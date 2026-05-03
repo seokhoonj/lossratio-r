@@ -4,8 +4,9 @@
 > diagnostics](https://seokhoonj.github.io/lossratio/triangle-diagnostics.md)
 
 chain ladder 또는 손해율 모형을 적합하기 전에 기반이 되는 triangle 을
-살펴보는 것이 효율적이다. 이 vignette 는 코호트 거동, age-to-age 인자의
-안정성, 성숙점 탐지를 이해하기 위한 `lossratio` 의 진단 도구를 다룬다.
+살펴보는 것이 효율적이다. 이 vignette 는 코호트 발전 양상, age-to-age
+인자의 안정성, 성숙점 탐지를 이해하기 위한 `lossratio` 의 진단 도구를
+다룬다.
 
 ## Triangle 수준 진단
 

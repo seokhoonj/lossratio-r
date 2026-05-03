@@ -280,7 +280,7 @@ compare projections against the withheld actuals.
 Detect the development period from which the projected loss ratio is
 predictively stable (paper Section 11, $`k_0`$ criterion).
 
-- [`find_lr_stability()`](https://seokhoonj.github.io/lossratio/reference/find_lr_stability.md)
+- [`find_lr_convergence()`](https://seokhoonj.github.io/lossratio/reference/find_lr_convergence.md)
   : Find the development period at which the loss ratio estimate
   stabilises
 
@@ -318,11 +318,11 @@ and
 - [`plot(`*`<EDFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.EDFit.md)
   : Plot an ED fit
 
+- [`plot(`*`<LRConvergence>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.LRConvergence.md)
+  : Plot the LRConvergence diagnostic
+
 - [`plot(`*`<LRFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.LRFit.md)
   : Plot a loss ratio fit
-
-- [`plot(`*`<LRStability>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.LRStability.md)
-  : Plot the LRStability diagnostic
 
 - [`plot(`*`<Total>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.Total.md)
   :
@@ -460,5 +460,5 @@ print / summary / longer methods registered on package classes.
   cohorts](https://seokhoonj.github.io/lossratio/articles/regime-detection.md):
 - [Backtesting projections against held-out
   diagonals](https://seokhoonj.github.io/lossratio/articles/backtest.md):
-- [Detecting LR stability with
-  find_lr_stability()](https://seokhoonj.github.io/lossratio/articles/lr-stability.md):
+- [Diagnosing LR convergence with
+  find_lr_convergence()](https://seokhoonj.github.io/lossratio/articles/lr-convergence.md):

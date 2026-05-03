@@ -13,8 +13,8 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/index.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/loss-ratio-methods-ko.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/loss-ratio-methods.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/lr-stability-ko.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/lr-stability.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/lr-convergence-ko.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/lr-convergence.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/regime-detection-ko.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/regime-detection.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/triangle-diagnostics-ko.html</loc></url>
@@ -85,7 +85,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-update_class.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/experience.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/find_ata_maturity.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/find_lr_stability.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/find_lr_convergence.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.html</loc></url>
@@ -103,8 +103,8 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot.CohortRegime.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot.ED.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot.EDFit.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot.LRConvergence.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot.LRFit.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot.LRStability.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot.Total.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot.Triangle.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.ATA.html</loc></url>

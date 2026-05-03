@@ -1,0 +1,203 @@
+# find_lr_convergence() 로 예측 손해율 수렴 시점 진단
+
+## 동기
+
+[`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/find_ata_maturity.md)
+는 *“어느 발전 기간부터 link factor $`f_k`$ 가 코호트 간에 재현
+가능해지는가?”* 에 답한다. chain ladder 예측에는 필요하지만,
+포트폴리오의 예측 손해율이 수렴했다고 선언하기에는 충분하지 않다 — 장기
+건강보험에서 $`f_k \to 1`$ 과 $`g_k \to 0`$ 은 누적 분모가 자라면서
+자동으로 발생하는 관성(inertia) 효과이지, 기저 경험이 실제로 수렴했다는
+신호가 아니다. 그 위에 세운 기준은 $`k`$ 가 커지기만 하면 자동으로
+통과한다.
+
+[`find_lr_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/find_lr_convergence.md)
+는 **수렴점**(convergence point) $`k^{**}`$ 를 검출한다 — projected loss
+ratio 가 예측적으로 수렴한 첫 평가 시점 $`v \ge k^*`$. $`k^*`$ (성숙점,
+[`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/find_ata_maturity.md)
+산출) 의 자연스러운 짝이다: $`k^*`$ 는 link factor $`f_k`$ 가 재현
+가능해지는 시점, $`k^{**}`$ 는 모형 출력 자체가 새 데이터에도 거의
+움직이지 않는 시점. 장기 건강보험 portfolio 는 $`k^*`$ 를 일찍 지나도
+$`k^{**}`$ 에 한참 못 미칠 수 있다.
+
+검출은 $`M`$ 개 연속 평가 시점에서 다음 두 조건이 동시에 만족되는 최초의
+$`v`$:
+
+1.  **예측 갱신** 이 자체 파라미터 SE 대비 작음:
+    $`R_v < c \cdot \widehat{SE}^{\mathrm{param}}_v`$, 여기서
+    $`R_v = |\widehat{LR}^{\mathrm{proj}}_v(D_v) -
+    \widehat{LR}^{\mathrm{proj}}_v(D_{v-1})|`$ 는 새 calendar diagonal
+    한 개가 추가될 때 portfolio 의 projected LR 이 변하는 크기.
+2.  **코호트 간 분산** 이 작음: $`\widehat{D}_v < \tau`$, 여기서
+    $`\widehat{D}_v = 1.4826 \cdot \mathrm{MAD}_i(\hat{lr}_{i,v}) /
+    |\mathrm{median}_i(\hat{lr}_{i,v})|`$ 는 발전 기간 $`v`$ 에서 코호트
+    간 *증분* 손해율의 강건 분산.
+
+$`\widehat{D}_v`$ 를 누적이 아닌 **증분** 손해율로 정의해 inertia-free —
+per-period 양이라 누적 분모로 인한 자동 감쇠가 없다. 두 절은 서로 다른
+실패 양상을 막는다: $`R_v`$ 는 *모형 출력* 이 갱신을 멈췄는지,
+$`\widehat{D}_v`$ 는 *raw 기간별 경험* 이 코호트 간에 일관되는지를
+검사한다. 한 쪽만 봐서는 속을 수 있다 — chain ladder 의 기계적
+$`\hat{f}_k \to 1`$ 표류가 실제 수렴과 무관하게 $`R_v`$ 를 무너뜨릴 수
+있고, 단일 기간 cohort level 일치가 predictive 수렴을 의미하지도 않는다.
+이 dual criterion 이 두 inertia-leakage 경로를 동시에 막는 핵심
+방어선이다.
+
+## 기본 사용
+
+``` r
+
+library(lossratio)
+data(experience)
+exp <- as_experience(experience)
+tri <- build_triangle(exp[cv_nm == "SUR"], cv_nm)
+
+res <- find_lr_convergence(tri)
+print(res)
+```
+
+모의 출력:
+
+    #> <LRConvergence>
+    #> k_conv       : NA
+    #> k_star       : 9
+    #> V (max dev)  : 30
+    #> criterion    : R_v < 0.5 * SE_param_v  AND  D_v < 0.15  (run M = 3)
+    #> fit_fn       : fit_lr
+    #> v candidates : 19 ( 0  pass both clauses)
+
+`LRConvergence` 객체의 주요 필드:
+
+- `k_conv` — 검출된 $`k^{**}`$. 조건이 $`M`$ 개 연속 만족되는 시점이
+  없으면 `NA`.
+- `k_star` — 하한으로 사용된 성숙점. 함수 내부에서 clr 기반 ATA 에
+  [`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/find_ata_maturity.md)
+  를 적용해 산출하거나, 호출 시 직접 전달할 수 있다.
+- `V` — triangle 에서 관측 가능한 최대 발전 기간.
+- `v`, `R_v`, `SE_param_v`, `D_v`, `pass_v` — 후보 평가 시점별 진단
+  시퀀스.
+- `c`, `tau`, `M`, `holdout_max`, `min_n_cohorts` — 사용된 설정값.
+- attribute: `group_var`, `value_var`, `fit_fn_name`, `dev_var`.
+
+`summary(res)` 는 후보 시점별 한 행 + `R_over_SE = R_v / SE_param_v`
+컬럼이 있는 `data.table` 을 반환한다:
+
+``` r
+
+head(summary(res), 6)
+```
+
+    #>        v    R_v   SE_param_v  R_over_SE   D_v     pass
+    #> 1:     9     NA           NA         NA  0.90   FALSE
+    #> 2:    10     NA           NA         NA  0.76   FALSE
+    #> 3:    11     NA           NA         NA  0.56   FALSE
+    #> 4:    12     NA           NA         NA  0.58   FALSE
+    #> 5:    13     NA           NA         NA  0.81   FALSE
+    #> 6:    14     NA           NA         NA  0.43   FALSE
+
+`R_v` 와 `SE_param_v` 는 holdout 깊이가 `holdout_max` 를 넘는 초기
+시점에서 `NA`. 기본값 `holdout_max = floor((V - k_star) / 2)` 는 모든
+backtest 에 적정한 refit 윈도우를 보장한다 — 더 깊이 진단하려면 풀어줄
+수 있다.
+
+## 시각화
+
+``` r
+
+plot(res)
+```
+
+진단은 위아래 두 패널: 위 패널은
+$`R_v / \widehat{SE}^{\mathrm{param}}_v`$ 대 $`v`$ 와 임계값 $`c`$ 의
+가로 점선; 아래 패널은 $`\widehat{D}_v`$ 대 $`v`$ 와 임계값 $`\tau`$ 의
+가로 점선. $`k^*`$ 는 세로 점선, $`k^{**}`$ 이 검출되면 세로 실선. **두
+점선 모두 아래에 있는 점** 이 양 절을 통과한 valuation.
+
+이 view 는 *어느 절이 binding 인지* 한눈에 보여준다. 위 패널이 임계값에
+근접하지만 아래가 멀면 코호트 간 이질성이 문제, 아래가 멀쩡한데 위가
+높으면 모형이 여전히 갱신 중이라는 뜻.
+
+## 임계값 튜닝
+
+기본값은 의도적으로 보수적:
+
+| 인자 | 기본값 | 의미 |
+|----|----|----|
+| `c` | `0.5` | 갱신 크기가 파라미터 SE 의 절반 이하. |
+| `tau` | `0.15` | 코호트 간 분산이 median lr 의 15% 이하. |
+| `M` | `3L` | 두 절이 최소 3 개 연속 시점에서 동시 만족. |
+| `min_n_cohorts` | `5L` | 코호트 수가 이 값 미만이면 $`\widehat{D}_v`$ 는 `NA`. |
+
+임계값을 조이면 $`k^{**}`$ 이 늦어지거나 NA 가 된다. 민감도는 sweep 으로
+확인:
+
+``` r
+
+sapply(
+  c(0.25, 0.5, 0.75, 1.0),
+  function(cc) find_lr_convergence(tri, c = cc)$k_conv
+)
+```
+
+$`\widehat{D}_v`$ 가 $`\tau \approx 0.05`$ 이하로 떨어지는 경우는 단일
+기간 청구 노이즈 때문에 실 portfolio 에서 보기 어렵고, $`0.20`$ 이상이면
+코호트 간 진성 이질성을 의심해야 한다 — 이 경우 모형 적합 전에
+[`detect_cohort_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_cohort_regime.md)
+으로 그룹을 분리하는 것이 권장된다.
+
+## $`k^*`$ 및 `detect_cohort_regime()` 와의 관계
+
+세 진단 도구는 서로 다른 질문을 다른 축에서 답한다:
+
+| 도구 | 질문 | 결과 | 축 |
+|----|----|----|----|
+| [`detect_cohort_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_cohort_regime.md) | 코호트들이 동질적인가? | 코호트 그룹 | 인수 시기 |
+| [`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/find_ata_maturity.md) ($`k^*`$) | link factor 가 재현 가능해지는 시점? | dev 값 | 발전 기간 |
+| [`find_lr_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/find_lr_convergence.md) ($`k^{**}`$) | LR 추정이 갱신을 멈추는 시점? | dev 값 | 발전 기간 |
+
+권장 워크플로:
+
+1.  [`detect_cohort_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_cohort_regime.md)
+    실행. 다중 레짐이 존재하면 그룹별로 분리해서 적합.
+2.  각 동질 그룹에서
+    [`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/find_ata_maturity.md)
+    로 $`k^*`$ 산출.
+3.  [`find_lr_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/find_lr_convergence.md)
+    로 $`k^{**} \ge k^*`$ 검출. 수렴 영역의 손해율
+    $`\widehat{clr}^{\mathrm{stable}}`$ 은 $`k \ge k^{**}`$ 에서의 평균
+    (또는
+    [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+    로 예측). 위 첨자 *stable* 은 영역(regime) 이 안정함을 가리키며,
+    $`clr`$ 자체의 속성이 아니다.
+
+이 순서는 *코호트 동질성*, *link 재현성*, *level 수렴* 세 속성의 분리를
+반영한다 — P&C run-off 에서는 한 점에 모이지만 장기 건강보험에서는 각각
+독립적으로 검증해야 한다.
+
+## 한계
+
+[`find_lr_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/find_lr_convergence.md)
+는 반복적인
+[`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+호출 위의 얇은 layer 이며 그 제약을 그대로 상속한다:
+
+- **식별 가능성**: $`k^{**}`$ 는 $`V \ge k^* + M`$ 일 때만 선언 가능.
+  관측 기간이 짧으면 `NA` 반환.
+- **모형 조건부**: $`\widehat{LR}^{\mathrm{proj}}_v`$ 는 `fit_fn` (기본
+  `fit_lr`) 으로 산출. fitter 가 다르면 $`k^{**}`$ 도 달라짐. robustness
+  를 위해 여러 `fit_fn` 하에서 결과 비교 권장.
+- **포트폴리오 집계**: $`R_v`$ 와 $`\widehat{SE}^{\mathrm{param}}_v`$ 는
+  코호트 간 독립 가정 하에 익스포저 가중 집계. 달력 연도 충격 (요율
+  개정, 의료비 인플레) 은 이 가정을 위배하며, 이 경우 두 절이 비코호트
+  사유로 동시에 움직일 수 있음.
+- **다중 그룹 triangle**: 현재 구현은 그룹 간 $`\widehat{D}_v`$ 를
+  median 으로 collapse. 그룹이 다르게 움직이면 분리 실행 권장.
+
+## 함께 보기
+
+- [`?find_lr_convergence`](https://seokhoonj.github.io/lossratio/ko/reference/find_lr_convergence.md),
+  [`?find_ata_maturity`](https://seokhoonj.github.io/lossratio/ko/reference/find_ata_maturity.md),
+  [`?backtest`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md),
+  [`?detect_cohort_regime`](https://seokhoonj.github.io/lossratio/ko/reference/detect_cohort_regime.md).
+- vignette `regime-detection-ko` — 위 워크플로 1단계의 코호트 동질성
+  진단.
