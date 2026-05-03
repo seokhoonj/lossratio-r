@@ -490,7 +490,7 @@ plot_triangle.CLFit <- function(x,
       "Label: SE"
     }
   } else {
-    ci_txt <- sprintf("Label: %d%% CI", round(conf_level * 100))
+    ci_txt <- sprintf("Label: %d%% CI [lower, upper]", round(conf_level * 100))
     if (is_ratio) {
       ci_txt
     } else if (nzchar(unit_txt)) {
@@ -510,12 +510,17 @@ plot_triangle.CLFit <- function(x,
   }
 
   # 6) base plot --------------------------------------------------------
+  label_args <- if (label_style == "ci") {
+    list(size = 2.5)
+  } else {
+    list(size = 3)
+  }
   p <- ggshort::ggtable(
     data       = dt,
     x          = .data[["dev"]],
     y          = .data$.y,
     label      = .data$label,
-    label_args = list(size = 3),
+    label_args = label_args,
     fill       = .data$.value,
     fill_args  = fill_args
   )

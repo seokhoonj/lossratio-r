@@ -41,7 +41,7 @@ tri <- build_triangle(exp, group_var = cv_nm)
 
 ```{r}
 plot(tri)                              # raw clr trajectories per cohort
-plot(tri, value_var = "loss")          # cumulative loss instead of clr
+plot(tri, value_var = "lr")            # incremental loss ratio instead of clr
 plot(tri, summary = TRUE)              # raw + overlay (mean / median / weighted)
 ```
 
@@ -52,9 +52,13 @@ Useful for spotting cohorts that deviate from the central tendency.
 ### Cell heatmap
 
 ```{r}
-plot_triangle(tri)                          # clr in each cell
-plot_triangle(tri, value_var = "loss")      # cumulative loss
-plot_triangle(tri, label_style = "detail")  # ratio + (loss / rp) amounts
+plot_triangle(tri)                            # clr in each cell
+plot_triangle(tri, value_var = "lr")          # incremental loss ratio
+
+# detail labels (ratio + loss/rp amounts) are 2-line — use quarterly cells
+tri_q <- build_triangle(exp, group_var = cv_nm,
+                        cohort_var = "uyq", dev_var = "elap_q")
+plot_triangle(tri_q, label_style = "detail")  # ratio + (loss / rp) amounts
 ```
 
 ### Group statistics by dev

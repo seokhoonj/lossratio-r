@@ -33,6 +33,8 @@ navbar:
         href: articles/regime-detection.html
       - text: Backtest
         href: articles/backtest.html
+      - text: LR stability
+        href: articles/lr-stability.html
     language:
       text: KO
       href: ./ko/
@@ -93,6 +95,13 @@ reference:
   contents:
   - backtest
 
+- title: LR stability detection
+  desc: >
+    Detect the development period from which the projected loss ratio
+    is predictively stable (paper Section 11, $k_0$ criterion).
+  contents:
+  - find_lr_stability
+
 - title: Visualisation
   desc: >
     `plot()` (base generic) and `plot_triangle()` (lossratio generic)
@@ -131,6 +140,7 @@ articles:
   - triangle-diagnostics
   - regime-detection
   - backtest
+  - lr-stability
 - title: internal
   navbar: ~
   contents:
@@ -142,3 +152,4 @@ articles:
   - "articles/triangle-diagnostics-ko"
   - "articles/regime-detection-ko"
   - "articles/backtest-ko"
+  - "articles/lr-stability-ko"

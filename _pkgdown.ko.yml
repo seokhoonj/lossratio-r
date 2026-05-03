@@ -34,6 +34,8 @@ navbar:
         href: articles/regime-detection-ko.html
       - text: Backtest
         href: articles/backtest-ko.html
+      - text: LR 안정성
+        href: articles/lr-stability-ko.html
     reference:
       text: 참조
       href: reference/index.html
@@ -102,6 +104,13 @@ reference:
   contents:
   - backtest
 
+- title: LR 안정성 탐지
+  desc: >
+    예측된 손해율이 안정화되는 발전 기간을 검출 (paper Section 11,
+    $k_0$ 기준).
+  contents:
+  - find_lr_stability
+
 - title: 시각화
   desc: >
     `plot()` (base generic) 과 `plot_triangle()` (lossratio generic)
@@ -137,6 +146,7 @@ articles:
   - "articles/triangle-diagnostics-ko"
   - "articles/regime-detection-ko"
   - "articles/backtest-ko"
+  - "articles/lr-stability-ko"
 - title: internal
   contents:
   - "articles/getting-started-ko"
@@ -147,3 +157,4 @@ articles:
   - triangle-diagnostics
   - regime-detection
   - backtest
+  - lr-stability
