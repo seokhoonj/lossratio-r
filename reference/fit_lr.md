@@ -80,11 +80,11 @@ fit_lr(
 
 - delta_method:
 
-  Method for computing `se_clr = SE(L/E)`. One of:
+  Method for computing `se_lr = SE(L/E)`. One of:
 
   `"simple"` (default)
 
-  :   `se_clr = se_proj / exposure_proj`, treats exposure as fixed.
+  :   `se_lr = se_proj / exposure_proj`, treats exposure as fixed.
 
   `"full"`
 

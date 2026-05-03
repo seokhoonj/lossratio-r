@@ -17,3 +17,5 @@
   cohorts](https://seokhoonj.github.io/lossratio/articles/regime-detection.md):
 - [Backtesting projections against held-out
   diagonals](https://seokhoonj.github.io/lossratio/articles/backtest.md):
+- [Detecting LR stability with
+  find_lr_stability()](https://seokhoonj.github.io/lossratio/articles/lr-stability.md):

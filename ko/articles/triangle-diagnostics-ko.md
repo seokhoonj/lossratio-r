@@ -31,7 +31,7 @@ plot(tri)                              # 코호트별 raw clr 궤적
 
 ``` r
 
-plot(tri, value_var = "loss")          # clr 대신 누적 loss
+plot(tri, value_var = "lr")            # clr 대신 증분 loss ratio
 ```
 
 ![](triangle-diagnostics-ko_files/figure-html/unnamed-chunk-2-2.png)
@@ -51,21 +51,25 @@ plot(tri, summary = TRUE)              # raw + overlay (mean / median / weighted
 
 ``` r
 
-plot_triangle(tri)                          # 각 셀의 clr
+plot_triangle(tri)                            # 각 셀의 clr
 ```
 
 ![](triangle-diagnostics-ko_files/figure-html/unnamed-chunk-3-1.png)
 
 ``` r
 
-plot_triangle(tri, value_var = "loss")      # 누적 loss
+plot_triangle(tri, value_var = "lr")          # 증분 loss ratio
 ```
 
 ![](triangle-diagnostics-ko_files/figure-html/unnamed-chunk-3-2.png)
 
 ``` r
 
-plot_triangle(tri, label_style = "detail")  # 비율 + (loss / rp) 금액
+
+# detail 라벨은 2 줄이라 monthly 셀에서는 겹침 — quarterly 로 다시 빌드
+tri_q <- build_triangle(exp, group_var = cv_nm,
+                        cohort_var = "uyq", dev_var = "elap_q")
+plot_triangle(tri_q, label_style = "detail")  # 비율 + (loss / rp) 금액
 ```
 
 ![](triangle-diagnostics-ko_files/figure-html/unnamed-chunk-3-3.png)

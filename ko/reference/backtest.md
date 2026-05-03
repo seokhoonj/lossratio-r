@@ -67,7 +67,7 @@ print(x, ...)
   `crp`, and `clr` jointly. Here `value_var` is used purely to pick
   which projection column on `fit_lr$full` is treated as the prediction
   for scoring. It must be one of `"closs"`, `"crp"`, or `"clr"`
-  (default), which map to `loss_proj`, `exposure_proj`, and `clr_proj`
+  (default), which map to `loss_proj`, `exposure_proj`, and `lr_proj`
   respectively.
 
 - ...:
@@ -133,7 +133,7 @@ against the fit's projection table.
 |----|----|----|----|----|
 | **`fit_fn`** | **Valid `value_var`** | **Forwarded to fitter?** | **Compared column on `fit$full`** | **Notes** |
 | `fit_cl` | any numeric column in `x` | yes (as `value_var`) | `value_proj` | Score column equals the column being accumulated by chain ladder. |
-| `fit_lr` | `"closs"`, `"crp"`, `"clr"` | no (fit_lr ignores `value_var`) | `loss_proj`, `exposure_proj`, `clr_proj` respectively | Fitter projects all three jointly; `value_var` only selects the scoring lane. |
+| `fit_lr` | `"closs"`, `"crp"`, `"clr"` | no (fit_lr ignores `value_var`) | `loss_proj`, `exposure_proj`, `lr_proj` respectively | Fitter projects all three jointly; `value_var` only selects the scoring lane. |
 
 This means that `backtest(..., value_var = "closs")` paired with
 `fit_lr` is *not* the same operation as `fit_cl(value_var = "closs")`

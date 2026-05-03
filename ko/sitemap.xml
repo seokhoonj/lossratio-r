@@ -13,6 +13,8 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/index.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/loss-ratio-methods-ko.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/loss-ratio-methods.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/lr-stability-ko.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/lr-stability.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/regime-detection-ko.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/regime-detection.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/triangle-diagnostics-ko.html</loc></url>
@@ -42,6 +44,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-cl_summary.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-cl_tail_factor.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-combined_facet_labeller.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-compute_dv.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-compute_tail_factor.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-element_axis_text.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-element_grid.html</loc></url>
@@ -49,6 +52,8 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-ensure_dt.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-expand_grid.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-expand_triangle_grid.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-extract_portfolio_lr.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-extract_portfolio_se_param.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-extrapolate_sigma_ata.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-extrapolate_sigma_ed.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-filter_ata.html</loc></url>
@@ -80,6 +85,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-update_class.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/experience.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/find_ata_maturity.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/find_lr_stability.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.html</loc></url>
@@ -98,6 +104,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot.ED.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot.EDFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot.LRFit.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot.LRStability.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot.Total.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot.Triangle.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.ATA.html</loc></url>

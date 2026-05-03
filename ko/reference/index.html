@@ -26,6 +26,7 @@
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics-ko.html">Triangle 및 ata 진단</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection-ko.html">Regime 탐지</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/lr-stability-ko.html">LR 안정성</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">참조</a></li>
 <li class="nav-item dropdown">
@@ -243,6 +244,22 @@
         </dt>
         <dd>Backtest a loss-ratio / chain ladder fit on existing data</dd>
       </dl></div><div class="section level2">
+      <h2 id="lr-">LR 안정성 탐지<a class="anchor" aria-label="anchor" href="#lr-"></a></h2>
+
+      <div class="section-desc"><p>예측된 손해율이 안정화되는 발전 기간을 검출 (paper Section 11, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>k</mi><mn>0</mn></msub><annotation encoding="application/x-tex">k_0</annotation></semantics></math> 기준).</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="find_lr_stability.html">find_lr_stability()</a></code>
+
+        </dt>
+        <dd>Find the development period at which the loss ratio estimate stabilises</dd>
+      </dl></div><div class="section level2">
       <h2 id="--3">시각화<a class="anchor" aria-label="anchor" href="#--3"></a></h2>
 
       <div class="section-desc"><p><code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> (base generic) 과 <code><a href="../reference/plot_triangle.html">plot_triangle()</a></code> (lossratio generic) 이 객체 클래스에 따라 dispatch.</p></div>
@@ -321,6 +338,13 @@
 
         </dt>
         <dd>Plot a loss ratio fit</dd>
+
+        <dt>
+
+          <code><a href="plot.LRStability.html">plot(<i>&lt;LRStability&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot the LRStability diagnostic</dd>
 
         <dt>
 

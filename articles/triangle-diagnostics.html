@@ -47,6 +47,7 @@
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ata diagnostics</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection.html">Regime detection</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/lr-stability.html">LR stability</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -100,7 +101,7 @@ every step generalises to multi-group input.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>                              <span class="co"># raw clr trajectories per cohort</span></span></code></pre></div>
 <p><img src="triangle-diagnostics_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span>          <span class="co"># cumulative loss instead of clr</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span>            <span class="co"># incremental loss ratio instead of clr</span></span></code></pre></div>
 <p><img src="triangle-diagnostics_files/figure-html/unnamed-chunk-2-2.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span>, summary <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>              <span class="co"># raw + overlay (mean / median / weighted)</span></span></code></pre></div>
@@ -113,13 +114,17 @@ for spotting cohorts that deviate from the central tendency.</p>
 <h3 id="cell-heatmap">Cell heatmap<a class="anchor" aria-label="anchor" href="#cell-heatmap"></a>
 </h3>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>                          <span class="co"># clr in each cell</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>                            <span class="co"># clr in each cell</span></span></code></pre></div>
 <p><img src="triangle-diagnostics_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span>      <span class="co"># cumulative loss</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span>          <span class="co"># incremental loss ratio</span></span></code></pre></div>
 <p><img src="triangle-diagnostics_files/figure-html/unnamed-chunk-3-2.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span>  <span class="co"># ratio + (loss / rp) amounts</span></span></code></pre></div>
+<code class="sourceCode R"><span></span>
+<span><span class="co"># detail labels (ratio + loss/rp amounts) are 2-line — use quarterly cells</span></span>
+<span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span>,</span>
+<span>                        cohort_var <span class="op">=</span> <span class="st">"uyq"</span>, dev_var <span class="op">=</span> <span class="st">"elap_q"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span>  <span class="co"># ratio + (loss / rp) amounts</span></span></code></pre></div>
 <p><img src="triangle-diagnostics_files/figure-html/unnamed-chunk-3-3.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level3">

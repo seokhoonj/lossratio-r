@@ -47,6 +47,7 @@
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics-ko.html">Triangle 및 ata 진단</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection-ko.html">Regime 탐지</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/lr-stability-ko.html">LR 안정성</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">참조</a></li>
@@ -364,11 +365,11 @@ ladder 를 적용한다. 전환 지점은 ata 인자에서 그룹별로 탐지�
 성숙점이다.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lr</span>, type <span class="op">=</span> <span class="st">"clr"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lr</span>, type <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="getting-started-ko_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      cv_nm     cohort     latest   ultimate    reserve exposure_ult clr_latest</span></span>
+<span><span class="co">#&gt;      cv_nm     cohort     latest   ultimate    reserve exposure_ult  lr_latest</span></span>
 <span><span class="co">#&gt;     &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;        &lt;num&gt;      &lt;num&gt;</span></span>
 <span><span class="co">#&gt;  1:    SUR 2023-04-01 2442597071 2442597071          0   2621263717 0.93183950</span></span>
 <span><span class="co">#&gt;  2:    SUR 2023-05-01 2423543637 2600462323  176918686   2447179852 1.06560740</span></span>
@@ -400,9 +401,9 @@ ladder 를 적용한다. 전환 지점은 ata 인자에서 그룹별로 탐지�
 <span><span class="co">#&gt; 28:    SUR 2025-07-01    6232031 2701876527 2695644496   3705335918 0.07318336</span></span>
 <span><span class="co">#&gt; 29:    SUR 2025-08-01          0 2250325480 2250325480   2969197221 0.00000000</span></span>
 <span><span class="co">#&gt; 30:    SUR 2025-09-01          0 2371912952 2371912952   2995415278 0.00000000</span></span>
-<span><span class="co">#&gt;      cv_nm     cohort     latest   ultimate    reserve exposure_ult clr_latest</span></span>
+<span><span class="co">#&gt;      cv_nm     cohort     latest   ultimate    reserve exposure_ult  lr_latest</span></span>
 <span><span class="co">#&gt;     &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;        &lt;num&gt;      &lt;num&gt;</span></span>
-<span><span class="co">#&gt;       clr_ult maturity_from      proc_se    param_se           se           cv</span></span>
+<span><span class="co">#&gt;        lr_ult maturity_from      proc_se    param_se           se           cv</span></span>
 <span><span class="co">#&gt;         &lt;num&gt;         &lt;num&gt;        &lt;num&gt;       &lt;num&gt;        &lt;num&gt;        &lt;num&gt;</span></span>
 <span><span class="co">#&gt;  1: 0.9318395             9          0.0         0.0          0.0 0.0000000000</span></span>
 <span><span class="co">#&gt;  2: 1.0626364             9     270023.8    278555.7     387951.2 0.0001491855</span></span>
@@ -434,9 +435,9 @@ ladder 를 적용한다. 전환 지점은 ata 인자에서 그룹별로 탐지�
 <span><span class="co">#&gt; 28: 0.7291853             9 1349660320.4 349060386.5 1394068195.6 0.5159629545</span></span>
 <span><span class="co">#&gt; 29: 0.7578902             9 1225790725.6 285878838.8 1258685669.0 0.5593349407</span></span>
 <span><span class="co">#&gt; 30: 0.7918478             9 1250626835.9 295553919.7 1285075718.4 0.5417887353</span></span>
-<span><span class="co">#&gt;       clr_ult maturity_from      proc_se    param_se           se           cv</span></span>
+<span><span class="co">#&gt;        lr_ult maturity_from      proc_se    param_se           se           cv</span></span>
 <span><span class="co">#&gt;         &lt;num&gt;         &lt;num&gt;        &lt;num&gt;       &lt;num&gt;        &lt;num&gt;        &lt;num&gt;</span></span>
-<span><span class="co">#&gt;           se_clr       cv_clr  ci_lower  ci_upper</span></span>
+<span><span class="co">#&gt;            se_lr        cv_lr  ci_lower  ci_upper</span></span>
 <span><span class="co">#&gt;            &lt;num&gt;        &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
 <span><span class="co">#&gt;  1: 0.0000000000 0.0000000000 0.9318395 0.9318395</span></span>
 <span><span class="co">#&gt;  2: 0.0001585299 0.0001491855 1.0623257 1.0629471</span></span>
@@ -468,7 +469,7 @@ ladder 를 적용한다. 전환 지점은 ata 인자에서 그룹별로 탐지�
 <span><span class="co">#&gt; 28: 0.3762326079 0.5159629545 0.0000000 1.4665877</span></span>
 <span><span class="co">#&gt; 29: 0.4239144709 0.5593349407 0.0000000 1.5887473</span></span>
 <span><span class="co">#&gt; 30: 0.4290142098 0.5417887353 0.0000000 1.6327002</span></span>
-<span><span class="co">#&gt;           se_clr       cv_clr  ci_lower  ci_upper</span></span>
+<span><span class="co">#&gt;            se_lr        cv_lr  ci_lower  ci_upper</span></span>
 <span><span class="co">#&gt;            &lt;num&gt;        &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span></code></pre></div>
 </div>
 <div class="section level2">

@@ -36,7 +36,7 @@ plot_triangle(
 
 - label_style:
 
-  One of `"value"` (clr only) or `"detail"` (clr with loss/exposure
+  One of `"value"` (lr only) or `"detail"` (lr with loss/exposure
   amounts). Default is `"value"`.
 
 - label_args:
@@ -49,7 +49,7 @@ plot_triangle(
 
 - digits:
 
-  Number of decimal places for clr display. Default is `0`.
+  Number of decimal places for lr display. Default is `0`.
 
 - amount_divisor:
 

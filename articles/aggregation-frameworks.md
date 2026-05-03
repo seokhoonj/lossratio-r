@@ -208,18 +208,18 @@ attributes (used for plot labels and granularity-aware date formatting):
 
 ``` r
 
-attr(tri, "cohort_var")      # "uym"
+attr(tri, "cohort_var")     # "uym"
 #> [1] "uym"
-attr(tri, "cohort_type")     # "month"
+attr(tri, "cohort_type")    # "month"
 #> [1] "month"
-attr(tri, "dev_var")     # "elap_m"
+attr(tri, "dev_var")        # "elap_m"
 #> [1] "elap_m"
-attr(tri, "dev_type")    # "month"
+attr(tri, "dev_type")       # "month"
 #> [1] NA
 
-attr(cal, "calendar_var")    # "cym"
+attr(cal, "calendar_var")   # "cym"
 #> [1] "cym"
-attr(cal, "calendar_type")   # "month"
+attr(cal, "calendar_type")  # "month"
 #> [1] "month"
 ```
 

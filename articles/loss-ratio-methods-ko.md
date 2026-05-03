@@ -56,7 +56,7 @@ exp <- as_experience(experience)
 tri <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
 
 lr_sa <- fit_lr(tri, method = "sa")        # 기본값
-plot(lr_sa, type = "clr")
+plot(lr_sa, type = "lr")
 ```
 
 ![](loss-ratio-methods-ko_files/figure-html/unnamed-chunk-1-1.png)
@@ -64,7 +64,7 @@ plot(lr_sa, type = "clr")
 ``` r
 
 summary(lr_sa)
-#>      cv_nm     cohort     latest   ultimate    reserve exposure_ult clr_latest
+#>      cv_nm     cohort     latest   ultimate    reserve exposure_ult  lr_latest
 #>     <char>     <Date>      <num>      <num>      <num>        <num>      <num>
 #>  1:    SUR 2023-04-01 2442597071 2442597071          0   2621263717 0.93183950
 #>  2:    SUR 2023-05-01 2423543637 2600462323  176918686   2447179852 1.06560740
@@ -96,9 +96,9 @@ summary(lr_sa)
 #> 28:    SUR 2025-07-01    6232031 2701876527 2695644496   3705335918 0.07318336
 #> 29:    SUR 2025-08-01          0 2250325480 2250325480   2969197221 0.00000000
 #> 30:    SUR 2025-09-01          0 2371912952 2371912952   2995415278 0.00000000
-#>      cv_nm     cohort     latest   ultimate    reserve exposure_ult clr_latest
+#>      cv_nm     cohort     latest   ultimate    reserve exposure_ult  lr_latest
 #>     <char>     <Date>      <num>      <num>      <num>        <num>      <num>
-#>       clr_ult maturity_from      proc_se    param_se           se           cv
+#>        lr_ult maturity_from      proc_se    param_se           se           cv
 #>         <num>         <num>        <num>       <num>        <num>        <num>
 #>  1: 0.9318395             9          0.0         0.0          0.0 0.0000000000
 #>  2: 1.0626364             9     270023.8    278555.7     387951.2 0.0001491855
@@ -130,9 +130,9 @@ summary(lr_sa)
 #> 28: 0.7291853             9 1349660320.4 349060386.5 1394068195.6 0.5159629545
 #> 29: 0.7578902             9 1225790725.6 285878838.8 1258685669.0 0.5593349407
 #> 30: 0.7918478             9 1250626835.9 295553919.7 1285075718.4 0.5417887353
-#>       clr_ult maturity_from      proc_se    param_se           se           cv
+#>        lr_ult maturity_from      proc_se    param_se           se           cv
 #>         <num>         <num>        <num>       <num>        <num>        <num>
-#>           se_clr       cv_clr  ci_lower  ci_upper
+#>            se_lr        cv_lr  ci_lower  ci_upper
 #>            <num>        <num>     <num>     <num>
 #>  1: 0.0000000000 0.0000000000 0.9318395 0.9318395
 #>  2: 0.0001585299 0.0001491855 1.0623257 1.0629471
@@ -164,7 +164,7 @@ summary(lr_sa)
 #> 28: 0.3762326079 0.5159629545 0.0000000 1.4665877
 #> 29: 0.4239144709 0.5593349407 0.0000000 1.5887473
 #> 30: 0.4290142098 0.5417887353 0.0000000 1.6327002
-#>           se_clr       cv_clr  ci_lower  ci_upper
+#>            se_lr        cv_lr  ci_lower  ci_upper
 #>            <num>        <num>     <num>     <num>
 ```
 
@@ -191,7 +191,7 @@ summary(lr_sa)
 ``` r
 
 lr_ed <- fit_lr(tri, method = "ed")
-plot(lr_ed, type = "clr")
+plot(lr_ed, type = "lr")
 ```
 
 ![](loss-ratio-methods-ko_files/figure-html/unnamed-chunk-2-1.png)
@@ -222,7 +222,7 @@ plot(lr_ed, type = "clr")
 ``` r
 
 lr_cl <- fit_lr(tri, method = "cl")
-plot(lr_cl, type = "clr")
+plot(lr_cl, type = "lr")
 ```
 
 ![](loss-ratio-methods-ko_files/figure-html/unnamed-chunk-3-1.png)
@@ -281,7 +281,7 @@ summary(lrs$cl)$ultimate
 
 lr_boot <- fit_lr(tri, method = "sa", bootstrap = TRUE, B = 1000, seed = 1)
 summary(lr_boot)
-#>      cv_nm     cohort     latest   ultimate    reserve exposure_ult clr_latest
+#>      cv_nm     cohort     latest   ultimate    reserve exposure_ult  lr_latest
 #>     <char>     <Date>      <num>      <num>      <num>        <num>      <num>
 #>  1:    SUR 2023-04-01 2442597071 2442597071          0   2621263717 0.93183950
 #>  2:    SUR 2023-05-01 2423543637 2600462323  176918686   2447179852 1.06560740
@@ -313,9 +313,9 @@ summary(lr_boot)
 #> 28:    SUR 2025-07-01    6232031 2701876527 2695644496   3705335918 0.07318336
 #> 29:    SUR 2025-08-01          0 2250325480 2250325480   2969197221 0.00000000
 #> 30:    SUR 2025-09-01          0 2371912952 2371912952   2995415278 0.00000000
-#>      cv_nm     cohort     latest   ultimate    reserve exposure_ult clr_latest
+#>      cv_nm     cohort     latest   ultimate    reserve exposure_ult  lr_latest
 #>     <char>     <Date>      <num>      <num>      <num>        <num>      <num>
-#>       clr_ult maturity_from      proc_se    param_se           se           cv
+#>        lr_ult maturity_from      proc_se    param_se           se           cv
 #>         <num>         <num>        <num>       <num>        <num>        <num>
 #>  1: 0.9318395             9          0.0         0.0          0.0 0.0000000000
 #>  2: 1.0626364             9     270023.8    278555.7     387951.2 0.0001491855
@@ -347,9 +347,9 @@ summary(lr_boot)
 #> 28: 0.7291853             9 1349660320.4 349060386.5 1394068195.6 0.5159629545
 #> 29: 0.7578902             9 1225790725.6 285878838.8 1258685669.0 0.5593349407
 #> 30: 0.7918478             9 1250626835.9 295553919.7 1285075718.4 0.5417887353
-#>       clr_ult maturity_from      proc_se    param_se           se           cv
+#>        lr_ult maturity_from      proc_se    param_se           se           cv
 #>         <num>         <num>        <num>       <num>        <num>        <num>
-#>           se_clr       cv_clr   ci_lower  ci_upper
+#>            se_lr        cv_lr   ci_lower  ci_upper
 #>            <num>        <num>      <num>     <num>
 #>  1: 0.0000000000 0.0000000000 0.93183950 0.9318395
 #>  2: 0.0001585299 0.0001491855 1.06231741 1.0629663
@@ -381,7 +381,7 @@ summary(lr_boot)
 #> 28: 0.3762326079 0.5159629545 0.11075062 1.5787469
 #> 29: 0.4239144709 0.5593349407 0.00000000 1.6643254
 #> 30: 0.4290142098 0.5417887353 0.05281717 1.7271721
-#>           se_clr       cv_clr   ci_lower  ci_upper
+#>            se_lr        cv_lr   ci_lower  ci_upper
 #>            <num>        <num>      <num>     <num>
 ```
 

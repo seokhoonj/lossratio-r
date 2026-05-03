@@ -47,6 +47,7 @@
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ata diagnostics</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection.html">Regime detection</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/lr-stability.html">LR stability</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -291,18 +292,18 @@ analytical question.</p>
 attributes (used for plot labels and granularity-aware date
 formatting):</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tri</span>, <span class="st">"cohort_var"</span><span class="op">)</span>      <span class="co"># "uym"</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tri</span>, <span class="st">"cohort_var"</span><span class="op">)</span>     <span class="co"># "uym"</span></span>
 <span><span class="co">#&gt; [1] "uym"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tri</span>, <span class="st">"cohort_type"</span><span class="op">)</span>     <span class="co"># "month"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tri</span>, <span class="st">"cohort_type"</span><span class="op">)</span>    <span class="co"># "month"</span></span>
 <span><span class="co">#&gt; [1] "month"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tri</span>, <span class="st">"dev_var"</span><span class="op">)</span>     <span class="co"># "elap_m"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tri</span>, <span class="st">"dev_var"</span><span class="op">)</span>        <span class="co"># "elap_m"</span></span>
 <span><span class="co">#&gt; [1] "elap_m"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tri</span>, <span class="st">"dev_type"</span><span class="op">)</span>    <span class="co"># "month"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tri</span>, <span class="st">"dev_type"</span><span class="op">)</span>       <span class="co"># "month"</span></span>
 <span><span class="co">#&gt; [1] NA</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">cal</span>, <span class="st">"calendar_var"</span><span class="op">)</span>    <span class="co"># "cym"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">cal</span>, <span class="st">"calendar_var"</span><span class="op">)</span>   <span class="co"># "cym"</span></span>
 <span><span class="co">#&gt; [1] "cym"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">cal</span>, <span class="st">"calendar_type"</span><span class="op">)</span>   <span class="co"># "month"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">cal</span>, <span class="st">"calendar_type"</span><span class="op">)</span>  <span class="co"># "month"</span></span>
 <span><span class="co">#&gt; [1] "month"</span></span></code></pre></div>
 <p>The data columns themselves are standardised to <code>cohort</code> /
 <code>dev</code> / <code>calendar</code>, so downstream code is

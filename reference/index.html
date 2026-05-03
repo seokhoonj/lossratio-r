@@ -26,6 +26,7 @@
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ata diagnostics</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection.html">Regime detection</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/lr-stability.html">LR stability</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -240,6 +241,22 @@
         </dt>
         <dd>Backtest a loss-ratio / chain ladder fit on existing data</dd>
       </dl></div><div class="section level2">
+      <h2 id="lr-stability-detection">LR stability detection<a class="anchor" aria-label="anchor" href="#lr-stability-detection"></a></h2>
+
+      <div class="section-desc"><p>Detect the development period from which the projected loss ratio is predictively stable (paper Section 11, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>k</mi><mn>0</mn></msub><annotation encoding="application/x-tex">k_0</annotation></semantics></math> criterion).</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="find_lr_stability.html">find_lr_stability()</a></code>
+
+        </dt>
+        <dd>Find the development period at which the loss ratio estimate stabilises</dd>
+      </dl></div><div class="section level2">
       <h2 id="visualisation">Visualisation<a class="anchor" aria-label="anchor" href="#visualisation"></a></h2>
 
       <div class="section-desc"><p><code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> (base generic) and <code><a href="../reference/plot_triangle.html">plot_triangle()</a></code> (lossratio generic) dispatch on the object class.</p></div>
@@ -318,6 +335,13 @@
 
         </dt>
         <dd>Plot a loss ratio fit</dd>
+
+        <dt>
+
+          <code><a href="plot.LRStability.html">plot(<i>&lt;LRStability&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot the LRStability diagnostic</dd>
 
         <dt>
 

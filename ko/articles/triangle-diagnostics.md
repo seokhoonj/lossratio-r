@@ -29,7 +29,7 @@ plot(tri)                              # raw clr trajectories per cohort
 
 ``` r
 
-plot(tri, value_var = "loss")          # cumulative loss instead of clr
+plot(tri, value_var = "lr")            # incremental loss ratio instead of clr
 ```
 
 ![](triangle-diagnostics_files/figure-html/unnamed-chunk-2-2.png)
@@ -49,21 +49,25 @@ cohorts that deviate from the central tendency.
 
 ``` r
 
-plot_triangle(tri)                          # clr in each cell
+plot_triangle(tri)                            # clr in each cell
 ```
 
 ![](triangle-diagnostics_files/figure-html/unnamed-chunk-3-1.png)
 
 ``` r
 
-plot_triangle(tri, value_var = "loss")      # cumulative loss
+plot_triangle(tri, value_var = "lr")          # incremental loss ratio
 ```
 
 ![](triangle-diagnostics_files/figure-html/unnamed-chunk-3-2.png)
 
 ``` r
 
-plot_triangle(tri, label_style = "detail")  # ratio + (loss / rp) amounts
+
+# detail labels (ratio + loss/rp amounts) are 2-line — use quarterly cells
+tri_q <- build_triangle(exp, group_var = cv_nm,
+                        cohort_var = "uyq", dev_var = "elap_q")
+plot_triangle(tri_q, label_style = "detail")  # ratio + (loss / rp) amounts
 ```
 
 ![](triangle-diagnostics_files/figure-html/unnamed-chunk-3-3.png)

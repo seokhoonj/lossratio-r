@@ -99,6 +99,15 @@ compare projections against the withheld actuals.
   [`print(`*`<summary.Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   : Backtest a loss-ratio / chain ladder fit on existing data
 
+## LR stability detection
+
+Detect the development period from which the projected loss ratio is
+predictively stable (paper Section 11, $`k_0`$ criterion).
+
+- [`find_lr_stability()`](https://seokhoonj.github.io/lossratio/reference/find_lr_stability.md)
+  : Find the development period at which the loss ratio estimate
+  stabilises
+
 ## Visualisation
 
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) (base generic)
@@ -135,6 +144,9 @@ and
 
 - [`plot(`*`<LRFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.LRFit.md)
   : Plot a loss ratio fit
+
+- [`plot(`*`<LRStability>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.LRStability.md)
+  : Plot the LRStability diagnostic
 
 - [`plot(`*`<Total>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.Total.md)
   :

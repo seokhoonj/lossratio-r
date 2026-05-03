@@ -40,6 +40,7 @@ calendar diagonal (diag_summary)."><meta property="og:image" content="https://se
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics-ko.html">Triangle 및 ata 진단</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection-ko.html">Regime 탐지</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/lr-stability-ko.html">LR 안정성</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">참조</a></li>
 <li class="nav-item dropdown">
@@ -128,7 +129,7 @@ present in <code>x</code> is admissible.</p>
 projection column on <code>fit_lr$full</code> is treated as the prediction
 for scoring. It must be one of <code>"closs"</code>, <code>"crp"</code>, or <code>"clr"</code>
 (default), which map to <code>loss_proj</code>, <code>exposure_proj</code>, and
-<code>clr_proj</code> respectively.</p></dd>
+<code>lr_proj</code> respectively.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -184,7 +185,7 @@ whether the fitter consumes the same name as input or whether the
 name is only resolved against the fit's projection table.</p>
 <table class="table table"><tr><td><strong><code>fit_fn</code></strong></td><td><strong>Valid <code>value_var</code></strong></td><td><strong>Forwarded to fitter?</strong></td><td><strong>Compared column on <code>fit$full</code></strong></td><td><strong>Notes</strong></td></tr><tr><td><code>fit_cl</code></td><td>any numeric column in <code>x</code></td><td>yes (as <code>value_var</code>)</td><td><code>value_proj</code></td><td>Score column equals the column being
 accumulated by chain ladder.</td></tr><tr><td><code>fit_lr</code></td><td><code>"closs"</code>, <code>"crp"</code>, <code>"clr"</code></td><td>no (fit_lr ignores
-<code>value_var</code>)</td><td><code>loss_proj</code>, <code>exposure_proj</code>, <code>clr_proj</code>
+<code>value_var</code>)</td><td><code>loss_proj</code>, <code>exposure_proj</code>, <code>lr_proj</code>
 respectively</td><td>Fitter projects all three jointly; <code>value_var</code>
 only selects the scoring lane.</td></tr></table><p>This means that <code>backtest(..., value_var = "closs")</code> paired with
 <code>fit_lr</code> is <em>not</em> the same operation as <code>fit_cl(value_var = "closs")</code>

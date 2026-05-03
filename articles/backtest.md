@@ -208,7 +208,7 @@ carry a consistent meaning across the triangle.
 |-------------|----------------------------------|
 | `"closs"`   | `loss_proj`                      |
 | `"crp"`     | `exposure_proj`                  |
-| `"clr"`     | `clr_proj`                       |
+| `"clr"`     | `lr_proj`                        |
 
 The `method` argument selects the underlying loss-ratio projection
 strategy: `"sa"` (stage-adaptive, the default) blends exposure-driven

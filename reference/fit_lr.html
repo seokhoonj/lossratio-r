@@ -82,6 +82,7 @@ $$\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}$$"><meta property="og:image" c
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ata diagnostics</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection.html">Regime detection</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/lr-stability.html">LR stability</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -182,8 +183,8 @@ is <code>1</code>.</p></dd>
 
 
 <dt id="arg-delta-method">delta_method<a class="anchor" aria-label="anchor" href="#arg-delta-method"></a></dt>
-<dd><p>Method for computing <code>se_clr = SE(L/E)</code>. One of:</p><dl><dt><code>"simple"</code> (default)</dt>
-<dd><p><code>se_clr = se_proj / exposure_proj</code>,
+<dd><p>Method for computing <code>se_lr = SE(L/E)</code>. One of:</p><dl><dt><code>"simple"</code> (default)</dt>
+<dd><p><code>se_lr = se_proj / exposure_proj</code>,
 treats exposure as fixed.</p></dd>
 
 <dt><code>"full"</code></dt>
