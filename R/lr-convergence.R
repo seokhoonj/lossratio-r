@@ -103,11 +103,11 @@
 #' Find the development period at which the loss ratio estimate stabilises
 #'
 #' @description
-#' Identify the first valuation \eqn{k_{stable}} from which the projected
+#' Identify the first valuation \eqn{k^{**}} from which the projected
 #' loss ratio is *predictively* stable, in the sense of the paper's
-#' Section 11 \eqn{k_0} criterion:
+#' Section 11 \eqn{k^{**}} criterion:
 #'
-#' \deqn{k_{stable} = \min\{v \in [k^*, V - h] : R_v < c \cdot \widehat{SE}^{param}_v \text{ and } \widehat{D}_v < \tau, \text{ for } M \text{ consecutive valuations}\}}
+#' \deqn{k^{**} = \min\{v \in [k^*, V - h] : R_v < c \cdot \widehat{SE}^{param}_v \text{ and } \widehat{D}_v < \tau, \text{ for } M \text{ consecutive valuations}\}}
 #'
 #' where \eqn{R_v} is the predictive revision in the projected loss ratio
 #' when calendar diagonal \eqn{D_v} is added, \eqn{\widehat{SE}^{param}_v}
@@ -122,8 +122,8 @@
 #' \eqn{\widehat{D}_v < \tau} requires cross-cohort agreement on the
 #' incremental-LR level (inertia-free per-period quantity).
 #'
-#' This function corresponds to \eqn{k_0} in the paper. The notation
-#' "0" denotes the starting index of the stable regime; the function
+#' This function corresponds to the paper's *convergence point*
+#' \eqn{k^{**}}, paired with \eqn{k^*} (maturity point). The function
 #' name uses `lr_stability` to be self-documenting.
 #'
 #' @param triangle A `Triangle` object (typically from [build_triangle()]).
@@ -142,15 +142,15 @@
 #'   \eqn{\widehat{D}_v}. Default `5L`.
 #' @param ... Additional arguments forwarded to `fit_fn`.
 #'
-#' @return An object of class `LRStability` (named list) containing the
-#'   detected `k_stable`, the candidate sequence `v`, and the diagnostic
+#' @return An object of class `LRConvergence` (named list) containing the
+#'   detected `k_conv`, the candidate sequence `v`, and the diagnostic
 #'   sequences `R_v`, `SE_param_v`, `D_v`, `pass_v`. Metadata is carried
 #'   on attributes (`group_var`, `value_var`, `fit_fn_name`).
 #'
 #' @seealso [find_ata_maturity()], [backtest()], [fit_lr()]
 #'
 #' @export
-find_lr_stability <- function(triangle,
+find_lr_convergence <- function(triangle,
                               fit_fn        = fit_lr,
                               c             = 0.5,
                               tau           = 0.15,
@@ -262,11 +262,11 @@ find_lr_stability <- function(triangle,
             (R_v < c * SE_param_v) & (D_v < tau)
 
   # 7) first run of length M -------------------------------------------
-  k_stable <- NA_integer_
+  k_conv <- NA_integer_
   if (length(pass_v) >= M) {
     for (i in seq_len(length(pass_v) - M + 1L)) {
       if (all(pass_v[i:(i + M - 1L)])) {
-        k_stable <- v_seq[i]
+        k_conv <- v_seq[i]
         break
       }
     }
@@ -275,7 +275,7 @@ find_lr_stability <- function(triangle,
   # 8) assemble return object ------------------------------------------
   out <- list(
     call          = match.call(),
-    k_stable      = k_stable,
+    k_conv      = k_conv,
     k_star        = k_star,
     V             = V,
     v             = v_seq,
@@ -294,18 +294,18 @@ find_lr_stability <- function(triangle,
   data.table::setattr(out, "value_var",   "clr")
   data.table::setattr(out, "fit_fn_name", fit_fn_name)
   data.table::setattr(out, "dev_var",     dev_var)
-  class(out) <- "LRStability"
+  class(out) <- "LRConvergence"
   out
 }
 
 
 # S3 methods --------------------------------------------------------------
 
-#' @method print LRStability
+#' @method print LRConvergence
 #' @export
-print.LRStability <- function(x, ...) {
-  cat("<LRStability>\n")
-  cat("k_stable     :", x$k_stable, "\n")
+print.LRConvergence <- function(x, ...) {
+  cat("<LRConvergence>\n")
+  cat("k_conv       :", x$k_conv, "\n")
   cat("k_star       :", x$k_star,   "\n")
   cat("V (max dev)  :", x$V,        "\n")
   cat("criterion    : R_v < ", x$c, " * SE_param_v  AND  D_v < ", x$tau,
@@ -317,9 +317,9 @@ print.LRStability <- function(x, ...) {
   invisible(x)
 }
 
-#' @method summary LRStability
+#' @method summary LRConvergence
 #' @export
-summary.LRStability <- function(object, ...) {
+summary.LRConvergence <- function(object, ...) {
   data.table::data.table(
     v          = object$v,
     R_v        = object$R_v,
@@ -330,10 +330,10 @@ summary.LRStability <- function(object, ...) {
   )
 }
 
-#' Plot the LRStability diagnostic
+#' Plot the LRConvergence diagnostic
 #'
 #' @description
-#' Two-panel diagnostic showing the dual criterion driving \eqn{k_0}:
+#' Two-panel diagnostic showing the dual criterion driving \eqn{k^{**}}:
 #' \itemize{
 #'   \item Top panel: \eqn{R_v / \widehat{SE}^{param}_v} (predictive
 #'     revision normalised by parameter SE), with horizontal guide at
@@ -342,21 +342,21 @@ summary.LRStability <- function(object, ...) {
 #'     dispersion of incremental loss ratio), with horizontal guide at
 #'     the threshold `tau`.
 #' }
-#' Vertical guides mark `k_star` (dashed) and `k_stable` (solid). A
+#' Vertical guides mark `k_star` (dashed) and `k_conv` (solid). A
 #' point falling below both threshold lines passes the joint criterion.
 #'
-#' @param x An object of class `LRStability`.
+#' @param x An object of class `LRConvergence`.
 #' @param theme String passed to [.switch_theme()].
 #' @param ... Additional arguments passed to [.switch_theme()].
 #'
 #' @return A `ggplot` object.
 #'
-#' @method plot LRStability
+#' @method plot LRConvergence
 #' @export
-plot.LRStability <- function(x,
+plot.LRConvergence <- function(x,
                              theme = c("view", "save", "shiny"),
                              ...) {
-  .assert_class(x, "LRStability")
+  .assert_class(x, "LRConvergence")
   theme <- match.arg(theme)
 
   # build long-form data: one row per (v, metric)
@@ -409,18 +409,18 @@ plot.LRStability <- function(x,
     ggplot2::labs(
       title = "LR stability diagnostic",
       subtitle = sprintf(
-        "k_star = %s   k_stable = %s   (c = %s, tau = %s, M = %d)",
+        "k_star = %s   k_conv = %s   (c = %s, tau = %s, M = %d)",
         x$k_star,
-        ifelse(is.na(x$k_stable), "NA", x$k_stable),
+        ifelse(is.na(x$k_conv), "NA", x$k_conv),
         x$c, x$tau, x$M
       ),
       x = .pretty_var_label(attr(x, "dev_var")),
       y = NULL
     )
 
-  if (!is.na(x$k_stable)) {
+  if (!is.na(x$k_conv)) {
     p <- p + ggplot2::geom_vline(
-      xintercept = x$k_stable,
+      xintercept = x$k_conv,
       linetype = "solid",
       color = "#2ca02c",
       linewidth = 0.8

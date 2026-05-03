@@ -35,7 +35,7 @@ navbar:
       - text: Backtest
         href: articles/backtest-ko.html
       - text: LR 안정성
-        href: articles/lr-stability-ko.html
+        href: articles/lr-convergence-ko.html
     reference:
       text: 참조
       href: reference/index.html
@@ -109,7 +109,7 @@ reference:
     예측된 손해율이 안정화되는 발전 기간을 검출 (paper Section 11,
     $k_0$ 기준).
   contents:
-  - find_lr_stability
+  - find_lr_convergence
 
 - title: 시각화
   desc: >
@@ -146,7 +146,7 @@ articles:
   - "articles/triangle-diagnostics-ko"
   - "articles/regime-detection-ko"
   - "articles/backtest-ko"
-  - "articles/lr-stability-ko"
+  - "articles/lr-convergence-ko"
 - title: internal
   contents:
   - "articles/getting-started-ko"
@@ -157,4 +157,4 @@ articles:
   - triangle-diagnostics
   - regime-detection
   - backtest
-  - lr-stability
+  - lr-convergence
