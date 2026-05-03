@@ -35,9 +35,9 @@
 #'   loss estimation. Default is `1`.
 #' @param exposure_alpha Numeric scalar for exposure chain ladder. Default
 #'   is `1`.
-#' @param delta_method Method for computing `se_clr = SE(L/E)`. One of:
+#' @param delta_method Method for computing `se_lr = SE(L/E)`. One of:
 #'   \describe{
-#'     \item{`"simple"` (default)}{`se_clr = se_proj / exposure_proj`,
+#'     \item{`"simple"` (default)}{`se_lr = se_proj / exposure_proj`,
 #'       treats exposure as fixed.}
 #'     \item{`"full"`}{Full delta method with exposure uncertainty and
 #'       loss-exposure correlation:
@@ -358,42 +358,42 @@ fit_lr <- function(x,
   }
 
   # 17) loss ratio projection -----------------------------------------------
-  full[, clr_proj := data.table::fifelse(
+  full[, lr_proj := data.table::fifelse(
     is.finite(loss_proj) & is.finite(exposure_proj) & exposure_proj != 0,
     loss_proj / exposure_proj,
     NA_real_
   )]
 
   if (delta_method == "full") {
-    full[, se_clr := {
-      var_clr <- (se_proj / exposure_proj)^2 +
+    full[, se_lr := {
+      var_lr <- (se_proj / exposure_proj)^2 +
                  (loss_proj * se_exposure / exposure_proj^2)^2 -
                  2 * rho * loss_proj * se_proj * se_exposure /
                    exposure_proj^3
-      sqrt(pmax(var_clr, 0))
+      sqrt(pmax(var_lr, 0))
     }]
     full[!is.finite(loss_proj)  | !is.finite(exposure_proj) |
          !is.finite(se_proj)    | !is.finite(se_exposure)   |
          exposure_proj <= 0,
-         se_clr := NA_real_]
+         se_lr := NA_real_]
   } else {
-    full[, se_clr := data.table::fifelse(
+    full[, se_lr := data.table::fifelse(
       is.finite(se_proj) & is.finite(exposure_proj) & exposure_proj != 0,
       se_proj / exposure_proj, NA_real_
     )]
   }
 
-  full[, cv_clr := data.table::fifelse(
-    is.finite(clr_proj) & clr_proj != 0,
-    se_clr / abs(clr_proj), NA_real_
+  full[, cv_lr := data.table::fifelse(
+    is.finite(lr_proj) & lr_proj != 0,
+    se_lr / abs(lr_proj), NA_real_
   )]
 
-  # 17b) analytical CI in $full (from se_proj / se_clr via z_alpha) ---------
+  # 17b) analytical CI in $full (from se_proj / se_lr via z_alpha) ---------
   z_alpha <- stats::qnorm((1 + conf_level) / 2)
 
   full[, `:=`(
-    ci_lower      = pmax(0, clr_proj - z_alpha * se_clr),
-    ci_upper      = clr_proj + z_alpha * se_clr,
+    ci_lower      = pmax(0, lr_proj - z_alpha * se_lr),
+    ci_upper      = lr_proj + z_alpha * se_lr,
     ci_lower_loss = pmax(0, loss_proj - z_alpha * se_proj),
     ci_upper_loss = loss_proj + z_alpha * se_proj
   )]
@@ -440,13 +440,24 @@ fit_lr <- function(x,
   }
   full[, (drop_cols) := NULL]
 
-  # 19) pred: NA out observed cells -----------------------------------------
+  # 19a) incremental projections (per cohort diff of cumulative) -----------
+  full[, loss_inc_proj     := loss_proj     - data.table::shift(loss_proj,     1L, fill = 0),
+       by = c(grp_var, "cohort")]
+  full[, exposure_inc_proj := exposure_proj - data.table::shift(exposure_proj, 1L, fill = 0),
+       by = c(grp_var, "cohort")]
+  full[, lr_inc_proj := data.table::fifelse(
+    is.finite(loss_inc_proj) & is.finite(exposure_inc_proj) & exposure_inc_proj > 0,
+    loss_inc_proj / exposure_inc_proj, NA_real_
+  )]
+
+  # 19b) pred: NA out observed cells ----------------------------------------
   pred    <- data.table::copy(full)
   na_cols <- c(
-    "loss_proj", "exposure_proj", "clr_proj",
+    "loss_proj", "exposure_proj", "lr_proj",
+    "loss_inc_proj", "exposure_inc_proj", "lr_inc_proj",
     "proc_se2", "param_se2", "total_se2",
     "proc_se",  "param_se",  "se_proj",
-    "cv_proj",  "se_clr",   "cv_clr",
+    "cv_proj",  "se_lr",   "cv_lr",
     "ci_lower", "ci_upper", "ci_lower_loss", "ci_upper_loss"
   )
   if (delta_method == "full") {
@@ -917,10 +928,10 @@ summary.LRFit <- function(object, ...) {
       next
     }
 
-    clr_i <- loss_i / e_i
+    lr_i <- loss_i / e_i
 
     ql <- stats::quantile(loss_i, probs = probs, na.rm = TRUE, names = FALSE)
-    qc <- stats::quantile(clr_i,  probs = probs, na.rm = TRUE, names = FALSE)
+    qc <- stats::quantile(lr_i,  probs = probs, na.rm = TRUE, names = FALSE)
 
     ci_lower_loss[i] <- ql[1]
     ci_upper_loss[i] <- ql[2]
@@ -1019,11 +1030,11 @@ summary.LRFit <- function(object, ...) {
     ultimate      = i.loss_proj,
     reserve       = i.loss_proj - loss_obs,
     exposure_ult  = i.exposure_proj,
-    clr_latest    = data.table::fifelse(
+    lr_latest    = data.table::fifelse(
       is.finite(exposure_obs) & exposure_obs != 0,
       loss_obs / exposure_obs, NA_real_
     ),
-    clr_ult       = i.clr_proj,
+    lr_ult       = i.lr_proj,
     maturity_from = maturity_from,
     proc_se       = i.proc_se,
     param_se      = i.param_se,
@@ -1032,8 +1043,8 @@ summary.LRFit <- function(object, ...) {
       is.finite(i.loss_proj) & i.loss_proj != 0,
       i.se_proj / abs(i.loss_proj), NA_real_
     ),
-    se_clr        = i.se_clr,
-    cv_clr        = i.cv_clr,
+    se_lr        = i.se_lr,
+    cv_lr        = i.cv_lr,
     ci_lower      = i.ci_lower,
     ci_upper      = i.ci_upper
   )]
@@ -1041,9 +1052,9 @@ summary.LRFit <- function(object, ...) {
   keep_cols <- c(
     grp_var, "cohort",
     "latest", "ultimate", "reserve", "exposure_ult",
-    "clr_latest", "clr_ult", "maturity_from",
+    "lr_latest", "lr_ult", "maturity_from",
     "proc_se", "param_se", "se", "cv",
-    "se_clr", "cv_clr",
+    "se_lr", "cv_lr",
     "ci_lower", "ci_upper"
   )
 
@@ -1053,26 +1064,26 @@ summary.LRFit <- function(object, ...) {
       cv_exposure = i.cv_exposure
     )]
 
-    agg[, var_clr := se_clr^2]
+    agg[, var_lr := se_lr^2]
 
     agg[, `:=`(
       pct_loss = data.table::fifelse(
-        is.finite(var_clr) & var_clr > 0,
-        (i.se_proj / i.exposure_proj)^2 / var_clr * 100, NA_real_
+        is.finite(var_lr) & var_lr > 0,
+        (i.se_proj / i.exposure_proj)^2 / var_lr * 100, NA_real_
       ),
       pct_exposure = data.table::fifelse(
-        is.finite(var_clr) & var_clr > 0,
+        is.finite(var_lr) & var_lr > 0,
         (i.loss_proj * i.se_exposure / i.exposure_proj^2)^2 /
-          var_clr * 100, NA_real_
+          var_lr * 100, NA_real_
       ),
       pct_cov = data.table::fifelse(
-        is.finite(var_clr) & var_clr > 0,
+        is.finite(var_lr) & var_lr > 0,
         -2 * rho * i.loss_proj * i.se_proj * i.se_exposure /
-          i.exposure_proj^3 / var_clr * 100, NA_real_
+          i.exposure_proj^3 / var_lr * 100, NA_real_
       )
     )]
 
-    agg[, var_clr := NULL]
+    agg[, var_lr := NULL]
 
     keep_cols <- c(keep_cols,
                    "se_exposure", "cv_exposure",

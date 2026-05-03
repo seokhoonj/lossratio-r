@@ -9,14 +9,14 @@
 #'
 #' Two plot types are supported:
 #' \itemize{
-#'   \item `"clr"`: projected cumulative loss ratio by cohort with
+#'   \item `"lr"`: projected cumulative loss ratio by cohort with
 #'     optional confidence bands.
 #'   \item `"closs"`: observed and projected cumulative loss by
 #'     cohort with optional confidence bands.
 #' }
 #'
 #' @param x An object of class `"LRFit"`.
-#' @param type One of `"clr"` or `"closs"`.
+#' @param type One of `"lr"` or `"closs"`.
 #' @param conf_level Confidence level. Default is `0.95`.
 #' @param show_interval Logical. Default is `TRUE`.
 #' @param amount_divisor Numeric. Default is `1e8`.
@@ -30,7 +30,7 @@
 #' @method plot LRFit
 #' @export
 plot.LRFit <- function(x,
-                        type           = c("clr", "closs"),
+                        type           = c("lr", "closs"),
                         conf_level     = 0.95,
                         show_interval  = TRUE,
                         amount_divisor = 1e8,
@@ -70,11 +70,11 @@ plot.LRFit <- function(x,
     hline        <- 0
     meta         <- list(type = "amount")
   } else {
-    val_col      <- "clr_proj"
+    val_col      <- "lr_proj"
     ci_lo_col    <- "ci_lower"
     ci_hi_col    <- "ci_upper"
     obs_col      <- NULL
-    y_lab        <- "clr"
+    y_lab        <- "lr"
     title        <- paste0("Projected Cumulative Loss Ratio",
                            " (method: ", x$method, ")")
     hline        <- 1
@@ -214,12 +214,12 @@ plot.LRFit <- function(x,
 #' @param x An object of class `"LRFit"`.
 #' @param what One of `"full"` (observed + projected) or `"pred"`
 #'   (projected cells only). Default is `"full"`.
-#' @param label_style One of `"value"` (clr only) or `"detail"`
-#'   (clr with loss/exposure amounts). Default is `"value"`.
+#' @param label_style One of `"value"` (lr only) or `"detail"`
+#'   (lr with loss/exposure amounts). Default is `"value"`.
 #' @param label_args Named list of label appearance arguments.
 #' @param show_maturity Logical; if `TRUE`, show maturity line.
 #'   Default is `TRUE`.
-#' @param digits Number of decimal places for clr display.
+#' @param digits Number of decimal places for lr display.
 #'   Default is `0`.
 #' @param amount_divisor Numeric divisor for amount display in
 #'   `"detail"` mode. Default is `1e8`.
@@ -260,8 +260,8 @@ plot_triangle.LRFit <- function(x,
     if (what == "full") x$full else x$pred
   )
 
-  # 2) compute clr for all cells
-  dt[, clr := data.table::fifelse(
+  # 2) compute lr for all cells
+  dt[, lr := data.table::fifelse(
     is.finite(loss_proj) & is.finite(exposure_proj) & exposure_proj != 0,
     loss_proj / exposure_proj,
     NA_real_
@@ -283,32 +283,32 @@ plot_triangle.LRFit <- function(x,
 
   if (label_style == "value") {
     dt[, label := data.table::fifelse(
-      is.finite(clr),
-      sprintf(fmt, clr * 100),
+      is.finite(lr),
+      sprintf(fmt, lr * 100),
       ""
     )]
-    caption_txt <- "Unit: clr % (column-wise relative fill)"
+    caption_txt <- "Unit: lr % (column-wise relative fill)"
   } else {
     dt[, label := data.table::fifelse(
-      is.finite(clr),
+      is.finite(lr),
       sprintf(
         paste0(fmt, "\n(%.1f/%.1f)"),
-        clr * 100,
+        lr * 100,
         loss_proj / amount_divisor,
         exposure_proj / amount_divisor
       ),
       ""
     )]
     caption_txt <- sprintf(
-      "Unit: clr %% (%s, column-wise relative fill)",
+      "Unit: lr %% (%s, column-wise relative fill)",
       .get_amount_unit(amount_divisor)
     )
   }
 
   # 6) column-wise relative fill
-  dt[, clr_fill := clr - stats::median(clr, na.rm = TRUE),
+  dt[, lr_fill := lr - stats::median(lr, na.rm = TRUE),
      by = c(grp_var, "dev")]
-  dt[!is.finite(clr_fill), clr_fill := NA_real_]
+  dt[!is.finite(lr_fill), lr_fill := NA_real_]
 
   # 7) resolve label_args
   label_args <- utils::modifyList(
@@ -317,7 +317,7 @@ plot_triangle.LRFit <- function(x,
     label_args
   )
 
-  plot_data <- dt[is.finite(clr)]
+  plot_data <- dt[is.finite(lr)]
 
   # ensure .y is a factor with stable levels matching ggheatmap's internal
   # coercion (factor with levels = sort(unique(.y))), so overlays can map
@@ -332,7 +332,7 @@ plot_triangle.LRFit <- function(x,
     y          = .y,
     label      = label,
     label_args = label_args,
-    fill       = clr_fill,
+    fill       = lr_fill,
     fill_args  = list(
       low       = "#D9ECFF",
       mid       = "white",

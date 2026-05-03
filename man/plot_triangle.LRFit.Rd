@@ -24,15 +24,15 @@
 \item{what}{One of \code{"full"} (observed + projected) or \code{"pred"}
 (projected cells only). Default is \code{"full"}.}
 
-\item{label_style}{One of \code{"value"} (clr only) or \code{"detail"}
-(clr with loss/exposure amounts). Default is \code{"value"}.}
+\item{label_style}{One of \code{"value"} (lr only) or \code{"detail"}
+(lr with loss/exposure amounts). Default is \code{"value"}.}
 
 \item{label_args}{Named list of label appearance arguments.}
 
 \item{show_maturity}{Logical; if \code{TRUE}, show maturity line.
 Default is \code{TRUE}.}
 
-\item{digits}{Number of decimal places for clr display.
+\item{digits}{Number of decimal places for lr display.
 Default is \code{0}.}
 
 \item{amount_divisor}{Numeric divisor for amount display in

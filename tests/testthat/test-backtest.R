@@ -143,14 +143,14 @@ test_that("backtest works with fit_lr method = 'cl'", {
   expect_true(any(is.finite(bt$aeg$aeg)))
 })
 
-test_that("backtest fit_lr value_var = 'clr' uses clr_proj", {
+test_that("backtest fit_lr value_var = 'clr' uses lr_proj", {
   bt <- backtest(sub, holdout = 6L, fit_fn = fit_lr,
                  method = "sa", value_var = "clr")
   cell <- bt$aeg[is.finite(bt$aeg$value_pred), ][1L, ]
   full <- bt$fit$full
   match_row <- full[full$cohort == cell$cohort & full$dev == cell$dev, ]
   expect_equal(nrow(match_row), 1L)
-  expect_equal(cell$value_pred, match_row$clr_proj, tolerance = 1e-8)
+  expect_equal(cell$value_pred, match_row$lr_proj, tolerance = 1e-8)
 })
 
 test_that("backtest fit_lr value_var = 'crp' uses exposure_proj", {

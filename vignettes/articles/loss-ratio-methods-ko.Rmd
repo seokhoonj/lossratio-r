@@ -73,7 +73,7 @@ exp <- as_experience(experience)
 tri <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
 
 lr_sa <- fit_lr(tri, method = "sa")        # 기본값
-plot(lr_sa, type = "clr")
+plot(lr_sa, type = "lr")
 summary(lr_sa)
 ```
 
@@ -99,7 +99,7 @@ $$
 
 ```{r}
 lr_ed <- fit_lr(tri, method = "ed")
-plot(lr_ed, type = "clr")
+plot(lr_ed, type = "lr")
 ```
 
 ## 방법 3: 고전적 chain ladder (`"cl"`)
@@ -125,7 +125,7 @@ $$
 
 ```{r}
 lr_cl <- fit_lr(tri, method = "cl")
-plot(lr_cl, type = "clr")
+plot(lr_cl, type = "lr")
 ```
 
 ## 비교

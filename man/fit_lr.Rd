@@ -38,9 +38,9 @@ loss estimation. Default is \code{1}.}
 \item{exposure_alpha}{Numeric scalar for exposure chain ladder. Default
 is \code{1}.}
 
-\item{delta_method}{Method for computing \code{se_clr = SE(L/E)}. One of:
+\item{delta_method}{Method for computing \code{se_lr = SE(L/E)}. One of:
 \describe{
-\item{\code{"simple"} (default)}{\code{se_clr = se_proj / exposure_proj},
+\item{\code{"simple"} (default)}{\code{se_lr = se_proj / exposure_proj},
 treats exposure as fixed.}
 \item{\code{"full"}}{Full delta method with exposure uncertainty and
 loss-exposure correlation:

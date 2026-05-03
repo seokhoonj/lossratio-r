@@ -4,7 +4,7 @@
 .backtest_proj_col <- function(fit_obj, value_var) {
   if (inherits(fit_obj, "CLFit")) return("value_proj")
   if (inherits(fit_obj, "LRFit")) {
-    lr_map <- c(closs = "loss_proj", crp = "exposure_proj", clr = "clr_proj")
+    lr_map <- c(closs = "loss_proj", crp = "exposure_proj", clr = "lr_proj")
     if (!(value_var %in% names(lr_map)))
       stop(sprintf(
         "For `fit_lr`, `value_var` must be one of %s; got '%s'.",
@@ -62,7 +62,7 @@
 #'   projection column on `fit_lr$full` is treated as the prediction
 #'   for scoring. It must be one of `"closs"`, `"crp"`, or `"clr"`
 #'   (default), which map to `loss_proj`, `exposure_proj`, and
-#'   `clr_proj` respectively.
+#'   `lr_proj` respectively.
 #' @param ... Additional arguments passed to `fit_fn` (e.g., `method`,
 #'   `alpha`, `recent`, `tail`).
 #'
@@ -81,7 +81,7 @@
 #'     \tab `value_proj` \tab Score column equals the column being
 #'     accumulated by chain ladder. \cr
 #'   `fit_lr` \tab `"closs"`, `"crp"`, `"clr"` \tab no (fit_lr ignores
-#'     `value_var`) \tab `loss_proj`, `exposure_proj`, `clr_proj`
+#'     `value_var`) \tab `loss_proj`, `exposure_proj`, `lr_proj`
 #'     respectively \tab Fitter projects all three jointly; `value_var`
 #'     only selects the scoring lane.
 #' }

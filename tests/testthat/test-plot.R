@@ -60,7 +60,7 @@ test_that("plot.CLFit dispatches (mack, both types)", {
 })
 
 test_that("plot.LRFit dispatches across types", {
-  expect_true(is_plot(suppressWarnings(plot(lr, type = "clr"))))
+  expect_true(is_plot(suppressWarnings(plot(lr, type = "lr"))))
   expect_true(is_plot(suppressWarnings(plot(lr, type = "closs"))))
 })
 

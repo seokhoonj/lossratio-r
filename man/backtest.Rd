@@ -48,7 +48,7 @@ With \code{fit_fn = fit_lr} (default), \code{fit_lr()} does not take a
 projection column on \code{fit_lr$full} is treated as the prediction
 for scoring. It must be one of \code{"closs"}, \code{"crp"}, or \code{"clr"}
 (default), which map to \code{loss_proj}, \code{exposure_proj}, and
-\code{clr_proj} respectively.}
+\code{lr_proj} respectively.}
 
 \item{...}{Additional arguments passed to \code{fit_fn} (e.g., \code{method},
 \code{alpha}, \code{recent}, \code{tail}).}
@@ -99,7 +99,7 @@ name is only resolved against the fit's projection table.
 \tab \code{value_proj} \tab Score column equals the column being
 accumulated by chain ladder. \cr
 \code{fit_lr} \tab \code{"closs"}, \code{"crp"}, \code{"clr"} \tab no (fit_lr ignores
-\code{value_var}) \tab \code{loss_proj}, \code{exposure_proj}, \code{clr_proj}
+\code{value_var}) \tab \code{loss_proj}, \code{exposure_proj}, \code{lr_proj}
 respectively \tab Fitter projects all three jointly; \code{value_var}
 only selects the scoring lane.
 }

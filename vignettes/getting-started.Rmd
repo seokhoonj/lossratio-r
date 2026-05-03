@@ -111,7 +111,7 @@ ata factors.
 
 ```{r}
 lr <- fit_lr(tri, method = "sa")
-plot(lr, type = "clr")
+plot(lr, type = "lr")
 summary(lr)
 ```
 

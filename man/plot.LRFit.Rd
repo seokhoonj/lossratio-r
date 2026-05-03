@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{LRFit}(
   x,
-  type = c("clr", "closs"),
+  type = c("lr", "closs"),
   conf_level = 0.95,
   show_interval = TRUE,
   amount_divisor = 1e+08,
@@ -20,7 +20,7 @@
 \arguments{
 \item{x}{An object of class \code{"LRFit"}.}
 
-\item{type}{One of \code{"clr"} or \code{"closs"}.}
+\item{type}{One of \code{"lr"} or \code{"closs"}.}
 
 \item{conf_level}{Confidence level. Default is \code{0.95}.}
 
@@ -44,7 +44,7 @@ Visualise an object of class \code{"LRFit"}.
 
 Two plot types are supported:
 \itemize{
-\item \code{"clr"}: projected cumulative loss ratio by cohort with
+\item \code{"lr"}: projected cumulative loss ratio by cohort with
 optional confidence bands.
 \item \code{"closs"}: observed and projected cumulative loss by
 cohort with optional confidence bands.
