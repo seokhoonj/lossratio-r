@@ -436,7 +436,7 @@ plot_triangle.CLFit <- function(x,
 
     if (label_style == "cv") {
       dt[is_observed == FALSE & is.finite(cv_proj),
-         label := sprintf("%.0f%%", cv_proj * 100)]
+         label := sprintf("%.0f", cv_proj * 100)]
 
     } else if (label_style == "se") {
       if (is_ratio) {
