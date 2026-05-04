@@ -4,7 +4,14 @@
 \alias{.apply_recent_filter}
 \title{Filter a long-format table to recent calendar diagonals}
 \usage{
-.apply_recent_filter(dt, recent, grp_var = character(0), coh_var, dev_var)
+.apply_recent_filter(
+  dt,
+  recent,
+  grp_var = character(0),
+  coh_var,
+  dev_var,
+  dev_min = NULL
+)
 }
 \arguments{
 \item{dt}{A long-format development \code{data.table}.}
@@ -18,6 +25,11 @@ is returned unchanged.}
 
 \item{dev_var}{Single column name for the development variable (e.g. \code{dev}
 for \code{Triangle} objects, or \code{ata_from} for \code{ATA}/\code{ED} objects).}
+
+\item{dev_min}{Optional numeric scalar. When supplied, the recent filter
+is applied only to rows where \code{dev_var > dev_min}; rows with
+\code{dev_var <= dev_min} are kept unconditionally (early-dev cells in the
+ED phase of stage-adaptive fits).}
 }
 \value{
 A filtered copy of \code{dt} (class preserved), keeping only rows

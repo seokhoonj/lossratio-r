@@ -426,6 +426,10 @@ get_recent_weights <- function(weights, recent) {
 #' @param coh_var Single column name for the cohort variable (e.g. `cohort`).
 #' @param dev_var Single column name for the development variable (e.g. `dev`
 #'   for `Triangle` objects, or `ata_from` for `ATA`/`ED` objects).
+#' @param dev_min Optional numeric scalar. When supplied, the recent filter
+#'   is applied only to rows where `dev_var > dev_min`; rows with
+#'   `dev_var <= dev_min` are kept unconditionally (early-dev cells in the
+#'   ED phase of stage-adaptive fits).
 #'
 #' @return A filtered copy of `dt` (class preserved), keeping only rows
 #'   within the recent-diagonal window.
@@ -433,7 +437,7 @@ get_recent_weights <- function(weights, recent) {
 #' @keywords internal
 .apply_recent_filter <- function(dt, recent,
                                  grp_var = character(0),
-                                 coh_var, dev_var) {
+                                 coh_var, dev_var, dev_min = NULL) {
 
   if (!data.table::is.data.table(dt))
     stop("`dt` must be a data.table.", call. = FALSE)
@@ -448,6 +452,11 @@ get_recent_weights <- function(weights, recent) {
 
   recent <- as.integer(recent)
 
+  if (!is.null(dev_min)) {
+    if (!is.numeric(dev_min) || length(dev_min) != 1L || is.na(dev_min))
+      stop("`dev_min` must be a single non-NA numeric scalar.", call. = FALSE)
+  }
+
   out <- data.table::copy(dt)
 
   # rank of cohort within group (1 = earliest), then calendar index
@@ -457,10 +466,108 @@ get_recent_weights <- function(weights, recent) {
       .SDcols = dev_var]
   out[, .max_cal := max(.cal_idx, na.rm = TRUE), by = grp_var]
 
-  keep <- out[, is.finite(.cal_idx) & is.finite(.max_cal) &
-              .cal_idx > .max_cal - recent]
+  if (is.null(dev_min)) {
+    keep <- out[, is.finite(.cal_idx) & is.finite(.max_cal) &
+                .cal_idx > .max_cal - recent]
+  } else {
+    keep <- out[, is.finite(.cal_idx) & is.finite(.max_cal) &
+                (.cal_idx > .max_cal - recent | .SD[[1L]] <= dev_min),
+                .SDcols = dev_var]
+  }
 
   out <- out[keep]
   out[, c(".coh_rank", ".cal_idx", ".max_cal") := NULL]
+  out[]
+}
+
+
+#' Resolve a regime-break specifier to a single Date
+#'
+#' @description
+#' Internal helper used by [.apply_break_filter()] to coerce a heterogeneous
+#' `break_date` argument (NULL, Date scalar/vector, character coercible to
+#' Date, or a `CohortRegime` object) into a single Date scalar (the latest
+#' break) or `NULL`.
+#'
+#' @param break_date See [.apply_break_filter()].
+#'
+#' @return A single Date, or `NULL` when no break is specified.
+#'
+#' @keywords internal
+.resolve_break_date <- function(break_date) {
+  if (is.null(break_date)) return(NULL)
+  if (inherits(break_date, "CohortRegime")) {
+    bp <- break_date$breakpoints
+    if (length(bp) == 0L) return(NULL)
+    return(max(bp))
+  }
+  d <- as.Date(break_date)
+  if (length(d) == 0L) return(NULL)
+  if (any(is.na(d)))
+    stop("`break_date` contains NA after coercion to Date.", call. = FALSE)
+  max(d)
+}
+
+
+#' Apply regime-break (cohort) filter to a triangle-shaped data.table
+#'
+#' @description
+#' Drops rows where `coh_var < break_date`. Optionally restrict the filter
+#' to rows with `dev_var <= dev_max` (apply only to ED-phase cells); rows
+#' with `dev_var > dev_max` are kept regardless of cohort.
+#'
+#' @param dt A data.table.
+#' @param break_date The cohort cutoff. Accepts:
+#'   * `NULL` -- no filter (return copy of `dt` unchanged).
+#'   * A single Date or character (coercible to Date).
+#'   * A Date/character vector -- uses the latest (max) date.
+#'   * A `CohortRegime` object -- extracts the latest from `$breakpoints`.
+#' @param grp_var Character vector of group columns (may be empty).
+#' @param coh_var Single column name for the cohort variable.
+#' @param dev_var Single column name for the development variable.
+#' @param dev_max Optional numeric scalar. When supplied, the cohort filter
+#'   is only applied to rows where `dev_var <= dev_max`; rows with
+#'   `dev_var > dev_max` are kept regardless of cohort.
+#'
+#' @return A filtered copy of `dt` (class preserved).
+#'
+#' @keywords internal
+.apply_break_filter <- function(dt, break_date,
+                                grp_var = character(0),
+                                coh_var, dev_var, dev_max = NULL) {
+
+  if (!data.table::is.data.table(dt))
+    stop("`dt` must be a data.table.", call. = FALSE)
+
+  bd <- .resolve_break_date(break_date)
+
+  if (is.null(bd)) {
+    return(data.table::copy(dt))
+  }
+
+  if (!is.null(dev_max)) {
+    if (!is.numeric(dev_max) || length(dev_max) != 1L || is.na(dev_max))
+      stop("`dev_max` must be a single non-NA numeric scalar.", call. = FALSE)
+  }
+
+  coh_class <- class(dt[[coh_var]])
+  if (!any(coh_class %in% c("Date", "POSIXct", "POSIXt"))) {
+    stop("Column `", coh_var, "` must be of class Date or POSIXct/POSIXt.",
+         call. = FALSE)
+  }
+
+  out <- data.table::copy(dt)
+
+  if (is.null(dev_max)) {
+    keep <- out[, .SD[[1L]] >= bd, .SDcols = coh_var]
+  } else {
+    # Drop rows where coh < bd AND dev <= dev_max.
+    # Keep if coh >= bd OR dev > dev_max.
+    coh_vals <- out[[coh_var]]
+    dev_vals <- out[[dev_var]]
+    keep <- (coh_vals >= bd) | (dev_vals > dev_max)
+  }
+
+  out <- out[keep]
   out[]
 }
