@@ -33,6 +33,8 @@ navbar:
         href: articles/regime-detection.html
       - text: Backtest
         href: articles/backtest.html
+      - text: Regime break filtering
+        href: articles/regime-break.html
       - text: LR stability
         href: articles/lr-convergence.html
     language:
@@ -140,6 +142,7 @@ articles:
   - triangle-diagnostics
   - regime-detection
   - backtest
+  - regime-break
   - lr-convergence
 - title: internal
   navbar: ~
@@ -152,4 +155,5 @@ articles:
   - "articles/triangle-diagnostics-ko"
   - "articles/regime-detection-ko"
   - "articles/backtest-ko"
+  - "articles/regime-break-ko"
   - "articles/lr-convergence-ko"
