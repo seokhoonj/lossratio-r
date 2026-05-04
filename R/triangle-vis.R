@@ -460,6 +460,14 @@ plot_triangle <- function(x, ...) {
 #' where `rp` denotes risk premium rather than written premium.
 #'
 #' @param x An object of class `Triangle`.
+#' @param type Plot type. One of:
+#'   \describe{
+#'     \item{"value"}{(default) Per-cell metric heatmap controlled by
+#'       `value_var`, `label_style`, `amount_divisor`, `nrow`, `ncol`.}
+#'     \item{"usage"}{Cell-status heatmap (fit_data / held_out / excluded /
+#'       future). Accepts `recent`, `regime_break`, `holdout`, `maturity_args`
+#'       via `...`. See `vignette("regime-break")` for details.}
+#'   }
 #' @param value_var A single metric to plot. Must be one of:
 #'   `"lr"`, `"clr"`,
 #'   `"loss"`, `"rp"`, `"margin"`, `"closs"`, `"crp"`, `"cmargin"`,
@@ -510,6 +518,7 @@ plot_triangle <- function(x, ...) {
 #' @method plot_triangle Triangle
 #' @export
 plot_triangle.Triangle <- function(x,
+                                   type = c("value", "usage"),
                                    value_var = "clr",
                                    label_style = c("value", "detail"),
                                    amount_divisor = 1e8,
@@ -518,6 +527,11 @@ plot_triangle.Triangle <- function(x,
                                    ...) {
 
   .assert_class(x, "Triangle")
+  type <- match.arg(type)
+
+  if (type == "usage") {
+    return(.plot_triangle_usage(x, theme = theme, ...))
+  }
 
   label_style <- match.arg(label_style)
   theme       <- match.arg(theme)
@@ -800,6 +814,292 @@ plot.Total <- function(x,
       y       = val_var,
       caption = meta$caption
     )
+
+  p + .switch_theme(theme = theme, ...)
+}
+
+# Data Usage Plot ---------------------------------------------------------
+
+#' Compute cell-level data-usage status for a Triangle
+#'
+#' @description
+#' Internal helper that classifies every `(group, cohort, dev)` cell of a
+#' `Triangle` into one of four buckets given a fit-data filter
+#' configuration: `"fit_data"`, `"held_out"`, `"excluded"`, or `"future"`.
+#'
+#' Mask precedence: `held_out` > `fit_data` > `excluded` > `future`.
+#'
+#' @param x A `Triangle` object.
+#' @param recent Optional positive integer (calendar-diagonal cut), or
+#'   `NULL`.
+#' @param regime_break Optional cohort cutoff. Accepts the same input
+#'   forms as [fit_lr()] (`NULL`, `Date`, character, vector, or
+#'   `CohortRegime`).
+#' @param holdout Optional positive integer. When supplied, the last
+#'   `holdout` calendar diagonals are flagged `"held_out"`.
+#' @param mat_k Optional integer. When both `recent` and `regime_break`
+#'   are provided, the hybrid mask uses `mat_k` as the maturity switch:
+#'   cells with `dev <= mat_k` apply the cohort cut, cells with
+#'   `dev > mat_k` apply the calendar-diagonal cut. When `NULL`, the
+#'   hybrid logic falls back to applying both filters jointly (cohort
+#'   cut AND recent cut).
+#'
+#' @return A `data.table` with one row per `(group, cohort, dev)` cell
+#'   spanning the full triangle (observed plus future). Columns include
+#'   group columns (if any), `cohort`, `dev`, `.coh_rank`, `.cal_idx`,
+#'   `.max_cal`, `is_observed`, `is_held_out`, `is_fit_data`,
+#'   `is_excluded`, and `status` (factor).
+#'
+#' @keywords internal
+.compute_triangle_usage <- function(x,
+                                recent       = NULL,
+                                regime_break = NULL,
+                                holdout      = NULL,
+                                mat_k        = NULL) {
+
+  .assert_class(x, "Triangle")
+
+  grp_var <- attr(x, "group_var")
+  if (is.null(grp_var)) grp_var <- character(0)
+
+  obs <- .ensure_dt(x)
+
+  # full grid (observed plus future) per group
+  grp_coh_dev_var <- c(grp_var, "cohort", "dev")
+  full <- obs[, .SD, .SDcols = grp_coh_dev_var]
+  full[, is_observed := TRUE]
+
+  if (length(grp_var)) {
+    grid_list <- split(full, by = grp_var, keep.by = TRUE)
+    expanded <- data.table::rbindlist(lapply(grid_list, function(d) {
+      cohorts <- sort(unique(d$cohort))
+      devs    <- sort(unique(d$dev))
+      g_vals  <- d[1L, .SD, .SDcols = grp_var]
+      grid <- data.table::CJ(cohort = cohorts, dev = devs)
+      cbind(g_vals[rep(1L, nrow(grid))], grid)
+    }))
+  } else {
+    cohorts <- sort(unique(full$cohort))
+    devs    <- sort(unique(full$dev))
+    expanded <- data.table::CJ(cohort = cohorts, dev = devs)
+  }
+
+  expanded[full, on = grp_coh_dev_var, is_observed := i.is_observed]
+  expanded[is.na(is_observed), is_observed := FALSE]
+
+  # cohort rank (1 = earliest) and calendar index per group
+  if (length(grp_var)) {
+    expanded[, .coh_rank := data.table::frank(cohort, ties.method = "dense"),
+             by = grp_var]
+    expanded[, .cal_idx := .coh_rank + dev - 1L]
+    expanded[, .max_cal := max(.cal_idx[is_observed], na.rm = TRUE),
+             by = grp_var]
+  } else {
+    expanded[, .coh_rank := data.table::frank(cohort, ties.method = "dense")]
+    expanded[, .cal_idx := .coh_rank + dev - 1L]
+    expanded[, .max_cal := max(.cal_idx[is_observed], na.rm = TRUE)]
+  }
+
+  # held-out flag
+  if (!is.null(holdout)) {
+    if (!is.numeric(holdout) || length(holdout) != 1L ||
+        is.na(holdout) || holdout < 1L)
+      stop("`holdout` must be a single positive integer.", call. = FALSE)
+    holdout <- as.integer(holdout)
+    expanded[, is_held_out := is_observed & .cal_idx > .max_cal - holdout]
+  } else {
+    expanded[, is_held_out := FALSE]
+  }
+
+  # resolve regime break date
+  bd <- if (!is.null(regime_break)) .resolve_break_date(regime_break) else NULL
+
+  # fit-data mask
+  has_recent <- !is.null(recent)
+  has_break  <- !is.null(bd)
+
+  if (has_recent) {
+    if (!is.numeric(recent) || length(recent) != 1L ||
+        is.na(recent) || recent < 1L)
+      stop("`recent` must be a single positive integer.", call. = FALSE)
+    recent <- as.integer(recent)
+  }
+
+  if (has_recent && has_break) {
+    # hybrid: cohort cut on dev <= mat_k, calendar cut on dev > mat_k.
+    # when mat_k is NULL, fall back to both filters jointly.
+    if (!is.null(mat_k)) {
+      if (!is.numeric(mat_k) || length(mat_k) != 1L || is.na(mat_k))
+        stop("`mat_k` must be a single non-missing numeric value.",
+             call. = FALSE)
+      expanded[, .pass_filter := (
+        (dev <= mat_k & cohort >= bd) |
+        (dev >  mat_k & .cal_idx > .max_cal - recent)
+      )]
+    } else {
+      expanded[, .pass_filter := (cohort >= bd) &
+                                  (.cal_idx > .max_cal - recent)]
+    }
+  } else if (has_recent) {
+    expanded[, .pass_filter := .cal_idx > .max_cal - recent]
+  } else if (has_break) {
+    expanded[, .pass_filter := cohort >= bd]
+  } else {
+    expanded[, .pass_filter := TRUE]
+  }
+
+  expanded[, is_fit_data := is_observed & !is_held_out & .pass_filter]
+  expanded[, is_excluded := is_observed & !is_held_out & !is_fit_data]
+
+  expanded[, status := data.table::fcase(
+    is_held_out, "held_out",
+    is_fit_data, "fit_data",
+    is_excluded, "excluded",
+    default     = "future"
+  )]
+  expanded[, status := factor(
+    status,
+    levels = c("fit_data", "held_out", "excluded", "future")
+  )]
+
+  expanded[, .pass_filter := NULL]
+  expanded[]
+}
+
+
+# Internal: usage-mask renderer dispatched from plot_triangle.Triangle
+# when type = "usage".
+.plot_triangle_usage <- function(x,
+                                 recent        = NULL,
+                                 regime_break  = NULL,
+                                 holdout       = NULL,
+                                 maturity_args = NULL,
+                                 value_var     = "closs",
+                                 theme         = c("view", "save", "shiny"),
+                                 ...) {
+
+  .assert_class(x, "Triangle")
+  theme <- match.arg(theme)
+
+  grp_var <- attr(x, "group_var")
+  coh_var <- attr(x, "cohort_var")
+  coh_type <- attr(x, "cohort_type")
+  dev_var <- attr(x, "dev_var")
+  if (is.null(grp_var)) grp_var <- character(0)
+
+  # 2-pass maturity detection for hybrid mode
+  mat_k <- NULL
+  bd <- if (!is.null(regime_break)) .resolve_break_date(regime_break) else NULL
+
+  if (!is.null(recent) && !is.null(bd)) {
+    margs <- if (is.null(maturity_args)) list() else maturity_args
+    ata_for_mat <- build_ata(x, value_var = value_var)
+    fit_for_mat <- tryCatch(
+      do.call(fit_ata, c(list(x = ata_for_mat, maturity_args = margs))),
+      error = function(e) NULL
+    )
+    if (!is.null(fit_for_mat) &&
+        !is.null(fit_for_mat$maturity) &&
+        nrow(fit_for_mat$maturity) > 0L &&
+        !all(is.na(fit_for_mat$maturity$ata_from))) {
+      mat_k <- max(fit_for_mat$maturity$ata_from, na.rm = TRUE)
+    }
+  }
+
+  dt <- .compute_triangle_usage(
+    x,
+    recent       = recent,
+    regime_break = regime_break,
+    holdout      = holdout,
+    mat_k        = mat_k
+  )
+
+  # cohort labels: most recent at top
+  if (!is.na(coh_type)) {
+    dt[, .y := .format_period(cohort, type = coh_type)]
+  } else {
+    dt[, .y := as.character(cohort)]
+  }
+  y_levels <- sort(unique(dt$.y), decreasing = TRUE)
+  dt[, .y := factor(.y, levels = y_levels)]
+
+  status_cols <- c(
+    fit_data = "#1f77b4",
+    held_out = "#d62728",
+    excluded = "#dcdcdc",
+    future   = "#ffffff"
+  )
+
+  p <- ggplot2::ggplot(
+    dt,
+    ggplot2::aes(x = .data[["dev"]], y = .data[[".y"]],
+                 fill = .data[["status"]])
+  ) +
+    ggplot2::geom_tile(color = "white", linewidth = 0.2) +
+    ggplot2::scale_fill_manual(values = status_cols, name = NULL,
+                               drop = FALSE) +
+    ggplot2::scale_x_continuous(expand = c(0, 0))
+
+  # vertical maturity line in hybrid mode
+  if (!is.null(mat_k)) {
+    p <- p + ggplot2::geom_vline(
+      xintercept = mat_k + 0.5,
+      linetype = "dashed", color = "black", linewidth = 0.4
+    )
+  }
+
+  # horizontal regime-break line. The y axis is a discrete factor with
+  # levels sorted descending; the break row is the row whose label
+  # corresponds to the smallest cohort >= bd. Draw the line just above
+  # that row (toward older cohorts).
+  if (!is.null(bd)) {
+    cohorts_sorted <- sort(unique(dt$cohort))
+    post_break <- cohorts_sorted[cohorts_sorted >= bd]
+    if (length(post_break)) {
+      first_post <- min(post_break)
+      lab <- if (!is.na(coh_type)) {
+        .format_period(first_post, type = coh_type)
+      } else {
+        as.character(first_post)
+      }
+      idx <- match(lab, y_levels)
+      if (!is.na(idx)) {
+        p <- p + ggplot2::geom_hline(
+          yintercept = idx + 0.5,
+          linetype = "dashed", color = "black", linewidth = 0.4
+        )
+      }
+    }
+  }
+
+  # facet for multi-group triangles
+  if (length(grp_var)) {
+    p <- p + ggplot2::facet_wrap(grp_var)
+  }
+
+  # title summarising active filters
+  parts <- character(0)
+  if (!is.null(recent))       parts <- c(parts, sprintf("recent=%d", as.integer(recent)))
+  if (!is.null(bd))           parts <- c(parts, sprintf("regime_break=%s", format(bd)))
+  if (!is.null(holdout))      parts <- c(parts, sprintf("holdout=%d", as.integer(holdout)))
+  title_txt <- if (length(parts)) {
+    sprintf("Data usage (%s)", paste(parts, collapse = ", "))
+  } else {
+    "Data usage (full)"
+  }
+
+  subtitle_txt <- if (!is.null(mat_k)) {
+    sprintf("hybrid mode: maturity k* = %g", mat_k)
+  } else {
+    NULL
+  }
+
+  p <- p + ggplot2::labs(
+    title    = title_txt,
+    subtitle = subtitle_txt,
+    x        = .pretty_var_label(dev_var),
+    y        = .pretty_var_label(coh_var)
+  )
 
   p + .switch_theme(theme = theme, ...)
 }

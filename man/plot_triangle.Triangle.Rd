@@ -6,6 +6,7 @@
 \usage{
 \method{plot_triangle}{Triangle}(
   x,
+  type = c("value", "usage"),
   value_var = "clr",
   label_style = c("value", "detail"),
   amount_divisor = 1e+08,
@@ -17,6 +18,15 @@
 }
 \arguments{
 \item{x}{An object of class \code{Triangle}.}
+
+\item{type}{Plot type. One of:
+\describe{
+\item{"value"}{(default) Per-cell metric heatmap controlled by
+\code{value_var}, \code{label_style}, \code{amount_divisor}, \code{nrow}, \code{ncol}.}
+\item{"usage"}{Cell-status heatmap (fit_data / held_out / excluded /
+future). Accepts \code{recent}, \code{regime_break}, \code{holdout}, \code{maturity_args}
+via \code{...}. See \code{vignette("regime-break")} for details.}
+}}
 
 \item{value_var}{A single metric to plot. Must be one of:
 \code{"lr"}, \code{"clr"},
