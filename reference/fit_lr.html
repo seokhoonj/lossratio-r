@@ -82,6 +82,7 @@ $$\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}$$"><meta property="og:image" c
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ata diagnostics</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection.html">Regime detection</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-break.html">Regime break filtering</a></li>
     <li><a class="dropdown-item" href="../articles/lr-convergence.html">LR stability</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -144,6 +145,7 @@ $$\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}$$</p>
 <span>  conf_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"min_last2"</span>, <span class="st">"locf"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  regime_break <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maturity_args <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  bootstrap <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  B <span class="op">=</span> <span class="fl">1000</span>,</span>
@@ -217,6 +219,25 @@ the cohort summary. Default is <code>0.95</code>.</p></dd>
 <dt id="arg-recent">recent<a class="anchor" aria-label="anchor" href="#arg-recent"></a></dt>
 <dd><p>Optional positive integer for estimation window.
 Default is <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-regime-break">regime_break<a class="anchor" aria-label="anchor" href="#arg-regime-break"></a></dt>
+<dd><p>Optional cohort cutoff for the regime break. Accepts:
+<code>NULL</code> (default, no filter), a single <code>Date</code>/character coercible to Date,
+a vector of dates (uses the latest), or a <code>CohortRegime</code> object (extracts
+the latest from <code>$breakpoints</code>). Behavior depends on <code>method</code>:</p><dl><dt><code>"sa"</code></dt>
+<dd><p>Hybrid filter. Pre-break cohorts are dropped only for
+development periods at or before the maturity point (ED phase);
+post-maturity (CL) cells use the <code>recent</code>-diagonal window across
+all cohorts. This preserves CL stability while protecting the ED
+intensities from a regime shift.</p></dd>
+
+<dt><code>"ed"</code>, <code>"cl"</code></dt>
+<dd><p>Simple cohort cut: all cohorts strictly before
+the break date are excluded from estimation.</p></dd>
+
+
+</dl></dd>
 
 
 <dt id="arg-maturity-args">maturity_args<a class="anchor" aria-label="anchor" href="#arg-maturity-args"></a></dt>

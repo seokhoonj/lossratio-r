@@ -44,6 +44,7 @@ Maturity diagnostics (maturity) from find_ata_maturity().
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics-ko.html">Triangle 및 ata 진단</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection-ko.html">Regime 탐지</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-break-ko.html">Regime break 필터링</a></li>
     <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">LR 안정성</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">참조</a></li>
@@ -85,6 +86,7 @@ after optional maturity filtering and LOCF fill.</p></li>
 <span>  na_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"min_last2"</span>, <span class="st">"locf"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  regime_break <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maturity_args <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -119,6 +121,14 @@ cannot be estimated. One of <code>"min_last2"</code> (default), <code>"locf"</co
 recent <code>recent</code> periods in the <code>ata</code> triangle are used for factor
 estimation. Applied before maturity filtering. Default is <code>NULL</code>
 (use all periods).</p></dd>
+
+
+<dt id="arg-regime-break">regime_break<a class="anchor" aria-label="anchor" href="#arg-regime-break"></a></dt>
+<dd><p>Optional cohort cutoff for the regime break. Accepts:
+<code>NULL</code> (default, no filter), a single <code>Date</code>/character coercible to Date,
+a vector of dates (uses the latest), or a <code>CohortRegime</code> object (extracts
+the latest from <code>$breakpoints</code>). When supplied, cohorts with
+<code>cohort &lt; break_date</code> are excluded from estimation. Default is <code>NULL</code>.</p></dd>
 
 
 <dt id="arg-maturity-args">maturity_args<a class="anchor" aria-label="anchor" href="#arg-maturity-args"></a></dt>
@@ -178,6 +188,9 @@ or <code>NULL</code> when maturity filtering was not applied.</p></dd>
 
 <dt><code>recent</code></dt>
 <dd><p>Number of recent periods used, or <code>NULL</code>.</p></dd>
+
+<dt><code>regime_break</code></dt>
+<dd><p>Resolved regime-break cutoff (<code>Date</code>), or <code>NULL</code>.</p></dd>
 
 <dt><code>use_maturity</code></dt>
 <dd><p>Logical; whether maturity filtering was applied.</p></dd>

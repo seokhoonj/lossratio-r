@@ -13,7 +13,14 @@ the group-wise long-form condition
 ## Usage
 
 ``` r
-.apply_recent_filter(dt, recent, grp_var = character(0), coh_var, dev_var)
+.apply_recent_filter(
+  dt,
+  recent,
+  grp_var = character(0),
+  coh_var,
+  dev_var,
+  dev_min = NULL
+)
 ```
 
 ## Arguments
@@ -39,6 +46,13 @@ the group-wise long-form condition
 
   Single column name for the development variable (e.g. `dev` for
   `Triangle` objects, or `ata_from` for `ATA`/`ED` objects).
+
+- dev_min:
+
+  Optional numeric scalar. When supplied, the recent filter is applied
+  only to rows where `dev_var > dev_min`; rows with `dev_var <= dev_min`
+  are kept unconditionally (early-dev cells in the ED phase of
+  stage-adaptive fits).
 
 ## Value
 

@@ -14,5 +14,7 @@
   탐지](https://seokhoonj.github.io/lossratio/ko/articles/regime-detection-ko.md):
 - [홀드아웃 대각선을 이용한 추정
   백테스팅](https://seokhoonj.github.io/lossratio/ko/articles/backtest-ko.md):
+- [Regime break 기반 hybrid
+  필터링](https://seokhoonj.github.io/lossratio/ko/articles/regime-break-ko.md):
 - [find_lr_convergence() 로 예측 손해율 수렴 시점
   진단](https://seokhoonj.github.io/lossratio/ko/articles/lr-convergence-ko.md):

@@ -23,6 +23,7 @@ where `rp` denotes risk premium rather than written premium.
 # S3 method for class 'Triangle'
 plot_triangle(
   x,
+  type = c("value", "usage"),
   value_var = "clr",
   label_style = c("value", "detail"),
   amount_divisor = 1e+08,
@@ -38,6 +39,23 @@ plot_triangle(
 - x:
 
   An object of class `Triangle`.
+
+- type:
+
+  Plot type. One of:
+
+  "value"
+
+  :   (default) Per-cell metric heatmap controlled by `value_var`,
+      `label_style`, `amount_divisor`, `nrow`, `ncol`.
+
+  "usage"
+
+  :   Cell-status heatmap (fit_data / held_out / excluded / future).
+      Accepts `recent`, `regime_break`, `holdout`, `maturity_args` via
+      `...`. See
+      [`vignette("regime-break")`](https://seokhoonj.github.io/lossratio/articles/regime-break.md)
+      for details.
 
 - value_var:
 

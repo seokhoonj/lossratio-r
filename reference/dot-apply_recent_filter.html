@@ -38,6 +38,7 @@ rank(cohort) + dev - 1 &amp;gt; max(rank(cohort) + dev - 1) - recent."><meta pro
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ata diagnostics</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection.html">Regime detection</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-break.html">Regime break filtering</a></li>
     <li><a class="dropdown-item" href="../articles/lr-convergence.html">LR stability</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -70,7 +71,14 @@ to the group-wise long-form condition
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.apply_recent_filter</span><span class="op">(</span><span class="va">dt</span>, <span class="va">recent</span>, grp_var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>, <span class="va">coh_var</span>, <span class="va">dev_var</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.apply_recent_filter</span><span class="op">(</span></span>
+<span>  <span class="va">dt</span>,</span>
+<span>  <span class="va">recent</span>,</span>
+<span>  grp_var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
+<span>  <span class="va">coh_var</span>,</span>
+<span>  <span class="va">dev_var</span>,</span>
+<span>  dev_min <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -97,6 +105,13 @@ is returned unchanged.</p></dd>
 <dt id="arg-dev-var">dev_var<a class="anchor" aria-label="anchor" href="#arg-dev-var"></a></dt>
 <dd><p>Single column name for the development variable (e.g. <code>dev</code>
 for <code>Triangle</code> objects, or <code>ata_from</code> for <code>ATA</code>/<code>ED</code> objects).</p></dd>
+
+
+<dt id="arg-dev-min">dev_min<a class="anchor" aria-label="anchor" href="#arg-dev-min"></a></dt>
+<dd><p>Optional numeric scalar. When supplied, the recent filter
+is applied only to rows where <code>dev_var &gt; dev_min</code>; rows with
+<code>dev_var &lt;= dev_min</code> are kept unconditionally (early-dev cells in the
+ED phase of stage-adaptive fits).</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -14,11 +14,13 @@ articles:
   loss-ratio-methods: loss-ratio-methods.html
   articles/lr-convergence-ko: lr-convergence-ko.html
   lr-convergence: lr-convergence.html
+  articles/regime-break-ko: regime-break-ko.html
+  regime-break: regime-break.html
   articles/regime-detection-ko: regime-detection-ko.html
   regime-detection: regime-detection.html
   articles/triangle-diagnostics-ko: triangle-diagnostics-ko.html
   triangle-diagnostics: triangle-diagnostics.html
-last_built: 2026-05-04T03:04Z
+last_built: 2026-05-04T15:32Z
 urls:
   reference: https://seokhoonj.github.io/lossratio/reference
   article: https://seokhoonj.github.io/lossratio/articles

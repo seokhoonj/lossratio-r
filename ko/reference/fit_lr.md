@@ -44,6 +44,7 @@ fit_lr(
   conf_level = 0.95,
   sigma_method = c("min_last2", "locf", "loglinear"),
   recent = NULL,
+  regime_break = NULL,
   maturity_args = NULL,
   bootstrap = FALSE,
   B = 1000,
@@ -112,6 +113,26 @@ fit_lr(
 - recent:
 
   Optional positive integer for estimation window. Default is `NULL`.
+
+- regime_break:
+
+  Optional cohort cutoff for the regime break. Accepts: `NULL` (default,
+  no filter), a single `Date`/character coercible to Date, a vector of
+  dates (uses the latest), or a `CohortRegime` object (extracts the
+  latest from `$breakpoints`). Behavior depends on `method`:
+
+  `"sa"`
+
+  :   Hybrid filter. Pre-break cohorts are dropped only for development
+      periods at or before the maturity point (ED phase);
+      post-maturity (CL) cells use the `recent`-diagonal window across
+      all cohorts. This preserves CL stability while protecting the ED
+      intensities from a regime shift.
+
+  `"ed"`, `"cl"`
+
+  :   Simple cohort cut: all cohorts strictly before the break date are
+      excluded from estimation.
 
 - maturity_args:
 

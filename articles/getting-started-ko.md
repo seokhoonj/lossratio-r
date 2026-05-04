@@ -183,6 +183,7 @@ fit_ata(ata)
 #> alpha       : 1 
 #> sigma_method: min_last2 
 #> recent      : all 
+#> regime_break: none 
 #> use_maturity: FALSE 
 #> groups      : cv_nm 
 #> n_groups    : 1 
@@ -198,6 +199,7 @@ fit_ed(ed)
 #> alpha       : 1 
 #> sigma_method: min_last2 
 #> recent      : all 
+#> regime_break: none 
 #> groups      : cv_nm 
 #> n_groups    : 1 
 #> links       : 29

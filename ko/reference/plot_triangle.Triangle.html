@@ -46,6 +46,7 @@ where rp denotes risk premium rather than written premium."><meta property="og:i
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics-ko.html">Triangle 및 ata 진단</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection-ko.html">Regime 탐지</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-break-ko.html">Regime break 필터링</a></li>
     <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">LR 안정성</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">참조</a></li>
@@ -88,6 +89,7 @@ $$lr = loss / rp$$</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'Triangle'</span></span>
 <span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"value"</span>, <span class="st">"usage"</span><span class="op">)</span>,</span>
 <span>  value_var <span class="op">=</span> <span class="st">"clr"</span>,</span>
 <span>  label_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"value"</span>, <span class="st">"detail"</span><span class="op">)</span>,</span>
 <span>  amount_divisor <span class="op">=</span> <span class="fl">1e+08</span>,</span>
@@ -104,6 +106,20 @@ $$lr = loss / rp$$</p>
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>An object of class <code>Triangle</code>.</p></dd>
+
+
+<dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
+<dd><p>Plot type. One of:</p><dl><dt>"value"</dt>
+<dd><p>(default) Per-cell metric heatmap controlled by
+<code>value_var</code>, <code>label_style</code>, <code>amount_divisor</code>, <code>nrow</code>, <code>ncol</code>.</p></dd>
+
+<dt>"usage"</dt>
+<dd><p>Cell-status heatmap (fit_data / held_out / excluded /
+future). Accepts <code>recent</code>, <code>regime_break</code>, <code>holdout</code>, <code>maturity_args</code>
+via <code>...</code>. See <code><a href="../articles/regime-break.html">vignette("regime-break")</a></code> for details.</p></dd>
+
+
+</dl></dd>
 
 
 <dt id="arg-value-var">value_var<a class="anchor" aria-label="anchor" href="#arg-value-var"></a></dt>

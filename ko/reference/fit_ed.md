@@ -26,6 +26,7 @@ fit_ed(
   na_method = c("zero", "locf", "none"),
   sigma_method = c("min_last2", "locf", "loglinear"),
   recent = NULL,
+  regime_break = NULL,
   ...
 )
 ```
@@ -60,6 +61,14 @@ fit_ed(
 
   Optional positive integer. When supplied, only the most recent
   `recent` periods are used for estimation. Default is `NULL`.
+
+- regime_break:
+
+  Optional cohort cutoff for the regime break. Accepts: `NULL` (default,
+  no filter), a single `Date`/character coercible to Date, a vector of
+  dates (uses the latest), or a `CohortRegime` object (extracts the
+  latest from `$breakpoints`). When supplied, cohorts with
+  `cohort < break_date` are excluded from estimation. Default is `NULL`.
 
 - ...:
 

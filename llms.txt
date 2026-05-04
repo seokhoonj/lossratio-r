@@ -460,5 +460,7 @@ print / summary / longer methods registered on package classes.
   cohorts](https://seokhoonj.github.io/lossratio/articles/regime-detection.md):
 - [Backtesting projections against held-out
   diagonals](https://seokhoonj.github.io/lossratio/articles/backtest.md):
+- [Hybrid filtering via regime
+  break](https://seokhoonj.github.io/lossratio/articles/regime-break.md):
 - [Diagnosing LR convergence with
   find_lr_convergence()](https://seokhoonj.github.io/lossratio/articles/lr-convergence.md):

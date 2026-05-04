@@ -54,6 +54,7 @@ added as g_var column in $selected.
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ata diagnostics</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection.html">Regime detection</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-break.html">Regime break filtering</a></li>
     <li><a class="dropdown-item" href="../articles/lr-convergence.html">LR stability</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -98,6 +99,7 @@ added as <code>g_var</code> column in <code>$selected</code>.</p></dd>
 <span>  na_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"zero"</span>, <span class="st">"locf"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"min_last2"</span>, <span class="st">"locf"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  regime_break <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -134,6 +136,14 @@ or <code>"locf"</code> or <code>"none"</code>.</p></dd>
 <dt id="arg-recent">recent<a class="anchor" aria-label="anchor" href="#arg-recent"></a></dt>
 <dd><p>Optional positive integer. When supplied, only the most
 recent <code>recent</code> periods are used for estimation. Default is <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-regime-break">regime_break<a class="anchor" aria-label="anchor" href="#arg-regime-break"></a></dt>
+<dd><p>Optional cohort cutoff for the regime break. Accepts:
+<code>NULL</code> (default, no filter), a single <code>Date</code>/character coercible to Date,
+a vector of dates (uses the latest), or a <code>CohortRegime</code> object (extracts
+the latest from <code>$breakpoints</code>). When supplied, cohorts with
+<code>cohort &lt; break_date</code> are excluded from estimation. Default is <code>NULL</code>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

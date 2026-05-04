@@ -339,6 +339,7 @@ fit_ata(ata, alpha = 1, recent = 12)        # last 12 calendar diagonals
 #> alpha       : 1 
 #> sigma_method: min_last2 
 #> recent      : 12 
+#> regime_break: none 
 #> use_maturity: FALSE 
 #> groups      : cv_nm 
 #> n_groups    : 1 
@@ -366,6 +367,7 @@ fit_lr(tri, recent = 12)
 #> ci_type       : analytical  
 #> sigma_method  : min_last2 
 #> recent        : 12 
+#> regime_break  : none 
 #> maturity[SUR] : 18
 #> groups        : cv_nm 
 #> periods       : 30

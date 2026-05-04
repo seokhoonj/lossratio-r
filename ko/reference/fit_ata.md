@@ -21,6 +21,7 @@ fit_ata(
   na_method = c("locf", "none"),
   sigma_method = c("min_last2", "locf", "loglinear"),
   recent = NULL,
+  regime_break = NULL,
   maturity_args = NULL,
   ...
 )
@@ -56,6 +57,14 @@ fit_ata(
   `recent` periods in the `ata` triangle are used for factor estimation.
   Applied before maturity filtering. Default is `NULL` (use all
   periods).
+
+- regime_break:
+
+  Optional cohort cutoff for the regime break. Accepts: `NULL` (default,
+  no filter), a single `Date`/character coercible to Date, a vector of
+  dates (uses the latest), or a `CohortRegime` object (extracts the
+  latest from `$breakpoints`). When supplied, cohorts with
+  `cohort < break_date` are excluded from estimation. Default is `NULL`.
 
 - maturity_args:
 
@@ -136,6 +145,10 @@ An object of class `"ATAFit"` (a named list) containing:
 - `recent`:
 
   Number of recent periods used, or `NULL`.
+
+- `regime_break`:
+
+  Resolved regime-break cutoff (`Date`), or `NULL`.
 
 - `use_maturity`:
 
