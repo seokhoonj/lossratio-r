@@ -16,6 +16,7 @@ fit_lr(
   conf_level = 0.95,
   sigma_method = c("min_last2", "locf", "loglinear"),
   recent = NULL,
+  regime_break = NULL,
   maturity_args = NULL,
   bootstrap = FALSE,
   B = 1000,
@@ -62,6 +63,20 @@ the cohort summary. Default is \code{0.95}.}
 
 \item{recent}{Optional positive integer for estimation window.
 Default is \code{NULL}.}
+
+\item{regime_break}{Optional cohort cutoff for the regime break. Accepts:
+\code{NULL} (default, no filter), a single \code{Date}/character coercible to Date,
+a vector of dates (uses the latest), or a \code{CohortRegime} object (extracts
+the latest from \verb{$breakpoints}). Behavior depends on \code{method}:
+\describe{
+\item{\code{"sa"}}{Hybrid filter. Pre-break cohorts are dropped only for
+development periods at or before the maturity point (ED phase);
+post-maturity (CL) cells use the \code{recent}-diagonal window across
+all cohorts. This preserves CL stability while protecting the ED
+intensities from a regime shift.}
+\item{\code{"ed"}, \code{"cl"}}{Simple cohort cut: all cohorts strictly before
+the break date are excluded from estimation.}
+}}
 
 \item{maturity_args}{A named list forwarded to \code{\link[=find_ata_maturity]{find_ata_maturity()}},
 or \code{NULL} (default) to skip maturity filtering. When

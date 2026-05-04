@@ -55,6 +55,19 @@
 #'   (default), `"locf"`, or `"loglinear"`.
 #' @param recent Optional positive integer for estimation window.
 #'   Default is `NULL`.
+#' @param regime_break Optional cohort cutoff for the regime break. Accepts:
+#'   `NULL` (default, no filter), a single `Date`/character coercible to Date,
+#'   a vector of dates (uses the latest), or a `CohortRegime` object (extracts
+#'   the latest from `$breakpoints`). Behavior depends on `method`:
+#'   \describe{
+#'     \item{`"sa"`}{Hybrid filter. Pre-break cohorts are dropped only for
+#'       development periods at or before the maturity point (ED phase);
+#'       post-maturity (CL) cells use the `recent`-diagonal window across
+#'       all cohorts. This preserves CL stability while protecting the ED
+#'       intensities from a regime shift.}
+#'     \item{`"ed"`, `"cl"`}{Simple cohort cut: all cohorts strictly before
+#'       the break date are excluded from estimation.}
+#'   }
 #' @param maturity_args A named list forwarded to [find_ata_maturity()],
 #'   or `NULL` (default) to skip maturity filtering. When
 #'   `method = "sa"`, this also determines the switch point between
@@ -102,6 +115,7 @@ fit_lr <- function(x,
                    conf_level     = 0.95,
                    sigma_method   = c("min_last2", "locf", "loglinear"),
                    recent         = NULL,
+                   regime_break   = NULL,
                    maturity_args  = NULL,
                    bootstrap      = FALSE,
                    B              = 1000,
@@ -158,12 +172,80 @@ fit_lr <- function(x,
   if (length(dev_var) != 1L)
     stop("`x` must contain exactly one `dev_var`.", call. = FALSE)
 
+  # preserve original user input — may be nullified below for SA hybrid
+  # path (filtering is done up-front and downstream calls receive NULL)
+  regime_break_user <- regime_break
+  recent_user       <- recent
+
+  # 1b) regime-break: SA hybrid (cohort cut on dev <= k*, recent cut on
+  # dev > k*), or simple cohort cut for ED/CL modes (delegated downstream).
+  if (!is.null(regime_break)) {
+    bd <- .resolve_break_date(regime_break)
+
+    if (!is.null(bd) && method == "sa") {
+      # 2-pass: detect maturity on unfiltered data first
+      pre_loss_ata <- build_ata(x, value_var = l_var)
+      pre_loss_fit <- fit_ata(
+        pre_loss_ata,
+        alpha         = loss_alpha,
+        sigma_method  = sigma_method,
+        recent        = recent,
+        maturity_args = maturity_args
+      )
+      mat_dt <- pre_loss_fit$maturity
+
+      if (is.null(mat_dt) || nrow(mat_dt) == 0L) {
+        warning(
+          "regime_break: cannot detect maturity; falling back to simple ",
+          "cohort cut.", call. = FALSE
+        )
+        x <- .apply_break_filter(
+          x, regime_break,
+          grp_var = grp_var,
+          coh_var = "cohort",
+          dev_var = "dev"
+        )
+        regime_break <- NULL
+      } else {
+        mat_k <- mat_dt$ata_from
+        if (length(unique(mat_k)) > 1L) {
+          warning(
+            "regime_break: maturity differs across groups; using max mat_k.",
+            call. = FALSE
+          )
+        }
+        mat_k <- max(mat_k)
+
+        x <- .apply_break_filter(
+          x, regime_break,
+          grp_var = grp_var,
+          coh_var = "cohort", dev_var = "dev",
+          dev_max = mat_k
+        )
+        if (!is.null(recent)) {
+          x <- .apply_recent_filter(
+            x, recent,
+            grp_var = grp_var,
+            coh_var = "cohort", dev_var = "dev",
+            dev_min = mat_k
+          )
+          # already pre-filtered: avoid double application downstream
+          recent <- NULL
+        }
+        regime_break <- NULL
+      }
+    }
+    # method = "ed" or "cl": leave regime_break in place, propagate to
+    # fit_ata / fit_ed below for a simple cohort cut.
+  }
+
   # 2) build and fit exposure chain ladder ----------------------------------
   exposure_ata <- build_ata(x, value_var = e_var)
   exposure_ata_fit <- fit_ata(
     exposure_ata,
     alpha        = exposure_alpha,
-    sigma_method = sigma_method
+    sigma_method = sigma_method,
+    regime_break = regime_break
   )
 
   # when delta_method = "full", compute exposure factor variance
@@ -181,6 +263,7 @@ fit_lr <- function(x,
     alpha         = loss_alpha,
     sigma_method  = sigma_method,
     recent        = recent,
+    regime_break  = regime_break,
     maturity_args = maturity_args
   )
 
@@ -197,7 +280,8 @@ fit_lr <- function(x,
     method       = "mack",
     alpha        = loss_alpha,
     sigma_method = sigma_method,
-    recent       = recent
+    recent       = recent,
+    regime_break = regime_break
   )
 
   # 6) determine maturity point per group (from loss ata) -------------------
@@ -495,7 +579,8 @@ fit_lr <- function(x,
     rho              = rho,
     conf_level       = conf_level,
     sigma_method     = sigma_method,
-    recent           = recent,
+    recent           = recent_user,
+    regime_break     = .resolve_break_date(regime_break_user),
     maturity_args    = maturity_args
   )
 
@@ -542,6 +627,8 @@ print.LRFit <- function(x, ...) {
   cat("sigma_method  :", x$sigma_method,   "\n")
   cat("recent        :",
       if (!is.null(x$recent)) x$recent else "all", "\n")
+  cat("regime_break  :",
+      if (!is.null(x$regime_break)) format(x$regime_break) else "none", "\n")
 
   if (!is.null(x$maturity) && nrow(x$maturity)) {
     mat <- .ensure_dt(x$maturity)

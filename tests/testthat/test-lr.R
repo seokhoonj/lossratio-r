@@ -89,3 +89,49 @@ test_that("print.LRFit doesn't error", {
   lr <- fit_lr(tri, method = "sa")
   expect_no_error(capture.output(print(lr)))
 })
+
+test_that("fit_lr with regime_break + method=sa applies hybrid filter", {
+  data(experience)
+  exp <- as_experience(experience[cv_nm == "SUR"])
+  tri <- build_triangle(exp, group_var = "cv_nm",
+                        cohort_var = "uym", dev_var = "elap_m")
+  fit_full <- fit_lr(tri, method = "sa")
+  fit_brk  <- fit_lr(tri, method = "sa", regime_break = "2024-04-01",
+                     recent = 18L)
+  # ED parameters (g_selected) should differ for early dev (k < k*)
+  expect_false(identical(fit_full$selected$g_selected,
+                         fit_brk$selected$g_selected))
+  expect_equal(fit_brk$regime_break, as.Date("2024-04-01"))
+})
+
+test_that("fit_lr with regime_break + method=ed drops pre-break cohorts", {
+  data(experience)
+  exp <- as_experience(experience[cv_nm == "SUR"])
+  tri <- build_triangle(exp, group_var = "cv_nm",
+                        cohort_var = "uym", dev_var = "elap_m")
+  fit_full <- fit_lr(tri, method = "ed")
+  fit_brk  <- fit_lr(tri, method = "ed", regime_break = "2024-04-01")
+  expect_false(identical(fit_full$full$lr_proj, fit_brk$full$lr_proj))
+})
+
+test_that("fit_lr with NULL regime_break is unchanged", {
+  data(experience)
+  exp <- as_experience(experience[cv_nm == "SUR"])
+  tri <- build_triangle(exp, group_var = "cv_nm",
+                        cohort_var = "uym", dev_var = "elap_m")
+  a <- fit_lr(tri, method = "sa")
+  b <- fit_lr(tri, method = "sa", regime_break = NULL)
+  expect_identical(a$full$lr_proj, b$full$lr_proj)
+})
+
+test_that("fit_lr with CohortRegime extracts last breakpoint", {
+  data(experience)
+  exp <- as_experience(experience[cv_nm == "SUR"])
+  tri <- build_triangle(exp, group_var = "cv_nm",
+                        cohort_var = "uym", dev_var = "elap_m")
+  reg <- detect_cohort_regime(tri)
+  fit_reg <- fit_lr(tri, method = "sa", regime_break = reg, recent = 18L)
+  if (length(reg$breakpoints) > 0L) {
+    expect_equal(fit_reg$regime_break, max(reg$breakpoints))
+  }
+})
