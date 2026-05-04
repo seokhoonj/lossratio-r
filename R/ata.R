@@ -572,6 +572,11 @@ find_ata_maturity <- function(x,
 #'   recent `recent` periods in the `ata` triangle are used for factor
 #'   estimation. Applied before maturity filtering. Default is `NULL`
 #'   (use all periods).
+#' @param regime_break Optional cohort cutoff for the regime break. Accepts:
+#'   `NULL` (default, no filter), a single `Date`/character coercible to Date,
+#'   a vector of dates (uses the latest), or a `CohortRegime` object (extracts
+#'   the latest from `$breakpoints`). When supplied, cohorts with
+#'   `cohort < break_date` are excluded from estimation. Default is `NULL`.
 #' @param maturity_args A named list of arguments forwarded to
 #'   [find_ata_maturity()], or `NULL` (default) to skip maturity filtering.
 #'   When a list is supplied, missing elements are filled with package
@@ -599,6 +604,7 @@ find_ata_maturity <- function(x,
 #'     \item{`na_method`}{NA fill method used.}
 #'     \item{`sigma_method`}{Sigma extrapolation method used.}
 #'     \item{`recent`}{Number of recent periods used, or `NULL`.}
+#'     \item{`regime_break`}{Resolved regime-break cutoff (`Date`), or `NULL`.}
 #'     \item{`use_maturity`}{Logical; whether maturity filtering was applied.}
 #'     \item{`maturity_args`}{Resolved maturity arguments, or `NULL`.}
 #'   }
@@ -612,6 +618,7 @@ fit_ata <- function(x,
                     na_method     = c("locf", "none"),
                     sigma_method  = c("min_last2", "locf", "loglinear"),
                     recent        = NULL,
+                    regime_break  = NULL,
                     maturity_args = NULL,
                     ...) {
 
@@ -620,7 +627,24 @@ fit_ata <- function(x,
   na_method    <- match.arg(na_method)
   sigma_method <- match.arg(sigma_method)
 
-  # 1) recent-diagonal filter -------------------------------------------
+  # 1) regime-break filter -----------------------------------------------
+  # when `regime_break` is supplied, drop cohorts strictly before the
+  # break date so estimation uses only the post-break regime.
+  if (!is.null(regime_break)) {
+    if (inherits(regime_break, "CohortRegime")) {
+      regime_break <- max(regime_break$breakpoints)
+    } else {
+      regime_break <- max(as.Date(regime_break))
+    }
+    x <- .apply_break_filter(
+      x, regime_break,
+      grp_var = if (is.null(attr(x, "group_var"))) character(0) else attr(x, "group_var"),
+      coh_var = "cohort",
+      dev_var = "ata_from"
+    )
+  }
+
+  # 2) recent-diagonal filter -------------------------------------------
   # when `recent` is supplied, subset to rows within the last `recent`
   # calendar diagonals before estimation.
   if (!is.null(recent)) {
@@ -632,7 +656,7 @@ fit_ata <- function(x,
     )
   }
 
-  # 2) resolve maturity arguments ----------------------------------------
+  # 3) resolve maturity arguments ----------------------------------------
   # maturity_args = NULL   → skip maturity filtering
   # maturity_args = list() → use all defaults
   # maturity_args = list(cv_threshold = 0.15) → partial override
@@ -656,17 +680,17 @@ fit_ata <- function(x,
   grp_var <- attr(x, "group_var")
   if (is.null(grp_var)) grp_var <- character(0)
 
-  # 3) compute summary statistics and WLS estimates ---------------------
+  # 4) compute summary statistics and WLS estimates ---------------------
   ata_summary <- summary(x, alpha = alpha, ...)
 
-  # 4) find maturity point ----------------------------------------------
+  # 5) find maturity point ----------------------------------------------
   maturity <- if (use_maturity) {
     do.call(find_ata_maturity, c(list(x = ata_summary), maturity_args))
   } else {
     NULL
   }
 
-  # 5) filter links by maturity and fill NA gaps with LOCF --------------
+  # 6) filter links by maturity and fill NA gaps with LOCF --------------
   # maturity is NULL when maturity_args = NULL; .filter_ata() ignores it
   selected <- .filter_ata(
     ata_summary  = ata_summary,
@@ -676,7 +700,7 @@ fit_ata <- function(x,
     na_method    = na_method
   )
 
-  # 6) extrapolate sigma and compute sigma2 -----------------------------
+  # 7) extrapolate sigma and compute sigma2 -----------------------------
   selected <- .extrapolate_sigma_ata(selected, method = sigma_method)
   selected[, sigma2 := sigma^2]
 
@@ -696,6 +720,7 @@ fit_ata <- function(x,
     na_method     = na_method,
     sigma_method  = sigma_method,
     recent        = recent,
+    regime_break  = regime_break,
     use_maturity  = use_maturity,
     maturity_args = maturity_args
   )
@@ -741,6 +766,9 @@ print.ATAFit <- function(x, ...) {
   cat("sigma_method:", x$sigma_method, "\n")
   cat("recent      :",
       if (!is.null(x$recent)) x$recent else "all", "\n")
+  cat("regime_break:",
+      if (!is.null(x$regime_break)) format(x$regime_break) else "none",
+      "\n")
   cat("use_maturity:", x$use_maturity, "\n")
 
   if (length(grp_var)) {

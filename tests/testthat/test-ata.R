@@ -135,3 +135,47 @@ test_that("summary.ATAFit returns the link-level ATASummary", {
     expect_true(nm %in% names(s), info = paste("missing", nm))
   }
 })
+
+# fit_ata regime_break ---------------------------------------------------
+
+test_that("fit_ata with regime_break drops pre-break cohorts", {
+  data(experience)
+  exp <- as_experience(experience[cv_nm == "SUR"])
+  tri <- build_triangle(exp, group_var = "cv_nm",
+                        cohort_var = "uym", dev_var = "elap_m")
+  ata <- build_ata(tri, value_var = "closs")
+
+  fit_full <- fit_ata(ata)
+  fit_brk  <- fit_ata(ata, regime_break = "2024-04-01")
+
+  # post-break fit should have fewer rows in the underlying ATA pairs
+  # and possibly different f_selected for at least one ata_from
+  expect_false(identical(fit_full$selected$f_selected,
+                         fit_brk$selected$f_selected))
+  expect_equal(fit_brk$regime_break, as.Date("2024-04-01"))
+})
+
+test_that("fit_ata with NULL regime_break is unchanged from default", {
+  data(experience)
+  exp <- as_experience(experience[cv_nm == "SUR"])
+  tri <- build_triangle(exp, group_var = "cv_nm",
+                        cohort_var = "uym", dev_var = "elap_m")
+  ata <- build_ata(tri, value_var = "closs")
+  fit_default <- fit_ata(ata)
+  fit_null    <- fit_ata(ata, regime_break = NULL)
+  expect_identical(fit_default$selected$f_selected,
+                   fit_null$selected$f_selected)
+})
+
+test_that("fit_ata with CohortRegime input extracts last breakpoint", {
+  data(experience)
+  exp <- as_experience(experience[cv_nm == "SUR"])
+  tri <- build_triangle(exp, group_var = "cv_nm",
+                        cohort_var = "uym", dev_var = "elap_m")
+  reg <- detect_cohort_regime(tri)
+  ata <- build_ata(tri, value_var = "closs")
+  fit_reg <- fit_ata(ata, regime_break = reg)
+  if (length(reg$breakpoints) > 0L) {
+    expect_equal(fit_reg$regime_break, max(reg$breakpoints))
+  }
+})
