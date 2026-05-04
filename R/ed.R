@@ -318,6 +318,11 @@ summary.ED <- function(object,
 #'   `"min_last2"` (default), `"locf"`, or `"loglinear"`.
 #' @param recent Optional positive integer. When supplied, only the most
 #'   recent `recent` periods are used for estimation. Default is `NULL`.
+#' @param regime_break Optional cohort cutoff for the regime break. Accepts:
+#'   `NULL` (default, no filter), a single `Date`/character coercible to Date,
+#'   a vector of dates (uses the latest), or a `CohortRegime` object (extracts
+#'   the latest from `$breakpoints`). When supplied, cohorts with
+#'   `cohort < break_date` are excluded from estimation. Default is `NULL`.
 #' @param ... Additional arguments passed to [summary.ED()].
 #'
 #' @return An object of class `"EDFit"` (a named list).
@@ -331,6 +336,7 @@ fit_ed <- function(x,
                    na_method     = c("zero", "locf", "none"),
                    sigma_method  = c("min_last2", "locf", "loglinear"),
                    recent        = NULL,
+                   regime_break  = NULL,
                    ...) {
 
   .assert_class(x, "ED")
@@ -339,7 +345,19 @@ fit_ed <- function(x,
   na_method    <- match.arg(na_method)
   sigma_method <- match.arg(sigma_method)
 
-  # 1) recent-diagonal filter -------------------------------------------
+  # 1) regime-break filter ----------------------------------------------
+  # when `regime_break` is supplied, drop cohorts with cohort < break_date.
+  if (!is.null(regime_break)) {
+    regime_break <- .resolve_break_date(regime_break)
+    x <- .apply_break_filter(
+      x, regime_break,
+      grp_var = if (is.null(attr(x, "group_var"))) character(0) else attr(x, "group_var"),
+      coh_var = "cohort",
+      dev_var = "ata_from"
+    )
+  }
+
+  # 2) recent-diagonal filter -------------------------------------------
   # when `recent` is supplied, subset to rows within the last `recent`
   # calendar diagonals before estimation.
   if (!is.null(recent)) {
@@ -379,7 +397,8 @@ fit_ed <- function(x,
     alpha        = alpha,
     na_method    = na_method,
     sigma_method = sigma_method,
-    recent       = recent
+    recent       = recent,
+    regime_break = regime_break
   )
 
   class(out) <- "EDFit"
@@ -432,6 +451,9 @@ print.EDFit <- function(x, ...) {
   cat("sigma_method:", x$sigma_method,             "\n")
   cat("recent      :",
       if (!is.null(x$recent)) x$recent else "all", "\n")
+  cat("regime_break:",
+      if (!is.null(x$regime_break)) format(x$regime_break) else "none",
+      "\n")
 
   if (length(grp_var)) {
     cat("groups      :", paste(grp_var, collapse = ", "), "\n")

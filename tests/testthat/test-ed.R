@@ -77,3 +77,43 @@ test_that("summary.ED returns EDSummary with expected columns", {
     expect_true(nm %in% names(sm), info = paste("missing", nm))
   }
 })
+
+# regime_break -----------------------------------------------------------
+
+test_that("fit_ed with regime_break drops pre-break cohorts", {
+  data(experience)
+  exp <- as_experience(experience[cv_nm == "SUR"])
+  tri <- build_triangle(exp, group_var = "cv_nm",
+                        cohort_var = "uym", dev_var = "elap_m")
+  ed <- build_ed(tri)
+  fit_full <- fit_ed(ed)
+  fit_brk  <- fit_ed(ed, regime_break = "2024-04-01")
+  expect_false(identical(fit_full$selected$g_selected,
+                         fit_brk$selected$g_selected))
+  expect_equal(fit_brk$regime_break, as.Date("2024-04-01"))
+})
+
+test_that("fit_ed with NULL regime_break is unchanged", {
+  data(experience)
+  exp <- as_experience(experience[cv_nm == "SUR"])
+  tri <- build_triangle(exp, group_var = "cv_nm",
+                        cohort_var = "uym", dev_var = "elap_m")
+  ed <- build_ed(tri)
+  fit_default <- fit_ed(ed)
+  fit_null    <- fit_ed(ed, regime_break = NULL)
+  expect_identical(fit_default$selected$g_selected,
+                   fit_null$selected$g_selected)
+})
+
+test_that("fit_ed with CohortRegime input extracts last breakpoint", {
+  data(experience)
+  exp <- as_experience(experience[cv_nm == "SUR"])
+  tri <- build_triangle(exp, group_var = "cv_nm",
+                        cohort_var = "uym", dev_var = "elap_m")
+  reg <- detect_cohort_regime(tri)
+  ed <- build_ed(tri)
+  fit_reg <- fit_ed(ed, regime_break = reg)
+  if (length(reg$breakpoints) > 0L) {
+    expect_equal(fit_reg$regime_break, max(reg$breakpoints))
+  }
+})
