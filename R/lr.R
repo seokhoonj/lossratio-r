@@ -183,13 +183,15 @@ fit_lr <- function(x,
     bd <- .resolve_break_date(regime_break)
 
     if (!is.null(bd) && method == "sa") {
-      # 2-pass: detect maturity on unfiltered data first
+      # 2-pass: detect maturity on the *unfiltered* triangle. We deliberately
+      # do not pass `recent` here — applying the calendar-diagonal cut before
+      # detecting the maturity moves k* (recent=18 shifts SUR's k* from 4 to
+      # 12 in dev/data.rds), which would change the hybrid boundary.
       pre_loss_ata <- build_ata(x, value_var = l_var)
       pre_loss_fit <- fit_ata(
         pre_loss_ata,
         alpha         = loss_alpha,
         sigma_method  = sigma_method,
-        recent        = recent,
         maturity_args = maturity_args
       )
       mat_dt <- pre_loss_fit$maturity
