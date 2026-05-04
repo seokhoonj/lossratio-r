@@ -2,11 +2,11 @@
 
 Two-panel diagnostic showing the dual criterion driving \\k^{\*\*}\\:
 
-- Top panel: \\R_v / \widehat{SE}^{param}\_v\\ (predictive revision
+- Top panel: \\R_v / \hat{SE}^{param}\_v\\ (predictive revision
   normalised by parameter SE), with horizontal guide at the threshold
   `c`.
 
-- Bottom panel: \\\widehat{D}\_v\\ (robust cross-cohort dispersion of
+- Bottom panel: \\\hat{D}\_v\\ (robust cross-cohort dispersion of
   incremental loss ratio), with horizontal guide at the threshold `tau`.
 
 Vertical guides mark `k_star` (dashed) and `k_conv` (solid). A point

@@ -4,26 +4,25 @@ Identify the first valuation \\k^{\*\*}\\ from which the projected loss
 ratio is *predictively* stable, in the sense of the paper's Section 11
 \\k^{\*\*}\\ criterion:
 
-\$\$k^{\*\*} = \min\\v \in \[k^\*, V - h\] : R_v \< c \cdot
-\widehat{SE}^{param}\_v \text{ and } \widehat{D}\_v \< \tau, \text{ for
-} M \text{ consecutive valuations}\\\$\$
+\$\$k^{\*\*} = \min\\v \in \[k^\*, V - M\] : R_v \< c \cdot
+\hat{SE}^{param}\_v \text{ and } \hat{D}\_v \< \tau, \text{ for } M
+\text{ consecutive valuations}\\\$\$
 
 where \\R_v\\ is the predictive revision in the projected loss ratio
-when calendar diagonal \\D_v\\ is added, \\\widehat{SE}^{param}\_v\\ is
-the parameter component of the Mack standard error of the projection,
-\\\widehat{D}\_v\\ is the robust cross-cohort dispersion of incremental
-loss ratios at \\v\\, and \\k^\*\\ is the age-to-age maturity point from
+when calendar diagonal \\D_v\\ is added, \\\hat{SE}^{param}\_v\\ is the
+parameter component of the Mack standard error of the projection,
+\\\hat{D}\_v\\ is the robust cross-cohort dispersion of incremental loss
+ratios at \\v\\, and \\k^\*\\ is the age-to-age maturity point from
 [`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/reference/find_ata_maturity.md).
 
 Both clauses guard against complementary failure modes: \\R_v \< c \cdot
-\widehat{SE}^{param}\_v\\ requires the projection to stop responding to
-new diagonals at a scale-relevant magnitude; \\\widehat{D}\_v \< \tau\\
-requires cross-cohort agreement on the incremental-LR level
-(inertia-free per-period quantity).
+\hat{SE}^{param}\_v\\ requires the projection to stop responding to new
+diagonals at a scale-relevant magnitude; \\\hat{D}\_v \< \tau\\ requires
+cross-cohort agreement on the incremental-LR level (inertia-free
+per-period quantity).
 
 This function corresponds to the paper's *convergence point*
-\\k^{\*\*}\\, paired with \\k^\*\\ (maturity point). The function name
-uses `lr_stability` to be self-documenting.
+\\k^{\*\*}\\, paired with \\k^\*\\ (maturity point).
 
 ## Usage
 
@@ -58,11 +57,11 @@ find_lr_convergence(
 
 - c:
 
-  Multiplier on \\\widehat{SE}^{param}\_v\\. Default `0.5`.
+  Multiplier on \\\hat{SE}^{param}\_v\\. Default `0.5`.
 
 - tau:
 
-  Upper bound on \\\widehat{D}\_v\\. Default `0.15`.
+  Upper bound on \\\hat{D}\_v\\. Default `0.15`.
 
 - M:
 
@@ -81,8 +80,8 @@ find_lr_convergence(
 
 - min_n_cohorts:
 
-  Minimum number of cohorts required to compute \\\widehat{D}\_v\\.
-  Default `5L`.
+  Minimum number of cohorts required to compute \\\hat{D}\_v\\. Default
+  `5L`.
 
 - ...:
 

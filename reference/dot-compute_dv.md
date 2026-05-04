@@ -4,7 +4,7 @@ Internal helper. For each (group, dev) cell of a `Triangle`, computes a
 robust scale-invariant dispersion of incremental loss ratio across
 cohorts:
 
-\$\$\widehat{D}\_v = \frac{1.4826 \cdot
+\$\$\hat{D}\_v = \frac{1.4826 \cdot
 \mathrm{MAD}\_i(lr\_{i,v})}{\|\mathrm{median}\_i(lr\_{i,v})\|}\$\$
 
 Operating on `lr` (incremental) rather than `clr` keeps the metric
