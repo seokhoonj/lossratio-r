@@ -34,6 +34,8 @@ navbar:
         href: articles/regime-detection-ko.html
       - text: Backtest
         href: articles/backtest-ko.html
+      - text: Regime break 필터링
+        href: articles/regime-break-ko.html
       - text: LR 안정성
         href: articles/lr-convergence-ko.html
     reference:
@@ -146,6 +148,7 @@ articles:
   - "articles/triangle-diagnostics-ko"
   - "articles/regime-detection-ko"
   - "articles/backtest-ko"
+  - "articles/regime-break-ko"
   - "articles/lr-convergence-ko"
 - title: internal
   contents:
@@ -157,4 +160,5 @@ articles:
   - triangle-diagnostics
   - regime-detection
   - backtest
+  - regime-break
   - lr-convergence
