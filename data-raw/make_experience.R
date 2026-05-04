@@ -71,6 +71,7 @@ growth <- 1 + 0.6 * pmin(dt$elap_m, 24L)
 dt[, rp := rp_base * growth]
 # Refund flip on ~0.1% of cells.
 dt[, rp := rp * ifelse(rbinom(.N, 1L, 0.999) == 1L, 1, -1)]
+dt[, rp := round(rp)]
 
 # ---- loss: cumulative loss --------------------------------------------------
 # loss = (Bernoulli has-loss) * Gamma anchored to rp * conditional-LR scale.
@@ -118,6 +119,7 @@ loss_raw <- has_loss * rgamma(N, shape = shape_loss, scale = cond_scale)
 
 # Reversal sign flip on ~0.3% of cells.
 dt[, loss := loss_raw * ifelse(rbinom(.N, 1L, 0.997) == 1L, 1, -1)]
+dt[, loss := round(loss)]
 
 # ---- Final column order (matches package schema) ----------------------------
 
