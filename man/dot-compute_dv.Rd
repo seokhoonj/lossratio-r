@@ -22,7 +22,7 @@ Internal helper. For each (group, dev) cell of a \code{Triangle}, computes a
 robust scale-invariant dispersion of incremental loss ratio across
 cohorts:
 
-\deqn{\widehat{D}_v = \frac{1.4826 \cdot \mathrm{MAD}_i(lr_{i,v})}{|\mathrm{median}_i(lr_{i,v})|}}
+\deqn{\hat{D}_v = \frac{1.4826 \cdot \mathrm{MAD}_i(lr_{i,v})}{|\mathrm{median}_i(lr_{i,v})|}}
 
 Operating on \code{lr} (incremental) rather than \code{clr} keeps the metric
 inertia-free.

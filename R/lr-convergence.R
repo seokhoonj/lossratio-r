@@ -7,7 +7,7 @@
 #' robust scale-invariant dispersion of incremental loss ratio across
 #' cohorts:
 #'
-#' \deqn{\widehat{D}_v = \frac{1.4826 \cdot \mathrm{MAD}_i(lr_{i,v})}{|\mathrm{median}_i(lr_{i,v})|}}
+#' \deqn{\hat{D}_v = \frac{1.4826 \cdot \mathrm{MAD}_i(lr_{i,v})}{|\mathrm{median}_i(lr_{i,v})|}}
 #'
 #' Operating on `lr` (incremental) rather than `clr` keeps the metric
 #' inertia-free.
@@ -107,31 +107,30 @@
 #' loss ratio is *predictively* stable, in the sense of the paper's
 #' Section 11 \eqn{k^{**}} criterion:
 #'
-#' \deqn{k^{**} = \min\{v \in [k^*, V - h] : R_v < c \cdot \widehat{SE}^{param}_v \text{ and } \widehat{D}_v < \tau, \text{ for } M \text{ consecutive valuations}\}}
+#' \deqn{k^{**} = \min\{v \in [k^*, V - M] : R_v < c \cdot \hat{SE}^{param}_v \text{ and } \hat{D}_v < \tau, \text{ for } M \text{ consecutive valuations}\}}
 #'
 #' where \eqn{R_v} is the predictive revision in the projected loss ratio
-#' when calendar diagonal \eqn{D_v} is added, \eqn{\widehat{SE}^{param}_v}
+#' when calendar diagonal \eqn{D_v} is added, \eqn{\hat{SE}^{param}_v}
 #' is the parameter component of the Mack standard error of the
-#' projection, \eqn{\widehat{D}_v} is the robust cross-cohort dispersion
+#' projection, \eqn{\hat{D}_v} is the robust cross-cohort dispersion
 #' of incremental loss ratios at \eqn{v}, and \eqn{k^*} is the
 #' age-to-age maturity point from [find_ata_maturity()].
 #'
 #' Both clauses guard against complementary failure modes:
-#' \eqn{R_v < c \cdot \widehat{SE}^{param}_v} requires the projection to
+#' \eqn{R_v < c \cdot \hat{SE}^{param}_v} requires the projection to
 #' stop responding to new diagonals at a scale-relevant magnitude;
-#' \eqn{\widehat{D}_v < \tau} requires cross-cohort agreement on the
+#' \eqn{\hat{D}_v < \tau} requires cross-cohort agreement on the
 #' incremental-LR level (inertia-free per-period quantity).
 #'
 #' This function corresponds to the paper's *convergence point*
-#' \eqn{k^{**}}, paired with \eqn{k^*} (maturity point). The function
-#' name uses `lr_stability` to be self-documenting.
+#' \eqn{k^{**}}, paired with \eqn{k^*} (maturity point).
 #'
 #' @param triangle A `Triangle` object (typically from [build_triangle()]).
 #' @param fit_fn Fitting function used to project. Default [fit_lr].
 #'   [fit_cl] is also accepted but `fit_lr` is recommended because it
 #'   exposes both loss and exposure projections required for portfolio LR.
-#' @param c Multiplier on \eqn{\widehat{SE}^{param}_v}. Default `0.5`.
-#' @param tau Upper bound on \eqn{\widehat{D}_v}. Default `0.15`.
+#' @param c Multiplier on \eqn{\hat{SE}^{param}_v}. Default `0.5`.
+#' @param tau Upper bound on \eqn{\hat{D}_v}. Default `0.15`.
 #' @param M Required run length of consecutive passing periods. Default
 #'   `3L`.
 #' @param k_star Pre-computed maturity point. When `NULL`, computed via
@@ -139,7 +138,7 @@
 #' @param holdout_max Maximum holdout depth used for the rolling
 #'   backtest. When `NULL`, set to `max(M, floor((V - k_star) / 2))`.
 #' @param min_n_cohorts Minimum number of cohorts required to compute
-#'   \eqn{\widehat{D}_v}. Default `5L`.
+#'   \eqn{\hat{D}_v}. Default `5L`.
 #' @param ... Additional arguments forwarded to `fit_fn`.
 #'
 #' @return An object of class `LRConvergence` (named list) containing the
@@ -335,10 +334,10 @@ summary.LRConvergence <- function(object, ...) {
 #' @description
 #' Two-panel diagnostic showing the dual criterion driving \eqn{k^{**}}:
 #' \itemize{
-#'   \item Top panel: \eqn{R_v / \widehat{SE}^{param}_v} (predictive
+#'   \item Top panel: \eqn{R_v / \hat{SE}^{param}_v} (predictive
 #'     revision normalised by parameter SE), with horizontal guide at
 #'     the threshold `c`.
-#'   \item Bottom panel: \eqn{\widehat{D}_v} (robust cross-cohort
+#'   \item Bottom panel: \eqn{\hat{D}_v} (robust cross-cohort
 #'     dispersion of incremental loss ratio), with horizontal guide at
 #'     the threshold `tau`.
 #' }

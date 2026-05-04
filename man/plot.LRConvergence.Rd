@@ -19,10 +19,10 @@ A \code{ggplot} object.
 \description{
 Two-panel diagnostic showing the dual criterion driving \eqn{k^{**}}:
 \itemize{
-\item Top panel: \eqn{R_v / \widehat{SE}^{param}_v} (predictive
+\item Top panel: \eqn{R_v / \hat{SE}^{param}_v} (predictive
 revision normalised by parameter SE), with horizontal guide at
 the threshold \code{c}.
-\item Bottom panel: \eqn{\widehat{D}_v} (robust cross-cohort
+\item Bottom panel: \eqn{\hat{D}_v} (robust cross-cohort
 dispersion of incremental loss ratio), with horizontal guide at
 the threshold \code{tau}.
 }

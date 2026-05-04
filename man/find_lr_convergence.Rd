@@ -23,9 +23,9 @@ find_lr_convergence(
 \link{fit_cl} is also accepted but \code{fit_lr} is recommended because it
 exposes both loss and exposure projections required for portfolio LR.}
 
-\item{c}{Multiplier on \eqn{\widehat{SE}^{param}_v}. Default \code{0.5}.}
+\item{c}{Multiplier on \eqn{\hat{SE}^{param}_v}. Default \code{0.5}.}
 
-\item{tau}{Upper bound on \eqn{\widehat{D}_v}. Default \code{0.15}.}
+\item{tau}{Upper bound on \eqn{\hat{D}_v}. Default \code{0.15}.}
 
 \item{M}{Required run length of consecutive passing periods. Default
 \code{3L}.}
@@ -37,7 +37,7 @@ exposes both loss and exposure projections required for portfolio LR.}
 backtest. When \code{NULL}, set to \code{max(M, floor((V - k_star) / 2))}.}
 
 \item{min_n_cohorts}{Minimum number of cohorts required to compute
-\eqn{\widehat{D}_v}. Default \code{5L}.}
+\eqn{\hat{D}_v}. Default \code{5L}.}
 
 \item{...}{Additional arguments forwarded to \code{fit_fn}.}
 }
@@ -52,24 +52,23 @@ Identify the first valuation \eqn{k^{**}} from which the projected
 loss ratio is \emph{predictively} stable, in the sense of the paper's
 Section 11 \eqn{k^{**}} criterion:
 
-\deqn{k^{**} = \min\{v \in [k^*, V - h] : R_v < c \cdot \widehat{SE}^{param}_v \text{ and } \widehat{D}_v < \tau, \text{ for } M \text{ consecutive valuations}\}}
+\deqn{k^{**} = \min\{v \in [k^*, V - M] : R_v < c \cdot \hat{SE}^{param}_v \text{ and } \hat{D}_v < \tau, \text{ for } M \text{ consecutive valuations}\}}
 
 where \eqn{R_v} is the predictive revision in the projected loss ratio
-when calendar diagonal \eqn{D_v} is added, \eqn{\widehat{SE}^{param}_v}
+when calendar diagonal \eqn{D_v} is added, \eqn{\hat{SE}^{param}_v}
 is the parameter component of the Mack standard error of the
-projection, \eqn{\widehat{D}_v} is the robust cross-cohort dispersion
+projection, \eqn{\hat{D}_v} is the robust cross-cohort dispersion
 of incremental loss ratios at \eqn{v}, and \eqn{k^*} is the
 age-to-age maturity point from \code{\link[=find_ata_maturity]{find_ata_maturity()}}.
 
 Both clauses guard against complementary failure modes:
-\eqn{R_v < c \cdot \widehat{SE}^{param}_v} requires the projection to
+\eqn{R_v < c \cdot \hat{SE}^{param}_v} requires the projection to
 stop responding to new diagonals at a scale-relevant magnitude;
-\eqn{\widehat{D}_v < \tau} requires cross-cohort agreement on the
+\eqn{\hat{D}_v < \tau} requires cross-cohort agreement on the
 incremental-LR level (inertia-free per-period quantity).
 
 This function corresponds to the paper's \emph{convergence point}
-\eqn{k^{**}}, paired with \eqn{k^*} (maturity point). The function
-name uses \code{lr_stability} to be self-documenting.
+\eqn{k^{**}}, paired with \eqn{k^*} (maturity point).
 }
 \seealso{
 \code{\link[=find_ata_maturity]{find_ata_maturity()}}, \code{\link[=backtest]{backtest()}}, \code{\link[=fit_lr]{fit_lr()}}
