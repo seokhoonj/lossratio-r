@@ -99,10 +99,10 @@ compare projections against the withheld actuals.
   [`print(`*`<summary.Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   : Backtest a loss-ratio / chain ladder fit on existing data
 
-## LR stability detection
+## LR convergence detection
 
-Detect the development period from which the projected loss ratio is
-predictively stable (paper Section 11, $`k_0`$ criterion).
+Detect the development period ($`k^{**}`$) from which the projected loss
+ratio stops revising and converges.
 
 - [`find_lr_convergence()`](https://seokhoonj.github.io/lossratio/reference/find_lr_convergence.md)
   : Find the development period at which the loss ratio estimate

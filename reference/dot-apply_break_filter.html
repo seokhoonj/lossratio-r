@@ -27,11 +27,11 @@ with dev_var &amp;gt; dev_max are kept regardless of cohort."><meta property="og
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks.html">Aggregation frameworks</a></li>
     <li><a class="dropdown-item" href="../articles/loss-ratio-methods.html">Loss-ratio projection methods</a></li>
     <li><a class="dropdown-item" href="../articles/chain-ladder.html">Chain ladder</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ata diagnostics</a></li>
+    <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ATA diagnostics</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection.html">Regime detection</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/regime-break.html">Regime break filtering</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence.html">LR stability</a></li>
+    <li><a class="dropdown-item" href="../articles/lr-convergence.html">LR convergence</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -62,8 +62,8 @@ with <code>dev_var &gt; dev_max</code> are kept regardless of cohort.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.apply_break_filter</span><span class="op">(</span></span>
 <span>  <span class="va">dt</span>,</span>
 <span>  <span class="va">break_date</span>,</span>
-<span>  grp_var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
-<span>  <span class="va">coh_var</span>,</span>
+<span>  group_var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
+<span>  <span class="va">cohort_var</span>,</span>
 <span>  <span class="va">dev_var</span>,</span>
 <span>  dev_max <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -85,11 +85,11 @@ with <code>dev_var &gt; dev_max</code> are kept regardless of cohort.</p>
 </ul></dd>
 
 
-<dt id="arg-grp-var">grp_var<a class="anchor" aria-label="anchor" href="#arg-grp-var"></a></dt>
+<dt id="arg-group-var">group_var<a class="anchor" aria-label="anchor" href="#arg-group-var"></a></dt>
 <dd><p>Character vector of group columns (may be empty).</p></dd>
 
 
-<dt id="arg-coh-var">coh_var<a class="anchor" aria-label="anchor" href="#arg-coh-var"></a></dt>
+<dt id="arg-cohort-var">cohort_var<a class="anchor" aria-label="anchor" href="#arg-cohort-var"></a></dt>
 <dd><p>Single column name for the cohort variable.</p></dd>
 
 

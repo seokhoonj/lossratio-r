@@ -29,7 +29,7 @@ Mask precedence: held_out &amp;gt; fit_data &amp;gt; excluded &amp;gt; future.'>
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks-ko.html">집계 프레임워크</a></li>
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics-ko.html">Triangle 및 ata 진단</a></li>
     <li><a class="dropdown-item" href="../articles/loss-ratio-methods-ko.html">손해율 추정 방법론</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">LR 안정성</a></li>
+    <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">손해율 수렴</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection-ko.html">Regime 탐지</a></li>
     <li><a class="dropdown-item" href="../articles/regime-break-ko.html">Regime break 필터링</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
@@ -96,7 +96,11 @@ forms as <code><a href="fit_lr.html">fit_lr()</a></code> (<code>NULL</code>, <co
 
 <dt id="arg-holdout">holdout<a class="anchor" aria-label="anchor" href="#arg-holdout"></a></dt>
 <dd><p>Optional positive integer. When supplied, the last
-<code>holdout</code> calendar diagonals are flagged <code>"held_out"</code>.</p></dd>
+<code>holdout</code> calendar diagonals are flagged <code>"held_out"</code>. The <code>recent</code>
+filter is then evaluated against the post-holdout boundary so the
+recent wedge sits <em>before</em> the held_out wedge (no overlap), matching
+<code><a href="backtest.html">backtest()</a></code> semantics — <code>fit_fn(masked, recent = N, ...)</code> operates
+on the masked triangle whose own max_cal is <code>original - holdout</code>.</p></dd>
 
 
 <dt id="arg-mat-k">mat_k<a class="anchor" aria-label="anchor" href="#arg-mat-k"></a></dt>

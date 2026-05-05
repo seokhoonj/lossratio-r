@@ -1,7 +1,8 @@
 # Triangle heatmap of backtest AEG
 
 Display the held-out cells as a `cohort x dev` heatmap coloured by AEG
-(red = over-projected, blue = under-projected, white at 0).
+(red = under-projected (actual \> pred), blue = over-projected (actual
+\< pred), white at 0).
 
 ## Usage
 

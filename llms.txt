@@ -275,10 +275,10 @@ compare projections against the withheld actuals.
   [`print(`*`<summary.Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   : Backtest a loss-ratio / chain ladder fit on existing data
 
-## LR stability detection
+## LR convergence detection
 
-Detect the development period from which the projected loss ratio is
-predictively stable (paper Section 11, $`k_0`$ criterion).
+Detect the development period ($`k^{**}`$) from which the projected loss
+ratio stops revising and converges.
 
 - [`find_lr_convergence()`](https://seokhoonj.github.io/lossratio/reference/find_lr_convergence.md)
   : Find the development period at which the loss ratio estimate
@@ -445,8 +445,8 @@ print / summary / longer methods registered on package classes.
 
 ### Workflow
 
-- [Aggregation frameworks: triangle, calendar,
-  total](https://seokhoonj.github.io/lossratio/articles/aggregation-frameworks.md):
+- [Aggregation frameworks: Triangle, Calendar,
+  Total](https://seokhoonj.github.io/lossratio/articles/aggregation-frameworks.md):
 
 ### Methods
 
@@ -454,7 +454,7 @@ print / summary / longer methods registered on package classes.
   CL](https://seokhoonj.github.io/lossratio/articles/loss-ratio-methods.md):
 - [Chain ladder reserving with
   fit_cl](https://seokhoonj.github.io/lossratio/articles/chain-ladder.md):
-- [Triangle and ata
+- [Triangle and ATA
   diagnostics](https://seokhoonj.github.io/lossratio/articles/triangle-diagnostics.md):
 - [Detecting regime shifts across underwriting
   cohorts](https://seokhoonj.github.io/lossratio/articles/regime-detection.md):

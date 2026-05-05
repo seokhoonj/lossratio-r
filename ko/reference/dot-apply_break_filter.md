@@ -10,8 +10,8 @@ with `dev_var > dev_max` are kept regardless of cohort.
 .apply_break_filter(
   dt,
   break_date,
-  grp_var = character(0),
-  coh_var,
+  group_var = character(0),
+  cohort_var,
   dev_var,
   dev_max = NULL
 )
@@ -35,11 +35,11 @@ with `dev_var > dev_max` are kept regardless of cohort.
 
   - A `CohortRegime` object – extracts the latest from `$breakpoints`.
 
-- grp_var:
+- group_var:
 
   Character vector of group columns (may be empty).
 
-- coh_var:
+- cohort_var:
 
   Single column name for the cohort variable.
 

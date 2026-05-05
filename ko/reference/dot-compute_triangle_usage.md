@@ -37,7 +37,12 @@ Mask precedence: `held_out` \> `fit_data` \> `excluded` \> `future`.
 - holdout:
 
   Optional positive integer. When supplied, the last `holdout` calendar
-  diagonals are flagged `"held_out"`.
+  diagonals are flagged `"held_out"`. The `recent` filter is then
+  evaluated against the post-holdout boundary so the recent wedge sits
+  *before* the held_out wedge (no overlap), matching
+  [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+  semantics — `fit_fn(masked, recent = N, ...)` operates on the masked
+  triangle whose own max_cal is `original - holdout`.
 
 - mat_k:
 

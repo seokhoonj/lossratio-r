@@ -29,7 +29,7 @@ identify the maturity point.'><meta property="og:image" content="https://seokhoo
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks-ko.html">집계 프레임워크</a></li>
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics-ko.html">Triangle 및 ata 진단</a></li>
     <li><a class="dropdown-item" href="../articles/loss-ratio-methods-ko.html">손해율 추정 방법론</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">LR 안정성</a></li>
+    <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">손해율 수렴</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection-ko.html">Regime 탐지</a></li>
     <li><a class="dropdown-item" href="../articles/regime-break-ko.html">Regime break 필터링</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
@@ -81,6 +81,7 @@ identify the maturity point.</p>
 <span>  nrow <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ncol <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"view"</span>, <span class="st">"save"</span>, <span class="st">"shiny"</span><span class="op">)</span>,</span>
+<span>  x.angle <span class="op">=</span> <span class="fl">90</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -140,6 +141,11 @@ One of <code>"fixed"</code>, <code>"free"</code>, <code>"free_x"</code>, or <cod
 
 <dt id="arg-theme">theme<a class="anchor" aria-label="anchor" href="#arg-theme"></a></dt>
 <dd><p>A string passed to <code><a href="dot-switch_theme.html">.switch_theme()</a></code>.</p></dd>
+
+
+<dt id="arg-x-angle">x.angle<a class="anchor" aria-label="anchor" href="#arg-x-angle"></a></dt>
+<dd><p>Numeric angle for x-axis tick labels. Default is <code>90</code>
+to prevent overlap of the <code>from-to</code> link labels.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

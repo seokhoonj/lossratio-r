@@ -3,9 +3,9 @@
 > 영어 원본 보기: [Getting started with
 > lossratio](https://seokhoonj.github.io/lossratio/ko/getting-started.md)
 
-이 vignette 은 `lossratio` 의 전체 파이프라인을 내장 합성 experience
-데이터 위에서 따라간다. raw long-format 행에서 시작하여 적합된 손해율
-추정까지 이어진다.
+이 문서는 `lossratio` 의 전체 파이프라인을 내장 합성 experience 데이터
+위에서 따라간다. raw long-format 행에서 시작하여 적합된 손해율 추정까지
+이어진다.
 
 ## 입력 형태
 
@@ -298,10 +298,10 @@ summary(cl)
 ```
 
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
-은 손해율 추정을 수행한다. 기본값 `method = "sa"` (단계
-적응적(stage-adaptive)) 는 성숙점(maturity point) 이전에는 노출 기반
-방식, 성숙점 이후에는 chain ladder 를 적용한다. 전환 지점은 ata 인자에서
-그룹별로 탐지된 성숙점이다.
+은 손해율 추정을 수행한다. 기본값으로 사용되는 단계
+적응적(stage-adaptive) 방식 (`method = "sa"`) 은 성숙점(maturity point)
+이전에는 노출 기반 방식, 성숙점 이후에는 chain ladder 를 적용한다. 전환
+지점은 ata 인자에서 그룹별로 탐지된 성숙점이다.
 
 ``` r
 

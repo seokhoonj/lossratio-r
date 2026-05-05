@@ -44,7 +44,7 @@
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks-ko.html">집계 프레임워크</a></li>
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics-ko.html">Triangle 및 ata 진단</a></li>
     <li><a class="dropdown-item" href="../articles/loss-ratio-methods-ko.html">손해율 추정 방법론</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">LR 안정성</a></li>
+    <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">손해율 수렴</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection-ko.html">Regime 탐지</a></li>
     <li><a class="dropdown-item" href="../articles/regime-break-ko.html">Regime break 필터링</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
@@ -108,8 +108,9 @@ factor
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
 를 검출한다 — projected loss ratio 가 예측적으로 수렴한 첫 평가 시점
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo>≥</mo><msup><mi>k</mi><mo>*</mo></msup></mrow><annotation encoding="application/x-tex">v \ge k^*</annotation></semantics></math>.
+성숙점(maturity point)
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
-(성숙점, <code><a href="../reference/find_ata_maturity.html">find_ata_maturity()</a></code> 산출) 의 자연스러운 짝이다:
+— <code><a href="../reference/find_ata_maturity.html">find_ata_maturity()</a></code> 가 산출 — 의 자연스러운 짝이다:
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
 는 link factor
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
@@ -515,8 +516,9 @@ ATA 에 <code><a href="../reference/find_ata_maturity.html">find_ata_maturity()<
 <li>
 <code><a href="../reference/find_lr_convergence.html">?find_lr_convergence</a></code>, <code><a href="../reference/find_ata_maturity.html">?find_ata_maturity</a></code>,
 <code><a href="../reference/backtest.html">?backtest</a></code>, <code><a href="../reference/detect_cohort_regime.html">?detect_cohort_regime</a></code>.</li>
-<li>vignette <code>regime-detection-ko</code> — 위 워크플로 1단계의
-코호트 동질성 진단.</li>
+<li>
+<code>regime-detection-ko</code> 문서 — 위 워크플로 1단계의 코호트
+동질성 진단.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

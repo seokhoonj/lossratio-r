@@ -1,17 +1,17 @@
-# 집계 프레임워크: triangle, calendar, total
+# 집계 프레임워크: Triangle, Calendar, Total
 
 > 영어 원본 보기: [Three aggregation
 > frameworks](https://seokhoonj.github.io/lossratio/aggregation-frameworks.md)
 
 동일한 long-format experience 데이터는 분석 질문에 따라 세 가지 방식으로
 집계할 수 있다. `lossratio` 는 각 프레임워크별로 하나의 빌더를 제공한다.
-이 vignette 은 셋을 비교한다.
+이 문서는 셋을 비교한다.
 
 ## 한눈에 보기
 
 | 빌더 | 출력 객체 | 차원 | 사용 시점 |
 |----|----|----|----|
-| [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md) | `Triangle` | 코호트 × dev (2D) | Chain ladder, ED, SA 추정 |
+| [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md) | `Triangle` | 코호트 × dev (2D) | SA, ED, CL 추정 |
 | [`build_calendar()`](https://seokhoonj.github.io/lossratio/reference/build_calendar.md) | `Calendar` | 달력 기간 (1D) | 달력 연도 추세, 대각선 효과 |
 | [`build_total()`](https://seokhoonj.github.io/lossratio/reference/build_total.md) | `Total` | 포트폴리오 합계 (그룹별) | 상위 수준 손해율 비교 |
 
@@ -133,7 +133,7 @@ head(cal)
 인덱스 (1, 2, 3, …) 이며, “코호트 시작 이후의 경과 기간(development
 period)” 이 아니다.
 
-Calendar 집계는 수학적으로 triangle 의 **대각선 합** 이다. 같은 `cym`
+Calendar 집계는 수학적으로 Triangle 의 **대각선 합** 이다. 같은 `cym`
 값을 갖는 셀 (`uym`/`elap_m` 와 무관하게) 이 합쳐진다.
 
 활용 사례는 다음과 같다.
@@ -145,14 +145,14 @@ Calendar 집계는 수학적으로 triangle 의 **대각선 합** 이다. 같은
 
 ``` r
 
-plot(cal)                       # x = calendar
+plot(cal)                       # x axis: calendar
 ```
 
 ![](aggregation-frameworks-ko_files/figure-html/unnamed-chunk-4-1.png)
 
 ``` r
 
-plot(cal, x_by = "dev")         # x = 순차 인덱스
+plot(cal, x_by = "dev")         # x axis: 순차 인덱스
 ```
 
 ![](aggregation-frameworks-ko_files/figure-html/unnamed-chunk-4-2.png)
@@ -191,7 +191,7 @@ head(tot)
 
 - 담보별 전체 손해율 비교
 - 그룹별 준비금 / 포트폴리오 비중 순위
-- 임원 보고용 요약표 작성
+- 보고용 요약표 작성
 
 ## 데이터 흐름으로 본 집계
 
@@ -211,8 +211,8 @@ head(tot)
 
 ## 속성 스키마
 
-집계 후 각 객체는 원본 컬럼 메타데이터를 속성으로 저장한다 (플롯 라벨과
-단위(granularity) 인지 날짜 형식 지정에 사용된다).
+집계 후 각 객체는 원본 컬럼 메타데이터를 속성으로 저장한다 — 플롯 라벨과
+집계 주기에 맞는 날짜 표기에 사용된다.
 
 ``` r
 
@@ -232,4 +232,4 @@ attr(cal, "calendar_type")   # "month"
 ```
 
 데이터 컬럼 자체는 `cohort` / `dev` / `calendar` 로 표준화되어 있으므로,
-하위 코드는 단위 비의존적으로 동작한다.
+이후 처리는 집계 주기에 무관하다.

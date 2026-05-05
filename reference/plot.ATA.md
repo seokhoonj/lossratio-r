@@ -25,6 +25,7 @@ plot(
   nrow = NULL,
   ncol = NULL,
   theme = c("view", "save", "shiny"),
+  x.angle = 90,
   ...
 )
 ```
@@ -87,6 +88,11 @@ plot(
 
   A string passed to
   [`.switch_theme()`](https://seokhoonj.github.io/lossratio/reference/dot-switch_theme.md).
+
+- x.angle:
+
+  Numeric angle for x-axis tick labels. Default is `90` to prevent
+  overlap of the `from-to` link labels.
 
 - ...:
 

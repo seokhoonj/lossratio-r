@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Triangle 및 ata 진단 • lossratio</title>
+<title>Triangle 과 ATA 진단 • lossratio</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<script src="../extra.js"></script><meta property="og:title" content="Triangle 및 ata 진단">
+<script src="../extra.js"></script><meta property="og:title" content="Triangle 과 ATA 진단">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -44,7 +44,7 @@
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks-ko.html">집계 프레임워크</a></li>
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics-ko.html">Triangle 및 ata 진단</a></li>
     <li><a class="dropdown-item" href="../articles/loss-ratio-methods-ko.html">손해율 추정 방법론</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">LR 안정성</a></li>
+    <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">손해율 수렴</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection-ko.html">Regime 탐지</a></li>
     <li><a class="dropdown-item" href="../articles/regime-break-ko.html">Regime break 필터링</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
@@ -78,7 +78,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>Triangle 및 ata 진단</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Triangle 과 ATA 진단</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/seokhoonj/lossratio/blob/main/vignettes/articles/triangle-diagnostics-ko.Rmd" class="external-link"><code>vignettes/articles/triangle-diagnostics-ko.Rmd</code></a></small>
@@ -89,16 +89,16 @@
     
 <blockquote>
 <p>영어 원본 보기: <a href="../triangle-diagnostics.html">Triangle and
-ata diagnostics</a></p>
+ATA diagnostics</a></p>
 </blockquote>
 <p>chain ladder 또는 손해율 모형을 적합하기 전에 기반이 되는 triangle 을
-살펴보는 것이 효율적이다. 이 vignette 는 코호트 발전 양상, age-to-age
-인자의 안정성, 성숙점 탐지를 이해하기 위한 <code>lossratio</code> 의
-진단 도구를 다룬다.</p>
+살펴보는 것이 효율적이다. 이 문서는 코호트 발전 양상, age-to-age 인자의
+안정성, 성숙점(maturity point) 탐지를 이해하기 위한
+<code>lossratio</code> 의 진단 도구를 다룬다.</p>
 <div class="section level2">
-<h2 id="triangle-수준-진단">Triangle 수준 진단<a class="anchor" aria-label="anchor" href="#triangle-%EC%88%98%EC%A4%80-%EC%A7%84%EB%8B%A8"></a>
+<h2 id="triangle-진단">Triangle 진단<a class="anchor" aria-label="anchor" href="#triangle-%EC%A7%84%EB%8B%A8"></a>
 </h2>
-<p>이 vignette 은 간결성을 위해 <code>SUR</code> 그룹만 사용한다 — 모든
+<p>이 문서는 간결성을 위해 <code>SUR</code> 그룹만 사용한다 — 모든
 절차는 다중 그룹 입력에도 그대로 일반화된다.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio" class="external-link">lossratio</a></span><span class="op">)</span></span>
@@ -233,16 +233,17 @@ clr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗
 <p><img src="triangle-diagnostics-ko_files/figure-html/unnamed-chunk-6-5.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level3">
-<h3 id="ata-인자의-triangle">ata 인자의 triangle<a class="anchor" aria-label="anchor" href="#ata-%EC%9D%B8%EC%9E%90%EC%9D%98-triangle"></a>
+<h3 id="ata-인자의-triangle">ATA 인자의 Triangle<a class="anchor" aria-label="anchor" href="#ata-%EC%9D%B8%EC%9E%90%EC%9D%98-triangle"></a>
 </h3>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata</span><span class="op">)</span>                                <span class="co"># 관측 인자 히트맵</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">la</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>                              <span class="co"># 라벨 크기 줄임</span></span>
+<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata</span>, label_args <span class="op">=</span> <span class="va">la</span><span class="op">)</span>               <span class="co"># 관측 인자 히트맵</span></span></code></pre></div>
 <p><img src="triangle-diagnostics-ko_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span>        <span class="co"># 인자 + (loss / rp) 금액</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata</span>, label_args <span class="op">=</span> <span class="va">la</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span>  <span class="co"># 인자 + (loss / rp) 금액</span></span></code></pre></div>
 <p><img src="triangle-diagnostics-ko_files/figure-html/unnamed-chunk-7-2.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata</span>, show_maturity <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>          <span class="co"># 성숙점 라인 overlay</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata</span>, label_args <span class="op">=</span> <span class="va">la</span>, show_maturity <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>    <span class="co"># 성숙점 라인 overlay</span></span></code></pre></div>
 <p><img src="triangle-diagnostics-ko_files/figure-html/unnamed-chunk-7-3.png" class="r-plt" alt="" width="100%"></p>
 <p>이 히트맵은 각 셀을 자기 링크 내에서
 <code>log(ata / median(ata))</code> 로 색칠하므로, 열 방향 색상은 해당

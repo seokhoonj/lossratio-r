@@ -1,4 +1,4 @@
-# Aggregation frameworks: triangle, calendar, total
+# Aggregation frameworks: Triangle, Calendar, Total
 
 The same long-format experience data can be aggregated three ways
 depending on the question being asked. `lossratio` exposes one builder
@@ -8,7 +8,7 @@ per framework. This vignette compares them.
 
 | Builder | Output object | Dimension | When to use |
 |----|----|----|----|
-| [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md) | `Triangle` | cohort × dev (2D) | Chain ladder, ED, SA projection |
+| [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md) | `Triangle` | cohort × dev (2D) | SA, ED, CL projection |
 | [`build_calendar()`](https://seokhoonj.github.io/lossratio/reference/build_calendar.md) | `Calendar` | calendar period (1D) | Calendar-year trend, diagonal effect |
 | [`build_total()`](https://seokhoonj.github.io/lossratio/reference/build_total.md) | `Total` | portfolio total (per group) | High-level loss-ratio comparison |
 
@@ -140,14 +140,14 @@ on-leveling event) - Portfolio monitoring dashboards
 
 ``` r
 
-plot(cal)                           # x = calendar
+plot(cal)                       # x axis: calendar
 ```
 
 ![](aggregation-frameworks_files/figure-html/unnamed-chunk-4-1.png)
 
 ``` r
 
-plot(cal, x_by = "dev")         # x = sequential index
+plot(cal, x_by = "dev")         # x axis: sequential index
 ```
 
 ![](aggregation-frameworks_files/figure-html/unnamed-chunk-4-2.png)

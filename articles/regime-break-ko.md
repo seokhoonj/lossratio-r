@@ -212,7 +212,7 @@ ultimate 추정도 post-break 데이터로 전이되므로, 사용자는 이 점
 - [`fit_lr`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
   — 손해율 추정 통합 인터페이스.
 - [백테스트
-  vignette](https://seokhoonj.github.io/lossratio/articles/backtest-ko.md)
-  — `recent`, `regime_break` 가 결과에 미치는 영향을 진단하는 도구.
+  문서](https://seokhoonj.github.io/lossratio/articles/backtest-ko.md) —
+  `recent`, `regime_break` 가 결과에 미치는 영향을 진단하는 도구.
 - [`detect_cohort_regime`](https://seokhoonj.github.io/lossratio/reference/detect_cohort_regime.md)
   — 코호트 단위 break date 자동 검출.

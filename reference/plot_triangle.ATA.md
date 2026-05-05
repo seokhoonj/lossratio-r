@@ -24,6 +24,7 @@ plot_triangle(
   theme = c("view", "save", "shiny"),
   nrow = NULL,
   ncol = NULL,
+  x.angle = 90,
   ...
 )
 ```
@@ -95,6 +96,11 @@ plot_triangle(
 
   Number of rows and columns for
   [`ggplot2::facet_wrap()`](https://ggplot2.tidyverse.org/reference/facet_wrap.html).
+
+- x.angle:
+
+  Numeric angle for x-axis tick labels. Default is `90` to prevent
+  overlap of the `from-to` link labels.
 
 - ...:
 

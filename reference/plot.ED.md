@@ -16,6 +16,7 @@ plot(
   nrow = NULL,
   ncol = NULL,
   theme = c("view", "save", "shiny"),
+  x.angle = 90,
   ...
 )
 ```
@@ -45,6 +46,11 @@ plot(
 - theme:
 
   Theme string.
+
+- x.angle:
+
+  Numeric angle for x-axis tick labels. Default is `90` to prevent
+  overlap of the `from-to` link labels.
 
 - ...:
 

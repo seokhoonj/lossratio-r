@@ -14,6 +14,7 @@ plot_triangle(
   theme = c("view", "save", "shiny"),
   nrow = NULL,
   ncol = NULL,
+  x.angle = 90,
   ...
 )
 ```
@@ -43,6 +44,11 @@ plot_triangle(
 - nrow, ncol:
 
   Facet dimensions.
+
+- x.angle:
+
+  Numeric angle for x-axis tick labels. Default is `90` to prevent
+  overlap of the `from-to` link labels.
 
 - ...:
 

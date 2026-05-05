@@ -1,4 +1,4 @@
-# Triangle and ata diagnostics
+# Triangle and ATA diagnostics
 
 Before fitting a chain ladder or loss-ratio model, it pays to inspect
 the underlying triangle. This vignette covers the diagnostic tools in
@@ -176,25 +176,26 @@ plot(ata, type = "point")         # scatter of observed ata per link
 
 ![](triangle-diagnostics_files/figure-html/unnamed-chunk-6-5.png)
 
-### Triangle of ata factors
+### Triangle of ATA factors
 
 ``` r
 
-plot_triangle(ata)                                # heatmap of observed factors
+la <- list(size = 3)                              # shrink labels
+plot_triangle(ata, label_args = la)               # heatmap of observed factors
 ```
 
 ![](triangle-diagnostics_files/figure-html/unnamed-chunk-7-1.png)
 
 ``` r
 
-plot_triangle(ata, label_style = "detail")        # factor + (loss / rp) amounts
+plot_triangle(ata, label_args = la, label_style = "detail")  # factor + (loss / rp) amounts
 ```
 
 ![](triangle-diagnostics_files/figure-html/unnamed-chunk-7-2.png)
 
 ``` r
 
-plot_triangle(ata, show_maturity = TRUE)          # overlay maturity line
+plot_triangle(ata, label_args = la, show_maturity = TRUE)    # overlay maturity line
 ```
 
 ![](triangle-diagnostics_files/figure-html/unnamed-chunk-7-3.png)

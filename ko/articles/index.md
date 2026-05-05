@@ -2,9 +2,9 @@
 
 ### 한국어
 
-- [집계 프레임워크: triangle, calendar,
-  total](https://seokhoonj.github.io/lossratio/ko/articles/aggregation-frameworks-ko.md):
-- [Triangle 및 ata
+- [집계 프레임워크: Triangle, Calendar,
+  Total](https://seokhoonj.github.io/lossratio/ko/articles/aggregation-frameworks-ko.md):
+- [Triangle 과 ATA
   진단](https://seokhoonj.github.io/lossratio/ko/articles/triangle-diagnostics-ko.md):
 - [손해율 추정 방법론: SA, ED,
   CL](https://seokhoonj.github.io/lossratio/ko/articles/loss-ratio-methods-ko.md):

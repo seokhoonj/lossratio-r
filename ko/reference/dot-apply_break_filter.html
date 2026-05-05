@@ -27,7 +27,7 @@ with dev_var &amp;gt; dev_max are kept regardless of cohort."><meta property="og
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks-ko.html">집계 프레임워크</a></li>
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics-ko.html">Triangle 및 ata 진단</a></li>
     <li><a class="dropdown-item" href="../articles/loss-ratio-methods-ko.html">손해율 추정 방법론</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">LR 안정성</a></li>
+    <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">손해율 수렴</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection-ko.html">Regime 탐지</a></li>
     <li><a class="dropdown-item" href="../articles/regime-break-ko.html">Regime break 필터링</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
@@ -66,8 +66,8 @@ with <code>dev_var &gt; dev_max</code> are kept regardless of cohort.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.apply_break_filter</span><span class="op">(</span></span>
 <span>  <span class="va">dt</span>,</span>
 <span>  <span class="va">break_date</span>,</span>
-<span>  grp_var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
-<span>  <span class="va">coh_var</span>,</span>
+<span>  group_var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
+<span>  <span class="va">cohort_var</span>,</span>
 <span>  <span class="va">dev_var</span>,</span>
 <span>  dev_max <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -89,11 +89,11 @@ with <code>dev_var &gt; dev_max</code> are kept regardless of cohort.</p>
 </ul></dd>
 
 
-<dt id="arg-grp-var">grp_var<a class="anchor" aria-label="anchor" href="#arg-grp-var"></a></dt>
+<dt id="arg-group-var">group_var<a class="anchor" aria-label="anchor" href="#arg-group-var"></a></dt>
 <dd><p>Character vector of group columns (may be empty).</p></dd>
 
 
-<dt id="arg-coh-var">coh_var<a class="anchor" aria-label="anchor" href="#arg-coh-var"></a></dt>
+<dt id="arg-cohort-var">cohort_var<a class="anchor" aria-label="anchor" href="#arg-cohort-var"></a></dt>
 <dd><p>Single column name for the cohort variable.</p></dd>
 
 

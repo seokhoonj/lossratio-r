@@ -13,9 +13,10 @@
 
 [`find_lr_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/find_lr_convergence.md)
 는 **수렴점**(convergence point) $`k^{**}`$ 를 검출한다 — projected loss
-ratio 가 예측적으로 수렴한 첫 평가 시점 $`v \ge k^*`$. $`k^*`$ (성숙점,
+ratio 가 예측적으로 수렴한 첫 평가 시점 $`v \ge k^*`$. 성숙점(maturity
+point) $`k^*`$ —
 [`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/find_ata_maturity.md)
-산출) 의 자연스러운 짝이다: $`k^*`$ 는 link factor $`f_k`$ 가 재현
+가 산출 — 의 자연스러운 짝이다: $`k^*`$ 는 link factor $`f_k`$ 가 재현
 가능해지는 시점, $`k^{**}`$ 는 모형 출력 자체가 새 데이터에도 거의
 움직이지 않는 시점. 장기 건강보험 portfolio 는 $`k^*`$ 를 일찍 지나도
 $`k^{**}`$ 에 한참 못 미칠 수 있다.
@@ -222,5 +223,4 @@ $`\hat{D}_v`$ 가 $`\tau \approx 0.05`$ 이하로 떨어지는 경우는 단일 
   [`?find_ata_maturity`](https://seokhoonj.github.io/lossratio/ko/reference/find_ata_maturity.md),
   [`?backtest`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md),
   [`?detect_cohort_regime`](https://seokhoonj.github.io/lossratio/ko/reference/detect_cohort_regime.md).
-- vignette `regime-detection-ko` — 위 워크플로 1단계의 코호트 동질성
-  진단.
+- `regime-detection-ko` 문서 — 위 워크플로 1단계의 코호트 동질성 진단.

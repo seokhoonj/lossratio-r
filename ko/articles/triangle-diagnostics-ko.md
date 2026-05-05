@@ -1,17 +1,17 @@
-# Triangle 및 ata 진단
+# Triangle 과 ATA 진단
 
-> 영어 원본 보기: [Triangle and ata
+> 영어 원본 보기: [Triangle and ATA
 > diagnostics](https://seokhoonj.github.io/lossratio/ko/triangle-diagnostics.md)
 
 chain ladder 또는 손해율 모형을 적합하기 전에 기반이 되는 triangle 을
-살펴보는 것이 효율적이다. 이 vignette 는 코호트 발전 양상, age-to-age
-인자의 안정성, 성숙점 탐지를 이해하기 위한 `lossratio` 의 진단 도구를
-다룬다.
+살펴보는 것이 효율적이다. 이 문서는 코호트 발전 양상, age-to-age 인자의
+안정성, 성숙점(maturity point) 탐지를 이해하기 위한 `lossratio` 의 진단
+도구를 다룬다.
 
-## Triangle 수준 진단
+## Triangle 진단
 
-이 vignette 은 간결성을 위해 `SUR` 그룹만 사용한다 — 모든 절차는 다중
-그룹 입력에도 그대로 일반화된다.
+이 문서는 간결성을 위해 `SUR` 그룹만 사용한다 — 모든 절차는 다중 그룹
+입력에도 그대로 일반화된다.
 
 ``` r
 
@@ -178,25 +178,26 @@ plot(ata, type = "point")         # 링크별 관측 ata 의 산점도
 
 ![](triangle-diagnostics-ko_files/figure-html/unnamed-chunk-6-5.png)
 
-### ata 인자의 triangle
+### ATA 인자의 Triangle
 
 ``` r
 
-plot_triangle(ata)                                # 관측 인자 히트맵
+la <- list(size = 3)                              # 라벨 크기 줄임
+plot_triangle(ata, label_args = la)               # 관측 인자 히트맵
 ```
 
 ![](triangle-diagnostics-ko_files/figure-html/unnamed-chunk-7-1.png)
 
 ``` r
 
-plot_triangle(ata, label_style = "detail")        # 인자 + (loss / rp) 금액
+plot_triangle(ata, label_args = la, label_style = "detail")  # 인자 + (loss / rp) 금액
 ```
 
 ![](triangle-diagnostics-ko_files/figure-html/unnamed-chunk-7-2.png)
 
 ``` r
 
-plot_triangle(ata, show_maturity = TRUE)          # 성숙점 라인 overlay
+plot_triangle(ata, label_args = la, show_maturity = TRUE)    # 성숙점 라인 overlay
 ```
 
 ![](triangle-diagnostics-ko_files/figure-html/unnamed-chunk-7-3.png)

@@ -35,7 +35,7 @@ rank(cohort) + dev - 1 &amp;gt; max(rank(cohort) + dev - 1) - recent."><meta pro
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks-ko.html">집계 프레임워크</a></li>
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics-ko.html">Triangle 및 ata 진단</a></li>
     <li><a class="dropdown-item" href="../articles/loss-ratio-methods-ko.html">손해율 추정 방법론</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">LR 안정성</a></li>
+    <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">손해율 수렴</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection-ko.html">Regime 탐지</a></li>
     <li><a class="dropdown-item" href="../articles/regime-break-ko.html">Regime break 필터링</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
@@ -78,8 +78,8 @@ to the group-wise long-form condition
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.apply_recent_filter</span><span class="op">(</span></span>
 <span>  <span class="va">dt</span>,</span>
 <span>  <span class="va">recent</span>,</span>
-<span>  grp_var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
-<span>  <span class="va">coh_var</span>,</span>
+<span>  group_var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
+<span>  <span class="va">cohort_var</span>,</span>
 <span>  <span class="va">dev_var</span>,</span>
 <span>  dev_min <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -98,11 +98,11 @@ to the group-wise long-form condition
 is returned unchanged.</p></dd>
 
 
-<dt id="arg-grp-var">grp_var<a class="anchor" aria-label="anchor" href="#arg-grp-var"></a></dt>
+<dt id="arg-group-var">group_var<a class="anchor" aria-label="anchor" href="#arg-group-var"></a></dt>
 <dd><p>Character vector of group columns (may be empty).</p></dd>
 
 
-<dt id="arg-coh-var">coh_var<a class="anchor" aria-label="anchor" href="#arg-coh-var"></a></dt>
+<dt id="arg-cohort-var">cohort_var<a class="anchor" aria-label="anchor" href="#arg-cohort-var"></a></dt>
 <dd><p>Single column name for the cohort variable (e.g. <code>cohort</code>).</p></dd>
 
 

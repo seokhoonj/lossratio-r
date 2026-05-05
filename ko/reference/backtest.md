@@ -5,10 +5,12 @@ Hold out the latest `holdout` calendar diagonals from the input
 cells, and compare the projection to the actual values that were
 withheld.
 
-The Actual-Expected Gap (AEG) is computed cell-wise as \$\$aeg =
-\frac{value\_{proj}}{value\_{actual}} - 1\$\$ and aggregated by
-development period (`col_summary`) and by calendar diagonal
-(`diag_summary`).
+The Actual-Expected Gap (AEG) follows the standard actuarial A/E
+convention and is computed cell-wise as \$\$aeg =
+\frac{value\_{actual}}{value\_{proj}} - 1\$\$ so that positive values
+flag under-projection (actual exceeded expected) and negative values
+flag over-projection. Aggregated by development period (`col_summary`)
+and by calendar diagonal (`diag_summary`).
 
 ## Usage
 

@@ -16,8 +16,8 @@ the group-wise long-form condition
 .apply_recent_filter(
   dt,
   recent,
-  grp_var = character(0),
-  coh_var,
+  group_var = character(0),
+  cohort_var,
   dev_var,
   dev_min = NULL
 )
@@ -34,11 +34,11 @@ the group-wise long-form condition
   Positive integer or `NULL`. When `NULL` or missing, `dt` is returned
   unchanged.
 
-- grp_var:
+- group_var:
 
   Character vector of group columns (may be empty).
 
-- coh_var:
+- cohort_var:
 
   Single column name for the cohort variable (e.g. `cohort`).
 

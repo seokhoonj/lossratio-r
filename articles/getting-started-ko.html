@@ -44,11 +44,11 @@
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks.html">Aggregation frameworks</a></li>
     <li><a class="dropdown-item" href="../articles/loss-ratio-methods.html">Loss-ratio projection methods</a></li>
     <li><a class="dropdown-item" href="../articles/chain-ladder.html">Chain ladder</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ata diagnostics</a></li>
+    <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ATA diagnostics</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection.html">Regime detection</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/regime-break.html">Regime break filtering</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence.html">LR stability</a></li>
+    <li><a class="dropdown-item" href="../articles/lr-convergence.html">LR convergence</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -85,7 +85,7 @@
 <p>영어 원본 보기: <a href="../getting-started.html">Getting started
 with lossratio</a></p>
 </blockquote>
-<p>이 vignette 은 <code>lossratio</code> 의 전체 파이프라인을 내장 합성
+<p>이 문서는 <code>lossratio</code> 의 전체 파이프라인을 내장 합성
 experience 데이터 위에서 따라간다. raw long-format 행에서 시작하여
 적합된 손해율 추정까지 이어진다.</p>
 <div class="section level2">
@@ -356,8 +356,8 @@ calendar / underwriting 기간 컬럼, 인구통계 차원 (<code>cv_nm</code>,
 <span><span class="co">#&gt; 30:          0.0           NA</span></span>
 <span><span class="co">#&gt;               se           cv</span></span>
 <span><span class="co">#&gt;            &lt;num&gt;        &lt;num&gt;</span></span></code></pre></div>
-<p><code><a href="../reference/fit_lr.html">fit_lr()</a></code> 은 손해율 추정을 수행한다. 기본값
-<code>method = "sa"</code> (단계 적응적(stage-adaptive)) 는
+<p><code><a href="../reference/fit_lr.html">fit_lr()</a></code> 은 손해율 추정을 수행한다. 기본값으로 사용되는
+단계 적응적(stage-adaptive) 방식 (<code>method = "sa"</code>) 은
 성숙점(maturity point) 이전에는 노출 기반 방식, 성숙점 이후에는 chain
 ladder 를 적용한다. 전환 지점은 ata 인자에서 그룹별로 탐지된
 성숙점이다.</p>

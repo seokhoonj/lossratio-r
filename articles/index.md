@@ -2,8 +2,8 @@
 
 ### Workflow
 
-- [Aggregation frameworks: triangle, calendar,
-  total](https://seokhoonj.github.io/lossratio/articles/aggregation-frameworks.md):
+- [Aggregation frameworks: Triangle, Calendar,
+  Total](https://seokhoonj.github.io/lossratio/articles/aggregation-frameworks.md):
 
 ### Methods
 
@@ -11,7 +11,7 @@
   CL](https://seokhoonj.github.io/lossratio/articles/loss-ratio-methods.md):
 - [Chain ladder reserving with
   fit_cl](https://seokhoonj.github.io/lossratio/articles/chain-ladder.md):
-- [Triangle and ata
+- [Triangle and ATA
   diagnostics](https://seokhoonj.github.io/lossratio/articles/triangle-diagnostics.md):
 - [Detecting regime shifts across underwriting
   cohorts](https://seokhoonj.github.io/lossratio/articles/regime-detection.md):

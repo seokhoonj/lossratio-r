@@ -29,11 +29,11 @@ Mask precedence: held_out &amp;gt; fit_data &amp;gt; excluded &amp;gt; future.'>
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks.html">Aggregation frameworks</a></li>
     <li><a class="dropdown-item" href="../articles/loss-ratio-methods.html">Loss-ratio projection methods</a></li>
     <li><a class="dropdown-item" href="../articles/chain-ladder.html">Chain ladder</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ata diagnostics</a></li>
+    <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ATA diagnostics</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection.html">Regime detection</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/regime-break.html">Regime break filtering</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence.html">LR stability</a></li>
+    <li><a class="dropdown-item" href="../articles/lr-convergence.html">LR convergence</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -92,7 +92,11 @@ forms as <code><a href="fit_lr.html">fit_lr()</a></code> (<code>NULL</code>, <co
 
 <dt id="arg-holdout">holdout<a class="anchor" aria-label="anchor" href="#arg-holdout"></a></dt>
 <dd><p>Optional positive integer. When supplied, the last
-<code>holdout</code> calendar diagonals are flagged <code>"held_out"</code>.</p></dd>
+<code>holdout</code> calendar diagonals are flagged <code>"held_out"</code>. The <code>recent</code>
+filter is then evaluated against the post-holdout boundary so the
+recent wedge sits <em>before</em> the held_out wedge (no overlap), matching
+<code><a href="backtest.html">backtest()</a></code> semantics — <code>fit_fn(masked, recent = N, ...)</code> operates
+on the masked triangle whose own max_cal is <code>original - holdout</code>.</p></dd>
 
 
 <dt id="arg-mat-k">mat_k<a class="anchor" aria-label="anchor" href="#arg-mat-k"></a></dt>
