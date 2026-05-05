@@ -836,7 +836,11 @@ plot.Total <- function(x,
 #'   forms as [fit_lr()] (`NULL`, `Date`, character, vector, or
 #'   `CohortRegime`).
 #' @param holdout Optional positive integer. When supplied, the last
-#'   `holdout` calendar diagonals are flagged `"held_out"`.
+#'   `holdout` calendar diagonals are flagged `"held_out"`. The `recent`
+#'   filter is then evaluated against the post-holdout boundary so the
+#'   recent wedge sits *before* the held_out wedge (no overlap), matching
+#'   `backtest()` semantics — `fit_fn(masked, recent = N, ...)` operates
+#'   on the masked triangle whose own max_cal is `original - holdout`.
 #' @param mat_k Optional integer. When both `recent` and `regime_break`
 #'   are provided, the hybrid mask uses `mat_k` as the maturity switch:
 #'   cells with `dev <= mat_k` apply the cohort cut, cells with
@@ -900,15 +904,20 @@ plot.Total <- function(x,
     expanded[, .max_cal := max(.cal_idx[is_observed], na.rm = TRUE)]
   }
 
-  # held-out flag
+  # held-out flag, plus an effective max-cal for fit-data filters that
+  # excludes the held_out region — this matches `backtest()` semantics,
+  # where `fit_fn(masked, recent = N, ...)` operates on the masked
+  # triangle whose own max_cal is `original_max_cal - holdout`.
   if (!is.null(holdout)) {
     if (!is.numeric(holdout) || length(holdout) != 1L ||
         is.na(holdout) || holdout < 1L)
       stop("`holdout` must be a single positive integer.", call. = FALSE)
     holdout <- as.integer(holdout)
     expanded[, is_held_out := is_observed & .cal_idx > .max_cal - holdout]
+    expanded[, .max_cal_fit := .max_cal - holdout]
   } else {
     expanded[, is_held_out := FALSE]
+    expanded[, .max_cal_fit := .max_cal]
   }
 
   # resolve regime break date
@@ -925,25 +934,35 @@ plot.Total <- function(x,
     recent <- as.integer(recent)
   }
 
+  if (!is.null(mat_k)) {
+    if (!is.numeric(mat_k) || length(mat_k) != 1L || is.na(mat_k))
+      stop("`mat_k` must be a single non-missing numeric value.",
+           call. = FALSE)
+  }
+
   if (has_recent && has_break) {
     # hybrid: cohort cut on dev <= mat_k, calendar cut on dev > mat_k.
     # when mat_k is NULL, fall back to both filters jointly.
     if (!is.null(mat_k)) {
-      if (!is.numeric(mat_k) || length(mat_k) != 1L || is.na(mat_k))
-        stop("`mat_k` must be a single non-missing numeric value.",
-             call. = FALSE)
       expanded[, .pass_filter := (
         (dev <= mat_k & cohort >= bd) |
-        (dev >  mat_k & .cal_idx > .max_cal - recent)
+        (dev >  mat_k & .cal_idx > .max_cal_fit - recent)
       )]
     } else {
       expanded[, .pass_filter := (cohort >= bd) &
-                                  (.cal_idx > .max_cal - recent)]
+                                  (.cal_idx > .max_cal_fit - recent)]
     }
   } else if (has_recent) {
-    expanded[, .pass_filter := .cal_idx > .max_cal - recent]
+    expanded[, .pass_filter := .cal_idx > .max_cal_fit - recent]
   } else if (has_break) {
-    expanded[, .pass_filter := cohort >= bd]
+    # SA semantics: cohort cut applies only on dev <= mat_k; CL region
+    # (dev > mat_k) keeps all cohorts. When mat_k is NULL, fall back to a
+    # simple cohort cut across all dev.
+    if (!is.null(mat_k)) {
+      expanded[, .pass_filter := (dev > mat_k) | (cohort >= bd)]
+    } else {
+      expanded[, .pass_filter := cohort >= bd]
+    }
   } else {
     expanded[, .pass_filter := TRUE]
   }
@@ -962,7 +981,7 @@ plot.Total <- function(x,
     levels = c("fit_data", "held_out", "excluded", "future")
   )]
 
-  expanded[, .pass_filter := NULL]
+  expanded[, c(".pass_filter", ".max_cal_fit") := NULL]
   expanded[]
 }
 
@@ -987,11 +1006,13 @@ plot.Total <- function(x,
   dev_var <- attr(x, "dev_var")
   if (is.null(grp_var)) grp_var <- character(0)
 
-  # 2-pass maturity detection for hybrid mode
+  # 2-pass maturity detection: needed whenever regime_break is set, so the
+  # SA-mode dev split (cohort cut on dev <= k*; CL region unfiltered, or
+  # recent wedge on dev > k* when `recent` is also set) is reflected.
   mat_k <- NULL
   bd <- if (!is.null(regime_break)) .resolve_break_date(regime_break) else NULL
 
-  if (!is.null(recent) && !is.null(bd)) {
+  if (!is.null(bd)) {
     margs <- if (is.null(maturity_args)) list() else maturity_args
     ata_for_mat <- build_ata(x, value_var = value_var)
     fit_for_mat <- tryCatch(
