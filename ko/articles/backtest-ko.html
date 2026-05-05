@@ -42,9 +42,9 @@
 <li><a class="dropdown-item" href="../articles/index.html">전체 글</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks-ko.html">집계 프레임워크</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-diagnostics-ko.html">Triangle 및 ata 진단</a></li>
-    <li><a class="dropdown-item" href="../articles/loss-ratio-methods-ko.html">손해율 추정 방법론</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">손해율 수렴</a></li>
+    <li><a class="dropdown-item" href="../articles/triangle-diagnostics-ko.html">Triangle 과 ATA 진단</a></li>
+    <li><a class="dropdown-item" href="../articles/loss-ratio-methods-ko.html">손해율 예측 방법론</a></li>
+    <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">예측 손해율 수렴 탐지</a></li>
     <li><a class="dropdown-item" href="../articles/regime-detection-ko.html">Regime 탐지</a></li>
     <li><a class="dropdown-item" href="../articles/regime-break-ko.html">Regime break 필터링</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
@@ -125,7 +125,7 @@ actuarial A/E 관용에 맞춰
 <span><span class="co">#&gt;   holdout     : 6 calendar diagonals</span></span>
 <span><span class="co">#&gt;   held-out    : 123 cells</span></span>
 <span><span class="co">#&gt;   AEG         : mean -13.05% / median -7.28%</span></span></code></pre></div>
-<p>기본 적합 함수는 단계 적응적(stage-adaptive, SA) 손해율 추정
+<p>기본 적합 함수는 단계 적응형(stage-adaptive, SA) 손해율 추정
 (<code>fit_lr(method = "sa")</code>) 이며, 기본 비교 컬럼은
 <code>value_var = "clr"</code> 이다 (누적 손해율). 반환되는 객체는
 <code>"Backtest"</code> 리스트이며, 주요 슬롯은 다음과 같다.</p>

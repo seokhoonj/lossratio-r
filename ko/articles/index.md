@@ -6,7 +6,7 @@
   Total](https://seokhoonj.github.io/lossratio/ko/articles/aggregation-frameworks-ko.md):
 - [Triangle 과 ATA
   진단](https://seokhoonj.github.io/lossratio/ko/articles/triangle-diagnostics-ko.md):
-- [손해율 추정 방법론: SA, ED,
+- [손해율 예측 방법론: SA, ED,
   CL](https://seokhoonj.github.io/lossratio/ko/articles/loss-ratio-methods-ko.md):
 - [find_lr_convergence() 로 예측 손해율 수렴 시점
   진단](https://seokhoonj.github.io/lossratio/ko/articles/lr-convergence-ko.md):

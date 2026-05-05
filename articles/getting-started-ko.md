@@ -299,7 +299,7 @@ summary(cl)
 
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
 은 손해율 추정을 수행한다. 기본값으로 사용되는 단계
-적응적(stage-adaptive) 방식 (`method = "sa"`) 은 성숙점(maturity point)
+적응형(stage-adaptive) 방식 (`method = "sa"`) 은 성숙점(maturity point)
 이전에는 노출 기반 방식, 성숙점 이후에는 chain ladder 를 적용한다. 전환
 지점은 ata 인자에서 그룹별로 탐지된 성숙점이다.
 

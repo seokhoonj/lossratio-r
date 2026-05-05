@@ -39,7 +39,7 @@ print(bt)
 #>   AEG         : mean -13.05% / median -7.28%
 ```
 
-기본 적합 함수는 단계 적응적(stage-adaptive, SA) 손해율 추정
+기본 적합 함수는 단계 적응형(stage-adaptive, SA) 손해율 추정
 (`fit_lr(method = "sa")`) 이며, 기본 비교 컬럼은 `value_var = "clr"`
 이다 (누적 손해율). 반환되는 객체는 `"Backtest"` 리스트이며, 주요 슬롯은
 다음과 같다.
