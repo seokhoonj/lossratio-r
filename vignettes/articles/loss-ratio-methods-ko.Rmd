@@ -1,8 +1,8 @@
 ---
-title: "손해율 추정 방법론: SA, ED, CL"
+title: "손해율 예측 방법론: SA, ED, CL"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{손해율 추정 방법론: SA, ED, CL}
+  %\VignetteIndexEntry{손해율 예측 방법론: SA, ED, CL}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
