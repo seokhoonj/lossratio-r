@@ -89,7 +89,7 @@ reference:
 
 - title: 예측
   desc: >
-    chain ladder 와 손해율 예측. `fit_lr` 은 세 가지 method 지원 —
+    chain ladder 와 손해율 추정. `fit_lr` 은 세 가지 method 지원 —
     `"sa"` (단계 적응형, default), `"ed"`, `"cl"`.
   contents:
   - fit_cl

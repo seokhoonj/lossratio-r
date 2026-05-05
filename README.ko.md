@@ -23,7 +23,7 @@
     (`Triangle`), 달력 기간 (`Calendar`), 포트폴리오 전체
     (`Total`)
 -   age-to-age (`ATA`) 와 노출 기반 (`ED`) 의 경과 기간 모형화
--   chain ladder 예측 (`fit_cl`) 과 손해율 예측 (`fit_lr`),
+-   chain ladder 추정 (`fit_cl`) 과 손해율 추정 (`fit_lr`),
     세 가지 method 지원:
     -   `"sa"` — **단계 적응형** (기본값): 성숙점 이전은 노출 기반,
         이후는 chain ladder
@@ -121,7 +121,7 @@ detect_cohort_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
 -   성숙점 이전: 노출 기반 추정
     $\Delta C^L = g_k \cdot C^P_k$ — 연속 발달비가 변동성이 큰 구간에서
     추정값을 보험료 규모에 고정한다.
--   성숙점 이후: chain ladder 예측
+-   성숙점 이후: chain ladder 추정
     $C^L_{k+1} = f_k \cdot C^L_k$ — 연속 발달비가 안정된 이후 코호트의
     관측 수준을 보존한다.
 
