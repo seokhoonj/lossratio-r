@@ -528,7 +528,7 @@ plot_triangle.ATA <- function(x,
   label_args <- utils::modifyList(
     list(
       family = getOption("ggshort.font"),
-      size   = 4,
+      size   = 3.88,
       angle  = 0,
       hjust  = 0.5,
       vjust  = 0.5,
@@ -584,11 +584,12 @@ plot_triangle.ATA <- function(x,
       y           = -Inf,
       hjust       = 1.05,
       vjust       = -0.05,
-      size        = 3,
+      family      = label_args$family,
+      size        = label_args$size,
+      color       = label_args$color,
       label.size  = 0.3,
       fill        = "white",
       alpha       = 0.8,
-      family      = getOption("ggshort.font"),
       inherit.aes = FALSE
     )
   }

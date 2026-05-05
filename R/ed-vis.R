@@ -256,7 +256,7 @@ plot_triangle.ED <- function(x,
 
   # 5) resolve label_args
   label_args <- utils::modifyList(
-    list(family = getOption("ggshort.font"), size = 4,
+    list(family = getOption("ggshort.font"), size = 3.88,
          angle = 0, hjust = 0.5, vjust = 0.5, color = "black"),
     label_args
   )
