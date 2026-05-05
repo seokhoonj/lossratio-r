@@ -102,7 +102,7 @@ plot.ATA <- function(x,
     )
   }
 
-  .add_shade <- function(p) {
+  .add_shade <- function(p, ymax = Inf) {
     if (is.null(mat) || !nrow(mat)) return(p)
 
     shade <- if (length(grp_var)) {
@@ -120,7 +120,7 @@ plot.ATA <- function(x,
         xmin = ata_from,
         xmax =  Inf,
         ymin = -Inf,
-        ymax = cv_threshold
+        ymax = ymax
       ),
       fill        = "#AED6F1",
       alpha       = 0.25,
@@ -187,7 +187,7 @@ plot.ATA <- function(x,
       .x_scale()
 
     # maturity overlays
-    p <- .add_shade(p)
+    p <- .add_shade(p, ymax = cv_threshold)
     p <- .add_vline(p)
     p <- .add_label(p)
 
@@ -222,7 +222,7 @@ plot.ATA <- function(x,
       .x_scale()
 
     # maturity overlays
-    p <- .add_shade(p)
+    p <- .add_shade(p, ymax = rse_threshold)
     p <- .add_vline(p)
     p <- .add_label(p)
 
