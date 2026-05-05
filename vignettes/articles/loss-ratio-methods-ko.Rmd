@@ -37,7 +37,7 @@ knitr::opts_chunk$set(
 - 성숙점(maturity point) $m_g$ — 그룹 $g$ 에서 $f_k$ 가 안정화되는
   dev (CV / RSE 임계값으로 탐지)
 
-## 방법 1: 단계 적응적(stage-adaptive, SA) (`"sa"`, 기본값)
+## 방법 1: 단계 적응형(stage-adaptive, SA) (`"sa"`, 기본값)
 
 기본 방법은 $f_k$ 가 초반에는 변동성이 크고 후반에는 안정적이라는
 사실, 그리고 $g_k$ 는 그 반대로 움직인다는 사실을 활용한다. SA 는

@@ -11,7 +11,7 @@
 연속 발달비(age-to-age)는 불안정하며, 익스포저(≈ 위험보험료)가
 추정의 가장 신뢰할 만한 기준이 된다. 또한 상품 개정, 인수 기준 변경,
 규제 개혁에서 비롯된 구조적 변화(structural break)가 코호트에 걸쳐
-누적된다. 이 패키지의 기본값 — 단계 적응적(stage-adaptive, SA)
+누적된다. 이 패키지의 기본값 — 단계 적응형(stage-adaptive, SA)
 추정, 초기 경과 기간의 노출 기반(exposure-driven, ED) 모형,
 코호트 regime(체제) 탐지 — 은 이러한 환경에 맞게 조정되어 있다.
 동일한 도구는 누적 손해 / 익스포저 구조라면 어떤 영역에도
@@ -23,9 +23,9 @@
     (`Triangle`), 달력 기간 (`Calendar`), 포트폴리오 전체
     (`Total`)
 -   age-to-age (`ATA`) 와 노출 기반 (`ED`) 의 경과 기간 모형화
--   chain ladder 추정 (`fit_cl`) 과 손해율 추정 (`fit_lr`),
+-   chain ladder 예측 (`fit_cl`) 과 손해율 예측 (`fit_lr`),
     세 가지 method 지원:
-    -   `"sa"` — **단계 적응적** (기본값): 성숙점 이전은 노출 기반,
+    -   `"sa"` — **단계 적응형** (기본값): 성숙점 이전은 노출 기반,
         이후는 chain ladder
     -   `"ed"` — 모든 경과 기간에 대해 노출 기반
     -   `"cl"` — 고전적 chain ladder (Mack 모형)
@@ -113,7 +113,7 @@ detect_cohort_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
 
 ## Methods
 
-### 단계 적응적
+### 단계 적응형
 
 `fit_lr(method = "sa")` (기본값). 노출 기반과 chain ladder 의 결합으로,
 그룹별 성숙점에서 전환된다:
@@ -121,7 +121,7 @@ detect_cohort_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
 -   성숙점 이전: 노출 기반 추정
     $\Delta C^L = g_k \cdot C^P_k$ — 연속 발달비가 변동성이 큰 구간에서
     추정값을 보험료 규모에 고정한다.
--   성숙점 이후: chain ladder 추정
+-   성숙점 이후: chain ladder 예측
     $C^L_{k+1} = f_k \cdot C^L_k$ — 연속 발달비가 안정된 이후 코호트의
     관측 수준을 보존한다.
 

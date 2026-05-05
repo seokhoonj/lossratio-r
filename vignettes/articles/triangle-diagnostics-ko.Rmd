@@ -114,7 +114,7 @@ plot_triangle(ata, label_args = la, show_maturity = TRUE)    # 성숙점 라인 
 
 ## 성숙점 탐지
 
-성숙점(maturity point) 은 age-to-age 인자가 chain ladder 추정에 신뢰할 만큼
+성숙점(maturity point) 은 age-to-age 인자가 chain ladder 예측에 신뢰할 만큼
 안정화되는 경과 기간 링크이다. `fit_lr(method = "sa")` 가 ED 에서 CL 로
 전환할 때 내부적으로 사용한다.
 
