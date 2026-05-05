@@ -1,8 +1,8 @@
 ---
-title: "Aggregation frameworks: triangle, calendar, total"
+title: "Aggregation frameworks: Triangle, Calendar, Total"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Aggregation frameworks: triangle, calendar, total}
+  %\VignetteIndexEntry{Aggregation frameworks: Triangle, Calendar, Total}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -28,7 +28,7 @@ builder per framework. This vignette compares them.
 
 | Builder              | Output object | Dimension                   | When to use                                |
 |----------------------|---------------|-----------------------------|--------------------------------------------|
-| `build_triangle()`   | `Triangle`    | cohort × dev (2D)           | Chain ladder, ED, SA projection        |
+| `build_triangle()`   | `Triangle`    | cohort × dev (2D)           | SA, ED, CL projection                  |
 | `build_calendar()`   | `Calendar`    | calendar period (1D)        | Calendar-year trend, diagonal effect       |
 | `build_total()`      | `Total`       | portfolio total (per group) | High-level loss-ratio comparison           |
 
