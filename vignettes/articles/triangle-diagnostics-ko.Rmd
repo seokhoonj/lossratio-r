@@ -100,7 +100,7 @@ plot(ata, type = "box")           # 링크별 관측 ata 의 boxplot
 plot(ata, type = "point")         # 링크별 관측 ata 의 산점도
 ```
 
-### ata 인자의 triangle
+### ATA 인자의 Triangle
 
 ```{r}
 plot_triangle(ata)                                # 관측 인자 히트맵

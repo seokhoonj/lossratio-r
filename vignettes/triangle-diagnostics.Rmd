@@ -103,7 +103,7 @@ plot(ata, type = "box")           # boxplot of observed ata per link
 plot(ata, type = "point")         # scatter of observed ata per link
 ```
 
-### Triangle of ata factors
+### Triangle of ATA factors
 
 ```{r}
 plot_triangle(ata)                                # heatmap of observed factors
