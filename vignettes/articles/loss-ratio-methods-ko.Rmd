@@ -103,7 +103,7 @@ plot(lr_ed, type = "lr")
 
 ## 방법 3: 고전적 chain ladder (`"cl"`)
 
-고전적 Mack 모형:
+고전적 Mack (1993) 모형:
 
 $$
 \hat{C}^L_{i,k+1} = f_k \cdot \hat{C}^L_{i,k}
