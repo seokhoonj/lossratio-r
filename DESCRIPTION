@@ -19,9 +19,9 @@ Encoding: UTF-8
 LazyData: true
 Depends: R (>= 4.1.0)
 Imports:
-    cli (>= 3.6.0),
-    data.table (>= 1.14.2),
-    ggplot2 (>= 3.3.3),
+    cli (>= 3.0.0),
+    data.table (>= 1.13.0),
+    ggplot2 (>= 3.5.0),
     ggshort,
     instead,
     rlang (>= 1.0.0)
