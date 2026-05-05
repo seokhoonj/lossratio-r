@@ -103,9 +103,10 @@ plot(ata, type = "point")         # 링크별 관측 ata 의 산점도
 ### ATA 인자의 Triangle
 
 ```{r}
-plot_triangle(ata)                                # 관측 인자 히트맵
-plot_triangle(ata, label_style = "detail")        # 인자 + (loss / rp) 금액
-plot_triangle(ata, show_maturity = TRUE)          # 성숙점 라인 overlay
+la <- list(size = 3)                              # 라벨 크기 줄임
+plot_triangle(ata, label_args = la)               # 관측 인자 히트맵
+plot_triangle(ata, label_args = la, label_style = "detail")  # 인자 + (loss / rp) 금액
+plot_triangle(ata, label_args = la, show_maturity = TRUE)    # 성숙점 라인 overlay
 ```
 
 이 히트맵은 각 셀을 자기 링크 내에서 `log(ata / median(ata))` 로 색칠하므로,

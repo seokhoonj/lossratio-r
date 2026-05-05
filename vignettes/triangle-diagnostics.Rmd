@@ -106,9 +106,10 @@ plot(ata, type = "point")         # scatter of observed ata per link
 ### Triangle of ATA factors
 
 ```{r}
-plot_triangle(ata)                                # heatmap of observed factors
-plot_triangle(ata, label_style = "detail")        # factor + (loss / rp) amounts
-plot_triangle(ata, show_maturity = TRUE)          # overlay maturity line
+la <- list(size = 3)                              # shrink labels
+plot_triangle(ata, label_args = la)               # heatmap of observed factors
+plot_triangle(ata, label_args = la, label_style = "detail")  # factor + (loss / rp) amounts
+plot_triangle(ata, label_args = la, show_maturity = TRUE)    # overlay maturity line
 ```
 
 The heatmap colours each cell by `log(ata / median(ata))` within its
