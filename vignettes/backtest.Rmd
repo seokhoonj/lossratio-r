@@ -29,10 +29,11 @@ calendar diagonals from a triangle, refitting the model on the earlier
 portion, and comparing its projection to the actuals that were withheld.
 This is calendar-diagonal hold-out (rather than dev-period hold-out),
 because it simulates "what would the model have said *K* months ago at
-the valuation date?". The cell-level metric is the Actual-Expected Gap,
-$\mathrm{aeg} = v_{\mathrm{pred}} / v_{\mathrm{actual}} - 1$, where
-positive values flag over-projection and negative values flag
-under-projection.
+the valuation date?". The cell-level metric follows the standard
+actuarial A/E convention,
+$\mathrm{aeg} = v_{\mathrm{actual}} / v_{\mathrm{pred}} - 1$, where
+positive values flag under-projection (actual exceeded expected) and
+negative values flag over-projection.
 
 ## Basic usage
 
@@ -83,9 +84,10 @@ head(bt$col_summary, 8)
 ```
 
 `aeg_mean` averages cell-level AEG, `aeg_med` is the median, and
-`aeg_wt = sum(pred - actual) / sum(actual)` is exposure-weighted.
-Comparing the three columns flags whether a few large cells dominate
-(`aeg_wt` very different from `aeg_med`) or the bias is uniform.
+`aeg_wt = sum(actual - pred) / sum(pred)` is the exposure-weighted
+pooled A/E ratio minus 1. Comparing the three columns flags whether
+a few large cells dominate (`aeg_wt` very different from `aeg_med`)
+or the bias is uniform.
 
 **`diag_summary` — calendar-year effect.** A single bad diagonal in
 otherwise unbiased output points at a calendar event (a rate change,
@@ -97,9 +99,10 @@ bt$diag_summary
 ```
 
 A monotone drift across calendar diagonals (as in the SUR example
-above, where AEG becomes increasingly negative across `25, ..., 30`)
-typically indicates that the latest period is running better than the
-earlier-cohort link factors imply.
+above, where AEG becomes increasingly positive across `25, ..., 30`)
+typically indicates that actuals on the latest diagonals are running
+above what the earlier-cohort link factors imply, i.e. a regime shift
+the static model has not absorbed.
 
 **`aeg` — cell-level outliers.** For diagnosing specific cohort × dev
 cells, inspect `bt$aeg` directly:
@@ -124,7 +127,7 @@ bias; `type = "diag"` reveals calendar-year drift; `type = "cell"`
 exposes which cohorts contribute the bias; `plot_triangle()` puts the
 cell-level AEG values on the same triangular layout as
 `plot_triangle()` for the underlying fit, with a red/blue diverging
-palette where red marks over-projection.
+palette where red marks under-projection (actual > pred).
 
 ## Holdout selection
 
