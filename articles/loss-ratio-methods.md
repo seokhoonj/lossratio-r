@@ -195,7 +195,7 @@ plot(lr_ed, type = "lr")
 
 ## Method 3: Classical Chain Ladder (`"cl"`)
 
-Classical Mack model:
+Classical Mack (1993) model:
 
 ``` math
 \hat{C}^L_{i,k+1} = f_k \cdot \hat{C}^L_{i,k}

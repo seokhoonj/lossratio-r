@@ -42,13 +42,14 @@
 <li><a class="dropdown-item" href="../articles/index.html">전체 글</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks-ko.html">집계 프레임워크</a></li>
-    <li><a class="dropdown-item" href="../articles/loss-ratio-methods-ko.html">손해율 추정 방법론</a></li>
-    <li><a class="dropdown-item" href="../articles/chain-ladder-ko.html">Chain ladder</a></li>
     <li><a class="dropdown-item" href="../articles/triangle-diagnostics-ko.html">Triangle 및 ata 진단</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-detection-ko.html">Regime 탐지</a></li>
-    <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-break-ko.html">Regime break 필터링</a></li>
+    <li><a class="dropdown-item" href="../articles/loss-ratio-methods-ko.html">손해율 추정 방법론</a></li>
     <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">LR 안정성</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-detection-ko.html">Regime 탐지</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-break-ko.html">Regime break 필터링</a></li>
+    <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/chain-ladder-ko.html">(참고) Chain ladder를 이용한 준비금 산출</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">참조</a></li>
@@ -153,7 +154,7 @@ f_k \cdot \hat{C}^L_{i,k}              &amp; k \ge m_g \quad \text{(성숙 이�
 <p>사용 시점:</p>
 <ul>
 <li>발달이 여러 해에 걸치는 long-tail 상품.</li>
-<li>최근 코호트(미성숙 데이터)와 오래된 코호트(성숙)가 혼재하는
+<li>최근 코호트(미성숙 데이터)와 오래된 코호트(성숙 데이터)가 혼재하는
 경우.</li>
 <li>성숙 이전·이후의 구조적 차이가 있는 건강보험 코호트 (예: 면책기간
 전환).</li>
@@ -302,7 +303,7 @@ f_k \cdot \hat{C}^L_{i,k}              &amp; k \ge m_g \quad \text{(성숙 이�
 <div class="section level2">
 <h2 id="방법-3-고전적-chain-ladder-cl">방법 3: 고전적 chain ladder (<code>"cl"</code>)<a class="anchor" aria-label="anchor" href="#%EB%B0%A9%EB%B2%95-3-%EA%B3%A0%EC%A0%84%EC%A0%81-chain-ladder-cl"></a>
 </h2>
-<p>고전적 Mack 모형:</p>
+<p>고전적 Mack (1993) 모형:</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mo>=</mo><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>L</mi></msubsup></mrow><annotation encoding="application/x-tex">
 \hat{C}^L_{i,k+1} = f_k \cdot \hat{C}^L_{i,k}
 </annotation></semantics></math></p>

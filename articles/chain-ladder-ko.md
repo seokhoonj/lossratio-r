@@ -1,4 +1,4 @@
-# fit_cl 을 이용한 chain ladder 준비금 산출
+# Chain ladder를 이용한 준비금 산출
 
 > 영어 원본 보기: [Chain ladder reserving with
 > fit_cl](https://seokhoonj.github.io/lossratio/chain-ladder.md)
