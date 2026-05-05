@@ -174,7 +174,7 @@ $`\hat{D}_v`$ 가 $`\tau \approx 0.05`$ 이하로 떨어지는 경우는 단일 
 [`detect_cohort_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_cohort_regime.md)
 으로 그룹을 분리하는 것이 권장된다.
 
-## $`k^*`$ 및 `detect_cohort_regime()` 와의 관계
+## 성숙점 및 regime 탐지와의 관계
 
 세 진단 도구는 서로 다른 질문을 다른 축에서 답한다:
 
