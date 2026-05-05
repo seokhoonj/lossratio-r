@@ -130,8 +130,9 @@ plot_triangle(tri_sur, type = "usage", recent = 12L,
 미관측. 수직 점선은 성숙점 $k^*$, 수평 점선은 regime break 코호트
 경계를 나타낸다.](figs/regime_break_data_usage.png)
 
-hybrid 패널은 사용자가 의도한 dev-축 split — ED 쪽은 수평 컷, CL 쪽은
-대각선 컷이 $k^*$ 에서 만나는 사다리꼴 합집합 — 을 그대로 시각화한다.
+hybrid 패널은 SA 모드가 적용하는 dev-축 split — ED 쪽은 cohort cut,
+CL 쪽은 calendar 대각선 cut 이 $k^*$ 에서 만나는 사다리꼴 합집합 — 을
+그대로 시각화한다.
 
 ## 5. 케이스 스터디 — SUR 그룹
 
@@ -155,17 +156,27 @@ bt_hybrid <- backtest(tri_sur, holdout = 6L, recent = 18L,
 
 | 변종                              | drift (cal30 − cal25) | overall mean |
 |-----------------------------------|-----------------------|--------------|
-| full                              | -4.50pp               | +1.25%       |
-| recent = 18                       | -2.03pp               | +3.45%       |
-| **regime_break + recent = 18**    | **+0.69pp**           | **-0.03%**   |
+| full                              | +4.50pp               | -1.25%       |
+| recent = 18                       | +2.03pp               | -3.45%       |
+| **regime_break + recent = 18**    | **-0.69pp**           | **+0.03%**   |
 
-drift 가 -4.50pp 에서 +0.69pp 로 거의 0 에 수렴하고 overall mean 도
-편향이 사라진다. 사용자가 의도한 "ED 는 수평 컷, CL 은 대각선 컷"
-이라는 dev-축 split 이 정확히 구현된 결과다.
+두 컬럼은 hold-out 대각선들에서 측정한 AEG = `actual / pred − 1`
+(양수 = 과소예측) 을 두 가지 관점으로 요약한 값이다.
+
+- **drift (cal30 − cal25)**: 대각선별로 평균낸 AEG 의 (가장 최근 −
+  가장 오래된) 차이. hold-out 기간 동안 예측 오차가 단조롭게 변하는지
+  — 즉 정적 모형이 흡수하지 못한 regime 변화의 시그니처 — 를 포착한다.
+- **overall mean**: hold-out 셀 전체의 셀단위 AEG 평균 —
+  모형의 방향성 편향.
+
+drift 가 `full` 의 +4.50pp 에서 hybrid 의 -0.69pp 로 거의 0 에 수렴하고
+overall mean 도 편향이 사라진다. hybrid 모드는 ED 영역 (dev ≤ k\*) 에서
+cohort cut, CL 영역 (dev > k\*) 에서 calendar 대각선 cut 의 두 axis 컷을
+$k^*$ 에서 이어붙여 적용한다.
 
 데이터 사용 영역의 시각적 비교는 위 4-panel 그림 참조. full 은 모든 셀,
-recent 는 최근 대각선 띠, hybrid 는 좌하단의 post-break 사다리꼴 +
-우상단의 최근 대각선 띠라는 두 영역의 합집합으로 나타난다.
+recent 는 최근 평행사변형 밴드, hybrid 는 좌하단의 post-break 사다리꼴 +
+우상단의 최근 평행사변형 밴드라는 두 영역의 합집합으로 나타난다.
 
 ## 6. 다중 그룹 처리
 
