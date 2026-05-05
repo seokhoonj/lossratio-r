@@ -24,20 +24,21 @@ navbar:
       - text: -------
       - text: 집계 프레임워크
         href: articles/aggregation-frameworks-ko.html
-      - text: 손해율 추정 방법론
-        href: articles/loss-ratio-methods-ko.html
-      - text: Chain ladder
-        href: articles/chain-ladder-ko.html
       - text: Triangle 및 ata 진단
         href: articles/triangle-diagnostics-ko.html
-      - text: Regime 탐지
-        href: articles/regime-detection-ko.html
-      - text: Backtest
-        href: articles/backtest-ko.html
-      - text: Regime break 필터링
-        href: articles/regime-break-ko.html
+      - text: 손해율 추정 방법론
+        href: articles/loss-ratio-methods-ko.html
       - text: LR 안정성
         href: articles/lr-convergence-ko.html
+      - text: Regime 탐지
+        href: articles/regime-detection-ko.html
+      - text: Regime break 필터링
+        href: articles/regime-break-ko.html
+      - text: Backtest
+        href: articles/backtest-ko.html
+      - text: -------
+      - text: (참고) Chain ladder를 이용한 준비금 산출
+        href: articles/chain-ladder-ko.html
     reference:
       text: 참조
       href: reference/index.html
@@ -143,13 +144,13 @@ articles:
   navbar: ~
   contents:
   - "articles/aggregation-frameworks-ko"
-  - "articles/loss-ratio-methods-ko"
-  - "articles/chain-ladder-ko"
   - "articles/triangle-diagnostics-ko"
-  - "articles/regime-detection-ko"
-  - "articles/backtest-ko"
-  - "articles/regime-break-ko"
+  - "articles/loss-ratio-methods-ko"
   - "articles/lr-convergence-ko"
+  - "articles/regime-detection-ko"
+  - "articles/regime-break-ko"
+  - "articles/backtest-ko"
+  - "articles/chain-ladder-ko"
 - title: internal
   contents:
   - "articles/getting-started-ko"

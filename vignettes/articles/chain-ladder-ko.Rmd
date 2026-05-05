@@ -1,8 +1,8 @@
 ---
-title: "fit_cl 을 이용한 chain ladder 준비금 산출"
+title: "Chain ladder를 이용한 준비금 산출"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{fit_cl 을 이용한 chain ladder 준비금 산출}
+  %\VignetteIndexEntry{Chain ladder를 이용한 준비금 산출}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
