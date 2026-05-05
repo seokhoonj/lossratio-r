@@ -19,6 +19,7 @@
   theme = c("view", "save", "shiny"),
   nrow = NULL,
   ncol = NULL,
+  x.angle = 90,
   ...
 )
 }
@@ -59,6 +60,9 @@ Default is \code{1L}.}
 \item{theme}{A string passed to \code{\link[=.switch_theme]{.switch_theme()}}.}
 
 \item{nrow, ncol}{Number of rows and columns for \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}.}
+
+\item{x.angle}{Numeric angle for x-axis tick labels. Default is \code{90}
+to prevent overlap of the \code{from-to} link labels.}
 
 \item{...}{Additional arguments passed to \code{\link[=.switch_theme]{.switch_theme()}}.}
 }

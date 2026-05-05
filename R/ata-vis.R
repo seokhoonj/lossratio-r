@@ -417,6 +417,8 @@ plot.ATA <- function(x,
 #'   `label_style = "detail"`. Default is `1e8`.
 #' @param theme A string passed to [.switch_theme()].
 #' @param nrow,ncol Number of rows and columns for [ggplot2::facet_wrap()].
+#' @param x.angle Numeric angle for x-axis tick labels. Default is `90`
+#'   to prevent overlap of the `from-to` link labels.
 #' @param ... Additional arguments passed to [.switch_theme()].
 #'
 #' @return A ggplot object.
@@ -439,6 +441,7 @@ plot_triangle.ATA <- function(x,
                               theme           = c("view", "save", "shiny"),
                               nrow            = NULL,
                               ncol            = NULL,
+                              x.angle         = 90,
                               ...) {
 
   .assert_class(x, "ATA")
@@ -606,7 +609,7 @@ plot_triangle.ATA <- function(x,
   )
 
   # 12) theme
-  p + .switch_theme(theme = theme, ...)
+  p + .switch_theme(theme = theme, x.angle = x.angle, ...)
 }
 
 
