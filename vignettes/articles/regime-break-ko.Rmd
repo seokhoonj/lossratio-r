@@ -119,9 +119,9 @@ factor noise 에 따라 흔들리지 않는다.
 
 ```r
 plot_triangle(tri_sur, type = "usage", holdout = 6L)                                 # full
-plot_triangle(tri_sur, type = "usage", recent = 18L, holdout = 6L)                   # recent
+plot_triangle(tri_sur, type = "usage", recent = 12L, holdout = 6L)                   # recent
 plot_triangle(tri_sur, type = "usage", regime_break = "2024-04-01", holdout = 6L)    # break
-plot_triangle(tri_sur, type = "usage", recent = 18L,
+plot_triangle(tri_sur, type = "usage", recent = 12L,
               regime_break = "2024-04-01", holdout = 6L)                             # hybrid
 ```
 
