@@ -1,4 +1,4 @@
-# find_lr_convergence() 로 예측 손해율 수렴 시점 진단
+# 예측 손해율 수렴 시점 진단: find_lr_convergence()
 
 ## 동기
 
@@ -12,14 +12,19 @@
 통과한다.
 
 [`find_lr_convergence()`](https://seokhoonj.github.io/lossratio/reference/find_lr_convergence.md)
-는 **수렴점**(convergence point) $`k^{**}`$ 를 검출한다 — projected loss
-ratio 가 예측적으로 수렴한 첫 평가 시점 $`v \ge k^*`$. 성숙점(maturity
-point) $`k^*`$ —
-[`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/reference/find_ata_maturity.md)
-가 산출 — 의 자연스러운 짝이다: $`k^*`$ 는 link factor $`f_k`$ 가 재현
-가능해지는 시점, $`k^{**}`$ 는 모형 출력 자체가 새 데이터에도 거의
-움직이지 않는 시점. 장기 건강보험 portfolio 는 $`k^*`$ 를 일찍 지나도
-$`k^{**}`$ 에 한참 못 미칠 수 있다.
+는 **수렴점**(convergence point) $`k^{**}`$ 를 검출한다. $`k^{**}`$ 는
+projected loss ratio 가 예측적으로 수렴하는 첫 평가 시점 ($`v \ge k^*`$)
+이다.
+
+$`k^{**}`$ 는 성숙점(maturity point) $`k^*`$
+([`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/reference/find_ata_maturity.md)
+가 산출) 의 자연스러운 짝이다.
+
+- $`k^*`$: link factor $`f_k`$ 가 재현 가능해지는 시점.
+- $`k^{**}`$: 모형 출력 자체가 새 데이터에도 거의 움직이지 않는 시점.
+
+장기 건강보험 portfolio 는 $`k^*`$ 를 일찍 지나도 $`k^{**}`$ 에 한참 못
+미칠 수 있다.
 
 검출은 $`M`$ 개 연속 평가 시점에서 다음 두 조건이 동시에 만족되는 최초의
 $`v`$:

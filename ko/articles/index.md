@@ -8,8 +8,8 @@
   진단](https://seokhoonj.github.io/lossratio/ko/articles/triangle-diagnostics-ko.md):
 - [손해율 예측 방법론: SA, ED,
   CL](https://seokhoonj.github.io/lossratio/ko/articles/loss-ratio-methods-ko.md):
-- [find_lr_convergence() 로 예측 손해율 수렴 시점
-  진단](https://seokhoonj.github.io/lossratio/ko/articles/lr-convergence-ko.md):
+- [예측 손해율 수렴 시점 진단:
+  find_lr_convergence()](https://seokhoonj.github.io/lossratio/ko/articles/lr-convergence-ko.md):
 - [인수 코호트 간 regime 변화
   탐지](https://seokhoonj.github.io/lossratio/ko/articles/regime-detection-ko.md):
 - [Regime break 기반 hybrid

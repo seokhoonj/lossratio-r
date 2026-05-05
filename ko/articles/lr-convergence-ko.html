@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>find_lr_convergence() 로 예측 손해율 수렴 시점 진단 • lossratio</title>
+<title>예측 손해율 수렴 시점 진단: find_lr_convergence() • lossratio</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<script src="../extra.js"></script><meta property="og:title" content="find_lr_convergence() 로 예측 손해율 수렴 시점 진단">
+<script src="../extra.js"></script><meta property="og:title" content="예측 손해율 수렴 시점 진단: find_lr_convergence()">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -78,7 +78,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>find_lr_convergence() 로 예측 손해율 수렴 시점 진단</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>예측 손해율 수렴 시점 진단: find_lr_convergence()</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/seokhoonj/lossratio/blob/main/vignettes/articles/lr-convergence-ko.Rmd" class="external-link"><code>vignettes/articles/lr-convergence-ko.Rmd</code></a></small>
@@ -106,18 +106,26 @@ factor
 <p><code><a href="../reference/find_lr_convergence.html">find_lr_convergence()</a></code> 는
 <strong>수렴점</strong>(convergence point)
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
-를 검출한다 — projected loss ratio 가 예측적으로 수렴한 첫 평가 시점
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo>≥</mo><msup><mi>k</mi><mo>*</mo></msup></mrow><annotation encoding="application/x-tex">v \ge k^*</annotation></semantics></math>.
-성숙점(maturity point)
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
-— <code><a href="../reference/find_ata_maturity.html">find_ata_maturity()</a></code> 가 산출 — 의 자연스러운 짝이다:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
-는 link factor
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
-가 재현 가능해지는 시점,
+를 검출한다.
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
-는 모형 출력 자체가 새 데이터에도 거의 움직이지 않는 시점. 장기 건강보험
-portfolio 는
+는 projected loss ratio 가 예측적으로 수렴하는 첫 평가 시점
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo>≥</mo><msup><mi>k</mi><mo>*</mo></msup></mrow><annotation encoding="application/x-tex">v \ge k^*</annotation></semantics></math>)
+이다.</p>
+<p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
+는 성숙점(maturity point)
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
+(<code><a href="../reference/find_ata_maturity.html">find_ata_maturity()</a></code> 가 산출) 의 자연스러운 짝이다.</p>
+<ul>
+<li>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>:
+link factor
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
+가 재현 가능해지는 시점.</li>
+<li>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>:
+모형 출력 자체가 새 데이터에도 거의 움직이지 않는 시점.</li>
+</ul>
+<p>장기 건강보험 portfolio 는
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
 를 일찍 지나도
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
