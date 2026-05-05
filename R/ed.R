@@ -351,8 +351,8 @@ fit_ed <- function(x,
     regime_break <- .resolve_break_date(regime_break)
     x <- .apply_break_filter(
       x, regime_break,
-      grp_var = if (is.null(attr(x, "group_var"))) character(0) else attr(x, "group_var"),
-      coh_var = "cohort",
+      group_var = if (is.null(attr(x, "group_var"))) character(0) else attr(x, "group_var"),
+      cohort_var = "cohort",
       dev_var = "ata_from"
     )
   }
@@ -363,8 +363,8 @@ fit_ed <- function(x,
   if (!is.null(recent)) {
     ed <- .apply_recent_filter(
       x, recent,
-      grp_var = if (is.null(attr(x, "group_var"))) character(0) else attr(x, "group_var"),
-      coh_var = "cohort",
+      group_var = if (is.null(attr(x, "group_var"))) character(0) else attr(x, "group_var"),
+      cohort_var = "cohort",
       dev_var = "ata_from"
     )
   } else {

@@ -203,8 +203,8 @@ fit_lr <- function(x,
         )
         x <- .apply_break_filter(
           x, regime_break,
-          grp_var = grp_var,
-          coh_var = "cohort",
+          group_var = grp_var,
+          cohort_var = "cohort",
           dev_var = "dev"
         )
         regime_break <- NULL
@@ -220,15 +220,15 @@ fit_lr <- function(x,
 
         x <- .apply_break_filter(
           x, regime_break,
-          grp_var = grp_var,
-          coh_var = "cohort", dev_var = "dev",
+          group_var = grp_var,
+          cohort_var = "cohort", dev_var = "dev",
           dev_max = mat_k
         )
         if (!is.null(recent)) {
           x <- .apply_recent_filter(
             x, recent,
-            grp_var = grp_var,
-            coh_var = "cohort", dev_var = "dev",
+            group_var = grp_var,
+            cohort_var = "cohort", dev_var = "dev",
             dev_min = mat_k
           )
           # already pre-filtered: avoid double application downstream

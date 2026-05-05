@@ -422,8 +422,8 @@ get_recent_weights <- function(weights, recent) {
 #' @param dt A long-format development `data.table`.
 #' @param recent Positive integer or `NULL`. When `NULL` or missing, `dt`
 #'   is returned unchanged.
-#' @param grp_var Character vector of group columns (may be empty).
-#' @param coh_var Single column name for the cohort variable (e.g. `cohort`).
+#' @param group_var Character vector of group columns (may be empty).
+#' @param cohort_var Single column name for the cohort variable (e.g. `cohort`).
 #' @param dev_var Single column name for the development variable (e.g. `dev`
 #'   for `Triangle` objects, or `ata_from` for `ATA`/`ED` objects).
 #' @param dev_min Optional numeric scalar. When supplied, the recent filter
@@ -436,8 +436,8 @@ get_recent_weights <- function(weights, recent) {
 #'
 #' @keywords internal
 .apply_recent_filter <- function(dt, recent,
-                                 grp_var = character(0),
-                                 coh_var, dev_var, dev_min = NULL) {
+                                 group_var = character(0),
+                                 cohort_var, dev_var, dev_min = NULL) {
 
   if (!data.table::is.data.table(dt))
     stop("`dt` must be a data.table.", call. = FALSE)
@@ -461,10 +461,10 @@ get_recent_weights <- function(weights, recent) {
 
   # rank of cohort within group (1 = earliest), then calendar index
   out[, .coh_rank := data.table::frank(.SD[[1L]], ties.method = "dense"),
-      by = grp_var, .SDcols = coh_var]
+      by = group_var, .SDcols = cohort_var]
   out[, .cal_idx := .coh_rank + .SD[[1L]] - 1L,
       .SDcols = dev_var]
-  out[, .max_cal := max(.cal_idx, na.rm = TRUE), by = grp_var]
+  out[, .max_cal := max(.cal_idx, na.rm = TRUE), by = group_var]
 
   if (is.null(dev_min)) {
     keep <- out[, is.finite(.cal_idx) & is.finite(.max_cal) &
@@ -522,8 +522,8 @@ get_recent_weights <- function(weights, recent) {
 #'   * A single Date or character (coercible to Date).
 #'   * A Date/character vector -- uses the latest (max) date.
 #'   * A `CohortRegime` object -- extracts the latest from `$breakpoints`.
-#' @param grp_var Character vector of group columns (may be empty).
-#' @param coh_var Single column name for the cohort variable.
+#' @param group_var Character vector of group columns (may be empty).
+#' @param cohort_var Single column name for the cohort variable.
 #' @param dev_var Single column name for the development variable.
 #' @param dev_max Optional numeric scalar. When supplied, the cohort filter
 #'   is only applied to rows where `dev_var <= dev_max`; rows with
@@ -533,8 +533,8 @@ get_recent_weights <- function(weights, recent) {
 #'
 #' @keywords internal
 .apply_break_filter <- function(dt, break_date,
-                                grp_var = character(0),
-                                coh_var, dev_var, dev_max = NULL) {
+                                group_var = character(0),
+                                cohort_var, dev_var, dev_max = NULL) {
 
   if (!data.table::is.data.table(dt))
     stop("`dt` must be a data.table.", call. = FALSE)
@@ -550,20 +550,20 @@ get_recent_weights <- function(weights, recent) {
       stop("`dev_max` must be a single non-NA numeric scalar.", call. = FALSE)
   }
 
-  coh_class <- class(dt[[coh_var]])
+  coh_class <- class(dt[[cohort_var]])
   if (!any(coh_class %in% c("Date", "POSIXct", "POSIXt"))) {
-    stop("Column `", coh_var, "` must be of class Date or POSIXct/POSIXt.",
+    stop("Column `", cohort_var, "` must be of class Date or POSIXct/POSIXt.",
          call. = FALSE)
   }
 
   out <- data.table::copy(dt)
 
   if (is.null(dev_max)) {
-    keep <- out[, .SD[[1L]] >= bd, .SDcols = coh_var]
+    keep <- out[, .SD[[1L]] >= bd, .SDcols = cohort_var]
   } else {
     # Drop rows where coh < bd AND dev <= dev_max.
     # Keep if coh >= bd OR dev > dev_max.
-    coh_vals <- out[[coh_var]]
+    coh_vals <- out[[cohort_var]]
     dev_vals <- out[[dev_var]]
     keep <- (coh_vals >= bd) | (dev_vals > dev_max)
   }
