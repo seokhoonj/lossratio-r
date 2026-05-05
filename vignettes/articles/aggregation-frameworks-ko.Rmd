@@ -100,8 +100,8 @@ Calendar 집계는 수학적으로 triangle 의 **대각선 합** 이다.
 - 포트폴리오 모니터링 대시보드
 
 ```{r}
-plot(cal)                       # x = calendar
-plot(cal, x_by = "dev")         # x = 순차 인덱스
+plot(cal)                       # x axis: calendar
+plot(cal, x_by = "dev")         # x axis: 순차 인덱스
 ```
 
 ## Total (포트폴리오 요약)

@@ -97,8 +97,8 @@ Use cases:
 - Portfolio monitoring dashboards
 
 ```{r}
-plot(cal)                           # x = calendar
-plot(cal, x_by = "dev")         # x = sequential index
+plot(cal)                       # x axis: calendar
+plot(cal, x_by = "dev")         # x axis: sequential index
 ```
 
 ## Total (portfolio summary)
