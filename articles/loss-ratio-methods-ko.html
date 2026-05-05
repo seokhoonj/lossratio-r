@@ -483,16 +483,17 @@ delta method 변형은 두 가지이다:</p>
 <div class="section level2">
 <h2 id="방법-선택">방법 선택<a class="anchor" aria-label="anchor" href="#%EB%B0%A9%EB%B2%95-%EC%84%A0%ED%83%9D"></a>
 </h2>
-<p>빠른 의사결정 흐름:</p>
-<pre><code>포트폴리오가 완전히 성숙했는가 (모든 코호트가 성숙점 이후)?
-  ├── Yes  →  "cl" (고전적, 규제 친화적)
-  └── No
-        ├── 초기 age-to-age 계수가 변동적인가?
-        │     ├── Yes  →  "sa" (기본 — 노출 기반 평활)
-        │     └── No   →  "cl"
-        └── 익스포저(rp) 가 더 정보적인 신호인가?
-              ├── Yes  →  "ed"
-              └── No   →  "sa"</code></pre>
+<p>SA 는 성숙점 이전엔 ED, 이후엔 CL 로 자연 전환하는 결합이다. 따라서
+일반적으로 <code>"sa"</code> 가 기본값이고, <code>"cl"</code> 과
+<code>"ed"</code> 는 SA 의 한쪽 영역이 무의미해지는 특수 케이스일 때만
+선택한다.</p>
+<pre><code>기본은 "sa" — 성숙점 이전엔 ED, 이후엔 CL 로 자연 전환.
+
+특수 케이스로만 "cl" 또는 "ed":
+  ├── 모든 코호트가 이미 성숙점 이후
+  │     → "cl"  (ED 영역이 비어있어 SA = CL)
+  └── 손해 전개가 전 기간 불안정하고 익스포저(rp) 가 더 신뢰할 만한 신호
+        → "ed"  (CL 영역도 노출 기반이 적절)</code></pre>
 <p>실무: <strong><code>"sa"</code> 로 시작하라</strong> (기본값). 이후
 민감도 점검을 위해 <code>"cl"</code> 과 <code>"ed"</code> 를 함께
 실행한다. 셋이 모두 일치하면 추정은 견고하다. 결과가 갈라지면 성숙점

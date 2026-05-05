@@ -386,17 +386,18 @@ summary(lr_boot)
 
 ## Choosing a method
 
-Quick decision flow:
+SA combines ED before the maturity point with CL after, so `"sa"` is the
+natural default. `"cl"` and `"ed"` are special cases that apply only
+when one of SA’s two regions becomes redundant.
 
-    Is the portfolio fully matured (all cohorts past maturity)?
-      ├── Yes  →  "cl" (classical, regulator-friendly)
-      └── No
-            ├── Are early age-to-age factors volatile?
-            │     ├── Yes  →  "sa" (default — exposure-driven smoothing)
-            │     └── No   →  "cl"
-            └── Is exposure (rp) the more informative signal?
-                  ├── Yes  →  "ed"
-                  └── No   →  "sa"
+    Default is "sa" — ED before maturity, CL after.
+
+    Pick "cl" or "ed" only as special cases:
+      ├── All cohorts are already past maturity
+      │     → "cl"  (no ED region, so SA reduces to CL)
+      └── Loss development is unstable across all dev and exposure (rp) is
+          the more reliable signal
+            → "ed"  (CL region is better served by exposure)
 
 In practice: **start with `"sa"`** (the default), then run `"cl"` and
 `"ed"` for sensitivity. If all three agree, the projection is robust. If

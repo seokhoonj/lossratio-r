@@ -485,16 +485,18 @@ uncertainty and loss-exposure correlation <code>rho</code>:</li>
 <div class="section level2">
 <h2 id="choosing-a-method">Choosing a method<a class="anchor" aria-label="anchor" href="#choosing-a-method"></a>
 </h2>
-<p>Quick decision flow:</p>
-<pre><code>Is the portfolio fully matured (all cohorts past maturity)?
-  ├── Yes  →  "cl" (classical, regulator-friendly)
-  └── No
-        ├── Are early age-to-age factors volatile?
-        │     ├── Yes  →  "sa" (default — exposure-driven smoothing)
-        │     └── No   →  "cl"
-        └── Is exposure (rp) the more informative signal?
-              ├── Yes  →  "ed"
-              └── No   →  "sa"</code></pre>
+<p>SA combines ED before the maturity point with CL after, so
+<code>"sa"</code> is the natural default. <code>"cl"</code> and
+<code>"ed"</code> are special cases that apply only when one of SA’s two
+regions becomes redundant.</p>
+<pre><code>Default is "sa" — ED before maturity, CL after.
+
+Pick "cl" or "ed" only as special cases:
+  ├── All cohorts are already past maturity
+  │     → "cl"  (no ED region, so SA reduces to CL)
+  └── Loss development is unstable across all dev and exposure (rp) is
+      the more reliable signal
+        → "ed"  (CL region is better served by exposure)</code></pre>
 <p>In practice: <strong>start with <code>"sa"</code></strong> (the
 default), then run <code>"cl"</code> and <code>"ed"</code> for
 sensitivity. If all three agree, the projection is robust. If they
