@@ -97,10 +97,10 @@ refitting the model on the earlier portion, and comparing its projection
 to the actuals that were withheld. This is calendar-diagonal hold-out
 (rather than dev-period hold-out), because it simulates “what would the
 model have said <em>K</em> months ago at the valuation date?”. The
-cell-level metric is the Actual-Expected Gap,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">g</mi></mrow><mo>=</mo><msub><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">d</mi></mrow></msub><mi>/</mi><msub><mi>v</mi><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">l</mi></mrow></msub><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\mathrm{aeg} = v_{\mathrm{pred}} / v_{\mathrm{actual}} - 1</annotation></semantics></math>,
-where positive values flag over-projection and negative values flag
-under-projection.</p>
+cell-level metric follows the standard actuarial A/E convention,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">g</mi></mrow><mo>=</mo><msub><mi>v</mi><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">l</mi></mrow></msub><mi>/</mi><msub><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">d</mi></mrow></msub><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\mathrm{aeg} = v_{\mathrm{actual}} / v_{\mathrm{pred}} - 1</annotation></semantics></math>,
+where positive values flag under-projection (actual exceeded expected)
+and negative values flag over-projection.</p>
 </div>
 <div class="section level2">
 <h2 id="basic-usage">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
@@ -118,7 +118,7 @@ under-projection.</p>
 <span><span class="co">#&gt;   value_var   : clr</span></span>
 <span><span class="co">#&gt;   holdout     : 6 calendar diagonals</span></span>
 <span><span class="co">#&gt;   held-out    : 123 cells</span></span>
-<span><span class="co">#&gt;   AEG         : mean 31.28% / median 7.85%</span></span></code></pre></div>
+<span><span class="co">#&gt;   AEG         : mean -13.05% / median -7.28%</span></span></code></pre></div>
 <p>The returned object is a <code>"Backtest"</code> list with these key
 slots:</p>
 <ul>
@@ -166,53 +166,53 @@ positive values usually reflect inflated link factors; late-dev values
 flag tail miscalibration.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">bt</span><span class="op">$</span><span class="va">col_summary</span>, <span class="fl">8</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     cv_nm   dev     n  aeg_mean   aeg_med    aeg_wt</span></span>
-<span><span class="co">#&gt;    &lt;char&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:    SUR     2     1 0.2837319 0.2837319 0.2837319</span></span>
-<span><span class="co">#&gt; 2:    SUR     3     2 2.1989640 2.1989640 1.6068274</span></span>
-<span><span class="co">#&gt; 3:    SUR     4     3 1.6455459 0.1315263 0.5380333</span></span>
-<span><span class="co">#&gt; 4:    SUR     5     4 0.6585571 0.2763337 0.4646954</span></span>
-<span><span class="co">#&gt; 5:    SUR     6     5 0.9926610 0.6708877 0.8535695</span></span>
-<span><span class="co">#&gt; 6:    SUR     7     6 0.8134587 0.5405732 0.4912874</span></span>
-<span><span class="co">#&gt; 7:    SUR     8     6 0.7926698 0.7754185 0.6533347</span></span>
-<span><span class="co">#&gt; 8:    SUR     9     6 0.5582173 0.5978053 0.4457645</span></span></code></pre></div>
+<span><span class="co">#&gt;     cv_nm   dev     n   aeg_mean    aeg_med     aeg_wt</span></span>
+<span><span class="co">#&gt;    &lt;char&gt; &lt;int&gt; &lt;int&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:    SUR     2     1 -0.2210212 -0.2210212 -0.2210212</span></span>
+<span><span class="co">#&gt; 2:    SUR     3     2 -0.6437701 -0.6437701 -0.6163919</span></span>
+<span><span class="co">#&gt; 3:    SUR     4     3 -0.3511641 -0.1162380 -0.3498190</span></span>
+<span><span class="co">#&gt; 4:    SUR     5     4 -0.3150824 -0.2157648 -0.3172642</span></span>
+<span><span class="co">#&gt; 5:    SUR     6     5 -0.4607816 -0.4015157 -0.4605004</span></span>
+<span><span class="co">#&gt; 6:    SUR     7     6 -0.3179501 -0.3459763 -0.3294385</span></span>
+<span><span class="co">#&gt; 7:    SUR     8     6 -0.3943149 -0.4362693 -0.3951618</span></span>
+<span><span class="co">#&gt; 8:    SUR     9     6 -0.3184528 -0.3718590 -0.3083244</span></span></code></pre></div>
 <p><code>aeg_mean</code> averages cell-level AEG, <code>aeg_med</code>
-is the median, and
-<code>aeg_wt = sum(pred - actual) / sum(actual)</code> is
-exposure-weighted. Comparing the three columns flags whether a few large
-cells dominate (<code>aeg_wt</code> very different from
-<code>aeg_med</code>) or the bias is uniform.</p>
+is the median, and <code>aeg_wt = sum(actual - pred) / sum(pred)</code>
+is the exposure-weighted pooled A/E ratio minus 1. Comparing the three
+columns flags whether a few large cells dominate (<code>aeg_wt</code>
+very different from <code>aeg_med</code>) or the bias is uniform.</p>
 <p><strong><code>diag_summary</code> — calendar-year effect.</strong> A
 single bad diagonal in otherwise unbiased output points at a calendar
 event (a rate change, claim handling shift, or one-off shock) that a
 static fitter cannot see by construction.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bt</span><span class="op">$</span><span class="va">diag_summary</span></span>
-<span><span class="co">#&gt;     cv_nm calendar_idx     n  aeg_mean    aeg_med     aeg_wt</span></span>
-<span><span class="co">#&gt;    &lt;char&gt;        &lt;int&gt; &lt;int&gt;     &lt;num&gt;      &lt;num&gt;      &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:    SUR           25    23 0.2613952 0.03817686 0.07549841</span></span>
-<span><span class="co">#&gt; 2:    SUR           26    22 0.4210423 0.05473890 0.12784660</span></span>
-<span><span class="co">#&gt; 3:    SUR           27    21 0.2465127 0.06217713 0.11629869</span></span>
-<span><span class="co">#&gt; 4:    SUR           28    20 0.2926339 0.08366472 0.14607697</span></span>
-<span><span class="co">#&gt; 5:    SUR           29    19 0.3595587 0.18991295 0.20108254</span></span>
-<span><span class="co">#&gt; 6:    SUR           30    18 0.2968898 0.11898697 0.19767807</span></span></code></pre></div>
+<span><span class="co">#&gt;     cv_nm calendar_idx     n   aeg_mean     aeg_med      aeg_wt</span></span>
+<span><span class="co">#&gt;    &lt;char&gt;        &lt;int&gt; &lt;int&gt;      &lt;num&gt;       &lt;num&gt;       &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:    SUR           25    23 -0.1066364 -0.03677298 -0.07019853</span></span>
+<span><span class="co">#&gt; 2:    SUR           26    22 -0.1401734 -0.05189725 -0.11335460</span></span>
+<span><span class="co">#&gt; 3:    SUR           27    21 -0.1090998 -0.05853744 -0.10418242</span></span>
+<span><span class="co">#&gt; 4:    SUR           28    20 -0.1311208 -0.07720194 -0.12745825</span></span>
+<span><span class="co">#&gt; 5:    SUR           29    19 -0.1621096 -0.15960239 -0.16741775</span></span>
+<span><span class="co">#&gt; 6:    SUR           30    18 -0.1402920 -0.10632300 -0.16505109</span></span></code></pre></div>
 <p>A monotone drift across calendar diagonals (as in the SUR example
-above, where AEG becomes increasingly negative across
-<code>25, ..., 30</code>) typically indicates that the latest period is
-running better than the earlier-cohort link factors imply.</p>
+above, where AEG becomes increasingly positive across
+<code>25, ..., 30</code>) typically indicates that actuals on the latest
+diagonals are running above what the earlier-cohort link factors imply,
+i.e. a regime shift the static model has not absorbed.</p>
 <p><strong><code>aeg</code> — cell-level outliers.</strong> For
 diagnosing specific cohort × dev cells, inspect <code>bt$aeg</code>
 directly:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">bt</span><span class="op">$</span><span class="va">aeg</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;cv_nm&gt;</span></span>
-<span><span class="co">#&gt;     cv_nm     cohort   dev value_actual value_pred         aeg calendar_idx</span></span>
-<span><span class="co">#&gt;    &lt;char&gt;     &lt;Date&gt; &lt;int&gt;        &lt;num&gt;      &lt;num&gt;       &lt;num&gt;        &lt;int&gt;</span></span>
-<span><span class="co">#&gt; 1:    SUR 2023-05-01    24     1.030446   1.156866 0.122684168           25</span></span>
-<span><span class="co">#&gt; 2:    SUR 2023-06-01    23     1.175862   1.182519 0.005661817           25</span></span>
-<span><span class="co">#&gt; 3:    SUR 2023-06-01    24     1.198728   1.292790 0.078467446           26</span></span>
-<span><span class="co">#&gt; 4:    SUR 2023-07-01    22     1.105530   1.113031 0.006784602           25</span></span>
-<span><span class="co">#&gt; 5:    SUR 2023-07-01    23     1.106120   1.118137 0.010863743           26</span></span></code></pre></div>
+<span><span class="co">#&gt;     cv_nm     cohort   dev value_actual value_pred          aeg calendar_idx</span></span>
+<span><span class="co">#&gt;    &lt;char&gt;     &lt;Date&gt; &lt;int&gt;        &lt;num&gt;      &lt;num&gt;        &lt;num&gt;        &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1:    SUR 2023-05-01    24     1.030446   1.156866 -0.109277544           25</span></span>
+<span><span class="co">#&gt; 2:    SUR 2023-06-01    23     1.175862   1.182519 -0.005629942           25</span></span>
+<span><span class="co">#&gt; 3:    SUR 2023-06-01    24     1.198728   1.292790 -0.072758288           26</span></span>
+<span><span class="co">#&gt; 4:    SUR 2023-07-01    22     1.105530   1.113031 -0.006738881           25</span></span>
+<span><span class="co">#&gt; 5:    SUR 2023-07-01    23     1.106120   1.118137 -0.010746990           26</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="plot-demos">Plot demos<a class="anchor" aria-label="anchor" href="#plot-demos"></a>
@@ -235,8 +235,8 @@ dev-period bias; <code>type = "diag"</code> reveals calendar-year drift;
 <code>type = "cell"</code> exposes which cohorts contribute the bias;
 <code><a href="../reference/plot_triangle.html">plot_triangle()</a></code> puts the cell-level AEG values on the same
 triangular layout as <code><a href="../reference/plot_triangle.html">plot_triangle()</a></code> for the underlying
-fit, with a red/blue diverging palette where red marks
-over-projection.</p>
+fit, with a red/blue diverging palette where red marks under-projection
+(actual &gt; pred).</p>
 </div>
 <div class="section level2">
 <h2 id="holdout-selection">Holdout selection<a class="anchor" aria-label="anchor" href="#holdout-selection"></a>
@@ -320,7 +320,7 @@ ladder afterwards; <code>"ed"</code> is purely exposure-driven;
 <span><span class="co">#&gt;   value_var   : clr</span></span>
 <span><span class="co">#&gt;   holdout     : 6 calendar diagonals</span></span>
 <span><span class="co">#&gt;   held-out    : 123 cells</span></span>
-<span><span class="co">#&gt;   AEG         : mean 31.28% / median 7.85%</span></span></code></pre></div>
+<span><span class="co">#&gt;   AEG         : mean -13.05% / median -7.28%</span></span></code></pre></div>
 <p>Backtesting <code>closs</code> weights the result toward whichever
 cohorts happen to be the largest at the held-out diagonals, which is
 useful when monetary impact matters more than a normalized

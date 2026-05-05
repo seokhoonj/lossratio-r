@@ -247,8 +247,8 @@ break 만 쓴다 — break 이후 누적된 코호트 수가 많을수록 post-b
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>,
 수평 점선은 regime break 코호트 경계를 나타낸다.</div>
 </div>
-<p>hybrid 패널은 사용자가 의도한 dev-축 split — ED 쪽은 수평 컷, CL 쪽은
-대각선 컷이
+<p>hybrid 패널은 SA 모드가 적용하는 dev-축 split — ED 쪽은 cohort cut,
+CL 쪽은 calendar 대각선 cut 이
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
 에서 만나는 사다리꼴 합집합 — 을 그대로 시각화한다.</p>
 </div>
@@ -284,27 +284,44 @@ backtest 를 돌리고 결과를 비교한다.</p>
 <tbody>
 <tr class="odd">
 <td>full</td>
-<td>-4.50pp</td>
-<td>+1.25%</td>
+<td>+4.50pp</td>
+<td>-1.25%</td>
 </tr>
 <tr class="even">
 <td>recent = 18</td>
-<td>-2.03pp</td>
-<td>+3.45%</td>
+<td>+2.03pp</td>
+<td>-3.45%</td>
 </tr>
 <tr class="odd">
 <td><strong>regime_break + recent = 18</strong></td>
-<td><strong>+0.69pp</strong></td>
-<td><strong>-0.03%</strong></td>
+<td><strong>-0.69pp</strong></td>
+<td><strong>+0.03%</strong></td>
 </tr>
 </tbody>
 </table>
-<p>drift 가 -4.50pp 에서 +0.69pp 로 거의 0 에 수렴하고 overall mean 도
-편향이 사라진다. 사용자가 의도한 “ED 는 수평 컷, CL 은 대각선 컷” 이라는
-dev-축 split 이 정확히 구현된 결과다.</p>
+<p>두 컬럼은 hold-out 대각선들에서 측정한 AEG =
+<code>actual / pred − 1</code> (양수 = 과소예측) 을 두 가지 관점으로
+요약한 값이다.</p>
+<ul>
+<li>
+<strong>drift (cal30 − cal25)</strong>: 대각선별로 평균낸 AEG 의
+(가장 최근 − 가장 오래된) 차이. hold-out 기간 동안 예측 오차가 단조롭게
+변하는지 — 즉 정적 모형이 흡수하지 못한 regime 변화의 시그니처 — 를
+포착한다.</li>
+<li>
+<strong>overall mean</strong>: hold-out 셀 전체의 셀단위 AEG 평균 —
+모형의 방향성 편향.</li>
+</ul>
+<p>drift 가 <code>full</code> 의 +4.50pp 에서 hybrid 의 -0.69pp 로 거의
+0 에 수렴하고 overall mean 도 편향이 사라진다. hybrid 모드는 ED 영역
+(dev ≤ k*) 에서 cohort cut, CL 영역 (dev &gt; k*) 에서 calendar 대각선
+cut 의 두 axis 컷을
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
+에서 이어붙여 적용한다.</p>
 <p>데이터 사용 영역의 시각적 비교는 위 4-panel 그림 참조. full 은 모든
-셀, recent 는 최근 대각선 띠, hybrid 는 좌하단의 post-break 사다리꼴 +
-우상단의 최근 대각선 띠라는 두 영역의 합집합으로 나타난다.</p>
+셀, recent 는 최근 평행사변형 밴드, hybrid 는 좌하단의 post-break
+사다리꼴 + 우상단의 최근 평행사변형 밴드라는 두 영역의 합집합으로
+나타난다.</p>
 </div>
 <div class="section level2">
 <h2 id="다중-그룹-처리">6. 다중 그룹 처리<a class="anchor" aria-label="anchor" href="#%EB%8B%A4%EC%A4%91-%EA%B7%B8%EB%A3%B9-%EC%B2%98%EB%A6%AC"></a>

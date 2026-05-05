@@ -107,8 +107,9 @@ data, red = held out (last 6 calendar diagonals), light grey = excluded
 by the filter, white = future. Vertical dashed line marks the maturity
 switch $`k^*`$; horizontal dashed line marks the regime break cohort.
 
-The hybrid panel realises the user’s intended dev-axis split: a cohort
-cut on the ED side and a diagonal cut on the CL side joined at $`k^*`$.
+The hybrid panel shows the dev-axis split that SA mode applies: a cohort
+cut on the ED side and a calendar diagonal cut on the CL side, joined at
+$`k^*`$.
 
 ## Case study — SUR cohort
 
@@ -131,13 +132,24 @@ Reproduced from `dev/regime_backtest_hybrid.R`:
 
 | Variant                        | drift (cal30 − cal25) | overall mean |
 |--------------------------------|-----------------------|--------------|
-| full                           | -4.50pp               | +1.25%       |
-| recent = 18                    | -2.03pp               | +3.45%       |
-| **regime_break + recent = 18** | **+0.69pp**           | **-0.03%**   |
+| full                           | +4.50pp               | -1.25%       |
+| recent = 18                    | +2.03pp               | -3.45%       |
+| **regime_break + recent = 18** | **-0.69pp**           | **+0.03%**   |
 
-Drift collapses from -4.50pp to +0.69pp; the overall mean returns to
-zero. The hybrid filter realises the user’s intended dev-axis split:
-horizontal cut on the ED side, diagonal cut on the CL side.
+Two columns summarise the AEG = `actual / pred − 1` (positive = under-
+projection) measured on the held-out diagonals:
+
+- **drift (cal30 − cal25)**: AEG aggregated by calendar diagonal, then
+  the (latest − earliest) difference. Captures whether the prediction
+  error is monotonically changing across the hold-out window — the
+  signature of a regime that the static model has not absorbed.
+- **overall mean**: cell-level mean AEG across all held-out cells — the
+  model’s directional bias.
+
+Drift collapses from +4.50pp under `full` to -0.69pp under the hybrid
+filter; the overall mean returns to ~0. The hybrid joins two axis cuts
+at $`k^*`$: a cohort cut on the ED side (dev ≤ k\*) and a calendar
+diagonal cut on the CL side (dev \> k\*).
 
 ## Multi-group handling
 
