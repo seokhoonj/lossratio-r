@@ -27,7 +27,7 @@ navbar:
         href: articles/loss-ratio-methods.html
       - text: Chain ladder
         href: articles/chain-ladder.html
-      - text: Triangle and ata diagnostics
+      - text: Triangle and ATA diagnostics
         href: articles/triangle-diagnostics.html
       - text: Regime detection
         href: articles/regime-detection.html
