@@ -23,12 +23,12 @@ knitr::opts_chunk$set(
 > 영어 원본 보기: [Triangle and ATA diagnostics](../triangle-diagnostics.html)
 
 chain ladder 또는 손해율 모형을 적합하기 전에 기반이 되는 triangle 을 살펴보는
-것이 효율적이다. 이 vignette 는 코호트 발전 양상, age-to-age 인자의 안정성, 성숙점
+것이 효율적이다. 이 문서는 코호트 발전 양상, age-to-age 인자의 안정성, 성숙점
 탐지를 이해하기 위한 `lossratio` 의 진단 도구를 다룬다.
 
 ## Triangle 수준 진단
 
-이 vignette 은 간결성을 위해 `SUR` 그룹만 사용한다 — 모든 절차는
+이 문서는 간결성을 위해 `SUR` 그룹만 사용한다 — 모든 절차는
 다중 그룹 입력에도 그대로 일반화된다.
 
 ```{r}

@@ -216,7 +216,7 @@ post-break window 가 너무 짧으면 (`n_post` 가 작으면) ED 강도 $g_k$
 ## 8. 같이 보기
 
 - [`fit_lr`](../reference/fit_lr.html) — 손해율 추정 통합 인터페이스.
-- [백테스트 vignette](backtest-ko.html) — `recent`, `regime_break` 가
+- [백테스트 문서](backtest-ko.html) — `recent`, `regime_break` 가
   결과에 미치는 영향을 진단하는 도구.
 - [`detect_cohort_regime`](../reference/detect_cohort_regime.html) —
   코호트 단위 break date 자동 검출.

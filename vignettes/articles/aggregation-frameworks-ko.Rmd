@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
 
 동일한 long-format experience 데이터는 분석 질문에 따라 세 가지
 방식으로 집계할 수 있다. `lossratio` 는 각 프레임워크별로 하나의
-빌더를 제공한다. 이 vignette 은 셋을 비교한다.
+빌더를 제공한다. 이 문서는 셋을 비교한다.
 
 ## 한눈에 보기
 
