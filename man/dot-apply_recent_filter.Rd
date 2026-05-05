@@ -7,8 +7,8 @@
 .apply_recent_filter(
   dt,
   recent,
-  grp_var = character(0),
-  coh_var,
+  group_var = character(0),
+  cohort_var,
   dev_var,
   dev_min = NULL
 )
@@ -19,9 +19,9 @@
 \item{recent}{Positive integer or \code{NULL}. When \code{NULL} or missing, \code{dt}
 is returned unchanged.}
 
-\item{grp_var}{Character vector of group columns (may be empty).}
+\item{group_var}{Character vector of group columns (may be empty).}
 
-\item{coh_var}{Single column name for the cohort variable (e.g. \code{cohort}).}
+\item{cohort_var}{Single column name for the cohort variable (e.g. \code{cohort}).}
 
 \item{dev_var}{Single column name for the development variable (e.g. \code{dev}
 for \code{Triangle} objects, or \code{ata_from} for \code{ATA}/\code{ED} objects).}

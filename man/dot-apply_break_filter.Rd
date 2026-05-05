@@ -7,8 +7,8 @@
 .apply_break_filter(
   dt,
   break_date,
-  grp_var = character(0),
-  coh_var,
+  group_var = character(0),
+  cohort_var,
   dev_var,
   dev_max = NULL
 )
@@ -24,9 +24,9 @@
 \item A \code{CohortRegime} object -- extracts the latest from \verb{$breakpoints}.
 }}
 
-\item{grp_var}{Character vector of group columns (may be empty).}
+\item{group_var}{Character vector of group columns (may be empty).}
 
-\item{coh_var}{Single column name for the cohort variable.}
+\item{cohort_var}{Single column name for the cohort variable.}
 
 \item{dev_var}{Single column name for the development variable.}
 

@@ -23,7 +23,11 @@ forms as \code{\link[=fit_lr]{fit_lr()}} (\code{NULL}, \code{Date}, character, v
 \code{CohortRegime}).}
 
 \item{holdout}{Optional positive integer. When supplied, the last
-\code{holdout} calendar diagonals are flagged \code{"held_out"}.}
+\code{holdout} calendar diagonals are flagged \code{"held_out"}. The \code{recent}
+filter is then evaluated against the post-holdout boundary so the
+recent wedge sits \emph{before} the held_out wedge (no overlap), matching
+\code{backtest()} semantics — \code{fit_fn(masked, recent = N, ...)} operates
+on the masked triangle whose own max_cal is \code{original - holdout}.}
 
 \item{mat_k}{Optional integer. When both \code{recent} and \code{regime_break}
 are provided, the hybrid mask uses \code{mat_k} as the maturity switch:
