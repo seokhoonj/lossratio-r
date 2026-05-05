@@ -35,7 +35,7 @@ navbar:
         href: articles/backtest.html
       - text: Regime break filtering
         href: articles/regime-break.html
-      - text: LR stability
+      - text: LR convergence
         href: articles/lr-convergence.html
     language:
       text: KO
@@ -97,10 +97,10 @@ reference:
   contents:
   - backtest
 
-- title: LR stability detection
+- title: LR convergence detection
   desc: >
-    Detect the development period from which the projected loss ratio
-    is predictively stable (paper Section 11, $k_0$ criterion).
+    Detect the development period ($k^{**}$) from which the projected
+    loss ratio stops revising and converges.
   contents:
   - find_lr_convergence
 
