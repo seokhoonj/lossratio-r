@@ -30,13 +30,13 @@ test_that("aeg has expected columns", {
   }
 })
 
-test_that("aeg = pred / actual - 1 (cell-wise)", {
+test_that("aeg = actual / pred - 1 (cell-wise, A/E convention)", {
   bt <- backtest(sub, holdout = 6L, fit_fn = fit_cl,
                  value_var = "closs", method = "mack")
-  ok <- with(bt$aeg, is.finite(value_actual) & value_actual != 0 &
-                     is.finite(value_pred))
+  ok <- with(bt$aeg, is.finite(value_pred) & value_pred != 0 &
+                     is.finite(value_actual))
   expect_equal(bt$aeg$aeg[ok],
-               (bt$aeg$value_pred[ok] / bt$aeg$value_actual[ok]) - 1,
+               (bt$aeg$value_actual[ok] / bt$aeg$value_pred[ok]) - 1,
                tolerance = 1e-8)
 })
 

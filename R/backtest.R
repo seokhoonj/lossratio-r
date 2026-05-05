@@ -27,10 +27,13 @@
 #' held-out cells, and compare the projection to the actual values
 #' that were withheld.
 #'
-#' The Actual-Expected Gap (AEG) is computed cell-wise as
-#' \deqn{aeg = \frac{value_{proj}}{value_{actual}} - 1}
-#' and aggregated by development period (`col_summary`) and by
-#' calendar diagonal (`diag_summary`).
+#' The Actual-Expected Gap (AEG) follows the standard actuarial A/E
+#' convention and is computed cell-wise as
+#' \deqn{aeg = \frac{value_{actual}}{value_{proj}} - 1}
+#' so that positive values flag under-projection (actual exceeded
+#' expected) and negative values flag over-projection. Aggregated by
+#' development period (`col_summary`) and by calendar diagonal
+#' (`diag_summary`).
 #'
 #' @param x A `"Triangle"` object (or a `"Backtest"` object for the S3
 #'   `print()` method).
@@ -213,8 +216,8 @@ backtest <- function(x,
   aeg <- aeg[is.finite(value_pred)]
 
   aeg[, aeg := data.table::fifelse(
-    is.finite(value_actual) & value_actual != 0,
-    value_pred / value_actual - 1,
+    is.finite(value_pred) & value_pred != 0,
+    value_actual / value_pred - 1,
     NA_real_
   )]
 
@@ -229,8 +232,8 @@ backtest <- function(x,
     n        = sum(is.finite(aeg)),
     aeg_mean = mean(aeg,   na.rm = TRUE),
     aeg_med  = stats::median(aeg, na.rm = TRUE),
-    aeg_wt   = sum(value_pred - value_actual, na.rm = TRUE) /
-               sum(value_actual, na.rm = TRUE)
+    aeg_wt   = sum(value_actual - value_pred, na.rm = TRUE) /
+               sum(value_pred, na.rm = TRUE)
   ), by = col_by]
   data.table::setorderv(col_summary, col_by)
 
@@ -239,8 +242,8 @@ backtest <- function(x,
     n        = sum(is.finite(aeg)),
     aeg_mean = mean(aeg,   na.rm = TRUE),
     aeg_med  = stats::median(aeg, na.rm = TRUE),
-    aeg_wt   = sum(value_pred - value_actual, na.rm = TRUE) /
-               sum(value_actual, na.rm = TRUE)
+    aeg_wt   = sum(value_actual - value_pred, na.rm = TRUE) /
+               sum(value_pred, na.rm = TRUE)
   ), by = diag_by]
   data.table::setorderv(diag_summary, diag_by)
 

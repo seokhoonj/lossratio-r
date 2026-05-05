@@ -66,7 +66,7 @@ plot.Backtest <- function(x,
       ggplot2::scale_y_continuous(labels = function(v) paste0(round(v * 100), "%")) +
       ggplot2::labs(title = "Backtest AEG by development period",
                     x = .pretty_var_label(x$dev_var),
-                    y = "AEG = pred / actual - 1")
+                    y = "AEG = actual / pred - 1")
     if (length(grp_var))
       p <- p + ggplot2::facet_wrap(grp_var, scales = scales)
 
@@ -99,7 +99,7 @@ plot.Backtest <- function(x,
       ggplot2::scale_y_continuous(labels = function(v) paste0(round(v * 100), "%")) +
       ggplot2::labs(title = "Backtest AEG by calendar diagonal",
                     x = "calendar diagonal index",
-                    y = "AEG = pred / actual - 1")
+                    y = "AEG = actual / pred - 1")
     if (length(grp_var))
       p <- p + ggplot2::facet_wrap(grp_var, scales = scales)
 
@@ -118,7 +118,7 @@ plot.Backtest <- function(x,
       ggplot2::scale_y_continuous(labels = function(v) paste0(round(v * 100), "%")) +
       ggplot2::labs(title = "Backtest AEG per held-out cell",
                     x = .pretty_var_label(x$dev_var),
-                    y = "AEG = pred / actual - 1")
+                    y = "AEG = actual / pred - 1")
     if (length(grp_var))
       p <- p + ggplot2::facet_wrap(grp_var, scales = scales)
   }
@@ -131,7 +131,8 @@ plot.Backtest <- function(x,
 #'
 #' @description
 #' Display the held-out cells as a `cohort x dev` heatmap coloured by
-#' AEG (red = over-projected, blue = under-projected, white at 0).
+#' AEG (red = under-projected (actual > pred), blue = over-projected
+#' (actual < pred), white at 0).
 #'
 #' @param x An object of class `"Backtest"`.
 #' @param theme String passed to [.switch_theme()].
