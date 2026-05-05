@@ -12,6 +12,8 @@
 #' @param scales Facet scale argument.
 #' @param nrow,ncol Facet dimensions.
 #' @param theme Theme string.
+#' @param x.angle Numeric angle for x-axis tick labels. Default is `90`
+#'   to prevent overlap of the `from-to` link labels.
 #' @param ... Additional arguments passed to [.switch_theme()].
 #'
 #' @return A `ggplot` object.
@@ -19,12 +21,13 @@
 #' @method plot ED
 #' @export
 plot.ED <- function(x,
-                    type   = c("summary", "box", "point"),
-                    alpha  = 1,
-                    scales = c("fixed", "free", "free_x", "free_y"),
-                    nrow   = NULL,
-                    ncol   = NULL,
-                    theme  = c("view", "save", "shiny"),
+                    type    = c("summary", "box", "point"),
+                    alpha   = 1,
+                    scales  = c("fixed", "free", "free_x", "free_y"),
+                    nrow    = NULL,
+                    ncol    = NULL,
+                    theme   = c("view", "save", "shiny"),
+                    x.angle = 90,
                     ...) {
 
   .assert_class(x, "ED")
@@ -109,7 +112,7 @@ plot.ED <- function(x,
     )
 
     # theme
-    return(p + .switch_theme(theme = theme, x.angle = 90, ...))
+    return(p + .switch_theme(theme = theme, x.angle = x.angle, ...))
   }
 
   if (type == "box") {
@@ -139,7 +142,7 @@ plot.ED <- function(x,
     )
 
     # theme
-    return(p + .switch_theme(theme = theme, x.angle = 90,
+    return(p + .switch_theme(theme = theme, x.angle = x.angle,
                                      legend.position = "none", ...))
   }
 
@@ -176,7 +179,7 @@ plot.ED <- function(x,
     )
 
     # theme
-    return(p + .switch_theme(theme = theme, x.angle = 90,
+    return(p + .switch_theme(theme = theme, x.angle = x.angle,
                                      legend.position = "none", ...))
   }
 }
@@ -195,6 +198,8 @@ plot.ED <- function(x,
 #' @param amount_divisor Numeric. Default is `1e8`.
 #' @param theme Theme string.
 #' @param nrow,ncol Facet dimensions.
+#' @param x.angle Numeric angle for x-axis tick labels. Default is `90`
+#'   to prevent overlap of the `from-to` link labels.
 #' @param ... Additional arguments.
 #'
 #' @return A ggplot object.
@@ -208,6 +213,7 @@ plot_triangle.ED <- function(x,
                              theme          = c("view", "save", "shiny"),
                              nrow           = NULL,
                              ncol           = NULL,
+                             x.angle        = 90,
                              ...) {
 
   .assert_class(x, "ED")
@@ -292,7 +298,7 @@ plot_triangle.ED <- function(x,
   )
 
   # 9) theme
-  p + .switch_theme(theme = theme, ...)
+  p + .switch_theme(theme = theme, x.angle = x.angle, ...)
 }
 
 

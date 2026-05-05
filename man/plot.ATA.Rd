@@ -18,6 +18,7 @@
   nrow = NULL,
   ncol = NULL,
   theme = c("view", "save", "shiny"),
+  x.angle = 90,
   ...
 )
 }
@@ -50,6 +51,9 @@ One of \code{"fixed"}, \code{"free"}, \code{"free_x"}, or \code{"free_y"}.}
 \item{nrow, ncol}{Number of rows and columns for \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}.}
 
 \item{theme}{A string passed to \code{\link[=.switch_theme]{.switch_theme()}}.}
+
+\item{x.angle}{Numeric angle for x-axis tick labels. Default is \code{90}
+to prevent overlap of the \code{from-to} link labels.}
 
 \item{...}{Additional arguments passed to \code{\link[=.switch_theme]{.switch_theme()}}.}
 }

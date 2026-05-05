@@ -25,6 +25,8 @@
 #'   One of `"fixed"`, `"free"`, `"free_x"`, or `"free_y"`.
 #' @param nrow,ncol Number of rows and columns for [ggplot2::facet_wrap()].
 #' @param theme A string passed to [.switch_theme()].
+#' @param x.angle Numeric angle for x-axis tick labels. Default is `90`
+#'   to prevent overlap of the `from-to` link labels.
 #' @param ... Additional arguments passed to [.switch_theme()].
 #'
 #' @return A `ggplot` object.
@@ -44,6 +46,7 @@ plot.ATA <- function(x,
                      nrow            = NULL,
                      ncol            = NULL,
                      theme           = c("view", "save", "shiny"),
+                     x.angle         = 90,
                      ...) {
 
   .assert_class(x, "ATA")
@@ -202,7 +205,7 @@ plot.ATA <- function(x,
     )
 
     # theme
-    return(p + .switch_theme(theme = theme, x.angle = 90,
+    return(p + .switch_theme(theme = theme, x.angle = x.angle,
                                      legend.position = "none", ...))
   }
 
@@ -237,7 +240,7 @@ plot.ATA <- function(x,
     )
 
     # theme
-    return(p + .switch_theme(theme = theme, x.angle = 90,
+    return(p + .switch_theme(theme = theme, x.angle = x.angle,
                                      legend.position = "none", ...))
   }
 
@@ -293,7 +296,7 @@ plot.ATA <- function(x,
     )
 
     # theme
-    return(p + .switch_theme(theme = theme, x.angle = 90, ...))
+    return(p + .switch_theme(theme = theme, x.angle = x.angle, ...))
   }
 
   if (type == "box") {
@@ -332,7 +335,7 @@ plot.ATA <- function(x,
     )
 
     # theme
-    return(p + .switch_theme(theme = theme, x.angle = 90,
+    return(p + .switch_theme(theme = theme, x.angle = x.angle,
                                      legend.position = "none", ...))
   }
 
@@ -377,7 +380,7 @@ plot.ATA <- function(x,
     )
 
     # theme
-    return(p + .switch_theme(theme = theme, x.angle = 90,
+    return(p + .switch_theme(theme = theme, x.angle = x.angle,
                                      legend.position = "none", ...))
   }
 }

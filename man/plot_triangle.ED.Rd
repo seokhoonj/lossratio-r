@@ -12,6 +12,7 @@
   theme = c("view", "save", "shiny"),
   nrow = NULL,
   ncol = NULL,
+  x.angle = 90,
   ...
 )
 }
@@ -27,6 +28,9 @@
 \item{theme}{Theme string.}
 
 \item{nrow, ncol}{Facet dimensions.}
+
+\item{x.angle}{Numeric angle for x-axis tick labels. Default is \code{90}
+to prevent overlap of the \code{from-to} link labels.}
 
 \item{...}{Additional arguments.}
 }
