@@ -182,7 +182,7 @@ plot(ata, type = "point")         # 링크별 관측 ata 의 산점도
 
 ``` r
 
-la <- list(size = 3)                              # 라벨 크기 줄임
+la <- list(size = 2.5)                            # 라벨 크기 줄임
 plot_triangle(ata, label_args = la)               # 관측 인자 히트맵
 ```
 
@@ -190,14 +190,17 @@ plot_triangle(ata, label_args = la)               # 관측 인자 히트맵
 
 ``` r
 
-plot_triangle(ata, label_args = la, label_style = "detail")  # 인자 + (loss / rp) 금액
+plot_triangle(ata, label_args = la, show_maturity = TRUE)  # 성숙점 라인 overlay
 ```
 
 ![](triangle-diagnostics-ko_files/figure-html/unnamed-chunk-7-2.png)
 
 ``` r
 
-plot_triangle(ata, label_args = la, show_maturity = TRUE)    # 성숙점 라인 overlay
+
+# detail 라벨은 2 줄이라 monthly 셀에서는 겹침 — quarterly ATA 로 다시 빌드
+ata_q <- build_ata(tri_q, value_var = "closs")
+plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / rp) 금액
 ```
 
 ![](triangle-diagnostics-ko_files/figure-html/unnamed-chunk-7-3.png)
@@ -295,7 +298,7 @@ plot(ed, type = "box")
 
 ``` r
 
-plot_triangle(ed)
+plot_triangle(ed, label_args = la)
 ```
 
 ![](triangle-diagnostics-ko_files/figure-html/unnamed-chunk-9-3.png)

@@ -231,14 +231,18 @@ the share of finite ATA factors per link.</li>
 <h3 id="triangle-of-ata-factors">Triangle of ATA factors<a class="anchor" aria-label="anchor" href="#triangle-of-ata-factors"></a>
 </h3>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">la</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>                              <span class="co"># shrink labels</span></span>
+<code class="sourceCode R"><span><span class="va">la</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2.5</span><span class="op">)</span>                            <span class="co"># shrink labels</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata</span>, label_args <span class="op">=</span> <span class="va">la</span><span class="op">)</span>               <span class="co"># heatmap of observed factors</span></span></code></pre></div>
 <p><img src="triangle-diagnostics_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata</span>, label_args <span class="op">=</span> <span class="va">la</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span>  <span class="co"># factor + (loss / rp) amounts</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata</span>, label_args <span class="op">=</span> <span class="va">la</span>, show_maturity <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>    <span class="co"># overlay maturity line</span></span></code></pre></div>
 <p><img src="triangle-diagnostics_files/figure-html/unnamed-chunk-7-2.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata</span>, label_args <span class="op">=</span> <span class="va">la</span>, show_maturity <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>    <span class="co"># overlay maturity line</span></span></code></pre></div>
+<code class="sourceCode R"><span></span>
+<span><span class="co"># detail labels are two lines and overlap on monthly cells — rebuild on the</span></span>
+<span><span class="co"># quarterly triangle so the labels fit</span></span>
+<span><span class="va">ata_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_ata.html">build_ata</a></span><span class="op">(</span><span class="va">tri_q</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span>      <span class="co"># factor + (loss / rp) amounts</span></span></code></pre></div>
 <p><img src="triangle-diagnostics_files/figure-html/unnamed-chunk-7-3.png" class="r-plt" alt="" width="100%"></p>
 <p>The heatmap colours each cell by <code>log(ata / median(ata))</code>
 within its link, so column-wise colour distinguishes cohorts that
@@ -316,7 +320,7 @@ loose thresholds push it earlier.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ed</span>, type <span class="op">=</span> <span class="st">"box"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="triangle-diagnostics_files/figure-html/unnamed-chunk-9-2.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ed</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ed</span>, label_args <span class="op">=</span> <span class="va">la</span><span class="op">)</span></span></code></pre></div>
 <p><img src="triangle-diagnostics_files/figure-html/unnamed-chunk-9-3.png" class="r-plt" alt="" width="100%"></p>
 <p>The <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> method on an <code>ED</code> object is the
 ED-side analogue of <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> on an <code>ATA</code>

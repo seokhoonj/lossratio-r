@@ -180,7 +180,7 @@ plot(ata, type = "point")         # scatter of observed ata per link
 
 ``` r
 
-la <- list(size = 3)                              # shrink labels
+la <- list(size = 2.5)                            # shrink labels
 plot_triangle(ata, label_args = la)               # heatmap of observed factors
 ```
 
@@ -188,14 +188,18 @@ plot_triangle(ata, label_args = la)               # heatmap of observed factors
 
 ``` r
 
-plot_triangle(ata, label_args = la, label_style = "detail")  # factor + (loss / rp) amounts
+plot_triangle(ata, label_args = la, show_maturity = TRUE)    # overlay maturity line
 ```
 
 ![](triangle-diagnostics_files/figure-html/unnamed-chunk-7-2.png)
 
 ``` r
 
-plot_triangle(ata, label_args = la, show_maturity = TRUE)    # overlay maturity line
+
+# detail labels are two lines and overlap on monthly cells — rebuild on the
+# quarterly triangle so the labels fit
+ata_q <- build_ata(tri_q, value_var = "closs")
+plot_triangle(ata_q, label_style = "detail")      # factor + (loss / rp) amounts
 ```
 
 ![](triangle-diagnostics_files/figure-html/unnamed-chunk-7-3.png)
@@ -292,7 +296,7 @@ plot(ed, type = "box")
 
 ``` r
 
-plot_triangle(ed)
+plot_triangle(ed, label_args = la)
 ```
 
 ![](triangle-diagnostics_files/figure-html/unnamed-chunk-9-3.png)
