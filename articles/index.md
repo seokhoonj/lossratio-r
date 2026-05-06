@@ -7,7 +7,7 @@
 
 ### Methods
 
-- [Loss-ratio projection methods: SA, ED,
+- [Loss ratio projection methods: SA, ED,
   CL](https://seokhoonj.github.io/lossratio/articles/loss-ratio-methods.md):
 - [Chain ladder reserving with
   fit_cl](https://seokhoonj.github.io/lossratio/articles/chain-ladder.md):
@@ -19,5 +19,5 @@
   diagonals](https://seokhoonj.github.io/lossratio/articles/backtest.md):
 - [Hybrid filtering via regime
   break](https://seokhoonj.github.io/lossratio/articles/regime-break.md):
-- [Diagnosing LR convergence with
+- [Diagnosing loss ratio convergence with
   find_lr_convergence()](https://seokhoonj.github.io/lossratio/articles/lr-convergence.md):

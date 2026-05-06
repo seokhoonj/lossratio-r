@@ -99,7 +99,7 @@ compare projections against the withheld actuals.
   [`print(`*`<summary.Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   : Backtest a loss-ratio / chain ladder fit on existing data
 
-## LR convergence detection
+## Loss ratio convergence detection
 
 Detect the development period ($`k^{**}`$) from which the projected loss
 ratio stops revising and converges.
