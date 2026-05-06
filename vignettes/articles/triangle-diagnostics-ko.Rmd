@@ -42,9 +42,9 @@ tri <- build_triangle(exp, group_var = cv_nm)
 ### 코호트 궤적
 
 ```{r}
-plot(tri)                              # 코호트별 raw clr 궤적
-plot(tri, value_var = "lr")            # clr 대신 증분 loss ratio
-plot(tri, summary = TRUE)              # raw + overlay (mean / median / weighted)
+plot(tri)                              # 코호트별 누적 손해율 궤적
+plot(tri, value_var = "lr")            # 누적 대신 증분 손해율
+plot(tri, summary = TRUE)              # 코호트 선 + overlay (평균 / 중앙값 / 가중)
 ```
 
 `summary = TRUE` overlay 는 각 dev 에서 평균, 중앙값, 가중 clr 을 계산해 코호트
