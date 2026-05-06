@@ -104,10 +104,13 @@ plot(ata, type = "point")         # 링크별 관측 ata 의 산점도
 ### ATA 인자의 Triangle
 
 ```{r}
-la <- list(size = 3)                              # 라벨 크기 줄임
+la <- list(size = 2.5)                            # 라벨 크기 줄임
 plot_triangle(ata, label_args = la)               # 관측 인자 히트맵
-plot_triangle(ata, label_args = la, label_style = "detail")  # 인자 + (loss / rp) 금액
-plot_triangle(ata, label_args = la, show_maturity = TRUE)    # 성숙점 라인 overlay
+plot_triangle(ata, label_args = la, show_maturity = TRUE)  # 성숙점 라인 overlay
+
+# detail 라벨은 2 줄이라 monthly 셀에서는 겹침 — quarterly ATA 로 다시 빌드
+ata_q <- build_ata(tri_q, value_var = "closs")
+plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / rp) 금액
 ```
 
 이 히트맵은 각 셀을 자기 링크 내에서 `log(ata / median(ata))` 로 색칠하므로,
@@ -155,7 +158,7 @@ head(sm)
 
 plot(ed, type = "summary")
 plot(ed, type = "box")
-plot_triangle(ed)
+plot_triangle(ed, label_args = la)
 ```
 
 `ED` 객체의 `summary()` 메소드는 `ATA` 객체의 `summary()` 에 대응하는
