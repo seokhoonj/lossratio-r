@@ -1,8 +1,8 @@
 ---
-title: "Triangle 과 ATA 진단"
+title: "Triangle 및 ATA 진단"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Triangle 과 ATA 진단}
+  %\VignetteIndexEntry{Triangle 및 ATA 진단}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
