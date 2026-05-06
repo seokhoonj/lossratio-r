@@ -1,8 +1,8 @@
 ---
-title: "예측 손해율 수렴 시점 진단: find_lr_convergence()"
+title: "예측 손해율 수렴 시점 진단"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{예측 손해율 수렴 시점 진단: find_lr_convergence()}
+  %\VignetteIndexEntry{예측 손해율 수렴 시점 진단}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

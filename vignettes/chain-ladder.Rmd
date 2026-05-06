@@ -1,8 +1,8 @@
 ---
-title: "Chain ladder reserving with fit_cl"
+title: "Chain ladder reserving"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Chain ladder reserving with fit_cl}
+  %\VignetteIndexEntry{Chain ladder reserving}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
