@@ -12,7 +12,8 @@ unstable in early development, exposure (≈ risk premium) is the most
 reliable anchor for projection, and structural shifts from product
 redesigns, underwriting changes, or regulatory reforms accumulate across
 cohorts. The package's defaults — stage-adaptive projection,
-exposure-driven early development, cohort regime detection — are tuned
+exposure-driven early development, cohort regime detection (regime: a homogeneous group of cohorts that share
+similar loss dynamics) — are tuned
 for this setting. The same tools apply to any cumulative loss / exposure
 framework (mortality, morbidity, general claims).
 
