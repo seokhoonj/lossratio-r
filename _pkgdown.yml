@@ -2,6 +2,9 @@ url: https://seokhoonj.github.io/lossratio
 
 template:
   bootstrap: 5
+  includes:
+    in_header: |
+      <meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs" />
 
 home:
   title: lossratio

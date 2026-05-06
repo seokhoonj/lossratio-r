@@ -3,6 +3,9 @@ url: https://seokhoonj.github.io/lossratio/ko
 template:
   bootstrap: 5
   language: ko
+  includes:
+    in_header: |
+      <meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs" />
 
 home:
   title: lossratio
