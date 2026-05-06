@@ -5,13 +5,15 @@ Version: 0.0.0.9000
 Authors@R:
     person(given = "Seokhoon", family = "Joo", email = "seokhoonj@gmail.com",
            role = c("aut", "cre"))
-Description: A toolkit for analysing insurance loss ratios using structured
-    experience data with loss and risk premium. Loss ratio is defined as
-    loss divided by risk premium. Provides underwriting-period,
-    calendar-period, and total aggregation frameworks with cumulative
-    metrics, margin analysis, and composition diagnostics. Intended for
-    actuarial workflows and extended with reserving methods such as
-    chain ladder.
+Description: A toolkit for loss-ratio analysis and projection on long-format
+    experience data, oriented toward long-term health insurance.
+    Implements stage-adaptive loss-ratio projection that uses an
+    exposure-driven model before the maturity point and chain ladder
+    after it, with supporting maturity point detection and cohort
+    regime detection for handling structural breaks. Provides cohort
+    by development period, calendar period, and total aggregation
+    frameworks for diagnostics, and applies to any cumulative loss
+    and exposure setting with sufficient sample per cell.
 License: GPL (>= 2)
 URL: https://seokhoonj.github.io/lossratio, https://github.com/seokhoonj/lossratio
 BugReports: https://github.com/seokhoonj/lossratio/issues

@@ -1,25 +1,8 @@
-#' lossratio: Tools for Insurance Loss Ratio Analysis
-#'
-#' @description
-#' A toolkit for analysing insurance loss ratios using risk premium-based
-#' frameworks. Supports underwriting-period, calendar-period, and total
-#' aggregation, with cumulative metrics, margin analysis, and composition
-#' diagnostics.
-#'
-#' The package provides structured workflows for actuarial experience analysis,
-#' including triangle-style summaries, calendar-based views, and total
-#' aggregations. It also includes extensions for reserving techniques such as
-#' chain ladder and development factor estimation.
-#'
 #' @details
 #' The core loss ratio is defined as:
 #' \deqn{lr = loss / rp}
 #'
 #' where `rp` represents risk premium, not written premium.
-#'
-#' The package is designed for practical actuarial workflows, emphasising
-#' consistency across summary functions and compatibility with data.table-based
-#' pipelines.
 #'
 #' @keywords internal
 "_PACKAGE"
