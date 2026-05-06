@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 
 > 영어 원본 보기: [Detecting regime shifts across underwriting cohorts](../regime-detection.html)
 
-## 동기
+## 1. 동기
 
 장기 건강보험 코호트 포트폴리오를 분석할 때 실무자가 자주 던지는 질문은 두 가지이다.
 
@@ -51,7 +51,7 @@ knitr::opts_chunk$set(
 코호트를 정렬한 뒤, 그 다변량 시퀀스에 변화점 또는 클러스터링 방법을
 적용한다.
 
-## 데이터와 설정
+## 2. 데이터와 설정
 
 ```{r}
 library(lossratio)
@@ -61,7 +61,7 @@ exp     <- as_experience(experience)
 tri_sur <- build_triangle(exp[cv_nm == "SUR"], cv_nm)
 ```
 
-## regime 탐지
+## 3. regime 탐지
 
 기본 방법은 `"ecp"` 로, 데이터로부터 regime 의 개수까지 결정하는 비모수
 다변량 변화점 알고리즘이다.
@@ -75,7 +75,7 @@ r
 이상 관측된 코호트만 분석되며, 창이 짧은 코호트는 제외된다. `K` 를 늘리면
 궤적을 더 많이 담을 수 있지만 최근 코호트가 그만큼 더 빠진다.
 
-## 요약과 regime 별 멤버십
+## 4. 요약과 regime 별 멤버십
 
 ```{r}
 summary(r)
@@ -83,7 +83,7 @@ summary(r)
 r$labels
 ```
 
-## 시각화
+## 5. 시각화
 
 `plot(r)` 은 코호트 궤적의 PCA(주성분분석) 산점도를 탐지된 regime 으로 색칠해
 보여 준다. PCA 공간에서 regime 들이 잘 분리된다면 구조적 변화가 시각적으로
@@ -97,7 +97,7 @@ plot(r)
 *어떻게* 다른지 (예: 변화가 주로 초기 경과에 영향을 주는지, 후기 경과에
 영향을 주는지) 읽어내는 데 유용하다.
 
-## 방법 선택
+## 6. 방법 선택
 
 * **`"ecp"`** — 권장 기본값. 다변량, 비모수 알고리즘으로, 주어진 유의수준에서
   regime 의 개수를 자동으로 탐지한다. 다른 방법보다 다소 느리지만 사전에
@@ -119,7 +119,7 @@ plot(r)
 `"hclust"` 가 모두 `24.04` 를 regime 경계로 지목하는 경우 — 실제 인수/요율
 변경의 강력한 증거가 된다.
 
-## regime 개수 강제하기
+## 7. regime 개수 강제하기
 
 regime 개수를 고정해 비교하고 싶을 때 — 예를 들어 2-regime 가설과 3-regime
 가설을 비교할 때 — `n_regimes` 를 넘긴다.
@@ -133,7 +133,7 @@ summary(r2)
 알고리즘이 그 수까지 regime 을 반환한다). `"hclust"` 의 경우에는 강제
 컷이다.
 
-## `fit_lr()` 과의 관계
+## 8. `fit_lr()` 과의 관계
 
 `detect_cohort_regime()` 은 `fit_lr()` 프레임워크의 수정이 아니라 *전처리
 진단* 이다. 그 출력은 두 가지로 활용된다.

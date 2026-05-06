@@ -26,7 +26,7 @@ knitr::opts_chunk$set(
 방식으로 집계할 수 있다. `lossratio` 는 각 프레임워크별로 하나의
 빌더를 제공한다. 이 문서는 셋을 비교한다.
 
-## 한눈에 보기
+## 1. 한눈에 보기
 
 | 빌더                 | 출력 객체     | 차원                          | 사용 시점                                  |
 |----------------------|---------------|-------------------------------|--------------------------------------------|
@@ -46,7 +46,7 @@ knitr::opts_chunk$set(
   포트폴리오 수준 비교에 유용하다 (해당 기간에 어떤 상품이 가장
   나쁜 손해율을 보였는가?).
 
-## Triangle (코호트 × dev)
+## 2. Triangle (코호트 × dev)
 
 ```{r}
 library(lossratio)
@@ -78,7 +78,7 @@ plot_triangle(tri_q)   # 코호트 × dev clr 히트맵
 - `fit_cl()`, `fit_lr()` — 추정
 - `detect_cohort_regime()` — 구조 변화 탐지
 
-## Calendar (달력 기간만)
+## 3. Calendar (달력 기간만)
 
 ```{r}
 cal <- build_calendar(exp, group_var = cv_nm, calendar_var = "cym")
@@ -104,7 +104,7 @@ plot(cal)                       # x axis: calendar
 plot(cal, x_by = "dev")         # x axis: 순차 인덱스
 ```
 
-## Total (포트폴리오 요약)
+## 4. Total (포트폴리오 요약)
 
 ```{r}
 tot <- build_total(
@@ -127,7 +127,7 @@ head(tot)
 - 그룹별 준비금 / 포트폴리오 비중 순위
 - 보고용 요약표 작성
 
-## 데이터 흐름으로 본 집계
+## 5. 데이터 흐름으로 본 집계
 
 ```
                      experience (long, with demographics)
@@ -145,7 +145,7 @@ head(tot)
 세 빌더 모두 동일한 `experience` 에서 출발해 인구통계 차원을
 제거한다. 분석 질문에 맞춰 프레임워크를 선택한다.
 
-## 속성 스키마
+## 6. 속성 스키마
 
 집계 후 각 객체는 원본 컬럼 메타데이터를 속성으로 저장한다 — 플롯
 라벨과 집계 주기에 맞는 날짜 표기에 사용된다.
