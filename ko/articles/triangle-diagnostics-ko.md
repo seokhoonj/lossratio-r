@@ -25,21 +25,21 @@ tri <- build_triangle(exp, group_var = cv_nm)
 
 ``` r
 
-plot(tri)                              # 코호트별 raw clr 궤적
+plot(tri)                              # 코호트별 누적 손해율 궤적
 ```
 
 ![](triangle-diagnostics-ko_files/figure-html/unnamed-chunk-2-1.png)
 
 ``` r
 
-plot(tri, value_var = "lr")            # clr 대신 증분 loss ratio
+plot(tri, value_var = "lr")            # 누적 대신 증분 손해율
 ```
 
 ![](triangle-diagnostics-ko_files/figure-html/unnamed-chunk-2-2.png)
 
 ``` r
 
-plot(tri, summary = TRUE)              # raw + overlay (mean / median / weighted)
+plot(tri, summary = TRUE)              # 코호트 선 + overlay (평균 / 중앙값 / 가중)
 ```
 
 ![](triangle-diagnostics-ko_files/figure-html/unnamed-chunk-2-3.png)

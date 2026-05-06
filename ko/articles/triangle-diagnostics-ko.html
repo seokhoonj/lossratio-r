@@ -109,13 +109,13 @@ ATA diagnostics</a></p>
 <h3 id="코호트-궤적">코호트 궤적<a class="anchor" aria-label="anchor" href="#%EC%BD%94%ED%98%B8%ED%8A%B8-%EA%B6%A4%EC%A0%81"></a>
 </h3>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>                              <span class="co"># 코호트별 raw clr 궤적</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>                              <span class="co"># 코호트별 누적 손해율 궤적</span></span></code></pre></div>
 <p><img src="triangle-diagnostics-ko_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span>            <span class="co"># clr 대신 증분 loss ratio</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span>            <span class="co"># 누적 대신 증분 손해율</span></span></code></pre></div>
 <p><img src="triangle-diagnostics-ko_files/figure-html/unnamed-chunk-2-2.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span>, summary <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>              <span class="co"># raw + overlay (mean / median / weighted)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span>, summary <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>              <span class="co"># 코호트 선 + overlay (평균 / 중앙값 / 가중)</span></span></code></pre></div>
 <p><img src="triangle-diagnostics-ko_files/figure-html/unnamed-chunk-2-3.png" class="r-plt" alt="" width="100%"></p>
 <p><code>summary = TRUE</code> overlay 는 각 dev 에서 평균, 중앙값, 가중
 clr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗어나는
