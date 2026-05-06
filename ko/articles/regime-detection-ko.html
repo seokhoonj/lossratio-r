@@ -123,9 +123,12 @@ shifts across underwriting cohorts</a></p>
 상황에서 궤적 다발을 눈대중으로 살피는 것은 구조적 변화의 위치를
 짚어내는 신뢰할 만한 방법이 못 된다.</p>
 <p><code><a href="../reference/detect_cohort_regime.html">detect_cohort_regime()</a></code> 은 이 두 질문에 한 번의 호출로
-답한다. 각 인수 코호트를 특징 벡터 (경과 기간 <code>1, ..., K</code> 에
-걸친 궤적) 로 다루고, 인수 시점 순으로 코호트를 정렬한 뒤, 그 다변량
-시퀀스에 변화점 또는 클러스터링 방법을 적용한다.</p>
+답한다 — 인수 코호트를 <strong>regime</strong> (유사한 손해 추이를
+공유하는 인수 코호트들의 묶음) 으로 그룹화하고, 그룹 사이의 break 시점을
+함께 보고한다. 각 인수 코호트를 특징 벡터 (경과 기간
+<code>1, ..., K</code> 에 걸친 궤적) 로 다루고, 인수 시점 순으로
+코호트를 정렬한 뒤, 그 다변량 시퀀스에 변화점 또는 클러스터링 방법을
+적용한다.</p>
 </div>
 <div class="section level2">
 <h2 id="데이터와-설정">데이터와 설정<a class="anchor" aria-label="anchor" href="#%EB%8D%B0%EC%9D%B4%ED%84%B0%EC%99%80-%EC%84%A4%EC%A0%95"></a>

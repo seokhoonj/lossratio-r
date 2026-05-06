@@ -134,21 +134,22 @@ dev
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>g</mi><mi>k</mi></msub><annotation encoding="application/x-tex">g_k</annotation></semantics></math>
 는 그 반대로 움직인다는 사실을 활용한다. SA 는 성숙점에서 추정량을
 전환한다:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><mrow><mo stretchy="true" form="prefix">{</mo><mtable><mtr><mtd columnalign="left" style="text-align: left"><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>L</mi></msubsup><mo>+</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>P</mi></msubsup></mtd><mtd columnalign="left" style="text-align: left"><mi>k</mi><mo>&lt;</mo><msub><mi>m</mi><mi>g</mi></msub><mspace width="1.0em"></mspace><mtext mathvariant="normal">(성숙 이전: ED)</mtext></mtd></mtr><mtr><mtd columnalign="left" style="text-align: left"><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>L</mi></msubsup></mtd><mtd columnalign="left" style="text-align: left"><mi>k</mi><mo>≥</mo><msub><mi>m</mi><mi>g</mi></msub><mspace width="1.0em"></mspace><mtext mathvariant="normal">(성숙 이후: CL)</mtext></mtd></mtr></mtable></mrow></mrow><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><mrow><mo stretchy="true" form="prefix">{</mo><mtable><mtr><mtd columnalign="left" style="text-align: left"><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>L</mi></msubsup><mo>+</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>P</mi></msubsup></mtd><mtd columnalign="left" style="text-align: left"><mi>k</mi><mo>&lt;</mo><msub><mi>m</mi><mi>g</mi></msub><mspace width="1.0em"></mspace><mtext mathvariant="normal">(성숙점 이전: ED)</mtext></mtd></mtr><mtr><mtd columnalign="left" style="text-align: left"><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>L</mi></msubsup></mtd><mtd columnalign="left" style="text-align: left"><mi>k</mi><mo>≥</mo><msub><mi>m</mi><mi>g</mi></msub><mspace width="1.0em"></mspace><mtext mathvariant="normal">(성숙점 이후: CL)</mtext></mtd></mtr></mtable></mrow></mrow><annotation encoding="application/x-tex">
 \hat{C}^L_{i,k+1} \;=\;
 \begin{cases}
-\hat{C}^L_{i,k} + g_k \cdot C^P_{i,k} &amp; k &lt; m_g \quad \text{(성숙 이전: ED)} \\
-f_k \cdot \hat{C}^L_{i,k}              &amp; k \ge m_g \quad \text{(성숙 이후: CL)}
+\hat{C}^L_{i,k} + g_k \cdot C^P_{i,k} &amp; k &lt; m_g \quad \text{(성숙점 이전: ED)} \\
+f_k \cdot \hat{C}^L_{i,k}              &amp; k \ge m_g \quad \text{(성숙점 이후: CL)}
 \end{cases}
 </annotation></semantics></math></p>
 <p>특성:</p>
 <ul>
 <li>
-<strong>성숙 이전</strong>: 손해 추정치가 익스포저에 비례한다. 초기
+<strong>성숙점 이전</strong>: 손해 추정치가 익스포저에 비례한다.
+초기
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
 가 노이즈로 폭주하는 문제를 회피한다.</li>
 <li>
-<strong>성숙 이후</strong>: 코호트 자체의 관측 수준을 보존한다. ED
+<strong>성숙점 이후</strong>: 코호트 자체의 관측 수준을 보존한다. ED
 방법이 꼬리에서 모든 코호트를 평균으로 끌어당기는 문제를 회피한다.</li>
 </ul>
 <p>사용 시점:</p>
@@ -156,7 +157,7 @@ f_k \cdot \hat{C}^L_{i,k}              &amp; k \ge m_g \quad \text{(성숙 이�
 <li>발달이 여러 해에 걸치는 long-tail 상품.</li>
 <li>최근 코호트(미성숙 데이터)와 오래된 코호트(성숙 데이터)가 혼재하는
 경우.</li>
-<li>성숙 이전·이후의 구조적 차이가 있는 건강보험 코호트 (예: 면책기간
+<li>성숙점 이전·이후의 구조적 차이가 있는 건강보험 코호트 (예: 면책기간
 전환).</li>
 </ul>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
