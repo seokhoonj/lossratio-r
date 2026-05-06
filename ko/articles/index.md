@@ -1,6 +1,6 @@
 # Articles
 
-### 한국어
+### 글
 
 - [집계 프레임워크: Triangle, Calendar,
   Total](https://seokhoonj.github.io/lossratio/ko/articles/aggregation-frameworks-ko.md):
@@ -16,5 +16,8 @@
   필터링](https://seokhoonj.github.io/lossratio/ko/articles/regime-break-ko.md):
 - [홀드아웃 대각선을 이용한 추정
   백테스팅](https://seokhoonj.github.io/lossratio/ko/articles/backtest-ko.md):
+
+### 참고
+
 - [Chain ladder를 이용한 준비금
   산출](https://seokhoonj.github.io/lossratio/ko/articles/chain-ladder-ko.md):
