@@ -60,15 +60,16 @@ structure with cumulative columns and derived ratios.
 ## Installation
 
 ``` r
-# devtools
-devtools::install_github("seokhoonj/lossratio")
+# pak (recommended)
+pak::pak("seokhoonj/lossratio")
 
-# remotes
+# remotes (alternative)
 remotes::install_github("seokhoonj/lossratio")
 ```
 
-The package depends on `seokhoonj/instead` and `seokhoonj/ggshort`
-(installed automatically via `Remotes:`).
+The package currently depends on seokhoonj/instead and seokhoonj/ggshort
+(installed automatically via Remotes:; planned for removal in a
+future release).
 
 ## Quick Start
 

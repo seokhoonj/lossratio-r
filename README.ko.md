@@ -59,15 +59,15 @@
 ## 설치
 
 ``` r
-# devtools
-devtools::install_github("seokhoonj/lossratio")
+# pak (recommended)
+pak::pak("seokhoonj/lossratio")
 
-# remotes
+# remotes (alternative)
 remotes::install_github("seokhoonj/lossratio")
 ```
 
-이 패키지는 `seokhoonj/instead` 와 `seokhoonj/ggshort` 에 의존한다
-(`Remotes:` 를 통해 자동 설치).
+이 패키지는 현재 seokhoonj/instead 와 seokhoonj/ggshort 에 의존한다
+(Remotes: 를 통해 자동 설치, 추후 의존성 제거 예정).
 
 ## Quick Start
 
