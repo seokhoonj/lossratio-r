@@ -207,12 +207,19 @@ link factor $`f_k`$ 가 noisy 해진다. 실용적 임계는 `n_post ≳ 6`
 ultimate 추정도 post-break 데이터로 전이되므로, 사용자는 이 점을
 인지하고 결과를 해석할 필요가 있다.
 
-## 8. 같이 보기
+## 8. 함께 보기
 
-- [`fit_lr`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
-  — 손해율 추정 통합 인터페이스.
-- [백테스트
-  문서](https://seokhoonj.github.io/lossratio/ko/articles/backtest-ko.md)
+- [`vignette("loss-ratio-methods")`](https://seokhoonj.github.io/lossratio/ko/articles/loss-ratio-methods.md)
+  —
+  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  과 `"sa"`, `"ed"`, `"cl"` 방법.
+- [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/ko/articles/backtest.md)
   — `recent`, `regime_break` 가 결과에 미치는 영향을 진단하는 도구.
-- [`detect_cohort_regime`](https://seokhoonj.github.io/lossratio/ko/reference/detect_cohort_regime.md)
-  — 코호트 단위 break date 자동 검출.
+- [`vignette("regime-detection")`](https://seokhoonj.github.io/lossratio/ko/articles/regime-detection.md)
+  —
+  [`detect_cohort_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_cohort_regime.md)
+  참고.
+- [`?fit_lr`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
+  [`?fit_ata`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
+  [`?fit_ed`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md),
+  [`?detect_cohort_regime`](https://seokhoonj.github.io/lossratio/ko/reference/detect_cohort_regime.md).

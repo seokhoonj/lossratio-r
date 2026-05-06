@@ -91,7 +91,7 @@ ATA diagnostics</a></p>
 인자</strong>(age-to-age factor) 의 안정성, 성숙점(maturity point)
 탐지를 이해하기 위한 <code>lossratio</code> 의 진단 도구를 다룬다.</p>
 <div class="section level2">
-<h2 id="triangle-진단">Triangle 진단<a class="anchor" aria-label="anchor" href="#triangle-%EC%A7%84%EB%8B%A8"></a>
+<h2 id="triangle-진단">1. Triangle 진단<a class="anchor" aria-label="anchor" href="#triangle-%EC%A7%84%EB%8B%A8"></a>
 </h2>
 <p>이 문서는 간결성을 위해 <code>SUR</code> 그룹만 사용한다 — 모든
 절차는 다중 그룹 입력에도 그대로 일반화된다.</p>
@@ -161,7 +161,7 @@ clr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗
 </div>
 </div>
 <div class="section level2">
-<h2 id="age-to-age-인자-진단">Age-to-age 인자 진단<a class="anchor" aria-label="anchor" href="#age-to-age-%EC%9D%B8%EC%9E%90-%EC%A7%84%EB%8B%A8"></a>
+<h2 id="age-to-age-인자-진단">2. Age-to-age 인자 진단<a class="anchor" aria-label="anchor" href="#age-to-age-%EC%9D%B8%EC%9E%90-%EC%A7%84%EB%8B%A8"></a>
 </h2>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ata</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_ata.html">build_ata</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span></span>
@@ -249,7 +249,7 @@ clr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗
 </div>
 </div>
 <div class="section level2">
-<h2 id="성숙점-탐지">성숙점 탐지<a class="anchor" aria-label="anchor" href="#%EC%84%B1%EC%88%99%EC%A0%90-%ED%83%90%EC%A7%80"></a>
+<h2 id="성숙점-탐지">3. 성숙점 탐지<a class="anchor" aria-label="anchor" href="#%EC%84%B1%EC%88%99%EC%A0%90-%ED%83%90%EC%A7%80"></a>
 </h2>
 <p>성숙점(maturity point) 은 ATA 인자가 chain ladder 추정에 신뢰할 만큼
 안정화되는 경과 기간 링크이다. <code>fit_lr(method = "sa")</code> 가 ED
@@ -288,7 +288,7 @@ attribute 로도 저장된다. <code><a href="../reference/find_ata_maturity.htm
 밀리고, 느슨하게 잡으면 앞으로 당겨진다.</p>
 </div>
 <div class="section level2">
-<h2 id="ed-진단">ED 진단<a class="anchor" aria-label="anchor" href="#ed-%EC%A7%84%EB%8B%A8"></a>
+<h2 id="ed-진단">4. ED 진단<a class="anchor" aria-label="anchor" href="#ed-%EC%A7%84%EB%8B%A8"></a>
 </h2>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_ed.html">build_ed</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"closs"</span>, exposure_var <span class="op">=</span> <span class="st">"crp"</span><span class="op">)</span></span>
@@ -327,7 +327,7 @@ attribute 로도 저장된다. <code><a href="../reference/find_ata_maturity.htm
 에 대해 링크별 통계를 계산한다.</p>
 </div>
 <div class="section level2">
-<h2 id="빌드-전-검증">빌드 전 검증<a class="anchor" aria-label="anchor" href="#%EB%B9%8C%EB%93%9C-%EC%A0%84-%EA%B2%80%EC%A6%9D"></a>
+<h2 id="빌드-전-검증">5. 빌드 전 검증<a class="anchor" aria-label="anchor" href="#%EB%B9%8C%EB%93%9C-%EC%A0%84-%EA%B2%80%EC%A6%9D"></a>
 </h2>
 <p>경과 기간 시퀀스에 결손이 의심되면 <code><a href="../reference/build_triangle.html">build_triangle()</a></code> 호출
 전에 점검한다.</p>
@@ -350,7 +350,7 @@ triangle 이 깨끗하다는 뜻이다.</p>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="최근-대각선-부분집합">최근 대각선 부분집합<a class="anchor" aria-label="anchor" href="#%EC%B5%9C%EA%B7%BC-%EB%8C%80%EA%B0%81%EC%84%A0-%EB%B6%80%EB%B6%84%EC%A7%91%ED%95%A9"></a>
+<h2 id="최근-대각선-부분집합">6. 최근 대각선 부분집합<a class="anchor" aria-label="anchor" href="#%EC%B5%9C%EA%B7%BC-%EB%8C%80%EA%B0%81%EC%84%A0-%EB%B6%80%EB%B6%84%EC%A7%91%ED%95%A9"></a>
 </h2>
 <p>오래된 코호트가 더 이상 대표성이 없을 때 (요율 변경, 적립 regime 변경
 등) 추정을 최근 대각선으로 제한한다.</p>
@@ -397,7 +397,7 @@ triangle 이 깨끗하다는 뜻이다.</p>
 개에 속하는 행만 남긴다.</p>
 </div>
 <div class="section level2">
-<h2 id="워크플로-체크리스트">워크플로 체크리스트<a class="anchor" aria-label="anchor" href="#%EC%9B%8C%ED%81%AC%ED%94%8C%EB%A1%9C-%EC%B2%B4%ED%81%AC%EB%A6%AC%EC%8A%A4%ED%8A%B8"></a>
+<h2 id="워크플로-체크리스트">7. 워크플로 체크리스트<a class="anchor" aria-label="anchor" href="#%EC%9B%8C%ED%81%AC%ED%94%8C%EB%A1%9C-%EC%B2%B4%ED%81%AC%EB%A6%AC%EC%8A%A4%ED%8A%B8"></a>
 </h2>
 <p>적합 전에 확인할 사항은 다음과 같다.</p>
 <ol style="list-style-type: decimal">
@@ -424,7 +424,7 @@ triangle 이 깨끗하다는 뜻이다.</p>
 <code><a href="../reference/fit_cl.html">fit_cl()</a></code> 을 적합한다.</p>
 </div>
 <div class="section level2">
-<h2 id="함께-보기">함께 보기<a class="anchor" aria-label="anchor" href="#%ED%95%A8%EA%BB%98-%EB%B3%B4%EA%B8%B0"></a>
+<h2 id="함께-보기">8. 함께 보기<a class="anchor" aria-label="anchor" href="#%ED%95%A8%EA%BB%98-%EB%B3%B4%EA%B8%B0"></a>
 </h2>
 <ul>
 <li>

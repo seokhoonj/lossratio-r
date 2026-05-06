@@ -8,7 +8,7 @@ chain ladder 또는 손해율 모형을 적합하기 전에 기반이 되는 tri
 인자**(age-to-age factor) 의 안정성, 성숙점(maturity point) 탐지를
 이해하기 위한 `lossratio` 의 진단 도구를 다룬다.
 
-## Triangle 진단
+## 1. Triangle 진단
 
 이 문서는 간결성을 위해 `SUR` 그룹만 사용한다 — 모든 절차는 다중 그룹
 입력에도 그대로 일반화된다.
@@ -103,7 +103,7 @@ head(sm)
 (group, dev) 셀별 평균 / 중앙값 / 가중 손해율을 담은 `TriangleSummary`
 객체를 반환한다.
 
-## Age-to-age 인자 진단
+## 2. Age-to-age 인자 진단
 
 ``` r
 
@@ -209,7 +209,7 @@ plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / rp) 금액
 색칠하므로, 열 방향 색상은 해당 링크의 중앙값에서 벗어나는 코호트를
 구분해 준다.
 
-## 성숙점 탐지
+## 3. 성숙점 탐지
 
 성숙점(maturity point) 은 ATA 인자가 chain ladder 추정에 신뢰할 만큼
 안정화되는 경과 기간 링크이다. `fit_lr(method = "sa")` 가 ED 에서 CL 로
@@ -259,7 +259,7 @@ print(mat)
 (예: `cv_threshold = 0.05`) 잡으면 성숙점이 뒤로 밀리고, 느슨하게 잡으면
 앞으로 당겨진다.
 
-## ED 진단
+## 4. ED 진단
 
 ``` r
 
@@ -308,7 +308,7 @@ plot_triangle(ed, label_args = la)
 대응하는 ED 측 분석으로, 강도 $`g_k = \Delta C^L_k / C^P_k`$ 에 대해
 링크별 통계를 계산한다.
 
-## 빌드 전 검증
+## 5. 빌드 전 검증
 
 경과 기간 시퀀스에 결손이 의심되면
 [`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md)
@@ -333,7 +333,7 @@ head(gaps)
   에 `fill_gaps = TRUE` 를 넘겨 누락 셀을 0 으로 채운다 (단, `n_obs` 가
   부풀어 오르므로 신중히 사용).
 
-## 최근 대각선 부분집합
+## 6. 최근 대각선 부분집합
 
 오래된 코호트가 더 이상 대표성이 없을 때 (요율 변경, 적립 regime 변경
 등) 추정을 최근 대각선으로 제한한다.
@@ -382,7 +382,7 @@ fit_lr(tri, recent = 12)
 `recent = K` 는 calendar 위치 (`rank(cohort) + dev - 1`) 가 그룹 내 최근
 `K` 개에 속하는 행만 남긴다.
 
-## 워크플로 체크리스트
+## 7. 워크플로 체크리스트
 
 적합 전에 확인할 사항은 다음과 같다.
 
@@ -405,7 +405,7 @@ fit_lr(tri, recent = 12)
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
 을 적합한다.
 
-## 함께 보기
+## 8. 함께 보기
 
 - [`vignette("getting-started")`](https://seokhoonj.github.io/lossratio/ko/articles/getting-started.md)
   — 전체 파이프라인 개요.

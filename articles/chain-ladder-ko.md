@@ -12,7 +12,7 @@
 은 하나의 누적 지표를 전방으로 추정하고 코호트별 Mack 방식 표준오차를
 함께 계산한다.
 
-## 기본 사용법
+## 1. 기본 사용법
 
 이 문서는 간결성을 위해 `SUR` 그룹만 사용한다 — 모든 절차는 다중 그룹
 입력에도 그대로 일반화된다.
@@ -43,7 +43,7 @@ print(cl)
 `"closs"` (누적 손해), 익스포저 추정에는 `"crp"` (누적 위험보험료) 를
 쓴다.
 
-## 방법: basic vs Mack
+## 2. 방법: basic vs Mack
 
 두 가지 추정 방법이 제공된다. 두 방법 모두 인접 dev 의 누적 손해 비
 $`f_k = C^L_{k+1} / C^L_k`$ — **ATA 인자**(age-to-age factor) — 를
@@ -97,7 +97,7 @@ plot(cl_mack, type = "projection", show_interval = TRUE)
 
 ![](chain-ladder-ko_files/figure-html/unnamed-chunk-3-1.png)
 
-## Tail 인자
+## 3. Tail 인자
 
 마지막 관측 경과 기간에서도 손해가 여전히 발달 중인 triangle 의 경우,
 외삽한 tail 인자(tail factor) 로 ultimate 를 추정한다.
@@ -115,7 +115,7 @@ cl_tail <- fit_cl(tri, value_var = "closs", method = "mack", tail = 1.025)
 외삽된 $`f_k`$ 의 누적 곱만큼 추정 범위를 연장한다. 기본값은 비활성
 (`tail = FALSE`) 이다.
 
-## Maturity 필터링
+## 4. Maturity 필터링
 
 선택된 ATA 인자가 변동성이 크다면, 추정을 성숙(mature) 영역으로 제한할
 수 있다.
@@ -143,7 +143,7 @@ cl_mat$maturity
 [`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/reference/find_ata_maturity.md)
 로 그대로 전달된다.
 
-## 분산 성분 (Mack)
+## 5. 분산 성분 (Mack)
 
 `fit_cl(method = "mack")` 은 추정 분산을 다음과 같이 분해한다.
 
@@ -228,7 +228,7 @@ summary(cl_mack)
 #>            <num>        <num>
 ```
 
-## 준비금 플롯
+## 6. 준비금 플롯
 
 `type = "reserve"` 는 코호트별 준비금을 (Mack 일 경우 선택적 오차 막대와
 함께) 표시한다.
@@ -240,7 +240,7 @@ plot(cl_mack, type = "reserve", conf_level = 0.95)
 
 ![](chain-ladder-ko_files/figure-html/unnamed-chunk-7-1.png)
 
-## Triangle 시각화
+## 7. Triangle 시각화
 
 [`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
 은 코호트 × dev 셀을 히트맵으로 표시하며, 관측된 셀과 추정된 셀을
@@ -291,7 +291,7 @@ plot_triangle(cl_mack, label_style = "ci")
 
 ![](chain-ladder-ko_files/figure-html/unnamed-chunk-9-3.png)
 
-## Sigma 외삽 방법
+## 8. Sigma 외삽 방법
 
 Mack 분산은 모든 발달 링크에서 $`\sigma_k`$ 가 필요한데, 마지막
 링크에서는 직접 추정이 불가능하다. `sigma_method` 가 외삽 방식을
@@ -319,7 +319,7 @@ fit_cl(tri, value_var = "closs", method = "mack", sigma_method = "loglinear")
 #> periods     : 30
 ```
 
-## 함께 보기
+## 9. 함께 보기
 
 - [`vignette("loss-ratio-methods")`](https://seokhoonj.github.io/lossratio/articles/loss-ratio-methods.md)
   —

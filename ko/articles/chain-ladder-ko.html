@@ -97,7 +97,7 @@ with fit_cl</a></p>
 지표를 전방으로 추정하고 코호트별 Mack 방식 표준오차를 함께
 계산한다.</p>
 <div class="section level2">
-<h2 id="기본-사용법">기본 사용법<a class="anchor" aria-label="anchor" href="#%EA%B8%B0%EB%B3%B8-%EC%82%AC%EC%9A%A9%EB%B2%95"></a>
+<h2 id="기본-사용법">1. 기본 사용법<a class="anchor" aria-label="anchor" href="#%EA%B8%B0%EB%B3%B8-%EC%82%AC%EC%9A%A9%EB%B2%95"></a>
 </h2>
 <p>이 문서는 간결성을 위해 <code>SUR</code> 그룹만 사용한다 — 모든
 절차는 다중 그룹 입력에도 그대로 일반화된다.</p>
@@ -125,7 +125,7 @@ with fit_cl</a></p>
 <code>"crp"</code> (누적 위험보험료) 를 쓴다.</p>
 </div>
 <div class="section level2">
-<h2 id="방법-basic-vs-mack">방법: basic vs Mack<a class="anchor" aria-label="anchor" href="#%EB%B0%A9%EB%B2%95-basic-vs-mack"></a>
+<h2 id="방법-basic-vs-mack">2. 방법: basic vs Mack<a class="anchor" aria-label="anchor" href="#%EB%B0%A9%EB%B2%95-basic-vs-mack"></a>
 </h2>
 <p>두 가지 추정 방법이 제공된다. 두 방법 모두 인접 dev 의 누적 손해 비
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mi>k</mi></msub><mo>=</mo><msubsup><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mi>/</mi><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup></mrow><annotation encoding="application/x-tex">f_k = C^L_{k+1} / C^L_k</annotation></semantics></math>
@@ -184,7 +184,7 @@ with fit_cl</a></p>
 <p><img src="chain-ladder-ko_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level2">
-<h2 id="tail-인자">Tail 인자<a class="anchor" aria-label="anchor" href="#tail-%EC%9D%B8%EC%9E%90"></a>
+<h2 id="tail-인자">3. Tail 인자<a class="anchor" aria-label="anchor" href="#tail-%EC%9D%B8%EC%9E%90"></a>
 </h2>
 <p>마지막 관측 경과 기간에서도 손해가 여전히 발달 중인 triangle 의 경우,
 외삽한 tail 인자(tail factor) 로 ultimate 를 추정한다.</p>
@@ -202,7 +202,7 @@ with fit_cl</a></p>
 (<code>tail = FALSE</code>) 이다.</p>
 </div>
 <div class="section level2">
-<h2 id="maturity-필터링">Maturity 필터링<a class="anchor" aria-label="anchor" href="#maturity-%ED%95%84%ED%84%B0%EB%A7%81"></a>
+<h2 id="maturity-필터링">4. Maturity 필터링<a class="anchor" aria-label="anchor" href="#maturity-%ED%95%84%ED%84%B0%EB%A7%81"></a>
 </h2>
 <p>선택된 ATA 인자가 변동성이 크다면, 추정을 성숙(mature) 영역으로
 제한할 수 있다.</p>
@@ -226,7 +226,7 @@ with fit_cl</a></p>
 그대로 전달된다.</p>
 </div>
 <div class="section level2">
-<h2 id="분산-성분-mack">분산 성분 (Mack)<a class="anchor" aria-label="anchor" href="#%EB%B6%84%EC%82%B0-%EC%84%B1%EB%B6%84-mack"></a>
+<h2 id="분산-성분-mack">5. 분산 성분 (Mack)<a class="anchor" aria-label="anchor" href="#%EB%B6%84%EC%82%B0-%EC%84%B1%EB%B6%84-mack"></a>
 </h2>
 <p><code>fit_cl(method = "mack")</code> 은 추정 분산을 다음과 같이
 분해한다.</p>
@@ -317,7 +317,7 @@ with fit_cl</a></p>
 <span><span class="co">#&gt;            &lt;num&gt;        &lt;num&gt;</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="준비금-플롯">준비금 플롯<a class="anchor" aria-label="anchor" href="#%EC%A4%80%EB%B9%84%EA%B8%88-%ED%94%8C%EB%A1%AF"></a>
+<h2 id="준비금-플롯">6. 준비금 플롯<a class="anchor" aria-label="anchor" href="#%EC%A4%80%EB%B9%84%EA%B8%88-%ED%94%8C%EB%A1%AF"></a>
 </h2>
 <p><code>type = "reserve"</code> 는 코호트별 준비금을 (Mack 일 경우
 선택적 오차 막대와 함께) 표시한다.</p>
@@ -326,7 +326,7 @@ with fit_cl</a></p>
 <p><img src="chain-ladder-ko_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level2">
-<h2 id="triangle-시각화">Triangle 시각화<a class="anchor" aria-label="anchor" href="#triangle-%EC%8B%9C%EA%B0%81%ED%99%94"></a>
+<h2 id="triangle-시각화">7. Triangle 시각화<a class="anchor" aria-label="anchor" href="#triangle-%EC%8B%9C%EA%B0%81%ED%99%94"></a>
 </h2>
 <p><code><a href="../reference/plot_triangle.html">plot_triangle()</a></code> 은 코호트 × dev 셀을 히트맵으로
 표시하며, 관측된 셀과 추정된 셀을 구분한다.</p>
@@ -352,7 +352,7 @@ with fit_cl</a></p>
 <p><img src="chain-ladder-ko_files/figure-html/unnamed-chunk-9-3.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level2">
-<h2 id="sigma-외삽-방법">Sigma 외삽 방법<a class="anchor" aria-label="anchor" href="#sigma-%EC%99%B8%EC%82%BD-%EB%B0%A9%EB%B2%95"></a>
+<h2 id="sigma-외삽-방법">8. Sigma 외삽 방법<a class="anchor" aria-label="anchor" href="#sigma-%EC%99%B8%EC%82%BD-%EB%B0%A9%EB%B2%95"></a>
 </h2>
 <p>Mack 분산은 모든 발달 링크에서
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mi>k</mi></msub><annotation encoding="application/x-tex">\sigma_k</annotation></semantics></math>
@@ -401,7 +401,7 @@ with fit_cl</a></p>
 <span><span class="co">#&gt; periods     : 30</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="함께-보기">함께 보기<a class="anchor" aria-label="anchor" href="#%ED%95%A8%EA%BB%98-%EB%B3%B4%EA%B8%B0"></a>
+<h2 id="함께-보기">9. 함께 보기<a class="anchor" aria-label="anchor" href="#%ED%95%A8%EA%BB%98-%EB%B3%B4%EA%B8%B0"></a>
 </h2>
 <ul>
 <li>

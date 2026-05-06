@@ -90,7 +90,7 @@ aggregation frameworks</a></p>
 방식으로 집계할 수 있다. <code>lossratio</code> 는 각 프레임워크별로
 하나의 빌더를 제공한다. 이 문서는 셋을 비교한다.</p>
 <div class="section level2">
-<h2 id="한눈에-보기">한눈에 보기<a class="anchor" aria-label="anchor" href="#%ED%95%9C%EB%88%88%EC%97%90-%EB%B3%B4%EA%B8%B0"></a>
+<h2 id="한눈에-보기">1. 한눈에 보기<a class="anchor" aria-label="anchor" href="#%ED%95%9C%EB%88%88%EC%97%90-%EB%B3%B4%EA%B8%B0"></a>
 </h2>
 <table class="table">
 <colgroup>
@@ -143,7 +143,7 @@ aggregation frameworks</a></p>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="triangle-코호트-dev">Triangle (코호트 × dev)<a class="anchor" aria-label="anchor" href="#triangle-%EC%BD%94%ED%98%B8%ED%8A%B8-dev"></a>
+<h2 id="triangle-코호트-dev">2. Triangle (코호트 × dev)<a class="anchor" aria-label="anchor" href="#triangle-%EC%BD%94%ED%98%B8%ED%8A%B8-dev"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio">lossratio</a></span><span class="op">)</span></span>
@@ -202,7 +202,7 @@ aggregation frameworks</a></p>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="calendar-달력-기간만">Calendar (달력 기간만)<a class="anchor" aria-label="anchor" href="#calendar-%EB%8B%AC%EB%A0%A5-%EA%B8%B0%EA%B0%84%EB%A7%8C"></a>
+<h2 id="calendar-달력-기간만">3. Calendar (달력 기간만)<a class="anchor" aria-label="anchor" href="#calendar-%EB%8B%AC%EB%A0%A5-%EA%B8%B0%EA%B0%84%EB%A7%8C"></a>
 </h2>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_calendar.html">build_calendar</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span>, calendar_var <span class="op">=</span> <span class="st">"cym"</span><span class="op">)</span></span>
@@ -252,7 +252,7 @@ on-leveling 이벤트)</li>
 <p><img src="aggregation-frameworks-ko_files/figure-html/unnamed-chunk-4-2.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level2">
-<h2 id="total-포트폴리오-요약">Total (포트폴리오 요약)<a class="anchor" aria-label="anchor" href="#total-%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4-%EC%9A%94%EC%95%BD"></a>
+<h2 id="total-포트폴리오-요약">4. Total (포트폴리오 요약)<a class="anchor" aria-label="anchor" href="#total-%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4-%EC%9A%94%EC%95%BD"></a>
 </h2>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_total.html">build_total</a></span><span class="op">(</span></span>
@@ -286,7 +286,7 @@ on-leveling 이벤트)</li>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="데이터-흐름으로-본-집계">데이터 흐름으로 본 집계<a class="anchor" aria-label="anchor" href="#%EB%8D%B0%EC%9D%B4%ED%84%B0-%ED%9D%90%EB%A6%84%EC%9C%BC%EB%A1%9C-%EB%B3%B8-%EC%A7%91%EA%B3%84"></a>
+<h2 id="데이터-흐름으로-본-집계">5. 데이터 흐름으로 본 집계<a class="anchor" aria-label="anchor" href="#%EB%8D%B0%EC%9D%B4%ED%84%B0-%ED%9D%90%EB%A6%84%EC%9C%BC%EB%A1%9C-%EB%B3%B8-%EC%A7%91%EA%B3%84"></a>
 </h2>
 <pre><code>                     experience (long, with demographics)
                               │
@@ -302,7 +302,7 @@ on-leveling 이벤트)</li>
 차원을 제거한다. 분석 질문에 맞춰 프레임워크를 선택한다.</p>
 </div>
 <div class="section level2">
-<h2 id="속성-스키마">속성 스키마<a class="anchor" aria-label="anchor" href="#%EC%86%8D%EC%84%B1-%EC%8A%A4%ED%82%A4%EB%A7%88"></a>
+<h2 id="속성-스키마">6. 속성 스키마<a class="anchor" aria-label="anchor" href="#%EC%86%8D%EC%84%B1-%EC%8A%A4%ED%82%A4%EB%A7%88"></a>
 </h2>
 <p>집계 후 각 객체는 원본 컬럼 메타데이터를 속성으로 저장한다 — 플롯
 라벨과 집계 주기에 맞는 날짜 표기에 사용된다.</p>

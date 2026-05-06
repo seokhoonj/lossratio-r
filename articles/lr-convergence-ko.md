@@ -1,6 +1,6 @@
 # 예측 손해율 수렴 시점 진단
 
-## 동기
+## 1. 동기
 
 [`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/reference/find_ata_maturity.md)
 는 *“어느 발전 기간부터 link factor $`f_k`$ 가 코호트 간에 재현
@@ -48,7 +48,7 @@ $`\hat{D}_v`$ 는 *기간별 경험* 이 코호트 간에 일관되는지를 검
 코호트 간 일치만으로는 예측 수렴을 보장하지 않는다. 두 조건을 함께
 적용해야 두 가지 관성 누출 경로를 동시에 막을 수 있다.
 
-## 왜 두 조건이 필요한가
+## 2. 왜 두 조건이 필요한가
 
 **분모효과 (denominator effect)** 가 단일 진단을 무력화하기 때문이다.
 
@@ -72,7 +72,7 @@ $`\hat{D}_v`$ 는 *기간별 경험* 이 코호트 간에 일관되는지를 검
 - 두 조건을 동시에 강제하면 분모효과로 인한 false PASS 의 주요 경로가
   모두 닫힌다. 이것이 dual criterion 의 핵심 설계 의도.
 
-## 기호
+## 3. 기호
 
 | 기호 | 의미 |
 |----|----|
@@ -96,7 +96,7 @@ MAD$`\to\sigma`$ 보정 계수다. 이 스케일링으로 $`\mathrm{MAD}_i`$ 는
 $`\hat{D}_v`$ 는 증분 손해율의 강건한 (이상치에 둔감한) 변동계수(CV) 로
 읽힌다.
 
-## 기본 사용
+## 4. 기본 사용
 
 ``` r
 
@@ -148,7 +148,7 @@ head(summary(res), 6)
     #> 5:    13     NA           NA         NA  0.81   FALSE
     #> 6:    14     NA           NA         NA  0.43   FALSE
 
-## 작동 메커니즘: 다중 holdout refit
+## 5. 작동 메커니즘: 다중 holdout refit
 
 [`find_lr_convergence()`](https://seokhoonj.github.io/lossratio/reference/find_lr_convergence.md)
 는 candidate 평가 시점마다 모형을 다시 적합하면서 projection 의 변화를
@@ -173,7 +173,7 @@ $`v \in \{24, 25, \dots, 30\}`$ (총 7개).
 `holdout_max` 를 키우면 더 이른 시점까지 진단 가능 — 다만 refit 자료가
 줄어들어 신뢰도가 떨어진다.
 
-## 시각화
+## 6. 시각화
 
 ``` r
 
@@ -190,7 +190,7 @@ valuation.
 근접하지만 아래가 멀면 코호트 간 이질성이 문제, 아래가 멀쩡한데 위가
 높으면 모형이 여전히 갱신 중이라는 뜻.
 
-## 임계값 튜닝
+## 7. 임계값 튜닝
 
 기본값은 의도적으로 보수적:
 
@@ -218,7 +218,7 @@ $`\hat{D}_v`$ 가 $`\tau \approx 0.05`$ 이하로 떨어지는 경우는 단일 
 [`detect_cohort_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_cohort_regime.md)
 으로 그룹을 분리하는 것이 권장된다.
 
-## 성숙점 및 regime 탐지와의 관계
+## 8. 성숙점 및 regime 탐지와의 관계
 
 세 진단 도구는 서로 다른 질문을 다른 축에서 답한다:
 
@@ -247,7 +247,7 @@ $`\hat{D}_v`$ 가 $`\tau \approx 0.05`$ 이하로 떨어지는 경우는 단일 
 반영한다 — P&C run-off 에서는 한 점에 모이지만 장기 건강보험에서는 각각
 독립적으로 검증해야 한다.
 
-## 한계
+## 9. 한계
 
 [`find_lr_convergence()`](https://seokhoonj.github.io/lossratio/reference/find_lr_convergence.md)
 는 반복적인
@@ -266,7 +266,7 @@ $`\hat{D}_v`$ 가 $`\tau \approx 0.05`$ 이하로 떨어지는 경우는 단일 
 - **다중 그룹 triangle**: 현재 구현은 그룹 간 $`\hat{D}_v`$ 를 median
   으로 collapse. 그룹이 다르게 움직이면 분리 실행 권장.
 
-## 함께 보기
+## 10. 함께 보기
 
 - [`?find_lr_convergence`](https://seokhoonj.github.io/lossratio/reference/find_lr_convergence.md),
   [`?find_ata_maturity`](https://seokhoonj.github.io/lossratio/reference/find_ata_maturity.md),

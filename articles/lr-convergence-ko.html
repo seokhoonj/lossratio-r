@@ -83,7 +83,7 @@
     
     
 <div class="section level2">
-<h2 id="동기">동기<a class="anchor" aria-label="anchor" href="#%EB%8F%99%EA%B8%B0"></a>
+<h2 id="동기">1. 동기<a class="anchor" aria-label="anchor" href="#%EB%8F%99%EA%B8%B0"></a>
 </h2>
 <p><code><a href="../reference/find_ata_maturity.html">find_ata_maturity()</a></code> 는 <em>“어느 발전 기간부터 link
 factor
@@ -165,7 +165,7 @@ link factor
 막을 수 있다.</p>
 </div>
 <div class="section level2">
-<h2 id="왜-두-조건이-필요한가">왜 두 조건이 필요한가<a class="anchor" aria-label="anchor" href="#%EC%99%9C-%EB%91%90-%EC%A1%B0%EA%B1%B4%EC%9D%B4-%ED%95%84%EC%9A%94%ED%95%9C%EA%B0%80"></a>
+<h2 id="왜-두-조건이-필요한가">2. 왜 두 조건이 필요한가<a class="anchor" aria-label="anchor" href="#%EC%99%9C-%EB%91%90-%EC%A1%B0%EA%B1%B4%EC%9D%B4-%ED%95%84%EC%9A%94%ED%95%9C%EA%B0%80"></a>
 </h2>
 <p><strong>분모효과 (denominator effect)</strong> 가 단일 진단을
 무력화하기 때문이다.</p>
@@ -226,7 +226,7 @@ link factor
 </ul>
 </div>
 <div class="section level2">
-<h2 id="기호">기호<a class="anchor" aria-label="anchor" href="#%EA%B8%B0%ED%98%B8"></a>
+<h2 id="기호">3. 기호<a class="anchor" aria-label="anchor" href="#%EA%B8%B0%ED%98%B8"></a>
 </h2>
 <table class="table">
 <colgroup>
@@ -325,7 +325,7 @@ MAD<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics>
 는 증분 손해율의 강건한 (이상치에 둔감한) 변동계수(CV) 로 읽힌다.</p>
 </div>
 <div class="section level2">
-<h2 id="기본-사용">기본 사용<a class="anchor" aria-label="anchor" href="#%EA%B8%B0%EB%B3%B8-%EC%82%AC%EC%9A%A9"></a>
+<h2 id="기본-사용">4. 기본 사용<a class="anchor" aria-label="anchor" href="#%EA%B8%B0%EB%B3%B8-%EC%82%AC%EC%9A%A9"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio">lossratio</a></span><span class="op">)</span></span>
@@ -382,7 +382,7 @@ ATA 에 <code><a href="../reference/find_ata_maturity.html">find_ata_maturity()<
 <span><span class="co">#&gt; 6:    14     NA           NA         NA  0.43   FALSE</span></span></code></pre>
 </div>
 <div class="section level2">
-<h2 id="작동-메커니즘-다중-holdout-refit">작동 메커니즘: 다중 holdout refit<a class="anchor" aria-label="anchor" href="#%EC%9E%91%EB%8F%99-%EB%A9%94%EC%BB%A4%EB%8B%88%EC%A6%98-%EB%8B%A4%EC%A4%91-holdout-refit"></a>
+<h2 id="작동-메커니즘-다중-holdout-refit">5. 작동 메커니즘: 다중 holdout refit<a class="anchor" aria-label="anchor" href="#%EC%9E%91%EB%8F%99-%EB%A9%94%EC%BB%A4%EB%8B%88%EC%A6%98-%EB%8B%A4%EC%A4%91-holdout-refit"></a>
 </h2>
 <p><code><a href="../reference/find_lr_convergence.html">find_lr_convergence()</a></code> 는 candidate 평가 시점마다 모형을
 다시 적합하면서 projection 의 변화를 추적한다.</p>
@@ -442,7 +442,7 @@ refit 자료가 너무 적어 <code>R_v</code> 와 <code>SE_param_v</code> 를
 refit 자료가 줄어들어 신뢰도가 떨어진다.</p>
 </div>
 <div class="section level2">
-<h2 id="시각화">시각화<a class="anchor" aria-label="anchor" href="#%EC%8B%9C%EA%B0%81%ED%99%94"></a>
+<h2 id="시각화">6. 시각화<a class="anchor" aria-label="anchor" href="#%EC%8B%9C%EA%B0%81%ED%99%94"></a>
 </h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
@@ -469,7 +469,7 @@ refit 자료가 줄어들어 신뢰도가 떨어진다.</p>
 위가 높으면 모형이 여전히 갱신 중이라는 뜻.</p>
 </div>
 <div class="section level2">
-<h2 id="임계값-튜닝">임계값 튜닝<a class="anchor" aria-label="anchor" href="#%EC%9E%84%EA%B3%84%EA%B0%92-%ED%8A%9C%EB%8B%9D"></a>
+<h2 id="임계값-튜닝">7. 임계값 튜닝<a class="anchor" aria-label="anchor" href="#%EC%9E%84%EA%B3%84%EA%B0%92-%ED%8A%9C%EB%8B%9D"></a>
 </h2>
 <p>기본값은 의도적으로 보수적:</p>
 <table class="table">
@@ -527,7 +527,7 @@ refit 자료가 줄어들어 신뢰도가 떨어진다.</p>
 권장된다.</p>
 </div>
 <div class="section level2">
-<h2 id="성숙점-및-regime-탐지와의-관계">성숙점 및 regime 탐지와의 관계<a class="anchor" aria-label="anchor" href="#%EC%84%B1%EC%88%99%EC%A0%90-%EB%B0%8F-regime-%ED%83%90%EC%A7%80%EC%99%80%EC%9D%98-%EA%B4%80%EA%B3%84"></a>
+<h2 id="성숙점-및-regime-탐지와의-관계">8. 성숙점 및 regime 탐지와의 관계<a class="anchor" aria-label="anchor" href="#%EC%84%B1%EC%88%99%EC%A0%90-%EB%B0%8F-regime-%ED%83%90%EC%A7%80%EC%99%80%EC%9D%98-%EA%B4%80%EA%B3%84"></a>
 </h2>
 <p>세 진단 도구는 서로 다른 질문을 다른 축에서 답한다:</p>
 <table style="width:100%;" class="table">
@@ -593,7 +593,7 @@ refit 자료가 줄어들어 신뢰도가 떨어진다.</p>
 모이지만 장기 건강보험에서는 각각 독립적으로 검증해야 한다.</p>
 </div>
 <div class="section level2">
-<h2 id="한계">한계<a class="anchor" aria-label="anchor" href="#%ED%95%9C%EA%B3%84"></a>
+<h2 id="한계">9. 한계<a class="anchor" aria-label="anchor" href="#%ED%95%9C%EA%B3%84"></a>
 </h2>
 <p><code><a href="../reference/find_lr_convergence.html">find_lr_convergence()</a></code> 는 반복적인
 <code><a href="../reference/backtest.html">backtest()</a></code> 호출 위의 얇은 layer 이며 그 제약을 그대로
@@ -628,7 +628,7 @@ refit 자료가 줄어들어 신뢰도가 떨어진다.</p>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="함께-보기">함께 보기<a class="anchor" aria-label="anchor" href="#%ED%95%A8%EA%BB%98-%EB%B3%B4%EA%B8%B0"></a>
+<h2 id="함께-보기">10. 함께 보기<a class="anchor" aria-label="anchor" href="#%ED%95%A8%EA%BB%98-%EB%B3%B4%EA%B8%B0"></a>
 </h2>
 <ul>
 <li>
