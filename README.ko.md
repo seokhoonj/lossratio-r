@@ -37,7 +37,7 @@
 
 | 컬럼   | 의미                                 | 예시               |
 |--------|--------------------------------------|--------------------|
-| cohort | 인수 / 사고 시점 (granularity 무관)  | `uym`, `uy`        |
+| cohort | 인수 / 사고 시점 (집계 주기 무관)    | `uym`, `uy`        |
 | dev    | 코호트 시작 시점 이후 경과 기간      | `elap_m`, `elap_y` |
 | `loss` | 셀 내 증가분 클레임 금액             | numeric            |
 | `rp`   | 셀 내 증가분 위험보험료 (기대손해액) | numeric            |
@@ -69,9 +69,9 @@ remotes::install_github("seokhoonj/lossratio")
 
 library(lossratio)
 
-# 번들 calibrated 합성 experience data
-# (종목별 dev curve 형상은 실 포트폴리오의 broad shape 에 calibrate;
-# cell-level 값과 cohort 패턴은 무작위 생성)
+# 번들로 제공되는 합성 경험 데이터
+# 경과에 따른 곡선 형태는 실제 포트폴리오의 전체 형태에 맞춰 보정
+# 셀 값과 코호트 패턴은 무작위 생성
 data(experience)
 exp <- as_experience(experience)
 
@@ -108,10 +108,10 @@ detect_cohort_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
 | [`build_calendar()`](https://seokhoonj.github.io/lossratio/reference/build_calendar.md) | `Calendar` | 달력 기간 (1D) | 달력연도 추세 / 대각선 효과 |
 | [`build_total()`](https://seokhoonj.github.io/lossratio/reference/build_total.md) | `Total` | 포트폴리오 전체 (0D, 그룹별) | 그룹 간 고수준 비교 |
 
-`build_triangle` 이후의 하위 컬럼은 입력 granularity (`uym` / `uyq` /
-`uy` 등) 와 무관하게 `cohort` 와 `dev` 로 표준화된다. 원본 컬럼명과
-granularity 는 attribute (`cohort_var`, `cohort_type`, `dev_var`,
-`dev_type`) 로 보존된다.
+`build_triangle` 이후의 하위 컬럼은 입력된 집계 주기 (`uym` / `uyq` /
+`uy` 등) 와 무관하게 `cohort` 와 `dev` 로 표준화된다. 원본 컬럼명과 집계
+주기는 attribute (`cohort_var`, `cohort_type`, `dev_var`, `dev_type`) 로
+보존된다.
 
 ## Methods
 
@@ -127,9 +127,9 @@ granularity 는 attribute (`cohort_var`, `cohort_type`, `dev_var`,
 
 ### 노출 기반
 
-`fit_lr(method = "ed")`. 모든 미래 손해 증가분이 익스포저(위험보험료)를
-분모로 사용한다. ATA 인자가 정보량이 부족하거나 전 구간에 걸쳐 불안정할
-때 적합하다.
+`fit_lr(method = "ed")`. 모든 미래 손해 증가분이 익스포저(≈
+위험보험료)를 분모로 사용한다. ATA 인자가 정보량이 부족하거나 전 구간에
+걸쳐 불안정할 때 적합하다.
 
 ### Chain Ladder
 
