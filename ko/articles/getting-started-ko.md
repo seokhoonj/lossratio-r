@@ -4,8 +4,8 @@
 > lossratio](https://seokhoonj.github.io/lossratio/ko/getting-started.md)
 
 이 문서는 `lossratio` 의 전체 파이프라인을 내장 합성 experience 데이터
-위에서 따라간다. raw long-format 행에서 시작하여 적합된 손해율 추정까지
-이어진다.
+위에서 따라간다. long-format raw 데이터에서 시작하여 적합된 손해율
+추정까지 이어진다.
 
 ## 입력 형태
 
@@ -77,7 +77,7 @@ names(tri)
 - 누적 컬럼 (`closs`, `crp`) 을 추가한다,
 - 파생 지표 (`margin`, `lr`, `clr`, 비율) 를 추가한다,
 - 코호트 / 경과 기간 컬럼을 표준명 `cohort` 와 `dev` 로 rename 한다,
-- 원본 컬럼명은 attribute (`cohort_var`, `dev_var`) 로 보존하여 하위
+- 원본 컬럼명은 attribute (`cohort_var`, `dev_var`) 로 보존하여 이후
   plot 라벨에서 활용 가능하게 한다.
 
 ## 3단계 — 진단

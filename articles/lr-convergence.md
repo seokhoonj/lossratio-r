@@ -49,6 +49,34 @@ and cross-cohort agreement on a single period’s level need not imply
 that the projection has settled. The dual criterion closes both
 inertia-leakage paths.
 
+## Why two conditions
+
+A **denominator effect** disables any single-criterion diagnostic.
+
+In long-duration health insurance, cumulative LR = cumulative loss /
+cumulative risk premium. As dev grows, the denominator grows alongside
+the numerator, so a new calendar diagonal’s contribution to the overall
+ratio shrinks automatically — *regardless of whether the underlying
+experience has actually changed*. This is the *inertia* effect.
+
+What each criterion guards against:
+
+| Scenario | $`R_v`$ | $`\hat{D}_v`$ | Result |
+|----|----|----|----|
+| True convergence (model + experience both stable) | small | small | **PASS** ✓ |
+| Chain-ladder $`\hat{f}_k \to 1`$ drift (inertia) | small (spurious) | large | FAIL — dispersion catches it |
+| Coincidental cohort agreement at one period | large | small (snapshot) | FAIL — projection revision catches it |
+
+- $`R_v`$ alone is fooled by chain ladder’s mechanical drift
+  ($`\hat{f}_k \to 1`$): the cumulative product barely moves, the
+  projection barely moves, and $`R_v`$ collapses to zero — a false
+  convergence.
+- $`\hat{D}_v`$ uses **incremental** LR, so it inherits no cumulative
+  denominator → immune to the inertia effect.
+- Requiring both criteria simultaneously closes the principal
+  inertia-leakage paths. That is the design intent of the dual
+  criterion.
+
 ## Notation
 
 | Symbol | Meaning |
@@ -127,11 +155,30 @@ head(summary(res), 6)
     #> 5:    13     NA           NA         NA  0.81   FALSE
     #> 6:    14     NA           NA         NA  0.43   FALSE
 
-`R_v` and `SE_param_v` are `NA` for early valuations whose holdout depth
-exceeds `holdout_max`. The default
-`holdout_max = floor((V - k_star) / 2)` keeps every backtest with a
-reasonable refit window; relax it if you need diagnostics deeper into
-the past.
+## How it works: multiple holdout refits
+
+[`find_lr_convergence()`](https://seokhoonj.github.io/lossratio/reference/find_lr_convergence.md)
+refits the model at each candidate valuation and tracks how the
+projection changes.
+
+Example: with $`V = 30`$, $`k^* = 18`$, and `holdout_max = 6` —
+candidates are $`v \in \{24, 25, \dots, 30\}`$ (7 in total).
+
+| $`v`$       | holdout depth ($`V - v`$) | $`R_v`$ available? |
+|-------------|---------------------------|--------------------|
+| 30          | 0                         | ✓                  |
+| 28          | 2                         | ✓                  |
+| 24 (cutoff) | 6                         | ✓                  |
+| 22          | 8                         | `NA`               |
+| 18          | 12                        | `NA`               |
+
+One refit per candidate $`v`$ (7 total) plus $`R_v`$ computed between
+adjacent $`v`$. The cutoff `holdout_max` defaults to
+`floor((V - k_star) / 2)`; once holdout depth exceeds it the refit data
+becomes too thin and $`R_v`$, $`SE_param_v`$ are masked to `NA`.
+
+Increase `holdout_max` to diagnose deeper into the past — at the cost of
+less data behind each refit, hence lower confidence.
 
 ## Plot
 

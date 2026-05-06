@@ -18,7 +18,7 @@
 - 성숙점(maturity point) $`m_g`$ — 그룹 $`g`$ 에서 $`f_k`$ 가 안정화되는
   dev (CV / RSE 임계값으로 탐지)
 
-## 방법 1: 단계 적응형(stage-adaptive, SA) (`"sa"`, 기본값)
+## 방법 1: 단계 적응형(stage-adaptive, SA) (`"sa"`, default)
 
 기본 방법은 $`f_k`$ 가 초반에는 변동성이 크고 후반에는 안정적이라는
 사실, 그리고 $`g_k`$ 는 그 반대로 움직인다는 사실을 활용한다. SA 는
@@ -54,7 +54,7 @@ data(experience)
 exp <- as_experience(experience)
 tri <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
 
-lr_sa <- fit_lr(tri, method = "sa")        # 기본값
+lr_sa <- fit_lr(tri, method = "sa")        # default
 plot(lr_sa, type = "lr")
 ```
 
@@ -263,7 +263,7 @@ summary(lrs$cl)$ultimate
 은 delta method 로 해석적 표준오차를 산출한다. delta method 변형은 두
 가지이다:
 
-- `delta_method = "simple"` (기본값) — 익스포저를 고정으로 취급,
+- `delta_method = "simple"` (default) — 익스포저를 고정으로 취급,
   $`\mathrm{SE}(L/E) \approx \mathrm{SE}(L)/E`$.
 - `delta_method = "full"` — 익스포저 불확실성과 손해-익스포저 상관계수
   `rho` 를 반영한다:
@@ -398,6 +398,6 @@ SA 는 성숙점 이전엔 ED, 이후엔 CL 로 자연 전환하는 결합이다
       └── 손해 전개가 전 기간 불안정하고 익스포저(rp) 가 더 신뢰할 만한 신호
             → "ed"  (CL 영역도 노출 기반이 적절)
 
-실무: **`"sa"` 로 시작한다** (기본값). 이후 민감도 점검을 위해 `"cl"` 과
-`"ed"` 를 함께 실행한다. 셋이 모두 일치하면 추정은 견고하다. 결과가
+실무: **`"sa"` 로 시작한다** (default). 이후 민감도 점검을 위해 `"cl"`
+과 `"ed"` 를 함께 실행한다. 셋이 모두 일치하면 추정은 견고하다. 결과가
 갈라지면 성숙점 탐지와 기저 ATA 계수를 점검한다.

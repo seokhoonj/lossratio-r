@@ -24,12 +24,12 @@
 - age-to-age (`ATA`) 와 노출 기반 (`ED`) 의 경과 기간 모형화
 - chain ladder 추정 (`fit_cl`) 과 손해율 추정 (`fit_lr`), 세 가지 method
   지원:
-  - `"sa"` — **단계 적응형** (기본값): 성숙점 이전은 노출 기반, 이후는
+  - `"sa"` — **단계 적응형** (default): 성숙점 이전은 노출 기반, 이후는
     chain ladder
   - `"ed"` — 모든 경과 기간에 대해 노출 기반
   - `"cl"` — 고전적 chain ladder (Mack 모형)
 - 구조적 변화에 대한 코호트 regime 탐지 (`detect_cohort_regime`)
-- 진단 및 triangle 시각화
+- 진단 및 Triangle 시각화
 
 ## 입력 형식
 
@@ -75,26 +75,26 @@ library(lossratio)
 data(experience)
 exp <- as_experience(experience)
 
-# Build the canonical cohort × dev structure
+# 표준 코호트 × dev 구조 구축
 tri <- build_triangle(exp, group_var = cv_nm)
 
 plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
 
-# Age-to-age and exposure-driven development
+# ATA 와 노출 기반 발전 모형
 ata <- build_ata(tri, value_var = "closs"); fit_ata(ata)
 ed  <- build_ed(tri);                       fit_ed(ed)
 
-# Chain ladder fit
+# Chain ladder 적합
 cl <- fit_cl(tri, value_var = "closs", method = "mack")
 plot(cl, type = "projection")
 
-# Loss ratio fit (stage-adaptive by default)
+# 손해율 적합 (default: 단계 적응형)
 lr <- fit_lr(tri, method = "sa")
 plot(lr, type = "clr")
 summary(lr)
 
-# Structural change across cohorts
+# 코호트 간 구조적 변화 탐지
 detect_cohort_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
 ```
 
@@ -108,8 +108,8 @@ detect_cohort_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
 | [`build_calendar()`](https://seokhoonj.github.io/lossratio/ko/reference/build_calendar.md) | `Calendar` | 달력 기간 (1D) | 달력연도 추세 / 대각선 효과 |
 | [`build_total()`](https://seokhoonj.github.io/lossratio/ko/reference/build_total.md) | `Total` | 포트폴리오 전체 (0D, 그룹별) | 그룹 간 고수준 비교 |
 
-`build_triangle` 이후의 하위 컬럼은 입력된 집계 주기 (`uym` / `uyq` /
-`uy` 등) 와 무관하게 `cohort` 와 `dev` 로 표준화된다. 원본 컬럼명과 집계
+`build_triangle` 이후의 컬럼은 입력된 집계 주기 (`uym` / `uyq` / `uy`
+등) 와 무관하게 `cohort` 와 `dev` 로 표준화된다. 원본 컬럼명과 집계
 주기는 attribute (`cohort_var`, `cohort_type`, `dev_var`, `dev_type`) 로
 보존된다.
 
@@ -117,7 +117,7 @@ detect_cohort_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
 
 ### 단계 적응형
 
-`fit_lr(method = "sa")` (기본값). 노출 기반과 chain ladder 의 결합으로,
+`fit_lr(method = "sa")` (default). 노출 기반과 chain ladder 의 결합으로,
 그룹별 성숙점에서 전환된다:
 
 - 성숙점 이전: 노출 기반 추정 $`\Delta C^L = g_k \cdot C^P_k`$ — ATA

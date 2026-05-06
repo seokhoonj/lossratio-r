@@ -58,14 +58,14 @@
 <li>age-to-age (<code>ATA</code>) 와 노출 기반 (<code>ED</code>) 의 경과 기간 모형화</li>
 <li>chain ladder 추정 (<code>fit_cl</code>) 과 손해율 추정 (<code>fit_lr</code>), 세 가지 method 지원:
 <ul><li>
-<code>"sa"</code> — <strong>단계 적응형</strong> (기본값): 성숙점 이전은 노출 기반, 이후는 chain ladder</li>
+<code>"sa"</code> — <strong>단계 적응형</strong> (default): 성숙점 이전은 노출 기반, 이후는 chain ladder</li>
 <li>
 <code>"ed"</code> — 모든 경과 기간에 대해 노출 기반</li>
 <li>
 <code>"cl"</code> — 고전적 chain ladder (Mack 모형)</li>
 </ul></li>
 <li>구조적 변화에 대한 코호트 regime 탐지 (<code>detect_cohort_regime</code>)</li>
-<li>진단 및 triangle 시각화</li>
+<li>진단 및 Triangle 시각화</li>
 </ul></div>
 <div class="section level2">
 <h2 id="입력-형식">입력 형식<a class="anchor" aria-label="anchor" href="#%EC%9E%85%EB%A0%A5-%ED%98%95%EC%8B%9D"></a></h2>
@@ -115,26 +115,26 @@
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/as_experience.html">as_experience</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Build the canonical cohort × dev structure</span></span>
+<span><span class="co"># 표준 코호트 × dev 구조 구축</span></span>
 <span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>              <span class="co"># cohort trajectories</span></span>
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>     <span class="co"># cell heatmap</span></span>
 <span></span>
-<span><span class="co"># Age-to-age and exposure-driven development</span></span>
+<span><span class="co"># ATA 와 노출 기반 발전 모형</span></span>
 <span><span class="va">ata</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_ata.html">build_ata</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span>; <span class="fu"><a href="reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">ata</span><span class="op">)</span></span>
 <span><span class="va">ed</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_ed.html">build_ed</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>;                       <span class="fu"><a href="reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">ed</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Chain ladder fit</span></span>
+<span><span class="co"># Chain ladder 적합</span></span>
 <span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cl</span>, type <span class="op">=</span> <span class="st">"projection"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Loss ratio fit (stage-adaptive by default)</span></span>
+<span><span class="co"># 손해율 적합 (default: 단계 적응형)</span></span>
 <span><span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lr</span>, type <span class="op">=</span> <span class="st">"clr"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Structural change across cohorts</span></span>
+<span><span class="co"># 코호트 간 구조적 변화 탐지</span></span>
 <span><span class="fu"><a href="reference/detect_cohort_regime.html">detect_cohort_regime</a></span><span class="op">(</span><span class="va">tri</span><span class="op">[</span><span class="va">cv_nm</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"ecp"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -156,13 +156,13 @@
 <td><code>Total</code></td>
 <td>포트폴리오 전체 (0D, 그룹별)</td>
 <td>그룹 간 고수준 비교</td>
-</tr></tbody></table><p><code>build_triangle</code> 이후의 하위 컬럼은 입력된 집계 주기 (<code>uym</code> / <code>uyq</code> / <code>uy</code> 등) 와 무관하게 <code>cohort</code> 와 <code>dev</code> 로 표준화된다. 원본 컬럼명과 집계 주기는 attribute (<code>cohort_var</code>, <code>cohort_type</code>, <code>dev_var</code>, <code>dev_type</code>) 로 보존된다.</p>
+</tr></tbody></table><p><code>build_triangle</code> 이후의 컬럼은 입력된 집계 주기 (<code>uym</code> / <code>uyq</code> / <code>uy</code> 등) 와 무관하게 <code>cohort</code> 와 <code>dev</code> 로 표준화된다. 원본 컬럼명과 집계 주기는 attribute (<code>cohort_var</code>, <code>cohort_type</code>, <code>dev_var</code>, <code>dev_type</code>) 로 보존된다.</p>
 </div>
 <div class="section level2">
 <h2 id="methods">Methods<a class="anchor" aria-label="anchor" href="#methods"></a></h2>
 <div class="section level3">
 <h3 id="단계-적응형">단계 적응형<a class="anchor" aria-label="anchor" href="#%EB%8B%A8%EA%B3%84-%EC%A0%81%EC%9D%91%ED%98%95"></a></h3>
-<p><code>fit_lr(method = "sa")</code> (기본값). 노출 기반과 chain ladder 의 결합으로, 그룹별 성숙점에서 전환된다:</p>
+<p><code>fit_lr(method = "sa")</code> (default). 노출 기반과 chain ladder 의 결합으로, 그룹별 성숙점에서 전환된다:</p>
 <ul><li>성숙점 이전: 노출 기반 추정 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><msup><mi>C</mi><mi>L</mi></msup><mo>=</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">\Delta C^L = g_k \cdot C^P_k</annotation></semantics></math> — ATA 인자가 변동성이 큰 구간에서 추정값을 보험료 규모에 고정한다.</li>
 <li>성숙점 이후: chain ladder 추정 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mo>=</mo><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup></mrow><annotation encoding="application/x-tex">C^L_{k+1} = f_k \cdot C^L_k</annotation></semantics></math> — ATA 인자가 안정된 이후 코호트의 관측 수준을 보존한다.</li>
 </ul></div>

@@ -14,7 +14,7 @@
 
 이 표류를 누르는 한 가지 도구가 `recent = N` 인자다. 최근 `N` 개의
 대각선만 사용해 link factor 를 다시 계산한다. 그러나 `recent` 단독은
-한계가 있다. 대각선 단위 컷은 어린 dev 영역까지 흘러들어가, 사용자가
+한계가 있다. 대각선 단위 컷은 초기 dev 영역까지 흘러들어가, 사용자가
 보기에는 “이미 충분히 안정된 초기 dev 의 ED 영역” 까지 좁은 창으로만
 보게 만든다.
 
@@ -47,7 +47,7 @@ post-break 통계량이 안정적이기 때문이다.
 
 | 입력 | 동작 |
 |----|----|
-| `NULL` (기본값) | 필터링 없음 — 기존 동작과 동일 |
+| `NULL` (default) | 필터링 없음 — 기존 동작과 동일 |
 | `Date` 또는 문자열 | 단일 break date |
 | Date/문자열 벡터 | 가장 최신 값 자동 선택 |
 | `CohortRegime` 객체 | [`detect_cohort_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_cohort_regime.md) 결과를 직접 전달 |
@@ -110,15 +110,15 @@ plot_triangle(tri_sur, type = "usage", recent = 12L,
               regime_break = "2024-04-01", holdout = 6L)                             # hybrid
 ```
 
-![SUR triangle에서 네 가지 필터 설정이 사용하는 셀. 파랑 = fit data,
-빨강 = held out (최근 6개 대각선), 연회색 = 필터로 제외된 셀, 흰색 =
+![SUR triangle 에서 네 가지 필터 설정이 사용하는 셀. 파랑 = 적합에 사용,
+빨강 = 홀드아웃 (최근 6개 대각선), 연회색 = 필터로 제외된 셀, 흰색 =
 미관측. 수직 점선은 성숙점 k^\*, 수평 점선은 regime break 코호트 경계를
 나타낸다.](figs/regime_break_data_usage.png)
 
-SUR triangle에서 네 가지 필터 설정이 사용하는 셀. 파랑 = fit data, 빨강
-= held out (최근 6개 대각선), 연회색 = 필터로 제외된 셀, 흰색 = 미관측.
-수직 점선은 성숙점 $`k^*`$, 수평 점선은 regime break 코호트 경계를
-나타낸다.
+SUR triangle 에서 네 가지 필터 설정이 사용하는 셀. 파랑 = 적합에 사용,
+빨강 = 홀드아웃 (최근 6개 대각선), 연회색 = 필터로 제외된 셀, 흰색 =
+미관측. 수직 점선은 성숙점 $`k^*`$, 수평 점선은 regime break 코호트
+경계를 나타낸다.
 
 hybrid 패널은 SA 모드가 적용하는 dev-축 split — ED 쪽은 cohort cut, CL
 쪽은 calendar 대각선 cut 이 $`k^*`$ 에서 만나는 사다리꼴 합집합 — 을

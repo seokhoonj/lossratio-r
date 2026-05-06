@@ -160,6 +160,72 @@ period’s level need not imply that the projection has settled. The dual
 criterion closes both inertia-leakage paths.</p>
 </div>
 <div class="section level2">
+<h2 id="why-two-conditions">Why two conditions<a class="anchor" aria-label="anchor" href="#why-two-conditions"></a>
+</h2>
+<p>A <strong>denominator effect</strong> disables any single-criterion
+diagnostic.</p>
+<p>In long-duration health insurance, cumulative LR = cumulative loss /
+cumulative risk premium. As dev grows, the denominator grows alongside
+the numerator, so a new calendar diagonal’s contribution to the overall
+ratio shrinks automatically — <em>regardless of whether the underlying
+experience has actually changed</em>. This is the <em>inertia</em>
+effect.</p>
+<p>What each criterion guards against:</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th>Scenario</th>
+<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math></th>
+<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math></th>
+<th>Result</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>True convergence (model + experience both stable)</td>
+<td>small</td>
+<td>small</td>
+<td>
+<strong>PASS</strong> ✓</td>
+</tr>
+<tr class="even">
+<td>Chain-ladder
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>f</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><mo>→</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\hat{f}_k \to 1</annotation></semantics></math>
+drift (inertia)</td>
+<td>small (spurious)</td>
+<td>large</td>
+<td>FAIL — dispersion catches it</td>
+</tr>
+<tr class="odd">
+<td>Coincidental cohort agreement at one period</td>
+<td>large</td>
+<td>small (snapshot)</td>
+<td>FAIL — projection revision catches it</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>
+alone is fooled by chain ladder’s mechanical drift
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>f</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><mo>→</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\hat{f}_k \to 1</annotation></semantics></math>):
+the cumulative product barely moves, the projection barely moves, and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>
+collapses to zero — a false convergence.</li>
+<li>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
+uses <strong>incremental</strong> LR, so it inherits no cumulative
+denominator → immune to the inertia effect.</li>
+<li>Requiring both criteria simultaneously closes the principal
+inertia-leakage paths. That is the design intent of the dual
+criterion.</li>
+</ul>
+</div>
+<div class="section level2">
 <h2 id="notation">Notation<a class="anchor" aria-label="anchor" href="#notation"></a>
 </h2>
 <table class="table">
@@ -320,11 +386,69 @@ row per candidate valuation and an extra
 <span><span class="co">#&gt; 4:    12     NA           NA         NA  0.58   FALSE</span></span>
 <span><span class="co">#&gt; 5:    13     NA           NA         NA  0.81   FALSE</span></span>
 <span><span class="co">#&gt; 6:    14     NA           NA         NA  0.43   FALSE</span></span></code></pre>
-<p><code>R_v</code> and <code>SE_param_v</code> are <code>NA</code> for
-early valuations whose holdout depth exceeds <code>holdout_max</code>.
-The default <code>holdout_max = floor((V - k_star) / 2)</code> keeps
-every backtest with a reasonable refit window; relax it if you need
-diagnostics deeper into the past.</p>
+</div>
+<div class="section level2">
+<h2 id="how-it-works-multiple-holdout-refits">How it works: multiple holdout refits<a class="anchor" aria-label="anchor" href="#how-it-works-multiple-holdout-refits"></a>
+</h2>
+<p><code><a href="../reference/find_lr_convergence.html">find_lr_convergence()</a></code> refits the model at each candidate
+valuation and tracks how the projection changes.</p>
+<p>Example: with
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mo>=</mo><mn>30</mn></mrow><annotation encoding="application/x-tex">V = 30</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>k</mi><mo>*</mo></msup><mo>=</mo><mn>18</mn></mrow><annotation encoding="application/x-tex">k^* = 18</annotation></semantics></math>,
+and <code>holdout_max = 6</code> — candidates are
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo>∈</mo><mo stretchy="false" form="prefix">{</mo><mn>24</mn><mo>,</mo><mn>25</mn><mo>,</mo><mi>…</mi><mo>,</mo><mn>30</mn><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">v \in \{24, 25, \dots, 30\}</annotation></semantics></math>
+(7 in total).</p>
+<table class="table">
+<thead><tr class="header">
+<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math></th>
+<th>holdout depth
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mo>−</mo><mi>v</mi></mrow><annotation encoding="application/x-tex">V - v</annotation></semantics></math>)</th>
+<th>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>
+available?</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>30</td>
+<td>0</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>28</td>
+<td>2</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>24 (cutoff)</td>
+<td>6</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>22</td>
+<td>8</td>
+<td><code>NA</code></td>
+</tr>
+<tr class="odd">
+<td>18</td>
+<td>12</td>
+<td><code>NA</code></td>
+</tr>
+</tbody>
+</table>
+<p>One refit per candidate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
+(7 total) plus
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>
+computed between adjacent
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>.
+The cutoff <code>holdout_max</code> defaults to
+<code>floor((V - k_star) / 2)</code>; once holdout depth exceeds it the
+refit data becomes too thin and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><msub><mi>E</mi><mi>p</mi></msub><mi>a</mi><mi>r</mi><mi>a</mi><msub><mi>m</mi><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">SE_param_v</annotation></semantics></math>
+are masked to <code>NA</code>.</p>
+<p>Increase <code>holdout_max</code> to diagnose deeper into the past —
+at the cost of less data behind each refit, hence lower confidence.</p>
 </div>
 <div class="section level2">
 <h2 id="plot">Plot<a class="anchor" aria-label="anchor" href="#plot"></a>
