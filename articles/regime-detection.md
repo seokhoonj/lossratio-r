@@ -31,8 +31,10 @@ of trajectories is an unreliable way to locate a structural shift —
 especially when observation windows differ across cohorts.
 
 [`detect_cohort_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_cohort_regime.md)
-answers both questions in one call. It treats each underwriting cohort
-as a feature vector (its trajectory over development periods
+answers both questions in one call — grouping underwriting cohorts into
+**regimes** (groups of cohorts that share similar loss dynamics) and
+reporting the break dates between groups. It treats each underwriting
+cohort as a feature vector (its trajectory over development periods
 `1, ..., K`), orders cohorts by underwriting date, and applies a
 change-point or clustering method to the resulting multivariate
 sequence.

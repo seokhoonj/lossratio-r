@@ -118,10 +118,13 @@ eye-balling a bundle of trajectories is an unreliable way to locate a
 structural shift — especially when observation windows differ across
 cohorts.</p>
 <p><code><a href="../reference/detect_cohort_regime.html">detect_cohort_regime()</a></code> answers both questions in one
-call. It treats each underwriting cohort as a feature vector (its
-trajectory over development periods <code>1, ..., K</code>), orders
-cohorts by underwriting date, and applies a change-point or clustering
-method to the resulting multivariate sequence.</p>
+call — grouping underwriting cohorts into <strong>regimes</strong>
+(groups of cohorts that share similar loss dynamics) and reporting the
+break dates between groups. It treats each underwriting cohort as a
+feature vector (its trajectory over development periods
+<code>1, ..., K</code>), orders cohorts by underwriting date, and
+applies a change-point or clustering method to the resulting
+multivariate sequence.</p>
 </div>
 <div class="section level2">
 <h2 id="data-and-setup">Data and setup<a class="anchor" aria-label="anchor" href="#data-and-setup"></a>

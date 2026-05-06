@@ -1,4 +1,4 @@
-# Triangle 과 ATA 진단
+# Triangle 및 ATA 진단
 
 > 영어 원본 보기: [Triangle and ATA
 > diagnostics](https://seokhoonj.github.io/lossratio/triangle-diagnostics.md)
