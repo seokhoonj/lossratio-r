@@ -23,20 +23,21 @@ navbar:
       - text: -------
       - text: Aggregation frameworks
         href: articles/aggregation-frameworks.html
-      - text: Loss-ratio projection methods
-        href: articles/loss-ratio-methods.html
-      - text: Chain ladder
-        href: articles/chain-ladder.html
       - text: Triangle and ATA diagnostics
         href: articles/triangle-diagnostics.html
+      - text: Loss ratio projection methods
+        href: articles/loss-ratio-methods.html
+      - text: Loss ratio convergence
+        href: articles/lr-convergence.html
       - text: Regime detection
         href: articles/regime-detection.html
-      - text: Backtest
-        href: articles/backtest.html
       - text: Regime break filtering
         href: articles/regime-break.html
-      - text: LR convergence
-        href: articles/lr-convergence.html
+      - text: Backtest
+        href: articles/backtest.html
+      - text: -------
+      - text: (Reference) Chain ladder reserving
+        href: articles/chain-ladder.html
     language:
       text: KO
       href: ./ko/
@@ -97,7 +98,7 @@ reference:
   contents:
   - backtest
 
-- title: LR convergence detection
+- title: Loss ratio convergence detection
   desc: >
     Detect the development period ($k^{**}$) from which the projected
     loss ratio stops revising and converges.

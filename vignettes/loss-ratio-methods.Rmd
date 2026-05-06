@@ -1,8 +1,8 @@
 ---
-title: "Loss-ratio projection methods: SA, ED, CL"
+title: "Loss ratio projection methods: SA, ED, CL"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Loss-ratio projection methods: SA, ED, CL}
+  %\VignetteIndexEntry{Loss ratio projection methods: SA, ED, CL}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

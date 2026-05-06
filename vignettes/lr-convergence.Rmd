@@ -1,8 +1,8 @@
 ---
-title: "Diagnosing LR convergence with find_lr_convergence()"
+title: "Diagnosing loss ratio convergence with find_lr_convergence()"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Diagnosing LR convergence with find_lr_convergence()}
+  %\VignetteIndexEntry{Diagnosing loss ratio convergence with find_lr_convergence()}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
