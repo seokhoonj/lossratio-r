@@ -1,7 +1,6 @@
 # lossratio (development version)
 
-Initial development release. Long-format experience-data toolkit for
-long-term health insurance loss-ratio analysis.
+# lossratio 0.0.0.9000
 
 ## Core API
 
