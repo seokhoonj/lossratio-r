@@ -128,7 +128,7 @@ detect_cohort_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
 
 ### 노출 기반
 
-`fit_lr(method = "ed")`. 모든 미래 손해 증가분이 익스포저(위험보험료)를
+`fit_lr(method = "ed")`. 모든 미래 손해 증가분이 익스포저(≈ 위험보험료)를
 분모로 사용한다. ATA 인자가 정보량이 부족하거나 전 구간에 걸쳐
 불안정할 때 적합하다.
 
