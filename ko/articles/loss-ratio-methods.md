@@ -401,4 +401,4 @@ when one of SA’s two regions becomes redundant.
 
 In practice: **start with `"sa"`** (the default), then run `"cl"` and
 `"ed"` for sensitivity. If all three agree, the projection is robust. If
-they diverge, inspect maturity detection and the underlying ata factors.
+they diverge, inspect maturity detection and the underlying ATA factors.

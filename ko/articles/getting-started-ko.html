@@ -252,7 +252,7 @@ calendar / underwriting 기간 컬럼, 인구통계 차원 (<code>cv_nm</code>,
 </h2>
 <p>코호트 발달을 보는 두 가지 상호 보완적 관점.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># 연속 발달비(age-to-age) 인자</span></span>
+<code class="sourceCode R"><span><span class="co"># ATA 인자(age-to-age factor)</span></span>
 <span><span class="va">ata</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_ata.html">build_ata</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">ata</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;ATAFit&gt;</span></span>
@@ -279,7 +279,7 @@ calendar / underwriting 기간 컬럼, 인구통계 차원 (<code>cv_nm</code>,
 <span><span class="co">#&gt; groups      : cv_nm </span></span>
 <span><span class="co">#&gt; n_groups    : 1 </span></span>
 <span><span class="co">#&gt; links       : 29</span></span></code></pre></div>
-<p><code><a href="../reference/fit_ata.html">fit_ata()</a></code> 는 경과 기간 링크별로 선택된 age-to-age 인자를
+<p><code><a href="../reference/fit_ata.html">fit_ata()</a></code> 는 경과 기간 링크별로 선택된 ATA 인자를
 반환한다. <code><a href="../reference/fit_ed.html">fit_ed()</a></code> 는 강도 인자
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>g</mi><mi>k</mi></msub><mo>=</mo><mi mathvariant="normal">Δ</mi><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup><mi>/</mi><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">g_k = \Delta C^L_k / C^P_k</annotation></semantics></math>
 를 반환한다. 두 출력 모두 아래 추정 방법의 입력으로 사용된다.</p>
@@ -365,7 +365,7 @@ calendar / underwriting 기간 컬럼, 인구통계 차원 (<code>cv_nm</code>,
 <p><code><a href="../reference/fit_lr.html">fit_lr()</a></code> 은 손해율 추정을 수행한다. 기본값으로 사용되는
 단계 적응형(stage-adaptive) 방식 (<code>method = "sa"</code>) 은
 성숙점(maturity point) 이전에는 노출 기반 방식, 성숙점 이후에는 chain
-ladder 를 적용한다. 전환 지점은 ata 인자에서 그룹별로 탐지된
+ladder 를 적용한다. 전환 지점은 ATA 인자에서 그룹별로 탐지된
 성숙점이다.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>

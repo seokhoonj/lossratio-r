@@ -52,7 +52,7 @@
 <p>보험 경험 데이터의 손해율 분석과 추정.</p>
 <div class="section level2">
 <h2 id="개요">개요<a class="anchor" aria-label="anchor" href="#%EA%B0%9C%EC%9A%94"></a></h2>
-<p><code>lossratio</code>는 long-format 경험 데이터로부터 <strong>장기 건강보험</strong> 손해율을 분석하기 위한 도구 모음이다 — 한 행이 (코호트 × 경과 기간 × 인구통계) 셀 하나에 대응하며, 손해액과 위험보험료 컬럼을 가진다. 다년 보장 건강보험은 손해가 천천히 누적된다. 초기 경과 기간에서 연속 발달비(age-to-age)는 불안정하며, 익스포저(≈ 위험보험료)가 추정의 가장 신뢰할 만한 기준이 된다. 또한 상품 개정, 인수 기준 변경, 규제 개혁에서 비롯된 구조적 변화(structural break)가 코호트에 걸쳐 누적된다. 이 패키지의 기본값 — 단계 적응형(stage-adaptive, SA) 추정, 초기 경과 기간의 노출 기반(exposure-driven, ED) 모형, 코호트 regime 탐지 (regime: 유사한 손해 추이를 공유하는 인수 코호트들의 묶음) — 은 이러한 환경에 맞게 조정되어 있다. 동일한 도구는 누적 손해 / 익스포저 구조라면 어떤 영역에도 적용 가능하다 (사망률, 발병률, 일반 손해).</p>
+<p><code>lossratio</code>는 long-format 경험 데이터로부터 <strong>장기 건강보험</strong> 손해율을 분석하기 위한 도구 모음이다 — 한 행이 (코호트 × 경과 기간 × 인구통계) 셀 하나에 대응하며, 손해액과 위험보험료 컬럼을 가진다. 다년 보장 건강보험은 손해가 천천히 누적된다. 초기 경과 기간에서 ATA 인자(age-to-age factor)는 불안정하며, 익스포저(≈ 위험보험료)가 추정의 가장 신뢰할 만한 기준이 된다. 또한 상품 개정, 인수 기준 변경, 규제 개혁에서 비롯된 구조적 변화(structural break)가 코호트에 걸쳐 누적된다. 이 패키지의 기본값 — 단계 적응형(stage-adaptive, SA) 추정, 초기 경과 기간의 노출 기반(exposure-driven, ED) 모형, 코호트 regime 탐지 (regime: 유사한 손해 추이를 공유하는 인수 코호트들의 묶음) — 은 이러한 환경에 맞게 조정되어 있다. 동일한 도구는 누적 손해 / 익스포저 구조라면 어떤 영역에도 적용 가능하다 (사망률, 발병률, 일반 손해).</p>
 <p>제공 기능:</p>
 <ul><li>경험 데이터의 세 가지 집계 프레임: 코호트 × 경과 기간 (<code>Triangle</code>), 달력 기간 (<code>Calendar</code>), 포트폴리오 전체 (<code>Total</code>)</li>
 <li>age-to-age (<code>ATA</code>) 와 노출 기반 (<code>ED</code>) 의 경과 기간 모형화</li>
@@ -163,12 +163,12 @@
 <div class="section level3">
 <h3 id="단계-적응형">단계 적응형<a class="anchor" aria-label="anchor" href="#%EB%8B%A8%EA%B3%84-%EC%A0%81%EC%9D%91%ED%98%95"></a></h3>
 <p><code>fit_lr(method = "sa")</code> (기본값). 노출 기반과 chain ladder 의 결합으로, 그룹별 성숙점에서 전환된다:</p>
-<ul><li>성숙점 이전: 노출 기반 추정 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><msup><mi>C</mi><mi>L</mi></msup><mo>=</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">\Delta C^L = g_k \cdot C^P_k</annotation></semantics></math> — 연속 발달비가 변동성이 큰 구간에서 추정값을 보험료 규모에 고정한다.</li>
-<li>성숙점 이후: chain ladder 추정 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mo>=</mo><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup></mrow><annotation encoding="application/x-tex">C^L_{k+1} = f_k \cdot C^L_k</annotation></semantics></math> — 연속 발달비가 안정된 이후 코호트의 관측 수준을 보존한다.</li>
+<ul><li>성숙점 이전: 노출 기반 추정 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><msup><mi>C</mi><mi>L</mi></msup><mo>=</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">\Delta C^L = g_k \cdot C^P_k</annotation></semantics></math> — ATA 인자가 변동성이 큰 구간에서 추정값을 보험료 규모에 고정한다.</li>
+<li>성숙점 이후: chain ladder 추정 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mo>=</mo><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup></mrow><annotation encoding="application/x-tex">C^L_{k+1} = f_k \cdot C^L_k</annotation></semantics></math> — ATA 인자가 안정된 이후 코호트의 관측 수준을 보존한다.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="노출-기반">노출 기반<a class="anchor" aria-label="anchor" href="#%EB%85%B8%EC%B6%9C-%EA%B8%B0%EB%B0%98"></a></h3>
-<p><code>fit_lr(method = "ed")</code>. 모든 미래 손해 증가분이 익스포저(위험보험료)를 분모로 사용한다. 연속 발달비가 정보량이 부족하거나 전 구간에 걸쳐 불안정할 때 적합하다.</p>
+<p><code>fit_lr(method = "ed")</code>. 모든 미래 손해 증가분이 익스포저(위험보험료)를 분모로 사용한다. ATA 인자가 정보량이 부족하거나 전 구간에 걸쳐 불안정할 때 적합하다.</p>
 </div>
 <div class="section level3">
 <h3 id="chain-ladder">Chain Ladder<a class="anchor" aria-label="anchor" href="#chain-ladder"></a></h3>

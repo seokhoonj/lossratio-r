@@ -127,12 +127,11 @@ with fit_cl</a></p>
 <div class="section level2">
 <h2 id="방법-basic-vs-mack">방법: basic vs Mack<a class="anchor" aria-label="anchor" href="#%EB%B0%A9%EB%B2%95-basic-vs-mack"></a>
 </h2>
-<p>두 가지 추정 방법이 제공된다.</p>
+<p>두 가지 추정 방법이 제공된다. 두 방법 모두 인접 dev 의 누적 손해 비
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mi>k</mi></msub><mo>=</mo><msubsup><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mi>/</mi><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup></mrow><annotation encoding="application/x-tex">f_k = C^L_{k+1} / C^L_k</annotation></semantics></math>
+— <strong>ATA 인자</strong>(age-to-age factor) — 를 링크별로 선택한 뒤
+누적 추정에 사용한다.</p>
 <table class="table">
-<colgroup>
-<col width="15%">
-<col width="84%">
-</colgroup>
 <thead><tr class="header">
 <th><code>method</code></th>
 <th>계산 내용</th>
@@ -140,7 +139,7 @@ with fit_cl</a></p>
 <tbody>
 <tr class="odd">
 <td><code>"basic"</code></td>
-<td>점 추정만 (선택된 연속 발달비(age-to-age) 인자)</td>
+<td>점 추정만 (선택된 ATA 인자)</td>
 </tr>
 <tr class="even">
 <td><code>"mack"</code></td>
@@ -190,12 +189,12 @@ with fit_cl</a></p>
 <p>마지막 관측 경과 기간에서도 손해가 여전히 발달 중인 triangle 의 경우,
 외삽한 tail 인자(tail factor) 로 ultimate 를 추정한다.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># 선택된 ata 인자로부터 로그 선형 외삽</span></span>
+<code class="sourceCode R"><span><span class="co"># 선택된 ATA 인자로부터 로그 선형 외삽</span></span>
 <span><span class="va">cl_tail</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, tail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 또는 명시적인 tail 인자 값 지정</span></span>
 <span><span class="va">cl_tail</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, tail <span class="op">=</span> <span class="fl">1.025</span><span class="op">)</span></span></code></pre></div>
-<p>외삽은 추정된 ata 인자에 대해
+<p>외삽은 추정된 ATA 인자에 대해
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>f</mi><mi>k</mi></msub><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo>∼</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">\log(f_k - 1) \sim k</annotation></semantics></math>
 회귀를 적합한 뒤, 외삽된
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
@@ -205,7 +204,7 @@ with fit_cl</a></p>
 <div class="section level2">
 <h2 id="maturity-필터링">Maturity 필터링<a class="anchor" aria-label="anchor" href="#maturity-%ED%95%84%ED%84%B0%EB%A7%81"></a>
 </h2>
-<p>선택된 ata 인자가 변동성이 크다면, 추정을 성숙(mature) 영역으로
+<p>선택된 ATA 인자가 변동성이 크다면, 추정을 성숙(mature) 영역으로
 제한할 수 있다.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cl_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span></span>
@@ -237,7 +236,7 @@ with fit_cl</a></p>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>σ</mi><mi>k</mi><mn>2</mn></msubsup><annotation encoding="application/x-tex">\sigma^2_k</annotation></semantics></math>
 (경과 기간별 잔차 링크 분산) 으로부터 도출.</li>
 <li>
-<code>param_se</code> — 모수 분산. 선택된 연속 발달비 인자
+<code>param_se</code> — 모수 분산. 선택된 ATA 인자
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>f</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><annotation encoding="application/x-tex">\hat{f}_k</annotation></semantics></math>
 의 불확실성으로부터 도출.</li>
 <li>

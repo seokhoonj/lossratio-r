@@ -297,7 +297,7 @@ summary(cl)
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
 runs a loss-ratio projection. The default `method = "sa"`
 (stage-adaptive) uses exposure-driven before maturity and chain ladder
-after, switching at the per-group maturity point detected from the ata
+after, switching at the per-group maturity point detected from the ATA
 factors.
 
 ``` r

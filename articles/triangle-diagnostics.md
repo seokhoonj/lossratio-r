@@ -137,7 +137,7 @@ The [`summary()`](https://rdrr.io/r/base/summary.html) method on an
 - `f_se`, `rse` — WLS standard error and relative standard error.
 - `sigma` — Mack residual sigma per link.
 - `n_obs`, `n_valid`, `n_inf`, `n_nan`, `valid_ratio` — observation
-  counts and the share of finite ata factors per link.
+  counts and the share of finite ATA factors per link.
 
 ### Diagnostic plots for `ATA`
 

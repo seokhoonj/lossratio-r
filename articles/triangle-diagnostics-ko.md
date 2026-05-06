@@ -4,9 +4,9 @@
 > diagnostics](https://seokhoonj.github.io/lossratio/triangle-diagnostics.md)
 
 chain ladder 또는 손해율 모형을 적합하기 전에 기반이 되는 triangle 을
-살펴보는 것이 효율적이다. 이 문서는 코호트 발전 양상, age-to-age 인자의
-안정성, 성숙점(maturity point) 탐지를 이해하기 위한 `lossratio` 의 진단
-도구를 다룬다.
+살펴보는 것이 효율적이다. 이 문서는 코호트 발전 양상, **ATA
+인자**(age-to-age factor) 의 안정성, 성숙점(maturity point) 탐지를
+이해하기 위한 `lossratio` 의 진단 도구를 다룬다.
 
 ## Triangle 진단
 
@@ -132,14 +132,14 @@ head(sm)
 `ATA` 객체의 [`summary()`](https://rdrr.io/r/base/summary.html) 메소드는
 성숙점 탐지를 구동하는 링크별 통계를 계산한다.
 
-- `mean`, `median`, `wt` — 각 링크에서 관측된 ata 인자의 기술 평균 (해당
+- `mean`, `median`, `wt` — 각 링크에서 관측된 ATA 인자의 기술 평균 (해당
   링크가 관측되지 않은 코호트는 제외).
 - `cv` — 관측 인자의 변동계수 (상대 산포, alpha 와 무관).
 - `f` — WLS 로 추정된 인자 (`value_from^alpha` 로 볼륨 가중).
 - `f_se`, `rse` — WLS 표준오차 및 상대 표준오차.
 - `sigma` — 링크별 Mack 잔차 sigma.
 - `n_obs`, `n_valid`, `n_inf`, `n_nan`, `valid_ratio` — 관측 수와 링크별
-  유한 ata 인자의 비율.
+  유한 ATA 인자의 비율.
 
 ### `ATA` 진단 플롯
 
@@ -208,9 +208,9 @@ plot_triangle(ata, label_args = la, show_maturity = TRUE)    # 성숙점 라인 
 
 ## 성숙점 탐지
 
-성숙점(maturity point) 은 age-to-age 인자가 chain ladder 추정에 신뢰할
-만큼 안정화되는 경과 기간 링크이다. `fit_lr(method = "sa")` 가 ED 에서
-CL 로 전환할 때 내부적으로 사용한다.
+성숙점(maturity point) 은 ATA 인자가 chain ladder 추정에 신뢰할 만큼
+안정화되는 경과 기간 링크이다. `fit_lr(method = "sa")` 가 ED 에서 CL 로
+전환할 때 내부적으로 사용한다.
 
 [`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/reference/find_ata_maturity.md)
 는 `ATA` 객체의 [`summary()`](https://rdrr.io/r/base/summary.html)

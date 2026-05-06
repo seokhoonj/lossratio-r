@@ -45,12 +45,14 @@ print(cl)
 
 ## 방법: basic vs Mack
 
-두 가지 추정 방법이 제공된다.
+두 가지 추정 방법이 제공된다. 두 방법 모두 인접 dev 의 누적 손해 비
+$`f_k = C^L_{k+1} / C^L_k`$ — **ATA 인자**(age-to-age factor) — 를
+링크별로 선택한 뒤 누적 추정에 사용한다.
 
-| `method`  | 계산 내용                                       |
-|-----------|-------------------------------------------------|
-| `"basic"` | 점 추정만 (선택된 연속 발달비(age-to-age) 인자) |
-| `"mack"`  | 점 추정 + 인자 / 프로세스 / 모수 SE             |
+| `method`  | 계산 내용                           |
+|-----------|-------------------------------------|
+| `"basic"` | 점 추정만 (선택된 ATA 인자)         |
+| `"mack"`  | 점 추정 + 인자 / 프로세스 / 모수 SE |
 
 ``` r
 
@@ -102,20 +104,20 @@ plot(cl_mack, type = "projection", show_interval = TRUE)
 
 ``` r
 
-# 선택된 ata 인자로부터 로그 선형 외삽
+# 선택된 ATA 인자로부터 로그 선형 외삽
 cl_tail <- fit_cl(tri, value_var = "closs", method = "mack", tail = TRUE)
 
 # 또는 명시적인 tail 인자 값 지정
 cl_tail <- fit_cl(tri, value_var = "closs", method = "mack", tail = 1.025)
 ```
 
-외삽은 추정된 ata 인자에 대해 $`\log(f_k - 1) \sim k`$ 회귀를 적합한 뒤,
+외삽은 추정된 ATA 인자에 대해 $`\log(f_k - 1) \sim k`$ 회귀를 적합한 뒤,
 외삽된 $`f_k`$ 의 누적 곱만큼 추정 범위를 연장한다. 기본값은 비활성
 (`tail = FALSE`) 이다.
 
 ## Maturity 필터링
 
-선택된 ata 인자가 변동성이 크다면, 추정을 성숙(mature) 영역으로 제한할
+선택된 ATA 인자가 변동성이 크다면, 추정을 성숙(mature) 영역으로 제한할
 수 있다.
 
 ``` r
@@ -147,7 +149,7 @@ cl_mat$maturity
 
 - `proc_se` — 프로세스 분산. $`\sigma^2_k`$ (경과 기간별 잔차 링크 분산)
   으로부터 도출.
-- `param_se` — 모수 분산. 선택된 연속 발달비 인자 $`\hat{f}_k`$ 의
+- `param_se` — 모수 분산. 선택된 ATA 인자 $`\hat{f}_k`$ 의
   불확실성으로부터 도출.
 - `se` — 총 표준오차,
   $`\sqrt{\mathrm{proc\_se}^2 + \mathrm{param\_se}^2}`$.

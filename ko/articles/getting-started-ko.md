@@ -176,7 +176,7 @@ summary(tri)           # 경과 기간별 그룹 통계량
 
 ``` r
 
-# 연속 발달비(age-to-age) 인자
+# ATA 인자(age-to-age factor)
 ata <- build_ata(tri, value_var = "closs")
 fit_ata(ata)
 #> <ATAFit>
@@ -206,7 +206,7 @@ fit_ed(ed)
 ```
 
 [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md)
-는 경과 기간 링크별로 선택된 age-to-age 인자를 반환한다.
+는 경과 기간 링크별로 선택된 ATA 인자를 반환한다.
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md)
 는 강도 인자 $`g_k = \Delta C^L_k / C^P_k`$ 를 반환한다. 두 출력 모두
 아래 추정 방법의 입력으로 사용된다.
@@ -301,7 +301,7 @@ summary(cl)
 은 손해율 추정을 수행한다. 기본값으로 사용되는 단계
 적응형(stage-adaptive) 방식 (`method = "sa"`) 은 성숙점(maturity point)
 이전에는 노출 기반 방식, 성숙점 이후에는 chain ladder 를 적용한다. 전환
-지점은 ata 인자에서 그룹별로 탐지된 성숙점이다.
+지점은 ATA 인자에서 그룹별로 탐지된 성숙점이다.
 
 ``` r
 

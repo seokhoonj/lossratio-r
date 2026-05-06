@@ -87,9 +87,9 @@
 ATA diagnostics</a></p>
 </blockquote>
 <p>chain ladder 또는 손해율 모형을 적합하기 전에 기반이 되는 triangle 을
-살펴보는 것이 효율적이다. 이 문서는 코호트 발전 양상, age-to-age 인자의
-안정성, 성숙점(maturity point) 탐지를 이해하기 위한
-<code>lossratio</code> 의 진단 도구를 다룬다.</p>
+살펴보는 것이 효율적이다. 이 문서는 코호트 발전 양상, <strong>ATA
+인자</strong>(age-to-age factor) 의 안정성, 성숙점(maturity point)
+탐지를 이해하기 위한 <code>lossratio</code> 의 진단 도구를 다룬다.</p>
 <div class="section level2">
 <h2 id="triangle-진단">Triangle 진단<a class="anchor" aria-label="anchor" href="#triangle-%EC%A7%84%EB%8B%A8"></a>
 </h2>
@@ -189,7 +189,7 @@ clr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗
 <ul>
 <li>
 <code>mean</code>, <code>median</code>, <code>wt</code> — 각
-링크에서 관측된 ata 인자의 기술 평균 (해당 링크가 관측되지 않은 코호트는
+링크에서 관측된 ATA 인자의 기술 평균 (해당 링크가 관측되지 않은 코호트는
 제외).</li>
 <li>
 <code>cv</code> — 관측 인자의 변동계수 (상대 산포, alpha 와
@@ -204,7 +204,7 @@ clr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗
 <code>sigma</code> — 링크별 Mack 잔차 sigma.</li>
 <li>
 <code>n_obs</code>, <code>n_valid</code>, <code>n_inf</code>,
-<code>n_nan</code>, <code>valid_ratio</code> — 관측 수와 링크별 유한 ata
+<code>n_nan</code>, <code>valid_ratio</code> — 관측 수와 링크별 유한 ATA
 인자의 비율.</li>
 </ul>
 <div class="section level3">
@@ -248,10 +248,9 @@ clr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗
 <div class="section level2">
 <h2 id="성숙점-탐지">성숙점 탐지<a class="anchor" aria-label="anchor" href="#%EC%84%B1%EC%88%99%EC%A0%90-%ED%83%90%EC%A7%80"></a>
 </h2>
-<p>성숙점(maturity point) 은 age-to-age 인자가 chain ladder 추정에
-신뢰할 만큼 안정화되는 경과 기간 링크이다.
-<code>fit_lr(method = "sa")</code> 가 ED 에서 CL 로 전환할 때 내부적으로
-사용한다.</p>
+<p>성숙점(maturity point) 은 ATA 인자가 chain ladder 추정에 신뢰할 만큼
+안정화되는 경과 기간 링크이다. <code>fit_lr(method = "sa")</code> 가 ED
+에서 CL 로 전환할 때 내부적으로 사용한다.</p>
 <p><code><a href="../reference/find_ata_maturity.html">find_ata_maturity()</a></code> 는 <code>ATA</code> 객체의
 <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> 결과를 입력으로 받는다 — 먼저
 <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> 로 기술/WLS 요약을 만들고, 거기서 첫 성숙 링크를

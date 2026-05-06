@@ -98,7 +98,7 @@ developing, an extrapolated tail factor estimates ultimate:
 
 ``` r
 
-# Log-linear extrapolation from the selected ata factors
+# Log-linear extrapolation from the selected ATA factors
 cl_tail <- fit_cl(tri, value_var = "closs", method = "mack", tail = TRUE)
 
 # Or supply a literal tail factor
@@ -111,7 +111,7 @@ values. Disabled by default (`tail = FALSE`).
 
 ## Maturity filtering
 
-If selected ata factors are volatile, restrict projection to the mature
+If selected ATA factors are volatile, restrict projection to the mature
 region only:
 
 ``` r
