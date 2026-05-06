@@ -139,7 +139,7 @@ reference:
   - experience
 
 articles:
-- title: 한국어
+- title: 글
   navbar: ~
   contents:
   - "articles/aggregation-frameworks-ko"
@@ -149,6 +149,9 @@ articles:
   - "articles/regime-detection-ko"
   - "articles/regime-break-ko"
   - "articles/backtest-ko"
+- title: 참고
+  navbar: ~
+  contents:
   - "articles/chain-ladder-ko"
 - title: internal
   contents:

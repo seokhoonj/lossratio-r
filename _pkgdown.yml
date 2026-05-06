@@ -131,20 +131,20 @@ reference:
   - experience
 
 articles:
-- title: Workflow
+- title: Articles
   navbar: ~
   contents:
   - aggregation-frameworks
-- title: Methods
+  - triangle-diagnostics
+  - loss-ratio-methods
+  - lr-convergence
+  - regime-detection
+  - regime-break
+  - backtest
+- title: Reference
   navbar: ~
   contents:
-  - loss-ratio-methods
   - chain-ladder
-  - triangle-diagnostics
-  - regime-detection
-  - backtest
-  - regime-break
-  - lr-convergence
 - title: internal
   navbar: ~
   contents:
