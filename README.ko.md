@@ -68,9 +68,9 @@ remotes::install_github("seokhoonj/lossratio")
 ``` r
 library(lossratio)
 
-# 번들 calibrated 합성 experience data
-# (종목별 dev curve 형상은 실 포트폴리오의 broad shape 에 calibrate;
-# cell-level 값과 cohort 패턴은 무작위 생성)
+# 번들로 제공되는 합성 경험 데이터
+# 경과에 따른 곡선 형태는 실제 포트폴리오의 전체 형태에 맞춰 보정
+# 셀 값과 코호트 패턴은 무작위 생성
 data(experience)
 exp <- as_experience(experience)
 
