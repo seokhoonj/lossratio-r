@@ -67,7 +67,7 @@ names(tri)
 - 파생 지표 (`margin`, `lr`, `clr`, 비율) 를 추가한다,
 - 코호트 / 경과 기간 컬럼을 표준명 `cohort` 와 `dev` 로 rename 한다,
 - 원본 컬럼명은 attribute (`cohort_var`, `dev_var`) 로 보존하여
-  하위 plot 라벨에서 활용 가능하게 한다.
+  이후 plot 라벨에서 활용 가능하게 한다.
 
 ## 3단계 — 진단
 
