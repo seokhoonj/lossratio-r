@@ -5,17 +5,24 @@ Loss ratio analysis and projection for insurance experience data.
 ## Overview
 
 `lossratio` is a toolkit for **long-term health insurance** loss ratio
-analysis from long-format experience data — one row per (cohort × dev ×
-demographic) cell with loss and risk premium columns. Multi-year health
-policies emit loss slowly: age-to-age factors are unstable in early
-development, exposure (≈ risk premium) is the most reliable anchor for
-projection, and structural shifts from product redesigns, underwriting
-changes, or regulatory reforms accumulate across cohorts. The package’s
-defaults — stage-adaptive projection, exposure-driven early development,
-cohort regime detection (regime: a homogeneous group of cohorts that
-share similar loss dynamics) — are tuned for this setting. The same
-tools apply to any cumulative loss / exposure framework (mortality,
-morbidity, general claims).
+analysis and projection. Input is long-format experience data — each row
+(cohort × dev × demographic) maps to one Triangle cell, with loss and
+risk premium columns.
+
+In long-term health insurance, new claims and premium are generated and
+earned continuously within each cohort, so cumulative loss and exposure
+grow together. Age-to-age (ATA) factors tend to show high variability in
+early development, and exposure (≈ risk premium) becomes a more stable
+and reliable anchor. Product redesigns, underwriting changes, or
+regulatory actions can also produce structural breaks that accumulate
+across cohorts.
+
+In this setting, lossratio provides stage-adaptive (SA) loss-ratio
+projection, supported by maturity point and regime detection. SA uses an
+exposure-driven (ED) model before the maturity point and chain ladder
+(CL) after it. Regime detection identifies homogeneous groups of cohorts
+(regimes) that share similar loss dynamics, separating structural break
+points and determining which cells to use for estimation.
 
 It provides:
 
@@ -54,15 +61,16 @@ columns and derived ratios.
 
 ``` r
 
-# devtools
-devtools::install_github("seokhoonj/lossratio")
+# pak (recommended)
+pak::pak("seokhoonj/lossratio")
 
-# remotes
+# remotes (alternative)
 remotes::install_github("seokhoonj/lossratio")
 ```
 
-The package depends on `seokhoonj/instead` and `seokhoonj/ggshort`
-(installed automatically via `Remotes:`).
+The package currently depends on seokhoonj/instead and seokhoonj/ggshort
+(installed automatically via Remotes:; planned for removal in a future
+release).
 
 ## Quick Start
 

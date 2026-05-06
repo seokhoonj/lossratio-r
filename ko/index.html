@@ -85,7 +85,9 @@
 <div class="section level2">
 <h2 id="개요">개요<a class="anchor" aria-label="anchor" href="#%EA%B0%9C%EC%9A%94"></a>
 </h2>
-<p><code>lossratio</code>는 long-format 경험 데이터로부터 <strong>장기 건강보험</strong> 손해율을 분석하기 위한 도구 모음이다 — 한 행이 (코호트 × 경과 기간 × 인구통계) 셀 하나에 대응하며, 손해액과 위험보험료 컬럼을 가진다. 다년 보장 건강보험은 손해가 천천히 누적된다. 초기 경과 기간에서 ATA 인자(age-to-age factor)는 불안정하며, 익스포저(≈ 위험보험료)가 추정의 가장 신뢰할 만한 기준이 된다. 또한 상품 개정, 인수 기준 변경, 규제 개혁에서 비롯된 구조적 변화(structural break)가 코호트에 걸쳐 누적된다. 이 패키지의 기본값 — 단계 적응형(stage-adaptive, SA) 추정, 초기 경과 기간의 노출 기반(exposure-driven, ED) 모형, 코호트 regime 탐지 (regime: 유사한 손해 추이를 공유하는 인수 코호트들의 묶음) — 은 이러한 환경에 맞게 조정되어 있다. 동일한 도구는 누적 손해 / 익스포저 구조라면 어떤 영역에도 적용 가능하다 (사망률, 발병률, 일반 손해).</p>
+<p><code>lossratio</code>는 보험 경험 데이터로부터 <strong>장기 건강보험</strong> 손해율을 분석·추정하기 위한 도구 모음이다. 입력은 long-format 경험 데이터로, 한 행(코호트 × 경과 기간 × 인구통계)이 Triangle 셀 하나에 대응하며, 손해액과 위험보험료 컬럼을 가진다.</p>
+<p>장기 건강보험에서는 코호트 내 신규 클레임과 위험보험료가 지속적으로 발생·유입되므로, 누적 손해와 익스포저가 함께 증가하는 구조를 가진다. 초기 경과 기간의 age-to-age (ATA) factor는 높은 변동성을 보일 수 있으며, 상대적으로 익스포저(≈ 위험보험료)가 보다 안정적이고 신뢰할 수 있는 기준이 된다. 또한 상품 개정, 인수 기준 변경, 규제 조치 등으로 인해 구조적 변화(structural break)가 발생할 수 있으며, 이는 코호트 전반에 걸쳐 누적된다.</p>
+<p><code>lossratio</code> 는 이러한 환경에 맞춰 단계 적응형(stage-adaptive, SA) 손해율 추정과 이를 뒷받침하는 성숙점(maturity point) 및 regime 탐지 도구를 제공한다. SA 는 성숙점 이전에는 노출 기반(exposure-driven, ED) 모형을, 이후에는 chain ladder(CL) 를 사용한다. regime 탐지는 유사한 손해 추이를 공유하는 인수 코호트들의 묶음(regime) 을 식별해 구조적 변화 시점을 분리하며, 어떤 셀을 추정에 활용할지 결정한다.</p>
 <p>제공 기능:</p>
 <ul>
 <li>경험 데이터의 세 가지 집계 프레임: 코호트 × 경과 기간 (<code>Triangle</code>), 달력 기간 (<code>Calendar</code>), 포트폴리오 전체 (<code>Total</code>)</li>
@@ -157,12 +159,12 @@
 <h2 id="설치">설치<a class="anchor" aria-label="anchor" href="#%EC%84%A4%EC%B9%98"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># devtools</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"seokhoonj/lossratio"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># pak (recommended)</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"seokhoonj/lossratio"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># remotes</span></span>
+<span><span class="co"># remotes (alternative)</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"seokhoonj/lossratio"</span><span class="op">)</span></span></code></pre></div>
-<p>이 패키지는 <code>seokhoonj/instead</code> 와 <code>seokhoonj/ggshort</code> 에 의존한다 (<code>Remotes:</code> 를 통해 자동 설치).</p>
+<p>이 패키지는 현재 seokhoonj/instead 와 seokhoonj/ggshort 에 의존한다 (Remotes: 를 통해 자동 설치, 추후 의존성 제거 예정).</p>
 </div>
 <div class="section level2">
 <h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
