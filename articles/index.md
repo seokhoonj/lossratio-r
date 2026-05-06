@@ -8,8 +8,8 @@
   diagnostics](https://seokhoonj.github.io/lossratio/articles/triangle-diagnostics.md):
 - [Loss ratio projection methods: SA, ED,
   CL](https://seokhoonj.github.io/lossratio/articles/loss-ratio-methods.md):
-- [Diagnosing loss ratio convergence with
-  find_lr_convergence()](https://seokhoonj.github.io/lossratio/articles/lr-convergence.md):
+- [Diagnosing loss ratio
+  convergence](https://seokhoonj.github.io/lossratio/articles/lr-convergence.md):
 - [Detecting regime shifts across underwriting
   cohorts](https://seokhoonj.github.io/lossratio/articles/regime-detection.md):
 - [Hybrid filtering via regime
@@ -19,5 +19,5 @@
 
 ### Reference
 
-- [Chain ladder reserving with
-  fit_cl](https://seokhoonj.github.io/lossratio/articles/chain-ladder.md):
+- [Chain ladder
+  reserving](https://seokhoonj.github.io/lossratio/articles/chain-ladder.md):

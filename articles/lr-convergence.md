@@ -1,4 +1,4 @@
-# Diagnosing loss ratio convergence with find_lr_convergence()
+# Diagnosing loss ratio convergence
 
 ## Motivation
 

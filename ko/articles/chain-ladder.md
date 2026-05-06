@@ -1,4 +1,4 @@
-# Chain ladder reserving with fit_cl
+# Chain ladder reserving
 
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
 is the dedicated chain ladder fit for a single value column. Unlike
