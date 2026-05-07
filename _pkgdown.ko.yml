@@ -78,33 +78,33 @@ reference:
   - build_calendar
   - build_total
 
-- title: Age-to-age (ATA) 인자
-  desc: chain ladder 방법의 기본 단위.
-  contents:
-  - build_ata
-  - fit_ata
-  - summary.ATA
-  - find_ata_maturity
-
-- title: 노출 기반 (ED) 강도
-  desc: 노출 기반 방법의 기본 단위.
-  contents:
-  - build_ed
-  - fit_ed
-  - summary.ED
-
-- title: 예측
+- title: 단계 연결 테이블
   desc: >
-    chain ladder 와 손해율 추정. `fit_lr` 은 세 가지 method 지원 —
-    `"sa"` (단계 적응형, default), `"ed"`, `"cl"`.
+    Chain ladder (ATA) 와 노출 기반 (ED) 의 공통 long-format intermediate.
+    `summary.Link()` 의 `model` 인자로 두 모형의 진단을 분기.
   contents:
+  - build_link
+  - summary.Link
+
+- title: 추정
+  desc: >
+    링크별 인자 추정 (`fit_ata`, `fit_ed`) 과 전체 예측 (`fit_cl`,
+    `fit_lr`). `fit_lr` 은 세 가지 method 지원 — `"sa"` (단계 적응형,
+    default), `"ed"`, `"cl"`.
+  contents:
+  - fit_ata
+  - fit_ed
   - fit_cl
   - fit_lr
 
-- title: Regime 탐지
-  desc: 인수 코호트 간 구조적 변화 탐지.
+- title: 진단
+  desc: >
+    경과 기간 축 (`detect_maturity`), 코호트 축 (`detect_regime`),
+    예측 수렴 (`detect_convergence`) — 세 가지 구조 탐지.
   contents:
+  - detect_maturity
   - detect_regime
+  - detect_convergence
 
 - title: Backtest
   desc: >
@@ -112,12 +112,6 @@ reference:
     비교.
   contents:
   - backtest
-
-- title: 예측 손해율 수렴 탐지
-  desc: >
-    예측 손해율이 갱신을 멈추고 수렴하는 발전 기간 ($k^{**}$) 을 검출.
-  contents:
-  - find_lr_convergence
 
 - title: 시각화
   desc: >

@@ -6,10 +6,10 @@
 
 * Experience class: `as_experience()`, `is_experience()`, `check_experience()`, `add_experience_period()`.
 * Aggregation: `build_triangle()` (cohort × dev), `build_calendar()` (calendar period), `build_total()` (portfolio total).
-* Age-to-age: `build_ata()`, `fit_ata()`, S3 `summary()` on `ATA` / `ATAFit`, `find_ata_maturity()`.
-* Exposure-driven: `build_ed()`, `fit_ed()`, S3 `summary()` on `ED` / `EDFit`.
-* Projection: `fit_cl()` (chain ladder, `basic` / `mack`), `fit_lr()` (loss-ratio with `sa` / `ed` / `cl` methods).
-* Diagnostics: `detect_regime()` (regime detection across underwriting cohorts), `backtest()` (calendar-diagonal hold-out, supports both `fit_cl` and `fit_lr`).
+* Link table: `build_link()` returns a `Link` object covering both single-variable (ATA-style) and dual-variable (ED-style) workflows. `summary.Link(model = "ata"|"ed")` dispatches to the matching diagnostic.
+* Estimation: `fit_ata()`, `fit_ed()` (per-link factors); `fit_cl()` and `fit_lr()` (full projection — `fit_lr` supports `"sa"` / `"ed"` / `"cl"` methods).
+* Diagnostics: `detect_maturity()` (development axis — when ATA factors stabilise), `detect_regime()` (cohort axis — structural breaks across underwriting cohorts), `detect_convergence()` (predictive axis — when projected loss ratio stops revising).
+* Backtest: `backtest()` (calendar-diagonal hold-out, supports both `fit_cl` and `fit_lr`).
 * Visualisation: S3 `plot()` and `plot_triangle()` methods on every fit class.
 
 ## Dataset

@@ -69,33 +69,35 @@ reference:
   - build_calendar
   - build_total
 
-- title: Age-to-age (ATA) factors
-  desc: Building blocks of the chain-ladder method.
-  contents:
-  - build_ata
-  - fit_ata
-  - summary.ATA
-  - detect_maturity
-
-- title: Exposure-driven (ED) intensity
-  desc: Building blocks of the exposure-driven method.
-  contents:
-  - build_ed
-  - fit_ed
-  - summary.ED
-
-- title: Projection
+- title: Link table
   desc: >
-    Chain ladder and loss-ratio projection. `fit_lr` supports three
-    methods — `"sa"` (stage-adaptive, default), `"ed"`, and `"cl"`.
+    Long-format intermediate underlying both the chain-ladder (ATA) and
+    exposure-driven (ED) workflows. Built once, summarised differently
+    via `summary.Link()`'s `model` argument.
   contents:
+  - build_link
+  - summary.Link
+
+- title: Estimation
+  desc: >
+    Per-link factor estimation (`fit_ata`, `fit_ed`) and full
+    projection (`fit_cl`, `fit_lr`). `fit_lr` supports three methods —
+    `"sa"` (stage-adaptive, default), `"ed"`, and `"cl"`.
+  contents:
+  - fit_ata
+  - fit_ed
   - fit_cl
   - fit_lr
 
-- title: Regime detection
-  desc: Structural change detection across underwriting cohorts.
+- title: Diagnostics
+  desc: >
+    Structural detection along the development axis (`detect_maturity`),
+    the cohort axis (`detect_regime`), and predictive convergence
+    (`detect_convergence`).
   contents:
+  - detect_maturity
   - detect_regime
+  - detect_convergence
 
 - title: Backtest
   desc: >
@@ -103,13 +105,6 @@ reference:
     compare projections against the withheld actuals.
   contents:
   - backtest
-
-- title: Loss ratio convergence detection
-  desc: >
-    Detect the development period ($k^{**}$) from which the projected
-    loss ratio stops revising and converges.
-  contents:
-  - detect_convergence
 
 - title: Visualisation
   desc: >
