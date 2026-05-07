@@ -199,15 +199,14 @@
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>              <span class="co"># cohort trajectories</span></span>
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>     <span class="co"># cell heatmap</span></span>
 <span></span>
-<span><span class="co"># ATA / 노출 기반 인자 추정</span></span>
-<span><span class="fu"><a href="reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, exposure_var <span class="op">=</span> <span class="st">"crp"</span><span class="op">)</span></span>
+<span><span class="co"># 노출 기반 적합 (additive ED 강도)</span></span>
+<span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, exposure_var <span class="op">=</span> <span class="st">"crp"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Chain ladder 적합</span></span>
+<span><span class="co"># Chain ladder 적합 (multiplicative ATA 인자)</span></span>
 <span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cl</span>, type <span class="op">=</span> <span class="st">"projection"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 손해율 적합 (default: 단계 적응형)</span></span>
+<span><span class="co"># 손해율 적합 (default: 단계 적응형 — 성숙점 이전은 ED, 이후는 CL)</span></span>
 <span><span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lr</span>, type <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span>

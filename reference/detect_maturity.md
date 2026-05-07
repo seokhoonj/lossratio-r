@@ -1,7 +1,7 @@
 # Find ata maturity by group
 
 Identify the first mature age-to-age (ata) link from a `Triangle`.
-Internally builds a single-variable Link table, computes the per-link
+Internally builds a single-variable `Link` table, computes the per-link
 diagnostic via
 [`summary.Link()`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md)
 with `model = "ata"`, and then locates the first link whose statistics
