@@ -12,6 +12,7 @@
 ^data-raw$
 ^CLAUDE\.md$
 ^\.claude$
+\.claude(/|$)
 ^doc$
 ^Meta$
 ^_pkgdown\.yml$
