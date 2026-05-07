@@ -35,7 +35,7 @@ insurance portfolio's first ten months of development; the elap_m
 11-30 plateau, all cohort-level patterns, demographic mixes, and
 cell-level loss / rp values are randomly drawn. The SUR coverage
 carries a synthetic 2024-04 cohort regime break (LR halved) so the
-\code{detect_cohort_regime()} example has a clear shift to find.
+\code{detect_regime()} example has a clear shift to find.
 }
 \examples{
 \dontrun{

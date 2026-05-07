@@ -110,7 +110,7 @@ test_that("fit_ed with CohortRegime input extracts last breakpoint", {
   exp <- as_experience(experience[cv_nm == "SUR"])
   tri <- build_triangle(exp, group_var = "cv_nm",
                         cohort_var = "uym", dev_var = "elap_m")
-  reg <- detect_cohort_regime(tri)
+  reg <- detect_regime(tri)
   ed <- build_link(tri, value_var = "closs", exposure_var = "crp")
   fit_reg <- fit_ed(tri, value_var = "closs", exposure_var = "crp", regime_break = reg)
   if (length(reg$breakpoints) > 0L) {

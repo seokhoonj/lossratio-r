@@ -68,7 +68,7 @@
 #'     \item{`"ed"`, `"cl"`}{Simple cohort cut: all cohorts strictly before
 #'       the break date are excluded from estimation.}
 #'   }
-#' @param maturity_args A named list forwarded to [find_ata_maturity()],
+#' @param maturity_args A named list forwarded to [find_maturity()],
 #'   or `NULL` (default) to skip maturity filtering. When
 #'   `method = "sa"`, this also determines the switch point between
 #'   ED and CL. Pass `list()` to use all defaults.
@@ -83,7 +83,7 @@
 #' @return An object of class `"LRFit"`.
 #'
 #' @seealso [build_triangle()], [build_link()], [fit_ata()],
-#'   [fit_ed()], [find_ata_maturity()]
+#'   [fit_ed()], [find_maturity()]
 #'
 #' @examples
 #' \dontrun{

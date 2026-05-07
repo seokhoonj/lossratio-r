@@ -117,13 +117,13 @@ summary(lr)
 
 ## Step 6 — Structural change diagnostics
 
-`detect_cohort_regime()` checks whether recent cohorts behave
+`detect_regime()` checks whether recent cohorts behave
 differently from earlier ones. Useful as a preprocessing step before
 loss-ratio fitting on a homogeneous subset:
 
 ```{r}
 sub <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
-detect_cohort_regime(sub, K = 12, method = "ecp")
+detect_regime(sub, K = 12, method = "ecp")
 ```
 
 See `vignette("regime-detection")` for the dedicated walkthrough.
@@ -137,8 +137,8 @@ See `vignette("regime-detection")` for the dedicated walkthrough.
 - `vignette("chain-ladder")` — `fit_cl()` deep dive (Mack variance,
   tail factor).
 - `vignette("triangle-diagnostics")` — `summary()`,
-  `find_ata_maturity()`, and triangle-style visualisations.
-- `vignette("regime-detection")` — `detect_cohort_regime()` for
+  `find_maturity()`, and triangle-style visualisations.
+- `vignette("regime-detection")` — `detect_regime()` for
   structural-change diagnosis across cohorts.
 - `vignette("backtest")` — calendar-diagonal hold-out validation with
   `fit_cl` or `fit_lr`.

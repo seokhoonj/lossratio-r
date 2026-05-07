@@ -114,7 +114,7 @@
 #' is the parameter component of the Mack standard error of the
 #' projection, \eqn{\hat{D}_v} is the robust cross-cohort dispersion
 #' of incremental loss ratios at \eqn{v}, and \eqn{k^*} is the
-#' age-to-age maturity point from [find_ata_maturity()].
+#' age-to-age maturity point from [find_maturity()].
 #'
 #' Both clauses guard against complementary failure modes:
 #' \eqn{R_v < c \cdot \hat{SE}^{param}_v} requires the projection to
@@ -134,22 +134,22 @@
 #' @param M Required run length of consecutive passing periods. Default
 #'   `3L`.
 #' @param k_star Pre-computed maturity point. When `NULL`, computed via
-#'   [find_ata_maturity()] applied to a clr-based ATA.
+#'   [find_maturity()] applied to a clr-based ATA.
 #' @param holdout_max Maximum holdout depth used for the rolling
 #'   backtest. When `NULL`, set to `max(M, floor((V - k_star) / 2))`.
 #' @param min_n_cohorts Minimum number of cohorts required to compute
 #'   \eqn{\hat{D}_v}. Default `5L`.
 #' @param ... Additional arguments forwarded to `fit_fn`.
 #'
-#' @return An object of class `LRConvergence` (named list) containing the
+#' @return An object of class `Convergence` (named list) containing the
 #'   detected `k_conv`, the candidate sequence `v`, and the diagnostic
 #'   sequences `R_v`, `SE_param_v`, `D_v`, `pass_v`. Metadata is carried
 #'   on attributes (`group_var`, `value_var`, `fit_fn_name`).
 #'
-#' @seealso [find_ata_maturity()], [backtest()], [fit_lr()]
+#' @seealso [find_maturity()], [backtest()], [fit_lr()]
 #'
 #' @export
-find_lr_convergence <- function(triangle,
+find_convergence <- function(triangle,
                               fit_fn        = fit_lr,
                               c             = 0.5,
                               tau           = 0.15,
@@ -180,10 +180,10 @@ find_lr_convergence <- function(triangle,
   if (is.null(k_star)) {
     link    <- build_link(triangle, value_var = "clr", weight_var = "crp")
     sm      <- summary(link)
-    mat     <- find_ata_maturity(sm)
+    mat     <- find_maturity(sm)
     k_star  <- suppressWarnings(min(mat$ata_from, na.rm = TRUE))
     if (!is.finite(k_star))
-      stop("Could not derive `k_star` from `find_ata_maturity()`; ",
+      stop("Could not derive `k_star` from `find_maturity()`; ",
            "supply it explicitly.", call. = FALSE)
   }
   k_star <- as.integer(k_star)
@@ -293,17 +293,17 @@ find_lr_convergence <- function(triangle,
   data.table::setattr(out, "value_var",   "clr")
   data.table::setattr(out, "fit_fn_name", fit_fn_name)
   data.table::setattr(out, "dev_var",     dev_var)
-  class(out) <- "LRConvergence"
+  class(out) <- "Convergence"
   out
 }
 
 
 # S3 methods --------------------------------------------------------------
 
-#' @method print LRConvergence
+#' @method print Convergence
 #' @export
-print.LRConvergence <- function(x, ...) {
-  cat("<LRConvergence>\n")
+print.Convergence <- function(x, ...) {
+  cat("<Convergence>\n")
   cat("k_conv       :", x$k_conv, "\n")
   cat("k_star       :", x$k_star,   "\n")
   cat("V (max dev)  :", x$V,        "\n")
@@ -316,9 +316,9 @@ print.LRConvergence <- function(x, ...) {
   invisible(x)
 }
 
-#' @method summary LRConvergence
+#' @method summary Convergence
 #' @export
-summary.LRConvergence <- function(object, ...) {
+summary.Convergence <- function(object, ...) {
   data.table::data.table(
     v          = object$v,
     R_v        = object$R_v,
@@ -329,7 +329,7 @@ summary.LRConvergence <- function(object, ...) {
   )
 }
 
-#' Plot the LRConvergence diagnostic
+#' Plot the Convergence diagnostic
 #'
 #' @description
 #' Two-panel diagnostic showing the dual criterion driving \eqn{k^{**}}:
@@ -344,18 +344,18 @@ summary.LRConvergence <- function(object, ...) {
 #' Vertical guides mark `k_star` (dashed) and `k_conv` (solid). A
 #' point falling below both threshold lines passes the joint criterion.
 #'
-#' @param x An object of class `LRConvergence`.
+#' @param x An object of class `Convergence`.
 #' @param theme String passed to [.switch_theme()].
 #' @param ... Additional arguments passed to [.switch_theme()].
 #'
 #' @return A `ggplot` object.
 #'
-#' @method plot LRConvergence
+#' @method plot Convergence
 #' @export
-plot.LRConvergence <- function(x,
+plot.Convergence <- function(x,
                              theme = c("view", "save", "shiny"),
                              ...) {
-  .assert_class(x, "LRConvergence")
+  .assert_class(x, "Convergence")
   theme <- match.arg(theme)
 
   # build long-form data: one row per (v, metric)

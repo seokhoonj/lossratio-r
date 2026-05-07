@@ -28,7 +28,7 @@ per ata link:
 \item{\code{wt}}{Volume-weighted mean:
 \eqn{\sum C_{i,k+1} / \sum C_{i,k}}, independent of \code{alpha}.}
 \item{\code{cv}}{Coefficient of variation of observed ata factors
-(\eqn{SD / mean}). Used by \code{\link[=find_ata_maturity]{find_ata_maturity()}} to assess
+(\eqn{SD / mean}). Used by \code{\link[=find_maturity]{find_maturity()}} to assess
 stability.}
 \item{\code{f}}{WLS-estimated factor. Equals \code{wt} when \code{alpha = 2}
 and no zero \code{value_from} rows are present.}
@@ -58,7 +58,7 @@ stability and consistency of observed ata factors across cohorts.
 model per ata link to produce the WLS-estimated factor (\code{f}), its
 standard error (\code{f_se}), relative standard error (\code{rse}), and Mack
 sigma (\code{sigma}). These are used downstream by
-\code{\link[=find_ata_maturity]{find_ata_maturity()}} and \code{\link[=fit_ata]{fit_ata()}}.
+\code{\link[=find_maturity]{find_maturity()}} and \code{\link[=fit_ata]{fit_ata()}}.
 }
 }
 \section{Relationship between \code{wt} and \code{f}}{
@@ -111,7 +111,7 @@ where \eqn{f_k} are the individual observed ata values for link
 \eqn{k} and \eqn{\bar{f}_k} is their arithmetic mean. The \code{cv}
 reflects the relative spread of observed factors across cohorts,
 regardless of the exposure scale. It is used by
-\code{\link[=find_ata_maturity]{find_ata_maturity()}} as one of the criteria for determining the
+\code{\link[=find_maturity]{find_maturity()}} as one of the criteria for determining the
 maturity point.
 }
 
@@ -129,7 +129,7 @@ consistent across cohorts.
 }
 
 \seealso{
-\code{\link[=build_link]{build_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=find_ata_maturity]{find_ata_maturity()}},
+\code{\link[=build_link]{build_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=find_maturity]{find_maturity()}},
 \code{\link[=fit_ata]{fit_ata()}}
 }
 \keyword{internal}

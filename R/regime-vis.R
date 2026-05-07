@@ -26,7 +26,7 @@
 #'
 #' @return A `ggplot` object.
 #'
-#' @seealso [detect_cohort_regime()]
+#' @seealso [detect_regime()]
 #'
 #' @method plot CohortRegime
 #' @export

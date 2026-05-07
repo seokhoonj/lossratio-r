@@ -52,5 +52,5 @@ ellipses indicate the 90\% contour per regime. Arrows show the
 loadings of the original development-period features on PC1/PC2.
 }
 \seealso{
-\code{\link[=detect_cohort_regime]{detect_cohort_regime()}}
+\code{\link[=detect_regime]{detect_regime()}}
 }

@@ -75,18 +75,18 @@
 #' tri_sur <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
 #'
 #' # Hierarchical clustering (no extra package dependency)
-#' r <- detect_cohort_regime(tri_sur, K = 12, method = "hclust",
+#' r <- detect_regime(tri_sur, K = 12, method = "hclust",
 #'                           n_regimes = 2L)
 #' print(r)
 #' summary(r)
 #' plot(r)
 #'
 #' # ecp divisive change-point detection (requires the ecp package)
-#' r_ecp <- detect_cohort_regime(tri_sur, K = 12, method = "ecp")
+#' r_ecp <- detect_regime(tri_sur, K = 12, method = "ecp")
 #' }
 #'
 #' @export
-detect_cohort_regime <- function(x,
+detect_regime <- function(x,
                                  value_var = "clr",
                                  K         = 12L,
                                  method    = c("ecp", "pelt", "hclust"),
@@ -272,7 +272,7 @@ detect_cohort_regime <- function(x,
 
 # Print / summary ---------------------------------------------------------
 
-#' @rdname detect_cohort_regime
+#' @rdname detect_regime
 #' @method print CohortRegime
 #' @export
 print.CohortRegime <- function(x, ...) {
@@ -299,7 +299,7 @@ print.CohortRegime <- function(x, ...) {
 }
 
 
-#' @rdname detect_cohort_regime
+#' @rdname detect_regime
 #' @method summary CohortRegime
 #' @export
 summary.CohortRegime <- function(object, ...) {
@@ -328,7 +328,7 @@ summary.CohortRegime <- function(object, ...) {
 }
 
 
-#' @rdname detect_cohort_regime
+#' @rdname detect_regime
 #' @method print summary.CohortRegime
 #' @export
 print.summary.CohortRegime <- function(x, ...) {

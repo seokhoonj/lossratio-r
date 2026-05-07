@@ -106,19 +106,19 @@ test_that("summary.Link (ata mode) accepts alpha = 0 / 2", {
   expect_no_error(summary(ata, alpha = 2))
 })
 
-# find_ata_maturity ------------------------------------------------------
+# find_maturity ------------------------------------------------------
 
-test_that("find_ata_maturity returns one row per group with loose thresholds", {
+test_that("find_maturity returns one row per group with loose thresholds", {
   sm  <- summary(ata)
-  mat <- find_ata_maturity(sm, cv_threshold = 0.5, rse_threshold = 0.5)
+  mat <- find_maturity(sm, cv_threshold = 0.5, rse_threshold = 0.5)
   groups <- unique(sm$cv_nm)
   expect_true(nrow(mat) <= length(groups))
 })
 
 test_that("tight thresholds yield fewer or NA mature rows", {
   sm <- summary(ata)
-  mat_loose <- find_ata_maturity(sm, cv_threshold = 0.5, rse_threshold = 0.5)
-  mat_tight <- find_ata_maturity(sm, cv_threshold = 0.001, rse_threshold = 0.001)
+  mat_loose <- find_maturity(sm, cv_threshold = 0.5, rse_threshold = 0.5)
+  mat_tight <- find_maturity(sm, cv_threshold = 0.001, rse_threshold = 0.001)
   finite_loose <- sum(is.finite(mat_loose$ata_from))
   finite_tight <- sum(is.finite(mat_tight$ata_from))
   expect_true(finite_tight <= finite_loose)
@@ -172,7 +172,7 @@ test_that("fit_ata with CohortRegime input extracts last breakpoint", {
   exp <- as_experience(experience[cv_nm == "SUR"])
   tri <- build_triangle(exp, group_var = "cv_nm",
                         cohort_var = "uym", dev_var = "elap_m")
-  reg <- detect_cohort_regime(tri)
+  reg <- detect_regime(tri)
   ata <- build_link(tri, value_var = "closs")
   fit_reg <- fit_ata(tri, value_var = "closs", regime_break = reg)
   if (length(reg$breakpoints) > 0L) {

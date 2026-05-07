@@ -46,10 +46,10 @@ stable. The natural fix is asymmetric:
 | Axis                       | Number of changes        | Source                             |
 |----------------------------|--------------------------|------------------------------------|
 | x (maturity, ED → CL)      | exactly one per group    | `fit_ata$maturity`                 |
-| y (regime break)           | zero or many per group   | `detect_cohort_regime$breakpoints` |
+| y (regime break)           | zero or many per group   | `detect_regime$breakpoints` |
 
 The maturity point $k^*$ is a single internal switch produced by
-`find_ata_maturity()`. Regime breaks are exogenous events — there can
+`find_maturity()`. Regime breaks are exogenous events — there can
 be none, one, or several. When `regime_break` receives multiple values,
 the **most recent** is used, since post-break statistics are most
 stable when the post-break window has accumulated the largest number
@@ -65,7 +65,7 @@ of cohorts.
 | `NULL` (default)            | no filtering — backwards compatible             |
 | `Date` or character scalar  | single break date                               |
 | Date/character vector       | uses the latest entry                           |
-| `CohortRegime` object       | output of `detect_cohort_regime()` passed in    |
+| `CohortRegime` object       | output of `detect_regime()` passed in    |
 
 ```r
 library(lossratio)
@@ -78,7 +78,7 @@ fit_lr(tri_sur, method = "sa", recent = 18L,
        regime_break = "2024-04-01")
 
 # CohortRegime object directly
-reg <- detect_cohort_regime(tri_sur)
+reg <- detect_regime(tri_sur)
 fit_lr(tri_sur, method = "sa", recent = 18L, regime_break = reg)
 
 # Vector — latest is used (= 2024-04-01)
@@ -130,7 +130,7 @@ The bundled `experience` dataset embeds a synthetic 2024-04 break in
 the SUR coverage. Backtests on the same triangle with four variants:
 
 ```r
-reg <- detect_cohort_regime(tri_sur)
+reg <- detect_regime(tri_sur)
 
 bt_full   <- backtest(tri_sur, holdout = 6L)
 bt_recent <- backtest(tri_sur, holdout = 6L, recent = 18L)
@@ -165,13 +165,13 @@ diagonal cut on the CL side (dev > k\*).
 
 ## Multi-group handling
 
-`detect_cohort_regime()` assumes a single-group triangle. For a
+`detect_regime()` assumes a single-group triangle. For a
 portfolio with multiple `cv_nm` groups, call it per group:
 
 ```r
 fits <- lapply(unique(exp$cv_nm), function(g) {
   tri_g <- build_triangle(exp[cv_nm == g], cv_nm)
-  reg_g <- detect_cohort_regime(tri_g)
+  reg_g <- detect_regime(tri_g)
   fit_lr(tri_g, method = "sa", recent = 18L,
          regime_break = reg_g)
 })
@@ -199,5 +199,5 @@ so pre-break ultimates inherit the post-break dynamics.
   `"ed"`, `"cl"` methods.
 - `vignette("backtest")` — diagnosing the impact of `recent` and
   `regime_break`.
-- `vignette("regime-detection")` — `detect_cohort_regime()` reference.
-- `?fit_lr`, `?fit_ata`, `?fit_ed`, `?detect_cohort_regime`.
+- `vignette("regime-detection")` — `detect_regime()` reference.
+- `?fit_lr`, `?fit_ata`, `?fit_ed`, `?detect_regime`.

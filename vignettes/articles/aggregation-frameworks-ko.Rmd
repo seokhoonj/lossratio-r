@@ -76,7 +76,7 @@ plot_triangle(tri_q)   # 코호트 × dev clr 히트맵
 
 - `build_link()` — 발달 인자 (ATA / ED 는 `value_var` + 선택적 `exposure_var` 로 선택)
 - `fit_cl()`, `fit_lr()` — 추정
-- `detect_cohort_regime()` — 구조 변화 탐지
+- `detect_regime()` — 구조 변화 탐지
 
 ## 3. Calendar (달력 기간만)
 

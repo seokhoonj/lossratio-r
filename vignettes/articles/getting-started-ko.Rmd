@@ -118,13 +118,13 @@ summary(lr)
 
 ## 6단계 — 구조 변화 진단
 
-`detect_cohort_regime()` 은 최근 코호트가 이전 코호트와 다르게 행동하는지
+`detect_regime()` 은 최근 코호트가 이전 코호트와 다르게 행동하는지
 검사한다. 동질적 부분집합에 한하여 손해율 적합을 수행하기 위한 전처리
 단계로 활용된다.
 
 ```{r}
 sub <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
-detect_cohort_regime(sub, K = 12, method = "ecp")
+detect_regime(sub, K = 12, method = "ecp")
 ```
 
 상세 설명은 `vignette("regime-detection")` 을 참고한다.
@@ -137,8 +137,8 @@ detect_cohort_regime(sub, K = 12, method = "ecp")
   `"cl"` 중 선택 기준.
 - `vignette("chain-ladder")` — `fit_cl()` 심층 해설 (Mack 분산, tail factor).
 - `vignette("triangle-diagnostics")` — `summary()`,
-  `find_ata_maturity()`, triangle 형식의 시각화.
-- `vignette("regime-detection")` — `detect_cohort_regime()` 을 통한 코호트
+  `find_maturity()`, triangle 형식의 시각화.
+- `vignette("regime-detection")` — `detect_regime()` 을 통한 코호트
   간 구조 변화 진단.
 - `vignette("backtest")` — `fit_cl` 또는 `fit_lr` 을 사용한 대각선
   홀드아웃(holdout) 검증.

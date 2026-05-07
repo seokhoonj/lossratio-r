@@ -34,7 +34,7 @@ navbar:
       - text: Loss ratio projection methods
         href: articles/loss-ratio-methods.html
       - text: Loss ratio convergence
-        href: articles/lr-convergence.html
+        href: articles/convergence.html
       - text: Regime detection
         href: articles/regime-detection.html
       - text: Regime break filtering
@@ -75,7 +75,7 @@ reference:
   - build_ata
   - fit_ata
   - summary.ATA
-  - find_ata_maturity
+  - find_maturity
 
 - title: Exposure-driven (ED) intensity
   desc: Building blocks of the exposure-driven method.
@@ -95,7 +95,7 @@ reference:
 - title: Regime detection
   desc: Structural change detection across underwriting cohorts.
   contents:
-  - detect_cohort_regime
+  - detect_regime
 
 - title: Backtest
   desc: >
@@ -109,7 +109,7 @@ reference:
     Detect the development period ($k^{**}$) from which the projected
     loss ratio stops revising and converges.
   contents:
-  - find_lr_convergence
+  - find_convergence
 
 - title: Visualisation
   desc: >
@@ -143,7 +143,7 @@ articles:
   - aggregation-frameworks
   - triangle-diagnostics
   - loss-ratio-methods
-  - lr-convergence
+  - convergence
   - regime-detection
   - regime-break
   - backtest
@@ -163,4 +163,4 @@ articles:
   - "articles/regime-detection-ko"
   - "articles/backtest-ko"
   - "articles/regime-break-ko"
-  - "articles/lr-convergence-ko"
+  - "articles/convergence-ko"

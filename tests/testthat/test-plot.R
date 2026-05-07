@@ -11,7 +11,7 @@ cl_b <- fit_cl(tri, value_var = "closs", method = "basic")
 cl_m <- fit_cl(tri, value_var = "closs", method = "mack")
 lr   <- fit_lr(tri, method = "sa")
 sub  <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
-reg  <- detect_cohort_regime(sub, K = 12, method = "ecp")
+reg  <- detect_regime(sub, K = 12, method = "ecp")
 
 is_plot <- function(x) inherits(x, "ggplot") || inherits(x, "gtable")
 

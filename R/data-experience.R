@@ -10,7 +10,7 @@
 #' 11-30 plateau, all cohort-level patterns, demographic mixes, and
 #' cell-level loss / rp values are randomly drawn. The SUR coverage
 #' carries a synthetic 2024-04 cohort regime break (LR halved) so the
-#' `detect_cohort_regime()` example has a clear shift to find.
+#' `detect_regime()` example has a clear shift to find.
 #'
 #' @format A `data.table` with 33,480 rows and 17 columns:
 #' \describe{

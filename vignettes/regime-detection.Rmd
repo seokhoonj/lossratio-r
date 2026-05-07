@@ -41,14 +41,14 @@ one of four triggers:
 
 The bundled `experience` dataset's SUR coverage carries a synthetic
 2024-04 break representing one of these triggers, so the demonstration
-below has a clear shift for `detect_cohort_regime()` to find.
+below has a clear shift for `detect_regime()` to find.
 
 A visual inspection of `plot(tri_sur)` can suggest that recent cohorts
 have lower early loss ratios than older ones, but eye-balling a bundle
 of trajectories is an unreliable way to locate a structural shift —
 especially when observation windows differ across cohorts.
 
-`detect_cohort_regime()` answers both questions in one call — grouping
+`detect_regime()` answers both questions in one call — grouping
 underwriting cohorts into **regimes** (groups of cohorts that share
 similar loss dynamics) and reporting the break dates between groups.
 It treats each underwriting cohort as a feature vector (its trajectory
@@ -73,7 +73,7 @@ change-point algorithm that determines the number of regimes from the
 data:
 
 ```{r}
-r <- detect_cohort_regime(tri_sur, K = 12, method = "ecp")
+r <- detect_regime(tri_sur, K = 12, method = "ecp")
 r
 ```
 
@@ -136,7 +136,7 @@ If you want to compare a fixed number of regimes — for example,
 two-vs-three regime hypotheses — pass `n_regimes`:
 
 ```{r}
-r2 <- detect_cohort_regime(tri_sur, K = 12, method = "ecp", n_regimes = 3)
+r2 <- detect_regime(tri_sur, K = 12, method = "ecp", n_regimes = 3)
 summary(r2)
 ```
 
@@ -146,7 +146,7 @@ return up to that many regimes if supported by the data). For
 
 ## Relation to `fit_lr()`
 
-`detect_cohort_regime()` is a *preprocessing diagnostic*, not a
+`detect_regime()` is a *preprocessing diagnostic*, not a
 modification of the `fit_lr()` framework. Its output is useful in two
 ways:
 
