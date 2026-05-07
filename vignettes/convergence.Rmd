@@ -1,8 +1,8 @@
 ---
-title: "Diagnosing loss ratio convergence"
+title: "Convergence: detecting when projected loss ratio stops revising"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Diagnosing loss ratio convergence}
+  %\VignetteIndexEntry{Convergence: detecting when projected loss ratio stops revising}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

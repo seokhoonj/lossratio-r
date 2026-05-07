@@ -1,8 +1,8 @@
 ---
-title: "(참고) Chain ladder 를 이용한 준비금 산출"
+title: "(참고) Chain ladder reserving: 손해보험 준비금 산출"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{(참고) Chain ladder 를 이용한 준비금 산출}
+  %\VignetteIndexEntry{(참고) Chain ladder reserving: 손해보험 준비금 산출}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

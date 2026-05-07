@@ -1,8 +1,8 @@
 ---
-title: "Getting started with lossratio"
+title: "Get started: lossratio quick tour"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Getting started with lossratio}
+  %\VignetteIndexEntry{Get started: lossratio quick tour}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

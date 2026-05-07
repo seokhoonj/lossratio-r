@@ -1,8 +1,8 @@
 ---
-title: "홀드아웃 대각선을 이용한 추정 백테스팅"
+title: "Backtest: 홀드아웃 대각선을 이용한 추정 검증"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{홀드아웃 대각선을 이용한 추정 백테스팅}
+  %\VignetteIndexEntry{Backtest: 홀드아웃 대각선을 이용한 추정 검증}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

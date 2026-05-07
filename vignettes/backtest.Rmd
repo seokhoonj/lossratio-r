@@ -1,8 +1,8 @@
 ---
-title: "Backtesting projections against held-out diagonals"
+title: "Backtest: holding out the latest diagonals to validate projections"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Backtesting projections against held-out diagonals}
+  %\VignetteIndexEntry{Backtest: holding out the latest diagonals to validate projections}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

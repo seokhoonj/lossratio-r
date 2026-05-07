@@ -1,8 +1,8 @@
 ---
-title: "Projection: SA, ED, CL"
+title: "Projection: 손해율 예측 (SA, ED, CL)"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Projection: SA, ED, CL}
+  %\VignetteIndexEntry{Projection: 손해율 예측 (SA, ED, CL)}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -1,8 +1,8 @@
 ---
-title: "집계 프레임워크: Triangle, Calendar, Total"
+title: "Aggregation frameworks: 집계 프레임워크 (Triangle, Calendar, Total)"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{집계 프레임워크: Triangle, Calendar, Total}
+  %\VignetteIndexEntry{Aggregation frameworks: 집계 프레임워크 (Triangle, Calendar, Total)}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

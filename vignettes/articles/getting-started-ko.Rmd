@@ -1,8 +1,8 @@
 ---
-title: "lossratio 시작하기"
+title: "Get started: lossratio 시작하기"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{lossratio 시작하기}
+  %\VignetteIndexEntry{Get started: lossratio 시작하기}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

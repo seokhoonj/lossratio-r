@@ -1,8 +1,8 @@
 ---
-title: "Regime break filter"
+title: "Regime break filter: hybrid cohort + diagonal cut for fit_*"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Regime break filter}
+  %\VignetteIndexEntry{Regime break filter: hybrid cohort + diagonal cut for fit_*}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -1,8 +1,8 @@
 ---
-title: "Regime break filter"
+title: "Regime break filter: 탐지된 regime 을 fit_* 의 필터로"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Regime break filter}
+  %\VignetteIndexEntry{Regime break filter: 탐지된 regime 을 fit_* 의 필터로}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
