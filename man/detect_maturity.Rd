@@ -50,7 +50,7 @@ per group. If no mature link is found, all values for that group are
 }
 \description{
 Identify the first mature age-to-age (ata) link from a \code{Triangle}.
-Internally builds a single-variable \link{Link} table, computes the
+Internally builds a single-variable \code{Link} table, computes the
 per-link diagnostic via \code{\link[=summary.Link]{summary.Link()}} with \code{model = "ata"}, and
 then locates the first link whose statistics satisfy all maturity
 criteria.
