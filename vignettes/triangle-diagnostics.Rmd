@@ -199,7 +199,7 @@ reserving regime shift), restrict estimation to the recent calendar
 diagonals:
 
 ```{r}
-fit_ata(ata, alpha = 1, recent = 12)        # last 12 calendar diagonals
+fit_ata(tri, value_var = "closs", alpha = 1, recent = 12)  # last 12 calendar diagonals
 fit_cl(tri, value_var = "closs", recent = 12)
 fit_lr(tri, recent = 12)
 ```

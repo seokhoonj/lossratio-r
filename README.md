@@ -164,8 +164,8 @@ plot_triangle(x)     # lossratio generic — cell heatmap layout
 ```
 
 `plot()` and `plot_triangle()` work uniformly across `Triangle`,
-`Calendar`, `ATA`, `ATAFit`, `ED`, `EDFit`, `CLFit`, `LRFit`, and
-`Regime` objects.
+`Calendar`, `Link`, `ATAFit`, `EDFit`, `CLFit`, `LRFit`, `Maturity`,
+`Convergence`, and `Regime` objects.
 
 ## Documentation
 

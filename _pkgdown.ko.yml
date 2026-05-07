@@ -35,7 +35,7 @@ navbar:
       - text: 손해율 예측 방법론
         href: articles/loss-ratio-methods-ko.html
       - text: 예측 손해율 수렴 탐지
-        href: articles/lr-convergence-ko.html
+        href: articles/convergence-ko.html
       - text: Regime 탐지
         href: articles/regime-detection-ko.html
       - text: Regime break 필터링
@@ -153,7 +153,7 @@ articles:
   - "articles/aggregation-frameworks-ko"
   - "articles/triangle-diagnostics-ko"
   - "articles/loss-ratio-methods-ko"
-  - "articles/lr-convergence-ko"
+  - "articles/convergence-ko"
   - "articles/regime-detection-ko"
   - "articles/regime-break-ko"
   - "articles/backtest-ko"
@@ -172,4 +172,4 @@ articles:
   - regime-detection
   - backtest
   - regime-break
-  - lr-convergence
+  - convergence

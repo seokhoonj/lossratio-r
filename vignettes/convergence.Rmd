@@ -260,8 +260,9 @@ A defensible workflow is:
 2. For each homogeneous group, compute $k^*$ via
    `detect_maturity()`.
 3. Run `detect_convergence()` to obtain $k^{**} \ge k^*$. The reported
-   $\hat{clr}^{\mathrm{stable}}$ is the LR averaged over
-   $k \ge k^{**}$ (or projected via `fit_lr()`).
+   $\hat{lr}$ at the convergence point is the projected ultimate loss
+   ratio averaged over $k \ge k^{**}$ (or read directly from
+   `fit_lr()$summary`).
 
 The sequence separates *cohort homogeneity*, *link reproducibility*,
 and *level convergence* — three properties that coincide in P&C

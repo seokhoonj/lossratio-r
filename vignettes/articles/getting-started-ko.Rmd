@@ -83,12 +83,10 @@ summary(tri)           # 경과 기간별 그룹 통계량
 
 ```{r}
 # ATA 인자(age-to-age factor)
-ata <- build_link(tri, value_var = "closs")
-fit_ata(ata)
+fit_ata(tri, value_var = "closs")
 
 # 노출 기반(exposure-driven) 강도
-ed <- build_link(tri, value_var = "closs", exposure_var = "crp")
-fit_ed(ed)
+fit_ed(tri, value_var = "closs", exposure_var = "crp")
 ```
 
 `fit_ata()` 는 경과 기간 링크별로 선택된 ATA 인자를 반환한다.

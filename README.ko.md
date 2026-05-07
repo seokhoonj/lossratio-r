@@ -160,9 +160,9 @@ plot(x)              # base plot generic — line / panel diagnostics
 plot_triangle(x)     # lossratio generic — cell heatmap layout
 ```
 
-`plot()` 과 `plot_triangle()` 은 `Triangle`, `Calendar`, `ATA`,
-`ATAFit`, `ED`, `EDFit`, `CLFit`, `LRFit`, `Regime`
-객체 전반에 일관되게 작동한다.
+`plot()` 과 `plot_triangle()` 은 `Triangle`, `Calendar`, `Link`,
+`ATAFit`, `EDFit`, `CLFit`, `LRFit`, `Maturity`, `Convergence`,
+`Regime` 객체 전반에 일관되게 작동한다.
 
 ## 문서
 
