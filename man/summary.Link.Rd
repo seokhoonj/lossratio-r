@@ -25,5 +25,5 @@ Either an \code{ATASummary} (model = \code{"ata"}) or \code{EDSummary}
 Dispatch to the appropriate diagnostic table based on \code{model}.
 }
 \seealso{
-\code{\link[=build_link]{build_link()}}, \code{\link[=find_maturity]{find_maturity()}}
+\code{\link[=build_link]{build_link()}}, \code{\link[=detect_maturity]{detect_maturity()}}
 }

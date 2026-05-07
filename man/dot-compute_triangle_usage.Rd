@@ -20,7 +20,7 @@
 
 \item{regime_break}{Optional cohort cutoff. Accepts the same input
 forms as \code{\link[=fit_lr]{fit_lr()}} (\code{NULL}, \code{Date}, character, vector, or
-\code{CohortRegime}).}
+\code{Regime}).}
 
 \item{holdout}{Optional positive integer. When supplied, the last
 \code{holdout} calendar diagonals are flagged \code{"held_out"}. The \code{recent}

@@ -21,7 +21,7 @@
 \item \code{NULL} -- no filter (return copy of \code{dt} unchanged).
 \item A single Date or character (coercible to Date).
 \item A Date/character vector -- uses the latest (max) date.
-\item A \code{CohortRegime} object -- extracts the latest from \verb{$breakpoints}.
+\item A \code{Regime} object -- extracts the latest from \verb{$breakpoints}.
 }}
 
 \item{group_var}{Character vector of group columns (may be empty).}

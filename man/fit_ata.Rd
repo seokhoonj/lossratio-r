@@ -44,12 +44,12 @@ estimation. Applied before maturity filtering. Default is \code{NULL}
 
 \item{regime_break}{Optional cohort cutoff for the regime break. Accepts:
 \code{NULL} (default, no filter), a single \code{Date}/character coercible to Date,
-a vector of dates (uses the latest), or a \code{CohortRegime} object (extracts
+a vector of dates (uses the latest), or a \code{Regime} object (extracts
 the latest from \verb{$breakpoints}). When supplied, cohorts with
 \code{cohort < break_date} are excluded from estimation. Default is \code{NULL}.}
 
 \item{maturity_args}{A named list of arguments forwarded to
-\code{\link[=find_maturity]{find_maturity()}}, or \code{NULL} (default) to skip maturity filtering.
+\code{\link[=detect_maturity]{detect_maturity()}}, or \code{NULL} (default) to skip maturity filtering.
 When a list is supplied, missing elements are filled with package
 defaults via \code{\link[utils:modifyList]{utils::modifyList()}}:
 \describe{
@@ -71,7 +71,7 @@ An object of class \code{"ATAFit"} (a named list) containing:
 \item{\code{summary}}{\code{"ATASummary"} object from \code{\link[=summary.Link]{summary.Link()}}.}
 \item{\code{selected}}{\code{data.table} of factors ready for projection,
 including \code{f_selected} and \code{sigma2}.}
-\item{\code{maturity}}{Maturity diagnostics from \code{\link[=find_maturity]{find_maturity()}},
+\item{\code{maturity}}{Maturity diagnostics from \code{\link[=detect_maturity]{detect_maturity()}},
 or \code{NULL} when maturity filtering was not applied.}
 \item{\code{alpha}}{Value of \code{alpha} used.}
 \item{\code{na_method}}{NA fill method used.}
@@ -91,10 +91,10 @@ Estimate age-to-age (ata) development factors from an object of class
 \code{\link[=summary.Link]{summary.Link()}} with \code{model = "ata"}.
 \item Selected factors (\code{selected}) ready for chain ladder projection,
 after optional maturity filtering and LOCF fill.
-\item Maturity diagnostics (\code{maturity}) from \code{\link[=find_maturity]{find_maturity()}}.
+\item Maturity diagnostics (\code{maturity}) from \code{\link[=detect_maturity]{detect_maturity()}}.
 }
 }
 \seealso{
-\code{\link[=build_link]{build_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=find_maturity]{find_maturity()}},
+\code{\link[=build_link]{build_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=detect_maturity]{detect_maturity()}},
 \code{\link[=fit_cl]{fit_cl()}}
 }

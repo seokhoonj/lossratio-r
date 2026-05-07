@@ -15,7 +15,7 @@
 #'     model per ata link to produce the WLS-estimated factor (`f`), its
 #'     standard error (`f_se`), relative standard error (`rse`), and Mack
 #'     sigma (`sigma`). These are used downstream by
-#'     [find_maturity()] and [fit_ata()].
+#'     [detect_maturity()] and [fit_ata()].
 #' }
 #'
 #' @section Relationship between `wt` and `f`:
@@ -63,7 +63,7 @@
 #' \eqn{k} and \eqn{\bar{f}_k} is their arithmetic mean. The `cv`
 #' reflects the relative spread of observed factors across cohorts,
 #' regardless of the exposure scale. It is used by
-#' [find_maturity()] as one of the criteria for determining the
+#' [detect_maturity()] as one of the criteria for determining the
 #' maturity point.
 #'
 #' @section Relative standard error (`rse`):
@@ -94,7 +94,7 @@
 #'     \item{`wt`}{Volume-weighted mean:
 #'       \eqn{\sum C_{i,k+1} / \sum C_{i,k}}, independent of `alpha`.}
 #'     \item{`cv`}{Coefficient of variation of observed ata factors
-#'       (\eqn{SD / mean}). Used by [find_maturity()] to assess
+#'       (\eqn{SD / mean}). Used by [detect_maturity()] to assess
 #'       stability.}
 #'     \item{`f`}{WLS-estimated factor. Equals `wt` when `alpha = 2`
 #'       and no zero `value_from` rows are present.}
@@ -111,7 +111,7 @@
 #'       (\eqn{n\_valid / n\_obs}).}
 #'   }
 #'
-#' @seealso [build_link()], [summary.Link()], [find_maturity()],
+#' @seealso [build_link()], [summary.Link()], [detect_maturity()],
 #'   [fit_ata()]
 #'
 #' @keywords internal
@@ -222,7 +222,7 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 }
 
 
-# Age-to-age maturity is now in R/maturity.R (find_maturity / Maturity)
+# Age-to-age maturity is now in R/maturity.R (detect_maturity / Maturity)
 
 
 # Age-to-age fitting ------------------------------------------------------
@@ -238,7 +238,7 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'     [summary.Link()] with `model = "ata"`.
 #'   \item Selected factors (`selected`) ready for chain ladder projection,
 #'     after optional maturity filtering and LOCF fill.
-#'   \item Maturity diagnostics (`maturity`) from [find_maturity()].
+#'   \item Maturity diagnostics (`maturity`) from [detect_maturity()].
 #' }
 #'
 #' @param x An object of class `"Link"`, typically produced by
@@ -256,11 +256,11 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'   (use all periods).
 #' @param regime_break Optional cohort cutoff for the regime break. Accepts:
 #'   `NULL` (default, no filter), a single `Date`/character coercible to Date,
-#'   a vector of dates (uses the latest), or a `CohortRegime` object (extracts
+#'   a vector of dates (uses the latest), or a `Regime` object (extracts
 #'   the latest from `$breakpoints`). When supplied, cohorts with
 #'   `cohort < break_date` are excluded from estimation. Default is `NULL`.
 #' @param maturity_args A named list of arguments forwarded to
-#'   [find_maturity()], or `NULL` (default) to skip maturity filtering.
+#'   [detect_maturity()], or `NULL` (default) to skip maturity filtering.
 #'   When a list is supplied, missing elements are filled with package
 #'   defaults via [utils::modifyList()]:
 #'   \describe{
@@ -280,7 +280,7 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'     \item{`summary`}{`"ATASummary"` object from [summary.Link()].}
 #'     \item{`selected`}{`data.table` of factors ready for projection,
 #'       including `f_selected` and `sigma2`.}
-#'     \item{`maturity`}{Maturity diagnostics from [find_maturity()],
+#'     \item{`maturity`}{Maturity diagnostics from [detect_maturity()],
 #'       or `NULL` when maturity filtering was not applied.}
 #'     \item{`alpha`}{Value of `alpha` used.}
 #'     \item{`na_method`}{NA fill method used.}
@@ -296,7 +296,7 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #' @param weight_var Optional WLS weight variable. Forwarded to
 #'   [build_link()].
 #'
-#' @seealso [build_link()], [summary.Link()], [find_maturity()],
+#' @seealso [build_link()], [summary.Link()], [detect_maturity()],
 #'   [fit_cl()]
 #'
 #' @export
@@ -322,7 +322,7 @@ fit_ata <- function(x,
   # when `regime_break` is supplied, drop cohorts strictly before the
   # break date so estimation uses only the post-break regime.
   if (!is.null(regime_break)) {
-    if (inherits(regime_break, "CohortRegime")) {
+    if (inherits(regime_break, "Regime")) {
       regime_break <- max(regime_break$breakpoints)
     } else {
       regime_break <- max(as.Date(regime_break))
@@ -376,7 +376,7 @@ fit_ata <- function(x,
 
   # 5) find maturity point ----------------------------------------------
   maturity <- if (use_maturity) {
-    do.call(.find_maturity, c(list(x = ata_summary), maturity_args))
+    do.call(.detect_maturity, c(list(x = ata_summary), maturity_args))
   } else {
     NULL
   }
@@ -491,7 +491,7 @@ print.ATAFit <- function(x, ...) {
 #'
 #' @param ata_summary A `data.table` of class `"ATASummary"` from
 #'   [summary.Link()] with `model = "ata"`.
-#' @param maturity A `data.table` from [find_maturity()], or `NULL`
+#' @param maturity A `data.table` from [detect_maturity()], or `NULL`
 #'   when `use_maturity = FALSE`.
 #' @param grp_var Character vector of grouping variable names.
 #' @param use_maturity Logical; if `TRUE`, apply the maturity filter.

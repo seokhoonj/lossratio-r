@@ -2,9 +2,9 @@
 % Please edit documentation in R/regime.R
 \name{detect_regime}
 \alias{detect_regime}
-\alias{print.CohortRegime}
-\alias{summary.CohortRegime}
-\alias{print.summary.CohortRegime}
+\alias{print.Regime}
+\alias{summary.Regime}
+\alias{print.summary.Regime}
 \title{Detect structural regime shifts across underwriting cohorts}
 \usage{
 detect_regime(
@@ -18,16 +18,16 @@ detect_regime(
   ...
 )
 
-\method{print}{CohortRegime}(x, ...)
+\method{print}{Regime}(x, ...)
 
-\method{summary}{CohortRegime}(object, ...)
+\method{summary}{Regime}(object, ...)
 
-\method{print}{summary.CohortRegime}(x, ...)
+\method{print}{summary.Regime}(x, ...)
 }
 \arguments{
 \item{x}{An object of class \code{"Triangle"}. Must correspond to a single
 group (no \code{group_var} or a single-value \code{group_var} subset).
-Also used by S3 \code{print()} method on \code{CohortRegime} objects.}
+Also used by S3 \code{print()} method on \code{Regime} objects.}
 
 \item{value_var}{Column name of the trajectory variable. Default
 is \code{"clr"} (cumulative loss ratio).}
@@ -48,11 +48,11 @@ the requested value) for \code{"hclust"}, where the default is \code{2}.}
 
 \item{...}{Reserved for future use.}
 
-\item{object}{An object of class \code{"CohortRegime"}. Used by the S3
+\item{object}{An object of class \code{"Regime"}. Used by the S3
 \code{summary()} method.}
 }
 \value{
-An object of class \code{"CohortRegime"} with components:
+An object of class \code{"Regime"} with components:
 \describe{
 \item{\code{call}}{Matched call.}
 \item{\code{method}}{Detection method used.}
@@ -117,5 +117,5 @@ r_ecp <- detect_regime(tri_sur, K = 12, method = "ecp")
 
 }
 \seealso{
-\code{\link[=plot.CohortRegime]{plot.CohortRegime()}}, \code{\link[=build_triangle]{build_triangle()}}
+\code{\link[=plot.Regime]{plot.Regime()}}, \code{\link[=build_triangle]{build_triangle()}}
 }

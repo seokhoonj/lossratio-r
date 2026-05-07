@@ -40,7 +40,7 @@ recent \code{recent} periods are used for factor estimation. Default is
 \code{NULL} (use all periods).}
 
 \item{maturity_args}{A named list of arguments forwarded to
-\code{\link[=find_maturity]{find_maturity()}} via \code{\link[=fit_ata]{fit_ata()}}, or \code{NULL} (default) to skip
+\code{\link[=detect_maturity]{detect_maturity()}} via \code{\link[=fit_ata]{fit_ata()}}, or \code{NULL} (default) to skip
 maturity filtering. Pass \code{list()} to use all defaults with maturity
 filtering enabled.}
 
@@ -70,7 +70,7 @@ ultimate, reserve, and Mack standard errors.}
 projection.}
 \item{\code{factor}}{For \code{"mack"} only: \code{data.table} of fitted factors
 from \code{\link[=fit_ata]{fit_ata()}}.}
-\item{\code{maturity}}{Maturity diagnostics from \code{\link[=find_maturity]{find_maturity()}},
+\item{\code{maturity}}{Maturity diagnostics from \code{\link[=detect_maturity]{detect_maturity()}},
 or \code{NULL} when maturity filtering was not applied.}
 \item{\code{alpha}}{Value of \code{alpha} used.}
 \item{\code{sigma_method}}{For \code{"mack"} only: sigma extrapolation method.}

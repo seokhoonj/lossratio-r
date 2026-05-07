@@ -44,7 +44,7 @@ recent \code{recent} periods are used for estimation. Default is \code{NULL}.}
 
 \item{regime_break}{Optional cohort cutoff for the regime break. Accepts:
 \code{NULL} (default, no filter), a single \code{Date}/character coercible to Date,
-a vector of dates (uses the latest), or a \code{CohortRegime} object (extracts
+a vector of dates (uses the latest), or a \code{Regime} object (extracts
 the latest from \verb{$breakpoints}). When supplied, cohorts with
 \code{cohort < break_date} are excluded from estimation. Default is \code{NULL}.}
 

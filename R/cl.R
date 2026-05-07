@@ -34,7 +34,7 @@
 #'   recent `recent` periods are used for factor estimation. Default is
 #'   `NULL` (use all periods).
 #' @param maturity_args A named list of arguments forwarded to
-#'   [find_maturity()] via [fit_ata()], or `NULL` (default) to skip
+#'   [detect_maturity()] via [fit_ata()], or `NULL` (default) to skip
 #'   maturity filtering. Pass `list()` to use all defaults with maturity
 #'   filtering enabled.
 #' @param tail Logical or numeric. If `FALSE`, no tail factor is applied.
@@ -62,7 +62,7 @@
 #'       projection.}
 #'     \item{`factor`}{For `"mack"` only: `data.table` of fitted factors
 #'       from [fit_ata()].}
-#'     \item{`maturity`}{Maturity diagnostics from [find_maturity()],
+#'     \item{`maturity`}{Maturity diagnostics from [detect_maturity()],
 #'       or `NULL` when maturity filtering was not applied.}
 #'     \item{`alpha`}{Value of `alpha` used.}
 #'     \item{`sigma_method`}{For `"mack"` only: sigma extrapolation method.}

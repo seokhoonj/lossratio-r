@@ -126,11 +126,11 @@ The maturity point is the development link beyond which age-to-age
 factors are stable enough to trust for chain-ladder projection. Used
 internally by `fit_lr(method = "sa")` to switch from ED to CL.
 
-`find_maturity()` takes a `Triangle` directly — the underlying
+`detect_maturity()` takes a `Triangle` directly — the underlying
 single-variable `Link` and its WLS summary are built internally:
 
 ```{r}
-mat <- find_maturity(
+mat <- detect_maturity(
   tri,
   value_var       = "closs",
   cv_threshold    = 0.10,    # CV must be below this
@@ -146,7 +146,7 @@ print(mat)
 A row per group with the first development link satisfying all
 thresholds, carrying the link's full statistics. The threshold
 arguments are also stored as attributes on the returned object.
-`find_maturity()` is also called internally by `fit_ata()` and
+`detect_maturity()` is also called internally by `fit_ata()` and
 `fit_cl()` when `maturity_args` is supplied (the `alpha` of the
 internal `summary()` step is taken from those callers).
 
@@ -216,7 +216,7 @@ Before fitting:
 3. `plot(tri)` / `plot_triangle(tri)` — visual inspection.
 4. `summary(tri)` — group-level central tendency.
 5. `build_link()` + `plot(ata, type = "cv")` — link stability.
-6. `find_maturity()` — verify maturity detection produces a
+6. `detect_maturity()` — verify maturity detection produces a
    sensible point per group.
 7. `detect_regime()` (optional) — structural change diagnosis.
 

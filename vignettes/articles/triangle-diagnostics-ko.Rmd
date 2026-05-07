@@ -122,11 +122,11 @@ plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / rp) 금액
 안정화되는 경과 기간 링크이다. `fit_lr(method = "sa")` 가 ED 에서 CL 로
 전환할 때 내부적으로 사용한다.
 
-`find_maturity()` 는 `Triangle` 을 직접 입력으로 받는다 —
+`detect_maturity()` 는 `Triangle` 을 직접 입력으로 받는다 —
 내부에서 단일 변수 `Link` 와 그 WLS 요약을 자동으로 빌드한다.
 
 ```{r}
-mat <- find_maturity(
+mat <- detect_maturity(
   tri,
   value_var       = "closs",
   cv_threshold    = 0.10,    # CV 가 이 값보다 작아야 함
@@ -141,7 +141,7 @@ print(mat)
 
 그룹별로 모든 임계값을 만족하는 첫 경과 기간 링크 한 행이 출력되며, 해당 링크의
 전체 통계가 같이 실린다. 임계값 인자들은 반환 객체의 attribute 로도 저장된다.
-`find_maturity()` 는 `maturity_args` 가 주어진 경우 `fit_ata()` 와
+`detect_maturity()` 는 `maturity_args` 가 주어진 경우 `fit_ata()` 와
 `fit_cl()` 내부에서도 호출된다 (내부 `summary()` 단계의 `alpha` 는 호출자의
 값을 그대로 받는다).
 
@@ -208,7 +208,7 @@ fit_lr(tri, recent = 12)
 3. `plot(tri)` / `plot_triangle(tri)` — 시각적 점검.
 4. `summary(tri)` — 그룹 수준 중심 경향 확인.
 5. `build_link()` + `plot(ata, type = "cv")` — 링크 안정성 확인.
-6. `find_maturity()` — 그룹별로 합리적 성숙점이 잡히는지 확인.
+6. `detect_maturity()` — 그룹별로 합리적 성숙점이 잡히는지 확인.
 7. `detect_regime()` (선택) — 구조적 변화 진단.
 
 이후 신뢰할 수 있는 입력 데이터로 `fit_lr()` / `fit_cl()` 을 적합한다.

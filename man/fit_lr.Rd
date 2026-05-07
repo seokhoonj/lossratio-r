@@ -66,7 +66,7 @@ Default is \code{NULL}.}
 
 \item{regime_break}{Optional cohort cutoff for the regime break. Accepts:
 \code{NULL} (default, no filter), a single \code{Date}/character coercible to Date,
-a vector of dates (uses the latest), or a \code{CohortRegime} object (extracts
+a vector of dates (uses the latest), or a \code{Regime} object (extracts
 the latest from \verb{$breakpoints}). Behavior depends on \code{method}:
 \describe{
 \item{\code{"sa"}}{Hybrid filter. Pre-break cohorts are dropped only for
@@ -78,7 +78,7 @@ intensities from a regime shift.}
 the break date are excluded from estimation.}
 }}
 
-\item{maturity_args}{A named list forwarded to \code{\link[=find_maturity]{find_maturity()}},
+\item{maturity_args}{A named list forwarded to \code{\link[=detect_maturity]{detect_maturity()}},
 or \code{NULL} (default) to skip maturity filtering. When
 \code{method = "sa"}, this also determines the switch point between
 ED and CL. Pass \code{list()} to use all defaults.}
@@ -143,5 +143,5 @@ lr_cl <- fit_lr(tri, method = "cl")
 }
 \seealso{
 \code{\link[=build_triangle]{build_triangle()}}, \code{\link[=build_link]{build_link()}}, \code{\link[=fit_ata]{fit_ata()}},
-\code{\link[=fit_ed]{fit_ed()}}, \code{\link[=find_maturity]{find_maturity()}}
+\code{\link[=fit_ed]{fit_ed()}}, \code{\link[=detect_maturity]{detect_maturity()}}
 }

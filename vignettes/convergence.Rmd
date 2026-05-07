@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 
 ## Motivation
 
-`find_maturity()` answers the question *"from which development
+`detect_maturity()` answers the question *"from which development
 period are link factors $f_k$ reproducible across cohorts?"*. That is
 necessary for chain-ladder projection but not sufficient for declaring
 a portfolio's projected loss ratio converged: in long-duration health
@@ -32,10 +32,10 @@ experience has actually settled. A criterion built on those quantities
 passes automatically with $k$, not because of true convergence — what
 we have called the *inertia* failure mode.
 
-`find_convergence()` detects the **convergence point** $k^{**}$ —
+`detect_convergence()` detects the **convergence point** $k^{**}$ —
 the first valuation $v \ge k^*$ at which the projected loss ratio has
 predictively converged. It is the natural counterpart to $k^*$
-(maturity point, from `find_maturity()`): $k^*$ marks where link
+(maturity point, from `detect_maturity()`): $k^*$ marks where link
 factors $f_k$ become reproducible, while $k^{**}$ marks where the
 projection itself stops moving with new data. Long-duration health
 portfolios may cross $k^*$ early yet remain far from $k^{**}$.
@@ -101,8 +101,8 @@ What each criterion guards against:
 | $i$ | cohort index (UY) |
 | $v$ | valuation index — the calendar diagonal; "$v$ diagonals observed" |
 | $V$ | maximum observed valuation (max dev in the triangle) |
-| $k^*$ | maturity point (from `find_maturity()`); lower bound on candidate $v$ |
-| $k^{**}$ | convergence point — the value `find_convergence()` returns |
+| $k^*$ | maturity point (from `detect_maturity()`); lower bound on candidate $v$ |
+| $k^{**}$ | convergence point — the value `detect_convergence()` returns |
 | $\hat{LR}^{\mathrm{proj}}_v$ | projected ultimate LR using data through valuation $v$ |
 | $R_v$ | revision: $\lvert\hat{LR}^{\mathrm{proj}}_v - \hat{LR}^{\mathrm{proj}}_{v-1}\rvert$ |
 | $\hat{SE}^{\mathrm{param}}_v$ | parameter-uncertainty SE of $\hat{LR}^{\mathrm{proj}}_v$ (Mack-style) |
@@ -126,7 +126,7 @@ data(experience)
 exp <- as_experience(experience)
 tri <- build_triangle(exp[cv_nm == "SUR"], cv_nm)
 
-res <- find_convergence(tri)
+res <- detect_convergence(tri)
 print(res)
 ```
 
@@ -147,7 +147,7 @@ The returned `Convergence` object reports:
 - `k_conv` — the detected $k^{**}$, or `NA` if no run of $M$
   consecutive passing valuations is found.
 - `k_star` — the maturity point used as the lower bound (computed
-  internally via `find_maturity()` on a clr-based ATA, or supplied
+  internally via `detect_maturity()` on a clr-based ATA, or supplied
   by the caller).
 - `V` — the maximum observable dev in the triangle.
 - `v`, `R_v`, `SE_param_v`, `D_v`, `pass_v` — per-valuation diagnostic
@@ -175,7 +175,7 @@ head(summary(res), 6)
 
 ## How it works: multiple holdout refits
 
-`find_convergence()` refits the model at each candidate valuation
+`detect_convergence()` refits the model at each candidate valuation
 and tracks how the projection changes.
 
 Example: with $V = 30$, $k^* = 18$, and `holdout_max = 6` —
@@ -233,7 +233,7 @@ range to inspect sensitivity:
 ```{r, eval = FALSE}
 sapply(
   c(0.25, 0.5, 0.75, 1.0),
-  function(cc) find_convergence(tri, c = cc)$k_conv
+  function(cc) detect_convergence(tri, c = cc)$k_conv
 )
 ```
 
@@ -250,16 +250,16 @@ different axes:
 | Tool | Question | Result | Axis |
 |------|----------|--------|------|
 | `detect_regime()` | Are cohorts homogeneous? | cohort groups | underwriting period |
-| `find_maturity()` ($k^*$) | When are link factors reproducible? | a dev value | development period |
-| `find_convergence()` ($k^{**}$) | When does the LR estimate stop revising? | a dev value | development period |
+| `detect_maturity()` ($k^*$) | When are link factors reproducible? | a dev value | development period |
+| `detect_convergence()` ($k^{**}$) | When does the LR estimate stop revising? | a dev value | development period |
 
 A defensible workflow is:
 
 1. Run `detect_regime()`. If multiple regimes exist, fit each
    group separately.
 2. For each homogeneous group, compute $k^*$ via
-   `find_maturity()`.
-3. Run `find_convergence()` to obtain $k^{**} \ge k^*$. The reported
+   `detect_maturity()`.
+3. Run `detect_convergence()` to obtain $k^{**} \ge k^*$. The reported
    $\hat{clr}^{\mathrm{stable}}$ is the LR averaged over
    $k \ge k^{**}$ (or projected via `fit_lr()`).
 
@@ -270,7 +270,7 @@ insurance.
 
 ## Limitations
 
-`find_convergence()` is a thin layer over repeated `backtest()` calls
+`detect_convergence()` is a thin layer over repeated `backtest()` calls
 and inherits their constraints:
 
 - **Identifiability**: $k^{**}$ can be declared only when $V \ge k^* + M$;
@@ -290,7 +290,7 @@ and inherits their constraints:
 
 ## See also
 
-- `?find_convergence`, `?find_maturity`, `?backtest`,
+- `?detect_convergence`, `?detect_maturity`, `?backtest`,
   `?detect_regime`.
 - Vignette `regime-detection` — cohort homogeneity diagnostics that
   feed step 1 of the workflow above.

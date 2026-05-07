@@ -21,7 +21,7 @@ test_that("ATA family carries PascalCase classes", {
   expect_s3_class(fits$ata_fit, "ATAFit")
   expect_s3_class(fits$ata_sm,  "ATASummary")
 
-  mat <- find_maturity(fits$tri, cv_threshold = 0.5, rse_threshold = 0.5)
+  mat <- detect_maturity(fits$tri, cv_threshold = 0.5, rse_threshold = 0.5)
   expect_s3_class(mat, "Maturity")
 })
 
@@ -38,11 +38,11 @@ test_that("CLFit / LRFit carry PascalCase classes", {
   expect_s3_class(fits$lr, "LRFit")
 })
 
-test_that("CohortRegime and Backtest carry PascalCase classes", {
+test_that("Regime and Backtest carry PascalCase classes", {
   sub <- make_sub_tri("SUR")
   reg <- detect_regime(sub, K = 12, method = "ecp")
-  expect_s3_class(reg, "CohortRegime")
-  expect_s3_class(summary(reg), "summary.CohortRegime")
+  expect_s3_class(reg, "Regime")
+  expect_s3_class(summary(reg), "summary.Regime")
 
   bt <- backtest(sub, holdout = 6L, fit_fn = fit_cl,
                  value_var = "closs", method = "mack")

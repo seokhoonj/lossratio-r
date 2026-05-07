@@ -106,7 +106,7 @@ target_lr <- dev_lr_mat[cbind(dt$elap_m,
 #   (3) sum insured limit change
 #   (4) underwriting guideline change
 # Post-2024-04 SUR cohorts get a 50% LR reduction. Strong enough that
-# all of ecp / pelt / hclust detect the break in `detect_cohort_regime()`.
+# all of ecp / pelt / hclust detect the break in `detect_regime()`.
 sur_post_break <- dt$cv_nm == "SUR" & dt$uym >= as.Date("2024-04-01")
 target_lr[sur_post_break] <- target_lr[sur_post_break] * 0.50
 

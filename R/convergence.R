@@ -114,7 +114,7 @@
 #' is the parameter component of the Mack standard error of the
 #' projection, \eqn{\hat{D}_v} is the robust cross-cohort dispersion
 #' of incremental loss ratios at \eqn{v}, and \eqn{k^*} is the
-#' age-to-age maturity point from [find_maturity()].
+#' age-to-age maturity point from [detect_maturity()].
 #'
 #' Both clauses guard against complementary failure modes:
 #' \eqn{R_v < c \cdot \hat{SE}^{param}_v} requires the projection to
@@ -134,7 +134,7 @@
 #' @param M Required run length of consecutive passing periods. Default
 #'   `3L`.
 #' @param k_star Pre-computed maturity point. When `NULL`, computed via
-#'   [find_maturity()] applied to a clr-based ATA.
+#'   [detect_maturity()] applied to a clr-based ATA.
 #' @param holdout_max Maximum holdout depth used for the rolling
 #'   backtest. When `NULL`, set to `max(M, floor((V - k_star) / 2))`.
 #' @param min_n_cohorts Minimum number of cohorts required to compute
@@ -146,10 +146,10 @@
 #'   sequences `R_v`, `SE_param_v`, `D_v`, `pass_v`. Metadata is carried
 #'   on attributes (`group_var`, `value_var`, `fit_fn_name`).
 #'
-#' @seealso [find_maturity()], [backtest()], [fit_lr()]
+#' @seealso [detect_maturity()], [backtest()], [fit_lr()]
 #'
 #' @export
-find_convergence <- function(triangle,
+detect_convergence <- function(triangle,
                               fit_fn        = fit_lr,
                               c             = 0.5,
                               tau           = 0.15,
@@ -178,10 +178,10 @@ find_convergence <- function(triangle,
 
   # 2) resolve k_star --------------------------------------------------
   if (is.null(k_star)) {
-    mat     <- find_maturity(triangle, value_var = "clr", weight_var = "crp")
+    mat     <- detect_maturity(triangle, value_var = "clr", weight_var = "crp")
     k_star  <- suppressWarnings(min(mat$ata_from, na.rm = TRUE))
     if (!is.finite(k_star))
-      stop("Could not derive `k_star` from `find_maturity()`; ",
+      stop("Could not derive `k_star` from `detect_maturity()`; ",
            "supply it explicitly.", call. = FALSE)
   }
   k_star <- as.integer(k_star)

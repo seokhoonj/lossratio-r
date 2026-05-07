@@ -31,8 +31,8 @@
 #'
 #' @param x An object of class `"Triangle"`. Must correspond to a single
 #'   group (no `group_var` or a single-value `group_var` subset).
-#'   Also used by S3 `print()` method on `CohortRegime` objects.
-#' @param object An object of class `"CohortRegime"`. Used by the S3
+#'   Also used by S3 `print()` method on `Regime` objects.
+#' @param object An object of class `"Regime"`. Used by the S3
 #'   `summary()` method.
 #' @param value_var Column name of the trajectory variable. Default
 #'   is `"clr"` (cumulative loss ratio).
@@ -47,7 +47,7 @@
 #' @param min_size Minimum segment size for `"ecp"`. Default `3`.
 #' @param ... Reserved for future use.
 #'
-#' @return An object of class `"CohortRegime"` with components:
+#' @return An object of class `"Regime"` with components:
 #'   \describe{
 #'     \item{`call`}{Matched call.}
 #'     \item{`method`}{Detection method used.}
@@ -66,7 +66,7 @@
 #'       constraint.}
 #'   }
 #'
-#' @seealso [plot.CohortRegime()], [build_triangle()]
+#' @seealso [plot.Regime()], [build_triangle()]
 #'
 #' @examples
 #' \dontrun{
@@ -192,7 +192,7 @@ detect_regime <- function(x,
     pca         = pca,
     dropped     = dropped
   )
-  class(out) <- "CohortRegime"
+  class(out) <- "Regime"
   out
 }
 
@@ -273,10 +273,10 @@ detect_regime <- function(x,
 # Print / summary ---------------------------------------------------------
 
 #' @rdname detect_regime
-#' @method print CohortRegime
+#' @method print Regime
 #' @export
-print.CohortRegime <- function(x, ...) {
-  cat("<CohortRegime>\n")
+print.Regime <- function(x, ...) {
+  cat("<Regime>\n")
   cat(sprintf("  method      : %s\n", x$method))
   cat(sprintf("  value_var   : %s\n", x$value_var))
   cat(sprintf("  window (K)  : %s 1, ..., %d\n", x$dev_var, x$K))
@@ -300,9 +300,9 @@ print.CohortRegime <- function(x, ...) {
 
 
 #' @rdname detect_regime
-#' @method summary CohortRegime
+#' @method summary Regime
 #' @export
-summary.CohortRegime <- function(object, ...) {
+summary.Regime <- function(object, ...) {
   labels <- object$labels
 
   tbl <- labels[, .(
@@ -323,15 +323,15 @@ summary.CohortRegime <- function(object, ...) {
     breakpoints = object$breakpoints,
     regimes     = tbl
   )
-  class(out) <- "summary.CohortRegime"
+  class(out) <- "summary.Regime"
   out
 }
 
 
 #' @rdname detect_regime
-#' @method print summary.CohortRegime
+#' @method print summary.Regime
 #' @export
-print.summary.CohortRegime <- function(x, ...) {
+print.summary.Regime <- function(x, ...) {
   cat("Cohort regime detection summary\n")
   cat(sprintf("  method    : %s\n", x$method))
   cat(sprintf("  value_var : %s\n", x$value_var))

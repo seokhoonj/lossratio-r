@@ -52,7 +52,7 @@ knitr::opts_chunk$set(
 | x (maturity, ED → CL)       | 그룹당 정확히 1회     | `fit_ata$maturity`                  |
 | y (regime break)            | 그룹당 0~여러 번      | `detect_regime$breakpoints`  |
 
-x 축은 모형 단계의 단일 switch 이며 `find_maturity()` 가 한 점 ($k^*$)
+x 축은 모형 단계의 단일 switch 이며 `detect_maturity()` 가 한 점 ($k^*$)
 을 반환한다. y 축은 외생적 사건이라 그룹 안에서 0 회일 수도, 여러 번일
 수도 있다. `regime_break` 가 다중 값을 받을 때는 가장 최신 break 만
 쓴다 — break 이후 누적된 코호트 수가 많을수록 post-break 통계량이
@@ -68,7 +68,7 @@ x 축은 모형 단계의 단일 switch 이며 `find_maturity()` 가 한 점 ($k
 | `NULL` (default)    | 필터링 없음 — 기존 동작과 동일                |
 | `Date` 또는 문자열  | 단일 break date                                |
 | Date/문자열 벡터    | 가장 최신 값 자동 선택                         |
-| `CohortRegime` 객체 | `detect_regime()` 결과를 직접 전달      |
+| `Regime` 객체 | `detect_regime()` 결과를 직접 전달      |
 
 ```r
 library(lossratio)
@@ -80,7 +80,7 @@ tri_sur <- build_triangle(exp[cv_nm == "SUR"], cv_nm)
 fit_lr(tri_sur, method = "sa", recent = 18L,
        regime_break = "2024-04-01")
 
-# CohortRegime 객체 직접 전달
+# Regime 객체 직접 전달
 reg <- detect_regime(tri_sur)
 fit_lr(tri_sur, method = "sa", recent = 18L, regime_break = reg)
 
@@ -105,7 +105,7 @@ fit_lr(tri_sur, method = "sa",
 성숙점 $k^*$ 자체는 break 컷에 의해 영향을 받지 않도록 **2-pass 검출** 로
 추정한다.
 
-1. 1차 pass: 필터링 없는 raw triangle 으로 `find_maturity()` 호출 →
+1. 1차 pass: 필터링 없는 raw triangle 으로 `detect_maturity()` 호출 →
    $k^*$ 추정. break 이전·이후 코호트 모두 ATA 패턴에 기여하므로 $k^*$
    는 안정적이다.
 2. 2차 pass: 1차에서 얻은 $k^*$ 를 고정한 채 hybrid 필터를 적용해 본
@@ -195,7 +195,7 @@ names(fits) <- groups
 ```
 
 향후 `regime_break = list(SUR = "2024-04-01", CAN = "2023-12-01")` 같은
-named list 입력을 지원할 수 있으나, 현재는 scalar/vector/`CohortRegime`
+named list 입력을 지원할 수 있으나, 현재는 scalar/vector/`Regime`
 세 형태만 동작한다.
 
 ## 7. 한계와 대안

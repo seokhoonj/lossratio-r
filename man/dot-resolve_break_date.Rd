@@ -15,7 +15,7 @@ A single Date, or \code{NULL} when no break is specified.
 \description{
 Internal helper used by \code{\link[=.apply_break_filter]{.apply_break_filter()}} to coerce a heterogeneous
 \code{break_date} argument (NULL, Date scalar/vector, character coercible to
-Date, or a \code{CohortRegime} object) into a single Date scalar (the latest
+Date, or a \code{Regime} object) into a single Date scalar (the latest
 break) or \code{NULL}.
 }
 \keyword{internal}

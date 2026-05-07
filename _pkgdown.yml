@@ -75,7 +75,7 @@ reference:
   - build_ata
   - fit_ata
   - summary.ATA
-  - find_maturity
+  - detect_maturity
 
 - title: Exposure-driven (ED) intensity
   desc: Building blocks of the exposure-driven method.
@@ -109,7 +109,7 @@ reference:
     Detect the development period ($k^{**}$) from which the projected
     loss ratio stops revising and converges.
   contents:
-  - find_convergence
+  - detect_convergence
 
 - title: Visualisation
   desc: >

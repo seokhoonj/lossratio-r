@@ -107,7 +107,7 @@ cl_mat <- fit_cl(
 cl_mat$maturity
 ```
 
-`maturity_args` 는 `find_maturity()` 로 그대로 전달된다.
+`maturity_args` 는 `detect_maturity()` 로 그대로 전달된다.
 
 ## 5. 분산 성분 (Mack)
 
@@ -174,5 +174,5 @@ fit_cl(tri, value_var = "closs", method = "mack", sigma_method = "loglinear")
 
 - `vignette("loss-ratio-methods")` — `fit_lr()` 을 사용해야 할 때.
 - `vignette("triangle-diagnostics")` — `summary()`,
-  `find_maturity()`, ata 진단 플롯.
-- `?fit_cl`, `?find_maturity`, `?fit_ata`.
+  `detect_maturity()`, ata 진단 플롯.
+- `?fit_cl`, `?detect_maturity`, `?fit_ata`.

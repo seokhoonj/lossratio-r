@@ -137,7 +137,7 @@ detect_regime(sub, K = 12, method = "ecp")
   `"cl"` 중 선택 기준.
 - `vignette("chain-ladder")` — `fit_cl()` 심층 해설 (Mack 분산, tail factor).
 - `vignette("triangle-diagnostics")` — `summary()`,
-  `find_maturity()`, triangle 형식의 시각화.
+  `detect_maturity()`, triangle 형식의 시각화.
 - `vignette("regime-detection")` — `detect_regime()` 을 통한 코호트
   간 구조 변화 진단.
 - `vignette("backtest")` — `fit_cl` 또는 `fit_lr` 을 사용한 대각선

@@ -103,7 +103,7 @@ cl_mat <- fit_cl(
 cl_mat$maturity
 ```
 
-`maturity_args` is forwarded to `find_maturity()`.
+`maturity_args` is forwarded to `detect_maturity()`.
 
 ## Variance components (Mack)
 
@@ -170,5 +170,5 @@ fit_cl(tri, value_var = "closs", method = "mack", sigma_method = "loglinear")
 
 - `vignette("loss-ratio-methods")` — when to use `fit_lr()` instead.
 - `vignette("triangle-diagnostics")` — `summary()`,
-  `find_maturity()`, ata diagnostic plots.
-- `?fit_cl`, `?find_maturity`, `?fit_ata`.
+  `detect_maturity()`, ata diagnostic plots.
+- `?fit_cl`, `?detect_maturity`, `?fit_ata`.

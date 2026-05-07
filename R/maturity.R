@@ -46,7 +46,7 @@
 #'   `NA`.
 #'
 #' @export
-find_maturity <- function(x,
+detect_maturity <- function(x,
                           value_var       = "closs",
                           weight_var      = NULL,
                           alpha           = 1,
@@ -61,7 +61,7 @@ find_maturity <- function(x,
   link <- build_link(x, value_var = value_var, weight_var = weight_var)
   ata_summary <- summary(link, model = "ata", alpha = alpha)
 
-  .find_maturity(
+  .detect_maturity(
     ata_summary,
     cv_threshold    = cv_threshold,
     rse_threshold   = rse_threshold,
@@ -75,7 +75,7 @@ find_maturity <- function(x,
 #' Internal: locate the first mature ata link from an `ATASummary`
 #'
 #' @keywords internal
-.find_maturity <- function(x,
+.detect_maturity <- function(x,
                            cv_threshold    = 0.10,
                            rse_threshold   = 0.05,
                            min_valid_ratio = 0.5,

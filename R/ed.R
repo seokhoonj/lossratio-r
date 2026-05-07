@@ -191,7 +191,7 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'   recent `recent` periods are used for estimation. Default is `NULL`.
 #' @param regime_break Optional cohort cutoff for the regime break. Accepts:
 #'   `NULL` (default, no filter), a single `Date`/character coercible to Date,
-#'   a vector of dates (uses the latest), or a `CohortRegime` object (extracts
+#'   a vector of dates (uses the latest), or a `Regime` object (extracts
 #'   the latest from `$breakpoints`). When supplied, cohorts with
 #'   `cohort < break_date` are excluded from estimation. Default is `NULL`.
 #' @param ... Additional arguments passed to [summary.Link()].

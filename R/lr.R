@@ -57,7 +57,7 @@
 #'   Default is `NULL`.
 #' @param regime_break Optional cohort cutoff for the regime break. Accepts:
 #'   `NULL` (default, no filter), a single `Date`/character coercible to Date,
-#'   a vector of dates (uses the latest), or a `CohortRegime` object (extracts
+#'   a vector of dates (uses the latest), or a `Regime` object (extracts
 #'   the latest from `$breakpoints`). Behavior depends on `method`:
 #'   \describe{
 #'     \item{`"sa"`}{Hybrid filter. Pre-break cohorts are dropped only for
@@ -68,7 +68,7 @@
 #'     \item{`"ed"`, `"cl"`}{Simple cohort cut: all cohorts strictly before
 #'       the break date are excluded from estimation.}
 #'   }
-#' @param maturity_args A named list forwarded to [find_maturity()],
+#' @param maturity_args A named list forwarded to [detect_maturity()],
 #'   or `NULL` (default) to skip maturity filtering. When
 #'   `method = "sa"`, this also determines the switch point between
 #'   ED and CL. Pass `list()` to use all defaults.
@@ -83,7 +83,7 @@
 #' @return An object of class `"LRFit"`.
 #'
 #' @seealso [build_triangle()], [build_link()], [fit_ata()],
-#'   [fit_ed()], [find_maturity()]
+#'   [fit_ed()], [detect_maturity()]
 #'
 #' @examples
 #' \dontrun{

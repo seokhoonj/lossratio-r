@@ -37,7 +37,7 @@
     -   `"ed"` — 모든 경과 기간에 대해 노출 기반
     -   `"cl"` — 고전적 chain ladder (Mack 모형)
 -   구조적 변화에 대한 코호트 regime 탐지
-    (`detect_cohort_regime`)
+    (`detect_regime`)
 -   진단 및 Triangle 시각화
 
 ## 입력 형식
@@ -100,7 +100,7 @@ plot(lr, type = "clr")
 summary(lr)
 
 # 코호트 간 구조적 변화 탐지
-detect_cohort_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
+detect_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
 ```
 
 ## 집계 프레임
@@ -153,7 +153,7 @@ plot_triangle(x)     # lossratio generic — cell heatmap layout
 ```
 
 `plot()` 과 `plot_triangle()` 은 `Triangle`, `Calendar`, `ATA`,
-`ATAFit`, `ED`, `EDFit`, `CLFit`, `LRFit`, `CohortRegime`
+`ATAFit`, `ED`, `EDFit`, `CLFit`, `LRFit`, `Regime`
 객체 전반에 일관되게 작동한다.
 
 ## 문서
@@ -161,7 +161,7 @@ plot_triangle(x)     # lossratio generic — cell heatmap layout
 ``` r
 ?build_triangle
 ?fit_lr
-?detect_cohort_regime
+?detect_regime
 vignette("regime-detection", package = "lossratio")
 ```
 

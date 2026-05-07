@@ -29,10 +29,10 @@ test_that(".apply_break_filter with single Date drops pre-break cohorts", {
   expect_true(all(out$cohort >= as.Date("2023-06-01")))
 })
 
-test_that(".apply_break_filter with CohortRegime extracts last breakpoint", {
+test_that(".apply_break_filter with Regime extracts last breakpoint", {
   reg <- structure(
     list(breakpoints = as.Date(c("2023-03-01", "2023-08-01"))),
-    class = "CohortRegime"
+    class = "Regime"
   )
   dt <- data.table::data.table(
     cohort = rep(seq.Date(as.Date("2023-01-01"), by = "month",
@@ -66,7 +66,7 @@ test_that(".apply_break_filter with NULL/empty returns unchanged", {
   expect_equal(nrow(lossratio:::.apply_break_filter(dt, NULL,
                       cohort_var = "cohort", dev_var = "dev")), 1L)
   reg_empty <- structure(list(breakpoints = as.Date(character(0))),
-                         class = "CohortRegime")
+                         class = "Regime")
   expect_equal(nrow(lossratio:::.apply_break_filter(dt, reg_empty,
                       cohort_var = "cohort", dev_var = "dev")), 1L)
 })

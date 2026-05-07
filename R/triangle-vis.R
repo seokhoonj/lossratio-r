@@ -834,7 +834,7 @@ plot.Total <- function(x,
 #'   `NULL`.
 #' @param regime_break Optional cohort cutoff. Accepts the same input
 #'   forms as [fit_lr()] (`NULL`, `Date`, character, vector, or
-#'   `CohortRegime`).
+#'   `Regime`).
 #' @param holdout Optional positive integer. When supplied, the last
 #'   `holdout` calendar diagonals are flagged `"held_out"`. The `recent`
 #'   filter is then evaluated against the post-holdout boundary so the

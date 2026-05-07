@@ -38,7 +38,7 @@ It provides:
     -   `"ed"` — exposure-driven for all development periods
     -   `"cl"` — classical chain ladder (Mack model)
 -   Cohort regime detection for structural breaks
-    (`detect_cohort_regime`)
+    (`detect_regime`)
 -   Diagnostic and triangle visualisations
 
 ## Expected input
@@ -102,7 +102,7 @@ plot(lr, type = "clr")
 summary(lr)
 
 # Structural change across cohorts
-detect_cohort_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
+detect_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
 ```
 
 ## Aggregation Frameworks
@@ -157,14 +157,14 @@ plot_triangle(x)     # lossratio generic — cell heatmap layout
 
 `plot()` and `plot_triangle()` work uniformly across `Triangle`,
 `Calendar`, `ATA`, `ATAFit`, `ED`, `EDFit`, `CLFit`, `LRFit`, and
-`CohortRegime` objects.
+`Regime` objects.
 
 ## Documentation
 
 ``` r
 ?build_triangle
 ?fit_lr
-?detect_cohort_regime
+?detect_regime
 vignette("regime-detection", package = "lossratio")
 ```
 

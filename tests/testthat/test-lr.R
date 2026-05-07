@@ -124,7 +124,7 @@ test_that("fit_lr with NULL regime_break is unchanged", {
   expect_identical(a$full$lr_proj, b$full$lr_proj)
 })
 
-test_that("fit_lr with CohortRegime extracts last breakpoint", {
+test_that("fit_lr with Regime extracts last breakpoint", {
   data(experience)
   exp <- as_experience(experience[cv_nm == "SUR"])
   tri <- build_triangle(exp, group_var = "cv_nm",

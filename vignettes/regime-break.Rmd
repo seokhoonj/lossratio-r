@@ -49,7 +49,7 @@ stable. The natural fix is asymmetric:
 | y (regime break)           | zero or many per group   | `detect_regime$breakpoints` |
 
 The maturity point $k^*$ is a single internal switch produced by
-`find_maturity()`. Regime breaks are exogenous events — there can
+`detect_maturity()`. Regime breaks are exogenous events — there can
 be none, one, or several. When `regime_break` receives multiple values,
 the **most recent** is used, since post-break statistics are most
 stable when the post-break window has accumulated the largest number
@@ -65,7 +65,7 @@ of cohorts.
 | `NULL` (default)            | no filtering — backwards compatible             |
 | `Date` or character scalar  | single break date                               |
 | Date/character vector       | uses the latest entry                           |
-| `CohortRegime` object       | output of `detect_regime()` passed in    |
+| `Regime` object       | output of `detect_regime()` passed in    |
 
 ```r
 library(lossratio)
@@ -77,7 +77,7 @@ tri_sur <- build_triangle(exp[cv_nm == "SUR"], cv_nm)
 fit_lr(tri_sur, method = "sa", recent = 18L,
        regime_break = "2024-04-01")
 
-# CohortRegime object directly
+# Regime object directly
 reg <- detect_regime(tri_sur)
 fit_lr(tri_sur, method = "sa", recent = 18L, regime_break = reg)
 
@@ -178,7 +178,7 @@ fits <- lapply(unique(exp$cv_nm), function(g) {
 ```
 
 A future extension may accept `regime_break = list(SUR = "2024-04-01",
-CAN = "2023-12-01")`. Today only scalar / vector / `CohortRegime` are
+CAN = "2023-12-01")`. Today only scalar / vector / `Regime` are
 supported.
 
 ## Limitations

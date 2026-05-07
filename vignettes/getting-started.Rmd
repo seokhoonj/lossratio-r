@@ -137,7 +137,7 @@ See `vignette("regime-detection")` for the dedicated walkthrough.
 - `vignette("chain-ladder")` — `fit_cl()` deep dive (Mack variance,
   tail factor).
 - `vignette("triangle-diagnostics")` — `summary()`,
-  `find_maturity()`, and triangle-style visualisations.
+  `detect_maturity()`, and triangle-style visualisations.
 - `vignette("regime-detection")` — `detect_regime()` for
   structural-change diagnosis across cohorts.
 - `vignette("backtest")` — calendar-diagonal hold-out validation with

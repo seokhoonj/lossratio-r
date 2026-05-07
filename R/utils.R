@@ -486,7 +486,7 @@ get_recent_weights <- function(weights, recent) {
 #' @description
 #' Internal helper used by [.apply_break_filter()] to coerce a heterogeneous
 #' `break_date` argument (NULL, Date scalar/vector, character coercible to
-#' Date, or a `CohortRegime` object) into a single Date scalar (the latest
+#' Date, or a `Regime` object) into a single Date scalar (the latest
 #' break) or `NULL`.
 #'
 #' @param break_date See [.apply_break_filter()].
@@ -496,7 +496,7 @@ get_recent_weights <- function(weights, recent) {
 #' @keywords internal
 .resolve_break_date <- function(break_date) {
   if (is.null(break_date)) return(NULL)
-  if (inherits(break_date, "CohortRegime")) {
+  if (inherits(break_date, "Regime")) {
     bp <- break_date$breakpoints
     if (length(bp) == 0L) return(NULL)
     return(max(bp))
@@ -521,7 +521,7 @@ get_recent_weights <- function(weights, recent) {
 #'   * `NULL` -- no filter (return copy of `dt` unchanged).
 #'   * A single Date or character (coercible to Date).
 #'   * A Date/character vector -- uses the latest (max) date.
-#'   * A `CohortRegime` object -- extracts the latest from `$breakpoints`.
+#'   * A `Regime` object -- extracts the latest from `$breakpoints`.
 #' @param group_var Character vector of group columns (may be empty).
 #' @param cohort_var Single column name for the cohort variable.
 #' @param dev_var Single column name for the development variable.

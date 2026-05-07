@@ -104,7 +104,7 @@ reference:
 - title: Regime 탐지
   desc: 인수 코호트 간 구조적 변화 탐지.
   contents:
-  - detect_cohort_regime
+  - detect_regime
 
 - title: Backtest
   desc: >

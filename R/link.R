@@ -226,7 +226,7 @@ build_link <- function(x,
 #' @return Either an `ATASummary` (model = `"ata"`) or `EDSummary`
 #'   (model = `"ed"`) `data.table`.
 #'
-#' @seealso [build_link()], [find_maturity()]
+#' @seealso [build_link()], [detect_maturity()]
 #'
 #' @method summary Link
 #' @export

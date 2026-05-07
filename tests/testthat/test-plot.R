@@ -64,7 +64,7 @@ test_that("plot.LRFit dispatches across types", {
   expect_true(is_plot(suppressWarnings(plot(lr, type = "closs"))))
 })
 
-test_that("plot.CohortRegime dispatches", {
+test_that("plot.Regime dispatches", {
   expect_true(is_plot(suppressWarnings(plot(reg))))
 })
 

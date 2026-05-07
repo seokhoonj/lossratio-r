@@ -105,7 +105,7 @@ test_that("fit_ed with NULL regime_break is unchanged", {
                    fit_null$selected$g_selected)
 })
 
-test_that("fit_ed with CohortRegime input extracts last breakpoint", {
+test_that("fit_ed with Regime input extracts last breakpoint", {
   data(experience)
   exp <- as_experience(experience[cv_nm == "SUR"])
   tri <- build_triangle(exp, group_var = "cv_nm",
