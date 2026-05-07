@@ -137,14 +137,11 @@ fit_cl <- function(x,
       stop("`weight_var` must differ from `value_var`.", call. = FALSE)
   }
 
-  # 3) build link and estimate factors ----------------------------------
-  link <- build_link(
-    x,
-    value_var  = val_var,
-    weight_var = if (use_external_weight) wt_var else NULL
-  )
+  # 3) estimate ata factors (fit_ata builds the Link internally) -------
   ata_fit <- fit_ata(
-    link,
+    x,
+    value_var     = val_var,
+    weight_var    = if (use_external_weight) wt_var else NULL,
     alpha         = alpha,
     sigma_method  = sigma_method,
     recent        = recent,
@@ -297,7 +294,7 @@ fit_cl <- function(x,
     value_var     = val_var,
     full          = full,
     pred          = pred,
-    link          = link,
+    link          = ata_fit$link,
     summary       = NULL,
     factor        = ata_fit$factor,
     selected      = ata_fit$selected,

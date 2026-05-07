@@ -38,7 +38,7 @@ test_that("build_link errors when value_var == exposure_var", {
 # fit_ed -----------------------------------------------------------------
 
 test_that("fit_ed returns class 'EDFit' with expected components", {
-  ef <- fit_ed(ed)
+  ef <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
   expect_s3_class(ef, "EDFit")
   for (nm in c("factor", "selected")) {
     expect_true(nm %in% names(ef), info = paste("missing", nm))
@@ -46,25 +46,25 @@ test_that("fit_ed returns class 'EDFit' with expected components", {
 })
 
 test_that("fit_ed method = 'basic' and 'mack' both work", {
-  expect_no_error(fit_ed(ed, method = "basic"))
-  ef_mack <- fit_ed(ed, method = "mack")
+  expect_no_error(fit_ed(tri, value_var = "closs", exposure_var = "crp", method = "basic"))
+  ef_mack <- fit_ed(tri, value_var = "closs", exposure_var = "crp", method = "mack")
   expect_s3_class(ef_mack, "EDFit")
 })
 
 test_that("fit_ed sigma_method variants run", {
   for (sm in c("min_last2", "locf", "loglinear")) {
-    expect_no_error(fit_ed(ed, sigma_method = sm))
+    expect_no_error(fit_ed(tri, value_var = "closs", exposure_var = "crp", sigma_method = sm))
   }
 })
 
 test_that("recent reduces selected rows count", {
-  ef_full   <- fit_ed(ed)
-  ef_recent <- fit_ed(ed, recent = 6)
+  ef_full   <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
+  ef_recent <- fit_ed(tri, value_var = "closs", exposure_var = "crp", recent = 6)
   expect_true(nrow(ef_recent$selected) <= nrow(ef_full$selected))
 })
 
 test_that("print.EDFit doesn't error", {
-  ef <- fit_ed(ed)
+  ef <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
   expect_no_error(capture.output(print(ef)))
 })
 
@@ -86,8 +86,8 @@ test_that("fit_ed with regime_break drops pre-break cohorts", {
   tri <- build_triangle(exp, group_var = "cv_nm",
                         cohort_var = "uym", dev_var = "elap_m")
   ed <- build_link(tri, value_var = "closs", exposure_var = "crp")
-  fit_full <- fit_ed(ed)
-  fit_brk  <- fit_ed(ed, regime_break = "2024-04-01")
+  fit_full <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
+  fit_brk  <- fit_ed(tri, value_var = "closs", exposure_var = "crp", regime_break = "2024-04-01")
   expect_false(identical(fit_full$selected$g_selected,
                          fit_brk$selected$g_selected))
   expect_equal(fit_brk$regime_break, as.Date("2024-04-01"))
@@ -99,8 +99,8 @@ test_that("fit_ed with NULL regime_break is unchanged", {
   tri <- build_triangle(exp, group_var = "cv_nm",
                         cohort_var = "uym", dev_var = "elap_m")
   ed <- build_link(tri, value_var = "closs", exposure_var = "crp")
-  fit_default <- fit_ed(ed)
-  fit_null    <- fit_ed(ed, regime_break = NULL)
+  fit_default <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
+  fit_null    <- fit_ed(tri, value_var = "closs", exposure_var = "crp", regime_break = NULL)
   expect_identical(fit_default$selected$g_selected,
                    fit_null$selected$g_selected)
 })
@@ -112,7 +112,7 @@ test_that("fit_ed with CohortRegime input extracts last breakpoint", {
                         cohort_var = "uym", dev_var = "elap_m")
   reg <- detect_cohort_regime(tri)
   ed <- build_link(tri, value_var = "closs", exposure_var = "crp")
-  fit_reg <- fit_ed(ed, regime_break = reg)
+  fit_reg <- fit_ed(tri, value_var = "closs", exposure_var = "crp", regime_break = reg)
   if (length(reg$breakpoints) > 0L) {
     expect_equal(fit_reg$regime_break, max(reg$breakpoints))
   }

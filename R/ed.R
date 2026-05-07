@@ -198,10 +198,17 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'
 #' @return An object of class `"EDFit"` (a named list).
 #'
+#' @param value_var Cumulative loss variable. Default `"closs"`.
+#'   Forwarded to [build_link()].
+#' @param exposure_var Cumulative exposure variable. Default `"crp"`.
+#'   Forwarded to [build_link()].
+#'
 #' @seealso [build_link()], [summary.Link()], [fit_lr()]
 #'
 #' @export
 fit_ed <- function(x,
+                   value_var     = "closs",
+                   exposure_var  = "crp",
                    method        = c("basic", "mack"),
                    alpha         = 1,
                    na_method     = c("zero", "locf", "none"),
@@ -210,11 +217,9 @@ fit_ed <- function(x,
                    regime_break  = NULL,
                    ...) {
 
-  .assert_class(x, "Link")
+  .assert_class(x, "Triangle")
 
-  if (is.null(attr(x, "exposure_var")))
-    stop("`fit_ed()` requires a Link built with `exposure_var`.",
-         call. = FALSE)
+  x <- build_link(x, value_var = value_var, exposure_var = exposure_var)
 
   method       <- match.arg(method)
   na_method    <- match.arg(na_method)

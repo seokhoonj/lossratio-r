@@ -6,6 +6,8 @@
 \usage{
 fit_ata(
   x,
+  value_var = "closs",
+  weight_var = NULL,
   alpha = 1,
   na_method = c("locf", "none"),
   sigma_method = c("min_last2", "locf", "loglinear"),
@@ -17,6 +19,12 @@ fit_ata(
 }
 \arguments{
 \item{x}{An object of class \code{"Link"}, typically produced by
+\code{\link[=build_link]{build_link()}}.}
+
+\item{value_var}{Cumulative metric for the link factor. Default
+\code{"closs"}. Forwarded to \code{\link[=build_link]{build_link()}}.}
+
+\item{weight_var}{Optional WLS weight variable. Forwarded to
 \code{\link[=build_link]{build_link()}}.}
 
 \item{alpha}{Numeric scalar controlling the variance structure. Default

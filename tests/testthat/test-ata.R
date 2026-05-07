@@ -52,7 +52,7 @@ test_that("drop_invalid removes non-finite ata", {
 # fit_ata ----------------------------------------------------------------
 
 test_that("fit_ata returns class 'ATAFit' with expected components", {
-  af <- fit_ata(ata)
+  af <- fit_ata(tri, value_var = "closs")
   expect_s3_class(af, "ATAFit")
   for (nm in c("factor", "selected")) {
     expect_true(nm %in% names(af), info = paste("missing", nm))
@@ -60,7 +60,7 @@ test_that("fit_ata returns class 'ATAFit' with expected components", {
 })
 
 test_that("fit_ata $selected has expected columns", {
-  af <- fit_ata(ata)
+  af <- fit_ata(tri, value_var = "closs")
   for (nm in c("ata_from", "ata_to", "f_selected")) {
     expect_true(nm %in% names(af$selected), info = paste("missing", nm))
   }
@@ -68,25 +68,25 @@ test_that("fit_ata $selected has expected columns", {
 
 test_that("sigma_method variants run", {
   for (sm in c("min_last2", "locf", "loglinear")) {
-    expect_no_error(fit_ata(ata, sigma_method = sm))
+    expect_no_error(fit_ata(tri, value_var = "closs", sigma_method = sm))
   }
 })
 
 test_that("recent reduces selected rows count", {
-  af_full   <- fit_ata(ata)
-  af_recent <- fit_ata(ata, recent = 6)
+  af_full   <- fit_ata(tri, value_var = "closs")
+  af_recent <- fit_ata(tri, value_var = "closs", recent = 6)
   expect_true(nrow(af_recent$selected) <= nrow(af_full$selected))
 })
 
 test_that("maturity_args adds $maturity", {
-  af_no  <- fit_ata(ata)
-  af_mat <- fit_ata(ata, maturity_args = list())
+  af_no  <- fit_ata(tri, value_var = "closs")
+  af_mat <- fit_ata(tri, value_var = "closs", maturity_args = list())
   expect_null(af_no$maturity)
   expect_false(is.null(af_mat$maturity))
 })
 
 test_that("print.ATAFit doesn't error", {
-  af <- fit_ata(ata)
+  af <- fit_ata(tri, value_var = "closs")
   expect_no_error(capture.output(print(af)))
 })
 
@@ -127,7 +127,7 @@ test_that("tight thresholds yield fewer or NA mature rows", {
 # summary.ATAFit ---------------------------------------------------------
 
 test_that("summary.ATAFit returns the link-level ATASummary", {
-  fit <- fit_ata(ata)
+  fit <- fit_ata(tri, value_var = "closs")
   s   <- summary(fit)
   expect_s3_class(s, "ATASummary")
   expect_identical(s, fit$factor)
@@ -145,8 +145,8 @@ test_that("fit_ata with regime_break drops pre-break cohorts", {
                         cohort_var = "uym", dev_var = "elap_m")
   ata <- build_link(tri, value_var = "closs")
 
-  fit_full <- fit_ata(ata)
-  fit_brk  <- fit_ata(ata, regime_break = "2024-04-01")
+  fit_full <- fit_ata(tri, value_var = "closs")
+  fit_brk  <- fit_ata(tri, value_var = "closs", regime_break = "2024-04-01")
 
   # post-break fit should have fewer rows in the underlying ATA pairs
   # and possibly different f_selected for at least one ata_from
@@ -161,8 +161,8 @@ test_that("fit_ata with NULL regime_break is unchanged from default", {
   tri <- build_triangle(exp, group_var = "cv_nm",
                         cohort_var = "uym", dev_var = "elap_m")
   ata <- build_link(tri, value_var = "closs")
-  fit_default <- fit_ata(ata)
-  fit_null    <- fit_ata(ata, regime_break = NULL)
+  fit_default <- fit_ata(tri, value_var = "closs")
+  fit_null    <- fit_ata(tri, value_var = "closs", regime_break = NULL)
   expect_identical(fit_default$selected$f_selected,
                    fit_null$selected$f_selected)
 })
@@ -174,7 +174,7 @@ test_that("fit_ata with CohortRegime input extracts last breakpoint", {
                         cohort_var = "uym", dev_var = "elap_m")
   reg <- detect_cohort_regime(tri)
   ata <- build_link(tri, value_var = "closs")
-  fit_reg <- fit_ata(ata, regime_break = reg)
+  fit_reg <- fit_ata(tri, value_var = "closs", regime_break = reg)
   if (length(reg$breakpoints) > 0L) {
     expect_equal(fit_reg$regime_break, max(reg$breakpoints))
   }

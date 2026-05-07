@@ -6,6 +6,8 @@
 \usage{
 fit_ed(
   x,
+  value_var = "closs",
+  exposure_var = "crp",
   method = c("basic", "mack"),
   alpha = 1,
   na_method = c("zero", "locf", "none"),
@@ -18,6 +20,12 @@ fit_ed(
 \arguments{
 \item{x}{A \code{Link} object built with \code{exposure_var} set, typically
 produced by \code{\link[=build_link]{build_link()}}.}
+
+\item{value_var}{Cumulative loss variable. Default \code{"closs"}.
+Forwarded to \code{\link[=build_link]{build_link()}}.}
+
+\item{exposure_var}{Cumulative exposure variable. Default \code{"crp"}.
+Forwarded to \code{\link[=build_link]{build_link()}}.}
 
 \item{method}{One of \code{"basic"} or \code{"mack"}. Default is \code{"basic"}.}
 

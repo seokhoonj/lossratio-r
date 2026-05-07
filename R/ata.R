@@ -469,11 +469,18 @@ find_ata_maturity <- function(x,
 #'     \item{`maturity_args`}{Resolved maturity arguments, or `NULL`.}
 #'   }
 #'
+#' @param value_var Cumulative metric for the link factor. Default
+#'   `"closs"`. Forwarded to [build_link()].
+#' @param weight_var Optional WLS weight variable. Forwarded to
+#'   [build_link()].
+#'
 #' @seealso [build_link()], [summary.Link()], [find_ata_maturity()],
 #'   [fit_cl()]
 #'
 #' @export
 fit_ata <- function(x,
+                    value_var     = "closs",
+                    weight_var    = NULL,
                     alpha         = 1,
                     na_method     = c("locf", "none"),
                     sigma_method  = c("min_last2", "locf", "loglinear"),
@@ -482,7 +489,9 @@ fit_ata <- function(x,
                     maturity_args = NULL,
                     ...) {
 
-  .assert_class(x, "Link")
+  .assert_class(x, "Triangle")
+
+  x <- build_link(x, value_var = value_var, weight_var = weight_var)
 
   na_method    <- match.arg(na_method)
   sigma_method <- match.arg(sigma_method)

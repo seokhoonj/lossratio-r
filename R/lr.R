@@ -187,9 +187,9 @@ fit_lr <- function(x,
       # do not pass `recent` here — applying the calendar-diagonal cut before
       # detecting the maturity moves k* (recent=18 shifts SUR's k* from 4 to
       # 12 in dev/data.rds), which would change the hybrid boundary.
-      pre_loss_link <- build_link(x, value_var = l_var)
       pre_loss_fit <- fit_ata(
-        pre_loss_link,
+        x,
+        value_var     = l_var,
         alpha         = loss_alpha,
         sigma_method  = sigma_method,
         maturity_args = maturity_args
@@ -241,10 +241,10 @@ fit_lr <- function(x,
     # fit_ata / fit_ed below for a simple cohort cut.
   }
 
-  # 2) build and fit exposure chain ladder ----------------------------------
-  exposure_link <- build_link(x, value_var = e_var)
+  # 2) fit exposure chain ladder ------------------------------------------
   exposure_ata_fit <- fit_ata(
-    exposure_link,
+    x,
+    value_var    = e_var,
     alpha        = exposure_alpha,
     sigma_method = sigma_method,
     regime_break = regime_break
@@ -258,10 +258,10 @@ fit_lr <- function(x,
     )
   }
 
-  # 3) build and fit loss chain ladder --------------------------------------
-  loss_link <- build_link(x, value_var = l_var)
+  # 3) fit loss chain ladder ----------------------------------------------
   loss_ata_fit <- fit_ata(
-    loss_link,
+    x,
+    value_var     = l_var,
     alpha         = loss_alpha,
     sigma_method  = sigma_method,
     recent        = recent,
@@ -275,10 +275,11 @@ fit_lr <- function(x,
     alpha   = loss_alpha
   )
 
-  # 5) build ED and estimate intensities g_k with Mack variance ------------
-  ed_link <- build_link(x, value_var = l_var, exposure_var = e_var)
+  # 5) estimate ED intensities g_k with Mack variance ---------------------
   ed_fit <- fit_ed(
-    ed_link,
+    x,
+    value_var    = l_var,
+    exposure_var = e_var,
     method       = "mack",
     alpha        = loss_alpha,
     sigma_method = sigma_method,
@@ -566,7 +567,7 @@ fit_lr <- function(x,
     full             = full,
     pred             = pred,
     summary          = NULL,
-    ed               = ed_link,
+    ed               = ed_fit$link,
     factor           = ed_fit$factor,
     selected         = ed_fit$selected,
     loss_ata_fit     = loss_ata_fit,
