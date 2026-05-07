@@ -1,10 +1,10 @@
 # lossratio <img src="man/figures/logo.png" align="right" alt="" height="120"/>
 
-보험 경험 데이터의 손해율 분석과 추정.
+경험 데이터 기반 손해율 분석 및 추정.
 
 ## 개요
 
-`lossratio`는 보험 경험 데이터로부터 **장기 건강보험** 손해율을
+`lossratio`는 경험 데이터로부터 **장기 건강보험** 손해율을
 분석·추정하기 위한 도구 모음이다. 입력은 long-format 경험 데이터로,
 한 행(코호트 × 경과 기간 × 인구통계)이 Triangle 셀 하나에 대응하며,
 손해액과 위험보험료 컬럼을 가진다.

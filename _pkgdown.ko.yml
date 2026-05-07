@@ -9,7 +9,7 @@ template:
 
 home:
   title: lossratio
-  description: 보험 경험 데이터를 위한 손해율 분석 및 추정 도구.
+  description: 경험 데이터 기반 손해율 분석 및 추정 도구.
 
 navbar:
   structure:
