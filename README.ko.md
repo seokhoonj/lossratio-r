@@ -50,7 +50,7 @@
 | dev      | 코호트 시작 시점 이후 경과 기간                           | `elap_m`, `elap_y` |
 | `loss`   | 셀 내 증가분 클레임 금액                                  | numeric            |
 | `rp`     | 셀 내 증가분 위험보험료 (기대손해액)                      | numeric            |
-| group    | 선택 — 보장, 상품, 연령대, 성별 등                        | character / factor |
+| group    | 선택 — 상품, 담보, 연령, 성별, 가입금액 등                | character / factor |
 
 `as_experience()` 는 스키마를 검증하고 날짜 컬럼을 코어션한다.
 이어서 `build_triangle()` 은 표준 코호트 × 경과 기간 구조로
