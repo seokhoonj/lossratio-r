@@ -49,7 +49,7 @@ A long-format `data.frame` / `data.table` with at minimum:
 | dev | Development period since cohort start | `elap_m`, `elap_y` |
 | `loss` | Incremental claim amount in the cell | numeric |
 | `rp` | Incremental risk premium (expected loss) in the cell | numeric |
-| group | Optional — coverage, product, age band, gender, etc. | character / factor |
+| group | Optional — product, coverage, age, gender, sum insured, etc. | character / factor |
 
 [`as_experience()`](https://seokhoonj.github.io/lossratio/reference/as_experience.md)
 validates the schema and coerces date columns;

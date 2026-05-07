@@ -42,13 +42,13 @@
 
 최소한 다음 컬럼을 포함하는 long-format `data.frame` / `data.table`:
 
-| 컬럼   | 의미                                 | 예시               |
-|--------|--------------------------------------|--------------------|
-| cohort | 인수 / 사고 시점 (집계 주기 무관)    | `uym`, `uy`        |
-| dev    | 코호트 시작 시점 이후 경과 기간      | `elap_m`, `elap_y` |
-| `loss` | 셀 내 증가분 클레임 금액             | numeric            |
-| `rp`   | 셀 내 증가분 위험보험료 (기대손해액) | numeric            |
-| group  | 선택 — 보장, 상품, 연령대, 성별 등   | character / factor |
+| 컬럼   | 의미                                       | 예시               |
+|--------|--------------------------------------------|--------------------|
+| cohort | 인수 / 사고 시점 (집계 주기 무관)          | `uym`, `uy`        |
+| dev    | 코호트 시작 시점 이후 경과 기간            | `elap_m`, `elap_y` |
+| `loss` | 셀 내 증가분 클레임 금액                   | numeric            |
+| `rp`   | 셀 내 증가분 위험보험료 (기대손해액)       | numeric            |
+| group  | 선택 — 상품, 담보, 연령, 성별, 가입금액 등 | character / factor |
 
 [`as_experience()`](https://seokhoonj.github.io/lossratio/reference/as_experience.md)
 는 스키마를 검증하고 날짜 컬럼을 코어션한다. 이어서
