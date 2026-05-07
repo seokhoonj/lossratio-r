@@ -92,15 +92,14 @@ tri <- build_triangle(exp, group_var = cv_nm)
 plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
 
-# Age-to-age and exposure-driven factor estimation
-fit_ata(tri, value_var = "closs")
-fit_ed(tri, value_var = "closs", exposure_var = "crp")
+# Exposure-driven fit (additive ED intensity)
+ed <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
 
-# Chain ladder fit
+# Chain ladder fit (multiplicative ATA factors)
 cl <- fit_cl(tri, value_var = "closs", method = "mack")
 plot(cl, type = "projection")
 
-# Loss ratio fit (stage-adaptive by default)
+# Loss ratio fit (stage-adaptive by default — ED before maturity, CL after)
 lr <- fit_lr(tri, method = "sa")
 plot(lr, type = "lr")
 summary(lr)
