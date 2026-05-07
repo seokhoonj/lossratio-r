@@ -28,23 +28,25 @@ navbar:
       - text: 전체 글
         href: articles/index.html
       - text: -------
-      - text: 집계 프레임워크
+      - text: Aggregation
         href: articles/aggregation-frameworks-ko.html
-      - text: Triangle 및 ATA 진단
-        href: articles/triangle-diagnostics-ko.html
-      - text: 손해율 예측 방법론
-        href: articles/loss-ratio-methods-ko.html
-      - text: 예측 손해율 수렴 탐지
-        href: articles/convergence-ko.html
-      - text: Regime 탐지
+      - text: Triangle and Link
+        href: articles/triangle-and-link-ko.html
+      - text: Maturity
+        href: articles/maturity-ko.html
+      - text: Regime
         href: articles/regime-detection-ko.html
-      - text: Regime break 필터링
+      - text: Projection
+        href: articles/loss-ratio-methods-ko.html
+      - text: Regime break filter
         href: articles/regime-break-ko.html
       - text: Backtest
         href: articles/backtest-ko.html
+      - text: Convergence
+        href: articles/convergence-ko.html
       - text: -------
-      - text: (참고) Chain ladder를 이용한 준비금 산출
-        href: articles/chain-ladder-ko.html
+      - text: (참고) Chain ladder 를 이용한 준비금 산출
+        href: articles/chain-ladder-reserving-ko.html
     reference:
       text: 참조
       href: reference/index.html
@@ -151,25 +153,27 @@ articles:
   navbar: ~
   contents:
   - "articles/aggregation-frameworks-ko"
-  - "articles/triangle-diagnostics-ko"
-  - "articles/loss-ratio-methods-ko"
-  - "articles/convergence-ko"
+  - "articles/triangle-and-link-ko"
+  - "articles/maturity-ko"
   - "articles/regime-detection-ko"
+  - "articles/loss-ratio-methods-ko"
   - "articles/regime-break-ko"
   - "articles/backtest-ko"
+  - "articles/convergence-ko"
 - title: 참고
   navbar: ~
   contents:
-  - "articles/chain-ladder-ko"
+  - "articles/chain-ladder-reserving-ko"
 - title: internal
   contents:
   - "articles/getting-started-ko"
   - getting-started
   - aggregation-frameworks
-  - loss-ratio-methods
-  - chain-ladder
-  - triangle-diagnostics
+  - triangle-and-link
+  - maturity
   - regime-detection
-  - backtest
+  - loss-ratio-methods
   - regime-break
+  - backtest
   - convergence
+  - chain-ladder-reserving

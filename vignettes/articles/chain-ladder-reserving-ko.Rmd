@@ -1,8 +1,8 @@
 ---
-title: "Chain ladder를 이용한 준비금 산출"
+title: "(참고) Chain ladder 를 이용한 준비금 산출"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Chain ladder를 이용한 준비금 산출}
+  %\VignetteIndexEntry{(참고) Chain ladder 를 이용한 준비금 산출}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -20,7 +20,16 @@ knitr::opts_chunk$set(
 )
 ```
 
-> 영어 원본 보기: [Chain ladder reserving with fit_cl](../chain-ladder.html)
+> **참고: 손해보험 (P&C) 준비금 맥락의 글.** 이 글은 *chain ladder
+> 준비금 산출* — 보고기간 미종료 사고연도의 ultimate 지급/발생 손해
+> 추정 — 을 다룬다. 이는 손해보험(P&C, Property & Casualty) 의
+> 전형적 use case 이다. lossratio 패키지의 메인 초점은 *장기 건강
+> 보험* 손해율 추정 (`fit_lr`) 이며, 준비금 framing 은 거기서는 직접
+> 적용되지 않는다. 이 글은 P&C 배경에서 오는 사용자가 `fit_cl` 을
+> 익숙한 Mack chain ladder workflow 와 매핑해 볼 수 있도록 하는
+> 참고 자료로 둔다.
+>
+> 영어 원본: [Chain ladder reserving with fit_cl](../chain-ladder-reserving.html)
 
 `fit_cl()` 은 단일 값 컬럼에 대한 전용 chain ladder 적합 함수이다.
 손해와 익스포저를 동시에 추정해 손해율을 산출하는 `fit_lr()` 과 달리,
@@ -173,6 +182,6 @@ fit_cl(tri, value_var = "closs", method = "mack", sigma_method = "loglinear")
 ## 9. 함께 보기
 
 - `vignette("loss-ratio-methods")` — `fit_lr()` 을 사용해야 할 때.
-- `vignette("triangle-diagnostics")` — `summary()`,
+- `vignette("triangle-and-link")` — `summary()`,
   `detect_maturity()`, ata 진단 플롯.
 - `?fit_cl`, `?detect_maturity`, `?fit_ata`.

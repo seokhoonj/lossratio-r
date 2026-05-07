@@ -133,8 +133,8 @@ detect_regime(sub, K = 12, method = "ecp")
   `build_total` 의 사용 시점 비교.
 - `vignette("loss-ratio-methods")` — `fit_lr()` 에서 `"sa"` / `"ed"` /
   `"cl"` 중 선택 기준.
-- `vignette("chain-ladder")` — `fit_cl()` 심층 해설 (Mack 분산, tail factor).
-- `vignette("triangle-diagnostics")` — `summary()`,
+- `vignette("chain-ladder-reserving")` — `fit_cl()` 심층 해설 (Mack 분산, tail factor).
+- `vignette("triangle-and-link")` — `summary()`,
   `detect_maturity()`, triangle 형식의 시각화.
 - `vignette("regime-detection")` — `detect_regime()` 을 통한 코호트
   간 구조 변화 진단.

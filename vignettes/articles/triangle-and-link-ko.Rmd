@@ -1,8 +1,8 @@
 ---
-title: "Triangle 및 ATA 진단"
+title: "Triangle 와 Link: 데이터 구조와 인자 진단"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Triangle 및 ATA 진단}
+  %\VignetteIndexEntry{Triangle 와 Link: 데이터 구조와 인자 진단}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -20,12 +20,12 @@ knitr::opts_chunk$set(
 )
 ```
 
-> 영어 원본 보기: [Triangle and ATA diagnostics](../triangle-diagnostics.html)
+> 영어 원본 보기: [Triangle and Link: data structures and factor diagnostics](../triangle-and-link.html)
 
-chain ladder 또는 손해율 모형을 적합하기 전에 기반이 되는 triangle 을 살펴보는
-것이 효율적이다. 이 문서는 코호트 발전 양상, **ATA 인자**(age-to-age factor) 의
-안정성, 성숙점(maturity point) 탐지를 이해하기 위한 `lossratio` 의 진단 도구를
-다룬다.
+chain ladder 또는 손해율 모형을 적합하기 전에 기반이 되는 triangle 과 그로부터
+파생된 단계 연결 테이블(link table) 을 살펴보는 것이 효율적이다. 이 문서는
+`Triangle` 과 `Link` 데이터 구조 및 진단 플롯을 다룬다. 성숙점(maturity point)
+탐지는 `vignette("maturity")` 를 참고한다.
 
 ## 1. Triangle 진단
 
@@ -72,15 +72,20 @@ head(sm)
 (group, dev) 셀별 평균 / 중앙값 / 가중 손해율을 담은 `TriangleSummary` 객체를
 반환한다.
 
-## 2. Age-to-age 인자 진단
+## 2. Link / 인자 진단
+
+`Link` 객체는 triangle 으로부터 빌드된 단계 연결 테이블(link table) 이다.
+단일 변수 모드에서는 관측된 **ATA 인자**(age-to-age factor) 를 담고,
+`exposure_var` 를 지정하면 ED 강도 $g_k = \Delta C^L_k / C^P_k$ 를 담는다.
 
 ```{r}
 ata <- build_link(tri, value_var = "closs")
-sm  <- summary(ata, alpha = 1)
+sm  <- summary(ata, model = "ata", alpha = 1)
 head(sm)
 ```
 
-`Link` 객체 (단일 변수 모드) 의 `summary()` 메소드는 성숙점 탐지를 구동하는 링크별 통계를 계산한다.
+`Link` 객체 (단일 변수 모드) 의 `summary()` 메소드는 성숙점 탐지를 구동하는
+링크별 통계를 계산한다.
 
 - `mean`, `median`, `wt` — 각 링크에서 관측된 ATA 인자의 기술 평균
   (해당 링크가 관측되지 않은 코호트는 제외).
@@ -108,7 +113,7 @@ la <- list(size = 2.5)                            # 라벨 크기 줄임
 plot_triangle(ata, label_args = la)               # 관측 인자 히트맵
 plot_triangle(ata, label_args = la, show_maturity = TRUE)  # 성숙점 라인 overlay
 
-# detail 라벨은 2 줄이라 monthly 셀에서는 겹침 — quarterly ATA 로 다시 빌드
+# detail 라벨은 2 줄이라 monthly 셀에서는 겹침 — quarterly Link 로 다시 빌드
 ata_q <- build_link(tri_q, value_var = "closs")
 plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / rp) 금액
 ```
@@ -116,44 +121,11 @@ plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / rp) 금액
 이 히트맵은 각 셀을 자기 링크 내에서 `log(ata / median(ata))` 로 색칠하므로,
 열 방향 색상은 해당 링크의 중앙값에서 벗어나는 코호트를 구분해 준다.
 
-## 3. 성숙점 탐지
-
-성숙점(maturity point) 은 ATA 인자가 chain ladder 추정에 신뢰할 만큼
-안정화되는 경과 기간 링크이다. `fit_lr(method = "sa")` 가 ED 에서 CL 로
-전환할 때 내부적으로 사용한다.
-
-`detect_maturity()` 는 `Triangle` 을 직접 입력으로 받는다 —
-내부에서 단일 변수 `Link` 와 그 WLS 요약을 자동으로 빌드한다.
-
-```{r}
-mat <- detect_maturity(
-  tri,
-  value_var       = "closs",
-  cv_threshold    = 0.10,    # CV 가 이 값보다 작아야 함
-  rse_threshold   = 0.05,    # RSE 가 이 값보다 작아야 함
-  min_valid_ratio = 0.5,     # 해당 링크에서 유한 코호트가 50% 이상
-  min_n_valid     = 3L,      # 유한 코호트가 최소 3개
-  min_run         = 1L       # 연속 성숙 링크 최소 1개
-)
-
-print(mat)
-```
-
-그룹별로 모든 임계값을 만족하는 첫 경과 기간 링크 한 행이 출력되며, 해당 링크의
-전체 통계가 같이 실린다. 임계값 인자들은 반환 객체의 attribute 로도 저장된다.
-`detect_maturity()` 는 `maturity_args` 가 주어진 경우 `fit_ata()` 와
-`fit_cl()` 내부에서도 호출된다 (내부 `summary()` 단계의 `alpha` 는 호출자의
-값을 그대로 받는다).
-
-임계값은 포트폴리오의 변동성 프로파일에 맞춰 조정한다. 임계값을 빡빡하게
-(예: `cv_threshold = 0.05`) 잡으면 성숙점이 뒤로 밀리고, 느슨하게 잡으면 앞으로
-당겨진다.
-
-## 4. ED 진단
+### ED 진단
 
 ```{r}
 ed <- build_link(tri, value_var = "closs", exposure_var = "crp")
-sm <- summary(ed, alpha = 1)
+sm <- summary(ed, model = "ed", alpha = 1)
 head(sm)
 
 plot(ed, type = "summary")
@@ -165,7 +137,7 @@ plot_triangle(ed, label_args = la)
 ED 측 분석으로, 강도 $g_k = \Delta C^L_k / C^P_k$ 에 대해 링크별 통계를
 계산한다.
 
-## 5. 빌드 전 검증
+## 3. 빌드 전 검증
 
 경과 기간 시퀀스에 결손이 의심되면 `build_triangle()` 호출 전에 점검한다.
 
@@ -185,7 +157,7 @@ head(gaps)
 - `build_triangle()` 에 `fill_gaps = TRUE` 를 넘겨 누락 셀을 0 으로 채운다
   (단, `n_obs` 가 부풀어 오르므로 신중히 사용).
 
-## 6. 최근 대각선 부분집합
+## 4. 최근 대각선 부분집합
 
 오래된 코호트가 더 이상 대표성이 없을 때 (요율 변경, 적립 regime 변경 등) 추정을
 최근 대각선으로 제한한다.
@@ -199,7 +171,7 @@ fit_lr(tri, recent = 12)
 `recent = K` 는 calendar 위치 (`rank(cohort) + dev - 1`) 가 그룹 내 최근
 `K` 개에 속하는 행만 남긴다.
 
-## 7. 워크플로 체크리스트
+## 5. 워크플로 체크리스트
 
 적합 전에 확인할 사항은 다음과 같다.
 
@@ -207,14 +179,16 @@ fit_lr(tri, recent = 12)
 2. `build_triangle()` — 파생 컬럼이 포함된 표준 형태 구축.
 3. `plot(tri)` / `plot_triangle(tri)` — 시각적 점검.
 4. `summary(tri)` — 그룹 수준 중심 경향 확인.
-5. `build_link()` + `plot(ata, type = "cv")` — 링크 안정성 확인.
-6. `detect_maturity()` — 그룹별로 합리적 성숙점이 잡히는지 확인.
+5. `build_link()` + `plot(link, type = "cv")` — 링크 안정성 확인.
+6. `detect_maturity()` — 그룹별로 합리적 성숙점이 잡히는지 확인
+   (`vignette("maturity")` 참고).
 7. `detect_regime()` (선택) — 구조적 변화 진단.
 
 이후 신뢰할 수 있는 입력 데이터로 `fit_lr()` / `fit_cl()` 을 적합한다.
 
-## 8. 함께 보기
+## 6. 함께 보기
 
 - `vignette("getting-started")` — 전체 파이프라인 개요.
+- `vignette("maturity")` — link table 기반 성숙점 탐지.
 - `vignette("regime-detection")` — `detect_regime()` 심화.
 - `vignette("loss-ratio-methods")` — 추정 방법 선택.

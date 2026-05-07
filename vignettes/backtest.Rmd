@@ -196,7 +196,7 @@ supported.
 
 ## See also
 
-- `vignette("chain-ladder")` — `fit_cl()` reference.
+- `vignette("chain-ladder-reserving")` — `fit_cl()` reference.
 - `vignette("loss-ratio-methods")` — `fit_lr()` and the `"sa"`,
   `"ed"`, `"cl"` methods.
 - `?backtest`, `?plot.Backtest`, `?plot_triangle.Backtest`.

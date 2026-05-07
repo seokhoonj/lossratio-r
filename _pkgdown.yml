@@ -27,23 +27,25 @@ navbar:
       - text: All articles
         href: articles/index.html
       - text: -------
-      - text: Aggregation frameworks
+      - text: Aggregation
         href: articles/aggregation-frameworks.html
-      - text: Triangle and ATA diagnostics
-        href: articles/triangle-diagnostics.html
-      - text: Loss ratio projection methods
-        href: articles/loss-ratio-methods.html
-      - text: Loss ratio convergence
-        href: articles/convergence.html
-      - text: Regime detection
+      - text: Triangle and Link
+        href: articles/triangle-and-link.html
+      - text: Maturity
+        href: articles/maturity.html
+      - text: Regime
         href: articles/regime-detection.html
-      - text: Regime break filtering
+      - text: Projection
+        href: articles/loss-ratio-methods.html
+      - text: Regime break filter
         href: articles/regime-break.html
       - text: Backtest
         href: articles/backtest.html
+      - text: Convergence
+        href: articles/convergence.html
       - text: -------
       - text: (Reference) Chain ladder reserving
-        href: articles/chain-ladder.html
+        href: articles/chain-ladder-reserving.html
     language:
       text: KO
       href: ./ko/
@@ -146,26 +148,28 @@ articles:
   navbar: ~
   contents:
   - aggregation-frameworks
-  - triangle-diagnostics
-  - loss-ratio-methods
-  - convergence
+  - triangle-and-link
+  - maturity
   - regime-detection
+  - loss-ratio-methods
   - regime-break
   - backtest
+  - convergence
 - title: Reference
   navbar: ~
   contents:
-  - chain-ladder
+  - chain-ladder-reserving
 - title: internal
   navbar: ~
   contents:
   - getting-started
   - "articles/getting-started-ko"
   - "articles/aggregation-frameworks-ko"
-  - "articles/loss-ratio-methods-ko"
-  - "articles/chain-ladder-ko"
-  - "articles/triangle-diagnostics-ko"
+  - "articles/triangle-and-link-ko"
+  - "articles/maturity-ko"
   - "articles/regime-detection-ko"
-  - "articles/backtest-ko"
+  - "articles/loss-ratio-methods-ko"
   - "articles/regime-break-ko"
+  - "articles/backtest-ko"
   - "articles/convergence-ko"
+  - "articles/chain-ladder-reserving-ko"
