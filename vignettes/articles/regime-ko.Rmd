@@ -1,8 +1,8 @@
 ---
-title: "인수 코호트 간 regime 변화 탐지"
+title: "Regime: 인수 코호트 간 구조적 변화 탐지"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{인수 코호트 간 regime 변화 탐지}
+  %\VignetteIndexEntry{Regime: 인수 코호트 간 구조적 변화 탐지}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

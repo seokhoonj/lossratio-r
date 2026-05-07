@@ -27,18 +27,18 @@ navbar:
       - text: All articles
         href: articles/index.html
       - text: -------
-      - text: Aggregation
+      - text: Aggregation frameworks
         href: articles/aggregation-frameworks.html
       - text: Triangle and Link
         href: articles/triangle-and-link.html
       - text: Maturity
         href: articles/maturity.html
       - text: Regime
-        href: articles/regime-detection.html
+        href: articles/regime.html
       - text: Projection
-        href: articles/loss-ratio-methods.html
+        href: articles/projection.html
       - text: Regime break filter
-        href: articles/regime-break.html
+        href: articles/regime-break-filter.html
       - text: Backtest
         href: articles/backtest.html
       - text: Convergence
@@ -150,9 +150,9 @@ articles:
   - aggregation-frameworks
   - triangle-and-link
   - maturity
-  - regime-detection
-  - loss-ratio-methods
-  - regime-break
+  - regime
+  - projection
+  - regime-break-filter
   - backtest
   - convergence
 - title: Reference
@@ -167,9 +167,9 @@ articles:
   - "articles/aggregation-frameworks-ko"
   - "articles/triangle-and-link-ko"
   - "articles/maturity-ko"
-  - "articles/regime-detection-ko"
-  - "articles/loss-ratio-methods-ko"
-  - "articles/regime-break-ko"
+  - "articles/regime-ko"
+  - "articles/projection-ko"
+  - "articles/regime-break-filter-ko"
   - "articles/backtest-ko"
   - "articles/convergence-ko"
   - "articles/chain-ladder-reserving-ko"

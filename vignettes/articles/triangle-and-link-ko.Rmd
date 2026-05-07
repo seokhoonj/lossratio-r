@@ -190,5 +190,5 @@ fit_lr(tri, recent = 12)
 
 - `vignette("getting-started")` — 전체 파이프라인 개요.
 - `vignette("maturity")` — link table 기반 성숙점 탐지.
-- `vignette("regime-detection")` — `detect_regime()` 심화.
-- `vignette("loss-ratio-methods")` — 추정 방법 선택.
+- `vignette("regime")` — `detect_regime()` 심화.
+- `vignette("projection")` — 추정 방법 선택.

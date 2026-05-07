@@ -28,18 +28,18 @@ navbar:
       - text: 전체 글
         href: articles/index.html
       - text: -------
-      - text: Aggregation
+      - text: Aggregation frameworks
         href: articles/aggregation-frameworks-ko.html
       - text: Triangle and Link
         href: articles/triangle-and-link-ko.html
       - text: Maturity
         href: articles/maturity-ko.html
       - text: Regime
-        href: articles/regime-detection-ko.html
+        href: articles/regime-ko.html
       - text: Projection
-        href: articles/loss-ratio-methods-ko.html
+        href: articles/projection-ko.html
       - text: Regime break filter
-        href: articles/regime-break-ko.html
+        href: articles/regime-break-filter-ko.html
       - text: Backtest
         href: articles/backtest-ko.html
       - text: Convergence
@@ -155,9 +155,9 @@ articles:
   - "articles/aggregation-frameworks-ko"
   - "articles/triangle-and-link-ko"
   - "articles/maturity-ko"
-  - "articles/regime-detection-ko"
-  - "articles/loss-ratio-methods-ko"
-  - "articles/regime-break-ko"
+  - "articles/regime-ko"
+  - "articles/projection-ko"
+  - "articles/regime-break-filter-ko"
   - "articles/backtest-ko"
   - "articles/convergence-ko"
 - title: 참고
@@ -171,9 +171,9 @@ articles:
   - aggregation-frameworks
   - triangle-and-link
   - maturity
-  - regime-detection
-  - loss-ratio-methods
-  - regime-break
+  - regime
+  - projection
+  - regime-break-filter
   - backtest
   - convergence
   - chain-ladder-reserving

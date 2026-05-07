@@ -187,6 +187,6 @@ print(bt_sa_clr)
 ## 8. 함께 보기
 
 - `vignette("chain-ladder-reserving")` — `fit_cl()` 참고.
-- `vignette("loss-ratio-methods")` — `fit_lr()` 및 `"sa"`, `"ed"`, `"cl"`
+- `vignette("projection")` — `fit_lr()` 및 `"sa"`, `"ed"`, `"cl"`
   방법.
 - `?backtest`, `?plot.Backtest`, `?plot_triangle.Backtest`.

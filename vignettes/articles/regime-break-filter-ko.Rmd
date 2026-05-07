@@ -1,8 +1,8 @@
 ---
-title: "Regime break 기반 hybrid 필터링"
+title: "Regime break filter"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Regime break 기반 hybrid 필터링}
+  %\VignetteIndexEntry{Regime break filter}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -215,9 +215,9 @@ post-break window 가 너무 짧으면 (`n_post` 가 작으면) ED 강도 $g_k$
 
 ## 8. 함께 보기
 
-- `vignette("loss-ratio-methods")` — `fit_lr()` 과 `"sa"`, `"ed"`,
+- `vignette("projection")` — `fit_lr()` 과 `"sa"`, `"ed"`,
   `"cl"` 방법.
 - `vignette("backtest")` — `recent`, `regime_break` 가 결과에 미치는
   영향을 진단하는 도구.
-- `vignette("regime-detection")` — `detect_regime()` 참고.
+- `vignette("regime")` — `detect_regime()` 참고.
 - `?fit_lr`, `?fit_ata`, `?fit_ed`, `?detect_regime`.

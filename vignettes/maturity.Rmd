@@ -120,6 +120,6 @@ Each group is detected independently with the same thresholds.
 
 - `vignette("triangle-and-link")` — `Triangle` / `Link` data
   structures and the per-link statistics used by `detect_maturity()`.
-- `vignette("loss-ratio-methods")` — how the maturity point feeds
+- `vignette("projection")` — how the maturity point feeds
   into `fit_lr(method = "sa")`.
 - `?detect_maturity` — full argument reference.

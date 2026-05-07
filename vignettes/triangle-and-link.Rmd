@@ -198,5 +198,5 @@ Then fit `fit_lr()` / `fit_cl()` with confidence in the input data.
 
 - `vignette("getting-started")` — full pipeline overview.
 - `vignette("maturity")` — maturity detection from the link table.
-- `vignette("regime-detection")` — `detect_regime()` deep dive.
-- `vignette("loss-ratio-methods")` — projection method choice.
+- `vignette("regime")` — `detect_regime()` deep dive.
+- `vignette("projection")` — projection method choice.

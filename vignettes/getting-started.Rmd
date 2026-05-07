@@ -124,19 +124,19 @@ sub <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
 detect_regime(sub, K = 12, method = "ecp")
 ```
 
-See `vignette("regime-detection")` for the dedicated walkthrough.
+See `vignette("regime")` for the dedicated walkthrough.
 
 ## Where to next
 
 - `vignette("aggregation-frameworks")` — when to use `build_triangle`
   vs `build_calendar` vs `build_total`.
-- `vignette("loss-ratio-methods")` — choosing among `"sa"` / `"ed"` /
+- `vignette("projection")` — choosing among `"sa"` / `"ed"` /
   `"cl"` in `fit_lr()`.
 - `vignette("chain-ladder-reserving")` — `fit_cl()` deep dive (Mack variance,
   tail factor).
 - `vignette("triangle-and-link")` — `summary()`,
   `detect_maturity()`, and triangle-style visualisations.
-- `vignette("regime-detection")` — `detect_regime()` for
+- `vignette("regime")` — `detect_regime()` for
   structural-change diagnosis across cohorts.
 - `vignette("backtest")` — calendar-diagonal hold-out validation with
   `fit_cl` or `fit_lr`.

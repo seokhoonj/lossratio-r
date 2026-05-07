@@ -1,8 +1,8 @@
 ---
-title: "Detecting regime shifts across underwriting cohorts"
+title: "Regime: detecting structural breaks across underwriting cohorts"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Detecting regime shifts across underwriting cohorts}
+  %\VignetteIndexEntry{Regime: detecting structural breaks across underwriting cohorts}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

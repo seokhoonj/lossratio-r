@@ -1,8 +1,8 @@
 ---
-title: "Hybrid filtering via regime break"
+title: "Regime break filter"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Hybrid filtering via regime break}
+  %\VignetteIndexEntry{Regime break filter}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -195,9 +195,9 @@ so pre-break ultimates inherit the post-break dynamics.
 
 ## See also
 
-- `vignette("loss-ratio-methods")` — `fit_lr()` and the `"sa"`,
+- `vignette("projection")` — `fit_lr()` and the `"sa"`,
   `"ed"`, `"cl"` methods.
 - `vignette("backtest")` — diagnosing the impact of `recent` and
   `regime_break`.
-- `vignette("regime-detection")` — `detect_regime()` reference.
+- `vignette("regime")` — `detect_regime()` reference.
 - `?fit_lr`, `?fit_ata`, `?fit_ed`, `?detect_regime`.

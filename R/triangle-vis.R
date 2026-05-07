@@ -466,7 +466,7 @@ plot_triangle <- function(x, ...) {
 #'       `value_var`, `label_style`, `amount_divisor`, `nrow`, `ncol`.}
 #'     \item{"usage"}{Cell-status heatmap (fit_data / held_out / excluded /
 #'       future). Accepts `recent`, `regime_break`, `holdout`, `maturity_args`
-#'       via `...`. See `vignette("regime-break")` for details.}
+#'       via `...`. See `vignette("regime-break-filter")` for details.}
 #'   }
 #' @param value_var A single metric to plot. Must be one of:
 #'   `"lr"`, `"clr"`,

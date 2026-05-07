@@ -25,7 +25,7 @@
 \code{value_var}, \code{label_style}, \code{amount_divisor}, \code{nrow}, \code{ncol}.}
 \item{"usage"}{Cell-status heatmap (fit_data / held_out / excluded /
 future). Accepts \code{recent}, \code{regime_break}, \code{holdout}, \code{maturity_args}
-via \code{...}. See \code{vignette("regime-break")} for details.}
+via \code{...}. See \code{vignette("regime-break-filter")} for details.}
 }}
 
 \item{value_var}{A single metric to plot. Must be one of:
