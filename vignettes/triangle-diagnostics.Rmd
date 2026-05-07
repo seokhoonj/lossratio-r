@@ -74,13 +74,13 @@ loss ratios per (group, dev) cell.
 ## Age-to-age factor diagnostics
 
 ```{r}
-ata <- build_ata(tri, value_var = "closs")
+ata <- build_link(tri, value_var = "closs")
 sm  <- summary(ata, alpha = 1)
 head(sm)
 ```
 
-The `summary()` method on an `ATA` object computes per-link statistics
-that drive maturity detection:
+The `summary()` method on a `Link` object (single-variable mode)
+computes per-link statistics that drive maturity detection:
 
 - `mean`, `median`, `wt` — descriptive averages of observed ata
   factors at each link (excluding cohorts where the link is not
@@ -93,7 +93,7 @@ that drive maturity detection:
 - `n_obs`, `n_valid`, `n_inf`, `n_nan`, `valid_ratio` — observation
   counts and the share of finite ATA factors per link.
 
-### Diagnostic plots for `ATA`
+### Diagnostic plots for the link table
 
 ```{r}
 plot(ata, type = "cv")            # CV vs ata link with maturity overlay
@@ -112,7 +112,7 @@ plot_triangle(ata, label_args = la, show_maturity = TRUE)    # overlay maturity 
 
 # detail labels are two lines and overlap on monthly cells — rebuild on the
 # quarterly triangle so the labels fit
-ata_q <- build_ata(tri_q, value_var = "closs")
+ata_q <- build_link(tri_q, value_var = "closs")
 plot_triangle(ata_q, label_style = "detail")      # factor + (loss / rp) amounts
 ```
 
@@ -126,9 +126,9 @@ The maturity point is the development link beyond which age-to-age
 factors are stable enough to trust for chain-ladder projection. Used
 internally by `fit_lr(method = "sa")` to switch from ED to CL.
 
-`find_ata_maturity()` operates on a summary of an `ATA` object — first
-build the descriptive / WLS summary via `summary()`, then probe it for
-the first mature link:
+`find_ata_maturity()` operates on a summary of a single-variable
+`Link` object — first build the descriptive / WLS summary via
+`summary()`, then probe it for the first mature link:
 
 ```{r}
 sm  <- summary(ata, alpha = 1)
@@ -158,7 +158,7 @@ thresholds push it earlier.
 ## ED diagnostics
 
 ```{r}
-ed <- build_ed(tri, loss_var = "closs", exposure_var = "crp")
+ed <- build_link(tri, value_var = "closs", exposure_var = "crp")
 sm <- summary(ed, alpha = 1)
 head(sm)
 
@@ -167,8 +167,8 @@ plot(ed, type = "box")
 plot_triangle(ed, label_args = la)
 ```
 
-The `summary()` method on an `ED` object is the ED-side analogue of
-`summary()` on an `ATA` object, computing per-link statistics for the
+`summary(link, model = "ed")` is the ED-side analogue of the
+single-variable `summary()`, computing per-link statistics for the
 intensity $g_k = \Delta C^L_k / C^P_k$.
 
 ## Validation before building
@@ -216,7 +216,7 @@ Before fitting:
 2. `build_triangle()` — canonical shape with derived columns.
 3. `plot(tri)` / `plot_triangle(tri)` — visual inspection.
 4. `summary(tri)` — group-level central tendency.
-5. `build_ata()` + `plot(ata, type = "cv")` — link stability.
+5. `build_link()` + `plot(ata, type = "cv")` — link stability.
 6. `find_ata_maturity()` — verify maturity detection produces a
    sensible point per group.
 7. `detect_cohort_regime()` (optional) — structural change diagnosis.

@@ -16,7 +16,8 @@ fit_ata(
 )
 }
 \arguments{
-\item{x}{An object of class \code{"ATA"}, typically produced by \code{\link[=build_ata]{build_ata()}}.}
+\item{x}{An object of class \code{"Link"}, typically produced by
+\code{\link[=build_link]{build_link()}}.}
 
 \item{alpha}{Numeric scalar controlling the variance structure. Default
 is \code{1}.}
@@ -29,7 +30,7 @@ cannot be estimated. One of \code{"min_last2"} (default), \code{"locf"}, or
 \code{"loglinear"}. Passed to \code{\link[=.extrapolate_sigma_ata]{.extrapolate_sigma_ata()}}.}
 
 \item{recent}{Optional positive integer. When supplied, only the most
-recent \code{recent} periods in the \code{ata} triangle are used for factor
+recent \code{recent} periods in the \code{Link} triangle are used for factor
 estimation. Applied before maturity filtering. Default is \code{NULL}
 (use all periods).}
 
@@ -52,14 +53,14 @@ defaults via \code{\link[utils:modifyList]{utils::modifyList()}}:
 }
 Pass \code{list()} to use all defaults with maturity filtering enabled.}
 
-\item{...}{Additional arguments passed to \code{\link[=summary.ATA]{summary.ATA()}}.}
+\item{...}{Additional arguments passed to \code{\link[=summary.Link]{summary.Link()}}.}
 }
 \value{
 An object of class \code{"ATAFit"} (a named list) containing:
 \describe{
 \item{\code{call}}{The matched call.}
-\item{\code{ata}}{The input \code{"ATA"} object.}
-\item{\code{summary}}{\code{"ATASummary"} object from \code{\link[=summary.ATA]{summary.ATA()}}.}
+\item{\code{link}}{The input \code{"Link"} object.}
+\item{\code{summary}}{\code{"ATASummary"} object from \code{\link[=summary.Link]{summary.Link()}}.}
 \item{\code{selected}}{\code{data.table} of factors ready for projection,
 including \code{f_selected} and \code{sigma2}.}
 \item{\code{maturity}}{Maturity diagnostics from \code{\link[=find_ata_maturity]{find_ata_maturity()}},
@@ -75,17 +76,17 @@ or \code{NULL} when maturity filtering was not applied.}
 }
 \description{
 Estimate age-to-age (ata) development factors from an object of class
-\code{"ATA"} and return a unified \code{"ATAFit"} object that bundles:
+\code{"Link"} and return a unified \code{"ATAFit"} object that bundles:
 
 \itemize{
 \item Summary statistics and WLS estimates (\code{summary}) from
-\code{\link[=summary.ATA]{summary.ATA()}}.
+\code{\link[=summary.Link]{summary.Link()}} with \code{model = "ata"}.
 \item Selected factors (\code{selected}) ready for chain ladder projection,
 after optional maturity filtering and LOCF fill.
 \item Maturity diagnostics (\code{maturity}) from \code{\link[=find_ata_maturity]{find_ata_maturity()}}.
 }
 }
 \seealso{
-\code{\link[=build_ata]{build_ata()}}, \code{\link[=summary.ATA]{summary.ATA()}}, \code{\link[=find_ata_maturity]{find_ata_maturity()}},
+\code{\link[=build_link]{build_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=find_ata_maturity]{find_ata_maturity()}},
 \code{\link[=fit_cl]{fit_cl()}}
 }

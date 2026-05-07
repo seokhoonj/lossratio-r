@@ -178,8 +178,8 @@ find_lr_convergence <- function(triangle,
 
   # 2) resolve k_star --------------------------------------------------
   if (is.null(k_star)) {
-    ata     <- build_ata(triangle, value_var = "clr", weight_var = "crp")
-    sm      <- summary(ata)
+    link    <- build_link(triangle, value_var = "clr", weight_var = "crp")
+    sm      <- summary(link)
     mat     <- find_ata_maturity(sm)
     k_star  <- suppressWarnings(min(mat$ata_from, na.rm = TRUE))
     if (!is.finite(k_star))

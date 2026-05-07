@@ -7,7 +7,7 @@ test_that("fit_cl method = 'basic' returns class 'CLFit' with expected structure
   cl <- fit_cl(tri, value_var = "closs", method = "basic")
   expect_s3_class(cl, "CLFit")
   for (nm in c("data", "method", "group_var", "cohort_var", "dev_var",
-               "value_var", "full", "pred", "ata", "summary",
+               "value_var", "full", "pred", "link", "summary",
                "factor", "selected")) {
     expect_true(nm %in% names(cl), info = paste("missing", nm))
   }

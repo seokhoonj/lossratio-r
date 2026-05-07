@@ -2,17 +2,17 @@
 data(experience)
 exp <- as_experience(experience)
 tri <- build_triangle(exp, group_var = cv_nm)
-ata <- build_ata(tri, value_var = "closs")
+ata <- build_link(tri, value_var = "closs")
 
-test_that("build_ata returns class 'ATA' with expected columns", {
-  expect_s3_class(ata, "ATA")
+test_that("build_link returns class 'Link' with expected columns", {
+  expect_s3_class(ata, "Link")
   for (nm in c("cv_nm", "cohort", "ata_from", "ata_to", "ata_link",
                "value_from", "value_to", "ata")) {
     expect_true(nm %in% names(ata), info = paste("missing", nm))
   }
 })
 
-test_that("build_ata sets attributes", {
+test_that("build_link sets attributes", {
   for (a in c("group_var", "cohort_var", "dev_var", "value_var")) {
     expect_false(is.null(attr(ata, a)), info = paste("missing attr", a))
   }
@@ -29,22 +29,22 @@ test_that("ata == value_to / value_from when value_from > 0", {
 })
 
 test_that("weight_var adds 'weight' column", {
-  ata_w <- build_ata(tri, value_var = "clr", weight_var = "crp")
+  ata_w <- build_link(tri, value_var = "clr", weight_var = "crp")
   expect_true("weight" %in% names(ata_w))
   expect_equal(attr(ata_w, "weight_var"), "crp")
 })
 
-test_that("build_ata errors on invalid value_var", {
-  expect_error(build_ata(tri, value_var = "loss"))
+test_that("build_link errors on invalid value_var", {
+  expect_error(build_link(tri, value_var = "loss"))
 })
 
-test_that("build_ata errors when weight_var equals value_var", {
-  expect_error(build_ata(tri, value_var = "closs", weight_var = "closs"))
+test_that("build_link errors when weight_var equals value_var", {
+  expect_error(build_link(tri, value_var = "closs", weight_var = "closs"))
 })
 
 test_that("drop_invalid removes non-finite ata", {
-  a1 <- build_ata(tri, value_var = "closs", drop_invalid = FALSE)
-  a2 <- build_ata(tri, value_var = "closs", drop_invalid = TRUE)
+  a1 <- build_link(tri, value_var = "closs", drop_invalid = FALSE)
+  a2 <- build_link(tri, value_var = "closs", drop_invalid = TRUE)
   expect_true(nrow(a2) <= nrow(a1))
   expect_true(all(is.finite(a2$ata)))
 })
@@ -90,9 +90,9 @@ test_that("print.ATAFit doesn't error", {
   expect_no_error(capture.output(print(af)))
 })
 
-# summary.ATA ------------------------------------------------------------
+# summary.Link (ATA mode) ------------------------------------------------
 
-test_that("summary.ATA returns ATASummary with expected columns", {
+test_that("summary.Link (ata mode) returns ATASummary with expected columns", {
   sm <- summary(ata, alpha = 1)
   expect_s3_class(sm, "ATASummary")
   for (nm in c("ata_from", "ata_to", "mean", "median", "wt", "cv",
@@ -101,7 +101,7 @@ test_that("summary.ATA returns ATASummary with expected columns", {
   }
 })
 
-test_that("summary.ATA accepts alpha = 0 / 2", {
+test_that("summary.Link (ata mode) accepts alpha = 0 / 2", {
   expect_no_error(summary(ata, alpha = 0))
   expect_no_error(summary(ata, alpha = 2))
 })
@@ -143,7 +143,7 @@ test_that("fit_ata with regime_break drops pre-break cohorts", {
   exp <- as_experience(experience[cv_nm == "SUR"])
   tri <- build_triangle(exp, group_var = "cv_nm",
                         cohort_var = "uym", dev_var = "elap_m")
-  ata <- build_ata(tri, value_var = "closs")
+  ata <- build_link(tri, value_var = "closs")
 
   fit_full <- fit_ata(ata)
   fit_brk  <- fit_ata(ata, regime_break = "2024-04-01")
@@ -160,7 +160,7 @@ test_that("fit_ata with NULL regime_break is unchanged from default", {
   exp <- as_experience(experience[cv_nm == "SUR"])
   tri <- build_triangle(exp, group_var = "cv_nm",
                         cohort_var = "uym", dev_var = "elap_m")
-  ata <- build_ata(tri, value_var = "closs")
+  ata <- build_link(tri, value_var = "closs")
   fit_default <- fit_ata(ata)
   fit_null    <- fit_ata(ata, regime_break = NULL)
   expect_identical(fit_default$selected$f_selected,
@@ -173,7 +173,7 @@ test_that("fit_ata with CohortRegime input extracts last breakpoint", {
   tri <- build_triangle(exp, group_var = "cv_nm",
                         cohort_var = "uym", dev_var = "elap_m")
   reg <- detect_cohort_regime(tri)
-  ata <- build_ata(tri, value_var = "closs")
+  ata <- build_link(tri, value_var = "closs")
   fit_reg <- fit_ata(ata, regime_break = reg)
   if (length(reg$breakpoints) > 0L) {
     expect_equal(fit_reg$regime_break, max(reg$breakpoints))

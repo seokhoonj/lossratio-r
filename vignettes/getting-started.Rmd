@@ -82,11 +82,11 @@ Two complementary views of cohort development:
 
 ```{r}
 # Age-to-age factors
-ata <- build_ata(tri, value_var = "closs")
+ata <- build_link(tri, value_var = "closs")
 fit_ata(ata)
 
 # Exposure-driven intensities
-ed <- build_ed(tri, loss_var = "closs", exposure_var = "crp")
+ed <- build_link(tri, value_var = "closs", exposure_var = "crp")
 fit_ed(ed)
 ```
 

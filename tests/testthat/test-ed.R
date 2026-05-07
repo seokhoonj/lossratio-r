@@ -2,37 +2,37 @@
 data(experience)
 exp <- as_experience(experience)
 tri <- build_triangle(exp, group_var = cv_nm)
-ed  <- build_ed(tri)
+ed  <- build_link(tri, value_var = "closs", exposure_var = "crp")
 
-test_that("build_ed returns class 'ED' with expected columns", {
-  expect_s3_class(ed, "ED")
+test_that("build_link (ED mode) returns class 'Link' with expected columns", {
+  expect_s3_class(ed, "Link")
   for (nm in c("cv_nm", "cohort", "ata_from", "ata_to", "ata_link",
-               "loss_from", "loss_to", "delta_loss",
+               "value_from", "value_to", "delta_value",
                "exposure_from", "exposure_to", "g")) {
     expect_true(nm %in% names(ed), info = paste("missing", nm))
   }
 })
 
-test_that("build_ed attributes set correctly", {
-  for (a in c("group_var", "cohort_var", "dev_var", "loss_var", "exposure_var")) {
+test_that("build_link (ED mode) attributes set correctly", {
+  for (a in c("group_var", "cohort_var", "dev_var", "value_var", "exposure_var")) {
     expect_false(is.null(attr(ed, a)), info = paste("missing attr", a))
   }
 })
 
-test_that("g == delta_loss / exposure_from when exposure_from > 0", {
+test_that("g == delta_value / exposure_from when exposure_from > 0", {
   ok <- is.finite(ed$g) & ed$exposure_from > 0
-  expect_equal(ed$g[ok], ed$delta_loss[ok] / ed$exposure_from[ok], tolerance = 1e-6)
+  expect_equal(ed$g[ok], ed$delta_value[ok] / ed$exposure_from[ok], tolerance = 1e-6)
 })
 
-test_that("delta_loss == loss_to - loss_from", {
-  ok <- is.finite(ed$delta_loss)
-  expect_equal(ed$delta_loss[ok],
-               ed$loss_to[ok] - ed$loss_from[ok],
+test_that("delta_value == value_to - value_from", {
+  ok <- is.finite(ed$delta_value)
+  expect_equal(ed$delta_value[ok],
+               ed$value_to[ok] - ed$value_from[ok],
                tolerance = 1e-6)
 })
 
-test_that("build_ed errors when loss_var == exposure_var", {
-  expect_error(build_ed(tri, loss_var = "closs", exposure_var = "closs"))
+test_that("build_link errors when value_var == exposure_var", {
+  expect_error(build_link(tri, value_var = "closs", exposure_var = "closs"))
 })
 
 # fit_ed -----------------------------------------------------------------
@@ -68,9 +68,9 @@ test_that("print.EDFit doesn't error", {
   expect_no_error(capture.output(print(ef)))
 })
 
-# summary.ED -------------------------------------------------------------
+# summary.Link (ED mode) -------------------------------------------------
 
-test_that("summary.ED returns EDSummary with expected columns", {
+test_that("summary.Link (ed mode) returns EDSummary with expected columns", {
   sm <- summary(ed, alpha = 1)
   expect_s3_class(sm, "EDSummary")
   for (nm in c("ata_from", "ata_to", "mean", "median", "wt", "g")) {
@@ -85,7 +85,7 @@ test_that("fit_ed with regime_break drops pre-break cohorts", {
   exp <- as_experience(experience[cv_nm == "SUR"])
   tri <- build_triangle(exp, group_var = "cv_nm",
                         cohort_var = "uym", dev_var = "elap_m")
-  ed <- build_ed(tri)
+  ed <- build_link(tri, value_var = "closs", exposure_var = "crp")
   fit_full <- fit_ed(ed)
   fit_brk  <- fit_ed(ed, regime_break = "2024-04-01")
   expect_false(identical(fit_full$selected$g_selected,
@@ -98,7 +98,7 @@ test_that("fit_ed with NULL regime_break is unchanged", {
   exp <- as_experience(experience[cv_nm == "SUR"])
   tri <- build_triangle(exp, group_var = "cv_nm",
                         cohort_var = "uym", dev_var = "elap_m")
-  ed <- build_ed(tri)
+  ed <- build_link(tri, value_var = "closs", exposure_var = "crp")
   fit_default <- fit_ed(ed)
   fit_null    <- fit_ed(ed, regime_break = NULL)
   expect_identical(fit_default$selected$g_selected,
@@ -111,7 +111,7 @@ test_that("fit_ed with CohortRegime input extracts last breakpoint", {
   tri <- build_triangle(exp, group_var = "cv_nm",
                         cohort_var = "uym", dev_var = "elap_m")
   reg <- detect_cohort_regime(tri)
-  ed <- build_ed(tri)
+  ed <- build_link(tri, value_var = "closs", exposure_var = "crp")
   fit_reg <- fit_ed(ed, regime_break = reg)
   if (length(reg$breakpoints) > 0L) {
     expect_equal(fit_reg$regime_break, max(reg$breakpoints))

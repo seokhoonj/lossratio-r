@@ -1,179 +1,11 @@
-# Age-to-age --------------------------------------------------------------
-
-#' Build age-to-age (ata) factors from `Triangle` data
-#'
-#' @description
-#' Construct age-to-age development factors from an object of class `Triangle`,
-#' typically produced by [build_triangle()]. Age-to-age factors are calculated
-#' from cumulative values such as `closs` or `crp`.
-#'
-#' Age-to-age is defined as:
-#' \deqn{ata_{k \to k+1} = value_{k+1} / value_k}
-#'
-#' where `value_k` is the selected cumulative metric at development period `k`.
-#'
-#' @param x An object of class `Triangle`.
-#' @param value_var A single cumulative metric used to compute age-to-age.
-#'   Must be one of `"closs"`, `"crp"`, or `"clr"`.
-#' @param weight_var An optional single cumulative metric used as weights
-#'   in WLS estimation via [summary.ATA()]. Must be one of `"closs"`,
-#'   `"crp"`, or `"clr"`, and must differ from `value_var`. Typical use
-#'   is `weight_var = "crp"` when `value_var = "clr"`, since `clr` values
-#'   are ratios and carry no exposure information. When `NULL` (default),
-#'   `value_from` is used as the WLS weight, which corresponds to the
-#'   standard volume-weighted chain ladder.
-#' @param min_denom Minimum denominator required to compute age-to-age.
-#'   If `value_from <= min_denom`, `ata` is set to `NA`. This is useful
-#'   when early development periods contain structural zeros
-#'   (for example, waiting periods in life insurance).
-#' @param drop_invalid Logical; if `TRUE`, rows with invalid (non-finite)
-#'   age-to-age factors are dropped. Useful for clean output when passing
-#'   to [summary.ATA()] or [find_ata_maturity()]. When `FALSE` (default),
-#'   all rows are retained, preserving the full triangle structure for
-#'   diagnostic visualisation via [plot_triangle.ATA()].
-#'
-#' @return A data.frame with class `"ATA"` containing:
-#'   \describe{
-#'     \item{`ata_from`}{Current development period.}
-#'     \item{`ata_to`}{Next development period.}
-#'     \item{`value_from`}{Current cumulative value.}
-#'     \item{`value_to`}{Next cumulative value.}
-#'     \item{`ata`}{Age-to-age factor (`value_to / value_from`), or `NA`
-#'       when `value_from <= min_denom`.}
-#'     \item{`weight`}{Weight values at `ata_from` derived from
-#'       `weight_var`. Only present when `weight_var` is supplied.}
-#'   }
-#'
-#' The returned object carries the following attributes:
-#' `group_var`, `cohort_var`, `dev_var`, `value_var`, and
-#' `weight_var`.
-#'
-#' @seealso [build_triangle()], [summary.ATA()], [fit_ata()]
-#'
-#' @examples
-#' \dontrun{
-#' d <- build_triangle(df, group_var = cv_nm)
-#'
-#' ata1 <- build_ata(d, "closs")
-#' ata2 <- build_ata(d, "crp")
-#' ata3 <- build_ata(d, "clr", weight_var = "crp")
-#'
-#' head(ata1)
-#' attr(ata1, "value_var")
-#' attr(ata1, "weight_var")
-#' }
-#'
-#' @export
-build_ata <- function(x,
-                      value_var    = "closs",
-                      weight_var   = NULL,
-                      min_denom    = 0,
-                      drop_invalid = FALSE) {
-
-  .assert_class(x, "Triangle")
-
-  if (!is.numeric(min_denom) || length(min_denom) != 1L || is.na(min_denom))
-    stop("`min_denom` must be a single non-missing numeric value.",
-         call. = FALSE)
-
-  if (!is.logical(drop_invalid) || length(drop_invalid) != 1L ||
-      is.na(drop_invalid))
-    stop("`drop_invalid` must be a single non-missing logical value.",
-         call. = FALSE)
-
-  dt <- .ensure_dt(x)
-
-  grp_var <- attr(dt, "group_var")
-  coh_var <- attr(dt, "cohort_var")
-  dev_var <- attr(dt, "dev_var")
-
-  val_var <- .capture_names(dt, !!rlang::enquo(value_var))
-
-  if (length(coh_var) != 1L)
-    stop("`x` must contain exactly one `cohort_var`.", call. = FALSE)
-  if (length(dev_var) != 1L)
-    stop("`x` must contain exactly one `dev_var`.", call. = FALSE)
-
-  valid_vars <- c("closs", "crp", "clr")
-
-  if (length(val_var) != 1L || !(val_var %in% valid_vars))
-    stop("`value_var` must be one of 'closs', 'crp', or 'clr'.",
-         call. = FALSE)
-
-  # 1) validate weight_var ----------------------------------------------
-  use_weight <- !is.null(weight_var)
-
-  if (use_weight) {
-    wt_var <- .capture_names(dt, !!rlang::enquo(weight_var))
-    if (length(wt_var) != 1L || !(wt_var %in% valid_vars))
-      stop("`weight_var` must be one of 'closs', 'crp', or 'clr'.",
-           call. = FALSE)
-    if (wt_var == val_var)
-      stop("`weight_var` must differ from `value_var`.", call. = FALSE)
-  }
-
-  grp_coh_var <- c(grp_var, "cohort")
-
-  z <- .ensure_dt(x)
-  data.table::setorderv(z, c(grp_coh_var, "dev"))
-
-  # 2) compute ata_from, ata_to, value_from, value_to -------------------
-  z[, ata_from   := dev]
-  z[, ata_to     := data.table::shift(dev, type = "lead"),
-    by = grp_coh_var]
-  z[, ata_link   := sprintf("%s-%s", ata_from, ata_to)]
-  z[, value_from := .SD[[val_var]], .SDcols = val_var]
-  z[, value_to   := data.table::shift(.SD[[1L]], type = "lead"),
-    by      = grp_coh_var,
-    .SDcols = val_var]
-
-  # 3) compute ata ------------------------------------------------------
-  z[, ata := data.table::fifelse(
-    value_from > min_denom,
-    value_to / value_from,
-    NA_real_
-  )]
-
-  # 4) remove last dev row per cohort (no lead available) -----------
-  z <- z[!is.na(ata_to)]
-
-  # 5) drop invalid rows if requested -----------------------------------
-  if (drop_invalid) z <- z[is.finite(ata)]
-
-  # 6) attach weight column if weight_var is supplied -------------------
-  # weight is value_from of weight_var at ata_from (current dev)
-  if (use_weight) {
-    z[, weight := .SD[[wt_var]], .SDcols = wt_var]
-  }
-
-  # 7) keep relevant columns --------------------------------------------
-  keep <- c(
-    grp_var, "cohort",
-    "ata_from", "ata_to", "ata_link",
-    "value_from", "value_to",
-    "ata",
-    if (use_weight) "weight"
-  )
-
-  z <- z[, .SD, .SDcols = keep]
-
-  data.table::setattr(z, "group_var"  , grp_var)
-  data.table::setattr(z, "cohort_var" , coh_var)
-  data.table::setattr(z, "dev_var", dev_var)
-  data.table::setattr(z, "value_var"  , val_var)
-  data.table::setattr(z, "weight_var" , if (use_weight) wt_var else NULL)
-
-  .prepend_class(z, "ATA")
-}
-
-
 # Age-to-age summary ------------------------------------------------------
 
-#' Summarise age-to-age factor statistics
+#' Internal: summarise age-to-age factor statistics from a `Link` table
 #'
 #' @description
 #' Compute group-wise summary statistics for age-to-age factors from an
-#' object of class `"ATA"`. This function serves two purposes:
+#' object of class `"Link"`. This helper backs the `summary.Link()`
+#' dispatcher when `model = "ata"`. It serves two purposes:
 #'
 #' \enumerate{
 #'   \item \strong{Diagnostics}: provides descriptive statistics
@@ -217,8 +49,8 @@ build_ata <- function(x,
 #' }
 #'
 #' @section Weights:
-#' When the input `"ATA"` object contains a `weight` column (added by
-#' [build_ata()] when `weight_var` is supplied), that column is
+#' When the input `"Link"` object contains a `weight` column (added by
+#' [build_link()] when `weight_var` is supplied), that column is
 #' automatically used as the WLS weight in place of `value_from`. This
 #' is useful when `value_var = "clr"`, where `value_from` carries no
 #' exposure information and an external exposure variable such as `crp`
@@ -245,8 +77,8 @@ build_ata <- function(x,
 #' (2) exposures are large, and (3) the observed ata values are
 #' consistent across cohorts.
 #'
-#' @param object An object of class `"ATA"`, typically produced by
-#'   [build_ata()].
+#' @param object An object of class `"Link"`, typically produced by
+#'   [build_link()].
 #' @param alpha Numeric scalar controlling the variance structure in the
 #'   WLS fit. Default is `1`.
 #' @param digits Number of decimal places to round numeric columns.
@@ -279,16 +111,16 @@ build_ata <- function(x,
 #'       (\eqn{n\_valid / n\_obs}).}
 #'   }
 #'
-#' @seealso [build_ata()], [find_ata_maturity()], [fit_ata()]
+#' @seealso [build_link()], [summary.Link()], [find_ata_maturity()],
+#'   [fit_ata()]
 #'
-#' @method summary ATA
-#' @export
-summary.ATA <- function(object,
-                        alpha  = 1,
-                        digits = 3,
-                        ...) {
+#' @keywords internal
+.summarize_link_ata <- function(object,
+                                alpha  = 1,
+                                digits = 3,
+                                ...) {
 
-  .assert_class(object, "ATA")
+  .assert_class(object, "Link")
 
   grp_var <- attr(object, "group_var")
   if (is.null(grp_var)) grp_var <- character(0)
@@ -319,10 +151,10 @@ summary.ATA <- function(object,
   ds[, valid_ratio := n_valid / n_obs]
 
   # 2) WLS estimation ---------------------------------------------------
-  # use weight column if present (added by build_ata(weight_var = ...))
+  # use weight column if present (added by build_link(weight_var = ...))
   # otherwise fall back to value_from (standard volume-weighted chain ladder)
   wt_col    <- if ("weight" %in% names(dt)) "weight" else 1
-  link_factors <- .lm_ata(object, weights = wt_col, alpha = alpha, ...)
+  link_factors <- .lm_link(object, weights = wt_col, alpha = alpha, ...)
 
   # 3) join WLS results onto descriptive statistics ---------------------
   join_cols <- c(grp_var, "ata_from", "ata_to", "ata_link")
@@ -342,16 +174,12 @@ summary.ATA <- function(object,
 
   ds[, ata_link := factor(ata_link, levels = unique(dt$ata_link))]
 
-  # 5) round numeric columns --------------------------------------------
+  # `digits` is retained for downstream display only (see print.ATASummary).
+  # Numeric columns are stored at full precision so callers get raw values.
   if (!is.null(digits)) {
     digits <- suppressWarnings(as.numeric(digits[1L]))
     if (length(digits) == 0L || is.na(digits))
       stop("Non-numeric `digits` specified.", call. = FALSE)
-
-    num_cols <- setdiff(names(ds), c(grp_var, "ata_link"))
-    for (nm in num_cols) {
-      data.table::set(ds, j = nm, value = round(ds[[nm]], digits))
-    }
   }
 
   data.table::setattr(ds, "group_var",   grp_var)
@@ -359,8 +187,38 @@ summary.ATA <- function(object,
   data.table::setattr(ds, "dev_var", attr(object, "dev_var"))
   data.table::setattr(ds, "value_var",   attr(object, "value_var"))
   data.table::setattr(ds, "weight_var",  attr(object, "weight_var"))
+  data.table::setattr(ds, "digits",      digits)
 
   .prepend_class(ds, "ATASummary")
+}
+
+
+#' Print method for `ATASummary`
+#'
+#' Numeric columns are stored at full double precision; rounding is applied
+#' only for display. The default `digits` is taken from the `digits`
+#' attribute set by [summary.Link()] (3 unless overridden).
+#'
+#' @param x An object of class `"ATASummary"`.
+#' @param digits Number of decimal places to display. Default uses the
+#'   `digits` attribute attached at construction.
+#' @param ... Further arguments passed to `print.data.table`.
+#'
+#' @method print ATASummary
+#' @export
+print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
+  if (is.null(digits)) {
+    NextMethod()
+    return(invisible(x))
+  }
+  y <- data.table::copy(x)
+  data.table::setattr(y, "class", setdiff(class(y), "ATASummary"))
+  num_cols <- vapply(y, is.numeric, logical(1L))
+  for (nm in names(y)[num_cols]) {
+    data.table::set(y, j = nm, value = round(y[[nm]], digits))
+  }
+  print(y, ...)
+  invisible(x)
 }
 
 
@@ -370,7 +228,8 @@ summary.ATA <- function(object,
 #'
 #' @description
 #' Identify the first mature age-to-age (ata) link from an object of class
-#' `"ATASummary"`, typically produced by [summary.ATA()].
+#' `"ATASummary"`, typically produced by [summary.Link()] with
+#' `model = "ata"`.
 #'
 #' Maturity is determined using a combination of:
 #' \itemize{
@@ -387,7 +246,7 @@ summary.ATA <- function(object,
 #' together provides a more robust maturity assessment than either alone.
 #'
 #' @param x An object of class `"ATASummary"`, typically produced by
-#'   [summary.ATA()].
+#'   [summary.Link()] with `model = "ata"`.
 #' @param cv_threshold Maximum allowed coefficient of variation.
 #'   Default is `0.10`.
 #' @param rse_threshold Maximum allowed relative standard error.
@@ -550,17 +409,18 @@ find_ata_maturity <- function(x,
 #'
 #' @description
 #' Estimate age-to-age (ata) development factors from an object of class
-#' `"ATA"` and return a unified `"ATAFit"` object that bundles:
+#' `"Link"` and return a unified `"ATAFit"` object that bundles:
 #'
 #' \itemize{
 #'   \item Summary statistics and WLS estimates (`summary`) from
-#'     [summary.ATA()].
+#'     [summary.Link()] with `model = "ata"`.
 #'   \item Selected factors (`selected`) ready for chain ladder projection,
 #'     after optional maturity filtering and LOCF fill.
 #'   \item Maturity diagnostics (`maturity`) from [find_ata_maturity()].
 #' }
 #'
-#' @param x An object of class `"ATA"`, typically produced by [build_ata()].
+#' @param x An object of class `"Link"`, typically produced by
+#'   [build_link()].
 #' @param alpha Numeric scalar controlling the variance structure. Default
 #'   is `1`.
 #' @param na_method Method used to fill `NA` values in `f_selected`. One of
@@ -569,7 +429,7 @@ find_ata_maturity <- function(x,
 #'   cannot be estimated. One of `"min_last2"` (default), `"locf"`, or
 #'   `"loglinear"`. Passed to [.extrapolate_sigma_ata()].
 #' @param recent Optional positive integer. When supplied, only the most
-#'   recent `recent` periods in the `ata` triangle are used for factor
+#'   recent `recent` periods in the `Link` triangle are used for factor
 #'   estimation. Applied before maturity filtering. Default is `NULL`
 #'   (use all periods).
 #' @param regime_break Optional cohort cutoff for the regime break. Accepts:
@@ -589,13 +449,13 @@ find_ata_maturity <- function(x,
 #'     \item{`min_run`}{Default `1L`.}
 #'   }
 #'   Pass `list()` to use all defaults with maturity filtering enabled.
-#' @param ... Additional arguments passed to [summary.ATA()].
+#' @param ... Additional arguments passed to [summary.Link()].
 #'
 #' @return An object of class `"ATAFit"` (a named list) containing:
 #'   \describe{
 #'     \item{`call`}{The matched call.}
-#'     \item{`ata`}{The input `"ATA"` object.}
-#'     \item{`summary`}{`"ATASummary"` object from [summary.ATA()].}
+#'     \item{`link`}{The input `"Link"` object.}
+#'     \item{`summary`}{`"ATASummary"` object from [summary.Link()].}
 #'     \item{`selected`}{`data.table` of factors ready for projection,
 #'       including `f_selected` and `sigma2`.}
 #'     \item{`maturity`}{Maturity diagnostics from [find_ata_maturity()],
@@ -609,7 +469,7 @@ find_ata_maturity <- function(x,
 #'     \item{`maturity_args`}{Resolved maturity arguments, or `NULL`.}
 #'   }
 #'
-#' @seealso [build_ata()], [summary.ATA()], [find_ata_maturity()],
+#' @seealso [build_link()], [summary.Link()], [find_ata_maturity()],
 #'   [fit_cl()]
 #'
 #' @export
@@ -622,7 +482,7 @@ fit_ata <- function(x,
                     maturity_args = NULL,
                     ...) {
 
-  .assert_class(x, "ATA")
+  .assert_class(x, "Link")
 
   na_method    <- match.arg(na_method)
   sigma_method <- match.arg(sigma_method)
@@ -681,7 +541,7 @@ fit_ata <- function(x,
   if (is.null(grp_var)) grp_var <- character(0)
 
   # 4) compute summary statistics and WLS estimates ---------------------
-  ata_summary <- summary(x, alpha = alpha, ...)
+  ata_summary <- summary(x, alpha = alpha, model = "ata", ...)
 
   # 5) find maturity point ----------------------------------------------
   maturity <- if (use_maturity) {
@@ -712,7 +572,7 @@ fit_ata <- function(x,
     dev_var   = attr(x, "dev_var"),
     value_var     = attr(x, "value_var"),
     weight_var    = attr(x, "weight_var"),
-    ata           = x,
+    link          = x,
     factor        = ata_summary,
     selected      = selected,
     maturity      = maturity,
@@ -758,7 +618,7 @@ summary.ATAFit <- function(object, ...) {
 #' @export
 print.ATAFit <- function(x, ...) {
 
-  grp_var <- attr(x$ata, "group_var")
+  grp_var <- attr(x$link, "group_var")
   if (is.null(grp_var)) grp_var <- character(0)
 
   cat("<ATAFit>\n")
@@ -787,149 +647,6 @@ print.ATAFit <- function(x, ...) {
 
 # Internal helpers --------------------------------------------------------
 
-#' Estimate age-to-age factors via weighted least squares
-#'
-#' @description
-#' Internal helper that fits one no-intercept weighted linear model per
-#' age-to-age link:
-#'
-#' \deqn{C_{i,k+1} = f_k \cdot C_{i,k} + \varepsilon_{i,k}}
-#'
-#' Weights are proportional to \eqn{w_{i,k} / C_{i,k}^{2 - \alpha}}, where
-#' \eqn{w_{i,k}} is either a constant or a column supplied via `weights`.
-#' This corresponds to Mack's variance assumption
-#' \eqn{\mathrm{Var}(C_{i,k+1} \mid C_{i,k}) \propto C_{i,k}^{\alpha}}.
-#'
-#' When only one observation is available for a link, the factor is computed
-#' directly as `value_to / value_from` and standard errors are set to `NA`.
-#'
-#' Near-zero values of `f_se` and `sigma` (below `tol`) are set to zero to
-#' avoid numerical noise from essentially perfect fits.
-#'
-#' @param x An object of class `"ATA"`.
-#' @param weights Either a length-one numeric scalar (default `1`) or a
-#'   single column name present in the `ata` data that provides per-row
-#'   weights.
-#' @param alpha Numeric scalar controlling the variance structure. Default
-#'   is `1`.
-#' @param na_rm Logical; if `TRUE` (default), rows with non-finite or
-#'   non-positive `value_from` are dropped before fitting. Note that
-#'   `value_to = 0` is permitted, as zero cumulative values are valid
-#'   observations (e.g. no claims yet developed in early development periods).
-#' @param tol Non-negative numeric scalar. Values below `tol` are set to
-#'   zero. Default is `1e-12`.
-#'
-#' @return A `data.table` with one row per ata link containing `f`,
-#'   `f_se`, `sigma`, `rse`, and `n_obs`. `rse` is defined as
-#'   \eqn{f\_se / f} and represents the relative standard error of the
-#'   WLS-estimated factor. `rse` is `NA` when `f_se` is `NA` (single
-#'   observation links) or when `f` is zero.
-#'
-#' @keywords internal
-.lm_ata <- function(x,
-                    weights = 1,
-                    alpha   = 1,
-                    na_rm   = TRUE,
-                    tol     = 1e-12) {
-
-  .assert_class(x, "ATA")
-
-  if (!is.numeric(alpha) || length(alpha) != 1L || is.na(alpha))
-    stop("`alpha` must be a single non-missing numeric value.", call. = FALSE)
-
-  if (!is.logical(na_rm) || length(na_rm) != 1L || is.na(na_rm))
-    stop("`na_rm` must be a single non-missing logical value.", call. = FALSE)
-
-  if (!is.numeric(tol) || length(tol) != 1L || is.na(tol) || tol < 0)
-    stop("`tol` must be a single non-negative numeric value.", call. = FALSE)
-
-  grp_var <- attr(x, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
-
-  dt <- .ensure_dt(x)
-
-  # 1) drop invalid rows ------------------------------------------------
-  if (na_rm) {
-    dt <- dt[is.finite(value_from) & is.finite(value_to) & value_from > 0]
-  }
-
-  # 2) attach weight column ---------------------------------------------
-  if (is.character(weights)) {
-    if (length(weights) != 1L || !weights %in% names(dt))
-      stop("`weights` must be a single existing column name.", call. = FALSE)
-    dt[, w := .SD, .SDcols = weights]
-  } else {
-    if (!is.numeric(weights) || length(weights) != 1L || is.na(weights))
-      stop(
-        "`weights` must be a single non-missing numeric scalar or a column name.",
-        call. = FALSE
-      )
-    dt[, w := weights]
-  }
-
-  # regression weight: w / value_from^(2 - alpha)
-  # this corresponds to Mack's variance assumption:
-  # Var(C_{i,k+1} | C_{i,k}) proportional to C_{i,k}^alpha / w_{i,k}
-  delta <- 2 - alpha
-  dt[, reg_w := w / value_from^delta]
-  dt[, ata_link := sprintf("%s-%s", ata_from, ata_to)]
-
-  # 3) fit one model per link -------------------------------------------
-  res <- dt[, {
-    if (.N == 1L) {
-      data.table::data.table(
-        f     = value_to[1L] / value_from[1L],
-        f_se  = NA_real_,
-        sigma = NA_real_,
-        n_obs = 1L
-      )
-    } else {
-      fit <- tryCatch(
-        stats::lm(value_to ~ value_from + 0, weights = reg_w),
-        error = function(e) NULL
-      )
-
-      if (is.null(fit)) {
-        data.table::data.table(
-          f = NA_real_, f_se = NA_real_, sigma = NA_real_, n_obs = .N
-        )
-      } else {
-        sm <- suppressWarnings(summary(fit))
-
-        f_val     <- unname(stats::coef(fit)[1L])
-        f_se_val  <- unname(sm$coef[1L, "Std. Error"])
-        sigma_val <- unname(sm$sigma)
-
-        if (is.finite(f_se_val)  && abs(f_se_val)  < tol) f_se_val  <- 0
-        if (is.finite(sigma_val) && abs(sigma_val) < tol) sigma_val <- 0
-
-        data.table::data.table(
-          f     = f_val,
-          f_se  = f_se_val,
-          sigma = sigma_val,
-          n_obs = .N
-        )
-      }
-    }
-  }, keyby = c(grp_var, "ata_from", "ata_to", "ata_link")]
-
-  # 4) compute rse = f_se / f -------------------------------------------
-  data.table::set(
-    res,
-    j     = "rse",
-    value = data.table::fifelse(
-      is.finite(res$f_se) & is.finite(res$f) & res$f != 0,
-      res$f_se / res$f,
-      NA_real_
-    )
-  )
-
-  data.table::setcolorder(res, "rse", before = "sigma")
-
-  res
-}
-
-
 #' Filter and fill age-to-age factors for projection
 #'
 #' @description
@@ -942,7 +659,7 @@ print.ATAFit <- function(x, ...) {
 #'    so that every link used in projection has a finite factor.
 #'
 #' @param ata_summary A `data.table` of class `"ATASummary"` from
-#'   [summary.ATA()].
+#'   [summary.Link()] with `model = "ata"`.
 #' @param maturity A `data.table` from [find_ata_maturity()], or `NULL`
 #'   when `use_maturity = FALSE`.
 #' @param grp_var Character vector of grouping variable names.

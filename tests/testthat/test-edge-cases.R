@@ -31,12 +31,12 @@ test_that("build_triangle on a single cohort succeeds", {
   expect_gt(nrow(tri), 0L)
 })
 
-test_that("build_ata on a single cohort returns ATA with valid links", {
+test_that("build_link on a single cohort returns Link with valid links", {
   exp <- make_exp()
   single <- exp[uym == as.Date("2023-04-01")]
   tri <- build_triangle(single, group_var = cv_nm)
-  ata <- build_ata(tri, value_var = "closs")
-  expect_s3_class(ata, "ATA")
+  ata <- build_link(tri, value_var = "closs")
+  expect_s3_class(ata, "Link")
   expect_true(all(ata$ata_to == ata$ata_from + 1L))
 })
 

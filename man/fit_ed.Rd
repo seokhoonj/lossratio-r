@@ -16,8 +16,8 @@ fit_ed(
 )
 }
 \arguments{
-\item{x}{An object of class \code{"ED"}, typically produced by
-\code{\link[=build_ed]{build_ed()}}.}
+\item{x}{A \code{Link} object built with \code{exposure_var} set, typically
+produced by \code{\link[=build_link]{build_link()}}.}
 
 \item{method}{One of \code{"basic"} or \code{"mack"}. Default is \code{"basic"}.}
 
@@ -40,15 +40,16 @@ a vector of dates (uses the latest), or a \code{CohortRegime} object (extracts
 the latest from \verb{$breakpoints}). When supplied, cohorts with
 \code{cohort < break_date} are excluded from estimation. Default is \code{NULL}.}
 
-\item{...}{Additional arguments passed to \code{\link[=summary.ED]{summary.ED()}}.}
+\item{...}{Additional arguments passed to \code{\link[=summary.Link]{summary.Link()}}.}
 }
 \value{
 An object of class \code{"EDFit"} (a named list).
 }
 \description{
-Estimate incremental loss intensities \eqn{g_k} from an object of
-class \code{"ED"} and return an \code{"EDFit"} object that bundles factor
-summaries, selected intensities, and maturity diagnostics.
+Estimate incremental loss intensities \eqn{g_k} from a dual-variable
+\code{Link} object (built with \code{exposure_var} set) and return an \code{"EDFit"}
+object that bundles factor summaries, selected intensities, and
+maturity diagnostics.
 
 Two methods are supported via the \code{method} argument:
 \describe{
@@ -59,5 +60,5 @@ added as \code{g_var} column in \verb{$selected}.}
 }
 }
 \seealso{
-\code{\link[=build_ed]{build_ed()}}, \code{\link[=summary.ED]{summary.ED()}}, \code{\link[=fit_lr]{fit_lr()}}
+\code{\link[=build_link]{build_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=fit_lr]{fit_lr()}}
 }

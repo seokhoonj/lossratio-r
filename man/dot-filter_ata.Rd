@@ -14,7 +14,7 @@
 }
 \arguments{
 \item{ata_summary}{A \code{data.table} of class \code{"ATASummary"} from
-\code{\link[=summary.ATA]{summary.ATA()}}.}
+\code{\link[=summary.Link]{summary.Link()}} with \code{model = "ata"}.}
 
 \item{maturity}{A \code{data.table} from \code{\link[=find_ata_maturity]{find_ata_maturity()}}, or \code{NULL}
 when \code{use_maturity = FALSE}.}

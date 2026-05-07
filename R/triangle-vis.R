@@ -1014,9 +1014,9 @@ plot.Total <- function(x,
 
   if (!is.null(bd)) {
     margs <- if (is.null(maturity_args)) list() else maturity_args
-    ata_for_mat <- build_ata(x, value_var = value_var)
+    link_for_mat <- build_link(x, value_var = value_var)
     fit_for_mat <- tryCatch(
-      do.call(fit_ata, c(list(x = ata_for_mat, maturity_args = margs))),
+      do.call(fit_ata, c(list(x = link_for_mat, maturity_args = margs))),
       error = function(e) NULL
     )
     if (!is.null(fit_for_mat) &&

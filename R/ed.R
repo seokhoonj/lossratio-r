@@ -1,173 +1,14 @@
-#' Build exposure-driven development data
-#'
-#' @description
-#' Construct exposure-driven incremental development data from an object
-#' of class `"Triangle"`, typically produced by [build_triangle()]. This is the
-#' foundational data structure for the exposure-driven (ED) model,
-#' where incremental loss is modelled as a function of cumulative
-#' exposure (risk premium) rather than cumulative loss.
-#'
-#' The incremental loss intensity is defined as:
-#'
-#' \deqn{g_{i,k} = \frac{\Delta C^L_{i,k+1}}{C^P_{i,k}}}
-#'
-#' where \eqn{\Delta C^L_{i,k+1} = C^L_{i,k+1} - C^L_{i,k}} is the
-#' incremental loss and \eqn{C^P_{i,k}} is the cumulative exposure
-#' (risk premium) at development period \eqn{k}.
-#'
-#' @param x An object of class `"Triangle"`.
-#' @param loss_var A single cumulative loss variable. Default is
-#'   `"closs"`.
-#' @param exposure_var A single cumulative exposure variable. Default is
-#'   `"crp"`.
-#' @param min_exposure Minimum exposure required to compute `g`. If
-#'   `exposure_from <= min_exposure`, `g` is set to `NA`. Default is `0`.
-#' @param drop_invalid Logical; if `TRUE`, rows with invalid (non-finite)
-#'   `g` values are dropped. Default is `FALSE`.
-#'
-#' @return A `data.table` with class `"ED"` containing:
-#'   \describe{
-#'     \item{`ata_from`}{Current development period.}
-#'     \item{`ata_to`}{Next development period.}
-#'     \item{`ata_link`}{Concatenated label `"ata_from-ata_to"`.}
-#'     \item{`loss_from`}{Cumulative loss \eqn{C^L_{i,k}}.}
-#'     \item{`loss_to`}{Cumulative loss \eqn{C^L_{i,k+1}}.}
-#'     \item{`delta_loss`}{Incremental loss \eqn{\Delta C^L_{i,k+1}}.}
-#'     \item{`exposure_from`}{Cumulative exposure \eqn{C^P_{i,k}}.}
-#'     \item{`exposure_to`}{Cumulative exposure \eqn{C^P_{i,k+1}}.}
-#'     \item{`g`}{Incremental loss intensity
-#'       \eqn{\Delta C^L_{i,k+1} / C^P_{i,k}}, or `NA` when
-#'       `exposure_from <= min_exposure`.}
-#'   }
-#'
-#' The returned object carries the following attributes:
-#' `group_var`, `cohort_var`, `dev_var`, `loss_var`, and
-#' `exposure_var`.
-#'
-#' @seealso [build_triangle()], [summary.ED()], [fit_ed()]
-#'
-#' @examples
-#' \dontrun{
-#' d <- build_triangle(df, group_var = cv_nm)
-#' ed <- build_ed(d)
-#' head(ed)
-#' attr(ed, "loss_var")
-#' attr(ed, "exposure_var")
-#' }
-#'
-#' @export
-build_ed <- function(x,
-                     loss_var     = "closs",
-                     exposure_var = "crp",
-                     min_exposure = 0,
-                     drop_invalid = FALSE) {
-
-  .assert_class(x, "Triangle")
-
-  if (!is.numeric(min_exposure) || length(min_exposure) != 1L ||
-      is.na(min_exposure))
-    stop("`min_exposure` must be a single non-missing numeric value.",
-         call. = FALSE)
-
-  if (!is.logical(drop_invalid) || length(drop_invalid) != 1L ||
-      is.na(drop_invalid))
-    stop("`drop_invalid` must be a single non-missing logical value.",
-         call. = FALSE)
-
-  dt <- .ensure_dt(x)
-
-  grp_var <- attr(dt, "group_var")
-  coh_var <- attr(dt, "cohort_var")
-  dev_var <- attr(dt, "dev_var")
-
-  if (is.null(grp_var)) grp_var <- character(0)
-
-  if (length(coh_var) != 1L)
-    stop("`x` must contain exactly one `cohort_var`.", call. = FALSE)
-  if (length(dev_var) != 1L)
-    stop("`x` must contain exactly one `dev_var`.", call. = FALSE)
-
-  valid_vars <- c("closs", "crp", "clr")
-
-  l_var <- .capture_names(dt, !!rlang::enquo(loss_var))
-  if (length(l_var) != 1L || !(l_var %in% valid_vars))
-    stop("`loss_var` must be one of 'closs', 'crp', or 'clr'.",
-         call. = FALSE)
-
-  e_var <- .capture_names(dt, !!rlang::enquo(exposure_var))
-  if (length(e_var) != 1L || !(e_var %in% valid_vars))
-    stop("`exposure_var` must be one of 'closs', 'crp', or 'clr'.",
-         call. = FALSE)
-
-  if (l_var == e_var)
-    stop("`loss_var` must differ from `exposure_var`.", call. = FALSE)
-
-  grp_coh_var <- c(grp_var, "cohort")
-
-  z <- .ensure_dt(x)
-  data.table::setorderv(z, c(grp_coh_var, "dev"))
-
-  # 1) compute ata_from, ata_to, ata_link
-  z[, ata_from := dev]
-  z[, ata_to   := data.table::shift(dev, type = "lead"),
-    by = grp_coh_var]
-  z[, ata_link := sprintf("%s-%s", ata_from, ata_to)]
-
-  # 2) compute loss_from, loss_to, delta_loss
-  z[, loss_from  := .SD[[l_var]], .SDcols = l_var]
-  z[, loss_to    := data.table::shift(.SD[[1L]], type = "lead"),
-    by      = grp_coh_var,
-    .SDcols = l_var]
-  z[, delta_loss := loss_to - loss_from]
-
-  # 3) compute exposure_from, exposure_to
-  z[, exposure_from := .SD[[e_var]], .SDcols = e_var]
-  z[, exposure_to   := data.table::shift(.SD[[1L]], type = "lead"),
-    by      = grp_coh_var,
-    .SDcols = e_var]
-
-  # 4) compute g = delta_loss / exposure_from
-  z[, g := data.table::fifelse(
-    exposure_from > min_exposure,
-    delta_loss / exposure_from,
-    NA_real_
-  )]
-
-  # 5) remove last ata row per cohort (no lead available)
-  z <- z[!is.na(ata_to)]
-
-  # 6) drop invalid rows if requested
-  if (drop_invalid) z <- z[is.finite(g)]
-
-  # 7) keep relevant columns
-  keep <- c(
-    grp_var, "cohort",
-    "ata_from", "ata_to", "ata_link",
-    "loss_from", "loss_to", "delta_loss",
-    "exposure_from", "exposure_to",
-    "g"
-  )
-
-  z <- z[, .SD, .SDcols = keep]
-
-  data.table::setattr(z, "group_var"   , grp_var)
-  data.table::setattr(z, "cohort_var"  , coh_var)
-  data.table::setattr(z, "dev_var" , dev_var)
-  data.table::setattr(z, "loss_var"    , l_var)
-  data.table::setattr(z, "exposure_var", e_var)
-
-  .prepend_class(z, "ED")
-}
-
-
 # ED Summary ---------------------------------------------------------------
 
 #' Summarise ED intensity statistics
 #'
 #' @description
-#' Compute group-wise summary statistics for incremental loss intensity
-#' \eqn{g} from an object of class `"ED"`. This function serves two
-#' purposes:
+#' Internal helper that computes group-wise summary statistics for
+#' incremental loss intensity \eqn{g} from a dual-variable `Link` object
+#' (built with `exposure_var` set). Dispatched via [summary.Link()] when
+#' `model = "ed"`.
+#'
+#' Two purposes:
 #'
 #' \enumerate{
 #'   \item \strong{Diagnostics}: provides descriptive statistics
@@ -191,13 +32,13 @@ build_ed <- function(x,
 #'     Computed from all rows where both values are finite.
 #'     Independent of `alpha`.}
 #'   \item{`g`}{WLS-estimated intensity from
-#'     \code{lm(delta_loss ~ exposure_from + 0)}. Only rows where
+#'     \code{lm(delta_value ~ exposure_from + 0)}. Only rows where
 #'     `exposure_from > 0` are used. When `alpha = 2`, `g` and `wt`
 #'     are numerically equivalent.}
 #' }
 #'
-#' @param object An object of class `"ED"`, typically produced by
-#'   [build_ed()].
+#' @param object A `Link` object built with `exposure_var` set,
+#'   typically produced by [build_link()].
 #' @param alpha Numeric scalar controlling the variance structure in the
 #'   WLS fit. Default is `1`.
 #' @param digits Number of decimal places to round numeric columns.
@@ -207,16 +48,19 @@ build_ed <- function(x,
 #' @return A `data.table` with class `"EDSummary"` containing one row
 #'   per development link with descriptive statistics and WLS estimates.
 #'
-#' @seealso [build_ed()], [fit_ed()]
+#' @seealso [build_link()], [summary.Link()], [fit_ed()]
 #'
-#' @method summary ED
-#' @export
-summary.ED <- function(object,
-                       alpha  = 1,
-                       digits = 5,
-                       ...) {
+#' @keywords internal
+.summarize_link_ed <- function(object,
+                               alpha  = 1,
+                               digits = 5,
+                               ...) {
 
-  .assert_class(object, "ED")
+  .assert_class(object, "Link")
+
+  if (is.null(attr(object, "exposure_var")))
+    stop("`.summarize_link_ed()` requires a Link built with `exposure_var`.",
+         call. = FALSE)
 
   grp_var <- attr(object, "group_var")
   if (is.null(grp_var)) grp_var <- character(0)
@@ -229,7 +73,7 @@ summary.ED <- function(object,
   ds <- dt[, {
     vals <- g[is.finite(g)]
     ef   <- exposure_from
-    dl   <- delta_loss
+    dl   <- delta_value
     m    <- mean(vals)
 
     .(
@@ -267,25 +111,51 @@ summary.ED <- function(object,
 
   ds[, ata_link := factor(ata_link, levels = unique(dt$ata_link))]
 
-  # 5) round numeric columns
+  # `digits` is retained for downstream display only (see print.EDSummary).
+  # Numeric columns are stored at full precision so callers get raw values.
   if (!is.null(digits)) {
     digits <- suppressWarnings(as.numeric(digits[1L]))
     if (length(digits) == 0L || is.na(digits))
       stop("Non-numeric `digits` specified.", call. = FALSE)
-
-    num_cols <- setdiff(names(ds), c(grp_var, "ata_link"))
-    for (nm in num_cols) {
-      data.table::set(ds, j = nm, value = round(ds[[nm]], digits))
-    }
   }
 
   data.table::setattr(ds, "group_var"   , grp_var)
   data.table::setattr(ds, "cohort_var"  , attr(object, "cohort_var"))
-  data.table::setattr(ds, "dev_var" , attr(object, "dev_var"))
-  data.table::setattr(ds, "loss_var"    , attr(object, "loss_var"))
+  data.table::setattr(ds, "dev_var"     , attr(object, "dev_var"))
+  data.table::setattr(ds, "value_var"   , attr(object, "value_var"))
   data.table::setattr(ds, "exposure_var", attr(object, "exposure_var"))
+  data.table::setattr(ds, "digits",       digits)
 
   .prepend_class(ds, "EDSummary")
+}
+
+
+#' Print method for `EDSummary`
+#'
+#' Numeric columns are stored at full double precision; rounding is applied
+#' only for display. The default `digits` is taken from the `digits`
+#' attribute set by [summary.Link()] (5 unless overridden).
+#'
+#' @param x An object of class `"EDSummary"`.
+#' @param digits Number of decimal places to display. Default uses the
+#'   `digits` attribute attached at construction.
+#' @param ... Further arguments passed to `print.data.table`.
+#'
+#' @method print EDSummary
+#' @export
+print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
+  if (is.null(digits)) {
+    NextMethod()
+    return(invisible(x))
+  }
+  y <- data.table::copy(x)
+  data.table::setattr(y, "class", setdiff(class(y), "EDSummary"))
+  num_cols <- vapply(y, is.numeric, logical(1L))
+  for (nm in names(y)[num_cols]) {
+    data.table::set(y, j = nm, value = round(y[[nm]], digits))
+  }
+  print(y, ...)
+  invisible(x)
 }
 
 
@@ -294,9 +164,10 @@ summary.ED <- function(object,
 #' Fit ED intensity factors
 #'
 #' @description
-#' Estimate incremental loss intensities \eqn{g_k} from an object of
-#' class `"ED"` and return an `"EDFit"` object that bundles factor
-#' summaries, selected intensities, and maturity diagnostics.
+#' Estimate incremental loss intensities \eqn{g_k} from a dual-variable
+#' `Link` object (built with `exposure_var` set) and return an `"EDFit"`
+#' object that bundles factor summaries, selected intensities, and
+#' maturity diagnostics.
 #'
 #' Two methods are supported via the `method` argument:
 #' \describe{
@@ -306,8 +177,8 @@ summary.ED <- function(object,
 #'     added as `g_var` column in `$selected`.}
 #' }
 #'
-#' @param x An object of class `"ED"`, typically produced by
-#'   [build_ed()].
+#' @param x A `Link` object built with `exposure_var` set, typically
+#'   produced by [build_link()].
 #' @param method One of `"basic"` or `"mack"`. Default is `"basic"`.
 #' @param alpha Numeric scalar controlling the variance structure. Default
 #'   is `1`.
@@ -323,11 +194,11 @@ summary.ED <- function(object,
 #'   a vector of dates (uses the latest), or a `CohortRegime` object (extracts
 #'   the latest from `$breakpoints`). When supplied, cohorts with
 #'   `cohort < break_date` are excluded from estimation. Default is `NULL`.
-#' @param ... Additional arguments passed to [summary.ED()].
+#' @param ... Additional arguments passed to [summary.Link()].
 #'
 #' @return An object of class `"EDFit"` (a named list).
 #'
-#' @seealso [build_ed()], [summary.ED()], [fit_lr()]
+#' @seealso [build_link()], [summary.Link()], [fit_lr()]
 #'
 #' @export
 fit_ed <- function(x,
@@ -339,7 +210,11 @@ fit_ed <- function(x,
                    regime_break  = NULL,
                    ...) {
 
-  .assert_class(x, "ED")
+  .assert_class(x, "Link")
+
+  if (is.null(attr(x, "exposure_var")))
+    stop("`fit_ed()` requires a Link built with `exposure_var`.",
+         call. = FALSE)
 
   method       <- match.arg(method)
   na_method    <- match.arg(na_method)
@@ -361,21 +236,21 @@ fit_ed <- function(x,
   # when `recent` is supplied, subset to rows within the last `recent`
   # calendar diagonals before estimation.
   if (!is.null(recent)) {
-    ed <- .apply_recent_filter(
+    link <- .apply_recent_filter(
       x, recent,
       group_var = if (is.null(attr(x, "group_var"))) character(0) else attr(x, "group_var"),
       cohort_var = "cohort",
       dev_var = "ata_from"
     )
   } else {
-    ed <- x
+    link <- x
   }
 
   grp_var <- attr(x, "group_var")
   if (is.null(grp_var)) grp_var <- character(0)
 
   # 2) compute summary statistics and WLS estimates
-  ed_summary <- summary(ed, alpha = alpha, ...)
+  ed_summary <- summary(link, alpha = alpha, model = "ed", ...)
 
   # 3) fill NA gaps in g_selected
   selected <- .filter_ed(
@@ -391,7 +266,7 @@ fit_ed <- function(x,
   out <- list(
     call         = match.call(),
     method       = method,
-    ed           = ed,
+    link         = link,
     factor       = ed_summary,
     selected     = selected,
     alpha        = alpha,
@@ -440,14 +315,14 @@ summary.EDFit <- function(object, ...) {
 #' @export
 print.EDFit <- function(x, ...) {
 
-  grp_var <- attr(x$ed, "group_var")
+  grp_var <- attr(x$link, "group_var")
   if (is.null(grp_var)) grp_var <- character(0)
 
   cat("<EDFit>\n")
-  cat("method      :", x$method,                    "\n")
-  cat("loss_var    :", attr(x$ed, "loss_var"),     "\n")
-  cat("exposure_var:", attr(x$ed, "exposure_var"), "\n")
-  cat("alpha       :", x$alpha,                    "\n")
+  cat("method      :", x$method,                      "\n")
+  cat("value_var   :", attr(x$link, "value_var"),    "\n")
+  cat("exposure_var:", attr(x$link, "exposure_var"), "\n")
+  cat("alpha       :", x$alpha,                      "\n")
   cat("sigma_method:", x$sigma_method,             "\n")
   cat("recent      :",
       if (!is.null(x$recent)) x$recent else "all", "\n")
@@ -491,7 +366,11 @@ print.EDFit <- function(x, ...) {
                    na_rm = TRUE,
                    tol   = 1e-12) {
 
-  .assert_class(x, "ED")
+  .assert_class(x, "Link")
+
+  if (is.null(attr(x, "exposure_var")))
+    stop("`.lm_ed()` requires a Link built with `exposure_var`.",
+         call. = FALSE)
 
   if (!is.numeric(alpha) || length(alpha) != 1L || is.na(alpha))
     stop("`alpha` must be a single non-missing numeric value.", call. = FALSE)
@@ -509,12 +388,12 @@ print.EDFit <- function(x, ...) {
 
   # 1) drop invalid rows
   if (na_rm) {
-    dt <- dt[is.finite(exposure_from) & is.finite(delta_loss) &
+    dt <- dt[is.finite(exposure_from) & is.finite(delta_value) &
                exposure_from > 0]
   }
 
   # 2) compute WLS weight
-  # Var(delta_loss) ~ exposure_from^alpha
+  # Var(delta_value) ~ exposure_from^alpha
   # => WLS weight = 1 / exposure_from^(2 - alpha)
   delta <- 2 - alpha
   dt[, reg_w := 1 / exposure_from^delta]
@@ -524,14 +403,14 @@ print.EDFit <- function(x, ...) {
   res <- dt[, {
     if (.N == 1L) {
       data.table::data.table(
-        g     = delta_loss[1L] / exposure_from[1L],
+        g     = delta_value[1L] / exposure_from[1L],
         g_se  = NA_real_,
         sigma = NA_real_,
         n_obs = 1L
       )
     } else {
       fit <- tryCatch(
-        stats::lm(delta_loss ~ exposure_from + 0, weights = reg_w),
+        stats::lm(delta_value ~ exposure_from + 0, weights = reg_w),
         error = function(e) NULL
       )
 
@@ -674,10 +553,10 @@ print.EDFit <- function(x, ...) {
 
   .assert_class(ed_fit, "EDFit")
 
-  grp_var <- attr(ed_fit$ed, "group_var")
+  grp_var <- attr(ed_fit$link, "group_var")
   if (is.null(grp_var)) grp_var <- character(0)
 
-  ed_long <- .ensure_dt(ed_fit$ed)
+  ed_long <- .ensure_dt(ed_fit$link)
   sel     <- data.table::copy(ed_fit$selected)
 
   if (!"sigma2" %in% names(sel))
@@ -685,7 +564,7 @@ print.EDFit <- function(x, ...) {
          call. = FALSE)
 
   ed_valid <- ed_long[is.finite(exposure_from) &
-                        is.finite(delta_loss) &
+                        is.finite(delta_value) &
                         exposure_from > 0]
 
   link_weights <- ed_valid[,

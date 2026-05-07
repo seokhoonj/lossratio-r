@@ -8,7 +8,7 @@
 #' Two methods are supported via the `method` argument:
 #' \describe{
 #'   \item{`"basic"` (default)}{Classical chain ladder point projection.
-#'     Age-to-age factors are estimated through [build_ata()] and
+#'     Age-to-age factors are estimated through [build_link()] and
 #'     [fit_ata()], then applied recursively.}
 #'   \item{`"mack"`}{Mack (1993) chain ladder. Point forecast follows the
 #'     standard recursion, and prediction uncertainty is decomposed into
@@ -22,7 +22,7 @@
 #' @param method One of `"basic"` or `"mack"`. Default is `"basic"`.
 #' @param value_var A single cumulative variable to project.
 #'   Typical choices are `"closs"`, `"crp"`, or `"clr"`.
-#' @param weight_var An optional column name passed to [build_ata()] as
+#' @param weight_var An optional column name passed to [build_link()] as
 #'   the WLS weight variable. Typically `"crp"` when `value_var = "clr"`.
 #'   Default is `NULL`.
 #' @param alpha Numeric scalar controlling the variance structure in
@@ -54,7 +54,7 @@
 #'       `"mack"`, also includes process/parameter SE and CV columns.}
 #'     \item{`pred`}{`data.table` identical to `full` with observed cells
 #'       set to `NA`.}
-#'     \item{`ata`}{The `"ATA"` object produced by [build_ata()].}
+#'     \item{`link`}{The `"Link"` object produced by [build_link()].}
 #'     \item{`summary`}{For `"basic"`: `data.table` of fitted factors from
 #'       [fit_ata()]. For `"mack"`: cohort-level summary with latest,
 #'       ultimate, reserve, and Mack standard errors.}
@@ -137,14 +137,14 @@ fit_cl <- function(x,
       stop("`weight_var` must differ from `value_var`.", call. = FALSE)
   }
 
-  # 3) build ata and estimate factors -----------------------------------
-  ata <- build_ata(
+  # 3) build link and estimate factors ----------------------------------
+  link <- build_link(
     x,
     value_var  = val_var,
     weight_var = if (use_external_weight) wt_var else NULL
   )
   ata_fit <- fit_ata(
-    ata,
+    link,
     alpha         = alpha,
     sigma_method  = sigma_method,
     recent        = recent,
@@ -297,7 +297,7 @@ fit_cl <- function(x,
     value_var     = val_var,
     full          = full,
     pred          = pred,
-    ata           = ata,
+    link          = link,
     summary       = NULL,
     factor        = ata_fit$factor,
     selected      = ata_fit$selected,
@@ -499,11 +499,11 @@ print.CLFit <- function(x, ...) {
 
   .assert_class(ata_fit, "ATAFit")
 
-  grp_var <- attr(ata_fit$ata, "group_var")
+  grp_var <- attr(ata_fit$link, "group_var")
   if (is.null(grp_var)) grp_var <- character(0)
 
-  ata_long <- .ensure_dt(ata_fit$ata)
-  sel      <- data.table::copy(ata_fit$selected)
+  link_long <- .ensure_dt(ata_fit$link)
+  sel       <- data.table::copy(ata_fit$selected)
 
   if (!"sigma2" %in% names(sel))
     stop(
@@ -512,15 +512,15 @@ print.CLFit <- function(x, ...) {
       call. = FALSE
     )
 
-  if ("weight" %in% names(ata_long)) {
-    ata_long[, .wt := weight]
+  if ("weight" %in% names(link_long)) {
+    link_long[, .wt := weight]
   } else {
-    ata_long[, .wt := 1]
+    link_long[, .wt := 1]
   }
 
-  ata_long <- ata_long[is.finite(.wt) & is.finite(value_to) & value_from > 0]
+  link_long <- link_long[is.finite(.wt) & is.finite(value_to) & value_from > 0]
 
-  link_weights <- ata_long[,
+  link_weights <- link_long[,
                        .(denom = sum(.wt * value_from^alpha, na.rm = TRUE)),
                        by = c(grp_var, "ata_from")
   ]

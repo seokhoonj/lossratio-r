@@ -20,10 +20,10 @@ make_sub_tri <- function(cv = "SUR") {
   build_triangle(exp[cv_nm == cv], group_var = "cv_nm")
 }
 
-make_fit_set <- function() {
+make_link_set <- function() {
   tri <- make_tri()
-  ata <- build_ata(tri, value_var = "closs")
-  ed  <- build_ed(tri)
+  ata <- build_link(tri, value_var = "closs")
+  ed  <- build_link(tri, value_var = "closs", exposure_var = "crp")
   list(
     exp     = make_exp(),
     tri     = tri,
@@ -39,6 +39,9 @@ make_fit_set <- function() {
     tot     = build_total(make_exp(), group_var = "cv_nm")
   )
 }
+
+# Backwards-compatible alias for any helper that still calls make_fit_set().
+make_fit_set <- make_link_set
 
 is_plot <- function(x) inherits(x, "ggplot") || inherits(x, "gg") ||
                        inherits(x, "gtable")

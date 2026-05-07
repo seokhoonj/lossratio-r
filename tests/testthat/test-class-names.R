@@ -17,7 +17,7 @@ test_that("Experience / Triangle / Calendar / Total carry PascalCase classes", {
 
 test_that("ATA family carries PascalCase classes", {
   fits <- make_fit_set()
-  expect_s3_class(fits$ata,     "ATA")
+  expect_s3_class(fits$ata,     "Link")
   expect_s3_class(fits$ata_fit, "ATAFit")
   expect_s3_class(fits$ata_sm,  "ATASummary")
 
@@ -28,7 +28,7 @@ test_that("ATA family carries PascalCase classes", {
 
 test_that("ED family carries PascalCase classes", {
   fits <- make_fit_set()
-  expect_s3_class(fits$ed,     "ED")
+  expect_s3_class(fits$ed,     "Link")
   expect_s3_class(fits$ed_fit, "EDFit")
   expect_s3_class(fits$ed_sm,  "EDSummary")
 })

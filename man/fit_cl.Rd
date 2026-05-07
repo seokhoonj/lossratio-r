@@ -24,7 +24,7 @@ fit_cl(
 \item{value_var}{A single cumulative variable to project.
 Typical choices are \code{"closs"}, \code{"crp"}, or \code{"clr"}.}
 
-\item{weight_var}{An optional column name passed to \code{\link[=build_ata]{build_ata()}} as
+\item{weight_var}{An optional column name passed to \code{\link[=build_link]{build_link()}} as
 the WLS weight variable. Typically \code{"crp"} when \code{value_var = "clr"}.
 Default is \code{NULL}.}
 
@@ -62,7 +62,7 @@ An object of class \code{"CLFit"} containing:
 \code{"mack"}, also includes process/parameter SE and CV columns.}
 \item{\code{pred}}{\code{data.table} identical to \code{full} with observed cells
 set to \code{NA}.}
-\item{\code{ata}}{The \code{"ATA"} object produced by \code{\link[=build_ata]{build_ata()}}.}
+\item{\code{link}}{The \code{"Link"} object produced by \code{\link[=build_link]{build_link()}}.}
 \item{\code{summary}}{For \code{"basic"}: \code{data.table} of fitted factors from
 \code{\link[=fit_ata]{fit_ata()}}. For \code{"mack"}: cohort-level summary with latest,
 ultimate, reserve, and Mack standard errors.}
@@ -90,7 +90,7 @@ a complete triangle.
 Two methods are supported via the \code{method} argument:
 \describe{
 \item{\code{"basic"} (default)}{Classical chain ladder point projection.
-Age-to-age factors are estimated through \code{\link[=build_ata]{build_ata()}} and
+Age-to-age factors are estimated through \code{\link[=build_link]{build_link()}} and
 \code{\link[=fit_ata]{fit_ata()}}, then applied recursively.}
 \item{\code{"mack"}}{Mack (1993) chain ladder. Point forecast follows the
 standard recursion, and prediction uncertainty is decomposed into

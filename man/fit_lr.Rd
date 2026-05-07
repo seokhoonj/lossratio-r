@@ -142,6 +142,6 @@ lr_cl <- fit_lr(tri, method = "cl")
 
 }
 \seealso{
-\code{\link[=build_triangle]{build_triangle()}}, \code{\link[=build_ata]{build_ata()}}, \code{\link[=fit_ata]{fit_ata()}},
-\code{\link[=build_ed]{build_ed()}}, \code{\link[=fit_ed]{fit_ed()}}, \code{\link[=find_ata_maturity]{find_ata_maturity()}}
+\code{\link[=build_triangle]{build_triangle()}}, \code{\link[=build_link]{build_link()}}, \code{\link[=fit_ata]{fit_ata()}},
+\code{\link[=fit_ed]{fit_ed()}}, \code{\link[=find_ata_maturity]{find_ata_maturity()}}
 }
