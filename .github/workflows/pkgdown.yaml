@@ -51,6 +51,25 @@ jobs:
           mv _pkgdown.en.yml.bak _pkgdown.yml
         shell: bash
 
+      - name: Fix sitemaps and add robots.txt
+        run: |
+          # pkgdown's sitemap.xml is missing the XML declaration and uses
+          # a non-standard xmlns syntax (space + single quotes), which
+          # Google Search Console rejects. Rewrite it as a valid sitemap.
+          for f in docs/sitemap.xml docs/ko/sitemap.xml; do
+            sed -i "s|<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>|<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">|" "$f"
+            sed -i '1i<?xml version="1.0" encoding="UTF-8"?>' "$f"
+          done
+
+          cat > docs/robots.txt <<'EOF'
+          User-agent: *
+          Allow: /
+
+          Sitemap: https://seokhoonj.github.io/lossratio/sitemap.xml
+          Sitemap: https://seokhoonj.github.io/lossratio/ko/sitemap.xml
+          EOF
+        shell: bash
+
       - name: Deploy to GitHub pages 🚀
         if: github.event_name != 'pull_request'
         uses: JamesIves/github-pages-deploy-action@v4.8.0
