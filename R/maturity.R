@@ -3,9 +3,11 @@
 #' Find ata maturity by group
 #'
 #' @description
-#' Identify the first mature age-to-age (ata) link from an object of class
-#' `"ATASummary"`, typically produced by [summary.Link()] with
-#' `model = "ata"`.
+#' Identify the first mature age-to-age (ata) link from a `Triangle`.
+#' Internally builds a single-variable [Link] table, computes the
+#' per-link diagnostic via [summary.Link()] with `model = "ata"`, and
+#' then locates the first link whose statistics satisfy all maturity
+#' criteria.
 #'
 #' Maturity is determined using a combination of:
 #' \itemize{
@@ -21,8 +23,13 @@
 #' reflects the precision of the WLS-estimated factor. Using both criteria
 #' together provides a more robust maturity assessment than either alone.
 #'
-#' @param x An object of class `"ATASummary"`, typically produced by
-#'   [summary.Link()] with `model = "ata"`.
+#' @param x A `Triangle` object.
+#' @param value_var Cumulative metric for the link factor. Default
+#'   `"closs"`. Forwarded to [build_link()].
+#' @param weight_var Optional WLS weight variable. Forwarded to
+#'   [build_link()].
+#' @param alpha Numeric scalar controlling the variance structure in
+#'   the underlying WLS fit. Default `1`. Forwarded to [summary.Link()].
 #' @param cv_threshold Maximum allowed coefficient of variation.
 #'   Default is `0.10`.
 #' @param rse_threshold Maximum allowed relative standard error.
@@ -40,11 +47,40 @@
 #'
 #' @export
 find_maturity <- function(x,
+                          value_var       = "closs",
+                          weight_var      = NULL,
+                          alpha           = 1,
                           cv_threshold    = 0.10,
                           rse_threshold   = 0.05,
                           min_valid_ratio = 0.5,
                           min_n_valid     = 3L,
                           min_run         = 1L) {
+
+  .assert_class(x, "Triangle")
+
+  link <- build_link(x, value_var = value_var, weight_var = weight_var)
+  ata_summary <- summary(link, model = "ata", alpha = alpha)
+
+  .find_maturity(
+    ata_summary,
+    cv_threshold    = cv_threshold,
+    rse_threshold   = rse_threshold,
+    min_valid_ratio = min_valid_ratio,
+    min_n_valid     = min_n_valid,
+    min_run         = min_run
+  )
+}
+
+
+#' Internal: locate the first mature ata link from an `ATASummary`
+#'
+#' @keywords internal
+.find_maturity <- function(x,
+                           cv_threshold    = 0.10,
+                           rse_threshold   = 0.05,
+                           min_valid_ratio = 0.5,
+                           min_n_valid     = 3L,
+                           min_run         = 1L) {
 
   .assert_class(x, "ATASummary")
 

@@ -178,9 +178,7 @@ find_convergence <- function(triangle,
 
   # 2) resolve k_star --------------------------------------------------
   if (is.null(k_star)) {
-    link    <- build_link(triangle, value_var = "clr", weight_var = "crp")
-    sm      <- summary(link)
-    mat     <- find_maturity(sm)
+    mat     <- find_maturity(triangle, value_var = "clr", weight_var = "crp")
     k_star  <- suppressWarnings(min(mat$ata_from, na.rm = TRUE))
     if (!is.finite(k_star))
       stop("Could not derive `k_star` from `find_maturity()`; ",

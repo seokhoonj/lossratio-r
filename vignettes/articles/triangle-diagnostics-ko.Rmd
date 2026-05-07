@@ -122,13 +122,13 @@ plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / rp) 금액
 안정화되는 경과 기간 링크이다. `fit_lr(method = "sa")` 가 ED 에서 CL 로
 전환할 때 내부적으로 사용한다.
 
-`find_maturity()` 는 단일 변수 `Link` 객체의 `summary()` 결과를 입력으로 받는다 —
-먼저 `summary()` 로 기술/WLS 요약을 만들고, 거기서 첫 성숙 링크를 탐색한다.
+`find_maturity()` 는 `Triangle` 을 직접 입력으로 받는다 —
+내부에서 단일 변수 `Link` 와 그 WLS 요약을 자동으로 빌드한다.
 
 ```{r}
-sm  <- summary(ata, alpha = 1)
 mat <- find_maturity(
-  sm,
+  tri,
+  value_var       = "closs",
   cv_threshold    = 0.10,    # CV 가 이 값보다 작아야 함
   rse_threshold   = 0.05,    # RSE 가 이 값보다 작아야 함
   min_valid_ratio = 0.5,     # 해당 링크에서 유한 코호트가 50% 이상

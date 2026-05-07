@@ -154,7 +154,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   mat <- NULL
 
   if (show_maturity) {
-    mat <- find_maturity(
+    mat <- .find_maturity(
       x               = sm,
       cv_threshold    = cv_threshold,
       rse_threshold   = rse_threshold,
@@ -671,7 +671,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   if (show_maturity) {
     sm     <- summary(x, model = "ata", alpha = alpha)
-    mat <- find_maturity(
+    mat <- .find_maturity(
       x               = sm,
       cv_threshold    = cv_threshold,
       rse_threshold   = rse_threshold,

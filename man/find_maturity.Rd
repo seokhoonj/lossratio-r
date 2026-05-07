@@ -6,6 +6,9 @@
 \usage{
 find_maturity(
   x,
+  value_var = "closs",
+  weight_var = NULL,
+  alpha = 1,
   cv_threshold = 0.1,
   rse_threshold = 0.05,
   min_valid_ratio = 0.5,
@@ -14,8 +17,16 @@ find_maturity(
 )
 }
 \arguments{
-\item{x}{An object of class \code{"ATASummary"}, typically produced by
-\code{\link[=summary.Link]{summary.Link()}} with \code{model = "ata"}.}
+\item{x}{A \code{Triangle} object.}
+
+\item{value_var}{Cumulative metric for the link factor. Default
+\code{"closs"}. Forwarded to \code{\link[=build_link]{build_link()}}.}
+
+\item{weight_var}{Optional WLS weight variable. Forwarded to
+\code{\link[=build_link]{build_link()}}.}
+
+\item{alpha}{Numeric scalar controlling the variance structure in
+the underlying WLS fit. Default \code{1}. Forwarded to \code{\link[=summary.Link]{summary.Link()}}.}
 
 \item{cv_threshold}{Maximum allowed coefficient of variation.
 Default is \code{0.10}.}
@@ -38,9 +49,11 @@ per group. If no mature link is found, all values for that group are
 \code{NA}.
 }
 \description{
-Identify the first mature age-to-age (ata) link from an object of class
-\code{"ATASummary"}, typically produced by \code{\link[=summary.Link]{summary.Link()}} with
-\code{model = "ata"}.
+Identify the first mature age-to-age (ata) link from a \code{Triangle}.
+Internally builds a single-variable \link{Link} table, computes the
+per-link diagnostic via \code{\link[=summary.Link]{summary.Link()}} with \code{model = "ata"}, and
+then locates the first link whose statistics satisfy all maturity
+criteria.
 
 Maturity is determined using a combination of:
 \itemize{

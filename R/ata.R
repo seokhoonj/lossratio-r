@@ -376,7 +376,7 @@ fit_ata <- function(x,
 
   # 5) find maturity point ----------------------------------------------
   maturity <- if (use_maturity) {
-    do.call(find_maturity, c(list(x = ata_summary), maturity_args))
+    do.call(.find_maturity, c(list(x = ata_summary), maturity_args))
   } else {
     NULL
   }

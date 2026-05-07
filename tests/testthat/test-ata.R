@@ -110,15 +110,15 @@ test_that("summary.Link (ata mode) accepts alpha = 0 / 2", {
 
 test_that("find_maturity returns one row per group with loose thresholds", {
   sm  <- summary(ata)
-  mat <- find_maturity(sm, cv_threshold = 0.5, rse_threshold = 0.5)
+  mat <- find_maturity(tri, cv_threshold = 0.5, rse_threshold = 0.5)
   groups <- unique(sm$cv_nm)
   expect_true(nrow(mat) <= length(groups))
 })
 
 test_that("tight thresholds yield fewer or NA mature rows", {
   sm <- summary(ata)
-  mat_loose <- find_maturity(sm, cv_threshold = 0.5, rse_threshold = 0.5)
-  mat_tight <- find_maturity(sm, cv_threshold = 0.001, rse_threshold = 0.001)
+  mat_loose <- find_maturity(tri, cv_threshold = 0.5, rse_threshold = 0.5)
+  mat_tight <- find_maturity(tri, cv_threshold = 0.001, rse_threshold = 0.001)
   finite_loose <- sum(is.finite(mat_loose$ata_from))
   finite_tight <- sum(is.finite(mat_tight$ata_from))
   expect_true(finite_tight <= finite_loose)
