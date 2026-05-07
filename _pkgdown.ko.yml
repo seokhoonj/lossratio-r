@@ -97,13 +97,21 @@ reference:
   - fit_cl
   - fit_lr
 
-- title: 진단
+- title: 추정 셀 선택 진단
   desc: >
-    경과 기간 축 (`detect_maturity`), 코호트 축 (`detect_regime`),
-    예측 수렴 (`detect_convergence`) — 세 가지 구조 탐지.
+    Triangle 의 어떤 셀을 추정에 쓸지 결정. `detect_maturity` 는
+    dev 축 (ATA 인자가 안정화되는 링크 이후), `detect_regime` 은
+    cohort 축 (인수 코호트 간 구조적 변화).
   contents:
   - detect_maturity
   - detect_regime
+
+- title: 예측 진단
+  desc: >
+    적합 결과 `LRFit` 위에서 동작 (raw Triangle 아님). 예측 손해율의
+    갱신이 멈추는 valuation 깊이 $v$ 를 dual criterion (예측 갱신이
+    잡음 수준 이하 AND 코호트 간 분산이 작음, M 회 연속) 으로 탐지.
+  contents:
   - detect_convergence
 
 - title: Backtest

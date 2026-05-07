@@ -24,8 +24,9 @@ before refitting. Default \code{6L}.}
 
 \item{fit_fn}{Fitting function. Default \code{fit_lr} (stage-adaptive
 loss-ratio projection); also supports \code{fit_cl} for single-column
-chain ladder. If \code{fit_fn} does not have a \code{value_var} formal (as is
-the case for \code{fit_lr}), \code{value_var} is used only to select the
+chain ladder and \code{fit_ed} for exposure-driven projection. If
+\code{fit_fn} does not have a \code{value_var} formal (as is the case for
+\code{fit_lr} and \code{fit_ed}), \code{value_var} is used only to select the
 comparison column on the fit's \verb{$full} table; arguments for the
 fitter itself (e.g., \code{loss_var}, \code{exposure_var}, \code{method}) are
 passed through \code{...}.}
@@ -104,7 +105,11 @@ accumulated by chain ladder. \cr
 \code{fit_lr} \tab \code{"closs"}, \code{"crp"}, \code{"clr"} \tab no (fit_lr ignores
 \code{value_var}) \tab \code{loss_proj}, \code{exposure_proj}, \code{lr_proj}
 respectively \tab Fitter projects all three jointly; \code{value_var}
-only selects the scoring lane.
+only selects the scoring lane. \cr
+\code{fit_ed} \tab \code{"closs"}, \code{"crp"}, \code{"clr"} \tab no (fit_ed ignores
+\code{value_var}) \tab \code{closs_proj}, \code{exposure_proj}, \code{lr_proj}
+respectively \tab Pure exposure-driven projection (additive
+\eqn{g_k \cdot C^P_k}); \code{value_var} only selects the scoring lane.
 }
 
 This means that \code{backtest(..., value_var = "closs")} paired with
@@ -127,5 +132,5 @@ plot(bt)
 
 }
 \seealso{
-\code{\link[=fit_lr]{fit_lr()}}, \code{\link[=fit_cl]{fit_cl()}}, \code{\link[=plot.Backtest]{plot.Backtest()}}
+\code{\link[=fit_lr]{fit_lr()}}, \code{\link[=fit_cl]{fit_cl()}}, \code{\link[=fit_ed]{fit_ed()}}, \code{\link[=plot.Backtest]{plot.Backtest()}}
 }

@@ -89,14 +89,24 @@ reference:
   - fit_cl
   - fit_lr
 
-- title: Diagnostics
+- title: Cell-selection diagnostics
   desc: >
-    Structural detection along the development axis (`detect_maturity`),
-    the cohort axis (`detect_regime`), and predictive convergence
-    (`detect_convergence`).
+    Decide which cells of the triangle to use for estimation.
+    `detect_maturity` works along the dev axis (link beyond which
+    ATA factors are stable); `detect_regime` works along the cohort
+    axis (structural break across underwriting cohorts).
   contents:
   - detect_maturity
   - detect_regime
+
+- title: Projection diagnostic
+  desc: >
+    Operates on a fitted `LRFit`, not on the raw triangle. Locates
+    the valuation depth $v$ at which the projected ultimate loss
+    ratio stops revising under a dual criterion (predictive revision
+    below noise threshold AND cross-cohort dispersion small,
+    sustained over M consecutive valuations).
+  contents:
   - detect_convergence
 
 - title: Backtest

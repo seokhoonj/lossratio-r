@@ -18,14 +18,13 @@ fit_ed(
 )
 }
 \arguments{
-\item{x}{A \code{Link} object built with \code{exposure_var} set, typically
-produced by \code{\link[=build_link]{build_link()}}.}
+\item{x}{A \code{"Triangle"} object.}
 
 \item{value_var}{Cumulative loss variable. Default \code{"closs"}.
-Forwarded to \code{\link[=build_link]{build_link()}}.}
+Forwarded to \code{\link[=build_link]{build_link()}} and to \code{\link[=fit_lr]{fit_lr()}} as \code{loss_var}.}
 
 \item{exposure_var}{Cumulative exposure variable. Default \code{"crp"}.
-Forwarded to \code{\link[=build_link]{build_link()}}.}
+Forwarded to \code{\link[=build_link]{build_link()}} and to \code{\link[=fit_lr]{fit_lr()}}.}
 
 \item{method}{One of \code{"basic"} or \code{"mack"}. Default is \code{"basic"}.}
 
@@ -51,13 +50,24 @@ the latest from \verb{$breakpoints}). When supplied, cohorts with
 \item{...}{Additional arguments passed to \code{\link[=summary.Link]{summary.Link()}}.}
 }
 \value{
-An object of class \code{"EDFit"} (a named list).
+An object of class \code{"EDFit"} (a named list) with components:
+\describe{
+\item{\code{factor}}{\code{EDSummary} of fitted intensities per development link.}
+\item{\code{selected}}{\code{data.table} of selected \code{g_selected}, \code{sigma2}
+(and \code{g_var} when \code{method = "mack"}).}
+\item{\code{full}}{\code{data.table} mirroring \code{LRFit$full} for \code{method = "ed"}:
+per-cell cumulative loss / exposure / loss-ratio projection plus
+SE columns (\code{closs_proj}, \code{exposure_proj}, \code{lr_proj},
+\code{se_proj}, \code{se_lr}, \code{cv_lr}, ...). Available cells include both
+observed and projected; \code{is_observed} flags observed cells.}
+\item{\code{link}}{\code{Link} object used for factor estimation.}
+}
 }
 \description{
-Estimate incremental loss intensities \eqn{g_k} from a dual-variable
-\code{Link} object (built with \code{exposure_var} set) and return an \code{"EDFit"}
-object that bundles factor summaries, selected intensities, and
-maturity diagnostics.
+Estimate incremental loss intensities \eqn{g_k} from a \code{"Triangle"}
+object and return an \code{"EDFit"} object that bundles factor summaries,
+selected intensities, and a cell-level projection of cumulative loss
+and exposure (\verb{$full}).
 
 Two methods are supported via the \code{method} argument:
 \describe{
@@ -66,7 +76,13 @@ Two methods are supported via the \code{method} argument:
 \item{\code{"mack"}}{Basic plus factor variance \eqn{\mathrm{Var}(\hat{g}_k)}
 added as \code{g_var} column in \verb{$selected}.}
 }
+
+The \verb{$full} projection table is produced by delegating to
+\code{\link[=fit_lr]{fit_lr()}} with \code{method = "ed"}, so cumulative loss / exposure /
+loss-ratio projections and their standard errors are numerically
+identical to those of \code{fit_lr(method = "ed")}. This makes
+\code{\link[=backtest]{backtest()}} usable with \code{fit_fn = fit_ed}.
 }
 \seealso{
-\code{\link[=build_link]{build_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=fit_lr]{fit_lr()}}
+\code{\link[=build_link]{build_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=fit_lr]{fit_lr()}}, \code{\link[=backtest]{backtest()}}
 }

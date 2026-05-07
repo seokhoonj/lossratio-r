@@ -37,10 +37,12 @@ It provides:
         maturity, chain ladder after
     -   `"ed"` — exposure-driven for all development periods
     -   `"cl"` — classical chain ladder (Mack model)
--   Diagnostics along three axes:
-    -   `detect_maturity` — development axis: when ATA factors stabilise
+-   Cell-selection diagnostics — which cells to use for estimation:
+    -   `detect_maturity` — dev axis: link beyond which ATA factors are stable
     -   `detect_regime` — cohort axis: structural breaks across underwriting
-    -   `detect_convergence` — predictive axis: when projected LR stops revising
+-   Projection diagnostic:
+    -   `detect_convergence` — valuation $v$ at which the projected ultimate
+        loss ratio stops revising (operates on a fitted `LRFit`)
 -   Backtest and triangle visualisations
 
 ## Expected input
@@ -103,9 +105,11 @@ lr <- fit_lr(tri, method = "sa")
 plot(lr, type = "lr")
 summary(lr)
 
-# Diagnostics — dev axis, cohort axis, predictive axis
+# Cell selection: maturity (dev axis) + regime (cohort axis)
 detect_maturity(tri[cv_nm == "SUR"])
 detect_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
+
+# Projection diagnostic: when does the projected ultimate LR stop revising?
 detect_convergence(lr)
 ```
 

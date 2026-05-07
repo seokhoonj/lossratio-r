@@ -164,10 +164,10 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #' Fit ED intensity factors
 #'
 #' @description
-#' Estimate incremental loss intensities \eqn{g_k} from a dual-variable
-#' `Link` object (built with `exposure_var` set) and return an `"EDFit"`
-#' object that bundles factor summaries, selected intensities, and
-#' maturity diagnostics.
+#' Estimate incremental loss intensities \eqn{g_k} from a `"Triangle"`
+#' object and return an `"EDFit"` object that bundles factor summaries,
+#' selected intensities, and a cell-level projection of cumulative loss
+#' and exposure (`$full`).
 #'
 #' Two methods are supported via the `method` argument:
 #' \describe{
@@ -177,8 +177,17 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'     added as `g_var` column in `$selected`.}
 #' }
 #'
-#' @param x A `Link` object built with `exposure_var` set, typically
-#'   produced by [build_link()].
+#' The `$full` projection table is produced by delegating to
+#' [fit_lr()] with `method = "ed"`, so cumulative loss / exposure /
+#' loss-ratio projections and their standard errors are numerically
+#' identical to those of `fit_lr(method = "ed")`. This makes
+#' [backtest()] usable with `fit_fn = fit_ed`.
+#'
+#' @param x A `"Triangle"` object.
+#' @param value_var Cumulative loss variable. Default `"closs"`.
+#'   Forwarded to [build_link()] and to [fit_lr()] as `loss_var`.
+#' @param exposure_var Cumulative exposure variable. Default `"crp"`.
+#'   Forwarded to [build_link()] and to [fit_lr()].
 #' @param method One of `"basic"` or `"mack"`. Default is `"basic"`.
 #' @param alpha Numeric scalar controlling the variance structure. Default
 #'   is `1`.
@@ -196,14 +205,20 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'   `cohort < break_date` are excluded from estimation. Default is `NULL`.
 #' @param ... Additional arguments passed to [summary.Link()].
 #'
-#' @return An object of class `"EDFit"` (a named list).
+#' @return An object of class `"EDFit"` (a named list) with components:
+#'   \describe{
+#'     \item{`factor`}{`EDSummary` of fitted intensities per development link.}
+#'     \item{`selected`}{`data.table` of selected `g_selected`, `sigma2`
+#'       (and `g_var` when `method = "mack"`).}
+#'     \item{`full`}{`data.table` mirroring `LRFit$full` for `method = "ed"`:
+#'       per-cell cumulative loss / exposure / loss-ratio projection plus
+#'       SE columns (`closs_proj`, `exposure_proj`, `lr_proj`,
+#'       `se_proj`, `se_lr`, `cv_lr`, ...). Available cells include both
+#'       observed and projected; `is_observed` flags observed cells.}
+#'     \item{`link`}{`Link` object used for factor estimation.}
+#'   }
 #'
-#' @param value_var Cumulative loss variable. Default `"closs"`.
-#'   Forwarded to [build_link()].
-#' @param exposure_var Cumulative exposure variable. Default `"crp"`.
-#'   Forwarded to [build_link()].
-#'
-#' @seealso [build_link()], [summary.Link()], [fit_lr()]
+#' @seealso [build_link()], [summary.Link()], [fit_lr()], [backtest()]
 #'
 #' @export
 fit_ed <- function(x,
@@ -216,6 +231,80 @@ fit_ed <- function(x,
                    recent        = NULL,
                    regime_break  = NULL,
                    ...) {
+
+  .assert_class(x, "Triangle")
+
+  method       <- match.arg(method)
+  na_method    <- match.arg(na_method)
+  sigma_method <- match.arg(sigma_method)
+
+  # 1) parameter-only fit (factor / selected / link) -----------------------
+  out <- .fit_ed_factors(
+    x,
+    value_var    = value_var,
+    exposure_var = exposure_var,
+    method       = method,
+    alpha        = alpha,
+    na_method    = na_method,
+    sigma_method = sigma_method,
+    recent       = recent,
+    regime_break = regime_break,
+    ...
+  )
+
+  # 2) cell-level projection via fit_lr(method = "ed") ---------------------
+  # Reuses the SA infrastructure with maturity = -Inf so every cell uses
+  # the ED rule (additive g_k * exposure increment). Numerically
+  # equivalent to fit_lr(method = "ed").
+  lr_fit <- fit_lr(
+    x,
+    method       = "ed",
+    loss_var     = value_var,
+    exposure_var = exposure_var,
+    loss_alpha   = alpha,
+    sigma_method = sigma_method,
+    recent       = recent,
+    regime_break = regime_break
+  )
+
+  # rename loss_proj -> closs_proj to match Triangle's c-prefix on the
+  # cumulative loss variable (`closs`); leave incremental (`_inc`) and
+  # SE columns alone.
+  full <- data.table::copy(lr_fit$full)
+  if ("loss_proj" %in% names(full)) {
+    data.table::setnames(full, "loss_proj", "closs_proj")
+  }
+  if ("loss_inc_proj" %in% names(full)) {
+    data.table::setnames(full, "loss_inc_proj", "closs_inc_proj")
+  }
+
+  out$call <- match.call()
+  out$full <- full
+
+  out
+}
+
+
+#' Estimate ED parameters (factor / selected) without cell-level projection
+#'
+#' @description
+#' Internal helper that performs ED factor estimation from a `"Triangle"`
+#' and returns an `"EDFit"`-shaped list missing only `$full`. Used both as
+#' the parameter-estimation half of public [fit_ed()] and directly by
+#' [fit_lr()] (to avoid a `fit_ed -> fit_lr -> fit_ed` recursion when
+#' [fit_ed()] delegates projection to [fit_lr()]).
+#'
+#' @keywords internal
+.fit_ed_factors <- function(x,
+                            value_var     = "closs",
+                            exposure_var  = "crp",
+                            method        = c("basic", "mack"),
+                            alpha         = 1,
+                            na_method     = c("zero", "locf", "none"),
+                            sigma_method  = c("min_last2", "locf", "loglinear"),
+                            recent        = NULL,
+                            regime_break  = NULL,
+                            ...) {
 
   .assert_class(x, "Triangle")
 

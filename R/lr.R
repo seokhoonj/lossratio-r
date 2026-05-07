@@ -276,7 +276,10 @@ fit_lr <- function(x,
   )
 
   # 5) estimate ED intensities g_k with Mack variance ---------------------
-  ed_fit <- fit_ed(
+  # Use `.fit_ed_factors()` (parameter-only) instead of public `fit_ed()`
+  # because public `fit_ed()` itself delegates cell-level projection back
+  # to `fit_lr(method = "ed")`; calling it here would recurse infinitely.
+  ed_fit <- .fit_ed_factors(
     x,
     value_var    = l_var,
     exposure_var = e_var,

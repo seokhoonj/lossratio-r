@@ -36,10 +36,12 @@
         이후는 chain ladder
     -   `"ed"` — 모든 경과 기간에 대해 노출 기반
     -   `"cl"` — 고전적 chain ladder (Mack 모형)
--   세 축의 진단:
-    -   `detect_maturity` — 경과 기간 축: ATA 인자가 안정화되는 시점
-    -   `detect_regime` — 코호트 축: 인수 코호트 간 구조적 변화
-    -   `detect_convergence` — 예측 축: 예측 손해율의 갱신이 멈추는 시점
+-   추정 셀 선택 진단 — 어떤 데이터로 fit 할지:
+    -   `detect_maturity` — dev 축: ATA 인자가 안정화되는 링크 이후
+    -   `detect_regime` — cohort 축: 인수 코호트 간 구조적 변화
+-   예측 진단:
+    -   `detect_convergence` — 예측 손해율 $\hat{LR}^{proj}_v$ 가 갱신을
+        멈추는 valuation $v$ (적합 결과 `LRFit` 위에서 동작)
 -   Backtest 및 Triangle 시각화
 
 ## 입력 형식
@@ -101,9 +103,11 @@ lr <- fit_lr(tri, method = "sa")
 plot(lr, type = "lr")
 summary(lr)
 
-# 진단 — dev 축, cohort 축, 예측 축
+# 추정 셀 선택: maturity (dev 축) + regime (cohort 축)
 detect_maturity(tri[cv_nm == "SUR"])
 detect_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
+
+# 예측 진단: 예측 손해율이 갱신을 멈추는 시점
 detect_convergence(lr)
 ```
 

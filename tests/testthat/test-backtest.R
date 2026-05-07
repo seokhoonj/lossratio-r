@@ -182,3 +182,39 @@ test_that("plot.Backtest dispatches for fit_lr backtests", {
     expect_true(is_plot(p), info = paste("type =", tp))
   }
 })
+
+# fit_ed support --------------------------------------------------------
+
+test_that("backtest works with fit_ed", {
+  bt <- backtest(sub, holdout = 6L, fit_fn = fit_ed,
+                 value_var = "closs")
+  expect_s3_class(bt, "Backtest")
+  expect_s3_class(bt$fit, "EDFit")
+  expect_true("value_pred" %in% names(bt$aeg))
+  expect_true(any(is.finite(bt$aeg$aeg)))
+})
+
+test_that("backtest fit_ed value_var = 'closs' uses closs_proj", {
+  bt <- backtest(sub, holdout = 6L, fit_fn = fit_ed,
+                 value_var = "closs")
+  cell <- bt$aeg[is.finite(bt$aeg$value_pred), ][1L, ]
+  full <- bt$fit$full
+  match_row <- full[full$cohort == cell$cohort & full$dev == cell$dev, ]
+  expect_equal(nrow(match_row), 1L)
+  expect_equal(cell$value_pred, match_row$closs_proj, tolerance = 1e-8)
+})
+
+test_that("backtest fit_ed value_var = 'clr' uses lr_proj", {
+  bt <- backtest(sub, holdout = 6L, fit_fn = fit_ed,
+                 value_var = "clr")
+  cell <- bt$aeg[is.finite(bt$aeg$value_pred), ][1L, ]
+  full <- bt$fit$full
+  match_row <- full[full$cohort == cell$cohort & full$dev == cell$dev, ]
+  expect_equal(nrow(match_row), 1L)
+  expect_equal(cell$value_pred, match_row$lr_proj, tolerance = 1e-8)
+})
+
+test_that("backtest errors when fit_ed value_var is unsupported", {
+  expect_error(backtest(sub, holdout = 6L, fit_fn = fit_ed,
+                        value_var = "loss_prop"))
+})

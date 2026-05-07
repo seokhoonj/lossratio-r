@@ -13,8 +13,18 @@
       ), call. = FALSE)
     return(unname(lr_map[value_var]))
   }
+  if (inherits(fit_obj, "EDFit")) {
+    ed_map <- c(closs = "closs_proj", crp = "exposure_proj", clr = "lr_proj")
+    if (!(value_var %in% names(ed_map)))
+      stop(sprintf(
+        "For `fit_ed`, `value_var` must be one of %s; got '%s'.",
+        paste(sprintf("'%s'", names(ed_map)), collapse = ", "),
+        value_var
+      ), call. = FALSE)
+    return(unname(ed_map[value_var]))
+  }
   stop(sprintf(
-    "Unsupported fit class: %s. Supported: 'CLFit', 'LRFit'.",
+    "Unsupported fit class: %s. Supported: 'CLFit', 'LRFit', 'EDFit'.",
     paste(class(fit_obj), collapse = "/")
   ), call. = FALSE)
 }
@@ -42,8 +52,9 @@
 #'   before refitting. Default `6L`.
 #' @param fit_fn Fitting function. Default `fit_lr` (stage-adaptive
 #'   loss-ratio projection); also supports `fit_cl` for single-column
-#'   chain ladder. If `fit_fn` does not have a `value_var` formal (as is
-#'   the case for `fit_lr`), `value_var` is used only to select the
+#'   chain ladder and `fit_ed` for exposure-driven projection. If
+#'   `fit_fn` does not have a `value_var` formal (as is the case for
+#'   `fit_lr` and `fit_ed`), `value_var` is used only to select the
 #'   comparison column on the fit's `$full` table; arguments for the
 #'   fitter itself (e.g., `loss_var`, `exposure_var`, `method`) are
 #'   passed through `...`.
@@ -86,7 +97,11 @@
 #'   `fit_lr` \tab `"closs"`, `"crp"`, `"clr"` \tab no (fit_lr ignores
 #'     `value_var`) \tab `loss_proj`, `exposure_proj`, `lr_proj`
 #'     respectively \tab Fitter projects all three jointly; `value_var`
-#'     only selects the scoring lane.
+#'     only selects the scoring lane. \cr
+#'   `fit_ed` \tab `"closs"`, `"crp"`, `"clr"` \tab no (fit_ed ignores
+#'     `value_var`) \tab `closs_proj`, `exposure_proj`, `lr_proj`
+#'     respectively \tab Pure exposure-driven projection (additive
+#'     \eqn{g_k \cdot C^P_k}); `value_var` only selects the scoring lane.
 #' }
 #'
 #' This means that `backtest(..., value_var = "closs")` paired with
@@ -114,7 +129,7 @@
 #'       from `x`.}
 #'   }
 #'
-#' @seealso [fit_lr()], [fit_cl()], [plot.Backtest()]
+#' @seealso [fit_lr()], [fit_cl()], [fit_ed()], [plot.Backtest()]
 #'
 #' @examples
 #' \dontrun{

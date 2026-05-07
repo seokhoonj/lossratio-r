@@ -117,3 +117,39 @@ test_that("fit_ed with Regime input extracts last breakpoint", {
     expect_equal(fit_reg$regime_break, max(reg$breakpoints))
   }
 })
+
+# fit_ed $full projection -----------------------------------------------
+
+test_that("fit_ed returns $full with projection columns", {
+  data(experience)
+  exp <- as_experience(experience[cv_nm == "SUR"])
+  tri <- build_triangle(exp, group_var = "cv_nm",
+                        cohort_var = "uym", dev_var = "elap_m")
+  ef <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
+  expect_true("full" %in% names(ef))
+  expect_s3_class(ef$full, "data.table")
+  for (nm in c("cohort", "dev", "loss_obs", "exposure_obs",
+               "closs_proj", "exposure_proj", "lr_proj",
+               "se_proj", "se_lr", "cv_lr", "is_observed")) {
+    expect_true(nm %in% names(ef$full), info = paste("missing", nm))
+  }
+  # projection columns finite for at least some cells
+  expect_true(any(is.finite(ef$full$closs_proj)))
+  expect_true(any(is.finite(ef$full$exposure_proj)))
+  expect_true(any(is.finite(ef$full$lr_proj)))
+})
+
+test_that("fit_ed projection matches fit_lr method = 'ed'", {
+  data(experience)
+  exp <- as_experience(experience[cv_nm == "SUR"])
+  tri <- build_triangle(exp, group_var = "cv_nm",
+                        cohort_var = "uym", dev_var = "elap_m")
+  ef <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
+  lr <- fit_lr(tri, method = "ed", loss_var = "closs", exposure_var = "crp")
+
+  # numerical equivalence cohort-by-cohort, cell-by-cell
+  expect_equal(ef$full$closs_proj,    lr$full$loss_proj,     tolerance = 1e-8)
+  expect_equal(ef$full$exposure_proj, lr$full$exposure_proj, tolerance = 1e-8)
+  expect_equal(ef$full$lr_proj,       lr$full$lr_proj,       tolerance = 1e-8)
+  expect_equal(ef$full$se_proj,       lr$full$se_proj,       tolerance = 1e-8)
+})
