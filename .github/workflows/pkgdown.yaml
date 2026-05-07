@@ -57,8 +57,15 @@ jobs:
           # a non-standard xmlns syntax (space + single quotes), which
           # Google Search Console rejects. Rewrite it as a valid sitemap.
           for f in docs/sitemap.xml docs/ko/sitemap.xml; do
-            sed -i "s|<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>|<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">|" "$f"
-            sed -i '1i<?xml version="1.0" encoding="UTF-8"?>' "$f"
+            [ -f "$f" ] || continue
+
+            # Normalize urlset namespace (handle space/quote variations)
+            sed -i "s|<urlset xmlns *= *['\"]http://www.sitemaps.org/schemas/sitemap/0.9['\"]>|<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">|" "$f"
+
+            # Add XML declaration only if missing (idempotent)
+            if ! head -n 1 "$f" | grep -q '<?xml'; then
+              sed -i '1i<?xml version="1.0" encoding="UTF-8"?>' "$f"
+            fi
           done
 
           cat > docs/robots.txt <<'EOF'

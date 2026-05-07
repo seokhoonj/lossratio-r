@@ -36,9 +36,11 @@
         이후는 chain ladder
     -   `"ed"` — 모든 경과 기간에 대해 노출 기반
     -   `"cl"` — 고전적 chain ladder (Mack 모형)
--   구조적 변화에 대한 코호트 regime 탐지
-    (`detect_regime`)
--   진단 및 Triangle 시각화
+-   세 축의 진단:
+    -   `detect_maturity` — 경과 기간 축: ATA 인자가 안정화되는 시점
+    -   `detect_regime` — 코호트 축: 인수 코호트 간 구조적 변화
+    -   `detect_convergence` — 예측 축: 예측 손해율의 갱신이 멈추는 시점
+-   Backtest 및 Triangle 시각화
 
 ## 입력 형식
 
@@ -86,9 +88,9 @@ tri <- build_triangle(exp, group_var = cv_nm)
 plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
 
-# ATA 와 노출 기반 발전 모형
-ata <- build_ata(tri, value_var = "closs"); fit_ata(ata)
-ed  <- build_ed(tri);                       fit_ed(ed)
+# ATA / 노출 기반 인자 추정
+fit_ata(tri, value_var = "closs")
+fit_ed(tri, value_var = "closs", exposure_var = "crp")
 
 # Chain ladder 적합
 cl <- fit_cl(tri, value_var = "closs", method = "mack")
@@ -96,11 +98,13 @@ plot(cl, type = "projection")
 
 # 손해율 적합 (default: 단계 적응형)
 lr <- fit_lr(tri, method = "sa")
-plot(lr, type = "clr")
+plot(lr, type = "lr")
 summary(lr)
 
-# 코호트 간 구조적 변화 탐지
+# 진단 — dev 축, cohort 축, 예측 축
+detect_maturity(tri[cv_nm == "SUR"])
 detect_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
+detect_convergence(lr)
 ```
 
 ## 집계 프레임

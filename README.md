@@ -37,9 +37,11 @@ It provides:
         maturity, chain ladder after
     -   `"ed"` — exposure-driven for all development periods
     -   `"cl"` — classical chain ladder (Mack model)
--   Cohort regime detection for structural breaks
-    (`detect_regime`)
--   Diagnostic and triangle visualisations
+-   Diagnostics along three axes:
+    -   `detect_maturity` — development axis: when ATA factors stabilise
+    -   `detect_regime` — cohort axis: structural breaks across underwriting
+    -   `detect_convergence` — predictive axis: when projected LR stops revising
+-   Backtest and triangle visualisations
 
 ## Expected input
 
@@ -88,9 +90,9 @@ tri <- build_triangle(exp, group_var = cv_nm)
 plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
 
-# Age-to-age and exposure-driven development
-ata <- build_ata(tri, value_var = "closs"); fit_ata(ata)
-ed  <- build_ed(tri);                       fit_ed(ed)
+# Age-to-age and exposure-driven factor estimation
+fit_ata(tri, value_var = "closs")
+fit_ed(tri, value_var = "closs", exposure_var = "crp")
 
 # Chain ladder fit
 cl <- fit_cl(tri, value_var = "closs", method = "mack")
@@ -98,11 +100,13 @@ plot(cl, type = "projection")
 
 # Loss ratio fit (stage-adaptive by default)
 lr <- fit_lr(tri, method = "sa")
-plot(lr, type = "clr")
+plot(lr, type = "lr")
 summary(lr)
 
-# Structural change across cohorts
+# Diagnostics — dev axis, cohort axis, predictive axis
+detect_maturity(tri[cv_nm == "SUR"])
 detect_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
+detect_convergence(lr)
 ```
 
 ## Aggregation Frameworks
