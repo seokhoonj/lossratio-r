@@ -21,14 +21,15 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/index.html">All articles</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks.html">Aggregation frameworks</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ATA diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/loss-ratio-methods.html">Loss ratio projection methods</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence.html">Loss ratio convergence</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-detection.html">Regime detection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-break.html">Regime break filtering</a></li>
+    <li><a class="dropdown-item" href="../articles/triangle-and-link.html">Triangle and Link</a></li>
+    <li><a class="dropdown-item" href="../articles/maturity.html">Maturity</a></li>
+    <li><a class="dropdown-item" href="../articles/regime.html">Regime</a></li>
+    <li><a class="dropdown-item" href="../articles/projection.html">Projection</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-break-filter.html">Regime break filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/convergence.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/chain-ladder.html">(Reference) Chain ladder reserving</a></li>
+    <li><a class="dropdown-item" href="../articles/chain-ladder-reserving.html">(Reference) Chain ladder reserving</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -56,10 +57,11 @@
 <h3 id="core-api-0-0-0-9000">Core API<a class="anchor" aria-label="anchor" href="#core-api-0-0-0-9000"></a></h3>
 <ul><li>Experience class: <code><a href="../reference/as_experience.html">as_experience()</a></code>, <code><a href="../reference/is_experience.html">is_experience()</a></code>, <code><a href="../reference/check_experience.html">check_experience()</a></code>, <code><a href="../reference/add_experience_period.html">add_experience_period()</a></code>.</li>
 <li>Aggregation: <code><a href="../reference/build_triangle.html">build_triangle()</a></code> (cohort × dev), <code><a href="../reference/build_calendar.html">build_calendar()</a></code> (calendar period), <code><a href="../reference/build_total.html">build_total()</a></code> (portfolio total).</li>
-<li>Age-to-age: <code><a href="../reference/build_ata.html">build_ata()</a></code>, <code><a href="../reference/fit_ata.html">fit_ata()</a></code>, S3 <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> on <code>ATA</code> / <code>ATAFit</code>, <code><a href="../reference/find_ata_maturity.html">find_ata_maturity()</a></code>.</li>
-<li>Exposure-driven: <code><a href="../reference/build_ed.html">build_ed()</a></code>, <code><a href="../reference/fit_ed.html">fit_ed()</a></code>, S3 <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> on <code>ED</code> / <code>EDFit</code>.</li>
-<li>Projection: <code><a href="../reference/fit_cl.html">fit_cl()</a></code> (chain ladder, <code>basic</code> / <code>mack</code>), <code><a href="../reference/fit_lr.html">fit_lr()</a></code> (loss-ratio with <code>sa</code> / <code>ed</code> / <code>cl</code> methods).</li>
-<li>Diagnostics: <code><a href="../reference/detect_cohort_regime.html">detect_cohort_regime()</a></code> (regime detection across underwriting cohorts), <code><a href="../reference/backtest.html">backtest()</a></code> (calendar-diagonal hold-out, supports both <code>fit_cl</code> and <code>fit_lr</code>).</li>
+<li>Link table: <code><a href="../reference/build_link.html">build_link()</a></code> returns a <code>Link</code> object covering both single-variable (ATA-style) and dual-variable (ED-style) workflows. <code>summary.Link(model = "ata"|"ed")</code> dispatches to the matching diagnostic.</li>
+<li>Estimation: <code><a href="../reference/fit_ata.html">fit_ata()</a></code> (per-link factors only); <code><a href="../reference/fit_ed.html">fit_ed()</a></code>, <code><a href="../reference/fit_cl.html">fit_cl()</a></code>, and <code><a href="../reference/fit_lr.html">fit_lr()</a></code> (factors + projection). <code>fit_lr</code> supports three methods — <code>"sa"</code> (default), <code>"ed"</code>, <code>"cl"</code>.</li>
+<li>Cell-selection diagnostics: <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> (dev axis — link beyond which ATA factors are stable), <code><a href="../reference/detect_regime.html">detect_regime()</a></code> (cohort axis — structural breaks across underwriting cohorts).</li>
+<li>Projection diagnostic: <code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> (operates on a fitted <code>LRFit</code>; valuation depth at which projected ultimate loss ratio stops revising).</li>
+<li>Backtest: <code><a href="../reference/backtest.html">backtest()</a></code> (calendar-diagonal hold-out, supports <code>fit_cl</code>, <code>fit_ed</code>, and <code>fit_lr</code>).</li>
 <li>Visualisation: S3 <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> and <code><a href="../reference/plot_triangle.html">plot_triangle()</a></code> methods on every fit class.</li>
 </ul></div>
 <div class="section level3">

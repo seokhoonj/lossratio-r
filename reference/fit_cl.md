@@ -10,7 +10,7 @@ Two methods are supported via the `method` argument:
 
   Classical chain ladder point projection. Age-to-age factors are
   estimated through
-  [`build_ata()`](https://seokhoonj.github.io/lossratio/reference/build_ata.md)
+  [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md)
   and
   [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md),
   then applied recursively.
@@ -58,7 +58,7 @@ fit_cl(
 - weight_var:
 
   An optional column name passed to
-  [`build_ata()`](https://seokhoonj.github.io/lossratio/reference/build_ata.md)
+  [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md)
   as the WLS weight variable. Typically `"crp"` when
   `value_var = "clr"`. Default is `NULL`.
 
@@ -84,7 +84,7 @@ fit_cl(
 - maturity_args:
 
   A named list of arguments forwarded to
-  [`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/reference/find_ata_maturity.md)
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
   via
   [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md),
   or `NULL` (default) to skip maturity filtering. Pass
@@ -138,10 +138,10 @@ An object of class `"CLFit"` containing:
 
   `data.table` identical to `full` with observed cells set to `NA`.
 
-- `ata`:
+- `link`:
 
-  The `"ATA"` object produced by
-  [`build_ata()`](https://seokhoonj.github.io/lossratio/reference/build_ata.md).
+  The `"Link"` object produced by
+  [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md).
 
 - `summary`:
 
@@ -162,7 +162,7 @@ An object of class `"CLFit"` containing:
 - `maturity`:
 
   Maturity diagnostics from
-  [`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/reference/find_ata_maturity.md),
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md),
   or `NULL` when maturity filtering was not applied.
 
 - `alpha`:

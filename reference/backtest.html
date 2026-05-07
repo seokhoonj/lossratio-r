@@ -41,14 +41,15 @@ development period (col_summary) and by calendar diagonal
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/index.html">All articles</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks.html">Aggregation frameworks</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ATA diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/loss-ratio-methods.html">Loss ratio projection methods</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence.html">Loss ratio convergence</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-detection.html">Regime detection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-break.html">Regime break filtering</a></li>
+    <li><a class="dropdown-item" href="../articles/triangle-and-link.html">Triangle and Link</a></li>
+    <li><a class="dropdown-item" href="../articles/maturity.html">Maturity</a></li>
+    <li><a class="dropdown-item" href="../articles/regime.html">Regime</a></li>
+    <li><a class="dropdown-item" href="../articles/projection.html">Projection</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-break-filter.html">Regime break filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/convergence.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/chain-ladder.html">(Reference) Chain ladder reserving</a></li>
+    <li><a class="dropdown-item" href="../articles/chain-ladder-reserving.html">(Reference) Chain ladder reserving</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -113,8 +114,9 @@ before refitting. Default <code>6L</code>.</p></dd>
 <dt id="arg-fit-fn">fit_fn<a class="anchor" aria-label="anchor" href="#arg-fit-fn"></a></dt>
 <dd><p>Fitting function. Default <code>fit_lr</code> (stage-adaptive
 loss-ratio projection); also supports <code>fit_cl</code> for single-column
-chain ladder. If <code>fit_fn</code> does not have a <code>value_var</code> formal (as is
-the case for <code>fit_lr</code>), <code>value_var</code> is used only to select the
+chain ladder and <code>fit_ed</code> for exposure-driven projection. If
+<code>fit_fn</code> does not have a <code>value_var</code> formal (as is the case for
+<code>fit_lr</code> and <code>fit_ed</code>), <code>value_var</code> is used only to select the
 comparison column on the fit's <code>$full</code> table; arguments for the
 fitter itself (e.g., <code>loss_var</code>, <code>exposure_var</code>, <code>method</code>) are
 passed through <code>...</code>.</p></dd>
@@ -195,7 +197,10 @@ name is only resolved against the fit's projection table.</p>
 accumulated by chain ladder.</td></tr><tr><td><code>fit_lr</code></td><td><code>"closs"</code>, <code>"crp"</code>, <code>"clr"</code></td><td>no (fit_lr ignores
 <code>value_var</code>)</td><td><code>loss_proj</code>, <code>exposure_proj</code>, <code>lr_proj</code>
 respectively</td><td>Fitter projects all three jointly; <code>value_var</code>
-only selects the scoring lane.</td></tr></table><p>This means that <code>backtest(..., value_var = "closs")</code> paired with
+only selects the scoring lane.</td></tr><tr><td><code>fit_ed</code></td><td><code>"closs"</code>, <code>"crp"</code>, <code>"clr"</code></td><td>no (fit_ed ignores
+<code>value_var</code>)</td><td><code>closs_proj</code>, <code>exposure_proj</code>, <code>lr_proj</code>
+respectively</td><td>Pure exposure-driven projection (additive
+\(g_k \cdot C^P_k\)); <code>value_var</code> only selects the scoring lane.</td></tr></table><p>This means that <code>backtest(..., value_var = "closs")</code> paired with
 <code>fit_lr</code> is <em>not</em> the same operation as <code>fit_cl(value_var = "closs")</code>
 under the hood, even though both use the string <code>"closs"</code>. The
 former scores the loss projection that came out of a stage-adaptive
@@ -204,7 +209,7 @@ to cumulative loss.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="fit_lr.html">fit_lr()</a></code>, <code><a href="fit_cl.html">fit_cl()</a></code>, <code><a href="plot.Backtest.html">plot.Backtest()</a></code></p></div>
+    <div class="dont-index"><p><code><a href="fit_lr.html">fit_lr()</a></code>, <code><a href="fit_cl.html">fit_cl()</a></code>, <code><a href="fit_ed.html">fit_ed()</a></code>, <code><a href="plot.Backtest.html">plot.Backtest()</a></code></p></div>
     </div>
 
     <div class="section level2">

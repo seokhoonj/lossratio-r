@@ -1,4 +1,4 @@
-# Backtesting projections against held-out diagonals
+# Backtest: holding out the latest diagonals to validate projections
 
 ## Motivation
 
@@ -33,7 +33,7 @@ print(bt)
 #>   value_var   : clr
 #>   holdout     : 6 calendar diagonals
 #>   held-out    : 123 cells
-#>   AEG         : mean -13.05% / median -7.28%
+#>   AEG         : mean -13.06% / median -7.37%
 ```
 
 The returned object is a `"Backtest"` list with these key slots:
@@ -75,14 +75,14 @@ reflect inflated link factors; late-dev values flag tail miscalibration.
 head(bt$col_summary, 8)
 #>     cv_nm   dev     n   aeg_mean    aeg_med     aeg_wt
 #>    <char> <int> <int>      <num>      <num>      <num>
-#> 1:    SUR     2     1 -0.2210212 -0.2210212 -0.2210212
-#> 2:    SUR     3     2 -0.6437701 -0.6437701 -0.6163919
-#> 3:    SUR     4     3 -0.3511641 -0.1162380 -0.3498190
-#> 4:    SUR     5     4 -0.3150824 -0.2157648 -0.3172642
-#> 5:    SUR     6     5 -0.4607816 -0.4015157 -0.4605004
-#> 6:    SUR     7     6 -0.3179501 -0.3459763 -0.3294385
-#> 7:    SUR     8     6 -0.3943149 -0.4362693 -0.3951618
-#> 8:    SUR     9     6 -0.3184528 -0.3718590 -0.3083244
+#> 1:    SUR     2     1 -0.2208792 -0.2208792 -0.2208792
+#> 2:    SUR     3     2 -0.6437453 -0.6437453 -0.6163673
+#> 3:    SUR     4     3 -0.3510508 -0.1160624 -0.3497066
+#> 4:    SUR     5     4 -0.3148234 -0.2154987 -0.3169997
+#> 5:    SUR     6     5 -0.4606402 -0.4013712 -0.4603512
+#> 6:    SUR     7     6 -0.3178128 -0.3457778 -0.3292850
+#> 7:    SUR     8     6 -0.3942605 -0.4362220 -0.3951000
+#> 8:    SUR     9     6 -0.3181451 -0.3715525 -0.3080096
 ```
 
 `aeg_mean` averages cell-level AEG, `aeg_med` is the median, and
@@ -101,12 +101,12 @@ by construction.
 bt$diag_summary
 #>     cv_nm calendar_idx     n   aeg_mean     aeg_med      aeg_wt
 #>    <char>        <int> <int>      <num>       <num>       <num>
-#> 1:    SUR           25    23 -0.1066364 -0.03677298 -0.07019853
-#> 2:    SUR           26    22 -0.1401734 -0.05189725 -0.11335460
-#> 3:    SUR           27    21 -0.1090998 -0.05853744 -0.10418242
-#> 4:    SUR           28    20 -0.1311208 -0.07720194 -0.12745825
-#> 5:    SUR           29    19 -0.1621096 -0.15960239 -0.16741775
-#> 6:    SUR           30    18 -0.1402920 -0.10632300 -0.16505109
+#> 1:    SUR           25    23 -0.1066524 -0.03666962 -0.07019119
+#> 2:    SUR           26    22 -0.1402247 -0.05155686 -0.11332892
+#> 3:    SUR           27    21 -0.1091468 -0.05802823 -0.10411330
+#> 4:    SUR           28    20 -0.1311544 -0.07713787 -0.12738203
+#> 5:    SUR           29    19 -0.1621482 -0.15996777 -0.16736131
+#> 6:    SUR           30    18 -0.1403813 -0.10594767 -0.16500512
 ```
 
 A monotone drift across calendar diagonals (as in the SUR example above,
@@ -124,11 +124,11 @@ head(bt$aeg, 5)
 #> Key: <cv_nm>
 #>     cv_nm     cohort   dev value_actual value_pred          aeg calendar_idx
 #>    <char>     <Date> <int>        <num>      <num>        <num>        <int>
-#> 1:    SUR 2023-05-01    24     1.030446   1.156866 -0.109277544           25
-#> 2:    SUR 2023-06-01    23     1.175862   1.182519 -0.005629942           25
-#> 3:    SUR 2023-06-01    24     1.198728   1.292790 -0.072758288           26
-#> 4:    SUR 2023-07-01    22     1.105530   1.113031 -0.006738881           25
-#> 5:    SUR 2023-07-01    23     1.106120   1.118137 -0.010746990           26
+#> 1:    SUR 2023-05-01    24     1.030446   1.157413 -0.109698314           25
+#> 2:    SUR 2023-06-01    23     1.175862   1.183114 -0.006130062           25
+#> 3:    SUR 2023-06-01    24     1.198728   1.294051 -0.073662448           26
+#> 4:    SUR 2023-07-01    22     1.105530   1.112573 -0.006330018           25
+#> 5:    SUR 2023-07-01    23     1.106120   1.118239 -0.010837528           26
 ```
 
 ## Plot demos
@@ -234,7 +234,7 @@ print(bt_sa)
 #>   value_var   : clr
 #>   holdout     : 6 calendar diagonals
 #>   held-out    : 123 cells
-#>   AEG         : mean -13.05% / median -7.28%
+#>   AEG         : mean -13.06% / median -7.37%
 ```
 
 Backtesting `closs` weights the result toward whichever cohorts happen
@@ -247,11 +247,11 @@ supported.
 
 ## See also
 
-- [`vignette("chain-ladder")`](https://seokhoonj.github.io/lossratio/articles/chain-ladder.md)
+- [`vignette("chain-ladder-reserving")`](https://seokhoonj.github.io/lossratio/articles/chain-ladder-reserving.md)
   —
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
   reference.
-- [`vignette("loss-ratio-methods")`](https://seokhoonj.github.io/lossratio/articles/loss-ratio-methods.md)
+- [`vignette("projection")`](https://seokhoonj.github.io/lossratio/articles/projection.md)
   —
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
   and the `"sa"`, `"ed"`, `"cl"` methods.

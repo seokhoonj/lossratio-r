@@ -33,7 +33,7 @@ with `dev_var > dev_max` are kept regardless of cohort.
 
   - A Date/character vector – uses the latest (max) date.
 
-  - A `CohortRegime` object – extracts the latest from `$breakpoints`.
+  - A `Regime` object – extracts the latest from `$breakpoints`.
 
 - group_var:
 

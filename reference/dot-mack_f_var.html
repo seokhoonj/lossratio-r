@@ -29,14 +29,15 @@ Also used by fit_lr() for the CL component."><meta property="og:image" content="
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/index.html">All articles</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks.html">Aggregation frameworks</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ATA diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/loss-ratio-methods.html">Loss ratio projection methods</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence.html">Loss ratio convergence</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-detection.html">Regime detection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-break.html">Regime break filtering</a></li>
+    <li><a class="dropdown-item" href="../articles/triangle-and-link.html">Triangle and Link</a></li>
+    <li><a class="dropdown-item" href="../articles/maturity.html">Maturity</a></li>
+    <li><a class="dropdown-item" href="../articles/regime.html">Regime</a></li>
+    <li><a class="dropdown-item" href="../articles/projection.html">Projection</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-break-filter.html">Regime break filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/convergence.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/chain-ladder.html">(Reference) Chain ladder reserving</a></li>
+    <li><a class="dropdown-item" href="../articles/chain-ladder-reserving.html">(Reference) Chain ladder reserving</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -60,7 +61,7 @@ Also used by fit_lr() for the CL component."><meta property="og:image" content="
     <p>Internal helper computing:</p>
 <p>$$\mathrm{Var}(\hat{f}_k) = \frac{\sigma^2_k}{W_k}$$</p>
 <p>where \(W_k = \sum_i w_{i,k} \cdot C_{i,k}^\alpha\). This is consistent
-with the WLS weight \(w_{i,k} / C_{i,k}^{2-\alpha}\) used in <code><a href="dot-lm_ata.html">.lm_ata()</a></code>.</p>
+with the WLS weight \(w_{i,k} / C_{i,k}^{2-\alpha}\) used in <code>.lm_ata()</code>.</p>
 <p>Also used by <code><a href="fit_lr.html">fit_lr()</a></code> for the CL component.</p>
     </div>
 

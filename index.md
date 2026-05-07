@@ -36,8 +36,14 @@ It provides:
     maturity, chain ladder after
   - `"ed"` — exposure-driven for all development periods
   - `"cl"` — classical chain ladder (Mack model)
-- Cohort regime detection for structural breaks (`detect_cohort_regime`)
-- Diagnostic and triangle visualisations
+- Cell-selection diagnostics — which cells to use for estimation:
+  - `detect_maturity` — dev axis: link beyond which ATA factors are
+    stable
+  - `detect_regime` — cohort axis: structural breaks across underwriting
+- Projection diagnostic:
+  - `detect_convergence` — valuation $`v`$ at which the projected
+    ultimate loss ratio stops revising (operates on a fitted `LRFit`)
+- Backtest and triangle visualisations
 
 ## Expected input
 
@@ -90,9 +96,9 @@ tri <- build_triangle(exp, group_var = cv_nm)
 plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
 
-# Age-to-age and exposure-driven development
-ata <- build_ata(tri, value_var = "closs"); fit_ata(ata)
-ed  <- build_ed(tri);                       fit_ed(ed)
+# Age-to-age and exposure-driven factor estimation
+fit_ata(tri, value_var = "closs")
+fit_ed(tri, value_var = "closs", exposure_var = "crp")
 
 # Chain ladder fit
 cl <- fit_cl(tri, value_var = "closs", method = "mack")
@@ -100,11 +106,15 @@ plot(cl, type = "projection")
 
 # Loss ratio fit (stage-adaptive by default)
 lr <- fit_lr(tri, method = "sa")
-plot(lr, type = "clr")
+plot(lr, type = "lr")
 summary(lr)
 
-# Structural change across cohorts
-detect_cohort_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
+# Cell selection: maturity (dev axis) + regime (cohort axis)
+detect_maturity(tri[cv_nm == "SUR"])
+detect_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
+
+# Projection diagnostic: when does the projected ultimate LR stop revising?
+detect_convergence(lr)
 ```
 
 ## Aggregation Frameworks
@@ -161,8 +171,8 @@ plot_triangle(x)     # lossratio generic — cell heatmap layout
 
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) and
 [`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
-work uniformly across `Triangle`, `Calendar`, `ATA`, `ATAFit`, `ED`,
-`EDFit`, `CLFit`, `LRFit`, and `CohortRegime` objects.
+work uniformly across `Triangle`, `Calendar`, `Link`, `ATAFit`, `EDFit`,
+`CLFit`, `LRFit`, `Maturity`, `Convergence`, and `Regime` objects.
 
 ## Documentation
 
@@ -170,7 +180,7 @@ work uniformly across `Triangle`, `Calendar`, `ATA`, `ATAFit`, `ED`,
 
 ?build_triangle
 ?fit_lr
-?detect_cohort_regime
+?detect_regime
 vignette("regime-detection", package = "lossratio")
 ```
 

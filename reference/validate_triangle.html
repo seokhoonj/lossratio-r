@@ -3,16 +3,16 @@
 dev_var sequence within its observed range. Non-consecutive
 cohorts produce non-consecutive age-to-age links downstream (e.g.,
 14 -&amp;gt; 17 instead of 14 -&amp;gt; 15), which breaks
-summary.ATA() / summary.ED() key uniqueness and causes cartesian
-joins in fit_lr().
+summary.Link() key uniqueness and causes cartesian joins in
+fit_lr().
 This function inspects the raw data without modifying it. Use it
 before build_triangle() to decide whether to fix the data source, drop
 offending cohorts, or pass fill_gaps = TRUE to build_triangle()."><meta property="og:description" content="Check that each (group_var, cohort_var) cohort has a consecutive
 dev_var sequence within its observed range. Non-consecutive
 cohorts produce non-consecutive age-to-age links downstream (e.g.,
 14 -&amp;gt; 17 instead of 14 -&amp;gt; 15), which breaks
-summary.ATA() / summary.ED() key uniqueness and causes cartesian
-joins in fit_lr().
+summary.Link() key uniqueness and causes cartesian joins in
+fit_lr().
 This function inspects the raw data without modifying it. Use it
 before build_triangle() to decide whether to fix the data source, drop
 offending cohorts, or pass fill_gaps = TRUE to build_triangle()."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"></head><body>
@@ -37,14 +37,15 @@ offending cohorts, or pass fill_gaps = TRUE to build_triangle()."><meta property
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/index.html">All articles</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks.html">Aggregation frameworks</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ATA diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/loss-ratio-methods.html">Loss ratio projection methods</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence.html">Loss ratio convergence</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-detection.html">Regime detection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-break.html">Regime break filtering</a></li>
+    <li><a class="dropdown-item" href="../articles/triangle-and-link.html">Triangle and Link</a></li>
+    <li><a class="dropdown-item" href="../articles/maturity.html">Maturity</a></li>
+    <li><a class="dropdown-item" href="../articles/regime.html">Regime</a></li>
+    <li><a class="dropdown-item" href="../articles/projection.html">Projection</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-break-filter.html">Regime break filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/convergence.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/chain-ladder.html">(Reference) Chain ladder reserving</a></li>
+    <li><a class="dropdown-item" href="../articles/chain-ladder-reserving.html">(Reference) Chain ladder reserving</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -69,8 +70,8 @@ offending cohorts, or pass fill_gaps = TRUE to build_triangle()."><meta property
 <code>dev_var</code> sequence within its observed range. Non-consecutive
 cohorts produce non-consecutive age-to-age links downstream (e.g.,
 <code>14 -&gt; 17</code> instead of <code>14 -&gt; 15</code>), which breaks
-<code><a href="summary.ATA.html">summary.ATA()</a></code> / <code><a href="summary.ED.html">summary.ED()</a></code> key uniqueness and causes cartesian
-joins in <code><a href="fit_lr.html">fit_lr()</a></code>.</p>
+<code><a href="summary.Link.html">summary.Link()</a></code> key uniqueness and causes cartesian joins in
+<code><a href="fit_lr.html">fit_lr()</a></code>.</p>
 <p>This function inspects the raw data without modifying it. Use it
 before <code><a href="build_triangle.html">build_triangle()</a></code> to decide whether to fix the data source, drop
 offending cohorts, or pass <code>fill_gaps = TRUE</code> to <code><a href="build_triangle.html">build_triangle()</a></code>.</p>

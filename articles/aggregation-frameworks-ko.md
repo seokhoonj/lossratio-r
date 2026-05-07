@@ -1,4 +1,4 @@
-# 집계 프레임워크: Triangle, Calendar, Total
+# Aggregation frameworks: 집계 프레임워크 (Triangle, Calendar, Total)
 
 > 영어 원본 보기: [Three aggregation
 > frameworks](https://seokhoonj.github.io/lossratio/aggregation-frameworks.md)
@@ -88,13 +88,12 @@ plot_triangle(tri_q)   # 코호트 × dev clr 히트맵
 
 `Triangle` 은 다음 함수의 입력으로 사용된다.
 
-- [`build_ata()`](https://seokhoonj.github.io/lossratio/reference/build_ata.md),
-  [`build_ed()`](https://seokhoonj.github.io/lossratio/reference/build_ed.md)
-  — 발달 인자
+- [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md)
+  — 발달 인자 (ATA / ED 는 `value_var` + 선택적 `exposure_var` 로 선택)
 - [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
   — 추정
-- [`detect_cohort_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_cohort_regime.md)
+- [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
   — 구조 변화 탐지
 
 ## 3. Calendar (달력 기간만)

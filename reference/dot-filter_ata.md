@@ -26,12 +26,13 @@ steps:
 - ata_summary:
 
   A `data.table` of class `"ATASummary"` from
-  [`summary.ATA()`](https://seokhoonj.github.io/lossratio/reference/summary.ATA.md).
+  [`summary.Link()`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md)
+  with `model = "ata"`.
 
 - maturity:
 
   A `data.table` from
-  [`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/reference/find_ata_maturity.md),
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md),
   or `NULL` when `use_maturity = FALSE`.
 
 - use_maturity:

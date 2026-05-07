@@ -85,13 +85,13 @@ plot_triangle(tri_q)   # cohort × dev heatmap of clr
 ![](aggregation-frameworks_files/figure-html/unnamed-chunk-2-2.png)
 
 Use `Triangle` as input to: -
-[`build_ata()`](https://seokhoonj.github.io/lossratio/reference/build_ata.md),
-[`build_ed()`](https://seokhoonj.github.io/lossratio/reference/build_ed.md)
-— development factors -
+[`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md)
+— development factors (ATA / ED via `value_var` + optional
+`exposure_var`) -
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
 — projection -
-[`detect_cohort_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_cohort_regime.md)
+[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
 — structural change detection
 
 ## Calendar (calendar period only)

@@ -118,8 +118,8 @@ fit_lr(
 
   Optional cohort cutoff for the regime break. Accepts: `NULL` (default,
   no filter), a single `Date`/character coercible to Date, a vector of
-  dates (uses the latest), or a `CohortRegime` object (extracts the
-  latest from `$breakpoints`). Behavior depends on `method`:
+  dates (uses the latest), or a `Regime` object (extracts the latest
+  from `$breakpoints`). Behavior depends on `method`:
 
   `"sa"`
 
@@ -137,7 +137,7 @@ fit_lr(
 - maturity_args:
 
   A named list forwarded to
-  [`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/find_ata_maturity.md),
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md),
   or `NULL` (default) to skip maturity filtering. When `method = "sa"`,
   this also determines the switch point between ED and CL. Pass
   [`list()`](https://rdrr.io/r/base/list.html) to use all defaults.
@@ -164,11 +164,10 @@ An object of class `"LRFit"`.
 ## See also
 
 [`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md),
-[`build_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/build_ata.md),
+[`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md),
 [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
-[`build_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/build_ed.md),
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md),
-[`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/find_ata_maturity.md)
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
 
 ## Examples
 

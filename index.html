@@ -46,14 +46,15 @@
 <li><a class="dropdown-item" href="articles/index.html">All articles</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="articles/aggregation-frameworks.html">Aggregation frameworks</a></li>
-    <li><a class="dropdown-item" href="articles/triangle-diagnostics.html">Triangle and ATA diagnostics</a></li>
-    <li><a class="dropdown-item" href="articles/loss-ratio-methods.html">Loss ratio projection methods</a></li>
-    <li><a class="dropdown-item" href="articles/lr-convergence.html">Loss ratio convergence</a></li>
-    <li><a class="dropdown-item" href="articles/regime-detection.html">Regime detection</a></li>
-    <li><a class="dropdown-item" href="articles/regime-break.html">Regime break filtering</a></li>
+    <li><a class="dropdown-item" href="articles/triangle-and-link.html">Triangle and Link</a></li>
+    <li><a class="dropdown-item" href="articles/maturity.html">Maturity</a></li>
+    <li><a class="dropdown-item" href="articles/regime.html">Regime</a></li>
+    <li><a class="dropdown-item" href="articles/projection.html">Projection</a></li>
+    <li><a class="dropdown-item" href="articles/regime-break-filter.html">Regime break filter</a></li>
     <li><a class="dropdown-item" href="articles/backtest.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="articles/convergence.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="articles/chain-ladder.html">(Reference) Chain ladder reserving</a></li>
+    <li><a class="dropdown-item" href="articles/chain-ladder-reserving.html">(Reference) Chain ladder reserving</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
@@ -98,8 +99,21 @@
 <code>"cl"</code> — classical chain ladder (Mack model)</li>
 </ul>
 </li>
-<li>Cohort regime detection for structural breaks (<code>detect_cohort_regime</code>)</li>
-<li>Diagnostic and triangle visualisations</li>
+<li>Cell-selection diagnostics — which cells to use for estimation:
+<ul>
+<li>
+<code>detect_maturity</code> — dev axis: link beyond which ATA factors are stable</li>
+<li>
+<code>detect_regime</code> — cohort axis: structural breaks across underwriting</li>
+</ul>
+</li>
+<li>Projection diagnostic:
+<ul>
+<li>
+<code>detect_convergence</code> — valuation <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math> at which the projected ultimate loss ratio stops revising (operates on a fitted <code>LRFit</code>)</li>
+</ul>
+</li>
+<li>Backtest and triangle visualisations</li>
 </ul>
 </div>
 <div class="section level2">
@@ -180,9 +194,9 @@
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>              <span class="co"># cohort trajectories</span></span>
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>     <span class="co"># cell heatmap</span></span>
 <span></span>
-<span><span class="co"># Age-to-age and exposure-driven development</span></span>
-<span><span class="va">ata</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_ata.html">build_ata</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span>; <span class="fu"><a href="reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">ata</span><span class="op">)</span></span>
-<span><span class="va">ed</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_ed.html">build_ed</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>;                       <span class="fu"><a href="reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">ed</span><span class="op">)</span></span>
+<span><span class="co"># Age-to-age and exposure-driven factor estimation</span></span>
+<span><span class="fu"><a href="reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, exposure_var <span class="op">=</span> <span class="st">"crp"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Chain ladder fit</span></span>
 <span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
@@ -190,11 +204,15 @@
 <span></span>
 <span><span class="co"># Loss ratio fit (stage-adaptive by default)</span></span>
 <span><span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lr</span>, type <span class="op">=</span> <span class="st">"clr"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lr</span>, type <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Structural change across cohorts</span></span>
-<span><span class="fu"><a href="reference/detect_cohort_regime.html">detect_cohort_regime</a></span><span class="op">(</span><span class="va">tri</span><span class="op">[</span><span class="va">cv_nm</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"ecp"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># Cell selection: maturity (dev axis) + regime (cohort axis)</span></span>
+<span><span class="fu"><a href="reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri</span><span class="op">[</span><span class="va">cv_nm</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri</span><span class="op">[</span><span class="va">cv_nm</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"ecp"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Projection diagnostic: when does the projected ultimate LR stop revising?</span></span>
+<span><span class="fu"><a href="reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="aggregation-frameworks">Aggregation Frameworks<a class="anchor" aria-label="anchor" href="#aggregation-frameworks"></a>
@@ -266,7 +284,7 @@
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>              <span class="co"># base plot generic — line / panel diagnostics</span></span>
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>     <span class="co"># lossratio generic — cell heatmap layout</span></span></code></pre></div>
-<p><code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> and <code><a href="reference/plot_triangle.html">plot_triangle()</a></code> work uniformly across <code>Triangle</code>, <code>Calendar</code>, <code>ATA</code>, <code>ATAFit</code>, <code>ED</code>, <code>EDFit</code>, <code>CLFit</code>, <code>LRFit</code>, and <code>CohortRegime</code> objects.</p>
+<p><code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> and <code><a href="reference/plot_triangle.html">plot_triangle()</a></code> work uniformly across <code>Triangle</code>, <code>Calendar</code>, <code>Link</code>, <code>ATAFit</code>, <code>EDFit</code>, <code>CLFit</code>, <code>LRFit</code>, <code>Maturity</code>, <code>Convergence</code>, and <code>Regime</code> objects.</p>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
@@ -274,7 +292,7 @@
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">?</span><span class="va">build_triangle</span></span>
 <span><span class="op">?</span><span class="va">fit_lr</span></span>
-<span><span class="op">?</span><span class="va">detect_cohort_regime</span></span>
+<span><span class="op">?</span><span class="va">detect_regime</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"regime-detection"</span>, package <span class="op">=</span> <span class="st">"lossratio"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">

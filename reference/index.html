@@ -21,14 +21,15 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/index.html">All articles</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks.html">Aggregation frameworks</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ATA diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/loss-ratio-methods.html">Loss ratio projection methods</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence.html">Loss ratio convergence</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-detection.html">Regime detection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-break.html">Regime break filtering</a></li>
+    <li><a class="dropdown-item" href="../articles/triangle-and-link.html">Triangle and Link</a></li>
+    <li><a class="dropdown-item" href="../articles/maturity.html">Maturity</a></li>
+    <li><a class="dropdown-item" href="../articles/regime.html">Regime</a></li>
+    <li><a class="dropdown-item" href="../articles/projection.html">Projection</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-break-filter.html">Regime break filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/convergence.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/chain-ladder.html">(Reference) Chain ladder reserving</a></li>
+    <li><a class="dropdown-item" href="../articles/chain-ladder-reserving.html">(Reference) Chain ladder reserving</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -121,9 +122,9 @@
         </dt>
         <dd>Build a total development summary from experience data</dd>
       </dl></div><div class="section level2">
-      <h2 id="age-to-age-ata-factors">Age-to-age (ATA) factors<a class="anchor" aria-label="anchor" href="#age-to-age-ata-factors"></a></h2>
+      <h2 id="link-table">Link table<a class="anchor" aria-label="anchor" href="#link-table"></a></h2>
 
-      <div class="section-desc"><p>Building blocks of the chain-ladder method.</p></div>
+      <div class="section-desc"><p>Long-format intermediate underlying both the chain-ladder (ATA) and exposure-driven (ED) workflows. Built once, summarised differently via <code><a href="../reference/summary.Link.html">summary.Link()</a></code>’s <code>model</code> argument.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -132,47 +133,33 @@
 
       <dl><dt>
 
-          <code><a href="build_ata.html">build_ata()</a></code>
+          <code><a href="build_link.html">build_link()</a></code>
 
         </dt>
-        <dd>Build age-to-age (ata) factors from <code>Triangle</code> data</dd>
+        <dd>Build a link table from <code>Triangle</code> data</dd>
 
         <dt>
+
+          <code><a href="summary.Link.html">summary(<i>&lt;Link&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Summarise a <code>Link</code> table</dd>
+      </dl></div><div class="section level2">
+      <h2 id="estimation">Estimation<a class="anchor" aria-label="anchor" href="#estimation"></a></h2>
+
+      <div class="section-desc"><p>Per-link factor estimation (<code>fit_ata</code>, <code>fit_ed</code>) and full projection (<code>fit_cl</code>, <code>fit_lr</code>). <code>fit_lr</code> supports three methods — <code>"sa"</code> (stage-adaptive, default), <code>"ed"</code>, and <code>"cl"</code>.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="fit_ata.html">fit_ata()</a></code>
 
         </dt>
         <dd>Fit age-to-age development factors</dd>
-
-        <dt>
-
-          <code><a href="summary.ATA.html">summary(<i>&lt;ATA&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summarise age-to-age factor statistics</dd>
-
-        <dt>
-
-          <code><a href="find_ata_maturity.html">find_ata_maturity()</a></code>
-
-        </dt>
-        <dd>Find ata maturity by group</dd>
-      </dl></div><div class="section level2">
-      <h2 id="exposure-driven-ed-intensity">Exposure-driven (ED) intensity<a class="anchor" aria-label="anchor" href="#exposure-driven-ed-intensity"></a></h2>
-
-      <div class="section-desc"><p>Building blocks of the exposure-driven method.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="build_ed.html">build_ed()</a></code>
-
-        </dt>
-        <dd>Build exposure-driven development data</dd>
 
         <dt>
 
@@ -182,22 +169,6 @@
         <dd>Fit ED intensity factors</dd>
 
         <dt>
-
-          <code><a href="summary.ED.html">summary(<i>&lt;ED&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summarise ED intensity statistics</dd>
-      </dl></div><div class="section level2">
-      <h2 id="projection">Projection<a class="anchor" aria-label="anchor" href="#projection"></a></h2>
-
-      <div class="section-desc"><p>Chain ladder and loss-ratio projection. <code>fit_lr</code> supports three methods — <code>"sa"</code> (stage-adaptive, default), <code>"ed"</code>, and <code>"cl"</code>.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
 
           <code><a href="fit_cl.html">fit_cl()</a></code>
 
@@ -211,9 +182,9 @@
         </dt>
         <dd>Fit loss ratio projection model</dd>
       </dl></div><div class="section level2">
-      <h2 id="regime-detection">Regime detection<a class="anchor" aria-label="anchor" href="#regime-detection"></a></h2>
+      <h2 id="cell-selection-diagnostics">Cell-selection diagnostics<a class="anchor" aria-label="anchor" href="#cell-selection-diagnostics"></a></h2>
 
-      <div class="section-desc"><p>Structural change detection across underwriting cohorts.</p></div>
+      <div class="section-desc"><p>Decide which cells of the triangle to use for estimation. <code>detect_maturity</code> works along the dev axis (link beyond which ATA factors are stable); <code>detect_regime</code> works along the cohort axis (structural break across underwriting cohorts).</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -222,10 +193,33 @@
 
       <dl><dt>
 
-          <code><a href="detect_cohort_regime.html">detect_cohort_regime()</a></code> <code><a href="detect_cohort_regime.html">print(<i>&lt;CohortRegime&gt;</i>)</a></code> <code><a href="detect_cohort_regime.html">summary(<i>&lt;CohortRegime&gt;</i>)</a></code> <code><a href="detect_cohort_regime.html">print(<i>&lt;summary.CohortRegime&gt;</i>)</a></code>
+          <code><a href="detect_maturity.html">detect_maturity()</a></code>
+
+        </dt>
+        <dd>Find ata maturity by group</dd>
+
+        <dt>
+
+          <code><a href="detect_regime.html">detect_regime()</a></code> <code><a href="detect_regime.html">print(<i>&lt;Regime&gt;</i>)</a></code> <code><a href="detect_regime.html">summary(<i>&lt;Regime&gt;</i>)</a></code> <code><a href="detect_regime.html">print(<i>&lt;summary.Regime&gt;</i>)</a></code>
 
         </dt>
         <dd>Detect structural regime shifts across underwriting cohorts</dd>
+      </dl></div><div class="section level2">
+      <h2 id="projection-diagnostic">Projection diagnostic<a class="anchor" aria-label="anchor" href="#projection-diagnostic"></a></h2>
+
+      <div class="section-desc"><p>Operates on a fitted <code>LRFit</code>, not on the raw triangle. Locates the valuation depth <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math> at which the projected ultimate loss ratio stops revising under a dual criterion (predictive revision below noise threshold AND cross-cohort dispersion small, sustained over M consecutive valuations).</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="detect_convergence.html">detect_convergence()</a></code>
+
+        </dt>
+        <dd>Find the development period at which the loss ratio estimate stabilises</dd>
       </dl></div><div class="section level2">
       <h2 id="backtest">Backtest<a class="anchor" aria-label="anchor" href="#backtest"></a></h2>
 
@@ -243,22 +237,6 @@
         </dt>
         <dd>Backtest a loss-ratio / chain ladder fit on existing data</dd>
       </dl></div><div class="section level2">
-      <h2 id="loss-ratio-convergence-detection">Loss ratio convergence detection<a class="anchor" aria-label="anchor" href="#loss-ratio-convergence-detection"></a></h2>
-
-      <div class="section-desc"><p>Detect the development period (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>) from which the projected loss ratio stops revising and converges.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="find_lr_convergence.html">find_lr_convergence()</a></code>
-
-        </dt>
-        <dd>Find the development period at which the loss ratio estimate stabilises</dd>
-      </dl></div><div class="section level2">
       <h2 id="visualisation">Visualisation<a class="anchor" aria-label="anchor" href="#visualisation"></a></h2>
 
       <div class="section-desc"><p><code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> (base generic) and <code><a href="../reference/plot_triangle.html">plot_triangle()</a></code> (lossratio generic) dispatch on the object class.</p></div>
@@ -274,13 +252,6 @@
 
         </dt>
         <dd>Triangle plot generic</dd>
-
-        <dt>
-
-          <code><a href="plot.ATA.html">plot(<i>&lt;ATA&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot age-to-age factor diagnostics</dd>
 
         <dt>
 
@@ -312,17 +283,10 @@
 
         <dt>
 
-          <code><a href="plot.CohortRegime.html">plot(<i>&lt;CohortRegime&gt;</i>)</a></code>
+          <code><a href="plot.Convergence.html">plot(<i>&lt;Convergence&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot a cohort regime detection result</dd>
-
-        <dt>
-
-          <code><a href="plot.ED.html">plot(<i>&lt;ED&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot ED intensity diagnostics</dd>
+        <dd>Plot the Convergence diagnostic</dd>
 
         <dt>
 
@@ -333,17 +297,24 @@
 
         <dt>
 
-          <code><a href="plot.LRConvergence.html">plot(<i>&lt;LRConvergence&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot the LRConvergence diagnostic</dd>
-
-        <dt>
-
           <code><a href="plot.LRFit.html">plot(<i>&lt;LRFit&gt;</i>)</a></code>
 
         </dt>
         <dd>Plot a loss ratio fit</dd>
+
+        <dt>
+
+          <code><a href="plot.Link.html">plot(<i>&lt;Link&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot link-factor diagnostics</dd>
+
+        <dt>
+
+          <code><a href="plot.Regime.html">plot(<i>&lt;Regime&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot a cohort regime detection result</dd>
 
         <dt>
 
@@ -358,13 +329,6 @@
 
         </dt>
         <dd>Plot development trajectories with optional summary overlay</dd>
-
-        <dt>
-
-          <code><a href="plot_triangle.ATA.html">plot_triangle(<i>&lt;ATA&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot ata factors as a triangle heatmap table</dd>
 
         <dt>
 
@@ -389,13 +353,6 @@
 
         <dt>
 
-          <code><a href="plot_triangle.ED.html">plot_triangle(<i>&lt;ED&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot ED intensities as a triangle heatmap table</dd>
-
-        <dt>
-
           <code><a href="plot_triangle.EDFit.html">plot_triangle(<i>&lt;EDFit&gt;</i>)</a></code>
 
         </dt>
@@ -407,6 +364,13 @@
 
         </dt>
         <dd>Plot loss ratio projection as a triangle heatmap</dd>
+
+        <dt>
+
+          <code><a href="plot_triangle.Link.html">plot_triangle(<i>&lt;Link&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot a Link object as a triangle heatmap</dd>
 
         <dt>
 
@@ -433,7 +397,7 @@
 
         <dt>
 
-          <code><a href="detect_cohort_regime.html">detect_cohort_regime()</a></code> <code><a href="detect_cohort_regime.html">print(<i>&lt;CohortRegime&gt;</i>)</a></code> <code><a href="detect_cohort_regime.html">summary(<i>&lt;CohortRegime&gt;</i>)</a></code> <code><a href="detect_cohort_regime.html">print(<i>&lt;summary.CohortRegime&gt;</i>)</a></code>
+          <code><a href="detect_regime.html">detect_regime()</a></code> <code><a href="detect_regime.html">print(<i>&lt;Regime&gt;</i>)</a></code> <code><a href="detect_regime.html">summary(<i>&lt;Regime&gt;</i>)</a></code> <code><a href="detect_regime.html">print(<i>&lt;summary.Regime&gt;</i>)</a></code>
 
         </dt>
         <dd>Detect structural regime shifts across underwriting cohorts</dd>
@@ -444,6 +408,13 @@
 
         </dt>
         <dd>Print an <code>ATAFit</code> object</dd>
+
+        <dt>
+
+          <code><a href="print.ATASummary.html">print(<i>&lt;ATASummary&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for <code>ATASummary</code></dd>
 
         <dt>
 
@@ -461,17 +432,17 @@
 
         <dt>
 
+          <code><a href="print.EDSummary.html">print(<i>&lt;EDSummary&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for <code>EDSummary</code></dd>
+
+        <dt>
+
           <code><a href="print.LRFit.html">print(<i>&lt;LRFit&gt;</i>)</a></code>
 
         </dt>
         <dd>Print an <code>LRFit</code> object</dd>
-
-        <dt>
-
-          <code><a href="summary.ATA.html">summary(<i>&lt;ATA&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summarise age-to-age factor statistics</dd>
 
         <dt>
 
@@ -496,13 +467,6 @@
 
         <dt>
 
-          <code><a href="summary.ED.html">summary(<i>&lt;ED&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summarise ED intensity statistics</dd>
-
-        <dt>
-
           <code><a href="summary.EDFit.html">summary(<i>&lt;EDFit&gt;</i>)</a></code>
 
         </dt>
@@ -514,6 +478,13 @@
 
         </dt>
         <dd>Summary method for <code>LRFit</code></dd>
+
+        <dt>
+
+          <code><a href="summary.Link.html">summary(<i>&lt;Link&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Summarise a <code>Link</code> table</dd>
 
         <dt>
 

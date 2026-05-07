@@ -2,8 +2,8 @@
 
 Visualise an object of class `"ATAFit"` as a triangle-style heatmap by
 delegating to
-[`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
-on the underlying `ATA` data stored in `x$ata`.
+[`plot_triangle.Link()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.Link.md)
+on the underlying `Link` data stored in `x$link` with `model = "ata"`.
 
 ## Usage
 
@@ -21,7 +21,7 @@ plot_triangle(x, ...)
 - ...:
 
   Arguments passed to
-  [`plot_triangle.ATA()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.ATA.md).
+  [`plot_triangle.Link()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.Link.md).
 
 ## Value
 
@@ -29,5 +29,5 @@ A `ggplot` object.
 
 ## See also
 
-[`plot_triangle.ATA()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.ATA.md),
+[`plot_triangle.Link()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.Link.md),
 [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)

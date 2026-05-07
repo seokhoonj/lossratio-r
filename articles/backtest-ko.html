@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>홀드아웃 대각선을 이용한 추정 백테스팅 • lossratio</title>
+<title>Backtest: 홀드아웃 대각선을 이용한 추정 검증 • lossratio</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<script src="../extra.js"></script><meta property="og:title" content="홀드아웃 대각선을 이용한 추정 백테스팅">
+<script src="../extra.js"></script><meta property="og:title" content="Backtest: 홀드아웃 대각선을 이용한 추정 검증">
 <meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs">
 </head>
 <body>
@@ -43,14 +43,15 @@
 <li><a class="dropdown-item" href="../articles/index.html">All articles</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks.html">Aggregation frameworks</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ATA diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/loss-ratio-methods.html">Loss ratio projection methods</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence.html">Loss ratio convergence</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-detection.html">Regime detection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-break.html">Regime break filtering</a></li>
+    <li><a class="dropdown-item" href="../articles/triangle-and-link.html">Triangle and Link</a></li>
+    <li><a class="dropdown-item" href="../articles/maturity.html">Maturity</a></li>
+    <li><a class="dropdown-item" href="../articles/regime.html">Regime</a></li>
+    <li><a class="dropdown-item" href="../articles/projection.html">Projection</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-break-filter.html">Regime break filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/convergence.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/chain-ladder.html">(Reference) Chain ladder reserving</a></li>
+    <li><a class="dropdown-item" href="../articles/chain-ladder-reserving.html">(Reference) Chain ladder reserving</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -74,7 +75,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>홀드아웃 대각선을 이용한 추정 백테스팅</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Backtest: 홀드아웃 대각선을 이용한 추정 검증</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/seokhoonj/lossratio/blob/main/vignettes/articles/backtest-ko.Rmd" class="external-link"><code>vignettes/articles/backtest-ko.Rmd</code></a></small>
@@ -120,7 +121,7 @@ actuarial A/E 관용에 맞춰
 <span><span class="co">#&gt;   value_var   : clr</span></span>
 <span><span class="co">#&gt;   holdout     : 6 calendar diagonals</span></span>
 <span><span class="co">#&gt;   held-out    : 123 cells</span></span>
-<span><span class="co">#&gt;   AEG         : mean -13.05% / median -7.28%</span></span></code></pre></div>
+<span><span class="co">#&gt;   AEG         : mean -13.06% / median -7.37%</span></span></code></pre></div>
 <p>기본 적합 함수는 단계 적응형(stage-adaptive, SA) 손해율 추정
 (<code>fit_lr(method = "sa")</code>) 이며, 기본 비교 컬럼은
 <code>value_var = "clr"</code> 이다 (누적 손해율). 반환되는 객체는
@@ -169,14 +170,14 @@ dev 까지만 추정값을 만들 수 있으므로, 그 범위를 넘어가는 �
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">bt</span><span class="op">$</span><span class="va">col_summary</span>, <span class="fl">8</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     cv_nm   dev     n   aeg_mean    aeg_med     aeg_wt</span></span>
 <span><span class="co">#&gt;    &lt;char&gt; &lt;int&gt; &lt;int&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:    SUR     2     1 -0.2210212 -0.2210212 -0.2210212</span></span>
-<span><span class="co">#&gt; 2:    SUR     3     2 -0.6437701 -0.6437701 -0.6163919</span></span>
-<span><span class="co">#&gt; 3:    SUR     4     3 -0.3511641 -0.1162380 -0.3498190</span></span>
-<span><span class="co">#&gt; 4:    SUR     5     4 -0.3150824 -0.2157648 -0.3172642</span></span>
-<span><span class="co">#&gt; 5:    SUR     6     5 -0.4607816 -0.4015157 -0.4605004</span></span>
-<span><span class="co">#&gt; 6:    SUR     7     6 -0.3179501 -0.3459763 -0.3294385</span></span>
-<span><span class="co">#&gt; 7:    SUR     8     6 -0.3943149 -0.4362693 -0.3951618</span></span>
-<span><span class="co">#&gt; 8:    SUR     9     6 -0.3184528 -0.3718590 -0.3083244</span></span></code></pre></div>
+<span><span class="co">#&gt; 1:    SUR     2     1 -0.2208792 -0.2208792 -0.2208792</span></span>
+<span><span class="co">#&gt; 2:    SUR     3     2 -0.6437453 -0.6437453 -0.6163673</span></span>
+<span><span class="co">#&gt; 3:    SUR     4     3 -0.3510508 -0.1160624 -0.3497066</span></span>
+<span><span class="co">#&gt; 4:    SUR     5     4 -0.3148234 -0.2154987 -0.3169997</span></span>
+<span><span class="co">#&gt; 5:    SUR     6     5 -0.4606402 -0.4013712 -0.4603512</span></span>
+<span><span class="co">#&gt; 6:    SUR     7     6 -0.3178128 -0.3457778 -0.3292850</span></span>
+<span><span class="co">#&gt; 7:    SUR     8     6 -0.3942605 -0.4362220 -0.3951000</span></span>
+<span><span class="co">#&gt; 8:    SUR     9     6 -0.3181451 -0.3715525 -0.3080096</span></span></code></pre></div>
 <p><code>aeg_mean</code> 은 셀 단위 AEG 의 평균, <code>aeg_med</code> 는
 중앙값, <code>aeg_wt = sum(actual - pred) / sum(pred)</code> 는 노출
 가중 pooled A/E ratio 에서 1 을 뺀 값이다. 세 컬럼을 비교하면 소수의 큰
@@ -190,12 +191,12 @@ effect).</strong> 그 외에는 편향이 없는 출력에서 단 하나의 대�
 <code class="sourceCode R"><span><span class="va">bt</span><span class="op">$</span><span class="va">diag_summary</span></span>
 <span><span class="co">#&gt;     cv_nm calendar_idx     n   aeg_mean     aeg_med      aeg_wt</span></span>
 <span><span class="co">#&gt;    &lt;char&gt;        &lt;int&gt; &lt;int&gt;      &lt;num&gt;       &lt;num&gt;       &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:    SUR           25    23 -0.1066364 -0.03677298 -0.07019853</span></span>
-<span><span class="co">#&gt; 2:    SUR           26    22 -0.1401734 -0.05189725 -0.11335460</span></span>
-<span><span class="co">#&gt; 3:    SUR           27    21 -0.1090998 -0.05853744 -0.10418242</span></span>
-<span><span class="co">#&gt; 4:    SUR           28    20 -0.1311208 -0.07720194 -0.12745825</span></span>
-<span><span class="co">#&gt; 5:    SUR           29    19 -0.1621096 -0.15960239 -0.16741775</span></span>
-<span><span class="co">#&gt; 6:    SUR           30    18 -0.1402920 -0.10632300 -0.16505109</span></span></code></pre></div>
+<span><span class="co">#&gt; 1:    SUR           25    23 -0.1066524 -0.03666962 -0.07019119</span></span>
+<span><span class="co">#&gt; 2:    SUR           26    22 -0.1402247 -0.05155686 -0.11332892</span></span>
+<span><span class="co">#&gt; 3:    SUR           27    21 -0.1091468 -0.05802823 -0.10411330</span></span>
+<span><span class="co">#&gt; 4:    SUR           28    20 -0.1311544 -0.07713787 -0.12738203</span></span>
+<span><span class="co">#&gt; 5:    SUR           29    19 -0.1621482 -0.15996777 -0.16736131</span></span>
+<span><span class="co">#&gt; 6:    SUR           30    18 -0.1403813 -0.10594767 -0.16500512</span></span></code></pre></div>
 <p>대각선을 가로지르는 단조로운 표류 (위 SUR 예시처럼
 <code>25, ..., 30</code> 으로 가면서 AEG 가 점점 더 양수가 되는 패턴) 는
 보통 가장 최근 대각선의 실적이 이전 코호트의 link factor 가 함의하는
@@ -208,11 +209,11 @@ shift 가 발생했음을 시사한다.</p>
 <span><span class="co">#&gt; Key: &lt;cv_nm&gt;</span></span>
 <span><span class="co">#&gt;     cv_nm     cohort   dev value_actual value_pred          aeg calendar_idx</span></span>
 <span><span class="co">#&gt;    &lt;char&gt;     &lt;Date&gt; &lt;int&gt;        &lt;num&gt;      &lt;num&gt;        &lt;num&gt;        &lt;int&gt;</span></span>
-<span><span class="co">#&gt; 1:    SUR 2023-05-01    24     1.030446   1.156866 -0.109277544           25</span></span>
-<span><span class="co">#&gt; 2:    SUR 2023-06-01    23     1.175862   1.182519 -0.005629942           25</span></span>
-<span><span class="co">#&gt; 3:    SUR 2023-06-01    24     1.198728   1.292790 -0.072758288           26</span></span>
-<span><span class="co">#&gt; 4:    SUR 2023-07-01    22     1.105530   1.113031 -0.006738881           25</span></span>
-<span><span class="co">#&gt; 5:    SUR 2023-07-01    23     1.106120   1.118137 -0.010746990           26</span></span></code></pre></div>
+<span><span class="co">#&gt; 1:    SUR 2023-05-01    24     1.030446   1.157413 -0.109698314           25</span></span>
+<span><span class="co">#&gt; 2:    SUR 2023-06-01    23     1.175862   1.183114 -0.006130062           25</span></span>
+<span><span class="co">#&gt; 3:    SUR 2023-06-01    24     1.198728   1.294051 -0.073662448           26</span></span>
+<span><span class="co">#&gt; 4:    SUR 2023-07-01    22     1.105530   1.112573 -0.006330018           25</span></span>
+<span><span class="co">#&gt; 5:    SUR 2023-07-01    23     1.106120   1.118239 -0.010837528           26</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="플롯-데모">5. 플롯 데모<a class="anchor" aria-label="anchor" href="#%ED%94%8C%EB%A1%AF-%EB%8D%B0%EB%AA%A8"></a>
@@ -310,7 +311,7 @@ column)</strong> 이다. 즉, 셀 단위로 실제값과 추정값을 비교하�
 <span><span class="co">#&gt;   value_var   : clr</span></span>
 <span><span class="co">#&gt;   holdout     : 6 calendar diagonals</span></span>
 <span><span class="co">#&gt;   held-out    : 123 cells</span></span>
-<span><span class="co">#&gt;   AEG         : mean -13.05% / median -7.28%</span></span></code></pre></div>
+<span><span class="co">#&gt;   AEG         : mean -13.06% / median -7.37%</span></span></code></pre></div>
 <p><code>clr</code> 을 백테스팅하는 것이 보통 더 유익한 진단이 된다.
 손해율은 단위가 없고 차원이 없어 규모가 크게 다른 코호트 간에도 일관되게
 비교 가능하므로, <code>aeg_mean</code> 과 <code>aeg_med</code> 가
@@ -325,11 +326,11 @@ triangle 전체에서 일관된 의미를 가진다. 반면 <code>closs</code> �
 </h2>
 <ul>
 <li>
-<code><a href="../articles/chain-ladder.html">vignette("chain-ladder")</a></code> — <code><a href="../reference/fit_cl.html">fit_cl()</a></code>
-참고.</li>
+<code><a href="../articles/chain-ladder-reserving.html">vignette("chain-ladder-reserving")</a></code> —
+<code><a href="../reference/fit_cl.html">fit_cl()</a></code> 참고.</li>
 <li>
-<code><a href="../articles/loss-ratio-methods.html">vignette("loss-ratio-methods")</a></code> — <code><a href="../reference/fit_lr.html">fit_lr()</a></code>
-및 <code>"sa"</code>, <code>"ed"</code>, <code>"cl"</code> 방법.</li>
+<code><a href="../articles/projection.html">vignette("projection")</a></code> — <code><a href="../reference/fit_lr.html">fit_lr()</a></code> 및
+<code>"sa"</code>, <code>"ed"</code>, <code>"cl"</code> 방법.</li>
 <li>
 <code><a href="../reference/backtest.html">?backtest</a></code>, <code><a href="../reference/plot.Backtest.html">?plot.Backtest</a></code>,
 <code><a href="../reference/plot_triangle.Backtest.html">?plot_triangle.Backtest</a></code>.</li>

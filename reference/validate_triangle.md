@@ -4,9 +4,7 @@ Check that each `(group_var, cohort_var)` cohort has a consecutive
 `dev_var` sequence within its observed range. Non-consecutive cohorts
 produce non-consecutive age-to-age links downstream (e.g., `14 -> 17`
 instead of `14 -> 15`), which breaks
-[`summary.ATA()`](https://seokhoonj.github.io/lossratio/reference/summary.ATA.md)
-/
-[`summary.ED()`](https://seokhoonj.github.io/lossratio/reference/summary.ED.md)
+[`summary.Link()`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md)
 key uniqueness and causes cartesian joins in
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md).
 

@@ -18,27 +18,33 @@
   (calendar period),
   [`build_total()`](https://seokhoonj.github.io/lossratio/ko/reference/build_total.md)
   (portfolio total).
-- Age-to-age:
-  [`build_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/build_ata.md),
-  [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
-  S3 [`summary()`](https://rdrr.io/r/base/summary.html) on `ATA` /
-  `ATAFit`,
-  [`find_ata_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/find_ata_maturity.md).
-- Exposure-driven:
-  [`build_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/build_ed.md),
+- Link table:
+  [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md)
+  returns a `Link` object covering both single-variable (ATA-style) and
+  dual-variable (ED-style) workflows. `summary.Link(model = "ata"|"ed")`
+  dispatches to the matching diagnostic.
+- Estimation:
+  [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md)
+  (per-link factors only);
   [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md),
-  S3 [`summary()`](https://rdrr.io/r/base/summary.html) on `ED` /
-  `EDFit`.
-- Projection:
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
-  (chain ladder, `basic` / `mack`),
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md),
+  and
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
-  (loss-ratio with `sa` / `ed` / `cl` methods).
-- Diagnostics:
-  [`detect_cohort_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_cohort_regime.md)
-  (regime detection across underwriting cohorts),
+  (factors + projection). `fit_lr` supports three methods — `"sa"`
+  (default), `"ed"`, `"cl"`.
+- Cell-selection diagnostics:
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
+  (dev axis — link beyond which ATA factors are stable),
+  [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
+  (cohort axis — structural breaks across underwriting cohorts).
+- Projection diagnostic:
+  [`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md)
+  (operates on a fitted `LRFit`; valuation depth at which projected
+  ultimate loss ratio stops revising).
+- Backtest:
   [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
-  (calendar-diagonal hold-out, supports both `fit_cl` and `fit_lr`).
+  (calendar-diagonal hold-out, supports `fit_cl`, `fit_ed`, and
+  `fit_lr`).
 - Visualisation: S3
   [`plot()`](https://rdrr.io/r/graphics/plot.default.html) and
   [`plot_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.md)

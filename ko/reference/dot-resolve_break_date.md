@@ -3,8 +3,8 @@
 Internal helper used by
 [`.apply_break_filter()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-apply_break_filter.md)
 to coerce a heterogeneous `break_date` argument (NULL, Date
-scalar/vector, character coercible to Date, or a `CohortRegime` object)
-into a single Date scalar (the latest break) or `NULL`.
+scalar/vector, character coercible to Date, or a `Regime` object) into a
+single Date scalar (the latest break) or `NULL`.
 
 ## Usage
 

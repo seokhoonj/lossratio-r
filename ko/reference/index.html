@@ -20,15 +20,16 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown--" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">글</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown--"><li><a class="dropdown-item" href="../articles/index.html">전체 글</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/aggregation-frameworks-ko.html">집계 프레임워크</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-diagnostics-ko.html">Triangle 및 ATA 진단</a></li>
-    <li><a class="dropdown-item" href="../articles/loss-ratio-methods-ko.html">손해율 예측 방법론</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">예측 손해율 수렴 탐지</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-detection-ko.html">Regime 탐지</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-break-ko.html">Regime break 필터링</a></li>
+    <li><a class="dropdown-item" href="../articles/aggregation-frameworks-ko.html">Aggregation frameworks</a></li>
+    <li><a class="dropdown-item" href="../articles/triangle-and-link-ko.html">Triangle and Link</a></li>
+    <li><a class="dropdown-item" href="../articles/maturity-ko.html">Maturity</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-ko.html">Regime</a></li>
+    <li><a class="dropdown-item" href="../articles/projection-ko.html">Projection</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-break-filter-ko.html">Regime break filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/convergence-ko.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/chain-ladder-ko.html">(참고) Chain ladder를 이용한 준비금 산출</a></li>
+    <li><a class="dropdown-item" href="../articles/chain-ladder-reserving-ko.html">(참고) Chain ladder 를 이용한 준비금 산출</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">참조</a></li>
 <li class="nav-item dropdown">
@@ -124,9 +125,9 @@
         </dt>
         <dd>Build a total development summary from experience data</dd>
       </dl></div><div class="section level2">
-      <h2 id="age-to-age-ata-">Age-to-age (ATA) 인자<a class="anchor" aria-label="anchor" href="#age-to-age-ata-"></a></h2>
+      <h2 id="--2">단계 연결 테이블<a class="anchor" aria-label="anchor" href="#--2"></a></h2>
 
-      <div class="section-desc"><p>chain ladder 방법의 기본 단위.</p></div>
+      <div class="section-desc"><p>Chain ladder (ATA) 와 노출 기반 (ED) 의 공통 long-format intermediate. <code><a href="../reference/summary.Link.html">summary.Link()</a></code> 의 <code>model</code> 인자로 두 모형의 진단을 분기.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -135,47 +136,33 @@
 
       <dl><dt>
 
-          <code><a href="build_ata.html">build_ata()</a></code>
+          <code><a href="build_link.html">build_link()</a></code>
 
         </dt>
-        <dd>Build age-to-age (ata) factors from <code>Triangle</code> data</dd>
+        <dd>Build a link table from <code>Triangle</code> data</dd>
 
         <dt>
+
+          <code><a href="summary.Link.html">summary(<i>&lt;Link&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Summarise a <code>Link</code> table</dd>
+      </dl></div><div class="section level2">
+      <h2 id="--3">추정<a class="anchor" aria-label="anchor" href="#--3"></a></h2>
+
+      <div class="section-desc"><p>링크별 인자 추정 (<code>fit_ata</code>, <code>fit_ed</code>) 과 전체 예측 (<code>fit_cl</code>, <code>fit_lr</code>). <code>fit_lr</code> 은 세 가지 method 지원 — <code>"sa"</code> (단계 적응형, default), <code>"ed"</code>, <code>"cl"</code>.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="fit_ata.html">fit_ata()</a></code>
 
         </dt>
         <dd>Fit age-to-age development factors</dd>
-
-        <dt>
-
-          <code><a href="summary.ATA.html">summary(<i>&lt;ATA&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summarise age-to-age factor statistics</dd>
-
-        <dt>
-
-          <code><a href="find_ata_maturity.html">find_ata_maturity()</a></code>
-
-        </dt>
-        <dd>Find ata maturity by group</dd>
-      </dl></div><div class="section level2">
-      <h2 id="-ed-">노출 기반 (ED) 강도<a class="anchor" aria-label="anchor" href="#-ed-"></a></h2>
-
-      <div class="section-desc"><p>노출 기반 방법의 기본 단위.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="build_ed.html">build_ed()</a></code>
-
-        </dt>
-        <dd>Build exposure-driven development data</dd>
 
         <dt>
 
@@ -185,22 +172,6 @@
         <dd>Fit ED intensity factors</dd>
 
         <dt>
-
-          <code><a href="summary.ED.html">summary(<i>&lt;ED&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summarise ED intensity statistics</dd>
-      </dl></div><div class="section level2">
-      <h2 id="--2">예측<a class="anchor" aria-label="anchor" href="#--2"></a></h2>
-
-      <div class="section-desc"><p>chain ladder 와 손해율 추정. <code>fit_lr</code> 은 세 가지 method 지원 — <code>"sa"</code> (단계 적응형, default), <code>"ed"</code>, <code>"cl"</code>.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
 
           <code><a href="fit_cl.html">fit_cl()</a></code>
 
@@ -214,9 +185,9 @@
         </dt>
         <dd>Fit loss ratio projection model</dd>
       </dl></div><div class="section level2">
-      <h2 id="regime-">Regime 탐지<a class="anchor" aria-label="anchor" href="#regime-"></a></h2>
+      <h2 id="--4">추정 셀 선택 진단<a class="anchor" aria-label="anchor" href="#--4"></a></h2>
 
-      <div class="section-desc"><p>인수 코호트 간 구조적 변화 탐지.</p></div>
+      <div class="section-desc"><p>Triangle 의 어떤 셀을 추정에 쓸지 결정. <code>detect_maturity</code> 는 dev 축 (ATA 인자가 안정화되는 링크 이후), <code>detect_regime</code> 은 cohort 축 (인수 코호트 간 구조적 변화).</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -225,10 +196,33 @@
 
       <dl><dt>
 
-          <code><a href="detect_cohort_regime.html">detect_cohort_regime()</a></code> <code><a href="detect_cohort_regime.html">print(<i>&lt;CohortRegime&gt;</i>)</a></code> <code><a href="detect_cohort_regime.html">summary(<i>&lt;CohortRegime&gt;</i>)</a></code> <code><a href="detect_cohort_regime.html">print(<i>&lt;summary.CohortRegime&gt;</i>)</a></code>
+          <code><a href="detect_maturity.html">detect_maturity()</a></code>
+
+        </dt>
+        <dd>Find ata maturity by group</dd>
+
+        <dt>
+
+          <code><a href="detect_regime.html">detect_regime()</a></code> <code><a href="detect_regime.html">print(<i>&lt;Regime&gt;</i>)</a></code> <code><a href="detect_regime.html">summary(<i>&lt;Regime&gt;</i>)</a></code> <code><a href="detect_regime.html">print(<i>&lt;summary.Regime&gt;</i>)</a></code>
 
         </dt>
         <dd>Detect structural regime shifts across underwriting cohorts</dd>
+      </dl></div><div class="section level2">
+      <h2 id="--5">예측 진단<a class="anchor" aria-label="anchor" href="#--5"></a></h2>
+
+      <div class="section-desc"><p>적합 결과 <code>LRFit</code> 위에서 동작 (raw Triangle 아님). 예측 손해율의 갱신이 멈추는 valuation 깊이 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math> 를 dual criterion (예측 갱신이 잡음 수준 이하 AND 코호트 간 분산이 작음, M 회 연속) 으로 탐지.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="detect_convergence.html">detect_convergence()</a></code>
+
+        </dt>
+        <dd>Find the development period at which the loss ratio estimate stabilises</dd>
       </dl></div><div class="section level2">
       <h2 id="backtest">Backtest<a class="anchor" aria-label="anchor" href="#backtest"></a></h2>
 
@@ -246,23 +240,7 @@
         </dt>
         <dd>Backtest a loss-ratio / chain ladder fit on existing data</dd>
       </dl></div><div class="section level2">
-      <h2 id="--3">예측 손해율 수렴 탐지<a class="anchor" aria-label="anchor" href="#--3"></a></h2>
-
-      <div class="section-desc"><p>예측 손해율이 갱신을 멈추고 수렴하는 발전 기간 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>) 을 검출.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="find_lr_convergence.html">find_lr_convergence()</a></code>
-
-        </dt>
-        <dd>Find the development period at which the loss ratio estimate stabilises</dd>
-      </dl></div><div class="section level2">
-      <h2 id="--4">시각화<a class="anchor" aria-label="anchor" href="#--4"></a></h2>
+      <h2 id="--6">시각화<a class="anchor" aria-label="anchor" href="#--6"></a></h2>
 
       <div class="section-desc"><p><code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> (base generic) 과 <code><a href="../reference/plot_triangle.html">plot_triangle()</a></code> (lossratio generic) 이 객체 클래스에 따라 dispatch.</p></div>
 
@@ -277,13 +255,6 @@
 
         </dt>
         <dd>Triangle plot generic</dd>
-
-        <dt>
-
-          <code><a href="plot.ATA.html">plot(<i>&lt;ATA&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot age-to-age factor diagnostics</dd>
 
         <dt>
 
@@ -315,17 +286,10 @@
 
         <dt>
 
-          <code><a href="plot.CohortRegime.html">plot(<i>&lt;CohortRegime&gt;</i>)</a></code>
+          <code><a href="plot.Convergence.html">plot(<i>&lt;Convergence&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot a cohort regime detection result</dd>
-
-        <dt>
-
-          <code><a href="plot.ED.html">plot(<i>&lt;ED&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot ED intensity diagnostics</dd>
+        <dd>Plot the Convergence diagnostic</dd>
 
         <dt>
 
@@ -336,17 +300,24 @@
 
         <dt>
 
-          <code><a href="plot.LRConvergence.html">plot(<i>&lt;LRConvergence&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot the LRConvergence diagnostic</dd>
-
-        <dt>
-
           <code><a href="plot.LRFit.html">plot(<i>&lt;LRFit&gt;</i>)</a></code>
 
         </dt>
         <dd>Plot a loss ratio fit</dd>
+
+        <dt>
+
+          <code><a href="plot.Link.html">plot(<i>&lt;Link&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot link-factor diagnostics</dd>
+
+        <dt>
+
+          <code><a href="plot.Regime.html">plot(<i>&lt;Regime&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot a cohort regime detection result</dd>
 
         <dt>
 
@@ -361,13 +332,6 @@
 
         </dt>
         <dd>Plot development trajectories with optional summary overlay</dd>
-
-        <dt>
-
-          <code><a href="plot_triangle.ATA.html">plot_triangle(<i>&lt;ATA&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot ata factors as a triangle heatmap table</dd>
 
         <dt>
 
@@ -392,13 +356,6 @@
 
         <dt>
 
-          <code><a href="plot_triangle.ED.html">plot_triangle(<i>&lt;ED&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot ED intensities as a triangle heatmap table</dd>
-
-        <dt>
-
           <code><a href="plot_triangle.EDFit.html">plot_triangle(<i>&lt;EDFit&gt;</i>)</a></code>
 
         </dt>
@@ -410,6 +367,13 @@
 
         </dt>
         <dd>Plot loss ratio projection as a triangle heatmap</dd>
+
+        <dt>
+
+          <code><a href="plot_triangle.Link.html">plot_triangle(<i>&lt;Link&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot a Link object as a triangle heatmap</dd>
 
         <dt>
 
@@ -436,7 +400,7 @@
 
         <dt>
 
-          <code><a href="detect_cohort_regime.html">detect_cohort_regime()</a></code> <code><a href="detect_cohort_regime.html">print(<i>&lt;CohortRegime&gt;</i>)</a></code> <code><a href="detect_cohort_regime.html">summary(<i>&lt;CohortRegime&gt;</i>)</a></code> <code><a href="detect_cohort_regime.html">print(<i>&lt;summary.CohortRegime&gt;</i>)</a></code>
+          <code><a href="detect_regime.html">detect_regime()</a></code> <code><a href="detect_regime.html">print(<i>&lt;Regime&gt;</i>)</a></code> <code><a href="detect_regime.html">summary(<i>&lt;Regime&gt;</i>)</a></code> <code><a href="detect_regime.html">print(<i>&lt;summary.Regime&gt;</i>)</a></code>
 
         </dt>
         <dd>Detect structural regime shifts across underwriting cohorts</dd>
@@ -447,6 +411,13 @@
 
         </dt>
         <dd>Print an <code>ATAFit</code> object</dd>
+
+        <dt>
+
+          <code><a href="print.ATASummary.html">print(<i>&lt;ATASummary&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for <code>ATASummary</code></dd>
 
         <dt>
 
@@ -464,17 +435,17 @@
 
         <dt>
 
+          <code><a href="print.EDSummary.html">print(<i>&lt;EDSummary&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for <code>EDSummary</code></dd>
+
+        <dt>
+
           <code><a href="print.LRFit.html">print(<i>&lt;LRFit&gt;</i>)</a></code>
 
         </dt>
         <dd>Print an <code>LRFit</code> object</dd>
-
-        <dt>
-
-          <code><a href="summary.ATA.html">summary(<i>&lt;ATA&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summarise age-to-age factor statistics</dd>
 
         <dt>
 
@@ -499,13 +470,6 @@
 
         <dt>
 
-          <code><a href="summary.ED.html">summary(<i>&lt;ED&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summarise ED intensity statistics</dd>
-
-        <dt>
-
           <code><a href="summary.EDFit.html">summary(<i>&lt;EDFit&gt;</i>)</a></code>
 
         </dt>
@@ -517,6 +481,13 @@
 
         </dt>
         <dd>Summary method for <code>LRFit</code></dd>
+
+        <dt>
+
+          <code><a href="summary.Link.html">summary(<i>&lt;Link&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Summarise a <code>Link</code> table</dd>
 
         <dt>
 
@@ -532,7 +503,7 @@
         </dt>
         <dd>Summarise development statistics (Mean, Median, Weighted)</dd>
       </dl></div><div class="section level2">
-      <h2 id="--5">헬퍼<a class="anchor" aria-label="anchor" href="#--5"></a></h2>
+      <h2 id="--7">헬퍼<a class="anchor" aria-label="anchor" href="#--7"></a></h2>
 
 
 
@@ -555,7 +526,7 @@
         </dt>
         <dd>Reshape an object to long form (S3 generic)</dd>
       </dl></div><div class="section level2">
-      <h2 id="--6">데이터셋<a class="anchor" aria-label="anchor" href="#--6"></a></h2>
+      <h2 id="--8">데이터셋<a class="anchor" aria-label="anchor" href="#--8"></a></h2>
 
 
 

@@ -45,15 +45,16 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown--">
 <li><a class="dropdown-item" href="articles/index.html">전체 글</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="articles/aggregation-frameworks-ko.html">집계 프레임워크</a></li>
-    <li><a class="dropdown-item" href="articles/triangle-diagnostics-ko.html">Triangle 및 ATA 진단</a></li>
-    <li><a class="dropdown-item" href="articles/loss-ratio-methods-ko.html">손해율 예측 방법론</a></li>
-    <li><a class="dropdown-item" href="articles/lr-convergence-ko.html">예측 손해율 수렴 탐지</a></li>
-    <li><a class="dropdown-item" href="articles/regime-detection-ko.html">Regime 탐지</a></li>
-    <li><a class="dropdown-item" href="articles/regime-break-ko.html">Regime break 필터링</a></li>
+    <li><a class="dropdown-item" href="articles/aggregation-frameworks-ko.html">Aggregation frameworks</a></li>
+    <li><a class="dropdown-item" href="articles/triangle-and-link-ko.html">Triangle and Link</a></li>
+    <li><a class="dropdown-item" href="articles/maturity-ko.html">Maturity</a></li>
+    <li><a class="dropdown-item" href="articles/regime-ko.html">Regime</a></li>
+    <li><a class="dropdown-item" href="articles/projection-ko.html">Projection</a></li>
+    <li><a class="dropdown-item" href="articles/regime-break-filter-ko.html">Regime break filter</a></li>
     <li><a class="dropdown-item" href="articles/backtest-ko.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="articles/convergence-ko.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="articles/chain-ladder-ko.html">(참고) Chain ladder를 이용한 준비금 산출</a></li>
+    <li><a class="dropdown-item" href="articles/chain-ladder-reserving-ko.html">(참고) Chain ladder 를 이용한 준비금 산출</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">참조</a></li>
@@ -103,8 +104,21 @@
 <code>"cl"</code> — 고전적 chain ladder (Mack 모형)</li>
 </ul>
 </li>
-<li>구조적 변화에 대한 코호트 regime 탐지 (<code>detect_cohort_regime</code>)</li>
-<li>진단 및 Triangle 시각화</li>
+<li>추정 셀 선택 진단 — 어떤 데이터로 fit 할지:
+<ul>
+<li>
+<code>detect_maturity</code> — dev 축: ATA 인자가 안정화되는 링크 이후</li>
+<li>
+<code>detect_regime</code> — cohort 축: 인수 코호트 간 구조적 변화</li>
+</ul>
+</li>
+<li>예측 진단:
+<ul>
+<li>
+<code>detect_convergence</code> — 예측 손해율 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi>p</mi><mi>r</mi><mi>o</mi><mi>j</mi></mrow></msubsup><annotation encoding="application/x-tex">\hat{LR}^{proj}_v</annotation></semantics></math> 가 갱신을 멈추는 valuation <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math> (적합 결과 <code>LRFit</code> 위에서 동작)</li>
+</ul>
+</li>
+<li>Backtest 및 Triangle 시각화</li>
 </ul>
 </div>
 <div class="section level2">
@@ -185,9 +199,9 @@
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>              <span class="co"># cohort trajectories</span></span>
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>     <span class="co"># cell heatmap</span></span>
 <span></span>
-<span><span class="co"># ATA 와 노출 기반 발전 모형</span></span>
-<span><span class="va">ata</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_ata.html">build_ata</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span>; <span class="fu"><a href="reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">ata</span><span class="op">)</span></span>
-<span><span class="va">ed</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_ed.html">build_ed</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>;                       <span class="fu"><a href="reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">ed</span><span class="op">)</span></span>
+<span><span class="co"># ATA / 노출 기반 인자 추정</span></span>
+<span><span class="fu"><a href="reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, exposure_var <span class="op">=</span> <span class="st">"crp"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Chain ladder 적합</span></span>
 <span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
@@ -195,11 +209,15 @@
 <span></span>
 <span><span class="co"># 손해율 적합 (default: 단계 적응형)</span></span>
 <span><span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lr</span>, type <span class="op">=</span> <span class="st">"clr"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lr</span>, type <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 코호트 간 구조적 변화 탐지</span></span>
-<span><span class="fu"><a href="reference/detect_cohort_regime.html">detect_cohort_regime</a></span><span class="op">(</span><span class="va">tri</span><span class="op">[</span><span class="va">cv_nm</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"ecp"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># 추정 셀 선택: maturity (dev 축) + regime (cohort 축)</span></span>
+<span><span class="fu"><a href="reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri</span><span class="op">[</span><span class="va">cv_nm</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri</span><span class="op">[</span><span class="va">cv_nm</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"ecp"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># 예측 진단: 예측 손해율이 갱신을 멈추는 시점</span></span>
+<span><span class="fu"><a href="reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="집계-프레임">집계 프레임<a class="anchor" aria-label="anchor" href="#%EC%A7%91%EA%B3%84-%ED%94%84%EB%A0%88%EC%9E%84"></a>
@@ -271,7 +289,7 @@
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>              <span class="co"># base plot generic — line / panel diagnostics</span></span>
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>     <span class="co"># lossratio generic — cell heatmap layout</span></span></code></pre></div>
-<p><code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> 과 <code><a href="reference/plot_triangle.html">plot_triangle()</a></code> 은 <code>Triangle</code>, <code>Calendar</code>, <code>ATA</code>, <code>ATAFit</code>, <code>ED</code>, <code>EDFit</code>, <code>CLFit</code>, <code>LRFit</code>, <code>CohortRegime</code> 객체 전반에 일관되게 작동한다.</p>
+<p><code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> 과 <code><a href="reference/plot_triangle.html">plot_triangle()</a></code> 은 <code>Triangle</code>, <code>Calendar</code>, <code>Link</code>, <code>ATAFit</code>, <code>EDFit</code>, <code>CLFit</code>, <code>LRFit</code>, <code>Maturity</code>, <code>Convergence</code>, <code>Regime</code> 객체 전반에 일관되게 작동한다.</p>
 </div>
 <div class="section level2">
 <h2 id="문서">문서<a class="anchor" aria-label="anchor" href="#%EB%AC%B8%EC%84%9C"></a>
@@ -279,7 +297,7 @@
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">?</span><span class="va">build_triangle</span></span>
 <span><span class="op">?</span><span class="va">fit_lr</span></span>
-<span><span class="op">?</span><span class="va">detect_cohort_regime</span></span>
+<span><span class="op">?</span><span class="va">detect_regime</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"regime-detection"</span>, package <span class="op">=</span> <span class="st">"lossratio"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">

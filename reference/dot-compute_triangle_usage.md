@@ -32,7 +32,7 @@ Mask precedence: `held_out` \> `fit_data` \> `excluded` \> `future`.
 
   Optional cohort cutoff. Accepts the same input forms as
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
-  (`NULL`, `Date`, character, vector, or `CohortRegime`).
+  (`NULL`, `Date`, character, vector, or `Regime`).
 
 - holdout:
 

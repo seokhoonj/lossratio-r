@@ -5,7 +5,7 @@ a complete triangle.
 Two methods are supported via the method argument:
 "basic" (default)
 Classical chain ladder point projection.
-Age-to-age factors are estimated through build_ata() and
+Age-to-age factors are estimated through build_link() and
 fit_ata(), then applied recursively.
 
 "mack"
@@ -23,7 +23,7 @@ a complete triangle.
 Two methods are supported via the method argument:
 "basic" (default)
 Classical chain ladder point projection.
-Age-to-age factors are estimated through build_ata() and
+Age-to-age factors are estimated through build_link() and
 fit_ata(), then applied recursively.
 
 "mack"
@@ -56,15 +56,16 @@ their variance are estimated using the supplied WLS weights.'><meta property="og
   <button class="nav-link dropdown-toggle" type="button" id="dropdown--" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">글</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown--"><li><a class="dropdown-item" href="../articles/index.html">전체 글</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/aggregation-frameworks-ko.html">집계 프레임워크</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-diagnostics-ko.html">Triangle 및 ATA 진단</a></li>
-    <li><a class="dropdown-item" href="../articles/loss-ratio-methods-ko.html">손해율 예측 방법론</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">예측 손해율 수렴 탐지</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-detection-ko.html">Regime 탐지</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-break-ko.html">Regime break 필터링</a></li>
+    <li><a class="dropdown-item" href="../articles/aggregation-frameworks-ko.html">Aggregation frameworks</a></li>
+    <li><a class="dropdown-item" href="../articles/triangle-and-link-ko.html">Triangle and Link</a></li>
+    <li><a class="dropdown-item" href="../articles/maturity-ko.html">Maturity</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-ko.html">Regime</a></li>
+    <li><a class="dropdown-item" href="../articles/projection-ko.html">Projection</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-break-filter-ko.html">Regime break filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/convergence-ko.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/chain-ladder-ko.html">(참고) Chain ladder를 이용한 준비금 산출</a></li>
+    <li><a class="dropdown-item" href="../articles/chain-ladder-reserving-ko.html">(참고) Chain ladder 를 이용한 준비금 산출</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">참조</a></li>
 <li class="nav-item dropdown">
@@ -93,7 +94,7 @@ The function works on long-form cumulative data and does not require
 a complete triangle.</p>
 <p>Two methods are supported via the <code>method</code> argument:</p><dl><dt><code>"basic"</code> (default)</dt>
 <dd><p>Classical chain ladder point projection.
-Age-to-age factors are estimated through <code><a href="build_ata.html">build_ata()</a></code> and
+Age-to-age factors are estimated through <code><a href="build_link.html">build_link()</a></code> and
 <code><a href="fit_ata.html">fit_ata()</a></code>, then applied recursively.</p></dd>
 
 <dt><code>"mack"</code></dt>
@@ -139,7 +140,7 @@ Typical choices are <code>"closs"</code>, <code>"crp"</code>, or <code>"clr"</co
 
 
 <dt id="arg-weight-var">weight_var<a class="anchor" aria-label="anchor" href="#arg-weight-var"></a></dt>
-<dd><p>An optional column name passed to <code><a href="build_ata.html">build_ata()</a></code> as
+<dd><p>An optional column name passed to <code><a href="build_link.html">build_link()</a></code> as
 the WLS weight variable. Typically <code>"crp"</code> when <code>value_var = "clr"</code>.
 Default is <code>NULL</code>.</p></dd>
 
@@ -163,7 +164,7 @@ recent <code>recent</code> periods are used for factor estimation. Default is
 
 <dt id="arg-maturity-args">maturity_args<a class="anchor" aria-label="anchor" href="#arg-maturity-args"></a></dt>
 <dd><p>A named list of arguments forwarded to
-<code><a href="find_ata_maturity.html">find_ata_maturity()</a></code> via <code><a href="fit_ata.html">fit_ata()</a></code>, or <code>NULL</code> (default) to skip
+<code><a href="detect_maturity.html">detect_maturity()</a></code> via <code><a href="fit_ata.html">fit_ata()</a></code>, or <code>NULL</code> (default) to skip
 maturity filtering. Pass <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> to use all defaults with maturity
 filtering enabled.</p></dd>
 
@@ -205,8 +206,8 @@ If numeric, the supplied value is used as the tail factor.</p></dd>
 <dd><p><code>data.table</code> identical to <code>full</code> with observed cells
 set to <code>NA</code>.</p></dd>
 
-<dt><code>ata</code></dt>
-<dd><p>The <code>"ATA"</code> object produced by <code><a href="build_ata.html">build_ata()</a></code>.</p></dd>
+<dt><code>link</code></dt>
+<dd><p>The <code>"Link"</code> object produced by <code><a href="build_link.html">build_link()</a></code>.</p></dd>
 
 <dt><code>summary</code></dt>
 <dd><p>For <code>"basic"</code>: <code>data.table</code> of fitted factors from
@@ -222,7 +223,7 @@ projection.</p></dd>
 from <code><a href="fit_ata.html">fit_ata()</a></code>.</p></dd>
 
 <dt><code>maturity</code></dt>
-<dd><p>Maturity diagnostics from <code><a href="find_ata_maturity.html">find_ata_maturity()</a></code>,
+<dd><p>Maturity diagnostics from <code><a href="detect_maturity.html">detect_maturity()</a></code>,
 or <code>NULL</code> when maturity filtering was not applied.</p></dd>
 
 <dt><code>alpha</code></dt>

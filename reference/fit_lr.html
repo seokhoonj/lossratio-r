@@ -77,14 +77,15 @@ $$\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}$$"><meta property="og:image" c
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/index.html">All articles</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks.html">Aggregation frameworks</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-diagnostics.html">Triangle and ATA diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/loss-ratio-methods.html">Loss ratio projection methods</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence.html">Loss ratio convergence</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-detection.html">Regime detection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-break.html">Regime break filtering</a></li>
+    <li><a class="dropdown-item" href="../articles/triangle-and-link.html">Triangle and Link</a></li>
+    <li><a class="dropdown-item" href="../articles/maturity.html">Maturity</a></li>
+    <li><a class="dropdown-item" href="../articles/regime.html">Regime</a></li>
+    <li><a class="dropdown-item" href="../articles/projection.html">Projection</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-break-filter.html">Regime break filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/convergence.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/chain-ladder.html">(Reference) Chain ladder reserving</a></li>
+    <li><a class="dropdown-item" href="../articles/chain-ladder-reserving.html">(Reference) Chain ladder reserving</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -225,7 +226,7 @@ Default is <code>NULL</code>.</p></dd>
 <dt id="arg-regime-break">regime_break<a class="anchor" aria-label="anchor" href="#arg-regime-break"></a></dt>
 <dd><p>Optional cohort cutoff for the regime break. Accepts:
 <code>NULL</code> (default, no filter), a single <code>Date</code>/character coercible to Date,
-a vector of dates (uses the latest), or a <code>CohortRegime</code> object (extracts
+a vector of dates (uses the latest), or a <code>Regime</code> object (extracts
 the latest from <code>$breakpoints</code>). Behavior depends on <code>method</code>:</p><dl><dt><code>"sa"</code></dt>
 <dd><p>Hybrid filter. Pre-break cohorts are dropped only for
 development periods at or before the maturity point (ED phase);
@@ -242,7 +243,7 @@ the break date are excluded from estimation.</p></dd>
 
 
 <dt id="arg-maturity-args">maturity_args<a class="anchor" aria-label="anchor" href="#arg-maturity-args"></a></dt>
-<dd><p>A named list forwarded to <code><a href="find_ata_maturity.html">find_ata_maturity()</a></code>,
+<dd><p>A named list forwarded to <code><a href="detect_maturity.html">detect_maturity()</a></code>,
 or <code>NULL</code> (default) to skip maturity filtering. When
 <code>method = "sa"</code>, this also determines the switch point between
 ED and CL. Pass <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> to use all defaults.</p></dd>
@@ -270,8 +271,8 @@ Default is <code>NULL</code>.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="build_triangle.html">build_triangle()</a></code>, <code><a href="build_ata.html">build_ata()</a></code>, <code><a href="fit_ata.html">fit_ata()</a></code>,
-<code><a href="build_ed.html">build_ed()</a></code>, <code><a href="fit_ed.html">fit_ed()</a></code>, <code><a href="find_ata_maturity.html">find_ata_maturity()</a></code></p></div>
+    <div class="dont-index"><p><code><a href="build_triangle.html">build_triangle()</a></code>, <code><a href="build_link.html">build_link()</a></code>, <code><a href="fit_ata.html">fit_ata()</a></code>,
+<code><a href="fit_ed.html">fit_ed()</a></code>, <code><a href="detect_maturity.html">detect_maturity()</a></code></p></div>
     </div>
 
     <div class="section level2">

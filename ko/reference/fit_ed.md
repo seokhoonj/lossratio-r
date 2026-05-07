@@ -1,8 +1,9 @@
 # Fit ED intensity factors
 
-Estimate incremental loss intensities \\g_k\\ from an object of class
-`"ED"` and return an `"EDFit"` object that bundles factor summaries,
-selected intensities, and maturity diagnostics.
+Estimate incremental loss intensities \\g_k\\ from a `"Triangle"` object
+and return an `"EDFit"` object that bundles factor summaries, selected
+intensities, and a cell-level projection of cumulative loss and exposure
+(`$full`).
 
 Two methods are supported via the `method` argument:
 
@@ -16,11 +17,21 @@ Two methods are supported via the `method` argument:
   Basic plus factor variance \\\mathrm{Var}(\hat{g}\_k)\\ added as
   `g_var` column in `$selected`.
 
+The `$full` projection table is produced by delegating to
+[`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+with `method = "ed"`, so cumulative loss / exposure / loss-ratio
+projections and their standard errors are numerically identical to those
+of `fit_lr(method = "ed")`. This makes
+[`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+usable with `fit_fn = fit_ed`.
+
 ## Usage
 
 ``` r
 fit_ed(
   x,
+  value_var = "closs",
+  exposure_var = "crp",
   method = c("basic", "mack"),
   alpha = 1,
   na_method = c("zero", "locf", "none"),
@@ -35,8 +46,22 @@ fit_ed(
 
 - x:
 
-  An object of class `"ED"`, typically produced by
-  [`build_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/build_ed.md).
+  A `"Triangle"` object.
+
+- value_var:
+
+  Cumulative loss variable. Default `"closs"`. Forwarded to
+  [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md)
+  and to
+  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  as `loss_var`.
+
+- exposure_var:
+
+  Cumulative exposure variable. Default `"crp"`. Forwarded to
+  [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md)
+  and to
+  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md).
 
 - method:
 
@@ -66,21 +91,43 @@ fit_ed(
 
   Optional cohort cutoff for the regime break. Accepts: `NULL` (default,
   no filter), a single `Date`/character coercible to Date, a vector of
-  dates (uses the latest), or a `CohortRegime` object (extracts the
-  latest from `$breakpoints`). When supplied, cohorts with
+  dates (uses the latest), or a `Regime` object (extracts the latest
+  from `$breakpoints`). When supplied, cohorts with
   `cohort < break_date` are excluded from estimation. Default is `NULL`.
 
 - ...:
 
   Additional arguments passed to
-  [`summary.ED()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.ED.md).
+  [`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md).
 
 ## Value
 
-An object of class `"EDFit"` (a named list).
+An object of class `"EDFit"` (a named list) with components:
+
+- `factor`:
+
+  `EDSummary` of fitted intensities per development link.
+
+- `selected`:
+
+  `data.table` of selected `g_selected`, `sigma2` (and `g_var` when
+  `method = "mack"`).
+
+- `full`:
+
+  `data.table` mirroring `LRFit$full` for `method = "ed"`: per-cell
+  cumulative loss / exposure / loss-ratio projection plus SE columns
+  (`closs_proj`, `exposure_proj`, `lr_proj`, `se_proj`, `se_lr`,
+  `cv_lr`, ...). Available cells include both observed and projected;
+  `is_observed` flags observed cells.
+
+- `link`:
+
+  `Link` object used for factor estimation.
 
 ## See also
 
-[`build_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/build_ed.md),
-[`summary.ED()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.ED.md),
-[`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+[`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md),
+[`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md),
+[`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
+[`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)

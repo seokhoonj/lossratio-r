@@ -6,8 +6,7 @@ Internal helper computing:
 
 where \\W_k = \sum_i w\_{i,k} \cdot C\_{i,k}^\alpha\\. This is
 consistent with the WLS weight \\w\_{i,k} / C\_{i,k}^{2-\alpha}\\ used
-in
-[`.lm_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-lm_ata.md).
+in `.lm_ata()`.
 
 Also used by
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)

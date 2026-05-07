@@ -4,20 +4,22 @@
 
 - [Aggregation frameworks: Triangle, Calendar,
   Total](https://seokhoonj.github.io/lossratio/articles/aggregation-frameworks.md):
-- [Triangle and ATA
-  diagnostics](https://seokhoonj.github.io/lossratio/articles/triangle-diagnostics.md):
-- [Loss ratio projection methods: SA, ED,
-  CL](https://seokhoonj.github.io/lossratio/articles/loss-ratio-methods.md):
-- [Diagnosing loss ratio
-  convergence](https://seokhoonj.github.io/lossratio/articles/lr-convergence.md):
-- [Detecting regime shifts across underwriting
-  cohorts](https://seokhoonj.github.io/lossratio/articles/regime-detection.md):
-- [Hybrid filtering via regime
-  break](https://seokhoonj.github.io/lossratio/articles/regime-break.md):
-- [Backtesting projections against held-out
-  diagonals](https://seokhoonj.github.io/lossratio/articles/backtest.md):
+- [Triangle and Link: data structures and factor
+  diagnostics](https://seokhoonj.github.io/lossratio/articles/triangle-and-link.md):
+- [Maturity: detecting when ATA factors stabilise across
+  cohorts](https://seokhoonj.github.io/lossratio/articles/maturity.md):
+- [Regime: detecting structural breaks across underwriting
+  cohorts](https://seokhoonj.github.io/lossratio/articles/regime.md):
+- [Projection: SA, ED, CL
+  methods](https://seokhoonj.github.io/lossratio/articles/projection.md):
+- [Regime break filter: hybrid cohort + diagonal cut for
+  fit\_\*](https://seokhoonj.github.io/lossratio/articles/regime-break-filter.md):
+- [Backtest: holding out the latest diagonals to validate
+  projections](https://seokhoonj.github.io/lossratio/articles/backtest.md):
+- [Convergence: detecting when projected loss ratio stops
+  revising](https://seokhoonj.github.io/lossratio/articles/convergence.md):
 
 ### Reference
 
-- [Chain ladder
-  reserving](https://seokhoonj.github.io/lossratio/articles/chain-ladder.md):
+- [(Reference) Chain ladder
+  reserving](https://seokhoonj.github.io/lossratio/articles/chain-ladder-reserving.md):

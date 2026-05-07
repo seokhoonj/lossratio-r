@@ -54,7 +54,7 @@ plot_triangle(
   :   Cell-status heatmap (fit_data / held_out / excluded / future).
       Accepts `recent`, `regime_break`, `holdout`, `maturity_args` via
       `...`. See
-      [`vignette("regime-break")`](https://seokhoonj.github.io/lossratio/articles/regime-break.md)
+      [`vignette("regime-break-filter")`](https://seokhoonj.github.io/lossratio/articles/regime-break-filter.md)
       for details.
 
 - value_var:

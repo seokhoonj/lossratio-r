@@ -42,15 +42,16 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown--">
 <li><a class="dropdown-item" href="../articles/index.html">전체 글</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/aggregation-frameworks-ko.html">집계 프레임워크</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-diagnostics-ko.html">Triangle 및 ATA 진단</a></li>
-    <li><a class="dropdown-item" href="../articles/loss-ratio-methods-ko.html">손해율 예측 방법론</a></li>
-    <li><a class="dropdown-item" href="../articles/lr-convergence-ko.html">예측 손해율 수렴 탐지</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-detection-ko.html">Regime 탐지</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-break-ko.html">Regime break 필터링</a></li>
+    <li><a class="dropdown-item" href="../articles/aggregation-frameworks-ko.html">Aggregation frameworks</a></li>
+    <li><a class="dropdown-item" href="../articles/triangle-and-link-ko.html">Triangle and Link</a></li>
+    <li><a class="dropdown-item" href="../articles/maturity-ko.html">Maturity</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-ko.html">Regime</a></li>
+    <li><a class="dropdown-item" href="../articles/projection-ko.html">Projection</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-break-filter-ko.html">Regime break filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
+    <li><a class="dropdown-item" href="../articles/convergence-ko.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/chain-ladder-ko.html">(참고) Chain ladder를 이용한 준비금 산출</a></li>
+    <li><a class="dropdown-item" href="../articles/chain-ladder-reserving-ko.html">(참고) Chain ladder 를 이용한 준비금 산출</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">참조</a></li>
@@ -194,10 +195,11 @@ premium. Visualise as line plot or heatmap:</p>
 <span>                        cohort_var <span class="op">=</span> <span class="st">"uyq"</span>, dev_var <span class="op">=</span> <span class="st">"elap_q"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_q</span><span class="op">)</span>   <span class="co"># cohort × dev heatmap of clr</span></span></code></pre></div>
 <p><img src="aggregation-frameworks_files/figure-html/unnamed-chunk-2-2.png" class="r-plt" alt="" width="100%"></p>
-<p>Use <code>Triangle</code> as input to: - <code><a href="../reference/build_ata.html">build_ata()</a></code>,
-<code><a href="../reference/build_ed.html">build_ed()</a></code> — development factors - <code><a href="../reference/fit_cl.html">fit_cl()</a></code>,
-<code><a href="../reference/fit_lr.html">fit_lr()</a></code> — projection - <code><a href="../reference/detect_cohort_regime.html">detect_cohort_regime()</a></code>
-— structural change detection</p>
+<p>Use <code>Triangle</code> as input to: - <code><a href="../reference/build_link.html">build_link()</a></code> —
+development factors (ATA / ED via <code>value_var</code> + optional
+<code>exposure_var</code>) - <code><a href="../reference/fit_cl.html">fit_cl()</a></code>,
+<code><a href="../reference/fit_lr.html">fit_lr()</a></code> — projection - <code><a href="../reference/detect_regime.html">detect_regime()</a></code> —
+structural change detection</p>
 </div>
 <div class="section level2">
 <h2 id="calendar-calendar-period-only">Calendar (calendar period only)<a class="anchor" aria-label="anchor" href="#calendar-calendar-period-only"></a>

@@ -1,8 +1,8 @@
 # Plot an ED fit
 
 Visualise an object of class `"EDFit"` by delegating to
-[`plot.ED()`](https://seokhoonj.github.io/lossratio/reference/plot.ED.md)
-on the underlying `ED` data stored in `x$ed`.
+[`plot.Link()`](https://seokhoonj.github.io/lossratio/reference/plot.Link.md)
+on the underlying `Link` data stored in `x$link` with `model = "ed"`.
 
 ## Usage
 
@@ -20,7 +20,7 @@ plot(x, ...)
 - ...:
 
   Arguments passed to
-  [`plot.ED()`](https://seokhoonj.github.io/lossratio/reference/plot.ED.md).
+  [`plot.Link()`](https://seokhoonj.github.io/lossratio/reference/plot.Link.md).
 
 ## Value
 
@@ -28,5 +28,5 @@ A `ggplot` object.
 
 ## See also
 
-[`plot.ED()`](https://seokhoonj.github.io/lossratio/reference/plot.ED.md),
+[`plot.Link()`](https://seokhoonj.github.io/lossratio/reference/plot.Link.md),
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md)

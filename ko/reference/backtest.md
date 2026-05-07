@@ -42,11 +42,12 @@ print(x, ...)
 - fit_fn:
 
   Fitting function. Default `fit_lr` (stage-adaptive loss-ratio
-  projection); also supports `fit_cl` for single-column chain ladder. If
-  `fit_fn` does not have a `value_var` formal (as is the case for
-  `fit_lr`), `value_var` is used only to select the comparison column on
-  the fit's `$full` table; arguments for the fitter itself (e.g.,
-  `loss_var`, `exposure_var`, `method`) are passed through `...`.
+  projection); also supports `fit_cl` for single-column chain ladder and
+  `fit_ed` for exposure-driven projection. If `fit_fn` does not have a
+  `value_var` formal (as is the case for `fit_lr` and `fit_ed`),
+  `value_var` is used only to select the comparison column on the fit's
+  `$full` table; arguments for the fitter itself (e.g., `loss_var`,
+  `exposure_var`, `method`) are passed through `...`.
 
 - value_var:
 
@@ -136,6 +137,7 @@ against the fit's projection table.
 | **`fit_fn`** | **Valid `value_var`** | **Forwarded to fitter?** | **Compared column on `fit$full`** | **Notes** |
 | `fit_cl` | any numeric column in `x` | yes (as `value_var`) | `value_proj` | Score column equals the column being accumulated by chain ladder. |
 | `fit_lr` | `"closs"`, `"crp"`, `"clr"` | no (fit_lr ignores `value_var`) | `loss_proj`, `exposure_proj`, `lr_proj` respectively | Fitter projects all three jointly; `value_var` only selects the scoring lane. |
+| `fit_ed` | `"closs"`, `"crp"`, `"clr"` | no (fit_ed ignores `value_var`) | `closs_proj`, `exposure_proj`, `lr_proj` respectively | Pure exposure-driven projection (additive \\g_k \cdot C^P_k\\); `value_var` only selects the scoring lane. |
 
 This means that `backtest(..., value_var = "closs")` paired with
 `fit_lr` is *not* the same operation as `fit_cl(value_var = "closs")`
@@ -148,6 +150,7 @@ loss.
 
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md),
+[`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md),
 [`plot.Backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/plot.Backtest.md)
 
 ## Examples

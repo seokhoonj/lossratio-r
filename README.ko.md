@@ -35,8 +35,13 @@
     chain ladder
   - `"ed"` — 모든 경과 기간에 대해 노출 기반
   - `"cl"` — 고전적 chain ladder (Mack 모형)
-- 구조적 변화에 대한 코호트 regime 탐지 (`detect_cohort_regime`)
-- 진단 및 Triangle 시각화
+- 추정 셀 선택 진단 — 어떤 데이터로 fit 할지:
+  - `detect_maturity` — dev 축: ATA 인자가 안정화되는 링크 이후
+  - `detect_regime` — cohort 축: 인수 코호트 간 구조적 변화
+- 예측 진단:
+  - `detect_convergence` — 예측 손해율 $`\hat{LR}^{proj}_v`$ 가 갱신을
+    멈추는 valuation $`v`$ (적합 결과 `LRFit` 위에서 동작)
+- Backtest 및 Triangle 시각화
 
 ## 입력 형식
 
@@ -88,9 +93,9 @@ tri <- build_triangle(exp, group_var = cv_nm)
 plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
 
-# ATA 와 노출 기반 발전 모형
-ata <- build_ata(tri, value_var = "closs"); fit_ata(ata)
-ed  <- build_ed(tri);                       fit_ed(ed)
+# ATA / 노출 기반 인자 추정
+fit_ata(tri, value_var = "closs")
+fit_ed(tri, value_var = "closs", exposure_var = "crp")
 
 # Chain ladder 적합
 cl <- fit_cl(tri, value_var = "closs", method = "mack")
@@ -98,11 +103,15 @@ plot(cl, type = "projection")
 
 # 손해율 적합 (default: 단계 적응형)
 lr <- fit_lr(tri, method = "sa")
-plot(lr, type = "clr")
+plot(lr, type = "lr")
 summary(lr)
 
-# 코호트 간 구조적 변화 탐지
-detect_cohort_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
+# 추정 셀 선택: maturity (dev 축) + regime (cohort 축)
+detect_maturity(tri[cv_nm == "SUR"])
+detect_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
+
+# 예측 진단: 예측 손해율이 갱신을 멈추는 시점
+detect_convergence(lr)
 ```
 
 ## 집계 프레임
@@ -157,8 +166,8 @@ plot_triangle(x)     # lossratio generic — cell heatmap layout
 
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) 과
 [`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
-은 `Triangle`, `Calendar`, `ATA`, `ATAFit`, `ED`, `EDFit`, `CLFit`,
-`LRFit`, `CohortRegime` 객체 전반에 일관되게 작동한다.
+은 `Triangle`, `Calendar`, `Link`, `ATAFit`, `EDFit`, `CLFit`, `LRFit`,
+`Maturity`, `Convergence`, `Regime` 객체 전반에 일관되게 작동한다.
 
 ## 문서
 
@@ -166,7 +175,7 @@ plot_triangle(x)     # lossratio generic — cell heatmap layout
 
 ?build_triangle
 ?fit_lr
-?detect_cohort_regime
+?detect_regime
 vignette("regime-detection", package = "lossratio")
 ```
 

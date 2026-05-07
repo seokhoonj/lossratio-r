@@ -6,21 +6,23 @@ articles:
   aggregation-frameworks: aggregation-frameworks.html
   articles/backtest-ko: backtest-ko.html
   backtest: backtest.html
-  articles/chain-ladder-ko: chain-ladder-ko.html
-  chain-ladder: chain-ladder.html
+  articles/chain-ladder-reserving-ko: chain-ladder-reserving-ko.html
+  chain-ladder-reserving: chain-ladder-reserving.html
+  articles/convergence-ko: convergence-ko.html
+  convergence: convergence.html
   articles/getting-started-ko: getting-started-ko.html
   getting-started: getting-started.html
-  articles/loss-ratio-methods-ko: loss-ratio-methods-ko.html
-  loss-ratio-methods: loss-ratio-methods.html
-  articles/lr-convergence-ko: lr-convergence-ko.html
-  lr-convergence: lr-convergence.html
-  articles/regime-break-ko: regime-break-ko.html
-  regime-break: regime-break.html
-  articles/regime-detection-ko: regime-detection-ko.html
-  regime-detection: regime-detection.html
-  articles/triangle-diagnostics-ko: triangle-diagnostics-ko.html
-  triangle-diagnostics: triangle-diagnostics.html
-last_built: 2026-05-07T01:19Z
+  articles/maturity-ko: maturity-ko.html
+  maturity: maturity.html
+  articles/projection-ko: projection-ko.html
+  projection: projection.html
+  articles/regime-break-filter-ko: regime-break-filter-ko.html
+  regime-break-filter: regime-break-filter.html
+  articles/regime-ko: regime-ko.html
+  regime: regime.html
+  articles/triangle-and-link-ko: triangle-and-link-ko.html
+  triangle-and-link: triangle-and-link.html
+last_built: 2026-05-07T19:00Z
 urls:
   reference: https://seokhoonj.github.io/lossratio/ko/reference
   article: https://seokhoonj.github.io/lossratio/ko/articles
