@@ -14,8 +14,11 @@ home:
 navbar:
   structure:
     left:  [intro, articles, reference, news]
-    right: [language, search, github]
+    right: [lang_switch, search, github]
   components:
+    lang_switch:
+      text: "🇬🇧 English"
+      href: ../
     intro:
       text: 시작하기
       href: articles/getting-started-ko.html

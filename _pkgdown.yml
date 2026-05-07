@@ -13,8 +13,11 @@ home:
 navbar:
   structure:
     left:  [intro, articles, reference, news]
-    right: [language, search, github]
+    right: [lang_switch, search, github]
   components:
+    lang_switch:
+      text: "🇰🇷 한국어"
+      href: ko/
     intro:
       text: Get started
       href: articles/getting-started.html
