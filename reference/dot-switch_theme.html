@@ -26,6 +26,16 @@ ggplot2::element_blank().'><meta property="og:image" content="https://seokhoonj.
      slicing rather than a regex with end-anchor, because pandoc
      treats the dollar sign as a template variable delimiter. --><script>
   (function() {
+    // If a Korean visitor explicitly clicked the English nav switch,
+    // their previous page was /lossratio/ko/...; remember that they
+    // chose English so the next reload does not bounce them back.
+    try {
+      if (document.referrer.indexOf('/lossratio/ko/') !== -1) {
+        localStorage.setItem('lossratio_lang', 'en');
+      }
+      if (localStorage.getItem('lossratio_lang') === 'en') return;
+    } catch (e) { /* localStorage unavailable */ }
+
     var p = window.location.pathname;
     if (p.slice(-11) === '/index.html') p = p.slice(0, -11);
     else if (p.slice(-1) === '/') p = p.slice(0, -1);
