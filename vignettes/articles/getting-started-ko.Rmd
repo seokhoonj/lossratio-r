@@ -139,4 +139,4 @@ detect_regime(sub, K = 12, method = "ecp")
 - `vignette("regime")` — `detect_regime()` 을 통한 코호트
   간 구조 변화 진단.
 - `vignette("backtest")` — `fit_cl` 또는 `fit_lr` 을 사용한 대각선
-  홀드아웃(holdout) 검증.
+  hold-out 검증.
