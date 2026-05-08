@@ -134,7 +134,7 @@ See `vignette("regime")` for the dedicated walkthrough.
   `"cl"` in `fit_lr()`.
 - `vignette("chain-ladder-reserving")` — `fit_cl()` deep dive (Mack variance,
   tail factor).
-- `vignette("triangle-and-link")` — `summary()`,
+- `vignette("triangle-link-and-maturity")` — `summary()`,
   `detect_maturity()`, and triangle-style visualisations.
 - `vignette("regime")` — `detect_regime()` for
   structural-change diagnosis across cohorts.

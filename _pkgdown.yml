@@ -52,10 +52,8 @@ navbar:
       - text: -------
       - text: Aggregation frameworks
         href: articles/aggregation-frameworks.html
-      - text: Triangle and Link
-        href: articles/triangle-and-link.html
-      - text: Maturity
-        href: articles/maturity.html
+      - text: Triangle, Link and Maturity
+        href: articles/triangle-link-and-maturity.html
       - text: Regime
         href: articles/regime.html
       - text: Projection
@@ -171,8 +169,7 @@ articles:
   navbar: ~
   contents:
   - aggregation-frameworks
-  - triangle-and-link
-  - maturity
+  - triangle-link-and-maturity
   - regime
   - projection
   - regime-break-filter
@@ -188,8 +185,7 @@ articles:
   - getting-started
   - "articles/getting-started-ko"
   - "articles/aggregation-frameworks-ko"
-  - "articles/triangle-and-link-ko"
-  - "articles/maturity-ko"
+  - "articles/triangle-link-and-maturity-ko"
   - "articles/regime-ko"
   - "articles/projection-ko"
   - "articles/regime-break-filter-ko"
