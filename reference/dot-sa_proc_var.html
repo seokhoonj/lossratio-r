@@ -22,23 +22,50 @@ CL phase (multiplicative, Mack):
      slicing rather than a regex with end-anchor, because pandoc
      treats the dollar sign as a template variable delimiter. --><script>
   (function() {
-    // If a Korean visitor explicitly clicked the English nav switch,
-    // their previous page was /lossratio/ko/...; remember that they
-    // chose English so the next reload does not bounce them back.
+    // Drop any stale localStorage flag from earlier deployments
+    // that used persistent storage. Per-session preference lives
+    // in sessionStorage from now on.
+    try { localStorage.removeItem('lossratio_lang'); } catch (e) {}
+
+    // Within the current session: if the visitor explicitly clicked
+    // the English nav switch (came from /ko/...), remember that and
+    // do not auto-redirect back. New tab / browser restart wipes
+    // sessionStorage, so the next first-visit detects again.
     try {
       if (document.referrer.indexOf('/lossratio/ko/') !== -1) {
-        localStorage.setItem('lossratio_lang', 'en');
+        sessionStorage.setItem('lossratio_lang', 'en');
       }
-      if (localStorage.getItem('lossratio_lang') === 'en') return;
-    } catch (e) { /* localStorage unavailable */ }
+      if (sessionStorage.getItem('lossratio_lang') === 'en') return;
+    } catch (e) { /* sessionStorage unavailable */ }
 
+    // Only run on landing page (root or /index.html).
     var p = window.location.pathname;
     if (p.slice(-11) === '/index.html') p = p.slice(0, -11);
     else if (p.slice(-1) === '/') p = p.slice(0, -1);
-    if (p.slice(-10) === '/lossratio' || p === '') {
-      var lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
-      if (lang.indexOf('ko') === 0) window.location.replace('./ko/');
+    if (!(p.slice(-10) === '/lossratio' || p === '')) return;
+
+    // Detect Korean preference via three signals:
+    //   1. navigator.languages array (covers users whose primary
+    //      browser language is EN but who also list KO).
+    //   2. navigator.language single value (older browsers).
+    //   3. Asia/Seoul timezone (catches Korean visitors whose
+    //      browser was provisioned with English locale, which is
+    //      common in corporate environments).
+    function prefersKorean() {
+      var langs = navigator.languages
+        || [navigator.language || navigator.userLanguage || ''];
+      for (var i = 0; i < langs.length; i++) {
+        if (typeof langs[i] === 'string'
+            && langs[i].toLowerCase().indexOf('ko') === 0) return true;
+      }
+      try {
+        var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (tz === 'Asia/Seoul') return true;
+      } catch (e) { /* Intl unavailable */ }
+      return false;
     }
+
+    if (prefersKorean()) window.location.replace('./ko/');
   })();
 </script><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
