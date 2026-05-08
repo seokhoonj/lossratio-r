@@ -283,7 +283,7 @@ its WLS summary are built internally:
 mat <- detect_maturity(
   tri,
   value_var       = "closs",
-  cv_threshold    = 0.10,    # CV must be below this
+  cv_threshold    = 0.15,    # CV must be below this
   rse_threshold   = 0.05,    # RSE must be below this
   min_valid_ratio = 0.5,     # at least 50% finite cohorts at the link
   min_n_valid     = 3L,      # at least 3 finite cohorts
@@ -357,15 +357,44 @@ dev).
 
 For multi-group triangles
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
-returns one row per group:
+returns one row per group, each detected independently with the same
+thresholds:
 
 ``` r
 
 tri_all <- build_triangle(as_experience(experience), group_var = cv_nm)
 detect_maturity(tri_all, value_var = "closs")
+#> Key: <cv_nm>
+#>     cv_nm ata_from ata_to ata_link     mean   median       wt         cv
+#>    <char>    <int>  <int>   <char>    <num>    <num>    <num>      <num>
+#> 1:    2CI        9     10     9-10 1.200664 1.165168 1.191871 0.11890294
+#> 2:    CAN       12     13    12-13 1.168357 1.127671 1.154423 0.09720467
+#> 3:    HOS       10     11    10-11 1.193928 1.157247 1.184079 0.11339122
+#> 4:    SUR        9     10     9-10 1.187815 1.172305 1.164727 0.09743995
+#>           f       f_se        rse    sigma n_obs n_valid n_inf n_nan
+#>       <num>      <num>      <num>    <num> <int>   <int> <int> <int>
+#> 1: 1.191871 0.03125736 0.02622544 1807.059    21      21     0     0
+#> 2: 1.154423 0.02502945 0.02168134 1751.230    18      18     0     0
+#> 3: 1.184079 0.03028008 0.02557268 1612.839    20      20     0     0
+#> 4: 1.164727 0.02218428 0.01904677 1774.278    21      21     0     0
+#>    valid_ratio
+#>          <num>
+#> 1:           1
+#> 2:           1
+#> 3:           1
+#> 4:           1
 ```
 
-Each group is detected independently with the same thresholds.
+The link diagnostic plot makes the result easier to read — each cv gets
+its own panel and the vertical line marks the maturity point where CV
+first drops below `cv_threshold`:
+
+``` r
+
+plot(build_link(tri_all, value_var = "closs"), type = "cv")
+```
+
+![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-12-1.png)
 
 ## Validation before building
 

@@ -89,7 +89,7 @@ fit_ata(
 
   `cv_threshold`
 
-  :   Default `0.10`.
+  :   Default `0.15`.
 
   `rse_threshold`
 

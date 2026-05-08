@@ -320,7 +320,7 @@ are built internally:</p>
 <code class="sourceCode R"><span><span class="va">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span></span>
 <span>  <span class="va">tri</span>,</span>
 <span>  value_var       <span class="op">=</span> <span class="st">"closs"</span>,</span>
-<span>  cv_threshold    <span class="op">=</span> <span class="fl">0.10</span>,    <span class="co"># CV must be below this</span></span>
+<span>  cv_threshold    <span class="op">=</span> <span class="fl">0.15</span>,    <span class="co"># CV must be below this</span></span>
 <span>  rse_threshold   <span class="op">=</span> <span class="fl">0.05</span>,    <span class="co"># RSE must be below this</span></span>
 <span>  min_valid_ratio <span class="op">=</span> <span class="fl">0.5</span>,     <span class="co"># at least 50% finite cohorts at the link</span></span>
 <span>  min_n_valid     <span class="op">=</span> <span class="fl">3L</span>,      <span class="co"># at least 3 finite cohorts</span></span>
@@ -396,11 +396,35 @@ to CL (later dev).</p>
 <h3 id="group-wise-output">Group-wise output<a class="anchor" aria-label="anchor" href="#group-wise-output"></a>
 </h3>
 <p>For multi-group triangles <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> returns one
-row per group:</p>
+row per group, each detected independently with the same thresholds:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tri_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="fu"><a href="../reference/as_experience.html">as_experience</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri_all</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span></span></code></pre></div>
-<p>Each group is detected independently with the same thresholds.</p>
+<span><span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri_all</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Key: &lt;cv_nm&gt;</span></span>
+<span><span class="co">#&gt;     cv_nm ata_from ata_to ata_link     mean   median       wt         cv</span></span>
+<span><span class="co">#&gt;    &lt;char&gt;    &lt;int&gt;  &lt;int&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;      &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:    2CI        9     10     9-10 1.200664 1.165168 1.191871 0.11890294</span></span>
+<span><span class="co">#&gt; 2:    CAN       12     13    12-13 1.168357 1.127671 1.154423 0.09720467</span></span>
+<span><span class="co">#&gt; 3:    HOS       10     11    10-11 1.193928 1.157247 1.184079 0.11339122</span></span>
+<span><span class="co">#&gt; 4:    SUR        9     10     9-10 1.187815 1.172305 1.164727 0.09743995</span></span>
+<span><span class="co">#&gt;           f       f_se        rse    sigma n_obs n_valid n_inf n_nan</span></span>
+<span><span class="co">#&gt;       &lt;num&gt;      &lt;num&gt;      &lt;num&gt;    &lt;num&gt; &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1: 1.191871 0.03125736 0.02622544 1807.059    21      21     0     0</span></span>
+<span><span class="co">#&gt; 2: 1.154423 0.02502945 0.02168134 1751.230    18      18     0     0</span></span>
+<span><span class="co">#&gt; 3: 1.184079 0.03028008 0.02557268 1612.839    20      20     0     0</span></span>
+<span><span class="co">#&gt; 4: 1.164727 0.02218428 0.01904677 1774.278    21      21     0     0</span></span>
+<span><span class="co">#&gt;    valid_ratio</span></span>
+<span><span class="co">#&gt;          &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:           1</span></span>
+<span><span class="co">#&gt; 2:           1</span></span>
+<span><span class="co">#&gt; 3:           1</span></span>
+<span><span class="co">#&gt; 4:           1</span></span></code></pre></div>
+<p>The link diagnostic plot makes the result easier to read — each cv
+gets its own panel and the vertical line marks the maturity point where
+CV first drops below <code>cv_threshold</code>:</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/build_link.html">build_link</a></span><span class="op">(</span><span class="va">tri_all</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"cv"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="100%"></p>
 </div>
 </div>
 <div class="section level2">
@@ -408,7 +432,7 @@ row per group:</p>
 </h2>
 <p>If gaps in the development sequence are suspected, inspect them
 before <code><a href="../reference/build_triangle.html">build_triangle()</a></code>:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gaps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate_triangle.html">validate_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span>,</span>
 <span>                          cohort_var <span class="op">=</span> <span class="st">"uym"</span>, dev_var <span class="op">=</span> <span class="st">"elap_m"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">gaps</span><span class="op">)</span></span>
@@ -432,7 +456,7 @@ to zero-fill missing cells (use with care — inflates
 <p>When older cohorts are no longer representative (rate change,
 reserving regime shift), restrict estimation to the recent calendar
 diagonals:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, alpha <span class="op">=</span> <span class="fl">1</span>, recent <span class="op">=</span> <span class="fl">12</span><span class="op">)</span>  <span class="co"># last 12 calendar diagonals</span></span>
 <span><span class="co">#&gt; &lt;ATAFit&gt;</span></span>
 <span><span class="co">#&gt; alpha       : 1 </span></span>

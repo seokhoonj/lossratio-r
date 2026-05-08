@@ -285,7 +285,7 @@ WLS 요약을 자동으로 빌드한다.
 mat <- detect_maturity(
   tri,
   value_var       = "closs",
-  cv_threshold    = 0.10,    # CV 가 이 값보다 작아야 함
+  cv_threshold    = 0.15,    # CV 가 이 값보다 작아야 함
   rse_threshold   = 0.05,    # RSE 가 이 값보다 작아야 함
   min_valid_ratio = 0.5,     # 해당 링크에서 유한 코호트가 50% 이상
   min_n_valid     = 3L,      # 유한 코호트가 최소 3개
@@ -357,15 +357,44 @@ fit_lr(tri, method = "sa",
 
 다중 그룹 triangle 의 경우
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
-는 그룹별로 한 행씩 반환한다.
+는 그룹별로 한 행씩 반환하며, 각 그룹은 동일한 임계값 하에서 독립적으로
+탐지된다.
 
 ``` r
 
 tri_all <- build_triangle(as_experience(experience), group_var = cv_nm)
 detect_maturity(tri_all, value_var = "closs")
+#> Key: <cv_nm>
+#>     cv_nm ata_from ata_to ata_link     mean   median       wt         cv
+#>    <char>    <int>  <int>   <char>    <num>    <num>    <num>      <num>
+#> 1:    2CI        9     10     9-10 1.200664 1.165168 1.191871 0.11890294
+#> 2:    CAN       12     13    12-13 1.168357 1.127671 1.154423 0.09720467
+#> 3:    HOS       10     11    10-11 1.193928 1.157247 1.184079 0.11339122
+#> 4:    SUR        9     10     9-10 1.187815 1.172305 1.164727 0.09743995
+#>           f       f_se        rse    sigma n_obs n_valid n_inf n_nan
+#>       <num>      <num>      <num>    <num> <int>   <int> <int> <int>
+#> 1: 1.191871 0.03125736 0.02622544 1807.059    21      21     0     0
+#> 2: 1.154423 0.02502945 0.02168134 1751.230    18      18     0     0
+#> 3: 1.184079 0.03028008 0.02557268 1612.839    20      20     0     0
+#> 4: 1.164727 0.02218428 0.01904677 1774.278    21      21     0     0
+#>    valid_ratio
+#>          <num>
+#> 1:           1
+#> 2:           1
+#> 3:           1
+#> 4:           1
 ```
 
-각 그룹은 동일한 임계값 하에서 독립적으로 탐지된다.
+링크 진단 플롯으로 보면 결과를 한눈에 읽기 쉽다 — cv 별 facet 으로
+나뉘고, 수직선이 CV 가 `cv_threshold` 아래로 처음 떨어지는 성숙점을
+표시한다.
+
+``` r
+
+plot(build_link(tri_all, value_var = "closs"), type = "cv")
+```
+
+![](triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-12-1.png)
 
 ## 4. 빌드 전 검증
 
