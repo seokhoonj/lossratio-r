@@ -158,7 +158,7 @@ single-variable `Link` and its WLS summary are built internally:
 mat <- detect_maturity(
   tri,
   value_var       = "closs",
-  cv_threshold    = 0.10,    # CV must be below this
+  cv_threshold    = 0.15,    # CV must be below this
   rse_threshold   = 0.05,    # RSE must be below this
   min_valid_ratio = 0.5,     # at least 50% finite cohorts at the link
   min_n_valid     = 3L,      # at least 3 finite cohorts
@@ -217,14 +217,20 @@ the dev at which the projection switches from ED (early dev) to CL
 ### Group-wise output
 
 For multi-group triangles `detect_maturity()` returns one row per
-group:
+group, each detected independently with the same thresholds:
 
-```{r, eval = FALSE}
+```{r}
 tri_all <- build_triangle(as_experience(experience), group_var = cv_nm)
 detect_maturity(tri_all, value_var = "closs")
 ```
 
-Each group is detected independently with the same thresholds.
+The link diagnostic plot makes the result easier to read — each cv
+gets its own panel and the vertical line marks the maturity point
+where CV first drops below `cv_threshold`:
+
+```{r}
+plot(build_link(tri_all, value_var = "closs"), type = "cv")
+```
 
 ## Validation before building
 

@@ -264,7 +264,7 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'   When a list is supplied, missing elements are filled with package
 #'   defaults via [utils::modifyList()]:
 #'   \describe{
-#'     \item{`cv_threshold`}{Default `0.10`.}
+#'     \item{`cv_threshold`}{Default `0.15`.}
 #'     \item{`rse_threshold`}{Default `0.05`.}
 #'     \item{`min_valid_ratio`}{Default `0.5`.}
 #'     \item{`min_n_valid`}{Default `3L`.}
@@ -354,7 +354,7 @@ fit_ata <- function(x,
   maturity_args <- if (!is.null(maturity_args)) {
     utils::modifyList(
       list(
-        cv_threshold    = 0.10,
+        cv_threshold    = 0.15,
         rse_threshold   = 0.05,
         min_valid_ratio = 0.5,
         min_n_valid     = 3L,

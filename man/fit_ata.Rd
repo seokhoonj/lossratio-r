@@ -53,7 +53,7 @@ the latest from \verb{$breakpoints}). When supplied, cohorts with
 When a list is supplied, missing elements are filled with package
 defaults via \code{\link[utils:modifyList]{utils::modifyList()}}:
 \describe{
-\item{\code{cv_threshold}}{Default \code{0.10}.}
+\item{\code{cv_threshold}}{Default \code{0.15}.}
 \item{\code{rse_threshold}}{Default \code{0.05}.}
 \item{\code{min_valid_ratio}}{Default \code{0.5}.}
 \item{\code{min_n_valid}}{Default \code{3L}.}
