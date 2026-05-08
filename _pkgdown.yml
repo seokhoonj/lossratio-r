@@ -6,15 +6,17 @@ template:
     in_header: |
       <meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs" />
       <!-- Browser-language redirect: send Korean visitors to /ko/ on the
-           landing page only. Deep links remain untouched. -->
+           landing page only. Deep links remain untouched. We use string
+           slicing rather than a regex with end-anchor, because pandoc
+           treats the dollar sign as a template variable delimiter. -->
       <script>
         (function() {
-          var p = window.location.pathname.replace(/\/(index\.html)?$/, '');
-          if (p.endsWith('/lossratio') || p === '') {
+          var p = window.location.pathname;
+          if (p.slice(-11) === '/index.html') p = p.slice(0, -11);
+          else if (p.slice(-1) === '/') p = p.slice(0, -1);
+          if (p.slice(-10) === '/lossratio' || p === '') {
             var lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
-            if (lang.indexOf('ko') === 0) {
-              window.location.replace('./ko/');
-            }
+            if (lang.indexOf('ko') === 0) window.location.replace('./ko/');
           }
         })();
       </script>
