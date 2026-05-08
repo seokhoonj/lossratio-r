@@ -1,4 +1,4 @@
-# Triangle validation -----------------------------------------------------
+# === Triangle validation ====================================================
 
 #' Validate triangle structure before building a development
 #'
@@ -14,10 +14,26 @@
 #' before [build_triangle()] to decide whether to fix the data source, drop
 #' offending cohorts, or pass `fill_gaps = TRUE` to [build_triangle()].
 #'
+#' Two checks are performed:
+#'
+#' \enumerate{
+#'   \item \strong{Cohort dev-sequence gaps} — for each `(group, cohort)`,
+#'     report missing `dev_var` values within the observed range.
+#'   \item \strong{Row-level calendar consistency} — when `calendar_var`
+#'     is supplied (or auto-detected as `"cym"` if present), report rows
+#'     where `calendar_var < cohort_var`. Such rows are logically
+#'     impossible (claims cannot precede policy issue) and downstream
+#'     they show up as negative `elap_m`, polluting cohort dev sequences.
+#' }
+#'
 #' @param df A data.frame.
 #' @param group_var Grouping variable(s).
 #' @param cohort_var A single cohort variable. Default `"uym"`.
 #' @param dev_var A single development variable. Default `"elap_m"`.
+#' @param calendar_var Optional calendar period variable for row-level
+#'   consistency check. When supplied, rows where `calendar_var <
+#'   cohort_var` are flagged as invalid. Default `"cym"`; pass `NULL`
+#'   to skip this check, or a column name to override.
 #'
 #' @return A `data.table` of class `"TriangleValidation"` with one row
 #'   per cohort containing gaps. Columns:
@@ -30,13 +46,20 @@
 #'   }
 #'   Returns a zero-row data.table when no gaps are found.
 #'
+#'   Row-level violations (when `calendar_var` is supplied and the check
+#'   finds any) are attached as the `"invalid_rows"` attribute — a
+#'   `data.table` with columns `[group_var, cohort_var, calendar_var,
+#'   dev_var (if present), reason]`. Use `attr(out, "invalid_rows")`
+#'   or rely on `print.TriangleValidation` which displays both sections.
+#'
 #' @seealso [build_triangle()]
 #'
 #' @export
 validate_triangle <- function(df,
                               group_var,
-                              cohort_var  = "uym",
-                              dev_var = "elap_m") {
+                              cohort_var   = "uym",
+                              dev_var      = "elap_m",
+                              calendar_var = "cym") {
   .assert_class(df, "data.frame")
 
   dt <- .ensure_dt(df)
@@ -48,60 +71,41 @@ validate_triangle <- function(df,
   .assert_length(coh_var)
   .assert_length(dev_var)
 
-  .validate_triangle_impl(dt, grp_var, coh_var, dev_var)
-}
-
-
-.validate_calendar_impl <- function(dt, grp_var, cal_var) {
-  period_type <- .get_period_type(cal_var)
-  step <- switch(period_type,
-                 month    = "month",
-                 quarter  = "3 months",
-                 half     = "6 months",
-                 year     = "year",
-                 NA_character_)
-
-  if (is.na(step)) {
-    z <- data.table::data.table()
-    return(.prepend_class(z, "CalendarValidation"))
+  # calendar_var: NULL skips, otherwise auto-skip if column missing
+  cal_var <- NULL
+  if (!is.null(calendar_var)) {
+    cal_var <- .capture_names(dt, !!rlang::enquo(calendar_var))
+    if (length(cal_var) != 1L || !(cal_var %in% names(dt))) cal_var <- NULL
   }
 
-  .row <- function(p) {
-    p <- sort(unique(p[!is.na(p)]))
-    if (length(p) == 0L) {
-      return(list(n_observed = 0L, n_expected = 0L,
-                  missing = list(as.Date(integer(0)))))
+  # 1) row-level calendar consistency first — invalid rows pollute the
+  #    dev sequence and would surface as spurious negative gaps if we
+  #    ran the gap check on the raw data.
+  invalid <- NULL
+  dt_clean <- dt
+  if (!is.null(cal_var)) {
+    invalid <- .validate_calendar_consistency_impl(
+      dt, grp_var = grp_var, coh_var = coh_var,
+      dev_var = dev_var, cal_var = cal_var
+    )
+    if (nrow(invalid) > 0L) {
+      ok <- is.na(dt[[cal_var]]) | is.na(dt[[coh_var]]) |
+            (dt[[cal_var]] >= dt[[coh_var]])
+      dt_clean <- dt[ok]
     }
-    exp_seq <- seq(min(p), max(p), by = step)
-    miss    <- setdiff(exp_seq, p)
-    list(
-      n_observed = length(p),
-      n_expected = length(exp_seq),
-      missing    = list(as.Date(miss, origin = "1970-01-01"))
-    )
   }
 
-  if (length(grp_var)) {
-    gaps <- dt[, .row(.SD[[1L]]), by = grp_var, .SDcols = cal_var]
-  } else {
-    r <- .row(dt[[cal_var]])
-    gaps <- data.table::data.table(
-      n_observed = r$n_observed,
-      n_expected = r$n_expected,
-      missing    = r$missing
-    )
+  # 2) dev-sequence gaps on the cleaned data
+  out <- .validate_dev_continuity_impl(dt_clean, grp_var, coh_var, dev_var)
+
+  if (!is.null(invalid) && nrow(invalid) > 0L) {
+    data.table::setattr(out, "invalid_rows", invalid)
   }
 
-  gaps <- gaps[n_observed != n_expected]
-
-  data.table::setattr(gaps, "group_var" , grp_var)
-  data.table::setattr(gaps, "cohort_var", cal_var)
-
-  .prepend_class(gaps, "CalendarValidation")
+  out
 }
 
-
-.validate_triangle_impl <- function(dt, grp_var, coh_var, dev_var) {
+.validate_dev_continuity_impl <- function(dt, grp_var, coh_var, dev_var) {
   grp_coh <- c(grp_var, coh_var)
 
   gaps <- dt[, {
@@ -129,8 +133,53 @@ validate_triangle <- function(df,
   .prepend_class(gaps, "TriangleValidation")
 }
 
+#' Internal: row-level cohort vs calendar consistency check
+#'
+#' Flag rows where `calendar_var < cohort_var` — claims/events recorded
+#' as occurring before the cohort start, which is logically impossible.
+#'
+#' @keywords internal
+.validate_calendar_consistency_impl <- function(dt, grp_var, coh_var, dev_var, cal_var) {
+  ok <- !is.na(dt[[cal_var]]) & !is.na(dt[[coh_var]])
+  bad_idx <- ok & (dt[[cal_var]] < dt[[coh_var]])
+  if (!any(bad_idx)) {
+    return(data.table::data.table())
+  }
 
-# Development -------------------------------------------------------------
+  keep <- c(grp_var, coh_var, cal_var, dev_var)
+  keep <- keep[keep %in% names(dt)]
+  z <- dt[bad_idx, .SD, .SDcols = keep]
+  z[, reason := sprintf("%s < %s", cal_var, coh_var)]
+  z
+}
+
+#' @method print TriangleValidation
+#' @export
+print.TriangleValidation <- function(x, ...) {
+  cat("<TriangleValidation>\n")
+
+  # gap section
+  if (nrow(x) == 0L) {
+    cat("Cohort dev-sequence gaps : none\n")
+  } else {
+    cat(sprintf("Cohort dev-sequence gaps : %d cohort(s) with gaps\n",
+                nrow(x)))
+    NextMethod("print", x, ...)
+  }
+
+  # invalid rows section
+  inv <- attr(x, "invalid_rows", exact = TRUE)
+  if (!is.null(inv) && nrow(inv) > 0L) {
+    cat(sprintf("\nRow-level violations     : %d row(s) where %s\n",
+                nrow(inv), inv$reason[1L]))
+    print(inv, ...)
+  }
+
+  invisible(x)
+}
+
+
+# === Triangle ===============================================================
 
 #' Build a development structure from experience data
 #'
@@ -274,7 +323,7 @@ build_triangle <- function(df,
   # build_ata / build_ed require consecutive (k, k+1) transitions per
   # cohort; non-consecutive dev produces duplicate (grp, ata_from)
   # keys in summary tables and cartesian joins in fit_lr.
-  gaps <- .validate_triangle_impl(ds, grp_var, "cohort", "dev")
+  gaps <- .validate_dev_continuity_impl(ds, grp_var, "cohort", "dev")
   if (nrow(gaps)) {
     if (fill_gaps) {
       grid <- ds[, .(dev = seq.int(min(dev, na.rm = TRUE),
@@ -357,6 +406,119 @@ build_triangle <- function(df,
 
   .update_class(ds, "Experience", "Triangle")
 }
+
+#' Summarise development statistics (Mean, Median, Weighted)
+#'
+#' @description
+#' S3 method for `summary()` on `Triangle` objects. Computes group-wise summary
+#' statistics for loss ratios (`lr`) and cumulative loss ratios (`clr`).
+#'
+#' The function aggregates data by the grouping variables stored in
+#' `attr(x, "group_var")` and the development variable stored in
+#' `attr(x, "dev_var")`.
+#'
+#' The following statistics are computed:
+#' - arithmetic mean,
+#' - median,
+#' - weighted mean (portfolio-level ratio based on sums).
+#'
+#' @param object An object of class `Triangle`.
+#' @param ... Unused; included for S3 compatibility.
+#'
+#' @details
+#' The weighted mean is computed as:
+#' \itemize{
+#'   \item `lr_wt  = sum(loss)  / sum(rp)`
+#'   \item `clr_wt = sum(closs) / sum(crp)`
+#' }
+#'
+#' These correspond to portfolio-level loss ratios based on risk premium and
+#' are typically more stable than simple averages when exposure sizes differ
+#' across cohorts.
+#'
+#' It is assumed that the input `Triangle` object does not contain missing values.
+#'
+#' @return
+#' A `data.table` grouped by `group_var` and `dev_var`, containing:
+#' \describe{
+#'   \item{n_obs}{Number of observations in the cell}
+#'   \item{lr_mean}{Mean of loss ratios}
+#'   \item{lr_median}{Median of loss ratios}
+#'   \item{lr_wt}{Weighted loss ratio (`sum(loss) / sum(rp)`)}
+#'   \item{clr_mean}{Mean of cumulative loss ratios}
+#'   \item{clr_median}{Median of cumulative loss ratios}
+#'   \item{clr_wt}{Weighted cumulative loss ratio (`sum(closs) / sum(crp)`)}
+#' }
+#'
+#' The returned object keeps the attributes `group_var` and `dev_var`,
+#' and its class is updated to `"TriangleSummary"`.
+#'
+#' @examples
+#' \dontrun{
+#' d <- build_triangle(df, group_var = cv_nm)
+#' sm <- summary(d)
+#' head(sm)
+#' attr(sm, "longer")
+#' }
+#'
+#' @method summary Triangle
+#' @export
+summary.Triangle <- function(object, ...) {
+  .assert_class(object, "Triangle")
+
+  dt <- .ensure_dt(object)
+
+  grp_var       <- attr(dt, "group_var")
+  dev_var       <- attr(dt, "dev_var")
+  dev_type      <- attr(dt, "dev_type")
+  grp_dev_var   <- c(grp_var, "dev")
+
+  ds <- dt[, .(
+    n_obs      = .N,
+    lr_mean    = mean(lr),
+    lr_median  = median(lr),
+    lr_wt      = sum(loss)  / sum(rp),
+    clr_mean   = mean(clr),
+    clr_median = median(clr),
+    clr_wt     = sum(closs) / sum(crp)
+  ), keyby = grp_dev_var]
+
+  dm <- data.table::melt(
+    data          = ds,
+    id.vars       = grp_dev_var,
+    measure.vars  = c(
+      "lr_mean" , "lr_median" , "lr_wt",
+      "clr_mean", "clr_median", "clr_wt"
+    ),
+    variable.name = "type",
+    value.name    = "value"
+  )
+  dm <- .prepend_class(dm, "TriangleSummaryLonger")
+
+  data.table::setattr(ds, "group_var"   , grp_var)
+  data.table::setattr(ds, "dev_var" , dev_var)
+  data.table::setattr(ds, "dev_type", dev_type)
+  data.table::setattr(ds, "longer"      , dm)
+
+  .update_class(ds, "Triangle", "TriangleSummary")
+}
+
+#' @method longer Triangle
+#' @export
+longer.Triangle <- function(x, ...) {
+  .assert_class(x, "Triangle")
+  attr(x, "longer")
+}
+
+#' @method longer TriangleSummary
+#' @export
+longer.TriangleSummary <- function(x, ...) {
+  .assert_class(x, "TriangleSummary")
+  attr(x, "longer")
+}
+
+
+# === Calendar ===============================================================
 
 #' Build a calendar-based development structure from experience data
 #'
@@ -505,7 +667,7 @@ build_calendar <- function(df,
            by = grp_cal_var, .SDcols = val_var]
 
   # validate / fill calendar period consecutiveness per group
-  gaps <- .validate_calendar_impl(ds, grp_var, "calendar")
+  gaps <- .validate_calendar_continuity_impl(ds, grp_var, "calendar")
   if (nrow(gaps)) {
     if (fill_gaps) {
       step <- switch(cal_type,
@@ -608,6 +770,124 @@ build_calendar <- function(df,
 
   .prepend_class(ds, "Calendar")
 }
+
+.validate_calendar_continuity_impl <- function(dt, grp_var, cal_var) {
+  period_type <- .get_period_type(cal_var)
+  step <- switch(period_type,
+                 month    = "month",
+                 quarter  = "3 months",
+                 half     = "6 months",
+                 year     = "year",
+                 NA_character_)
+
+  if (is.na(step)) {
+    z <- data.table::data.table()
+    return(.prepend_class(z, "CalendarValidation"))
+  }
+
+  .row <- function(p) {
+    p <- sort(unique(p[!is.na(p)]))
+    if (length(p) == 0L) {
+      return(list(n_observed = 0L, n_expected = 0L,
+                  missing = list(as.Date(integer(0)))))
+    }
+    exp_seq <- seq(min(p), max(p), by = step)
+    miss    <- setdiff(exp_seq, p)
+    list(
+      n_observed = length(p),
+      n_expected = length(exp_seq),
+      missing    = list(as.Date(miss, origin = "1970-01-01"))
+    )
+  }
+
+  if (length(grp_var)) {
+    gaps <- dt[, .row(.SD[[1L]]), by = grp_var, .SDcols = cal_var]
+  } else {
+    r <- .row(dt[[cal_var]])
+    gaps <- data.table::data.table(
+      n_observed = r$n_observed,
+      n_expected = r$n_expected,
+      missing    = r$missing
+    )
+  }
+
+  gaps <- gaps[n_observed != n_expected]
+
+  data.table::setattr(gaps, "group_var" , grp_var)
+  data.table::setattr(gaps, "cohort_var", cal_var)
+
+  .prepend_class(gaps, "CalendarValidation")
+}
+
+#' Summarise calendar-development statistics (Mean, Median, Weighted)
+#'
+#' @description
+#' S3 method for `summary()` on `Calendar` objects. Computes
+#' calendar-period summary statistics for loss ratios (`lr`) and
+#' cumulative loss ratios (`clr`).
+#'
+#' Where [summary.Triangle()] aggregates by `(group_var, dev)` (cohort
+#' × development), this method aggregates by `(group_var, calendar)`
+#' (calendar period) so the resulting table is indexed by calendar
+#' diagonals rather than development periods.
+#'
+#' @param object An object of class `Calendar`.
+#' @param ... Unused; included for S3 compatibility.
+#'
+#' @return
+#' A `data.table` of class `"CalendarSummary"` with one row per
+#' `(group_var, calendar)` combination, containing:
+#' \describe{
+#'   \item{n_obs}{Number of observations in the cell.}
+#'   \item{lr_mean}{Mean of loss ratios.}
+#'   \item{lr_median}{Median of loss ratios.}
+#'   \item{lr_wt}{Weighted loss ratio (`sum(loss) / sum(rp)`).}
+#'   \item{clr_mean}{Mean of cumulative loss ratios.}
+#'   \item{clr_median}{Median of cumulative loss ratios.}
+#'   \item{clr_wt}{Weighted cumulative loss ratio (`sum(closs) / sum(crp)`).}
+#' }
+#'
+#' The returned object preserves the attributes `group_var`,
+#' `calendar_var`, and `calendar_type`.
+#'
+#' @examples
+#' \dontrun{
+#' cal <- build_calendar(df, group_var = cv_nm)
+#' sm  <- summary(cal)
+#' head(sm)
+#' }
+#'
+#' @method summary Calendar
+#' @export
+summary.Calendar <- function(object, ...) {
+  .assert_class(object, "Calendar")
+
+  dt <- .ensure_dt(object)
+
+  grp_var       <- attr(dt, "group_var")
+  cal_var       <- attr(dt, "calendar_var")
+  cal_type      <- attr(dt, "calendar_type")
+  grp_cal_var   <- c(grp_var, "calendar")
+
+  ds <- dt[, .(
+    n_obs      = .N,
+    lr_mean    = mean(lr),
+    lr_median  = stats::median(lr),
+    lr_wt      = sum(loss)  / sum(rp),
+    clr_mean   = mean(clr),
+    clr_median = stats::median(clr),
+    clr_wt     = sum(closs) / sum(crp)
+  ), keyby = grp_cal_var]
+
+  data.table::setattr(ds, "group_var"    , grp_var)
+  data.table::setattr(ds, "calendar_var" , cal_var)
+  data.table::setattr(ds, "calendar_type", cal_type)
+
+  .update_class(ds, "Calendar", "CalendarSummary")
+}
+
+
+# === Total ==================================================================
 
 #' Build a total development summary from experience data
 #'
@@ -721,7 +1001,7 @@ build_total <- function(df,
   }
 
   # validate / fill dev gaps per (grp, cohort)
-  gaps <- .validate_triangle_impl(dt, grp_var, coh_var, dev_var)
+  gaps <- .validate_dev_continuity_impl(dt, grp_var, coh_var, dev_var)
   if (nrow(gaps)) {
     if (fill_gaps) {
       grp_coh_dev <- c(grp_var, coh_var, dev_var)
@@ -765,191 +1045,6 @@ build_total <- function(df,
 
   .prepend_class(ds, "Total")
 }
-
-# Development Summary -----------------------------------------------------
-
-#' Summarise development statistics (Mean, Median, Weighted)
-#'
-#' @description
-#' S3 method for `summary()` on `Triangle` objects. Computes group-wise summary
-#' statistics for loss ratios (`lr`) and cumulative loss ratios (`clr`).
-#'
-#' The function aggregates data by the grouping variables stored in
-#' `attr(x, "group_var")` and the development variable stored in
-#' `attr(x, "dev_var")`.
-#'
-#' The following statistics are computed:
-#' - arithmetic mean,
-#' - median,
-#' - weighted mean (portfolio-level ratio based on sums).
-#'
-#' @param object An object of class `Triangle`.
-#' @param ... Unused; included for S3 compatibility.
-#'
-#' @details
-#' The weighted mean is computed as:
-#' \itemize{
-#'   \item `lr_wt  = sum(loss)  / sum(rp)`
-#'   \item `clr_wt = sum(closs) / sum(crp)`
-#' }
-#'
-#' These correspond to portfolio-level loss ratios based on risk premium and
-#' are typically more stable than simple averages when exposure sizes differ
-#' across cohorts.
-#'
-#' It is assumed that the input `Triangle` object does not contain missing values.
-#'
-#' @return
-#' A `data.table` grouped by `group_var` and `dev_var`, containing:
-#' \describe{
-#'   \item{n_obs}{Number of observations in the cell}
-#'   \item{lr_mean}{Mean of loss ratios}
-#'   \item{lr_median}{Median of loss ratios}
-#'   \item{lr_wt}{Weighted loss ratio (`sum(loss) / sum(rp)`)}
-#'   \item{clr_mean}{Mean of cumulative loss ratios}
-#'   \item{clr_median}{Median of cumulative loss ratios}
-#'   \item{clr_wt}{Weighted cumulative loss ratio (`sum(closs) / sum(crp)`)}
-#' }
-#'
-#' The returned object keeps the attributes `group_var` and `dev_var`,
-#' and its class is updated to `"TriangleSummary"`.
-#'
-#' @examples
-#' \dontrun{
-#' d <- build_triangle(df, group_var = cv_nm)
-#' sm <- summary(d)
-#' head(sm)
-#' attr(sm, "longer")
-#' }
-#'
-#' @method summary Triangle
-#' @export
-summary.Triangle <- function(object, ...) {
-  .assert_class(object, "Triangle")
-
-  dt <- .ensure_dt(object)
-
-  grp_var       <- attr(dt, "group_var")
-  dev_var       <- attr(dt, "dev_var")
-  dev_type      <- attr(dt, "dev_type")
-  grp_dev_var   <- c(grp_var, "dev")
-
-  ds <- dt[, .(
-    n_obs      = .N,
-    lr_mean    = mean(lr),
-    lr_median  = median(lr),
-    lr_wt      = sum(loss)  / sum(rp),
-    clr_mean   = mean(clr),
-    clr_median = median(clr),
-    clr_wt     = sum(closs) / sum(crp)
-  ), keyby = grp_dev_var]
-
-  dm <- data.table::melt(
-    data          = ds,
-    id.vars       = grp_dev_var,
-    measure.vars  = c(
-      "lr_mean" , "lr_median" , "lr_wt",
-      "clr_mean", "clr_median", "clr_wt"
-    ),
-    variable.name = "type",
-    value.name    = "value"
-  )
-  dm <- .prepend_class(dm, "TriangleSummaryLonger")
-
-  data.table::setattr(ds, "group_var"   , grp_var)
-  data.table::setattr(ds, "dev_var" , dev_var)
-  data.table::setattr(ds, "dev_type", dev_type)
-  data.table::setattr(ds, "longer"      , dm)
-
-  .update_class(ds, "Triangle", "TriangleSummary")
-}
-
-# Development Longer ------------------------------------------------------
-
-#' @method longer Triangle
-#' @export
-longer.Triangle <- function(x, ...) {
-  .assert_class(x, "Triangle")
-  attr(x, "longer")
-}
-
-#' @method longer TriangleSummary
-#' @export
-longer.TriangleSummary <- function(x, ...) {
-  .assert_class(x, "TriangleSummary")
-  attr(x, "longer")
-}
-
-# Calendar Summary --------------------------------------------------------
-
-#' Summarise calendar-development statistics (Mean, Median, Weighted)
-#'
-#' @description
-#' S3 method for `summary()` on `Calendar` objects. Computes
-#' calendar-period summary statistics for loss ratios (`lr`) and
-#' cumulative loss ratios (`clr`).
-#'
-#' Where [summary.Triangle()] aggregates by `(group_var, dev)` (cohort
-#' × development), this method aggregates by `(group_var, calendar)`
-#' (calendar period) so the resulting table is indexed by calendar
-#' diagonals rather than development periods.
-#'
-#' @param object An object of class `Calendar`.
-#' @param ... Unused; included for S3 compatibility.
-#'
-#' @return
-#' A `data.table` of class `"CalendarSummary"` with one row per
-#' `(group_var, calendar)` combination, containing:
-#' \describe{
-#'   \item{n_obs}{Number of observations in the cell.}
-#'   \item{lr_mean}{Mean of loss ratios.}
-#'   \item{lr_median}{Median of loss ratios.}
-#'   \item{lr_wt}{Weighted loss ratio (`sum(loss) / sum(rp)`).}
-#'   \item{clr_mean}{Mean of cumulative loss ratios.}
-#'   \item{clr_median}{Median of cumulative loss ratios.}
-#'   \item{clr_wt}{Weighted cumulative loss ratio (`sum(closs) / sum(crp)`).}
-#' }
-#'
-#' The returned object preserves the attributes `group_var`,
-#' `calendar_var`, and `calendar_type`.
-#'
-#' @examples
-#' \dontrun{
-#' cal <- build_calendar(df, group_var = cv_nm)
-#' sm  <- summary(cal)
-#' head(sm)
-#' }
-#'
-#' @method summary Calendar
-#' @export
-summary.Calendar <- function(object, ...) {
-  .assert_class(object, "Calendar")
-
-  dt <- .ensure_dt(object)
-
-  grp_var       <- attr(dt, "group_var")
-  cal_var       <- attr(dt, "calendar_var")
-  cal_type      <- attr(dt, "calendar_type")
-  grp_cal_var   <- c(grp_var, "calendar")
-
-  ds <- dt[, .(
-    n_obs      = .N,
-    lr_mean    = mean(lr),
-    lr_median  = stats::median(lr),
-    lr_wt      = sum(loss)  / sum(rp),
-    clr_mean   = mean(clr),
-    clr_median = stats::median(clr),
-    clr_wt     = sum(closs) / sum(crp)
-  ), keyby = grp_cal_var]
-
-  data.table::setattr(ds, "group_var"    , grp_var)
-  data.table::setattr(ds, "calendar_var" , cal_var)
-  data.table::setattr(ds, "calendar_type", cal_type)
-
-  .update_class(ds, "Calendar", "CalendarSummary")
-}
-
-# Total Summary -----------------------------------------------------------
 
 #' Summarise a `Total` object
 #'

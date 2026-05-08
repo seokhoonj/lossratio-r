@@ -4,7 +4,13 @@
 \alias{validate_triangle}
 \title{Validate triangle structure before building a development}
 \usage{
-validate_triangle(df, group_var, cohort_var = "uym", dev_var = "elap_m")
+validate_triangle(
+  df,
+  group_var,
+  cohort_var = "uym",
+  dev_var = "elap_m",
+  calendar_var = "cym"
+)
 }
 \arguments{
 \item{df}{A data.frame.}
@@ -14,6 +20,10 @@ validate_triangle(df, group_var, cohort_var = "uym", dev_var = "elap_m")
 \item{cohort_var}{A single cohort variable. Default \code{"uym"}.}
 
 \item{dev_var}{A single development variable. Default \code{"elap_m"}.}
+
+\item{calendar_var}{Optional calendar period variable for row-level
+consistency check. When supplied, rows where \code{calendar_var < cohort_var} are flagged as invalid. Default \code{"cym"}; pass \code{NULL}
+to skip this check, or a column name to override.}
 }
 \value{
 A \code{data.table} of class \code{"TriangleValidation"} with one row
@@ -26,6 +36,11 @@ values.}
 \item{\code{missing}}{List column of missing \code{dev_var} values.}
 }
 Returns a zero-row data.table when no gaps are found.
+
+Row-level violations (when \code{calendar_var} is supplied and the check
+finds any) are attached as the \code{"invalid_rows"} attribute — a
+\code{data.table} with columns \verb{[group_var, cohort_var, calendar_var, dev_var (if present), reason]}. Use \code{attr(out, "invalid_rows")}
+or rely on \code{print.TriangleValidation} which displays both sections.
 }
 \description{
 Check that each \verb{(group_var, cohort_var)} cohort has a consecutive
@@ -38,6 +53,18 @@ cohorts produce non-consecutive age-to-age links downstream (e.g.,
 This function inspects the raw data without modifying it. Use it
 before \code{\link[=build_triangle]{build_triangle()}} to decide whether to fix the data source, drop
 offending cohorts, or pass \code{fill_gaps = TRUE} to \code{\link[=build_triangle]{build_triangle()}}.
+
+Two checks are performed:
+
+\enumerate{
+\item \strong{Cohort dev-sequence gaps} — for each \verb{(group, cohort)},
+report missing \code{dev_var} values within the observed range.
+\item \strong{Row-level calendar consistency} — when \code{calendar_var}
+is supplied (or auto-detected as \code{"cym"} if present), report rows
+where \code{calendar_var < cohort_var}. Such rows are logically
+impossible (claims cannot precede policy issue) and downstream
+they show up as negative \code{elap_m}, polluting cohort dev sequences.
+}
 }
 \seealso{
 \code{\link[=build_triangle]{build_triangle()}}
