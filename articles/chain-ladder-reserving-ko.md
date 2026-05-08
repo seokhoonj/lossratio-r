@@ -336,7 +336,7 @@ fit_cl(tri, value_var = "closs", method = "mack", sigma_method = "loglinear")
   —
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
   을 사용해야 할 때.
-- [`vignette("triangle-and-link")`](https://seokhoonj.github.io/lossratio/articles/triangle-and-link.md)
+- [`vignette("triangle-link-and-maturity")`](https://seokhoonj.github.io/lossratio/articles/triangle-link-and-maturity.md)
   — [`summary()`](https://rdrr.io/r/base/summary.html),
   [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md),
   ata 진단 플롯.

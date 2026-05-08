@@ -12,17 +12,15 @@ articles:
   convergence: convergence.html
   articles/getting-started-ko: getting-started-ko.html
   getting-started: getting-started.html
-  articles/maturity-ko: maturity-ko.html
-  maturity: maturity.html
   articles/projection-ko: projection-ko.html
   projection: projection.html
   articles/regime-break-filter-ko: regime-break-filter-ko.html
   regime-break-filter: regime-break-filter.html
   articles/regime-ko: regime-ko.html
   regime: regime.html
-  articles/triangle-and-link-ko: triangle-and-link-ko.html
-  triangle-and-link: triangle-and-link.html
-last_built: 2026-05-08T03:54Z
+  articles/triangle-link-and-maturity-ko: triangle-link-and-maturity-ko.html
+  triangle-link-and-maturity: triangle-link-and-maturity.html
+last_built: 2026-05-08T05:33Z
 urls:
   reference: https://seokhoonj.github.io/lossratio/reference
   article: https://seokhoonj.github.io/lossratio/articles

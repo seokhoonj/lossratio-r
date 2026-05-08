@@ -3,7 +3,20 @@
 per development link with fitted intensity g, standard error, and
 diagnostic statistics."><meta property="og:description" content="Returns the factor-level EDSummary carried by the fit, i.e. one row
 per development link with fitted intensity g, standard error, and
-diagnostic statistics."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
+diagnostic statistics."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Browser-language redirect: send Korean visitors to /ko/ on the
+     landing page only. Deep links remain untouched. We use string
+     slicing rather than a regex with end-anchor, because pandoc
+     treats the dollar sign as a template variable delimiter. --><script>
+  (function() {
+    var p = window.location.pathname;
+    if (p.slice(-11) === '/index.html') p = p.slice(0, -11);
+    else if (p.slice(-1) === '/') p = p.slice(0, -1);
+    if (p.slice(-10) === '/lossratio' || p === '') {
+      var lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+      if (lang.indexOf('ko') === 0) window.location.replace('./ko/');
+    }
+  })();
+</script><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
@@ -30,8 +43,7 @@ diagnostic statistics."><meta property="og:image" content="https://seokhoonj.git
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/index.html">All articles</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks.html">Aggregation frameworks</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-and-link.html">Triangle and Link</a></li>
-    <li><a class="dropdown-item" href="../articles/maturity.html">Maturity</a></li>
+    <li><a class="dropdown-item" href="../articles/triangle-link-and-maturity.html">Triangle, Link and Maturity</a></li>
     <li><a class="dropdown-item" href="../articles/regime.html">Regime</a></li>
     <li><a class="dropdown-item" href="../articles/projection.html">Projection</a></li>
     <li><a class="dropdown-item" href="../articles/regime-break-filter.html">Regime break filter</a></li>

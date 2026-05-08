@@ -449,7 +449,7 @@ for the dedicated walkthrough.
   —
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
   deep dive (Mack variance, tail factor).
-- [`vignette("triangle-and-link")`](https://seokhoonj.github.io/lossratio/articles/triangle-and-link.md)
+- [`vignette("triangle-link-and-maturity")`](https://seokhoonj.github.io/lossratio/articles/triangle-link-and-maturity.md)
   — [`summary()`](https://rdrr.io/r/base/summary.html),
   [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md),
   and triangle-style visualisations.

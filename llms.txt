@@ -471,10 +471,8 @@ print / summary / longer methods registered on package classes.
 
 - [Aggregation frameworks: Triangle, Calendar,
   Total](https://seokhoonj.github.io/lossratio/articles/aggregation-frameworks.md):
-- [Triangle and Link: data structures and factor
-  diagnostics](https://seokhoonj.github.io/lossratio/articles/triangle-and-link.md):
-- [Maturity: detecting when ATA factors stabilise across
-  cohorts](https://seokhoonj.github.io/lossratio/articles/maturity.md):
+- [Triangle, Link and Maturity: data structures and factor
+  diagnostics](https://seokhoonj.github.io/lossratio/articles/triangle-link-and-maturity.md):
 - [Regime: detecting structural breaks across underwriting
   cohorts](https://seokhoonj.github.io/lossratio/articles/regime.md):
 - [Projection: SA, ED, CL

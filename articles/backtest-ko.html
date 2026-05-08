@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Backtest: 홀드아웃 대각선을 이용한 추정 검증 • lossratio</title>
+<title>Backtest: hold-out 대각선을 이용한 추정 검증 • lossratio</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,9 +16,22 @@
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<script src="../extra.js"></script><meta property="og:title" content="Backtest: 홀드아웃 대각선을 이용한 추정 검증">
+<script src="../extra.js"></script><meta property="og:title" content="Backtest: hold-out 대각선을 이용한 추정 검증">
 <meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs">
-<!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
+<!-- Browser-language redirect: send Korean visitors to /ko/ on the
+     landing page only. Deep links remain untouched. We use string
+     slicing rather than a regex with end-anchor, because pandoc
+     treats the dollar sign as a template variable delimiter. --><script>
+  (function() {
+    var p = window.location.pathname;
+    if (p.slice(-11) === '/index.html') p = p.slice(0, -11);
+    else if (p.slice(-1) === '/') p = p.slice(0, -1);
+    if (p.slice(-10) === '/lossratio' || p === '') {
+      var lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+      if (lang.indexOf('ko') === 0) window.location.replace('./ko/');
+    }
+  })();
+</script><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
@@ -49,8 +62,7 @@
 <li><a class="dropdown-item" href="../articles/index.html">All articles</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/aggregation-frameworks.html">Aggregation frameworks</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-and-link.html">Triangle and Link</a></li>
-    <li><a class="dropdown-item" href="../articles/maturity.html">Maturity</a></li>
+    <li><a class="dropdown-item" href="../articles/triangle-link-and-maturity.html">Triangle, Link and Maturity</a></li>
     <li><a class="dropdown-item" href="../articles/regime.html">Regime</a></li>
     <li><a class="dropdown-item" href="../articles/projection.html">Projection</a></li>
     <li><a class="dropdown-item" href="../articles/regime-break-filter.html">Regime break filter</a></li>
@@ -81,7 +93,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>Backtest: 홀드아웃 대각선을 이용한 추정 검증</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Backtest: hold-out 대각선을 이용한 추정 검증</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/seokhoonj/lossratio/blob/main/vignettes/articles/backtest-ko.Rmd" class="external-link"><code>vignettes/articles/backtest-ko.Rmd</code></a></small>
@@ -103,7 +115,7 @@ against held-out diagonals</a></p>
 <code>holdout</code> 으로 지정한 만큼의 최근 대각선 (calendar
 diagonal)을 마스킹한 뒤, 이전 부분에 모형을 재적합하고, 그 추정값을
 마스킹된 셀의 실제값과 비교함으로써 이 질문에 답한다. 이는 경과 기간
-단위 홀드아웃이 아니라 대각선 단위 홀드아웃인데, “<em>K</em> 개월 전
+단위 hold-out이 아니라 대각선 단위 hold-out인데, “<em>K</em> 개월 전
 valuation 시점에서 모형은 무엇이라 말했을까?” 를 모사하기 때문이다. 셀
 단위 지표는 AEG (Actual-Expected Gap, 실제-예측 차이) 이며, 표준
 actuarial A/E 관용에 맞춰
@@ -235,7 +247,7 @@ shift 가 발생했음을 시사한다.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bt</span>, type <span class="op">=</span> <span class="st">"cell"</span><span class="op">)</span>   <span class="co"># dev 위에 그려진 코호트별 AEG 궤적</span></span></code></pre></div>
 <p><img src="backtest-ko_files/figure-html/unnamed-chunk-5-3.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span>         <span class="co"># 홀드아웃 영역에 대한 발산형 팔레트 히트맵</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span>         <span class="co"># hold-out 영역에 대한 발산형 팔레트 히트맵</span></span></code></pre></div>
 <p><img src="backtest-ko_files/figure-html/unnamed-chunk-5-4.png" class="r-plt" alt="" width="100%"></p>
 <p><code>type = "col"</code> 은 경과 기간별 체계적 편향을 살피기에
 적합하다. <code>type = "diag"</code> 는 대각선 효과(calendar-year drift)
@@ -246,7 +258,7 @@ shift 가 발생했음을 시사한다.</p>
 발산형 팔레트를 사용한다.</p>
 </div>
 <div class="section level2">
-<h2 id="홀드아웃-선택">6. 홀드아웃 선택<a class="anchor" aria-label="anchor" href="#%ED%99%80%EB%93%9C%EC%95%84%EC%9B%83-%EC%84%A0%ED%83%9D"></a>
+<h2 id="hold-out-선택">6. hold-out 선택<a class="anchor" aria-label="anchor" href="#hold-out-%EC%84%A0%ED%83%9D"></a>
 </h2>
 <p><code>holdout</code> 은 다음 두 가지 상충 효과의 균형을 잡도록
 선택한다.</p>
@@ -254,7 +266,7 @@ shift 가 발생했음을 시사한다.</p>
 <li>너무 큰 경우: 마스킹된 triangle 이 가장 최근 경험을 잃게 되어, 가장
 오래된 코호트들은 후기 경과 기간에서 도달 가능 셀이 거의 또는 전혀 없게
 된다. 검증 집합이 불균등하게 줄어들며 초기 dev 쪽으로 편향된다.</li>
-<li>너무 작은 경우: 홀드아웃 영역이 얇은 평행사변형 밴드에 불과해,
+<li>너무 작은 경우: hold-out 영역이 얇은 평행사변형 밴드에 불과해,
 체계적 패턴을 드러내기에 충분한 셀을 포함하지 못할 수 있다.</li>
 </ul>
 <p>월별 triangle 에서는 <code>holdout = 6L</code> (반년) 이 일반적이며,
@@ -281,7 +293,7 @@ column)</strong> 이다. 즉, 셀 단위로 실제값과 추정값을 비교하�
 <code>value_var</code> 를 받지 않으며 — 항상 <code>closs</code>,
 <code>crp</code>, <code>clr</code> 세 컬럼을 동시에 추정한다 —
 <code>value_var</code> 는 <code>fit_lr$full</code> 의 세 추정 컬럼 중
-어느 것을 홀드아웃 실제값과 비교할지를 선택하는 역할만 한다. 매핑은
+어느 것을 hold-out 실제값과 비교할지를 선택하는 역할만 한다. 매핑은
 다음과 같다.</p>
 </blockquote>
 <table class="table">
@@ -322,7 +334,7 @@ column)</strong> 이다. 즉, 셀 단위로 실제값과 추정값을 비교하�
 손해율은 단위가 없고 차원이 없어 규모가 크게 다른 코호트 간에도 일관되게
 비교 가능하므로, <code>aeg_mean</code> 과 <code>aeg_med</code> 가
 triangle 전체에서 일관된 의미를 가진다. 반면 <code>closs</code> 를
-백테스팅하면 결과가 홀드아웃 대각선에서 가장 큰 코호트 쪽으로
+백테스팅하면 결과가 hold-out 대각선에서 가장 큰 코호트 쪽으로
 가중된다.</p>
 <p>단일 컬럼만 추정하면 되는 경우 (누적손해 등 손해율 형태가 아닌 단일
 지표) <code>fit_fn = fit_cl</code> 도 지원한다.</p>

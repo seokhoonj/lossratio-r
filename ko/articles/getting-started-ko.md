@@ -452,7 +452,7 @@ detect_regime(sub, K = 12, method = "ecp")
   —
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
   심층 해설 (Mack 분산, tail factor).
-- [`vignette("triangle-and-link")`](https://seokhoonj.github.io/lossratio/ko/articles/triangle-and-link.md)
+- [`vignette("triangle-link-and-maturity")`](https://seokhoonj.github.io/lossratio/ko/articles/triangle-link-and-maturity.md)
   — [`summary()`](https://rdrr.io/r/base/summary.html),
   [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md),
   triangle 형식의 시각화.
@@ -461,4 +461,4 @@ detect_regime(sub, K = 12, method = "ecp")
   [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
   을 통한 코호트 간 구조 변화 진단.
 - [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/ko/articles/backtest.md)
-  — `fit_cl` 또는 `fit_lr` 을 사용한 대각선 홀드아웃(holdout) 검증.
+  — `fit_cl` 또는 `fit_lr` 을 사용한 대각선 hold-out 검증.
