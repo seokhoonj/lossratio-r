@@ -277,7 +277,8 @@ plot_triangle(ed, label_args = la)
 gaps <- validate_triangle(exp, group_var = cv_nm,
                           cohort_var = "uym", dev_var = "elap_m")
 head(gaps)
-#> Empty data.table (0 rows and 5 cols): cv_nm,uym,n_observed,n_expected,missing
+#> <TriangleValidation>
+#> Cohort dev-sequence gaps : none
 ```
 
 경과 기간이 비연속인 코호트마다 한 행씩을 담은 `TriangleValidation`

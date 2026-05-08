@@ -305,7 +305,8 @@ before <code><a href="../reference/build_triangle.html">build_triangle()</a></co
 <code class="sourceCode R"><span><span class="va">gaps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate_triangle.html">validate_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span>,</span>
 <span>                          cohort_var <span class="op">=</span> <span class="st">"uym"</span>, dev_var <span class="op">=</span> <span class="st">"elap_m"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">gaps</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Empty data.table (0 rows and 5 cols): cv_nm,uym,n_observed,n_expected,missing</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;TriangleValidation&gt;</span></span>
+<span><span class="co">#&gt; Cohort dev-sequence gaps : none</span></span></code></pre></div>
 <p>Returns a <code>TriangleValidation</code> object with one row per
 cohort that has non-consecutive development periods. An empty result
 means the triangle is clean.</p>

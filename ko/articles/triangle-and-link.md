@@ -274,7 +274,8 @@ If gaps in the development sequence are suspected, inspect them before
 gaps <- validate_triangle(exp, group_var = cv_nm,
                           cohort_var = "uym", dev_var = "elap_m")
 head(gaps)
-#> Empty data.table (0 rows and 5 cols): cv_nm,uym,n_observed,n_expected,missing
+#> <TriangleValidation>
+#> Cohort dev-sequence gaps : none
 ```
 
 Returns a `TriangleValidation` object with one row per cohort that has

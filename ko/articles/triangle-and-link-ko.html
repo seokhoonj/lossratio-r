@@ -308,7 +308,8 @@ clr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗
 <code class="sourceCode R"><span><span class="va">gaps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate_triangle.html">validate_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span>,</span>
 <span>                          cohort_var <span class="op">=</span> <span class="st">"uym"</span>, dev_var <span class="op">=</span> <span class="st">"elap_m"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">gaps</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Empty data.table (0 rows and 5 cols): cv_nm,uym,n_observed,n_expected,missing</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;TriangleValidation&gt;</span></span>
+<span><span class="co">#&gt; Cohort dev-sequence gaps : none</span></span></code></pre></div>
 <p>경과 기간이 비연속인 코호트마다 한 행씩을 담은
 <code>TriangleValidation</code> 객체를 반환한다. 결과가 비어 있다면
 triangle 이 깨끗하다는 뜻이다.</p>

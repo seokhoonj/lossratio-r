@@ -14,10 +14,27 @@ to decide whether to fix the data source, drop offending cohorts, or
 pass `fill_gaps = TRUE` to
 [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md).
 
+Two checks are performed:
+
+1.  **Cohort dev-sequence gaps** — for each `(group, cohort)`, report
+    missing `dev_var` values within the observed range.
+
+2.  **Row-level calendar consistency** — when `calendar_var` is supplied
+    (or auto-detected as `"cym"` if present), report rows where
+    `calendar_var < cohort_var`. Such rows are logically impossible
+    (claims cannot precede policy issue) and downstream they show up as
+    negative `elap_m`, polluting cohort dev sequences.
+
 ## Usage
 
 ``` r
-validate_triangle(df, group_var, cohort_var = "uym", dev_var = "elap_m")
+validate_triangle(
+  df,
+  group_var,
+  cohort_var = "uym",
+  dev_var = "elap_m",
+  calendar_var = "cym"
+)
 ```
 
 ## Arguments
@@ -37,6 +54,13 @@ validate_triangle(df, group_var, cohort_var = "uym", dev_var = "elap_m")
 - dev_var:
 
   A single development variable. Default `"elap_m"`.
+
+- calendar_var:
+
+  Optional calendar period variable for row-level consistency check.
+  When supplied, rows where `calendar_var < cohort_var` are flagged as
+  invalid. Default `"cym"`; pass `NULL` to skip this check, or a column
+  name to override.
 
 ## Value
 
@@ -60,6 +84,13 @@ containing gaps. Columns:
   List column of missing `dev_var` values.
 
 Returns a zero-row data.table when no gaps are found.
+
+Row-level violations (when `calendar_var` is supplied and the check
+finds any) are attached as the `"invalid_rows"` attribute — a
+`data.table` with columns
+`[group_var, cohort_var, calendar_var, dev_var (if present), reason]`.
+Use `attr(out, "invalid_rows")` or rely on `print.TriangleValidation`
+which displays both sections.
 
 ## See also
 
