@@ -66,6 +66,11 @@ jobs:
             if ! head -n 1 "$f" | grep -q '<?xml'; then
               sed -i '1i<?xml version="1.0" encoding="UTF-8"?>' "$f"
             fi
+
+            # Drop low-SEO entries pkgdown auto-includes:
+            #   - 404.html (error page — should not be indexed)
+            #   - LICENSE.html (boilerplate)
+            sed -i '/\/404\.html<\/loc>/d; /\/LICENSE\.html<\/loc>/d' "$f"
           done
 
           cat > docs/robots.txt <<'EOF'
