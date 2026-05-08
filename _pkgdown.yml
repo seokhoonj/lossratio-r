@@ -5,6 +5,19 @@ template:
   includes:
     in_header: |
       <meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs" />
+      <!-- Browser-language redirect: send Korean visitors to /ko/ on the
+           landing page only. Deep links remain untouched. -->
+      <script>
+        (function() {
+          var p = window.location.pathname.replace(/\/(index\.html)?$/, '');
+          if (p.endsWith('/lossratio') || p === '') {
+            var lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+            if (lang.indexOf('ko') === 0) {
+              window.location.replace('./ko/');
+            }
+          }
+        })();
+      </script>
       <!-- Google tag (gtag.js) -->
       <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script>
       <script>
