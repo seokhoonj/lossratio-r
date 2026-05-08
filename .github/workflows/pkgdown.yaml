@@ -68,9 +68,14 @@ jobs:
             fi
 
             # Drop low-SEO entries pkgdown auto-includes:
-            #   - 404.html (error page — should not be indexed)
-            #   - LICENSE.html (boilerplate)
-            sed -i '/\/404\.html<\/loc>/d; /\/LICENSE\.html<\/loc>/d' "$f"
+            #   - 404.html      — error page, should not be indexed
+            #   - LICENSE.html  — boilerplate, low search value
+            #   - README*.html  — duplicate of index.html (pkgdown renders
+            #                     README.md as the home page), so search
+            #                     engines penalise it as duplicate content
+            sed -i '/\/404\.html<\/loc>/d;
+                    /\/LICENSE\.html<\/loc>/d;
+                    /\/README[^<]*\.html<\/loc>/d' "$f"
           done
 
           cat > docs/robots.txt <<'EOF'
