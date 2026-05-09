@@ -456,7 +456,7 @@ fit_lr(tri, recent = 12)
 #> loss_var      : loss 
 #> premium_var  : premium 
 #> loss_alpha    : 1 
-#> exposure_alpha: 1 
+#> premium_alpha: 1 
 #> delta_method  : simple 
 #> conf_level    : 0.95 
 #> ci_type       : analytical  

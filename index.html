@@ -17,8 +17,8 @@
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
 <script src="extra.js"></script><meta property="og:title" content="lossratio">
-<meta name="description" content="Loss ratio analytics for long-term health insurance — cohort development analysis, stage-adaptive projection, and regime detection.">
-<meta property="og:description" content="Loss ratio analytics for long-term health insurance — cohort development analysis, stage-adaptive projection, and regime detection.">
+<meta name="description" content="Loss ratio analytics for long-term health insurance — cohort development analysis, stage-adaptive projection, regime detection, and backtest validation.">
+<meta property="og:description" content="Loss ratio analytics for long-term health insurance — cohort development analysis, stage-adaptive projection, regime detection, and backtest validation.">
 <meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png">
 <meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs">
 <!-- Browser-language redirect: send Korean visitors to /ko/ on the
@@ -133,11 +133,11 @@
 <img src="logo.png" class="logo" alt=""><h1 id="lossratio-">lossratio <a class="anchor" aria-label="anchor" href="#lossratio-"></a>
 </h1>
 </div>
-<p>Loss ratio analytics for <strong>long-term health insurance</strong> — cohort development analysis, stage-adaptive projection, and regime detection.</p>
+<p>Loss ratio analytics for <strong>long-term health insurance</strong> — cohort development analysis, stage-adaptive projection, regime detection, and backtest validation.</p>
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
-<p><code>lossratio</code> is a loss ratio analytics toolkit for <strong>long-term health insurance</strong>, covering cohort development analysis, stage-adaptive projection, and regime detection. Input is long-format experience data — each row (cohort × dev × demographic) maps to one Triangle cell, with loss and premium columns (<code>loss</code>, <code>premium</code>).</p>
+<p><code>lossratio</code> is a loss ratio analytics toolkit for <strong>long-term health insurance</strong>, covering cohort development analysis, stage-adaptive projection, regime detection, and backtest validation. Input is long-format experience data — each row (cohort × dev × demographic) maps to one Triangle cell, with loss and premium columns (<code>loss</code>, <code>premium</code>).</p>
 <p>In long-term health insurance, new claims and premium are generated and earned continuously within each cohort, so cumulative loss and exposure grow together. Age-to-age (ATA) factors tend to show high variability in early development, and exposure (≈ risk premium) becomes a more stable and reliable anchor. Product redesigns, underwriting changes, or regulatory actions can also produce structural breaks that accumulate across cohorts.</p>
 <p>In this setting, lossratio provides stage-adaptive (SA) loss-ratio projection, supported by maturity point and regime detection. SA uses an exposure-driven (ED) model before the maturity point and chain ladder (CL) after it. Regime detection identifies homogeneous groups of cohorts (regimes) that share similar loss dynamics, separating structural break points and determining which cells to use for estimation.</p>
 <p>It provides:</p>

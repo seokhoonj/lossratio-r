@@ -38,7 +38,7 @@ fit_lr(
   loss_var = "loss",
   premium_var = "premium",
   loss_alpha = 1,
-  exposure_alpha = 1,
+  premium_alpha = 1,
   delta_method = c("simple", "full"),
   rho = 0,
   conf_level = 0.95,
@@ -75,7 +75,7 @@ fit_lr(
   Numeric scalar controlling the variance structure for loss estimation.
   Default is `1`.
 
-- exposure_alpha:
+- premium_alpha:
 
   Numeric scalar for exposure chain ladder. Default is `1`.
 

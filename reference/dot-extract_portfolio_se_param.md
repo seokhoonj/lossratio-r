@@ -22,4 +22,4 @@ Numeric scalar. `NA_real_` when fields missing.
 ## Details
 
 \$\$SE^{param}(LR\_{portfolio}) = \sqrt{\sum_i (param\\se_i)^2} / \sum_i
-exposure\_{ult,i}\$\$
+premium\_{ult,i}\$\$

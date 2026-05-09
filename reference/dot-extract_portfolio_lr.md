@@ -1,7 +1,7 @@
 # Extract portfolio-level projected loss ratio from a Backtest fit object
 
 Aggregates per-cohort projected ultimate to a single portfolio LR via
-exposure-weighting: \\\sum_i loss\_{ult,i} / \sum_i exposure\_{ult,i}\\.
+exposure-weighting: \\\sum_i loss\_{ult,i} / \sum_i premium\_{ult,i}\\.
 
 ## Usage
 

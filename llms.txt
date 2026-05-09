@@ -1,15 +1,16 @@
 # lossratio
 
 Loss ratio analytics for **long-term health insurance** — cohort
-development analysis, stage-adaptive projection, and regime detection.
+development analysis, stage-adaptive projection, regime detection, and
+backtest validation.
 
 ## Overview
 
 `lossratio` is a loss ratio analytics toolkit for **long-term health
 insurance**, covering cohort development analysis, stage-adaptive
-projection, and regime detection. Input is long-format experience data —
-each row (cohort × dev × demographic) maps to one Triangle cell, with
-loss and premium columns (`loss`, `premium`).
+projection, regime detection, and backtest validation. Input is
+long-format experience data — each row (cohort × dev × demographic) maps
+to one Triangle cell, with loss and premium columns (`loss`, `premium`).
 
 In long-term health insurance, new claims and premium are generated and
 earned continuously within each cohort, so cumulative loss and exposure
