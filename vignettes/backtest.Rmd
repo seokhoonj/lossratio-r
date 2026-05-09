@@ -147,23 +147,23 @@ triangle has at least 24–30 diagonals of history.
 ## Choosing the fit function
 
 The default fitter is `fit_lr` with `method = "sa"` and
-`value_var = "lr"`. The loss ratio is unitless and dimension-free
+`loss_var = "lr"`. The loss ratio is unitless and dimension-free
 across cohorts of very different volume, so `aeg_mean` and `aeg_med`
 carry a consistent meaning across the triangle.
 
-> **A note on `value_var`.** `backtest(value_var = ...)` is the
+> **A note on `loss_var`.** `backtest(loss_var = ...)` is the
 > **score column** — the column on which actual vs. predicted are
 > compared cell-by-cell. It is *not*, in general, the same thing as
-> the `value_var` argument to a chain-ladder fitter (which selects
+> the `loss_var` argument to a chain-ladder fitter (which selects
 > which column of the triangle to accumulate). With `fit_fn = fit_cl`,
-> the two coincide because `backtest()` forwards `value_var` straight
+> the two coincide because `backtest()` forwards `loss_var` straight
 > through to `fit_cl()`. With `fit_fn = fit_lr`, the fitter does not
-> take a `value_var` at all — it always projects `loss`, `premium`, and
-> `lr` jointly — and `value_var` here only chooses which of those
+> take a `loss_var` at all — it always projects `loss`, `premium`, and
+> `lr` jointly — and `loss_var` here only chooses which of those
 > three projection columns on `fit_lr$full` is compared against the
 > held-out actuals:
 
-| `value_var` | Compared column on `fit_lr$full` |
+| `loss_var` | Compared column on `fit_lr$full` |
 |-------------|----------------------------------|
 | `"loss"`   | `loss_proj`                      |
 | `"premium"`     | `premium_proj`                  |
@@ -180,8 +180,8 @@ bt_sa  <- backtest(tri_sur, holdout = 6L, method = "sa")   # default
 bt_ed  <- backtest(tri_sur, holdout = 6L, method = "ed")
 bt_cl  <- backtest(tri_sur, holdout = 6L, method = "cl")
 
-bt_loss <- backtest(tri_sur, holdout = 6L, value_var = "loss")
-bt_rp   <- backtest(tri_sur, holdout = 6L, value_var = "premium")
+bt_loss <- backtest(tri_sur, holdout = 6L, loss_var = "loss")
+bt_rp   <- backtest(tri_sur, holdout = 6L, loss_var = "premium")
 
 print(bt_sa)
 ```

@@ -83,10 +83,10 @@ summary(tri)           # 경과 기간별 그룹 통계량
 
 ```{r}
 # ATA 인자(age-to-age factor)
-fit_ata(tri, value_var = "loss")
+fit_ata(tri, loss_var = "loss")
 
 # 노출 기반(exposure-driven) 강도
-fit_ed(tri, value_var = "loss", premium_var = "premium")
+fit_ed(tri, loss_var = "loss", premium_var = "premium")
 ```
 
 `fit_ata()` 는 경과 기간 링크별로 선택된 ATA 인자를 반환한다.
@@ -98,7 +98,7 @@ fit_ed(tri, value_var = "loss", premium_var = "premium")
 `fit_cl()` 은 chain ladder 추정을 수행한다.
 
 ```{r}
-cl <- fit_cl(tri, value_var = "loss", method = "mack")
+cl <- fit_cl(tri, loss_var = "loss", method = "mack")
 plot(cl, type = "projection")
 summary(cl)
 ```

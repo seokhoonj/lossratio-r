@@ -112,7 +112,7 @@ $$
 
 Behaviour:
 
-- Standard reserving practice. Equivalent to `fit_cl(tri, value_var = "loss")`
+- Standard reserving practice. Equivalent to `fit_cl(tri, loss_var = "loss")`
   for the loss projection, but `fit_lr()` additionally projects
   exposure forward via CL on `premium` and computes the loss-ratio
   uncertainty via the delta method.

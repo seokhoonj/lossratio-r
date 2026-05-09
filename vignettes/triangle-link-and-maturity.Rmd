@@ -81,7 +81,7 @@ ATA factors; with `premium_var` it carries the ED-style intensities
 $g_k = \Delta C^L_k / C^P_k$.
 
 ```{r}
-ata <- build_link(tri, value_var = "loss")
+ata <- build_link(tri, loss_var = "loss")
 sm  <- summary(ata, model = "ata", alpha = 1)
 head(sm)
 ```
@@ -119,7 +119,7 @@ plot_triangle(ata, label_args = la, show_maturity = TRUE)    # overlay maturity 
 
 # detail labels are two lines and overlap on monthly cells — rebuild on the
 # quarterly triangle so the labels fit
-ata_q <- build_link(tri_q, value_var = "loss")
+ata_q <- build_link(tri_q, loss_var = "loss")
 plot_triangle(ata_q, label_style = "detail")      # factor + (loss / rp) amounts
 ```
 
@@ -130,7 +130,7 @@ the link's median.
 ### ED diagnostics
 
 ```{r}
-ed <- build_link(tri, value_var = "loss", premium_var = "premium")
+ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
 sm <- summary(ed, model = "ed", alpha = 1)
 head(sm)
 
@@ -157,7 +157,7 @@ single-variable `Link` and its WLS summary are built internally:
 ```{r}
 mat <- detect_maturity(
   tri,
-  value_var       = "loss",
+  loss_var       = "loss",
   cv_threshold    = 0.15,    # CV must be below this
   rse_threshold   = 0.05,    # RSE must be below this
   min_valid_ratio = 0.5,     # at least 50% finite cohorts at the link
@@ -200,10 +200,10 @@ push it earlier.
 internal `summary()` step is taken from those callers):
 
 ```{r, eval = FALSE}
-fit_ata(tri, value_var = "loss",
+fit_ata(tri, loss_var = "loss",
         maturity_args = list(cv_threshold = 0.08, min_run = 2L))
 
-fit_cl(tri, value_var = "loss",
+fit_cl(tri, loss_var = "loss",
        maturity_args = list(cv_threshold = 0.08))
 
 fit_lr(tri, method = "sa",
@@ -221,7 +221,7 @@ group, each detected independently with the same thresholds:
 
 ```{r}
 tri_all <- build_triangle(as_experience(experience), group_var = cv_nm)
-detect_maturity(tri_all, value_var = "loss")
+detect_maturity(tri_all, loss_var = "loss")
 ```
 
 The link diagnostic plot makes the result easier to read — each cv
@@ -229,7 +229,7 @@ gets its own panel and the vertical line marks the maturity point
 where CV first drops below `cv_threshold`:
 
 ```{r}
-plot(build_link(tri_all, value_var = "loss"), type = "cv")
+plot(build_link(tri_all, loss_var = "loss"), type = "cv")
 ```
 
 ## Validation before building
@@ -261,8 +261,8 @@ reserving regime shift), restrict estimation to the recent calendar
 diagonals:
 
 ```{r}
-fit_ata(tri, value_var = "loss", alpha = 1, recent = 12)  # last 12 calendar diagonals
-fit_cl(tri, value_var = "loss", recent = 12)
+fit_ata(tri, loss_var = "loss", alpha = 1, recent = 12)  # last 12 calendar diagonals
+fit_cl(tri, loss_var = "loss", recent = 12)
 fit_lr(tri, recent = 12)
 ```
 

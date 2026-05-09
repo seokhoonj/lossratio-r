@@ -82,10 +82,10 @@ Two complementary views of cohort development:
 
 ```{r}
 # Age-to-age factors
-fit_ata(tri, value_var = "loss")
+fit_ata(tri, loss_var = "loss")
 
 # Exposure-driven intensities
-fit_ed(tri, value_var = "loss", premium_var = "premium")
+fit_ed(tri, loss_var = "loss", premium_var = "premium")
 ```
 
 `fit_ata()` returns selected age-to-age factors per development link.
@@ -97,7 +97,7 @@ Both are inputs to the projection methods below.
 `fit_cl()` runs a chain ladder projection:
 
 ```{r}
-cl <- fit_cl(tri, value_var = "loss", method = "mack")
+cl <- fit_cl(tri, loss_var = "loss", method = "mack")
 plot(cl, type = "projection")
 summary(cl)
 ```

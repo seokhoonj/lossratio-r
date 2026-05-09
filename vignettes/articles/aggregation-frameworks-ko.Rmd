@@ -74,7 +74,7 @@ plot_triangle(tri_q)   # 코호트 × dev lr 히트맵
 
 `Triangle` 은 다음 함수의 입력으로 사용된다.
 
-- `build_link()` — 발달 인자 (ATA / ED 는 `value_var` + 선택적 `premium_var` 로 선택)
+- `build_link()` — 발달 인자 (ATA / ED 는 `loss_var` + 선택적 `premium_var` 로 선택)
 - `fit_cl()`, `fit_lr()` — 추정
 - `detect_regime()` — 구조 변화 탐지
 
