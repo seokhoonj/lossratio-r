@@ -10,7 +10,7 @@ fit_lr(
   loss_var = "loss",
   premium_var = "premium",
   loss_alpha = 1,
-  exposure_alpha = 1,
+  premium_alpha = 1,
   delta_method = c("simple", "full"),
   rho = 0,
   conf_level = 0.95,
@@ -36,7 +36,7 @@ Default is \code{"sa"}.}
 \item{loss_alpha}{Numeric scalar controlling the variance structure for
 loss estimation. Default is \code{1}.}
 
-\item{exposure_alpha}{Numeric scalar for exposure chain ladder. Default
+\item{premium_alpha}{Numeric scalar for exposure chain ladder. Default
 is \code{1}.}
 
 \item{delta_method}{Method for computing \code{se_lr = SE(L/E)}. One of:

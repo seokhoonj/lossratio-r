@@ -301,7 +301,7 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'
 #' @export
 fit_ata <- function(x,
-                    loss_var     = "loss",
+                    loss_var      = "loss",
                     weight_var    = NULL,
                     alpha         = 1,
                     na_method     = c("locf", "none"),

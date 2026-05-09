@@ -23,9 +23,19 @@
 #' reflects the precision of the WLS-estimated factor. Using both criteria
 #' together provides a more robust maturity assessment than either alone.
 #'
+#' Default `loss_var = "loss"` (cumulative loss). Maturity in chain
+#' ladder is methodologically a property of *loss* development:
+#' the ATA factors of cumulative loss stabilize when chain ladder
+#' becomes reliable, which in turn makes downstream LR projection
+#' reliable. ATA factors of `lr` itself (a ratio of two cumulative
+#' quantities) carry additional noise and tend to give less precise
+#' maturity decisions. Override `loss_var` only when you specifically
+#' want maturity of premium development or another cumulative metric.
+#'
 #' @param x A `Triangle` object.
 #' @param loss_var Cumulative metric for the link factor. Default
-#'   `"loss"`. Forwarded to [build_link()].
+#'   `"loss"` (chain-ladder convention; see Description). Forwarded to
+#'   [build_link()].
 #' @param weight_var Optional WLS weight variable. Forwarded to
 #'   [build_link()].
 #' @param alpha Numeric scalar controlling the variance structure in
@@ -47,14 +57,14 @@
 #'
 #' @export
 detect_maturity <- function(x,
-                          loss_var       = "loss",
-                          weight_var      = NULL,
-                          alpha           = 1,
-                          cv_threshold    = 0.15,
-                          rse_threshold   = 0.05,
-                          min_valid_ratio = 0.5,
-                          min_n_valid     = 3L,
-                          min_run         = 1L) {
+                            loss_var        = "loss",
+                            weight_var      = NULL,
+                            alpha           = 1,
+                            cv_threshold    = 0.15,
+                            rse_threshold   = 0.05,
+                            min_valid_ratio = 0.5,
+                            min_n_valid     = 3L,
+                            min_run         = 1L) {
 
   .assert_class(x, "Triangle")
 
@@ -76,11 +86,11 @@ detect_maturity <- function(x,
 #'
 #' @keywords internal
 .detect_maturity <- function(x,
-                           cv_threshold    = 0.15,
-                           rse_threshold   = 0.05,
-                           min_valid_ratio = 0.5,
-                           min_n_valid     = 3L,
-                           min_run         = 1L) {
+                             cv_threshold    = 0.15,
+                             rse_threshold   = 0.05,
+                             min_valid_ratio = 0.5,
+                             min_n_valid     = 3L,
+                             min_run         = 1L) {
 
   .assert_class(x, "ATASummary")
 

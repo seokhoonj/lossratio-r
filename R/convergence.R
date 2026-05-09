@@ -56,7 +56,7 @@
 #' Extract portfolio-level projected loss ratio from a Backtest fit object
 #'
 #' Aggregates per-cohort projected ultimate to a single portfolio LR via
-#' exposure-weighting: \eqn{\sum_i loss_{ult,i} / \sum_i exposure_{ult,i}}.
+#' exposure-weighting: \eqn{\sum_i loss_{ult,i} / \sum_i premium_{ult,i}}.
 #'
 #' @param bt A `Backtest` object (result of `backtest()`).
 #'
@@ -66,10 +66,10 @@
   if (is.null(bt) || is.null(bt$fit) || is.null(bt$fit$summary))
     return(NA_real_)
   s <- data.table::as.data.table(bt$fit$summary)
-  needed <- c("ultimate", "exposure_ult")
+  needed <- c("ultimate", "premium_ult")
   if (!all(needed %in% names(s))) return(NA_real_)
   total_loss <- sum(s$ultimate,     na.rm = TRUE)
-  total_exp  <- sum(s$exposure_ult, na.rm = TRUE)
+  total_exp  <- sum(s$premium_ult, na.rm = TRUE)
   if (!is.finite(total_exp) || total_exp <= 0) return(NA_real_)
   total_loss / total_exp
 }
@@ -80,7 +80,7 @@
 #' Aggregates per-cohort parameter SE (on loss scale) to portfolio-level
 #' SE on the LR scale assuming inter-cohort independence:
 #'
-#' \deqn{SE^{param}(LR_{portfolio}) = \sqrt{\sum_i (param\_se_i)^2} / \sum_i exposure_{ult,i}}
+#' \deqn{SE^{param}(LR_{portfolio}) = \sqrt{\sum_i (param\_se_i)^2} / \sum_i premium_{ult,i}}
 #'
 #' @param bt A `Backtest` object.
 #' @return Numeric scalar. `NA_real_` when fields missing.
@@ -89,9 +89,9 @@
   if (is.null(bt) || is.null(bt$fit) || is.null(bt$fit$summary))
     return(NA_real_)
   s <- data.table::as.data.table(bt$fit$summary)
-  needed <- c("param_se", "exposure_ult")
+  needed <- c("param_se", "premium_ult")
   if (!all(needed %in% names(s))) return(NA_real_)
-  total_exp <- sum(s$exposure_ult, na.rm = TRUE)
+  total_exp <- sum(s$premium_ult, na.rm = TRUE)
   if (!is.finite(total_exp) || total_exp <= 0) return(NA_real_)
   ss <- s$param_se
   ss <- ss[is.finite(ss)]

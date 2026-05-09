@@ -222,8 +222,8 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'
 #' @export
 fit_ed <- function(x,
-                   loss_var     = "loss",
-                   premium_var  = "premium",
+                   loss_var      = "loss",
+                   premium_var   = "premium",
                    method        = c("basic", "mack"),
                    alpha         = 1,
                    na_method     = c("zero", "locf", "none"),
@@ -285,8 +285,8 @@ fit_ed <- function(x,
 #'
 #' @keywords internal
 .fit_ed_factors <- function(x,
-                            loss_var     = "loss",
-                            premium_var  = "premium",
+                            loss_var      = "loss",
+                            premium_var   = "premium",
                             method        = c("basic", "mack"),
                             alpha         = 1,
                             na_method     = c("zero", "locf", "none"),

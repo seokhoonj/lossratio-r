@@ -13,7 +13,7 @@ test_that("LRFit has expected list elements", {
   lr <- fit_lr(tri, method = "sa")
   for (nm in c("data", "method", "group_var", "cohort_var", "dev_var",
                "loss_var", "premium_var", "full", "pred", "summary",
-               "ed", "loss_ata_fit", "exposure_ata_fit", "maturity",
+               "ed", "loss_ata_fit", "premium_ata_fit", "maturity",
                "delta_method", "rho", "conf_level")) {
     expect_true(nm %in% names(lr), info = paste("missing", nm))
   }
@@ -34,10 +34,10 @@ test_that("incremental projections recover cumulative via per-cohort cumsum", {
   full <- data.table::copy(lr$full)
   data.table::setorder(full, cv_nm, cohort, dev)
   full[, .loss_recovered     := cumsum(loss_incr_proj),     by = .(cv_nm, cohort)]
-  full[, .exposure_recovered := cumsum(premium_incr_proj), by = .(cv_nm, cohort)]
+  full[, .premium_recovered := cumsum(premium_incr_proj), by = .(cv_nm, cohort)]
   rows <- full[is.finite(loss_proj) & is.finite(loss_incr_proj)]
   expect_equal(rows$.loss_recovered,     rows$loss_proj,     tolerance = 1e-8)
-  expect_equal(rows$.exposure_recovered, rows$premium_proj, tolerance = 1e-8)
+  expect_equal(rows$.premium_recovered, rows$premium_proj, tolerance = 1e-8)
 })
 
 test_that("$pred masks incremental projections on observed cells", {

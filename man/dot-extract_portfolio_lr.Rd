@@ -14,6 +14,6 @@ Numeric scalar. \code{NA_real_} when fields missing.
 }
 \description{
 Aggregates per-cohort projected ultimate to a single portfolio LR via
-exposure-weighting: \eqn{\sum_i loss_{ult,i} / \sum_i exposure_{ult,i}}.
+exposure-weighting: \eqn{\sum_i loss_{ult,i} / \sum_i premium_{ult,i}}.
 }
 \keyword{internal}

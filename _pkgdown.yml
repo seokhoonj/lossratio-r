@@ -69,8 +69,8 @@ template:
 home:
   title: lossratio
   description: Loss ratio analytics for long-term health insurance —
-    cohort development analysis, stage-adaptive projection, and regime
-    detection.
+    cohort development analysis, stage-adaptive projection, regime
+    detection, and backtest validation.
 
 navbar:
   structure:

@@ -17,6 +17,6 @@ Aggregates per-cohort parameter SE (on loss scale) to portfolio-level
 SE on the LR scale assuming inter-cohort independence:
 }
 \details{
-\deqn{SE^{param}(LR_{portfolio}) = \sqrt{\sum_i (param\_se_i)^2} / \sum_i exposure_{ult,i}}
+\deqn{SE^{param}(LR_{portfolio}) = \sqrt{\sum_i (param\_se_i)^2} / \sum_i premium_{ult,i}}
 }
 \keyword{internal}

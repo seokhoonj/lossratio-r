@@ -146,7 +146,7 @@
 backtest <- function(x,
                      holdout    = 6L,
                      fit_fn     = fit_lr,
-                     loss_var  = "lr",
+                     loss_var   = "lr",
                      ...) {
 
   .assert_class(x, "Triangle")

@@ -87,13 +87,13 @@
 #'
 #' @export
 detect_regime <- function(x,
-                                 loss_var = "lr",
-                                 K         = 12L,
-                                 method    = c("ecp", "pelt", "hclust"),
-                                 n_regimes = NULL,
-                                 sig_level = 0.05,
-                                 min_size  = 3L,
-                                 ...) {
+                          loss_var  = "lr",
+                          K         = 12L,
+                          method    = c("ecp", "pelt", "hclust"),
+                          n_regimes = NULL,
+                          sig_level = 0.05,
+                          min_size  = 3L,
+                          ...) {
 
   .assert_class(x, "Triangle")
   method <- match.arg(method)

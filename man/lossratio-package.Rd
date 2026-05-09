@@ -8,7 +8,7 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-A loss ratio analytics toolkit for long-term health insurance, covering cohort development analysis, stage-adaptive loss-ratio projection, and regime detection on long-format experience data. Implements stage-adaptive loss-ratio projection that uses an exposure-driven model before the maturity point and chain ladder after it, with supporting maturity point detection and cohort regime detection for handling structural breaks. Provides cohort by development period, calendar period, and total aggregation frameworks for diagnostics, and applies to any cumulative loss and exposure setting with sufficient sample per cell.
+A loss ratio analytics toolkit for long-term health insurance, covering cohort development analysis, stage-adaptive loss-ratio projection, regime detection, and backtest validation on long-format experience data. Implements stage-adaptive loss-ratio projection that uses an exposure-driven model before the maturity point and chain ladder after it, with supporting maturity point detection and cohort regime detection for handling structural breaks. Provides cohort by development period, calendar period, and total aggregation frameworks for diagnostics, and applies to any cumulative loss and exposure setting with sufficient sample per cell.
 }
 \details{
 The core loss ratio is defined as:

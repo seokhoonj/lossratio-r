@@ -98,7 +98,7 @@
 #' @export
 fit_cl <- function(x,
                    method        = c("basic", "mack"),
-                   loss_var     = "loss",
+                   loss_var      = "loss",
                    weight_var    = NULL,
                    alpha         = 1,
                    sigma_method  = c("min_last2", "locf", "loglinear"),
