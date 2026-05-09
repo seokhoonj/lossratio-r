@@ -91,10 +91,10 @@ plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
 
 # 노출 기반 적합 (additive ED 강도)
-ed <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
+ed <- fit_ed(tri, value_var = "loss", premium_var = "premium")
 
 # Chain ladder 적합 (multiplicative ATA 인자)
-cl <- fit_cl(tri, value_var = "closs", method = "mack")
+cl <- fit_cl(tri, value_var = "loss", method = "mack")
 plot(cl, type = "projection")
 
 # 손해율 적합 (default: 단계 적응형 — 성숙점 이전은 ED, 이후는 CL)

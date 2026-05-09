@@ -93,10 +93,10 @@ plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
 
 # Exposure-driven fit (additive ED intensity)
-ed <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
+ed <- fit_ed(tri, value_var = "loss", premium_var = "premium")
 
 # Chain ladder fit (multiplicative ATA factors)
-cl <- fit_cl(tri, value_var = "closs", method = "mack")
+cl <- fit_cl(tri, value_var = "loss", method = "mack")
 plot(cl, type = "projection")
 
 # Loss ratio fit (stage-adaptive by default — ED before maturity, CL after)
