@@ -128,13 +128,13 @@ actuarial A/E 관용에 맞춰
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Backtest&gt;</span></span>
 <span><span class="co">#&gt;   fit_fn      : fit_lr</span></span>
-<span><span class="co">#&gt;   value_var   : clr</span></span>
+<span><span class="co">#&gt;   loss_var   : lr</span></span>
 <span><span class="co">#&gt;   holdout     : 6 calendar diagonals</span></span>
 <span><span class="co">#&gt;   held-out    : 123 cells</span></span>
 <span><span class="co">#&gt;   AEG         : mean -13.06% / median -7.37%</span></span></code></pre></div>
 <p>기본 적합 함수는 단계 적응형(stage-adaptive, SA) 손해율 추정
 (<code>fit_lr(method = "sa")</code>) 이며, 기본 비교 컬럼은
-<code>value_var = "clr"</code> 이다 (누적 손해율). 반환되는 객체는
+<code>loss_var = "lr"</code> 이다 (누적 손해율). 반환되는 객체는
 <code>"Backtest"</code> 리스트이며, 주요 슬롯은 다음과 같다.</p>
 <ul>
 <li>
@@ -268,64 +268,64 @@ shift 가 발생했음을 시사한다.</p>
 <div class="section level2">
 <h2 id="적합-함수-선택">7. 적합 함수 선택<a class="anchor" aria-label="anchor" href="#%EC%A0%81%ED%95%A9-%ED%95%A8%EC%88%98-%EC%84%A0%ED%83%9D"></a>
 </h2>
-<p>기본값인 <code>fit_fn = fit_lr</code> (method = “sa”, value_var =
-“clr”) 은 손해율 관점의 진단을 직접 제공한다. <code>fit_lr</code> 의
-method 와 <code>value_var</code> 를 바꾸면 다양한 변형을 백테스트할 수
+<p>기본값인 <code>fit_fn = fit_lr</code> (method = “sa”, loss_var =
+“lr”) 은 손해율 관점의 진단을 직접 제공한다. <code>fit_lr</code> 의
+method 와 <code>loss_var</code> 를 바꾸면 다양한 변형을 백테스트할 수
 있다.</p>
 <blockquote>
-<p><strong><code>value_var</code> 에 대한 참고.</strong>
-<code>backtest(value_var = ...)</code> 는 <strong>스코어 컬럼(score
+<p><strong><code>loss_var</code> 에 대한 참고.</strong>
+<code>backtest(loss_var = ...)</code> 는 <strong>스코어 컬럼(score
 column)</strong> 이다. 즉, 셀 단위로 실제값과 추정값을 비교하는 대상
-컬럼을 가리킨다. 이는 chain ladder 적합 함수의 <code>value_var</code>
+컬럼을 가리킨다. 이는 chain ladder 적합 함수의 <code>loss_var</code>
 인자 — triangle 에서 어느 컬럼을 누적해 쌓을지 선택하는 인자 — 와
 일반적으로 같은 개념이 아니다. <code>fit_fn = fit_cl</code> 일 때는
-<code><a href="../reference/backtest.html">backtest()</a></code> 가 <code>value_var</code> 를 그대로
+<code><a href="../reference/backtest.html">backtest()</a></code> 가 <code>loss_var</code> 를 그대로
 <code><a href="../reference/fit_cl.html">fit_cl()</a></code> 에 전달하므로 두 의미가 일치한다. 반면
 <code>fit_fn = fit_lr</code> 일 때 <code>fit_lr</code> 자체는
-<code>value_var</code> 를 받지 않으며 — 항상 <code>closs</code>,
-<code>crp</code>, <code>clr</code> 세 컬럼을 동시에 추정한다 —
-<code>value_var</code> 는 <code>fit_lr$full</code> 의 세 추정 컬럼 중
+<code>loss_var</code> 를 받지 않으며 — 항상 <code>loss</code>,
+<code>premium</code>, <code>lr</code> 세 컬럼을 동시에 추정한다 —
+<code>loss_var</code> 는 <code>fit_lr$full</code> 의 세 추정 컬럼 중
 어느 것을 hold-out 실제값과 비교할지를 선택하는 역할만 한다. 매핑은
 다음과 같다.</p>
 </blockquote>
 <table class="table">
 <thead><tr class="header">
-<th><code>value_var</code></th>
+<th><code>loss_var</code></th>
 <th>
 <code>fit_lr$full</code> 의 비교 컬럼</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>"closs"</code></td>
+<td><code>"loss"</code></td>
 <td><code>loss_proj</code></td>
 </tr>
 <tr class="even">
-<td><code>"crp"</code></td>
-<td><code>exposure_proj</code></td>
+<td><code>"premium"</code></td>
+<td><code>premium_proj</code></td>
 </tr>
 <tr class="odd">
-<td><code>"clr"</code></td>
+<td><code>"lr"</code></td>
 <td><code>lr_proj</code></td>
 </tr>
 </tbody>
 </table>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">bt_sa_clr</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>                      <span class="co"># default</span></span>
-<span><span class="va">bt_sa_loss</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span></span>
-<span><span class="va">bt_ed_clr</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span></span>
-<span><span class="va">bt_cl_clr</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">bt_sa_lr</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>                      <span class="co"># default</span></span>
+<span><span class="va">bt_sa_loss</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
+<span><span class="va">bt_ed_lr</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span></span>
+<span><span class="va">bt_cl_lr</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt_sa_clr</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt_sa_lr</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Backtest&gt;</span></span>
 <span><span class="co">#&gt;   fit_fn      : fit_lr</span></span>
-<span><span class="co">#&gt;   value_var   : clr</span></span>
+<span><span class="co">#&gt;   loss_var   : lr</span></span>
 <span><span class="co">#&gt;   holdout     : 6 calendar diagonals</span></span>
 <span><span class="co">#&gt;   held-out    : 123 cells</span></span>
 <span><span class="co">#&gt;   AEG         : mean -13.06% / median -7.37%</span></span></code></pre></div>
-<p><code>clr</code> 을 백테스팅하는 것이 보통 더 유익한 진단이 된다.
+<p><code>lr</code> 을 백테스팅하는 것이 보통 더 유익한 진단이 된다.
 손해율은 단위가 없고 차원이 없어 규모가 크게 다른 코호트 간에도 일관되게
 비교 가능하므로, <code>aeg_mean</code> 과 <code>aeg_med</code> 가
-triangle 전체에서 일관된 의미를 가진다. 반면 <code>closs</code> 를
+triangle 전체에서 일관된 의미를 가진다. 반면 <code>loss</code> 를
 백테스팅하면 결과가 hold-out 대각선에서 가장 큰 코호트 쪽으로
 가중된다.</p>
 <p>단일 컬럼만 추정하면 되는 경우 (누적손해 등 손해율 형태가 아닌 단일

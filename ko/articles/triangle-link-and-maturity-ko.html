@@ -127,14 +127,14 @@ data structures and factor diagnostics</a></p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span>, summary <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>              <span class="co"># 코호트 선 + overlay (평균 / 중앙값 / 가중)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-2-3.png" class="r-plt" alt="" width="100%"></p>
 <p><code>summary = TRUE</code> overlay 는 각 dev 에서 평균, 중앙값, 가중
-clr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗어나는
-코호트를 포착하는 데 유용하다.</p>
+lr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗어나는 코호트를
+포착하는 데 유용하다.</p>
 </div>
 <div class="section level3">
 <h3 id="셀-히트맵">셀 히트맵<a class="anchor" aria-label="anchor" href="#%EC%85%80-%ED%9E%88%ED%8A%B8%EB%A7%B5"></a>
 </h3>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>                            <span class="co"># 각 셀의 clr</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>                            <span class="co"># 각 셀의 lr</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span>          <span class="co"># 증분 loss ratio</span></span></code></pre></div>
@@ -154,22 +154,22 @@ clr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗
 <code class="sourceCode R"><span><span class="va">sm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sm</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;cv_nm, dev&gt;</span></span>
-<span><span class="co">#&gt;     cv_nm   dev n_obs   lr_mean lr_median      lr_wt  clr_mean clr_median</span></span>
-<span><span class="co">#&gt;    &lt;char&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;      &lt;num&gt;     &lt;num&gt;      &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:    SUR     1    30 0.0738546 0.0000000 0.07343113 0.0738546  0.0000000</span></span>
-<span><span class="co">#&gt; 2:    SUR     2    29 0.5365888 0.0992849 0.54126362 0.3512535  0.1120447</span></span>
-<span><span class="co">#&gt; 3:    SUR     3    28 0.6201189 0.2472070 0.56590118 0.4521326  0.2618096</span></span>
-<span><span class="co">#&gt; 4:    SUR     4    27 0.8852657 0.6387164 0.92060611 0.6327242  0.4798531</span></span>
-<span><span class="co">#&gt; 5:    SUR     5    26 0.5767556 0.4828899 0.59880663 0.6369307  0.5641166</span></span>
-<span><span class="co">#&gt; 6:    SUR     6    25 0.9314593 0.5431397 0.95085711 0.7264308  0.6191132</span></span>
-<span><span class="co">#&gt;        clr_wt</span></span>
-<span><span class="co">#&gt;         &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1: 0.07343113</span></span>
-<span><span class="co">#&gt; 2: 0.35150128</span></span>
-<span><span class="co">#&gt; 3: 0.44744109</span></span>
-<span><span class="co">#&gt; 4: 0.63467048</span></span>
-<span><span class="co">#&gt; 5: 0.63999290</span></span>
-<span><span class="co">#&gt; 6: 0.72781355</span></span></code></pre></div>
+<span><span class="co">#&gt;     cv_nm   dev n_obs   lr_mean lr_median      lr_wt lr_incr_mean</span></span>
+<span><span class="co">#&gt;    &lt;char&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;      &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:    SUR     1    30 0.0738546 0.0000000 0.07343113    0.0738546</span></span>
+<span><span class="co">#&gt; 2:    SUR     2    29 0.3512535 0.1120447 0.35150128    0.5365888</span></span>
+<span><span class="co">#&gt; 3:    SUR     3    28 0.4521326 0.2618096 0.44744109    0.6201189</span></span>
+<span><span class="co">#&gt; 4:    SUR     4    27 0.6327242 0.4798531 0.63467048    0.8852657</span></span>
+<span><span class="co">#&gt; 5:    SUR     5    26 0.6369307 0.5641166 0.63999290    0.5767556</span></span>
+<span><span class="co">#&gt; 6:    SUR     6    25 0.7264308 0.6191132 0.72781355    0.9314593</span></span>
+<span><span class="co">#&gt;    lr_incr_median lr_incr_wt</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;      &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:      0.0000000 0.07343113</span></span>
+<span><span class="co">#&gt; 2:      0.0992849 0.54126362</span></span>
+<span><span class="co">#&gt; 3:      0.2472070 0.56590118</span></span>
+<span><span class="co">#&gt; 4:      0.6387164 0.92060611</span></span>
+<span><span class="co">#&gt; 5:      0.4828899 0.59880663</span></span>
+<span><span class="co">#&gt; 6:      0.5431397 0.95085711</span></span></code></pre></div>
 <p>(group, dev) 셀별 평균 / 중앙값 / 가중 손해율을 담은
 <code>TriangleSummary</code> 객체를 반환한다.</p>
 </div>
@@ -179,12 +179,12 @@ clr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗
 </h2>
 <p><code>Link</code> 객체는 triangle 으로부터 빌드된 단계 연결
 테이블(link table) 이다. 단일 변수 모드에서는 관측된 <strong>ATA
-인자</strong>(age-to-age factor) 를 담고, <code>exposure_var</code> 를
+인자</strong>(age-to-age factor) 를 담고, <code>premium_var</code> 를
 지정하면 ED 강도
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>g</mi><mi>k</mi></msub><mo>=</mo><mi mathvariant="normal">Δ</mi><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup><mi>/</mi><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">g_k = \Delta C^L_k / C^P_k</annotation></semantics></math>
 를 담는다.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ata</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_link.html">build_link</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">ata</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_link.html">build_link</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="va">sm</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ata</span>, model <span class="op">=</span> <span class="st">"ata"</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sm</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;cv_nm&gt;</span></span>
@@ -259,7 +259,7 @@ clr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly Link 로 다시 빌드</span></span>
-<span><span class="va">ata_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_link.html">build_link</a></span><span class="op">(</span><span class="va">tri_q</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span></span>
+<span><span class="va">ata_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_link.html">build_link</a></span><span class="op">(</span><span class="va">tri_q</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span>      <span class="co"># 인자 + (loss / rp) 금액</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-7-3.png" class="r-plt" alt="" width="100%"></p>
 <p>이 히트맵은 각 셀을 자기 링크 내에서
@@ -270,7 +270,7 @@ clr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗
 <h3 id="ed-진단">ED 진단<a class="anchor" aria-label="anchor" href="#ed-%EC%A7%84%EB%8B%A8"></a>
 </h3>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_link.html">build_link</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, exposure_var <span class="op">=</span> <span class="st">"crp"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_link.html">build_link</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, premium_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
 <span><span class="va">sm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ed</span>, model <span class="op">=</span> <span class="st">"ed"</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sm</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;cv_nm&gt;</span></span>
@@ -321,7 +321,7 @@ factor) 가 chain ladder 추정에 신뢰할 만큼 안정화되는 경과 기�
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span></span>
 <span>  <span class="va">tri</span>,</span>
-<span>  value_var       <span class="op">=</span> <span class="st">"closs"</span>,</span>
+<span>  loss_var       <span class="op">=</span> <span class="st">"loss"</span>,</span>
 <span>  cv_threshold    <span class="op">=</span> <span class="fl">0.15</span>,    <span class="co"># CV 가 이 값보다 작아야 함</span></span>
 <span>  rse_threshold   <span class="op">=</span> <span class="fl">0.05</span>,    <span class="co"># RSE 가 이 값보다 작아야 함</span></span>
 <span>  min_valid_ratio <span class="op">=</span> <span class="fl">0.5</span>,     <span class="co"># 해당 링크에서 유한 코호트가 50% 이상</span></span>
@@ -377,10 +377,10 @@ factor) 가 chain ladder 추정에 신뢰할 만큼 안정화되는 경과 기�
 호출된다 (내부 <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> 단계의 <code>alpha</code> 는
 호출자의 값을 그대로 받는다).</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>,</span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>,</span>
 <span>        maturity_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>cv_threshold <span class="op">=</span> <span class="fl">0.08</span>, min_run <span class="op">=</span> <span class="fl">2L</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>,</span>
+<span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>,</span>
 <span>       maturity_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>cv_threshold <span class="op">=</span> <span class="fl">0.08</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span>,</span>
@@ -396,7 +396,7 @@ dev) 에서 CL (이후 dev) 로 전환되는 dev 를 결정한다.</p>
 탐지된다.</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tri_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="fu"><a href="../reference/as_experience.html">as_experience</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri_all</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri_all</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;cv_nm&gt;</span></span>
 <span><span class="co">#&gt;     cv_nm ata_from ata_to ata_link     mean   median       wt         cv</span></span>
 <span><span class="co">#&gt;    &lt;char&gt;    &lt;int&gt;  &lt;int&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;      &lt;num&gt;</span></span>
@@ -420,7 +420,7 @@ dev) 에서 CL (이후 dev) 로 전환되는 dev 를 결정한다.</p>
 나뉘고, 수직선이 CV 가 <code>cv_threshold</code> 아래로 처음 떨어지는
 성숙점을 표시한다.</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/build_link.html">build_link</a></span><span class="op">(</span><span class="va">tri_all</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"cv"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/build_link.html">build_link</a></span><span class="op">(</span><span class="va">tri_all</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"cv"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="100%"></p>
 </div>
 </div>
@@ -454,7 +454,7 @@ triangle 이 깨끗하다는 뜻이다.</p>
 <p>오래된 코호트가 더 이상 대표성이 없을 때 (요율 변경, 인수 가이드라인
 변경 등) 추정을 최근 대각선으로 제한한다.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, alpha <span class="op">=</span> <span class="fl">1</span>, recent <span class="op">=</span> <span class="fl">12</span><span class="op">)</span>  <span class="co"># 최근 12개 대각선</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, alpha <span class="op">=</span> <span class="fl">1</span>, recent <span class="op">=</span> <span class="fl">12</span><span class="op">)</span>  <span class="co"># 최근 12개 대각선</span></span>
 <span><span class="co">#&gt; &lt;ATAFit&gt;</span></span>
 <span><span class="co">#&gt; alpha       : 1 </span></span>
 <span><span class="co">#&gt; sigma_method: min_last2 </span></span>
@@ -464,10 +464,10 @@ triangle 이 깨끗하다는 뜻이다.</p>
 <span><span class="co">#&gt; groups      : cv_nm </span></span>
 <span><span class="co">#&gt; n_groups    : 1 </span></span>
 <span><span class="co">#&gt; ata links   : 29</span></span>
-<span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, recent <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, recent <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;CLFit&gt;</span></span>
 <span><span class="co">#&gt; method      : basic </span></span>
-<span><span class="co">#&gt; value_var   : closs </span></span>
+<span><span class="co">#&gt; loss_var   : loss </span></span>
 <span><span class="co">#&gt; weight_var  : none </span></span>
 <span><span class="co">#&gt; alpha       : 1 </span></span>
 <span><span class="co">#&gt; recent      : 12 </span></span>
@@ -478,8 +478,8 @@ triangle 이 깨끗하다는 뜻이다.</p>
 <span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, recent <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;LRFit&gt;</span></span>
 <span><span class="co">#&gt; method        : sa </span></span>
-<span><span class="co">#&gt; loss_var      : closs </span></span>
-<span><span class="co">#&gt; exposure_var  : crp </span></span>
+<span><span class="co">#&gt; loss_var      : loss </span></span>
+<span><span class="co">#&gt; premium_var  : premium </span></span>
 <span><span class="co">#&gt; loss_alpha    : 1 </span></span>
 <span><span class="co">#&gt; exposure_alpha: 1 </span></span>
 <span><span class="co">#&gt; delta_method  : simple </span></span>

@@ -3,35 +3,35 @@
 Aggregate experience data into a development structure by grouping,
 period, and development-period variables. The result contains:
 
-- cumulative loss and cumulative risk premium,
+- cumulative loss and cumulative premium,
 
-- period and cumulative proportions,
+- per-period and cumulative proportions,
 
-- margin and cumulative margin,
+- per-period and cumulative margin,
 
 - profit indicators,
 
-- loss ratio (`lr = loss / rp`) and cumulative loss ratio
-  (`clr = closs / crp`).
+- per-period loss ratio (`lr_incr = loss_incr / premium_incr`) and
+  cumulative loss ratio (`lr = loss / premium`).
 
-The loss ratio is defined as: \$\$lr = loss / rp\$\$
+The cumulative loss ratio is defined as: \$\$lr = loss / premium\$\$
 
-where `rp` represents risk premium (expected loss), not written premium.
+For long-term health insurance applications, risk premium is commonly
+used as the `premium` measure.
 
-Proportion variables are computed within each `cohort_var + dev_var`
-cell:
+Proportion variables are computed within each `(cohort, dev)` cell:
+
+- `loss_incr_prop = loss_incr / sum(loss_incr)`
+
+- `premium_incr_prop = premium_incr / sum(premium_incr)`
 
 - `loss_prop = loss / sum(loss)`
 
-- `rp_prop = rp / sum(rp)`
+- `premium_prop = premium / sum(premium)`
 
-- `closs_prop = closs / sum(closs)`
-
-- `crp_prop = crp / sum(crp)`
-
-Therefore, for a fixed `(cohort_var, dev_var)` cell, the proportions sum
-to 1 across groups. These are useful for examining the composition of
-each development cell across products or other grouping variables.
+Therefore, for a fixed `(cohort, dev)` cell, the proportions sum to 1
+across groups. These are useful for examining the composition of each
+development cell across products or other grouping variables.
 
 ## Usage
 
@@ -41,7 +41,8 @@ build_triangle(
   group_var,
   cohort_var = "uym",
   dev_var = "elap_m",
-  value_var = c("loss", "rp"),
+  loss_var = "loss_incr",
+  premium_var = "premium_incr",
   fill_gaps = FALSE
 )
 ```
@@ -50,7 +51,8 @@ build_triangle(
 
 - df:
 
-  A data.frame containing experience data with loss and risk premium.
+  A data.frame containing experience data with per-period loss and
+  premium columns.
 
 - group_var:
 
@@ -66,14 +68,17 @@ build_triangle(
   Column(s) defining development periods (e.g., months since issue such
   as `elap_m`).
 
-- value_var:
+- loss_var:
 
-  Character vector specifying the value columns, typically
-  `c("loss", "rp")` where:
+  Single character; per-period loss column in `df`. Default
+  `"loss_incr"`.
 
-  - `loss` = actual claims (observed loss),
+- premium_var:
 
-  - `rp` = risk premium (expected loss).
+  Single character; per-period premium column in `df`. Default
+  `"premium_incr"`. Premium measure used as denominator for loss ratio
+  calculations. For long-term health insurance applications, risk
+  premium is commonly used.
 
 - fill_gaps:
 
@@ -91,35 +96,37 @@ columns:
 
 - n_obs:
 
-  Number of distinct periods observed
+  Number of distinct cohorts observed
 
-- closs, crp:
+- loss, loss_incr:
 
-  Cumulative loss and cumulative risk premium
+  Cumulative and per-period loss
 
-- loss_prop, rp_prop:
+- premium, premium_incr:
 
-  Period proportions within each `(period, dev)` cell
+  Cumulative and per-period premium
 
-- closs_prop, crp_prop:
+- lr, lr_incr:
 
-  Cumulative proportions within each `(period, dev)` cell
+  Cumulative and per-period loss ratio
 
-- margin, cmargin:
+- margin, margin_incr:
 
-  Period and cumulative margin (`rp - loss`)
+  Cumulative and per-period margin (`premium - loss`)
 
-- profit, cprofit:
+- profit, profit_incr:
 
   Profit indicator (factor `"pos"` / `"neg"`)
 
-- lr:
+- loss_prop, loss_incr_prop:
 
-  Loss ratio (`loss / rp`)
+  Cumulative and per-period proportions of loss within each
+  `(cohort, dev)` cell
 
-- clr:
+- premium_prop, premium_incr_prop:
 
-  Cumulative loss ratio (`closs / crp`)
+  Cumulative and per-period proportions of premium within each
+  `(cohort, dev)` cell
 
 The returned object also has an attribute `"longer"` containing a melted
 long-format version (`class = "TriangleLonger"`).
@@ -129,21 +136,19 @@ long-format version (`class = "TriangleLonger"`).
 ``` r
 if (FALSE) { # \dontrun{
 df <- data.frame(
-  pd_cd    = rep(c("P001", "P002"), each = 6),
-  pd_nm    = rep(c("cancer", "health"), each = 6),
-  uym      = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
-  elap_m     = rep(1:2, 6),
-  loss     = runif(12, 80, 120),
-  rp       = runif(12, 90, 110),
-  n_policy = sample(50:100, 12, replace = TRUE)
+  pd_cd        = rep(c("P001", "P002"), each = 6),
+  pd_nm        = rep(c("cancer", "health"), each = 6),
+  uym          = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
+  elap_m       = rep(1:2, 6),
+  loss_incr    = runif(12, 80, 120),
+  premium_incr = runif(12, 90, 110)
 )
 
 res <- build_triangle(
   df,
-  group_var   = pd_cd,
-  value_var   = c("loss", "rp", "n_policy"),
+  group_var  = pd_cd,
   cohort_var = "uym",
-  dev_var = "elap_m"
+  dev_var    = "elap_m"
 )
 
 head(res)

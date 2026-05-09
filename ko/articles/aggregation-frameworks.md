@@ -34,30 +34,30 @@ exp <- as_experience(experience)
 
 tri <- build_triangle(exp, group_var = cv_nm)
 head(tri)
-#>     cv_nm n_obs     cohort   dev   loss       rp  closs      crp   margin
-#>    <char> <int>     <Date> <int>  <num>    <num>  <num>    <num>    <num>
-#> 1:    SUR    30 2023-04-01     1      0 11191622      0 11191622 11191622
-#> 2:    CAN    30 2023-04-01     1   6445 12879191   6445 12879191 12872746
-#> 3:    2CI    30 2023-04-01     1 468845  7567723 468845  7567723  7098878
-#> 4:    HOS    30 2023-04-01     1      0 15273272      0 15273272 15273272
-#> 5:    SUR    29 2023-04-01     2      0 14025885      0 25217507 14025885
-#> 6:    CAN    29 2023-04-01     2      0 30821344   6445 43700535 30821344
-#>     cmargin profit cprofit           lr          clr  loss_prop   rp_prop
-#>       <num> <fctr>  <fctr>        <num>        <num>      <num>     <num>
-#> 1: 11191622    pos     pos 0.0000000000 0.0000000000 0.00000000 0.2385673
-#> 2: 12872746    pos     pos 0.0005004196 0.0005004196 0.01356014 0.2745405
-#> 3:  7098878    pos     pos 0.0619532454 0.0619532454 0.98643986 0.1613181
-#> 4: 15273272    pos     pos 0.0000000000 0.0000000000 0.00000000 0.3255741
-#> 5: 25217507    pos     pos 0.0000000000 0.0000000000 0.00000000 0.1890296
-#> 6: 43694090    pos     pos 0.0000000000 0.0001474810 0.00000000 0.4153853
-#>     closs_prop  crp_prop
-#>          <num>     <num>
-#> 1: 0.000000000 0.2385673
-#> 2: 0.013560142 0.2745405
-#> 3: 0.986439858 0.1613181
-#> 4: 0.000000000 0.3255741
-#> 5: 0.000000000 0.2082178
-#> 6: 0.008953204 0.3608298
+#>     cv_nm n_obs     cohort   dev   loss loss_incr  premium premium_incr
+#>    <char> <int>     <Date> <int>  <num>     <num>    <num>        <num>
+#> 1:    SUR    30 2023-04-01     1      0         0 11191622     11191622
+#> 2:    CAN    30 2023-04-01     1   6445      6445 12879191     12879191
+#> 3:    2CI    30 2023-04-01     1 468845    468845  7567723      7567723
+#> 4:    HOS    30 2023-04-01     1      0         0 15273272     15273272
+#> 5:    SUR    29 2023-04-01     2      0         0 25217507     14025885
+#> 6:    CAN    29 2023-04-01     2   6445         0 43700535     30821344
+#>              lr      lr_incr   margin margin_incr profit profit_incr
+#>           <num>        <num>    <num>       <num> <fctr>      <fctr>
+#> 1: 0.0000000000 0.0000000000 11191622    11191622    pos         pos
+#> 2: 0.0005004196 0.0005004196 12872746    12872746    pos         pos
+#> 3: 0.0619532454 0.0619532454  7098878     7098878    pos         pos
+#> 4: 0.0000000000 0.0000000000 15273272    15273272    pos         pos
+#> 5: 0.0000000000 0.0000000000 25217507    14025885    pos         pos
+#> 6: 0.0001474810 0.0000000000 43694090    30821344    pos         pos
+#>      loss_prop loss_incr_prop premium_prop premium_incr_prop
+#>          <num>          <num>        <num>             <num>
+#> 1: 0.000000000     0.00000000    0.2385673         0.2385673
+#> 2: 0.013560142     0.01356014    0.2745405         0.2745405
+#> 3: 0.986439858     0.98643986    0.1613181         0.1613181
+#> 4: 0.000000000     0.00000000    0.3255741         0.3255741
+#> 5: 0.000000000     0.00000000    0.2082178         0.1890296
+#> 6: 0.008953204     0.00000000    0.3608298         0.4153853
 ```
 
 Each row is one (cohort, dev) cell with cumulative loss / risk premium.
@@ -79,15 +79,15 @@ plot(tri)              # one trajectory per cohort, faceted by group
 # can keep monthly resolution by enlarging the plot.
 tri_q <- build_triangle(exp, group_var = cv_nm,
                         cohort_var = "uyq", dev_var = "elap_q")
-plot_triangle(tri_q)   # cohort × dev heatmap of clr
+plot_triangle(tri_q)   # cohort × dev heatmap of lr
 ```
 
 ![](aggregation-frameworks_files/figure-html/unnamed-chunk-2-2.png)
 
 Use `Triangle` as input to: -
 [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md)
-— development factors (ATA / ED via `value_var` + optional
-`exposure_var`) -
+— development factors (ATA / ED via `loss_var` + optional
+`premium_var`) -
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md),
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
 — projection -
@@ -100,30 +100,30 @@ Use `Triangle` as input to: -
 
 cal <- build_calendar(exp, group_var = cv_nm, calendar_var = "cym")
 head(cal)
-#>     cv_nm   calendar   dev     loss        rp     closs       crp   margin
-#>    <char>     <Date> <int>    <num>     <num>     <num>     <num>    <num>
-#> 1:    2CI 2023-04-01     1   468845   7567723    468845   7567723  7098878
-#> 2:    2CI 2023-05-01     2   788082  27286688   1256927  34854411 26498606
-#> 3:    2CI 2023-06-01     3 18122450  42665533  19379377  77519944 24543083
-#> 4:    2CI 2023-07-01     4 70259233  68265637  89638610 145785581 -1993596
-#> 5:    2CI 2023-08-01     5 32739949 110351072 122378559 256136653 77611123
-#> 6:    2CI 2023-09-01     6 61587160 135154735 183965719 391291388 73567575
-#>      cmargin profit cprofit         lr        clr loss_prop   rp_prop
-#>        <num> <fctr>  <fctr>      <num>      <num>     <num>     <num>
-#> 1:   7098878    pos     pos 0.06195325 0.06195325 0.9864399 0.1613181
-#> 2:  33597484    pos     pos 0.02888156 0.03606221 0.9626040 0.2248381
-#> 3:  58140567    pos     pos 0.42475621 0.24999214 0.3480569 0.1688936
-#> 4:  56146971    neg     pos 1.02920351 0.61486609 0.4423512 0.2060648
-#> 5: 133758094    pos     pos 0.29668900 0.47778620 0.2173682 0.2219566
-#> 6: 207325669    pos     pos 0.45567889 0.47015019 0.2061898 0.2113124
-#>    closs_prop  crp_prop
-#>         <num>     <num>
-#> 1:  0.9864399 0.1613181
-#> 2:  0.9713591 0.2071298
-#> 3:  0.3631717 0.1841805
-#> 4:  0.4224394 0.1938191
-#> 5:  0.3373051 0.2050163
-#> 6:  0.2781021 0.2071482
+#>     cv_nm   calendar   dev      loss loss_incr   premium premium_incr
+#>    <char>     <Date> <int>     <num>     <num>     <num>        <num>
+#> 1:    2CI 2023-04-01     1    468845    468845   7567723      7567723
+#> 2:    2CI 2023-05-01     2   1256927    788082  34854411     27286688
+#> 3:    2CI 2023-06-01     3  19379377  18122450  77519944     42665533
+#> 4:    2CI 2023-07-01     4  89638610  70259233 145785581     68265637
+#> 5:    2CI 2023-08-01     5 122378559  32739949 256136653    110351072
+#> 6:    2CI 2023-09-01     6 183965719  61587160 391291388    135154735
+#>            lr    lr_incr    margin margin_incr profit profit_incr loss_prop
+#>         <num>      <num>     <num>       <num> <fctr>      <fctr>     <num>
+#> 1: 0.06195325 0.06195325   7098878     7098878    pos         pos 0.9864399
+#> 2: 0.03606221 0.02888156  33597484    26498606    pos         pos 0.9713591
+#> 3: 0.24999214 0.42475621  58140567    24543083    pos         pos 0.3631717
+#> 4: 0.61486609 1.02920351  56146971    -1993596    pos         neg 0.4224394
+#> 5: 0.47778620 0.29668900 133758094    77611123    pos         pos 0.3373051
+#> 6: 0.47015019 0.45567889 207325669    73567575    pos         pos 0.2781021
+#>    loss_incr_prop premium_prop premium_incr_prop
+#>             <num>        <num>             <num>
+#> 1:      0.9864399    0.1613181         0.1613181
+#> 2:      0.9626040    0.2071298         0.2248381
+#> 3:      0.3480569    0.1841805         0.1688936
+#> 4:      0.4423512    0.1938191         0.2060648
+#> 5:      0.2173682    0.2050163         0.2219566
+#> 6:      0.2061898    0.2071482         0.2113124
 ```
 
 Each row is one calendar period (per group). The `dev` column here is a
@@ -164,18 +164,18 @@ tot <- build_total(
   period_to   = "2024-03-01"
 )
 head(tot)
-#>     cv_nm n_obs sales_start  sales_end        loss          rp        lr
+#>     cv_nm n_obs sales_start  sales_end        loss     premium        lr
 #>    <char> <int>      <Date>     <Date>       <num>       <num>     <num>
 #> 1:    SUR    30  2023-04-01 2024-03-01 26195800145 23817090339 1.0998741
 #> 2:    CAN    30  2023-04-01 2024-03-01 15036650678 24008537158 0.6263043
 #> 3:    2CI    30  2023-04-01 2024-03-01 12482828960 18720199627 0.6668107
 #> 4:    HOS    30  2023-04-01 2024-03-01  9737095690 25111393787 0.3877561
-#>    loss_prop   rp_prop
-#>        <num>     <num>
-#> 1: 0.4128419 0.2598496
-#> 2: 0.2369754 0.2619383
-#> 3: 0.1967275 0.2042414
-#> 4: 0.1534552 0.2739707
+#>    loss_prop premium_prop
+#>        <num>        <num>
+#> 1: 0.4128419    0.2598496
+#> 2: 0.2369754    0.2619383
+#> 3: 0.1967275    0.2042414
+#> 4: 0.1534552    0.2739707
 ```
 
 One row per group, summarising loss / risk premium / loss ratio over the

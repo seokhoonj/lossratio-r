@@ -43,9 +43,10 @@ Minimum required columns are:
 
 - `uym` : Underwriting year-month (`Date` or coercible to `Date`)
 
-- `loss` : Incurred loss amount (`numeric` or coercible)
+- `loss_incr` : Per-period loss amount (`numeric` or coercible)
 
-- `rp` : Risk premium (`numeric` or coercible)
+- `premium_incr` : Per-period premium (`numeric` or coercible); for
+  long-term health insurance, risk premium is commonly used
 
 If `add_period = TRUE`, additional period variables such as `uy`, `uyh`,
 `uyq`, `cy`, `cyh`, `cyq`, `elap_y`, `elap_h`, and `elap_q` may be

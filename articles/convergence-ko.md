@@ -123,14 +123,14 @@ print(res)
 
 - `k_conv` — 검출된 $`k^{**}`$. 조건이 $`M`$ 개 연속 만족되는 시점이
   없으면 `NA`.
-- `k_star` — 하한으로 사용된 성숙점. 함수 내부에서 clr 기반 ATA 에
+- `k_star` — 하한으로 사용된 성숙점. 함수 내부에서 lr 기반 ATA 에
   [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
   를 적용해 산출하거나, 호출 시 직접 전달할 수 있다.
 - `V` — triangle 에서 관측 가능한 최대 발전 기간.
 - `v`, `R_v`, `SE_param_v`, `D_v`, `pass_v` — 후보 평가 시점별 진단
   시퀀스.
 - `c`, `tau`, `M`, `holdout_max`, `min_n_cohorts` — 사용된 설정값.
-- attribute: `group_var`, `value_var`, `fit_fn_name`, `dev_var`.
+- attribute: `group_var`, `loss_var`, `fit_fn_name`, `dev_var`.
 
 `summary(res)` 는 후보 시점별 한 행 + `R_over_SE = R_v / SE_param_v`
 컬럼이 있는 `data.table` 을 반환한다:

@@ -16,7 +16,7 @@ process variance and parameter variance.
 
 
 
-When weight_var is supplied (e.g. "crp"), age-to-age factors and
+When weight_var is supplied (e.g. "premium"), age-to-age factors and
 their variance are estimated using the supplied WLS weights.'><meta property="og:description" content='Fit a chain ladder projection from an object of class "Triangle".
 The function works on long-form cumulative data and does not require
 a complete triangle.
@@ -34,7 +34,7 @@ process variance and parameter variance.
 
 
 
-When weight_var is supplied (e.g. "crp"), age-to-age factors and
+When weight_var is supplied (e.g. "premium"), age-to-age factors and
 their variance are estimated using the supplied WLS weights.'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -107,7 +107,7 @@ standard recursion, and prediction uncertainty is decomposed into
 process variance and parameter variance.</p></dd>
 
 
-</dl><p>When <code>weight_var</code> is supplied (e.g. <code>"crp"</code>), age-to-age factors and
+</dl><p>When <code>weight_var</code> is supplied (e.g. <code>"premium"</code>), age-to-age factors and
 their variance are estimated using the supplied WLS weights.</p>
     </div>
 
@@ -116,7 +116,7 @@ their variance are estimated using the supplied WLS weights.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fit_cl</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"basic"</span>, <span class="st">"mack"</span><span class="op">)</span>,</span>
-<span>  value_var <span class="op">=</span> <span class="st">"closs"</span>,</span>
+<span>  loss_var <span class="op">=</span> <span class="st">"loss"</span>,</span>
 <span>  weight_var <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"min_last2"</span>, <span class="st">"locf"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
@@ -138,14 +138,14 @@ their variance are estimated using the supplied WLS weights.</p>
 <dd><p>One of <code>"basic"</code> or <code>"mack"</code>. Default is <code>"basic"</code>.</p></dd>
 
 
-<dt id="arg-value-var">value_var<a class="anchor" aria-label="anchor" href="#arg-value-var"></a></dt>
+<dt id="arg-loss-var">loss_var<a class="anchor" aria-label="anchor" href="#arg-loss-var"></a></dt>
 <dd><p>A single cumulative variable to project.
-Typical choices are <code>"closs"</code>, <code>"crp"</code>, or <code>"clr"</code>.</p></dd>
+Typical choices are <code>"loss"</code>, <code>"premium"</code>, or <code>"lr"</code>.</p></dd>
 
 
 <dt id="arg-weight-var">weight_var<a class="anchor" aria-label="anchor" href="#arg-weight-var"></a></dt>
 <dd><p>An optional column name passed to <code><a href="build_link.html">build_link()</a></code> as
-the WLS weight variable. Typically <code>"crp"</code> when <code>value_var = "clr"</code>.
+the WLS weight variable. Typically <code>"premium"</code> when <code>loss_var = "lr"</code>.
 Default is <code>NULL</code>.</p></dd>
 
 
@@ -199,7 +199,7 @@ If numeric, the supplied value is used as the tail factor.</p></dd>
 <dt><code>dev_var</code></dt>
 <dd><p>Character scalar of development variable name.</p></dd>
 
-<dt><code>value_var</code></dt>
+<dt><code>loss_var</code></dt>
 <dd><p>Character scalar of value variable name.</p></dd>
 
 <dt><code>full</code></dt>
@@ -269,16 +269,16 @@ or <code>NULL</code> when maturity filtering was not applied.</p></dd>
 <span class="r-in"><span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span><span class="op">[</span><span class="va">cv_nm</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Basic chain ladder (point projection only)</span></span></span>
-<span class="r-in"><span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">fit_cl</span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, method <span class="op">=</span> <span class="st">"basic"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">fit_cl</span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"basic"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Mack chain ladder with process / parameter standard errors</span></span></span>
-<span class="r-in"><span><span class="va">cl_mack</span> <span class="op">&lt;-</span> <span class="fu">fit_cl</span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">cl_mack</span> <span class="op">&lt;-</span> <span class="fu">fit_cl</span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cl_mack</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cl_mack</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># WLS factors for clr (loss ratio) using crp as the weight</span></span></span>
-<span class="r-in"><span><span class="va">cl_clr</span> <span class="op">&lt;-</span> <span class="fu">fit_cl</span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"clr"</span>, weight_var <span class="op">=</span> <span class="st">"crp"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># WLS factors for lr (loss ratio) using premium as the weight</span></span></span>
+<span class="r-in"><span><span class="va">cl_clr</span> <span class="op">&lt;-</span> <span class="fu">fit_cl</span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"lr"</span>, weight_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

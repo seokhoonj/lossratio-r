@@ -6,9 +6,9 @@ the lossratio package workflow. Generated deterministically from
 LR-by-development curve for each of the four coverages is calibrated to
 the broad shape of a real long-term insurance portfolio's first ten
 months of development; the elap_m 11-30 plateau, all cohort-level
-patterns, demographic mixes, and cell-level loss / rp values are
-randomly drawn. The SUR coverage carries a synthetic 2024-04 cohort
-regime break (LR halved) so the
+patterns, demographic mixes, and cell-level `loss_incr` / `premium_incr`
+values are randomly drawn. The SUR coverage carries a synthetic 2024-04
+cohort regime break (LR halved) so the
 [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
 example has a clear shift to find.
 
@@ -46,13 +46,14 @@ A `data.table` with 33,480 rows and 17 columns:
 
   Gender (factor).
 
-- loss:
+- loss_incr:
 
-  Loss amount (perturbed).
+  Per-period loss amount (numeric).
 
-- rp:
+- premium_incr:
 
-  Risk premium amount (perturbed).
+  Per-period premium amount (numeric); for long-term health insurance
+  applications, risk premium is commonly used.
 
 ## Source
 

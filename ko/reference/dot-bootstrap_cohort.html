@@ -86,7 +86,7 @@ percentiles.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.bootstrap_cohort</span><span class="op">(</span></span>
 <span>  <span class="va">loss_obs</span>,</span>
 <span>  <span class="va">loss_proj</span>,</span>
-<span>  <span class="va">exposure_proj</span>,</span>
+<span>  <span class="va">premium_proj</span>,</span>
 <span>  <span class="va">g_selected</span>,</span>
 <span>  <span class="va">f_selected</span>,</span>
 <span>  <span class="va">ed_sigma2</span>,</span>
@@ -104,7 +104,7 @@ percentiles.</p>
 
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list with four vectors of length <code>length(exposure_proj)</code>:
+    <p>A list with four vectors of length <code>length(premium_proj)</code>:
 <code>ci_lower</code>, <code>ci_upper</code> (for CLR), and <code>ci_lower_loss</code>,
 <code>ci_upper_loss</code> (for cumulative loss).</p>
     </div>

@@ -71,7 +71,7 @@ detect_convergence(
 
   Pre-computed maturity point. When `NULL`, computed via
   [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
-  applied to a clr-based ATA.
+  applied to a lr-based ATA.
 
 - holdout_max:
 
@@ -92,7 +92,7 @@ detect_convergence(
 An object of class `Convergence` (named list) containing the detected
 `k_conv`, the candidate sequence `v`, and the diagnostic sequences
 `R_v`, `SE_param_v`, `D_v`, `pass_v`. Metadata is carried on attributes
-(`group_var`, `value_var`, `fit_fn_name`).
+(`group_var`, `loss_var`, `fit_fn_name`).
 
 ## See also
 

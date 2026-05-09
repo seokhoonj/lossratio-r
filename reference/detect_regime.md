@@ -3,7 +3,7 @@
 Detect structural change points in the sequence of cohort-level
 development trajectories. Each underwriting cohort (indexed by the
 `cohort_var` of a `"Triangle"` object) is treated as a feature vector
-whose entries are the selected `value_var` observed at development
+whose entries are the selected `loss_var` observed at development
 periods `1, ..., K`. Cohorts are then ordered by underwriting period and
 tested for structural shifts in the multivariate sequence.
 
@@ -36,7 +36,7 @@ Three detection strategies are supported:
 ``` r
 detect_regime(
   x,
-  value_var = "clr",
+  loss_var = "lr",
   K = 12L,
   method = c("ecp", "pelt", "hclust"),
   n_regimes = NULL,
@@ -64,9 +64,9 @@ print(x, ...)
   [`print()`](https://rdrr.io/r/base/print.html) method on `Regime`
   objects.
 
-- value_var:
+- loss_var:
 
-  Column name of the trajectory variable. Default is `"clr"` (cumulative
+  Column name of the trajectory variable. Default is `"lr"` (cumulative
   loss ratio).
 
 - K:
@@ -114,7 +114,7 @@ An object of class `"Regime"` with components:
 
   Detection method used.
 
-- `value_var`, `K`:
+- `loss_var`, `K`:
 
   Trajectory variable and window.
 

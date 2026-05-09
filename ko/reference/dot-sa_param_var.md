@@ -13,7 +13,7 @@ Internal helper for parameter variance:
 ``` r
 .sa_param_var(
   loss_proj,
-  exposure_proj,
+  premium_proj,
   ed_g_var,
   cl_f_var,
   f_selected,

@@ -123,7 +123,7 @@ and negative values flag over-projection.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Backtest&gt;</span></span>
 <span><span class="co">#&gt;   fit_fn      : fit_lr</span></span>
-<span><span class="co">#&gt;   value_var   : clr</span></span>
+<span><span class="co">#&gt;   loss_var   : lr</span></span>
 <span><span class="co">#&gt;   holdout     : 6 calendar diagonals</span></span>
 <span><span class="co">#&gt;   held-out    : 123 cells</span></span>
 <span><span class="co">#&gt;   AEG         : mean -13.06% / median -7.37%</span></span></code></pre></div>
@@ -267,43 +267,43 @@ history.</p>
 <h2 id="choosing-the-fit-function">Choosing the fit function<a class="anchor" aria-label="anchor" href="#choosing-the-fit-function"></a>
 </h2>
 <p>The default fitter is <code>fit_lr</code> with
-<code>method = "sa"</code> and <code>value_var = "clr"</code>. The loss
+<code>method = "sa"</code> and <code>loss_var = "lr"</code>. The loss
 ratio is unitless and dimension-free across cohorts of very different
 volume, so <code>aeg_mean</code> and <code>aeg_med</code> carry a
 consistent meaning across the triangle.</p>
 <blockquote>
-<p><strong>A note on <code>value_var</code>.</strong>
-<code>backtest(value_var = ...)</code> is the <strong>score
+<p><strong>A note on <code>loss_var</code>.</strong>
+<code>backtest(loss_var = ...)</code> is the <strong>score
 column</strong> — the column on which actual vs. predicted are compared
 cell-by-cell. It is <em>not</em>, in general, the same thing as the
-<code>value_var</code> argument to a chain-ladder fitter (which selects
+<code>loss_var</code> argument to a chain-ladder fitter (which selects
 which column of the triangle to accumulate). With
 <code>fit_fn = fit_cl</code>, the two coincide because
-<code><a href="../reference/backtest.html">backtest()</a></code> forwards <code>value_var</code> straight through
+<code><a href="../reference/backtest.html">backtest()</a></code> forwards <code>loss_var</code> straight through
 to <code><a href="../reference/fit_cl.html">fit_cl()</a></code>. With <code>fit_fn = fit_lr</code>, the fitter
-does not take a <code>value_var</code> at all — it always projects
-<code>closs</code>, <code>crp</code>, and <code>clr</code> jointly — and
-<code>value_var</code> here only chooses which of those three projection
-columns on <code>fit_lr$full</code> is compared against the held-out
-actuals:</p>
+does not take a <code>loss_var</code> at all — it always projects
+<code>loss</code>, <code>premium</code>, and <code>lr</code> jointly —
+and <code>loss_var</code> here only chooses which of those three
+projection columns on <code>fit_lr$full</code> is compared against the
+held-out actuals:</p>
 </blockquote>
 <table class="table">
 <thead><tr class="header">
-<th><code>value_var</code></th>
+<th><code>loss_var</code></th>
 <th>Compared column on <code>fit_lr$full</code>
 </th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>"closs"</code></td>
+<td><code>"loss"</code></td>
 <td><code>loss_proj</code></td>
 </tr>
 <tr class="even">
-<td><code>"crp"</code></td>
-<td><code>exposure_proj</code></td>
+<td><code>"premium"</code></td>
+<td><code>premium_proj</code></td>
 </tr>
 <tr class="odd">
-<td><code>"clr"</code></td>
+<td><code>"lr"</code></td>
 <td><code>lr_proj</code></td>
 </tr>
 </tbody>
@@ -313,23 +313,23 @@ projection strategy: <code>"sa"</code> (stage-adaptive, the default)
 blends exposure-driven projections before the maturity point with chain
 ladder afterwards; <code>"ed"</code> is purely exposure-driven;
 <code>"cl"</code> is the classical chain ladder applied to
-<code>clr</code>.</p>
+<code>lr</code>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bt_sa</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span>   <span class="co"># default</span></span>
 <span><span class="va">bt_ed</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span></span>
 <span><span class="va">bt_cl</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">bt_loss</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span></span>
-<span><span class="va">bt_rp</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, value_var <span class="op">=</span> <span class="st">"crp"</span><span class="op">)</span></span>
+<span><span class="va">bt_loss</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
+<span><span class="va">bt_rp</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt_sa</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Backtest&gt;</span></span>
 <span><span class="co">#&gt;   fit_fn      : fit_lr</span></span>
-<span><span class="co">#&gt;   value_var   : clr</span></span>
+<span><span class="co">#&gt;   loss_var   : lr</span></span>
 <span><span class="co">#&gt;   holdout     : 6 calendar diagonals</span></span>
 <span><span class="co">#&gt;   held-out    : 123 cells</span></span>
 <span><span class="co">#&gt;   AEG         : mean -13.06% / median -7.37%</span></span></code></pre></div>
-<p>Backtesting <code>closs</code> weights the result toward whichever
+<p>Backtesting <code>loss</code> weights the result toward whichever
 cohorts happen to be the largest at the held-out diagonals, which is
 useful when monetary impact matters more than a normalized
 comparison.</p>

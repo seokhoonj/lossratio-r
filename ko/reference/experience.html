@@ -6,18 +6,20 @@ deterministically from data-raw/make_experience.R (set.seed =
 coverages is calibrated to the broad shape of a real long-term
 insurance portfolio's first ten months of development; the elap_m
 11-30 plateau, all cohort-level patterns, demographic mixes, and
-cell-level loss / rp values are randomly drawn. The SUR coverage
-carries a synthetic 2024-04 cohort regime break (LR halved) so the
-detect_regime() example has a clear shift to find."><meta property="og:description" content="Calibrated synthetic long-format loss experience data for
+cell-level loss_incr / premium_incr values are randomly drawn.
+The SUR coverage carries a synthetic 2024-04 cohort regime break
+(LR halved) so the detect_regime() example has a clear shift to
+find."><meta property="og:description" content="Calibrated synthetic long-format loss experience data for
 demonstrating the lossratio package workflow. Generated
 deterministically from data-raw/make_experience.R (set.seed =
 20260501). The marginal LR-by-development curve for each of the four
 coverages is calibrated to the broad shape of a real long-term
 insurance portfolio's first ten months of development; the elap_m
 11-30 plateau, all cohort-level patterns, demographic mixes, and
-cell-level loss / rp values are randomly drawn. The SUR coverage
-carries a synthetic 2024-04 cohort regime break (LR halved) so the
-detect_regime() example has a clear shift to find."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
+cell-level loss_incr / premium_incr values are randomly drawn.
+The SUR coverage carries a synthetic 2024-04 cohort regime break
+(LR halved) so the detect_regime() example has a clear shift to
+find."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
@@ -82,9 +84,10 @@ deterministically from <code>data-raw/make_experience.R</code> (set.seed =
 coverages is calibrated to the broad shape of a real long-term
 insurance portfolio's first ten months of development; the elap_m
 11-30 plateau, all cohort-level patterns, demographic mixes, and
-cell-level loss / rp values are randomly drawn. The SUR coverage
-carries a synthetic 2024-04 cohort regime break (LR halved) so the
-<code><a href="detect_regime.html">detect_regime()</a></code> example has a clear shift to find.</p>
+cell-level <code>loss_incr</code> / <code>premium_incr</code> values are randomly drawn.
+The SUR coverage carries a synthetic 2024-04 cohort regime break
+(LR halved) so the <code><a href="detect_regime.html">detect_regime()</a></code> example has a clear shift to
+find.</p>
     </div>
 
     <div class="section level2">
@@ -112,11 +115,13 @@ carries a synthetic 2024-04 cohort regime break (LR halved) so the
 <dt>gender</dt>
 <dd><p>Gender (factor).</p></dd>
 
-<dt>loss</dt>
-<dd><p>Loss amount (perturbed).</p></dd>
+<dt>loss_incr</dt>
+<dd><p>Per-period loss amount (numeric).</p></dd>
 
-<dt>rp</dt>
-<dd><p>Risk premium amount (perturbed).</p></dd>
+<dt>premium_incr</dt>
+<dd><p>Per-period premium amount (numeric); for
+long-term health insurance applications, risk premium is
+commonly used.</p></dd>
 
 
 </dl></div>

@@ -16,8 +16,8 @@ delegates projection to
 ``` r
 .fit_ed_factors(
   x,
-  value_var = "closs",
-  exposure_var = "crp",
+  loss_var = "loss",
+  premium_var = "premium",
   method = c("basic", "mack"),
   alpha = 1,
   na_method = c("zero", "locf", "none"),

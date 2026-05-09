@@ -7,7 +7,7 @@ cohorts:
 \$\$\hat{D}\_v = \frac{1.4826 \cdot
 \mathrm{MAD}\_i(lr\_{i,v})}{\|\mathrm{median}\_i(lr\_{i,v})\|}\$\$
 
-Operating on `lr` (incremental) rather than `clr` keeps the metric
+Operating on `lr` (incremental) rather than `lr` keeps the metric
 inertia-free.
 
 ## Usage

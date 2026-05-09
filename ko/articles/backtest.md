@@ -30,7 +30,7 @@ bt <- backtest(tri_sur, holdout = 6L)
 print(bt)
 #> <Backtest>
 #>   fit_fn      : fit_lr
-#>   value_var   : clr
+#>   loss_var   : lr
 #>   holdout     : 6 calendar diagonals
 #>   held-out    : 123 cells
 #>   AEG         : mean -13.06% / median -7.37%
@@ -189,35 +189,35 @@ has at least 24–30 diagonals of history.
 ## Choosing the fit function
 
 The default fitter is `fit_lr` with `method = "sa"` and
-`value_var = "clr"`. The loss ratio is unitless and dimension-free
-across cohorts of very different volume, so `aeg_mean` and `aeg_med`
-carry a consistent meaning across the triangle.
+`loss_var = "lr"`. The loss ratio is unitless and dimension-free across
+cohorts of very different volume, so `aeg_mean` and `aeg_med` carry a
+consistent meaning across the triangle.
 
-> **A note on `value_var`.** `backtest(value_var = ...)` is the **score
+> **A note on `loss_var`.** `backtest(loss_var = ...)` is the **score
 > column** — the column on which actual vs. predicted are compared
 > cell-by-cell. It is *not*, in general, the same thing as the
-> `value_var` argument to a chain-ladder fitter (which selects which
+> `loss_var` argument to a chain-ladder fitter (which selects which
 > column of the triangle to accumulate). With `fit_fn = fit_cl`, the two
 > coincide because
 > [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
-> forwards `value_var` straight through to
+> forwards `loss_var` straight through to
 > [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md).
-> With `fit_fn = fit_lr`, the fitter does not take a `value_var` at all
-> — it always projects `closs`, `crp`, and `clr` jointly — and
-> `value_var` here only chooses which of those three projection columns
+> With `fit_fn = fit_lr`, the fitter does not take a `loss_var` at all —
+> it always projects `loss`, `premium`, and `lr` jointly — and
+> `loss_var` here only chooses which of those three projection columns
 > on `fit_lr$full` is compared against the held-out actuals:
 
-| `value_var` | Compared column on `fit_lr$full` |
+| `loss_var`  | Compared column on `fit_lr$full` |
 |-------------|----------------------------------|
-| `"closs"`   | `loss_proj`                      |
-| `"crp"`     | `exposure_proj`                  |
-| `"clr"`     | `lr_proj`                        |
+| `"loss"`    | `loss_proj`                      |
+| `"premium"` | `premium_proj`                   |
+| `"lr"`      | `lr_proj`                        |
 
 The `method` argument selects the underlying loss-ratio projection
 strategy: `"sa"` (stage-adaptive, the default) blends exposure-driven
 projections before the maturity point with chain ladder afterwards;
 `"ed"` is purely exposure-driven; `"cl"` is the classical chain ladder
-applied to `clr`.
+applied to `lr`.
 
 ``` r
 
@@ -225,21 +225,21 @@ bt_sa  <- backtest(tri_sur, holdout = 6L, method = "sa")   # default
 bt_ed  <- backtest(tri_sur, holdout = 6L, method = "ed")
 bt_cl  <- backtest(tri_sur, holdout = 6L, method = "cl")
 
-bt_loss <- backtest(tri_sur, holdout = 6L, value_var = "closs")
-bt_rp   <- backtest(tri_sur, holdout = 6L, value_var = "crp")
+bt_loss <- backtest(tri_sur, holdout = 6L, loss_var = "loss")
+bt_rp   <- backtest(tri_sur, holdout = 6L, loss_var = "premium")
 
 print(bt_sa)
 #> <Backtest>
 #>   fit_fn      : fit_lr
-#>   value_var   : clr
+#>   loss_var   : lr
 #>   holdout     : 6 calendar diagonals
 #>   held-out    : 123 cells
 #>   AEG         : mean -13.06% / median -7.37%
 ```
 
-Backtesting `closs` weights the result toward whichever cohorts happen
-to be the largest at the held-out diagonals, which is useful when
-monetary impact matters more than a normalized comparison.
+Backtesting `loss` weights the result toward whichever cohorts happen to
+be the largest at the held-out diagonals, which is useful when monetary
+impact matters more than a normalized comparison.
 
 If you only need to project a single triangle column (e.g., raw
 cumulative loss without forming a ratio), `fit_fn = fit_cl` is also

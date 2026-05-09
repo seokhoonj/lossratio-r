@@ -62,7 +62,7 @@ r <- detect_regime(tri_sur, K = 12, method = "ecp")
 r
 #> <Regime>
 #>   method      : ecp
-#>   value_var   : clr
+#>   loss_var   : lr
 #>   window (K)  : elap_m 1, ..., 12
 #>   cohorts     : 19 analysed (11 dropped)
 #>   regimes     : 2
@@ -82,7 +82,7 @@ captures more of the trajectory but drops more recent cohorts.
 summary(r)
 #> Cohort regime detection summary
 #>   method    : ecp
-#>   value_var : clr
+#>   loss_var : lr
 #>   window    : elap_m 1, ..., 12
 #>   cohorts   : 19 analysed (11 dropped)
 #> 
@@ -169,7 +169,7 @@ r2 <- detect_regime(tri_sur, K = 12, method = "ecp", n_regimes = 3)
 summary(r2)
 #> Cohort regime detection summary
 #>   method    : ecp
-#>   value_var : clr
+#>   loss_var : lr
 #>   window    : elap_m 1, ..., 12
 #>   cohorts   : 19 analysed (11 dropped)
 #> 

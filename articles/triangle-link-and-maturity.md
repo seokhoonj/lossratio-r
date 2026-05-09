@@ -32,7 +32,7 @@ plot(tri)                              # cumulative loss-ratio trajectories per 
 
 ``` r
 
-plot(tri, value_var = "lr")            # incremental loss ratio instead of clr
+plot(tri, value_var = "lr")            # incremental loss ratio instead of lr
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-2-2.png)
@@ -44,7 +44,7 @@ plot(tri, summary = TRUE)              # raw + overlay (mean / median / weighted
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-2-3.png)
 
-The `summary = TRUE` overlay computes mean, median, and weighted clr at
+The `summary = TRUE` overlay computes mean, median, and weighted lr at
 each dev and overlays them on the cohort lines. Useful for spotting
 cohorts that deviate from the central tendency.
 
@@ -52,7 +52,7 @@ cohorts that deviate from the central tendency.
 
 ``` r
 
-plot_triangle(tri)                            # clr in each cell
+plot_triangle(tri)                            # lr in each cell
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-1.png)
@@ -82,22 +82,22 @@ plot_triangle(tri_q, label_style = "detail")  # ratio + (loss / rp) amounts
 sm <- summary(tri)
 head(sm)
 #> Key: <cv_nm, dev>
-#>     cv_nm   dev n_obs   lr_mean lr_median      lr_wt  clr_mean clr_median
-#>    <char> <int> <int>     <num>     <num>      <num>     <num>      <num>
-#> 1:    SUR     1    30 0.0738546 0.0000000 0.07343113 0.0738546  0.0000000
-#> 2:    SUR     2    29 0.5365888 0.0992849 0.54126362 0.3512535  0.1120447
-#> 3:    SUR     3    28 0.6201189 0.2472070 0.56590118 0.4521326  0.2618096
-#> 4:    SUR     4    27 0.8852657 0.6387164 0.92060611 0.6327242  0.4798531
-#> 5:    SUR     5    26 0.5767556 0.4828899 0.59880663 0.6369307  0.5641166
-#> 6:    SUR     6    25 0.9314593 0.5431397 0.95085711 0.7264308  0.6191132
-#>        clr_wt
-#>         <num>
-#> 1: 0.07343113
-#> 2: 0.35150128
-#> 3: 0.44744109
-#> 4: 0.63467048
-#> 5: 0.63999290
-#> 6: 0.72781355
+#>     cv_nm   dev n_obs   lr_mean lr_median      lr_wt lr_incr_mean
+#>    <char> <int> <int>     <num>     <num>      <num>        <num>
+#> 1:    SUR     1    30 0.0738546 0.0000000 0.07343113    0.0738546
+#> 2:    SUR     2    29 0.3512535 0.1120447 0.35150128    0.5365888
+#> 3:    SUR     3    28 0.4521326 0.2618096 0.44744109    0.6201189
+#> 4:    SUR     4    27 0.6327242 0.4798531 0.63467048    0.8852657
+#> 5:    SUR     5    26 0.6369307 0.5641166 0.63999290    0.5767556
+#> 6:    SUR     6    25 0.7264308 0.6191132 0.72781355    0.9314593
+#>    lr_incr_median lr_incr_wt
+#>             <num>      <num>
+#> 1:      0.0000000 0.07343113
+#> 2:      0.0992849 0.54126362
+#> 3:      0.2472070 0.56590118
+#> 4:      0.6387164 0.92060611
+#> 5:      0.4828899 0.59880663
+#> 6:      0.5431397 0.95085711
 ```
 
 Returns a `TriangleSummary` object with mean / median / weighted loss
@@ -107,12 +107,12 @@ ratios per (group, dev) cell.
 
 The `Link` object is the link table (age-to-age factor table) built from
 the triangle. In single-variable mode it carries the observed ATA
-factors; with `exposure_var` it carries the ED-style intensities
+factors; with `premium_var` it carries the ED-style intensities
 $`g_k = \Delta C^L_k / C^P_k`$.
 
 ``` r
 
-ata <- build_link(tri, value_var = "closs")
+ata <- build_link(tri, loss_var = "loss")
 sm  <- summary(ata, model = "ata", alpha = 1)
 head(sm)
 #> Key: <cv_nm>
@@ -207,7 +207,7 @@ plot_triangle(ata, label_args = la, show_maturity = TRUE)    # overlay maturity 
 
 # detail labels are two lines and overlap on monthly cells — rebuild on the
 # quarterly triangle so the labels fit
-ata_q <- build_link(tri_q, value_var = "closs")
+ata_q <- build_link(tri_q, loss_var = "loss")
 plot_triangle(ata_q, label_style = "detail")      # factor + (loss / rp) amounts
 ```
 
@@ -221,7 +221,7 @@ link’s median.
 
 ``` r
 
-ed <- build_link(tri, value_var = "closs", exposure_var = "crp")
+ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
 sm <- summary(ed, model = "ed", alpha = 1)
 head(sm)
 #> Key: <cv_nm>
@@ -282,7 +282,7 @@ its WLS summary are built internally:
 
 mat <- detect_maturity(
   tri,
-  value_var       = "closs",
+  loss_var       = "loss",
   cv_threshold    = 0.15,    # CV must be below this
   rse_threshold   = 0.05,    # RSE must be below this
   min_valid_ratio = 0.5,     # at least 50% finite cohorts at the link
@@ -339,10 +339,10 @@ those callers):
 
 ``` r
 
-fit_ata(tri, value_var = "closs",
+fit_ata(tri, loss_var = "loss",
         maturity_args = list(cv_threshold = 0.08, min_run = 2L))
 
-fit_cl(tri, value_var = "closs",
+fit_cl(tri, loss_var = "loss",
        maturity_args = list(cv_threshold = 0.08))
 
 fit_lr(tri, method = "sa",
@@ -363,7 +363,7 @@ thresholds:
 ``` r
 
 tri_all <- build_triangle(as_experience(experience), group_var = cv_nm)
-detect_maturity(tri_all, value_var = "closs")
+detect_maturity(tri_all, loss_var = "loss")
 #> Key: <cv_nm>
 #>     cv_nm ata_from ata_to ata_link     mean   median       wt         cv
 #>    <char>    <int>  <int>   <char>    <num>    <num>    <num>      <num>
@@ -391,7 +391,7 @@ first drops below `cv_threshold`:
 
 ``` r
 
-plot(build_link(tri_all, value_var = "closs"), type = "cv")
+plot(build_link(tri_all, loss_var = "loss"), type = "cv")
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-12-1.png)
@@ -429,7 +429,7 @@ regime shift), restrict estimation to the recent calendar diagonals:
 
 ``` r
 
-fit_ata(tri, value_var = "closs", alpha = 1, recent = 12)  # last 12 calendar diagonals
+fit_ata(tri, loss_var = "loss", alpha = 1, recent = 12)  # last 12 calendar diagonals
 #> <ATAFit>
 #> alpha       : 1 
 #> sigma_method: min_last2 
@@ -439,10 +439,10 @@ fit_ata(tri, value_var = "closs", alpha = 1, recent = 12)  # last 12 calendar di
 #> groups      : cv_nm 
 #> n_groups    : 1 
 #> ata links   : 29
-fit_cl(tri, value_var = "closs", recent = 12)
+fit_cl(tri, loss_var = "loss", recent = 12)
 #> <CLFit>
 #> method      : basic 
-#> value_var   : closs 
+#> loss_var   : loss 
 #> weight_var  : none 
 #> alpha       : 1 
 #> recent      : 12 
@@ -453,8 +453,8 @@ fit_cl(tri, value_var = "closs", recent = 12)
 fit_lr(tri, recent = 12)
 #> <LRFit>
 #> method        : sa 
-#> loss_var      : closs 
-#> exposure_var  : crp 
+#> loss_var      : loss 
+#> premium_var  : premium 
 #> loss_alpha    : 1 
 #> exposure_alpha: 1 
 #> delta_method  : simple 

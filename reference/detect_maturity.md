@@ -29,7 +29,7 @@ together provides a more robust maturity assessment than either alone.
 ``` r
 detect_maturity(
   x,
-  value_var = "closs",
+  loss_var = "loss",
   weight_var = NULL,
   alpha = 1,
   cv_threshold = 0.15,
@@ -46,9 +46,9 @@ detect_maturity(
 
   A `Triangle` object.
 
-- value_var:
+- loss_var:
 
-  Cumulative metric for the link factor. Default `"closs"`. Forwarded to
+  Cumulative metric for the link factor. Default `"loss"`. Forwarded to
   [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md).
 
 - weight_var:

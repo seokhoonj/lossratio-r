@@ -21,7 +21,7 @@ Two methods are supported via the `method` argument:
   recursion, and prediction uncertainty is decomposed into process
   variance and parameter variance.
 
-When `weight_var` is supplied (e.g. `"crp"`), age-to-age factors and
+When `weight_var` is supplied (e.g. `"premium"`), age-to-age factors and
 their variance are estimated using the supplied WLS weights.
 
 ## Usage
@@ -30,7 +30,7 @@ their variance are estimated using the supplied WLS weights.
 fit_cl(
   x,
   method = c("basic", "mack"),
-  value_var = "closs",
+  loss_var = "loss",
   weight_var = NULL,
   alpha = 1,
   sigma_method = c("min_last2", "locf", "loglinear"),
@@ -50,17 +50,17 @@ fit_cl(
 
   One of `"basic"` or `"mack"`. Default is `"basic"`.
 
-- value_var:
+- loss_var:
 
-  A single cumulative variable to project. Typical choices are
-  `"closs"`, `"crp"`, or `"clr"`.
+  A single cumulative variable to project. Typical choices are `"loss"`,
+  `"premium"`, or `"lr"`.
 
 - weight_var:
 
   An optional column name passed to
   [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md)
-  as the WLS weight variable. Typically `"crp"` when
-  `value_var = "clr"`. Default is `NULL`.
+  as the WLS weight variable. Typically `"premium"` when
+  `loss_var = "lr"`. Default is `NULL`.
 
 - alpha:
 
@@ -125,7 +125,7 @@ An object of class `"CLFit"` containing:
 
   Character scalar of development variable name.
 
-- `value_var`:
+- `loss_var`:
 
   Character scalar of value variable name.
 
@@ -211,15 +211,15 @@ exp <- as_experience(experience)
 tri <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
 
 # Basic chain ladder (point projection only)
-cl <- fit_cl(tri, value_var = "closs", method = "basic")
+cl <- fit_cl(tri, loss_var = "loss", method = "basic")
 print(cl)
 
 # Mack chain ladder with process / parameter standard errors
-cl_mack <- fit_cl(tri, value_var = "closs", method = "mack")
+cl_mack <- fit_cl(tri, loss_var = "loss", method = "mack")
 summary(cl_mack)
 plot(cl_mack)
 
-# WLS factors for clr (loss ratio) using crp as the weight
-cl_clr <- fit_cl(tri, value_var = "clr", weight_var = "crp")
+# WLS factors for lr (loss ratio) using premium as the weight
+cl_clr <- fit_cl(tri, loss_var = "lr", weight_var = "premium")
 } # }
 ```

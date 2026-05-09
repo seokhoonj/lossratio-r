@@ -13,7 +13,7 @@ Internal helper that projects cumulative loss:
 ``` r
 .sa_proj(
   loss_obs,
-  exposure_proj,
+  premium_proj,
   g_selected,
   f_selected,
   maturity_from,
@@ -27,7 +27,7 @@ Internal helper that projects cumulative loss:
 
   Numeric vector of observed cumulative loss.
 
-- exposure_proj:
+- premium_proj:
 
   Numeric vector of projected cumulative exposure.
 

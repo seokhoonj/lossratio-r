@@ -1,7 +1,8 @@
-# lossratio: Loss Ratio Analysis for Insurance Experience Data
+# lossratio: Loss Ratio Analytics for Long-Term Health Insurance
 
-A toolkit for loss-ratio analysis and projection on long-format
-experience data, oriented toward long-term health insurance. Implements
+A loss ratio analytics toolkit for long-term health insurance, covering
+cohort development analysis, stage-adaptive loss-ratio projection, and
+regime detection on long-format experience data. Implements
 stage-adaptive loss-ratio projection that uses an exposure-driven model
 before the maturity point and chain ladder after it, with supporting
 maturity point detection and cohort regime detection for handling
@@ -12,9 +13,9 @@ cell.
 
 ## Details
 
-The core loss ratio is defined as: \$\$lr = loss / rp\$\$
+The core loss ratio is defined as: \$\$lr = loss / premium\$\$
 
-where `rp` represents risk premium, not written premium.
+where `premium` represents risk premium, not written premium.
 
 ## See also
 

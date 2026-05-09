@@ -1,20 +1,20 @@
 # Build a total development summary from experience data
 
-Aggregate `loss` and `rp` by group and compute the corresponding total
-loss ratio over a selected period window.
+Aggregate `loss` and `premium` by group and compute the corresponding
+total loss ratio over a selected period window.
 
 This function is intended for high-level portfolio comparison across
 groups such as products, coverages, or channels. It summarises:
 
-- the number of observed periods (`n_obs`)
+- the number of observed cohorts (`n_obs`)
 
 - the first and last observed periods (`sales_start`, `sales_end`)
 
-- total `loss` and total `rp`
+- total `loss` and total `premium` (cumulative)
 
-- total loss ratio (`lr = loss / rp`)
+- total loss ratio (`lr = loss / premium`)
 
-- each group's share of total loss and risk premium
+- each group's share of total loss and total premium
 
 If `period_from` and/or `period_to` are supplied, the input data are
 first restricted to that period window before aggregation. This is
@@ -28,7 +28,8 @@ build_total(
   group_var,
   cohort_var = "uym",
   dev_var = "elap_m",
-  value_var = c("loss", "rp"),
+  loss_var = "loss_incr",
+  premium_var = "premium_incr",
   period_from = NULL,
   period_to = NULL,
   fill_gaps = FALSE
@@ -56,10 +57,17 @@ build_total(
   A single development variable used to count observed periods. Default
   `"elap_m"`.
 
-- value_var:
+- loss_var:
 
-  Value variables to aggregate. Must include both `"loss"` and `"rp"`.
-  Default `c("loss", "rp")`.
+  Single character; per-period loss column in `df`. Default
+  `"loss_incr"`.
+
+- premium_var:
+
+  Single character; per-period premium column in `df`. Default
+  `"premium_incr"`. Premium measure used as denominator for loss ratio
+  calculations. For long-term health insurance applications, risk
+  premium is commonly used.
 
 - period_from:
 
@@ -103,21 +111,21 @@ A data.frame with class `"Total"` containing:
 
   Total loss
 
-- rp:
+- premium:
 
-  Total risk premium
+  Total premium
 
 - lr:
 
-  Total loss ratio (`loss / rp`)
+  Total loss ratio (`loss / premium`)
 
 - loss_prop:
 
   Share of total loss
 
-- rp_prop:
+- premium_prop:
 
-  Share of total risk premium
+  Share of total premium
 
 ## Examples
 

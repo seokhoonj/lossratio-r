@@ -13,7 +13,7 @@ Internal helper for process variance:
 ``` r
 .sa_proc_var(
   loss_proj,
-  exposure_proj,
+  premium_proj,
   ed_sigma2,
   cl_sigma2,
   f_selected,

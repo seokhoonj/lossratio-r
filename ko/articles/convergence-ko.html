@@ -363,7 +363,7 @@ MAD<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
 개 연속 만족되는 시점이 없으면 <code>NA</code>.</li>
 <li>
-<code>k_star</code> — 하한으로 사용된 성숙점. 함수 내부에서 clr 기반
+<code>k_star</code> — 하한으로 사용된 성숙점. 함수 내부에서 lr 기반
 ATA 에 <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> 를 적용해 산출하거나, 호출 시 직접
 전달할 수 있다.</li>
 <li>
@@ -376,7 +376,7 @@ ATA 에 <code><a href="../reference/detect_maturity.html">detect_maturity()</a><
 <code>c</code>, <code>tau</code>, <code>M</code>,
 <code>holdout_max</code>, <code>min_n_cohorts</code> — 사용된
 설정값.</li>
-<li>attribute: <code>group_var</code>, <code>value_var</code>,
+<li>attribute: <code>group_var</code>, <code>loss_var</code>,
 <code>fit_fn_name</code>, <code>dev_var</code>.</li>
 </ul>
 <p><code>summary(res)</code> 는 후보 시점별 한 행 +

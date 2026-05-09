@@ -314,9 +314,9 @@ links.</li>
 <p>Behaviour:</p>
 <ul>
 <li>Standard reserving practice. Equivalent to
-<code>fit_cl(tri, value_var = "closs")</code> for the loss projection,
-but <code><a href="../reference/fit_lr.html">fit_lr()</a></code> additionally projects exposure forward via CL
-on <code>crp</code> and computes the loss-ratio uncertainty via the
+<code>fit_cl(tri, loss_var = "loss")</code> for the loss projection, but
+<code><a href="../reference/fit_lr.html">fit_lr()</a></code> additionally projects exposure forward via CL on
+<code>premium</code> and computes the loss-ratio uncertainty via the
 delta method.</li>
 <li>Volatile when early
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>

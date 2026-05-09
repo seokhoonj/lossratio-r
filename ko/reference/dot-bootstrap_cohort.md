@@ -17,7 +17,7 @@ percentiles.
 .bootstrap_cohort(
   loss_obs,
   loss_proj,
-  exposure_proj,
+  premium_proj,
   g_selected,
   f_selected,
   ed_sigma2,
@@ -35,6 +35,6 @@ percentiles.
 
 ## Value
 
-A list with four vectors of length `length(exposure_proj)`: `ci_lower`,
+A list with four vectors of length `length(premium_proj)`: `ci_lower`,
 `ci_upper` (for CLR), and `ci_lower_loss`, `ci_upper_loss` (for
 cumulative loss).

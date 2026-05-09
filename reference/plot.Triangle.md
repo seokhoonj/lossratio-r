@@ -26,7 +26,7 @@ Summary statistics are computed from
 # S3 method for class 'Triangle'
 plot(
   x,
-  value_var = "clr",
+  value_var = "lr",
   summary = FALSE,
   summary_min_n = 5L,
   amount_divisor = 1e+08,
@@ -44,16 +44,17 @@ plot(
 
 - value_var:
 
-  A single metric to plot. Must be one of: `"lr"`, `"clr"`, `"loss"`,
-  `"rp"`, `"margin"`, `"closs"`, `"crp"`, `"cmargin"`, `"loss_prop"`,
-  `"rp_prop"`, `"closs_prop"`, or `"crp_prop"`.
+  A single metric to plot. Must be one of: `"lr"`, `"lr_incr"`,
+  `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`,
+  `"margin_incr"`, `"loss_prop"`, `"loss_incr_prop"`, `"premium_prop"`,
+  or `"premium_incr_prop"`.
 
 - summary:
 
   Logical. If `FALSE` (default), shows raw cohort trajectories. If
   `TRUE`, shows grey cohort trajectories with overlaid summary lines
   (mean, median, weighted mean). Summary overlay is supported only for
-  `"lr"` and `"clr"`, and only when the x-axis variable is a
+  `"lr"` and `"lr_incr"`, and only when the x-axis variable is a
   development-period variable (for example, `elap_m`, `elap_q`,
   `elap_h`, `elap_y`).
 
@@ -97,15 +98,17 @@ Cohort lines are grouped by the period variable stored in
 `attr(x, "cohort_var")`, and facets are created from
 `attr(x, "group_var")`.
 
-The loss ratio is defined here as: \$\$lr = loss / rp\$\$
+The cumulative loss ratio is defined here as: \$\$lr = loss /
+premium\$\$
 
-where `rp` denotes risk premium rather than written premium.
+For long-term health insurance applications, risk premium is commonly
+used as the `premium` measure.
 
 The weighted mean is defined as:
 
-- `lr_wt = sum(loss) / sum(rp)`
+- `lr_wt = sum(loss) / sum(premium)`
 
-- `clr_wt = sum(closs) / sum(crp)`
+- `lr_incr_wt = sum(loss_incr) / sum(premium_incr)`
 
 Ratio and proportion metrics are plotted on the original scale and
 displayed as percentages via y-axis labels. Amount metrics are plotted

@@ -152,7 +152,7 @@ exposes both loss and exposure projections required for portfolio LR.</p></dd>
 
 <dt id="arg-k-star">k_star<a class="anchor" aria-label="anchor" href="#arg-k-star"></a></dt>
 <dd><p>Pre-computed maturity point. When <code>NULL</code>, computed via
-<code><a href="detect_maturity.html">detect_maturity()</a></code> applied to a clr-based ATA.</p></dd>
+<code><a href="detect_maturity.html">detect_maturity()</a></code> applied to a lr-based ATA.</p></dd>
 
 
 <dt id="arg-holdout-max">holdout_max<a class="anchor" aria-label="anchor" href="#arg-holdout-max"></a></dt>
@@ -174,7 +174,7 @@ backtest. When <code>NULL</code>, set to <code>max(M, floor((V - k_star) / 2))</
     <p>An object of class <code>Convergence</code> (named list) containing the
 detected <code>k_conv</code>, the candidate sequence <code>v</code>, and the diagnostic
 sequences <code>R_v</code>, <code>SE_param_v</code>, <code>D_v</code>, <code>pass_v</code>. Metadata is carried
-on attributes (<code>group_var</code>, <code>value_var</code>, <code>fit_fn_name</code>).</p>
+on attributes (<code>group_var</code>, <code>loss_var</code>, <code>fit_fn_name</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

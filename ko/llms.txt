@@ -1,13 +1,15 @@
 # lossratio
 
-경험 데이터 기반 손해율 분석 및 추정.
+**장기 건강보험** 손해율 분석 및 예측 도구 — 코호트 기반 경과 기간 분석,
+단계 적응형 예측, regime 탐지를 다룬다.
 
 ## 개요
 
-`lossratio`는 경험 데이터로부터 **장기 건강보험** 손해율을 분석·추정하기
-위한 도구 모음이다. 입력은 long-format 경험 데이터로, 한 행(코호트 ×
-경과 기간 × 인구통계)이 Triangle 셀 하나에 대응하며, 손해액과 위험보험료
-컬럼을 가진다.
+`lossratio` 는 **장기 건강보험** 손해율 분석 및 예측 도구로, 코호트 기반
+경과 기간 분석, 단계 적응형 예측, regime 탐지를 지원한다. 입력은
+long-format 경험 데이터로, 한 행(코호트 × 경과 기간 × 인구통계)이
+Triangle 셀 하나에 대응하며, 손해액과 보험료 컬럼 (`loss`, `premium`) 을
+가진다.
 
 장기 건강보험에서는 코호트 내 신규 클레임과 위험보험료가 지속적으로
 발생·유입되므로, 누적 손해와 익스포저가 함께 증가하는 구조를 가진다.
@@ -47,19 +49,39 @@
 
 최소한 다음 컬럼을 포함하는 long-format `data.frame` / `data.table`:
 
-| 컬럼   | 의미                                       | 예시               |
-|--------|--------------------------------------------|--------------------|
-| cohort | 인수 / 사고 시점 (집계 주기 무관)          | `uym`, `uy`        |
-| dev    | 코호트 시작 시점 이후 경과 기간            | `elap_m`, `elap_y` |
-| `loss` | 셀 내 증가분 클레임 금액                   | numeric            |
-| `rp`   | 셀 내 증가분 위험보험료 (기대손해액)       | numeric            |
-| group  | 선택 — 상품, 담보, 연령, 성별, 가입금액 등 | character / factor |
+| 컬럼 | 의미 | 예시 |
+|----|----|----|
+| cohort | 인수 / 사고 시점 (집계 주기 무관) | `uym`, `uy` |
+| dev | 코호트 시작 시점 이후 경과 기간 | `elap_m`, `elap_y` |
+| `loss_incr` | 셀 내 기간별 클레임 금액 | numeric |
+| `premium_incr` | 셀 내 기간별 보험료 (장기건강보험은 위험보험료 사용) | numeric |
+| group | 선택 — 상품, 담보, 연령, 성별, 가입금액 등 | character / factor |
 
 [`as_experience()`](https://seokhoonj.github.io/lossratio/ko/reference/as_experience.md)
 는 스키마를 검증하고 날짜 컬럼을 코어션한다. 이어서
 [`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md)
 은 표준 코호트 × 경과 기간 구조로 집계하며, 누적 컬럼과 파생 비율을 함께
 산출한다.
+
+### 컬럼 컨벤션
+
+패키지 전반에서 누적값(cumulative)은 default 이름이고, 기간별
+(per-period) 값은 `_incr` (incremental) suffix 를 사용한다:
+
+| metric | 누적 (default) | 기간별 (`_incr`) |
+|--------|----------------|------------------|
+| 손해   | `loss`         | `loss_incr`      |
+| 보험료 | `premium`      | `premium_incr`   |
+| 손해율 | `lr`           | `lr_incr`        |
+| 마진   | `margin`       | `margin_incr`    |
+| 손익   | `profit`       | `profit_incr`    |
+
+raw `experience` 입력은 기간별 컬럼만 가진다 (`loss_incr`,
+`premium_incr`).
+[`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md)
+은 출력에서 두 형태를 모두 생성한다. 적합 함수는 `loss_var` /
+`premium_var` 인자를 받으며 default 는 누적 형 컬럼명 (`"loss"`,
+`"premium"`).
 
 ## 설치
 
@@ -94,10 +116,10 @@ plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
 
 # 노출 기반 적합 (additive ED 강도)
-ed <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
+ed <- fit_ed(tri, value_var = "loss", premium_var = "premium")
 
 # Chain ladder 적합 (multiplicative ATA 인자)
-cl <- fit_cl(tri, value_var = "closs", method = "mack")
+cl <- fit_cl(tri, value_var = "loss", method = "mack")
 plot(cl, type = "projection")
 
 # 손해율 적합 (default: 단계 적응형 — 성숙점 이전은 ED, 이후는 CL)

@@ -166,11 +166,11 @@ every step generalises to multi-group input.</p>
 <span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_experience.html">as_experience</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span><span class="op">[</span><span class="va">cv_nm</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;CLFit&gt;</span></span>
 <span><span class="co">#&gt; method      : mack </span></span>
-<span><span class="co">#&gt; value_var   : closs </span></span>
+<span><span class="co">#&gt; loss_var   : loss </span></span>
 <span><span class="co">#&gt; weight_var  : none </span></span>
 <span><span class="co">#&gt; alpha       : 1 </span></span>
 <span><span class="co">#&gt; sigma_method: min_last2 </span></span>
@@ -179,9 +179,9 @@ every step generalises to multi-group input.</p>
 <span><span class="co">#&gt; tail_factor : 1 </span></span>
 <span><span class="co">#&gt; groups      : cv_nm </span></span>
 <span><span class="co">#&gt; periods     : 30</span></span></code></pre></div>
-<p><code>value_var</code> selects the cumulative column to project —
-typically <code>"closs"</code> (cumulative loss) for reserving, or
-<code>"crp"</code> (cumulative risk premium) for exposure
+<p><code>loss_var</code> selects the cumulative column to project —
+typically <code>"loss"</code> (cumulative loss) for reserving, or
+<code>"premium"</code> (cumulative risk premium) for exposure
 projection.</p>
 </div>
 <div class="section level2">
@@ -205,12 +205,12 @@ projection.</p>
 </tbody>
 </table>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cl_basic</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, method <span class="op">=</span> <span class="st">"basic"</span><span class="op">)</span></span>
-<span><span class="va">cl_mack</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">cl_basic</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"basic"</span><span class="op">)</span></span>
+<span><span class="va">cl_mack</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">cl_basic</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "call"          "data"          "method"        "group_var"    </span></span>
-<span><span class="co">#&gt;  [5] "cohort_var"    "dev_var"       "value_var"     "full"         </span></span>
+<span><span class="co">#&gt;  [5] "cohort_var"    "dev_var"       "loss_var"      "full"         </span></span>
 <span><span class="co">#&gt;  [9] "pred"          "link"          "summary"       "factor"       </span></span>
 <span><span class="co">#&gt; [13] "selected"      "maturity"      "alpha"         "sigma_method" </span></span>
 <span><span class="co">#&gt; [17] "weight_var"    "recent"        "use_maturity"  "maturity_args"</span></span>
@@ -247,10 +247,10 @@ bands (<code>show_interval = TRUE</code>):</p>
 developing, an extrapolated tail factor estimates ultimate:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Log-linear extrapolation from the selected ATA factors</span></span>
-<span><span class="va">cl_tail</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, tail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">cl_tail</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, tail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Or supply a literal tail factor</span></span>
-<span><span class="va">cl_tail</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, tail <span class="op">=</span> <span class="fl">1.025</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">cl_tail</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, tail <span class="op">=</span> <span class="fl">1.025</span><span class="op">)</span></span></code></pre></div>
 <p>The extrapolation fits
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>f</mi><mi>k</mi></msub><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo>∼</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">\log(f_k - 1) \sim k</annotation></semantics></math>
 to projected factors and extends the projection by the cumulative
@@ -266,7 +266,7 @@ mature region only:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cl_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span></span>
 <span>  <span class="va">tri</span>,</span>
-<span>  value_var     <span class="op">=</span> <span class="st">"closs"</span>,</span>
+<span>  loss_var     <span class="op">=</span> <span class="st">"loss"</span>,</span>
 <span>  method        <span class="op">=</span> <span class="st">"mack"</span>,</span>
 <span>  maturity_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>cv_threshold <span class="op">=</span> <span class="fl">0.10</span>, rse_threshold <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
@@ -449,10 +449,10 @@ sequence</td>
 </tbody>
 </table>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, sigma_method <span class="op">=</span> <span class="st">"loglinear"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, sigma_method <span class="op">=</span> <span class="st">"loglinear"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;CLFit&gt;</span></span>
 <span><span class="co">#&gt; method      : mack </span></span>
-<span><span class="co">#&gt; value_var   : closs </span></span>
+<span><span class="co">#&gt; loss_var   : loss </span></span>
 <span><span class="co">#&gt; weight_var  : none </span></span>
 <span><span class="co">#&gt; alpha       : 1 </span></span>
 <span><span class="co">#&gt; sigma_method: loglinear </span></span>

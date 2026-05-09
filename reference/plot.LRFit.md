@@ -7,7 +7,7 @@ Two plot types are supported:
 - `"lr"`: projected cumulative loss ratio by cohort with optional
   confidence bands.
 
-- `"closs"`: observed and projected cumulative loss by cohort with
+- `"loss"`: observed and projected cumulative loss by cohort with
   optional confidence bands.
 
 ## Usage
@@ -16,7 +16,7 @@ Two plot types are supported:
 # S3 method for class 'LRFit'
 plot(
   x,
-  type = c("lr", "closs"),
+  type = c("lr", "loss"),
   conf_level = 0.95,
   show_interval = TRUE,
   amount_divisor = 1e+08,
@@ -36,7 +36,7 @@ plot(
 
 - type:
 
-  One of `"lr"` or `"closs"`.
+  One of `"lr"` or `"loss"`.
 
 - conf_level:
 

@@ -35,8 +35,8 @@ In all cases, exposure is projected forward using chain ladder:
 fit_lr(
   x,
   method = c("sa", "ed", "cl"),
-  loss_var = "closs",
-  exposure_var = "crp",
+  loss_var = "loss",
+  premium_var = "premium",
   loss_alpha = 1,
   exposure_alpha = 1,
   delta_method = c("simple", "full"),
@@ -64,11 +64,11 @@ fit_lr(
 
 - loss_var:
 
-  Cumulative loss variable. Default is `"closs"`.
+  Cumulative loss variable. Default is `"loss"`.
 
-- exposure_var:
+- premium_var:
 
-  Cumulative exposure variable. Default is `"crp"`.
+  Cumulative exposure variable. Default is `"premium"`.
 
 - loss_alpha:
 
@@ -85,7 +85,7 @@ fit_lr(
 
   `"simple"` (default)
 
-  :   `se_lr = se_proj / exposure_proj`, treats exposure as fixed.
+  :   `se_lr = se_proj / premium_proj`, treats exposure as fixed.
 
   `"full"`
 

@@ -4,18 +4,20 @@ typically produced by build_triangle(). The link table is the
 long-format intermediate underlying both the chain ladder (CL) and
 exposure-driven (ED) workflows. Each row corresponds to one
 development link (cohort, ata_from -&amp;gt; ata_to).
-Two modes are produced depending on exposure_var:
+Two modes are produced depending on premium_var:
 
-Single-variable mode (exposure_var = NULL)
-Replaces the
-former build_ata(). The age-to-age factor is
-\(ata = value_{to} / value_{from}\).
+Single-variable mode (premium_var = NULL)
+The age-to-age
+factor is \(ata = value_{to} / value_{from}\), where
+\(value\) is the column named by loss_var.
 
-Dual-variable mode (exposure_var supplied)
-Replaces the
-former build_ed(). In addition to the loss-side ATA, the
-exposure-driven intensity
-\(g = \Delta value / exposure_{from}\) is computed.
+Dual-variable mode (premium_var supplied)
+In addition to
+the loss-side ATA, the exposure-driven intensity
+\(g = \Delta loss / premium_{from}\) is computed. Premium
+measure used as denominator for loss ratio calculations; for
+long-term health insurance applications, risk premium is
+commonly used.
 
 
 
@@ -24,18 +26,20 @@ typically produced by build_triangle(). The link table is the
 long-format intermediate underlying both the chain ladder (CL) and
 exposure-driven (ED) workflows. Each row corresponds to one
 development link (cohort, ata_from -&amp;gt; ata_to).
-Two modes are produced depending on exposure_var:
+Two modes are produced depending on premium_var:
 
-Single-variable mode (exposure_var = NULL)
-Replaces the
-former build_ata(). The age-to-age factor is
-\(ata = value_{to} / value_{from}\).
+Single-variable mode (premium_var = NULL)
+The age-to-age
+factor is \(ata = value_{to} / value_{from}\), where
+\(value\) is the column named by loss_var.
 
-Dual-variable mode (exposure_var supplied)
-Replaces the
-former build_ed(). In addition to the loss-side ATA, the
-exposure-driven intensity
-\(g = \Delta value / exposure_{from}\) is computed.
+Dual-variable mode (premium_var supplied)
+In addition to
+the loss-side ATA, the exposure-driven intensity
+\(g = \Delta loss / premium_{from}\) is computed. Premium
+measure used as denominator for loss ratio calculations; for
+long-term health insurance applications, risk premium is
+commonly used.
 
 
 
@@ -102,17 +106,19 @@ typically produced by <code><a href="build_triangle.html">build_triangle()</a></
 long-format intermediate underlying both the chain ladder (CL) and
 exposure-driven (ED) workflows. Each row corresponds to one
 development link <code>(cohort, ata_from -&gt; ata_to)</code>.</p>
-<p>Two modes are produced depending on <code>exposure_var</code>:</p>
-<dl><dt>Single-variable mode (<code>exposure_var = NULL</code>)</dt>
-<dd><p>Replaces the
-former <code>build_ata()</code>. The age-to-age factor is
-\(ata = value_{to} / value_{from}\).</p></dd>
+<p>Two modes are produced depending on <code>premium_var</code>:</p>
+<dl><dt>Single-variable mode (<code>premium_var = NULL</code>)</dt>
+<dd><p>The age-to-age
+factor is \(ata = value_{to} / value_{from}\), where
+\(value\) is the column named by <code>loss_var</code>.</p></dd>
 
-<dt>Dual-variable mode (<code>exposure_var</code> supplied)</dt>
-<dd><p>Replaces the
-former <code>build_ed()</code>. In addition to the loss-side ATA, the
-exposure-driven intensity
-\(g = \Delta value / exposure_{from}\) is computed.</p></dd>
+<dt>Dual-variable mode (<code>premium_var</code> supplied)</dt>
+<dd><p>In addition to
+the loss-side ATA, the exposure-driven intensity
+\(g = \Delta loss / premium_{from}\) is computed. Premium
+measure used as denominator for loss ratio calculations; for
+long-term health insurance applications, risk premium is
+commonly used.</p></dd>
 
 
 </dl></div>
@@ -121,8 +127,8 @@ exposure-driven intensity
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">build_link</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  value_var <span class="op">=</span> <span class="st">"closs"</span>,</span>
-<span>  exposure_var <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  loss_var <span class="op">=</span> <span class="st">"loss"</span>,</span>
+<span>  premium_var <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  weight_var <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  min_denom <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  drop_invalid <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -137,30 +143,31 @@ exposure-driven intensity
 <dd><p>A <code>Triangle</code> object.</p></dd>
 
 
-<dt id="arg-value-var">value_var<a class="anchor" aria-label="anchor" href="#arg-value-var"></a></dt>
+<dt id="arg-loss-var">loss_var<a class="anchor" aria-label="anchor" href="#arg-loss-var"></a></dt>
 <dd><p>A single cumulative metric used as the link
-numerator. Must be one of <code>"closs"</code>, <code>"crp"</code>, or <code>"clr"</code>. Default
-<code>"closs"</code>.</p></dd>
+numerator. Must be one of <code>"loss"</code>, <code>"premium"</code>, or <code>"lr"</code>. Default
+<code>"loss"</code>. Despite the name, this argument accepts any cumulative
+metric on the Triangle; <code>"loss"</code> reflects the most common use.</p></dd>
 
 
-<dt id="arg-exposure-var">exposure_var<a class="anchor" aria-label="anchor" href="#arg-exposure-var"></a></dt>
+<dt id="arg-premium-var">premium_var<a class="anchor" aria-label="anchor" href="#arg-premium-var"></a></dt>
 <dd><p>Optional second cumulative metric, treated as the
-exposure anchor for the ED workflow. Must be one of <code>"closs"</code>,
-<code>"crp"</code>, <code>"clr"</code>, and must differ from <code>value_var</code>. When <code>NULL</code>
+exposure anchor for the ED workflow. Must be one of <code>"loss"</code>,
+<code>"premium"</code>, <code>"lr"</code>, and must differ from <code>loss_var</code>. When <code>NULL</code>
 (default), only the single-variable columns are produced.</p></dd>
 
 
 <dt id="arg-weight-var">weight_var<a class="anchor" aria-label="anchor" href="#arg-weight-var"></a></dt>
 <dd><p>Optional cumulative metric used as WLS weight in
 downstream <code>summary</code> / <code>fit_ata</code> calls. Must differ from
-<code>value_var</code>. Cannot be combined with <code>exposure_var</code> (the dual
+<code>loss_var</code>. Cannot be combined with <code>premium_var</code> (the dual
 workflow has its own anchor).</p></dd>
 
 
 <dt id="arg-min-denom">min_denom<a class="anchor" aria-label="anchor" href="#arg-min-denom"></a></dt>
 <dd><p>Minimum denominator required to compute <code>ata</code>
 and <code>g</code>. If <code>value_from &lt;= min_denom</code>, <code>ata</code> becomes <code>NA</code>; if
-<code>exposure_from &lt;= min_denom</code>, <code>g</code> becomes <code>NA</code>. Default <code>0</code>.</p></dd>
+<code>premium_from &lt;= min_denom</code>, <code>g</code> becomes <code>NA</code>. Default <code>0</code>.</p></dd>
 
 
 <dt id="arg-drop-invalid">drop_invalid<a class="anchor" aria-label="anchor" href="#arg-drop-invalid"></a></dt>
@@ -173,11 +180,11 @@ and <code>g</code>. If <code>value_from &lt;= min_denom</code>, <code>ata</code>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>data.table</code> of class <code>"Link"</code> with columns:</p><ul><li><p>Always: <code>[group_var]</code>, <code>cohort</code>, <code>ata_from</code>, <code>ata_to</code>, <code>ata_link</code>,
 <code>value_from</code>, <code>value_to</code>, <code>delta_value</code>, <code>ata</code>.</p></li>
-<li><p>If <code>exposure_var</code> is set: also <code>exposure_from</code>, <code>exposure_to</code>,
-<code>delta_exposure</code>, <code>g</code>.</p></li>
+<li><p>If <code>premium_var</code> is set: also <code>premium_from</code>, <code>premium_to</code>,
+<code>delta_premium</code>, <code>g</code>.</p></li>
 <li><p>If <code>weight_var</code> is set: also <code>weight</code>.</p></li>
 </ul><p>The returned object carries attributes <code>group_var</code>, <code>cohort_var</code>,
-<code>cohort_type</code>, <code>dev_var</code>, <code>dev_type</code>, <code>value_var</code>, <code>exposure_var</code>
+<code>cohort_type</code>, <code>dev_var</code>, <code>dev_type</code>, <code>loss_var</code>, <code>premium_var</code>
 (or <code>NULL</code>), <code>weight_var</code> (or <code>NULL</code>).</p>
     </div>
     <div class="section level2">
@@ -191,11 +198,11 @@ and <code>g</code>. If <code>value_from &lt;= min_denom</code>, <code>ata</code>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">df</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Single-variable: closs link factors (ATA workflow)</span></span></span>
-<span class="r-in"><span><span class="va">link_loss</span> <span class="op">&lt;-</span> <span class="fu">build_link</span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Single-variable: cumulative-loss link factors (ATA workflow)</span></span></span>
+<span class="r-in"><span><span class="va">link_loss</span> <span class="op">&lt;-</span> <span class="fu">build_link</span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Dual-variable: ED-ready link table (loss + exposure)</span></span></span>
-<span class="r-in"><span><span class="va">link_ed</span> <span class="op">&lt;-</span> <span class="fu">build_link</span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, exposure_var <span class="op">=</span> <span class="st">"crp"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Dual-variable: ED-ready link table (loss + premium)</span></span></span>
+<span class="r-in"><span><span class="va">link_ed</span> <span class="op">&lt;-</span> <span class="fu">build_link</span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, premium_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">link_ed</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>

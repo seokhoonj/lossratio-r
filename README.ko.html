@@ -104,10 +104,10 @@
 
 <div id="lossratio-" class="section level1">
 
-<p>경험 데이터 기반 손해율 분석 및 추정.</p>
+<p><strong>장기 건강보험</strong> 손해율 분석 및 예측 도구 — 코호트 기반 경과 기간 분석, 단계 적응형 예측, regime 탐지를 다룬다.</p>
 <div class="section level2">
 <h2 id="개요">개요<a class="anchor" aria-label="anchor" href="#%EA%B0%9C%EC%9A%94"></a></h2>
-<p><code>lossratio</code>는 경험 데이터로부터 <strong>장기 건강보험</strong> 손해율을 분석·추정하기 위한 도구 모음이다. 입력은 long-format 경험 데이터로, 한 행(코호트 × 경과 기간 × 인구통계)이 Triangle 셀 하나에 대응하며, 손해액과 위험보험료 컬럼을 가진다.</p>
+<p><code>lossratio</code> 는 <strong>장기 건강보험</strong> 손해율 분석 및 예측 도구로, 코호트 기반 경과 기간 분석, 단계 적응형 예측, regime 탐지를 지원한다. 입력은 long-format 경험 데이터로, 한 행(코호트 × 경과 기간 × 인구통계)이 Triangle 셀 하나에 대응하며, 손해액과 보험료 컬럼 (<code>loss</code>, <code>premium</code>) 을 가진다.</p>
 <p>장기 건강보험에서는 코호트 내 신규 클레임과 위험보험료가 지속적으로 발생·유입되므로, 누적 손해와 익스포저가 함께 증가하는 구조를 가진다. 초기 경과 기간의 age-to-age (ATA) factor는 높은 변동성을 보일 수 있으며, 상대적으로 익스포저(≈ 위험보험료)가 보다 안정적이고 신뢰할 수 있는 기준이 된다. 또한 상품 개정, 인수 기준 변경, 규제 조치 등으로 인해 구조적 변화(structural break)가 발생할 수 있으며, 이는 코호트 전반에 걸쳐 누적된다.</p>
 <p><code>lossratio</code> 는 이러한 환경에 맞춰 단계 적응형(stage-adaptive, SA) 손해율 추정과 이를 뒷받침하는 성숙점(maturity point) 및 regime 탐지 도구를 제공한다. SA 는 성숙점 이전에는 노출 기반(exposure-driven, ED) 모형을, 이후에는 chain ladder(CL) 를 사용한다. regime 탐지는 유사한 손해 추이를 공유하는 인수 코호트들의 묶음(regime) 을 식별해 구조적 변화 시점을 분리하며, 어떤 셀을 추정에 활용할지 결정한다.</p>
 <p>제공 기능:</p>
@@ -136,7 +136,7 @@
 <div class="section level2">
 <h2 id="입력-형식">입력 형식<a class="anchor" aria-label="anchor" href="#%EC%9E%85%EB%A0%A5-%ED%98%95%EC%8B%9D"></a></h2>
 <p>최소한 다음 컬럼을 포함하는 long-format <code>data.frame</code> / <code>data.table</code>:</p>
-<table style="width:100%;" class="table"><colgroup><col width="11%"><col width="66%"><col width="22%"></colgroup><thead><tr><th>컬럼</th>
+<table style="width:100%;" class="table"><colgroup><col width="18%"><col width="59%"><col width="21%"></colgroup><thead><tr><th>컬럼</th>
 <th>의미</th>
 <th>예시</th>
 </tr></thead><tbody><tr><td>cohort</td>
@@ -149,16 +149,39 @@
 <td>
 <code>elap_m</code>, <code>elap_y</code>
 </td>
-</tr><tr><td><code>loss</code></td>
-<td>셀 내 증가분 클레임 금액</td>
+</tr><tr><td><code>loss_incr</code></td>
+<td>셀 내 기간별 클레임 금액</td>
 <td>numeric</td>
-</tr><tr><td><code>rp</code></td>
-<td>셀 내 증가분 위험보험료 (기대손해액)</td>
+</tr><tr><td><code>premium_incr</code></td>
+<td>셀 내 기간별 보험료 (장기건강보험은 위험보험료 사용)</td>
 <td>numeric</td>
 </tr><tr><td>group</td>
 <td>선택 — 상품, 담보, 연령, 성별, 가입금액 등</td>
 <td>character / factor</td>
 </tr></tbody></table><p><code><a href="reference/as_experience.html">as_experience()</a></code> 는 스키마를 검증하고 날짜 컬럼을 코어션한다. 이어서 <code><a href="reference/build_triangle.html">build_triangle()</a></code> 은 표준 코호트 × 경과 기간 구조로 집계하며, 누적 컬럼과 파생 비율을 함께 산출한다.</p>
+<div class="section level3">
+<h3 id="컬럼-컨벤션">컬럼 컨벤션<a class="anchor" aria-label="anchor" href="#%EC%BB%AC%EB%9F%BC-%EC%BB%A8%EB%B2%A4%EC%85%98"></a></h3>
+<p>패키지 전반에서 누적값(cumulative)은 default 이름이고, 기간별 (per-period) 값은 <code>_incr</code> (incremental) suffix 를 사용한다:</p>
+<table class="table"><thead><tr><th>metric</th>
+<th>누적 (default)</th>
+<th>기간별 (<code>_incr</code>)</th>
+</tr></thead><tbody><tr><td>손해</td>
+<td><code>loss</code></td>
+<td><code>loss_incr</code></td>
+</tr><tr><td>보험료</td>
+<td><code>premium</code></td>
+<td><code>premium_incr</code></td>
+</tr><tr><td>손해율</td>
+<td><code>lr</code></td>
+<td><code>lr_incr</code></td>
+</tr><tr><td>마진</td>
+<td><code>margin</code></td>
+<td><code>margin_incr</code></td>
+</tr><tr><td>손익</td>
+<td><code>profit</code></td>
+<td><code>profit_incr</code></td>
+</tr></tbody></table><p>raw <code>experience</code> 입력은 기간별 컬럼만 가진다 (<code>loss_incr</code>, <code>premium_incr</code>). <code><a href="reference/build_triangle.html">build_triangle()</a></code> 은 출력에서 두 형태를 모두 생성한다. 적합 함수는 <code>loss_var</code> / <code>premium_var</code> 인자를 받으며 default 는 누적 형 컬럼명 (<code>"loss"</code>, <code>"premium"</code>).</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="설치">설치<a class="anchor" aria-label="anchor" href="#%EC%84%A4%EC%B9%98"></a></h2>
@@ -188,10 +211,10 @@
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>     <span class="co"># cell heatmap</span></span>
 <span></span>
 <span><span class="co"># 노출 기반 적합 (additive ED 강도)</span></span>
-<span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, exposure_var <span class="op">=</span> <span class="st">"crp"</span><span class="op">)</span></span>
+<span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"loss"</span>, premium_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Chain ladder 적합 (multiplicative ATA 인자)</span></span>
-<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cl</span>, type <span class="op">=</span> <span class="st">"projection"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 손해율 적합 (default: 단계 적응형 — 성숙점 이전은 ED, 이후는 CL)</span></span>

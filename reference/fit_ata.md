@@ -18,7 +18,7 @@ Estimate age-to-age (ata) development factors from an object of class
 ``` r
 fit_ata(
   x,
-  value_var = "closs",
+  loss_var = "loss",
   weight_var = NULL,
   alpha = 1,
   na_method = c("locf", "none"),
@@ -37,9 +37,9 @@ fit_ata(
   An object of class `"Link"`, typically produced by
   [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md).
 
-- value_var:
+- loss_var:
 
-  Cumulative metric for the link factor. Default `"closs"`. Forwarded to
+  Cumulative metric for the link factor. Default `"loss"`. Forwarded to
   [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md).
 
 - weight_var:

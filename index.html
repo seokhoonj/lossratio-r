@@ -17,8 +17,8 @@
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
 <script src="extra.js"></script><meta property="og:title" content="lossratio">
-<meta name="description" content="Loss ratio analysis and projection for insurance experience data.">
-<meta property="og:description" content="Loss ratio analysis and projection for insurance experience data.">
+<meta name="description" content="Loss ratio analytics for long-term health insurance — cohort development analysis, stage-adaptive projection, and regime detection.">
+<meta property="og:description" content="Loss ratio analytics for long-term health insurance — cohort development analysis, stage-adaptive projection, and regime detection.">
 <meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png">
 <meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs">
 <!-- Browser-language redirect: send Korean visitors to /ko/ on the
@@ -133,11 +133,11 @@
 <img src="logo.png" class="logo" alt=""><h1 id="lossratio-">lossratio <a class="anchor" aria-label="anchor" href="#lossratio-"></a>
 </h1>
 </div>
-<p>Loss ratio analysis and projection for insurance experience data.</p>
+<p>Loss ratio analytics for <strong>long-term health insurance</strong> — cohort development analysis, stage-adaptive projection, and regime detection.</p>
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
-<p><code>lossratio</code> is a toolkit for <strong>long-term health insurance</strong> loss ratio analysis and projection. Input is long-format experience data — each row (cohort × dev × demographic) maps to one Triangle cell, with loss and risk premium columns.</p>
+<p><code>lossratio</code> is a loss ratio analytics toolkit for <strong>long-term health insurance</strong>, covering cohort development analysis, stage-adaptive projection, and regime detection. Input is long-format experience data — each row (cohort × dev × demographic) maps to one Triangle cell, with loss and premium columns (<code>loss</code>, <code>premium</code>).</p>
 <p>In long-term health insurance, new claims and premium are generated and earned continuously within each cohort, so cumulative loss and exposure grow together. Age-to-age (ATA) factors tend to show high variability in early development, and exposure (≈ risk premium) becomes a more stable and reliable anchor. Product redesigns, underwriting changes, or regulatory actions can also produce structural breaks that accumulate across cohorts.</p>
 <p>In this setting, lossratio provides stage-adaptive (SA) loss-ratio projection, supported by maturity point and regime detection. SA uses an exposure-driven (ED) model before the maturity point and chain ladder (CL) after it. Regime detection identifies homogeneous groups of cohorts (regimes) that share similar loss dynamics, separating structural break points and determining which cells to use for estimation.</p>
 <p>It provides:</p>
@@ -177,9 +177,9 @@
 <p>A long-format <code>data.frame</code> / <code>data.table</code> with at minimum:</p>
 <table class="table">
 <colgroup>
-<col width="11%">
-<col width="64%">
-<col width="23%">
+<col width="17%">
+<col width="62%">
+<col width="19%">
 </colgroup>
 <thead><tr>
 <th>Column</th>
@@ -202,13 +202,13 @@
 </td>
 </tr>
 <tr>
-<td><code>loss</code></td>
-<td>Incremental claim amount in the cell</td>
+<td><code>loss_incr</code></td>
+<td>Per-period claim amount in the cell</td>
 <td>numeric</td>
 </tr>
 <tr>
-<td><code>rp</code></td>
-<td>Incremental risk premium (expected loss) in the cell</td>
+<td><code>premium_incr</code></td>
+<td>Per-period premium in the cell (risk premium for long-term health)</td>
 <td>numeric</td>
 </tr>
 <tr>
@@ -219,6 +219,46 @@
 </tbody>
 </table>
 <p><code><a href="reference/as_experience.html">as_experience()</a></code> validates the schema and coerces date columns; <code><a href="reference/build_triangle.html">build_triangle()</a></code> then aggregates to the canonical cohort × dev structure with cumulative columns and derived ratios.</p>
+<div class="section level3">
+<h3 id="column-convention">Column convention<a class="anchor" aria-label="anchor" href="#column-convention"></a>
+</h3>
+<p>Throughout the package, cumulative is the unmarked default and per-period values carry an <code>_incr</code> (incremental) suffix:</p>
+<table class="table">
+<thead><tr>
+<th>Metric</th>
+<th>Cumulative (default)</th>
+<th>Per-period (<code>_incr</code>)</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Loss</td>
+<td><code>loss</code></td>
+<td><code>loss_incr</code></td>
+</tr>
+<tr>
+<td>Premium</td>
+<td><code>premium</code></td>
+<td><code>premium_incr</code></td>
+</tr>
+<tr>
+<td>Loss ratio</td>
+<td><code>lr</code></td>
+<td><code>lr_incr</code></td>
+</tr>
+<tr>
+<td>Margin</td>
+<td><code>margin</code></td>
+<td><code>margin_incr</code></td>
+</tr>
+<tr>
+<td>Profit</td>
+<td><code>profit</code></td>
+<td><code>profit_incr</code></td>
+</tr>
+</tbody>
+</table>
+<p>Raw <code>experience</code> input is per-period only (<code>loss_incr</code>, <code>premium_incr</code>); <code><a href="reference/build_triangle.html">build_triangle()</a></code> produces both forms in the output. Fit functions take <code>loss_var</code> and <code>premium_var</code> arguments (defaults to the cumulative slot names).</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -250,10 +290,10 @@
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>     <span class="co"># cell heatmap</span></span>
 <span></span>
 <span><span class="co"># Exposure-driven fit (additive ED intensity)</span></span>
-<span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, exposure_var <span class="op">=</span> <span class="st">"crp"</span><span class="op">)</span></span>
+<span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"loss"</span>, premium_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Chain ladder fit (multiplicative ATA factors)</span></span>
-<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cl</span>, type <span class="op">=</span> <span class="st">"projection"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Loss ratio fit (stage-adaptive by default — ED before maturity, CL after)</span></span>

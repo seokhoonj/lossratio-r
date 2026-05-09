@@ -131,12 +131,12 @@ The returned `Convergence` object reports:
 - `k_star` — the maturity point used as the lower bound (computed
   internally via
   [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
-  on a clr-based ATA, or supplied by the caller).
+  on a lr-based ATA, or supplied by the caller).
 - `V` — the maximum observable dev in the triangle.
 - `v`, `R_v`, `SE_param_v`, `D_v`, `pass_v` — per-valuation diagnostic
   sequences indexed by $`v`$.
 - `c`, `tau`, `M`, `holdout_max`, `min_n_cohorts` — settings used.
-- attributes `group_var`, `value_var`, `fit_fn_name`, `dev_var`.
+- attributes `group_var`, `loss_var`, `fit_fn_name`, `dev_var`.
 
 `summary(res)` returns a `data.table` with one row per candidate
 valuation and an extra `R_over_SE = R_v / SE_param_v` column for

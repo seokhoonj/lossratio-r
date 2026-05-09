@@ -30,8 +30,8 @@ usable with `fit_fn = fit_ed`.
 ``` r
 fit_ed(
   x,
-  value_var = "closs",
-  exposure_var = "crp",
+  loss_var = "loss",
+  premium_var = "premium",
   method = c("basic", "mack"),
   alpha = 1,
   na_method = c("zero", "locf", "none"),
@@ -48,17 +48,17 @@ fit_ed(
 
   A `"Triangle"` object.
 
-- value_var:
+- loss_var:
 
-  Cumulative loss variable. Default `"closs"`. Forwarded to
+  Cumulative loss variable. Default `"loss"`. Forwarded to
   [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md)
   and to
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
   as `loss_var`.
 
-- exposure_var:
+- premium_var:
 
-  Cumulative exposure variable. Default `"crp"`. Forwarded to
+  Cumulative exposure variable. Default `"premium"`. Forwarded to
   [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md)
   and to
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md).
@@ -117,8 +117,8 @@ An object of class `"EDFit"` (a named list) with components:
 
   `data.table` mirroring `LRFit$full` for `method = "ed"`: per-cell
   cumulative loss / exposure / loss-ratio projection plus SE columns
-  (`closs_proj`, `exposure_proj`, `lr_proj`, `se_proj`, `se_lr`,
-  `cv_lr`, ...). Available cells include both observed and projected;
+  (`loss_proj`, `premium_proj`, `lr_proj`, `se_proj`, `se_lr`, `cv_lr`,
+  ...). Available cells include both observed and projected;
   `is_observed` flags observed cells.
 
 - `link`:

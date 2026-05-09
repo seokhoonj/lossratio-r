@@ -105,31 +105,31 @@ per (cohort × dev × demographic) cell. The bundled dataset
 <code>experience</code> is a 33,480-row table with calendar /
 underwriting period columns at multiple granularities, demographic
 dimensions (<code>cv_nm</code>, <code>age_band</code>,
-<code>gender</code>), and amounts (<code>loss</code>,
-<code>rp</code>).</p>
+<code>gender</code>), and per-period amounts (<code>loss_incr</code>,
+<code>premium_incr</code>).</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio" class="external-link">lossratio</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Classes 'data.table' and 'data.frame':   33480 obs. of  17 variables:</span></span>
-<span><span class="co">#&gt;  $ cy      : Date, format: "2023-01-01" "2023-01-01" ...</span></span>
-<span><span class="co">#&gt;  $ cyh     : Date, format: "2023-01-01" "2023-01-01" ...</span></span>
-<span><span class="co">#&gt;  $ cyq     : Date, format: "2023-04-01" "2023-04-01" ...</span></span>
-<span><span class="co">#&gt;  $ cym     : Date, format: "2023-04-01" "2023-04-01" ...</span></span>
-<span><span class="co">#&gt;  $ uy      : Date, format: "2023-01-01" "2023-01-01" ...</span></span>
-<span><span class="co">#&gt;  $ uyh     : Date, format: "2023-01-01" "2023-01-01" ...</span></span>
-<span><span class="co">#&gt;  $ uyq     : Date, format: "2023-04-01" "2023-04-01" ...</span></span>
-<span><span class="co">#&gt;  $ uym     : Date, format: "2023-04-01" "2023-04-01" ...</span></span>
-<span><span class="co">#&gt;  $ elap_y  : int  1 1 1 1 1 1 1 1 1 1 ...</span></span>
-<span><span class="co">#&gt;  $ elap_h  : int  1 1 1 1 1 1 1 1 1 1 ...</span></span>
-<span><span class="co">#&gt;  $ elap_q  : int  1 1 1 1 1 1 1 1 1 1 ...</span></span>
-<span><span class="co">#&gt;  $ elap_m  : int  1 1 1 1 1 1 1 1 1 1 ...</span></span>
-<span><span class="co">#&gt;  $ cv_nm   : chr  "SUR" "SUR" "SUR" "SUR" ...</span></span>
-<span><span class="co">#&gt;  $ age_band: Ord.factor w/ 9 levels "30-34"&lt;"35-39"&lt;..: 1 1 2 2 3 3 4 4 5 5 ...</span></span>
-<span><span class="co">#&gt;  $ gender  : Factor w/ 2 levels "M","F": 1 2 1 2 1 2 1 2 1 2 ...</span></span>
-<span><span class="co">#&gt;  $ loss    : num  0 0 0 0 0 0 0 0 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ rp      : num  3555865 258448 255420 464313 92744 ...</span></span>
+<span><span class="co">#&gt;  $ cy          : Date, format: "2023-01-01" "2023-01-01" ...</span></span>
+<span><span class="co">#&gt;  $ cyh         : Date, format: "2023-01-01" "2023-01-01" ...</span></span>
+<span><span class="co">#&gt;  $ cyq         : Date, format: "2023-04-01" "2023-04-01" ...</span></span>
+<span><span class="co">#&gt;  $ cym         : Date, format: "2023-04-01" "2023-04-01" ...</span></span>
+<span><span class="co">#&gt;  $ uy          : Date, format: "2023-01-01" "2023-01-01" ...</span></span>
+<span><span class="co">#&gt;  $ uyh         : Date, format: "2023-01-01" "2023-01-01" ...</span></span>
+<span><span class="co">#&gt;  $ uyq         : Date, format: "2023-04-01" "2023-04-01" ...</span></span>
+<span><span class="co">#&gt;  $ uym         : Date, format: "2023-04-01" "2023-04-01" ...</span></span>
+<span><span class="co">#&gt;  $ elap_y      : int  1 1 1 1 1 1 1 1 1 1 ...</span></span>
+<span><span class="co">#&gt;  $ elap_h      : int  1 1 1 1 1 1 1 1 1 1 ...</span></span>
+<span><span class="co">#&gt;  $ elap_q      : int  1 1 1 1 1 1 1 1 1 1 ...</span></span>
+<span><span class="co">#&gt;  $ elap_m      : int  1 1 1 1 1 1 1 1 1 1 ...</span></span>
+<span><span class="co">#&gt;  $ cv_nm       : chr  "SUR" "SUR" "SUR" "SUR" ...</span></span>
+<span><span class="co">#&gt;  $ age_band    : Ord.factor w/ 9 levels "30-34"&lt;"35-39"&lt;..: 1 1 2 2 3 3 4 4 5 5 ...</span></span>
+<span><span class="co">#&gt;  $ gender      : Factor w/ 2 levels "M","F": 1 2 1 2 1 2 1 2 1 2 ...</span></span>
+<span><span class="co">#&gt;  $ loss_incr   : num  0 0 0 0 0 0 0 0 0 0 ...</span></span>
+<span><span class="co">#&gt;  $ premium_incr: num  3555865 258448 255420 464313 92744 ...</span></span>
 <span><span class="co">#&gt;  - attr(*, ".internal.selfref")=&lt;pointer: (nil)&gt;</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -140,9 +140,9 @@ dimensions (<code>cv_nm</code>, <code>age_band</code>,
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "Experience" "data.table" "data.frame"</span></span></code></pre></div>
 <p><code><a href="../reference/as_experience.html">as_experience()</a></code> checks required columns
-(<code>cym</code>, <code>uym</code>, <code>loss</code>,
-<code>rp</code>), coerces date columns, and tags the class. Use
-<code>check_experience(df)</code> for a non-mutating check.</p>
+(<code>cym</code>, <code>uym</code>, <code>loss_incr</code>,
+<code>premium_incr</code>), coerces date columns, and tags the class.
+Use <code>check_experience(df)</code> for a non-mutating check.</p>
 </div>
 <div class="section level2">
 <h2 id="step-2-build-the-cohort-dev-structure">Step 2 — Build the cohort × dev structure<a class="anchor" aria-label="anchor" href="#step-2-build-the-cohort-dev-structure"></a>
@@ -152,104 +152,111 @@ dimensions (<code>cv_nm</code>, <code>age_band</code>,
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "Triangle"   "data.table" "data.frame"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "cv_nm"      "n_obs"      "cohort"     "dev"        "loss"      </span></span>
-<span><span class="co">#&gt;  [6] "rp"         "closs"      "crp"        "margin"     "cmargin"   </span></span>
-<span><span class="co">#&gt; [11] "profit"     "cprofit"    "lr"         "clr"        "loss_prop" </span></span>
-<span><span class="co">#&gt; [16] "rp_prop"    "closs_prop" "crp_prop"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] "cv_nm"             "n_obs"             "cohort"           </span></span>
+<span><span class="co">#&gt;  [4] "dev"               "loss"              "loss_incr"        </span></span>
+<span><span class="co">#&gt;  [7] "premium"           "premium_incr"      "lr"               </span></span>
+<span><span class="co">#&gt; [10] "lr_incr"           "margin"            "margin_incr"      </span></span>
+<span><span class="co">#&gt; [13] "profit"            "profit_incr"       "loss_prop"        </span></span>
+<span><span class="co">#&gt; [16] "loss_incr_prop"    "premium_prop"      "premium_incr_prop"</span></span></code></pre></div>
 <p><code><a href="../reference/build_triangle.html">build_triangle()</a></code>:</p>
 <ul>
 <li>aggregates demographic dimensions away (here: <code>age_band</code>,
 <code>gender</code>),</li>
-<li>adds cumulative columns (<code>closs</code>, <code>crp</code>),</li>
-<li>adds derived metrics (<code>margin</code>, <code>lr</code>,
-<code>clr</code>, proportions),</li>
+<li>standardises raw input names to the per-period slots
+<code>loss_incr</code> and <code>premium_incr</code>,</li>
+<li>adds cumulative companions (<code>loss</code>, <code>premium</code>)
+— cumulative is the unmarked default; per-period carries the
+<code>_incr</code> suffix,</li>
+<li>adds derived metrics (<code>margin</code> /
+<code>margin_incr</code>, <code>lr</code> / <code>lr_incr</code>,
+proportions),</li>
 <li>standardises the cohort / development columns to the names
 <code>cohort</code> and <code>dev</code>,</li>
 <li>preserves original column names as attributes
-(<code>cohort_var</code>, <code>dev_var</code>) for downstream plot
-labels.</li>
+(<code>cohort_var</code>, <code>dev_var</code>, <code>loss_var</code>,
+<code>premium_var</code>) for downstream plot labels.</li>
 </ul>
 </div>
 <div class="section level2">
 <h2 id="step-3-diagnostics">Step 3 — Diagnostics<a class="anchor" aria-label="anchor" href="#step-3-diagnostics"></a>
 </h2>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>              <span class="co"># cohort trajectories of clr</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>              <span class="co"># cohort trajectories of lr</span></span></code></pre></div>
 <p><img src="getting-started_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>     <span class="co"># heatmap of clr cells</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>     <span class="co"># heatmap of lr cells</span></span></code></pre></div>
 <p><img src="getting-started_files/figure-html/unnamed-chunk-4-2.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>           <span class="co"># group-wise statistics by dev</span></span>
 <span><span class="co">#&gt; Key: &lt;cv_nm, dev&gt;</span></span>
-<span><span class="co">#&gt;      cv_nm   dev n_obs   lr_mean lr_median      lr_wt  clr_mean clr_median</span></span>
-<span><span class="co">#&gt;     &lt;char&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;      &lt;num&gt;     &lt;num&gt;      &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:    SUR     1    30 0.0738546 0.0000000 0.07343113 0.0738546  0.0000000</span></span>
-<span><span class="co">#&gt;  2:    SUR     2    29 0.5365888 0.0992849 0.54126362 0.3512535  0.1120447</span></span>
-<span><span class="co">#&gt;  3:    SUR     3    28 0.6201189 0.2472070 0.56590118 0.4521326  0.2618096</span></span>
-<span><span class="co">#&gt;  4:    SUR     4    27 0.8852657 0.6387164 0.92060611 0.6327242  0.4798531</span></span>
-<span><span class="co">#&gt;  5:    SUR     5    26 0.5767556 0.4828899 0.59880663 0.6369307  0.5641166</span></span>
-<span><span class="co">#&gt;  6:    SUR     6    25 0.9314593 0.5431397 0.95085711 0.7264308  0.6191132</span></span>
-<span><span class="co">#&gt;  7:    SUR     7    24 0.8240033 0.6252286 0.77687370 0.7555932  0.7992795</span></span>
-<span><span class="co">#&gt;  8:    SUR     8    23 1.1675190 0.7248212 1.27544718 0.8676101  0.7931337</span></span>
-<span><span class="co">#&gt;  9:    SUR     9    22 0.7525589 0.6155797 0.80158895 0.8755390  0.7890790</span></span>
-<span><span class="co">#&gt; 10:    SUR    10    21 0.8335086 0.6979443 0.76977519 0.8760001  0.7896553</span></span>
-<span><span class="co">#&gt; 11:    SUR    11    20 0.9673902 0.8800705 1.00022912 0.8967165  0.8355443</span></span>
-<span><span class="co">#&gt; 12:    SUR    12    19 0.8517931 0.6947156 0.85401463 0.9051208  0.8833728</span></span>
-<span><span class="co">#&gt; 13:    SUR    13    18 1.0020059 0.8967964 0.98253067 0.9362016  0.9420986</span></span>
-<span><span class="co">#&gt; 14:    SUR    14    17 1.0962361 1.0738800 1.16483245 0.9869708  1.0624927</span></span>
-<span><span class="co">#&gt; 15:    SUR    15    16 0.7760479 0.8230115 0.80108577 0.9870392  1.0459131</span></span>
-<span><span class="co">#&gt; 16:    SUR    16    15 0.8254441 0.6962883 0.85204193 0.9992647  1.0388452</span></span>
-<span><span class="co">#&gt; 17:    SUR    17    14 0.9058332 0.8098679 0.90979966 1.0121916  1.0649114</span></span>
-<span><span class="co">#&gt; 18:    SUR    18    13 1.0184650 1.0848554 1.00362430 1.0518881  1.0717561</span></span>
-<span><span class="co">#&gt; 19:    SUR    19    12 1.1760267 1.0964987 1.16189899 1.0931503  1.1135768</span></span>
-<span><span class="co">#&gt; 20:    SUR    20    11 1.0221131 1.0224721 1.00298630 1.1006314  1.1221288</span></span>
-<span><span class="co">#&gt; 21:    SUR    21    10 1.2370057 1.1559477 1.24931320 1.1032718  1.1256455</span></span>
-<span><span class="co">#&gt; 22:    SUR    22     9 1.1949424 1.1807304 1.17762170 1.1065793  1.1255582</span></span>
-<span><span class="co">#&gt; 23:    SUR    23     8 1.2851680 1.3577496 1.31179285 1.1060777  1.1285479</span></span>
-<span><span class="co">#&gt; 24:    SUR    24     7 1.0598906 0.8375035 1.13727404 1.1000157  1.0774681</span></span>
-<span><span class="co">#&gt; 25:    SUR    25     6 0.9385597 0.9798018 0.95054947 1.0833124  1.0638356</span></span>
-<span><span class="co">#&gt; 26:    SUR    26     5 0.8196121 0.9665387 0.85145986 1.0923577  1.0737966</span></span>
-<span><span class="co">#&gt; 27:    SUR    27     4 1.0466054 1.0672777 1.03231128 1.0684910  1.0866012</span></span>
-<span><span class="co">#&gt; 28:    SUR    28     3 0.9876176 0.5356686 1.20396265 1.0678995  1.0663302</span></span>
-<span><span class="co">#&gt; 29:    SUR    29     2 0.9678421 0.9678421 0.96314465 1.0004101  1.0004101</span></span>
-<span><span class="co">#&gt; 30:    SUR    30     1 0.8877097 0.8877097 0.88770973 0.9318395  0.9318395</span></span>
-<span><span class="co">#&gt;      cv_nm   dev n_obs   lr_mean lr_median      lr_wt  clr_mean clr_median</span></span>
-<span><span class="co">#&gt;     &lt;char&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;      &lt;num&gt;     &lt;num&gt;      &lt;num&gt;</span></span>
-<span><span class="co">#&gt;         clr_wt</span></span>
-<span><span class="co">#&gt;          &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1: 0.07343113</span></span>
-<span><span class="co">#&gt;  2: 0.35150128</span></span>
-<span><span class="co">#&gt;  3: 0.44744109</span></span>
-<span><span class="co">#&gt;  4: 0.63467048</span></span>
-<span><span class="co">#&gt;  5: 0.63999290</span></span>
-<span><span class="co">#&gt;  6: 0.72781355</span></span>
-<span><span class="co">#&gt;  7: 0.75210593</span></span>
-<span><span class="co">#&gt;  8: 0.86554028</span></span>
-<span><span class="co">#&gt;  9: 0.87613232</span></span>
-<span><span class="co">#&gt; 10: 0.87381694</span></span>
-<span><span class="co">#&gt; 11: 0.89806835</span></span>
-<span><span class="co">#&gt; 12: 0.90531724</span></span>
-<span><span class="co">#&gt; 13: 0.93753009</span></span>
-<span><span class="co">#&gt; 14: 0.98899894</span></span>
-<span><span class="co">#&gt; 15: 0.99133864</span></span>
-<span><span class="co">#&gt; 16: 1.00482935</span></span>
-<span><span class="co">#&gt; 17: 1.01782259</span></span>
-<span><span class="co">#&gt; 18: 1.05697013</span></span>
-<span><span class="co">#&gt; 19: 1.09700313</span></span>
-<span><span class="co">#&gt; 20: 1.10409515</span></span>
-<span><span class="co">#&gt; 21: 1.10555289</span></span>
-<span><span class="co">#&gt; 22: 1.10949324</span></span>
-<span><span class="co">#&gt; 23: 1.10906728</span></span>
-<span><span class="co">#&gt; 24: 1.10067296</span></span>
-<span><span class="co">#&gt; 25: 1.08291578</span></span>
-<span><span class="co">#&gt; 26: 1.09382873</span></span>
-<span><span class="co">#&gt; 27: 1.07050979</span></span>
-<span><span class="co">#&gt; 28: 1.07487952</span></span>
-<span><span class="co">#&gt; 29: 0.99818417</span></span>
-<span><span class="co">#&gt; 30: 0.93183949</span></span>
-<span><span class="co">#&gt;         clr_wt</span></span>
-<span><span class="co">#&gt;          &lt;num&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt;      cv_nm   dev n_obs   lr_mean lr_median      lr_wt lr_incr_mean</span></span>
+<span><span class="co">#&gt;     &lt;char&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;      &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:    SUR     1    30 0.0738546 0.0000000 0.07343113    0.0738546</span></span>
+<span><span class="co">#&gt;  2:    SUR     2    29 0.3512535 0.1120447 0.35150128    0.5365888</span></span>
+<span><span class="co">#&gt;  3:    SUR     3    28 0.4521326 0.2618096 0.44744109    0.6201189</span></span>
+<span><span class="co">#&gt;  4:    SUR     4    27 0.6327242 0.4798531 0.63467048    0.8852657</span></span>
+<span><span class="co">#&gt;  5:    SUR     5    26 0.6369307 0.5641166 0.63999290    0.5767556</span></span>
+<span><span class="co">#&gt;  6:    SUR     6    25 0.7264308 0.6191132 0.72781355    0.9314593</span></span>
+<span><span class="co">#&gt;  7:    SUR     7    24 0.7555932 0.7992795 0.75210593    0.8240033</span></span>
+<span><span class="co">#&gt;  8:    SUR     8    23 0.8676101 0.7931337 0.86554028    1.1675190</span></span>
+<span><span class="co">#&gt;  9:    SUR     9    22 0.8755390 0.7890790 0.87613232    0.7525589</span></span>
+<span><span class="co">#&gt; 10:    SUR    10    21 0.8760001 0.7896553 0.87381694    0.8335086</span></span>
+<span><span class="co">#&gt; 11:    SUR    11    20 0.8967165 0.8355443 0.89806835    0.9673902</span></span>
+<span><span class="co">#&gt; 12:    SUR    12    19 0.9051208 0.8833728 0.90531724    0.8517931</span></span>
+<span><span class="co">#&gt; 13:    SUR    13    18 0.9362016 0.9420986 0.93753009    1.0020059</span></span>
+<span><span class="co">#&gt; 14:    SUR    14    17 0.9869708 1.0624927 0.98899894    1.0962361</span></span>
+<span><span class="co">#&gt; 15:    SUR    15    16 0.9870392 1.0459131 0.99133864    0.7760479</span></span>
+<span><span class="co">#&gt; 16:    SUR    16    15 0.9992647 1.0388452 1.00482935    0.8254441</span></span>
+<span><span class="co">#&gt; 17:    SUR    17    14 1.0121916 1.0649114 1.01782259    0.9058332</span></span>
+<span><span class="co">#&gt; 18:    SUR    18    13 1.0518881 1.0717561 1.05697013    1.0184650</span></span>
+<span><span class="co">#&gt; 19:    SUR    19    12 1.0931503 1.1135768 1.09700313    1.1760267</span></span>
+<span><span class="co">#&gt; 20:    SUR    20    11 1.1006314 1.1221288 1.10409515    1.0221131</span></span>
+<span><span class="co">#&gt; 21:    SUR    21    10 1.1032718 1.1256455 1.10555289    1.2370057</span></span>
+<span><span class="co">#&gt; 22:    SUR    22     9 1.1065793 1.1255582 1.10949324    1.1949424</span></span>
+<span><span class="co">#&gt; 23:    SUR    23     8 1.1060777 1.1285479 1.10906728    1.2851680</span></span>
+<span><span class="co">#&gt; 24:    SUR    24     7 1.1000157 1.0774681 1.10067296    1.0598906</span></span>
+<span><span class="co">#&gt; 25:    SUR    25     6 1.0833124 1.0638356 1.08291578    0.9385597</span></span>
+<span><span class="co">#&gt; 26:    SUR    26     5 1.0923577 1.0737966 1.09382873    0.8196121</span></span>
+<span><span class="co">#&gt; 27:    SUR    27     4 1.0684910 1.0866012 1.07050979    1.0466054</span></span>
+<span><span class="co">#&gt; 28:    SUR    28     3 1.0678995 1.0663302 1.07487952    0.9876176</span></span>
+<span><span class="co">#&gt; 29:    SUR    29     2 1.0004101 1.0004101 0.99818417    0.9678421</span></span>
+<span><span class="co">#&gt; 30:    SUR    30     1 0.9318395 0.9318395 0.93183949    0.8877097</span></span>
+<span><span class="co">#&gt;      cv_nm   dev n_obs   lr_mean lr_median      lr_wt lr_incr_mean</span></span>
+<span><span class="co">#&gt;     &lt;char&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;      &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt;     lr_incr_median lr_incr_wt</span></span>
+<span><span class="co">#&gt;              &lt;num&gt;      &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:      0.0000000 0.07343113</span></span>
+<span><span class="co">#&gt;  2:      0.0992849 0.54126362</span></span>
+<span><span class="co">#&gt;  3:      0.2472070 0.56590118</span></span>
+<span><span class="co">#&gt;  4:      0.6387164 0.92060611</span></span>
+<span><span class="co">#&gt;  5:      0.4828899 0.59880663</span></span>
+<span><span class="co">#&gt;  6:      0.5431397 0.95085711</span></span>
+<span><span class="co">#&gt;  7:      0.6252286 0.77687370</span></span>
+<span><span class="co">#&gt;  8:      0.7248212 1.27544718</span></span>
+<span><span class="co">#&gt;  9:      0.6155797 0.80158895</span></span>
+<span><span class="co">#&gt; 10:      0.6979443 0.76977519</span></span>
+<span><span class="co">#&gt; 11:      0.8800705 1.00022912</span></span>
+<span><span class="co">#&gt; 12:      0.6947156 0.85401463</span></span>
+<span><span class="co">#&gt; 13:      0.8967964 0.98253067</span></span>
+<span><span class="co">#&gt; 14:      1.0738800 1.16483245</span></span>
+<span><span class="co">#&gt; 15:      0.8230115 0.80108577</span></span>
+<span><span class="co">#&gt; 16:      0.6962883 0.85204193</span></span>
+<span><span class="co">#&gt; 17:      0.8098679 0.90979966</span></span>
+<span><span class="co">#&gt; 18:      1.0848554 1.00362430</span></span>
+<span><span class="co">#&gt; 19:      1.0964987 1.16189899</span></span>
+<span><span class="co">#&gt; 20:      1.0224721 1.00298630</span></span>
+<span><span class="co">#&gt; 21:      1.1559477 1.24931320</span></span>
+<span><span class="co">#&gt; 22:      1.1807304 1.17762170</span></span>
+<span><span class="co">#&gt; 23:      1.3577496 1.31179285</span></span>
+<span><span class="co">#&gt; 24:      0.8375035 1.13727404</span></span>
+<span><span class="co">#&gt; 25:      0.9798018 0.95054947</span></span>
+<span><span class="co">#&gt; 26:      0.9665387 0.85145986</span></span>
+<span><span class="co">#&gt; 27:      1.0672777 1.03231128</span></span>
+<span><span class="co">#&gt; 28:      0.5356686 1.20396265</span></span>
+<span><span class="co">#&gt; 29:      0.9678421 0.96314465</span></span>
+<span><span class="co">#&gt; 30:      0.8877097 0.88770973</span></span>
+<span><span class="co">#&gt;     lr_incr_median lr_incr_wt</span></span>
+<span><span class="co">#&gt;              &lt;num&gt;      &lt;num&gt;</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="step-4-development-modeling">Step 4 — Development modeling<a class="anchor" aria-label="anchor" href="#step-4-development-modeling"></a>
@@ -257,7 +264,7 @@ labels.</li>
 <p>Two complementary views of cohort development:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Age-to-age factors</span></span>
-<span><span class="fu"><a href="../reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;ATAFit&gt;</span></span>
 <span><span class="co">#&gt; alpha       : 1 </span></span>
 <span><span class="co">#&gt; sigma_method: min_last2 </span></span>
@@ -269,11 +276,11 @@ labels.</li>
 <span><span class="co">#&gt; ata links   : 29</span></span>
 <span></span>
 <span><span class="co"># Exposure-driven intensities</span></span>
-<span><span class="fu"><a href="../reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, exposure_var <span class="op">=</span> <span class="st">"crp"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, premium_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;EDFit&gt;</span></span>
 <span><span class="co">#&gt; method      : basic </span></span>
-<span><span class="co">#&gt; value_var   : closs </span></span>
-<span><span class="co">#&gt; exposure_var: crp </span></span>
+<span><span class="co">#&gt; loss_var   : loss </span></span>
+<span><span class="co">#&gt; premium_var: premium </span></span>
 <span><span class="co">#&gt; alpha       : 1 </span></span>
 <span><span class="co">#&gt; sigma_method: min_last2 </span></span>
 <span><span class="co">#&gt; recent      : all </span></span>
@@ -291,7 +298,7 @@ Both are inputs to the projection methods below.</p>
 </h2>
 <p><code><a href="../reference/fit_cl.html">fit_cl()</a></code> runs a chain ladder projection:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"closs"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cl</span>, type <span class="op">=</span> <span class="st">"projection"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="getting-started_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -488,7 +495,7 @@ loss-ratio fitting on a homogeneous subset:</p>
 <span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">sub</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"ecp"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Regime&gt;</span></span>
 <span><span class="co">#&gt;   method      : ecp</span></span>
-<span><span class="co">#&gt;   value_var   : clr</span></span>
+<span><span class="co">#&gt;   loss_var   : lr</span></span>
 <span><span class="co">#&gt;   window (K)  : elap_m 1, ..., 12</span></span>
 <span><span class="co">#&gt;   cohorts     : 19 analysed (11 dropped)</span></span>
 <span><span class="co">#&gt;   regimes     : 2</span></span>

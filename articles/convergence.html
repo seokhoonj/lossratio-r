@@ -415,7 +415,7 @@ or <code>NA</code> if no run of
 consecutive passing valuations is found.</li>
 <li>
 <code>k_star</code> — the maturity point used as the lower bound
-(computed internally via <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> on a clr-based
+(computed internally via <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> on a lr-based
 ATA, or supplied by the caller).</li>
 <li>
 <code>V</code> — the maximum observable dev in the triangle.</li>
@@ -428,7 +428,7 @@ sequences indexed by
 <code>c</code>, <code>tau</code>, <code>M</code>,
 <code>holdout_max</code>, <code>min_n_cohorts</code> — settings
 used.</li>
-<li>attributes <code>group_var</code>, <code>value_var</code>,
+<li>attributes <code>group_var</code>, <code>loss_var</code>,
 <code>fit_fn_name</code>, <code>dev_var</code>.</li>
 </ul>
 <p><code>summary(res)</code> returns a <code>data.table</code> with one

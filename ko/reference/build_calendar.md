@@ -3,35 +3,36 @@
 Aggregate experience data into a development structure along a single
 calendar-style period axis, including:
 
-- cumulative loss and cumulative risk premium,
+- cumulative loss and cumulative premium,
 
-- period and cumulative proportions,
+- per-period and cumulative proportions,
 
-- margin and cumulative margin,
+- per-period and cumulative margin,
 
 - profit indicators,
 
-- loss ratio (`lr = loss / rp`) and cumulative loss ratio
-  (`clr = closs / crp`).
+- per-period loss ratio (`lr_incr = loss_incr / premium_incr`) and
+  cumulative loss ratio (`lr = loss / premium`).
 
 In contrast to
 [`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md),
-which builds a development structure using `calendar_var × dev_var`,
-this function aggregates values over a one-dimensional calendar axis.
+which builds a development structure using `cohort_var × dev_var`, this
+function aggregates values over a one-dimensional calendar axis.
 
-The loss ratio is defined as: \$\$lr = loss / rp\$\$
+The cumulative loss ratio is defined as: \$\$lr = loss / premium\$\$
 
-where `rp` represents risk premium (expected loss), not written premium.
+For long-term health insurance applications, risk premium is commonly
+used as the `premium` measure.
 
 Proportion variables are computed within each `calendar_var` cell:
 
+- `loss_incr_prop = loss_incr / sum(loss_incr)`
+
+- `premium_incr_prop = premium_incr / sum(premium_incr)`
+
 - `loss_prop = loss / sum(loss)`
 
-- `rp_prop = rp / sum(rp)`
-
-- `closs_prop = closs / sum(closs)`
-
-- `crp_prop = crp / sum(crp)`
+- `premium_prop = premium / sum(premium)`
 
 Therefore, for a fixed `calendar_var` cell, the proportions sum to 1
 across groups. These are useful for examining the composition of each
@@ -44,7 +45,8 @@ build_calendar(
   df,
   group_var,
   calendar_var = "cym",
-  value_var = c("loss", "rp"),
+  loss_var = "loss_incr",
+  premium_var = "premium_incr",
   period_from = NULL,
   period_to = NULL,
   fill_gaps = FALSE
@@ -55,7 +57,8 @@ build_calendar(
 
 - df:
 
-  A data.frame containing experience data with loss and risk premium.
+  A data.frame containing experience data with per-period loss and
+  premium columns.
 
 - group_var:
 
@@ -78,14 +81,17 @@ build_calendar(
     to be summarised as a time series rather than as a development
     structure.
 
-- value_var:
+- loss_var:
 
-  Character vector specifying the value columns, typically
-  `c("loss", "rp")` where:
+  Single character; per-period loss column in `df`. Default
+  `"loss_incr"`.
 
-  - `loss` = actual claims (observed loss),
+- premium_var:
 
-  - `rp` = risk premium (expected loss).
+  Single character; per-period premium column in `df`. Default
+  `"premium_incr"`. Premium measure used as denominator for loss ratio
+  calculations. For long-term health insurance applications, risk
+  premium is commonly used.
 
 - period_from:
 
@@ -109,7 +115,7 @@ build_calendar(
 A data.frame with class `"Calendar"`, containing the following derived
 columns:
 
-- index:
+- dev:
 
   Calendar index within each group, defined as the sequential order of
   `calendar_var` after sorting in ascending order. This represents the
@@ -117,33 +123,29 @@ columns:
   observed period, 2 = second, ...), and can be used to align groups
   with different starting periods on a common index scale.
 
-- closs, crp:
+- loss, loss_incr:
 
-  Cumulative loss and cumulative risk premium
+  Cumulative and per-period loss
 
-- loss_prop, rp_prop:
+- premium, premium_incr:
 
-  Period proportions within each `calendar_var` cell
+  Cumulative and per-period premium
 
-- closs_prop, crp_prop:
+- lr, lr_incr:
 
-  Cumulative proportions within each `calendar_var` cell
+  Cumulative and per-period loss ratio
 
-- margin, cmargin:
+- margin, margin_incr:
 
-  Period and cumulative margin (`rp - loss`)
+  Cumulative and per-period margin
 
-- profit, cprofit:
+- profit, profit_incr:
 
-  Profit indicator (factor `"pos"` / `"neg"`)
+  Profit indicator
 
-- lr:
+- loss_prop, loss_incr_prop, premium_prop, premium_incr_prop:
 
-  Loss ratio (`loss / rp`)
-
-- clr:
-
-  Cumulative loss ratio (`closs / crp`)
+  Proportions within each `calendar_var` cell
 
 The returned object also has an attribute `"longer"` containing a melted
 long-format version (`class = "CalendarLonger"`).
@@ -154,15 +156,15 @@ long-format version (`class = "CalendarLonger"`).
 if (FALSE) { # \dontrun{
 res1 <- build_calendar(
   df,
-  group_var  = pd_cd,
+  group_var    = pd_cd,
   calendar_var = "cym"
 )
 
 res2 <- build_calendar(
   df,
-  group_var   = pd_cd,
+  group_var    = pd_cd,
   calendar_var = "cyq",
-  period_from = "2023-01-01"
+  period_from  = "2023-01-01"
 )
 
 head(res1)

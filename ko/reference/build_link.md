@@ -7,26 +7,27 @@ The link table is the long-format intermediate underlying both the chain
 ladder (CL) and exposure-driven (ED) workflows. Each row corresponds to
 one development link `(cohort, ata_from -> ata_to)`.
 
-Two modes are produced depending on `exposure_var`:
+Two modes are produced depending on `premium_var`:
 
-- Single-variable mode (`exposure_var = NULL`):
+- Single-variable mode (`premium_var = NULL`):
 
-  Replaces the former `build_ata()`. The age-to-age factor is \\ata =
-  value\_{to} / value\_{from}\\.
+  The age-to-age factor is \\ata = value\_{to} / value\_{from}\\, where
+  \\value\\ is the column named by `loss_var`.
 
-- Dual-variable mode (`exposure_var` supplied):
+- Dual-variable mode (`premium_var` supplied):
 
-  Replaces the former `build_ed()`. In addition to the loss-side ATA,
-  the exposure-driven intensity \\g = \Delta value / exposure\_{from}\\
-  is computed.
+  In addition to the loss-side ATA, the exposure-driven intensity \\g =
+  \Delta loss / premium\_{from}\\ is computed. Premium measure used as
+  denominator for loss ratio calculations; for long-term health
+  insurance applications, risk premium is commonly used.
 
 ## Usage
 
 ``` r
 build_link(
   x,
-  value_var = "closs",
-  exposure_var = NULL,
+  loss_var = "loss",
+  premium_var = NULL,
   weight_var = NULL,
   min_denom = 0,
   drop_invalid = FALSE
@@ -39,29 +40,31 @@ build_link(
 
   A `Triangle` object.
 
-- value_var:
+- loss_var:
 
   A single cumulative metric used as the link numerator. Must be one of
-  `"closs"`, `"crp"`, or `"clr"`. Default `"closs"`.
+  `"loss"`, `"premium"`, or `"lr"`. Default `"loss"`. Despite the name,
+  this argument accepts any cumulative metric on the Triangle; `"loss"`
+  reflects the most common use.
 
-- exposure_var:
+- premium_var:
 
   Optional second cumulative metric, treated as the exposure anchor for
-  the ED workflow. Must be one of `"closs"`, `"crp"`, `"clr"`, and must
-  differ from `value_var`. When `NULL` (default), only the
+  the ED workflow. Must be one of `"loss"`, `"premium"`, `"lr"`, and
+  must differ from `loss_var`. When `NULL` (default), only the
   single-variable columns are produced.
 
 - weight_var:
 
   Optional cumulative metric used as WLS weight in downstream `summary`
-  / `fit_ata` calls. Must differ from `value_var`. Cannot be combined
-  with `exposure_var` (the dual workflow has its own anchor).
+  / `fit_ata` calls. Must differ from `loss_var`. Cannot be combined
+  with `premium_var` (the dual workflow has its own anchor).
 
 - min_denom:
 
   Minimum denominator required to compute `ata` and `g`. If
   `value_from <= min_denom`, `ata` becomes `NA`; if
-  `exposure_from <= min_denom`, `g` becomes `NA`. Default `0`.
+  `premium_from <= min_denom`, `g` becomes `NA`. Default `0`.
 
 - drop_invalid:
 
@@ -76,13 +79,13 @@ A `data.table` of class `"Link"` with columns:
 - Always: `[group_var]`, `cohort`, `ata_from`, `ata_to`, `ata_link`,
   `value_from`, `value_to`, `delta_value`, `ata`.
 
-- If `exposure_var` is set: also `exposure_from`, `exposure_to`,
-  `delta_exposure`, `g`.
+- If `premium_var` is set: also `premium_from`, `premium_to`,
+  `delta_premium`, `g`.
 
 - If `weight_var` is set: also `weight`.
 
 The returned object carries attributes `group_var`, `cohort_var`,
-`cohort_type`, `dev_var`, `dev_type`, `value_var`, `exposure_var` (or
+`cohort_type`, `dev_var`, `dev_type`, `loss_var`, `premium_var` (or
 `NULL`), `weight_var` (or `NULL`).
 
 ## See also
@@ -99,11 +102,11 @@ The returned object carries attributes `group_var`, `cohort_var`,
 if (FALSE) { # \dontrun{
 tri <- build_triangle(df, group_var = cv_nm)
 
-# Single-variable: closs link factors (ATA workflow)
-link_loss <- build_link(tri, value_var = "closs")
+# Single-variable: cumulative-loss link factors (ATA workflow)
+link_loss <- build_link(tri, loss_var = "loss")
 
-# Dual-variable: ED-ready link table (loss + exposure)
-link_ed <- build_link(tri, value_var = "closs", exposure_var = "crp")
+# Dual-variable: ED-ready link table (loss + premium)
+link_ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
 head(link_ed)
 } # }
 ```

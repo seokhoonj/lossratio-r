@@ -27,8 +27,8 @@ plot(
 - value_var:
 
   A single metric to plot. Must be one of the columns carried by a
-  `Total`: `"lr"`, `"loss"`, `"rp"`, `"loss_prop"`, or `"rp_prop"`.
-  Default `"lr"`.
+  `Total`: `"lr"`, `"loss"`, `"premium"`, `"loss_prop"`, or
+  `"premium_prop"`. Default `"lr"`.
 
 - amount_divisor:
 

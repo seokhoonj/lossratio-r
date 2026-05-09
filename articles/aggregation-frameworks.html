@@ -206,30 +206,30 @@ ratio over the window?).</li>
 <span></span>
 <span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     cv_nm n_obs     cohort   dev   loss       rp  closs      crp   margin</span></span>
-<span><span class="co">#&gt;    &lt;char&gt; &lt;int&gt;     &lt;Date&gt; &lt;int&gt;  &lt;num&gt;    &lt;num&gt;  &lt;num&gt;    &lt;num&gt;    &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:    SUR    30 2023-04-01     1      0 11191622      0 11191622 11191622</span></span>
-<span><span class="co">#&gt; 2:    CAN    30 2023-04-01     1   6445 12879191   6445 12879191 12872746</span></span>
-<span><span class="co">#&gt; 3:    2CI    30 2023-04-01     1 468845  7567723 468845  7567723  7098878</span></span>
-<span><span class="co">#&gt; 4:    HOS    30 2023-04-01     1      0 15273272      0 15273272 15273272</span></span>
-<span><span class="co">#&gt; 5:    SUR    29 2023-04-01     2      0 14025885      0 25217507 14025885</span></span>
-<span><span class="co">#&gt; 6:    CAN    29 2023-04-01     2      0 30821344   6445 43700535 30821344</span></span>
-<span><span class="co">#&gt;     cmargin profit cprofit           lr          clr  loss_prop   rp_prop</span></span>
-<span><span class="co">#&gt;       &lt;num&gt; &lt;fctr&gt;  &lt;fctr&gt;        &lt;num&gt;        &lt;num&gt;      &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1: 11191622    pos     pos 0.0000000000 0.0000000000 0.00000000 0.2385673</span></span>
-<span><span class="co">#&gt; 2: 12872746    pos     pos 0.0005004196 0.0005004196 0.01356014 0.2745405</span></span>
-<span><span class="co">#&gt; 3:  7098878    pos     pos 0.0619532454 0.0619532454 0.98643986 0.1613181</span></span>
-<span><span class="co">#&gt; 4: 15273272    pos     pos 0.0000000000 0.0000000000 0.00000000 0.3255741</span></span>
-<span><span class="co">#&gt; 5: 25217507    pos     pos 0.0000000000 0.0000000000 0.00000000 0.1890296</span></span>
-<span><span class="co">#&gt; 6: 43694090    pos     pos 0.0000000000 0.0001474810 0.00000000 0.4153853</span></span>
-<span><span class="co">#&gt;     closs_prop  crp_prop</span></span>
-<span><span class="co">#&gt;          &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1: 0.000000000 0.2385673</span></span>
-<span><span class="co">#&gt; 2: 0.013560142 0.2745405</span></span>
-<span><span class="co">#&gt; 3: 0.986439858 0.1613181</span></span>
-<span><span class="co">#&gt; 4: 0.000000000 0.3255741</span></span>
-<span><span class="co">#&gt; 5: 0.000000000 0.2082178</span></span>
-<span><span class="co">#&gt; 6: 0.008953204 0.3608298</span></span></code></pre></div>
+<span><span class="co">#&gt;     cv_nm n_obs     cohort   dev   loss loss_incr  premium premium_incr</span></span>
+<span><span class="co">#&gt;    &lt;char&gt; &lt;int&gt;     &lt;Date&gt; &lt;int&gt;  &lt;num&gt;     &lt;num&gt;    &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:    SUR    30 2023-04-01     1      0         0 11191622     11191622</span></span>
+<span><span class="co">#&gt; 2:    CAN    30 2023-04-01     1   6445      6445 12879191     12879191</span></span>
+<span><span class="co">#&gt; 3:    2CI    30 2023-04-01     1 468845    468845  7567723      7567723</span></span>
+<span><span class="co">#&gt; 4:    HOS    30 2023-04-01     1      0         0 15273272     15273272</span></span>
+<span><span class="co">#&gt; 5:    SUR    29 2023-04-01     2      0         0 25217507     14025885</span></span>
+<span><span class="co">#&gt; 6:    CAN    29 2023-04-01     2   6445         0 43700535     30821344</span></span>
+<span><span class="co">#&gt;              lr      lr_incr   margin margin_incr profit profit_incr</span></span>
+<span><span class="co">#&gt;           &lt;num&gt;        &lt;num&gt;    &lt;num&gt;       &lt;num&gt; &lt;fctr&gt;      &lt;fctr&gt;</span></span>
+<span><span class="co">#&gt; 1: 0.0000000000 0.0000000000 11191622    11191622    pos         pos</span></span>
+<span><span class="co">#&gt; 2: 0.0005004196 0.0005004196 12872746    12872746    pos         pos</span></span>
+<span><span class="co">#&gt; 3: 0.0619532454 0.0619532454  7098878     7098878    pos         pos</span></span>
+<span><span class="co">#&gt; 4: 0.0000000000 0.0000000000 15273272    15273272    pos         pos</span></span>
+<span><span class="co">#&gt; 5: 0.0000000000 0.0000000000 25217507    14025885    pos         pos</span></span>
+<span><span class="co">#&gt; 6: 0.0001474810 0.0000000000 43694090    30821344    pos         pos</span></span>
+<span><span class="co">#&gt;      loss_prop loss_incr_prop premium_prop premium_incr_prop</span></span>
+<span><span class="co">#&gt;          &lt;num&gt;          &lt;num&gt;        &lt;num&gt;             &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1: 0.000000000     0.00000000    0.2385673         0.2385673</span></span>
+<span><span class="co">#&gt; 2: 0.013560142     0.01356014    0.2745405         0.2745405</span></span>
+<span><span class="co">#&gt; 3: 0.986439858     0.98643986    0.1613181         0.1613181</span></span>
+<span><span class="co">#&gt; 4: 0.000000000     0.00000000    0.3255741         0.3255741</span></span>
+<span><span class="co">#&gt; 5: 0.000000000     0.00000000    0.2082178         0.1890296</span></span>
+<span><span class="co">#&gt; 6: 0.008953204     0.00000000    0.3608298         0.4153853</span></span></code></pre></div>
 <p>Each row is one (cohort, dev) cell with cumulative loss / risk
 premium. Visualise as line plot or heatmap:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -243,13 +243,13 @@ premium. Visualise as line plot or heatmap:</p>
 <span><span class="co"># can keep monthly resolution by enlarging the plot.</span></span>
 <span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span>,</span>
 <span>                        cohort_var <span class="op">=</span> <span class="st">"uyq"</span>, dev_var <span class="op">=</span> <span class="st">"elap_q"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_q</span><span class="op">)</span>   <span class="co"># cohort × dev heatmap of clr</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_q</span><span class="op">)</span>   <span class="co"># cohort × dev heatmap of lr</span></span></code></pre></div>
 <p><img src="aggregation-frameworks_files/figure-html/unnamed-chunk-2-2.png" class="r-plt" alt="" width="100%"></p>
 <p>Use <code>Triangle</code> as input to: - <code><a href="../reference/build_link.html">build_link()</a></code> —
-development factors (ATA / ED via <code>value_var</code> + optional
-<code>exposure_var</code>) - <code><a href="../reference/fit_cl.html">fit_cl()</a></code>,
-<code><a href="../reference/fit_lr.html">fit_lr()</a></code> — projection - <code><a href="../reference/detect_regime.html">detect_regime()</a></code> —
-structural change detection</p>
+development factors (ATA / ED via <code>loss_var</code> + optional
+<code>premium_var</code>) - <code><a href="../reference/fit_cl.html">fit_cl()</a></code>, <code><a href="../reference/fit_lr.html">fit_lr()</a></code>
+— projection - <code><a href="../reference/detect_regime.html">detect_regime()</a></code> — structural change
+detection</p>
 </div>
 <div class="section level2">
 <h2 id="calendar-calendar-period-only">Calendar (calendar period only)<a class="anchor" aria-label="anchor" href="#calendar-calendar-period-only"></a>
@@ -257,30 +257,30 @@ structural change detection</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_calendar.html">build_calendar</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span>, calendar_var <span class="op">=</span> <span class="st">"cym"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cal</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     cv_nm   calendar   dev     loss        rp     closs       crp   margin</span></span>
-<span><span class="co">#&gt;    &lt;char&gt;     &lt;Date&gt; &lt;int&gt;    &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;    &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:    2CI 2023-04-01     1   468845   7567723    468845   7567723  7098878</span></span>
-<span><span class="co">#&gt; 2:    2CI 2023-05-01     2   788082  27286688   1256927  34854411 26498606</span></span>
-<span><span class="co">#&gt; 3:    2CI 2023-06-01     3 18122450  42665533  19379377  77519944 24543083</span></span>
-<span><span class="co">#&gt; 4:    2CI 2023-07-01     4 70259233  68265637  89638610 145785581 -1993596</span></span>
-<span><span class="co">#&gt; 5:    2CI 2023-08-01     5 32739949 110351072 122378559 256136653 77611123</span></span>
-<span><span class="co">#&gt; 6:    2CI 2023-09-01     6 61587160 135154735 183965719 391291388 73567575</span></span>
-<span><span class="co">#&gt;      cmargin profit cprofit         lr        clr loss_prop   rp_prop</span></span>
-<span><span class="co">#&gt;        &lt;num&gt; &lt;fctr&gt;  &lt;fctr&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:   7098878    pos     pos 0.06195325 0.06195325 0.9864399 0.1613181</span></span>
-<span><span class="co">#&gt; 2:  33597484    pos     pos 0.02888156 0.03606221 0.9626040 0.2248381</span></span>
-<span><span class="co">#&gt; 3:  58140567    pos     pos 0.42475621 0.24999214 0.3480569 0.1688936</span></span>
-<span><span class="co">#&gt; 4:  56146971    neg     pos 1.02920351 0.61486609 0.4423512 0.2060648</span></span>
-<span><span class="co">#&gt; 5: 133758094    pos     pos 0.29668900 0.47778620 0.2173682 0.2219566</span></span>
-<span><span class="co">#&gt; 6: 207325669    pos     pos 0.45567889 0.47015019 0.2061898 0.2113124</span></span>
-<span><span class="co">#&gt;    closs_prop  crp_prop</span></span>
-<span><span class="co">#&gt;         &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:  0.9864399 0.1613181</span></span>
-<span><span class="co">#&gt; 2:  0.9713591 0.2071298</span></span>
-<span><span class="co">#&gt; 3:  0.3631717 0.1841805</span></span>
-<span><span class="co">#&gt; 4:  0.4224394 0.1938191</span></span>
-<span><span class="co">#&gt; 5:  0.3373051 0.2050163</span></span>
-<span><span class="co">#&gt; 6:  0.2781021 0.2071482</span></span></code></pre></div>
+<span><span class="co">#&gt;     cv_nm   calendar   dev      loss loss_incr   premium premium_incr</span></span>
+<span><span class="co">#&gt;    &lt;char&gt;     &lt;Date&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:    2CI 2023-04-01     1    468845    468845   7567723      7567723</span></span>
+<span><span class="co">#&gt; 2:    2CI 2023-05-01     2   1256927    788082  34854411     27286688</span></span>
+<span><span class="co">#&gt; 3:    2CI 2023-06-01     3  19379377  18122450  77519944     42665533</span></span>
+<span><span class="co">#&gt; 4:    2CI 2023-07-01     4  89638610  70259233 145785581     68265637</span></span>
+<span><span class="co">#&gt; 5:    2CI 2023-08-01     5 122378559  32739949 256136653    110351072</span></span>
+<span><span class="co">#&gt; 6:    2CI 2023-09-01     6 183965719  61587160 391291388    135154735</span></span>
+<span><span class="co">#&gt;            lr    lr_incr    margin margin_incr profit profit_incr loss_prop</span></span>
+<span><span class="co">#&gt;         &lt;num&gt;      &lt;num&gt;     &lt;num&gt;       &lt;num&gt; &lt;fctr&gt;      &lt;fctr&gt;     &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1: 0.06195325 0.06195325   7098878     7098878    pos         pos 0.9864399</span></span>
+<span><span class="co">#&gt; 2: 0.03606221 0.02888156  33597484    26498606    pos         pos 0.9713591</span></span>
+<span><span class="co">#&gt; 3: 0.24999214 0.42475621  58140567    24543083    pos         pos 0.3631717</span></span>
+<span><span class="co">#&gt; 4: 0.61486609 1.02920351  56146971    -1993596    pos         neg 0.4224394</span></span>
+<span><span class="co">#&gt; 5: 0.47778620 0.29668900 133758094    77611123    pos         pos 0.3373051</span></span>
+<span><span class="co">#&gt; 6: 0.47015019 0.45567889 207325669    73567575    pos         pos 0.2781021</span></span>
+<span><span class="co">#&gt;    loss_incr_prop premium_prop premium_incr_prop</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;        &lt;num&gt;             &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:      0.9864399    0.1613181         0.1613181</span></span>
+<span><span class="co">#&gt; 2:      0.9626040    0.2071298         0.2248381</span></span>
+<span><span class="co">#&gt; 3:      0.3480569    0.1841805         0.1688936</span></span>
+<span><span class="co">#&gt; 4:      0.4423512    0.1938191         0.2060648</span></span>
+<span><span class="co">#&gt; 5:      0.2173682    0.2050163         0.2219566</span></span>
+<span><span class="co">#&gt; 6:      0.2061898    0.2071482         0.2113124</span></span></code></pre></div>
 <p>Each row is one calendar period (per group). The <code>dev</code>
 column here is a sequential index (1, 2, 3, …) within group, not
 “development period since cohort start”.</p>
@@ -309,18 +309,18 @@ on-leveling event) - Portfolio monitoring dashboards</p>
 <span>  period_to   <span class="op">=</span> <span class="st">"2024-03-01"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tot</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     cv_nm n_obs sales_start  sales_end        loss          rp        lr</span></span>
+<span><span class="co">#&gt;     cv_nm n_obs sales_start  sales_end        loss     premium        lr</span></span>
 <span><span class="co">#&gt;    &lt;char&gt; &lt;int&gt;      &lt;Date&gt;     &lt;Date&gt;       &lt;num&gt;       &lt;num&gt;     &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:    SUR    30  2023-04-01 2024-03-01 26195800145 23817090339 1.0998741</span></span>
 <span><span class="co">#&gt; 2:    CAN    30  2023-04-01 2024-03-01 15036650678 24008537158 0.6263043</span></span>
 <span><span class="co">#&gt; 3:    2CI    30  2023-04-01 2024-03-01 12482828960 18720199627 0.6668107</span></span>
 <span><span class="co">#&gt; 4:    HOS    30  2023-04-01 2024-03-01  9737095690 25111393787 0.3877561</span></span>
-<span><span class="co">#&gt;    loss_prop   rp_prop</span></span>
-<span><span class="co">#&gt;        &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1: 0.4128419 0.2598496</span></span>
-<span><span class="co">#&gt; 2: 0.2369754 0.2619383</span></span>
-<span><span class="co">#&gt; 3: 0.1967275 0.2042414</span></span>
-<span><span class="co">#&gt; 4: 0.1534552 0.2739707</span></span></code></pre></div>
+<span><span class="co">#&gt;    loss_prop premium_prop</span></span>
+<span><span class="co">#&gt;        &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1: 0.4128419    0.2598496</span></span>
+<span><span class="co">#&gt; 2: 0.2369754    0.2619383</span></span>
+<span><span class="co">#&gt; 3: 0.1967275    0.2042414</span></span>
+<span><span class="co">#&gt; 4: 0.1534552    0.2739707</span></span></code></pre></div>
 <p>One row per group, summarising loss / risk premium / loss ratio over
 the window. The <code>period_from</code> / <code>period_to</code>
 arguments restrict to a fixed window so groups are comparable.</p>

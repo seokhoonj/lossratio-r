@@ -1,8 +1,8 @@
 # Summarise development statistics (Mean, Median, Weighted)
 
 S3 method for [`summary()`](https://rdrr.io/r/base/summary.html) on
-`Triangle` objects. Computes group-wise summary statistics for loss
-ratios (`lr`) and cumulative loss ratios (`clr`).
+`Triangle` objects. Computes group-wise summary statistics for
+cumulative loss ratios (`lr`) and per-period loss ratios (`lr_incr`).
 
 The function aggregates data by the grouping variables stored in
 `attr(x, "group_var")` and the development variable stored in
@@ -43,27 +43,27 @@ A `data.table` grouped by `group_var` and `dev_var`, containing:
 
 - lr_mean:
 
-  Mean of loss ratios
+  Mean of cumulative loss ratios
 
 - lr_median:
 
-  Median of loss ratios
+  Median of cumulative loss ratios
 
 - lr_wt:
 
-  Weighted loss ratio (`sum(loss) / sum(rp)`)
+  Weighted cumulative loss ratio (`sum(loss) / sum(premium)`)
 
-- clr_mean:
+- lr_incr_mean:
 
-  Mean of cumulative loss ratios
+  Mean of per-period loss ratios
 
-- clr_median:
+- lr_incr_median:
 
-  Median of cumulative loss ratios
+  Median of per-period loss ratios
 
-- clr_wt:
+- lr_incr_wt:
 
-  Weighted cumulative loss ratio (`sum(closs) / sum(crp)`)
+  Weighted per-period loss ratio (`sum(loss_incr) / sum(premium_incr)`)
 
 The returned object keeps the attributes `group_var` and `dev_var`, and
 its class is updated to `"TriangleSummary"`.
@@ -72,13 +72,13 @@ its class is updated to `"TriangleSummary"`.
 
 The weighted mean is computed as:
 
-- `lr_wt = sum(loss) / sum(rp)`
+- `lr_wt = sum(loss) / sum(premium)`
 
-- `clr_wt = sum(closs) / sum(crp)`
+- `lr_incr_wt = sum(loss_incr) / sum(premium_incr)`
 
-These correspond to portfolio-level loss ratios based on risk premium
-and are typically more stable than simple averages when exposure sizes
-differ across cohorts.
+These correspond to portfolio-level loss ratios based on premium and are
+typically more stable than simple averages when exposure sizes differ
+across cohorts.
 
 It is assumed that the input `Triangle` object does not contain missing
 values.

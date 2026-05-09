@@ -206,10 +206,10 @@ plot(lr_ed, type = "lr")
 특성:
 
 - 표준적인 적립 실무. 손해 예측에 한해서는
-  `fit_cl(tri, value_var = "closs")` 과 동등하지만,
+  `fit_cl(tri, loss_var = "loss")` 과 동등하지만,
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
-  은 추가로 `crp` 에 대한 CL 로 익스포저를 전방 추정하고 delta method 로
-  손해율 불확실성을 계산한다.
+  은 추가로 `premium` 에 대한 CL 로 익스포저를 전방 추정하고 delta
+  method 로 손해율 불확실성을 계산한다.
 - 초기 $`f_k`$ 에 노이즈가 있을 때 변동성이 크다 — 작은 분모가 link
   오차를 증폭한다.
 

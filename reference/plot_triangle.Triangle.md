@@ -4,18 +4,18 @@ Visualise a `Triangle` object as a triangle-style table. Cells are
 arranged by period and dev dimensions, and each cell displays the
 selected metric.
 
-For ratio metrics (`lr`, `clr`), labels can show either the ratio alone
+For ratio metrics (`lr`, `lr`), labels can show either the ratio alone
 or the ratio together with the associated loss / risk premium amounts.
 
-For amount metrics (`loss`, `rp`, `margin`, `closs`, `crp`, `cmargin`),
-labels show the selected amount only.
+For amount metrics (`loss`, `loss_incr`, `premium`, `premium_incr`,
+`margin`, `margin_incr`), labels show the selected amount only.
 
-For proportion metrics (`loss_prop`, `rp_prop`, `closs_prop`,
-`crp_prop`), labels are displayed as percentages.
+For proportion metrics (`loss_prop`, `loss_incr_prop`, `premium_prop`,
+`premium_incr_prop`), labels are displayed as percentages.
 
-The loss ratio is defined as: \$\$lr = loss / rp\$\$
+The loss ratio is defined as: \$\$lr = loss / premium\$\$
 
-where `rp` denotes risk premium rather than written premium.
+where `premium` denotes risk premium rather than written premium.
 
 ## Usage
 
@@ -24,7 +24,7 @@ where `rp` denotes risk premium rather than written premium.
 plot_triangle(
   x,
   type = c("value", "usage"),
-  value_var = "clr",
+  value_var = "lr",
   label_style = c("value", "detail"),
   amount_divisor = 1e+08,
   nrow = NULL,
@@ -59,9 +59,10 @@ plot_triangle(
 
 - value_var:
 
-  A single metric to plot. Must be one of: `"lr"`, `"clr"`, `"loss"`,
-  `"rp"`, `"margin"`, `"closs"`, `"crp"`, `"cmargin"`, `"loss_prop"`,
-  `"rp_prop"`, `"closs_prop"`, or `"crp_prop"`.
+  A single metric to plot. Must be one of: `"lr"`, `"lr_incr"`,
+  `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`,
+  `"margin_incr"`, `"loss_prop"`, `"loss_incr_prop"`, `"premium_prop"`,
+  or `"premium_incr_prop"`.
 
 - label_style:
 
@@ -73,15 +74,15 @@ plot_triangle(
 
   "detail"
 
-  :   For `lr` / `clr`, show the ratio in percent and, on the next line,
+  :   For `lr` / `lr`, show the ratio in percent and, on the next line,
       the associated loss / premium amounts. For amount and proportion
       metrics, this falls back to `"value"`.
 
 - amount_divisor:
 
   Numeric scaling factor applied to amount variables (e.g., `loss`,
-  `rp`, `margin`, `closs`, `crp`, `cmargin`) before plotting. Default is
-  `1e8`
+  `loss_incr`, `premium`, `premium_incr`, `margin`, `margin_incr`)
+  before plotting. Default is `1e8`
 
 - nrow, ncol:
 
@@ -126,9 +127,9 @@ d <- build_triangle(df, group_var = pd_cat_nm)
 plot_triangle(d)
 plot_triangle(d, value_var = "lr")
 plot_triangle(d, value_var = "loss")
-plot_triangle(d, value_var = "crp")
+plot_triangle(d, value_var = "premium")
 plot_triangle(d, value_var = "loss_prop")
-plot_triangle(d, value_var = "crp_prop")
+plot_triangle(d, value_var = "premium_prop")
 plot_triangle(d, label_style = "value")
 plot_triangle(d, label_style = "detail")
 } # }

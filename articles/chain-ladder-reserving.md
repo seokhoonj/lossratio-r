@@ -29,11 +29,11 @@ data(experience)
 exp <- as_experience(experience)
 tri <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
 
-cl <- fit_cl(tri, value_var = "closs", method = "mack")
+cl <- fit_cl(tri, loss_var = "loss", method = "mack")
 print(cl)
 #> <CLFit>
 #> method      : mack 
-#> value_var   : closs 
+#> loss_var   : loss 
 #> weight_var  : none 
 #> alpha       : 1 
 #> sigma_method: min_last2 
@@ -44,8 +44,8 @@ print(cl)
 #> periods     : 30
 ```
 
-`value_var` selects the cumulative column to project — typically
-`"closs"` (cumulative loss) for reserving, or `"crp"` (cumulative risk
+`loss_var` selects the cumulative column to project — typically `"loss"`
+(cumulative loss) for reserving, or `"premium"` (cumulative risk
 premium) for exposure projection.
 
 ## Method: basic vs Mack
@@ -59,12 +59,12 @@ Two estimation methods are available:
 
 ``` r
 
-cl_basic <- fit_cl(tri, value_var = "closs", method = "basic")
-cl_mack  <- fit_cl(tri, value_var = "closs", method = "mack")
+cl_basic <- fit_cl(tri, loss_var = "loss", method = "basic")
+cl_mack  <- fit_cl(tri, loss_var = "loss", method = "mack")
 
 names(cl_basic)
 #>  [1] "call"          "data"          "method"        "group_var"    
-#>  [5] "cohort_var"    "dev_var"       "value_var"     "full"         
+#>  [5] "cohort_var"    "dev_var"       "loss_var"      "full"         
 #>  [9] "pred"          "link"          "summary"       "factor"       
 #> [13] "selected"      "maturity"      "alpha"         "sigma_method" 
 #> [17] "weight_var"    "recent"        "use_maturity"  "maturity_args"
@@ -108,10 +108,10 @@ developing, an extrapolated tail factor estimates ultimate:
 ``` r
 
 # Log-linear extrapolation from the selected ATA factors
-cl_tail <- fit_cl(tri, value_var = "closs", method = "mack", tail = TRUE)
+cl_tail <- fit_cl(tri, loss_var = "loss", method = "mack", tail = TRUE)
 
 # Or supply a literal tail factor
-cl_tail <- fit_cl(tri, value_var = "closs", method = "mack", tail = 1.025)
+cl_tail <- fit_cl(tri, loss_var = "loss", method = "mack", tail = 1.025)
 ```
 
 The extrapolation fits $`\log(f_k - 1) \sim k`$ to projected factors and
@@ -127,7 +127,7 @@ region only:
 
 cl_mat <- fit_cl(
   tri,
-  value_var     = "closs",
+  loss_var     = "loss",
   method        = "mack",
   maturity_args = list(cv_threshold = 0.10, rse_threshold = 0.05)
 )
@@ -310,10 +310,10 @@ the extrapolation:
 
 ``` r
 
-fit_cl(tri, value_var = "closs", method = "mack", sigma_method = "loglinear")
+fit_cl(tri, loss_var = "loss", method = "mack", sigma_method = "loglinear")
 #> <CLFit>
 #> method      : mack 
-#> value_var   : closs 
+#> loss_var   : loss 
 #> weight_var  : none 
 #> alpha       : 1 
 #> sigma_method: loglinear 

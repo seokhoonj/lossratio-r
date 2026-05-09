@@ -9,12 +9,12 @@
 Source:
 [`DESCRIPTION`](https://github.com/seokhoonj/lossratio/blob/main/DESCRIPTION)
 
-Joo S (2026). *lossratio: Loss Ratio Analysis for Insurance Experience
-Data*. R package version 0.0.0.9000,
+Joo S (2026). *lossratio: Loss Ratio Analytics for Long-Term Health
+Insurance*. R package version 0.0.0.9000,
 <https://seokhoonj.github.io/lossratio>.
 
     @Manual{,
-      title = {lossratio: Loss Ratio Analysis for Insurance Experience Data},
+      title = {lossratio: Loss Ratio Analytics for Long-Term Health Insurance},
       author = {Seokhoon Joo},
       year = {2026},
       note = {R package version 0.0.0.9000},

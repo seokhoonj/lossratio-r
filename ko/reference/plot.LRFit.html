@@ -3,14 +3,14 @@
 Two plot types are supported:
 "lr": projected cumulative loss ratio by cohort with
 optional confidence bands.
-"closs": observed and projected cumulative loss by
+"loss": observed and projected cumulative loss by
 cohort with optional confidence bands.
 
 '><meta property="og:description" content='Visualise an object of class "LRFit".
 Two plot types are supported:
 "lr": projected cumulative loss ratio by cohort with
 optional confidence bands.
-"closs": observed and projected cumulative loss by
+"loss": observed and projected cumulative loss by
 cohort with optional confidence bands.
 
 '><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
@@ -74,7 +74,7 @@ cohort with optional confidence bands.
     <p>Visualise an object of class <code>"LRFit"</code>.</p>
 <p>Two plot types are supported:</p><ul><li><p><code>"lr"</code>: projected cumulative loss ratio by cohort with
 optional confidence bands.</p></li>
-<li><p><code>"closs"</code>: observed and projected cumulative loss by
+<li><p><code>"loss"</code>: observed and projected cumulative loss by
 cohort with optional confidence bands.</p></li>
 </ul></div>
 
@@ -83,7 +83,7 @@ cohort with optional confidence bands.</p></li>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'LRFit'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lr"</span>, <span class="st">"closs"</span><span class="op">)</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lr"</span>, <span class="st">"loss"</span><span class="op">)</span>,</span>
 <span>  conf_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  show_interval <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  amount_divisor <span class="op">=</span> <span class="fl">1e+08</span>,</span>
@@ -104,7 +104,7 @@ cohort with optional confidence bands.</p></li>
 
 
 <dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
-<dd><p>One of <code>"lr"</code> or <code>"closs"</code>.</p></dd>
+<dd><p>One of <code>"lr"</code> or <code>"loss"</code>.</p></dd>
 
 
 <dt id="arg-conf-level">conf_level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>

@@ -1,13 +1,15 @@
 # lossratio
 
-Loss ratio analysis and projection for insurance experience data.
+Loss ratio analytics for **long-term health insurance** — cohort
+development analysis, stage-adaptive projection, and regime detection.
 
 ## Overview
 
-`lossratio` is a toolkit for **long-term health insurance** loss ratio
-analysis and projection. Input is long-format experience data — each row
-(cohort × dev × demographic) maps to one Triangle cell, with loss and
-risk premium columns.
+`lossratio` is a loss ratio analytics toolkit for **long-term health
+insurance**, covering cohort development analysis, stage-adaptive
+projection, and regime detection. Input is long-format experience data —
+each row (cohort × dev × demographic) maps to one Triangle cell, with
+loss and premium columns (`loss`, `premium`).
 
 In long-term health insurance, new claims and premium are generated and
 earned continuously within each cohort, so cumulative loss and exposure
@@ -53,8 +55,8 @@ A long-format `data.frame` / `data.table` with at minimum:
 |----|----|----|
 | cohort | Underwriting / accident period (any granularity) | `uym`, `uy` |
 | dev | Development period since cohort start | `elap_m`, `elap_y` |
-| `loss` | Incremental claim amount in the cell | numeric |
-| `rp` | Incremental risk premium (expected loss) in the cell | numeric |
+| `loss_incr` | Per-period claim amount in the cell | numeric |
+| `premium_incr` | Per-period premium in the cell (risk premium for long-term health) | numeric |
 | group | Optional — product, coverage, age, gender, sum insured, etc. | character / factor |
 
 [`as_experience()`](https://seokhoonj.github.io/lossratio/reference/as_experience.md)
@@ -62,6 +64,24 @@ validates the schema and coerces date columns;
 [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
 then aggregates to the canonical cohort × dev structure with cumulative
 columns and derived ratios.
+
+### Column convention
+
+Throughout the package, cumulative is the unmarked default and
+per-period values carry an `_incr` (incremental) suffix:
+
+| Metric     | Cumulative (default) | Per-period (`_incr`) |
+|------------|----------------------|----------------------|
+| Loss       | `loss`               | `loss_incr`          |
+| Premium    | `premium`            | `premium_incr`       |
+| Loss ratio | `lr`                 | `lr_incr`            |
+| Margin     | `margin`             | `margin_incr`        |
+| Profit     | `profit`             | `profit_incr`        |
+
+Raw `experience` input is per-period only (`loss_incr`, `premium_incr`);
+[`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
+produces both forms in the output. Fit functions take `loss_var` and
+`premium_var` arguments (defaults to the cumulative slot names).
 
 ## Installation
 
@@ -97,10 +117,10 @@ plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
 
 # Exposure-driven fit (additive ED intensity)
-ed <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
+ed <- fit_ed(tri, value_var = "loss", premium_var = "premium")
 
 # Chain ladder fit (multiplicative ATA factors)
-cl <- fit_cl(tri, value_var = "closs", method = "mack")
+cl <- fit_cl(tri, value_var = "loss", method = "mack")
 plot(cl, type = "projection")
 
 # Loss ratio fit (stage-adaptive by default — ED before maturity, CL after)

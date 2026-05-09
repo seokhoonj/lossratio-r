@@ -10,7 +10,7 @@ loss-ratio projection.
 dev × demographic) cell. The bundled dataset `experience` is a
 33,480-row table with calendar / underwriting period columns at multiple
 granularities, demographic dimensions (`cv_nm`, `age_band`, `gender`),
-and amounts (`loss`, `rp`).
+and per-period amounts (`loss_incr`, `premium_incr`).
 
 ``` r
 
@@ -19,23 +19,23 @@ library(lossratio)
 data(experience)
 str(experience)
 #> Classes 'data.table' and 'data.frame':   33480 obs. of  17 variables:
-#>  $ cy      : Date, format: "2023-01-01" "2023-01-01" ...
-#>  $ cyh     : Date, format: "2023-01-01" "2023-01-01" ...
-#>  $ cyq     : Date, format: "2023-04-01" "2023-04-01" ...
-#>  $ cym     : Date, format: "2023-04-01" "2023-04-01" ...
-#>  $ uy      : Date, format: "2023-01-01" "2023-01-01" ...
-#>  $ uyh     : Date, format: "2023-01-01" "2023-01-01" ...
-#>  $ uyq     : Date, format: "2023-04-01" "2023-04-01" ...
-#>  $ uym     : Date, format: "2023-04-01" "2023-04-01" ...
-#>  $ elap_y  : int  1 1 1 1 1 1 1 1 1 1 ...
-#>  $ elap_h  : int  1 1 1 1 1 1 1 1 1 1 ...
-#>  $ elap_q  : int  1 1 1 1 1 1 1 1 1 1 ...
-#>  $ elap_m  : int  1 1 1 1 1 1 1 1 1 1 ...
-#>  $ cv_nm   : chr  "SUR" "SUR" "SUR" "SUR" ...
-#>  $ age_band: Ord.factor w/ 9 levels "30-34"<"35-39"<..: 1 1 2 2 3 3 4 4 5 5 ...
-#>  $ gender  : Factor w/ 2 levels "M","F": 1 2 1 2 1 2 1 2 1 2 ...
-#>  $ loss    : num  0 0 0 0 0 0 0 0 0 0 ...
-#>  $ rp      : num  3555865 258448 255420 464313 92744 ...
+#>  $ cy          : Date, format: "2023-01-01" "2023-01-01" ...
+#>  $ cyh         : Date, format: "2023-01-01" "2023-01-01" ...
+#>  $ cyq         : Date, format: "2023-04-01" "2023-04-01" ...
+#>  $ cym         : Date, format: "2023-04-01" "2023-04-01" ...
+#>  $ uy          : Date, format: "2023-01-01" "2023-01-01" ...
+#>  $ uyh         : Date, format: "2023-01-01" "2023-01-01" ...
+#>  $ uyq         : Date, format: "2023-04-01" "2023-04-01" ...
+#>  $ uym         : Date, format: "2023-04-01" "2023-04-01" ...
+#>  $ elap_y      : int  1 1 1 1 1 1 1 1 1 1 ...
+#>  $ elap_h      : int  1 1 1 1 1 1 1 1 1 1 ...
+#>  $ elap_q      : int  1 1 1 1 1 1 1 1 1 1 ...
+#>  $ elap_m      : int  1 1 1 1 1 1 1 1 1 1 ...
+#>  $ cv_nm       : chr  "SUR" "SUR" "SUR" "SUR" ...
+#>  $ age_band    : Ord.factor w/ 9 levels "30-34"<"35-39"<..: 1 1 2 2 3 3 4 4 5 5 ...
+#>  $ gender      : Factor w/ 2 levels "M","F": 1 2 1 2 1 2 1 2 1 2 ...
+#>  $ loss_incr   : num  0 0 0 0 0 0 0 0 0 0 ...
+#>  $ premium_incr: num  3555865 258448 255420 464313 92744 ...
 #>  - attr(*, ".internal.selfref")=<pointer: (nil)>
 ```
 
@@ -49,9 +49,9 @@ class(exp)
 ```
 
 [`as_experience()`](https://seokhoonj.github.io/lossratio/ko/reference/as_experience.md)
-checks required columns (`cym`, `uym`, `loss`, `rp`), coerces date
-columns, and tags the class. Use `check_experience(df)` for a
-non-mutating check.
+checks required columns (`cym`, `uym`, `loss_incr`, `premium_incr`),
+coerces date columns, and tags the class. Use `check_experience(df)` for
+a non-mutating check.
 
 ## Step 2 — Build the cohort × dev structure
 
@@ -61,34 +61,40 @@ tri <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
 class(tri)
 #> [1] "Triangle"   "data.table" "data.frame"
 names(tri)
-#>  [1] "cv_nm"      "n_obs"      "cohort"     "dev"        "loss"      
-#>  [6] "rp"         "closs"      "crp"        "margin"     "cmargin"   
-#> [11] "profit"     "cprofit"    "lr"         "clr"        "loss_prop" 
-#> [16] "rp_prop"    "closs_prop" "crp_prop"
+#>  [1] "cv_nm"             "n_obs"             "cohort"           
+#>  [4] "dev"               "loss"              "loss_incr"        
+#>  [7] "premium"           "premium_incr"      "lr"               
+#> [10] "lr_incr"           "margin"            "margin_incr"      
+#> [13] "profit"            "profit_incr"       "loss_prop"        
+#> [16] "loss_incr_prop"    "premium_prop"      "premium_incr_prop"
 ```
 
 [`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md):
 
 - aggregates demographic dimensions away (here: `age_band`, `gender`),
-- adds cumulative columns (`closs`, `crp`),
-- adds derived metrics (`margin`, `lr`, `clr`, proportions),
+- standardises raw input names to the per-period slots `loss_incr` and
+  `premium_incr`,
+- adds cumulative companions (`loss`, `premium`) — cumulative is the
+  unmarked default; per-period carries the `_incr` suffix,
+- adds derived metrics (`margin` / `margin_incr`, `lr` / `lr_incr`,
+  proportions),
 - standardises the cohort / development columns to the names `cohort`
   and `dev`,
 - preserves original column names as attributes (`cohort_var`,
-  `dev_var`) for downstream plot labels.
+  `dev_var`, `loss_var`, `premium_var`) for downstream plot labels.
 
 ## Step 3 — Diagnostics
 
 ``` r
 
-plot(tri)              # cohort trajectories of clr
+plot(tri)              # cohort trajectories of lr
 ```
 
 ![](getting-started_files/figure-html/unnamed-chunk-4-1.png)
 
 ``` r
 
-plot_triangle(tri)     # heatmap of clr cells
+plot_triangle(tri)     # heatmap of lr cells
 ```
 
 ![](getting-started_files/figure-html/unnamed-chunk-4-2.png)
@@ -97,74 +103,74 @@ plot_triangle(tri)     # heatmap of clr cells
 
 summary(tri)           # group-wise statistics by dev
 #> Key: <cv_nm, dev>
-#>      cv_nm   dev n_obs   lr_mean lr_median      lr_wt  clr_mean clr_median
-#>     <char> <int> <int>     <num>     <num>      <num>     <num>      <num>
-#>  1:    SUR     1    30 0.0738546 0.0000000 0.07343113 0.0738546  0.0000000
-#>  2:    SUR     2    29 0.5365888 0.0992849 0.54126362 0.3512535  0.1120447
-#>  3:    SUR     3    28 0.6201189 0.2472070 0.56590118 0.4521326  0.2618096
-#>  4:    SUR     4    27 0.8852657 0.6387164 0.92060611 0.6327242  0.4798531
-#>  5:    SUR     5    26 0.5767556 0.4828899 0.59880663 0.6369307  0.5641166
-#>  6:    SUR     6    25 0.9314593 0.5431397 0.95085711 0.7264308  0.6191132
-#>  7:    SUR     7    24 0.8240033 0.6252286 0.77687370 0.7555932  0.7992795
-#>  8:    SUR     8    23 1.1675190 0.7248212 1.27544718 0.8676101  0.7931337
-#>  9:    SUR     9    22 0.7525589 0.6155797 0.80158895 0.8755390  0.7890790
-#> 10:    SUR    10    21 0.8335086 0.6979443 0.76977519 0.8760001  0.7896553
-#> 11:    SUR    11    20 0.9673902 0.8800705 1.00022912 0.8967165  0.8355443
-#> 12:    SUR    12    19 0.8517931 0.6947156 0.85401463 0.9051208  0.8833728
-#> 13:    SUR    13    18 1.0020059 0.8967964 0.98253067 0.9362016  0.9420986
-#> 14:    SUR    14    17 1.0962361 1.0738800 1.16483245 0.9869708  1.0624927
-#> 15:    SUR    15    16 0.7760479 0.8230115 0.80108577 0.9870392  1.0459131
-#> 16:    SUR    16    15 0.8254441 0.6962883 0.85204193 0.9992647  1.0388452
-#> 17:    SUR    17    14 0.9058332 0.8098679 0.90979966 1.0121916  1.0649114
-#> 18:    SUR    18    13 1.0184650 1.0848554 1.00362430 1.0518881  1.0717561
-#> 19:    SUR    19    12 1.1760267 1.0964987 1.16189899 1.0931503  1.1135768
-#> 20:    SUR    20    11 1.0221131 1.0224721 1.00298630 1.1006314  1.1221288
-#> 21:    SUR    21    10 1.2370057 1.1559477 1.24931320 1.1032718  1.1256455
-#> 22:    SUR    22     9 1.1949424 1.1807304 1.17762170 1.1065793  1.1255582
-#> 23:    SUR    23     8 1.2851680 1.3577496 1.31179285 1.1060777  1.1285479
-#> 24:    SUR    24     7 1.0598906 0.8375035 1.13727404 1.1000157  1.0774681
-#> 25:    SUR    25     6 0.9385597 0.9798018 0.95054947 1.0833124  1.0638356
-#> 26:    SUR    26     5 0.8196121 0.9665387 0.85145986 1.0923577  1.0737966
-#> 27:    SUR    27     4 1.0466054 1.0672777 1.03231128 1.0684910  1.0866012
-#> 28:    SUR    28     3 0.9876176 0.5356686 1.20396265 1.0678995  1.0663302
-#> 29:    SUR    29     2 0.9678421 0.9678421 0.96314465 1.0004101  1.0004101
-#> 30:    SUR    30     1 0.8877097 0.8877097 0.88770973 0.9318395  0.9318395
-#>      cv_nm   dev n_obs   lr_mean lr_median      lr_wt  clr_mean clr_median
-#>     <char> <int> <int>     <num>     <num>      <num>     <num>      <num>
-#>         clr_wt
-#>          <num>
-#>  1: 0.07343113
-#>  2: 0.35150128
-#>  3: 0.44744109
-#>  4: 0.63467048
-#>  5: 0.63999290
-#>  6: 0.72781355
-#>  7: 0.75210593
-#>  8: 0.86554028
-#>  9: 0.87613232
-#> 10: 0.87381694
-#> 11: 0.89806835
-#> 12: 0.90531724
-#> 13: 0.93753009
-#> 14: 0.98899894
-#> 15: 0.99133864
-#> 16: 1.00482935
-#> 17: 1.01782259
-#> 18: 1.05697013
-#> 19: 1.09700313
-#> 20: 1.10409515
-#> 21: 1.10555289
-#> 22: 1.10949324
-#> 23: 1.10906728
-#> 24: 1.10067296
-#> 25: 1.08291578
-#> 26: 1.09382873
-#> 27: 1.07050979
-#> 28: 1.07487952
-#> 29: 0.99818417
-#> 30: 0.93183949
-#>         clr_wt
-#>          <num>
+#>      cv_nm   dev n_obs   lr_mean lr_median      lr_wt lr_incr_mean
+#>     <char> <int> <int>     <num>     <num>      <num>        <num>
+#>  1:    SUR     1    30 0.0738546 0.0000000 0.07343113    0.0738546
+#>  2:    SUR     2    29 0.3512535 0.1120447 0.35150128    0.5365888
+#>  3:    SUR     3    28 0.4521326 0.2618096 0.44744109    0.6201189
+#>  4:    SUR     4    27 0.6327242 0.4798531 0.63467048    0.8852657
+#>  5:    SUR     5    26 0.6369307 0.5641166 0.63999290    0.5767556
+#>  6:    SUR     6    25 0.7264308 0.6191132 0.72781355    0.9314593
+#>  7:    SUR     7    24 0.7555932 0.7992795 0.75210593    0.8240033
+#>  8:    SUR     8    23 0.8676101 0.7931337 0.86554028    1.1675190
+#>  9:    SUR     9    22 0.8755390 0.7890790 0.87613232    0.7525589
+#> 10:    SUR    10    21 0.8760001 0.7896553 0.87381694    0.8335086
+#> 11:    SUR    11    20 0.8967165 0.8355443 0.89806835    0.9673902
+#> 12:    SUR    12    19 0.9051208 0.8833728 0.90531724    0.8517931
+#> 13:    SUR    13    18 0.9362016 0.9420986 0.93753009    1.0020059
+#> 14:    SUR    14    17 0.9869708 1.0624927 0.98899894    1.0962361
+#> 15:    SUR    15    16 0.9870392 1.0459131 0.99133864    0.7760479
+#> 16:    SUR    16    15 0.9992647 1.0388452 1.00482935    0.8254441
+#> 17:    SUR    17    14 1.0121916 1.0649114 1.01782259    0.9058332
+#> 18:    SUR    18    13 1.0518881 1.0717561 1.05697013    1.0184650
+#> 19:    SUR    19    12 1.0931503 1.1135768 1.09700313    1.1760267
+#> 20:    SUR    20    11 1.1006314 1.1221288 1.10409515    1.0221131
+#> 21:    SUR    21    10 1.1032718 1.1256455 1.10555289    1.2370057
+#> 22:    SUR    22     9 1.1065793 1.1255582 1.10949324    1.1949424
+#> 23:    SUR    23     8 1.1060777 1.1285479 1.10906728    1.2851680
+#> 24:    SUR    24     7 1.1000157 1.0774681 1.10067296    1.0598906
+#> 25:    SUR    25     6 1.0833124 1.0638356 1.08291578    0.9385597
+#> 26:    SUR    26     5 1.0923577 1.0737966 1.09382873    0.8196121
+#> 27:    SUR    27     4 1.0684910 1.0866012 1.07050979    1.0466054
+#> 28:    SUR    28     3 1.0678995 1.0663302 1.07487952    0.9876176
+#> 29:    SUR    29     2 1.0004101 1.0004101 0.99818417    0.9678421
+#> 30:    SUR    30     1 0.9318395 0.9318395 0.93183949    0.8877097
+#>      cv_nm   dev n_obs   lr_mean lr_median      lr_wt lr_incr_mean
+#>     <char> <int> <int>     <num>     <num>      <num>        <num>
+#>     lr_incr_median lr_incr_wt
+#>              <num>      <num>
+#>  1:      0.0000000 0.07343113
+#>  2:      0.0992849 0.54126362
+#>  3:      0.2472070 0.56590118
+#>  4:      0.6387164 0.92060611
+#>  5:      0.4828899 0.59880663
+#>  6:      0.5431397 0.95085711
+#>  7:      0.6252286 0.77687370
+#>  8:      0.7248212 1.27544718
+#>  9:      0.6155797 0.80158895
+#> 10:      0.6979443 0.76977519
+#> 11:      0.8800705 1.00022912
+#> 12:      0.6947156 0.85401463
+#> 13:      0.8967964 0.98253067
+#> 14:      1.0738800 1.16483245
+#> 15:      0.8230115 0.80108577
+#> 16:      0.6962883 0.85204193
+#> 17:      0.8098679 0.90979966
+#> 18:      1.0848554 1.00362430
+#> 19:      1.0964987 1.16189899
+#> 20:      1.0224721 1.00298630
+#> 21:      1.1559477 1.24931320
+#> 22:      1.1807304 1.17762170
+#> 23:      1.3577496 1.31179285
+#> 24:      0.8375035 1.13727404
+#> 25:      0.9798018 0.95054947
+#> 26:      0.9665387 0.85145986
+#> 27:      1.0672777 1.03231128
+#> 28:      0.5356686 1.20396265
+#> 29:      0.9678421 0.96314465
+#> 30:      0.8877097 0.88770973
+#>     lr_incr_median lr_incr_wt
+#>              <num>      <num>
 ```
 
 ## Step 4 — Development modeling
@@ -174,7 +180,7 @@ Two complementary views of cohort development:
 ``` r
 
 # Age-to-age factors
-fit_ata(tri, value_var = "closs")
+fit_ata(tri, loss_var = "loss")
 #> <ATAFit>
 #> alpha       : 1 
 #> sigma_method: min_last2 
@@ -186,11 +192,11 @@ fit_ata(tri, value_var = "closs")
 #> ata links   : 29
 
 # Exposure-driven intensities
-fit_ed(tri, value_var = "closs", exposure_var = "crp")
+fit_ed(tri, loss_var = "loss", premium_var = "premium")
 #> <EDFit>
 #> method      : basic 
-#> value_var   : closs 
-#> exposure_var: crp 
+#> loss_var   : loss 
+#> premium_var: premium 
 #> alpha       : 1 
 #> sigma_method: min_last2 
 #> recent      : all 
@@ -213,7 +219,7 @@ runs a chain ladder projection:
 
 ``` r
 
-cl <- fit_cl(tri, value_var = "closs", method = "mack")
+cl <- fit_cl(tri, loss_var = "loss", method = "mack")
 plot(cl, type = "projection")
 ```
 
@@ -426,7 +432,7 @@ sub <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
 detect_regime(sub, K = 12, method = "ecp")
 #> <Regime>
 #>   method      : ecp
-#>   value_var   : clr
+#>   loss_var   : lr
 #>   window (K)  : elap_m 1, ..., 12
 #>   cohorts     : 19 analysed (11 dropped)
 #>   regimes     : 2

@@ -204,10 +204,10 @@ Classical Mack (1993) model:
 Behaviour:
 
 - Standard reserving practice. Equivalent to
-  `fit_cl(tri, value_var = "closs")` for the loss projection, but
+  `fit_cl(tri, loss_var = "loss")` for the loss projection, but
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
-  additionally projects exposure forward via CL on `crp` and computes
-  the loss-ratio uncertainty via the delta method.
+  additionally projects exposure forward via CL on `premium` and
+  computes the loss-ratio uncertainty via the delta method.
 - Volatile when early $`f_k`$ are noisy — small denominators amplify
   link errors.
 

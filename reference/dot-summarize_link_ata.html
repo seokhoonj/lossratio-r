@@ -263,8 +263,8 @@ choice of <code>alpha</code> materially affects the estimated factor.</p></li>
 <p>When the input <code>"Link"</code> object contains a <code>weight</code> column (added by
 <code><a href="build_link.html">build_link()</a></code> when <code>weight_var</code> is supplied), that column is
 automatically used as the WLS weight in place of <code>value_from</code>. This
-is useful when <code>value_var = "clr"</code>, where <code>value_from</code> carries no
-exposure information and an external exposure variable such as <code>crp</code>
+is useful when <code>loss_var = "lr"</code>, where <code>value_from</code> carries no
+exposure information and an external exposure variable such as <code>premium</code>
 should be used instead.</p>
     </div>
     <div class="section level2">

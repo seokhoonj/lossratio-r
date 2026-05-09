@@ -1,8 +1,8 @@
 # Summarise calendar-development statistics (Mean, Median, Weighted)
 
 S3 method for [`summary()`](https://rdrr.io/r/base/summary.html) on
-`Calendar` objects. Computes calendar-period summary statistics for loss
-ratios (`lr`) and cumulative loss ratios (`clr`).
+`Calendar` objects. Computes calendar-period summary statistics for
+cumulative loss ratios (`lr`) and per-period loss ratios (`lr_incr`).
 
 Where
 [`summary.Triangle()`](https://seokhoonj.github.io/lossratio/reference/summary.Triangle.md)
@@ -38,27 +38,27 @@ A `data.table` of class `"CalendarSummary"` with one row per
 
 - lr_mean:
 
-  Mean of loss ratios.
+  Mean of cumulative loss ratios.
 
 - lr_median:
 
-  Median of loss ratios.
+  Median of cumulative loss ratios.
 
 - lr_wt:
 
-  Weighted loss ratio (`sum(loss) / sum(rp)`).
+  Weighted cumulative loss ratio (`sum(loss) / sum(premium)`).
 
-- clr_mean:
+- lr_incr_mean:
 
-  Mean of cumulative loss ratios.
+  Mean of per-period loss ratios.
 
-- clr_median:
+- lr_incr_median:
 
-  Median of cumulative loss ratios.
+  Median of per-period loss ratios.
 
-- clr_wt:
+- lr_incr_wt:
 
-  Weighted cumulative loss ratio (`sum(closs) / sum(crp)`).
+  Weighted per-period loss ratio (`sum(loss_incr) / sum(premium_incr)`).
 
 The returned object preserves the attributes `group_var`,
 `calendar_var`, and `calendar_type`.

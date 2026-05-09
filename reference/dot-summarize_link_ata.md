@@ -148,8 +148,9 @@ When the input `"Link"` object contains a `weight` column (added by
 [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md)
 when `weight_var` is supplied), that column is automatically used as the
 WLS weight in place of `value_from`. This is useful when
-`value_var = "clr"`, where `value_from` carries no exposure information
-and an external exposure variable such as `crp` should be used instead.
+`loss_var = "lr"`, where `value_from` carries no exposure information
+and an external exposure variable such as `premium` should be used
+instead.
 
 ## Coefficient of variation (`cv`)
 

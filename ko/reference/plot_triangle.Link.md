@@ -4,7 +4,7 @@ Visualise a `"Link"` object as a triangle-style heatmap. Dispatches to
 the multiplicative ATA branch (`model = "ata"`) or the additive
 exposure-driven branch (`model = "ed"`).
 
-The default `model` is chosen from `attr(x, "exposure_var")`: `NULL`
+The default `model` is chosen from `attr(x, "premium_var")`: `NULL`
 selects `"ata"`, non-`NULL` selects `"ed"`.
 
 ## Usage
@@ -22,8 +22,7 @@ plot_triangle(x, model = NULL, ...)
 
 - model:
 
-  Either `"ata"` or `"ed"`. Default depends on
-  `attr(x, "exposure_var")`.
+  Either `"ata"` or `"ed"`. Default depends on `attr(x, "premium_var")`.
 
 - ...:
 

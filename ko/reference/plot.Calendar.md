@@ -4,11 +4,12 @@ Visualise an object of class `Calendar` as a time-series plot. The
 selected metric is plotted over the calendar-style `calendar_var`, or
 over the calendar development variable stored in `attr(x, "dev_var")`.
 
-Ratio metrics (`lr`, `clr`) and proportion metrics (`loss_prop`,
-`rp_prop`, `closs_prop`, `crp_prop`) are plotted on the original scale
-and displayed as percentages via y-axis labels. Amount metrics (`loss`,
-`rp`, `margin`, `closs`, `crp`, `cmargin`) are plotted on the original
-scale and displayed using y-axis labels scaled by `amount_divisor`.
+Ratio metrics (`lr`, `lr`) and proportion metrics (`loss_prop`,
+`loss_incr_prop`, `premium_prop`, `premium_incr_prop`) are plotted on
+the original scale and displayed as percentages via y-axis labels.
+Amount metrics (`loss`, `loss_incr`, `premium`, `premium_incr`,
+`margin`, `margin_incr`) are plotted on the original scale and displayed
+using y-axis labels scaled by `amount_divisor`.
 
 If grouping variables are present, lines are drawn separately by group.
 
@@ -18,7 +19,7 @@ If grouping variables are present, lines are drawn separately by group.
 # S3 method for class 'Calendar'
 plot(
   x,
-  value_var = "clr",
+  value_var = "lr",
   x_by = c("period", "dev"),
   amount_divisor = 1e+08,
   theme = c("view", "save", "shiny"),
@@ -34,9 +35,10 @@ plot(
 
 - value_var:
 
-  A single metric to plot. Must be one of: `"lr"`, `"clr"`, `"loss"`,
-  `"rp"`, `"margin"`, `"closs"`, `"crp"`, `"cmargin"`, `"loss_prop"`,
-  `"rp_prop"`, `"closs_prop"`, or `"crp_prop"`.
+  A single metric to plot. Must be one of: `"lr"`, `"lr_incr"`,
+  `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`,
+  `"margin_incr"`, `"loss_prop"`, `"loss_incr_prop"`, `"premium_prop"`,
+  or `"premium_incr_prop"`.
 
 - x_by:
 
@@ -76,9 +78,9 @@ The x-axis uses either the calendar variable stored in
 `attr(x, "calendar_var")` or the sequential `dev` column, depending on
 `x_by`.
 
-The loss ratio is defined as: \$\$lr = loss / rp\$\$
+The loss ratio is defined as: \$\$lr = loss / premium\$\$
 
-where `rp` denotes risk premium rather than written premium.
+where `premium` denotes risk premium rather than written premium.
 
 ## Examples
 

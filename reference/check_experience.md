@@ -29,9 +29,10 @@ These columns must be present:
 
 - `uym` : Underwriting year-month (`Date`)
 
-- `loss` : Incurred loss amount (`numeric`)
+- `loss_incr` : Per-period loss amount (`numeric`)
 
-- `rp` : Risk premium (`numeric`)
+- `premium_incr` : Per-period premium (`numeric`); for long-term health
+  insurance, risk premium is commonly used
 
 ## Optional columns
 

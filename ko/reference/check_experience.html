@@ -87,10 +87,11 @@ when present.</p>
     <h2 id="required-columns">Required columns<a class="anchor" aria-label="anchor" href="#required-columns"></a></h2>
 
 
-<p>These columns must be present:</p><ul><li><p><code>cym</code>  : Calendar year-month (<code>Date</code>)</p></li>
-<li><p><code>uym</code>  : Underwriting year-month (<code>Date</code>)</p></li>
-<li><p><code>loss</code> : Incurred loss amount (<code>numeric</code>)</p></li>
-<li><p><code>rp</code>   : Risk premium (<code>numeric</code>)</p></li>
+<p>These columns must be present:</p><ul><li><p><code>cym</code>          : Calendar year-month (<code>Date</code>)</p></li>
+<li><p><code>uym</code>          : Underwriting year-month (<code>Date</code>)</p></li>
+<li><p><code>loss_incr</code>    : Per-period loss amount (<code>numeric</code>)</p></li>
+<li><p><code>premium_incr</code> : Per-period premium (<code>numeric</code>); for long-term
+health insurance, risk premium is commonly used</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="optional-columns">Optional columns<a class="anchor" aria-label="anchor" href="#optional-columns"></a></h2>

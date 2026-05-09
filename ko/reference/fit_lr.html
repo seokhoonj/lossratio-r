@@ -145,8 +145,8 @@ $$\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}$$</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fit_lr</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sa"</span>, <span class="st">"ed"</span>, <span class="st">"cl"</span><span class="op">)</span>,</span>
-<span>  loss_var <span class="op">=</span> <span class="st">"closs"</span>,</span>
-<span>  exposure_var <span class="op">=</span> <span class="st">"crp"</span>,</span>
+<span>  loss_var <span class="op">=</span> <span class="st">"loss"</span>,</span>
+<span>  premium_var <span class="op">=</span> <span class="st">"premium"</span>,</span>
 <span>  loss_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  exposure_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  delta_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"simple"</span>, <span class="st">"full"</span><span class="op">)</span>,</span>
@@ -176,11 +176,11 @@ Default is <code>"sa"</code>.</p></dd>
 
 
 <dt id="arg-loss-var">loss_var<a class="anchor" aria-label="anchor" href="#arg-loss-var"></a></dt>
-<dd><p>Cumulative loss variable. Default is <code>"closs"</code>.</p></dd>
+<dd><p>Cumulative loss variable. Default is <code>"loss"</code>.</p></dd>
 
 
-<dt id="arg-exposure-var">exposure_var<a class="anchor" aria-label="anchor" href="#arg-exposure-var"></a></dt>
-<dd><p>Cumulative exposure variable. Default is <code>"crp"</code>.</p></dd>
+<dt id="arg-premium-var">premium_var<a class="anchor" aria-label="anchor" href="#arg-premium-var"></a></dt>
+<dd><p>Cumulative exposure variable. Default is <code>"premium"</code>.</p></dd>
 
 
 <dt id="arg-loss-alpha">loss_alpha<a class="anchor" aria-label="anchor" href="#arg-loss-alpha"></a></dt>
@@ -195,7 +195,7 @@ is <code>1</code>.</p></dd>
 
 <dt id="arg-delta-method">delta_method<a class="anchor" aria-label="anchor" href="#arg-delta-method"></a></dt>
 <dd><p>Method for computing <code>se_lr = SE(L/E)</code>. One of:</p><dl><dt><code>"simple"</code> (default)</dt>
-<dd><p><code>se_lr = se_proj / exposure_proj</code>,
+<dd><p><code>se_lr = se_proj / premium_proj</code>,
 treats exposure as fixed.</p></dd>
 
 <dt><code>"full"</code></dt>
