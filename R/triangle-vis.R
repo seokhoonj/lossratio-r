@@ -165,7 +165,8 @@ plot.Triangle <- function(x,
     smr <- summary(x)
 
     sm_long <- longer(smr)
-    sm_long <- sm_long[grepl(paste0("^", val_var, "_"), type)]
+    target_types <- paste0(val_var, c("_mean", "_median", "_wt"))
+    sm_long <- sm_long[type %in% target_types]
 
     sm_long[smr, on = c(grp_var, "dev"), n_obs := i.n_obs]
 
