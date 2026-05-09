@@ -9,9 +9,9 @@ satisfy all maturity criteria.
 
 Maturity is determined using a combination of:
 
-- `cv < cv_threshold`
+- `cv < max_cv`
 
-- `rse < rse_threshold`
+- `rse < max_rse`
 
 - `valid_ratio >= min_valid_ratio`
 
@@ -41,11 +41,11 @@ detect_maturity(
   loss_var = "loss",
   weight_var = NULL,
   alpha = 1,
-  cv_threshold = 0.15,
-  rse_threshold = 0.05,
+  max_cv = 0.15,
+  max_rse = 0.05,
   min_valid_ratio = 0.5,
   min_n_valid = 3L,
-  min_run = 1L
+  min_run = 2L
 )
 ```
 
@@ -72,11 +72,11 @@ detect_maturity(
   WLS fit. Default `1`. Forwarded to
   [`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md).
 
-- cv_threshold:
+- max_cv:
 
-  Maximum allowed coefficient of variation. Default is `0.10`.
+  Maximum allowed coefficient of variation. Default is `0.15`.
 
-- rse_threshold:
+- max_rse:
 
   Maximum allowed relative standard error. Default is `0.05`.
 
@@ -91,7 +91,7 @@ detect_maturity(
 - min_run:
 
   Minimum number of consecutive ata links satisfying the maturity
-  criteria. Default is `1L`.
+  criteria. Default is `2L`.
 
 ## Value
 

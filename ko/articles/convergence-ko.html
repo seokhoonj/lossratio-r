@@ -373,7 +373,7 @@ ATA 에 <code><a href="../reference/detect_maturity.html">detect_maturity()</a><
 <code>D_v</code>, <code>pass_v</code> — 후보 평가 시점별 진단
 시퀀스.</li>
 <li>
-<code>c</code>, <code>tau</code>, <code>M</code>,
+<code>se_mult</code>, <code>max_dv</code>, <code>min_run</code>,
 <code>holdout_max</code>, <code>min_n_cohorts</code> — 사용된
 설정값.</li>
 <li>attribute: <code>group_var</code>, <code>loss_var</code>,
@@ -496,17 +496,17 @@ refit 자료가 줄어들어 신뢰도가 떨어진다.</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>c</code></td>
+<td><code>se_mult</code></td>
 <td><code>0.5</code></td>
 <td>갱신 크기가 파라미터 SE 의 절반 이하.</td>
 </tr>
 <tr class="even">
-<td><code>tau</code></td>
+<td><code>max_dv</code></td>
 <td><code>0.15</code></td>
 <td>코호트 간 분산이 median lr 의 15% 이하.</td>
 </tr>
 <tr class="odd">
-<td><code>M</code></td>
+<td><code>min_run</code></td>
 <td><code>3L</code></td>
 <td>두 절이 최소 3 개 연속 시점에서 동시 만족.</td>
 </tr>
@@ -525,7 +525,7 @@ refit 자료가 줄어들어 신뢰도가 떨어진다.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">1.0</span><span class="op">)</span>,</span>
-<span>  <span class="kw">function</span><span class="op">(</span><span class="va">cc</span><span class="op">)</span> <span class="fu"><a href="../reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">tri</span>, c <span class="op">=</span> <span class="va">cc</span><span class="op">)</span><span class="op">$</span><span class="va">k_conv</span></span>
+<span>  <span class="kw">function</span><span class="op">(</span><span class="va">cc</span><span class="op">)</span> <span class="fu"><a href="../reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">tri</span>, se_mult <span class="op">=</span> <span class="va">cc</span><span class="op">)</span><span class="op">$</span><span class="va">k_conv</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
 가

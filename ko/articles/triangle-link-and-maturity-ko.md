@@ -285,8 +285,8 @@ WLS 요약을 자동으로 빌드한다.
 mat <- detect_maturity(
   tri,
   loss_var       = "loss",
-  cv_threshold    = 0.15,    # CV 가 이 값보다 작아야 함
-  rse_threshold   = 0.05,    # RSE 가 이 값보다 작아야 함
+  max_cv    = 0.15,    # CV 가 이 값보다 작아야 함
+  max_rse   = 0.05,    # RSE 가 이 값보다 작아야 함
   min_valid_ratio = 0.5,     # 해당 링크에서 유한 코호트가 50% 이상
   min_n_valid     = 3L,      # 유한 코호트가 최소 3개
   min_run         = 1L       # 연속 성숙 링크 최소 1개
@@ -311,10 +311,10 @@ attribute 로도 저장된다.
 
 ### 임계값의 의미
 
-- `cv_threshold` — 해당 링크에서 관측된 ATA 인자의 변동계수. `alpha` 와
+- `max_cv` — 해당 링크에서 관측된 ATA 인자의 변동계수. `alpha` 와
   무관하게 상대 산포를 제한한다.
-- `rse_threshold` — WLS 추정 인자 `f` 의 상대 표준오차. 잔차 산포가
-  아니라 파라미터 불확실성을 포착한다.
+- `max_rse` — WLS 추정 인자 `f` 의 상대 표준오차. 잔차 산포가 아니라
+  파라미터 불확실성을 포착한다.
 - `min_valid_ratio` — 해당 링크에서 유한 ATA 를 갖는 코호트의 최소 비율.
   대부분이 0 / NA / Inf 인 링크를 막는다.
 - `min_n_valid` — 해당 링크에서 유한 코호트의 최소 개수. 데이터가 얇은
@@ -324,8 +324,8 @@ attribute 로도 저장된다.
   안정성을 요구한다.
 
 포트폴리오의 변동성 프로파일에 맞춰 조정한다. 임계값을 빡빡하게 (예:
-`cv_threshold = 0.05`) 잡으면 성숙점이 뒤로 밀리고, 느슨하게 잡으면
-앞으로 당겨진다.
+`max_cv = 0.05`) 잡으면 성숙점이 뒤로 밀리고, 느슨하게 잡으면 앞으로
+당겨진다.
 
 ### 적합 함수에서의 사용
 
@@ -341,13 +341,13 @@ attribute 로도 저장된다.
 ``` r
 
 fit_ata(tri, loss_var = "loss",
-        maturity_args = list(cv_threshold = 0.08, min_run = 2L))
+        maturity_args = list(max_cv = 0.08, min_run = 2L))
 
 fit_cl(tri, loss_var = "loss",
-       maturity_args = list(cv_threshold = 0.08))
+       maturity_args = list(max_cv = 0.08))
 
 fit_lr(tri, method = "sa",
-       maturity_args = list(cv_threshold = 0.08))
+       maturity_args = list(max_cv = 0.08))
 ```
 
 `fit_lr(method = "sa")` 에서는 탐지된 성숙점이 ED (초기 dev) 에서 CL
@@ -386,8 +386,7 @@ detect_maturity(tri_all, loss_var = "loss")
 ```
 
 링크 진단 플롯으로 보면 결과를 한눈에 읽기 쉽다 — cv 별 facet 으로
-나뉘고, 수직선이 CV 가 `cv_threshold` 아래로 처음 떨어지는 성숙점을
-표시한다.
+나뉘고, 수직선이 CV 가 `max_cv` 아래로 처음 떨어지는 성숙점을 표시한다.
 
 ``` r
 

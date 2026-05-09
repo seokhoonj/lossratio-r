@@ -425,7 +425,7 @@ ATA, or supplied by the caller).</li>
 sequences indexed by
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>.</li>
 <li>
-<code>c</code>, <code>tau</code>, <code>M</code>,
+<code>se_mult</code>, <code>max_dv</code>, <code>min_run</code>,
 <code>holdout_max</code>, <code>min_n_cohorts</code> — settings
 used.</li>
 <li>attributes <code>group_var</code>, <code>loss_var</code>,
@@ -552,17 +552,17 @@ but the top is high, the model is still revising.</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>c</code></td>
+<td><code>se_mult</code></td>
 <td><code>0.5</code></td>
 <td>Revision must be smaller than half the parameter SE.</td>
 </tr>
 <tr class="even">
-<td><code>tau</code></td>
+<td><code>max_dv</code></td>
 <td><code>0.15</code></td>
 <td>Cross-cohort dispersion must be below 15% of the median lr.</td>
 </tr>
 <tr class="odd">
-<td><code>M</code></td>
+<td><code>min_run</code></td>
 <td><code>3L</code></td>
 <td>Both clauses must hold for at least 3 consecutive valuations.</td>
 </tr>
@@ -581,7 +581,7 @@ sweep a range to inspect sensitivity:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">1.0</span><span class="op">)</span>,</span>
-<span>  <span class="kw">function</span><span class="op">(</span><span class="va">cc</span><span class="op">)</span> <span class="fu"><a href="../reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">tri</span>, c <span class="op">=</span> <span class="va">cc</span><span class="op">)</span><span class="op">$</span><span class="va">k_conv</span></span>
+<span>  <span class="kw">function</span><span class="op">(</span><span class="va">cc</span><span class="op">)</span> <span class="fu"><a href="../reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">tri</span>, se_mult <span class="op">=</span> <span class="va">cc</span><span class="op">)</span><span class="op">$</span><span class="va">k_conv</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Values of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>

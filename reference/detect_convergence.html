@@ -160,9 +160,9 @@ incremental-LR level (inertia-free per-period quantity).</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">detect_convergence</span><span class="op">(</span></span>
 <span>  <span class="va">triangle</span>,</span>
 <span>  fit_fn <span class="op">=</span> <span class="va">fit_lr</span>,</span>
-<span>  c <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span>  tau <span class="op">=</span> <span class="fl">0.15</span>,</span>
-<span>  M <span class="op">=</span> <span class="fl">3L</span>,</span>
+<span>  se_mult <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>  max_dv <span class="op">=</span> <span class="fl">0.15</span>,</span>
+<span>  min_run <span class="op">=</span> <span class="fl">3L</span>,</span>
 <span>  k_star <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  holdout_max <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  min_n_cohorts <span class="op">=</span> <span class="fl">5L</span>,</span>
@@ -184,17 +184,19 @@ incremental-LR level (inertia-free per-period quantity).</p>
 exposes both loss and exposure projections required for portfolio LR.</p></dd>
 
 
-<dt id="arg-c">c<a class="anchor" aria-label="anchor" href="#arg-c"></a></dt>
-<dd><p>Multiplier on \(\hat{SE}^{param}_v\). Default <code>0.5</code>.</p></dd>
+<dt id="arg-se-mult">se_mult<a class="anchor" aria-label="anchor" href="#arg-se-mult"></a></dt>
+<dd><p>Multiplier on \(\hat{SE}^{param}_v\) (the symbol
+<code>c</code> in the math criterion above). Default <code>0.5</code>.</p></dd>
 
 
-<dt id="arg-tau">tau<a class="anchor" aria-label="anchor" href="#arg-tau"></a></dt>
-<dd><p>Upper bound on \(\hat{D}_v\). Default <code>0.15</code>.</p></dd>
+<dt id="arg-max-dv">max_dv<a class="anchor" aria-label="anchor" href="#arg-max-dv"></a></dt>
+<dd><p>Upper bound on \(\hat{D}_v\) (the symbol <code>\tau</code> in
+the math criterion above). Default <code>0.15</code>.</p></dd>
 
 
-<dt id="arg-m">M<a class="anchor" aria-label="anchor" href="#arg-m"></a></dt>
-<dd><p>Required run length of consecutive passing periods. Default
-<code>3L</code>.</p></dd>
+<dt id="arg-min-run">min_run<a class="anchor" aria-label="anchor" href="#arg-min-run"></a></dt>
+<dd><p>Required run length of consecutive passing periods
+(the symbol <code>M</code> in the math criterion above). Default <code>3L</code>.</p></dd>
 
 
 <dt id="arg-k-star">k_star<a class="anchor" aria-label="anchor" href="#arg-k-star"></a></dt>
@@ -204,7 +206,7 @@ exposes both loss and exposure projections required for portfolio LR.</p></dd>
 
 <dt id="arg-holdout-max">holdout_max<a class="anchor" aria-label="anchor" href="#arg-holdout-max"></a></dt>
 <dd><p>Maximum holdout depth used for the rolling
-backtest. When <code>NULL</code>, set to <code>max(M, floor((V - k_star) / 2))</code>.</p></dd>
+backtest. When <code>NULL</code>, set to <code>max(min_run, floor((V - k_star) / 2))</code>.</p></dd>
 
 
 <dt id="arg-min-n-cohorts">min_n_cohorts<a class="anchor" aria-label="anchor" href="#arg-min-n-cohorts"></a></dt>

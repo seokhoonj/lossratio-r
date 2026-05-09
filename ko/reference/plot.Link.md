@@ -38,9 +38,8 @@ A `ggplot` object.
 
 For `model = "ata"`, accepted arguments include `type`
 (`"cv" | "rse" | "summary" | "box" | "point"`), `alpha`,
-`show_maturity`, `cv_threshold`, `rse_threshold`, `min_valid_ratio`,
-`min_n_valid`, `min_run`, `scales`, `nrow`, `ncol`, `theme`, and
-`x.angle`.
+`show_maturity`, `max_cv`, `max_rse`, `min_valid_ratio`, `min_n_valid`,
+`min_run`, `scales`, `nrow`, `ncol`, `theme`, and `x.angle`.
 
 For `model = "ed"`, accepted arguments include `type`
 (`"summary" | "box" | "point"`), `alpha`, `scales`, `nrow`, `ncol`,

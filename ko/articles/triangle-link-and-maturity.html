@@ -320,8 +320,8 @@ are built internally:</p>
 <code class="sourceCode R"><span><span class="va">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span></span>
 <span>  <span class="va">tri</span>,</span>
 <span>  loss_var       <span class="op">=</span> <span class="st">"loss"</span>,</span>
-<span>  cv_threshold    <span class="op">=</span> <span class="fl">0.15</span>,    <span class="co"># CV must be below this</span></span>
-<span>  rse_threshold   <span class="op">=</span> <span class="fl">0.05</span>,    <span class="co"># RSE must be below this</span></span>
+<span>  max_cv    <span class="op">=</span> <span class="fl">0.15</span>,    <span class="co"># CV must be below this</span></span>
+<span>  max_rse   <span class="op">=</span> <span class="fl">0.05</span>,    <span class="co"># RSE must be below this</span></span>
 <span>  min_valid_ratio <span class="op">=</span> <span class="fl">0.5</span>,     <span class="co"># at least 50% finite cohorts at the link</span></span>
 <span>  min_n_valid     <span class="op">=</span> <span class="fl">3L</span>,      <span class="co"># at least 3 finite cohorts</span></span>
 <span>  min_run         <span class="op">=</span> <span class="fl">1L</span>       <span class="co"># at least 1 consecutive mature link</span></span>
@@ -348,13 +348,13 @@ object.</p>
 </h3>
 <ul>
 <li>
-<code>cv_threshold</code> — coefficient of variation of the observed
-ATA factors at the link. Caps relative spread regardless of
+<code>max_cv</code> — coefficient of variation of the observed ATA
+factors at the link. Caps relative spread regardless of
 <code>alpha</code>.</li>
 <li>
-<code>rse_threshold</code> — relative standard error of the
-WLS-estimated factor <code>f</code>. Captures parameter uncertainty
-rather than residual spread.</li>
+<code>max_rse</code> — relative standard error of the WLS-estimated
+factor <code>f</code>. Captures parameter uncertainty rather than
+residual spread.</li>
 <li>
 <code>min_valid_ratio</code> — minimum share of cohorts with a
 finite ATA at the link. Guards against links where most observations are
@@ -369,8 +369,8 @@ link wins; setting it to <code>2L</code> or higher requires sustained
 stability.</li>
 </ul>
 <p>Tune these to your portfolio’s volatility profile. Tight thresholds
-(e.g. <code>cv_threshold = 0.05</code>) push maturity later; loose
-thresholds push it earlier.</p>
+(e.g. <code>max_cv = 0.05</code>) push maturity later; loose thresholds
+push it earlier.</p>
 </div>
 <div class="section level3">
 <h3 id="use-in-fitting">Use in fitting<a class="anchor" aria-label="anchor" href="#use-in-fitting"></a>
@@ -381,13 +381,13 @@ thresholds push it earlier.</p>
 internal <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> step is taken from those callers):</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>,</span>
-<span>        maturity_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>cv_threshold <span class="op">=</span> <span class="fl">0.08</span>, min_run <span class="op">=</span> <span class="fl">2L</span><span class="op">)</span><span class="op">)</span></span>
+<span>        maturity_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>max_cv <span class="op">=</span> <span class="fl">0.08</span>, min_run <span class="op">=</span> <span class="fl">2L</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>,</span>
-<span>       maturity_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>cv_threshold <span class="op">=</span> <span class="fl">0.08</span><span class="op">)</span><span class="op">)</span></span>
+<span>       maturity_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>max_cv <span class="op">=</span> <span class="fl">0.08</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span>,</span>
-<span>       maturity_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>cv_threshold <span class="op">=</span> <span class="fl">0.08</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span>       maturity_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>max_cv <span class="op">=</span> <span class="fl">0.08</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>For <code>fit_lr(method = "sa")</code> the detected maturity point
 determines the dev at which the projection switches from ED (early dev)
 to CL (later dev).</p>
@@ -421,7 +421,7 @@ row per group, each detected independently with the same thresholds:</p>
 <span><span class="co">#&gt; 4:           1</span></span></code></pre></div>
 <p>The link diagnostic plot makes the result easier to read — each cv
 gets its own panel and the vertical line marks the maturity point where
-CV first drops below <code>cv_threshold</code>:</p>
+CV first drops below <code>max_cv</code>:</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/build_link.html">build_link</a></span><span class="op">(</span><span class="va">tri_all</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"cv"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="100%"></p>

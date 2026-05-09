@@ -129,7 +129,8 @@ print(res)
 - `V` — triangle 에서 관측 가능한 최대 발전 기간.
 - `v`, `R_v`, `SE_param_v`, `D_v`, `pass_v` — 후보 평가 시점별 진단
   시퀀스.
-- `c`, `tau`, `M`, `holdout_max`, `min_n_cohorts` — 사용된 설정값.
+- `se_mult`, `max_dv`, `min_run`, `holdout_max`, `min_n_cohorts` —
+  사용된 설정값.
 - attribute: `group_var`, `loss_var`, `fit_fn_name`, `dev_var`.
 
 `summary(res)` 는 후보 시점별 한 행 + `R_over_SE = R_v / SE_param_v`
@@ -196,9 +197,9 @@ valuation.
 
 | 인자            | default | 의미                                              |
 |-----------------|---------|---------------------------------------------------|
-| `c`             | `0.5`   | 갱신 크기가 파라미터 SE 의 절반 이하.             |
-| `tau`           | `0.15`  | 코호트 간 분산이 median lr 의 15% 이하.           |
-| `M`             | `3L`    | 두 절이 최소 3 개 연속 시점에서 동시 만족.        |
+| `se_mult`       | `0.5`   | 갱신 크기가 파라미터 SE 의 절반 이하.             |
+| `max_dv`        | `0.15`  | 코호트 간 분산이 median lr 의 15% 이하.           |
+| `min_run`       | `3L`    | 두 절이 최소 3 개 연속 시점에서 동시 만족.        |
 | `min_n_cohorts` | `5L`    | 코호트 수가 이 값 미만이면 $`\hat{D}_v`$ 는 `NA`. |
 
 임계값을 조이면 $`k^{**}`$ 이 늦어지거나 NA 가 된다. 민감도는 sweep 으로
@@ -208,7 +209,7 @@ valuation.
 
 sapply(
   c(0.25, 0.5, 0.75, 1.0),
-  function(cc) detect_convergence(tri, c = cc)$k_conv
+  function(cc) detect_convergence(tri, se_mult = cc)$k_conv
 )
 ```
 

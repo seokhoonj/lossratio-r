@@ -154,10 +154,10 @@ the latest from <code>$breakpoints</code>). When supplied, cohorts with
 <dd><p>A named list of arguments forwarded to
 <code><a href="detect_maturity.html">detect_maturity()</a></code>, or <code>NULL</code> (default) to skip maturity filtering.
 When a list is supplied, missing elements are filled with package
-defaults via <code><a href="https://rdrr.io/r/utils/modifyList.html" class="external-link">utils::modifyList()</a></code>:</p><dl><dt><code>cv_threshold</code></dt>
+defaults via <code><a href="https://rdrr.io/r/utils/modifyList.html" class="external-link">utils::modifyList()</a></code>:</p><dl><dt><code>max_cv</code></dt>
 <dd><p>Default <code>0.15</code>.</p></dd>
 
-<dt><code>rse_threshold</code></dt>
+<dt><code>max_rse</code></dt>
 <dd><p>Default <code>0.05</code>.</p></dd>
 
 <dt><code>min_valid_ratio</code></dt>
@@ -167,7 +167,7 @@ defaults via <code><a href="https://rdrr.io/r/utils/modifyList.html" class="exte
 <dd><p>Default <code>3L</code>.</p></dd>
 
 <dt><code>min_run</code></dt>
-<dd><p>Default <code>1L</code>.</p></dd>
+<dd><p>Default <code>2L</code>.</p></dd>
 
 
 </dl><p>Pass <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> to use all defaults with maturity filtering enabled.</p></dd>

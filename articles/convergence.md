@@ -135,7 +135,8 @@ The returned `Convergence` object reports:
 - `V` — the maximum observable dev in the triangle.
 - `v`, `R_v`, `SE_param_v`, `D_v`, `pass_v` — per-valuation diagnostic
   sequences indexed by $`v`$.
-- `c`, `tau`, `M`, `holdout_max`, `min_n_cohorts` — settings used.
+- `se_mult`, `max_dv`, `min_run`, `holdout_max`, `min_n_cohorts` —
+  settings used.
 - attributes `group_var`, `loss_var`, `fit_fn_name`, `dev_var`.
 
 `summary(res)` returns a `data.table` with one row per candidate
@@ -205,9 +206,9 @@ The defaults are deliberately conservative:
 
 | Argument | Default | Meaning |
 |----|----|----|
-| `c` | `0.5` | Revision must be smaller than half the parameter SE. |
-| `tau` | `0.15` | Cross-cohort dispersion must be below 15% of the median lr. |
-| `M` | `3L` | Both clauses must hold for at least 3 consecutive valuations. |
+| `se_mult` | `0.5` | Revision must be smaller than half the parameter SE. |
+| `max_dv` | `0.15` | Cross-cohort dispersion must be below 15% of the median lr. |
+| `min_run` | `3L` | Both clauses must hold for at least 3 consecutive valuations. |
 | `min_n_cohorts` | `5L` | Below this cohort count, $`\hat{D}_v`$ is `NA` (insufficient sample). |
 
 Tighter thresholds yield later (or no) $`k^{**}`$; sweep a range to
@@ -217,7 +218,7 @@ inspect sensitivity:
 
 sapply(
   c(0.25, 0.5, 0.75, 1.0),
-  function(cc) detect_convergence(tri, c = cc)$k_conv
+  function(cc) detect_convergence(tri, se_mult = cc)$k_conv
 )
 ```
 

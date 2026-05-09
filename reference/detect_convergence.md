@@ -30,9 +30,9 @@ This function corresponds to the paper's *convergence point*
 detect_convergence(
   triangle,
   fit_fn = fit_lr,
-  c = 0.5,
-  tau = 0.15,
-  M = 3L,
+  se_mult = 0.5,
+  max_dv = 0.15,
+  min_run = 3L,
   k_star = NULL,
   holdout_max = NULL,
   min_n_cohorts = 5L,
@@ -55,17 +55,20 @@ detect_convergence(
   also accepted but `fit_lr` is recommended because it exposes both loss
   and exposure projections required for portfolio LR.
 
-- c:
+- se_mult:
 
-  Multiplier on \\\hat{SE}^{param}\_v\\. Default `0.5`.
+  Multiplier on \\\hat{SE}^{param}\_v\\ (the symbol `c` in the math
+  criterion above). Default `0.5`.
 
-- tau:
+- max_dv:
 
-  Upper bound on \\\hat{D}\_v\\. Default `0.15`.
+  Upper bound on \\\hat{D}\_v\\ (the symbol `\tau` in the math criterion
+  above). Default `0.15`.
 
-- M:
+- min_run:
 
-  Required run length of consecutive passing periods. Default `3L`.
+  Required run length of consecutive passing periods (the symbol `M` in
+  the math criterion above). Default `3L`.
 
 - k_star:
 
@@ -76,7 +79,7 @@ detect_convergence(
 - holdout_max:
 
   Maximum holdout depth used for the rolling backtest. When `NULL`, set
-  to `max(M, floor((V - k_star) / 2))`.
+  to `max(min_run, floor((V - k_star) / 2))`.
 
 - min_n_cohorts:
 

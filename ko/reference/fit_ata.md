@@ -87,11 +87,11 @@ fit_ata(
   supplied, missing elements are filled with package defaults via
   [`utils::modifyList()`](https://rdrr.io/r/utils/modifyList.html):
 
-  `cv_threshold`
+  `max_cv`
 
   :   Default `0.15`.
 
-  `rse_threshold`
+  `max_rse`
 
   :   Default `0.05`.
 
@@ -105,7 +105,7 @@ fit_ata(
 
   `min_run`
 
-  :   Default `1L`.
+  :   Default `2L`.
 
   Pass [`list()`](https://rdrr.io/r/base/list.html) to use all defaults
   with maturity filtering enabled.

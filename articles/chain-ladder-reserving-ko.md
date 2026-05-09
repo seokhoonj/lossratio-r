@@ -134,20 +134,17 @@ cl_mat <- fit_cl(
   tri,
   loss_var     = "loss",
   method        = "mack",
-  maturity_args = list(cv_threshold = 0.10, rse_threshold = 0.05)
+  maturity_args = list(max_cv = 0.10, max_rse = 0.05)
 )
 
 cl_mat$maturity
 #> Key: <cv_nm>
-#>     cv_nm ata_from ata_to ata_link     mean   median       wt         cv
-#>    <char>    <int>  <int>   <char>    <num>    <num>    <num>      <num>
-#> 1:    SUR        9     10     9-10 1.187815 1.172305 1.164727 0.09743995
-#>           f       f_se        rse    sigma n_obs n_valid n_inf n_nan
-#>       <num>      <num>      <num>    <num> <int>   <int> <int> <int>
-#> 1: 1.164727 0.02218428 0.01904677 1774.278    21      21     0     0
-#>    valid_ratio
-#>          <num>
-#> 1:           1
+#>     cv_nm ata_from ata_to ata_link    mean   median       wt         cv
+#>    <char>    <int>  <int>   <char>   <num>    <num>    <num>      <num>
+#> 1:    SUR       12     13    12-13 1.15268 1.132523 1.139843 0.08193976
+#>           f      f_se        rse    sigma n_obs n_valid n_inf n_nan valid_ratio
+#>       <num>     <num>      <num>    <num> <int>   <int> <int> <int>       <num>
+#> 1: 1.139843 0.0200195 0.01756339 1952.041    18      18     0     0           1
 ```
 
 `maturity_args` 는
