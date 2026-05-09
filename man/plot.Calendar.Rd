@@ -17,9 +17,9 @@
 \item{x}{An object of class \code{Calendar}.}
 
 \item{value_var}{A single metric to plot. Must be one of:
-\code{"lr"}, \code{"lr"},
-\code{"loss"}, \code{"rp"}, \code{"margin"}, \code{"loss"}, \code{"premium"}, \code{"margin"},
-\code{"loss_prop"}, \code{"rp_prop"}, \code{"loss_prop"}, or \code{"premium_prop"}.}
+\code{"lr"}, \code{"lr_incr"},
+\code{"loss"}, \code{"loss_incr"}, \code{"premium"}, \code{"premium_incr"}, \code{"margin"}, \code{"margin_incr"},
+\code{"loss_prop"}, \code{"loss_incr_prop"}, \code{"premium_prop"}, or \code{"premium_incr_prop"}.}
 
 \item{x_by}{X-axis basis. One of:
 \describe{
@@ -44,9 +44,9 @@ The selected metric is plotted over the calendar-style \code{calendar_var},
 or over the calendar development variable stored in \code{attr(x, "dev_var")}.
 
 Ratio metrics (\code{lr}, \code{lr}) and proportion metrics
-(\code{loss_prop}, \code{rp_prop}, \code{loss_prop}, \code{premium_prop}) are plotted on the
+(\code{loss_prop}, \code{loss_incr_prop}, \code{premium_prop}, \code{premium_incr_prop}) are plotted on the
 original scale and displayed as percentages via y-axis labels.
-Amount metrics (\code{loss}, \code{rp}, \code{margin}, \code{loss}, \code{premium}, \code{margin}) are
+Amount metrics (\code{loss}, \code{loss_incr}, \code{premium}, \code{premium_incr}, \code{margin}, \code{margin_incr}) are
 plotted on the original scale and displayed using y-axis labels scaled by
 \code{amount_divisor}.
 
@@ -57,9 +57,9 @@ The x-axis uses either the calendar variable stored in \code{attr(x, "calendar_v
 or the sequential \code{dev} column, depending on \code{x_by}.
 
 The loss ratio is defined as:
-\deqn{lr = loss / rp}
+\deqn{lr = loss / premium}
 
-where \code{rp} denotes risk premium rather than written premium.
+where \code{premium} denotes risk premium rather than written premium.
 }
 \examples{
 \dontrun{

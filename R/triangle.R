@@ -877,8 +877,8 @@ build_calendar <- function(df,
 #'
 #' @description
 #' S3 method for `summary()` on `Calendar` objects. Computes
-#' calendar-period summary statistics for loss ratios (`lr`) and
-#' cumulative loss ratios (`clr`).
+#' calendar-period summary statistics for cumulative loss ratios (`lr`)
+#' and per-period loss ratios (`lr_incr`).
 #'
 #' Where [summary.Triangle()] aggregates by `(group_var, dev)` (cohort
 #' × development), this method aggregates by `(group_var, calendar)`

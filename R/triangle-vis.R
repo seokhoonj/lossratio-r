@@ -269,9 +269,9 @@ plot.Triangle <- function(x,
 #' or over the calendar development variable stored in `attr(x, "dev_var")`.
 #'
 #' Ratio metrics (`lr`, `lr`) and proportion metrics
-#' (`loss_prop`, `rp_prop`, `loss_prop`, `premium_prop`) are plotted on the
+#' (`loss_prop`, `loss_incr_prop`, `premium_prop`, `premium_incr_prop`) are plotted on the
 #' original scale and displayed as percentages via y-axis labels.
-#' Amount metrics (`loss`, `rp`, `margin`, `loss`, `premium`, `margin`) are
+#' Amount metrics (`loss`, `loss_incr`, `premium`, `premium_incr`, `margin`, `margin_incr`) are
 #' plotted on the original scale and displayed using y-axis labels scaled by
 #' `amount_divisor`.
 #'
@@ -279,9 +279,9 @@ plot.Triangle <- function(x,
 #'
 #' @param x An object of class `Calendar`.
 #' @param value_var A single metric to plot. Must be one of:
-#'   `"lr"`, `"lr"`,
-#'   `"loss"`, `"rp"`, `"margin"`, `"loss"`, `"premium"`, `"margin"`,
-#'   `"loss_prop"`, `"rp_prop"`, `"loss_prop"`, or `"premium_prop"`.
+#'   `"lr"`, `"lr_incr"`,
+#'   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`, `"margin_incr"`,
+#'   `"loss_prop"`, `"loss_incr_prop"`, `"premium_prop"`, or `"premium_incr_prop"`.
 #' @param x_by X-axis basis. One of:
 #'   \describe{
 #'     \item{"period"}{Use the calendar variable stored in `attr(x, "calendar_var")`.}
@@ -298,9 +298,9 @@ plot.Triangle <- function(x,
 #' or the sequential `dev` column, depending on `x_by`.
 #'
 #' The loss ratio is defined as:
-#' \deqn{lr = loss / rp}
+#' \deqn{lr = loss / premium}
 #'
-#' where `rp` denotes risk premium rather than written premium.
+#' where `premium` denotes risk premium rather than written premium.
 #'
 #' @return A `ggplot` object.
 #'
@@ -457,16 +457,16 @@ plot_triangle <- function(x, ...) {
 #' For ratio metrics (`lr`, `lr`), labels can show either the ratio alone or
 #' the ratio together with the associated loss / risk premium amounts.
 #'
-#' For amount metrics (`loss`, `rp`, `margin`, `loss`, `premium`, `margin`),
+#' For amount metrics (`loss`, `loss_incr`, `premium`, `premium_incr`, `margin`, `margin_incr`),
 #' labels show the selected amount only.
 #'
-#' For proportion metrics (`loss_prop`, `rp_prop`, `loss_prop`, `premium_prop`),
+#' For proportion metrics (`loss_prop`, `loss_incr_prop`, `premium_prop`, `premium_incr_prop`),
 #' labels are displayed as percentages.
 #'
 #' The loss ratio is defined as:
-#' \deqn{lr = loss / rp}
+#' \deqn{lr = loss / premium}
 #'
-#' where `rp` denotes risk premium rather than written premium.
+#' where `premium` denotes risk premium rather than written premium.
 #'
 #' @param x An object of class `Triangle`.
 #' @param type Plot type. One of:
@@ -478,9 +478,9 @@ plot_triangle <- function(x, ...) {
 #'       via `...`. See `vignette("regime-break-filter")` for details.}
 #'   }
 #' @param value_var A single metric to plot. Must be one of:
-#'   `"lr"`, `"lr"`,
-#'   `"loss"`, `"rp"`, `"margin"`, `"loss"`, `"premium"`, `"margin"`,
-#'   `"loss_prop"`, `"rp_prop"`, `"loss_prop"`, or `"premium_prop"`.
+#'   `"lr"`, `"lr_incr"`,
+#'   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`, `"margin_incr"`,
+#'   `"loss_prop"`, `"loss_incr_prop"`, `"premium_prop"`, or `"premium_incr_prop"`.
 #' @param label_style Label display style. One of:
 #'   \describe{
 #'     \item{"value"}{Show only the selected metric.}
@@ -489,7 +489,7 @@ plot_triangle <- function(x, ...) {
 #'       proportion metrics, this falls back to `"value"`.}
 #'   }
 #' @param amount_divisor Numeric scaling factor applied to amount variables
-#'   (e.g., `loss`, `rp`, `margin`, `loss`, `premium`, `margin`) before plotting.
+#'   (e.g., `loss`, `loss_incr`, `premium`, `premium_incr`, `margin`, `margin_incr`) before plotting.
 #'   Default is `1e8`
 #' @param theme A string passed to [.switch_theme()]
 #'   (`"view"`, `"save"`, `"shiny"`).
@@ -593,42 +593,32 @@ plot_triangle.Triangle <- function(x,
     dt[, .x := dt[["dev"]]]
   }
 
-  ratio_vars  <- c("lr", "lr")
-  amount_vars <- c("loss", "rp", "margin", "loss", "premium", "margin")
-  prop_vars   <- c("loss_prop", "rp_prop", "loss_prop", "premium_prop")
+  ratio_vars  <- c("lr", "lr_incr")
+  amount_vars <- c("loss", "loss_incr",
+                   "premium", "premium_incr",
+                   "margin", "margin_incr")
+  prop_vars   <- c("loss_prop", "loss_incr_prop",
+                   "premium_prop", "premium_incr_prop")
 
   if (val_var %in% ratio_vars) {
 
-    if (val_var == "lr") {
-      if (label_style == "value") {
-        dt[, label := sprintf("%.0f", lr * 100)]
-      } else {
-        dt[, label := sprintf(
-          "%.0f\n(%.1f/%.1f)",
-          lr   * 100,
-          loss / amount_divisor,
-          premium   / amount_divisor
-        )]
-      }
+    is_cum <- val_var == "lr"
+    loss_col    <- if (is_cum) "loss"    else "loss_incr"
+    premium_col <- if (is_cum) "premium" else "premium_incr"
 
-      title_txt <- "Cumulative Loss Ratio"
-      fill_col  <- "lr"
-
+    if (label_style == "value") {
+      dt[, label := sprintf("%.0f", dt[[val_var]] * 100)]
     } else {
-      if (label_style == "value") {
-        dt[, label := sprintf("%.0f", lr * 100)]
-      } else {
-        dt[, label := sprintf(
-          "%.0f\n(%.1f/%.1f)",
-          lr   * 100,
-          loss / amount_divisor,
-          rp   / amount_divisor
-        )]
-      }
-
-      title_txt <- "Loss Ratio"
-      fill_col  <- "lr"
+      dt[, label := sprintf(
+        "%.0f\n(%.1f/%.1f)",
+        dt[[val_var]]    * 100,
+        dt[[loss_col]]    / amount_divisor,
+        dt[[premium_col]] / amount_divisor
+      )]
     }
+
+    title_txt <- if (is_cum) "Cumulative Loss Ratio" else "Per-Period Loss Ratio"
+    fill_col  <- val_var
 
     caption_txt <- if (label_style == "detail") {
       sprintf("Unit: %% (%s)", .get_amount_unit(amount_divisor))
@@ -652,12 +642,12 @@ plot_triangle.Triangle <- function(x,
 
     title_txt <- switch(
       val_var,
-      loss    = "Loss",
-      rp      = "Risk Premium",
-      margin  = "Margin",
-      loss   = "Cumulative Loss",
-      premium     = "Cumulative Risk Premium",
-      margin = "Cumulative Margin"
+      loss          = "Cumulative Loss",
+      loss_incr     = "Per-Period Loss",
+      premium       = "Cumulative Premium",
+      premium_incr  = "Per-Period Premium",
+      margin        = "Cumulative Margin",
+      margin_incr   = "Per-Period Margin"
     )
 
     caption_txt <- sprintf("Unit: %s", .get_amount_unit(amount_divisor))
@@ -678,10 +668,10 @@ plot_triangle.Triangle <- function(x,
 
     title_txt <- switch(
       val_var,
-      loss_prop  = "Loss Proportion",
-      rp_prop    = "Risk Premium Proportion",
-      loss_prop = "Cumulative Loss Proportion",
-      premium_prop   = "Cumulative Risk Premium Proportion"
+      loss_prop          = "Cumulative Loss Proportion",
+      loss_incr_prop     = "Per-Period Loss Proportion",
+      premium_prop       = "Cumulative Premium Proportion",
+      premium_incr_prop  = "Per-Period Premium Proportion"
     )
 
     caption_txt <- "Unit: %"
@@ -724,8 +714,8 @@ plot_triangle.Triangle <- function(x,
 #'
 #' @param x An object of class `Total`.
 #' @param value_var A single metric to plot. Must be one of the columns
-#'   carried by a `Total`: `"lr"`, `"loss"`, `"rp"`, `"loss_prop"`, or
-#'   `"rp_prop"`. Default `"lr"`.
+#'   carried by a `Total`: `"lr"`, `"loss"`, `"premium"`, `"loss_prop"`, or
+#'   `"premium_prop"`. Default `"lr"`.
 #' @param amount_divisor Numeric scaling factor used only for y-axis
 #'   labels of amount variables. Default `1e8`.
 #' @param theme A string passed to [.switch_theme()]
@@ -766,13 +756,13 @@ plot.Total <- function(x,
   grp_var <- attr(x, "group_var")
   val_var <- .capture_names(x, !!rlang::enquo(value_var))
 
-  valid_vars <- c("lr", "loss", "rp", "loss_prop", "rp_prop")
+  valid_vars <- c("lr", "loss", "premium", "loss_prop", "premium_prop")
 
   if (length(val_var) != 1L || !(val_var %in% valid_vars)) {
     stop(
       paste0(
         "`value_var` must be one of ",
-        "'lr', 'loss', 'rp', 'loss_prop', or 'rp_prop'."
+        "'lr', 'loss', 'premium', 'loss_prop', or 'premium_prop'."
       ),
       call. = FALSE
     )

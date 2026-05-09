@@ -4,17 +4,17 @@
 \name{lossratio-package}
 \alias{lossratio}
 \alias{lossratio-package}
-\title{lossratio: Loss Ratio Analysis for Insurance Experience Data}
+\title{lossratio: Loss Ratio Analytics for Long-Term Health Insurance}
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-A toolkit for loss-ratio analysis and projection on long-format experience data, oriented toward long-term health insurance. Implements stage-adaptive loss-ratio projection that uses an exposure-driven model before the maturity point and chain ladder after it, with supporting maturity point detection and cohort regime detection for handling structural breaks. Provides cohort by development period, calendar period, and total aggregation frameworks for diagnostics, and applies to any cumulative loss and exposure setting with sufficient sample per cell.
+A loss ratio analytics toolkit for long-term health insurance, covering cohort development analysis, stage-adaptive loss-ratio projection, and regime detection on long-format experience data. Implements stage-adaptive loss-ratio projection that uses an exposure-driven model before the maturity point and chain ladder after it, with supporting maturity point detection and cohort regime detection for handling structural breaks. Provides cohort by development period, calendar period, and total aggregation frameworks for diagnostics, and applies to any cumulative loss and exposure setting with sufficient sample per cell.
 }
 \details{
 The core loss ratio is defined as:
-\deqn{lr = loss / rp}
+\deqn{lr = loss / premium}
 
-where \code{rp} represents risk premium, not written premium.
+where \code{premium} represents risk premium, not written premium.
 }
 \seealso{
 Useful links:

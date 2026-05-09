@@ -29,9 +29,9 @@ via \code{...}. See \code{vignette("regime-break-filter")} for details.}
 }}
 
 \item{value_var}{A single metric to plot. Must be one of:
-\code{"lr"}, \code{"lr"},
-\code{"loss"}, \code{"rp"}, \code{"margin"}, \code{"loss"}, \code{"premium"}, \code{"margin"},
-\code{"loss_prop"}, \code{"rp_prop"}, \code{"loss_prop"}, or \code{"premium_prop"}.}
+\code{"lr"}, \code{"lr_incr"},
+\code{"loss"}, \code{"loss_incr"}, \code{"premium"}, \code{"premium_incr"}, \code{"margin"}, \code{"margin_incr"},
+\code{"loss_prop"}, \code{"loss_incr_prop"}, \code{"premium_prop"}, or \code{"premium_incr_prop"}.}
 
 \item{label_style}{Label display style. One of:
 \describe{
@@ -42,7 +42,7 @@ proportion metrics, this falls back to \code{"value"}.}
 }}
 
 \item{amount_divisor}{Numeric scaling factor applied to amount variables
-(e.g., \code{loss}, \code{rp}, \code{margin}, \code{loss}, \code{premium}, \code{margin}) before plotting.
+(e.g., \code{loss}, \code{loss_incr}, \code{premium}, \code{premium_incr}, \code{margin}, \code{margin_incr}) before plotting.
 Default is \code{1e8}}
 
 \item{nrow, ncol}{Number of rows and columns passed to \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}.}
@@ -62,16 +62,16 @@ period and dev dimensions, and each cell displays the selected metric.
 For ratio metrics (\code{lr}, \code{lr}), labels can show either the ratio alone or
 the ratio together with the associated loss / risk premium amounts.
 
-For amount metrics (\code{loss}, \code{rp}, \code{margin}, \code{loss}, \code{premium}, \code{margin}),
+For amount metrics (\code{loss}, \code{loss_incr}, \code{premium}, \code{premium_incr}, \code{margin}, \code{margin_incr}),
 labels show the selected amount only.
 
-For proportion metrics (\code{loss_prop}, \code{rp_prop}, \code{loss_prop}, \code{premium_prop}),
+For proportion metrics (\code{loss_prop}, \code{loss_incr_prop}, \code{premium_prop}, \code{premium_incr_prop}),
 labels are displayed as percentages.
 
 The loss ratio is defined as:
-\deqn{lr = loss / rp}
+\deqn{lr = loss / premium}
 
-where \code{rp} denotes risk premium rather than written premium.
+where \code{premium} denotes risk premium rather than written premium.
 }
 \details{
 The x-axis uses the development variable stored in \code{attr(x, "dev_var")}, and

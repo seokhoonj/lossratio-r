@@ -13,8 +13,10 @@ A \code{data.table} with 33,480 rows and 17 columns:
 \item{cv_nm}{Coverage name (character).}
 \item{age_band}{Age band (ordered factor).}
 \item{gender}{Gender (factor).}
-\item{loss}{Loss amount (perturbed).}
-\item{rp}{Risk premium amount (perturbed).}
+\item{loss_incr}{Per-period loss amount (numeric).}
+\item{premium_incr}{Per-period premium amount (numeric); for
+long-term health insurance applications, risk premium is
+commonly used.}
 }
 }
 \source{
@@ -33,9 +35,10 @@ deterministically from \code{data-raw/make_experience.R} (set.seed =
 coverages is calibrated to the broad shape of a real long-term
 insurance portfolio's first ten months of development; the elap_m
 11-30 plateau, all cohort-level patterns, demographic mixes, and
-cell-level loss / rp values are randomly drawn. The SUR coverage
-carries a synthetic 2024-04 cohort regime break (LR halved) so the
-\code{detect_regime()} example has a clear shift to find.
+cell-level \code{loss_incr} / \code{premium_incr} values are randomly drawn.
+The SUR coverage carries a synthetic 2024-04 cohort regime break
+(LR halved) so the \code{detect_regime()} example has a clear shift to
+find.
 }
 \examples{
 \dontrun{

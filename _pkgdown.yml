@@ -68,7 +68,9 @@ template:
 
 home:
   title: lossratio
-  description: Loss ratio analysis and projection for insurance experience data.
+  description: Loss ratio analytics for long-term health insurance —
+    cohort development analysis, stage-adaptive projection, and regime
+    detection.
 
 navbar:
   structure:

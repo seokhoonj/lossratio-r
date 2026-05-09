@@ -267,7 +267,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     p <- p + facet_layer
 
     p <- p + ggplot2::labs(
-      title = "Coefficient of Variation of Age-to-Age Factors",
+      title = "Coefficient of Variation of ATA Factors",
       x     = "ata link",
       y     = "CV"
     )
@@ -297,7 +297,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     p <- p + facet_layer
 
     p <- p + ggplot2::labs(
-      title = "Relative Standard Error of Age-to-Age Factors",
+      title = "Relative Standard Error of ATA Factors",
       x     = "ata link",
       y     = "RSE"
     )
@@ -347,7 +347,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     p <- p + facet_layer
 
     p <- p + ggplot2::labs(
-      title = "Summary of Age-to-Age Factors",
+      title = "Summary of ATA Factors",
       x     = "ata link",
       y     = "Factor",
       color = NULL
@@ -382,7 +382,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     p <- p + facet_layer
 
     p <- p + ggplot2::labs(
-      title = "Box Plot of Age-to-Age Factors",
+      title = "Box Plot of ATA Factors",
       x     = "ata link",
       y     = "Factor"
     )
@@ -422,7 +422,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     p <- p + facet_layer
 
     p <- p + ggplot2::labs(
-      title = "Distribution of Age-to-Age Factors",
+      title = "Distribution of ATA Factors",
       x     = "ata link",
       y     = "Factor"
     )
@@ -660,10 +660,10 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   # 5) build title ------------------------------------------------------
   title_txt <- switch(val_var,
-                      loss = "Age-to-Age Factor for Cumulative Loss",
-                      premium   = "Age-to-Age Factor for Cumulative Risk Premium",
-                      lr   = "Age-to-Age Factor for Cumulative Loss Ratio",
-                      "Age-to-Age Factor"
+                      loss    = "ATA Factor for Cumulative Loss",
+                      premium = "ATA Factor for Cumulative Premium",
+                      lr      = "ATA Factor for Cumulative Loss Ratio",
+                      "ATA Factor"
   )
 
   # 6) compute maturity -------------------------------------------------

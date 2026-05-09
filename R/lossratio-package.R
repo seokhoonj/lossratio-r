@@ -1,8 +1,8 @@
 #' @details
 #' The core loss ratio is defined as:
-#' \deqn{lr = loss / rp}
+#' \deqn{lr = loss / premium}
 #'
-#' where `rp` represents risk premium, not written premium.
+#' where `premium` represents risk premium, not written premium.
 #'
 #' @keywords internal
 "_PACKAGE"

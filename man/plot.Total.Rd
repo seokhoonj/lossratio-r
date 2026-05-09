@@ -16,8 +16,8 @@
 \item{x}{An object of class \code{Total}.}
 
 \item{value_var}{A single metric to plot. Must be one of the columns
-carried by a \code{Total}: \code{"lr"}, \code{"loss"}, \code{"rp"}, \code{"loss_prop"}, or
-\code{"rp_prop"}. Default \code{"lr"}.}
+carried by a \code{Total}: \code{"lr"}, \code{"loss"}, \code{"premium"}, \code{"loss_prop"}, or
+\code{"premium_prop"}. Default \code{"lr"}.}
 
 \item{amount_divisor}{Numeric scaling factor used only for y-axis
 labels of amount variables. Default \code{1e8}.}

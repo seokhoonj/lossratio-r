@@ -30,7 +30,8 @@ loss-ratio projection.
 (cohort × dev × demographic) cell. The bundled dataset
 `experience` is a 33,480-row table with calendar / underwriting
 period columns at multiple granularities, demographic dimensions
-(`cv_nm`, `age_band`, `gender`), and amounts (`loss`, `rp`).
+(`cv_nm`, `age_band`, `gender`), and per-period amounts
+(`loss_incr`, `premium_incr`).
 
 ```{r}
 library(lossratio)
@@ -46,8 +47,8 @@ exp <- as_experience(experience)
 class(exp)
 ```
 
-`as_experience()` checks required columns (`cym`, `uym`, `loss`,
-`rp`), coerces date columns, and tags the class. Use
+`as_experience()` checks required columns (`cym`, `uym`, `loss_incr`,
+`premium_incr`), coerces date columns, and tags the class. Use
 `check_experience(df)` for a non-mutating check.
 
 ## Step 2 — Build the cohort × dev structure
@@ -61,12 +62,16 @@ names(tri)
 `build_triangle()`:
 
 - aggregates demographic dimensions away (here: `age_band`, `gender`),
-- adds cumulative columns (`loss`, `premium`),
-- adds derived metrics (`margin`, `lr`, `lr`, proportions),
+- standardises raw input names to the per-period slots `loss_incr`
+  and `premium_incr`,
+- adds cumulative companions (`loss`, `premium`) — cumulative is the
+  unmarked default; per-period carries the `_incr` suffix,
+- adds derived metrics (`margin` / `margin_incr`, `lr` / `lr_incr`,
+  proportions),
 - standardises the cohort / development columns to the names `cohort`
   and `dev`,
 - preserves original column names as attributes (`cohort_var`,
-  `dev_var`) for downstream plot labels.
+  `dev_var`, `loss_var`, `premium_var`) for downstream plot labels.
 
 ## Step 3 — Diagnostics
 

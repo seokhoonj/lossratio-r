@@ -31,8 +31,8 @@ The returned object preserves the attributes \code{group_var},
 }
 \description{
 S3 method for \code{summary()} on \code{Calendar} objects. Computes
-calendar-period summary statistics for loss ratios (\code{lr}) and
-cumulative loss ratios (\code{clr}).
+calendar-period summary statistics for cumulative loss ratios (\code{lr})
+and per-period loss ratios (\code{lr_incr}).
 
 Where \code{\link[=summary.Triangle]{summary.Triangle()}} aggregates by \verb{(group_var, dev)} (cohort
 × development), this method aggregates by \verb{(group_var, calendar)}
