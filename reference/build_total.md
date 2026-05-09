@@ -131,11 +131,11 @@ A data.frame with class `"Total"` containing:
 
 ``` r
 if (FALSE) { # \dontrun{
-build_total(df, cv_nm)
+build_total(df, coverage)
 
 build_total(
   df,
-  cv_nm,
+  coverage,
   period_from = "2023-01-01",
   period_to   = "2023-12-01"
 )

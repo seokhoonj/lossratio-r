@@ -162,7 +162,7 @@ and negative values flag over-projection.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio">lossratio</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span><span class="va">exp</span>     <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_experience.html">as_experience</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
-<span><span class="va">tri_sur</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span><span class="op">[</span><span class="va">cv_nm</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, <span class="va">cv_nm</span><span class="op">)</span></span>
+<span><span class="va">tri_sur</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, <span class="va">coverage</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">bt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span></span>
@@ -170,8 +170,8 @@ and negative values flag over-projection.</p>
 <span><span class="co">#&gt;   fit_fn      : fit_lr</span></span>
 <span><span class="co">#&gt;   loss_var   : lr</span></span>
 <span><span class="co">#&gt;   holdout     : 6 calendar diagonals</span></span>
-<span><span class="co">#&gt;   held-out    : 123 cells</span></span>
-<span><span class="co">#&gt;   AEG         : mean -13.06% / median -7.37%</span></span></code></pre></div>
+<span><span class="co">#&gt;   held-out    : 159 cells</span></span>
+<span><span class="co">#&gt;   AEG         : mean 0.21% / median -0.00%</span></span></code></pre></div>
 <p>The returned object is a <code>"Backtest"</code> list with these key
 slots:</p>
 <ul>
@@ -219,16 +219,16 @@ positive values usually reflect inflated link factors; late-dev values
 flag tail miscalibration.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">bt</span><span class="op">$</span><span class="va">col_summary</span>, <span class="fl">8</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     cv_nm   dev     n   aeg_mean    aeg_med     aeg_wt</span></span>
-<span><span class="co">#&gt;    &lt;char&gt; &lt;int&gt; &lt;int&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:    SUR     2     1 -0.2208792 -0.2208792 -0.2208792</span></span>
-<span><span class="co">#&gt; 2:    SUR     3     2 -0.6437453 -0.6437453 -0.6163673</span></span>
-<span><span class="co">#&gt; 3:    SUR     4     3 -0.3510508 -0.1160624 -0.3497066</span></span>
-<span><span class="co">#&gt; 4:    SUR     5     4 -0.3148234 -0.2154987 -0.3169997</span></span>
-<span><span class="co">#&gt; 5:    SUR     6     5 -0.4606402 -0.4013712 -0.4603512</span></span>
-<span><span class="co">#&gt; 6:    SUR     7     6 -0.3178128 -0.3457778 -0.3292850</span></span>
-<span><span class="co">#&gt; 7:    SUR     8     6 -0.3942605 -0.4362220 -0.3951000</span></span>
-<span><span class="co">#&gt; 8:    SUR     9     6 -0.3181451 -0.3715525 -0.3080096</span></span></code></pre></div>
+<span><span class="co">#&gt;    coverage   dev     n    aeg_mean     aeg_med       aeg_wt</span></span>
+<span><span class="co">#&gt;      &lt;char&gt; &lt;int&gt; &lt;int&gt;       &lt;num&gt;       &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:      SUR     2     1 -0.36674932 -0.36674932 -0.366749322</span></span>
+<span><span class="co">#&gt; 2:      SUR     3     2 -0.09011955 -0.09011955 -0.154463503</span></span>
+<span><span class="co">#&gt; 3:      SUR     4     3 -0.02300710  0.04378484 -0.065662205</span></span>
+<span><span class="co">#&gt; 4:      SUR     5     4  0.01186458  0.01235174 -0.016264772</span></span>
+<span><span class="co">#&gt; 5:      SUR     6     5  0.01349877  0.06211286 -0.022035200</span></span>
+<span><span class="co">#&gt; 6:      SUR     7     6  0.03540917  0.07574468  0.008863285</span></span>
+<span><span class="co">#&gt; 7:      SUR     8     6  0.05916242  0.07259077  0.055085668</span></span>
+<span><span class="co">#&gt; 8:      SUR     9     6  0.02445333  0.02775188  0.022389147</span></span></code></pre></div>
 <p><code>aeg_mean</code> averages cell-level AEG, <code>aeg_med</code>
 is the median, and <code>aeg_wt = sum(actual - pred) / sum(pred)</code>
 is the exposure-weighted pooled A/E ratio minus 1. Comparing the three
@@ -240,14 +240,14 @@ event (a rate change, claim handling shift, or one-off shock) that a
 static fitter cannot see by construction.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bt</span><span class="op">$</span><span class="va">diag_summary</span></span>
-<span><span class="co">#&gt;     cv_nm calendar_idx     n   aeg_mean     aeg_med      aeg_wt</span></span>
-<span><span class="co">#&gt;    &lt;char&gt;        &lt;int&gt; &lt;int&gt;      &lt;num&gt;       &lt;num&gt;       &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:    SUR           25    23 -0.1066524 -0.03666962 -0.07019119</span></span>
-<span><span class="co">#&gt; 2:    SUR           26    22 -0.1402247 -0.05155686 -0.11332892</span></span>
-<span><span class="co">#&gt; 3:    SUR           27    21 -0.1091468 -0.05802823 -0.10411330</span></span>
-<span><span class="co">#&gt; 4:    SUR           28    20 -0.1311544 -0.07713787 -0.12738203</span></span>
-<span><span class="co">#&gt; 5:    SUR           29    19 -0.1621482 -0.15996777 -0.16736131</span></span>
-<span><span class="co">#&gt; 6:    SUR           30    18 -0.1403813 -0.10594767 -0.16500512</span></span></code></pre></div>
+<span><span class="co">#&gt;    coverage calendar_idx     n     aeg_mean       aeg_med        aeg_wt</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;        &lt;int&gt; &lt;int&gt;        &lt;num&gt;         &lt;num&gt;         &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:      SUR           31    29 -0.011309409 -0.0036993121 -0.0107004532</span></span>
+<span><span class="co">#&gt; 2:      SUR           32    28 -0.002794292 -0.0095889605 -0.0089044276</span></span>
+<span><span class="co">#&gt; 3:      SUR           33    27  0.007666313  0.0061548319  0.0004012161</span></span>
+<span><span class="co">#&gt; 4:      SUR           34    26  0.008094503  0.0004212464  0.0010973315</span></span>
+<span><span class="co">#&gt; 5:      SUR           35    25  0.007408947  0.0094557038 -0.0005997011</span></span>
+<span><span class="co">#&gt; 6:      SUR           36    24  0.005874139  0.0094502806 -0.0023535417</span></span></code></pre></div>
 <p>A monotone drift across calendar diagonals (as in the SUR example
 above, where AEG becomes increasingly positive across
 <code>25, ..., 30</code>) typically indicates that actuals on the latest
@@ -258,14 +258,14 @@ diagnosing specific cohort × dev cells, inspect <code>bt$aeg</code>
 directly:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">bt</span><span class="op">$</span><span class="va">aeg</span>, <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Key: &lt;cv_nm&gt;</span></span>
-<span><span class="co">#&gt;     cv_nm     cohort   dev value_actual value_pred          aeg calendar_idx</span></span>
-<span><span class="co">#&gt;    &lt;char&gt;     &lt;Date&gt; &lt;int&gt;        &lt;num&gt;      &lt;num&gt;        &lt;num&gt;        &lt;int&gt;</span></span>
-<span><span class="co">#&gt; 1:    SUR 2023-05-01    24     1.030446   1.157413 -0.109698314           25</span></span>
-<span><span class="co">#&gt; 2:    SUR 2023-06-01    23     1.175862   1.183114 -0.006130062           25</span></span>
-<span><span class="co">#&gt; 3:    SUR 2023-06-01    24     1.198728   1.294051 -0.073662448           26</span></span>
-<span><span class="co">#&gt; 4:    SUR 2023-07-01    22     1.105530   1.112573 -0.006330018           25</span></span>
-<span><span class="co">#&gt; 5:    SUR 2023-07-01    23     1.106120   1.118239 -0.010837528           26</span></span></code></pre></div>
+<span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
+<span><span class="co">#&gt;    coverage     cohort   dev value_actual value_pred          aeg calendar_idx</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt; &lt;int&gt;        &lt;num&gt;      &lt;num&gt;        &lt;num&gt;        &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1:      SUR 2024-02-01    30     1.474656   1.485094 -0.007028587           31</span></span>
+<span><span class="co">#&gt; 2:      SUR 2024-03-01    29     1.441826   1.414305  0.019458534           31</span></span>
+<span><span class="co">#&gt; 3:      SUR 2024-03-01    30     1.441234   1.418776  0.015828824           32</span></span>
+<span><span class="co">#&gt; 4:      SUR 2024-04-01    28     1.513021   1.510169  0.001888463           31</span></span>
+<span><span class="co">#&gt; 5:      SUR 2024-04-01    29     1.531922   1.504873  0.017974002           32</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="plot-demos">Plot demos<a class="anchor" aria-label="anchor" href="#plot-demos"></a>
@@ -372,8 +372,8 @@ ladder afterwards; <code>"ed"</code> is purely exposure-driven;
 <span><span class="co">#&gt;   fit_fn      : fit_lr</span></span>
 <span><span class="co">#&gt;   loss_var   : lr</span></span>
 <span><span class="co">#&gt;   holdout     : 6 calendar diagonals</span></span>
-<span><span class="co">#&gt;   held-out    : 123 cells</span></span>
-<span><span class="co">#&gt;   AEG         : mean -13.06% / median -7.37%</span></span></code></pre></div>
+<span><span class="co">#&gt;   held-out    : 159 cells</span></span>
+<span><span class="co">#&gt;   AEG         : mean 0.21% / median -0.00%</span></span></code></pre></div>
 <p>Backtesting <code>loss</code> weights the result toward whichever
 cohorts happen to be the largest at the held-out diagonals, which is
 useful when monetary impact matters more than a normalized

@@ -38,7 +38,7 @@ A `data.table` of class `"TotalSummary"` with the same rows as the input
 
 ``` r
 if (FALSE) { # \dontrun{
-tot <- build_total(df, group_var = cv_nm)
+tot <- build_total(df, group_var = coverage)
 summary(tot)
 } # }
 ```

@@ -194,11 +194,11 @@ accepts:</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio" class="external-link">lossratio</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span><span class="va">exp</span>     <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_experience.html">as_experience</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
-<span><span class="va">tri_sur</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span><span class="op">[</span><span class="va">cv_nm</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, <span class="va">cv_nm</span><span class="op">)</span></span>
+<span><span class="va">tri_sur</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, <span class="va">coverage</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Single break date</span></span>
 <span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
-<span>       regime_break <span class="op">=</span> <span class="st">"2024-04-01"</span><span class="op">)</span></span>
+<span>       regime_break <span class="op">=</span> <span class="st">"2025-07-01"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Regime object directly</span></span>
 <span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span><span class="op">)</span></span>
@@ -206,7 +206,7 @@ accepts:</p>
 <span></span>
 <span><span class="co"># Vector — latest is used (= 2024-04-01)</span></span>
 <span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>,</span>
-<span>       regime_break <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2023-06-01"</span>, <span class="st">"2024-04-01"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span>       regime_break <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2023-06-01"</span>, <span class="st">"2025-07-01"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>In simple modes (<code>fit_ata</code>, <code>fit_ed</code>, or
 <code>fit_lr(method ∈ {"ed","cl"})</code>) the same argument acts as a
 plain cohort cut.</p>
@@ -238,9 +238,9 @@ each filter configuration feeds to <code>fit_lr</code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>                                 <span class="co"># full</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, recent <span class="op">=</span> <span class="fl">12L</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>                   <span class="co"># recent</span></span>
-<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, regime_break <span class="op">=</span> <span class="st">"2024-04-01"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>    <span class="co"># break</span></span>
+<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, regime_break <span class="op">=</span> <span class="st">"2025-07-01"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>    <span class="co"># break</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, recent <span class="op">=</span> <span class="fl">12L</span>,</span>
-<span>              regime_break <span class="op">=</span> <span class="st">"2024-04-01"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>                             <span class="co"># hybrid</span></span></code></pre></div>
+<span>              regime_break <span class="op">=</span> <span class="st">"2025-07-01"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>                             <span class="co"># hybrid</span></span></code></pre></div>
 <div class="float">
 <img src="articles/figs/regime_break_data_usage.png" alt="Cells used by each filter configuration on the SUR triangle. Blue = fit data, red = held out (last 6 calendar diagonals), light grey = excluded by the filter, white = future. Vertical dashed line marks the maturity switch k^*; horizontal dashed line marks the regime break cohort."><div class="figcaption">Cells used by each filter configuration on the
 SUR triangle. Blue = fit data, red = held out (last 6 calendar
@@ -322,17 +322,17 @@ the CL side (dev &gt; k*).</p>
 <h2 id="multi-group-handling">Multi-group handling<a class="anchor" aria-label="anchor" href="#multi-group-handling"></a>
 </h2>
 <p><code><a href="../reference/detect_regime.html">detect_regime()</a></code> assumes a single-group triangle. For a
-portfolio with multiple <code>cv_nm</code> groups, call it per
+portfolio with multiple <code>coverage</code> groups, call it per
 group:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">exp</span><span class="op">$</span><span class="va">cv_nm</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">g</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">tri_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span><span class="op">[</span><span class="va">cv_nm</span> <span class="op">==</span> <span class="va">g</span><span class="op">]</span>, <span class="va">cv_nm</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">fits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">exp</span><span class="op">$</span><span class="va">coverage</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">g</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">tri_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="va">g</span><span class="op">]</span>, <span class="va">coverage</span><span class="op">)</span></span>
 <span>  <span class="va">reg_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_g</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_g</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
 <span>         regime_break <span class="op">=</span> <span class="va">reg_g</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>A future extension may accept
-<code>regime_break = list(SUR = "2024-04-01", CAN = "2023-12-01")</code>.
+<code>regime_break = list(SUR = "2025-07-01", CAN = "2023-12-01")</code>.
 Today only scalar / vector / <code>Regime</code> are supported.</p>
 </div>
 <div class="section level2">

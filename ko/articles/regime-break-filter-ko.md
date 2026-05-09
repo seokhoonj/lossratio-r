@@ -57,11 +57,11 @@ post-break 통계량이 안정적이기 때문이다.
 library(lossratio)
 data(experience)
 exp     <- as_experience(experience)
-tri_sur <- build_triangle(exp[cv_nm == "SUR"], cv_nm)
+tri_sur <- build_triangle(exp[coverage == "SUR"], coverage)
 
 # 단일 break date — 24.04 이후 코호트만 사용
 fit_lr(tri_sur, method = "sa", recent = 18L,
-       regime_break = "2024-04-01")
+       regime_break = "2025-07-01")
 
 # Regime 객체 직접 전달
 reg <- detect_regime(tri_sur)
@@ -69,7 +69,7 @@ fit_lr(tri_sur, method = "sa", recent = 18L, regime_break = reg)
 
 # 다중 break — 자동으로 최신 사용 (= 24.04)
 fit_lr(tri_sur, method = "sa",
-       regime_break = c("2023-06-01", "2024-04-01"))
+       regime_break = c("2023-06-01", "2025-07-01"))
 ```
 
 `fit_ata`, `fit_ed` 도 같은 인자 시그니처를 따른다. 단순 모드
@@ -105,9 +105,9 @@ factor noise 에 따라 흔들리지 않는다.
 
 plot_triangle(tri_sur, type = "usage", holdout = 6L)                                 # full
 plot_triangle(tri_sur, type = "usage", recent = 12L, holdout = 6L)                   # recent
-plot_triangle(tri_sur, type = "usage", regime_break = "2024-04-01", holdout = 6L)    # break
+plot_triangle(tri_sur, type = "usage", regime_break = "2025-07-01", holdout = 6L)    # break
 plot_triangle(tri_sur, type = "usage", recent = 12L,
-              regime_break = "2024-04-01", holdout = 6L)                             # hybrid
+              regime_break = "2025-07-01", holdout = 6L)                             # hybrid
 ```
 
 ![SUR triangle 에서 네 가지 필터 설정이 사용하는 셀. 파랑 = 적합에 사용,
@@ -132,7 +132,7 @@ hybrid 패널은 SA 모드가 적용하는 dev-축 split — ED 쪽은 cohort cu
 
 ``` r
 
-tri_sur <- build_triangle(exp[cv_nm == "SUR"], cv_nm)
+tri_sur <- build_triangle(exp[coverage == "SUR"], coverage)
 reg     <- detect_regime(tri_sur)
 
 bt_full   <- backtest(tri_sur, holdout = 6L)
@@ -173,14 +173,14 @@ recent 는 최근 평행사변형 밴드, hybrid 는 좌하단의 post-break 사
 ## 6. 다중 그룹 처리
 
 [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
-은 단일 그룹 triangle 을 전제한다. 여러 `cv_nm` 그룹이 있는 portfolio
+은 단일 그룹 triangle 을 전제한다. 여러 `coverage` 그룹이 있는 portfolio
 에서는 그룹별로 별도 호출한다.
 
 ``` r
 
-groups <- unique(exp$cv_nm)
+groups <- unique(exp$coverage)
 fits <- lapply(groups, function(g) {
-  tri_g <- build_triangle(exp[cv_nm == g], cv_nm)
+  tri_g <- build_triangle(exp[coverage == g], coverage)
   reg_g <- detect_regime(tri_g)
   fit_lr(tri_g, method = "sa", recent = 18L,
          regime_break = reg_g)
@@ -188,7 +188,7 @@ fits <- lapply(groups, function(g) {
 names(fits) <- groups
 ```
 
-향후 `regime_break = list(SUR = "2024-04-01", CAN = "2023-12-01")` 같은
+향후 `regime_break = list(SUR = "2025-07-01", CAN = "2023-12-01")` 같은
 named list 입력을 지원할 수 있으나, 현재는 scalar/vector/`Regime` 세
 형태만 동작한다.
 

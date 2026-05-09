@@ -43,8 +43,8 @@ These columns are validated only when present:
 - `pd_tp_cd`, `pd_tp_nm`, `pd_cd`, `pd_nm`: Product type/product codes
   and names (`character`)
 
-- `cv_tp_cd`, `cv_tp_nm`, `cv_cd`, `cv_nm`: Coverage type/coverage codes
-  and names (`character`)
+- `cv_tp_cd`, `cv_tp_nm`, `cv_cd`, `coverage`: Coverage type/coverage
+  codes and names (`character`)
 
 - `rd_tp_cd`, `rd_tp_nm`, `rd_cd`, `rd_nm`: Rider type/rider codes and
   names (`character`)

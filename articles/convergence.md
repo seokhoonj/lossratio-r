@@ -108,7 +108,7 @@ outlier-resistant coefficient of variation of incremental LR.
 library(lossratio)
 data(experience)
 exp <- as_experience(experience)
-tri <- build_triangle(exp[cv_nm == "SUR"], cv_nm)
+tri <- build_triangle(exp[coverage == "SUR"], coverage)
 
 res <- detect_convergence(tri)
 print(res)

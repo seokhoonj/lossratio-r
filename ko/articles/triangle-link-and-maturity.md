@@ -17,8 +17,8 @@ generalises to multi-group input.
 
 library(lossratio)
 data(experience)
-exp <- as_experience(experience)[cv_nm == "SUR"]
-tri <- build_triangle(exp, group_var = cv_nm)
+exp <- as_experience(experience)[coverage == "SUR"]
+tri <- build_triangle(exp, group_var = coverage)
 ```
 
 ### Cohort trajectories
@@ -68,7 +68,7 @@ plot_triangle(tri, value_var = "lr")          # incremental loss ratio
 
 
 # detail labels (ratio + loss/rp amounts) are 2-line — use quarterly cells
-tri_q <- build_triangle(exp, group_var = cv_nm,
+tri_q <- build_triangle(exp, group_var = coverage,
                         cohort_var = "uyq", dev_var = "elap_q")
 plot_triangle(tri_q, label_style = "detail")  # ratio + (loss / rp) amounts
 ```
@@ -81,23 +81,23 @@ plot_triangle(tri_q, label_style = "detail")  # ratio + (loss / rp) amounts
 
 sm <- summary(tri)
 head(sm)
-#> Key: <cv_nm, dev>
-#>     cv_nm   dev n_obs   lr_mean lr_median      lr_wt lr_incr_mean
-#>    <char> <int> <int>     <num>     <num>      <num>        <num>
-#> 1:    SUR     1    30 0.0738546 0.0000000 0.07343113    0.0738546
-#> 2:    SUR     2    29 0.3512535 0.1120447 0.35150128    0.5365888
-#> 3:    SUR     3    28 0.4521326 0.2618096 0.44744109    0.6201189
-#> 4:    SUR     4    27 0.6327242 0.4798531 0.63467048    0.8852657
-#> 5:    SUR     5    26 0.6369307 0.5641166 0.63999290    0.5767556
-#> 6:    SUR     6    25 0.7264308 0.6191132 0.72781355    0.9314593
+#> Key: <coverage, dev>
+#>    coverage   dev n_obs   lr_mean lr_median     lr_wt lr_incr_mean
+#>      <char> <int> <int>     <num>     <num>     <num>        <num>
+#> 1:      SUR     1    36 0.2522898 0.2393582 0.2525932    0.2522898
+#> 2:      SUR     2    35 0.8030639 0.7859128 0.7890646    1.3572087
+#> 3:      SUR     3    34 0.9258662 0.8997912 0.9204360    1.1519240
+#> 4:      SUR     4    33 0.9856772 0.9716558 0.9778502    1.1797269
+#> 5:      SUR     5    32 1.0336648 1.0502252 1.0447602    1.2268717
+#> 6:      SUR     6    31 1.0945723 1.1832332 1.0892484    1.3676102
 #>    lr_incr_median lr_incr_wt
 #>             <num>      <num>
-#> 1:      0.0000000 0.07343113
-#> 2:      0.0992849 0.54126362
-#> 3:      0.2472070 0.56590118
-#> 4:      0.6387164 0.92060611
-#> 5:      0.4828899 0.59880663
-#> 6:      0.5431397 0.95085711
+#> 1:      0.2393582  0.2525932
+#> 2:      1.2618216  1.3280769
+#> 3:      1.1517980  1.1728982
+#> 4:      1.1167740  1.1742272
+#> 5:      1.2663384  1.3110155
+#> 6:      1.2676379  1.2752751
 ```
 
 Returns a `TriangleSummary` object with mean / median / weighted loss
@@ -115,23 +115,23 @@ $`g_k = \Delta C^L_k / C^P_k`$.
 ata <- build_link(tri, loss_var = "loss")
 sm  <- summary(ata, model = "ata", alpha = 1)
 head(sm)
-#> Key: <cv_nm>
-#>     cv_nm ata_from ata_to ata_link   mean median     wt    cv     f  f_se   rse
-#>    <char>    <num>  <num>   <fctr>  <num>  <num>  <num> <num> <num> <num> <num>
-#> 1:    SUR        1      2      1-2 60.965  4.062 11.320 3.111 6.768 4.767 0.704
-#> 2:    SUR        2      3      2-3 15.316  2.005  2.083 2.955 1.939 1.284 0.663
-#> 3:    SUR        3      4      3-4 36.458  2.167  2.167 4.493 2.167 2.434 1.123
-#> 4:    SUR        4      5      4-5  1.641  1.282  1.291 0.854 1.291 0.115 0.089
-#> 5:    SUR        5      6      5-6  1.607  1.334  1.461 0.455 1.461 0.113 0.078
-#> 6:    SUR        6      7      6-7  1.348  1.208  1.282 0.256 1.282 0.058 0.046
-#>        sigma n_obs n_valid n_inf n_nan valid_ratio
-#>        <num> <num>   <num> <num> <num>       <num>
-#> 1: 27972.257    29      14     0     0       0.483
-#> 2: 25358.337    28      24     0     0       0.857
-#> 3: 69089.724    27      27     0     0       1.000
-#> 4:  4787.739    26      26     0     0       1.000
-#> 5:  5301.574    25      25     0     0       1.000
-#> 6:  3279.239    24      24     0     0       1.000
+#> Key: <coverage>
+#>    coverage ata_from ata_to ata_link  mean median    wt    cv     f  f_se   rse
+#>      <char>    <num>  <num>   <fctr> <num>  <num> <num> <num> <num> <num> <num>
+#> 1:      SUR        1      2      1-2 6.595  6.089 6.163 0.427 6.163 0.382 0.062
+#> 2:      SUR        2      3      2-3 1.765  1.768 1.739 0.157 1.739 0.042 0.024
+#> 3:      SUR        3      4      3-4 1.435  1.400 1.418 0.105 1.418 0.027 0.019
+#> 4:      SUR        4      5      4-5 1.324  1.331 1.339 0.068 1.339 0.018 0.014
+#> 5:      SUR        5      6      5-6 1.267  1.246 1.243 0.070 1.243 0.016 0.013
+#> 6:      SUR        6      7      6-7 1.204  1.194 1.205 0.048 1.205 0.011 0.009
+#>       sigma n_obs n_valid n_inf n_nan valid_ratio
+#>       <num> <num>   <num> <num> <num>       <num>
+#> 1: 6207.618    35      35     0     0           1
+#> 2: 1689.250    34      34     0     0           1
+#> 3: 1372.883    33      33     0     0           1
+#> 4: 1105.053    32      32     0     0           1
+#> 5: 1086.826    31      31     0     0           1
+#> 6:  812.770    30      30     0     0           1
 ```
 
 The [`summary()`](https://rdrr.io/r/base/summary.html) method on a
@@ -224,23 +224,23 @@ link’s median.
 ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
 sm <- summary(ed, model = "ed", alpha = 1)
 head(sm)
-#> Key: <cv_nm>
-#>     cv_nm ata_from ata_to ata_link    mean  median      wt      cv       g
-#>    <char>    <num>  <num>   <fctr>   <num>   <num>   <num>   <num>   <num>
-#> 1:    SUR        1      2      1-2 0.83638 0.11124 0.78549 1.64664 0.78549
-#> 2:    SUR        2      3      2-3 0.42921 0.19355 0.39517 1.28530 0.39517
-#> 3:    SUR        3      4      3-4 0.57740 0.28022 0.54349 1.36754 0.54349
-#> 4:    SUR        4      5      4-5 0.18873 0.13962 0.18976 0.90510 0.18976
-#> 5:    SUR        5      6      5-6 0.29944 0.16294 0.30277 1.01004 0.30277
-#> 6:    SUR        6      7      6-7 0.21583 0.18880 0.20988 0.85987 0.20988
-#>       g_se     rse    sigma n_obs n_valid n_inf n_nan valid_ratio
-#>      <num>   <num>    <num> <num>   <num> <num> <num>       <num>
-#> 1: 0.24877 0.31671 5291.085    29      29     0     0           1
-#> 2: 0.09984 0.25264 3263.751    28      28     0     0           1
-#> 3: 0.14933 0.27477 6210.872    27      27     0     0           1
-#> 4: 0.03343 0.17615 1720.934    26      26     0     0           1
-#> 5: 0.06037 0.19939 3487.836    25      25     0     0           1
-#> 6: 0.03771 0.17970 2450.547    24      24     0     0           1
+#> Key: <coverage>
+#>    coverage ata_from ata_to ata_link    mean  median      wt      cv       g
+#>      <char>    <num>  <num>   <fctr>   <num>   <num>   <num>   <num>   <num>
+#> 1:      SUR        1      2      1-2 1.34661 1.21766 1.31614 0.47327 1.31614
+#> 2:      SUR        2      3      2-3 0.58109 0.56432 0.58674 0.37381 0.58674
+#> 3:      SUR        3      4      3-4 0.39105 0.36751 0.38178 0.43535 0.38178
+#> 4:      SUR        4      5      4-5 0.31110 0.32321 0.33127 0.35969 0.33127
+#> 5:      SUR        5      6      5-6 0.27543 0.25088 0.25518 0.43531 0.25518
+#> 6:      SUR        6      7      6-7 0.21364 0.20479 0.22393 0.31371 0.22393
+#>       g_se     rse     sigma n_obs n_valid n_inf n_nan valid_ratio
+#>      <num>   <num>     <num> <num>   <num> <num> <num>       <num>
+#> 1: 0.09107 0.06919 2930.7438    35      35     0     0           1
+#> 2: 0.03508 0.05979 1580.2621    34      34     0     0           1
+#> 3: 0.02931 0.07677 1587.1869    33      33     0     0           1
+#> 4: 0.02135 0.06444 1319.1106    32      32     0     0           1
+#> 5: 0.02087 0.08178 1421.4780    31      31     0     0           1
+#> 6: 0.01273 0.05686  937.7864    30      30     0     0           1
 
 plot(ed, type = "summary")
 ```
@@ -291,13 +291,13 @@ mat <- detect_maturity(
 )
 
 print(mat)
-#> Key: <cv_nm>
-#>     cv_nm ata_from ata_to ata_link     mean   median       wt         cv
-#>    <char>    <int>  <int>   <char>    <num>    <num>    <num>      <num>
-#> 1:    SUR        9     10     9-10 1.187815 1.172305 1.164727 0.09743995
+#> Key: <coverage>
+#>    coverage ata_from ata_to ata_link     mean   median       wt        cv
+#>      <char>    <int>  <int>   <char>    <num>    <num>    <num>     <num>
+#> 1:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.1053282
 #>           f       f_se        rse    sigma n_obs n_valid n_inf n_nan
 #>       <num>      <num>      <num>    <num> <int>   <int> <int> <int>
-#> 1: 1.164727 0.02218428 0.01904677 1774.278    21      21     0     0
+#> 1: 1.417706 0.02651852 0.01870522 1372.883    33      33     0     0
 #>    valid_ratio
 #>          <num>
 #> 1:           1
@@ -362,21 +362,21 @@ thresholds:
 
 ``` r
 
-tri_all <- build_triangle(as_experience(experience), group_var = cv_nm)
+tri_all <- build_triangle(as_experience(experience), group_var = coverage)
 detect_maturity(tri_all, loss_var = "loss")
-#> Key: <cv_nm>
-#>     cv_nm ata_from ata_to ata_link     mean   median       wt         cv
-#>    <char>    <int>  <int>   <char>    <num>    <num>    <num>      <num>
-#> 1:    2CI        9     10     9-10 1.200664 1.165168 1.191871 0.11890294
-#> 2:    CAN       12     13    12-13 1.168357 1.127671 1.154423 0.09720467
-#> 3:    HOS       10     11    10-11 1.193928 1.157247 1.184079 0.11339122
-#> 4:    SUR        9     10     9-10 1.187815 1.172305 1.164727 0.09743995
-#>           f       f_se        rse    sigma n_obs n_valid n_inf n_nan
-#>       <num>      <num>      <num>    <num> <int>   <int> <int> <int>
-#> 1: 1.191871 0.03125736 0.02622544 1807.059    21      21     0     0
-#> 2: 1.154423 0.02502945 0.02168134 1751.230    18      18     0     0
-#> 3: 1.184079 0.03028008 0.02557268 1612.839    20      20     0     0
-#> 4: 1.164727 0.02218428 0.01904677 1774.278    21      21     0     0
+#> Key: <coverage>
+#>    coverage ata_from ata_to ata_link     mean   median       wt         cv
+#>      <char>    <int>  <int>   <char>    <num>    <num>    <num>      <num>
+#> 1:      CAN        8      9      8-9 1.079323 1.060341 1.065354 0.07131509
+#> 2:       CI       11     12    11-12 1.094403 1.070561 1.114066 0.07563394
+#> 3:      HOS        6      7      6-7 1.244842 1.184287 1.205542 0.13563426
+#> 4:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.10532824
+#>           f       f_se        rse     sigma n_obs n_valid n_inf n_nan
+#>       <num>      <num>      <num>     <num> <int>   <int> <int> <int>
+#> 1: 1.065354 0.01384183 0.01299271  637.2413    28      28     0     0
+#> 2: 1.114066 0.01954799 0.01754653 1459.6221    25      25     0     0
+#> 3: 1.205542 0.02746025 0.02277835  220.8771    30      30     0     0
+#> 4: 1.417706 0.02651852 0.01870522 1372.8834    33      33     0     0
 #>    valid_ratio
 #>          <num>
 #> 1:           1
@@ -403,7 +403,7 @@ If gaps in the development sequence are suspected, inspect them before
 
 ``` r
 
-gaps <- validate_triangle(exp, group_var = cv_nm,
+gaps <- validate_triangle(exp, group_var = coverage,
                           cohort_var = "uym", dev_var = "elap_m")
 head(gaps)
 #> <TriangleValidation>
@@ -436,9 +436,9 @@ fit_ata(tri, loss_var = "loss", alpha = 1, recent = 12)  # last 12 calendar diag
 #> recent      : 12 
 #> regime_break: none 
 #> use_maturity: FALSE 
-#> groups      : cv_nm 
+#> groups      : coverage 
 #> n_groups    : 1 
-#> ata links   : 29
+#> ata links   : 35
 fit_cl(tri, loss_var = "loss", recent = 12)
 #> <CLFit>
 #> method      : basic 
@@ -448,8 +448,8 @@ fit_cl(tri, loss_var = "loss", recent = 12)
 #> recent      : 12 
 #> use_maturity: FALSE 
 #> tail_factor : 1 
-#> groups      : cv_nm 
-#> periods     : 30
+#> groups      : coverage 
+#> periods     : 36
 fit_lr(tri, recent = 12)
 #> <LRFit>
 #> method        : sa 
@@ -463,9 +463,9 @@ fit_lr(tri, recent = 12)
 #> sigma_method  : min_last2 
 #> recent        : 12 
 #> regime_break  : none 
-#> maturity[SUR] : 18
-#> groups        : cv_nm 
-#> periods       : 30
+#> maturity[SUR] : 24
+#> groups        : coverage 
+#> periods       : 36
 ```
 
 `recent = K` keeps only rows whose calendar position

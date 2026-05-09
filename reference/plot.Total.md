@@ -64,7 +64,7 @@ scale and labelled using `amount_divisor`.
 
 ``` r
 if (FALSE) { # \dontrun{
-tot <- build_total(df, group_var = cv_nm)
+tot <- build_total(df, group_var = coverage)
 plot(tot)
 plot(tot, value_var = "loss")
 } # }

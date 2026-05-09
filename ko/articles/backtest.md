@@ -24,7 +24,7 @@ negative values flag over-projection.
 library(lossratio)
 data(experience)
 exp     <- as_experience(experience)
-tri_sur <- build_triangle(exp[cv_nm == "SUR"], cv_nm)
+tri_sur <- build_triangle(exp[coverage == "SUR"], coverage)
 
 bt <- backtest(tri_sur, holdout = 6L)
 print(bt)
@@ -32,8 +32,8 @@ print(bt)
 #>   fit_fn      : fit_lr
 #>   loss_var   : lr
 #>   holdout     : 6 calendar diagonals
-#>   held-out    : 123 cells
-#>   AEG         : mean -13.06% / median -7.37%
+#>   held-out    : 159 cells
+#>   AEG         : mean 0.21% / median -0.00%
 ```
 
 The returned object is a `"Backtest"` list with these key slots:
@@ -73,16 +73,16 @@ reflect inflated link factors; late-dev values flag tail miscalibration.
 ``` r
 
 head(bt$col_summary, 8)
-#>     cv_nm   dev     n   aeg_mean    aeg_med     aeg_wt
-#>    <char> <int> <int>      <num>      <num>      <num>
-#> 1:    SUR     2     1 -0.2208792 -0.2208792 -0.2208792
-#> 2:    SUR     3     2 -0.6437453 -0.6437453 -0.6163673
-#> 3:    SUR     4     3 -0.3510508 -0.1160624 -0.3497066
-#> 4:    SUR     5     4 -0.3148234 -0.2154987 -0.3169997
-#> 5:    SUR     6     5 -0.4606402 -0.4013712 -0.4603512
-#> 6:    SUR     7     6 -0.3178128 -0.3457778 -0.3292850
-#> 7:    SUR     8     6 -0.3942605 -0.4362220 -0.3951000
-#> 8:    SUR     9     6 -0.3181451 -0.3715525 -0.3080096
+#>    coverage   dev     n    aeg_mean     aeg_med       aeg_wt
+#>      <char> <int> <int>       <num>       <num>        <num>
+#> 1:      SUR     2     1 -0.36674932 -0.36674932 -0.366749322
+#> 2:      SUR     3     2 -0.09011955 -0.09011955 -0.154463503
+#> 3:      SUR     4     3 -0.02300710  0.04378484 -0.065662205
+#> 4:      SUR     5     4  0.01186458  0.01235174 -0.016264772
+#> 5:      SUR     6     5  0.01349877  0.06211286 -0.022035200
+#> 6:      SUR     7     6  0.03540917  0.07574468  0.008863285
+#> 7:      SUR     8     6  0.05916242  0.07259077  0.055085668
+#> 8:      SUR     9     6  0.02445333  0.02775188  0.022389147
 ```
 
 `aeg_mean` averages cell-level AEG, `aeg_med` is the median, and
@@ -99,14 +99,14 @@ by construction.
 ``` r
 
 bt$diag_summary
-#>     cv_nm calendar_idx     n   aeg_mean     aeg_med      aeg_wt
-#>    <char>        <int> <int>      <num>       <num>       <num>
-#> 1:    SUR           25    23 -0.1066524 -0.03666962 -0.07019119
-#> 2:    SUR           26    22 -0.1402247 -0.05155686 -0.11332892
-#> 3:    SUR           27    21 -0.1091468 -0.05802823 -0.10411330
-#> 4:    SUR           28    20 -0.1311544 -0.07713787 -0.12738203
-#> 5:    SUR           29    19 -0.1621482 -0.15996777 -0.16736131
-#> 6:    SUR           30    18 -0.1403813 -0.10594767 -0.16500512
+#>    coverage calendar_idx     n     aeg_mean       aeg_med        aeg_wt
+#>      <char>        <int> <int>        <num>         <num>         <num>
+#> 1:      SUR           31    29 -0.011309409 -0.0036993121 -0.0107004532
+#> 2:      SUR           32    28 -0.002794292 -0.0095889605 -0.0089044276
+#> 3:      SUR           33    27  0.007666313  0.0061548319  0.0004012161
+#> 4:      SUR           34    26  0.008094503  0.0004212464  0.0010973315
+#> 5:      SUR           35    25  0.007408947  0.0094557038 -0.0005997011
+#> 6:      SUR           36    24  0.005874139  0.0094502806 -0.0023535417
 ```
 
 A monotone drift across calendar diagonals (as in the SUR example above,
@@ -121,14 +121,14 @@ cells, inspect `bt$aeg` directly:
 ``` r
 
 head(bt$aeg, 5)
-#> Key: <cv_nm>
-#>     cv_nm     cohort   dev value_actual value_pred          aeg calendar_idx
-#>    <char>     <Date> <int>        <num>      <num>        <num>        <int>
-#> 1:    SUR 2023-05-01    24     1.030446   1.157413 -0.109698314           25
-#> 2:    SUR 2023-06-01    23     1.175862   1.183114 -0.006130062           25
-#> 3:    SUR 2023-06-01    24     1.198728   1.294051 -0.073662448           26
-#> 4:    SUR 2023-07-01    22     1.105530   1.112573 -0.006330018           25
-#> 5:    SUR 2023-07-01    23     1.106120   1.118239 -0.010837528           26
+#> Key: <coverage>
+#>    coverage     cohort   dev value_actual value_pred          aeg calendar_idx
+#>      <char>     <Date> <int>        <num>      <num>        <num>        <int>
+#> 1:      SUR 2024-02-01    30     1.474656   1.485094 -0.007028587           31
+#> 2:      SUR 2024-03-01    29     1.441826   1.414305  0.019458534           31
+#> 3:      SUR 2024-03-01    30     1.441234   1.418776  0.015828824           32
+#> 4:      SUR 2024-04-01    28     1.513021   1.510169  0.001888463           31
+#> 5:      SUR 2024-04-01    29     1.531922   1.504873  0.017974002           32
 ```
 
 ## Plot demos
@@ -233,8 +233,8 @@ print(bt_sa)
 #>   fit_fn      : fit_lr
 #>   loss_var   : lr
 #>   holdout     : 6 calendar diagonals
-#>   held-out    : 123 cells
-#>   AEG         : mean -13.06% / median -7.37%
+#>   held-out    : 159 cells
+#>   AEG         : mean 0.21% / median -0.00%
 ```
 
 Backtesting `loss` weights the result toward whichever cohorts happen to

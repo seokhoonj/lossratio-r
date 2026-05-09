@@ -154,8 +154,8 @@ every step generalises to multi-group input.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio">lossratio</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
-<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_experience.html">as_experience</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span><span class="op">[</span><span class="va">cv_nm</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span></span>
-<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_experience.html">as_experience</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span></span>
+<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="cohort-trajectories">Cohort trajectories<a class="anchor" aria-label="anchor" href="#cohort-trajectories"></a>
 </h3>
@@ -184,7 +184,7 @@ for spotting cohorts that deviate from the central tendency.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># detail labels (ratio + loss/rp amounts) are 2-line — use quarterly cells</span></span>
-<span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span>,</span>
+<span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">coverage</span>,</span>
 <span>                        cohort_var <span class="op">=</span> <span class="st">"uyq"</span>, dev_var <span class="op">=</span> <span class="st">"elap_q"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span>  <span class="co"># ratio + (loss / rp) amounts</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-3.png" class="r-plt" alt="" width="100%"></p>
@@ -195,23 +195,23 @@ for spotting cohorts that deviate from the central tendency.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sm</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Key: &lt;cv_nm, dev&gt;</span></span>
-<span><span class="co">#&gt;     cv_nm   dev n_obs   lr_mean lr_median      lr_wt lr_incr_mean</span></span>
-<span><span class="co">#&gt;    &lt;char&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;      &lt;num&gt;        &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:    SUR     1    30 0.0738546 0.0000000 0.07343113    0.0738546</span></span>
-<span><span class="co">#&gt; 2:    SUR     2    29 0.3512535 0.1120447 0.35150128    0.5365888</span></span>
-<span><span class="co">#&gt; 3:    SUR     3    28 0.4521326 0.2618096 0.44744109    0.6201189</span></span>
-<span><span class="co">#&gt; 4:    SUR     4    27 0.6327242 0.4798531 0.63467048    0.8852657</span></span>
-<span><span class="co">#&gt; 5:    SUR     5    26 0.6369307 0.5641166 0.63999290    0.5767556</span></span>
-<span><span class="co">#&gt; 6:    SUR     6    25 0.7264308 0.6191132 0.72781355    0.9314593</span></span>
+<span><span class="co">#&gt; Key: &lt;coverage, dev&gt;</span></span>
+<span><span class="co">#&gt;    coverage   dev n_obs   lr_mean lr_median     lr_wt lr_incr_mean</span></span>
+<span><span class="co">#&gt;      &lt;char&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:      SUR     1    36 0.2522898 0.2393582 0.2525932    0.2522898</span></span>
+<span><span class="co">#&gt; 2:      SUR     2    35 0.8030639 0.7859128 0.7890646    1.3572087</span></span>
+<span><span class="co">#&gt; 3:      SUR     3    34 0.9258662 0.8997912 0.9204360    1.1519240</span></span>
+<span><span class="co">#&gt; 4:      SUR     4    33 0.9856772 0.9716558 0.9778502    1.1797269</span></span>
+<span><span class="co">#&gt; 5:      SUR     5    32 1.0336648 1.0502252 1.0447602    1.2268717</span></span>
+<span><span class="co">#&gt; 6:      SUR     6    31 1.0945723 1.1832332 1.0892484    1.3676102</span></span>
 <span><span class="co">#&gt;    lr_incr_median lr_incr_wt</span></span>
 <span><span class="co">#&gt;             &lt;num&gt;      &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      0.0000000 0.07343113</span></span>
-<span><span class="co">#&gt; 2:      0.0992849 0.54126362</span></span>
-<span><span class="co">#&gt; 3:      0.2472070 0.56590118</span></span>
-<span><span class="co">#&gt; 4:      0.6387164 0.92060611</span></span>
-<span><span class="co">#&gt; 5:      0.4828899 0.59880663</span></span>
-<span><span class="co">#&gt; 6:      0.5431397 0.95085711</span></span></code></pre></div>
+<span><span class="co">#&gt; 1:      0.2393582  0.2525932</span></span>
+<span><span class="co">#&gt; 2:      1.2618216  1.3280769</span></span>
+<span><span class="co">#&gt; 3:      1.1517980  1.1728982</span></span>
+<span><span class="co">#&gt; 4:      1.1167740  1.1742272</span></span>
+<span><span class="co">#&gt; 5:      1.2663384  1.3110155</span></span>
+<span><span class="co">#&gt; 6:      1.2676379  1.2752751</span></span></code></pre></div>
 <p>Returns a <code>TriangleSummary</code> object with mean / median /
 weighted loss ratios per (group, dev) cell.</p>
 </div>
@@ -228,23 +228,23 @@ ED-style intensities
 <code class="sourceCode R"><span><span class="va">ata</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_link.html">build_link</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="va">sm</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ata</span>, model <span class="op">=</span> <span class="st">"ata"</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sm</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Key: &lt;cv_nm&gt;</span></span>
-<span><span class="co">#&gt;     cv_nm ata_from ata_to ata_link   mean median     wt    cv     f  f_se   rse</span></span>
-<span><span class="co">#&gt;    &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;fctr&gt;  &lt;num&gt;  &lt;num&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:    SUR        1      2      1-2 60.965  4.062 11.320 3.111 6.768 4.767 0.704</span></span>
-<span><span class="co">#&gt; 2:    SUR        2      3      2-3 15.316  2.005  2.083 2.955 1.939 1.284 0.663</span></span>
-<span><span class="co">#&gt; 3:    SUR        3      4      3-4 36.458  2.167  2.167 4.493 2.167 2.434 1.123</span></span>
-<span><span class="co">#&gt; 4:    SUR        4      5      4-5  1.641  1.282  1.291 0.854 1.291 0.115 0.089</span></span>
-<span><span class="co">#&gt; 5:    SUR        5      6      5-6  1.607  1.334  1.461 0.455 1.461 0.113 0.078</span></span>
-<span><span class="co">#&gt; 6:    SUR        6      7      6-7  1.348  1.208  1.282 0.256 1.282 0.058 0.046</span></span>
-<span><span class="co">#&gt;        sigma n_obs n_valid n_inf n_nan valid_ratio</span></span>
-<span><span class="co">#&gt;        &lt;num&gt; &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;       &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1: 27972.257    29      14     0     0       0.483</span></span>
-<span><span class="co">#&gt; 2: 25358.337    28      24     0     0       0.857</span></span>
-<span><span class="co">#&gt; 3: 69089.724    27      27     0     0       1.000</span></span>
-<span><span class="co">#&gt; 4:  4787.739    26      26     0     0       1.000</span></span>
-<span><span class="co">#&gt; 5:  5301.574    25      25     0     0       1.000</span></span>
-<span><span class="co">#&gt; 6:  3279.239    24      24     0     0       1.000</span></span></code></pre></div>
+<span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
+<span><span class="co">#&gt;    coverage ata_from ata_to ata_link  mean median    wt    cv     f  f_se   rse</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;fctr&gt; &lt;num&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:      SUR        1      2      1-2 6.595  6.089 6.163 0.427 6.163 0.382 0.062</span></span>
+<span><span class="co">#&gt; 2:      SUR        2      3      2-3 1.765  1.768 1.739 0.157 1.739 0.042 0.024</span></span>
+<span><span class="co">#&gt; 3:      SUR        3      4      3-4 1.435  1.400 1.418 0.105 1.418 0.027 0.019</span></span>
+<span><span class="co">#&gt; 4:      SUR        4      5      4-5 1.324  1.331 1.339 0.068 1.339 0.018 0.014</span></span>
+<span><span class="co">#&gt; 5:      SUR        5      6      5-6 1.267  1.246 1.243 0.070 1.243 0.016 0.013</span></span>
+<span><span class="co">#&gt; 6:      SUR        6      7      6-7 1.204  1.194 1.205 0.048 1.205 0.011 0.009</span></span>
+<span><span class="co">#&gt;       sigma n_obs n_valid n_inf n_nan valid_ratio</span></span>
+<span><span class="co">#&gt;       &lt;num&gt; &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;       &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1: 6207.618    35      35     0     0           1</span></span>
+<span><span class="co">#&gt; 2: 1689.250    34      34     0     0           1</span></span>
+<span><span class="co">#&gt; 3: 1372.883    33      33     0     0           1</span></span>
+<span><span class="co">#&gt; 4: 1105.053    32      32     0     0           1</span></span>
+<span><span class="co">#&gt; 5: 1086.826    31      31     0     0           1</span></span>
+<span><span class="co">#&gt; 6:  812.770    30      30     0     0           1</span></span></code></pre></div>
 <p>The <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> method on a <code>Link</code> object
 (single-variable mode) computes per-link statistics that drive maturity
 detection:</p>
@@ -316,23 +316,23 @@ deviate from the link’s median.</p>
 <code class="sourceCode R"><span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_link.html">build_link</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, premium_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
 <span><span class="va">sm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ed</span>, model <span class="op">=</span> <span class="st">"ed"</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sm</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Key: &lt;cv_nm&gt;</span></span>
-<span><span class="co">#&gt;     cv_nm ata_from ata_to ata_link    mean  median      wt      cv       g</span></span>
-<span><span class="co">#&gt;    &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;fctr&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:    SUR        1      2      1-2 0.83638 0.11124 0.78549 1.64664 0.78549</span></span>
-<span><span class="co">#&gt; 2:    SUR        2      3      2-3 0.42921 0.19355 0.39517 1.28530 0.39517</span></span>
-<span><span class="co">#&gt; 3:    SUR        3      4      3-4 0.57740 0.28022 0.54349 1.36754 0.54349</span></span>
-<span><span class="co">#&gt; 4:    SUR        4      5      4-5 0.18873 0.13962 0.18976 0.90510 0.18976</span></span>
-<span><span class="co">#&gt; 5:    SUR        5      6      5-6 0.29944 0.16294 0.30277 1.01004 0.30277</span></span>
-<span><span class="co">#&gt; 6:    SUR        6      7      6-7 0.21583 0.18880 0.20988 0.85987 0.20988</span></span>
-<span><span class="co">#&gt;       g_se     rse    sigma n_obs n_valid n_inf n_nan valid_ratio</span></span>
-<span><span class="co">#&gt;      &lt;num&gt;   &lt;num&gt;    &lt;num&gt; &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;       &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1: 0.24877 0.31671 5291.085    29      29     0     0           1</span></span>
-<span><span class="co">#&gt; 2: 0.09984 0.25264 3263.751    28      28     0     0           1</span></span>
-<span><span class="co">#&gt; 3: 0.14933 0.27477 6210.872    27      27     0     0           1</span></span>
-<span><span class="co">#&gt; 4: 0.03343 0.17615 1720.934    26      26     0     0           1</span></span>
-<span><span class="co">#&gt; 5: 0.06037 0.19939 3487.836    25      25     0     0           1</span></span>
-<span><span class="co">#&gt; 6: 0.03771 0.17970 2450.547    24      24     0     0           1</span></span>
+<span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
+<span><span class="co">#&gt;    coverage ata_from ata_to ata_link    mean  median      wt      cv       g</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;fctr&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:      SUR        1      2      1-2 1.34661 1.21766 1.31614 0.47327 1.31614</span></span>
+<span><span class="co">#&gt; 2:      SUR        2      3      2-3 0.58109 0.56432 0.58674 0.37381 0.58674</span></span>
+<span><span class="co">#&gt; 3:      SUR        3      4      3-4 0.39105 0.36751 0.38178 0.43535 0.38178</span></span>
+<span><span class="co">#&gt; 4:      SUR        4      5      4-5 0.31110 0.32321 0.33127 0.35969 0.33127</span></span>
+<span><span class="co">#&gt; 5:      SUR        5      6      5-6 0.27543 0.25088 0.25518 0.43531 0.25518</span></span>
+<span><span class="co">#&gt; 6:      SUR        6      7      6-7 0.21364 0.20479 0.22393 0.31371 0.22393</span></span>
+<span><span class="co">#&gt;       g_se     rse     sigma n_obs n_valid n_inf n_nan valid_ratio</span></span>
+<span><span class="co">#&gt;      &lt;num&gt;   &lt;num&gt;     &lt;num&gt; &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;       &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1: 0.09107 0.06919 2930.7438    35      35     0     0           1</span></span>
+<span><span class="co">#&gt; 2: 0.03508 0.05979 1580.2621    34      34     0     0           1</span></span>
+<span><span class="co">#&gt; 3: 0.02931 0.07677 1587.1869    33      33     0     0           1</span></span>
+<span><span class="co">#&gt; 4: 0.02135 0.06444 1319.1106    32      32     0     0           1</span></span>
+<span><span class="co">#&gt; 5: 0.02087 0.08178 1421.4780    31      31     0     0           1</span></span>
+<span><span class="co">#&gt; 6: 0.01273 0.05686  937.7864    30      30     0     0           1</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ed</span>, type <span class="op">=</span> <span class="st">"summary"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="100%"></p>
@@ -373,13 +373,13 @@ are built internally:</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">mat</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Key: &lt;cv_nm&gt;</span></span>
-<span><span class="co">#&gt;     cv_nm ata_from ata_to ata_link     mean   median       wt         cv</span></span>
-<span><span class="co">#&gt;    &lt;char&gt;    &lt;int&gt;  &lt;int&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;      &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:    SUR        9     10     9-10 1.187815 1.172305 1.164727 0.09743995</span></span>
+<span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
+<span><span class="co">#&gt;    coverage ata_from ata_to ata_link     mean   median       wt        cv</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;    &lt;int&gt;  &lt;int&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;     &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.1053282</span></span>
 <span><span class="co">#&gt;           f       f_se        rse    sigma n_obs n_valid n_inf n_nan</span></span>
 <span><span class="co">#&gt;       &lt;num&gt;      &lt;num&gt;      &lt;num&gt;    &lt;num&gt; &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;</span></span>
-<span><span class="co">#&gt; 1: 1.164727 0.02218428 0.01904677 1774.278    21      21     0     0</span></span>
+<span><span class="co">#&gt; 1: 1.417706 0.02651852 0.01870522 1372.883    33      33     0     0</span></span>
 <span><span class="co">#&gt;    valid_ratio</span></span>
 <span><span class="co">#&gt;          &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:           1</span></span></code></pre></div>
@@ -443,21 +443,21 @@ to CL (later dev).</p>
 <p>For multi-group triangles <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> returns one
 row per group, each detected independently with the same thresholds:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tri_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="fu"><a href="../reference/as_experience.html">as_experience</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">tri_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="fu"><a href="../reference/as_experience.html">as_experience</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri_all</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Key: &lt;cv_nm&gt;</span></span>
-<span><span class="co">#&gt;     cv_nm ata_from ata_to ata_link     mean   median       wt         cv</span></span>
-<span><span class="co">#&gt;    &lt;char&gt;    &lt;int&gt;  &lt;int&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;      &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:    2CI        9     10     9-10 1.200664 1.165168 1.191871 0.11890294</span></span>
-<span><span class="co">#&gt; 2:    CAN       12     13    12-13 1.168357 1.127671 1.154423 0.09720467</span></span>
-<span><span class="co">#&gt; 3:    HOS       10     11    10-11 1.193928 1.157247 1.184079 0.11339122</span></span>
-<span><span class="co">#&gt; 4:    SUR        9     10     9-10 1.187815 1.172305 1.164727 0.09743995</span></span>
-<span><span class="co">#&gt;           f       f_se        rse    sigma n_obs n_valid n_inf n_nan</span></span>
-<span><span class="co">#&gt;       &lt;num&gt;      &lt;num&gt;      &lt;num&gt;    &lt;num&gt; &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;</span></span>
-<span><span class="co">#&gt; 1: 1.191871 0.03125736 0.02622544 1807.059    21      21     0     0</span></span>
-<span><span class="co">#&gt; 2: 1.154423 0.02502945 0.02168134 1751.230    18      18     0     0</span></span>
-<span><span class="co">#&gt; 3: 1.184079 0.03028008 0.02557268 1612.839    20      20     0     0</span></span>
-<span><span class="co">#&gt; 4: 1.164727 0.02218428 0.01904677 1774.278    21      21     0     0</span></span>
+<span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
+<span><span class="co">#&gt;    coverage ata_from ata_to ata_link     mean   median       wt         cv</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;    &lt;int&gt;  &lt;int&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;      &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:      CAN        8      9      8-9 1.079323 1.060341 1.065354 0.07131509</span></span>
+<span><span class="co">#&gt; 2:       CI       11     12    11-12 1.094403 1.070561 1.114066 0.07563394</span></span>
+<span><span class="co">#&gt; 3:      HOS        6      7      6-7 1.244842 1.184287 1.205542 0.13563426</span></span>
+<span><span class="co">#&gt; 4:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.10532824</span></span>
+<span><span class="co">#&gt;           f       f_se        rse     sigma n_obs n_valid n_inf n_nan</span></span>
+<span><span class="co">#&gt;       &lt;num&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt; &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1: 1.065354 0.01384183 0.01299271  637.2413    28      28     0     0</span></span>
+<span><span class="co">#&gt; 2: 1.114066 0.01954799 0.01754653 1459.6221    25      25     0     0</span></span>
+<span><span class="co">#&gt; 3: 1.205542 0.02746025 0.02277835  220.8771    30      30     0     0</span></span>
+<span><span class="co">#&gt; 4: 1.417706 0.02651852 0.01870522 1372.8834    33      33     0     0</span></span>
 <span><span class="co">#&gt;    valid_ratio</span></span>
 <span><span class="co">#&gt;          &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:           1</span></span>
@@ -478,7 +478,7 @@ CV first drops below <code>max_cv</code>:</p>
 <p>If gaps in the development sequence are suspected, inspect them
 before <code><a href="../reference/build_triangle.html">build_triangle()</a></code>:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gaps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate_triangle.html">validate_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span>,</span>
+<code class="sourceCode R"><span><span class="va">gaps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate_triangle.html">validate_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">coverage</span>,</span>
 <span>                          cohort_var <span class="op">=</span> <span class="st">"uym"</span>, dev_var <span class="op">=</span> <span class="st">"elap_m"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">gaps</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;TriangleValidation&gt;</span></span>
@@ -509,9 +509,9 @@ diagonals:</p>
 <span><span class="co">#&gt; recent      : 12 </span></span>
 <span><span class="co">#&gt; regime_break: none </span></span>
 <span><span class="co">#&gt; use_maturity: FALSE </span></span>
-<span><span class="co">#&gt; groups      : cv_nm </span></span>
+<span><span class="co">#&gt; groups      : coverage </span></span>
 <span><span class="co">#&gt; n_groups    : 1 </span></span>
-<span><span class="co">#&gt; ata links   : 29</span></span>
+<span><span class="co">#&gt; ata links   : 35</span></span>
 <span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, recent <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;CLFit&gt;</span></span>
 <span><span class="co">#&gt; method      : basic </span></span>
@@ -521,8 +521,8 @@ diagonals:</p>
 <span><span class="co">#&gt; recent      : 12 </span></span>
 <span><span class="co">#&gt; use_maturity: FALSE </span></span>
 <span><span class="co">#&gt; tail_factor : 1 </span></span>
-<span><span class="co">#&gt; groups      : cv_nm </span></span>
-<span><span class="co">#&gt; periods     : 30</span></span>
+<span><span class="co">#&gt; groups      : coverage </span></span>
+<span><span class="co">#&gt; periods     : 36</span></span>
 <span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, recent <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;LRFit&gt;</span></span>
 <span><span class="co">#&gt; method        : sa </span></span>
@@ -536,9 +536,9 @@ diagonals:</p>
 <span><span class="co">#&gt; sigma_method  : min_last2 </span></span>
 <span><span class="co">#&gt; recent        : 12 </span></span>
 <span><span class="co">#&gt; regime_break  : none </span></span>
-<span><span class="co">#&gt; maturity[SUR] : 18</span></span>
-<span><span class="co">#&gt; groups        : cv_nm </span></span>
-<span><span class="co">#&gt; periods       : 30</span></span></code></pre></div>
+<span><span class="co">#&gt; maturity[SUR] : 24</span></span>
+<span><span class="co">#&gt; groups        : coverage </span></span>
+<span><span class="co">#&gt; periods       : 36</span></span></code></pre></div>
 <p><code>recent = K</code> keeps only rows whose calendar position
 (<code>rank(cohort) + dev - 1</code>) is among the latest <code>K</code>
 per group.</p>
