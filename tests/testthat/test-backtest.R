@@ -1,8 +1,8 @@
 # Setup
 data(experience)
 exp <- as_experience(experience)
-tri <- build_triangle(exp, group_var = cv_nm)
-sub <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
+tri <- build_triangle(exp, group_var = coverage)
+sub <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
 
 test_that("backtest returns class 'Backtest'", {
   bt <- backtest(sub, holdout = 6L, fit_fn = fit_cl,
@@ -24,7 +24,7 @@ test_that("Backtest has expected list elements", {
 test_that("aeg has expected columns", {
   bt <- backtest(sub, holdout = 6L, fit_fn = fit_cl,
                  loss_var = "loss", method = "mack")
-  for (nm in c("cv_nm", "cohort", "dev", "value_actual", "value_pred",
+  for (nm in c("coverage", "cohort", "dev", "value_actual", "value_pred",
                "aeg", "calendar_idx")) {
     expect_true(nm %in% names(bt$aeg), info = paste("missing", nm))
   }
@@ -43,9 +43,9 @@ test_that("aeg = actual / pred - 1 (cell-wise, A/E convention)", {
 test_that("col_summary and diag_summary keyed correctly", {
   bt <- backtest(sub, holdout = 6L, fit_fn = fit_cl,
                  loss_var = "loss", method = "mack")
-  expect_true(all(c("cv_nm", "dev", "n", "aeg_mean",
+  expect_true(all(c("coverage", "dev", "n", "aeg_mean",
                     "aeg_med", "aeg_wt") %in% names(bt$col_summary)))
-  expect_true(all(c("cv_nm", "calendar_idx", "n", "aeg_mean",
+  expect_true(all(c("coverage", "calendar_idx", "n", "aeg_mean",
                     "aeg_med", "aeg_wt") %in% names(bt$diag_summary)))
 })
 
@@ -65,8 +65,8 @@ test_that("backtest works with method = 'basic'", {
 test_that("backtest preserves multi-group structure", {
   bt <- backtest(tri, holdout = 6L, fit_fn = fit_cl,
                  loss_var = "loss", method = "mack")
-  expect_true("cv_nm" %in% names(bt$aeg))
-  expect_gt(length(unique(bt$aeg$cv_nm)), 1L)
+  expect_true("coverage" %in% names(bt$aeg))
+  expect_gt(length(unique(bt$aeg$coverage)), 1L)
 })
 
 test_that("backtest errors on invalid holdout", {
@@ -171,7 +171,7 @@ test_that("backtest errors when fit_lr loss_var is unsupported", {
 test_that("backtest preserves multi-group structure with fit_lr", {
   bt <- backtest(tri, holdout = 6L, fit_fn = fit_lr,
                  method = "cl", loss_var = "loss")
-  expect_gt(length(unique(bt$aeg$cv_nm)), 1L)
+  expect_gt(length(unique(bt$aeg$coverage)), 1L)
 })
 
 test_that("plot.Backtest dispatches for fit_lr backtests", {

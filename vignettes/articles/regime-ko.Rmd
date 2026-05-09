@@ -58,7 +58,7 @@ library(lossratio)
 
 data(experience)
 exp     <- as_experience(experience)
-tri_sur <- build_triangle(exp[cv_nm == "SUR"], cv_nm)
+tri_sur <- build_triangle(exp[coverage == "SUR"], coverage)
 ```
 
 ## 3. regime 탐지

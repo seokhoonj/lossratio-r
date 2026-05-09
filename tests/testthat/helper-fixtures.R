@@ -11,13 +11,13 @@ make_exp <- function() {
   as_experience(experience)
 }
 
-make_tri <- function(group_var = "cv_nm", ...) {
+make_tri <- function(group_var = "coverage", ...) {
   build_triangle(make_exp(), group_var = !!group_var, ...)
 }
 
 make_sub_tri <- function(cv = "SUR") {
   exp <- make_exp()
-  build_triangle(exp[cv_nm == cv], group_var = "cv_nm")
+  build_triangle(exp[coverage == cv], group_var = "coverage")
 }
 
 make_link_set <- function() {
@@ -35,8 +35,8 @@ make_link_set <- function() {
     ed_sm   = summary(ed),
     cl      = fit_cl(tri, loss_var = "loss", method = "mack"),
     lr      = fit_lr(tri, method = "sa"),
-    cal     = build_calendar(make_exp(), group_var = "cv_nm"),
-    tot     = build_total(make_exp(), group_var = "cv_nm")
+    cal     = build_calendar(make_exp(), group_var = "coverage"),
+    tot     = build_total(make_exp(), group_var = "coverage")
   )
 }
 

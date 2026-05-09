@@ -306,7 +306,7 @@ plot.Triangle <- function(x,
 #'
 #' @examples
 #' \dontrun{
-#' x <- build_calendar(df, cv_nm, cym)
+#' x <- build_calendar(df, coverage, cym)
 #'
 #' plot(x)
 #' plot(x, value_var = "lr")
@@ -735,7 +735,7 @@ plot_triangle.Triangle <- function(x,
 #'
 #' @examples
 #' \dontrun{
-#' tot <- build_total(df, group_var = cv_nm)
+#' tot <- build_total(df, group_var = coverage)
 #' plot(tot)
 #' plot(tot, value_var = "loss")
 #' }

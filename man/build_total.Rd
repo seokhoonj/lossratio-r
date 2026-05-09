@@ -83,11 +83,11 @@ comparing groups on a common period basis.
 }
 \examples{
 \dontrun{
-build_total(df, cv_nm)
+build_total(df, coverage)
 
 build_total(
   df,
-  cv_nm,
+  coverage,
   period_from = "2023-01-01",
   period_to   = "2023-12-01"
 )

@@ -1,8 +1,8 @@
 # Setup
 data(experience)
 exp <- as_experience(experience)
-sub <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
-tri <- build_triangle(exp, group_var = cv_nm)
+sub <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
+tri <- build_triangle(exp, group_var = coverage)
 
 test_that("detect_convergence returns class 'Convergence' with required fields", {
   res <- detect_convergence(sub)
@@ -27,8 +27,8 @@ test_that("k_conv is >= k_star when non-NA", {
 
 test_that("insufficient history yields k_conv == NA", {
   k_star_guess <- 6L
-  short_exp <- exp[cv_nm == "SUR" & elap_m <= k_star_guess + 2L]
-  short_tri <- build_triangle(short_exp, group_var = cv_nm)
+  short_exp <- exp[coverage == "SUR" & elap_m <= k_star_guess + 2L]
+  short_tri <- build_triangle(short_exp, group_var = coverage)
   res <- detect_convergence(short_tri, k_star = k_star_guess, min_run = 3L)
   expect_true(is.na(res$k_conv))
 })

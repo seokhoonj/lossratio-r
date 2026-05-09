@@ -102,7 +102,7 @@ strictly chronological.}
 \dontrun{
 data(experience)
 exp <- as_experience(experience)
-tri_sur <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
+tri_sur <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
 
 # Hierarchical clustering (no extra package dependency)
 r <- detect_regime(tri_sur, K = 12, method = "hclust",

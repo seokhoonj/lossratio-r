@@ -63,7 +63,7 @@ where \code{premium} denotes risk premium rather than written premium.
 }
 \examples{
 \dontrun{
-x <- build_calendar(df, cv_nm, cym)
+x <- build_calendar(df, coverage, cym)
 
 plot(x)
 plot(x, value_var = "lr")

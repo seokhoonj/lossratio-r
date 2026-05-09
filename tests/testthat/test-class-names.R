@@ -64,10 +64,10 @@ test_that("TriangleSummary / TriangleLonger / TriangleSummaryLonger classes set"
 
 test_that("CalendarLonger and validation classes set", {
   exp <- make_exp()
-  cal <- build_calendar(exp, group_var = cv_nm)
+  cal <- build_calendar(exp, group_var = coverage)
   expect_s3_class(attr(cal, "longer"), "CalendarLonger")
 
-  val_tri <- validate_triangle(exp, group_var = cv_nm)
+  val_tri <- validate_triangle(exp, group_var = coverage)
   expect_s3_class(val_tri, "TriangleValidation")
 })
 
@@ -122,7 +122,7 @@ test_that("Triangle attribute names preserved (raw / standard split)", {
   # columns; .get_granularity() distinguishes them. Lock in the
   # current attribute value (NA) so a future change is intentional.
   expect_true(is.na(attr(tri, "dev_type")))
-  expect_identical(attr(tri, "group_var"),   "cv_nm")
+  expect_identical(attr(tri, "group_var"),   "coverage")
 
   # standard column names rename happened (raw cohort/dev replaced).
   expect_true("cohort" %in% names(tri))
@@ -132,15 +132,15 @@ test_that("Triangle attribute names preserved (raw / standard split)", {
 })
 
 test_that("Calendar attributes use calendar_var / calendar_type", {
-  cal <- build_calendar(make_exp(), group_var = cv_nm)
+  cal <- build_calendar(make_exp(), group_var = coverage)
   expect_identical(attr(cal, "calendar_var"),  "cym")
   expect_identical(attr(cal, "calendar_type"), "month")
-  expect_identical(attr(cal, "group_var"),     "cv_nm")
+  expect_identical(attr(cal, "group_var"),     "coverage")
 })
 
 test_that("Forbidden legacy attribute names not present", {
   tri <- make_tri()
-  cal <- build_calendar(make_exp(), group_var = cv_nm)
+  cal <- build_calendar(make_exp(), group_var = coverage)
   for (a in c("period_var", "duration_var", "duration_type",
               "elapsed_var", "elp_var", "elp_type", "dur_var", "dur_type")) {
     expect_null(attr(tri, a, exact = TRUE), info = paste("tri attr", a))

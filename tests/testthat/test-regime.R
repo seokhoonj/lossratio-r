@@ -1,7 +1,7 @@
 # Setup — use a single-group subset to keep test fast
 data(experience)
 exp <- as_experience(experience)
-sub <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
+sub <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
 
 test_that("detect_regime returns class 'Regime' (ecp default)", {
   r <- detect_regime(sub, K = 12, method = "ecp")

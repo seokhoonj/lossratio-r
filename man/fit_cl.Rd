@@ -104,7 +104,7 @@ their variance are estimated using the supplied WLS weights.
 \dontrun{
 data(experience)
 exp <- as_experience(experience)
-tri <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
+tri <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
 
 # Basic chain ladder (point projection only)
 cl <- fit_cl(tri, loss_var = "loss", method = "basic")

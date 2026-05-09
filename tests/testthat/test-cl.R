@@ -1,7 +1,7 @@
 # Setup
 data(experience)
 exp <- as_experience(experience)
-tri <- build_triangle(exp, group_var = cv_nm)
+tri <- build_triangle(exp, group_var = coverage)
 
 test_that("fit_cl method = 'basic' returns class 'CLFit' with expected structure", {
   cl <- fit_cl(tri, loss_var = "loss", method = "basic")
@@ -16,7 +16,7 @@ test_that("fit_cl method = 'basic' returns class 'CLFit' with expected structure
 
 test_that("$full has expected columns", {
   cl <- fit_cl(tri, loss_var = "loss", method = "basic")
-  for (nm in c("cv_nm", "cohort", "dev", "value_obs", "value_proj", "is_observed")) {
+  for (nm in c("coverage", "cohort", "dev", "value_obs", "value_proj", "is_observed")) {
     expect_true(nm %in% names(cl$full), info = paste("missing", nm))
   }
 })
@@ -42,7 +42,7 @@ test_that("Mack standard errors are non-negative", {
 
 test_that("$summary has one row per (group, cohort) with expected columns", {
   cl <- fit_cl(tri, loss_var = "loss", method = "mack")
-  for (nm in c("cv_nm", "cohort", "latest", "ultimate", "reserve")) {
+  for (nm in c("coverage", "cohort", "latest", "ultimate", "reserve")) {
     expect_true(nm %in% names(cl$summary), info = paste("missing", nm))
   }
 })

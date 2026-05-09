@@ -43,7 +43,7 @@ generalises to multi-group input.
 library(lossratio)
 data(experience)
 exp <- as_experience(experience)
-tri <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
+tri <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
 
 cl <- fit_cl(tri, loss_var = "loss", method = "mack")
 print(cl)

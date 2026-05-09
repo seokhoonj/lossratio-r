@@ -36,7 +36,7 @@ These columns are validated only when present:
 \item \code{elap_m}     : Elapsed month (\code{integer})
 \item \code{pd_tp_cd}, \code{pd_tp_nm}, \code{pd_cd}, \code{pd_nm}:
 Product type/product codes and names (\code{character})
-\item \code{cv_tp_cd}, \code{cv_tp_nm}, \code{cv_cd}, \code{cv_nm}:
+\item \code{cv_tp_cd}, \code{cv_tp_nm}, \code{cv_cd}, \code{coverage}:
 Coverage type/coverage codes and names (\code{character})
 \item \code{rd_tp_cd}, \code{rd_tp_nm}, \code{rd_cd}, \code{rd_nm}:
 Rider type/rider codes and names (\code{character})

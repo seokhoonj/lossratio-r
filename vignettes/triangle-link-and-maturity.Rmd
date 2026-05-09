@@ -35,8 +35,8 @@ generalises to multi-group input.
 ```{r}
 library(lossratio)
 data(experience)
-exp <- as_experience(experience)[cv_nm == "SUR"]
-tri <- build_triangle(exp, group_var = cv_nm)
+exp <- as_experience(experience)[coverage == "SUR"]
+tri <- build_triangle(exp, group_var = coverage)
 ```
 
 ### Cohort trajectories
@@ -58,7 +58,7 @@ plot_triangle(tri)                            # lr in each cell
 plot_triangle(tri, value_var = "lr")          # incremental loss ratio
 
 # detail labels (ratio + loss/rp amounts) are 2-line — use quarterly cells
-tri_q <- build_triangle(exp, group_var = cv_nm,
+tri_q <- build_triangle(exp, group_var = coverage,
                         cohort_var = "uyq", dev_var = "elap_q")
 plot_triangle(tri_q, label_style = "detail")  # ratio + (loss / rp) amounts
 ```
@@ -220,7 +220,7 @@ For multi-group triangles `detect_maturity()` returns one row per
 group, each detected independently with the same thresholds:
 
 ```{r}
-tri_all <- build_triangle(as_experience(experience), group_var = cv_nm)
+tri_all <- build_triangle(as_experience(experience), group_var = coverage)
 detect_maturity(tri_all, loss_var = "loss")
 ```
 
@@ -238,7 +238,7 @@ If gaps in the development sequence are suspected, inspect them before
 `build_triangle()`:
 
 ```{r}
-gaps <- validate_triangle(exp, group_var = cv_nm,
+gaps <- validate_triangle(exp, group_var = coverage,
                           cohort_var = "uym", dev_var = "elap_m")
 head(gaps)
 ```

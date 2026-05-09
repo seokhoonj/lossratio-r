@@ -72,7 +72,7 @@
 #' \dontrun{
 #' data(experience)
 #' exp <- as_experience(experience)
-#' tri_sur <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
+#' tri_sur <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
 #'
 #' # Hierarchical clustering (no extra package dependency)
 #' r <- detect_regime(tri_sur, K = 12, method = "hclust",
@@ -279,7 +279,7 @@ print.Regime <- function(x, ...) {
   cat("<Regime>\n")
   cat(sprintf("  method      : %s\n", x$method))
   cat(sprintf("  loss_var   : %s\n", x$loss_var))
-  cat(sprintf("  window (K)  : %s 1, ..., %d\n", x$dev_var, x$K))
+  cat(sprintf("  window (K)  : %s 1-%d\n", x$dev_var, x$K))
   cat(sprintf("  cohorts     : %d analysed",
               nrow(x$labels)))
   if (length(x$dropped))

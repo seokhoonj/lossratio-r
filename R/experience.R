@@ -23,7 +23,7 @@
 #'   \item `elap_m`     : Elapsed month (`integer`)
 #'   \item `pd_tp_cd`, `pd_tp_nm`, `pd_cd`, `pd_nm`:
 #'     Product type/product codes and names (`character`)
-#'   \item `cv_tp_cd`, `cv_tp_nm`, `cv_cd`, `cv_nm`:
+#'   \item `cv_tp_cd`, `cv_tp_nm`, `cv_cd`, `coverage`:
 #'     Coverage type/coverage codes and names (`character`)
 #'   \item `rd_tp_cd`, `rd_tp_nm`, `rd_cd`, `rd_nm`:
 #'     Rider type/rider codes and names (`character`)
@@ -67,7 +67,7 @@ check_experience <- function(df) {
     cv_tp_cd = "character",
     cv_tp_nm = "character",
     cv_cd    = "character",
-    cv_nm    = "character",
+    coverage    = "character",
     rd_tp_cd = "character",
     rd_tp_nm = "character",
     rd_cd    = "character",

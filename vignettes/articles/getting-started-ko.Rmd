@@ -31,7 +31,7 @@ knitr::opts_chunk$set(
 `lossratio` 는 long-format experience 데이터를 입력으로 사용한다 — 한 행은
 (코호트 × 경과 기간 × 인구통계) 셀 하나에 대응한다. 내장 데이터셋
 `experience` 는 33,480 행 테이블로, 여러 단위의 calendar / underwriting 기간
-컬럼, 인구통계 차원 (`cv_nm`, `age_band`, `gender`), 기간별 금액 컬럼
+컬럼, 인구통계 차원 (`coverage`, `age_band`, `gender`), 기간별 금액 컬럼
 (`loss_incr`, `premium_incr`) 을 포함한다.
 
 ```{r}
@@ -55,7 +55,7 @@ class(exp)
 ## 2단계 — 코호트 × 경과 기간 구조 구축
 
 ```{r}
-tri <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
+tri <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
 class(tri)
 names(tri)
 ```
@@ -121,7 +121,7 @@ summary(lr)
 단계로 활용된다.
 
 ```{r}
-sub <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
+sub <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
 detect_regime(sub, K = 12, method = "ecp")
 ```
 

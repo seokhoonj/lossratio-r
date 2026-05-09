@@ -36,8 +36,8 @@ chain ladder 또는 손해율 모형을 적합하기 전에 기반이 되는 tri
 ```{r}
 library(lossratio)
 data(experience)
-exp <- as_experience(experience)[cv_nm == "SUR"]
-tri <- build_triangle(exp, group_var = cv_nm)
+exp <- as_experience(experience)[coverage == "SUR"]
+tri <- build_triangle(exp, group_var = coverage)
 ```
 
 ### 코호트 궤적
@@ -58,7 +58,7 @@ plot_triangle(tri)                            # 각 셀의 lr
 plot_triangle(tri, value_var = "lr")          # 증분 loss ratio
 
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly 로 다시 빌드
-tri_q <- build_triangle(exp, group_var = cv_nm,
+tri_q <- build_triangle(exp, group_var = coverage,
                         cohort_var = "uyq", dev_var = "elap_q")
 plot_triangle(tri_q, label_style = "detail")  # 비율 + (loss / rp) 금액
 ```
@@ -211,7 +211,7 @@ dev) 로 전환되는 dev 를 결정한다.
 반환하며, 각 그룹은 동일한 임계값 하에서 독립적으로 탐지된다.
 
 ```{r}
-tri_all <- build_triangle(as_experience(experience), group_var = cv_nm)
+tri_all <- build_triangle(as_experience(experience), group_var = coverage)
 detect_maturity(tri_all, loss_var = "loss")
 ```
 
@@ -228,7 +228,7 @@ plot(build_link(tri_all, loss_var = "loss"), type = "cv")
 경과 기간 시퀀스에 결손이 의심되면 `build_triangle()` 호출 전에 점검한다.
 
 ```{r}
-gaps <- validate_triangle(exp, group_var = cv_nm,
+gaps <- validate_triangle(exp, group_var = coverage,
                           cohort_var = "uym", dev_var = "elap_m")
 head(gaps)
 ```

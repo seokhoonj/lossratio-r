@@ -126,7 +126,7 @@ In all cases, exposure is projected forward using chain ladder:
 \dontrun{
 data(experience)
 exp <- as_experience(experience)
-tri <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
+tri <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
 
 # Stage-adaptive (default): ED before maturity, CL after
 lr_sa <- fit_lr(tri, method = "sa")

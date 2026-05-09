@@ -484,7 +484,7 @@ build_triangle <- function(df,
 #'
 #' @examples
 #' \dontrun{
-#' d <- build_triangle(df, group_var = cv_nm)
+#' d <- build_triangle(df, group_var = coverage)
 #' smr <- summary(d)
 #' head(smr)
 #' attr(smr, "longer")
@@ -908,7 +908,7 @@ build_calendar <- function(df,
 #'
 #' @examples
 #' \dontrun{
-#' cal <- build_calendar(df, group_var = cv_nm)
+#' cal <- build_calendar(df, group_var = coverage)
 #' smr  <- summary(cal)
 #' head(smr)
 #' }
@@ -1004,11 +1004,11 @@ summary.Calendar <- function(object, ...) {
 #'
 #' @examples
 #' \dontrun{
-#' build_total(df, cv_nm)
+#' build_total(df, coverage)
 #'
 #' build_total(
 #'   df,
-#'   cv_nm,
+#'   coverage,
 #'   period_from = "2023-01-01",
 #'   period_to   = "2023-12-01"
 #' )
@@ -1131,7 +1131,7 @@ build_total <- function(df,
 #'
 #' @examples
 #' \dontrun{
-#' tot <- build_total(df, group_var = cv_nm)
+#' tot <- build_total(df, group_var = coverage)
 #' summary(tot)
 #' }
 #'

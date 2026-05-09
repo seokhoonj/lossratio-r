@@ -1,137 +1,144 @@
 # Synthetic experience-study generator for the lossratio package.
-# Produces a fully synthetic `experience` data.table that mirrors the
-# package's documented schema (column order, classes, factor levels) and
-# lands in broadly plausible marginal ranges. Deterministic via
-# set.seed(20260501L). Run from the package root:
+#
+# Produces a 36 x 36 jagged triangle x 4 coverages, deterministic via
+# set.seed(20260501). Calibration scalars (target LR, premium volume,
+# cell noise CV) per coverage were measured once on a real long-term
+# Korean health-insurance portfolio and are baked in here as constants
+# so this script ships without any real-data dependency. SUR carries a
+# regime shift at cohort 18 (2025-07): target LR is scaled down to
+# 0.6x to mimic the real portfolio's underwriting tightening.
+#
+# Run from the package root:
 #   Rscript -e 'source("data-raw/make_experience.R")'
+
+suppressPackageStartupMessages({
+  library(data.table)
+  library(usethis)
+})
 
 set.seed(20260501L)
 
-library(data.table)
-library(lubridate)
-
-# ---- Grid -------------------------------------------------------------------
-
-cohorts   <- seq.Date(as.Date("2023-04-01"), as.Date("2025-09-01"), by = "month")
-n_cohorts <- length(cohorts)  # 30
-
-cv_levels       <- c("SUR", "CAN", "2CI", "HOS")
-age_band_levels <- c("30-34", "35-39", "40-44", "45-49", "50-54",
-                     "55-59", "60-64", "65-69", "70-")
-gender_levels   <- c("M", "F")
-
-# Build full triangle: cohort c (1..30) gets elap_m 1..(31 - c).
-tri_grid <- rbindlist(lapply(seq_len(n_cohorts), function(c) {
-  data.table(uym = cohorts[c], elap_m = seq.int(1L, n_cohorts - c + 1L))
-}))
-
-# Cross-join triangle cells with demographic strata. Each (uym, elap_m) cell
-# is replicated 4 * 9 * 2 = 72 times.
-dt <- CJ(idx      = seq_len(nrow(tri_grid)),
-         cv_nm    = cv_levels,
-         age_band = age_band_levels,
-         gender   = gender_levels,
-         sorted   = FALSE)
-dt[, `:=`(uym = tri_grid$uym[idx], elap_m = tri_grid$elap_m[idx])]
-dt[, idx := NULL]
-
-# ---- Date derivations -------------------------------------------------------
-
-dt[, uy  := lubridate::floor_date(uym, "year")]
-dt[, uyq := lubridate::floor_date(uym, "quarter")]
-dt[, uyh := as.Date(ifelse(month(uym) <= 6,
-                           sprintf("%d-01-01", year(uym)),
-                           sprintf("%d-07-01", year(uym))))]
-dt[, cym := uym %m+% months(elap_m - 1L)]
-dt[, cy  := lubridate::floor_date(cym, "year")]
-dt[, cyq := lubridate::floor_date(cym, "quarter")]
-dt[, cyh := as.Date(ifelse(month(cym) <= 6,
-                           sprintf("%d-01-01", year(cym)),
-                           sprintf("%d-07-01", year(cym))))]
-
-dt[, elap_y := as.integer(ceiling(elap_m / 12))]
-dt[, elap_h := as.integer(ceiling(elap_m / 6))]
-dt[, elap_q := as.integer(ceiling(elap_m / 3))]
-dt[, elap_m := as.integer(elap_m)]
-
-# ---- Factor coercion --------------------------------------------------------
-
-dt[, age_band := factor(age_band, levels = age_band_levels, ordered = TRUE)]
-dt[, gender   := factor(gender,   levels = gender_levels)]
-
-# ---- premium_incr: per-period risk premium (exposure proxy) ----------------
-# Right-skewed Gamma scaled per cv_nm; premium_incr grows with elap_m.
-# Allow tiny share negatives (refunds).
-
-N <- nrow(dt)
-premium_scale_by_cv <- c(SUR = 0.9e6, CAN = 0.9e6, `2CI` = 0.7e6, HOS = 0.9e6)
-premium_base <- rgamma(N, shape = 0.6, scale = premium_scale_by_cv[dt$cv_nm])
-# Per-period growth with elap_m: roughly linear early then taper after 24m.
-growth <- 1 + 0.6 * pmin(dt$elap_m, 24L)
-dt[, premium_incr := premium_base * growth]
-# Refund flip on ~0.1% of cells.
-dt[, premium_incr := premium_incr * ifelse(rbinom(.N, 1L, 0.999) == 1L, 1, -1)]
-dt[, premium_incr := round(premium_incr)]
-
-# ---- loss_incr: per-period loss --------------------------------------------
-# loss_incr = (Bernoulli has-loss) * Gamma anchored to premium_incr * conditional-LR scale.
-# Targets ~65% zeros overall.
+# ---- Calibration constants (per coverage) -----------------------------------
 #
-# Per-cv development LR curves are calibrated to the broad shape of a real
-# long-term insurance portfolio's marginal LR-by-development pattern for the
-# four coverage types. Only the smoothed first-10-month curve is taken from
-# real aggregates; the elap_m 11-30 plateau is synthetic; cohort patterns,
-# demographic mixes, cell-level loss / rp values are all randomly drawn.
-
-dev_lr_by_cv <- list(
-  SUR  = c(0.20, 0.80, 0.95, 1.05, 1.15, 1.20, 1.15, 1.20, 1.15, 1.10,
-           rep(1.10, 20)),
-  CAN  = c(0.01, 0.02, 0.05, 0.08, 0.15, 0.30, 0.40, 0.65, 0.70, 0.70,
-           rep(0.70, 20)),
-  `2CI` = c(0.05, 0.25, 0.55, 0.60, 0.70, 0.70, 0.80, 0.65, 0.75, 0.75,
-            rep(0.70, 20)),
-  HOS  = c(0.05, 0.15, 0.30, 0.40, 0.45, 0.40, 0.40, 0.40, 0.50, 0.40,
-           rep(0.40, 20))
+# Coverage codes (letter-first uppercase, valid bare identifiers):
+#   CI   The two major non-cancer critical illnesses:
+#          - cerebrovascular disease (stroke, cerebral infarction,
+#            cerebral haemorrhage)
+#          - ischemic heart disease (angina, acute myocardial
+#            infarction)
+#        Does NOT include cancer; cancer is the separate `CAN` coverage.
+#   CAN  Cancer
+#   HOS  Hospitalisation (per-day fixed benefit)
+#   SUR  Surgery (per-event fixed benefit)
+calib <- data.table(
+  coverage     = c("CI",       "CAN",      "HOS",      "SUR"),
+  target_lr = c(0.6041798,  0.4966633,  0.3533962,  1.4291995),
+  prem_mean = c(490082826,  403465899,  32725571,   704738057),
+  prem_cv   = c(0.9332768,  0.8684393,  0.8545352,  0.6738675),
+  cell_cv   = c(1.3679838,  1.6660074,  0.8603264,  0.3589258)
 )
-dev_lr_mat <- vapply(c("SUR", "CAN", "2CI", "HOS"),
-                     function(cv) dev_lr_by_cv[[cv]],
-                     numeric(30))
-target_lr <- dev_lr_mat[cbind(dt$elap_m,
-                              match(dt$cv_nm, c("SUR", "CAN", "2CI", "HOS")))]
 
-# SUR cohort regime break at 2024-04: a synthetic scenario representing one
-# of the four typical regime triggers in long-term insurance underwriting:
-#   (1) drastic premium adjustment (up or down)
-#   (2) product coverage content change
-#   (3) sum insured limit change
-#   (4) underwriting guideline change
-# Post-2024-04 SUR cohorts get a 50% LR reduction. Strong enough that
-# all of ecp / pelt / hclust detect the break in `detect_regime()`.
-sur_post_break <- dt$cv_nm == "SUR" & dt$uym >= as.Date("2024-04-01")
-target_lr[sur_post_break] <- target_lr[sur_post_break] * 0.50
+# Single regime shift on SUR at cohort idx 18 (2025-07): scale target
+# LR by 0.6 (1.43 -> ~0.86), reflecting an underwriting tightening.
+shifts <- list("SUR" = list(at = 18L, scale = 0.60))
 
-p_has_loss <- pmin(0.55, dt$elap_m / 32)
-has_loss   <- rbinom(N, 1L, p_has_loss)
-shape_loss <- 5.0   # tight Gamma → cleaner cohort signal for regime demo
-cond_scale <- pmax(abs(dt$premium_incr), 1) * target_lr /
-  pmax(p_has_loss, 0.05) / shape_loss
-loss_raw <- has_loss * rgamma(N, shape = shape_loss, scale = cond_scale)
+# ---- Synthesis grid -------------------------------------------------------
 
-# Reversal sign flip on ~0.3% of cells.
-dt[, loss_incr := loss_raw * ifelse(rbinom(.N, 1L, 0.997) == 1L, 1, -1)]
-dt[, loss_incr := round(loss_incr)]
+n_cohorts   <- 36L
+K           <- 36L
+max_cym_idx <- n_cohorts - 1L
 
-# ---- Final column order (matches package schema) ----------------------------
+# Runoff: roughly constant incremental loss per dev with a small dev-1
+# dampening that mimics the waiting-period dip in real long-term
+# health data.
+weights    <- rep(1.0, K)
+weights[1] <- 0.2
+weights    <- weights / sum(weights)
 
-col_order <- c("cy", "cyh", "cyq", "cym",
-               "uy", "uyh", "uyq", "uym",
-               "elap_y", "elap_h", "elap_q", "elap_m",
-               "cv_nm", "age_band", "gender", "loss_incr", "premium_incr")
-setcolorder(dt, col_order)
-setattr(dt, "sorted", NULL)
+records <- vector("list", 0L)
+for (i in seq_len(nrow(calib))) {
+  cv        <- calib$coverage[i]
+  target_lr <- calib$target_lr[i]
+  prem_mean <- calib$prem_mean[i] / K
+  prem_cv   <- calib$prem_cv[i]
+  cell_cv   <- calib$cell_cv[i]
 
-experience <- dt[]
+  shift_at    <- if (!is.null(shifts[[cv]])) shifts[[cv]]$at    else NA_integer_
+  shift_scale <- if (!is.null(shifts[[cv]])) shifts[[cv]]$scale else 1.0
 
-# ---- Save -------------------------------------------------------------------
+  for (ci in 0L:(n_cohorts - 1L)) {
+    cohort_mult  <- exp(rnorm(1L, mean = 0, sd = prem_cv))
+    prem_base_ci <- prem_mean * cohort_mult
+    eff_target   <- target_lr *
+                    (if (!is.na(shift_at) && ci >= shift_at) shift_scale else 1.0)
+
+    cy_u <- ci %/% 12L
+    cm_u <- ci %% 12L + 1L
+    uym  <- as.Date(sprintf("%d-%02d-01", 2024L + cy_u, cm_u))
+
+    for (k in 0L:(K - 1L)) {
+      if (ci + k > max_cym_idx) break
+      cy_c <- (ci + k) %/% 12L
+      cm_c <- (ci + k) %% 12L + 1L
+      cym  <- as.Date(sprintf("%d-%02d-01", 2024L + cy_c, cm_c))
+
+      incr_premium <- prem_base_ci * (1 + rnorm(1L, 0, 0.05))
+      incr_premium <- max(incr_premium, 0)
+
+      noise <- exp(rnorm(1L, 0, log(1 + cell_cv)))
+      incr_loss <- incr_premium * eff_target * weights[k + 1L] * K * noise
+
+      records[[length(records) + 1L]] <- data.table(
+        coverage        = cv,
+        cym          = cym,
+        uym          = uym,
+        loss_incr    = incr_loss,
+        premium_incr = incr_premium
+      )
+    }
+  }
+}
+
+experience <- rbindlist(records)
+
+# ---- Derived time-axis columns ---------------------------------------------
+.year_of  <- function(d) data.table::year(d)
+.half_of  <- function(d) as.Date(sprintf(
+  "%d-%02d-01", data.table::year(d),
+  ifelse(data.table::month(d) <= 6L, 1L, 7L)))
+.quart_of <- function(d) as.Date(sprintf(
+  "%d-%02d-01", data.table::year(d),
+  ((data.table::month(d) - 1L) %/% 3L) * 3L + 1L))
+
+experience[, `:=`(
+  uy     = .year_of(uym),
+  uyh    = .half_of(uym),
+  uyq    = .quart_of(uym),
+  cy     = .year_of(cym),
+  cyh    = .half_of(cym),
+  cyq    = .quart_of(cym),
+  elap_y = data.table::year(cym)  - data.table::year(uym) + 1L,
+  elap_h = 2L * (data.table::year(cym) - data.table::year(uym)) +
+           ((data.table::month(cym) - 1L) %/% 6L -
+            (data.table::month(uym) - 1L) %/% 6L) + 1L,
+  elap_q = 4L * (data.table::year(cym) - data.table::year(uym)) +
+           ((data.table::month(cym) - 1L) %/% 3L -
+            (data.table::month(uym) - 1L) %/% 3L) + 1L,
+  elap_m = 12L * (data.table::year(cym) - data.table::year(uym)) +
+           (data.table::month(cym) - data.table::month(uym)) + 1L
+)]
+
+setcolorder(experience, c(
+  "coverage",
+  "uy", "uyh", "uyq", "uym",
+  "cy", "cyh", "cyq", "cym",
+  "elap_y", "elap_h", "elap_q", "elap_m",
+  "loss_incr", "premium_incr"
+))
+setattr(experience$uy,  "class", "Date")  # year-as-Date convention
+
+cat(sprintf("experience: %d rows x %d cols, coverage = %s\n",
+            nrow(experience), ncol(experience),
+            paste(unique(experience$coverage), collapse = ", ")))
 
 usethis::use_data(experience, overwrite = TRUE)

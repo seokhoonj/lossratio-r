@@ -76,7 +76,7 @@ commonly used.}
 }
 \examples{
 \dontrun{
-tri <- build_triangle(df, group_var = cv_nm)
+tri <- build_triangle(df, group_var = coverage)
 
 # Single-variable: cumulative-loss link factors (ATA workflow)
 link_loss <- build_link(tri, loss_var = "loss")

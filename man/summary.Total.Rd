@@ -27,7 +27,7 @@ numeric columns for display.
 }
 \examples{
 \dontrun{
-tot <- build_total(df, group_var = cv_nm)
+tot <- build_total(df, group_var = coverage)
 summary(tot)
 }
 

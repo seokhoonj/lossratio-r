@@ -41,7 +41,7 @@ diagonals rather than development periods.
 }
 \examples{
 \dontrun{
-cal <- build_calendar(df, group_var = cv_nm)
+cal <- build_calendar(df, group_var = coverage)
 smr  <- summary(cal)
 head(smr)
 }

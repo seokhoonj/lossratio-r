@@ -123,7 +123,7 @@ to cumulative loss.
 \dontrun{
 data(experience)
 exp <- as_experience(experience)
-tri <- build_triangle(exp, group_var = cv_nm)
+tri <- build_triangle(exp, group_var = coverage)
 bt <- backtest(tri, holdout = 6L)
 print(bt)
 summary(bt)

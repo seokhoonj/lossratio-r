@@ -41,7 +41,7 @@ negative values flag over-projection.
 library(lossratio)
 data(experience)
 exp     <- as_experience(experience)
-tri_sur <- build_triangle(exp[cv_nm == "SUR"], cv_nm)
+tri_sur <- build_triangle(exp[coverage == "SUR"], coverage)
 
 bt <- backtest(tri_sur, holdout = 6L)
 print(bt)
