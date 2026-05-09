@@ -29,15 +29,15 @@
 #' @param x An object of class `"Triangle"`.
 #' @param method One of `"sa"`, `"ed"`, or `"cl"`.
 #'   Default is `"sa"`.
-#' @param loss_var Cumulative loss variable. Default is `"closs"`.
-#' @param exposure_var Cumulative exposure variable. Default is `"crp"`.
+#' @param loss_var Cumulative loss variable. Default is `"loss"`.
+#' @param premium_var Cumulative exposure variable. Default is `"premium"`.
 #' @param loss_alpha Numeric scalar controlling the variance structure for
 #'   loss estimation. Default is `1`.
 #' @param exposure_alpha Numeric scalar for exposure chain ladder. Default
 #'   is `1`.
 #' @param delta_method Method for computing `se_lr = SE(L/E)`. One of:
 #'   \describe{
-#'     \item{`"simple"` (default)}{`se_lr = se_proj / exposure_proj`,
+#'     \item{`"simple"` (default)}{`se_lr = se_proj / premium_proj`,
 #'       treats exposure as fixed.}
 #'     \item{`"full"`}{Full delta method with exposure uncertainty and
 #'       loss-exposure correlation:
@@ -106,8 +106,8 @@
 #' @export
 fit_lr <- function(x,
                    method         = c("sa", "ed", "cl"),
-                   loss_var       = "closs",
-                   exposure_var   = "crp",
+                   loss_var       = "loss",
+                   premium_var   = "premium",
                    loss_alpha     = 1,
                    exposure_alpha = 1,
                    delta_method   = c("simple", "full"),
@@ -152,14 +152,14 @@ fit_lr <- function(x,
 
   # 1) resolve variable names -----------------------------------------------
   l_var <- .capture_names(x, !!rlang::enquo(loss_var))
-  e_var <- .capture_names(x, !!rlang::enquo(exposure_var))
+  e_var <- .capture_names(x, !!rlang::enquo(premium_var))
 
   if (length(l_var) != 1L)
     stop("`loss_var` must resolve to exactly one column.", call. = FALSE)
   if (length(e_var) != 1L)
-    stop("`exposure_var` must resolve to exactly one column.", call. = FALSE)
+    stop("`premium_var` must resolve to exactly one column.", call. = FALSE)
   if (l_var == e_var)
-    stop("`loss_var` must differ from `exposure_var`.", call. = FALSE)
+    stop("`loss_var` must differ from `premium_var`.", call. = FALSE)
 
   grp_var <- attr(x, "group_var")
   coh_var <- attr(x, "cohort_var")
@@ -189,7 +189,7 @@ fit_lr <- function(x,
       # 12 in dev/data.rds), which would change the hybrid boundary.
       pre_loss_fit <- fit_ata(
         x,
-        value_var     = l_var,
+        loss_var     = l_var,
         alpha         = loss_alpha,
         sigma_method  = sigma_method,
         maturity_args = maturity_args
@@ -244,7 +244,7 @@ fit_lr <- function(x,
   # 2) fit exposure chain ladder ------------------------------------------
   exposure_ata_fit <- fit_ata(
     x,
-    value_var    = e_var,
+    loss_var    = e_var,
     alpha        = exposure_alpha,
     sigma_method = sigma_method,
     regime_break = regime_break
@@ -261,7 +261,7 @@ fit_lr <- function(x,
   # 3) fit loss chain ladder ----------------------------------------------
   loss_ata_fit <- fit_ata(
     x,
-    value_var     = l_var,
+    loss_var     = l_var,
     alpha         = loss_alpha,
     sigma_method  = sigma_method,
     recent        = recent,
@@ -281,8 +281,8 @@ fit_lr <- function(x,
   # to `fit_lr(method = "ed")`; calling it here would recurse infinitely.
   ed_fit <- .fit_ed_factors(
     x,
-    value_var    = l_var,
-    exposure_var = e_var,
+    loss_var    = l_var,
+    premium_var = e_var,
     method       = "mack",
     alpha        = loss_alpha,
     sigma_method = sigma_method,
@@ -299,7 +299,7 @@ fit_lr <- function(x,
     ed_fit           = ed_fit,
     exposure_ata_fit = exposure_ata_fit,
     loss_var         = l_var,
-    exposure_var     = e_var
+    premium_var     = e_var
   )
 
   # 8) join ED factors (g_selected, sigma2, g_var) --------------------------
@@ -359,7 +359,7 @@ fit_lr <- function(x,
 
   if (delta_method == "full") {
     full[, last_obs_exp := {
-      idx <- which(is.finite(exposure_obs))
+      idx <- which(is.finite(premium_obs))
       if (length(idx)) max(idx) else 0L
     }, by = c(grp_var, "cohort")]
   }
@@ -367,7 +367,7 @@ fit_lr <- function(x,
   # 13) loss point projection -----------------------------------------------
   full[, loss_proj := .sa_proj(
     loss_obs      = loss_obs,
-    exposure_proj = exposure_proj,
+    premium_proj = premium_proj,
     g_selected    = g_selected,
     f_selected    = f_selected,
     maturity_from = maturity_from[1L],
@@ -378,7 +378,7 @@ fit_lr <- function(x,
   full[, `:=`(
     proc_se2  = .sa_proc_var(
       loss_proj     = loss_proj,
-      exposure_proj = exposure_proj,
+      premium_proj = premium_proj,
       ed_sigma2     = ed_sigma2,
       cl_sigma2     = cl_sigma2,
       f_selected    = f_selected,
@@ -389,7 +389,7 @@ fit_lr <- function(x,
     ),
     param_se2 = .sa_param_var(
       loss_proj     = loss_proj,
-      exposure_proj = exposure_proj,
+      premium_proj = premium_proj,
       ed_g_var      = ed_g_var,
       cl_f_var      = cl_f_var,
       f_selected    = f_selected,
@@ -419,14 +419,14 @@ fit_lr <- function(x,
   if (delta_method == "full") {
     full[, `:=`(
       exp_proc_se2  = .mack_proc_var(
-        value_proj = exposure_proj,
+        value_proj = premium_proj,
         f_selected = exp_f_selected,
         sigma2     = exp_sigma2,
         last_obs   = last_obs_exp[1L],
         alpha      = exposure_alpha
       ),
       exp_param_se2 = .mack_param_var(
-        value_proj = exposure_proj,
+        value_proj = premium_proj,
         f_selected = exp_f_selected,
         f_var      = exp_f_var,
         last_obs   = last_obs_exp[1L]
@@ -442,34 +442,34 @@ fit_lr <- function(x,
     )]
 
     full[, cv_exposure := data.table::fifelse(
-      is.finite(exposure_proj) & exposure_proj != 0,
-      se_exposure / abs(exposure_proj), NA_real_
+      is.finite(premium_proj) & premium_proj != 0,
+      se_exposure / abs(premium_proj), NA_real_
     )]
   }
 
   # 17) loss ratio projection -----------------------------------------------
   full[, lr_proj := data.table::fifelse(
-    is.finite(loss_proj) & is.finite(exposure_proj) & exposure_proj != 0,
-    loss_proj / exposure_proj,
+    is.finite(loss_proj) & is.finite(premium_proj) & premium_proj != 0,
+    loss_proj / premium_proj,
     NA_real_
   )]
 
   if (delta_method == "full") {
     full[, se_lr := {
-      var_lr <- (se_proj / exposure_proj)^2 +
-                 (loss_proj * se_exposure / exposure_proj^2)^2 -
+      var_lr <- (se_proj / premium_proj)^2 +
+                 (loss_proj * se_exposure / premium_proj^2)^2 -
                  2 * rho * loss_proj * se_proj * se_exposure /
-                   exposure_proj^3
+                   premium_proj^3
       sqrt(pmax(var_lr, 0))
     }]
-    full[!is.finite(loss_proj)  | !is.finite(exposure_proj) |
+    full[!is.finite(loss_proj)  | !is.finite(premium_proj) |
          !is.finite(se_proj)    | !is.finite(se_exposure)   |
-         exposure_proj <= 0,
+         premium_proj <= 0,
          se_lr := NA_real_]
   } else {
     full[, se_lr := data.table::fifelse(
-      is.finite(se_proj) & is.finite(exposure_proj) & exposure_proj != 0,
-      se_proj / exposure_proj, NA_real_
+      is.finite(se_proj) & is.finite(premium_proj) & premium_proj != 0,
+      se_proj / premium_proj, NA_real_
     )]
   }
 
@@ -499,7 +499,7 @@ fit_lr <- function(x,
       .bootstrap_cohort(
         loss_obs      = loss_obs,
         loss_proj     = loss_proj,
-        exposure_proj = exposure_proj,
+        premium_proj = premium_proj,
         g_selected    = g_selected,
         f_selected    = f_selected,
         ed_sigma2     = ed_sigma2,
@@ -531,20 +531,20 @@ fit_lr <- function(x,
   full[, (drop_cols) := NULL]
 
   # 19a) incremental projections (per cohort diff of cumulative) -----------
-  full[, loss_inc_proj     := loss_proj     - data.table::shift(loss_proj,     1L, fill = 0),
+  full[, loss_incr_proj     := loss_proj     - data.table::shift(loss_proj,     1L, fill = 0),
        by = c(grp_var, "cohort")]
-  full[, exposure_inc_proj := exposure_proj - data.table::shift(exposure_proj, 1L, fill = 0),
+  full[, premium_incr_proj := premium_proj - data.table::shift(premium_proj, 1L, fill = 0),
        by = c(grp_var, "cohort")]
-  full[, lr_inc_proj := data.table::fifelse(
-    is.finite(loss_inc_proj) & is.finite(exposure_inc_proj) & exposure_inc_proj > 0,
-    loss_inc_proj / exposure_inc_proj, NA_real_
+  full[, lr_incr_proj := data.table::fifelse(
+    is.finite(loss_incr_proj) & is.finite(premium_incr_proj) & premium_incr_proj > 0,
+    loss_incr_proj / premium_incr_proj, NA_real_
   )]
 
   # 19b) pred: NA out observed cells ----------------------------------------
   pred    <- data.table::copy(full)
   na_cols <- c(
-    "loss_proj", "exposure_proj", "lr_proj",
-    "loss_inc_proj", "exposure_inc_proj", "lr_inc_proj",
+    "loss_proj", "premium_proj", "lr_proj",
+    "loss_incr_proj", "premium_incr_proj", "lr_incr_proj",
     "proc_se2", "param_se2", "total_se2",
     "proc_se",  "param_se",  "se_proj",
     "cv_proj",  "se_lr",   "cv_lr",
@@ -566,7 +566,7 @@ fit_lr <- function(x,
     cohort_var = coh_var,
     dev_var      = dev_var,
     loss_var         = l_var,
-    exposure_var     = e_var,
+    premium_var     = e_var,
     full             = full,
     pred             = pred,
     summary          = NULL,
@@ -614,7 +614,7 @@ print.LRFit <- function(x, ...) {
   cat("<LRFit>\n")
   cat("method        :", x$method,         "\n")
   cat("loss_var      :", x$loss_var,       "\n")
-  cat("exposure_var  :", x$exposure_var,   "\n")
+  cat("premium_var  :", x$premium_var,   "\n")
   cat("loss_alpha    :", x$loss_alpha,     "\n")
   cat("exposure_alpha:", x$exposure_alpha, "\n")
   cat("delta_method  :", x$delta_method,   "\n")
@@ -688,7 +688,7 @@ summary.LRFit <- function(object, ...) {
 #' }
 #'
 #' @param loss_obs Numeric vector of observed cumulative loss.
-#' @param exposure_proj Numeric vector of projected cumulative exposure.
+#' @param premium_proj Numeric vector of projected cumulative exposure.
 #' @param g_selected Numeric vector of ED intensities.
 #' @param f_selected Numeric vector of CL factors.
 #' @param maturity_from Numeric scalar; switch point. `NA` = no switch.
@@ -698,7 +698,7 @@ summary.LRFit <- function(object, ...) {
 #'
 #' @keywords internal
 .sa_proj <- function(loss_obs,
-                         exposure_proj,
+                         premium_proj,
                          g_selected,
                          f_selected,
                          maturity_from,
@@ -729,7 +729,7 @@ summary.LRFit <- function(object, ...) {
     if (k < mat) {
       # ED phase: additive, exposure-driven
       g_now <- g_selected[k]
-      e_now <- exposure_proj[k]
+      e_now <- premium_proj[k]
 
       if (is.finite(g_now) && is.finite(e_now)) {
         v[i] <- v_prev + g_now * e_now
@@ -764,7 +764,7 @@ summary.LRFit <- function(object, ...) {
 #'
 #' @keywords internal
 .sa_proc_var <- function(loss_proj,
-                             exposure_proj,
+                             premium_proj,
                              ed_sigma2,
                              cl_sigma2,
                              f_selected,
@@ -792,7 +792,7 @@ summary.LRFit <- function(object, ...) {
     if (k < mat) {
       # ED phase: additive variance
       s2  <- ed_sigma2[k]
-      e_k <- exposure_proj[k]
+      e_k <- premium_proj[k]
 
       proc[i] <- proc[i - 1L]
       if (is.finite(s2) && is.finite(e_k) && e_k > 0) {
@@ -833,7 +833,7 @@ summary.LRFit <- function(object, ...) {
 #'
 #' @keywords internal
 .sa_param_var <- function(loss_proj,
-                              exposure_proj,
+                              premium_proj,
                               ed_g_var,
                               cl_f_var,
                               f_selected,
@@ -860,7 +860,7 @@ summary.LRFit <- function(object, ...) {
     if (k < mat) {
       # ED phase: additive
       gv  <- ed_g_var[k]
-      e_k <- exposure_proj[k]
+      e_k <- premium_proj[k]
 
       param[i] <- param[i - 1L]
       if (is.finite(gv) && is.finite(e_k)) {
@@ -898,14 +898,14 @@ summary.LRFit <- function(object, ...) {
 #' observed value (no uncertainty). Projected rows get bootstrap
 #' percentiles.
 #'
-#' @return A list with four vectors of length `length(exposure_proj)`:
+#' @return A list with four vectors of length `length(premium_proj)`:
 #'   `ci_lower`, `ci_upper` (for CLR), and `ci_lower_loss`,
 #'   `ci_upper_loss` (for cumulative loss).
 #'
 #' @keywords internal
 .bootstrap_cohort <- function(loss_obs,
                               loss_proj,
-                              exposure_proj,
+                              premium_proj,
                               g_selected,
                               f_selected,
                               ed_sigma2,
@@ -919,14 +919,14 @@ summary.LRFit <- function(object, ...) {
                               method,
                               probs) {
 
-  n <- length(exposure_proj)
+  n <- length(premium_proj)
 
   # default (for observed cells, degenerate CI = point value)
   ci_lower_loss <- loss_proj
   ci_upper_loss <- loss_proj
   ci_lower <- data.table::fifelse(
-    is.finite(loss_proj) & is.finite(exposure_proj) & exposure_proj > 0,
-    loss_proj / exposure_proj, NA_real_
+    is.finite(loss_proj) & is.finite(premium_proj) & premium_proj > 0,
+    loss_proj / premium_proj, NA_real_
   )
   ci_upper <- ci_lower
 
@@ -954,7 +954,7 @@ summary.LRFit <- function(object, ...) {
 
   for (i in seq(last_obs + 1L, n)) {
     k    <- i - 1L
-    e_k  <- exposure_proj[k]
+    e_k  <- premium_proj[k]
     prev <- loss_mat[i - 1L, ]
 
     if (k < mat) {
@@ -1010,7 +1010,7 @@ summary.LRFit <- function(object, ...) {
 
   # percentiles for projected rows
   for (i in seq(last_obs + 1L, n)) {
-    e_i    <- exposure_proj[i]
+    e_i    <- premium_proj[i]
     loss_i <- loss_mat[i, ]
 
     if (!is.finite(e_i) || e_i <= 0 || all(!is.finite(loss_i))) {
@@ -1050,7 +1050,7 @@ summary.LRFit <- function(object, ...) {
                          ed_fit,
                          exposure_ata_fit,
                          loss_var,
-                         exposure_var) {
+                         premium_var) {
 
   grp_var <- attr(triangle, "group_var")
 
@@ -1060,7 +1060,7 @@ summary.LRFit <- function(object, ...) {
 
   obs <- raw[, .(
     loss_obs     = .SD[[loss_var]],
-    exposure_obs = .SD[[exposure_var]]
+    premium_obs = .SD[[premium_var]]
   ), by = c(grp_var, "cohort", "dev")]
 
   max_dev_ed  <- max(ed_fit$selected$ata_to, na.rm = TRUE)
@@ -1083,8 +1083,8 @@ summary.LRFit <- function(object, ...) {
                        c("dev", "f_exposure"))
   full <- exp_sel[full, on = c(grp_var, "dev")]
 
-  full[, exposure_proj := .cl_proj(
-    value_obs  = exposure_obs,
+  full[, premium_proj := .cl_proj(
+    value_obs  = premium_obs,
     f_selected = f_exposure
   ), by = c(grp_var, "cohort")]
 
@@ -1122,10 +1122,10 @@ summary.LRFit <- function(object, ...) {
     latest        = loss_obs,
     ultimate      = i.loss_proj,
     reserve       = i.loss_proj - loss_obs,
-    exposure_ult  = i.exposure_proj,
+    exposure_ult  = i.premium_proj,
     lr_latest    = data.table::fifelse(
-      is.finite(exposure_obs) & exposure_obs != 0,
-      loss_obs / exposure_obs, NA_real_
+      is.finite(premium_obs) & premium_obs != 0,
+      loss_obs / premium_obs, NA_real_
     ),
     lr_ult       = i.lr_proj,
     maturity_from = maturity_from,
@@ -1162,17 +1162,17 @@ summary.LRFit <- function(object, ...) {
     agg[, `:=`(
       pct_loss = data.table::fifelse(
         is.finite(var_lr) & var_lr > 0,
-        (i.se_proj / i.exposure_proj)^2 / var_lr * 100, NA_real_
+        (i.se_proj / i.premium_proj)^2 / var_lr * 100, NA_real_
       ),
       pct_exposure = data.table::fifelse(
         is.finite(var_lr) & var_lr > 0,
-        (i.loss_proj * i.se_exposure / i.exposure_proj^2)^2 /
+        (i.loss_proj * i.se_exposure / i.premium_proj^2)^2 /
           var_lr * 100, NA_real_
       ),
       pct_cov = data.table::fifelse(
         is.finite(var_lr) & var_lr > 0,
         -2 * rho * i.loss_proj * i.se_proj * i.se_exposure /
-          i.exposure_proj^3 / var_lr * 100, NA_real_
+          i.premium_proj^3 / var_lr * 100, NA_real_
       )
     )]
 

@@ -1,27 +1,27 @@
 # Backtest --------------------------------------------------------------
 
-# Map (fit_obj class, value_var) -> projection column on fit_obj$full.
-.backtest_proj_col <- function(fit_obj, value_var) {
+# Map (fit_obj class, loss_var) -> projection column on fit_obj$full.
+.backtest_proj_col <- function(fit_obj, loss_var) {
   if (inherits(fit_obj, "CLFit")) return("value_proj")
   if (inherits(fit_obj, "LRFit")) {
-    lr_map <- c(closs = "loss_proj", crp = "exposure_proj", clr = "lr_proj")
-    if (!(value_var %in% names(lr_map)))
+    lr_map <- c(loss = "loss_proj", premium = "premium_proj", lr = "lr_proj")
+    if (!(loss_var %in% names(lr_map)))
       stop(sprintf(
-        "For `fit_lr`, `value_var` must be one of %s; got '%s'.",
+        "For `fit_lr`, `loss_var` must be one of %s; got '%s'.",
         paste(sprintf("'%s'", names(lr_map)), collapse = ", "),
-        value_var
+        loss_var
       ), call. = FALSE)
-    return(unname(lr_map[value_var]))
+    return(unname(lr_map[loss_var]))
   }
   if (inherits(fit_obj, "EDFit")) {
-    ed_map <- c(closs = "closs_proj", crp = "exposure_proj", clr = "lr_proj")
-    if (!(value_var %in% names(ed_map)))
+    ed_map <- c(loss = "loss_proj", premium = "premium_proj", lr = "lr_proj")
+    if (!(loss_var %in% names(ed_map)))
       stop(sprintf(
-        "For `fit_ed`, `value_var` must be one of %s; got '%s'.",
+        "For `fit_ed`, `loss_var` must be one of %s; got '%s'.",
         paste(sprintf("'%s'", names(ed_map)), collapse = ", "),
-        value_var
+        loss_var
       ), call. = FALSE)
-    return(unname(ed_map[value_var]))
+    return(unname(ed_map[loss_var]))
   }
   stop(sprintf(
     "Unsupported fit class: %s. Supported: 'CLFit', 'LRFit', 'EDFit'.",
@@ -53,60 +53,60 @@
 #' @param fit_fn Fitting function. Default `fit_lr` (stage-adaptive
 #'   loss-ratio projection); also supports `fit_cl` for single-column
 #'   chain ladder and `fit_ed` for exposure-driven projection. If
-#'   `fit_fn` does not have a `value_var` formal (as is the case for
-#'   `fit_lr` and `fit_ed`), `value_var` is used only to select the
+#'   `fit_fn` does not have a `loss_var` formal (as is the case for
+#'   `fit_lr` and `fit_ed`), `loss_var` is used only to select the
 #'   comparison column on the fit's `$full` table; arguments for the
-#'   fitter itself (e.g., `loss_var`, `exposure_var`, `method`) are
+#'   fitter itself (e.g., `loss_var`, `premium_var`, `method`) are
 #'   passed through `...`.
-#' @param value_var Character scalar. The **score column** for the
+#' @param loss_var Character scalar. The **score column** for the
 #'   backtest — the column whose held-out actual values are compared
 #'   against the corresponding model projection cell-by-cell. This is a
 #'   scoring choice for `backtest()` and is not, in general, the same
-#'   thing as the `value_var` argument of the underlying fitter.
+#'   thing as the `loss_var` argument of the underlying fitter.
 #'
-#'   With `fit_fn = fit_cl`, `backtest()` forwards `value_var` to
-#'   `fit_cl()` (because `fit_cl` has its own `value_var` formal that
+#'   With `fit_fn = fit_cl`, `backtest()` forwards `loss_var` to
+#'   `fit_cl()` (because `fit_cl` has its own `loss_var` formal that
 #'   selects which triangle column to accumulate), so the score column
 #'   and the chain-ladder accumulation column coincide; any column
 #'   present in `x` is admissible.
 #'
 #'   With `fit_fn = fit_lr` (default), `fit_lr()` does not take a
-#'   `value_var` argument — it always projects `closs`, `crp`, and
-#'   `clr` jointly. Here `value_var` is used purely to pick which
+#'   `loss_var` argument — it always projects `loss`, `premium`, and
+#'   `lr` jointly. Here `loss_var` is used purely to pick which
 #'   projection column on `fit_lr$full` is treated as the prediction
-#'   for scoring. It must be one of `"closs"`, `"crp"`, or `"clr"`
-#'   (default), which map to `loss_proj`, `exposure_proj`, and
+#'   for scoring. It must be one of `"loss"`, `"premium"`, or `"lr"`
+#'   (default), which map to `loss_proj`, `premium_proj`, and
 #'   `lr_proj` respectively.
 #' @param ... Additional arguments passed to `fit_fn` (e.g., `method`,
 #'   `alpha`, `recent`, `tail`).
 #'
 #' @details
-#' The `value_var` argument plays two slightly different roles
-#' depending on the fitter, summarised below. In every case `value_var`
+#' The `loss_var` argument plays two slightly different roles
+#' depending on the fitter, summarised below. In every case `loss_var`
 #' is the column that drives the AEG comparison; the difference is
 #' whether the fitter consumes the same name as input or whether the
 #' name is only resolved against the fit's projection table.
 #'
 #' \tabular{lllll}{
-#'   \strong{`fit_fn`} \tab \strong{Valid `value_var`} \tab
+#'   \strong{`fit_fn`} \tab \strong{Valid `loss_var`} \tab
 #'     \strong{Forwarded to fitter?} \tab
 #'     \strong{Compared column on `fit$full`} \tab \strong{Notes} \cr
-#'   `fit_cl` \tab any numeric column in `x` \tab yes (as `value_var`)
+#'   `fit_cl` \tab any numeric column in `x` \tab yes (as `loss_var`)
 #'     \tab `value_proj` \tab Score column equals the column being
 #'     accumulated by chain ladder. \cr
-#'   `fit_lr` \tab `"closs"`, `"crp"`, `"clr"` \tab no (fit_lr ignores
-#'     `value_var`) \tab `loss_proj`, `exposure_proj`, `lr_proj`
-#'     respectively \tab Fitter projects all three jointly; `value_var`
+#'   `fit_lr` \tab `"loss"`, `"premium"`, `"lr"` \tab no (fit_lr ignores
+#'     `loss_var`) \tab `loss_proj`, `premium_proj`, `lr_proj`
+#'     respectively \tab Fitter projects all three jointly; `loss_var`
 #'     only selects the scoring lane. \cr
-#'   `fit_ed` \tab `"closs"`, `"crp"`, `"clr"` \tab no (fit_ed ignores
-#'     `value_var`) \tab `closs_proj`, `exposure_proj`, `lr_proj`
+#'   `fit_ed` \tab `"loss"`, `"premium"`, `"lr"` \tab no (fit_ed ignores
+#'     `loss_var`) \tab `loss_proj`, `premium_proj`, `lr_proj`
 #'     respectively \tab Pure exposure-driven projection (additive
-#'     \eqn{g_k \cdot C^P_k}); `value_var` only selects the scoring lane.
+#'     \eqn{g_k \cdot C^P_k}); `loss_var` only selects the scoring lane.
 #' }
 #'
-#' This means that `backtest(..., value_var = "closs")` paired with
-#' `fit_lr` is *not* the same operation as `fit_cl(value_var = "closs")`
-#' under the hood, even though both use the string `"closs"`. The
+#' This means that `backtest(..., loss_var = "loss")` paired with
+#' `fit_lr` is *not* the same operation as `fit_cl(loss_var = "loss")`
+#' under the hood, even though both use the string `"loss"`. The
 #' former scores the loss projection that came out of a stage-adaptive
 #' loss-ratio fit; the latter scores a chain ladder applied directly
 #' to cumulative loss.
@@ -124,7 +124,7 @@
 #'     \item{`col_summary`}{Per-`dev` aggregate AEG (mean / median /
 #'       weighted / n).}
 #'     \item{`diag_summary`}{Per-calendar-diagonal aggregate AEG.}
-#'     \item{`value_var`, `holdout`, `fit_fn_name`}{Call metadata.}
+#'     \item{`loss_var`, `holdout`, `fit_fn_name`}{Call metadata.}
 #'     \item{`group_var`, `cohort_var`, `dev_var`}{Variable name relays
 #'       from `x`.}
 #'   }
@@ -146,7 +146,7 @@
 backtest <- function(x,
                      holdout    = 6L,
                      fit_fn     = fit_lr,
-                     value_var  = "clr",
+                     loss_var  = "lr",
                      ...) {
 
   .assert_class(x, "Triangle")
@@ -163,8 +163,8 @@ backtest <- function(x,
   coh_var <- attr(x, "cohort_var")
   dev_var <- attr(x, "dev_var")
 
-  if (!(value_var %in% names(x)))
-    stop(sprintf("`value_var` = '%s' not found in `x`.", value_var),
+  if (!(loss_var %in% names(x)))
+    stop(sprintf("`loss_var` = '%s' not found in `x`.", loss_var),
          call. = FALSE)
 
   # 1) Tag held-out cells on the original (long-format) triangle ----------
@@ -195,15 +195,19 @@ backtest <- function(x,
   }
 
   # 3) Fit on masked ----------------------------------------------------
-  # Only forward `value_var` if the fitter declares it; e.g., `fit_lr`
-  # does not, and would otherwise raise unused-argument.
-  if ("value_var" %in% names(formals(fit_fn))) {
-    fit_obj <- fit_fn(masked, value_var = value_var, ...)
+  # Forward `loss_var` only to single-column fitters (fit_cl: has
+  # `loss_var` but no `premium_var`). For dual-arg fitters like
+  # fit_lr / fit_ed, `loss_var` here is just the scoring lane and must
+  # not override the fitter's loss numerator (would conflict with the
+  # default `premium_var`).
+  fit_formals <- names(formals(fit_fn))
+  if ("loss_var" %in% fit_formals && !("premium_var" %in% fit_formals)) {
+    fit_obj <- fit_fn(masked, loss_var = loss_var, ...)
   } else {
     fit_obj <- fit_fn(masked, ...)
   }
 
-  proj_col <- .backtest_proj_col(fit_obj, value_var)
+  proj_col <- .backtest_proj_col(fit_obj, loss_var)
 
   if (!("full" %in% names(fit_obj)) ||
       !all(c("cohort", "dev", proj_col) %in% names(fit_obj$full)))
@@ -218,8 +222,8 @@ backtest <- function(x,
 
   obs <- full[.is_held_out == TRUE,
     .SD,
-    .SDcols = c(grp_var, "cohort", "dev", value_var, ".cal_idx")]
-  data.table::setnames(obs, value_var, "value_actual")
+    .SDcols = c(grp_var, "cohort", "dev", loss_var, ".cal_idx")]
+  data.table::setnames(obs, loss_var, "value_actual")
   data.table::setnames(obs, ".cal_idx", "calendar_idx")
 
   aeg <- pred[obs,
@@ -271,7 +275,7 @@ backtest <- function(x,
     aeg          = aeg,
     col_summary  = col_summary,
     diag_summary = diag_summary,
-    value_var    = value_var,
+    loss_var    = loss_var,
     holdout      = holdout,
     fit_fn_name  = deparse(substitute(fit_fn)),
     group_var    = grp_var,
@@ -291,7 +295,7 @@ backtest <- function(x,
 print.Backtest <- function(x, ...) {
   cat("<Backtest>\n")
   cat(sprintf("  fit_fn      : %s\n", x$fit_fn_name))
-  cat(sprintf("  value_var   : %s\n", x$value_var))
+  cat(sprintf("  loss_var   : %s\n", x$loss_var))
   cat(sprintf("  holdout     : %d calendar diagonals\n", x$holdout))
   cat(sprintf("  held-out    : %d cells\n", nrow(x$aeg)))
   ag <- x$aeg$aeg
@@ -312,7 +316,7 @@ print.Backtest <- function(x, ...) {
 summary.Backtest <- function(object, ...) {
   out <- list(
     fit_fn_name  = object$fit_fn_name,
-    value_var    = object$value_var,
+    loss_var    = object$loss_var,
     holdout      = object$holdout,
     n_held_out   = nrow(object$aeg),
     col_summary  = object$col_summary,
@@ -329,7 +333,7 @@ summary.Backtest <- function(object, ...) {
 print.summary.Backtest <- function(x, ...) {
   cat("Backtest summary\n")
   cat(sprintf("  fit_fn      : %s\n", x$fit_fn_name))
-  cat(sprintf("  value_var   : %s\n", x$value_var))
+  cat(sprintf("  loss_var   : %s\n", x$loss_var))
   cat(sprintf("  holdout     : %d calendar diagonals\n", x$holdout))
   cat(sprintf("  held-out    : %d cells\n\n", x$n_held_out))
 

@@ -15,15 +15,15 @@
 #'     process variance and parameter variance.}
 #' }
 #'
-#' When `weight_var` is supplied (e.g. `"crp"`), age-to-age factors and
+#' When `weight_var` is supplied (e.g. `"premium"`), age-to-age factors and
 #' their variance are estimated using the supplied WLS weights.
 #'
 #' @param x An object of class `"Triangle"`.
 #' @param method One of `"basic"` or `"mack"`. Default is `"basic"`.
-#' @param value_var A single cumulative variable to project.
-#'   Typical choices are `"closs"`, `"crp"`, or `"clr"`.
+#' @param loss_var A single cumulative variable to project.
+#'   Typical choices are `"loss"`, `"premium"`, or `"lr"`.
 #' @param weight_var An optional column name passed to [build_link()] as
-#'   the WLS weight variable. Typically `"crp"` when `value_var = "clr"`.
+#'   the WLS weight variable. Typically `"premium"` when `loss_var = "lr"`.
 #'   Default is `NULL`.
 #' @param alpha Numeric scalar controlling the variance structure in
 #'   [fit_ata()]. Default is `1`.
@@ -49,7 +49,7 @@
 #'     \item{`group_var`}{Character vector of grouping variable names.}
 #'     \item{`cohort_var`}{Character scalar of period variable name.}
 #'     \item{`dev_var`}{Character scalar of development variable name.}
-#'     \item{`value_var`}{Character scalar of value variable name.}
+#'     \item{`loss_var`}{Character scalar of value variable name.}
 #'     \item{`full`}{`data.table` with observed and projected values. For
 #'       `"mack"`, also includes process/parameter SE and CV columns.}
 #'     \item{`pred`}{`data.table` identical to `full` with observed cells
@@ -83,22 +83,22 @@
 #' tri <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
 #'
 #' # Basic chain ladder (point projection only)
-#' cl <- fit_cl(tri, value_var = "closs", method = "basic")
+#' cl <- fit_cl(tri, loss_var = "loss", method = "basic")
 #' print(cl)
 #'
 #' # Mack chain ladder with process / parameter standard errors
-#' cl_mack <- fit_cl(tri, value_var = "closs", method = "mack")
+#' cl_mack <- fit_cl(tri, loss_var = "loss", method = "mack")
 #' summary(cl_mack)
 #' plot(cl_mack)
 #'
-#' # WLS factors for clr (loss ratio) using crp as the weight
-#' cl_clr <- fit_cl(tri, value_var = "clr", weight_var = "crp")
+#' # WLS factors for lr (loss ratio) using premium as the weight
+#' cl_clr <- fit_cl(tri, loss_var = "lr", weight_var = "premium")
 #' }
 #'
 #' @export
 fit_cl <- function(x,
                    method        = c("basic", "mack"),
-                   value_var     = "closs",
+                   loss_var     = "loss",
                    weight_var    = NULL,
                    alpha         = 1,
                    sigma_method  = c("min_last2", "locf", "loglinear"),
@@ -111,9 +111,9 @@ fit_cl <- function(x,
   sigma_method <- match.arg(sigma_method)
 
   # 1) resolve variable names -------------------------------------------
-  val_var <- .capture_names(x, !!rlang::enquo(value_var))
+  val_var <- .capture_names(x, !!rlang::enquo(loss_var))
   if (length(val_var) != 1L)
-    stop("`value_var` must resolve to exactly one column.", call. = FALSE)
+    stop("`loss_var` must resolve to exactly one column.", call. = FALSE)
 
   grp_var <- attr(x, "group_var")
   coh_var <- attr(x, "cohort_var")
@@ -134,13 +134,13 @@ fit_cl <- function(x,
     if (length(wt_var) != 1L)
       stop("`weight_var` must resolve to exactly one column.", call. = FALSE)
     if (wt_var == val_var)
-      stop("`weight_var` must differ from `value_var`.", call. = FALSE)
+      stop("`weight_var` must differ from `loss_var`.", call. = FALSE)
   }
 
   # 3) estimate ata factors (fit_ata builds the Link internally) -------
   ata_fit <- fit_ata(
     x,
-    value_var     = val_var,
+    loss_var     = val_var,
     weight_var    = if (use_external_weight) wt_var else NULL,
     alpha         = alpha,
     sigma_method  = sigma_method,
@@ -163,7 +163,7 @@ fit_cl <- function(x,
   full <- .expand_triangle_grid(
     triangle  = x,
     ata_fit   = ata_fit,
-    value_var = val_var
+    loss_var = val_var
   )
 
   # 7) join factor columns onto full grid -------------------------------
@@ -291,7 +291,7 @@ fit_cl <- function(x,
     group_var     = grp_var,
     cohort_var = coh_var,
     dev_var   = dev_var,
-    value_var     = val_var,
+    loss_var     = val_var,
     full          = full,
     pred          = pred,
     link          = ata_fit$link,
@@ -337,7 +337,7 @@ print.CLFit <- function(x, ...) {
 
   cat("<CLFit>\n")
   cat("method      :", x$method, "\n")
-  cat("value_var   :", x$value_var, "\n")
+  cat("loss_var   :", x$loss_var, "\n")
   cat("weight_var  :",
       if (!is.null(x$weight_var)) x$weight_var else "none", "\n")
   cat("alpha       :", x$alpha, "\n")
@@ -416,7 +416,7 @@ print.CLFit <- function(x, ...) {
 #' from an object of class `"Triangle"`, analogous to [base::expand.grid()].
 #'
 #' @keywords internal
-.expand_triangle_grid <- function(triangle, ata_fit, value_var) {
+.expand_triangle_grid <- function(triangle, ata_fit, loss_var) {
 
   grp_var <- attr(triangle, "group_var")
 
@@ -425,7 +425,7 @@ print.CLFit <- function(x, ...) {
   raw <- .ensure_dt(triangle)
 
   obs <- raw[
-    , .(value_obs = .SD[[value_var]]),
+    , .(value_obs = .SD[[loss_var]]),
     by = c(grp_var, "cohort", "dev")
   ]
 
@@ -701,9 +701,9 @@ print.CLFit <- function(x, ...) {
   is_mack  <- identical(x$method, "mack")
   grp_var  <- x$group_var
   coh_var  <- x$cohort_var
-  val_var  <- x$value_var
+  val_var  <- x$loss_var
   full     <- x$full
-  is_ratio <- val_var == "clr"
+  is_ratio <- val_var == "lr"
 
   latest_obs <- full[is_observed == TRUE, .SD[.N], by = c(grp_var, "cohort")]
   ultimate   <- full[, .SD[.N],           by = c(grp_var, "cohort")]

@@ -7,8 +7,8 @@
 fit_lr(
   x,
   method = c("sa", "ed", "cl"),
-  loss_var = "closs",
-  exposure_var = "crp",
+  loss_var = "loss",
+  premium_var = "premium",
   loss_alpha = 1,
   exposure_alpha = 1,
   delta_method = c("simple", "full"),
@@ -29,9 +29,9 @@ fit_lr(
 \item{method}{One of \code{"sa"}, \code{"ed"}, or \code{"cl"}.
 Default is \code{"sa"}.}
 
-\item{loss_var}{Cumulative loss variable. Default is \code{"closs"}.}
+\item{loss_var}{Cumulative loss variable. Default is \code{"loss"}.}
 
-\item{exposure_var}{Cumulative exposure variable. Default is \code{"crp"}.}
+\item{premium_var}{Cumulative exposure variable. Default is \code{"premium"}.}
 
 \item{loss_alpha}{Numeric scalar controlling the variance structure for
 loss estimation. Default is \code{1}.}
@@ -41,7 +41,7 @@ is \code{1}.}
 
 \item{delta_method}{Method for computing \code{se_lr = SE(L/E)}. One of:
 \describe{
-\item{\code{"simple"} (default)}{\code{se_lr = se_proj / exposure_proj},
+\item{\code{"simple"} (default)}{\code{se_lr = se_proj / premium_proj},
 treats exposure as fixed.}
 \item{\code{"full"}}{Full delta method with exposure uncertainty and
 loss-exposure correlation:

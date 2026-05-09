@@ -15,12 +15,13 @@
 A \code{data.table} grouped by \code{group_var} and \code{dev_var}, containing:
 \describe{
 \item{n_obs}{Number of observations in the cell}
-\item{lr_mean}{Mean of loss ratios}
-\item{lr_median}{Median of loss ratios}
-\item{lr_wt}{Weighted loss ratio (\code{sum(loss) / sum(rp)})}
-\item{clr_mean}{Mean of cumulative loss ratios}
-\item{clr_median}{Median of cumulative loss ratios}
-\item{clr_wt}{Weighted cumulative loss ratio (\code{sum(closs) / sum(crp)})}
+\item{lr_mean}{Mean of cumulative loss ratios}
+\item{lr_median}{Median of cumulative loss ratios}
+\item{lr_wt}{Weighted cumulative loss ratio (\code{sum(loss) / sum(premium)})}
+\item{lr_incr_mean}{Mean of per-period loss ratios}
+\item{lr_incr_median}{Median of per-period loss ratios}
+\item{lr_incr_wt}{Weighted per-period loss ratio
+(\code{sum(loss_incr) / sum(premium_incr)})}
 }
 
 The returned object keeps the attributes \code{group_var} and \code{dev_var},
@@ -28,7 +29,8 @@ and its class is updated to \code{"TriangleSummary"}.
 }
 \description{
 S3 method for \code{summary()} on \code{Triangle} objects. Computes group-wise summary
-statistics for loss ratios (\code{lr}) and cumulative loss ratios (\code{clr}).
+statistics for cumulative loss ratios (\code{lr}) and per-period loss ratios
+(\code{lr_incr}).
 
 The function aggregates data by the grouping variables stored in
 \code{attr(x, "group_var")} and the development variable stored in
@@ -44,11 +46,11 @@ The following statistics are computed:
 \details{
 The weighted mean is computed as:
 \itemize{
-\item \code{lr_wt  = sum(loss)  / sum(rp)}
-\item \code{clr_wt = sum(closs) / sum(crp)}
+\item \code{lr_wt      = sum(loss)      / sum(premium)}
+\item \code{lr_incr_wt = sum(loss_incr) / sum(premium_incr)}
 }
 
-These correspond to portfolio-level loss ratios based on risk premium and
+These correspond to portfolio-level loss ratios based on premium and
 are typically more stable than simple averages when exposure sizes differ
 across cohorts.
 

@@ -9,7 +9,7 @@
 \usage{
 detect_regime(
   x,
-  value_var = "clr",
+  loss_var = "lr",
   K = 12L,
   method = c("ecp", "pelt", "hclust"),
   n_regimes = NULL,
@@ -29,8 +29,8 @@ detect_regime(
 group (no \code{group_var} or a single-value \code{group_var} subset).
 Also used by S3 \code{print()} method on \code{Regime} objects.}
 
-\item{value_var}{Column name of the trajectory variable. Default
-is \code{"clr"} (cumulative loss ratio).}
+\item{loss_var}{Column name of the trajectory variable. Default
+is \code{"lr"} (cumulative loss ratio).}
 
 \item{K}{Integer. Common development-period window used to build the
 cohort feature matrix. Cohorts with fewer than \code{K} observed
@@ -56,7 +56,7 @@ An object of class \code{"Regime"} with components:
 \describe{
 \item{\code{call}}{Matched call.}
 \item{\code{method}}{Detection method used.}
-\item{\code{value_var}, \code{K}}{Trajectory variable and window.}
+\item{\code{loss_var}, \code{K}}{Trajectory variable and window.}
 \item{\code{cohort_var}}{Period variable from \code{x}.}
 \item{\code{labels}}{\code{data.table} with one row per analysed cohort:
 period, regime id, regime label.}
@@ -75,7 +75,7 @@ constraint.}
 Detect structural change points in the sequence of cohort-level
 development trajectories. Each underwriting cohort (indexed by the
 \code{cohort_var} of a \code{"Triangle"} object) is treated as a feature vector
-whose entries are the selected \code{value_var} observed at development
+whose entries are the selected \code{loss_var} observed at development
 periods \verb{1, ..., K}. Cohorts are then ordered by underwriting
 period and tested for structural shifts in the multivariate
 sequence.

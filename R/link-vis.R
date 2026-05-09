@@ -16,13 +16,13 @@
 #' the multiplicative ATA branch (`model = "ata"`) or the additive
 #' exposure-driven branch (`model = "ed"`).
 #'
-#' The default `model` is chosen from `attr(x, "exposure_var")`: `NULL`
+#' The default `model` is chosen from `attr(x, "premium_var")`: `NULL`
 #' (single-variable link) selects `"ata"`, a non-`NULL` exposure variable
 #' (dual-variable link) selects `"ed"`.
 #'
 #' @param x An object of class `"Link"`.
 #' @param model Either `"ata"` or `"ed"`. Default depends on
-#'   `attr(x, "exposure_var")`.
+#'   `attr(x, "premium_var")`.
 #' @param ... Arguments forwarded to the underlying plotting helper. See
 #'   the per-model parameter list in Details.
 #'
@@ -45,12 +45,12 @@ plot.Link <- function(x, model = NULL, ...) {
   .assert_class(x, "Link")
 
   if (is.null(model)) {
-    model <- if (!is.null(attr(x, "exposure_var"))) "ed" else "ata"
+    model <- if (!is.null(attr(x, "premium_var"))) "ed" else "ata"
   }
   model <- match.arg(model, c("ata", "ed"))
 
-  if (identical(model, "ed") && is.null(attr(x, "exposure_var")))
-    stop("`model = 'ed'` requires a Link built with `exposure_var`.",
+  if (identical(model, "ed") && is.null(attr(x, "premium_var")))
+    stop("`model = 'ed'` requires a Link built with `premium_var`.",
          call. = FALSE)
 
   if (identical(model, "ata")) {
@@ -70,12 +70,12 @@ plot.Link <- function(x, model = NULL, ...) {
 #' the multiplicative ATA branch (`model = "ata"`) or the additive
 #' exposure-driven branch (`model = "ed"`).
 #'
-#' The default `model` is chosen from `attr(x, "exposure_var")`: `NULL`
+#' The default `model` is chosen from `attr(x, "premium_var")`: `NULL`
 #' selects `"ata"`, non-`NULL` selects `"ed"`.
 #'
 #' @param x An object of class `"Link"`.
 #' @param model Either `"ata"` or `"ed"`. Default depends on
-#'   `attr(x, "exposure_var")`.
+#'   `attr(x, "premium_var")`.
 #' @param ... Arguments forwarded to the underlying plotting helper.
 #'
 #' @return A `ggplot` object.
@@ -87,12 +87,12 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   .assert_class(x, "Link")
 
   if (is.null(model)) {
-    model <- if (!is.null(attr(x, "exposure_var"))) "ed" else "ata"
+    model <- if (!is.null(attr(x, "premium_var"))) "ed" else "ata"
   }
   model <- match.arg(model, c("ata", "ed"))
 
-  if (identical(model, "ed") && is.null(attr(x, "exposure_var")))
-    stop("`model = 'ed'` requires a Link built with `exposure_var`.",
+  if (identical(model, "ed") && is.null(attr(x, "premium_var")))
+    stop("`model = 'ed'` requires a Link built with `premium_var`.",
          call. = FALSE)
 
   if (identical(model, "ata")) {
@@ -130,7 +130,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   grp_var <- attr(x, "group_var")
   if (is.null(grp_var)) grp_var <- character(0)
 
-  val_var <- attr(x, "value_var")
+  val_var <- attr(x, "loss_var")
   meta    <- .get_plot_meta(val_var)
 
   # 1) compute summary --------------------------------------------------
@@ -615,7 +615,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   dt      <- .ensure_dt(x)
   grp_var <- attr(x, "group_var")
   coh_var <- attr(x, "cohort_var")
-  val_var <- attr(x, "value_var")
+  val_var <- attr(x, "loss_var")
 
   if (is.null(grp_var) || is.null(coh_var))
     stop("`x` must contain `group_var` and `cohort_var` attributes.",
@@ -660,9 +660,9 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   # 5) build title ------------------------------------------------------
   title_txt <- switch(val_var,
-                      closs = "Age-to-Age Factor for Cumulative Loss",
-                      crp   = "Age-to-Age Factor for Cumulative Risk Premium",
-                      clr   = "Age-to-Age Factor for Cumulative Loss Ratio",
+                      loss = "Age-to-Age Factor for Cumulative Loss",
+                      premium   = "Age-to-Age Factor for Cumulative Risk Premium",
+                      lr   = "Age-to-Age Factor for Cumulative Loss Ratio",
                       "Age-to-Age Factor"
   )
 
@@ -818,7 +818,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
       is.finite(g),
       sprintf("%.3f\n(%.1f/%.1f)", g,
               delta_loss / amount_divisor,
-              exposure_from / amount_divisor),
+              premium_from / amount_divisor),
       ""
     )]
     caption_txt <- sprintf(

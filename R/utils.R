@@ -127,16 +127,19 @@
 #' @keywords internal
 .get_plot_meta <- function(value_var, amount_divisor = 1e8) {
 
-  ratio_vars  <- c("lr", "clr")
-  amount_vars <- c("loss", "rp", "margin", "closs", "crp", "cmargin")
-  prop_vars   <- c("loss_prop", "rp_prop", "closs_prop", "crp_prop")
+  ratio_vars  <- c("lr", "lr_incr")
+  amount_vars <- c("loss", "loss_incr",
+                   "premium", "premium_incr",
+                   "margin", "margin_incr")
+  prop_vars   <- c("loss_prop", "loss_incr_prop",
+                   "premium_prop", "premium_incr_prop")
 
   if (value_var %in% ratio_vars) {
     list(
       type    = "ratio",
       title   = switch(value_var,
-                       lr  = "Loss Ratio",
-                       clr = "Cumulative Loss Ratio"
+                       lr      = "Cumulative Loss Ratio",
+                       lr_incr = "Per-Period Loss Ratio"
       ),
       caption = "Unit: %",
       hline   = 1
@@ -147,12 +150,12 @@
     list(
       type    = "amount",
       title   = switch(value_var,
-                       loss    = "Loss",
-                       rp      = "Risk Premium",
-                       margin  = "Margin",
-                       closs   = "Cumulative Loss",
-                       crp     = "Cumulative Risk Premium",
-                       cmargin = "Cumulative Margin"
+                       loss         = "Cumulative Loss",
+                       loss_incr    = "Per-Period Loss",
+                       premium      = "Cumulative Premium",
+                       premium_incr = "Per-Period Premium",
+                       margin       = "Cumulative Margin",
+                       margin_incr  = "Per-Period Margin"
       ),
       caption = if (nzchar(unit_txt)) paste("Unit:", unit_txt) else NULL,
       hline   = 0
@@ -162,10 +165,10 @@
     list(
       type    = "prop",
       title   = switch(value_var,
-                       loss_prop  = "Loss Proportion",
-                       rp_prop    = "Risk Premium Proportion",
-                       closs_prop = "Cumulative Loss Proportion",
-                       crp_prop   = "Cumulative Risk Premium Proportion"
+                       loss_prop         = "Cumulative Loss Proportion",
+                       loss_incr_prop    = "Per-Period Loss Proportion",
+                       premium_prop      = "Cumulative Premium Proportion",
+                       premium_incr_prop = "Per-Period Premium Proportion"
       ),
       caption = "Unit: %",
       hline   = NULL

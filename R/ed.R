@@ -5,7 +5,7 @@
 #' @description
 #' Internal helper that computes group-wise summary statistics for
 #' incremental loss intensity \eqn{g} from a dual-variable `Link` object
-#' (built with `exposure_var` set). Dispatched via [summary.Link()] when
+#' (built with `premium_var` set). Dispatched via [summary.Link()] when
 #' `model = "ed"`.
 #'
 #' Two purposes:
@@ -32,12 +32,12 @@
 #'     Computed from all rows where both values are finite.
 #'     Independent of `alpha`.}
 #'   \item{`g`}{WLS-estimated intensity from
-#'     \code{lm(delta_value ~ exposure_from + 0)}. Only rows where
-#'     `exposure_from > 0` are used. When `alpha = 2`, `g` and `wt`
+#'     \code{lm(delta_value ~ premium_from + 0)}. Only rows where
+#'     `premium_from > 0` are used. When `alpha = 2`, `g` and `wt`
 #'     are numerically equivalent.}
 #' }
 #'
-#' @param object A `Link` object built with `exposure_var` set,
+#' @param object A `Link` object built with `premium_var` set,
 #'   typically produced by [build_link()].
 #' @param alpha Numeric scalar controlling the variance structure in the
 #'   WLS fit. Default is `1`.
@@ -58,8 +58,8 @@
 
   .assert_class(object, "Link")
 
-  if (is.null(attr(object, "exposure_var")))
-    stop("`.summarize_link_ed()` requires a Link built with `exposure_var`.",
+  if (is.null(attr(object, "premium_var")))
+    stop("`.summarize_link_ed()` requires a Link built with `premium_var`.",
          call. = FALSE)
 
   grp_var <- attr(object, "group_var")
@@ -72,7 +72,7 @@
   # 1) descriptive statistics
   ds <- dt[, {
     vals <- g[is.finite(g)]
-    ef   <- exposure_from
+    ef   <- premium_from
     dl   <- delta_value
     m    <- mean(vals)
 
@@ -122,8 +122,8 @@
   data.table::setattr(ds, "group_var"   , grp_var)
   data.table::setattr(ds, "cohort_var"  , attr(object, "cohort_var"))
   data.table::setattr(ds, "dev_var"     , attr(object, "dev_var"))
-  data.table::setattr(ds, "value_var"   , attr(object, "value_var"))
-  data.table::setattr(ds, "exposure_var", attr(object, "exposure_var"))
+  data.table::setattr(ds, "loss_var"   , attr(object, "loss_var"))
+  data.table::setattr(ds, "premium_var", attr(object, "premium_var"))
   data.table::setattr(ds, "digits",       digits)
 
   .prepend_class(ds, "EDSummary")
@@ -184,9 +184,9 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #' [backtest()] usable with `fit_fn = fit_ed`.
 #'
 #' @param x A `"Triangle"` object.
-#' @param value_var Cumulative loss variable. Default `"closs"`.
+#' @param loss_var Cumulative loss variable. Default `"loss"`.
 #'   Forwarded to [build_link()] and to [fit_lr()] as `loss_var`.
-#' @param exposure_var Cumulative exposure variable. Default `"crp"`.
+#' @param premium_var Cumulative exposure variable. Default `"premium"`.
 #'   Forwarded to [build_link()] and to [fit_lr()].
 #' @param method One of `"basic"` or `"mack"`. Default is `"basic"`.
 #' @param alpha Numeric scalar controlling the variance structure. Default
@@ -212,7 +212,7 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'       (and `g_var` when `method = "mack"`).}
 #'     \item{`full`}{`data.table` mirroring `LRFit$full` for `method = "ed"`:
 #'       per-cell cumulative loss / exposure / loss-ratio projection plus
-#'       SE columns (`closs_proj`, `exposure_proj`, `lr_proj`,
+#'       SE columns (`loss_proj`, `premium_proj`, `lr_proj`,
 #'       `se_proj`, `se_lr`, `cv_lr`, ...). Available cells include both
 #'       observed and projected; `is_observed` flags observed cells.}
 #'     \item{`link`}{`Link` object used for factor estimation.}
@@ -222,8 +222,8 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'
 #' @export
 fit_ed <- function(x,
-                   value_var     = "closs",
-                   exposure_var  = "crp",
+                   loss_var     = "loss",
+                   premium_var  = "premium",
                    method        = c("basic", "mack"),
                    alpha         = 1,
                    na_method     = c("zero", "locf", "none"),
@@ -241,8 +241,8 @@ fit_ed <- function(x,
   # 1) parameter-only fit (factor / selected / link) -----------------------
   out <- .fit_ed_factors(
     x,
-    value_var    = value_var,
-    exposure_var = exposure_var,
+    loss_var    = loss_var,
+    premium_var = premium_var,
     method       = method,
     alpha        = alpha,
     na_method    = na_method,
@@ -259,27 +259,16 @@ fit_ed <- function(x,
   lr_fit <- fit_lr(
     x,
     method       = "ed",
-    loss_var     = value_var,
-    exposure_var = exposure_var,
+    loss_var     = loss_var,
+    premium_var = premium_var,
     loss_alpha   = alpha,
     sigma_method = sigma_method,
     recent       = recent,
     regime_break = regime_break
   )
 
-  # rename loss_proj -> closs_proj to match Triangle's c-prefix on the
-  # cumulative loss variable (`closs`); leave incremental (`_inc`) and
-  # SE columns alone.
-  full <- data.table::copy(lr_fit$full)
-  if ("loss_proj" %in% names(full)) {
-    data.table::setnames(full, "loss_proj", "closs_proj")
-  }
-  if ("loss_inc_proj" %in% names(full)) {
-    data.table::setnames(full, "loss_inc_proj", "closs_inc_proj")
-  }
-
   out$call <- match.call()
-  out$full <- full
+  out$full <- data.table::copy(lr_fit$full)
 
   out
 }
@@ -296,8 +285,8 @@ fit_ed <- function(x,
 #'
 #' @keywords internal
 .fit_ed_factors <- function(x,
-                            value_var     = "closs",
-                            exposure_var  = "crp",
+                            loss_var     = "loss",
+                            premium_var  = "premium",
                             method        = c("basic", "mack"),
                             alpha         = 1,
                             na_method     = c("zero", "locf", "none"),
@@ -308,7 +297,7 @@ fit_ed <- function(x,
 
   .assert_class(x, "Triangle")
 
-  x <- build_link(x, value_var = value_var, exposure_var = exposure_var)
+  x <- build_link(x, loss_var = loss_var, premium_var = premium_var)
 
   method       <- match.arg(method)
   na_method    <- match.arg(na_method)
@@ -414,8 +403,8 @@ print.EDFit <- function(x, ...) {
 
   cat("<EDFit>\n")
   cat("method      :", x$method,                      "\n")
-  cat("value_var   :", attr(x$link, "value_var"),    "\n")
-  cat("exposure_var:", attr(x$link, "exposure_var"), "\n")
+  cat("loss_var   :", attr(x$link, "loss_var"),    "\n")
+  cat("premium_var:", attr(x$link, "premium_var"), "\n")
   cat("alpha       :", x$alpha,                      "\n")
   cat("sigma_method:", x$sigma_method,             "\n")
   cat("recent      :",
@@ -462,8 +451,8 @@ print.EDFit <- function(x, ...) {
 
   .assert_class(x, "Link")
 
-  if (is.null(attr(x, "exposure_var")))
-    stop("`.lm_ed()` requires a Link built with `exposure_var`.",
+  if (is.null(attr(x, "premium_var")))
+    stop("`.lm_ed()` requires a Link built with `premium_var`.",
          call. = FALSE)
 
   if (!is.numeric(alpha) || length(alpha) != 1L || is.na(alpha))
@@ -482,29 +471,29 @@ print.EDFit <- function(x, ...) {
 
   # 1) drop invalid rows
   if (na_rm) {
-    dt <- dt[is.finite(exposure_from) & is.finite(delta_value) &
-               exposure_from > 0]
+    dt <- dt[is.finite(premium_from) & is.finite(delta_value) &
+               premium_from > 0]
   }
 
   # 2) compute WLS weight
-  # Var(delta_value) ~ exposure_from^alpha
-  # => WLS weight = 1 / exposure_from^(2 - alpha)
+  # Var(delta_value) ~ premium_from^alpha
+  # => WLS weight = 1 / premium_from^(2 - alpha)
   delta <- 2 - alpha
-  dt[, reg_w := 1 / exposure_from^delta]
+  dt[, reg_w := 1 / premium_from^delta]
   dt[, ata_link := sprintf("%s-%s", ata_from, ata_to)]
 
   # 3) fit one model per link
   res <- dt[, {
     if (.N == 1L) {
       data.table::data.table(
-        g     = delta_value[1L] / exposure_from[1L],
+        g     = delta_value[1L] / premium_from[1L],
         g_se  = NA_real_,
         sigma = NA_real_,
         n_obs = 1L
       )
     } else {
       fit <- tryCatch(
-        stats::lm(delta_value ~ exposure_from + 0, weights = reg_w),
+        stats::lm(delta_value ~ premium_from + 0, weights = reg_w),
         error = function(e) NULL
       )
 
@@ -657,12 +646,12 @@ print.EDFit <- function(x, ...) {
     stop("`ed_fit$selected` must contain a `sigma2` column.",
          call. = FALSE)
 
-  ed_valid <- ed_long[is.finite(exposure_from) &
+  ed_valid <- ed_long[is.finite(premium_from) &
                         is.finite(delta_value) &
-                        exposure_from > 0]
+                        premium_from > 0]
 
   link_weights <- ed_valid[,
-                       .(denom = sum(exposure_from^(2 - alpha), na.rm = TRUE)),
+                       .(denom = sum(premium_from^(2 - alpha), na.rm = TRUE)),
                        by = c(grp_var, "ata_from")
   ]
 

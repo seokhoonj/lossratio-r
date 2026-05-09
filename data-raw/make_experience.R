@@ -59,22 +59,22 @@ dt[, elap_m := as.integer(elap_m)]
 dt[, age_band := factor(age_band, levels = age_band_levels, ordered = TRUE)]
 dt[, gender   := factor(gender,   levels = gender_levels)]
 
-# ---- rp: cumulative risk premium (exposure proxy) ---------------------------
-# Right-skewed Gamma scaled per cv_nm; rp grows with elap_m (cumulative).
+# ---- premium_incr: per-period risk premium (exposure proxy) ----------------
+# Right-skewed Gamma scaled per cv_nm; premium_incr grows with elap_m.
 # Allow tiny share negatives (refunds).
 
 N <- nrow(dt)
-rp_scale_by_cv <- c(SUR = 0.9e6, CAN = 0.9e6, `2CI` = 0.7e6, HOS = 0.9e6)
-rp_base <- rgamma(N, shape = 0.6, scale = rp_scale_by_cv[dt$cv_nm])
-# Cumulative growth with elap_m: roughly linear early then taper after 24m.
+premium_scale_by_cv <- c(SUR = 0.9e6, CAN = 0.9e6, `2CI` = 0.7e6, HOS = 0.9e6)
+premium_base <- rgamma(N, shape = 0.6, scale = premium_scale_by_cv[dt$cv_nm])
+# Per-period growth with elap_m: roughly linear early then taper after 24m.
 growth <- 1 + 0.6 * pmin(dt$elap_m, 24L)
-dt[, rp := rp_base * growth]
+dt[, premium_incr := premium_base * growth]
 # Refund flip on ~0.1% of cells.
-dt[, rp := rp * ifelse(rbinom(.N, 1L, 0.999) == 1L, 1, -1)]
-dt[, rp := round(rp)]
+dt[, premium_incr := premium_incr * ifelse(rbinom(.N, 1L, 0.999) == 1L, 1, -1)]
+dt[, premium_incr := round(premium_incr)]
 
-# ---- loss: cumulative loss --------------------------------------------------
-# loss = (Bernoulli has-loss) * Gamma anchored to rp * conditional-LR scale.
+# ---- loss_incr: per-period loss --------------------------------------------
+# loss_incr = (Bernoulli has-loss) * Gamma anchored to premium_incr * conditional-LR scale.
 # Targets ~65% zeros overall.
 #
 # Per-cv development LR curves are calibrated to the broad shape of a real
@@ -113,20 +113,20 @@ target_lr[sur_post_break] <- target_lr[sur_post_break] * 0.50
 p_has_loss <- pmin(0.55, dt$elap_m / 32)
 has_loss   <- rbinom(N, 1L, p_has_loss)
 shape_loss <- 5.0   # tight Gamma → cleaner cohort signal for regime demo
-cond_scale <- pmax(abs(dt$rp), 1) * target_lr /
+cond_scale <- pmax(abs(dt$premium_incr), 1) * target_lr /
   pmax(p_has_loss, 0.05) / shape_loss
 loss_raw <- has_loss * rgamma(N, shape = shape_loss, scale = cond_scale)
 
 # Reversal sign flip on ~0.3% of cells.
-dt[, loss := loss_raw * ifelse(rbinom(.N, 1L, 0.997) == 1L, 1, -1)]
-dt[, loss := round(loss)]
+dt[, loss_incr := loss_raw * ifelse(rbinom(.N, 1L, 0.997) == 1L, 1, -1)]
+dt[, loss_incr := round(loss_incr)]
 
 # ---- Final column order (matches package schema) ----------------------------
 
 col_order <- c("cy", "cyh", "cyq", "cym",
                "uy", "uyh", "uyq", "uym",
                "elap_y", "elap_h", "elap_q", "elap_m",
-               "cv_nm", "age_band", "gender", "loss", "rp")
+               "cv_nm", "age_band", "gender", "loss_incr", "premium_incr")
 setcolorder(dt, col_order)
 setattr(dt, "sorted", NULL)
 

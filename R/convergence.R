@@ -9,7 +9,7 @@
 #'
 #' \deqn{\hat{D}_v = \frac{1.4826 \cdot \mathrm{MAD}_i(lr_{i,v})}{|\mathrm{median}_i(lr_{i,v})|}}
 #'
-#' Operating on `lr` (incremental) rather than `clr` keeps the metric
+#' Operating on `lr` (incremental) rather than `lr` keeps the metric
 #' inertia-free.
 #'
 #' @param triangle A `Triangle` object.
@@ -134,7 +134,7 @@
 #' @param M Required run length of consecutive passing periods. Default
 #'   `3L`.
 #' @param k_star Pre-computed maturity point. When `NULL`, computed via
-#'   [detect_maturity()] applied to a clr-based ATA.
+#'   [detect_maturity()] applied to a lr-based ATA.
 #' @param holdout_max Maximum holdout depth used for the rolling
 #'   backtest. When `NULL`, set to `max(M, floor((V - k_star) / 2))`.
 #' @param min_n_cohorts Minimum number of cohorts required to compute
@@ -144,7 +144,7 @@
 #' @return An object of class `Convergence` (named list) containing the
 #'   detected `k_conv`, the candidate sequence `v`, and the diagnostic
 #'   sequences `R_v`, `SE_param_v`, `D_v`, `pass_v`. Metadata is carried
-#'   on attributes (`group_var`, `value_var`, `fit_fn_name`).
+#'   on attributes (`group_var`, `loss_var`, `fit_fn_name`).
 #'
 #' @seealso [detect_maturity()], [backtest()], [fit_lr()]
 #'
@@ -178,7 +178,7 @@ detect_convergence <- function(triangle,
 
   # 2) resolve k_star --------------------------------------------------
   if (is.null(k_star)) {
-    mat     <- detect_maturity(triangle, value_var = "clr", weight_var = "crp")
+    mat     <- detect_maturity(triangle, loss_var = "lr", weight_var = "premium")
     k_star  <- suppressWarnings(min(mat$ata_from, na.rm = TRUE))
     if (!is.finite(k_star))
       stop("Could not derive `k_star` from `detect_maturity()`; ",
@@ -215,7 +215,7 @@ detect_convergence <- function(triangle,
       return(list(lr = lr_cache[idx], se = se_cache[idx]))
     }
     bt <- tryCatch(
-      backtest(triangle, holdout = h, fit_fn = fit_fn, value_var = "clr", ...),
+      backtest(triangle, holdout = h, fit_fn = fit_fn, loss_var = "lr", ...),
       error = function(e) NULL
     )
     lr <- .extract_portfolio_lr(bt)
@@ -288,7 +288,7 @@ detect_convergence <- function(triangle,
   )
 
   data.table::setattr(out, "group_var",   grp_var)
-  data.table::setattr(out, "value_var",   "clr")
+  data.table::setattr(out, "loss_var",   "lr")
   data.table::setattr(out, "fit_fn_name", fit_fn_name)
   data.table::setattr(out, "dev_var",     dev_var)
   class(out) <- "Convergence"

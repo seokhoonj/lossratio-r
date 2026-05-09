@@ -31,10 +31,11 @@ unchanged and should be cleaned by the user in advance.
 \details{
 Minimum required columns are:
 \itemize{
-\item \code{cym}  : Calendar year-month (\code{Date} or coercible to \code{Date})
-\item \code{uym}  : Underwriting year-month (\code{Date} or coercible to \code{Date})
-\item \code{loss} : Incurred loss amount (\code{numeric} or coercible)
-\item \code{rp}   : Risk premium (\code{numeric} or coercible)
+\item \code{cym}          : Calendar year-month (\code{Date} or coercible to \code{Date})
+\item \code{uym}          : Underwriting year-month (\code{Date} or coercible to \code{Date})
+\item \code{loss_incr}    : Per-period loss amount (\code{numeric} or coercible)
+\item \code{premium_incr} : Per-period premium (\code{numeric} or coercible); for
+long-term health insurance, risk premium is commonly used
 }
 
 If \code{add_period = TRUE}, additional period variables such as \code{uy},

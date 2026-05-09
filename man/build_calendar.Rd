@@ -8,14 +8,16 @@ build_calendar(
   df,
   group_var,
   calendar_var = "cym",
-  value_var = c("loss", "rp"),
+  loss_var = "loss_incr",
+  premium_var = "premium_incr",
   period_from = NULL,
   period_to = NULL,
   fill_gaps = FALSE
 )
 }
 \arguments{
-\item{df}{A data.frame containing experience data with loss and risk premium.}
+\item{df}{A data.frame containing experience data with per-period loss
+and premium columns.}
 
 \item{group_var}{Column(s) used for grouping (e.g., product, gender).}
 
@@ -31,12 +33,13 @@ is to be summarised as a time series rather than as a development
 structure.
 }}
 
-\item{value_var}{Character vector specifying the value columns, typically
-\code{c("loss", "rp")} where:
-\itemize{
-\item \code{loss} = actual claims (observed loss),
-\item \code{rp}   = risk premium (expected loss).
-}}
+\item{loss_var}{Single character; per-period loss column in \code{df}.
+Default \code{"loss_incr"}.}
+
+\item{premium_var}{Single character; per-period premium column in \code{df}.
+Default \code{"premium_incr"}. Premium measure used as denominator for
+loss ratio calculations. For long-term health insurance applications,
+risk premium is commonly used.}
 
 \item{period_from}{Optional lower bound for \code{calendar_var}. Only rows with
 \code{calendar_var >= period_from} are kept.}
@@ -53,18 +56,18 @@ Default \code{FALSE}, which raises an error when gaps are detected.}
 A data.frame with class \code{"Calendar"}, containing the following
 derived columns:
 \describe{
-\item{index}{Calendar index within each group, defined as the sequential
+\item{dev}{Calendar index within each group, defined as the sequential
 order of \code{calendar_var} after sorting in ascending order. This represents
 the progression of calendar periods for each group (e.g., 1 = first
 observed period, 2 = second, ...), and can be used to align groups with
 different starting periods on a common index scale.}
-\item{closs, crp}{Cumulative loss and cumulative risk premium}
-\item{loss_prop, rp_prop}{Period proportions within each \code{calendar_var} cell}
-\item{closs_prop, crp_prop}{Cumulative proportions within each \code{calendar_var} cell}
-\item{margin, cmargin}{Period and cumulative margin (\code{rp - loss})}
-\item{profit, cprofit}{Profit indicator (factor \code{"pos"} / \code{"neg"})}
-\item{lr}{Loss ratio (\code{loss / rp})}
-\item{clr}{Cumulative loss ratio (\code{closs / crp})}
+\item{loss, loss_incr}{Cumulative and per-period loss}
+\item{premium, premium_incr}{Cumulative and per-period premium}
+\item{lr, lr_incr}{Cumulative and per-period loss ratio}
+\item{margin, margin_incr}{Cumulative and per-period margin}
+\item{profit, profit_incr}{Profit indicator}
+\item{loss_prop, loss_incr_prop, premium_prop, premium_incr_prop}{
+Proportions within each \code{calendar_var} cell}
 }
 
 The returned object also has an attribute \code{"longer"} containing
@@ -74,28 +77,30 @@ a melted long-format version (\code{class = "CalendarLonger"}).
 Aggregate experience data into a development structure along a single
 calendar-style period axis, including:
 \itemize{
-\item cumulative loss and cumulative risk premium,
-\item period and cumulative proportions,
-\item margin and cumulative margin,
+\item cumulative loss and cumulative premium,
+\item per-period and cumulative proportions,
+\item per-period and cumulative margin,
 \item profit indicators,
-\item loss ratio (\code{lr = loss / rp}) and cumulative loss ratio (\code{clr = closs / crp}).
+\item per-period loss ratio (\code{lr_incr = loss_incr / premium_incr}) and
+cumulative loss ratio (\code{lr = loss / premium}).
 }
 
 In contrast to \code{\link[=build_triangle]{build_triangle()}}, which builds a development structure using
-\verb{calendar_var × dev_var}, this function aggregates values over
+\verb{cohort_var × dev_var}, this function aggregates values over
 a one-dimensional calendar axis.
 
-The loss ratio is defined as:
-\deqn{lr = loss / rp}
+The cumulative loss ratio is defined as:
+\deqn{lr = loss / premium}
 
-where \code{rp} represents risk premium (expected loss), not written premium.
+For long-term health insurance applications, risk premium is commonly
+used as the \code{premium} measure.
 
 Proportion variables are computed within each \code{calendar_var} cell:
 \itemize{
-\item \code{loss_prop  = loss  / sum(loss)}
-\item \code{rp_prop    = rp    / sum(rp)}
-\item \code{closs_prop = closs / sum(closs)}
-\item \code{crp_prop   = crp   / sum(crp)}
+\item \code{loss_incr_prop    = loss_incr    / sum(loss_incr)}
+\item \code{premium_incr_prop = premium_incr / sum(premium_incr)}
+\item \code{loss_prop         = loss         / sum(loss)}
+\item \code{premium_prop      = premium      / sum(premium)}
 }
 
 Therefore, for a fixed \code{calendar_var} cell, the proportions
@@ -106,15 +111,15 @@ each calendar period across products or other grouping variables.
 \dontrun{
 res1 <- build_calendar(
   df,
-  group_var  = pd_cd,
+  group_var    = pd_cd,
   calendar_var = "cym"
 )
 
 res2 <- build_calendar(
   df,
-  group_var   = pd_cd,
+  group_var    = pd_cd,
   calendar_var = "cyq",
-  period_from = "2023-01-01"
+  period_from  = "2023-01-01"
 )
 
 head(res1)

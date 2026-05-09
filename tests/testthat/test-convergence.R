@@ -11,7 +11,7 @@ test_that("detect_convergence returns class 'Convergence' with required fields",
                "k_star", "c", "tau", "M")) {
     expect_true(nm %in% names(res), info = paste("missing", nm))
   }
-  for (a in c("group_var", "value_var", "fit_fn_name")) {
+  for (a in c("group_var", "loss_var", "fit_fn_name")) {
     expect_false(is.null(attr(res, a)), info = paste("missing attr", a))
   }
 })

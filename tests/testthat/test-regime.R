@@ -12,7 +12,7 @@ test_that("detect_regime returns class 'Regime' (ecp default)", {
 
 test_that("Regime has expected list elements", {
   r <- detect_regime(sub, K = 12, method = "ecp")
-  for (nm in c("method", "value_var", "K", "cohort_var", "dev_var",
+  for (nm in c("method", "loss_var", "K", "cohort_var", "dev_var",
                "group_var", "labels", "breakpoints", "n_regimes",
                "trajectory", "pca")) {
     expect_true(nm %in% names(r), info = paste("missing", nm))
@@ -52,8 +52,8 @@ test_that("hclust with n_regimes = 3 runs", {
   expect_true(r$n_regimes >= 1L)
 })
 
-test_that("value_var = 'lr' runs", {
-  expect_s3_class(detect_regime(sub, K = 12, method = "ecp", value_var = "lr"),
+test_that("loss_var = 'lr' runs", {
+  expect_s3_class(detect_regime(sub, K = 12, method = "ecp", loss_var = "lr"),
                   "Regime")
 })
 

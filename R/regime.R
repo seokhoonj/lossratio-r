@@ -6,7 +6,7 @@
 #' Detect structural change points in the sequence of cohort-level
 #' development trajectories. Each underwriting cohort (indexed by the
 #' `cohort_var` of a `"Triangle"` object) is treated as a feature vector
-#' whose entries are the selected `value_var` observed at development
+#' whose entries are the selected `loss_var` observed at development
 #' periods `1, ..., K`. Cohorts are then ordered by underwriting
 #' period and tested for structural shifts in the multivariate
 #' sequence.
@@ -34,8 +34,8 @@
 #'   Also used by S3 `print()` method on `Regime` objects.
 #' @param object An object of class `"Regime"`. Used by the S3
 #'   `summary()` method.
-#' @param value_var Column name of the trajectory variable. Default
-#'   is `"clr"` (cumulative loss ratio).
+#' @param loss_var Column name of the trajectory variable. Default
+#'   is `"lr"` (cumulative loss ratio).
 #' @param K Integer. Common development-period window used to build the
 #'   cohort feature matrix. Cohorts with fewer than `K` observed
 #'   periods are dropped. Default is `12`.
@@ -51,7 +51,7 @@
 #'   \describe{
 #'     \item{`call`}{Matched call.}
 #'     \item{`method`}{Detection method used.}
-#'     \item{`value_var`, `K`}{Trajectory variable and window.}
+#'     \item{`loss_var`, `K`}{Trajectory variable and window.}
 #'     \item{`cohort_var`}{Period variable from `x`.}
 #'     \item{`labels`}{`data.table` with one row per analysed cohort:
 #'       period, regime id, regime label.}
@@ -87,7 +87,7 @@
 #'
 #' @export
 detect_regime <- function(x,
-                                 value_var = "clr",
+                                 loss_var = "lr",
                                  K         = 12L,
                                  method    = c("ecp", "pelt", "hclust"),
                                  n_regimes = NULL,
@@ -113,8 +113,8 @@ detect_regime <- function(x,
     stop("`x` must contain a single group. Subset before calling.",
          call. = FALSE)
 
-  if (!(value_var %in% names(d)))
-    stop(sprintf("`value_var` = '%s' not found in `x`.", value_var),
+  if (!(loss_var %in% names(d)))
+    stop(sprintf("`loss_var` = '%s' not found in `x`.", loss_var),
          call. = FALSE)
 
   K <- as.integer(K)
@@ -134,7 +134,7 @@ detect_regime <- function(x,
 
   w <- data.table::dcast(
     d, stats::reformulate("dev", response = "cohort"),
-    value.var = value_var
+    value.var = loss_var
   )
   data.table::setorderv(w, "cohort")
 
@@ -180,7 +180,7 @@ detect_regime <- function(x,
   out <- list(
     call        = match.call(),
     method      = method,
-    value_var   = value_var,
+    loss_var   = loss_var,
     K           = K,
     cohort_var = coh_var,
     dev_var = dev_var,
@@ -278,7 +278,7 @@ detect_regime <- function(x,
 print.Regime <- function(x, ...) {
   cat("<Regime>\n")
   cat(sprintf("  method      : %s\n", x$method))
-  cat(sprintf("  value_var   : %s\n", x$value_var))
+  cat(sprintf("  loss_var   : %s\n", x$loss_var))
   cat(sprintf("  window (K)  : %s 1, ..., %d\n", x$dev_var, x$K))
   cat(sprintf("  cohorts     : %d analysed",
               nrow(x$labels)))
@@ -314,7 +314,7 @@ summary.Regime <- function(object, ...) {
 
   out <- list(
     method      = object$method,
-    value_var   = object$value_var,
+    loss_var   = object$loss_var,
     dev_var     = object$dev_var,
     K           = object$K,
     n_cohorts   = nrow(labels),
@@ -334,7 +334,7 @@ summary.Regime <- function(object, ...) {
 print.summary.Regime <- function(x, ...) {
   cat("Cohort regime detection summary\n")
   cat(sprintf("  method    : %s\n", x$method))
-  cat(sprintf("  value_var : %s\n", x$value_var))
+  cat(sprintf("  loss_var : %s\n", x$loss_var))
   cat(sprintf("  window    : %s 1, ..., %d\n", x$dev_var, x$K))
   cat(sprintf("  cohorts   : %d analysed", x$n_cohorts))
   if (x$n_dropped) cat(sprintf(" (%d dropped)", x$n_dropped))

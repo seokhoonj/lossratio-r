@@ -9,12 +9,14 @@ build_triangle(
   group_var,
   cohort_var = "uym",
   dev_var = "elap_m",
-  value_var = c("loss", "rp"),
+  loss_var = "loss_incr",
+  premium_var = "premium_incr",
   fill_gaps = FALSE
 )
 }
 \arguments{
-\item{df}{A data.frame containing experience data with loss and risk premium.}
+\item{df}{A data.frame containing experience data with per-period loss and
+premium columns.}
 
 \item{group_var}{Column(s) used for grouping (e.g., product, gender).}
 
@@ -25,12 +27,13 @@ build_triangle(
 \item{dev_var}{Column(s) defining development periods
 (e.g., months since issue such as \code{elap_m}).}
 
-\item{value_var}{Character vector specifying the value columns, typically
-\code{c("loss", "rp")} where:
-\itemize{
-\item \code{loss} = actual claims (observed loss),
-\item \code{rp}   = risk premium (expected loss).
-}}
+\item{loss_var}{Single character; per-period loss column in \code{df}.
+Default \code{"loss_incr"}.}
+
+\item{premium_var}{Single character; per-period premium column in \code{df}.
+Default \code{"premium_incr"}. Premium measure used as denominator for
+loss ratio calculations. For long-term health insurance applications,
+risk premium is commonly used.}
 
 \item{fill_gaps}{Logical; if \code{TRUE}, zero-fill missing
 \verb{(group_var, cohort_var, dev_var)} cells so that every cohort
@@ -42,14 +45,17 @@ raises an error when gaps are detected. Use
 A data.frame with class \code{"Triangle"}, containing the following
 derived columns:
 \describe{
-\item{n_obs}{Number of distinct periods observed}
-\item{closs, crp}{Cumulative loss and cumulative risk premium}
-\item{loss_prop, rp_prop}{Period proportions within each \verb{(period, dev)} cell}
-\item{closs_prop, crp_prop}{Cumulative proportions within each \verb{(period, dev)} cell}
-\item{margin, cmargin}{Period and cumulative margin (\code{rp - loss})}
-\item{profit, cprofit}{Profit indicator (factor \code{"pos"} / \code{"neg"})}
-\item{lr}{Loss ratio (\code{loss / rp})}
-\item{clr}{Cumulative loss ratio (\code{closs / crp})}
+\item{n_obs}{Number of distinct cohorts observed}
+\item{loss, loss_incr}{Cumulative and per-period loss}
+\item{premium, premium_incr}{Cumulative and per-period premium}
+\item{lr, lr_incr}{Cumulative and per-period loss ratio}
+\item{margin, margin_incr}{Cumulative and per-period margin
+(\code{premium - loss})}
+\item{profit, profit_incr}{Profit indicator (factor \code{"pos"} / \code{"neg"})}
+\item{loss_prop, loss_incr_prop}{Cumulative and per-period proportions
+of loss within each \verb{(cohort, dev)} cell}
+\item{premium_prop, premium_incr_prop}{Cumulative and per-period
+proportions of premium within each \verb{(cohort, dev)} cell}
 }
 
 The returned object also has an attribute \code{"longer"} containing
@@ -59,48 +65,48 @@ a melted long-format version (\code{class = "TriangleLonger"}).
 Aggregate experience data into a development structure by grouping,
 period, and development-period variables. The result contains:
 \itemize{
-\item cumulative loss and cumulative risk premium,
-\item period and cumulative proportions,
-\item margin and cumulative margin,
+\item cumulative loss and cumulative premium,
+\item per-period and cumulative proportions,
+\item per-period and cumulative margin,
 \item profit indicators,
-\item loss ratio (\code{lr = loss / rp}) and cumulative loss ratio (\code{clr = closs / crp}).
+\item per-period loss ratio (\code{lr_incr = loss_incr / premium_incr}) and
+cumulative loss ratio (\code{lr = loss / premium}).
 }
 
-The loss ratio is defined as:
-\deqn{lr = loss / rp}
+The cumulative loss ratio is defined as:
+\deqn{lr = loss / premium}
 
-where \code{rp} represents risk premium (expected loss), not written premium.
+For long-term health insurance applications, risk premium is commonly
+used as the \code{premium} measure.
 
-Proportion variables are computed within each \code{cohort_var + dev_var} cell:
+Proportion variables are computed within each \verb{(cohort, dev)} cell:
 \itemize{
-\item \code{loss_prop  = loss  / sum(loss)}
-\item \code{rp_prop    = rp    / sum(rp)}
-\item \code{closs_prop = closs / sum(closs)}
-\item \code{crp_prop   = crp   / sum(crp)}
+\item \code{loss_incr_prop    = loss_incr    / sum(loss_incr)}
+\item \code{premium_incr_prop = premium_incr / sum(premium_incr)}
+\item \code{loss_prop         = loss         / sum(loss)}
+\item \code{premium_prop      = premium      / sum(premium)}
 }
 
-Therefore, for a fixed \verb{(cohort_var, dev_var)} cell, the proportions
+Therefore, for a fixed \verb{(cohort, dev)} cell, the proportions
 sum to 1 across groups. These are useful for examining the composition of
 each development cell across products or other grouping variables.
 }
 \examples{
 \dontrun{
 df <- data.frame(
-  pd_cd    = rep(c("P001", "P002"), each = 6),
-  pd_nm    = rep(c("cancer", "health"), each = 6),
-  uym      = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
-  elap_m     = rep(1:2, 6),
-  loss     = runif(12, 80, 120),
-  rp       = runif(12, 90, 110),
-  n_policy = sample(50:100, 12, replace = TRUE)
+  pd_cd        = rep(c("P001", "P002"), each = 6),
+  pd_nm        = rep(c("cancer", "health"), each = 6),
+  uym          = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
+  elap_m       = rep(1:2, 6),
+  loss_incr    = runif(12, 80, 120),
+  premium_incr = runif(12, 90, 110)
 )
 
 res <- build_triangle(
   df,
-  group_var   = pd_cd,
-  value_var   = c("loss", "rp", "n_policy"),
+  group_var  = pd_cd,
   cohort_var = "uym",
-  dev_var = "elap_m"
+  dev_var    = "elap_m"
 )
 
 head(res)

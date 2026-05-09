@@ -8,8 +8,9 @@ test_that("build_triangle returns object inheriting class 'Triangle'", {
 
 test_that("build_triangle output has expected columns", {
   tri <- build_triangle(exp, group_var = cv_nm)
-  expected <- c("cohort", "dev", "loss", "rp",
-                "closs", "crp", "lr", "clr")
+  expected <- c("cohort", "dev",
+                "loss", "loss_incr", "premium", "premium_incr",
+                "lr", "lr_incr")
   expect_true(all(expected %in% names(tri)))
 })
 
@@ -21,19 +22,19 @@ test_that("build_triangle sets attributes correctly", {
   expect_equal(attr(tri, "group_var"),   "cv_nm")
 })
 
-test_that("closs equals cumulative sum of loss within (group, cohort)", {
+test_that("loss equals cumulative sum of loss_incr within (group, cohort)", {
   tri <- build_triangle(exp, group_var = cv_nm)
   data.table::setorder(tri, cv_nm, cohort, dev)
-  chk <- tri[, .(max_abs_err = max(abs(closs - cumsum(loss)))),
+  chk <- tri[, .(max_abs_err = max(abs(loss - cumsum(loss_incr)))),
              by = .(cv_nm, cohort)]
   tol <- 1e-6
   expect_true(all(chk$max_abs_err <= tol))
 })
 
-test_that("lr equals loss/rp within each row when rp > 0", {
+test_that("lr equals loss/premium within each row when premium > 0", {
   tri <- build_triangle(exp, group_var = cv_nm)
-  pos <- tri[rp > 0]
-  expect_equal(pos$lr, pos$loss / pos$rp)
+  pos <- tri[premium > 0]
+  expect_equal(pos$lr, pos$loss / pos$premium)
 })
 
 test_that("summary.Triangle returns a TriangleSummary with expected columns", {
@@ -41,7 +42,7 @@ test_that("summary.Triangle returns a TriangleSummary with expected columns", {
   sm <- summary(tri)
   expect_s3_class(sm, "TriangleSummary")
   expected <- c("lr_mean", "lr_median", "lr_wt",
-                "clr_mean", "clr_median", "clr_wt")
+                "lr_incr_mean", "lr_incr_median", "lr_incr_wt")
   expect_true(all(expected %in% names(sm)))
 })
 
@@ -63,7 +64,7 @@ test_that("build_total returns class 'Total' with one row per group", {
   tot <- build_total(exp, group_var = cv_nm)
   expect_s3_class(tot, "Total")
   expected <- c("n_obs", "sales_start", "sales_end",
-                "loss", "rp", "lr", "loss_prop", "rp_prop")
+                "loss", "premium", "lr", "loss_prop", "premium_prop")
   expect_true(all(expected %in% names(tot)))
   expect_equal(nrow(tot), data.table::uniqueN(exp$cv_nm))
 })
@@ -85,7 +86,7 @@ test_that("summary.Calendar returns CalendarSummary with expected columns", {
   expect_s3_class(s, "CalendarSummary")
   expected <- c("calendar", "n_obs",
                 "lr_mean", "lr_median", "lr_wt",
-                "clr_mean", "clr_median", "clr_wt")
+                "lr_incr_mean", "lr_incr_median", "lr_incr_wt")
   expect_true(all(expected %in% names(s)))
   expect_equal(attr(s, "group_var"),    "cv_nm")
   expect_equal(attr(s, "calendar_var"), "cym")

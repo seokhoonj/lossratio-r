@@ -10,7 +10,7 @@
 \item{x}{An object of class \code{"Link"}.}
 
 \item{model}{Either \code{"ata"} or \code{"ed"}. Default depends on
-\code{attr(x, "exposure_var")}.}
+\code{attr(x, "premium_var")}.}
 
 \item{...}{Arguments forwarded to the underlying plotting helper. See
 the per-model parameter list in Details.}
@@ -23,7 +23,7 @@ Visualise diagnostic summaries from a \code{"Link"} object. Dispatches to
 the multiplicative ATA branch (\code{model = "ata"}) or the additive
 exposure-driven branch (\code{model = "ed"}).
 
-The default \code{model} is chosen from \code{attr(x, "exposure_var")}: \code{NULL}
+The default \code{model} is chosen from \code{attr(x, "premium_var")}: \code{NULL}
 (single-variable link) selects \code{"ata"}, a non-\code{NULL} exposure variable
 (dual-variable link) selects \code{"ed"}.
 }

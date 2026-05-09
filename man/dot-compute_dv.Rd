@@ -24,7 +24,7 @@ cohorts:
 
 \deqn{\hat{D}_v = \frac{1.4826 \cdot \mathrm{MAD}_i(lr_{i,v})}{|\mathrm{median}_i(lr_{i,v})|}}
 
-Operating on \code{lr} (incremental) rather than \code{clr} keeps the metric
+Operating on \code{lr} (incremental) rather than \code{lr} keeps the metric
 inertia-free.
 }
 \keyword{internal}

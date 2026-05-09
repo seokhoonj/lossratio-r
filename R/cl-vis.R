@@ -68,7 +68,7 @@ plot.CLFit <- function(x,
   grp_var <- x$group_var
   coh_var <- x$cohort_var
   dev_var <- x$dev_var
-  val_var <- x$value_var
+  val_var <- x$loss_var
 
   if (is.null(grp_var)) grp_var <- character(0)
 
@@ -366,7 +366,7 @@ plot_triangle.CLFit <- function(x,
   grp_var <- x$group_var
   coh_var <- x$cohort_var
   dev_var <- x$dev_var
-  val_var <- x$value_var
+  val_var <- x$loss_var
 
   if (is.null(grp_var)) grp_var <- character(0)
 
@@ -375,24 +375,25 @@ plot_triangle.CLFit <- function(x,
   if (length(dev_var) != 1L)
     stop("`x` must contain exactly one `dev_var`.", call. = FALSE)
 
-  ratio_vars <- c("lr", "clr")
-  prop_vars  <- c("loss_prop", "rp_prop", "closs_prop", "crp_prop")
+  ratio_vars <- c("lr", "lr_incr")
+  prop_vars  <- c("loss_prop", "loss_incr_prop",
+                  "premium_prop", "premium_incr_prop")
   is_ratio   <- val_var %in% c(ratio_vars, prop_vars)
 
   base_title <- switch(
     val_var,
-    lr         = "Loss Ratio",
-    clr        = "Cumulative Loss Ratio",
-    loss       = "Loss",
-    rp         = "Risk Premium",
-    margin     = "Margin",
-    closs      = "Cumulative Loss",
-    crp        = "Cumulative Risk Premium",
-    cmargin    = "Cumulative Margin",
-    loss_prop  = "Loss Proportion",
-    rp_prop    = "Risk Premium Proportion",
-    closs_prop = "Cumulative Loss Proportion",
-    crp_prop   = "Cumulative Risk Premium Proportion",
+    lr                 = "Cumulative Loss Ratio",
+    lr_incr            = "Per-Period Loss Ratio",
+    loss               = "Cumulative Loss",
+    loss_incr          = "Per-Period Loss",
+    premium            = "Cumulative Premium",
+    premium_incr       = "Per-Period Premium",
+    margin             = "Cumulative Margin",
+    margin_incr        = "Per-Period Margin",
+    loss_prop          = "Cumulative Loss Proportion",
+    loss_incr_prop     = "Per-Period Loss Proportion",
+    premium_prop       = "Cumulative Premium Proportion",
+    premium_incr_prop  = "Per-Period Premium Proportion",
     val_var
   )
 

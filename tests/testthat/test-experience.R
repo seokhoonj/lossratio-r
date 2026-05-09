@@ -10,9 +10,9 @@ test_that("as_experience errors when required columns are missing", {
                regexp = "Missing columns.*'cym'")
 
   broken2 <- as.data.frame(experience)[, setdiff(names(experience),
-                                                 c("uym", "loss", "rp"))]
+                                                 c("uym", "loss_incr", "premium_incr"))]
   expect_error(as_experience(broken2),
-               regexp = "Missing columns.*'uym'.*'loss'.*'rp'")
+               regexp = "Missing columns.*'uym'.*'loss_incr'.*'premium_incr'")
 })
 
 test_that("as_experience returns an object inheriting class 'Experience'", {

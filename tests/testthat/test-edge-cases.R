@@ -17,7 +17,7 @@ test_that("build_triangle accepts a zero-row Experience and returns empty Triang
   expect_no_error(tri <- build_triangle(exp_empty, group_var = cv_nm))
   expect_s3_class(tri, "Triangle")
   expect_equal(nrow(tri), 0L)
-  expect_true(all(c("cohort", "dev", "loss", "rp") %in% names(tri)))
+  expect_true(all(c("cohort", "dev", "loss", "premium") %in% names(tri)))
 })
 
 # Single cohort -------------------------------------------------------------
@@ -35,7 +35,7 @@ test_that("build_link on a single cohort returns Link with valid links", {
   exp <- make_exp()
   single <- exp[uym == as.Date("2023-04-01")]
   tri <- build_triangle(single, group_var = cv_nm)
-  ata <- build_link(tri, value_var = "closs")
+  ata <- build_link(tri, loss_var = "loss")
   expect_s3_class(ata, "Link")
   expect_true(all(ata$ata_to == ata$ata_from + 1L))
 })
@@ -59,7 +59,7 @@ test_that("summary.Triangle on a single group returns one row per dev", {
 
 test_that("fit_cl runs on a single-group triangle", {
   tri <- make_sub_tri("SUR")
-  expect_no_error(cl <- fit_cl(tri, value_var = "closs", method = "mack"))
+  expect_no_error(cl <- fit_cl(tri, loss_var = "loss", method = "mack"))
   expect_s3_class(cl, "CLFit")
 })
 
@@ -68,18 +68,18 @@ test_that("fit_cl runs on a single-group triangle", {
 test_that("build_triangle propagates NA loss without erroring", {
   exp <- make_exp()
   exp_na <- data.table::copy(exp)
-  exp_na[1:50, loss := NA_real_]
+  exp_na[1:50, loss_incr := NA_real_]
   expect_no_error(tri <- build_triangle(exp_na, group_var = cv_nm))
   expect_s3_class(tri, "Triangle")
   # at least some NAs survive aggregation
-  expect_true(anyNA(tri$loss))
+  expect_true(anyNA(tri$loss_incr))
 })
 
 test_that("as_experience refuses NA in required columns after coercion", {
   raw <- as.data.frame(make_exp())
-  raw$loss[1:5] <- NA
+  raw$loss_incr[1:5] <- NA
   expect_error(as_experience(raw),
-               regexp = "loss.*coerced.*numeric")
+               regexp = "loss_incr.*coerced.*numeric")
 })
 
 # Granularity (quarter / half / year) --------------------------------------

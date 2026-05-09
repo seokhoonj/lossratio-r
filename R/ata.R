@@ -52,8 +52,8 @@
 #' When the input `"Link"` object contains a `weight` column (added by
 #' [build_link()] when `weight_var` is supplied), that column is
 #' automatically used as the WLS weight in place of `value_from`. This
-#' is useful when `value_var = "clr"`, where `value_from` carries no
-#' exposure information and an external exposure variable such as `crp`
+#' is useful when `loss_var = "lr"`, where `value_from` carries no
+#' exposure information and an external exposure variable such as `premium`
 #' should be used instead.
 #'
 #' @section Coefficient of variation (`cv`):
@@ -185,7 +185,7 @@
   data.table::setattr(ds, "group_var",   grp_var)
   data.table::setattr(ds, "cohort_var",  attr(object, "cohort_var"))
   data.table::setattr(ds, "dev_var", attr(object, "dev_var"))
-  data.table::setattr(ds, "value_var",   attr(object, "value_var"))
+  data.table::setattr(ds, "loss_var",   attr(object, "loss_var"))
   data.table::setattr(ds, "weight_var",  attr(object, "weight_var"))
   data.table::setattr(ds, "digits",      digits)
 
@@ -291,8 +291,8 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'     \item{`maturity_args`}{Resolved maturity arguments, or `NULL`.}
 #'   }
 #'
-#' @param value_var Cumulative metric for the link factor. Default
-#'   `"closs"`. Forwarded to [build_link()].
+#' @param loss_var Cumulative metric for the link factor. Default
+#'   `"loss"`. Forwarded to [build_link()].
 #' @param weight_var Optional WLS weight variable. Forwarded to
 #'   [build_link()].
 #'
@@ -301,7 +301,7 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'
 #' @export
 fit_ata <- function(x,
-                    value_var     = "closs",
+                    loss_var     = "loss",
                     weight_var    = NULL,
                     alpha         = 1,
                     na_method     = c("locf", "none"),
@@ -313,7 +313,7 @@ fit_ata <- function(x,
 
   .assert_class(x, "Triangle")
 
-  x <- build_link(x, value_var = value_var, weight_var = weight_var)
+  x <- build_link(x, loss_var = loss_var, weight_var = weight_var)
 
   na_method    <- match.arg(na_method)
   sigma_method <- match.arg(sigma_method)
@@ -401,7 +401,7 @@ fit_ata <- function(x,
     group_var     = grp_var,
     cohort_var = attr(x, "cohort_var"),
     dev_var   = attr(x, "dev_var"),
-    value_var     = attr(x, "value_var"),
+    loss_var     = attr(x, "loss_var"),
     weight_var    = attr(x, "weight_var"),
     link          = x,
     factor        = ata_summary,

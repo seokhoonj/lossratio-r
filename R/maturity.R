@@ -24,8 +24,8 @@
 #' together provides a more robust maturity assessment than either alone.
 #'
 #' @param x A `Triangle` object.
-#' @param value_var Cumulative metric for the link factor. Default
-#'   `"closs"`. Forwarded to [build_link()].
+#' @param loss_var Cumulative metric for the link factor. Default
+#'   `"loss"`. Forwarded to [build_link()].
 #' @param weight_var Optional WLS weight variable. Forwarded to
 #'   [build_link()].
 #' @param alpha Numeric scalar controlling the variance structure in
@@ -47,7 +47,7 @@
 #'
 #' @export
 detect_maturity <- function(x,
-                          value_var       = "closs",
+                          loss_var       = "loss",
                           weight_var      = NULL,
                           alpha           = 1,
                           cv_threshold    = 0.15,
@@ -58,7 +58,7 @@ detect_maturity <- function(x,
 
   .assert_class(x, "Triangle")
 
-  link <- build_link(x, value_var = value_var, weight_var = weight_var)
+  link <- build_link(x, loss_var = loss_var, weight_var = weight_var)
   ata_summary <- summary(link, model = "ata", alpha = alpha)
 
   .detect_maturity(
@@ -208,7 +208,7 @@ detect_maturity <- function(x,
   data.table::setattr(z, "min_n_valid",     min_n_valid)
   data.table::setattr(z, "min_run",         min_run)
   data.table::setattr(z, "group_var",       grp_var)
-  data.table::setattr(z, "value_var",       attr(x, "value_var"))
+  data.table::setattr(z, "loss_var",       attr(x, "loss_var"))
   data.table::setattr(z, "weight_var",      attr(x, "weight_var"))
 
   .prepend_class(z, "Maturity")

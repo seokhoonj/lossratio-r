@@ -6,7 +6,7 @@
 \usage{
 detect_maturity(
   x,
-  value_var = "closs",
+  loss_var = "loss",
   weight_var = NULL,
   alpha = 1,
   cv_threshold = 0.15,
@@ -19,8 +19,8 @@ detect_maturity(
 \arguments{
 \item{x}{A \code{Triangle} object.}
 
-\item{value_var}{Cumulative metric for the link factor. Default
-\code{"closs"}. Forwarded to \code{\link[=build_link]{build_link()}}.}
+\item{loss_var}{Cumulative metric for the link factor. Default
+\code{"loss"}. Forwarded to \code{\link[=build_link]{build_link()}}.}
 
 \item{weight_var}{Optional WLS weight variable. Forwarded to
 \code{\link[=build_link]{build_link()}}.}

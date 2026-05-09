@@ -12,7 +12,7 @@ test_that("fit_lr default (method = 'sa') returns class 'LRFit'", {
 test_that("LRFit has expected list elements", {
   lr <- fit_lr(tri, method = "sa")
   for (nm in c("data", "method", "group_var", "cohort_var", "dev_var",
-               "loss_var", "exposure_var", "full", "pred", "summary",
+               "loss_var", "premium_var", "full", "pred", "summary",
                "ed", "loss_ata_fit", "exposure_ata_fit", "maturity",
                "delta_method", "rho", "conf_level")) {
     expect_true(nm %in% names(lr), info = paste("missing", nm))
@@ -21,10 +21,10 @@ test_that("LRFit has expected list elements", {
 
 test_that("$full has expected columns", {
   lr <- fit_lr(tri, method = "sa")
-  for (nm in c("cv_nm", "cohort", "dev", "loss_obs", "exposure_obs",
+  for (nm in c("cv_nm", "cohort", "dev", "loss_obs", "premium_obs",
                "is_observed",
-               "loss_proj", "exposure_proj", "lr_proj",
-               "loss_inc_proj", "exposure_inc_proj", "lr_inc_proj")) {
+               "loss_proj", "premium_proj", "lr_proj",
+               "loss_incr_proj", "premium_incr_proj", "lr_incr_proj")) {
     expect_true(nm %in% names(lr$full), info = paste("missing", nm))
   }
 })
@@ -33,19 +33,19 @@ test_that("incremental projections recover cumulative via per-cohort cumsum", {
   lr <- fit_lr(tri, method = "sa")
   full <- data.table::copy(lr$full)
   data.table::setorder(full, cv_nm, cohort, dev)
-  full[, .loss_recovered     := cumsum(loss_inc_proj),     by = .(cv_nm, cohort)]
-  full[, .exposure_recovered := cumsum(exposure_inc_proj), by = .(cv_nm, cohort)]
-  rows <- full[is.finite(loss_proj) & is.finite(loss_inc_proj)]
+  full[, .loss_recovered     := cumsum(loss_incr_proj),     by = .(cv_nm, cohort)]
+  full[, .exposure_recovered := cumsum(premium_incr_proj), by = .(cv_nm, cohort)]
+  rows <- full[is.finite(loss_proj) & is.finite(loss_incr_proj)]
   expect_equal(rows$.loss_recovered,     rows$loss_proj,     tolerance = 1e-8)
-  expect_equal(rows$.exposure_recovered, rows$exposure_proj, tolerance = 1e-8)
+  expect_equal(rows$.exposure_recovered, rows$premium_proj, tolerance = 1e-8)
 })
 
 test_that("$pred masks incremental projections on observed cells", {
   lr <- fit_lr(tri, method = "sa")
   obs <- lr$pred[lr$pred$is_observed == TRUE, ]
-  expect_true(all(is.na(obs$loss_inc_proj)))
-  expect_true(all(is.na(obs$exposure_inc_proj)))
-  expect_true(all(is.na(obs$lr_inc_proj)))
+  expect_true(all(is.na(obs$loss_incr_proj)))
+  expect_true(all(is.na(obs$premium_incr_proj)))
+  expect_true(all(is.na(obs$lr_incr_proj)))
 })
 
 test_that("$summary has cohort-level entries with expected columns", {

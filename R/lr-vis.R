@@ -11,12 +11,12 @@
 #' \itemize{
 #'   \item `"lr"`: projected cumulative loss ratio by cohort with
 #'     optional confidence bands.
-#'   \item `"closs"`: observed and projected cumulative loss by
+#'   \item `"loss"`: observed and projected cumulative loss by
 #'     cohort with optional confidence bands.
 #' }
 #'
 #' @param x An object of class `"LRFit"`.
-#' @param type One of `"lr"` or `"closs"`.
+#' @param type One of `"lr"` or `"loss"`.
 #' @param conf_level Confidence level. Default is `0.95`.
 #' @param show_interval Logical. Default is `TRUE`.
 #' @param amount_divisor Numeric. Default is `1e8`.
@@ -30,7 +30,7 @@
 #' @method plot LRFit
 #' @export
 plot.LRFit <- function(x,
-                        type           = c("lr", "closs"),
+                        type           = c("lr", "loss"),
                         conf_level     = 0.95,
                         show_interval  = TRUE,
                         amount_divisor = 1e8,
@@ -59,7 +59,7 @@ plot.LRFit <- function(x,
 
   ci_type <- if (!is.null(x$ci_type)) x$ci_type else "analytical"
 
-  if (type == "closs") {
+  if (type == "loss") {
     val_col      <- "loss_proj"
     ci_lo_col    <- "ci_lower_loss"
     ci_hi_col    <- "ci_upper_loss"
@@ -84,12 +84,12 @@ plot.LRFit <- function(x,
   obs  <- full[is_observed == TRUE  & is.finite(loss_obs)]
   pred <- full[is_observed == FALSE & is.finite(full[[val_col]])]
 
-  if (type == "closs") {
+  if (type == "loss") {
     obs[, .y := loss_obs]
   } else {
     obs[, .y := data.table::fifelse(
-      is.finite(exposure_obs) & exposure_obs != 0,
-      loss_obs / exposure_obs, NA_real_
+      is.finite(premium_obs) & premium_obs != 0,
+      loss_obs / premium_obs, NA_real_
     )]
   }
 
@@ -262,8 +262,8 @@ plot_triangle.LRFit <- function(x,
 
   # 2) compute lr for all cells
   dt[, lr := data.table::fifelse(
-    is.finite(loss_proj) & is.finite(exposure_proj) & exposure_proj != 0,
-    loss_proj / exposure_proj,
+    is.finite(loss_proj) & is.finite(premium_proj) & premium_proj != 0,
+    loss_proj / premium_proj,
     NA_real_
   )]
 
@@ -295,7 +295,7 @@ plot_triangle.LRFit <- function(x,
         paste0(fmt, "\n(%.1f/%.1f)"),
         lr * 100,
         loss_proj / amount_divisor,
-        exposure_proj / amount_divisor
+        premium_proj / amount_divisor
       ),
       ""
     )]

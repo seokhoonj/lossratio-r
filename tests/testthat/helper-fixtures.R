@@ -22,18 +22,18 @@ make_sub_tri <- function(cv = "SUR") {
 
 make_link_set <- function() {
   tri <- make_tri()
-  ata <- build_link(tri, value_var = "closs")
-  ed  <- build_link(tri, value_var = "closs", exposure_var = "crp")
+  ata <- build_link(tri, loss_var = "loss")
+  ed  <- build_link(tri, loss_var = "loss", premium_var = "premium")
   list(
     exp     = make_exp(),
     tri     = tri,
     ata     = ata,
-    ata_fit = fit_ata(tri, value_var = "closs"),
+    ata_fit = fit_ata(tri, loss_var = "loss"),
     ata_sm  = summary(ata),
     ed      = ed,
-    ed_fit  = fit_ed(tri, value_var = "closs", exposure_var = "crp"),
+    ed_fit  = fit_ed(tri, loss_var = "loss", premium_var = "premium"),
     ed_sm   = summary(ed),
-    cl      = fit_cl(tri, value_var = "closs", method = "mack"),
+    cl      = fit_cl(tri, loss_var = "loss", method = "mack"),
     lr      = fit_lr(tri, method = "sa"),
     cal     = build_calendar(make_exp(), group_var = "cv_nm"),
     tot     = build_total(make_exp(), group_var = "cv_nm")

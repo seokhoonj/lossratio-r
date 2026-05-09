@@ -7,7 +7,7 @@
 fit_cl(
   x,
   method = c("basic", "mack"),
-  value_var = "closs",
+  loss_var = "loss",
   weight_var = NULL,
   alpha = 1,
   sigma_method = c("min_last2", "locf", "loglinear"),
@@ -21,11 +21,11 @@ fit_cl(
 
 \item{method}{One of \code{"basic"} or \code{"mack"}. Default is \code{"basic"}.}
 
-\item{value_var}{A single cumulative variable to project.
-Typical choices are \code{"closs"}, \code{"crp"}, or \code{"clr"}.}
+\item{loss_var}{A single cumulative variable to project.
+Typical choices are \code{"loss"}, \code{"premium"}, or \code{"lr"}.}
 
 \item{weight_var}{An optional column name passed to \code{\link[=build_link]{build_link()}} as
-the WLS weight variable. Typically \code{"crp"} when \code{value_var = "clr"}.
+the WLS weight variable. Typically \code{"premium"} when \code{loss_var = "lr"}.
 Default is \code{NULL}.}
 
 \item{alpha}{Numeric scalar controlling the variance structure in
@@ -57,7 +57,7 @@ An object of class \code{"CLFit"} containing:
 \item{\code{group_var}}{Character vector of grouping variable names.}
 \item{\code{cohort_var}}{Character scalar of period variable name.}
 \item{\code{dev_var}}{Character scalar of development variable name.}
-\item{\code{value_var}}{Character scalar of value variable name.}
+\item{\code{loss_var}}{Character scalar of value variable name.}
 \item{\code{full}}{\code{data.table} with observed and projected values. For
 \code{"mack"}, also includes process/parameter SE and CV columns.}
 \item{\code{pred}}{\code{data.table} identical to \code{full} with observed cells
@@ -97,7 +97,7 @@ standard recursion, and prediction uncertainty is decomposed into
 process variance and parameter variance.}
 }
 
-When \code{weight_var} is supplied (e.g. \code{"crp"}), age-to-age factors and
+When \code{weight_var} is supplied (e.g. \code{"premium"}), age-to-age factors and
 their variance are estimated using the supplied WLS weights.
 }
 \examples{
@@ -107,16 +107,16 @@ exp <- as_experience(experience)
 tri <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
 
 # Basic chain ladder (point projection only)
-cl <- fit_cl(tri, value_var = "closs", method = "basic")
+cl <- fit_cl(tri, loss_var = "loss", method = "basic")
 print(cl)
 
 # Mack chain ladder with process / parameter standard errors
-cl_mack <- fit_cl(tri, value_var = "closs", method = "mack")
+cl_mack <- fit_cl(tri, loss_var = "loss", method = "mack")
 summary(cl_mack)
 plot(cl_mack)
 
-# WLS factors for clr (loss ratio) using crp as the weight
-cl_clr <- fit_cl(tri, value_var = "clr", weight_var = "crp")
+# WLS factors for lr (loss ratio) using premium as the weight
+cl_clr <- fit_cl(tri, loss_var = "lr", weight_var = "premium")
 }
 
 }

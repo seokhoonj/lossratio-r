@@ -10,10 +10,11 @@
 #' @section Required columns:
 #' These columns must be present:
 #' \itemize{
-#'   \item `cym`  : Calendar year-month (`Date`)
-#'   \item `uym`  : Underwriting year-month (`Date`)
-#'   \item `loss` : Incurred loss amount (`numeric`)
-#'   \item `rp`   : Risk premium (`numeric`)
+#'   \item `cym`          : Calendar year-month (`Date`)
+#'   \item `uym`          : Underwriting year-month (`Date`)
+#'   \item `loss_incr`    : Per-period loss amount (`numeric`)
+#'   \item `premium_incr` : Per-period premium (`numeric`); for long-term
+#'     health insurance, risk premium is commonly used
 #' }
 #'
 #' @section Optional columns:
@@ -51,10 +52,10 @@ check_experience <- function(df) {
   .assert_class(df, "data.frame")
 
   required_spec <- list(
-    cym  = "Date",
-    uym  = "Date",
-    loss = "numeric",
-    rp   = "numeric"
+    cym          = "Date",
+    uym          = "Date",
+    loss_incr    = "numeric",
+    premium_incr = "numeric"
   )
 
   optional_spec <- list(
@@ -265,10 +266,11 @@ add_experience_period <- function(df) {
 #' @details
 #' Minimum required columns are:
 #' \itemize{
-#'   \item `cym`  : Calendar year-month (`Date` or coercible to `Date`)
-#'   \item `uym`  : Underwriting year-month (`Date` or coercible to `Date`)
-#'   \item `loss` : Incurred loss amount (`numeric` or coercible)
-#'   \item `rp`   : Risk premium (`numeric` or coercible)
+#'   \item `cym`          : Calendar year-month (`Date` or coercible to `Date`)
+#'   \item `uym`          : Underwriting year-month (`Date` or coercible to `Date`)
+#'   \item `loss_incr`    : Per-period loss amount (`numeric` or coercible)
+#'   \item `premium_incr` : Per-period premium (`numeric` or coercible); for
+#'     long-term health insurance, risk premium is commonly used
 #' }
 #'
 #' If `add_period = TRUE`, additional period variables such as `uy`,
@@ -295,7 +297,7 @@ as_experience <- function(df, add_period = TRUE) {
          call. = FALSE)
   }
 
-  required_cols <- c("cym", "uym", "loss", "rp")
+  required_cols <- c("cym", "uym", "loss_incr", "premium_incr")
   missing_cols  <- setdiff(required_cols, names(df))
 
   if (length(missing_cols)) {
@@ -323,8 +325,8 @@ as_experience <- function(df, add_period = TRUE) {
   }
 
   # coerce required numeric columns
-  data.table::set(dt, j = "loss", value = as.numeric(dt[["loss"]]))
-  data.table::set(dt, j = "rp"  , value = as.numeric(dt[["rp"]]))
+  data.table::set(dt, j = "loss_incr",    value = as.numeric(dt[["loss_incr"]]))
+  data.table::set(dt, j = "premium_incr", value = as.numeric(dt[["premium_incr"]]))
 
   # validate required columns after coercion
   if (anyNA(dt[["cym"]])) {
@@ -335,12 +337,12 @@ as_experience <- function(df, add_period = TRUE) {
     stop("`uym` could not be safely coerced to `Date`.", call. = FALSE)
   }
 
-  if (anyNA(dt[["loss"]])) {
-    stop("`loss` could not be safely coerced to `numeric`.", call. = FALSE)
+  if (anyNA(dt[["loss_incr"]])) {
+    stop("`loss_incr` could not be safely coerced to `numeric`.", call. = FALSE)
   }
 
-  if (anyNA(dt[["rp"]])) {
-    stop("`rp` could not be safely coerced to `numeric`.", call. = FALSE)
+  if (anyNA(dt[["premium_incr"]])) {
+    stop("`premium_incr` could not be safely coerced to `numeric`.", call. = FALSE)
   }
 
   # add derived period variables

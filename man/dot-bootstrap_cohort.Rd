@@ -7,7 +7,7 @@
 .bootstrap_cohort(
   loss_obs,
   loss_proj,
-  exposure_proj,
+  premium_proj,
   g_selected,
   f_selected,
   ed_sigma2,
@@ -23,7 +23,7 @@
 )
 }
 \value{
-A list with four vectors of length \code{length(exposure_proj)}:
+A list with four vectors of length \code{length(premium_proj)}:
 \code{ci_lower}, \code{ci_upper} (for CLR), and \code{ci_lower_loss},
 \code{ci_upper_loss} (for cumulative loss).
 }

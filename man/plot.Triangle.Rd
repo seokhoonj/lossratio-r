@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{Triangle}(
   x,
-  value_var = "clr",
+  value_var = "lr",
   summary = FALSE,
   summary_min_n = 5L,
   amount_divisor = 1e+08,
@@ -19,14 +19,15 @@
 \item{x}{An object of class \code{Triangle}.}
 
 \item{value_var}{A single metric to plot. Must be one of:
-\code{"lr"}, \code{"clr"},
-\code{"loss"}, \code{"rp"}, \code{"margin"}, \code{"closs"}, \code{"crp"}, \code{"cmargin"},
-\code{"loss_prop"}, \code{"rp_prop"}, \code{"closs_prop"}, or \code{"crp_prop"}.}
+\code{"lr"}, \code{"lr_incr"},
+\code{"loss"}, \code{"loss_incr"}, \code{"premium"}, \code{"premium_incr"},
+\code{"margin"}, \code{"margin_incr"},
+\code{"loss_prop"}, \code{"loss_incr_prop"}, \code{"premium_prop"}, or \code{"premium_incr_prop"}.}
 
 \item{summary}{Logical. If \code{FALSE} (default), shows raw cohort trajectories.
 If \code{TRUE}, shows grey cohort trajectories with overlaid summary lines
 (mean, median, weighted mean). Summary overlay is supported only for
-\code{"lr"} and \code{"clr"}, and only when the x-axis variable is a development-period
+\code{"lr"} and \code{"lr_incr"}, and only when the x-axis variable is a development-period
 variable (for example, \code{elap_m}, \code{elap_q}, \code{elap_h}, \code{elap_y}).}
 
 \item{summary_min_n}{Optional minimum number of observations required for
@@ -74,15 +75,16 @@ Cohort lines are grouped by the period variable stored in
 \code{attr(x, "cohort_var")}, and facets are created from
 \code{attr(x, "group_var")}.
 
-The loss ratio is defined here as:
-\deqn{lr = loss / rp}
+The cumulative loss ratio is defined here as:
+\deqn{lr = loss / premium}
 
-where \code{rp} denotes risk premium rather than written premium.
+For long-term health insurance applications, risk premium is commonly
+used as the \code{premium} measure.
 
 The weighted mean is defined as:
 \itemize{
-\item \code{lr_wt = sum(loss) / sum(rp)}
-\item \code{clr_wt = sum(closs) / sum(crp)}
+\item \code{lr_wt      = sum(loss)      / sum(premium)}
+\item \code{lr_incr_wt = sum(loss_incr) / sum(premium_incr)}
 }
 
 Ratio and proportion metrics are plotted on the original scale and displayed

@@ -6,8 +6,8 @@
 \usage{
 fit_ed(
   x,
-  value_var = "closs",
-  exposure_var = "crp",
+  loss_var = "loss",
+  premium_var = "premium",
   method = c("basic", "mack"),
   alpha = 1,
   na_method = c("zero", "locf", "none"),
@@ -20,10 +20,10 @@ fit_ed(
 \arguments{
 \item{x}{A \code{"Triangle"} object.}
 
-\item{value_var}{Cumulative loss variable. Default \code{"closs"}.
+\item{loss_var}{Cumulative loss variable. Default \code{"loss"}.
 Forwarded to \code{\link[=build_link]{build_link()}} and to \code{\link[=fit_lr]{fit_lr()}} as \code{loss_var}.}
 
-\item{exposure_var}{Cumulative exposure variable. Default \code{"crp"}.
+\item{premium_var}{Cumulative exposure variable. Default \code{"premium"}.
 Forwarded to \code{\link[=build_link]{build_link()}} and to \code{\link[=fit_lr]{fit_lr()}}.}
 
 \item{method}{One of \code{"basic"} or \code{"mack"}. Default is \code{"basic"}.}
@@ -57,7 +57,7 @@ An object of class \code{"EDFit"} (a named list) with components:
 (and \code{g_var} when \code{method = "mack"}).}
 \item{\code{full}}{\code{data.table} mirroring \code{LRFit$full} for \code{method = "ed"}:
 per-cell cumulative loss / exposure / loss-ratio projection plus
-SE columns (\code{closs_proj}, \code{exposure_proj}, \code{lr_proj},
+SE columns (\code{loss_proj}, \code{premium_proj}, \code{lr_proj},
 \code{se_proj}, \code{se_lr}, \code{cv_lr}, ...). Available cells include both
 observed and projected; \code{is_observed} flags observed cells.}
 \item{\code{link}}{\code{Link} object used for factor estimation.}

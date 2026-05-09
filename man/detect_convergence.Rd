@@ -31,7 +31,7 @@ exposes both loss and exposure projections required for portfolio LR.}
 \code{3L}.}
 
 \item{k_star}{Pre-computed maturity point. When \code{NULL}, computed via
-\code{\link[=detect_maturity]{detect_maturity()}} applied to a clr-based ATA.}
+\code{\link[=detect_maturity]{detect_maturity()}} applied to a lr-based ATA.}
 
 \item{holdout_max}{Maximum holdout depth used for the rolling
 backtest. When \code{NULL}, set to \code{max(M, floor((V - k_star) / 2))}.}
@@ -45,7 +45,7 @@ backtest. When \code{NULL}, set to \code{max(M, floor((V - k_star) / 2))}.}
 An object of class \code{Convergence} (named list) containing the
 detected \code{k_conv}, the candidate sequence \code{v}, and the diagnostic
 sequences \code{R_v}, \code{SE_param_v}, \code{D_v}, \code{pass_v}. Metadata is carried
-on attributes (\code{group_var}, \code{value_var}, \code{fit_fn_name}).
+on attributes (\code{group_var}, \code{loss_var}, \code{fit_fn_name}).
 }
 \description{
 Identify the first valuation \eqn{k^{**}} from which the projected

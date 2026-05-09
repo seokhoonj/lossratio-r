@@ -3,12 +3,12 @@ data(experience)
 exp  <- as_experience(experience)
 tri  <- build_triangle(exp, group_var = cv_nm)
 cal  <- build_calendar(exp, group_var = cv_nm)
-ata  <- build_link(tri, value_var = "closs")
-af   <- fit_ata(tri, value_var = "closs")
-ed   <- build_link(tri, value_var = "closs", exposure_var = "crp")
-ef   <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
-cl_b <- fit_cl(tri, value_var = "closs", method = "basic")
-cl_m <- fit_cl(tri, value_var = "closs", method = "mack")
+ata  <- build_link(tri, loss_var = "loss")
+af   <- fit_ata(tri, loss_var = "loss")
+ed   <- build_link(tri, loss_var = "loss", premium_var = "premium")
+ef   <- fit_ed(tri, loss_var = "loss", premium_var = "premium")
+cl_b <- fit_cl(tri, loss_var = "loss", method = "basic")
+cl_m <- fit_cl(tri, loss_var = "loss", method = "mack")
 lr   <- fit_lr(tri, method = "sa")
 sub  <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
 reg  <- detect_regime(sub, K = 12, method = "ecp")
@@ -61,7 +61,7 @@ test_that("plot.CLFit dispatches (mack, both types)", {
 
 test_that("plot.LRFit dispatches across types", {
   expect_true(is_plot(suppressWarnings(plot(lr, type = "lr"))))
-  expect_true(is_plot(suppressWarnings(plot(lr, type = "closs"))))
+  expect_true(is_plot(suppressWarnings(plot(lr, type = "loss"))))
 })
 
 test_that("plot.Regime dispatches", {

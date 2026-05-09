@@ -2,26 +2,26 @@
 data(experience)
 exp <- as_experience(experience)
 tri <- build_triangle(exp, group_var = cv_nm)
-ed  <- build_link(tri, value_var = "closs", exposure_var = "crp")
+ed  <- build_link(tri, loss_var = "loss", premium_var = "premium")
 
 test_that("build_link (ED mode) returns class 'Link' with expected columns", {
   expect_s3_class(ed, "Link")
   for (nm in c("cv_nm", "cohort", "ata_from", "ata_to", "ata_link",
                "value_from", "value_to", "delta_value",
-               "exposure_from", "exposure_to", "g")) {
+               "premium_from", "premium_to", "g")) {
     expect_true(nm %in% names(ed), info = paste("missing", nm))
   }
 })
 
 test_that("build_link (ED mode) attributes set correctly", {
-  for (a in c("group_var", "cohort_var", "dev_var", "value_var", "exposure_var")) {
+  for (a in c("group_var", "cohort_var", "dev_var", "loss_var", "premium_var")) {
     expect_false(is.null(attr(ed, a)), info = paste("missing attr", a))
   }
 })
 
-test_that("g == delta_value / exposure_from when exposure_from > 0", {
-  ok <- is.finite(ed$g) & ed$exposure_from > 0
-  expect_equal(ed$g[ok], ed$delta_value[ok] / ed$exposure_from[ok], tolerance = 1e-6)
+test_that("g == delta_value / premium_from when premium_from > 0", {
+  ok <- is.finite(ed$g) & ed$premium_from > 0
+  expect_equal(ed$g[ok], ed$delta_value[ok] / ed$premium_from[ok], tolerance = 1e-6)
 })
 
 test_that("delta_value == value_to - value_from", {
@@ -31,14 +31,14 @@ test_that("delta_value == value_to - value_from", {
                tolerance = 1e-6)
 })
 
-test_that("build_link errors when value_var == exposure_var", {
-  expect_error(build_link(tri, value_var = "closs", exposure_var = "closs"))
+test_that("build_link errors when loss_var == premium_var", {
+  expect_error(build_link(tri, loss_var = "loss", premium_var = "loss"))
 })
 
 # fit_ed -----------------------------------------------------------------
 
 test_that("fit_ed returns class 'EDFit' with expected components", {
-  ef <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
+  ef <- fit_ed(tri, loss_var = "loss", premium_var = "premium")
   expect_s3_class(ef, "EDFit")
   for (nm in c("factor", "selected")) {
     expect_true(nm %in% names(ef), info = paste("missing", nm))
@@ -46,25 +46,25 @@ test_that("fit_ed returns class 'EDFit' with expected components", {
 })
 
 test_that("fit_ed method = 'basic' and 'mack' both work", {
-  expect_no_error(fit_ed(tri, value_var = "closs", exposure_var = "crp", method = "basic"))
-  ef_mack <- fit_ed(tri, value_var = "closs", exposure_var = "crp", method = "mack")
+  expect_no_error(fit_ed(tri, loss_var = "loss", premium_var = "premium", method = "basic"))
+  ef_mack <- fit_ed(tri, loss_var = "loss", premium_var = "premium", method = "mack")
   expect_s3_class(ef_mack, "EDFit")
 })
 
 test_that("fit_ed sigma_method variants run", {
   for (sm in c("min_last2", "locf", "loglinear")) {
-    expect_no_error(fit_ed(tri, value_var = "closs", exposure_var = "crp", sigma_method = sm))
+    expect_no_error(fit_ed(tri, loss_var = "loss", premium_var = "premium", sigma_method = sm))
   }
 })
 
 test_that("recent reduces selected rows count", {
-  ef_full   <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
-  ef_recent <- fit_ed(tri, value_var = "closs", exposure_var = "crp", recent = 6)
+  ef_full   <- fit_ed(tri, loss_var = "loss", premium_var = "premium")
+  ef_recent <- fit_ed(tri, loss_var = "loss", premium_var = "premium", recent = 6)
   expect_true(nrow(ef_recent$selected) <= nrow(ef_full$selected))
 })
 
 test_that("print.EDFit doesn't error", {
-  ef <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
+  ef <- fit_ed(tri, loss_var = "loss", premium_var = "premium")
   expect_no_error(capture.output(print(ef)))
 })
 
@@ -85,9 +85,9 @@ test_that("fit_ed with regime_break drops pre-break cohorts", {
   exp <- as_experience(experience[cv_nm == "SUR"])
   tri <- build_triangle(exp, group_var = "cv_nm",
                         cohort_var = "uym", dev_var = "elap_m")
-  ed <- build_link(tri, value_var = "closs", exposure_var = "crp")
-  fit_full <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
-  fit_brk  <- fit_ed(tri, value_var = "closs", exposure_var = "crp", regime_break = "2024-04-01")
+  ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
+  fit_full <- fit_ed(tri, loss_var = "loss", premium_var = "premium")
+  fit_brk  <- fit_ed(tri, loss_var = "loss", premium_var = "premium", regime_break = "2024-04-01")
   expect_false(identical(fit_full$selected$g_selected,
                          fit_brk$selected$g_selected))
   expect_equal(fit_brk$regime_break, as.Date("2024-04-01"))
@@ -98,9 +98,9 @@ test_that("fit_ed with NULL regime_break is unchanged", {
   exp <- as_experience(experience[cv_nm == "SUR"])
   tri <- build_triangle(exp, group_var = "cv_nm",
                         cohort_var = "uym", dev_var = "elap_m")
-  ed <- build_link(tri, value_var = "closs", exposure_var = "crp")
-  fit_default <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
-  fit_null    <- fit_ed(tri, value_var = "closs", exposure_var = "crp", regime_break = NULL)
+  ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
+  fit_default <- fit_ed(tri, loss_var = "loss", premium_var = "premium")
+  fit_null    <- fit_ed(tri, loss_var = "loss", premium_var = "premium", regime_break = NULL)
   expect_identical(fit_default$selected$g_selected,
                    fit_null$selected$g_selected)
 })
@@ -111,8 +111,8 @@ test_that("fit_ed with Regime input extracts last breakpoint", {
   tri <- build_triangle(exp, group_var = "cv_nm",
                         cohort_var = "uym", dev_var = "elap_m")
   reg <- detect_regime(tri)
-  ed <- build_link(tri, value_var = "closs", exposure_var = "crp")
-  fit_reg <- fit_ed(tri, value_var = "closs", exposure_var = "crp", regime_break = reg)
+  ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
+  fit_reg <- fit_ed(tri, loss_var = "loss", premium_var = "premium", regime_break = reg)
   if (length(reg$breakpoints) > 0L) {
     expect_equal(fit_reg$regime_break, max(reg$breakpoints))
   }
@@ -125,17 +125,17 @@ test_that("fit_ed returns $full with projection columns", {
   exp <- as_experience(experience[cv_nm == "SUR"])
   tri <- build_triangle(exp, group_var = "cv_nm",
                         cohort_var = "uym", dev_var = "elap_m")
-  ef <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
+  ef <- fit_ed(tri, loss_var = "loss", premium_var = "premium")
   expect_true("full" %in% names(ef))
   expect_s3_class(ef$full, "data.table")
-  for (nm in c("cohort", "dev", "loss_obs", "exposure_obs",
-               "closs_proj", "exposure_proj", "lr_proj",
+  for (nm in c("cohort", "dev", "loss_obs", "premium_obs",
+               "loss_proj", "premium_proj", "lr_proj",
                "se_proj", "se_lr", "cv_lr", "is_observed")) {
     expect_true(nm %in% names(ef$full), info = paste("missing", nm))
   }
   # projection columns finite for at least some cells
-  expect_true(any(is.finite(ef$full$closs_proj)))
-  expect_true(any(is.finite(ef$full$exposure_proj)))
+  expect_true(any(is.finite(ef$full$loss_proj)))
+  expect_true(any(is.finite(ef$full$premium_proj)))
   expect_true(any(is.finite(ef$full$lr_proj)))
 })
 
@@ -144,12 +144,12 @@ test_that("fit_ed projection matches fit_lr method = 'ed'", {
   exp <- as_experience(experience[cv_nm == "SUR"])
   tri <- build_triangle(exp, group_var = "cv_nm",
                         cohort_var = "uym", dev_var = "elap_m")
-  ef <- fit_ed(tri, value_var = "closs", exposure_var = "crp")
-  lr <- fit_lr(tri, method = "ed", loss_var = "closs", exposure_var = "crp")
+  ef <- fit_ed(tri, loss_var = "loss", premium_var = "premium")
+  lr <- fit_lr(tri, method = "ed", loss_var = "loss", premium_var = "premium")
 
   # numerical equivalence cohort-by-cohort, cell-by-cell
-  expect_equal(ef$full$closs_proj,    lr$full$loss_proj,     tolerance = 1e-8)
-  expect_equal(ef$full$exposure_proj, lr$full$exposure_proj, tolerance = 1e-8)
+  expect_equal(ef$full$loss_proj,    lr$full$loss_proj,     tolerance = 1e-8)
+  expect_equal(ef$full$premium_proj, lr$full$premium_proj, tolerance = 1e-8)
   expect_equal(ef$full$lr_proj,       lr$full$lr_proj,       tolerance = 1e-8)
   expect_equal(ef$full$se_proj,       lr$full$se_proj,       tolerance = 1e-8)
 })

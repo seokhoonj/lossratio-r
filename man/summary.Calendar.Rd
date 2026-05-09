@@ -16,12 +16,14 @@ A \code{data.table} of class \code{"CalendarSummary"} with one row per
 \verb{(group_var, calendar)} combination, containing:
 \describe{
 \item{n_obs}{Number of observations in the cell.}
-\item{lr_mean}{Mean of loss ratios.}
-\item{lr_median}{Median of loss ratios.}
-\item{lr_wt}{Weighted loss ratio (\code{sum(loss) / sum(rp)}).}
-\item{clr_mean}{Mean of cumulative loss ratios.}
-\item{clr_median}{Median of cumulative loss ratios.}
-\item{clr_wt}{Weighted cumulative loss ratio (\code{sum(closs) / sum(crp)}).}
+\item{lr_mean}{Mean of cumulative loss ratios.}
+\item{lr_median}{Median of cumulative loss ratios.}
+\item{lr_wt}{Weighted cumulative loss ratio
+(\code{sum(loss) / sum(premium)}).}
+\item{lr_incr_mean}{Mean of per-period loss ratios.}
+\item{lr_incr_median}{Median of per-period loss ratios.}
+\item{lr_incr_wt}{Weighted per-period loss ratio
+(\code{sum(loss_incr) / sum(premium_incr)}).}
 }
 
 The returned object preserves the attributes \code{group_var},

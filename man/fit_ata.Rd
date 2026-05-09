@@ -6,7 +6,7 @@
 \usage{
 fit_ata(
   x,
-  value_var = "closs",
+  loss_var = "loss",
   weight_var = NULL,
   alpha = 1,
   na_method = c("locf", "none"),
@@ -21,8 +21,8 @@ fit_ata(
 \item{x}{An object of class \code{"Link"}, typically produced by
 \code{\link[=build_link]{build_link()}}.}
 
-\item{value_var}{Cumulative metric for the link factor. Default
-\code{"closs"}. Forwarded to \code{\link[=build_link]{build_link()}}.}
+\item{loss_var}{Cumulative metric for the link factor. Default
+\code{"loss"}. Forwarded to \code{\link[=build_link]{build_link()}}.}
 
 \item{weight_var}{Optional WLS weight variable. Forwarded to
 \code{\link[=build_link]{build_link()}}.}

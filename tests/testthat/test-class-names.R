@@ -45,7 +45,7 @@ test_that("Regime and Backtest carry PascalCase classes", {
   expect_s3_class(summary(reg), "summary.Regime")
 
   bt <- backtest(sub, holdout = 6L, fit_fn = fit_cl,
-                 value_var = "closs", method = "mack")
+                 loss_var = "loss", method = "mack")
   expect_s3_class(bt, "Backtest")
   expect_s3_class(summary(bt), "summary.Backtest")
 })
@@ -101,7 +101,7 @@ test_that("lowercase class names not introduced (CL / LR / regime / backtest)", 
   sub  <- make_sub_tri("SUR")
   reg  <- detect_regime(sub, K = 12, method = "ecp")
   bt   <- backtest(sub, holdout = 6L, fit_fn = fit_cl,
-                   value_var = "closs", method = "mack")
+                   loss_var = "loss", method = "mack")
 
   for (nm in c("cl_fit", "lr_fit", "cohort_regime", "backtest")) {
     expect_false(inherits(fits$cl, nm), info = paste("cl inherits", nm))

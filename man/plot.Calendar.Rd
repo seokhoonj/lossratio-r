@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{Calendar}(
   x,
-  value_var = "clr",
+  value_var = "lr",
   x_by = c("period", "dev"),
   amount_divisor = 1e+08,
   theme = c("view", "save", "shiny"),
@@ -17,9 +17,9 @@
 \item{x}{An object of class \code{Calendar}.}
 
 \item{value_var}{A single metric to plot. Must be one of:
-\code{"lr"}, \code{"clr"},
-\code{"loss"}, \code{"rp"}, \code{"margin"}, \code{"closs"}, \code{"crp"}, \code{"cmargin"},
-\code{"loss_prop"}, \code{"rp_prop"}, \code{"closs_prop"}, or \code{"crp_prop"}.}
+\code{"lr"}, \code{"lr"},
+\code{"loss"}, \code{"rp"}, \code{"margin"}, \code{"loss"}, \code{"premium"}, \code{"margin"},
+\code{"loss_prop"}, \code{"rp_prop"}, \code{"loss_prop"}, or \code{"premium_prop"}.}
 
 \item{x_by}{X-axis basis. One of:
 \describe{
@@ -43,10 +43,10 @@ Visualise an object of class \code{Calendar} as a time-series plot.
 The selected metric is plotted over the calendar-style \code{calendar_var},
 or over the calendar development variable stored in \code{attr(x, "dev_var")}.
 
-Ratio metrics (\code{lr}, \code{clr}) and proportion metrics
-(\code{loss_prop}, \code{rp_prop}, \code{closs_prop}, \code{crp_prop}) are plotted on the
+Ratio metrics (\code{lr}, \code{lr}) and proportion metrics
+(\code{loss_prop}, \code{rp_prop}, \code{loss_prop}, \code{premium_prop}) are plotted on the
 original scale and displayed as percentages via y-axis labels.
-Amount metrics (\code{loss}, \code{rp}, \code{margin}, \code{closs}, \code{crp}, \code{cmargin}) are
+Amount metrics (\code{loss}, \code{rp}, \code{margin}, \code{loss}, \code{premium}, \code{margin}) are
 plotted on the original scale and displayed using y-axis labels scaled by
 \code{amount_divisor}.
 

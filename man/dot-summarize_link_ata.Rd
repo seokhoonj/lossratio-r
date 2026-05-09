@@ -98,8 +98,8 @@ choice of \code{alpha} materially affects the estimated factor.
 When the input \code{"Link"} object contains a \code{weight} column (added by
 \code{\link[=build_link]{build_link()}} when \code{weight_var} is supplied), that column is
 automatically used as the WLS weight in place of \code{value_from}. This
-is useful when \code{value_var = "clr"}, where \code{value_from} carries no
-exposure information and an external exposure variable such as \code{crp}
+is useful when \code{loss_var = "lr"}, where \code{value_from} carries no
+exposure information and an external exposure variable such as \code{premium}
 should be used instead.
 }
 

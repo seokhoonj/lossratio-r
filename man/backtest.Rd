@@ -7,7 +7,7 @@
 \alias{print.summary.Backtest}
 \title{Backtest a loss-ratio / chain ladder fit on existing data}
 \usage{
-backtest(x, holdout = 6L, fit_fn = fit_lr, value_var = "clr", ...)
+backtest(x, holdout = 6L, fit_fn = fit_lr, loss_var = "lr", ...)
 
 \method{print}{Backtest}(x, ...)
 
@@ -25,30 +25,30 @@ before refitting. Default \code{6L}.}
 \item{fit_fn}{Fitting function. Default \code{fit_lr} (stage-adaptive
 loss-ratio projection); also supports \code{fit_cl} for single-column
 chain ladder and \code{fit_ed} for exposure-driven projection. If
-\code{fit_fn} does not have a \code{value_var} formal (as is the case for
-\code{fit_lr} and \code{fit_ed}), \code{value_var} is used only to select the
+\code{fit_fn} does not have a \code{loss_var} formal (as is the case for
+\code{fit_lr} and \code{fit_ed}), \code{loss_var} is used only to select the
 comparison column on the fit's \verb{$full} table; arguments for the
-fitter itself (e.g., \code{loss_var}, \code{exposure_var}, \code{method}) are
+fitter itself (e.g., \code{loss_var}, \code{premium_var}, \code{method}) are
 passed through \code{...}.}
 
-\item{value_var}{Character scalar. The \strong{score column} for the
+\item{loss_var}{Character scalar. The \strong{score column} for the
 backtest — the column whose held-out actual values are compared
 against the corresponding model projection cell-by-cell. This is a
 scoring choice for \code{backtest()} and is not, in general, the same
-thing as the \code{value_var} argument of the underlying fitter.
+thing as the \code{loss_var} argument of the underlying fitter.
 
-With \code{fit_fn = fit_cl}, \code{backtest()} forwards \code{value_var} to
-\code{fit_cl()} (because \code{fit_cl} has its own \code{value_var} formal that
+With \code{fit_fn = fit_cl}, \code{backtest()} forwards \code{loss_var} to
+\code{fit_cl()} (because \code{fit_cl} has its own \code{loss_var} formal that
 selects which triangle column to accumulate), so the score column
 and the chain-ladder accumulation column coincide; any column
 present in \code{x} is admissible.
 
 With \code{fit_fn = fit_lr} (default), \code{fit_lr()} does not take a
-\code{value_var} argument — it always projects \code{closs}, \code{crp}, and
-\code{clr} jointly. Here \code{value_var} is used purely to pick which
+\code{loss_var} argument — it always projects \code{loss}, \code{premium}, and
+\code{lr} jointly. Here \code{loss_var} is used purely to pick which
 projection column on \code{fit_lr$full} is treated as the prediction
-for scoring. It must be one of \code{"closs"}, \code{"crp"}, or \code{"clr"}
-(default), which map to \code{loss_proj}, \code{exposure_proj}, and
+for scoring. It must be one of \code{"loss"}, \code{"premium"}, or \code{"lr"}
+(default), which map to \code{loss_proj}, \code{premium_proj}, and
 \code{lr_proj} respectively.}
 
 \item{...}{Additional arguments passed to \code{fit_fn} (e.g., \code{method},
@@ -69,7 +69,7 @@ removed).}
 \item{\code{col_summary}}{Per-\code{dev} aggregate AEG (mean / median /
 weighted / n).}
 \item{\code{diag_summary}}{Per-calendar-diagonal aggregate AEG.}
-\item{\code{value_var}, \code{holdout}, \code{fit_fn_name}}{Call metadata.}
+\item{\code{loss_var}, \code{holdout}, \code{fit_fn_name}}{Call metadata.}
 \item{\code{group_var}, \code{cohort_var}, \code{dev_var}}{Variable name relays
 from \code{x}.}
 }
@@ -89,32 +89,32 @@ development period (\code{col_summary}) and by calendar diagonal
 (\code{diag_summary}).
 }
 \details{
-The \code{value_var} argument plays two slightly different roles
-depending on the fitter, summarised below. In every case \code{value_var}
+The \code{loss_var} argument plays two slightly different roles
+depending on the fitter, summarised below. In every case \code{loss_var}
 is the column that drives the AEG comparison; the difference is
 whether the fitter consumes the same name as input or whether the
 name is only resolved against the fit's projection table.
 
 \tabular{lllll}{
-\strong{\code{fit_fn}} \tab \strong{Valid \code{value_var}} \tab
+\strong{\code{fit_fn}} \tab \strong{Valid \code{loss_var}} \tab
 \strong{Forwarded to fitter?} \tab
 \strong{Compared column on \code{fit$full}} \tab \strong{Notes} \cr
-\code{fit_cl} \tab any numeric column in \code{x} \tab yes (as \code{value_var})
+\code{fit_cl} \tab any numeric column in \code{x} \tab yes (as \code{loss_var})
 \tab \code{value_proj} \tab Score column equals the column being
 accumulated by chain ladder. \cr
-\code{fit_lr} \tab \code{"closs"}, \code{"crp"}, \code{"clr"} \tab no (fit_lr ignores
-\code{value_var}) \tab \code{loss_proj}, \code{exposure_proj}, \code{lr_proj}
-respectively \tab Fitter projects all three jointly; \code{value_var}
+\code{fit_lr} \tab \code{"loss"}, \code{"premium"}, \code{"lr"} \tab no (fit_lr ignores
+\code{loss_var}) \tab \code{loss_proj}, \code{premium_proj}, \code{lr_proj}
+respectively \tab Fitter projects all three jointly; \code{loss_var}
 only selects the scoring lane. \cr
-\code{fit_ed} \tab \code{"closs"}, \code{"crp"}, \code{"clr"} \tab no (fit_ed ignores
-\code{value_var}) \tab \code{closs_proj}, \code{exposure_proj}, \code{lr_proj}
+\code{fit_ed} \tab \code{"loss"}, \code{"premium"}, \code{"lr"} \tab no (fit_ed ignores
+\code{loss_var}) \tab \code{loss_proj}, \code{premium_proj}, \code{lr_proj}
 respectively \tab Pure exposure-driven projection (additive
-\eqn{g_k \cdot C^P_k}); \code{value_var} only selects the scoring lane.
+\eqn{g_k \cdot C^P_k}); \code{loss_var} only selects the scoring lane.
 }
 
-This means that \code{backtest(..., value_var = "closs")} paired with
-\code{fit_lr} is \emph{not} the same operation as \code{fit_cl(value_var = "closs")}
-under the hood, even though both use the string \code{"closs"}. The
+This means that \code{backtest(..., loss_var = "loss")} paired with
+\code{fit_lr} is \emph{not} the same operation as \code{fit_cl(loss_var = "loss")}
+under the hood, even though both use the string \code{"loss"}. The
 former scores the loss projection that came out of a stage-adaptive
 loss-ratio fit; the latter scores a chain ladder applied directly
 to cumulative loss.

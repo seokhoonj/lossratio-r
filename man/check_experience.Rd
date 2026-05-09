@@ -21,10 +21,11 @@ when present.
 
 These columns must be present:
 \itemize{
-\item \code{cym}  : Calendar year-month (\code{Date})
-\item \code{uym}  : Underwriting year-month (\code{Date})
-\item \code{loss} : Incurred loss amount (\code{numeric})
-\item \code{rp}   : Risk premium (\code{numeric})
+\item \code{cym}          : Calendar year-month (\code{Date})
+\item \code{uym}          : Underwriting year-month (\code{Date})
+\item \code{loss_incr}    : Per-period loss amount (\code{numeric})
+\item \code{premium_incr} : Per-period premium (\code{numeric}); for long-term
+health insurance, risk premium is commonly used
 }
 }
 

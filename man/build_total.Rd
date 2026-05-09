@@ -9,7 +9,8 @@ build_total(
   group_var,
   cohort_var = "uym",
   dev_var = "elap_m",
-  value_var = c("loss", "rp"),
+  loss_var = "loss_incr",
+  premium_var = "premium_incr",
   period_from = NULL,
   period_to = NULL,
   fill_gaps = FALSE
@@ -27,8 +28,13 @@ period (\code{uym}, \code{uyq}, \code{uyh}, \code{uy}) or a calendar period
 \item{dev_var}{A single development variable used to count observed periods.
 Default \code{"elap_m"}.}
 
-\item{value_var}{Value variables to aggregate. Must include both \code{"loss"}
-and \code{"rp"}. Default \code{c("loss", "rp")}.}
+\item{loss_var}{Single character; per-period loss column in \code{df}.
+Default \code{"loss_incr"}.}
+
+\item{premium_var}{Single character; per-period premium column in \code{df}.
+Default \code{"premium_incr"}. Premium measure used as denominator for
+loss ratio calculations. For long-term health insurance applications,
+risk premium is commonly used.}
 
 \item{period_from}{Optional lower bound for \code{cohort_var}. Only rows with
 \code{cohort_var >= period_from} are kept. May be supplied as \code{Date},
@@ -51,24 +57,24 @@ A data.frame with class \code{"Total"} containing:
 \item{sales_start}{First observed period}
 \item{sales_end}{Last observed period}
 \item{loss}{Total loss}
-\item{rp}{Total risk premium}
-\item{lr}{Total loss ratio (\code{loss / rp})}
+\item{premium}{Total premium}
+\item{lr}{Total loss ratio (\code{loss / premium})}
 \item{loss_prop}{Share of total loss}
-\item{rp_prop}{Share of total risk premium}
+\item{premium_prop}{Share of total premium}
 }
 }
 \description{
-Aggregate \code{loss} and \code{rp} by group and compute the corresponding total
+Aggregate \code{loss} and \code{premium} by group and compute the corresponding total
 loss ratio over a selected period window.
 
 This function is intended for high-level portfolio comparison across
 groups such as products, coverages, or channels. It summarises:
 \itemize{
-\item the number of observed periods (\code{n_obs})
+\item the number of observed cohorts (\code{n_obs})
 \item the first and last observed periods (\code{sales_start}, \code{sales_end})
-\item total \code{loss} and total \code{rp}
-\item total loss ratio (\code{lr = loss / rp})
-\item each group's share of total loss and risk premium
+\item total \code{loss} and total \code{premium} (cumulative)
+\item total loss ratio (\code{lr = loss / premium})
+\item each group's share of total loss and total premium
 }
 
 If \code{period_from} and/or \code{period_to} are supplied, the input data are first
