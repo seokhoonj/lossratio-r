@@ -26,6 +26,7 @@ plot_triangle(
   type = c("value", "usage"),
   value_var = "lr",
   label_style = c("value", "detail"),
+  label_args = list(),
   amount_divisor = 1e+08,
   nrow = NULL,
   ncol = NULL,
@@ -77,6 +78,14 @@ plot_triangle(
   :   For `lr` / `lr`, show the ratio in percent and, on the next line,
       the associated loss / premium amounts. For amount and proportion
       metrics, this falls back to `"value"`.
+
+- label_args:
+
+  A list of arguments forwarded to
+  [`ggshort::ggtable()`](https://rdrr.io/pkg/ggshort/man/ggtable.html)
+  to control label appearance (`family`, `size`, `angle`, `hjust`,
+  `vjust`, `color`). Slots not supplied fall back to ggshort defaults
+  (e.g. `size = 3.88`).
 
 - amount_divisor:
 

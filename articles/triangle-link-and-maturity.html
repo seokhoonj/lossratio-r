@@ -176,17 +176,17 @@ for spotting cohorts that deviate from the central tendency.</p>
 <h3 id="cell-heatmap">Cell heatmap<a class="anchor" aria-label="anchor" href="#cell-heatmap"></a>
 </h3>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>                            <span class="co"># lr in each cell</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span>          <span class="co"># cumulative lr</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span>          <span class="co"># incremental loss ratio</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"lr_incr"</span><span class="op">)</span>     <span class="co"># incremental lr</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-2.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="co"># detail labels (ratio + loss/rp amounts) are 2-line — use quarterly cells</span></span>
+<span><span class="co"># detail labels (ratio + loss/premium amounts) are 2-line — use quarterly cells</span></span>
 <span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">coverage</span>,</span>
 <span>                        cohort_var <span class="op">=</span> <span class="st">"uyq"</span>, dev_var <span class="op">=</span> <span class="st">"elap_q"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span>  <span class="co"># ratio + (loss / rp) amounts</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span> <span class="co"># ratio + (loss / premium)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-3.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level3">
@@ -292,7 +292,7 @@ the share of finite ATA factors per link.</li>
 <h3 id="triangle-of-ata-factors">Triangle of ATA factors<a class="anchor" aria-label="anchor" href="#triangle-of-ata-factors"></a>
 </h3>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">la</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2.5</span><span class="op">)</span>                            <span class="co"># shrink labels</span></span>
+<code class="sourceCode R"><span><span class="va">la</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2.5</span><span class="op">)</span>                            <span class="co"># smaller labels</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata</span>, label_args <span class="op">=</span> <span class="va">la</span><span class="op">)</span>               <span class="co"># heatmap of observed factors</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
@@ -301,9 +301,11 @@ the share of finite ATA factors per link.</li>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># detail labels are two lines and overlap on monthly cells — rebuild on the</span></span>
-<span><span class="co"># quarterly triangle so the labels fit</span></span>
+<span><span class="co"># quarterly triangle and shrink the labels another step so the</span></span>
+<span><span class="co"># two-line "factor (loss / premium)" text fits inside each cell.</span></span>
 <span><span class="va">ata_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_link.html">build_link</a></span><span class="op">(</span><span class="va">tri_q</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span>      <span class="co"># factor + (loss / rp) amounts</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span>,</span>
+<span>              label_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2.2</span><span class="op">)</span><span class="op">)</span>      <span class="co"># factor + (loss / premium)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-7-3.png" class="r-plt" alt="" width="100%"></p>
 <p>The heatmap colours each cell by <code>log(ata / median(ata))</code>
 within its link, so column-wise colour distinguishes cohorts that
@@ -340,7 +342,7 @@ deviate from the link’s median.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ed</span>, type <span class="op">=</span> <span class="st">"box"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-8-2.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ed</span>, label_args <span class="op">=</span> <span class="va">la</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ed</span>, label_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2.2</span><span class="op">)</span><span class="op">)</span>   <span class="co"># ED labels are longer; shrink another step</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-8-3.png" class="r-plt" alt="" width="100%"></p>
 <p><code>summary(link, model = "ed")</code> is the ED-side analogue of
 the single-variable <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>, computing per-link

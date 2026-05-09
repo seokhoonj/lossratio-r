@@ -52,16 +52,16 @@ tri_sur <- build_triangle(exp[coverage == "SUR"], coverage)
 
 ## Detecting regimes
 
-The default method is `"ecp"`, a non-parametric multivariate
+The default method is `"e_divisive"`, a non-parametric multivariate
 change-point algorithm that determines the number of regimes from the
 data:
 
 ``` r
 
-r <- detect_regime(tri_sur, K = 12, method = "ecp")
+r <- detect_regime(tri_sur, K = 12, method = "e_divisive")
 r
 #> <Regime>
-#>   method      : ecp
+#>   method      : e_divisive
 #>   loss_var   : lr
 #>   window (K)  : elap_m 1-12
 #>   cohorts     : 25 analysed (11 dropped)
@@ -81,47 +81,47 @@ captures more of the trajectory but drops more recent cohorts.
 
 summary(r)
 #> Cohort regime detection summary
-#>   method    : ecp
+#>   method    : e_divisive
 #>   loss_var : lr
-#>   window    : elap_m 1, ..., 12
+#>   window    : elap_m 1-12
 #>   cohorts   : 25 analysed (11 dropped)
 #> 
 #> Regimes (2):
-#>   1: 24.01, ..., 25.06 (18 cohorts)
-#>   2: 25.07, ..., 26.01 (7 cohorts)
+#>   1: 24.01-25.06 (18 cohorts)
+#>   2: 25.07-26.01 (7 cohorts)
 #> 
 #> Breakpoints: 25.07
 
 r$labels
-#>         cohort            regime regime_id
-#>         <Date>            <fctr>     <int>
-#>  1: 2024-01-01 24.01, ..., 25.06         1
-#>  2: 2024-02-01 24.01, ..., 25.06         1
-#>  3: 2024-03-01 24.01, ..., 25.06         1
-#>  4: 2024-04-01 24.01, ..., 25.06         1
-#>  5: 2024-05-01 24.01, ..., 25.06         1
-#>  6: 2024-06-01 24.01, ..., 25.06         1
-#>  7: 2024-07-01 24.01, ..., 25.06         1
-#>  8: 2024-08-01 24.01, ..., 25.06         1
-#>  9: 2024-09-01 24.01, ..., 25.06         1
-#> 10: 2024-10-01 24.01, ..., 25.06         1
-#> 11: 2024-11-01 24.01, ..., 25.06         1
-#> 12: 2024-12-01 24.01, ..., 25.06         1
-#> 13: 2025-01-01 24.01, ..., 25.06         1
-#> 14: 2025-02-01 24.01, ..., 25.06         1
-#> 15: 2025-03-01 24.01, ..., 25.06         1
-#> 16: 2025-04-01 24.01, ..., 25.06         1
-#> 17: 2025-05-01 24.01, ..., 25.06         1
-#> 18: 2025-06-01 24.01, ..., 25.06         1
-#> 19: 2025-07-01 25.07, ..., 26.01         2
-#> 20: 2025-08-01 25.07, ..., 26.01         2
-#> 21: 2025-09-01 25.07, ..., 26.01         2
-#> 22: 2025-10-01 25.07, ..., 26.01         2
-#> 23: 2025-11-01 25.07, ..., 26.01         2
-#> 24: 2025-12-01 25.07, ..., 26.01         2
-#> 25: 2026-01-01 25.07, ..., 26.01         2
-#>         cohort            regime regime_id
-#>         <Date>            <fctr>     <int>
+#>         cohort      regime regime_id
+#>         <Date>      <fctr>     <int>
+#>  1: 2024-01-01 24.01-25.06         1
+#>  2: 2024-02-01 24.01-25.06         1
+#>  3: 2024-03-01 24.01-25.06         1
+#>  4: 2024-04-01 24.01-25.06         1
+#>  5: 2024-05-01 24.01-25.06         1
+#>  6: 2024-06-01 24.01-25.06         1
+#>  7: 2024-07-01 24.01-25.06         1
+#>  8: 2024-08-01 24.01-25.06         1
+#>  9: 2024-09-01 24.01-25.06         1
+#> 10: 2024-10-01 24.01-25.06         1
+#> 11: 2024-11-01 24.01-25.06         1
+#> 12: 2024-12-01 24.01-25.06         1
+#> 13: 2025-01-01 24.01-25.06         1
+#> 14: 2025-02-01 24.01-25.06         1
+#> 15: 2025-03-01 24.01-25.06         1
+#> 16: 2025-04-01 24.01-25.06         1
+#> 17: 2025-05-01 24.01-25.06         1
+#> 18: 2025-06-01 24.01-25.06         1
+#> 19: 2025-07-01 25.07-26.01         2
+#> 20: 2025-08-01 25.07-26.01         2
+#> 21: 2025-09-01 25.07-26.01         2
+#> 22: 2025-10-01 25.07-26.01         2
+#> 23: 2025-11-01 25.07-26.01         2
+#> 24: 2025-12-01 25.07-26.01         2
+#> 25: 2026-01-01 25.07-26.01         2
+#>         cohort      regime regime_id
+#>         <Date>      <fctr>     <int>
 ```
 
 ## Visualisation
@@ -143,7 +143,7 @@ shift primarily affects early or late development).
 
 ## Choice of method
 
-- **`"ecp"`** — preferred default. Multivariate, non-parametric,
+- **`"e_divisive"`** — preferred default. Multivariate, non-parametric,
   auto-detects the number of regimes at a given significance level.
   Slightly slower than the alternatives but requires no a priori choice
   of `n_regimes`.
@@ -152,7 +152,7 @@ shift primarily affects early or late development).
   first principal component. May return multiple breakpoints and is
   useful when the trajectory variation is dominated by one axis (check
   `PC1 %` in the [`print()`](https://rdrr.io/r/base/print.html) output —
-  if \> 70%, PELT is reliable; if much lower, prefer `"ecp"`).
+  if \> 70%, PELT is reliable; if much lower, prefer `"e_divisive"`).
 
 - **`"hclust"`** — Ward hierarchical clustering on the scaled feature
   matrix, cut to `n_regimes` clusters (default `2`). Ignores
@@ -163,8 +163,9 @@ shift primarily affects early or late development).
   method.
 
 In practice, agreement across all three methods — as in the SUR example
-above, where `"ecp"`, `"pelt"`, and `"hclust"` all locate `24.04` as the
-regime boundary — is strong evidence of a real underwriting/rate shift.
+above, where `"e_divisive"`, `"pelt"`, and `"hclust"` all locate `24.04`
+as the regime boundary — is strong evidence of a real underwriting/rate
+shift.
 
 ## Forcing the number of regimes
 
@@ -173,24 +174,24 @@ two-vs-three regime hypotheses — pass `n_regimes`:
 
 ``` r
 
-r2 <- detect_regime(tri_sur, K = 12, method = "ecp", n_regimes = 3)
+r2 <- detect_regime(tri_sur, K = 12, method = "e_divisive", n_regimes = 3)
 summary(r2)
 #> Cohort regime detection summary
-#>   method    : ecp
+#>   method    : e_divisive
 #>   loss_var : lr
-#>   window    : elap_m 1, ..., 12
+#>   window    : elap_m 1-12
 #>   cohorts   : 25 analysed (11 dropped)
 #> 
 #> Regimes (3):
-#>   1: 24.01, ..., 24.08 (8 cohorts)
-#>   2: 24.09, ..., 25.06 (10 cohorts)
-#>   3: 25.07, ..., 26.01 (7 cohorts)
+#>   1: 24.01-24.08 (8 cohorts)
+#>   2: 24.09-25.06 (10 cohorts)
+#>   3: 25.07-26.01 (7 cohorts)
 #> 
 #> Breakpoints: 24.09, 25.07
 ```
 
-For `"ecp"` and `"pelt"`, `n_regimes` is a request (the algorithm will
-return up to that many regimes if supported by the data). For
+For `"e_divisive"` and `"pelt"`, `n_regimes` is a request (the algorithm
+will return up to that many regimes if supported by the data). For
 `"hclust"`, it is a hard cut.
 
 ## Relation to `fit_lr()`

@@ -98,6 +98,7 @@ $$lr = loss / premium$$</p>
 <span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"value"</span>, <span class="st">"usage"</span><span class="op">)</span>,</span>
 <span>  value_var <span class="op">=</span> <span class="st">"lr"</span>,</span>
 <span>  label_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"value"</span>, <span class="st">"detail"</span><span class="op">)</span>,</span>
+<span>  label_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  amount_divisor <span class="op">=</span> <span class="fl">1e+08</span>,</span>
 <span>  nrow <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ncol <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -146,6 +147,13 @@ proportion metrics, this falls back to <code>"value"</code>.</p></dd>
 
 
 </dl></dd>
+
+
+<dt id="arg-label-args">label_args<a class="anchor" aria-label="anchor" href="#arg-label-args"></a></dt>
+<dd><p>A list of arguments forwarded to <code><a href="https://rdrr.io/pkg/ggshort/man/ggtable.html" class="external-link">ggshort::ggtable()</a></code> to
+control label appearance (<code>family</code>, <code>size</code>, <code>angle</code>, <code>hjust</code>, <code>vjust</code>,
+<code>color</code>). Slots not supplied fall back to ggshort defaults
+(e.g. <code>size = 3.88</code>).</p></dd>
 
 
 <dt id="arg-amount-divisor">amount_divisor<a class="anchor" aria-label="anchor" href="#arg-amount-divisor"></a></dt>

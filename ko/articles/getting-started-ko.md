@@ -467,9 +467,9 @@ summary(lr)
 ``` r
 
 sub <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
-detect_regime(sub, K = 12, method = "ecp")
+detect_regime(sub, K = 12, method = "e_divisive")
 #> <Regime>
-#>   method      : ecp
+#>   method      : e_divisive
 #>   loss_var   : lr
 #>   window (K)  : elap_m 1-12
 #>   cohorts     : 25 analysed (11 dropped)

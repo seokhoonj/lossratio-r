@@ -9,7 +9,7 @@ tested for structural shifts in the multivariate sequence.
 
 Three detection strategies are supported:
 
-- `"ecp"`:
+- `"e_divisive"`:
 
   Multivariate non-parametric divisive change-point detection via
   [`ecp::e.divisive()`](https://rdrr.io/pkg/ecp/man/e.divisive.html).
@@ -38,7 +38,7 @@ detect_regime(
   x,
   loss_var = "lr",
   K = 12L,
-  method = c("ecp", "pelt", "hclust"),
+  method = c("e_divisive", "pelt", "hclust"),
   n_regimes = NULL,
   sig_level = 0.05,
   min_size = 3L,
@@ -77,21 +77,21 @@ print(x, ...)
 
 - method:
 
-  One of `"ecp"`, `"pelt"`, `"hclust"`.
+  One of `"e_divisive"`, `"pelt"`, `"hclust"`.
 
 - n_regimes:
 
   Integer. Number of regimes to force. `NULL` means auto-detect for
-  `"ecp"` and `"pelt"`; ignored (required to equal the requested value)
-  for `"hclust"`, where the default is `2`.
+  `"e_divisive"` and `"pelt"`; ignored (required to equal the requested
+  value) for `"hclust"`, where the default is `2`.
 
 - sig_level:
 
-  Significance level for `"ecp"`. Default `0.05`.
+  Significance level for `"e_divisive"`. Default `0.05`.
 
 - min_size:
 
-  Minimum segment size for `"ecp"`. Default `3`.
+  Minimum segment size for `"e_divisive"`. Default `3`.
 
 - ...:
 
@@ -170,6 +170,6 @@ summary(r)
 plot(r)
 
 # ecp divisive change-point detection (requires the ecp package)
-r_ecp <- detect_regime(tri_sur, K = 12, method = "ecp")
+r_ecp <- detect_regime(tri_sur, K = 12, method = "e_divisive")
 } # }
 ```

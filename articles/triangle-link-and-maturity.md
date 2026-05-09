@@ -52,14 +52,14 @@ cohorts that deviate from the central tendency.
 
 ``` r
 
-plot_triangle(tri)                            # lr in each cell
+plot_triangle(tri, value_var = "lr")          # cumulative lr
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-1.png)
 
 ``` r
 
-plot_triangle(tri, value_var = "lr")          # incremental loss ratio
+plot_triangle(tri, value_var = "lr_incr")     # incremental lr
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-2.png)
@@ -67,10 +67,10 @@ plot_triangle(tri, value_var = "lr")          # incremental loss ratio
 ``` r
 
 
-# detail labels (ratio + loss/rp amounts) are 2-line — use quarterly cells
+# detail labels (ratio + loss/premium amounts) are 2-line — use quarterly cells
 tri_q <- build_triangle(exp, group_var = coverage,
                         cohort_var = "uyq", dev_var = "elap_q")
-plot_triangle(tri_q, label_style = "detail")  # ratio + (loss / rp) amounts
+plot_triangle(tri_q, label_style = "detail") # ratio + (loss / premium)
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-3.png)
@@ -189,7 +189,7 @@ plot(ata, type = "point")         # scatter of observed ata per link
 
 ``` r
 
-la <- list(size = 2.5)                            # shrink labels
+la <- list(size = 2.5)                            # smaller labels
 plot_triangle(ata, label_args = la)               # heatmap of observed factors
 ```
 
@@ -206,9 +206,11 @@ plot_triangle(ata, label_args = la, show_maturity = TRUE)    # overlay maturity 
 
 
 # detail labels are two lines and overlap on monthly cells — rebuild on the
-# quarterly triangle so the labels fit
+# quarterly triangle and shrink the labels another step so the
+# two-line "factor (loss / premium)" text fits inside each cell.
 ata_q <- build_link(tri_q, loss_var = "loss")
-plot_triangle(ata_q, label_style = "detail")      # factor + (loss / rp) amounts
+plot_triangle(ata_q, label_style = "detail",
+              label_args = list(size = 2.2))      # factor + (loss / premium)
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-7-3.png)
@@ -256,7 +258,7 @@ plot(ed, type = "box")
 
 ``` r
 
-plot_triangle(ed, label_args = la)
+plot_triangle(ed, label_args = list(size = 2.2))   # ED labels are longer; shrink another step
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-8-3.png)

@@ -56,14 +56,14 @@ plot(tri, summary = TRUE)              # 코호트 선 + overlay (평균 / 중�
 
 ``` r
 
-plot_triangle(tri)                            # 각 셀의 lr
+plot_triangle(tri, value_var = "lr")          # 누적 lr
 ```
 
 ![](triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-3-1.png)
 
 ``` r
 
-plot_triangle(tri, value_var = "lr")          # 증분 loss ratio
+plot_triangle(tri, value_var = "lr_incr")     # 증분 lr
 ```
 
 ![](triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-3-2.png)
@@ -74,7 +74,7 @@ plot_triangle(tri, value_var = "lr")          # 증분 loss ratio
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly 로 다시 빌드
 tri_q <- build_triangle(exp, group_var = coverage,
                         cohort_var = "uyq", dev_var = "elap_q")
-plot_triangle(tri_q, label_style = "detail")  # 비율 + (loss / rp) 금액
+plot_triangle(tri_q, label_style = "detail")  # 비율 + (loss / premium)
 ```
 
 ![](triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-3-3.png)
@@ -210,7 +210,8 @@ plot_triangle(ata, label_args = la, show_maturity = TRUE)  # 성숙점 라인 ov
 
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly Link 로 다시 빌드
 ata_q <- build_link(tri_q, loss_var = "loss")
-plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / rp) 금액
+plot_triangle(ata_q, label_style = "detail",
+              label_args = list(size = 2.2))      # 인자 + (loss / premium)
 ```
 
 ![](triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-7-3.png)
@@ -258,7 +259,7 @@ plot(ed, type = "box")
 
 ``` r
 
-plot_triangle(ed, label_args = la)
+plot_triangle(ed, label_args = list(size = 2.2))   # ED 셀 라벨이 더 길어 한 단계 더 작게
 ```
 
 ![](triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-8-3.png)

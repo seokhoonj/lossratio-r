@@ -7,7 +7,7 @@ periods 1, ..., K. Cohorts are then ordered by underwriting
 period and tested for structural shifts in the multivariate
 sequence.
 Three detection strategies are supported:
-"ecp"
+"e_divisive"
 Multivariate non-parametric divisive change-point
 detection via ecp::e.divisive(). The number of regimes is
 determined by the data; only significant breakpoints at
@@ -37,7 +37,7 @@ periods 1, ..., K. Cohorts are then ordered by underwriting
 period and tested for structural shifts in the multivariate
 sequence.
 Three detection strategies are supported:
-"ecp"
+"e_divisive"
 Multivariate non-parametric divisive change-point
 detection via ecp::e.divisive(). The number of regimes is
 determined by the data; only significant breakpoints at
@@ -171,7 +171,7 @@ whose entries are the selected <code>loss_var</code> observed at development
 periods <code>1, ..., K</code>. Cohorts are then ordered by underwriting
 period and tested for structural shifts in the multivariate
 sequence.</p>
-<p>Three detection strategies are supported:</p><dl><dt><code>"ecp"</code></dt>
+<p>Three detection strategies are supported:</p><dl><dt><code>"e_divisive"</code></dt>
 <dd><p>Multivariate non-parametric divisive change-point
 detection via <code><a href="https://rdrr.io/pkg/ecp/man/e.divisive.html" class="external-link">ecp::e.divisive()</a></code>. The number of regimes is
 determined by the data; only significant breakpoints at
@@ -200,7 +200,7 @@ strictly chronological.</p></dd>
 <span>  <span class="va">x</span>,</span>
 <span>  loss_var <span class="op">=</span> <span class="st">"lr"</span>,</span>
 <span>  K <span class="op">=</span> <span class="fl">12L</span>,</span>
-<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ecp"</span>, <span class="st">"pelt"</span>, <span class="st">"hclust"</span><span class="op">)</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"e_divisive"</span>, <span class="st">"pelt"</span>, <span class="st">"hclust"</span><span class="op">)</span>,</span>
 <span>  n_regimes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sig_level <span class="op">=</span> <span class="fl">0.05</span>,</span>
 <span>  min_size <span class="op">=</span> <span class="fl">3L</span>,</span>
@@ -239,21 +239,21 @@ periods are dropped. Default is <code>12</code>.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>One of <code>"ecp"</code>, <code>"pelt"</code>, <code>"hclust"</code>.</p></dd>
+<dd><p>One of <code>"e_divisive"</code>, <code>"pelt"</code>, <code>"hclust"</code>.</p></dd>
 
 
 <dt id="arg-n-regimes">n_regimes<a class="anchor" aria-label="anchor" href="#arg-n-regimes"></a></dt>
 <dd><p>Integer. Number of regimes to force. <code>NULL</code> means
-auto-detect for <code>"ecp"</code> and <code>"pelt"</code>; ignored (required to equal
+auto-detect for <code>"e_divisive"</code> and <code>"pelt"</code>; ignored (required to equal
 the requested value) for <code>"hclust"</code>, where the default is <code>2</code>.</p></dd>
 
 
 <dt id="arg-sig-level">sig_level<a class="anchor" aria-label="anchor" href="#arg-sig-level"></a></dt>
-<dd><p>Significance level for <code>"ecp"</code>. Default <code>0.05</code>.</p></dd>
+<dd><p>Significance level for <code>"e_divisive"</code>. Default <code>0.05</code>.</p></dd>
 
 
 <dt id="arg-min-size">min_size<a class="anchor" aria-label="anchor" href="#arg-min-size"></a></dt>
-<dd><p>Minimum segment size for <code>"ecp"</code>. Default <code>3</code>.</p></dd>
+<dd><p>Minimum segment size for <code>"e_divisive"</code>. Default <code>3</code>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -324,7 +324,7 @@ constraint.</p></dd>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># ecp divisive change-point detection (requires the ecp package)</span></span></span>
-<span class="r-in"><span><span class="va">r_ecp</span> <span class="op">&lt;-</span> <span class="fu">detect_regime</span><span class="op">(</span><span class="va">tri_sur</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"ecp"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">r_ecp</span> <span class="op">&lt;-</span> <span class="fu">detect_regime</span><span class="op">(</span><span class="va">tri_sur</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
