@@ -109,8 +109,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
                            type            = c("cv", "rse", "summary", "box", "point"),
                            alpha           = 1,
                            show_maturity   = TRUE,
-                           max_cv    = 0.15,
-                           max_rse   = 0.05,
+                           max_cv          = 0.15,
+                           max_rse         = 0.05,
                            min_valid_ratio = 0.5,
                            min_n_valid     = 3L,
                            min_run         = 1L,
@@ -134,19 +134,19 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   meta    <- .get_plot_meta(val_var)
 
   # 1) compute summary --------------------------------------------------
-  sm <- summary(x, model = "ata", alpha = alpha)
+  smr <- summary(x, model = "ata", alpha = alpha)
 
   # 2) build ata_link label lookup (numeric x axis) ---------------------
-  sm[, ata_link_chr := sprintf("%s-%s", ata_from, ata_to)]
+  smr[, ata_link_chr := sprintf("%s-%s", ata_from, ata_to)]
 
-  link_labels <- sm[
+  link_labels <- smr[
     , setNames(ata_link_chr, as.character(ata_from))
   ]
 
   .x_scale <- function() {
     ggplot2::scale_x_continuous(
-      breaks = sm$ata_from,
-      labels = link_labels[as.character(sm$ata_from)]
+      breaks = smr$ata_from,
+      labels = link_labels[as.character(smr$ata_from)]
     )
   }
 
@@ -155,9 +155,9 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   if (show_maturity) {
     mat <- .detect_maturity(
-      x               = sm,
-      max_cv    = max_cv,
-      max_rse   = max_rse,
+      x               = smr,
+      max_cv          = max_cv,
+      max_rse         = max_rse,
       min_valid_ratio = min_valid_ratio,
       min_n_valid     = min_n_valid,
       min_run         = min_run
@@ -181,11 +181,11 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     if (is.null(mat) || !nrow(mat)) return(p)
 
     shade <- if (length(grp_var)) {
-      mat[sm[, .(xmax = max(ata_from)), by = grp_var], on = grp_var]
+      mat[smr[, .(xmax = max(ata_from)), by = grp_var], on = grp_var]
     } else {
       data.table::data.table(
         ata_from = mat$ata_from[1L],
-        xmax     = max(sm$ata_from)
+        xmax     = max(smr$ata_from)
       )
     }
 
@@ -248,7 +248,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   if (type == "cv") {
     p <- ggplot2::ggplot(
-      sm,
+      smr,
       ggplot2::aes(x = ata_from, y = cv, group = 1)
     ) +
       ggplot2::geom_line(na.rm = TRUE) +
@@ -278,7 +278,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   if (type == "rse") {
     p <- ggplot2::ggplot(
-      sm,
+      smr,
       ggplot2::aes(x = ata_from, y = rse, group = 1)
     ) +
       ggplot2::geom_line(na.rm = TRUE) +
@@ -308,7 +308,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   if (type == "summary") {
     dm <- data.table::melt(
-      sm,
+      smr,
       id.vars      = c(grp_var, "ata_from", "ata_link_chr"),
       measure.vars = c("mean", "median", "wt"),
       variable.name = "stat",
@@ -455,18 +455,18 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   if (is.null(grp_var)) grp_var <- character(0)
 
   # 1) compute summary
-  sm <- summary(x, model = "ed", alpha = alpha)
+  smr <- summary(x, model = "ed", alpha = alpha)
 
-  sm[, ata_link_chr := sprintf("%s-%s", ata_from, ata_to)]
+  smr[, ata_link_chr := sprintf("%s-%s", ata_from, ata_to)]
 
-  link_labels <- sm[
+  link_labels <- smr[
     , setNames(ata_link_chr, as.character(ata_from))
   ]
 
   .x_scale <- function() {
     ggplot2::scale_x_continuous(
-      breaks = sm$ata_from,
-      labels = link_labels[as.character(sm$ata_from)]
+      breaks = smr$ata_from,
+      labels = link_labels[as.character(smr$ata_from)]
     )
   }
 
@@ -485,7 +485,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   if (type == "summary") {
     dm <- data.table::melt(
-      sm,
+      smr,
       id.vars       = c(grp_var, "ata_from", "ata_link_chr"),
       measure.vars  = c("mean", "median", "wt"),
       variable.name = "stat",
@@ -595,8 +595,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
                                     label_args      = list(),
                                     show_maturity   = FALSE,
                                     alpha           = 1,
-                                    max_cv    = 0.15,
-                                    max_rse   = 0.05,
+                                    max_cv          = 0.15,
+                                    max_rse         = 0.05,
                                     min_valid_ratio = 0.5,
                                     min_n_valid     = 3L,
                                     min_run         = 1L,
@@ -670,11 +670,11 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   mat <- NULL
 
   if (show_maturity) {
-    sm     <- summary(x, model = "ata", alpha = alpha)
+    smr <- summary(x, model = "ata", alpha = alpha)
     mat <- .detect_maturity(
-      x               = sm,
-      max_cv    = max_cv,
-      max_rse   = max_rse,
+      x               = smr,
+      max_cv          = max_cv,
+      max_rse         = max_rse,
       min_valid_ratio = min_valid_ratio,
       min_n_valid     = min_n_valid,
       min_run         = min_run

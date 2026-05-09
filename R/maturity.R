@@ -60,8 +60,8 @@ detect_maturity <- function(x,
                             loss_var        = "loss",
                             weight_var      = NULL,
                             alpha           = 1,
-                            max_cv    = 0.15,
-                            max_rse   = 0.05,
+                            max_cv          = 0.15,
+                            max_rse         = 0.05,
                             min_valid_ratio = 0.5,
                             min_n_valid     = 3L,
                             min_run         = 2L) {
@@ -73,8 +73,8 @@ detect_maturity <- function(x,
 
   .detect_maturity(
     ata_summary,
-    max_cv    = max_cv,
-    max_rse   = max_rse,
+    max_cv          = max_cv,
+    max_rse         = max_rse,
     min_valid_ratio = min_valid_ratio,
     min_n_valid     = min_n_valid,
     min_run         = min_run
@@ -86,8 +86,8 @@ detect_maturity <- function(x,
 #'
 #' @keywords internal
 .detect_maturity <- function(x,
-                             max_cv    = 0.15,
-                             max_rse   = 0.05,
+                             max_cv          = 0.15,
+                             max_rse         = 0.05,
                              min_valid_ratio = 0.5,
                              min_n_valid     = 3L,
                              min_run         = 2L) {
@@ -121,7 +121,7 @@ detect_maturity <- function(x,
   min_n_valid <- as.integer(min_n_valid)
   min_run     <- as.integer(min_run)
 
-  sm      <- .ensure_dt(x)
+  smr     <- .ensure_dt(x)
   grp_var <- attr(x, "group_var")
   if (is.null(grp_var)) grp_var <- character(0)
 
@@ -193,19 +193,19 @@ detect_maturity <- function(x,
   }
 
   if (length(grp_var)) {
-    z <- sm[, .first_mature_row(
+    z <- smr[, .first_mature_row(
       .SD,
-      max_cv    = max_cv,
-      max_rse   = max_rse,
+      max_cv          = max_cv,
+      max_rse         = max_rse,
       min_valid_ratio = min_valid_ratio,
       min_n_valid     = min_n_valid,
       min_run         = min_run
     ), by = grp_var]
   } else {
     z <- .first_mature_row(
-      sm,
-      max_cv    = max_cv,
-      max_rse   = max_rse,
+      smr,
+      max_cv          = max_cv,
+      max_rse         = max_rse,
       min_valid_ratio = min_valid_ratio,
       min_n_valid     = min_n_valid,
       min_run         = min_run

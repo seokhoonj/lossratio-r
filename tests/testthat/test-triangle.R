@@ -39,11 +39,11 @@ test_that("lr equals loss/premium within each row when premium > 0", {
 
 test_that("summary.Triangle returns a TriangleSummary with expected columns", {
   tri <- build_triangle(exp, group_var = cv_nm)
-  sm <- summary(tri)
-  expect_s3_class(sm, "TriangleSummary")
+  smr <- summary(tri)
+  expect_s3_class(smr, "TriangleSummary")
   expected <- c("lr_mean", "lr_median", "lr_wt",
                 "lr_incr_mean", "lr_incr_median", "lr_incr_wt")
-  expect_true(all(expected %in% names(sm)))
+  expect_true(all(expected %in% names(smr)))
 })
 
 test_that("longer.Triangle returns TriangleLonger with variable/value", {

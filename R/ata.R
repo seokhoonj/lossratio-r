@@ -354,8 +354,8 @@ fit_ata <- function(x,
   maturity_args <- if (!is.null(maturity_args)) {
     utils::modifyList(
       list(
-        max_cv    = 0.15,
-        max_rse   = 0.05,
+        max_cv          = 0.15,
+        max_rse         = 0.05,
         min_valid_ratio = 0.5,
         min_n_valid     = 3L,
         min_run         = 2L

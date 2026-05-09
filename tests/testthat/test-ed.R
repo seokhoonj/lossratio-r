@@ -71,10 +71,10 @@ test_that("print.EDFit doesn't error", {
 # summary.Link (ED mode) -------------------------------------------------
 
 test_that("summary.Link (ed mode) returns EDSummary with expected columns", {
-  sm <- summary(ed, alpha = 1)
-  expect_s3_class(sm, "EDSummary")
+  smr <- summary(ed, alpha = 1)
+  expect_s3_class(smr, "EDSummary")
   for (nm in c("ata_from", "ata_to", "mean", "median", "wt", "g")) {
-    expect_true(nm %in% names(sm), info = paste("missing", nm))
+    expect_true(nm %in% names(smr), info = paste("missing", nm))
   }
 })
 

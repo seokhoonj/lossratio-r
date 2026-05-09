@@ -369,11 +369,11 @@ summary.Link <- function(object,
           f = NA_real_, f_se = NA_real_, sigma = NA_real_, n_obs = .N
         )
       } else {
-        sm <- suppressWarnings(summary(fit))
+        smr <- suppressWarnings(summary(fit))
 
         f_val     <- unname(stats::coef(fit)[1L])
-        f_se_val  <- unname(sm$coef[1L, "Std. Error"])
-        sigma_val <- unname(sm$sigma)
+        f_se_val  <- unname(smr$coef[1L, "Std. Error"])
+        sigma_val <- unname(smr$sigma)
 
         if (is.finite(f_se_val)  && abs(f_se_val)  < tol) f_se_val  <- 0
         if (is.finite(sigma_val) && abs(sigma_val) < tol) sigma_val <- 0

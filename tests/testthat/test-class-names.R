@@ -52,13 +52,13 @@ test_that("Regime and Backtest carry PascalCase classes", {
 
 test_that("TriangleSummary / TriangleLonger / TriangleSummaryLonger classes set", {
   tri <- make_tri()
-  sm  <- summary(tri)
-  expect_s3_class(sm, "TriangleSummary")
+  smr  <- summary(tri)
+  expect_s3_class(smr, "TriangleSummary")
 
   lng <- attr(tri, "longer")
   expect_s3_class(lng, "TriangleLonger")
 
-  sm_lng <- attr(sm, "longer")
+  sm_lng <- attr(smr, "longer")
   expect_s3_class(sm_lng, "TriangleSummaryLonger")
 })
 

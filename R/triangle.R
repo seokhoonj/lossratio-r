@@ -485,9 +485,9 @@ build_triangle <- function(df,
 #' @examples
 #' \dontrun{
 #' d <- build_triangle(df, group_var = cv_nm)
-#' sm <- summary(d)
-#' head(sm)
-#' attr(sm, "longer")
+#' smr <- summary(d)
+#' head(smr)
+#' attr(smr, "longer")
 #' }
 #'
 #' @method summary Triangle
@@ -909,8 +909,8 @@ build_calendar <- function(df,
 #' @examples
 #' \dontrun{
 #' cal <- build_calendar(df, group_var = cv_nm)
-#' sm  <- summary(cal)
-#' head(sm)
+#' smr  <- summary(cal)
+#' head(smr)
 #' }
 #'
 #' @method summary Calendar

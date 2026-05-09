@@ -38,9 +38,9 @@ plot.Backtest <- function(x,
   grp_var <- x$group_var
 
   if (type == "col") {
-    sm <- .ensure_dt(x$col_summary)
+    smr <- .ensure_dt(x$col_summary)
     long <- data.table::melt(
-      sm,
+      smr,
       id.vars       = c(grp_var, "dev", "n"),
       measure.vars  = c("aeg_mean", "aeg_med", "aeg_wt"),
       variable.name = "stat",
@@ -71,9 +71,9 @@ plot.Backtest <- function(x,
       p <- p + ggplot2::facet_wrap(grp_var, scales = scales)
 
   } else if (type == "diag") {
-    sm <- .ensure_dt(x$diag_summary)
+    smr <- .ensure_dt(x$diag_summary)
     long <- data.table::melt(
-      sm,
+      smr,
       id.vars       = c(grp_var, "calendar_idx", "n"),
       measure.vars  = c("aeg_mean", "aeg_med", "aeg_wt"),
       variable.name = "stat",

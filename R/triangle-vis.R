@@ -162,12 +162,12 @@ plot.Triangle <- function(x,
   }
 
   if (summary) {
-    sm <- summary(x)
+    smr <- summary(x)
 
-    sm_long <- longer(sm)
+    sm_long <- longer(smr)
     sm_long <- sm_long[grepl(paste0("^", val_var, "_"), type)]
 
-    sm_long[sm, on = c(grp_var, "dev"), n_obs := i.n_obs]
+    sm_long[smr, on = c(grp_var, "dev"), n_obs := i.n_obs]
 
     if (!is.null(summary_min_n) && is.finite(summary_min_n)) {
       summary_min_n <- as.integer(summary_min_n)
@@ -203,7 +203,7 @@ plot.Triangle <- function(x,
       )
 
     if (!is.null(summary_min_n) && is.finite(summary_min_n)) {
-      vline <- sm[, {
+      vline <- smr[, {
         idx <- which(n_obs <= summary_min_n)[1L]
         sd1 <- .SD[[1L]]
 

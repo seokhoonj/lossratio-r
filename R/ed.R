@@ -502,11 +502,11 @@ print.EDFit <- function(x, ...) {
           g = NA_real_, g_se = NA_real_, sigma = NA_real_, n_obs = .N
         )
       } else {
-        sm <- suppressWarnings(summary(fit))
+        smr <- suppressWarnings(summary(fit))
 
         g_val     <- unname(stats::coef(fit)[1L])
-        g_se_val  <- unname(sm$coef[1L, "Std. Error"])
-        sigma_val <- unname(sm$sigma)
+        g_se_val  <- unname(smr$coef[1L, "Std. Error"])
+        sigma_val <- unname(smr$sigma)
 
         if (is.finite(g_se_val)  && abs(g_se_val)  < tol) g_se_val  <- 0
         if (is.finite(sigma_val) && abs(sigma_val) < tol) sigma_val <- 0

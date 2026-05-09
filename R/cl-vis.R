@@ -226,19 +226,19 @@ plot.CLFit <- function(x,
   }
 
   # --- reserve (mack only) ----------------------------------------------
-  smry <- .ensure_dt(x$summary)
+  smr <- .ensure_dt(x$summary)
 
-  coh_raw <- smry[["cohort"]]
+  coh_raw <- smr[["cohort"]]
   coh_lab <- .format_period(
     coh_raw,
     type = .get_period_type(coh_var),
     abb  = TRUE
   )
 
-  smry[, .coh := factor(coh_lab, levels = unique(coh_lab[order(coh_raw)]))]
+  smr[, .coh := factor(coh_lab, levels = unique(coh_lab[order(coh_raw)]))]
 
   if (show_interval) {
-    smry[, `:=`(
+    smr[, `:=`(
       lower = pmax(0, reserve - z_alpha * se),
       upper = reserve + z_alpha * se
     )]
@@ -246,7 +246,7 @@ plot.CLFit <- function(x,
 
   # base plot
   p <- ggplot2::ggplot(
-    smry,
+    smr,
     ggplot2::aes(x = .data$.coh, y = .data$reserve)
   ) +
     ggplot2::geom_col()

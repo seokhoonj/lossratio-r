@@ -52,9 +52,9 @@ test_that("build_triangle on a single group succeeds", {
 
 test_that("summary.Triangle on a single group returns one row per dev", {
   tri <- make_sub_tri("SUR")
-  sm  <- summary(tri)
-  expect_s3_class(sm, "TriangleSummary")
-  expect_equal(nrow(sm), data.table::uniqueN(tri$dev))
+  smr  <- summary(tri)
+  expect_s3_class(smr, "TriangleSummary")
+  expect_equal(nrow(smr), data.table::uniqueN(tri$dev))
 })
 
 test_that("fit_cl runs on a single-group triangle", {
