@@ -54,15 +54,13 @@ Useful for spotting cohorts that deviate from the central tendency.
 ### Cell heatmap
 
 ```{r}
-la <- list(size = 2.5)                                       # smaller label size
-plot_triangle(tri, value_var = "lr",      label_args = la)   # cumulative lr
-plot_triangle(tri, value_var = "lr_incr", label_args = la)   # incremental lr
+plot_triangle(tri, value_var = "lr")          # cumulative lr
+plot_triangle(tri, value_var = "lr_incr")     # incremental lr
 
 # detail labels (ratio + loss/premium amounts) are 2-line — use quarterly cells
 tri_q <- build_triangle(exp, group_var = coverage,
                         cohort_var = "uyq", dev_var = "elap_q")
-plot_triangle(tri_q, label_style = "detail",
-              label_args = la)                          # ratio + (loss / premium)
+plot_triangle(tri_q, label_style = "detail") # ratio + (loss / premium)
 ```
 
 ### Group statistics by dev
@@ -115,14 +113,16 @@ plot(ata, type = "point")         # scatter of observed ata per link
 ### Triangle of ATA factors
 
 ```{r}
+la <- list(size = 2.5)                            # smaller labels
 plot_triangle(ata, label_args = la)               # heatmap of observed factors
 plot_triangle(ata, label_args = la, show_maturity = TRUE)    # overlay maturity line
 
 # detail labels are two lines and overlap on monthly cells — rebuild on the
-# quarterly triangle so the labels fit
+# quarterly triangle and shrink the labels another step so the
+# two-line "factor (loss / premium)" text fits inside each cell.
 ata_q <- build_link(tri_q, loss_var = "loss")
 plot_triangle(ata_q, label_style = "detail",
-              label_args = la)                    # factor + (loss / premium)
+              label_args = list(size = 2.2))      # factor + (loss / premium)
 ```
 
 The heatmap colours each cell by `log(ata / median(ata))` within its

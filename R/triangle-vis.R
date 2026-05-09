@@ -489,6 +489,10 @@ plot_triangle <- function(x, ...) {
 #'       next line, the associated loss / premium amounts. For amount and
 #'       proportion metrics, this falls back to `"value"`.}
 #'   }
+#' @param label_args A list of arguments forwarded to [ggshort::ggtable()] to
+#'   control label appearance (`family`, `size`, `angle`, `hjust`, `vjust`,
+#'   `color`). Slots not supplied fall back to ggshort defaults
+#'   (e.g. `size = 3.88`).
 #' @param amount_divisor Numeric scaling factor applied to amount variables
 #'   (e.g., `loss`, `loss_incr`, `premium`, `premium_incr`, `margin`, `margin_incr`) before plotting.
 #'   Default is `1e8`
@@ -531,6 +535,7 @@ plot_triangle.Triangle <- function(x,
                                    type = c("value", "usage"),
                                    value_var = "lr",
                                    label_style = c("value", "detail"),
+                                   label_args = list(),
                                    amount_divisor = 1e8,
                                    nrow = NULL, ncol = NULL,
                                    theme = c("view", "save", "shiny"),
@@ -545,6 +550,7 @@ plot_triangle.Triangle <- function(x,
 
   label_style <- match.arg(label_style)
   theme       <- match.arg(theme)
+  label_args  <- .modify_label_args(label_args)
 
   grp_var <- attr(x, "group_var")
   coh_var <- attr(x, "cohort_var")
@@ -632,7 +638,7 @@ plot_triangle.Triangle <- function(x,
       x          = .data[[".x"]],
       y          = .data[[".y"]],
       label      = .data[["label"]],
-      label_args = list(size = 3),
+      label_args = label_args,
       fill       = .data[[fill_col]],
       fill_args  = list(threshold = 1)
     )
@@ -658,7 +664,7 @@ plot_triangle.Triangle <- function(x,
       x          = .data[[".x"]],
       y          = .data[[".y"]],
       label      = .data[["label"]],
-      label_args = list(size = 3),
+      label_args = label_args,
       fill       = .data[[val_var]],
       fill_args  = list(when = "<", threshold = 0)
     )
@@ -682,7 +688,7 @@ plot_triangle.Triangle <- function(x,
       x          = .data[[".x"]],
       y          = .data[[".y"]],
       label      = .data[["label"]],
-      label_args = list(size = 3),
+      label_args = label_args,
       fill       = .data[[val_var]],
       fill_args  = list(threshold = 0.05)
     )

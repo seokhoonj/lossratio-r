@@ -252,3 +252,24 @@
     ...
   )
 }
+
+
+#' Merge user-supplied `label_args` with the standard ggshort label
+#' defaults
+#'
+#' Mirrors `ggshort:::.modify_label_args()` so heatmap callers can
+#' supply a partial list (e.g. `list(size = 2.5)`) and let the
+#' remaining slots fall back to the standard ggshort label appearance.
+#'
+#' @keywords internal
+.modify_label_args <- function(label_args) {
+  defaults <- list(
+    family = getOption("ggshort.font"),
+    size   = 3.88,
+    angle  = 0,
+    hjust  = 0.5,
+    vjust  = 0.5,
+    color  = "black"
+  )
+  utils::modifyList(defaults, label_args, keep.null = TRUE)
+}

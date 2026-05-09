@@ -9,6 +9,7 @@
   type = c("value", "usage"),
   value_var = "lr",
   label_style = c("value", "detail"),
+  label_args = list(),
   amount_divisor = 1e+08,
   nrow = NULL,
   ncol = NULL,
@@ -40,6 +41,11 @@ via \code{...}. See \code{vignette("regime-break-filter")} for details.}
 next line, the associated loss / premium amounts. For amount and
 proportion metrics, this falls back to \code{"value"}.}
 }}
+
+\item{label_args}{A list of arguments forwarded to \code{\link[ggshort:ggtable]{ggshort::ggtable()}} to
+control label appearance (\code{family}, \code{size}, \code{angle}, \code{hjust}, \code{vjust},
+\code{color}). Slots not supplied fall back to ggshort defaults
+(e.g. \code{size = 3.88}).}
 
 \item{amount_divisor}{Numeric scaling factor applied to amount variables
 (e.g., \code{loss}, \code{loss_incr}, \code{premium}, \code{premium_incr}, \code{margin}, \code{margin_incr}) before plotting.

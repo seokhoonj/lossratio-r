@@ -54,15 +54,13 @@ plot(tri, summary = TRUE)              # 코호트 선 + overlay (평균 / 중�
 ### 셀 히트맵
 
 ```{r}
-la <- list(size = 2.5)                                       # 라벨 크기 줄임
-plot_triangle(tri, value_var = "lr",      label_args = la)   # 누적 lr
-plot_triangle(tri, value_var = "lr_incr", label_args = la)   # 증분 lr
+plot_triangle(tri, value_var = "lr")          # 누적 lr
+plot_triangle(tri, value_var = "lr_incr")     # 증분 lr
 
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly 로 다시 빌드
 tri_q <- build_triangle(exp, group_var = coverage,
                         cohort_var = "uyq", dev_var = "elap_q")
-plot_triangle(tri_q, label_style = "detail",
-              label_args = la)                              # 비율 + (loss / premium)
+plot_triangle(tri_q, label_style = "detail")  # 비율 + (loss / premium)
 ```
 
 ### dev 별 그룹 통계
@@ -112,13 +110,14 @@ plot(ata, type = "point")         # 링크별 관측 ata 의 산점도
 ### ATA 인자의 Triangle
 
 ```{r}
+la <- list(size = 2.5)                            # 라벨 크기 줄임
 plot_triangle(ata, label_args = la)               # 관측 인자 히트맵
 plot_triangle(ata, label_args = la, show_maturity = TRUE)  # 성숙점 라인 overlay
 
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly Link 로 다시 빌드
 ata_q <- build_link(tri_q, loss_var = "loss")
 plot_triangle(ata_q, label_style = "detail",
-              label_args = la)                    # 인자 + (loss / premium)
+              label_args = list(size = 2.2))      # 인자 + (loss / premium)
 ```
 
 이 히트맵은 각 셀을 자기 링크 내에서 `log(ata / median(ata))` 로 색칠하므로,
