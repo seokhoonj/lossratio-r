@@ -29,7 +29,7 @@
 #' @details
 #' For `model = "ata"`, accepted arguments include `type`
 #' (`"cv" | "rse" | "summary" | "box" | "point"`), `alpha`, `show_maturity`,
-#' `cv_threshold`, `rse_threshold`, `min_valid_ratio`, `min_n_valid`,
+#' `max_cv`, `max_rse`, `min_valid_ratio`, `min_n_valid`,
 #' `min_run`, `scales`, `nrow`, `ncol`, `theme`, and `x.angle`.
 #'
 #' For `model = "ed"`, accepted arguments include `type`
@@ -109,8 +109,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
                            type            = c("cv", "rse", "summary", "box", "point"),
                            alpha           = 1,
                            show_maturity   = TRUE,
-                           cv_threshold    = 0.15,
-                           rse_threshold   = 0.05,
+                           max_cv    = 0.15,
+                           max_rse   = 0.05,
                            min_valid_ratio = 0.5,
                            min_n_valid     = 3L,
                            min_run         = 1L,
@@ -156,8 +156,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   if (show_maturity) {
     mat <- .detect_maturity(
       x               = sm,
-      cv_threshold    = cv_threshold,
-      rse_threshold   = rse_threshold,
+      max_cv    = max_cv,
+      max_rse   = max_rse,
       min_valid_ratio = min_valid_ratio,
       min_n_valid     = min_n_valid,
       min_run         = min_run
@@ -254,13 +254,13 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
       ggplot2::geom_line(na.rm = TRUE) +
       ggplot2::geom_point(na.rm = TRUE) +
       ggplot2::geom_hline(
-        yintercept = cv_threshold,
+        yintercept = max_cv,
         color      = "red",
         linetype   = "dashed"
       ) +
       .x_scale()
 
-    p <- .add_shade(p, ymax = cv_threshold)
+    p <- .add_shade(p, ymax = max_cv)
     p <- .add_vline(p)
     p <- .add_label(p)
 
@@ -284,13 +284,13 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
       ggplot2::geom_line(na.rm = TRUE) +
       ggplot2::geom_point(na.rm = TRUE) +
       ggplot2::geom_hline(
-        yintercept = rse_threshold,
+        yintercept = max_rse,
         color      = "red",
         linetype   = "dashed"
       ) +
       .x_scale()
 
-    p <- .add_shade(p, ymax = rse_threshold)
+    p <- .add_shade(p, ymax = max_rse)
     p <- .add_vline(p)
     p <- .add_label(p)
 
@@ -595,8 +595,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
                                     label_args      = list(),
                                     show_maturity   = FALSE,
                                     alpha           = 1,
-                                    cv_threshold    = 0.15,
-                                    rse_threshold   = 0.05,
+                                    max_cv    = 0.15,
+                                    max_rse   = 0.05,
                                     min_valid_ratio = 0.5,
                                     min_n_valid     = 3L,
                                     min_run         = 1L,
@@ -673,8 +673,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     sm     <- summary(x, model = "ata", alpha = alpha)
     mat <- .detect_maturity(
       x               = sm,
-      cv_threshold    = cv_threshold,
-      rse_threshold   = rse_threshold,
+      max_cv    = max_cv,
+      max_rse   = max_rse,
       min_valid_ratio = min_valid_ratio,
       min_n_valid     = min_n_valid,
       min_run         = min_run

@@ -7,9 +7,9 @@
 detect_convergence(
   triangle,
   fit_fn = fit_lr,
-  c = 0.5,
-  tau = 0.15,
-  M = 3L,
+  se_mult = 0.5,
+  max_dv = 0.15,
+  min_run = 3L,
   k_star = NULL,
   holdout_max = NULL,
   min_n_cohorts = 5L,
@@ -23,18 +23,20 @@ detect_convergence(
 \link{fit_cl} is also accepted but \code{fit_lr} is recommended because it
 exposes both loss and exposure projections required for portfolio LR.}
 
-\item{c}{Multiplier on \eqn{\hat{SE}^{param}_v}. Default \code{0.5}.}
+\item{se_mult}{Multiplier on \eqn{\hat{SE}^{param}_v} (the symbol
+\code{c} in the math criterion above). Default \code{0.5}.}
 
-\item{tau}{Upper bound on \eqn{\hat{D}_v}. Default \code{0.15}.}
+\item{max_dv}{Upper bound on \eqn{\hat{D}_v} (the symbol \verb{\\tau} in
+the math criterion above). Default \code{0.15}.}
 
-\item{M}{Required run length of consecutive passing periods. Default
-\code{3L}.}
+\item{min_run}{Required run length of consecutive passing periods
+(the symbol \code{M} in the math criterion above). Default \code{3L}.}
 
 \item{k_star}{Pre-computed maturity point. When \code{NULL}, computed via
 \code{\link[=detect_maturity]{detect_maturity()}} applied to a lr-based ATA.}
 
 \item{holdout_max}{Maximum holdout depth used for the rolling
-backtest. When \code{NULL}, set to \code{max(M, floor((V - k_star) / 2))}.}
+backtest. When \code{NULL}, set to \code{max(min_run, floor((V - k_star) / 2))}.}
 
 \item{min_n_cohorts}{Minimum number of cohorts required to compute
 \eqn{\hat{D}_v}. Default \code{5L}.}

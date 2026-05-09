@@ -21,7 +21,7 @@ test_that("ATA family carries PascalCase classes", {
   expect_s3_class(fits$ata_fit, "ATAFit")
   expect_s3_class(fits$ata_sm,  "ATASummary")
 
-  mat <- detect_maturity(fits$tri, cv_threshold = 0.5, rse_threshold = 0.5)
+  mat <- detect_maturity(fits$tri, max_cv = 0.5, max_rse = 0.5)
   expect_s3_class(mat, "Maturity")
 })
 

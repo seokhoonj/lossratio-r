@@ -9,11 +9,11 @@ detect_maturity(
   loss_var = "loss",
   weight_var = NULL,
   alpha = 1,
-  cv_threshold = 0.15,
-  rse_threshold = 0.05,
+  max_cv = 0.15,
+  max_rse = 0.05,
   min_valid_ratio = 0.5,
   min_n_valid = 3L,
-  min_run = 1L
+  min_run = 2L
 )
 }
 \arguments{
@@ -29,10 +29,10 @@ detect_maturity(
 \item{alpha}{Numeric scalar controlling the variance structure in
 the underlying WLS fit. Default \code{1}. Forwarded to \code{\link[=summary.Link]{summary.Link()}}.}
 
-\item{cv_threshold}{Maximum allowed coefficient of variation.
-Default is \code{0.10}.}
+\item{max_cv}{Maximum allowed coefficient of variation.
+Default is \code{0.15}.}
 
-\item{rse_threshold}{Maximum allowed relative standard error.
+\item{max_rse}{Maximum allowed relative standard error.
 Default is \code{0.05}.}
 
 \item{min_valid_ratio}{Minimum proportion of finite ata values required.
@@ -42,7 +42,7 @@ Default is \code{0.5}.}
 Default is \code{3L}.}
 
 \item{min_run}{Minimum number of consecutive ata links satisfying the
-maturity criteria. Default is \code{1L}.}
+maturity criteria. Default is \code{2L}.}
 }
 \value{
 A \code{data.table} with class \code{"Maturity"} containing one row
@@ -58,8 +58,8 @@ criteria.
 
 Maturity is determined using a combination of:
 \itemize{
-\item \code{cv < cv_threshold}
-\item \code{rse < rse_threshold}
+\item \code{cv < max_cv}
+\item \code{rse < max_rse}
 \item \code{valid_ratio >= min_valid_ratio}
 \item \code{n_valid >= min_n_valid}
 \item optional consecutive maturity over \code{min_run} ata links

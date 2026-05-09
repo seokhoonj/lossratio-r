@@ -264,11 +264,11 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'   When a list is supplied, missing elements are filled with package
 #'   defaults via [utils::modifyList()]:
 #'   \describe{
-#'     \item{`cv_threshold`}{Default `0.15`.}
-#'     \item{`rse_threshold`}{Default `0.05`.}
+#'     \item{`max_cv`}{Default `0.15`.}
+#'     \item{`max_rse`}{Default `0.05`.}
 #'     \item{`min_valid_ratio`}{Default `0.5`.}
 #'     \item{`min_n_valid`}{Default `3L`.}
-#'     \item{`min_run`}{Default `1L`.}
+#'     \item{`min_run`}{Default `2L`.}
 #'   }
 #'   Pass `list()` to use all defaults with maturity filtering enabled.
 #' @param ... Additional arguments passed to [summary.Link()].
@@ -350,15 +350,15 @@ fit_ata <- function(x,
   # 3) resolve maturity arguments ----------------------------------------
   # maturity_args = NULL   → skip maturity filtering
   # maturity_args = list() → use all defaults
-  # maturity_args = list(cv_threshold = 0.15) → partial override
+  # maturity_args = list(max_cv = 0.15) → partial override
   maturity_args <- if (!is.null(maturity_args)) {
     utils::modifyList(
       list(
-        cv_threshold    = 0.15,
-        rse_threshold   = 0.05,
+        max_cv    = 0.15,
+        max_rse   = 0.05,
         min_valid_ratio = 0.5,
         min_n_valid     = 3L,
-        min_run         = 1L
+        min_run         = 2L
       ),
       maturity_args
     )

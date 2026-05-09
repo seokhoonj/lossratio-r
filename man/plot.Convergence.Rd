@@ -21,10 +21,10 @@ Two-panel diagnostic showing the dual criterion driving \eqn{k^{**}}:
 \itemize{
 \item Top panel: \eqn{R_v / \hat{SE}^{param}_v} (predictive
 revision normalised by parameter SE), with horizontal guide at
-the threshold \code{c}.
+the threshold \code{se_mult}.
 \item Bottom panel: \eqn{\hat{D}_v} (robust cross-cohort
 dispersion of incremental loss ratio), with horizontal guide at
-the threshold \code{tau}.
+the threshold \code{max_dv}.
 }
 Vertical guides mark \code{k_star} (dashed) and \code{k_conv} (solid). A
 point falling below both threshold lines passes the joint criterion.

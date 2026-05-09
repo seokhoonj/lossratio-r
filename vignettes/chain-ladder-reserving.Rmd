@@ -106,7 +106,7 @@ cl_mat <- fit_cl(
   tri,
   loss_var     = "loss",
   method        = "mack",
-  maturity_args = list(cv_threshold = 0.10, rse_threshold = 0.05)
+  maturity_args = list(max_cv = 0.10, max_rse = 0.05)
 )
 
 cl_mat$maturity

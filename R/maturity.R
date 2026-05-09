@@ -11,8 +11,8 @@
 #'
 #' Maturity is determined using a combination of:
 #' \itemize{
-#'   \item `cv < cv_threshold`
-#'   \item `rse < rse_threshold`
+#'   \item `cv < max_cv`
+#'   \item `rse < max_rse`
 #'   \item `valid_ratio >= min_valid_ratio`
 #'   \item `n_valid >= min_n_valid`
 #'   \item optional consecutive maturity over `min_run` ata links
@@ -40,16 +40,16 @@
 #'   [build_link()].
 #' @param alpha Numeric scalar controlling the variance structure in
 #'   the underlying WLS fit. Default `1`. Forwarded to [summary.Link()].
-#' @param cv_threshold Maximum allowed coefficient of variation.
-#'   Default is `0.10`.
-#' @param rse_threshold Maximum allowed relative standard error.
+#' @param max_cv Maximum allowed coefficient of variation.
+#'   Default is `0.15`.
+#' @param max_rse Maximum allowed relative standard error.
 #'   Default is `0.05`.
 #' @param min_valid_ratio Minimum proportion of finite ata values required.
 #'   Default is `0.5`.
 #' @param min_n_valid Minimum number of finite ata factors required.
 #'   Default is `3L`.
 #' @param min_run Minimum number of consecutive ata links satisfying the
-#'   maturity criteria. Default is `1L`.
+#'   maturity criteria. Default is `2L`.
 #'
 #' @return A `data.table` with class `"Maturity"` containing one row
 #'   per group. If no mature link is found, all values for that group are
@@ -60,11 +60,11 @@ detect_maturity <- function(x,
                             loss_var        = "loss",
                             weight_var      = NULL,
                             alpha           = 1,
-                            cv_threshold    = 0.15,
-                            rse_threshold   = 0.05,
+                            max_cv    = 0.15,
+                            max_rse   = 0.05,
                             min_valid_ratio = 0.5,
                             min_n_valid     = 3L,
-                            min_run         = 1L) {
+                            min_run         = 2L) {
 
   .assert_class(x, "Triangle")
 
@@ -73,8 +73,8 @@ detect_maturity <- function(x,
 
   .detect_maturity(
     ata_summary,
-    cv_threshold    = cv_threshold,
-    rse_threshold   = rse_threshold,
+    max_cv    = max_cv,
+    max_rse   = max_rse,
     min_valid_ratio = min_valid_ratio,
     min_n_valid     = min_n_valid,
     min_run         = min_run
@@ -86,22 +86,22 @@ detect_maturity <- function(x,
 #'
 #' @keywords internal
 .detect_maturity <- function(x,
-                             cv_threshold    = 0.15,
-                             rse_threshold   = 0.05,
+                             max_cv    = 0.15,
+                             max_rse   = 0.05,
                              min_valid_ratio = 0.5,
                              min_n_valid     = 3L,
-                             min_run         = 1L) {
+                             min_run         = 2L) {
 
   .assert_class(x, "ATASummary")
 
-  if (!is.numeric(cv_threshold) || length(cv_threshold) != 1L ||
-      is.na(cv_threshold))
-    stop("`cv_threshold` must be a single non-missing numeric value.",
+  if (!is.numeric(max_cv) || length(max_cv) != 1L ||
+      is.na(max_cv))
+    stop("`max_cv` must be a single non-missing numeric value.",
          call. = FALSE)
 
-  if (!is.numeric(rse_threshold) || length(rse_threshold) != 1L ||
-      is.na(rse_threshold))
-    stop("`rse_threshold` must be a single non-missing numeric value.",
+  if (!is.numeric(max_rse) || length(max_rse) != 1L ||
+      is.na(max_rse))
+    stop("`max_rse` must be a single non-missing numeric value.",
          call. = FALSE)
 
   if (!is.numeric(min_valid_ratio) || length(min_valid_ratio) != 1L ||
@@ -127,16 +127,16 @@ detect_maturity <- function(x,
 
   # internal: find first mature row in a single-group summary table
   .first_mature_row <- function(d,
-                                cv_threshold,
-                                rse_threshold,
+                                max_cv,
+                                max_rse,
                                 min_valid_ratio,
                                 min_n_valid,
                                 min_run) {
 
     d  <- .ensure_dt(d)
     ok <- with(d,
-               is.finite(cv)          & cv          <  cv_threshold    &
-                 is.finite(rse)         & rse         <  rse_threshold   &
+               is.finite(cv)          & cv          <  max_cv    &
+                 is.finite(rse)         & rse         <  max_rse   &
                  is.finite(valid_ratio) & valid_ratio >= min_valid_ratio &
                  is.finite(n_valid)     & n_valid     >= min_n_valid
     )
@@ -195,8 +195,8 @@ detect_maturity <- function(x,
   if (length(grp_var)) {
     z <- sm[, .first_mature_row(
       .SD,
-      cv_threshold    = cv_threshold,
-      rse_threshold   = rse_threshold,
+      max_cv    = max_cv,
+      max_rse   = max_rse,
       min_valid_ratio = min_valid_ratio,
       min_n_valid     = min_n_valid,
       min_run         = min_run
@@ -204,16 +204,16 @@ detect_maturity <- function(x,
   } else {
     z <- .first_mature_row(
       sm,
-      cv_threshold    = cv_threshold,
-      rse_threshold   = rse_threshold,
+      max_cv    = max_cv,
+      max_rse   = max_rse,
       min_valid_ratio = min_valid_ratio,
       min_n_valid     = min_n_valid,
       min_run         = min_run
     )
   }
 
-  data.table::setattr(z, "cv_threshold",    cv_threshold)
-  data.table::setattr(z, "rse_threshold",   rse_threshold)
+  data.table::setattr(z, "max_cv",    max_cv)
+  data.table::setattr(z, "max_rse",   max_rse)
   data.table::setattr(z, "min_valid_ratio", min_valid_ratio)
   data.table::setattr(z, "min_n_valid",     min_n_valid)
   data.table::setattr(z, "min_run",         min_run)

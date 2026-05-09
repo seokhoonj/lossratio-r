@@ -6,11 +6,11 @@
 \usage{
 .detect_maturity(
   x,
-  cv_threshold = 0.15,
-  rse_threshold = 0.05,
+  max_cv = 0.15,
+  max_rse = 0.05,
   min_valid_ratio = 0.5,
   min_n_valid = 3L,
-  min_run = 1L
+  min_run = 2L
 )
 }
 \description{

@@ -30,7 +30,7 @@ The default \code{model} is chosen from \code{attr(x, "premium_var")}: \code{NUL
 \details{
 For \code{model = "ata"}, accepted arguments include \code{type}
 (\code{"cv" | "rse" | "summary" | "box" | "point"}), \code{alpha}, \code{show_maturity},
-\code{cv_threshold}, \code{rse_threshold}, \code{min_valid_ratio}, \code{min_n_valid},
+\code{max_cv}, \code{max_rse}, \code{min_valid_ratio}, \code{min_n_valid},
 \code{min_run}, \code{scales}, \code{nrow}, \code{ncol}, \code{theme}, and \code{x.angle}.
 
 For \code{model = "ed"}, accepted arguments include \code{type}

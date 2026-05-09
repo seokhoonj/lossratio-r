@@ -8,7 +8,7 @@ test_that("detect_convergence returns class 'Convergence' with required fields",
   res <- detect_convergence(sub)
   expect_s3_class(res, "Convergence")
   for (nm in c("k_conv", "R_v", "SE_param_v", "D_v", "pass_v",
-               "k_star", "c", "tau", "M")) {
+               "k_star", "se_mult", "max_dv", "min_run")) {
     expect_true(nm %in% names(res), info = paste("missing", nm))
   }
   for (a in c("group_var", "loss_var", "fit_fn_name")) {
@@ -29,13 +29,13 @@ test_that("insufficient history yields k_conv == NA", {
   k_star_guess <- 6L
   short_exp <- exp[cv_nm == "SUR" & elap_m <= k_star_guess + 2L]
   short_tri <- build_triangle(short_exp, group_var = cv_nm)
-  res <- detect_convergence(short_tri, k_star = k_star_guess, M = 3L)
+  res <- detect_convergence(short_tri, k_star = k_star_guess, min_run = 3L)
   expect_true(is.na(res$k_conv))
 })
 
-test_that("tighter c yields a later k_conv (or NA)", {
-  loose <- detect_convergence(sub, c = 1.0)
-  tight <- detect_convergence(sub, c = 0.1)
+test_that("tighter se_mult yields a later k_conv (or NA)", {
+  loose <- detect_convergence(sub, se_mult = 1.0)
+  tight <- detect_convergence(sub, se_mult = 0.1)
   if (!is.na(loose$k_conv) && !is.na(tight$k_conv)) {
     expect_gte(tight$k_conv, loose$k_conv)
   } else if (!is.na(loose$k_conv) && is.na(tight$k_conv)) {
@@ -45,9 +45,9 @@ test_that("tighter c yields a later k_conv (or NA)", {
   }
 })
 
-test_that("tighter tau yields a later k_conv (or NA)", {
-  loose <- detect_convergence(sub, tau = 0.5)
-  tight <- detect_convergence(sub, tau = 0.05)
+test_that("tighter max_dv yields a later k_conv (or NA)", {
+  loose <- detect_convergence(sub, max_dv = 0.5)
+  tight <- detect_convergence(sub, max_dv = 0.05)
   if (!is.na(loose$k_conv) && !is.na(tight$k_conv)) {
     expect_gte(tight$k_conv, loose$k_conv)
   } else if (!is.na(loose$k_conv) && is.na(tight$k_conv)) {

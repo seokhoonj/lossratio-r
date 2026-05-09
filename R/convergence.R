@@ -129,14 +129,16 @@
 #' @param fit_fn Fitting function used to project. Default [fit_lr].
 #'   [fit_cl] is also accepted but `fit_lr` is recommended because it
 #'   exposes both loss and exposure projections required for portfolio LR.
-#' @param c Multiplier on \eqn{\hat{SE}^{param}_v}. Default `0.5`.
-#' @param tau Upper bound on \eqn{\hat{D}_v}. Default `0.15`.
-#' @param M Required run length of consecutive passing periods. Default
-#'   `3L`.
+#' @param se_mult Multiplier on \eqn{\hat{SE}^{param}_v} (the symbol
+#'   `c` in the math criterion above). Default `0.5`.
+#' @param max_dv Upper bound on \eqn{\hat{D}_v} (the symbol `\tau` in
+#'   the math criterion above). Default `0.15`.
+#' @param min_run Required run length of consecutive passing periods
+#'   (the symbol `M` in the math criterion above). Default `3L`.
 #' @param k_star Pre-computed maturity point. When `NULL`, computed via
 #'   [detect_maturity()] applied to a lr-based ATA.
 #' @param holdout_max Maximum holdout depth used for the rolling
-#'   backtest. When `NULL`, set to `max(M, floor((V - k_star) / 2))`.
+#'   backtest. When `NULL`, set to `max(min_run, floor((V - k_star) / 2))`.
 #' @param min_n_cohorts Minimum number of cohorts required to compute
 #'   \eqn{\hat{D}_v}. Default `5L`.
 #' @param ... Additional arguments forwarded to `fit_fn`.
@@ -151,9 +153,9 @@
 #' @export
 detect_convergence <- function(triangle,
                               fit_fn        = fit_lr,
-                              c             = 0.5,
-                              tau           = 0.15,
-                              M             = 3L,
+                              se_mult       = 0.5,
+                              max_dv        = 0.15,
+                              min_run       = 3L,
                               k_star        = NULL,
                               holdout_max   = NULL,
                               min_n_cohorts = 5L,
@@ -164,13 +166,18 @@ detect_convergence <- function(triangle,
   # 1) validate inputs -------------------------------------------------
   .assert_class(triangle, "Triangle")
 
-  if (!is.numeric(c)   || length(c)   != 1L || is.na(c)   || c   <= 0)
-    stop("`c` must be a single positive numeric value.",   call. = FALSE)
-  if (!is.numeric(tau) || length(tau) != 1L || is.na(tau) || tau <= 0)
-    stop("`tau` must be a single positive numeric value.", call. = FALSE)
-  if (!is.numeric(M)   || length(M)   != 1L || is.na(M)   || M   <  1)
-    stop("`M` must be a single integer >= 1.", call. = FALSE)
-  M <- as.integer(M)
+  if (!is.numeric(se_mult) || length(se_mult) != 1L ||
+      is.na(se_mult) || se_mult <= 0)
+    stop("`se_mult` must be a single positive numeric value.",
+         call. = FALSE)
+  if (!is.numeric(max_dv)  || length(max_dv)  != 1L ||
+      is.na(max_dv)  || max_dv  <= 0)
+    stop("`max_dv` must be a single positive numeric value.",
+         call. = FALSE)
+  if (!is.numeric(min_run) || length(min_run) != 1L ||
+      is.na(min_run) || min_run < 1)
+    stop("`min_run` must be a single integer >= 1.", call. = FALSE)
+  min_run <- as.integer(min_run)
 
   grp_var <- attr(triangle, "group_var")
   if (is.null(grp_var)) grp_var <- character(0)
@@ -189,12 +196,13 @@ detect_convergence <- function(triangle,
   # 3) determine V (max observable dev) and holdout window -------------
   V <- max(triangle$dev, na.rm = TRUE)
   if (is.null(holdout_max)) {
-    holdout_max <- max(M, as.integer(floor((V - k_star) / 2)))
+    holdout_max <- max(min_run, as.integer(floor((V - k_star) / 2)))
   }
   holdout_max <- as.integer(holdout_max)
 
-  # candidate v sequence: [k_star, V - M] so an M-run still fits
-  v_seq <- if (V - M >= k_star) seq.int(k_star, V - M) else integer(0)
+  # candidate v sequence: [k_star, V - min_run] so a run still fits
+  v_seq <- if (V - min_run >= k_star)
+    seq.int(k_star, V - min_run) else integer(0)
 
   # 4) build R_v sequence via repeated backtest ------------------------
   # For each v: bt_prev uses data through v-1 (holdout = V-v+1),
@@ -256,13 +264,13 @@ detect_convergence <- function(triangle,
 
   # 6) two-clause pass test --------------------------------------------
   pass_v <- is.finite(R_v) & is.finite(SE_param_v) & is.finite(D_v) &
-            (R_v < c * SE_param_v) & (D_v < tau)
+            (R_v < se_mult * SE_param_v) & (D_v < max_dv)
 
-  # 7) first run of length M -------------------------------------------
+  # 7) first run of length min_run -------------------------------------
   k_conv <- NA_integer_
-  if (length(pass_v) >= M) {
-    for (i in seq_len(length(pass_v) - M + 1L)) {
-      if (all(pass_v[i:(i + M - 1L)])) {
+  if (length(pass_v) >= min_run) {
+    for (i in seq_len(length(pass_v) - min_run + 1L)) {
+      if (all(pass_v[i:(i + min_run - 1L)])) {
         k_conv <- v_seq[i]
         break
       }
@@ -280,9 +288,9 @@ detect_convergence <- function(triangle,
     SE_param_v    = SE_param_v,
     D_v           = D_v,
     pass_v        = pass_v,
-    c             = c,
-    tau           = tau,
-    M             = M,
+    se_mult       = se_mult,
+    max_dv        = max_dv,
+    min_run       = min_run,
     holdout_max   = holdout_max,
     min_n_cohorts = min_n_cohorts
   )
@@ -305,8 +313,8 @@ print.Convergence <- function(x, ...) {
   cat("k_conv       :", x$k_conv, "\n")
   cat("k_star       :", x$k_star,   "\n")
   cat("V (max dev)  :", x$V,        "\n")
-  cat("criterion    : R_v < ", x$c, " * SE_param_v  AND  D_v < ", x$tau,
-      "  (run M = ", x$M, ")\n", sep = "")
+  cat("criterion    : R_v < ", x$se_mult, " * SE_param_v  AND  D_v < ",
+      x$max_dv, "  (min_run = ", x$min_run, ")\n", sep = "")
   cat("fit_fn       :", attr(x, "fit_fn_name"), "\n")
   n_pass <- sum(x$pass_v, na.rm = TRUE)
   cat("v candidates :", length(x$v), " (",
@@ -334,10 +342,10 @@ summary.Convergence <- function(object, ...) {
 #' \itemize{
 #'   \item Top panel: \eqn{R_v / \hat{SE}^{param}_v} (predictive
 #'     revision normalised by parameter SE), with horizontal guide at
-#'     the threshold `c`.
+#'     the threshold `se_mult`.
 #'   \item Bottom panel: \eqn{\hat{D}_v} (robust cross-cohort
 #'     dispersion of incremental loss ratio), with horizontal guide at
-#'     the threshold `tau`.
+#'     the threshold `max_dv`.
 #' }
 #' Vertical guides mark `k_star` (dashed) and `k_conv` (solid). A
 #' point falling below both threshold lines passes the joint criterion.
@@ -360,25 +368,25 @@ plot.Convergence <- function(x,
   R_over_SE <- x$R_v / x$SE_param_v
   long <- data.table::rbindlist(list(
     data.table::data.table(
-      v        = x$v,
-      metric   = "R[v] / SE[param]",
-      value    = R_over_SE,
-      thresh   = x$c
+      v         = x$v,
+      metric    = "R[v] / SE[param]",
+      value     = R_over_SE,
+      threshold = x$se_mult
     ),
     data.table::data.table(
-      v        = x$v,
-      metric   = "D[v]",
-      value    = x$D_v,
-      thresh   = x$tau
+      v         = x$v,
+      metric    = "D[v]",
+      value     = x$D_v,
+      threshold = x$max_dv
     )
   ))
   long[, metric := factor(metric, levels = c("R[v] / SE[param]", "D[v]"))]
 
   # threshold table (one row per facet) for geom_hline
-  thresh_tbl <- data.table::data.table(
-    metric = factor(c("R[v] / SE[param]", "D[v]"),
-                    levels = c("R[v] / SE[param]", "D[v]")),
-    thresh = c(x$c, x$tau)
+  threshold_tbl <- data.table::data.table(
+    metric    = factor(c("R[v] / SE[param]", "D[v]"),
+                       levels = c("R[v] / SE[param]", "D[v]")),
+    threshold = c(x$se_mult, x$max_dv)
   )
 
   p <- ggplot2::ggplot(
@@ -386,8 +394,8 @@ plot.Convergence <- function(x,
     ggplot2::aes(x = .data[["v"]], y = .data[["value"]])
   ) +
     ggplot2::geom_hline(
-      data = thresh_tbl,
-      mapping = ggplot2::aes(yintercept = .data[["thresh"]]),
+      data = threshold_tbl,
+      mapping = ggplot2::aes(yintercept = .data[["threshold"]]),
       linetype = "dashed",
       color = "#d62728"
     ) +
@@ -406,10 +414,10 @@ plot.Convergence <- function(x,
     ggplot2::labs(
       title = "LR stability diagnostic",
       subtitle = sprintf(
-        "k_star = %s   k_conv = %s   (c = %s, tau = %s, M = %d)",
+        "k_star = %s   k_conv = %s   (se_mult = %s, max_dv = %s, min_run = %d)",
         x$k_star,
         ifelse(is.na(x$k_conv), "NA", x$k_conv),
-        x$c, x$tau, x$M
+        x$se_mult, x$max_dv, x$min_run
       ),
       x = .pretty_var_label(attr(x, "dev_var")),
       y = NULL
