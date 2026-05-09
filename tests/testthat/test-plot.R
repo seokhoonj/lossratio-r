@@ -11,7 +11,7 @@ cl_b <- fit_cl(tri, loss_var = "loss", method = "basic")
 cl_m <- fit_cl(tri, loss_var = "loss", method = "mack")
 lr   <- fit_lr(tri, method = "sa")
 sub  <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
-reg  <- detect_regime(sub, K = 12, method = "ecp")
+reg  <- detect_regime(sub, K = 12, method = "e_divisive")
 
 is_plot <- function(x) inherits(x, "ggplot") || inherits(x, "gtable")
 

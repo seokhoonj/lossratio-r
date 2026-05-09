@@ -68,12 +68,12 @@ tri_sur <- build_triangle(exp[coverage == "SUR"], coverage)
 
 ## Detecting regimes
 
-The default method is `"ecp"`, a non-parametric multivariate
+The default method is `"e_divisive"`, a non-parametric multivariate
 change-point algorithm that determines the number of regimes from the
 data:
 
 ```{r}
-r <- detect_regime(tri_sur, K = 12, method = "ecp")
+r <- detect_regime(tri_sur, K = 12, method = "e_divisive")
 r
 ```
 
@@ -106,7 +106,7 @@ shift primarily affects early or late development).
 
 ## Choice of method
 
-* **`"ecp"`** — preferred default. Multivariate, non-parametric,
+* **`"e_divisive"`** — preferred default. Multivariate, non-parametric,
   auto-detects the number of regimes at a given significance level.
   Slightly slower than the alternatives but requires no a priori
   choice of `n_regimes`.
@@ -115,7 +115,7 @@ shift primarily affects early or late development).
   the first principal component. May return multiple breakpoints and
   is useful when the trajectory variation is dominated by one axis
   (check `PC1 %` in the `print()` output — if > 70%, PELT is reliable;
-  if much lower, prefer `"ecp"`).
+  if much lower, prefer `"e_divisive"`).
 
 * **`"hclust"`** — Ward hierarchical clustering on the scaled feature
   matrix, cut to `n_regimes` clusters (default `2`). Ignores
@@ -126,7 +126,7 @@ shift primarily affects early or late development).
   artefact of the method.
 
 In practice, agreement across all three methods — as in the SUR
-example above, where `"ecp"`, `"pelt"`, and `"hclust"` all locate
+example above, where `"e_divisive"`, `"pelt"`, and `"hclust"` all locate
 `24.04` as the regime boundary — is strong evidence of a real
 underwriting/rate shift.
 
@@ -136,11 +136,11 @@ If you want to compare a fixed number of regimes — for example,
 two-vs-three regime hypotheses — pass `n_regimes`:
 
 ```{r}
-r2 <- detect_regime(tri_sur, K = 12, method = "ecp", n_regimes = 3)
+r2 <- detect_regime(tri_sur, K = 12, method = "e_divisive", n_regimes = 3)
 summary(r2)
 ```
 
-For `"ecp"` and `"pelt"`, `n_regimes` is a request (the algorithm will
+For `"e_divisive"` and `"pelt"`, `n_regimes` is a request (the algorithm will
 return up to that many regimes if supported by the data). For
 `"hclust"`, it is a hard cut.
 

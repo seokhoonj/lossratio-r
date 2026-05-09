@@ -13,7 +13,7 @@
 #'
 #' Three detection strategies are supported:
 #' \describe{
-#'   \item{`"ecp"`}{Multivariate non-parametric divisive change-point
+#'   \item{`"e_divisive"`}{Multivariate non-parametric divisive change-point
 #'     detection via [ecp::e.divisive()]. The number of regimes is
 #'     determined by the data; only significant breakpoints at
 #'     `sig_level` are retained. Preferred when the number of regimes
@@ -39,12 +39,12 @@
 #' @param K Integer. Common development-period window used to build the
 #'   cohort feature matrix. Cohorts with fewer than `K` observed
 #'   periods are dropped. Default is `12`.
-#' @param method One of `"ecp"`, `"pelt"`, `"hclust"`.
+#' @param method One of `"e_divisive"`, `"pelt"`, `"hclust"`.
 #' @param n_regimes Integer. Number of regimes to force. `NULL` means
-#'   auto-detect for `"ecp"` and `"pelt"`; ignored (required to equal
+#'   auto-detect for `"e_divisive"` and `"pelt"`; ignored (required to equal
 #'   the requested value) for `"hclust"`, where the default is `2`.
-#' @param sig_level Significance level for `"ecp"`. Default `0.05`.
-#' @param min_size Minimum segment size for `"ecp"`. Default `3`.
+#' @param sig_level Significance level for `"e_divisive"`. Default `0.05`.
+#' @param min_size Minimum segment size for `"e_divisive"`. Default `3`.
 #' @param ... Reserved for future use.
 #'
 #' @return An object of class `"Regime"` with components:
@@ -82,14 +82,14 @@
 #' plot(r)
 #'
 #' # ecp divisive change-point detection (requires the ecp package)
-#' r_ecp <- detect_regime(tri_sur, K = 12, method = "ecp")
+#' r_ecp <- detect_regime(tri_sur, K = 12, method = "e_divisive")
 #' }
 #'
 #' @export
 detect_regime <- function(x,
                           loss_var  = "lr",
                           K         = 12L,
-                          method    = c("ecp", "pelt", "hclust"),
+                          method    = c("e_divisive", "pelt", "hclust"),
                           n_regimes = NULL,
                           sig_level = 0.05,
                           min_size  = 3L,
@@ -204,7 +204,7 @@ detect_regime <- function(x,
                                 sig_level, min_size) {
   n <- nrow(mat)
 
-  if (method == "ecp") {
+  if (method == "e_divisive") {
     if (!requireNamespace("ecp", quietly = TRUE))
       stop("Package 'ecp' is required for method = \"ecp\". ",
            "Install with install.packages('ecp').", call. = FALSE)
@@ -264,7 +264,7 @@ detect_regime <- function(x,
 #' @keywords internal
 .regime_label_from_range <- function(period, regime_id) {
   s <- vapply(split(period, regime_id), function(p) {
-    sprintf("%s, ..., %s", format(min(p), "%y.%m"), format(max(p), "%y.%m"))
+    sprintf("%s-%s", format(min(p), "%y.%m"), format(max(p), "%y.%m"))
   }, character(1L))
   s[as.character(regime_id)]
 }
@@ -335,7 +335,7 @@ print.summary.Regime <- function(x, ...) {
   cat("Cohort regime detection summary\n")
   cat(sprintf("  method    : %s\n", x$method))
   cat(sprintf("  loss_var : %s\n", x$loss_var))
-  cat(sprintf("  window    : %s 1, ..., %d\n", x$dev_var, x$K))
+  cat(sprintf("  window    : %s 1-%d\n", x$dev_var, x$K))
   cat(sprintf("  cohorts   : %d analysed", x$n_cohorts))
   if (x$n_dropped) cat(sprintf(" (%d dropped)", x$n_dropped))
   cat("\n\n")
@@ -343,7 +343,7 @@ print.summary.Regime <- function(x, ...) {
   cat(sprintf("Regimes (%d):\n", x$n_regimes))
   for (i in seq_len(nrow(x$regimes))) {
     r <- x$regimes[i]
-    cat(sprintf("  %d: %s, ..., %s (%d cohorts)\n",
+    cat(sprintf("  %d: %s-%s (%d cohorts)\n",
                 r$regime_id,
                 format(r$start, "%y.%m"),
                 format(r$end,   "%y.%m"),

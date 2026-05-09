@@ -126,7 +126,7 @@ loss-ratio fitting on a homogeneous subset:
 
 ```{r}
 sub <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
-detect_regime(sub, K = 12, method = "ecp")
+detect_regime(sub, K = 12, method = "e_divisive")
 ```
 
 See `vignette("regime")` for the dedicated walkthrough.

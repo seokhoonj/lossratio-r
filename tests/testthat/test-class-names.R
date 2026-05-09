@@ -40,7 +40,7 @@ test_that("CLFit / LRFit carry PascalCase classes", {
 
 test_that("Regime and Backtest carry PascalCase classes", {
   sub <- make_sub_tri("SUR")
-  reg <- detect_regime(sub, K = 12, method = "ecp")
+  reg <- detect_regime(sub, K = 12, method = "e_divisive")
   expect_s3_class(reg, "Regime")
   expect_s3_class(summary(reg), "summary.Regime")
 
@@ -99,7 +99,7 @@ test_that("lowercase class names not introduced (ATA / ED family)", {
 test_that("lowercase class names not introduced (CL / LR / regime / backtest)", {
   fits <- make_fit_set()
   sub  <- make_sub_tri("SUR")
-  reg  <- detect_regime(sub, K = 12, method = "ecp")
+  reg  <- detect_regime(sub, K = 12, method = "e_divisive")
   bt   <- backtest(sub, holdout = 6L, fit_fn = fit_cl,
                    loss_var = "loss", method = "mack")
 

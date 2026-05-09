@@ -11,7 +11,7 @@ detect_regime(
   x,
   loss_var = "lr",
   K = 12L,
-  method = c("ecp", "pelt", "hclust"),
+  method = c("e_divisive", "pelt", "hclust"),
   n_regimes = NULL,
   sig_level = 0.05,
   min_size = 3L,
@@ -36,15 +36,15 @@ is \code{"lr"} (cumulative loss ratio).}
 cohort feature matrix. Cohorts with fewer than \code{K} observed
 periods are dropped. Default is \code{12}.}
 
-\item{method}{One of \code{"ecp"}, \code{"pelt"}, \code{"hclust"}.}
+\item{method}{One of \code{"e_divisive"}, \code{"pelt"}, \code{"hclust"}.}
 
 \item{n_regimes}{Integer. Number of regimes to force. \code{NULL} means
-auto-detect for \code{"ecp"} and \code{"pelt"}; ignored (required to equal
+auto-detect for \code{"e_divisive"} and \code{"pelt"}; ignored (required to equal
 the requested value) for \code{"hclust"}, where the default is \code{2}.}
 
-\item{sig_level}{Significance level for \code{"ecp"}. Default \code{0.05}.}
+\item{sig_level}{Significance level for \code{"e_divisive"}. Default \code{0.05}.}
 
-\item{min_size}{Minimum segment size for \code{"ecp"}. Default \code{3}.}
+\item{min_size}{Minimum segment size for \code{"e_divisive"}. Default \code{3}.}
 
 \item{...}{Reserved for future use.}
 
@@ -82,7 +82,7 @@ sequence.
 
 Three detection strategies are supported:
 \describe{
-\item{\code{"ecp"}}{Multivariate non-parametric divisive change-point
+\item{\code{"e_divisive"}}{Multivariate non-parametric divisive change-point
 detection via \code{\link[ecp:e.divisive]{ecp::e.divisive()}}. The number of regimes is
 determined by the data; only significant breakpoints at
 \code{sig_level} are retained. Preferred when the number of regimes
@@ -112,7 +112,7 @@ summary(r)
 plot(r)
 
 # ecp divisive change-point detection (requires the ecp package)
-r_ecp <- detect_regime(tri_sur, K = 12, method = "ecp")
+r_ecp <- detect_regime(tri_sur, K = 12, method = "e_divisive")
 }
 
 }
