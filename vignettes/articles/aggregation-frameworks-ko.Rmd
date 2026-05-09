@@ -69,12 +69,12 @@ plot(tri)              # 코호트별 궤적, 그룹별 facet
 # 단위 그대로 볼 수 있다.
 tri_q <- build_triangle(exp, group_var = cv_nm,
                         cohort_var = "uyq", dev_var = "elap_q")
-plot_triangle(tri_q)   # 코호트 × dev clr 히트맵
+plot_triangle(tri_q)   # 코호트 × dev lr 히트맵
 ```
 
 `Triangle` 은 다음 함수의 입력으로 사용된다.
 
-- `build_link()` — 발달 인자 (ATA / ED 는 `value_var` + 선택적 `exposure_var` 로 선택)
+- `build_link()` — 발달 인자 (ATA / ED 는 `value_var` + 선택적 `premium_var` 로 선택)
 - `fit_cl()`, `fit_lr()` — 추정
 - `detect_regime()` — 구조 변화 탐지
 

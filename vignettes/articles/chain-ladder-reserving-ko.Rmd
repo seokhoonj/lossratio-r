@@ -47,12 +47,12 @@ data(experience)
 exp <- as_experience(experience)
 tri <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
 
-cl <- fit_cl(tri, value_var = "closs", method = "mack")
+cl <- fit_cl(tri, value_var = "loss", method = "mack")
 print(cl)
 ```
 
 `value_var` 은 추정 대상 누적 컬럼을 선택한다 — 준비금 산출에는
-보통 `"closs"` (누적 손해), 익스포저 추정에는 `"crp"` (누적
+보통 `"loss"` (누적 손해), 익스포저 추정에는 `"premium"` (누적
 위험보험료) 를 쓴다.
 
 ## 2. 방법: basic vs Mack
@@ -67,8 +67,8 @@ $f_k = C^L_{k+1} / C^L_k$ — **ATA 인자**(age-to-age factor) — 를
 | `"mack"`   | 점 추정 + 인자 / 프로세스 / 모수 SE             |
 
 ```{r}
-cl_basic <- fit_cl(tri, value_var = "closs", method = "basic")
-cl_mack  <- fit_cl(tri, value_var = "closs", method = "mack")
+cl_basic <- fit_cl(tri, value_var = "loss", method = "basic")
+cl_mack  <- fit_cl(tri, value_var = "loss", method = "mack")
 
 names(cl_basic)
 
@@ -90,10 +90,10 @@ plot(cl_mack, type = "projection", show_interval = TRUE)
 
 ```{r}
 # 선택된 ATA 인자로부터 로그 선형 외삽
-cl_tail <- fit_cl(tri, value_var = "closs", method = "mack", tail = TRUE)
+cl_tail <- fit_cl(tri, value_var = "loss", method = "mack", tail = TRUE)
 
 # 또는 명시적인 tail 인자 값 지정
-cl_tail <- fit_cl(tri, value_var = "closs", method = "mack", tail = 1.025)
+cl_tail <- fit_cl(tri, value_var = "loss", method = "mack", tail = 1.025)
 ```
 
 외삽은 추정된 ATA 인자에 대해 $\log(f_k - 1) \sim k$ 회귀를 적합한 뒤,
@@ -108,7 +108,7 @@ cl_tail <- fit_cl(tri, value_var = "closs", method = "mack", tail = 1.025)
 ```{r}
 cl_mat <- fit_cl(
   tri,
-  value_var     = "closs",
+  value_var     = "loss",
   method        = "mack",
   maturity_args = list(cv_threshold = 0.10, rse_threshold = 0.05)
 )
@@ -176,7 +176,7 @@ Mack 분산은 모든 발달 링크에서 $\sigma_k$ 가 필요한데, 마지막
 | `"loglinear"`   | 관측된 $\sigma_k$ 시퀀스에 대한 로그 선형 외삽                       |
 
 ```{r}
-fit_cl(tri, value_var = "closs", method = "mack", sigma_method = "loglinear")
+fit_cl(tri, value_var = "loss", method = "mack", sigma_method = "loglinear")
 ```
 
 ## 9. 함께 보기

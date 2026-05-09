@@ -48,7 +48,7 @@ print(bt)
 ```
 
 기본 적합 함수는 단계 적응형(stage-adaptive, SA) 손해율 추정 (`fit_lr(method = "sa")`)
-이며, 기본 비교 컬럼은 `value_var = "clr"` 이다 (누적 손해율). 반환되는 객체는
+이며, 기본 비교 컬럼은 `value_var = "lr"` 이다 (누적 손해율). 반환되는 객체는
 `"Backtest"` 리스트이며, 주요 슬롯은 다음과 같다.
 
 - `aeg` — 셀 단위 `data.table` (cohort, dev, actual, pred, aeg, calendar_idx).
@@ -144,7 +144,7 @@ plot_triangle(bt)         # hold-out 영역에 대한 발산형 팔레트 히트
 
 ## 7. 적합 함수 선택
 
-기본값인 `fit_fn = fit_lr` (method = "sa", value_var = "clr") 은 손해율
+기본값인 `fit_fn = fit_lr` (method = "sa", value_var = "lr") 은 손해율
 관점의 진단을 직접 제공한다. `fit_lr` 의 method 와 `value_var` 를 바꾸면
 다양한 변형을 백테스트할 수 있다.
 
@@ -155,30 +155,30 @@ plot_triangle(bt)         # hold-out 영역에 대한 발산형 팔레트 히트
 > 일반적으로 같은 개념이 아니다. `fit_fn = fit_cl` 일 때는
 > `backtest()` 가 `value_var` 를 그대로 `fit_cl()` 에 전달하므로 두
 > 의미가 일치한다. 반면 `fit_fn = fit_lr` 일 때 `fit_lr` 자체는
-> `value_var` 를 받지 않으며 — 항상 `closs`, `crp`, `clr` 세 컬럼을
+> `value_var` 를 받지 않으며 — 항상 `loss`, `premium`, `lr` 세 컬럼을
 > 동시에 추정한다 — `value_var` 는 `fit_lr$full` 의 세 추정 컬럼
 > 중 어느 것을 hold-out 실제값과 비교할지를 선택하는 역할만 한다.
 > 매핑은 다음과 같다.
 
 | `value_var` | `fit_lr$full` 의 비교 컬럼 |
 |-------------|----------------------------|
-| `"closs"`   | `loss_proj`                |
-| `"crp"`     | `exposure_proj`            |
-| `"clr"`     | `lr_proj`                  |
+| `"loss"`   | `loss_proj`                |
+| `"premium"`     | `premium_proj`            |
+| `"lr"`     | `lr_proj`                  |
 
 ```{r}
-bt_sa_clr   <- backtest(tri_sur, holdout = 6L)                      # default
-bt_sa_loss  <- backtest(tri_sur, holdout = 6L, value_var = "closs")
-bt_ed_clr   <- backtest(tri_sur, holdout = 6L, method = "ed")
-bt_cl_clr   <- backtest(tri_sur, holdout = 6L, method = "cl")
+bt_sa_lr   <- backtest(tri_sur, holdout = 6L)                      # default
+bt_sa_loss  <- backtest(tri_sur, holdout = 6L, value_var = "loss")
+bt_ed_lr   <- backtest(tri_sur, holdout = 6L, method = "ed")
+bt_cl_lr   <- backtest(tri_sur, holdout = 6L, method = "cl")
 
-print(bt_sa_clr)
+print(bt_sa_lr)
 ```
 
-`clr` 을 백테스팅하는 것이 보통 더 유익한 진단이 된다. 손해율은 단위가
+`lr` 을 백테스팅하는 것이 보통 더 유익한 진단이 된다. 손해율은 단위가
 없고 차원이 없어 규모가 크게 다른 코호트 간에도 일관되게 비교 가능하므로,
 `aeg_mean` 과 `aeg_med` 가 triangle 전체에서 일관된 의미를 가진다. 반면
-`closs` 를 백테스팅하면 결과가 hold-out 대각선에서 가장 큰 코호트 쪽으로
+`loss` 를 백테스팅하면 결과가 hold-out 대각선에서 가장 큰 코호트 쪽으로
 가중된다.
 
 단일 컬럼만 추정하면 되는 경우 (누적손해 등 손해율 형태가 아닌 단일 지표)

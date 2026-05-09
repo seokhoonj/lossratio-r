@@ -139,7 +139,7 @@ print(res)
 `Convergence` 객체의 주요 필드:
 
 - `k_conv` — 검출된 $k^{**}$. 조건이 $M$ 개 연속 만족되는 시점이 없으면 `NA`.
-- `k_star` — 하한으로 사용된 성숙점. 함수 내부에서 clr 기반 ATA 에
+- `k_star` — 하한으로 사용된 성숙점. 함수 내부에서 lr 기반 ATA 에
   `detect_maturity()` 를 적용해 산출하거나, 호출 시 직접 전달할 수 있다.
 - `V` — triangle 에서 관측 가능한 최대 발전 기간.
 - `v`, `R_v`, `SE_param_v`, `D_v`, `pass_v` — 후보 평가 시점별 진단 시퀀스.

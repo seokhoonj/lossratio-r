@@ -63,8 +63,8 @@ names(tri)
 `build_triangle()` 의 동작:
 
 - 인구통계 차원을 집계하여 제거한다 (여기서는 `age_band`, `gender`),
-- 누적 컬럼 (`closs`, `crp`) 을 추가한다,
-- 파생 지표 (`margin`, `lr`, `clr`, 비율) 를 추가한다,
+- 누적 컬럼 (`loss`, `premium`) 을 추가한다,
+- 파생 지표 (`margin`, `lr`, `lr`, 비율) 를 추가한다,
 - 코호트 / 경과 기간 컬럼을 표준명 `cohort` 와 `dev` 로 rename 한다,
 - 원본 컬럼명은 attribute (`cohort_var`, `dev_var`) 로 보존하여
   이후 plot 라벨에서 활용 가능하게 한다.
@@ -72,8 +72,8 @@ names(tri)
 ## 3단계 — 진단
 
 ```{r}
-plot(tri)              # 코호트별 clr 궤적
-plot_triangle(tri)     # clr 셀의 heatmap
+plot(tri)              # 코호트별 lr 궤적
+plot_triangle(tri)     # lr 셀의 heatmap
 summary(tri)           # 경과 기간별 그룹 통계량
 ```
 
@@ -83,10 +83,10 @@ summary(tri)           # 경과 기간별 그룹 통계량
 
 ```{r}
 # ATA 인자(age-to-age factor)
-fit_ata(tri, value_var = "closs")
+fit_ata(tri, value_var = "loss")
 
 # 노출 기반(exposure-driven) 강도
-fit_ed(tri, value_var = "closs", exposure_var = "crp")
+fit_ed(tri, value_var = "loss", premium_var = "premium")
 ```
 
 `fit_ata()` 는 경과 기간 링크별로 선택된 ATA 인자를 반환한다.
@@ -98,7 +98,7 @@ fit_ed(tri, value_var = "closs", exposure_var = "crp")
 `fit_cl()` 은 chain ladder 추정을 수행한다.
 
 ```{r}
-cl <- fit_cl(tri, value_var = "closs", method = "mack")
+cl <- fit_cl(tri, value_var = "loss", method = "mack")
 plot(cl, type = "projection")
 summary(cl)
 ```
