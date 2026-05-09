@@ -1115,12 +1115,12 @@ summary.LRFit <- function(object, ...) {
   z_alpha      <- stats::qnorm((1 + conf_level) / 2)
 
   latest_obs <- full[is_observed == TRUE, .SD[.N], by = c(grp_var, "cohort")]
-  ultimate   <- full[, .SD[.N],                    by = c(grp_var, "cohort")]
-  agg <- latest_obs[ultimate, on = c(grp_var, "cohort")]
+  ult        <- full[, .SD[.N],                    by = c(grp_var, "cohort")]
+  agg <- latest_obs[ult, on = c(grp_var, "cohort")]
 
   agg[, `:=`(
     latest        = loss_obs,
-    ultimate      = i.loss_proj,
+    loss_ult      = i.loss_proj,
     reserve       = i.loss_proj - loss_obs,
     premium_ult  = i.premium_proj,
     lr_latest    = data.table::fifelse(
@@ -1144,7 +1144,7 @@ summary.LRFit <- function(object, ...) {
 
   keep_cols <- c(
     grp_var, "cohort",
-    "latest", "ultimate", "reserve", "premium_ult",
+    "latest", "loss_ult", "reserve", "premium_ult",
     "lr_latest", "lr_ult", "maturity_from",
     "proc_se", "param_se", "se", "cv",
     "se_lr", "cv_lr",

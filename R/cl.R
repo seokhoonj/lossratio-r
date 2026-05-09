@@ -706,14 +706,15 @@ print.CLFit <- function(x, ...) {
   is_ratio <- val_var == "lr"
 
   latest_obs <- full[is_observed == TRUE, .SD[.N], by = c(grp_var, "cohort")]
-  ultimate   <- full[, .SD[.N],           by = c(grp_var, "cohort")]
-  agg <- latest_obs[ultimate, on = c(grp_var, "cohort")]
+  ult        <- full[, .SD[.N],           by = c(grp_var, "cohort")]
+  agg <- latest_obs[ult, on = c(grp_var, "cohort")]
 
+  ult_col <- paste0(val_var, "_ult")
   agg[, `:=`(
     latest   = value_proj,
-    ultimate = i.value_proj,
     reserve  = if (is_ratio) NA_real_ else i.value_proj - value_proj
   )]
+  agg[, (ult_col) := i.value_proj]
 
   if (is_mack) {
     agg[, `:=`(
@@ -726,11 +727,11 @@ print.CLFit <- function(x, ...) {
       )
     )]
     out_cols <- c(grp_var, "cohort",
-                  "latest", "ultimate", "reserve",
+                  "latest", ult_col, "reserve",
                   "proc_se", "param_se", "se", "cv")
   } else {
     out_cols <- c(grp_var, "cohort",
-                  "latest", "ultimate", "reserve")
+                  "latest", ult_col, "reserve")
   }
 
   x$summary <- agg[, .SD, .SDcols = out_cols]

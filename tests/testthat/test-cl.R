@@ -42,7 +42,7 @@ test_that("Mack standard errors are non-negative", {
 
 test_that("$summary has one row per (group, cohort) with expected columns", {
   cl <- fit_cl(tri, loss_var = "loss", method = "mack")
-  for (nm in c("coverage", "cohort", "latest", "ultimate", "reserve")) {
+  for (nm in c("coverage", "cohort", "latest", "loss_ult", "reserve")) {
     expect_true(nm %in% names(cl$summary), info = paste("missing", nm))
   }
 })

@@ -66,9 +66,9 @@
   if (is.null(bt) || is.null(bt$fit) || is.null(bt$fit$summary))
     return(NA_real_)
   s <- data.table::as.data.table(bt$fit$summary)
-  needed <- c("ultimate", "premium_ult")
+  needed <- c("loss_ult", "premium_ult")
   if (!all(needed %in% names(s))) return(NA_real_)
-  total_loss <- sum(s$ultimate,     na.rm = TRUE)
+  total_loss <- sum(s$loss_ult,    na.rm = TRUE)
   total_exp  <- sum(s$premium_ult, na.rm = TRUE)
   if (!is.finite(total_exp) || total_exp <= 0) return(NA_real_)
   total_loss / total_exp

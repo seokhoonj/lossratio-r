@@ -50,7 +50,7 @@ test_that("$pred masks incremental projections on observed cells", {
 
 test_that("$summary has cohort-level entries with expected columns", {
   lr <- fit_lr(tri, method = "sa")
-  for (nm in c("coverage", "cohort", "latest", "ultimate", "reserve")) {
+  for (nm in c("coverage", "cohort", "latest", "loss_ult", "reserve")) {
     expect_true(nm %in% names(lr$summary), info = paste("missing", nm))
   }
 })

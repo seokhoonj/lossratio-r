@@ -141,9 +141,9 @@ lrs <- list(
 )
 
 # Cohort-level summary
-summary(lrs$sa)$ultimate
-summary(lrs$ed)$ultimate
-summary(lrs$cl)$ultimate
+summary(lrs$sa)$loss_ult
+summary(lrs$ed)$loss_ult
+summary(lrs$cl)$loss_ult
 ```
 
 ## Variance and confidence intervals
