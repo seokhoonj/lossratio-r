@@ -68,7 +68,7 @@ The returned object preserves the attributes `group_var`,
 ``` r
 if (FALSE) { # \dontrun{
 cal <- build_calendar(df, group_var = cv_nm)
-sm  <- summary(cal)
-head(sm)
+smr  <- summary(cal)
+head(smr)
 } # }
 ```

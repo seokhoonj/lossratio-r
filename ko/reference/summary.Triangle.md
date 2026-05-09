@@ -88,8 +88,8 @@ values.
 ``` r
 if (FALSE) { # \dontrun{
 d <- build_triangle(df, group_var = cv_nm)
-sm <- summary(d)
-head(sm)
-attr(sm, "longer")
+smr <- summary(d)
+head(smr)
+attr(smr, "longer")
 } # }
 ```
