@@ -61,7 +61,7 @@ plot(lr_sa, type = "lr")
 ``` r
 
 summary(lr_sa)
-#>     coverage     cohort     latest   ultimate    reserve premium_ult lr_latest
+#>     coverage     cohort     latest   loss_ult    reserve premium_ult lr_latest
 #>       <char>     <Date>      <num>      <num>      <num>       <num>     <num>
 #>  1:      SUR 2024-01-01  410248523  410248523          0   274192568 1.4962058
 #>  2:      SUR 2024-02-01  976330446 1001441304   25110859   665667724 1.5107824
@@ -99,7 +99,7 @@ summary(lr_sa)
 #> 34:      SUR 2026-10-01  121626172 2001214853 1879588681  1338462730 1.0894657
 #> 35:      SUR 2026-11-01   15716444  576954666  561238222   593147597 0.4765917
 #> 36:      SUR 2026-12-01    4825085 1246569317 1241744232  1022559933 0.1689836
-#>     coverage     cohort     latest   ultimate    reserve premium_ult lr_latest
+#>     coverage     cohort     latest   loss_ult    reserve premium_ult lr_latest
 #>       <char>     <Date>      <num>      <num>      <num>       <num>     <num>
 #>        lr_ult maturity_from   proc_se param_se        se          cv
 #>         <num>         <int>     <num>    <num>     <num>       <num>
@@ -255,21 +255,21 @@ lrs <- list(
 )
 
 # Cohort-level summary
-summary(lrs$sa)$ultimate
+summary(lrs$sa)$loss_ult
 #>  [1]  410248523 1001441304 1026151241 2186771224  697669308  931393933
 #>  [7] 3050990158  488218204 1751869309 1311793844  848103124 1497869026
 #> [13] 2901492850 1160045952  686574146 5687484009 2645801834 1209024555
 #> [19] 2542927187  918120581  635470027  856446527  260916098  295637302
 #> [25]  710560088 3276849148  434950050  356301149  697290588  789468809
 #> [31] 1040451732 1008356737  783000254 2001214853  576954666 1246569317
-summary(lrs$ed)$ultimate
+summary(lrs$ed)$loss_ult
 #>  [1]  410248523 1001304262 1027365213 2186835973  700124208  924502356
 #>  [7] 3028986424  488454953 1725804921 1308019739  876716311 1527010389
 #> [13] 2942802609 1193629492  685046660 5424401584 2740753227 1170293303
 #> [19] 3461664511 1212435164  870725770 1217843287  398006957  456590850
 #> [25] 1064623871 4386331023  727050150  616924305 1330756287 1072907082
 #> [31] 1209357476 1432029255  865239649 1911124853  828091914 1442904484
-summary(lrs$cl)$ultimate
+summary(lrs$cl)$loss_ult
 #>  [1]  410248523 1001441304 1026151241 2186771224  697669308  931393933
 #>  [7] 3050990158  488218204 1751869309 1311793844  848103124 1497869026
 #> [13] 2901492850 1160045952  686574146 5687484009 2645801834 1209024555
@@ -301,7 +301,7 @@ Bootstrap intervals are also available:
 
 lr_boot <- fit_lr(tri, method = "sa", bootstrap = TRUE, B = 1000, seed = 1)
 summary(lr_boot)
-#>     coverage     cohort     latest   ultimate    reserve premium_ult lr_latest
+#>     coverage     cohort     latest   loss_ult    reserve premium_ult lr_latest
 #>       <char>     <Date>      <num>      <num>      <num>       <num>     <num>
 #>  1:      SUR 2024-01-01  410248523  410248523          0   274192568 1.4962058
 #>  2:      SUR 2024-02-01  976330446 1001441304   25110859   665667724 1.5107824
@@ -339,7 +339,7 @@ summary(lr_boot)
 #> 34:      SUR 2026-10-01  121626172 2001214853 1879588681  1338462730 1.0894657
 #> 35:      SUR 2026-11-01   15716444  576954666  561238222   593147597 0.4765917
 #> 36:      SUR 2026-12-01    4825085 1246569317 1241744232  1022559933 0.1689836
-#>     coverage     cohort     latest   ultimate    reserve premium_ult lr_latest
+#>     coverage     cohort     latest   loss_ult    reserve premium_ult lr_latest
 #>       <char>     <Date>      <num>      <num>      <num>       <num>     <num>
 #>        lr_ult maturity_from   proc_se param_se        se          cv
 #>         <num>         <int>     <num>    <num>     <num>       <num>

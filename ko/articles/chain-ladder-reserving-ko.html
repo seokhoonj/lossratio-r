@@ -176,7 +176,7 @@ reserving with fit_cl</a></p>
 <span></span>
 <span><span class="co"># Mack 은 $full 과 $summary 에 분산 추정값을 추가한다</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cl_mack</span><span class="op">$</span><span class="va">summary</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    coverage     cohort     latest   ultimate   reserve  proc_se param_se</span></span>
+<span><span class="co">#&gt;    coverage     cohort     latest   loss_ult   reserve  proc_se param_se</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;    &lt;num&gt;    &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:      SUR 2024-01-01  410248523  410248523         0        0        0</span></span>
 <span><span class="co">#&gt; 2:      SUR 2024-02-01  976330446 1001441304  25110859  2531458  3955123</span></span>
@@ -265,7 +265,7 @@ reserving with fit_cl</a></p>
 </ul>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cl_mack</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     coverage     cohort     latest   ultimate    reserve   proc_se param_se</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve   proc_se param_se</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;    &lt;num&gt;</span></span>
 <span><span class="co">#&gt;  1:      SUR 2024-01-01  410248523  410248523          0         0        0</span></span>
 <span><span class="co">#&gt;  2:      SUR 2024-02-01  976330446 1001441304   25110859   2531458  3955123</span></span>
@@ -303,7 +303,7 @@ reserving with fit_cl</a></p>
 <span><span class="co">#&gt; 34:      SUR 2026-10-01  121626172 2001214853 1879588681 337099735 80042629</span></span>
 <span><span class="co">#&gt; 35:      SUR 2026-11-01   15716444  449653411  433936967 194099313 21020897</span></span>
 <span><span class="co">#&gt; 36:      SUR 2026-12-01    4825085  850839165  846014080 472740731 66059976</span></span>
-<span><span class="co">#&gt;     coverage     cohort     latest   ultimate    reserve   proc_se param_se</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve   proc_se param_se</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;    &lt;num&gt;</span></span>
 <span><span class="co">#&gt;            se          cv</span></span>
 <span><span class="co">#&gt;         &lt;num&gt;       &lt;num&gt;</span></span>

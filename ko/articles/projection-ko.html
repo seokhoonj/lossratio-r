@@ -178,7 +178,7 @@ f_k \cdot \hat{C}^L_{i,k}              &amp; k \ge m_g \quad \text{(성숙점 �
 <p><img src="projection-ko_files/figure-html/unnamed-chunk-1-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lr_sa</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     coverage     cohort     latest   ultimate    reserve premium_ult lr_latest</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve premium_ult lr_latest</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;       &lt;num&gt;     &lt;num&gt;</span></span>
 <span><span class="co">#&gt;  1:      SUR 2024-01-01  410248523  410248523          0   274192568 1.4962058</span></span>
 <span><span class="co">#&gt;  2:      SUR 2024-02-01  976330446 1001441304   25110859   665667724 1.5107824</span></span>
@@ -216,7 +216,7 @@ f_k \cdot \hat{C}^L_{i,k}              &amp; k \ge m_g \quad \text{(성숙점 �
 <span><span class="co">#&gt; 34:      SUR 2026-10-01  121626172 2001214853 1879588681  1338462730 1.0894657</span></span>
 <span><span class="co">#&gt; 35:      SUR 2026-11-01   15716444  576954666  561238222   593147597 0.4765917</span></span>
 <span><span class="co">#&gt; 36:      SUR 2026-12-01    4825085 1246569317 1241744232  1022559933 0.1689836</span></span>
-<span><span class="co">#&gt;     coverage     cohort     latest   ultimate    reserve premium_ult lr_latest</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve premium_ult lr_latest</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;       &lt;num&gt;     &lt;num&gt;</span></span>
 <span><span class="co">#&gt;        lr_ult maturity_from   proc_se param_se        se          cv</span></span>
 <span><span class="co">#&gt;         &lt;num&gt;         &lt;int&gt;     &lt;num&gt;    &lt;num&gt;     &lt;num&gt;       &lt;num&gt;</span></span>
@@ -367,21 +367,21 @@ f_k \cdot \hat{C}^L_{i,k}              &amp; k \ge m_g \quad \text{(성숙점 �
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 코호트 단위 요약</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lrs</span><span class="op">$</span><span class="va">sa</span><span class="op">)</span><span class="op">$</span><span class="va">ultimate</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lrs</span><span class="op">$</span><span class="va">sa</span><span class="op">)</span><span class="op">$</span><span class="va">loss_ult</span></span>
 <span><span class="co">#&gt;  [1]  410248523 1001441304 1026151241 2186771224  697669308  931393933</span></span>
 <span><span class="co">#&gt;  [7] 3050990158  488218204 1751869309 1311793844  848103124 1497869026</span></span>
 <span><span class="co">#&gt; [13] 2901492850 1160045952  686574146 5687484009 2645801834 1209024555</span></span>
 <span><span class="co">#&gt; [19] 2542927187  918120581  635470027  856446527  260916098  295637302</span></span>
 <span><span class="co">#&gt; [25]  710560088 3276849148  434950050  356301149  697290588  789468809</span></span>
 <span><span class="co">#&gt; [31] 1040451732 1008356737  783000254 2001214853  576954666 1246569317</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lrs</span><span class="op">$</span><span class="va">ed</span><span class="op">)</span><span class="op">$</span><span class="va">ultimate</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lrs</span><span class="op">$</span><span class="va">ed</span><span class="op">)</span><span class="op">$</span><span class="va">loss_ult</span></span>
 <span><span class="co">#&gt;  [1]  410248523 1001304262 1027365213 2186835973  700124208  924502356</span></span>
 <span><span class="co">#&gt;  [7] 3028986424  488454953 1725804921 1308019739  876716311 1527010389</span></span>
 <span><span class="co">#&gt; [13] 2942802609 1193629492  685046660 5424401584 2740753227 1170293303</span></span>
 <span><span class="co">#&gt; [19] 3461664511 1212435164  870725770 1217843287  398006957  456590850</span></span>
 <span><span class="co">#&gt; [25] 1064623871 4386331023  727050150  616924305 1330756287 1072907082</span></span>
 <span><span class="co">#&gt; [31] 1209357476 1432029255  865239649 1911124853  828091914 1442904484</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lrs</span><span class="op">$</span><span class="va">cl</span><span class="op">)</span><span class="op">$</span><span class="va">ultimate</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lrs</span><span class="op">$</span><span class="va">cl</span><span class="op">)</span><span class="op">$</span><span class="va">loss_ult</span></span>
 <span><span class="co">#&gt;  [1]  410248523 1001441304 1026151241 2186771224  697669308  931393933</span></span>
 <span><span class="co">#&gt;  [7] 3050990158  488218204 1751869309 1311793844  848103124 1497869026</span></span>
 <span><span class="co">#&gt; [13] 2901492850 1160045952  686574146 5687484009 2645801834 1209024555</span></span>
@@ -412,7 +412,7 @@ delta method 변형은 두 가지이다:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lr_boot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span>, bootstrap <span class="op">=</span> <span class="cn">TRUE</span>, B <span class="op">=</span> <span class="fl">1000</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lr_boot</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     coverage     cohort     latest   ultimate    reserve premium_ult lr_latest</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve premium_ult lr_latest</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;       &lt;num&gt;     &lt;num&gt;</span></span>
 <span><span class="co">#&gt;  1:      SUR 2024-01-01  410248523  410248523          0   274192568 1.4962058</span></span>
 <span><span class="co">#&gt;  2:      SUR 2024-02-01  976330446 1001441304   25110859   665667724 1.5107824</span></span>
@@ -450,7 +450,7 @@ delta method 변형은 두 가지이다:</p>
 <span><span class="co">#&gt; 34:      SUR 2026-10-01  121626172 2001214853 1879588681  1338462730 1.0894657</span></span>
 <span><span class="co">#&gt; 35:      SUR 2026-11-01   15716444  576954666  561238222   593147597 0.4765917</span></span>
 <span><span class="co">#&gt; 36:      SUR 2026-12-01    4825085 1246569317 1241744232  1022559933 0.1689836</span></span>
-<span><span class="co">#&gt;     coverage     cohort     latest   ultimate    reserve premium_ult lr_latest</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve premium_ult lr_latest</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;       &lt;num&gt;     &lt;num&gt;</span></span>
 <span><span class="co">#&gt;        lr_ult maturity_from   proc_se param_se        se          cv</span></span>
 <span><span class="co">#&gt;         &lt;num&gt;         &lt;int&gt;     &lt;num&gt;    &lt;num&gt;     &lt;num&gt;       &lt;num&gt;</span></span>

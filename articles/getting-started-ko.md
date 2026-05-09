@@ -237,7 +237,7 @@ plot(cl, type = "projection")
 ``` r
 
 summary(cl)
-#>     coverage     cohort     latest   ultimate    reserve   proc_se param_se
+#>     coverage     cohort     latest   loss_ult    reserve   proc_se param_se
 #>       <char>     <Date>      <num>      <num>      <num>     <num>    <num>
 #>  1:      SUR 2024-01-01  410248523  410248523          0         0        0
 #>  2:      SUR 2024-02-01  976330446 1001441304   25110859   2531458  3955123
@@ -275,7 +275,7 @@ summary(cl)
 #> 34:      SUR 2026-10-01  121626172 2001214853 1879588681 337099735 80042629
 #> 35:      SUR 2026-11-01   15716444  449653411  433936967 194099313 21020897
 #> 36:      SUR 2026-12-01    4825085  850839165  846014080 472740731 66059976
-#>     coverage     cohort     latest   ultimate    reserve   proc_se param_se
+#>     coverage     cohort     latest   loss_ult    reserve   proc_se param_se
 #>       <char>     <Date>      <num>      <num>      <num>     <num>    <num>
 #>            se          cv
 #>         <num>       <num>
@@ -336,7 +336,7 @@ plot(lr, type = "lr")
 ``` r
 
 summary(lr)
-#>     coverage     cohort     latest   ultimate    reserve premium_ult lr_latest
+#>     coverage     cohort     latest   loss_ult    reserve premium_ult lr_latest
 #>       <char>     <Date>      <num>      <num>      <num>       <num>     <num>
 #>  1:      SUR 2024-01-01  410248523  410248523          0   274192568 1.4962058
 #>  2:      SUR 2024-02-01  976330446 1001441304   25110859   665667724 1.5107824
@@ -374,7 +374,7 @@ summary(lr)
 #> 34:      SUR 2026-10-01  121626172 2001214853 1879588681  1338462730 1.0894657
 #> 35:      SUR 2026-11-01   15716444  576954666  561238222   593147597 0.4765917
 #> 36:      SUR 2026-12-01    4825085 1246569317 1241744232  1022559933 0.1689836
-#>     coverage     cohort     latest   ultimate    reserve premium_ult lr_latest
+#>     coverage     cohort     latest   loss_ult    reserve premium_ult lr_latest
 #>       <char>     <Date>      <num>      <num>      <num>       <num>     <num>
 #>        lr_ult maturity_from   proc_se param_se        se          cv
 #>         <num>         <int>     <num>    <num>     <num>       <num>
