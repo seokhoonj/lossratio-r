@@ -133,7 +133,7 @@ head(sm)
 
 plot(ed, type = "summary")
 plot(ed, type = "box")
-plot_triangle(ed, label_args = la)
+plot_triangle(ed, label_args = list(size = 2.2))   # ED 셀 라벨이 더 길어 한 단계 더 작게
 ```
 
 `summary(link, model = "ed")` 는 단일 변수 `summary()` 에 대응하는

@@ -138,7 +138,7 @@ head(sm)
 
 plot(ed, type = "summary")
 plot(ed, type = "box")
-plot_triangle(ed, label_args = la)
+plot_triangle(ed, label_args = list(size = 2.2))   # ED labels are longer; shrink another step
 ```
 
 `summary(link, model = "ed")` is the ED-side analogue of the
