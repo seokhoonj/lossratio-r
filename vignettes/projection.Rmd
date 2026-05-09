@@ -112,9 +112,9 @@ $$
 
 Behaviour:
 
-- Standard reserving practice. Equivalent to `fit_cl(tri, value_var = "closs")`
+- Standard reserving practice. Equivalent to `fit_cl(tri, value_var = "loss")`
   for the loss projection, but `fit_lr()` additionally projects
-  exposure forward via CL on `crp` and computes the loss-ratio
+  exposure forward via CL on `premium` and computes the loss-ratio
   uncertainty via the delta method.
 - Volatile when early $f_k$ are noisy — small denominators amplify
   link errors.

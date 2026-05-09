@@ -45,12 +45,12 @@ data(experience)
 exp <- as_experience(experience)
 tri <- build_triangle(exp[cv_nm == "SUR"], group_var = cv_nm)
 
-cl <- fit_cl(tri, value_var = "closs", method = "mack")
+cl <- fit_cl(tri, value_var = "loss", method = "mack")
 print(cl)
 ```
 
 `value_var` selects the cumulative column to project — typically
-`"closs"` (cumulative loss) for reserving, or `"crp"` (cumulative
+`"loss"` (cumulative loss) for reserving, or `"premium"` (cumulative
 risk premium) for exposure projection.
 
 ## Method: basic vs Mack
@@ -63,8 +63,8 @@ Two estimation methods are available:
 | `"mack"`   | Point projection + factor / process / parameter SE    |
 
 ```{r}
-cl_basic <- fit_cl(tri, value_var = "closs", method = "basic")
-cl_mack  <- fit_cl(tri, value_var = "closs", method = "mack")
+cl_basic <- fit_cl(tri, value_var = "loss", method = "basic")
+cl_mack  <- fit_cl(tri, value_var = "loss", method = "mack")
 
 names(cl_basic)
 
@@ -86,10 +86,10 @@ developing, an extrapolated tail factor estimates ultimate:
 
 ```{r}
 # Log-linear extrapolation from the selected ATA factors
-cl_tail <- fit_cl(tri, value_var = "closs", method = "mack", tail = TRUE)
+cl_tail <- fit_cl(tri, value_var = "loss", method = "mack", tail = TRUE)
 
 # Or supply a literal tail factor
-cl_tail <- fit_cl(tri, value_var = "closs", method = "mack", tail = 1.025)
+cl_tail <- fit_cl(tri, value_var = "loss", method = "mack", tail = 1.025)
 ```
 
 The extrapolation fits $\log(f_k - 1) \sim k$ to projected factors and
@@ -104,7 +104,7 @@ mature region only:
 ```{r}
 cl_mat <- fit_cl(
   tri,
-  value_var     = "closs",
+  value_var     = "loss",
   method        = "mack",
   maturity_args = list(cv_threshold = 0.10, rse_threshold = 0.05)
 )
@@ -172,7 +172,7 @@ controls the extrapolation:
 | `"loglinear"`   | Log-linear extrapolation from the observed $\sigma_k$ sequence        |
 
 ```{r}
-fit_cl(tri, value_var = "closs", method = "mack", sigma_method = "loglinear")
+fit_cl(tri, value_var = "loss", method = "mack", sigma_method = "loglinear")
 ```
 
 ## See also

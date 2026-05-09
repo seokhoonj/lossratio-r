@@ -67,11 +67,11 @@ plot(tri)              # one trajectory per cohort, faceted by group
 # can keep monthly resolution by enlarging the plot.
 tri_q <- build_triangle(exp, group_var = cv_nm,
                         cohort_var = "uyq", dev_var = "elap_q")
-plot_triangle(tri_q)   # cohort × dev heatmap of clr
+plot_triangle(tri_q)   # cohort × dev heatmap of lr
 ```
 
 Use `Triangle` as input to:
-- `build_link()` — development factors (ATA / ED via `value_var` + optional `exposure_var`)
+- `build_link()` — development factors (ATA / ED via `value_var` + optional `premium_var`)
 - `fit_cl()`, `fit_lr()` — projection
 - `detect_regime()` — structural change detection
 

@@ -61,8 +61,8 @@ names(tri)
 `build_triangle()`:
 
 - aggregates demographic dimensions away (here: `age_band`, `gender`),
-- adds cumulative columns (`closs`, `crp`),
-- adds derived metrics (`margin`, `lr`, `clr`, proportions),
+- adds cumulative columns (`loss`, `premium`),
+- adds derived metrics (`margin`, `lr`, `lr`, proportions),
 - standardises the cohort / development columns to the names `cohort`
   and `dev`,
 - preserves original column names as attributes (`cohort_var`,
@@ -71,8 +71,8 @@ names(tri)
 ## Step 3 — Diagnostics
 
 ```{r}
-plot(tri)              # cohort trajectories of clr
-plot_triangle(tri)     # heatmap of clr cells
+plot(tri)              # cohort trajectories of lr
+plot_triangle(tri)     # heatmap of lr cells
 summary(tri)           # group-wise statistics by dev
 ```
 
@@ -82,10 +82,10 @@ Two complementary views of cohort development:
 
 ```{r}
 # Age-to-age factors
-fit_ata(tri, value_var = "closs")
+fit_ata(tri, value_var = "loss")
 
 # Exposure-driven intensities
-fit_ed(tri, value_var = "closs", exposure_var = "crp")
+fit_ed(tri, value_var = "loss", premium_var = "premium")
 ```
 
 `fit_ata()` returns selected age-to-age factors per development link.
@@ -97,7 +97,7 @@ Both are inputs to the projection methods below.
 `fit_cl()` runs a chain ladder projection:
 
 ```{r}
-cl <- fit_cl(tri, value_var = "closs", method = "mack")
+cl <- fit_cl(tri, value_var = "loss", method = "mack")
 plot(cl, type = "projection")
 summary(cl)
 ```

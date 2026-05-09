@@ -147,7 +147,7 @@ The returned `Convergence` object reports:
 - `k_conv` — the detected $k^{**}$, or `NA` if no run of $M$
   consecutive passing valuations is found.
 - `k_star` — the maturity point used as the lower bound (computed
-  internally via `detect_maturity()` on a clr-based ATA, or supplied
+  internally via `detect_maturity()` on a lr-based ATA, or supplied
   by the caller).
 - `V` — the maximum observable dev in the triangle.
 - `v`, `R_v`, `SE_param_v`, `D_v`, `pass_v` — per-valuation diagnostic
