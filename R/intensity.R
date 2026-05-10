@@ -32,8 +32,11 @@
 #'   exposure anchor. Default `"premium"`.
 #' @param alpha WLS weight exponent. Default `1`.
 #' @param na_method NA fill method for the selected intensity series
-#'   used downstream by [fit_ed()]. One of `"locf"` (default) or
-#'   `"none"`.
+#'   used downstream by [fit_ed()]. One of `"locf"` (default —
+#'   carries the last observed intensity forward, appropriate for
+#'   long-term health where ageing keeps \eqn{g_k} elevated rather
+#'   than decaying to 0), `"zero"` (sets late-dev NAs to 0; suits
+#'   short-tail lines where claims fully settle), or `"none"`.
 #' @param sigma_method Method for extrapolating missing or
 #'   non-positive `sigma` values across links. One of `"min_last2"`
 #'   (default), `"locf"`, `"loglinear"`.
@@ -74,8 +77,8 @@
 #' @examples
 #' \dontrun{
 #' tri <- build_triangle(df, group_var = coverage)
-#' intf <- fit_intensity(tri, loss_var = "loss", premium_var = "premium")
-#' summary(intf)
+#' intensity_fit <- fit_intensity(tri, loss_var = "loss", premium_var = "premium")
+#' summary(intensity)
 #' }
 #'
 #' @export
@@ -83,13 +86,13 @@ fit_intensity <- function(x,
                           loss_var     = "loss",
                           premium_var  = "premium",
                           alpha        = 1,
-                          na_method    = c("locf", "none"),
+                          na_method    = c("locf", "zero", "none"),
                           sigma_method = c("min_last2", "locf", "loglinear"),
                           recent       = NULL,
                           regime_break = NULL,
                           ...) {
 
-  .assert_class(x, "Triangle")
+  .assert_triangle_input(x, "fit_intensity()")
 
   link <- build_link(x, loss_var = loss_var, premium_var = premium_var)
 
@@ -236,14 +239,16 @@ print.IntensityFit <- function(x, ...) {
 #' @keywords internal
 .select_intensity <- function(ed_summary,
                               grp_var   = character(0),
-                              na_method = c("locf", "none")) {
+                              na_method = c("zero", "locf", "none")) {
 
   na_method <- match.arg(na_method)
 
   z <- .ensure_dt(ed_summary)
   z[, g_selected := g]
 
-  if (na_method == "locf") {
+  if (na_method == "zero") {
+    z[is.na(g_selected), g_selected := 0]
+  } else if (na_method == "locf") {
     if (length(grp_var)) {
       z[, g_selected := data.table::nafill(g_selected, type = "locf"),
         by = grp_var]

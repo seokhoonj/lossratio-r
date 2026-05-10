@@ -121,7 +121,7 @@ fit_lr <- function(x,
                    B               = 1000,
                    seed            = NULL) {
 
-  .assert_class(x, "Triangle")
+  .assert_triangle_input(x, "fit_lr()")
   sigma_method <- match.arg(sigma_method)
   method       <- match.arg(method)
   delta_method <- match.arg(delta_method)
@@ -276,19 +276,32 @@ fit_lr <- function(x,
   )
 
   # 5) estimate ED intensities g_k with Mack variance ---------------------
-  # Use `.fit_ed_factors()` (parameter-only) instead of public `fit_ed()`
-  # because public `fit_ed()` itself delegates cell-level projection back
-  # to `fit_lr(method = "ed")`; calling it here would recurse infinitely.
-  ed_fit <- .fit_ed_factors(
+  # fit_intensity is the factor-level (parameter-only) ED estimator;
+  # public fit_ed() would recurse here because it delegates projection
+  # back to fit_lr(method = "ed"). Compose an EDFit shell from the
+  # IntensityFit and apply Mack g_var separately, mirroring fit_cl's
+  # use of fit_ata + .mack_f_var.
+  intensity_fit <- fit_intensity(
     x,
-    loss_var    = l_var,
-    premium_var = p_var,
-    method       = "mack",
+    loss_var     = l_var,
+    premium_var  = p_var,
     alpha        = loss_alpha,
     sigma_method = sigma_method,
     recent       = recent,
     regime_break = regime_break
   )
+  ed_fit <- list(
+    method       = "mack",
+    link         = intensity_fit$link,
+    factor       = intensity_fit$factor,
+    selected     = intensity_fit$selected,
+    alpha        = loss_alpha,
+    sigma_method = sigma_method,
+    recent       = recent,
+    regime_break = regime_break
+  )
+  class(ed_fit) <- "EDFit"
+  ed_fit$selected <- .mack_g_var(ed_fit = ed_fit, alpha = loss_alpha)
 
   # 6) determine maturity point per group (from loss ata) -------------------
   maturity <- loss_ata_fit$maturity

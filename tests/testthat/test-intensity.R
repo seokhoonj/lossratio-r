@@ -6,35 +6,35 @@ sub <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
 
 
 test_that("fit_intensity returns class 'IntensityFit'", {
-  intf <- fit_intensity(sub)
-  expect_s3_class(intf, "IntensityFit")
+  intensity_fit <- fit_intensity(sub)
+  expect_s3_class(intensity_fit, "IntensityFit")
 })
 
 test_that("fit_intensity bundles expected components", {
-  intf <- fit_intensity(sub)
+  intensity_fit <- fit_intensity(sub)
   for (nm in c("call", "data", "group_var", "cohort_var", "dev_var",
                "loss_var", "premium_var", "link", "factor", "selected",
                "alpha", "na_method", "sigma_method", "recent",
                "regime_break")) {
-    expect_true(nm %in% names(intf), info = paste("missing", nm))
+    expect_true(nm %in% names(intensity_fit), info = paste("missing", nm))
   }
 })
 
 test_that("fit_intensity$factor inherits 'EDSummary'", {
-  intf <- fit_intensity(sub)
-  expect_s3_class(intf$factor, "EDSummary")
+  intensity_fit <- fit_intensity(sub)
+  expect_s3_class(intensity_fit$factor, "EDSummary")
 })
 
 test_that("fit_intensity$selected has g_selected and sigma2 columns", {
-  intf <- fit_intensity(sub)
-  expect_true("g_selected" %in% names(intf$selected))
-  expect_true("sigma2"     %in% names(intf$selected))
-  expect_true("sigma_extrapolated" %in% names(intf$selected))
+  intensity_fit <- fit_intensity(sub)
+  expect_true("g_selected" %in% names(intensity_fit$selected))
+  expect_true("sigma2"     %in% names(intensity_fit$selected))
+  expect_true("sigma_extrapolated" %in% names(intensity_fit$selected))
 })
 
 test_that("fit_intensity preserves multi-group structure", {
-  intf <- fit_intensity(tri)
-  expect_gt(length(unique(intf$factor$coverage)), 1L)
+  intensity_fit <- fit_intensity(tri)
+  expect_gt(length(unique(intensity_fit$factor$coverage)), 1L)
 })
 
 test_that("fit_intensity rejects non-Triangle input", {
@@ -51,15 +51,15 @@ test_that("fit_intensity respects recent filter", {
 })
 
 test_that("summary.IntensityFit returns the EDSummary", {
-  intf <- fit_intensity(sub)
-  s <- summary(intf)
+  intensity_fit <- fit_intensity(sub)
+  s <- summary(intensity_fit)
   expect_s3_class(s, "EDSummary")
-  expect_identical(s, intf$factor)
+  expect_identical(s, intensity_fit$factor)
 })
 
 test_that("print.IntensityFit does not error", {
-  intf <- fit_intensity(sub)
-  expect_no_error(capture.output(print(intf)))
+  intensity_fit <- fit_intensity(sub)
+  expect_no_error(capture.output(print(intensity_fit)))
 })
 
 test_that("Link (ED mode) carries `intensity` column (not `g`)", {

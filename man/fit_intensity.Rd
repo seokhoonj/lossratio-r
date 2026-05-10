@@ -9,7 +9,7 @@ fit_intensity(
   loss_var = "loss",
   premium_var = "premium",
   alpha = 1,
-  na_method = c("locf", "none"),
+  na_method = c("locf", "zero", "none"),
   sigma_method = c("min_last2", "locf", "loglinear"),
   recent = NULL,
   regime_break = NULL,
@@ -28,8 +28,11 @@ exposure anchor. Default \code{"premium"}.}
 \item{alpha}{WLS weight exponent. Default \code{1}.}
 
 \item{na_method}{NA fill method for the selected intensity series
-used downstream by \code{\link[=fit_ed]{fit_ed()}}. One of \code{"locf"} (default) or
-\code{"none"}.}
+used downstream by \code{\link[=fit_ed]{fit_ed()}}. One of \code{"locf"} (default —
+carries the last observed intensity forward, appropriate for
+long-term health where ageing keeps \eqn{g_k} elevated rather
+than decaying to 0), \code{"zero"} (sets late-dev NAs to 0; suits
+short-tail lines where claims fully settle), or \code{"none"}.}
 
 \item{sigma_method}{Method for extrapolating missing or
 non-positive \code{sigma} values across links. One of \code{"min_last2"}
@@ -97,8 +100,8 @@ instability. \code{fit_intensity()} therefore deliberately omits a
 \examples{
 \dontrun{
 tri <- build_triangle(df, group_var = coverage)
-intf <- fit_intensity(tri, loss_var = "loss", premium_var = "premium")
-summary(intf)
+intensity_fit <- fit_intensity(tri, loss_var = "loss", premium_var = "premium")
+summary(intensity)
 }
 
 }

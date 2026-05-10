@@ -7,7 +7,7 @@
 .select_intensity(
   ed_summary,
   grp_var = character(0),
-  na_method = c("locf", "none")
+  na_method = c("zero", "locf", "none")
 )
 }
 \arguments{

@@ -150,7 +150,7 @@ backtest <- function(x,
                      loss_var   = "lr",
                      ...) {
 
-  .assert_class(x, "Triangle")
+  .assert_triangle_input(x, "backtest()")
 
   if (!is.numeric(holdout) || length(holdout) != 1L ||
       is.na(holdout) || holdout < 1L)

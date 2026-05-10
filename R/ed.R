@@ -226,24 +226,23 @@ fit_ed <- function(x,
                    premium_var   = "premium",
                    method        = c("basic", "mack"),
                    alpha         = 1,
-                   na_method     = c("zero", "locf", "none"),
+                   na_method     = c("locf", "zero", "none"),
                    sigma_method  = c("min_last2", "locf", "loglinear"),
                    recent        = NULL,
                    regime_break  = NULL,
                    ...) {
 
-  .assert_class(x, "Triangle")
+  .assert_triangle_input(x, "fit_ed()")
 
   method       <- match.arg(method)
   na_method    <- match.arg(na_method)
   sigma_method <- match.arg(sigma_method)
 
-  # 1) parameter-only fit (factor / selected / link) -----------------------
-  out <- .fit_ed_factors(
+  # 1) factor-level fit (mirrors fit_cl's use of fit_ata) ------------------
+  intensity_fit <- fit_intensity(
     x,
-    loss_var    = loss_var,
-    premium_var = premium_var,
-    method       = method,
+    loss_var     = loss_var,
+    premium_var  = premium_var,
     alpha        = alpha,
     na_method    = na_method,
     sigma_method = sigma_method,
@@ -252,7 +251,29 @@ fit_ed <- function(x,
     ...
   )
 
-  # 2) cell-level projection via fit_lr(method = "ed") ---------------------
+  # 2) compose EDFit from IntensityFit + method metadata -------------------
+  # Use intensity_fit's resolved regime_break (Date), not the user's original
+  # input (which may be a Regime / character / vector).
+  out <- list(
+    call         = match.call(),
+    method       = method,
+    link         = intensity_fit$link,
+    factor       = intensity_fit$factor,
+    selected     = intensity_fit$selected,
+    alpha        = alpha,
+    na_method    = na_method,
+    sigma_method = sigma_method,
+    recent       = recent,
+    regime_break = intensity_fit$regime_break
+  )
+  class(out) <- "EDFit"
+
+  # 3) compute factor variance when method = "mack" ------------------------
+  if (method == "mack") {
+    out$selected <- .mack_g_var(ed_fit = out, alpha = alpha)
+  }
+
+  # 4) cell-level projection via fit_lr(method = "ed") ---------------------
   # Reuses the SA infrastructure with maturity = -Inf so every cell uses
   # the ED rule (additive g_k * exposure increment). Numerically
   # equivalent to fit_lr(method = "ed").
@@ -260,115 +281,17 @@ fit_ed <- function(x,
     x,
     method       = "ed",
     loss_var     = loss_var,
-    premium_var = premium_var,
+    premium_var  = premium_var,
     loss_alpha   = alpha,
     sigma_method = sigma_method,
     recent       = recent,
     regime_break = regime_break
   )
 
-  out$call <- match.call()
   out$full <- data.table::copy(lr_fit$full)
 
   out
 }
-
-
-#' Estimate ED parameters (factor / selected) without cell-level projection
-#'
-#' @description
-#' Internal helper that performs ED factor estimation from a `"Triangle"`
-#' and returns an `"EDFit"`-shaped list missing only `$full`. Used both as
-#' the parameter-estimation half of public [fit_ed()] and directly by
-#' [fit_lr()] (to avoid a `fit_ed -> fit_lr -> fit_ed` recursion when
-#' [fit_ed()] delegates projection to [fit_lr()]).
-#'
-#' @keywords internal
-.fit_ed_factors <- function(x,
-                            loss_var      = "loss",
-                            premium_var   = "premium",
-                            method        = c("basic", "mack"),
-                            alpha         = 1,
-                            na_method     = c("zero", "locf", "none"),
-                            sigma_method  = c("min_last2", "locf", "loglinear"),
-                            recent        = NULL,
-                            regime_break  = NULL,
-                            ...) {
-
-  .assert_class(x, "Triangle")
-
-  x <- build_link(x, loss_var = loss_var, premium_var = premium_var)
-
-  method       <- match.arg(method)
-  na_method    <- match.arg(na_method)
-  sigma_method <- match.arg(sigma_method)
-
-  # 1) regime-break filter ----------------------------------------------
-  # when `regime_break` is supplied, drop cohorts with cohort < break_date.
-  if (!is.null(regime_break)) {
-    regime_break <- .resolve_break_date(regime_break)
-    x <- .apply_break_filter(
-      x, regime_break,
-      group_var = if (is.null(attr(x, "group_var"))) character(0) else attr(x, "group_var"),
-      cohort_var = "cohort",
-      dev_var = "ata_from"
-    )
-  }
-
-  # 2) recent-diagonal filter -------------------------------------------
-  # when `recent` is supplied, subset to rows within the last `recent`
-  # calendar diagonals before estimation.
-  if (!is.null(recent)) {
-    link <- .apply_recent_filter(
-      x, recent,
-      group_var = if (is.null(attr(x, "group_var"))) character(0) else attr(x, "group_var"),
-      cohort_var = "cohort",
-      dev_var = "ata_from"
-    )
-  } else {
-    link <- x
-  }
-
-  grp_var <- attr(x, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
-
-  # 2) compute summary statistics and WLS estimates
-  ed_summary <- summary(link, alpha = alpha, model = "ed", ...)
-
-  # 3) fill NA gaps in g_selected
-  selected <- .filter_ed(
-    ed_summary = ed_summary,
-    grp_var    = grp_var,
-    na_method  = na_method
-  )
-
-  # 4) extrapolate sigma and compute sigma2
-  selected <- .extrapolate_sigma_ed(selected, method = sigma_method)
-  selected[, sigma2 := sigma^2]
-
-  out <- list(
-    call         = match.call(),
-    method       = method,
-    link         = link,
-    factor       = ed_summary,
-    selected     = selected,
-    alpha        = alpha,
-    na_method    = na_method,
-    sigma_method = sigma_method,
-    recent       = recent,
-    regime_break = regime_break
-  )
-
-  class(out) <- "EDFit"
-
-  # 7) mack: add factor variance
-  if (method == "mack") {
-    out$selected <- .mack_g_var(ed_fit = out, alpha = alpha)
-  }
-
-  out
-}
-
 
 #' Summary method for `EDFit`
 #'
@@ -537,84 +460,6 @@ print.EDFit <- function(x, ...) {
   res
 }
 
-
-#' Fill ED intensities for projection
-#'
-#' @description
-#' Internal helper that fills `NA` values in `g_selected` using
-#' `na_method`: `"zero"` (default, no further development), `"locf"`,
-#' or `"none"`.
-#'
-#' @keywords internal
-.filter_ed <- function(ed_summary,
-                       grp_var   = character(0),
-                       na_method = c("zero", "locf", "none")) {
-
-  na_method <- match.arg(na_method)
-
-  z <- .ensure_dt(ed_summary)
-
-  # initialise: g_selected equals fitted g
-  z[, g_selected := g]
-
-  # --- NA fill -----------------------------------------------------------
-  if (na_method == "zero") {
-    z[is.na(g_selected), g_selected := 0]
-  } else if (na_method == "locf") {
-    if (length(grp_var)) {
-      z[, g_selected := data.table::nafill(g_selected, type = "locf"),
-        by = grp_var]
-    } else {
-      z[, g_selected := data.table::nafill(g_selected, type = "locf")]
-    }
-  }
-
-  data.table::setorderv(z, c(grp_var, "ata_from", "ata_to"))
-  z
-}
-
-
-#' Extrapolate missing sigma values for ED links
-#'
-#' @keywords internal
-.extrapolate_sigma_ed <- function(x,
-                                  method = c("min_last2", "locf",
-                                             "loglinear")) {
-
-  method <- match.arg(method)
-
-  if (!all(c("ata_from", "sigma") %in% names(x)))
-    stop("`x` must contain `ata_from` and `sigma`.", call. = FALSE)
-
-  z <- .ensure_dt(x)
-
-  z[, sigma_extrapolated := !is.finite(sigma) | sigma <= 0]
-
-  idx_valid <- which(!z$sigma_extrapolated)
-  idx_pred  <- which( z$sigma_extrapolated)
-
-  if (length(idx_pred) == 0L) return(z[])
-
-  if (length(idx_valid) < 2L) {
-    warning("Fewer than two valid `sigma` values; extrapolation skipped.",
-            call. = FALSE)
-    return(z[])
-  }
-
-  if (method == "min_last2") {
-    fill_val <- min(tail(z$sigma[idx_valid], 2L))
-    z[idx_pred, sigma := fill_val]
-
-  } else if (method == "locf") {
-    z[idx_pred, sigma := z$sigma[idx_valid[length(idx_valid)]]]
-
-  } else if (method == "loglinear") {
-    fit <- stats::lm(log(sigma) ~ ata_from, data = z[idx_valid])
-    z[idx_pred, sigma := exp(stats::predict(fit, newdata = z[idx_pred]))]
-  }
-
-  z[]
-}
 
 
 #' Compute ED intensity variance for each development link

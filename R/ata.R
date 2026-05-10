@@ -311,7 +311,7 @@ fit_ata <- function(x,
                     maturity_args = NULL,
                     ...) {
 
-  .assert_class(x, "Triangle")
+  .assert_triangle_input(x, "fit_ata()")
 
   link <- build_link(x, loss_var = loss_var, weight_var = weight_var)
 

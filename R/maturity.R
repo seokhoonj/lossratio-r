@@ -66,7 +66,7 @@ detect_maturity <- function(x,
                             min_n_valid     = 3L,
                             min_run         = 2L) {
 
-  .assert_class(x, "Triangle")
+  .assert_triangle_input(x, "detect_maturity()")
 
   link <- build_link(x, loss_var = loss_var, weight_var = weight_var)
   ata_summary <- summary(link, model = "ata", alpha = alpha)

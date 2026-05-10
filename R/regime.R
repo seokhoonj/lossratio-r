@@ -95,7 +95,7 @@ detect_regime <- function(x,
                           min_size  = 3L,
                           ...) {
 
-  .assert_class(x, "Triangle")
+  .assert_triangle_input(x, "detect_regime()")
   method <- match.arg(method)
 
   coh_var <- attr(x, "cohort_var")

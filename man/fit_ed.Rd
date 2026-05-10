@@ -10,7 +10,7 @@ fit_ed(
   premium_var = "premium",
   method = c("basic", "mack"),
   alpha = 1,
-  na_method = c("zero", "locf", "none"),
+  na_method = c("locf", "zero", "none"),
   sigma_method = c("min_last2", "locf", "loglinear"),
   recent = NULL,
   regime_break = NULL,

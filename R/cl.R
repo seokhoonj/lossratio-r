@@ -106,7 +106,7 @@ fit_cl <- function(x,
                    maturity_args = NULL,
                    tail          = FALSE) {
 
-  .assert_class(x, "Triangle")
+  .assert_triangle_input(x, "fit_cl()")
   method       <- match.arg(method)
   sigma_method <- match.arg(sigma_method)
 

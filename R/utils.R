@@ -574,3 +574,29 @@ get_recent_weights <- function(weights, recent) {
   out <- out[keep]
   out[]
 }
+
+
+#' Assert that the input is a `Triangle`, with a helpful error for `Link`
+#'
+#' Internal helper used by `fit_*()` entry points. Wraps
+#' [.assert_class()] but intercepts `Link` inputs first to print a
+#' message that explains why a `Link` is not a valid input (build_link
+#' is called internally) and how to pass the data correctly.
+#'
+#' @param x The object to check.
+#' @param called_from A short string naming the caller, e.g.
+#'   `"fit_ata()"`, used in the error message.
+#'
+#' @return Invisibly `NULL`. Throws an error if `x` is not a Triangle.
+#'
+#' @keywords internal
+.assert_triangle_input <- function(x, called_from) {
+  if (inherits(x, "Link")) {
+    fn_bare <- sub("\\(\\)$", "", called_from)
+    stop(sprintf(
+      "`%s` expects a Triangle, not a Link.\n  Link is built internally; pass the Triangle directly:\n    %s(tri, loss_var = \"loss\", ...)",
+      called_from, fn_bare
+    ), call. = FALSE)
+  }
+  .assert_class(x, "Triangle")
+}
