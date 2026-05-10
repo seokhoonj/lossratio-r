@@ -8,7 +8,7 @@ test_that("build_link (ED mode) returns class 'Link' with expected columns", {
   expect_s3_class(ed, "Link")
   for (nm in c("coverage", "cohort", "ata_from", "ata_to", "ata_link",
                "loss_from", "loss_to", "loss_delta",
-               "premium_from", "premium_to", "g")) {
+               "premium_from", "premium_to", "intensity")) {
     expect_true(nm %in% names(ed), info = paste("missing", nm))
   }
 })
@@ -19,9 +19,10 @@ test_that("build_link (ED mode) attributes set correctly", {
   }
 })
 
-test_that("g == loss_delta / premium_from when premium_from > 0", {
-  ok <- is.finite(ed$g) & ed$premium_from > 0
-  expect_equal(ed$g[ok], ed$loss_delta[ok] / ed$premium_from[ok], tolerance = 1e-6)
+test_that("intensity == loss_delta / premium_from when premium_from > 0", {
+  ok <- is.finite(ed$intensity) & ed$premium_from > 0
+  expect_equal(ed$intensity[ok],
+               ed$loss_delta[ok] / ed$premium_from[ok], tolerance = 1e-6)
 })
 
 test_that("loss_delta == loss_to - loss_from", {

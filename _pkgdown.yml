@@ -154,15 +154,17 @@ reference:
 
 - title: Factor diagnostics
   desc: >
-    Per-link ATA factor estimation (factor level). Returns factors,
-    standard errors, and per-link diagnostic stats without producing a
-    projection. Used as the building block of `fit_cl` and consumed
-    internally by `detect_maturity()` and the stage transition in
-    `fit_lr(method = "sa")`. The ED-side factor-level diagnostic is
-    exposed via `summary.Link(model = "ed")`, not a dedicated fit
-    function.
+    Per-link factor estimation at the *factor level*. Both `fit_ata`
+    (multiplicative ATA factors `f_k`) and `fit_intensity`
+    (ED-style additive intensities `g_k`) return per-link factors
+    with standard errors and diagnostic stats — without producing a
+    full projection. `fit_ata` feeds into `fit_cl`,
+    `detect_maturity()`, and the SA stage transition in `fit_lr`;
+    `fit_intensity` feeds into `fit_ed` and is the ED counterpart
+    diagnostic.
   contents:
   - fit_ata
+  - fit_intensity
 
 - title: Cell-selection diagnostics
   desc: >

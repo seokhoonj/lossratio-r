@@ -107,13 +107,15 @@ reference:
 
 - title: 인자 진단
   desc: >
-    링크별 ATA 인자 추정 (factor level). projection 은 산출하지 않고
-    인자·SE·진단 stat 만 제공. `fit_cl` 의 building block 이며
-    `detect_maturity()` 와 `fit_lr(method = "sa")` 의 stage transition
-    에서 내부적으로 사용. ED 측 factor-level 진단은 별도 함수가 아닌
-    `summary.Link(model = "ed")` 로 노출.
+    Factor level 의 링크별 인자 추정. `fit_ata` (multiplicative ATA
+    인자 `f_k`) 와 `fit_intensity` (ED 의 additive intensity `g_k`)
+    가 짝. 두 함수 모두 projection 은 산출하지 않고 인자·SE·진단
+    stat 만 반환. `fit_ata` 는 `fit_cl`, `detect_maturity()`,
+    `fit_lr(method = "sa")` 의 stage transition 에서 사용되고,
+    `fit_intensity` 는 `fit_ed` 의 짝 diagnostic.
   contents:
   - fit_ata
+  - fit_intensity
 
 - title: 추정 셀 선택 진단
   desc: >

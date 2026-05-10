@@ -17,10 +17,10 @@
 #'     \eqn{value} is the column named by `loss_var`.}
 #'   \item{Dual-variable mode (`premium_var` supplied)}{In addition to
 #'     the loss-side ATA, the exposure-driven intensity
-#'     \eqn{g = \Delta loss / premium_{from}} is computed. Premium
-#'     measure used as denominator for loss ratio calculations; for
-#'     long-term health insurance applications, risk premium is
-#'     commonly used.}
+#'     \eqn{g = \Delta loss / premium_{from}} is computed and stored in
+#'     the `intensity` column. Premium measure used as denominator for
+#'     loss ratio calculations; for long-term health insurance
+#'     applications, risk premium is commonly used.}
 #' }
 #'
 #' @param x A `Triangle` object.
@@ -37,18 +37,20 @@
 #'   `loss_var`. Cannot be combined with `premium_var` (the dual
 #'   workflow has its own anchor).
 #' @param min_denom Minimum denominator required to compute `ata`
-#'   and `g`. If `loss_from <= min_denom`, `ata` becomes `NA`; if
-#'   `premium_from <= min_denom`, `g` becomes `NA`. Default `0`.
+#'   and `intensity`. If `loss_from <= min_denom`, `ata` becomes `NA`;
+#'   if `premium_from <= min_denom`, `intensity` becomes `NA`. Default
+#'   `0`.
 #' @param drop_invalid Logical; if `TRUE`, rows with non-finite `ata`
-#'   (single-var) or non-finite `g` (dual-var) are dropped. Default
-#'   `FALSE` so the full link grid is preserved for diagnostics.
+#'   (single-var) or non-finite `intensity` (dual-var) are dropped.
+#'   Default `FALSE` so the full link grid is preserved for
+#'   diagnostics.
 #'
 #' @return A `data.table` of class `"Link"` with columns:
 #'
 #'   * Always: `[group_var]`, `cohort`, `ata_from`, `ata_to`, `ata_link`,
 #'     `loss_from`, `loss_to`, `loss_delta`, `ata`.
 #'   * If `premium_var` is set: also `premium_from`, `premium_to`,
-#'     `premium_delta`, `g`.
+#'     `premium_delta`, `intensity`.
 #'   * If `weight_var` is set: also `weight`.
 #'
 #'   The returned object carries attributes `group_var`, `cohort_var`,
@@ -162,14 +164,14 @@ build_link <- function(x,
     NA_real_
   )]
 
-  # 3) premium_from / premium_to / premium_delta / g -------------------
+  # 3) premium_from / premium_to / premium_delta / intensity -----------
   if (use_premium) {
     z[, premium_from := .SD[[p_var]], .SDcols = p_var]
     z[, premium_to   := data.table::shift(.SD[[1L]], type = "lead"),
       by      = grp_coh_var,
       .SDcols = p_var]
     z[, premium_delta := premium_to - premium_from]
-    z[, g := data.table::fifelse(
+    z[, intensity := data.table::fifelse(
       premium_from > min_denom,
       loss_delta / premium_from,
       NA_real_
@@ -186,7 +188,7 @@ build_link <- function(x,
 
   # 6) drop invalid rows if requested ----------------------------------
   if (drop_invalid) {
-    z <- if (use_premium) z[is.finite(g)] else z[is.finite(ata)]
+    z <- if (use_premium) z[is.finite(intensity)] else z[is.finite(ata)]
   }
 
   # 7) keep relevant columns -------------------------------------------
@@ -195,7 +197,7 @@ build_link <- function(x,
     "ata_from", "ata_to", "ata_link",
     "loss_from", "loss_to", "loss_delta", "ata",
     if (use_premium)
-      c("premium_from", "premium_to", "premium_delta", "g"),
+      c("premium_from", "premium_to", "premium_delta", "intensity"),
     if (use_weight) "weight"
   )
 

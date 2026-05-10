@@ -71,7 +71,7 @@
 
   # 1) descriptive statistics
   ds <- dt[, {
-    vals <- g[is.finite(g)]
+    vals <- intensity[is.finite(intensity)]
     ef   <- premium_from
     dl   <- loss_delta
     m    <- mean(vals)
@@ -82,9 +82,9 @@
       wt          = sum(dl, na.rm = TRUE) / sum(ef, na.rm = TRUE),
       cv          = stats::sd(vals, na.rm = TRUE) / abs(m),
       n_obs       = .N,
-      n_valid     = sum(is.finite(g)),
-      n_inf       = sum(is.infinite(g)),
-      n_nan       = sum(is.nan(g))
+      n_valid     = sum(is.finite(intensity)),
+      n_inf       = sum(is.infinite(intensity)),
+      n_nan       = sum(is.nan(intensity))
     )
   }, by = grp_link_var]
 

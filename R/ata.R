@@ -313,7 +313,7 @@ fit_ata <- function(x,
 
   .assert_class(x, "Triangle")
 
-  x <- build_link(x, loss_var = loss_var, weight_var = weight_var)
+  link <- build_link(x, loss_var = loss_var, weight_var = weight_var)
 
   na_method    <- match.arg(na_method)
   sigma_method <- match.arg(sigma_method)
@@ -327,11 +327,11 @@ fit_ata <- function(x,
     } else {
       regime_break <- max(as.Date(regime_break))
     }
-    x <- .apply_break_filter(
-      x, regime_break,
-      group_var = if (is.null(attr(x, "group_var"))) character(0) else attr(x, "group_var"),
+    link <- .apply_break_filter(
+      link, regime_break,
+      group_var  = if (is.null(attr(link, "group_var"))) character(0) else attr(link, "group_var"),
       cohort_var = "cohort",
-      dev_var = "ata_from"
+      dev_var    = "ata_from"
     )
   }
 
@@ -339,11 +339,11 @@ fit_ata <- function(x,
   # when `recent` is supplied, subset to rows within the last `recent`
   # calendar diagonals before estimation.
   if (!is.null(recent)) {
-    x <- .apply_recent_filter(
-      x, recent,
-      group_var = if (is.null(attr(x, "group_var"))) character(0) else attr(x, "group_var"),
+    link <- .apply_recent_filter(
+      link, recent,
+      group_var  = if (is.null(attr(link, "group_var"))) character(0) else attr(link, "group_var"),
       cohort_var = "cohort",
-      dev_var = "ata_from"
+      dev_var    = "ata_from"
     )
   }
 
@@ -368,11 +368,11 @@ fit_ata <- function(x,
 
   use_maturity <- !is.null(maturity_args)
 
-  grp_var <- attr(x, "group_var")
+  grp_var <- attr(link, "group_var")
   if (is.null(grp_var)) grp_var <- character(0)
 
   # 4) compute summary statistics and WLS estimates ---------------------
-  ata_summary <- summary(x, alpha = alpha, model = "ata", ...)
+  ata_summary <- summary(link, alpha = alpha, model = "ata", ...)
 
   # 5) find maturity point ----------------------------------------------
   maturity <- if (use_maturity) {
@@ -399,11 +399,11 @@ fit_ata <- function(x,
     call          = match.call(),
     data          = x,
     group_var     = grp_var,
-    cohort_var = attr(x, "cohort_var"),
-    dev_var   = attr(x, "dev_var"),
-    loss_var     = attr(x, "loss_var"),
-    weight_var    = attr(x, "weight_var"),
-    link          = x,
+    cohort_var    = attr(link, "cohort_var"),
+    dev_var       = attr(link, "dev_var"),
+    loss_var      = attr(link, "loss_var"),
+    weight_var    = attr(link, "weight_var"),
+    link          = link,
     factor        = ata_summary,
     selected      = selected,
     maturity      = maturity,

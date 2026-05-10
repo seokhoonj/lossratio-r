@@ -32,12 +32,14 @@ downstream \code{summary} / \code{fit_ata} calls. Must differ from
 workflow has its own anchor).}
 
 \item{min_denom}{Minimum denominator required to compute \code{ata}
-and \code{g}. If \code{loss_from <= min_denom}, \code{ata} becomes \code{NA}; if
-\code{premium_from <= min_denom}, \code{g} becomes \code{NA}. Default \code{0}.}
+and \code{intensity}. If \code{loss_from <= min_denom}, \code{ata} becomes \code{NA};
+if \code{premium_from <= min_denom}, \code{intensity} becomes \code{NA}. Default
+\code{0}.}
 
 \item{drop_invalid}{Logical; if \code{TRUE}, rows with non-finite \code{ata}
-(single-var) or non-finite \code{g} (dual-var) are dropped. Default
-\code{FALSE} so the full link grid is preserved for diagnostics.}
+(single-var) or non-finite \code{intensity} (dual-var) are dropped.
+Default \code{FALSE} so the full link grid is preserved for
+diagnostics.}
 }
 \value{
 A \code{data.table} of class \code{"Link"} with columns:
@@ -45,7 +47,7 @@ A \code{data.table} of class \code{"Link"} with columns:
 \item Always: \verb{[group_var]}, \code{cohort}, \code{ata_from}, \code{ata_to}, \code{ata_link},
 \code{loss_from}, \code{loss_to}, \code{loss_delta}, \code{ata}.
 \item If \code{premium_var} is set: also \code{premium_from}, \code{premium_to},
-\code{premium_delta}, \code{g}.
+\code{premium_delta}, \code{intensity}.
 \item If \code{weight_var} is set: also \code{weight}.
 }
 
@@ -68,10 +70,10 @@ factor is \eqn{ata = value_{to} / value_{from}}, where
 \eqn{value} is the column named by \code{loss_var}.}
 \item{Dual-variable mode (\code{premium_var} supplied)}{In addition to
 the loss-side ATA, the exposure-driven intensity
-\eqn{g = \Delta loss / premium_{from}} is computed. Premium
-measure used as denominator for loss ratio calculations; for
-long-term health insurance applications, risk premium is
-commonly used.}
+\eqn{g = \Delta loss / premium_{from}} is computed and stored in
+the \code{intensity} column. Premium measure used as denominator for
+loss ratio calculations; for long-term health insurance
+applications, risk premium is commonly used.}
 }
 }
 \examples{

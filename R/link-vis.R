@@ -519,7 +519,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     p <- p + ggplot2::labs(
       title = "Summary of Incremental Loss Intensity (g)",
       x     = "development link",
-      y     = "g",
+      y     = "intensity",
       color = NULL
     )
 
@@ -531,7 +531,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
     p <- ggplot2::ggplot(
       dt,
-      ggplot2::aes(x = ata_from, y = g, group = ata_from)
+      ggplot2::aes(x = ata_from, y = intensity, group = ata_from)
     ) +
       ggplot2::geom_boxplot(na.rm = TRUE) +
       ggplot2::geom_hline(
@@ -546,7 +546,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     p <- p + ggplot2::labs(
       title = "Box Plot of Incremental Loss Intensity (g)",
       x     = "development link",
-      y     = "g"
+      y     = "intensity"
     )
 
     return(p + .switch_theme(theme = theme, x.angle = x.angle,
@@ -558,7 +558,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
     p <- ggplot2::ggplot(
       dt,
-      ggplot2::aes(x = ata_from, y = g)
+      ggplot2::aes(x = ata_from, y = intensity)
     ) +
       ggplot2::geom_point(na.rm = TRUE) +
       ggplot2::stat_summary(
@@ -579,7 +579,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     p <- p + ggplot2::labs(
       title = "Distribution of Incremental Loss Intensity (g)",
       x     = "development link",
-      y     = "g"
+      y     = "intensity"
     )
 
     return(p + .switch_theme(theme = theme, x.angle = x.angle,
@@ -805,12 +805,13 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   # 3) build cell labels
   if (label_style == "value") {
-    dt[, label := data.table::fifelse(is.finite(g), sprintf("%.3f", g), "")]
+    dt[, label := data.table::fifelse(is.finite(intensity),
+                                      sprintf("%.3f", intensity), "")]
     caption_txt <- "Unit: g (column-wise relative fill)"
   } else {
     dt[, label := data.table::fifelse(
-      is.finite(g),
-      sprintf("%.3f\n(%.1f/%.1f)", g,
+      is.finite(intensity),
+      sprintf("%.3f\n(%.1f/%.1f)", intensity,
               loss_delta / amount_divisor,
               premium_from / amount_divisor),
       ""
@@ -822,9 +823,9 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   }
 
   # 4) column-wise relative fill
-  dt[, g_fill := g - stats::median(g, na.rm = TRUE),
+  dt[, intensity_fill := intensity - stats::median(intensity, na.rm = TRUE),
      by = c(grp_var, "ata_link")]
-  dt[!is.finite(g_fill), g_fill := NA_real_]
+  dt[!is.finite(intensity_fill), intensity_fill := NA_real_]
 
   # 5) resolve label_args
   label_args <- .modify_label_args(list(size = label_size))
@@ -836,7 +837,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     y          = .y,
     label      = label,
     label_args = label_args,
-    fill       = g_fill,
+    fill       = intensity_fill,
     fill_args  = list(
       low       = "#D9ECFF",
       mid       = "white",
