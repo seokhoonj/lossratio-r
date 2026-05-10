@@ -40,7 +40,7 @@ build_triangle(
   df,
   group_var,
   cohort_var = "uym",
-  dev_var = "elap_m",
+  dev_var = "dev_m",
   loss_var = "loss_incr",
   premium_var = "premium_incr",
   fill_gaps = FALSE
@@ -66,7 +66,7 @@ build_triangle(
 - dev_var:
 
   Column(s) defining development periods (e.g., months since issue such
-  as `elap_m`).
+  as `dev_m`).
 
 - loss_var:
 
@@ -139,7 +139,7 @@ df <- data.frame(
   pd_cd        = rep(c("P001", "P002"), each = 6),
   pd_nm        = rep(c("cancer", "health"), each = 6),
   uym          = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
-  elap_m       = rep(1:2, 6),
+  dev_m        = rep(1:2, 6),
   loss_incr    = runif(12, 80, 120),
   premium_incr = runif(12, 90, 110)
 )
@@ -148,7 +148,7 @@ res <- build_triangle(
   df,
   group_var  = pd_cd,
   cohort_var = "uym",
-  dev_var    = "elap_m"
+  dev_var    = "dev_m"
 )
 
 head(res)

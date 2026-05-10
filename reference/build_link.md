@@ -86,8 +86,8 @@ A `data.table` of class `"Link"` with columns:
 - If `weight_var` is set: also `weight`.
 
 The returned object carries attributes `group_var`, `cohort_var`,
-`cohort_type`, `dev_var`, `dev_type`, `loss_var`, `premium_var` (or
-`NULL`), `weight_var` (or `NULL`).
+`dev_var`, `loss_var`, `premium_var` (or `NULL`), `weight_var` (or
+`NULL`).
 
 ## See also
 

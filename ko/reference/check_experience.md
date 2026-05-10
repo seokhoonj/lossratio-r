@@ -38,7 +38,7 @@ These columns must be present:
 
 These columns are validated only when present:
 
-- `elap_m` : Elapsed month (`integer`)
+- `dev_m` : Development month (`integer`)
 
 - `pd_tp_cd`, `pd_tp_nm`, `pd_cd`, `pd_nm`: Product type/product codes
   and names (`character`)
@@ -67,7 +67,7 @@ and are not validated here:
 
 - `cy`, `cyh`, `cyq` : Calendar year, half-year, quarter
 
-- `elap_y`, `elap_h`, `elap_q` : Elapsed year, half-year, quarter
+- `dev_y`, `dev_h`, `dev_q` : Development year, half-year, quarter
 
 ## See also
 

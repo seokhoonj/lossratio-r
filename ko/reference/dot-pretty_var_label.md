@@ -1,7 +1,7 @@
 # Human-readable label for a period / development variable name
 
 Internal helper that maps a package convention variable name (e.g.
-`"uym"`, `"elap_m"`) to a human-readable axis label (e.g.
+`"uym"`, `"dev_m"`) to a human-readable axis label (e.g.
 `"underwriting months"`, `"development months"`). Falls back to the
 input string when the variable is not recognised.
 

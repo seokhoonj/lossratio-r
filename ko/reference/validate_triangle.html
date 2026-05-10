@@ -16,7 +16,7 @@ Row-level calendar consistency — when calendar_var
 is supplied (or auto-detected as "cym" if present), report rows
 where calendar_var &amp;lt; cohort_var. Such rows are logically
 impossible (claims cannot precede policy issue) and downstream
-they show up as negative elap_m, polluting cohort dev sequences.
+they show up as negative dev_m, polluting cohort dev sequences.
 
 '><meta property="og:description" content='Check that each (group_var, cohort_var) cohort has a consecutive
 dev_var sequence within its observed range. Non-consecutive
@@ -35,7 +35,7 @@ Row-level calendar consistency — when calendar_var
 is supplied (or auto-detected as "cym" if present), report rows
 where calendar_var &amp;lt; cohort_var. Such rows are logically
 impossible (claims cannot precede policy issue) and downstream
-they show up as negative elap_m, polluting cohort dev sequences.
+they show up as negative dev_m, polluting cohort dev sequences.
 
 '><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
@@ -111,7 +111,7 @@ report missing <code>dev_var</code> values within the observed range.</p></li>
 is supplied (or auto-detected as <code>"cym"</code> if present), report rows
 where <code>calendar_var &lt; cohort_var</code>. Such rows are logically
 impossible (claims cannot precede policy issue) and downstream
-they show up as negative <code>elap_m</code>, polluting cohort dev sequences.</p></li>
+they show up as negative <code>dev_m</code>, polluting cohort dev sequences.</p></li>
 </ol></div>
 
     <div class="section level2">
@@ -120,7 +120,7 @@ they show up as negative <code>elap_m</code>, polluting cohort dev sequences.</p
 <span>  <span class="va">df</span>,</span>
 <span>  <span class="va">group_var</span>,</span>
 <span>  cohort_var <span class="op">=</span> <span class="st">"uym"</span>,</span>
-<span>  dev_var <span class="op">=</span> <span class="st">"elap_m"</span>,</span>
+<span>  dev_var <span class="op">=</span> <span class="st">"dev_m"</span>,</span>
 <span>  calendar_var <span class="op">=</span> <span class="st">"cym"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -142,7 +142,7 @@ they show up as negative <code>elap_m</code>, polluting cohort dev sequences.</p
 
 
 <dt id="arg-dev-var">dev_var<a class="anchor" aria-label="anchor" href="#arg-dev-var"></a></dt>
-<dd><p>A single development variable. Default <code>"elap_m"</code>.</p></dd>
+<dd><p>A single development variable. Default <code>"dev_m"</code>.</p></dd>
 
 
 <dt id="arg-calendar-var">calendar_var<a class="anchor" aria-label="anchor" href="#arg-calendar-var"></a></dt>
@@ -162,7 +162,7 @@ per cohort containing gaps. Columns:</p><dl><dt>group_var(s), cohort_var</dt>
 values.</p></dd>
 
 <dt><code>n_expected</code></dt>
-<dd><p><code>max(elap_m) - min(elap_m) + 1</code> for that cohort.</p></dd>
+<dd><p><code>max(dev_m) - min(dev_m) + 1</code> for that cohort.</p></dd>
 
 <dt><code>missing</code></dt>
 <dd><p>List column of missing <code>dev_var</code> values.</p></dd>

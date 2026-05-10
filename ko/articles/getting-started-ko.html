@@ -125,10 +125,10 @@ calendar / underwriting 기간 컬럼, <code>coverage</code> 그룹 컬럼,
 <span><span class="co">#&gt;  $ cyh         : Date, format: "2024-01-01" "2024-01-01" ...</span></span>
 <span><span class="co">#&gt;  $ cyq         : Date, format: "2024-01-01" "2024-01-01" ...</span></span>
 <span><span class="co">#&gt;  $ cym         : Date, format: "2024-01-01" "2024-02-01" ...</span></span>
-<span><span class="co">#&gt;  $ elap_y      : int  1 1 1 1 1 1 1 1 1 1 ...</span></span>
-<span><span class="co">#&gt;  $ elap_h      : int  1 1 1 1 1 1 2 2 2 2 ...</span></span>
-<span><span class="co">#&gt;  $ elap_q      : int  1 1 1 2 2 2 3 3 3 4 ...</span></span>
-<span><span class="co">#&gt;  $ elap_m      : int  1 2 3 4 5 6 7 8 9 10 ...</span></span>
+<span><span class="co">#&gt;  $ dev_y       : int  1 1 1 1 1 1 1 1 1 1 ...</span></span>
+<span><span class="co">#&gt;  $ dev_h       : int  1 1 1 1 1 1 2 2 2 2 ...</span></span>
+<span><span class="co">#&gt;  $ dev_q       : int  1 1 1 2 2 2 3 3 3 4 ...</span></span>
+<span><span class="co">#&gt;  $ dev_m       : int  1 2 3 4 5 6 7 8 9 10 ...</span></span>
 <span><span class="co">#&gt;  $ loss_incr   : num  1262380 11255763 11281309 33602387 7152622 ...</span></span>
 <span><span class="co">#&gt;  $ premium_incr: num  27993106 29183931 29401966 26570540 27471886 ...</span></span>
 <span><span class="co">#&gt;  - attr(*, ".internal.selfref")=&lt;pointer: (nil)&gt;</span></span></code></pre></div>
@@ -536,7 +536,7 @@ ladder 를 적용한다. 전환 지점은 ATA 인자에서 그룹별로 탐지�
 <span><span class="co">#&gt; &lt;Regime&gt;</span></span>
 <span><span class="co">#&gt;   method      : e_divisive</span></span>
 <span><span class="co">#&gt;   loss_var   : lr</span></span>
-<span><span class="co">#&gt;   window (K)  : elap_m 1-12</span></span>
+<span><span class="co">#&gt;   window (K)  : dev_m 1-12</span></span>
 <span><span class="co">#&gt;   cohorts     : 25 analysed (11 dropped)</span></span>
 <span><span class="co">#&gt;   regimes     : 2</span></span>
 <span><span class="co">#&gt;   breakpoints : 25.07</span></span>

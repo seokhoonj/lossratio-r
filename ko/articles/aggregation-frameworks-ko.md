@@ -80,7 +80,7 @@ plot(tri)              # 코호트별 궤적, 그룹별 facet
 # 문서 표시 크기에 맞춘 처리이며, 실제 분석에서는 플롯을 키우면 월
 # 단위 그대로 볼 수 있다.
 tri_q <- build_triangle(exp, group_var = coverage,
-                        cohort_var = "uyq", dev_var = "elap_q")
+                        cohort_var = "uyq", dev_var = "dev_q")
 plot_triangle(tri_q)   # 코호트 × dev lr 히트맵
 ```
 
@@ -133,7 +133,7 @@ head(cal)
 period)” 이 아니다.
 
 Calendar 집계는 수학적으로 Triangle 의 **대각선 합** 이다. 같은 `cym`
-값을 갖는 셀 (`uym`/`elap_m` 와 무관하게) 이 합쳐진다.
+값을 갖는 셀 (`uym`/`dev_m` 와 무관하게) 이 합쳐진다.
 
 활용 사례는 다음과 같다.
 
@@ -218,16 +218,16 @@ head(tot)
 attr(tri, "cohort_var")      # "uym"
 #> [1] "uym"
 attr(tri, "cohort_type")     # "month"
-#> [1] "month"
-attr(tri, "dev_var")         # "elap_m"
-#> [1] "elap_m"
+#> NULL
+attr(tri, "dev_var")         # "dev_m"
+#> [1] "dev_m"
 attr(tri, "dev_type")        # "month"
-#> [1] NA
+#> NULL
 
 attr(cal, "calendar_var")    # "cym"
 #> [1] "cym"
 attr(cal, "calendar_type")   # "month"
-#> [1] "month"
+#> NULL
 ```
 
 데이터 컬럼 자체는 `cohort` / `dev` / `calendar` 로 표준화되어 있으므로,

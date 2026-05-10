@@ -23,7 +23,7 @@ Two checks are performed:
     (or auto-detected as `"cym"` if present), report rows where
     `calendar_var < cohort_var`. Such rows are logically impossible
     (claims cannot precede policy issue) and downstream they show up as
-    negative `elap_m`, polluting cohort dev sequences.
+    negative `dev_m`, polluting cohort dev sequences.
 
 ## Usage
 
@@ -32,7 +32,7 @@ validate_triangle(
   df,
   group_var,
   cohort_var = "uym",
-  dev_var = "elap_m",
+  dev_var = "dev_m",
   calendar_var = "cym"
 )
 ```
@@ -53,7 +53,7 @@ validate_triangle(
 
 - dev_var:
 
-  A single development variable. Default `"elap_m"`.
+  A single development variable. Default `"dev_m"`.
 
 - calendar_var:
 
@@ -77,7 +77,7 @@ containing gaps. Columns:
 
 - `n_expected`:
 
-  `max(elap_m) - min(elap_m) + 1` for that cohort.
+  `max(dev_m) - min(dev_m) + 1` for that cohort.
 
 - `missing`:
 

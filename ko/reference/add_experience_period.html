@@ -3,12 +3,12 @@
 experience dataset using standard column conventions for loss ratio
 analysis.
 The function detects the presence of key source columns such as uym,
-cym, and elap_m, and derives additional period variables when
+cym, and dev_m, and derives additional period variables when
 possible."><meta property="og:description" content="Add underwriting, calendar, and development period variables to an
 experience dataset using standard column conventions for loss ratio
 analysis.
 The function detects the presence of key source columns such as uym,
-cym, and elap_m, and derives additional period variables when
+cym, and dev_m, and derives additional period variables when
 possible."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -71,7 +71,7 @@ possible."><meta property="og:image" content="https://seokhoonj.github.io/lossra
 experience dataset using standard column conventions for loss ratio
 analysis.</p>
 <p>The function detects the presence of key source columns such as <code>uym</code>,
-<code>cym</code>, and <code>elap_m</code>, and derives additional period variables when
+<code>cym</code>, and <code>dev_m</code>, and derives additional period variables when
 possible.</p>
     </div>
 
@@ -86,7 +86,7 @@ possible.</p>
 
 <dl><dt id="arg-df">df<a class="anchor" aria-label="anchor" href="#arg-df"></a></dt>
 <dd><p>A data.frame containing period variables such as <code>uym</code>,
-<code>cym</code>, and <code>elap_m</code>.</p></dd>
+<code>cym</code>, and <code>dev_m</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -104,18 +104,18 @@ exist:</p>
 </ul><p><strong>Calendar period (from <code>cym</code>):</strong></p><ul><li><p><code>cy</code>  : calendar year</p></li>
 <li><p><code>cyh</code> : calendar half-year</p></li>
 <li><p><code>cyq</code> : calendar quarter</p></li>
-</ul><p><strong>Elapsed period:</strong></p><ul><li><p><code>elap_y</code> is derived from <code>elap_m</code> as yearly development
+</ul><p><strong>Development period:</strong></p><ul><li><p><code>dev_y</code> is derived from <code>dev_m</code> as yearly development
 index, where months 1 to 12 map to 1, 13 to 24 map to 2, and so on.</p></li>
-<li><p><code>elap_h</code> is derived from <code>uym</code> and <code>cym</code> using calendar half-year
+<li><p><code>dev_h</code> is derived from <code>uym</code> and <code>cym</code> using calendar half-year
 boundaries. For example, contracts issued in January to June are
 aligned to the same first development half-year block, and the next
 calendar half-year becomes development half-year 2.</p></li>
-<li><p><code>elap_q</code> is derived from <code>uym</code> and <code>cym</code> using calendar quarter
+<li><p><code>dev_q</code> is derived from <code>uym</code> and <code>cym</code> using calendar quarter
 boundaries. For example, contracts issued in January to March are
 aligned to the same first development quarter block, and the next
 calendar quarter becomes development quarter 2.</p></li>
-</ul><p>Therefore, <code>elap_h</code> and <code>elap_q</code> are not simple grouped versions of
-<code>elap_m</code>; they are aligned to calendar half-year and quarter boundaries
+</ul><p>Therefore, <code>dev_h</code> and <code>dev_q</code> are not simple grouped versions of
+<code>dev_m</code>; they are aligned to calendar half-year and quarter boundaries
 so that underwriting cohorts such as Q1, Q2, H1, and H2 are compared
 consistently on the same cumulative development basis.</p>
 <p>Newly created columns are inserted before their corresponding base
@@ -126,9 +126,9 @@ columns.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  uym  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2023-01-01"</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0</span><span class="op">:</span><span class="fl">5</span> <span class="op">*</span> <span class="fl">30</span>,</span></span>
-<span class="r-in"><span>  cym  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2023-01-01"</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0</span><span class="op">:</span><span class="fl">5</span> <span class="op">*</span> <span class="fl">30</span>,</span></span>
-<span class="r-in"><span>  elap_m <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span></span></span>
+<span class="r-in"><span>  uym   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2023-01-01"</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0</span><span class="op">:</span><span class="fl">5</span> <span class="op">*</span> <span class="fl">30</span>,</span></span>
+<span class="r-in"><span>  cym   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2023-01-01"</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0</span><span class="op">:</span><span class="fl">5</span> <span class="op">*</span> <span class="fl">30</span>,</span></span>
+<span class="r-in"><span>  dev_m <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">df2</span> <span class="op">&lt;-</span> <span class="fu">add_experience_period</span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></span>

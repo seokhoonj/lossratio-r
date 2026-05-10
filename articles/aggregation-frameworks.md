@@ -78,7 +78,7 @@ plot(tri)              # one trajectory per cohort, faceted by group
 # cells. This fits the documentation's display size; in practice you
 # can keep monthly resolution by enlarging the plot.
 tri_q <- build_triangle(exp, group_var = coverage,
-                        cohort_var = "uyq", dev_var = "elap_q")
+                        cohort_var = "uyq", dev_var = "dev_q")
 plot_triangle(tri_q)   # cohort × dev heatmap of lr
 ```
 
@@ -131,7 +131,7 @@ sequential index (1, 2, 3, …) within group, not “development period
 since cohort start”.
 
 Calendar aggregation is mathematically the **diagonal sum** of the
-triangle: cells with the same `cym` (regardless of `uym`/`elap_m`) are
+triangle: cells with the same `cym` (regardless of `uym`/`dev_m`) are
 combined.
 
 Use cases: - Trend analysis (“loss ratio is rising over calendar
@@ -211,16 +211,16 @@ attributes (used for plot labels and granularity-aware date formatting):
 attr(tri, "cohort_var")     # "uym"
 #> [1] "uym"
 attr(tri, "cohort_type")    # "month"
-#> [1] "month"
-attr(tri, "dev_var")        # "elap_m"
-#> [1] "elap_m"
+#> NULL
+attr(tri, "dev_var")        # "dev_m"
+#> [1] "dev_m"
 attr(tri, "dev_type")       # "month"
-#> [1] NA
+#> NULL
 
 attr(cal, "calendar_var")   # "cym"
 #> [1] "cym"
 attr(cal, "calendar_type")  # "month"
-#> [1] "month"
+#> NULL
 ```
 
 The data columns themselves are standardised to `cohort` / `dev` /

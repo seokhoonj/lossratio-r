@@ -50,9 +50,9 @@ up-to-36-dev jagged triangle:
 
   Calendar period (year / half / quarter / month) as `Date`.
 
-- elap_y, elap_h, elap_q, elap_m:
+- dev_y, dev_h, dev_q, dev_m:
 
-  Elapsed period (year / half / quarter / month) as integer.
+  Development period (year / half / quarter / month) as integer.
 
 - loss_incr:
 

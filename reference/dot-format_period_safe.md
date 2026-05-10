@@ -25,7 +25,7 @@ period.
 - var:
 
   A single character string naming the variable (e.g. `"uym"`,
-  `"elap_m"`).
+  `"dev_m"`).
 
 ## Value
 

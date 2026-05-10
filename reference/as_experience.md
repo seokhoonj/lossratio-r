@@ -49,8 +49,8 @@ Minimum required columns are:
   long-term health insurance, risk premium is commonly used
 
 If `add_period = TRUE`, additional period variables such as `uy`, `uyh`,
-`uyq`, `cy`, `cyh`, `cyq`, `elap_y`, `elap_h`, and `elap_q` may be
-added, depending on the available source columns.
+`uyq`, `cy`, `cyh`, `cyq`, `dev_y`, `dev_h`, and `dev_q` may be added,
+depending on the available source columns.
 
 ## See also
 

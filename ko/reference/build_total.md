@@ -27,7 +27,7 @@ build_total(
   df,
   group_var,
   cohort_var = "uym",
-  dev_var = "elap_m",
+  dev_var = "dev_m",
   loss_var = "loss_incr",
   premium_var = "premium_incr",
   period_from = NULL,
@@ -55,7 +55,7 @@ build_total(
 - dev_var:
 
   A single development variable used to count observed periods. Default
-  `"elap_m"`.
+  `"dev_m"`.
 
 - loss_var:
 

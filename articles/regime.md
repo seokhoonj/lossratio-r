@@ -63,7 +63,7 @@ r
 #> <Regime>
 #>   method      : e_divisive
 #>   loss_var   : lr
-#>   window (K)  : elap_m 1-12
+#>   window (K)  : dev_m 1-12
 #>   cohorts     : 25 analysed (11 dropped)
 #>   regimes     : 2
 #>   breakpoints : 25.07
@@ -83,7 +83,7 @@ summary(r)
 #> Cohort regime detection summary
 #>   method    : e_divisive
 #>   loss_var : lr
-#>   window    : elap_m 1-12
+#>   window    : dev_m 1-12
 #>   cohorts   : 25 analysed (11 dropped)
 #> 
 #> Regimes (2):
@@ -179,7 +179,7 @@ summary(r2)
 #> Cohort regime detection summary
 #>   method    : e_divisive
 #>   loss_var : lr
-#>   window    : elap_m 1-12
+#>   window    : dev_m 1-12
 #>   cohorts   : 25 analysed (11 dropped)
 #> 
 #> Regimes (3):
