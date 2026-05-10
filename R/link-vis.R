@@ -592,7 +592,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
 .plot_triangle_link_ata <- function(x,
                                     label_style     = c("value", "detail"),
-                                    label_args      = list(),
+                                    label_size      = NULL,
                                     show_maturity   = FALSE,
                                     alpha           = 1,
                                     max_cv          = 0.15,
@@ -611,6 +611,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   label_style <- match.arg(label_style)
   theme       <- match.arg(theme)
+  if (is.null(label_size))
+    label_size <- if (label_style == "detail") 2.5 else 3
 
   dt      <- .ensure_dt(x)
   grp_var <- attr(x, "group_var")
@@ -643,8 +645,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     dt[, label := data.table::fifelse(
       is.finite(ata),
       sprintf("%.2f\n(%.1f->%.1f)", ata,
-              value_from / amount_divisor,
-              value_to   / amount_divisor),
+              loss_from / amount_divisor,
+              loss_to   / amount_divisor),
       ""
     )]
     caption_txt <- sprintf(
@@ -691,17 +693,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   }
 
   # 7) resolve label_args -----------------------------------------------
-  label_args <- utils::modifyList(
-    list(
-      family = getOption("ggshort.font"),
-      size   = 3.88,
-      angle  = 0,
-      hjust  = 0.5,
-      vjust  = 0.5,
-      color  = "black"
-    ),
-    label_args
-  )
+  label_args <- .modify_label_args(list(size = label_size))
 
   # 8) base heatmap -----------------------------------------------------
   p <- ggshort::ggheatmap(
@@ -780,7 +772,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
 .plot_triangle_link_ed <- function(x,
                                    label_style    = c("value", "detail"),
-                                   label_args     = list(),
+                                   label_size     = NULL,
                                    amount_divisor = 1e8,
                                    theme          = c("view", "save", "shiny"),
                                    nrow           = NULL,
@@ -792,6 +784,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   label_style <- match.arg(label_style)
   theme       <- match.arg(theme)
+  if (is.null(label_size))
+    label_size <- if (label_style == "detail") 2.5 else 3
 
   dt      <- .ensure_dt(x)
   grp_var <- attr(x, "group_var")
@@ -817,7 +811,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     dt[, label := data.table::fifelse(
       is.finite(g),
       sprintf("%.3f\n(%.1f/%.1f)", g,
-              delta_loss / amount_divisor,
+              loss_delta / amount_divisor,
               premium_from / amount_divisor),
       ""
     )]
@@ -833,11 +827,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   dt[!is.finite(g_fill), g_fill := NA_real_]
 
   # 5) resolve label_args
-  label_args <- utils::modifyList(
-    list(family = getOption("ggshort.font"), size = 3.88,
-         angle = 0, hjust = 0.5, vjust = 0.5, color = "black"),
-    label_args
-  )
+  label_args <- .modify_label_args(list(size = label_size))
 
   # 6) base heatmap
   p <- ggshort::ggheatmap(

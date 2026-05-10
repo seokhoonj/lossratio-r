@@ -322,6 +322,10 @@ plot.CLFit <- function(x,
 #' @param what One of `"pred"`, `"full"`, or `"data"`.
 #' @param label_style One of `"value"` (default), `"cv"`, `"se"`, or
 #'   `"ci"`. The uncertainty styles require `method = "mack"`.
+#' @param label_size Numeric label text size forwarded to
+#'   [ggshort::ggtable()]. Defaults to `3` for `label_style = "value"`,
+#'   `"cv"`, or `"se"` and `2.5` for `label_style = "ci"` (two-line
+#'   labels).
 #' @param conf_level Confidence level used when `label_style = "ci"`.
 #'   Default is `0.95`.
 #' @param amount_divisor Numeric scaling factor for amount variables.
@@ -337,6 +341,7 @@ plot.CLFit <- function(x,
 plot_triangle.CLFit <- function(x,
                                  what           = c("pred", "full", "data"),
                                  label_style    = c("value", "cv", "se", "ci"),
+                                 label_size     = NULL,
                                  conf_level     = 0.95,
                                  amount_divisor = 1e8,
                                  theme          = c("view", "save", "shiny"),
@@ -349,6 +354,8 @@ plot_triangle.CLFit <- function(x,
   what        <- match.arg(what)
   label_style <- match.arg(label_style)
   theme       <- match.arg(theme)
+  if (is.null(label_size))
+    label_size <- if (label_style == "ci") 2.5 else 3
 
   is_mack <- identical(x$method, "mack")
 
@@ -511,11 +518,7 @@ plot_triangle.CLFit <- function(x,
   }
 
   # 6) base plot --------------------------------------------------------
-  label_args <- if (label_style == "ci") {
-    list(size = 2.5)
-  } else {
-    list(size = 3)
-  }
+  label_args <- .modify_label_args(list(size = label_size))
   p <- ggshort::ggtable(
     data       = dt,
     x          = .data[["dev"]],

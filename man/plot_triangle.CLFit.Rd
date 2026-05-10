@@ -8,6 +8,7 @@
   x,
   what = c("pred", "full", "data"),
   label_style = c("value", "cv", "se", "ci"),
+  label_size = NULL,
   conf_level = 0.95,
   amount_divisor = 1e+08,
   theme = c("view", "save", "shiny"),
@@ -23,6 +24,11 @@
 
 \item{label_style}{One of \code{"value"} (default), \code{"cv"}, \code{"se"}, or
 \code{"ci"}. The uncertainty styles require \code{method = "mack"}.}
+
+\item{label_size}{Numeric label text size forwarded to
+\code{\link[ggshort:ggtable]{ggshort::ggtable()}}. Defaults to \code{3} for \code{label_style = "value"},
+\code{"cv"}, or \code{"se"} and \code{2.5} for \code{label_style = "ci"} (two-line
+labels).}
 
 \item{conf_level}{Confidence level used when \code{label_style = "ci"}.
 Default is \code{0.95}.}

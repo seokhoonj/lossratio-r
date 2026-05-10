@@ -7,7 +7,7 @@ ata <- build_link(tri, loss_var = "loss")
 test_that("build_link returns class 'Link' with expected columns", {
   expect_s3_class(ata, "Link")
   for (nm in c("coverage", "cohort", "ata_from", "ata_to", "ata_link",
-               "value_from", "value_to", "ata")) {
+               "loss_from", "loss_to", "ata")) {
     expect_true(nm %in% names(ata), info = paste("missing", nm))
   }
 })
@@ -23,9 +23,9 @@ test_that("ata_to == ata_from + 1", {
   expect_true(all(ata$ata_to == ata$ata_from + 1L))
 })
 
-test_that("ata == value_to / value_from when value_from > 0", {
-  ok <- is.finite(ata$ata) & ata$value_from > 0
-  expect_equal(ata$ata[ok], ata$value_to[ok] / ata$value_from[ok], tolerance = 1e-6)
+test_that("ata == loss_to / loss_from when loss_from > 0", {
+  ok <- is.finite(ata$ata) & ata$loss_from > 0
+  expect_equal(ata$ata[ok], ata$loss_to[ok] / ata$loss_from[ok], tolerance = 1e-6)
 })
 
 test_that("weight_var adds 'weight' column", {

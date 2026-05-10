@@ -15,7 +15,7 @@ A single character string.
 \description{
 Internal helper that maps a package convention variable name (e.g.
 \code{"uym"}, \code{"elap_m"}) to a human-readable axis label (e.g.
-\code{"underwriting ym"}, \code{"development months"}). Falls back to the input
-string when the variable is not recognised.
+\code{"underwriting months"}, \code{"development months"}). Falls back to the
+input string when the variable is not recognised.
 }
 \keyword{internal}

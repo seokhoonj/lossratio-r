@@ -14,39 +14,39 @@ test_that("Backtest has expected list elements", {
   bt <- backtest(sub, holdout = 6L, fit_fn = fit_cl,
                  loss_var = "loss", method = "mack")
   for (nm in c("call", "data", "masked", "fit",
-               "aeg", "col_summary", "diag_summary",
+               "ae_err", "col_summary", "diag_summary",
                "loss_var", "holdout", "fit_fn_name",
                "group_var", "cohort_var", "dev_var")) {
     expect_true(nm %in% names(bt), info = paste("missing", nm))
   }
 })
 
-test_that("aeg has expected columns", {
+test_that("ae_err has expected columns", {
   bt <- backtest(sub, holdout = 6L, fit_fn = fit_cl,
                  loss_var = "loss", method = "mack")
   for (nm in c("coverage", "cohort", "dev", "value_actual", "value_pred",
-               "aeg", "calendar_idx")) {
-    expect_true(nm %in% names(bt$aeg), info = paste("missing", nm))
+               "ae_err", "calendar_idx")) {
+    expect_true(nm %in% names(bt$ae_err), info = paste("missing", nm))
   }
 })
 
-test_that("aeg = actual / pred - 1 (cell-wise, A/E convention)", {
+test_that("ae_err = actual / pred - 1 (cell-wise, A/E convention)", {
   bt <- backtest(sub, holdout = 6L, fit_fn = fit_cl,
                  loss_var = "loss", method = "mack")
-  ok <- with(bt$aeg, is.finite(value_pred) & value_pred != 0 &
+  ok <- with(bt$ae_err, is.finite(value_pred) & value_pred != 0 &
                      is.finite(value_actual))
-  expect_equal(bt$aeg$aeg[ok],
-               (bt$aeg$value_actual[ok] / bt$aeg$value_pred[ok]) - 1,
+  expect_equal(bt$ae_err$ae_err[ok],
+               (bt$ae_err$value_actual[ok] / bt$ae_err$value_pred[ok]) - 1,
                tolerance = 1e-8)
 })
 
 test_that("col_summary and diag_summary keyed correctly", {
   bt <- backtest(sub, holdout = 6L, fit_fn = fit_cl,
                  loss_var = "loss", method = "mack")
-  expect_true(all(c("coverage", "dev", "n", "aeg_mean",
-                    "aeg_med", "aeg_wt") %in% names(bt$col_summary)))
-  expect_true(all(c("coverage", "calendar_idx", "n", "aeg_mean",
-                    "aeg_med", "aeg_wt") %in% names(bt$diag_summary)))
+  expect_true(all(c("coverage", "dev", "n", "ae_err_mean",
+                    "ae_err_med", "ae_err_wt") %in% names(bt$col_summary)))
+  expect_true(all(c("coverage", "calendar_idx", "n", "ae_err_mean",
+                    "ae_err_med", "ae_err_wt") %in% names(bt$diag_summary)))
 })
 
 test_that("masked triangle has fewer rows than original", {
@@ -65,8 +65,8 @@ test_that("backtest works with method = 'basic'", {
 test_that("backtest preserves multi-group structure", {
   bt <- backtest(tri, holdout = 6L, fit_fn = fit_cl,
                  loss_var = "loss", method = "mack")
-  expect_true("coverage" %in% names(bt$aeg))
-  expect_gt(length(unique(bt$aeg$coverage)), 1L)
+  expect_true("coverage" %in% names(bt$ae_err))
+  expect_gt(length(unique(bt$ae_err$coverage)), 1L)
 })
 
 test_that("backtest errors on invalid holdout", {
@@ -123,8 +123,8 @@ test_that("backtest works with fit_lr method = 'sa'", {
                  method = "sa", loss_var = "loss")
   expect_s3_class(bt, "Backtest")
   expect_s3_class(bt$fit, "LRFit")
-  expect_true("value_pred" %in% names(bt$aeg))
-  expect_true(any(is.finite(bt$aeg$aeg)))
+  expect_true("value_pred" %in% names(bt$ae_err))
+  expect_true(any(is.finite(bt$ae_err$ae_err)))
 })
 
 test_that("backtest works with fit_lr method = 'ed'", {
@@ -132,7 +132,7 @@ test_that("backtest works with fit_lr method = 'ed'", {
                  method = "ed", loss_var = "loss")
   expect_s3_class(bt, "Backtest")
   expect_s3_class(bt$fit, "LRFit")
-  expect_true(any(is.finite(bt$aeg$aeg)))
+  expect_true(any(is.finite(bt$ae_err$ae_err)))
 })
 
 test_that("backtest works with fit_lr method = 'cl'", {
@@ -140,13 +140,13 @@ test_that("backtest works with fit_lr method = 'cl'", {
                  method = "cl", loss_var = "loss")
   expect_s3_class(bt, "Backtest")
   expect_s3_class(bt$fit, "LRFit")
-  expect_true(any(is.finite(bt$aeg$aeg)))
+  expect_true(any(is.finite(bt$ae_err$ae_err)))
 })
 
 test_that("backtest fit_lr loss_var = 'lr' uses lr_proj", {
   bt <- backtest(sub, holdout = 6L, fit_fn = fit_lr,
                  method = "sa", loss_var = "lr")
-  cell <- bt$aeg[is.finite(bt$aeg$value_pred), ][1L, ]
+  cell <- bt$ae_err[is.finite(bt$ae_err$value_pred), ][1L, ]
   full <- bt$fit$full
   match_row <- full[full$cohort == cell$cohort & full$dev == cell$dev, ]
   expect_equal(nrow(match_row), 1L)
@@ -156,7 +156,7 @@ test_that("backtest fit_lr loss_var = 'lr' uses lr_proj", {
 test_that("backtest fit_lr loss_var = 'premium' uses premium_proj", {
   bt <- backtest(sub, holdout = 6L, fit_fn = fit_lr,
                  method = "sa", loss_var = "premium")
-  cell <- bt$aeg[is.finite(bt$aeg$value_pred), ][1L, ]
+  cell <- bt$ae_err[is.finite(bt$ae_err$value_pred), ][1L, ]
   full <- bt$fit$full
   match_row <- full[full$cohort == cell$cohort & full$dev == cell$dev, ]
   expect_equal(nrow(match_row), 1L)
@@ -171,7 +171,7 @@ test_that("backtest errors when fit_lr loss_var is unsupported", {
 test_that("backtest preserves multi-group structure with fit_lr", {
   bt <- backtest(tri, holdout = 6L, fit_fn = fit_lr,
                  method = "cl", loss_var = "loss")
-  expect_gt(length(unique(bt$aeg$coverage)), 1L)
+  expect_gt(length(unique(bt$ae_err$coverage)), 1L)
 })
 
 test_that("plot.Backtest dispatches for fit_lr backtests", {
@@ -190,14 +190,14 @@ test_that("backtest works with fit_ed", {
                  loss_var = "loss")
   expect_s3_class(bt, "Backtest")
   expect_s3_class(bt$fit, "EDFit")
-  expect_true("value_pred" %in% names(bt$aeg))
-  expect_true(any(is.finite(bt$aeg$aeg)))
+  expect_true("value_pred" %in% names(bt$ae_err))
+  expect_true(any(is.finite(bt$ae_err$ae_err)))
 })
 
 test_that("backtest fit_ed loss_var = 'loss' uses loss_proj", {
   bt <- backtest(sub, holdout = 6L, fit_fn = fit_ed,
                  loss_var = "loss")
-  cell <- bt$aeg[is.finite(bt$aeg$value_pred), ][1L, ]
+  cell <- bt$ae_err[is.finite(bt$ae_err$value_pred), ][1L, ]
   full <- bt$fit$full
   match_row <- full[full$cohort == cell$cohort & full$dev == cell$dev, ]
   expect_equal(nrow(match_row), 1L)
@@ -207,7 +207,7 @@ test_that("backtest fit_ed loss_var = 'loss' uses loss_proj", {
 test_that("backtest fit_ed loss_var = 'lr' uses lr_proj", {
   bt <- backtest(sub, holdout = 6L, fit_fn = fit_ed,
                  loss_var = "lr")
-  cell <- bt$aeg[is.finite(bt$aeg$value_pred), ][1L, ]
+  cell <- bt$ae_err[is.finite(bt$ae_err$value_pred), ][1L, ]
   full <- bt$fit$full
   match_row <- full[full$cohort == cell$cohort & full$dev == cell$dev, ]
   expect_equal(nrow(match_row), 1L)

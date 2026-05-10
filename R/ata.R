@@ -26,19 +26,19 @@
 #' \describe{
 #'   \item{`wt`}{Volume-weighted mean:
 #'     \eqn{wt = \sum C_{i,k+1} / \sum C_{i,k}}.
-#'     Computed from all rows where `value_from` and `value_to` are
+#'     Computed from all rows where `loss_from` and `loss_to` are
 #'     finite, including rows where either value is zero.
 #'     Independent of `alpha`.}
-#'   \item{`f`}{WLS-estimated factor. Only rows where `value_from > 0`
-#'     are used, since `value_from = 0` causes numerical issues in the
+#'   \item{`f`}{WLS-estimated factor. Only rows where `loss_from > 0`
+#'     are used, since `loss_from = 0` causes numerical issues in the
 #'     WLS weights (\eqn{w = value\_from^{\alpha}}). When `alpha = 2`,
 #'     `f` and `wt` are numerically equivalent (assuming no zero
-#'     `value_from` rows). When `alpha \ne 2`, they diverge.}
+#'     `loss_from` rows). When `alpha \ne 2`, they diverge.}
 #' }
 #'
 #' Therefore `wt` and `f` can differ for two reasons:
 #' \enumerate{
-#'   \item \strong{Zero exclusion}: rows with `value_from = 0` are
+#'   \item \strong{Zero exclusion}: rows with `loss_from = 0` are
 #'     included in `wt` but excluded from `f`. This typically affects
 #'     early development periods where some cohorts have not yet accumulated
 #'     any claims.
@@ -51,8 +51,8 @@
 #' @section Weights:
 #' When the input `"Link"` object contains a `weight` column (added by
 #' [build_link()] when `weight_var` is supplied), that column is
-#' automatically used as the WLS weight in place of `value_from`. This
-#' is useful when `loss_var = "lr"`, where `value_from` carries no
+#' automatically used as the WLS weight in place of `loss_from`. This
+#' is useful when `loss_var = "lr"`, where `loss_from` carries no
 #' exposure information and an external exposure variable such as `premium`
 #' should be used instead.
 #'
@@ -97,7 +97,7 @@
 #'       (\eqn{SD / mean}). Used by [detect_maturity()] to assess
 #'       stability.}
 #'     \item{`f`}{WLS-estimated factor. Equals `wt` when `alpha = 2`
-#'       and no zero `value_from` rows are present.}
+#'       and no zero `loss_from` rows are present.}
 #'     \item{`f_se`}{Standard error of the WLS-estimated factor.}
 #'     \item{`rse`}{Relative standard error of the WLS-estimated factor
 #'       (\eqn{f\_se / f}).}
@@ -132,8 +132,8 @@
   # 1) descriptive statistics -------------------------------------------
   ds <- dt[, {
     vals <- ata[is.finite(ata)]
-    vf   <- value_from
-    vt   <- value_to
+    vf   <- loss_from
+    vt   <- loss_to
     m    <- mean(vals)
 
     .(
@@ -152,7 +152,7 @@
 
   # 2) WLS estimation ---------------------------------------------------
   # use weight column if present (added by build_link(weight_var = ...))
-  # otherwise fall back to value_from (standard volume-weighted chain ladder)
+  # otherwise fall back to loss_from (standard volume-weighted chain ladder)
   wt_col    <- if ("weight" %in% names(dt)) "weight" else 1
   link_factors <- .lm_link(object, weights = wt_col, alpha = alpha, ...)
 

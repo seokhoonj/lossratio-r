@@ -32,7 +32,7 @@ downstream \code{summary} / \code{fit_ata} calls. Must differ from
 workflow has its own anchor).}
 
 \item{min_denom}{Minimum denominator required to compute \code{ata}
-and \code{g}. If \code{value_from <= min_denom}, \code{ata} becomes \code{NA}; if
+and \code{g}. If \code{loss_from <= min_denom}, \code{ata} becomes \code{NA}; if
 \code{premium_from <= min_denom}, \code{g} becomes \code{NA}. Default \code{0}.}
 
 \item{drop_invalid}{Logical; if \code{TRUE}, rows with non-finite \code{ata}
@@ -43,9 +43,9 @@ and \code{g}. If \code{value_from <= min_denom}, \code{ata} becomes \code{NA}; i
 A \code{data.table} of class \code{"Link"} with columns:
 \itemize{
 \item Always: \verb{[group_var]}, \code{cohort}, \code{ata_from}, \code{ata_to}, \code{ata_link},
-\code{value_from}, \code{value_to}, \code{delta_value}, \code{ata}.
+\code{loss_from}, \code{loss_to}, \code{loss_delta}, \code{ata}.
 \item If \code{premium_var} is set: also \code{premium_from}, \code{premium_to},
-\code{delta_premium}, \code{g}.
+\code{premium_delta}, \code{g}.
 \item If \code{weight_var} is set: also \code{weight}.
 }
 

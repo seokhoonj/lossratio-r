@@ -37,11 +37,12 @@
 #' held-out cells, and compare the projection to the actual values
 #' that were withheld.
 #'
-#' The Actual-Expected Gap (AEG) follows the standard actuarial A/E
+#' The A/E Error (`ae_err`) follows the standard actuarial A/E
 #' convention and is computed cell-wise as
-#' \deqn{aeg = \frac{value_{actual}}{value_{proj}} - 1}
-#' so that positive values flag under-projection (actual exceeded
-#' expected) and negative values flag over-projection. Aggregated by
+#' \deqn{ae\_err = \frac{value_{actual}}{value_{proj}} - 1}
+#' so that positive values flag under-projection (the model
+#' under-estimated; actual exceeded expected) and negative values
+#' flag over-projection. Aggregated by
 #' development period (`col_summary`) and by calendar diagonal
 #' (`diag_summary`).
 #'
@@ -83,7 +84,7 @@
 #' @details
 #' The `loss_var` argument plays two slightly different roles
 #' depending on the fitter, summarised below. In every case `loss_var`
-#' is the column that drives the AEG comparison; the difference is
+#' is the column that drives the A/E Error comparison; the difference is
 #' whether the fitter consumes the same name as input or whether the
 #' name is only resolved against the fit's projection table.
 #'
@@ -118,12 +119,12 @@
 #'     \item{`masked`}{Triangle used for fitting (with held-out cells
 #'       removed).}
 #'     \item{`fit`}{The fit object returned by `fit_fn`.}
-#'     \item{`aeg`}{`data.table` of held-out cells with columns
-#'       `(group_var, cohort, dev, value_actual, value_pred, aeg,
+#'     \item{`ae_err`}{`data.table` of held-out cells with columns
+#'       `(group_var, cohort, dev, value_actual, value_pred, ae_err,
 #'       calendar_idx)`.}
-#'     \item{`col_summary`}{Per-`dev` aggregate AEG (mean / median /
-#'       weighted / n).}
-#'     \item{`diag_summary`}{Per-calendar-diagonal aggregate AEG.}
+#'     \item{`col_summary`}{Per-`dev` aggregate A/E Error (mean /
+#'       median / weighted / n).}
+#'     \item{`diag_summary`}{Per-calendar-diagonal aggregate A/E Error.}
 #'     \item{`loss_var`, `holdout`, `fit_fn_name`}{Call metadata.}
 #'     \item{`group_var`, `cohort_var`, `dev_var`}{Variable name relays
 #'       from `x`.}
@@ -226,43 +227,43 @@ backtest <- function(x,
   data.table::setnames(obs, loss_var, "value_actual")
   data.table::setnames(obs, ".cal_idx", "calendar_idx")
 
-  aeg <- pred[obs,
-              on = c(grp_var, "cohort", "dev"),
-              nomatch = NULL]
-  data.table::setnames(aeg, proj_col, "value_pred")
+  ae_err <- pred[obs,
+                 on = c(grp_var, "cohort", "dev"),
+                 nomatch = NULL]
+  data.table::setnames(ae_err, proj_col, "value_pred")
 
   # Drop cells the masked fit cannot reach (no projection produced)
-  aeg <- aeg[is.finite(value_pred)]
+  ae_err <- ae_err[is.finite(value_pred)]
 
-  aeg[, aeg := data.table::fifelse(
+  ae_err[, ae_err := data.table::fifelse(
     is.finite(value_pred) & value_pred != 0,
     value_actual / value_pred - 1,
     NA_real_
   )]
 
-  data.table::setcolorder(aeg, c(grp_var, "cohort", "dev",
-                                 "value_actual", "value_pred",
-                                 "aeg", "calendar_idx"))
-  data.table::setorderv(aeg, c(grp_var, "cohort", "dev"))
+  data.table::setcolorder(ae_err, c(grp_var, "cohort", "dev",
+                                    "value_actual", "value_pred",
+                                    "ae_err", "calendar_idx"))
+  data.table::setorderv(ae_err, c(grp_var, "cohort", "dev"))
 
   # 5) Summaries --------------------------------------------------------
   col_by   <- c(grp_var, "dev")
-  col_summary <- aeg[, .(
-    n        = sum(is.finite(aeg)),
-    aeg_mean = mean(aeg,   na.rm = TRUE),
-    aeg_med  = stats::median(aeg, na.rm = TRUE),
-    aeg_wt   = sum(value_actual - value_pred, na.rm = TRUE) /
-               sum(value_pred, na.rm = TRUE)
+  col_summary <- ae_err[, .(
+    n           = sum(is.finite(ae_err)),
+    ae_err_mean = mean(ae_err, na.rm = TRUE),
+    ae_err_med  = stats::median(ae_err, na.rm = TRUE),
+    ae_err_wt   = sum(value_actual - value_pred, na.rm = TRUE) /
+                  sum(value_pred, na.rm = TRUE)
   ), by = col_by]
   data.table::setorderv(col_summary, col_by)
 
   diag_by <- c(grp_var, "calendar_idx")
-  diag_summary <- aeg[, .(
-    n        = sum(is.finite(aeg)),
-    aeg_mean = mean(aeg,   na.rm = TRUE),
-    aeg_med  = stats::median(aeg, na.rm = TRUE),
-    aeg_wt   = sum(value_actual - value_pred, na.rm = TRUE) /
-               sum(value_pred, na.rm = TRUE)
+  diag_summary <- ae_err[, .(
+    n           = sum(is.finite(ae_err)),
+    ae_err_mean = mean(ae_err, na.rm = TRUE),
+    ae_err_med  = stats::median(ae_err, na.rm = TRUE),
+    ae_err_wt   = sum(value_actual - value_pred, na.rm = TRUE) /
+                  sum(value_pred, na.rm = TRUE)
   ), by = diag_by]
   data.table::setorderv(diag_summary, diag_by)
 
@@ -272,7 +273,7 @@ backtest <- function(x,
     data         = x,
     masked       = masked,
     fit          = fit_obj,
-    aeg          = aeg,
+    ae_err       = ae_err,
     col_summary  = col_summary,
     diag_summary = diag_summary,
     loss_var    = loss_var,
@@ -295,16 +296,16 @@ backtest <- function(x,
 print.Backtest <- function(x, ...) {
   cat("<Backtest>\n")
   cat(sprintf("  fit_fn      : %s\n", x$fit_fn_name))
-  cat(sprintf("  loss_var   : %s\n", x$loss_var))
+  cat(sprintf("  loss_var    : %s\n", x$loss_var))
   cat(sprintf("  holdout     : %d calendar diagonals\n", x$holdout))
-  cat(sprintf("  held-out    : %d cells\n", nrow(x$aeg)))
-  ag <- x$aeg$aeg
-  ag <- ag[is.finite(ag)]
-  if (length(ag)) {
-    cat(sprintf("  AEG         : mean %.2f%% / median %.2f%%\n",
-                mean(ag) * 100, stats::median(ag) * 100))
+  cat(sprintf("  held-out    : %d cells\n", nrow(x$ae_err)))
+  err <- x$ae_err$ae_err
+  err <- err[is.finite(err)]
+  if (length(err)) {
+    cat(sprintf("  A/E Error   : mean %.2f%% / median %.2f%%\n",
+                mean(err) * 100, stats::median(err) * 100))
   } else {
-    cat("  AEG         : (no finite values)\n")
+    cat("  A/E Error   : (no finite values)\n")
   }
   invisible(x)
 }
@@ -318,7 +319,7 @@ summary.Backtest <- function(object, ...) {
     fit_fn_name  = object$fit_fn_name,
     loss_var    = object$loss_var,
     holdout      = object$holdout,
-    n_held_out   = nrow(object$aeg),
+    n_held_out   = nrow(object$ae_err),
     col_summary  = object$col_summary,
     diag_summary = object$diag_summary
   )
@@ -333,7 +334,7 @@ summary.Backtest <- function(object, ...) {
 print.summary.Backtest <- function(x, ...) {
   cat("Backtest summary\n")
   cat(sprintf("  fit_fn      : %s\n", x$fit_fn_name))
-  cat(sprintf("  loss_var   : %s\n", x$loss_var))
+  cat(sprintf("  loss_var    : %s\n", x$loss_var))
   cat(sprintf("  holdout     : %d calendar diagonals\n", x$holdout))
   cat(sprintf("  held-out    : %d cells\n\n", x$n_held_out))
 

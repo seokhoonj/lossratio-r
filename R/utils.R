@@ -236,8 +236,8 @@
 #' @description
 #' Internal helper that maps a package convention variable name (e.g.
 #' `"uym"`, `"elap_m"`) to a human-readable axis label (e.g.
-#' `"underwriting ym"`, `"development months"`). Falls back to the input
-#' string when the variable is not recognised.
+#' `"underwriting months"`, `"development months"`). Falls back to the
+#' input string when the variable is not recognised.
 #'
 #' @param var A single character string.
 #'
@@ -248,14 +248,14 @@
   if (length(var) != 1L || is.na(var)) return(var)
   switch(
     var,
-    uym  = "underwriting ym",
-    uyq  = "underwriting yq",
-    uyh  = "underwriting yh",
-    uy   = "underwriting y",
-    cym  = "calendar ym",
-    cyq  = "calendar yq",
-    cyh  = "calendar yh",
-    cy   = "calendar y",
+    uym  = "underwriting months",
+    uyq  = "underwriting quarters",
+    uyh  = "underwriting halves",
+    uy   = "underwriting years",
+    cym  = "calendar months",
+    cyq  = "calendar quarters",
+    cyh  = "calendar halves",
+    cy   = "calendar years",
     elap_m = "development months",
     elap_q = "development quarters",
     elap_h = "development halves",

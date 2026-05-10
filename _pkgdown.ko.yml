@@ -96,14 +96,24 @@ reference:
 
 - title: 추정
   desc: >
-    링크별 인자 추정 (`fit_ata`, `fit_ed`) 과 전체 예측 (`fit_cl`,
-    `fit_lr`). `fit_lr` 은 세 가지 method 지원 — `"sa"` (단계 적응형,
-    default), `"ed"`, `"cl"`.
+    Triangle 위에서 projection 을 산출하는 모형. `fit_cl` (chain ladder),
+    `fit_ed` (노출 기반 / additive), `fit_lr` (손해율 통합 인터페이스 —
+    `"sa"` 단계 적응형 default, `"ed"`, `"cl"` method 지원). 모두 결과
+    객체에 `$full` projection table 을 보유.
+  contents:
+  - fit_cl
+  - fit_ed
+  - fit_lr
+
+- title: 인자 진단
+  desc: >
+    링크별 ATA 인자 추정 (factor level). projection 은 산출하지 않고
+    인자·SE·진단 stat 만 제공. `fit_cl` 의 building block 이며
+    `detect_maturity()` 와 `fit_lr(method = "sa")` 의 stage transition
+    에서 내부적으로 사용. ED 측 factor-level 진단은 별도 함수가 아닌
+    `summary.Link(model = "ed")` 로 노출.
   contents:
   - fit_ata
-  - fit_ed
-  - fit_cl
-  - fit_lr
 
 - title: 추정 셀 선택 진단
   desc: >

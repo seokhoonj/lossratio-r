@@ -37,7 +37,7 @@
 #'   `loss_var`. Cannot be combined with `premium_var` (the dual
 #'   workflow has its own anchor).
 #' @param min_denom Minimum denominator required to compute `ata`
-#'   and `g`. If `value_from <= min_denom`, `ata` becomes `NA`; if
+#'   and `g`. If `loss_from <= min_denom`, `ata` becomes `NA`; if
 #'   `premium_from <= min_denom`, `g` becomes `NA`. Default `0`.
 #' @param drop_invalid Logical; if `TRUE`, rows with non-finite `ata`
 #'   (single-var) or non-finite `g` (dual-var) are dropped. Default
@@ -46,9 +46,9 @@
 #' @return A `data.table` of class `"Link"` with columns:
 #'
 #'   * Always: `[group_var]`, `cohort`, `ata_from`, `ata_to`, `ata_link`,
-#'     `value_from`, `value_to`, `delta_value`, `ata`.
+#'     `loss_from`, `loss_to`, `loss_delta`, `ata`.
 #'   * If `premium_var` is set: also `premium_from`, `premium_to`,
-#'     `delta_premium`, `g`.
+#'     `premium_delta`, `g`.
 #'   * If `weight_var` is set: also `weight`.
 #'
 #'   The returned object carries attributes `group_var`, `cohort_var`,
@@ -150,28 +150,28 @@ build_link <- function(x,
     by = grp_coh_var]
   z[, ata_link := sprintf("%s-%s", ata_from, ata_to)]
 
-  # 2) value_from / value_to / delta_value / ata -----------------------
-  z[, value_from := .SD[[l_var]], .SDcols = l_var]
-  z[, value_to   := data.table::shift(.SD[[1L]], type = "lead"),
+  # 2) loss_from / loss_to / loss_delta / ata -----------------------
+  z[, loss_from := .SD[[l_var]], .SDcols = l_var]
+  z[, loss_to   := data.table::shift(.SD[[1L]], type = "lead"),
     by      = grp_coh_var,
     .SDcols = l_var]
-  z[, delta_value := value_to - value_from]
+  z[, loss_delta := loss_to - loss_from]
   z[, ata := data.table::fifelse(
-    value_from > min_denom,
-    value_to / value_from,
+    loss_from > min_denom,
+    loss_to / loss_from,
     NA_real_
   )]
 
-  # 3) premium_from / premium_to / delta_premium / g -------------------
+  # 3) premium_from / premium_to / premium_delta / g -------------------
   if (use_premium) {
     z[, premium_from := .SD[[p_var]], .SDcols = p_var]
     z[, premium_to   := data.table::shift(.SD[[1L]], type = "lead"),
       by      = grp_coh_var,
       .SDcols = p_var]
-    z[, delta_premium := premium_to - premium_from]
+    z[, premium_delta := premium_to - premium_from]
     z[, g := data.table::fifelse(
       premium_from > min_denom,
-      delta_value / premium_from,
+      loss_delta / premium_from,
       NA_real_
     )]
   }
@@ -193,9 +193,9 @@ build_link <- function(x,
   keep <- c(
     grp_var, "cohort",
     "ata_from", "ata_to", "ata_link",
-    "value_from", "value_to", "delta_value", "ata",
+    "loss_from", "loss_to", "loss_delta", "ata",
     if (use_premium)
-      c("premium_from", "premium_to", "delta_premium", "g"),
+      c("premium_from", "premium_to", "premium_delta", "g"),
     if (use_weight) "weight"
   )
 
@@ -276,7 +276,7 @@ summary.Link <- function(object,
 #' \eqn{\mathrm{Var}(C_{i,k+1} \mid C_{i,k}) \propto C_{i,k}^{\alpha}}.
 #'
 #' When only one observation is available for a link, the factor is computed
-#' directly as `value_to / value_from` and standard errors are set to `NA`.
+#' directly as `loss_to / loss_from` and standard errors are set to `NA`.
 #'
 #' Near-zero values of `f_se` and `sigma` (below `tol`) are set to zero to
 #' avoid numerical noise from essentially perfect fits.
@@ -288,8 +288,8 @@ summary.Link <- function(object,
 #' @param alpha Numeric scalar controlling the variance structure. Default
 #'   is `1`.
 #' @param na_rm Logical; if `TRUE` (default), rows with non-finite or
-#'   non-positive `value_from` are dropped before fitting. Note that
-#'   `value_to = 0` is permitted, as zero cumulative values are valid
+#'   non-positive `loss_from` are dropped before fitting. Note that
+#'   `loss_to = 0` is permitted, as zero cumulative values are valid
 #'   observations (e.g. no claims yet developed in early development periods).
 #' @param tol Non-negative numeric scalar. Values below `tol` are set to
 #'   zero. Default is `1e-12`.
@@ -325,7 +325,7 @@ summary.Link <- function(object,
 
   # 1) drop invalid rows ------------------------------------------------
   if (na_rm) {
-    dt <- dt[is.finite(value_from) & is.finite(value_to) & value_from > 0]
+    dt <- dt[is.finite(loss_from) & is.finite(loss_to) & loss_from > 0]
   }
 
   # 2) attach weight column ---------------------------------------------
@@ -342,25 +342,25 @@ summary.Link <- function(object,
     dt[, w := weights]
   }
 
-  # regression weight: w / value_from^(2 - alpha)
+  # regression weight: w / loss_from^(2 - alpha)
   # this corresponds to Mack's variance assumption:
   # Var(C_{i,k+1} | C_{i,k}) proportional to C_{i,k}^alpha / w_{i,k}
   delta <- 2 - alpha
-  dt[, reg_w := w / value_from^delta]
+  dt[, reg_w := w / loss_from^delta]
   dt[, ata_link := sprintf("%s-%s", ata_from, ata_to)]
 
   # 3) fit one model per link -------------------------------------------
   res <- dt[, {
     if (.N == 1L) {
       data.table::data.table(
-        f     = value_to[1L] / value_from[1L],
+        f     = loss_to[1L] / loss_from[1L],
         f_se  = NA_real_,
         sigma = NA_real_,
         n_obs = 1L
       )
     } else {
       fit <- tryCatch(
-        stats::lm(value_to ~ value_from + 0, weights = reg_w),
+        stats::lm(loss_to ~ loss_from + 0, weights = reg_w),
         error = function(e) NULL
       )
 

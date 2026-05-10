@@ -489,10 +489,11 @@ plot_triangle <- function(x, ...) {
 #'       next line, the associated loss / premium amounts. For amount and
 #'       proportion metrics, this falls back to `"value"`.}
 #'   }
-#' @param label_args A list of arguments forwarded to [ggshort::ggtable()] to
-#'   control label appearance (`family`, `size`, `angle`, `hjust`, `vjust`,
-#'   `color`). Slots not supplied fall back to ggshort defaults
-#'   (e.g. `size = 3.88`).
+#' @param label_size Numeric label text size forwarded to
+#'   [ggshort::ggtable()]. Defaults to `3` for `label_style = "value"`
+#'   and `2.5` for `label_style = "detail"` (two-line labels need a
+#'   smaller size to fit). Other label appearance fields (family,
+#'   color, hjust, ...) fall back to ggshort defaults.
 #' @param amount_divisor Numeric scaling factor applied to amount variables
 #'   (e.g., `loss`, `loss_incr`, `premium`, `premium_incr`, `margin`, `margin_incr`) before plotting.
 #'   Default is `1e8`
@@ -535,7 +536,7 @@ plot_triangle.Triangle <- function(x,
                                    type = c("value", "usage"),
                                    value_var = "lr",
                                    label_style = c("value", "detail"),
-                                   label_args = list(),
+                                   label_size = NULL,
                                    amount_divisor = 1e8,
                                    nrow = NULL, ncol = NULL,
                                    theme = c("view", "save", "shiny"),
@@ -550,7 +551,9 @@ plot_triangle.Triangle <- function(x,
 
   label_style <- match.arg(label_style)
   theme       <- match.arg(theme)
-  label_args  <- .modify_label_args(label_args)
+  if (is.null(label_size))
+    label_size <- if (label_style == "detail") 2.5 else 3
+  label_args  <- .modify_label_args(list(size = label_size))
 
   grp_var <- attr(x, "group_var")
   coh_var <- attr(x, "cohort_var")

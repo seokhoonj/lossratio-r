@@ -142,14 +142,27 @@ reference:
 
 - title: Estimation
   desc: >
-    Per-link factor estimation (`fit_ata`, `fit_ed`) and full
-    projection (`fit_cl`, `fit_lr`). `fit_lr` supports three methods —
-    `"sa"` (stage-adaptive, default), `"ed"`, and `"cl"`.
+    Models that produce full projections on a Triangle. `fit_cl`
+    (chain ladder), `fit_ed` (exposure-driven / additive), `fit_lr`
+    (loss-ratio umbrella with three methods — `"sa"` stage-adaptive
+    default, `"ed"`, `"cl"`). All return an object carrying a `$full`
+    projection table.
+  contents:
+  - fit_cl
+  - fit_ed
+  - fit_lr
+
+- title: Factor diagnostics
+  desc: >
+    Per-link ATA factor estimation (factor level). Returns factors,
+    standard errors, and per-link diagnostic stats without producing a
+    projection. Used as the building block of `fit_cl` and consumed
+    internally by `detect_maturity()` and the stage transition in
+    `fit_lr(method = "sa")`. The ED-side factor-level diagnostic is
+    exposed via `summary.Link(model = "ed")`, not a dedicated fit
+    function.
   contents:
   - fit_ata
-  - fit_ed
-  - fit_cl
-  - fit_lr
 
 - title: Cell-selection diagnostics
   desc: >

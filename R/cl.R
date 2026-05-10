@@ -515,10 +515,10 @@ print.CLFit <- function(x, ...) {
     link_long[, .wt := 1]
   }
 
-  link_long <- link_long[is.finite(.wt) & is.finite(value_to) & value_from > 0]
+  link_long <- link_long[is.finite(.wt) & is.finite(loss_to) & loss_from > 0]
 
   link_weights <- link_long[,
-                       .(denom = sum(.wt * value_from^alpha, na.rm = TRUE)),
+                       .(denom = sum(.wt * loss_from^alpha, na.rm = TRUE)),
                        by = c(grp_var, "ata_from")
   ]
 

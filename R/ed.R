@@ -32,7 +32,7 @@
 #'     Computed from all rows where both values are finite.
 #'     Independent of `alpha`.}
 #'   \item{`g`}{WLS-estimated intensity from
-#'     \code{lm(delta_value ~ premium_from + 0)}. Only rows where
+#'     \code{lm(loss_delta ~ premium_from + 0)}. Only rows where
 #'     `premium_from > 0` are used. When `alpha = 2`, `g` and `wt`
 #'     are numerically equivalent.}
 #' }
@@ -73,7 +73,7 @@
   ds <- dt[, {
     vals <- g[is.finite(g)]
     ef   <- premium_from
-    dl   <- delta_value
+    dl   <- loss_delta
     m    <- mean(vals)
 
     .(
@@ -471,12 +471,12 @@ print.EDFit <- function(x, ...) {
 
   # 1) drop invalid rows
   if (na_rm) {
-    dt <- dt[is.finite(premium_from) & is.finite(delta_value) &
+    dt <- dt[is.finite(premium_from) & is.finite(loss_delta) &
                premium_from > 0]
   }
 
   # 2) compute WLS weight
-  # Var(delta_value) ~ premium_from^alpha
+  # Var(loss_delta) ~ premium_from^alpha
   # => WLS weight = 1 / premium_from^(2 - alpha)
   delta <- 2 - alpha
   dt[, reg_w := 1 / premium_from^delta]
@@ -486,14 +486,14 @@ print.EDFit <- function(x, ...) {
   res <- dt[, {
     if (.N == 1L) {
       data.table::data.table(
-        g     = delta_value[1L] / premium_from[1L],
+        g     = loss_delta[1L] / premium_from[1L],
         g_se  = NA_real_,
         sigma = NA_real_,
         n_obs = 1L
       )
     } else {
       fit <- tryCatch(
-        stats::lm(delta_value ~ premium_from + 0, weights = reg_w),
+        stats::lm(loss_delta ~ premium_from + 0, weights = reg_w),
         error = function(e) NULL
       )
 
@@ -647,7 +647,7 @@ print.EDFit <- function(x, ...) {
          call. = FALSE)
 
   ed_valid <- ed_long[is.finite(premium_from) &
-                        is.finite(delta_value) &
+                        is.finite(loss_delta) &
                         premium_from > 0]
 
   link_weights <- ed_valid[,

@@ -30,9 +30,9 @@ knitr::opts_chunk$set(
 (calendar diagonal)을 마스킹한 뒤, 이전 부분에 모형을 재적합하고, 그
 추정값을 마스킹된 셀의 실제값과 비교함으로써 이 질문에 답한다. 이는 경과 기간 단위 hold-out이 아니라
 대각선 단위 hold-out인데, "*K* 개월 전 valuation 시점에서 모형은 무엇이라
-말했을까?" 를 모사하기 때문이다. 셀 단위 지표는 AEG (Actual-Expected Gap,
-실제-예측 차이) 이며, 표준 actuarial A/E 관용에 맞춰
-$\mathrm{aeg} = v_{\mathrm{actual}} / v_{\mathrm{pred}} - 1$ 로 정의한다.
+말했을까?" 를 모사하기 때문이다. 셀 단위 지표는 A/E Error (`ae_err`) 이며,
+표준 actuarial A/E 관용에 맞춰
+$\mathrm{ae\_err} = v_{\mathrm{actual}} / v_{\mathrm{pred}} - 1$ 로 정의한다.
 양수는 과소 추정 (실제가 기대보다 큼), 음수는 과대 추정을 의미한다.
 
 ## 2. 기본 사용법
@@ -51,9 +51,9 @@ print(bt)
 이며, 기본 비교 컬럼은 `loss_var = "lr"` 이다 (누적 손해율). 반환되는 객체는
 `"Backtest"` 리스트이며, 주요 슬롯은 다음과 같다.
 
-- `aeg` — 셀 단위 `data.table` (cohort, dev, actual, pred, aeg, calendar_idx).
-- `col_summary` — `dev` 별로 집계된 AEG.
-- `diag_summary` — 대각선별로 집계된 AEG.
+- `ae_err` — 셀 단위 `data.table` (cohort, dev, actual, pred, ae_err, calendar_idx).
+- `col_summary` — `dev` 별로 집계된 A/E Error.
+- `diag_summary` — 대각선별로 집계된 A/E Error.
 - `masked` — 적합에 사용된 triangle (최근 대각선이 제거됨).
 - `fit` — `fit_fn` 이 반환한 적합 객체 (`LRFit` 또는 `CLFit`).
 
@@ -65,7 +65,7 @@ print(bt)
 chain ladder 는 마스킹된 데이터에 남아 있는 가장 큰 dev 까지만 추정값을
 만들 수 있으므로, 그 범위를 넘어가는 셀 — 가장 오래된 코호트의 후기
 dev 셀들 — 은 비교할 추정값이 아예 생성되지 않는다. 이런 셀은 자동으로
-제외되어, `bt$aeg` 에는 실제값과 추정값이 모두 존재하는 셀만 남는다.
+제외되어, `bt$ae_err` 에는 실제값과 추정값이 모두 존재하는 셀만 남는다.
 
 실무적 함의: `holdout` 이 커질수록 가장 오래된 코호트의 후기 dev 영역이
 가장 먼저 검증에서 빠진다. 이 영역은 chain ladder 가 외삽 (관측 범위
@@ -74,20 +74,20 @@ dev 셀들 — 은 비교할 추정값이 아예 생성되지 않는다. 이런 
 
 ## 4. 출력 해석
 
-**`col_summary` — 경과 기간별 체계적 편향.** 특정 dev 에서 AEG 의 부호가
-일관되게 나타나면, 그 성숙도에서 모형과 자료 사이에 구조적 불일치가 있음을
-시사한다. 초기 dev 의 양의 값은 보통 부풀려진 link factor 를 반영하고, 후기
-dev 의 값은 꼬리 미보정(miscalibration) 을 시사한다.
+**`col_summary` — 경과 기간별 체계적 편향.** 특정 dev 에서 A/E Error 의
+부호가 일관되게 나타나면, 그 성숙도에서 모형과 자료 사이에 구조적 불일치가
+있음을 시사한다. 초기 dev 의 양의 값은 보통 부풀려진 link factor 를 반영하고,
+후기 dev 의 값은 꼬리 미보정(miscalibration) 을 시사한다.
 
 ```{r}
 head(bt$col_summary, 8)
 ```
 
-`aeg_mean` 은 셀 단위 AEG 의 평균, `aeg_med` 는 중앙값,
-`aeg_wt = sum(actual - pred) / sum(pred)` 는 노출 가중 pooled A/E ratio
+`ae_err_mean` 은 셀 단위 A/E Error 의 평균, `ae_err_med` 는 중앙값,
+`ae_err_wt = sum(actual - pred) / sum(pred)` 는 노출 가중 pooled A/E ratio
 에서 1 을 뺀 값이다. 세 컬럼을 비교하면 소수의 큰 셀이 결과를 지배하는지
-(`aeg_wt` 가 `aeg_med` 와 크게 다른 경우) 또는 편향이 균일한지 식별할 수
-있다.
+(`ae_err_wt` 가 `ae_err_med` 와 크게 다른 경우) 또는 편향이 균일한지 식별할
+수 있다.
 
 **`diag_summary` — 대각선 효과(calendar-year effect).** 그 외에는 편향이
 없는 출력에서 단 하나의 대각선만 나쁘게 나타난다면, 정적 chain ladder 가
@@ -99,15 +99,15 @@ bt$diag_summary
 ```
 
 대각선을 가로지르는 단조로운 표류 (위 SUR 예시처럼 `25, ..., 30` 으로
-가면서 AEG 가 점점 더 양수가 되는 패턴) 는 보통 가장 최근 대각선의 실적이
-이전 코호트의 link factor 가 함의하는 수준보다 더 높게 진행되고 있음 —
-즉 정적 모형이 흡수하지 못한 regime shift 가 발생했음을 시사한다.
+가면서 A/E Error 가 점점 더 양수가 되는 패턴) 는 보통 가장 최근 대각선의
+실적이 이전 코호트의 link factor 가 함의하는 수준보다 더 높게 진행되고
+있음 — 즉 정적 모형이 흡수하지 못한 regime shift 가 발생했음을 시사한다.
 
-**`aeg` — 셀 단위 이상치.** 특정 cohort × dev 셀을 진단하려면 `bt$aeg` 를
-직접 살펴본다.
+**`ae_err` — 셀 단위 이상치.** 특정 cohort × dev 셀을 진단하려면
+`bt$ae_err` 를 직접 살펴본다.
 
 ```{r}
-head(bt$aeg, 5)
+head(bt$ae_err, 5)
 ```
 
 ## 5. 플롯 데모
@@ -115,18 +115,18 @@ head(bt$aeg, 5)
 `"Backtest"` 에는 네 가지 플롯 뷰가 등록되어 있다.
 
 ```{r}
-plot(bt, type = "col")    # dev 별 AEG (점 + 0 기준 점선)
-plot(bt, type = "diag")   # 대각선별 AEG
-plot(bt, type = "cell")   # dev 위에 그려진 코호트별 AEG 궤적
+plot(bt, type = "col")    # dev 별 A/E Error (점 + 0 기준 점선)
+plot(bt, type = "diag")   # 대각선별 A/E Error
+plot(bt, type = "cell")   # dev 위에 그려진 코호트별 A/E Error 궤적
 plot_triangle(bt)         # hold-out 영역에 대한 발산형 팔레트 히트맵
 ```
 
 `type = "col"` 은 경과 기간별 체계적 편향을 살피기에 적합하다.
 `type = "diag"` 는 대각선 효과(calendar-year drift) 를 드러낸다.
 `type = "cell"` 은 어느 코호트가 편향에 기여하는지를 노출한다.
-`plot_triangle()` 은 셀 단위 AEG 값을 기저 적합의 `plot_triangle()` 과
-동일한 삼각 배치 위에 올려놓으며, 빨간색이 과소 추정 (actual > pred) 을
-표시하는 빨강/파랑 발산형 팔레트를 사용한다.
+`plot_triangle()` 은 셀 단위 A/E Error 값을 기저 적합의
+`plot_triangle()` 과 동일한 삼각 배치 위에 올려놓으며, 빨간색이 과소
+추정 (actual > pred) 을 표시하는 빨강/파랑 발산형 팔레트를 사용한다.
 
 ## 6. hold-out 선택
 
@@ -167,17 +167,17 @@ plot_triangle(bt)         # hold-out 영역에 대한 발산형 팔레트 히트
 | `"lr"`     | `lr_proj`                  |
 
 ```{r}
-bt_sa_lr   <- backtest(tri_sur, holdout = 6L)                      # default
+bt_sa_lr    <- backtest(tri_sur, holdout = 6L)                     # default
 bt_sa_loss  <- backtest(tri_sur, holdout = 6L, loss_var = "loss")
-bt_ed_lr   <- backtest(tri_sur, holdout = 6L, method = "ed")
-bt_cl_lr   <- backtest(tri_sur, holdout = 6L, method = "cl")
+bt_ed_lr    <- backtest(tri_sur, holdout = 6L, method = "ed")
+bt_cl_lr    <- backtest(tri_sur, holdout = 6L, method = "cl")
 
 print(bt_sa_lr)
 ```
 
 `lr` 을 백테스팅하는 것이 보통 더 유익한 진단이 된다. 손해율은 단위가
 없고 차원이 없어 규모가 크게 다른 코호트 간에도 일관되게 비교 가능하므로,
-`aeg_mean` 과 `aeg_med` 가 triangle 전체에서 일관된 의미를 가진다. 반면
+`ae_err_mean` 과 `ae_err_med` 가 triangle 전체에서 일관된 의미를 가진다. 반면
 `loss` 를 백테스팅하면 결과가 hold-out 대각선에서 가장 큰 코호트 쪽으로
 가중된다.
 

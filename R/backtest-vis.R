@@ -3,14 +3,15 @@
 #' Plot a backtest object
 #'
 #' @description
-#' Visualise the Actual-Expected Gap (AEG) of a `"Backtest"` object.
+#' Visualise the A/E Error (`ae_err`) of a `"Backtest"` object.
 #'
 #' Three plot types:
 #' \itemize{
-#'   \item `"col"`: AEG aggregated by development period (one line per
-#'     summary statistic).
-#'   \item `"diag"`: AEG aggregated by calendar diagonal.
-#'   \item `"cell"`: per-cell AEG as a scatter / line, faceted by group.
+#'   \item `"col"`: A/E Error aggregated by development period (one line
+#'     per summary statistic).
+#'   \item `"diag"`: A/E Error aggregated by calendar diagonal.
+#'   \item `"cell"`: per-cell A/E Error as a scatter / line, faceted by
+#'     group.
 #' }
 #'
 #' @param x An object of class `"Backtest"`.
@@ -42,16 +43,16 @@ plot.Backtest <- function(x,
     long <- data.table::melt(
       smr,
       id.vars       = c(grp_var, "dev", "n"),
-      measure.vars  = c("aeg_mean", "aeg_med", "aeg_wt"),
+      measure.vars  = c("ae_err_mean", "ae_err_med", "ae_err_wt"),
       variable.name = "stat",
-      value.name    = "aeg"
+      value.name    = "ae_err"
     )
     long[, stat := factor(stat,
-                          levels = c("aeg_mean", "aeg_med", "aeg_wt"),
+                          levels = c("ae_err_mean", "ae_err_med", "ae_err_wt"),
                           labels = c("Mean", "Median", "Weighted"))]
     p <- ggplot2::ggplot(
       long,
-      ggplot2::aes(x = .data[["dev"]], y = .data[["aeg"]],
+      ggplot2::aes(x = .data[["dev"]], y = .data[["ae_err"]],
                    color = .data[["stat"]], group = .data[["stat"]])
     ) +
       ggplot2::geom_hline(yintercept = 0, linetype = "dashed",
@@ -64,9 +65,9 @@ plot.Backtest <- function(x,
         name = NULL
       ) +
       ggplot2::scale_y_continuous(labels = function(v) paste0(round(v * 100), "%")) +
-      ggplot2::labs(title = "Backtest AEG by development period",
+      ggplot2::labs(title = "Backtest A/E Error by development period",
                     x = .pretty_var_label(x$dev_var),
-                    y = "AEG = actual / pred - 1")
+                    y = "A/E Error = actual / pred - 1")
     if (length(grp_var))
       p <- p + ggplot2::facet_wrap(grp_var, scales = scales)
 
@@ -75,16 +76,16 @@ plot.Backtest <- function(x,
     long <- data.table::melt(
       smr,
       id.vars       = c(grp_var, "calendar_idx", "n"),
-      measure.vars  = c("aeg_mean", "aeg_med", "aeg_wt"),
+      measure.vars  = c("ae_err_mean", "ae_err_med", "ae_err_wt"),
       variable.name = "stat",
-      value.name    = "aeg"
+      value.name    = "ae_err"
     )
     long[, stat := factor(stat,
-                          levels = c("aeg_mean", "aeg_med", "aeg_wt"),
+                          levels = c("ae_err_mean", "ae_err_med", "ae_err_wt"),
                           labels = c("Mean", "Median", "Weighted"))]
     p <- ggplot2::ggplot(
       long,
-      ggplot2::aes(x = .data[["calendar_idx"]], y = .data[["aeg"]],
+      ggplot2::aes(x = .data[["calendar_idx"]], y = .data[["ae_err"]],
                    color = .data[["stat"]], group = .data[["stat"]])
     ) +
       ggplot2::geom_hline(yintercept = 0, linetype = "dashed",
@@ -97,17 +98,17 @@ plot.Backtest <- function(x,
         name = NULL
       ) +
       ggplot2::scale_y_continuous(labels = function(v) paste0(round(v * 100), "%")) +
-      ggplot2::labs(title = "Backtest AEG by calendar diagonal",
+      ggplot2::labs(title = "Backtest A/E Error by calendar diagonal",
                     x = "calendar diagonal index",
-                    y = "AEG = actual / pred - 1")
+                    y = "A/E Error = actual / pred - 1")
     if (length(grp_var))
       p <- p + ggplot2::facet_wrap(grp_var, scales = scales)
 
   } else { # cell
-    dt <- .ensure_dt(x$aeg)
+    dt <- .ensure_dt(x$ae_err)
     p <- ggplot2::ggplot(
       dt,
-      ggplot2::aes(x = .data[["dev"]], y = .data[["aeg"]],
+      ggplot2::aes(x = .data[["dev"]], y = .data[["ae_err"]],
                    color = .data[["cohort"]], group = .data[["cohort"]])
     ) +
       ggplot2::geom_hline(yintercept = 0, linetype = "dashed",
@@ -116,9 +117,9 @@ plot.Backtest <- function(x,
       ggplot2::geom_point(alpha = 0.6, size = 1.2) +
       .scale_color_by_month_gradientn(begin = 0.25) +
       ggplot2::scale_y_continuous(labels = function(v) paste0(round(v * 100), "%")) +
-      ggplot2::labs(title = "Backtest AEG per held-out cell",
+      ggplot2::labs(title = "Backtest A/E Error per held-out cell",
                     x = .pretty_var_label(x$dev_var),
-                    y = "AEG = actual / pred - 1")
+                    y = "A/E Error = actual / pred - 1")
     if (length(grp_var))
       p <- p + ggplot2::facet_wrap(grp_var, scales = scales)
   }
@@ -127,14 +128,17 @@ plot.Backtest <- function(x,
 }
 
 
-#' Triangle heatmap of backtest AEG
+#' Triangle heatmap of backtest A/E Error
 #'
 #' @description
 #' Display the held-out cells as a `cohort x dev` heatmap coloured by
-#' AEG (red = under-projected (actual > pred), blue = over-projected
-#' (actual < pred), white at 0).
+#' A/E Error (red = under-projected (actual > pred), blue =
+#' over-projected (actual < pred), white at 0).
 #'
 #' @param x An object of class `"Backtest"`.
+#' @param label_size Numeric label text size for cell labels. Default
+#'   `2.5` (single-line A/E Error percent labels on the held-out
+#'   wedge).
 #' @param theme String passed to [.switch_theme()].
 #' @param ... Extra arguments passed to [.switch_theme()].
 #'
@@ -143,17 +147,18 @@ plot.Backtest <- function(x,
 #' @method plot_triangle Backtest
 #' @export
 plot_triangle.Backtest <- function(x,
-                                   theme = c("view", "save", "shiny"),
+                                   label_size = 2.5,
+                                   theme      = c("view", "save", "shiny"),
                                    ...) {
 
   .assert_class(x, "Backtest")
   theme <- match.arg(theme)
 
   grp_var <- x$group_var
-  dt <- .ensure_dt(x$aeg)
+  dt <- .ensure_dt(x$ae_err)
 
-  dt[, .label := sprintf("%.1f", aeg * 100)]
-  lim <- max(abs(dt$aeg), na.rm = TRUE)
+  dt[, .label := sprintf("%.1f", ae_err * 100)]
+  lim <- max(abs(dt$ae_err), na.rm = TRUE)
   if (!is.finite(lim) || lim == 0) lim <- 1
 
   # Encode cohort as a factor with levels in reverse-chronological order
@@ -165,11 +170,11 @@ plot_triangle.Backtest <- function(x,
   p <- ggplot2::ggplot(
     dt,
     ggplot2::aes(x = .data[["dev"]], y = .data[[".y_lab"]],
-                 fill = .data[["aeg"]])
+                 fill = .data[["ae_err"]])
   ) +
     ggplot2::geom_tile(color = "white") +
     ggplot2::geom_text(ggplot2::aes(label = .data[[".label"]]),
-                       size = 2.5) +
+                       size = label_size) +
     ggplot2::scale_fill_gradient2(
       low      = "#1f77b4",
       mid      = "white",
@@ -177,9 +182,9 @@ plot_triangle.Backtest <- function(x,
       midpoint = 0,
       limits   = c(-lim, lim),
       labels   = function(v) paste0(round(v * 100), "%"),
-      name     = "AEG"
+      name     = "A/E Error"
     ) +
-    ggplot2::labs(title = "Backtest AEG (held-out cells)",
+    ggplot2::labs(title = "Backtest A/E Error (held-out cells)",
                   x = .pretty_var_label(x$dev_var),
                   y = .pretty_var_label(x$cohort_var),
                   caption = "Unit: %")

@@ -2,12 +2,16 @@
 % Please edit documentation in R/backtest-vis.R
 \name{plot_triangle.Backtest}
 \alias{plot_triangle.Backtest}
-\title{Triangle heatmap of backtest AEG}
+\title{Triangle heatmap of backtest A/E Error}
 \usage{
-\method{plot_triangle}{Backtest}(x, theme = c("view", "save", "shiny"), ...)
+\method{plot_triangle}{Backtest}(x, label_size = 2.5, theme = c("view", "save", "shiny"), ...)
 }
 \arguments{
 \item{x}{An object of class \code{"Backtest"}.}
+
+\item{label_size}{Numeric label text size for cell labels. Default
+\code{2.5} (single-line A/E Error percent labels on the held-out
+wedge).}
 
 \item{theme}{String passed to \code{\link[=.switch_theme]{.switch_theme()}}.}
 
@@ -18,6 +22,6 @@ A \code{ggplot} object.
 }
 \description{
 Display the held-out cells as a \verb{cohort x dev} heatmap coloured by
-AEG (red = under-projected (actual > pred), blue = over-projected
-(actual < pred), white at 0).
+A/E Error (red = under-projected (actual > pred), blue =
+over-projected (actual < pred), white at 0).
 }

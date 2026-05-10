@@ -27,11 +27,10 @@ loss-ratio projection.
 ## Input shape
 
 `lossratio` consumes long-format experience data — one row per
-(cohort × dev × demographic) cell. The bundled dataset
-`experience` is a 33,480-row table with calendar / underwriting
-period columns at multiple granularities, demographic dimensions
-(`coverage`, `age_band`, `gender`), and per-period amounts
-(`loss_incr`, `premium_incr`).
+(cohort × dev × group) cell. The bundled dataset
+`experience` is a 2,664-row table with calendar / underwriting
+period columns at multiple granularities, a `coverage` group
+column, and per-period amounts (`loss_incr`, `premium_incr`).
 
 ```{r}
 library(lossratio)

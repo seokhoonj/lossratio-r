@@ -53,7 +53,7 @@ but they differ in how weights are assigned:
 Computed from all rows where both values are finite.
 Independent of \code{alpha}.}
 \item{\code{g}}{WLS-estimated intensity from
-\code{lm(delta_value ~ premium_from + 0)}. Only rows where
+\code{lm(loss_delta ~ premium_from + 0)}. Only rows where
 \code{premium_from > 0} are used. When \code{alpha = 2}, \code{g} and \code{wt}
 are numerically equivalent.}
 }

@@ -28,13 +28,14 @@
 A \code{ggplot} object.
 }
 \description{
-Visualise the Actual-Expected Gap (AEG) of a \code{"Backtest"} object.
+Visualise the A/E Error (\code{ae_err}) of a \code{"Backtest"} object.
 
 Three plot types:
 \itemize{
-\item \code{"col"}: AEG aggregated by development period (one line per
-summary statistic).
-\item \code{"diag"}: AEG aggregated by calendar diagonal.
-\item \code{"cell"}: per-cell AEG as a scatter / line, faceted by group.
+\item \code{"col"}: A/E Error aggregated by development period (one line
+per summary statistic).
+\item \code{"diag"}: A/E Error aggregated by calendar diagonal.
+\item \code{"cell"}: per-cell A/E Error as a scatter / line, faceted by
+group.
 }
 }

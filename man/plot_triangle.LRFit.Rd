@@ -8,7 +8,7 @@
   x,
   what = c("full", "pred"),
   label_style = c("value", "detail"),
-  label_args = list(),
+  label_size = NULL,
   show_maturity = TRUE,
   digits = 0,
   amount_divisor = 1e+08,
@@ -27,7 +27,9 @@
 \item{label_style}{One of \code{"value"} (lr only) or \code{"detail"}
 (lr with loss/exposure amounts). Default is \code{"value"}.}
 
-\item{label_args}{Named list of label appearance arguments.}
+\item{label_size}{Numeric label text size forwarded to
+\code{\link[ggshort:ggtable]{ggshort::ggtable()}}. Defaults to \code{3} for \code{label_style = "value"}
+and \code{2.5} for \code{label_style = "detail"} (two-line labels).}
 
 \item{show_maturity}{Logical; if \code{TRUE}, show maturity line.
 Default is \code{TRUE}.}

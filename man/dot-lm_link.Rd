@@ -17,8 +17,8 @@ weights.}
 is \code{1}.}
 
 \item{na_rm}{Logical; if \code{TRUE} (default), rows with non-finite or
-non-positive \code{value_from} are dropped before fitting. Note that
-\code{value_to = 0} is permitted, as zero cumulative values are valid
+non-positive \code{loss_from} are dropped before fitting. Note that
+\code{loss_to = 0} is permitted, as zero cumulative values are valid
 observations (e.g. no claims yet developed in early development periods).}
 
 \item{tol}{Non-negative numeric scalar. Values below \code{tol} are set to
@@ -43,7 +43,7 @@ This corresponds to Mack's variance assumption
 \eqn{\mathrm{Var}(C_{i,k+1} \mid C_{i,k}) \propto C_{i,k}^{\alpha}}.
 
 When only one observation is available for a link, the factor is computed
-directly as \code{value_to / value_from} and standard errors are set to \code{NA}.
+directly as \code{loss_to / loss_from} and standard errors are set to \code{NA}.
 
 Near-zero values of \code{f_se} and \code{sigma} (below \code{tol}) are set to zero to
 avoid numerical noise from essentially perfect fits.

@@ -64,11 +64,11 @@ An object of class \code{"Backtest"} with components:
 \item{\code{masked}}{Triangle used for fitting (with held-out cells
 removed).}
 \item{\code{fit}}{The fit object returned by \code{fit_fn}.}
-\item{\code{aeg}}{\code{data.table} of held-out cells with columns
-\verb{(group_var, cohort, dev, value_actual, value_pred, aeg, calendar_idx)}.}
-\item{\code{col_summary}}{Per-\code{dev} aggregate AEG (mean / median /
-weighted / n).}
-\item{\code{diag_summary}}{Per-calendar-diagonal aggregate AEG.}
+\item{\code{ae_err}}{\code{data.table} of held-out cells with columns
+\verb{(group_var, cohort, dev, value_actual, value_pred, ae_err, calendar_idx)}.}
+\item{\code{col_summary}}{Per-\code{dev} aggregate A/E Error (mean /
+median / weighted / n).}
+\item{\code{diag_summary}}{Per-calendar-diagonal aggregate A/E Error.}
 \item{\code{loss_var}, \code{holdout}, \code{fit_fn_name}}{Call metadata.}
 \item{\code{group_var}, \code{cohort_var}, \code{dev_var}}{Variable name relays
 from \code{x}.}
@@ -80,18 +80,19 @@ Hold out the latest \code{holdout} calendar diagonals from the input
 held-out cells, and compare the projection to the actual values
 that were withheld.
 
-The Actual-Expected Gap (AEG) follows the standard actuarial A/E
+The A/E Error (\code{ae_err}) follows the standard actuarial A/E
 convention and is computed cell-wise as
-\deqn{aeg = \frac{value_{actual}}{value_{proj}} - 1}
-so that positive values flag under-projection (actual exceeded
-expected) and negative values flag over-projection. Aggregated by
+\deqn{ae\_err = \frac{value_{actual}}{value_{proj}} - 1}
+so that positive values flag under-projection (the model
+under-estimated; actual exceeded expected) and negative values
+flag over-projection. Aggregated by
 development period (\code{col_summary}) and by calendar diagonal
 (\code{diag_summary}).
 }
 \details{
 The \code{loss_var} argument plays two slightly different roles
 depending on the fitter, summarised below. In every case \code{loss_var}
-is the column that drives the AEG comparison; the difference is
+is the column that drives the A/E Error comparison; the difference is
 whether the fitter consumes the same name as input or whether the
 name is only resolved against the fit's projection table.
 

@@ -216,7 +216,9 @@ plot.LRFit <- function(x,
 #'   (projected cells only). Default is `"full"`.
 #' @param label_style One of `"value"` (lr only) or `"detail"`
 #'   (lr with loss/exposure amounts). Default is `"value"`.
-#' @param label_args Named list of label appearance arguments.
+#' @param label_size Numeric label text size forwarded to
+#'   [ggshort::ggtable()]. Defaults to `3` for `label_style = "value"`
+#'   and `2.5` for `label_style = "detail"` (two-line labels).
 #' @param show_maturity Logical; if `TRUE`, show maturity line.
 #'   Default is `TRUE`.
 #' @param digits Number of decimal places for lr display.
@@ -234,7 +236,7 @@ plot.LRFit <- function(x,
 plot_triangle.LRFit <- function(x,
                                  what           = c("full", "pred"),
                                  label_style    = c("value", "detail"),
-                                 label_args     = list(),
+                                 label_size     = NULL,
                                  show_maturity  = TRUE,
                                  digits         = 0,
                                  amount_divisor = 1e8,
@@ -248,6 +250,8 @@ plot_triangle.LRFit <- function(x,
   what        <- match.arg(what)
   label_style <- match.arg(label_style)
   theme       <- match.arg(theme)
+  if (is.null(label_size))
+    label_size <- if (label_style == "detail") 2.5 else 3
 
   grp_var <- x$group_var
   coh_var <- x$cohort_var
@@ -311,11 +315,7 @@ plot_triangle.LRFit <- function(x,
   dt[!is.finite(lr_fill), lr_fill := NA_real_]
 
   # 7) resolve label_args
-  label_args <- utils::modifyList(
-    list(family = getOption("ggshort.font"), size = 3,
-         angle = 0, hjust = 0.5, vjust = 0.5, color = "black"),
-    label_args
-  )
+  label_args <- .modify_label_args(list(size = label_size))
 
   plot_data <- dt[is.finite(lr)]
 
