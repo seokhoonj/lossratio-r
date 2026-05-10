@@ -237,7 +237,7 @@ If gaps in the development sequence are suspected, inspect them before
 `build_triangle()`:
 
 ```{r}
-gaps <- validate_triangle(exp, group_var = coverage, grain = "M")
+gaps <- validate_triangle(exp, group_var = coverage, cohort_var = "uy_m", dev_var = "dev_m")
 head(gaps)
 ```
 

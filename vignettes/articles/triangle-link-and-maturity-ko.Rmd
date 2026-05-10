@@ -226,7 +226,7 @@ plot(build_link(tri_all, loss_var = "loss"), type = "cv")
 경과 기간 시퀀스에 결손이 의심되면 `build_triangle()` 호출 전에 점검한다.
 
 ```{r}
-gaps <- validate_triangle(exp, group_var = coverage, grain = "M")
+gaps <- validate_triangle(exp, group_var = coverage, cohort_var = "uy_m", dev_var = "dev_m")
 head(gaps)
 ```
 
