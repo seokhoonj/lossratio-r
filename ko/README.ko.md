@@ -51,8 +51,8 @@ Triangle 셀 하나에 대응하며, 손해액과 보험료 컬럼 (`loss`, `pre
 
 | 컬럼 | 의미 | 예시 |
 |----|----|----|
-| cohort | 인수 / 사고 시점 (집계 주기 무관) | `uym`, `uy` |
-| dev | 코호트 시작 시점 이후 경과 기간 | `dev_m`, `dev_y` |
+| cohort | 인수 / 사고 시점 (집계 주기 무관) | `uy_m`, `uy_a` |
+| dev | 코호트 시작 시점 이후 경과 기간 | `dev_m`, `dev_a` |
 | `loss_incr` | 셀 내 기간별 클레임 금액 | numeric |
 | `premium_incr` | 셀 내 기간별 보험료 (장기건강보험은 위험보험료 사용) | numeric |
 | group | 선택 — 상품, 담보, 연령, 성별, 가입금액 등 | character / factor |
@@ -145,10 +145,10 @@ detect_convergence(lr)
 | [`build_calendar()`](https://seokhoonj.github.io/lossratio/ko/reference/build_calendar.md) | `Calendar` | 달력 기간 (1D) | 달력연도 추세 / 대각선 효과 |
 | [`build_total()`](https://seokhoonj.github.io/lossratio/ko/reference/build_total.md) | `Total` | 포트폴리오 전체 (0D, 그룹별) | 그룹 간 고수준 비교 |
 
-`build_triangle` 이후의 컬럼은 입력된 집계 주기 (`uym` / `uyq` / `uy`
-등) 와 무관하게 `cohort` 와 `dev` 로 표준화된다. 원본 컬럼명과 집계
-주기는 attribute (`cohort_var`, `cohort_type`, `dev_var`, `dev_type`) 로
-보존된다.
+`build_triangle` 이후의 컬럼은 입력된 집계 주기 (`uy_m` / `uy_q` /
+`uy_a` 등) 와 무관하게 `cohort` 와 `dev` 로 표준화된다. 원본 컬럼명과
+집계 주기는 attribute (`cohort_var`, `cohort_type`, `dev_var`,
+`dev_type`) 로 보존된다.
 
 ## Methods
 

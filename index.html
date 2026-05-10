@@ -191,14 +191,14 @@
 <td>cohort</td>
 <td>Underwriting / accident period (any granularity)</td>
 <td>
-<code>uym</code>, <code>uy</code>
+<code>uy_m</code>, <code>uy_a</code>
 </td>
 </tr>
 <tr>
 <td>dev</td>
 <td>Development period since cohort start</td>
 <td>
-<code>dev_m</code>, <code>dev_y</code>
+<code>dev_m</code>, <code>dev_a</code>
 </td>
 </tr>
 <tr>
@@ -346,7 +346,7 @@
 </tr>
 </tbody>
 </table>
-<p>After <code>build_triangle</code>, downstream columns are standardized to <code>cohort</code> and <code>dev</code> regardless of input granularity (<code>uym</code> / <code>uyq</code> / <code>uy</code>, etc.). Original column names and granularity are preserved as attributes (<code>cohort_var</code>, <code>cohort_type</code>, <code>dev_var</code>, <code>dev_type</code>).</p>
+<p>After <code>build_triangle</code>, downstream columns are standardized to <code>cohort</code> and <code>dev</code> regardless of input granularity (<code>uy_m</code> / <code>uy_q</code> / <code>uy_a</code>, etc.). Original column names and granularity are preserved as attributes (<code>cohort_var</code>, <code>cohort_type</code>, <code>dev_var</code>, <code>dev_type</code>).</p>
 </div>
 <div class="section level2">
 <h2 id="methods">Methods<a class="anchor" aria-label="anchor" href="#methods"></a>

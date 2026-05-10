@@ -39,7 +39,7 @@ development cell across products or other grouping variables.
 build_triangle(
   df,
   group_var,
-  cohort_var = "uym",
+  cohort_var = "uy_m",
   dev_var = "dev_m",
   loss_var = "loss_incr",
   premium_var = "premium_incr",
@@ -61,7 +61,7 @@ build_triangle(
 - cohort_var:
 
   Column(s) defining the exposure period (e.g., underwriting year-month,
-  quarter, half-year, or year such as `uym`, `uyq`, `uyh`, `uy`).
+  quarter, half-year, or year such as `uy_m`, `uy_q`, `uy_s`, `uy_a`).
 
 - dev_var:
 
@@ -138,7 +138,7 @@ if (FALSE) { # \dontrun{
 df <- data.frame(
   pd_cd        = rep(c("P001", "P002"), each = 6),
   pd_nm        = rep(c("cancer", "health"), each = 6),
-  uym          = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
+  uy_m         = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
   dev_m        = rep(1:2, 6),
   loss_incr    = runif(12, 80, 120),
   premium_incr = runif(12, 90, 110)
@@ -147,7 +147,7 @@ df <- data.frame(
 res <- build_triangle(
   df,
   group_var  = pd_cd,
-  cohort_var = "uym",
+  cohort_var = "uy_m",
   dev_var    = "dev_m"
 )
 

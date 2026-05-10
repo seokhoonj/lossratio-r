@@ -13,7 +13,7 @@ Two checks are performed:
 Cohort dev-sequence gaps — for each (group, cohort),
 report missing dev_var values within the observed range.
 Row-level calendar consistency — when calendar_var
-is supplied (or auto-detected as "cym" if present), report rows
+is supplied (or auto-detected as "cy_m" if present), report rows
 where calendar_var &amp;lt; cohort_var. Such rows are logically
 impossible (claims cannot precede policy issue) and downstream
 they show up as negative dev_m, polluting cohort dev sequences.
@@ -32,7 +32,7 @@ Two checks are performed:
 Cohort dev-sequence gaps — for each (group, cohort),
 report missing dev_var values within the observed range.
 Row-level calendar consistency — when calendar_var
-is supplied (or auto-detected as "cym" if present), report rows
+is supplied (or auto-detected as "cy_m" if present), report rows
 where calendar_var &amp;lt; cohort_var. Such rows are logically
 impossible (claims cannot precede policy issue) and downstream
 they show up as negative dev_m, polluting cohort dev sequences.
@@ -155,7 +155,7 @@ offending cohorts, or pass <code>fill_gaps = TRUE</code> to <code><a href="build
 <ol><li><p><strong>Cohort dev-sequence gaps</strong> — for each <code>(group, cohort)</code>,
 report missing <code>dev_var</code> values within the observed range.</p></li>
 <li><p><strong>Row-level calendar consistency</strong> — when <code>calendar_var</code>
-is supplied (or auto-detected as <code>"cym"</code> if present), report rows
+is supplied (or auto-detected as <code>"cy_m"</code> if present), report rows
 where <code>calendar_var &lt; cohort_var</code>. Such rows are logically
 impossible (claims cannot precede policy issue) and downstream
 they show up as negative <code>dev_m</code>, polluting cohort dev sequences.</p></li>
@@ -166,9 +166,9 @@ they show up as negative <code>dev_m</code>, polluting cohort dev sequences.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">validate_triangle</span><span class="op">(</span></span>
 <span>  <span class="va">df</span>,</span>
 <span>  <span class="va">group_var</span>,</span>
-<span>  cohort_var <span class="op">=</span> <span class="st">"uym"</span>,</span>
+<span>  cohort_var <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  dev_var <span class="op">=</span> <span class="st">"dev_m"</span>,</span>
-<span>  calendar_var <span class="op">=</span> <span class="st">"cym"</span></span>
+<span>  calendar_var <span class="op">=</span> <span class="st">"cy_m"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -185,7 +185,7 @@ they show up as negative <code>dev_m</code>, polluting cohort dev sequences.</p>
 
 
 <dt id="arg-cohort-var">cohort_var<a class="anchor" aria-label="anchor" href="#arg-cohort-var"></a></dt>
-<dd><p>A single cohort variable. Default <code>"uym"</code>.</p></dd>
+<dd><p>A single cohort variable. Default <code>"uy_m"</code>.</p></dd>
 
 
 <dt id="arg-dev-var">dev_var<a class="anchor" aria-label="anchor" href="#arg-dev-var"></a></dt>
@@ -194,7 +194,7 @@ they show up as negative <code>dev_m</code>, polluting cohort dev sequences.</p>
 
 <dt id="arg-calendar-var">calendar_var<a class="anchor" aria-label="anchor" href="#arg-calendar-var"></a></dt>
 <dd><p>Optional calendar period variable for row-level
-consistency check. When supplied, rows where <code>calendar_var &lt; cohort_var</code> are flagged as invalid. Default <code>"cym"</code>; pass <code>NULL</code>
+consistency check. When supplied, rows where <code>calendar_var &lt; cohort_var</code> are flagged as invalid. Default <code>"cy_m"</code>; pass <code>NULL</code>
 to skip this check, or a column name to override.</p></dd>
 
 </dl></div>

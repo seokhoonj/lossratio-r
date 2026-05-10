@@ -113,16 +113,16 @@ underwriting period columns at multiple granularities, a
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Classes 'data.table' and 'data.frame':   2664 obs. of  15 variables:</span></span>
 <span><span class="co">#&gt;  $ coverage    : chr  "CI" "CI" "CI" "CI" ...</span></span>
-<span><span class="co">#&gt;  $ uy          : Date, format: "1975-07-18" "1975-07-18" ...</span></span>
-<span><span class="co">#&gt;  $ uyh         : Date, format: "2024-01-01" "2024-01-01" ...</span></span>
-<span><span class="co">#&gt;  $ uyq         : Date, format: "2024-01-01" "2024-01-01" ...</span></span>
-<span><span class="co">#&gt;  $ uym         : Date, format: "2024-01-01" "2024-01-01" ...</span></span>
-<span><span class="co">#&gt;  $ cy          : int  2024 2024 2024 2024 2024 2024 2024 2024 2024 2024 ...</span></span>
-<span><span class="co">#&gt;  $ cyh         : Date, format: "2024-01-01" "2024-01-01" ...</span></span>
-<span><span class="co">#&gt;  $ cyq         : Date, format: "2024-01-01" "2024-01-01" ...</span></span>
-<span><span class="co">#&gt;  $ cym         : Date, format: "2024-01-01" "2024-02-01" ...</span></span>
-<span><span class="co">#&gt;  $ dev_y       : int  1 1 1 1 1 1 1 1 1 1 ...</span></span>
-<span><span class="co">#&gt;  $ dev_h       : int  1 1 1 1 1 1 2 2 2 2 ...</span></span>
+<span><span class="co">#&gt;  $ uy_a        : Date, format: "2024-01-01" "2024-01-01" ...</span></span>
+<span><span class="co">#&gt;  $ uy_s        : Date, format: "2024-01-01" "2024-01-01" ...</span></span>
+<span><span class="co">#&gt;  $ uy_q        : Date, format: "2024-01-01" "2024-01-01" ...</span></span>
+<span><span class="co">#&gt;  $ uy_m        : Date, format: "2024-01-01" "2024-01-01" ...</span></span>
+<span><span class="co">#&gt;  $ cy_a        : Date, format: "2024-01-01" "2024-01-01" ...</span></span>
+<span><span class="co">#&gt;  $ cy_s        : Date, format: "2024-01-01" "2024-01-01" ...</span></span>
+<span><span class="co">#&gt;  $ cy_q        : Date, format: "2024-01-01" "2024-01-01" ...</span></span>
+<span><span class="co">#&gt;  $ cy_m        : Date, format: "2024-01-01" "2024-02-01" ...</span></span>
+<span><span class="co">#&gt;  $ dev_a       : int  1 1 1 1 1 1 1 1 1 1 ...</span></span>
+<span><span class="co">#&gt;  $ dev_s       : int  1 1 1 1 1 1 2 2 2 2 ...</span></span>
 <span><span class="co">#&gt;  $ dev_q       : int  1 1 1 2 2 2 3 3 3 4 ...</span></span>
 <span><span class="co">#&gt;  $ dev_m       : int  1 2 3 4 5 6 7 8 9 10 ...</span></span>
 <span><span class="co">#&gt;  $ loss_incr   : num  1262380 11255763 11281309 33602387 7152622 ...</span></span>
@@ -137,7 +137,7 @@ underwriting period columns at multiple granularities, a
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "Experience" "data.table" "data.frame"</span></span></code></pre></div>
 <p><code><a href="../reference/as_experience.html">as_experience()</a></code> checks required columns
-(<code>cym</code>, <code>uym</code>, <code>loss_incr</code>,
+(<code>cy_m</code>, <code>uy_m</code>, <code>loss_incr</code>,
 <code>premium_incr</code>), coerces date columns, and tags the class.
 Use <code>check_experience(df)</code> for a non-mutating check.</p>
 </div>

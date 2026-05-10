@@ -142,12 +142,12 @@
 </tr></thead><tbody><tr><td>cohort</td>
 <td>인수 / 사고 시점 (집계 주기 무관)</td>
 <td>
-<code>uym</code>, <code>uy</code>
+<code>uy_m</code>, <code>uy_a</code>
 </td>
 </tr><tr><td>dev</td>
 <td>코호트 시작 시점 이후 경과 기간</td>
 <td>
-<code>dev_m</code>, <code>dev_y</code>
+<code>dev_m</code>, <code>dev_a</code>
 </td>
 </tr><tr><td><code>loss_incr</code></td>
 <td>셀 내 기간별 클레임 금액</td>
@@ -248,7 +248,7 @@
 <td><code>Total</code></td>
 <td>포트폴리오 전체 (0D, 그룹별)</td>
 <td>그룹 간 고수준 비교</td>
-</tr></tbody></table><p><code>build_triangle</code> 이후의 컬럼은 입력된 집계 주기 (<code>uym</code> / <code>uyq</code> / <code>uy</code> 등) 와 무관하게 <code>cohort</code> 와 <code>dev</code> 로 표준화된다. 원본 컬럼명과 집계 주기는 attribute (<code>cohort_var</code>, <code>cohort_type</code>, <code>dev_var</code>, <code>dev_type</code>) 로 보존된다.</p>
+</tr></tbody></table><p><code>build_triangle</code> 이후의 컬럼은 입력된 집계 주기 (<code>uy_m</code> / <code>uy_q</code> / <code>uy_a</code> 등) 와 무관하게 <code>cohort</code> 와 <code>dev</code> 로 표준화된다. 원본 컬럼명과 집계 주기는 attribute (<code>cohort_var</code>, <code>cohort_type</code>, <code>dev_var</code>, <code>dev_type</code>) 로 보존된다.</p>
 </div>
 <div class="section level2">
 <h2 id="methods">Methods<a class="anchor" aria-label="anchor" href="#methods"></a></h2>

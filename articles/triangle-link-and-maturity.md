@@ -69,7 +69,7 @@ plot_triangle(tri, value_var = "lr_incr")     # incremental lr
 
 # detail labels (ratio + loss/premium amounts) are 2-line — use quarterly cells
 tri_q <- build_triangle(exp, group_var = coverage,
-                        cohort_var = "uyq", dev_var = "dev_q")
+                        cohort_var = "uy_q", dev_var = "dev_q")
 plot_triangle(tri_q, label_style = "detail") # ratio + (loss / premium)
 ```
 
@@ -404,7 +404,7 @@ If gaps in the development sequence are suspected, inspect them before
 ``` r
 
 gaps <- validate_triangle(exp, group_var = coverage,
-                          cohort_var = "uym", dev_var = "dev_m")
+                          cohort_var = "uy_m", dev_var = "dev_m")
 head(gaps)
 #> <TriangleValidation>
 #> Cohort dev-sequence gaps : none

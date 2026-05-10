@@ -44,7 +44,7 @@ calendar period across products or other grouping variables.
 build_calendar(
   df,
   group_var,
-  calendar_var = "cym",
+  calendar_var = "cy_m",
   loss_var = "loss_incr",
   premium_var = "premium_incr",
   period_from = NULL,
@@ -69,17 +69,17 @@ build_calendar(
   A single calendar-like period variable defining the summary axis.
   Typical examples include:
 
-  - `cym` (calendar year-month),
+  - `cy_m` (calendar year-month),
 
-  - `cyq` (calendar year-quarter),
+  - `cy_q` (calendar year-quarter),
 
-  - `cyh` (calendar year-half),
+  - `cy_s` (calendar year-half),
 
-  - `cy` (calendar year),
+  - `cy_a` (calendar year),
 
-  - `uym`, `uyq`, `uyh`, `uy` when a single underwriting-period axis is
-    to be summarised as a time series rather than as a development
-    structure.
+  - `uy_m`, `uy_q`, `uy_s`, `uy_a` when a single underwriting-period
+    axis is to be summarised as a time series rather than as a
+    development structure.
 
 - loss_var:
 
@@ -157,13 +157,13 @@ if (FALSE) { # \dontrun{
 res1 <- build_calendar(
   df,
   group_var    = pd_cd,
-  calendar_var = "cym"
+  calendar_var = "cy_m"
 )
 
 res2 <- build_calendar(
   df,
   group_var    = pd_cd,
-  calendar_var = "cyq",
+  calendar_var = "cy_q",
   period_from  = "2023-01-01"
 )
 

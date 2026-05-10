@@ -184,7 +184,7 @@ each calendar period across products or other grouping variables.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">build_calendar</span><span class="op">(</span></span>
 <span>  <span class="va">df</span>,</span>
 <span>  <span class="va">group_var</span>,</span>
-<span>  calendar_var <span class="op">=</span> <span class="st">"cym"</span>,</span>
+<span>  calendar_var <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss_var <span class="op">=</span> <span class="st">"loss_incr"</span>,</span>
 <span>  premium_var <span class="op">=</span> <span class="st">"premium_incr"</span>,</span>
 <span>  period_from <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -208,11 +208,11 @@ and premium columns.</p></dd>
 
 <dt id="arg-calendar-var">calendar_var<a class="anchor" aria-label="anchor" href="#arg-calendar-var"></a></dt>
 <dd><p>A single calendar-like period variable defining
-the summary axis. Typical examples include:</p><ul><li><p><code>cym</code> (calendar year-month),</p></li>
-<li><p><code>cyq</code> (calendar year-quarter),</p></li>
-<li><p><code>cyh</code> (calendar year-half),</p></li>
-<li><p><code>cy</code>  (calendar year),</p></li>
-<li><p><code>uym</code>, <code>uyq</code>, <code>uyh</code>, <code>uy</code> when a single underwriting-period axis
+the summary axis. Typical examples include:</p><ul><li><p><code>cy_m</code> (calendar year-month),</p></li>
+<li><p><code>cy_q</code> (calendar year-quarter),</p></li>
+<li><p><code>cy_s</code> (calendar year-half),</p></li>
+<li><p><code>cy_a</code> (calendar year),</p></li>
+<li><p><code>uy_m</code>, <code>uy_q</code>, <code>uy_s</code>, <code>uy_a</code> when a single underwriting-period axis
 is to be summarised as a time series rather than as a development
 structure.</p></li>
 </ul></dd>
@@ -286,13 +286,13 @@ a melted long-format version (<code>class = "CalendarLonger"</code>).</p>
 <span class="r-in"><span><span class="va">res1</span> <span class="op">&lt;-</span> <span class="fu">build_calendar</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">df</span>,</span></span>
 <span class="r-in"><span>  group_var    <span class="op">=</span> <span class="va">pd_cd</span>,</span></span>
-<span class="r-in"><span>  calendar_var <span class="op">=</span> <span class="st">"cym"</span></span></span>
+<span class="r-in"><span>  calendar_var <span class="op">=</span> <span class="st">"cy_m"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">res2</span> <span class="op">&lt;-</span> <span class="fu">build_calendar</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">df</span>,</span></span>
 <span class="r-in"><span>  group_var    <span class="op">=</span> <span class="va">pd_cd</span>,</span></span>
-<span class="r-in"><span>  calendar_var <span class="op">=</span> <span class="st">"cyq"</span>,</span></span>
+<span class="r-in"><span>  calendar_var <span class="op">=</span> <span class="st">"cy_q"</span>,</span></span>
 <span class="r-in"><span>  period_from  <span class="op">=</span> <span class="st">"2023-01-01"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>

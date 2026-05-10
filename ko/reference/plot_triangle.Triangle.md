@@ -119,8 +119,8 @@ A ggplot object.
 The x-axis uses the development variable stored in `attr(x, "dev_var")`,
 and the y-axis uses the period variable stored in
 `attr(x, "cohort_var")`. If either axis variable is a period-like
-variable such as `uym`, `cym`, `uyq`, `cyq`, `uyh`, `cyh`, `uy`, or
-`cy`, it is formatted using
+variable such as `uy_m`, `cy_m`, `uy_q`, `cy_q`, `uy_s`, `cy_s`, `uy_a`,
+or `cy_a`, it is formatted using
 [`.format_period()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-format_period.md).
 
 Facets are created from `attr(x, "group_var")`.

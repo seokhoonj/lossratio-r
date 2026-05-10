@@ -78,7 +78,7 @@ plot(tri)              # one trajectory per cohort, faceted by group
 # cells. This fits the documentation's display size; in practice you
 # can keep monthly resolution by enlarging the plot.
 tri_q <- build_triangle(exp, group_var = coverage,
-                        cohort_var = "uyq", dev_var = "dev_q")
+                        cohort_var = "uy_q", dev_var = "dev_q")
 plot_triangle(tri_q)   # cohort × dev heatmap of lr
 ```
 
@@ -98,7 +98,7 @@ Use `Triangle` as input to: -
 
 ``` r
 
-cal <- build_calendar(exp, group_var = coverage, calendar_var = "cym")
+cal <- build_calendar(exp, group_var = coverage, calendar_var = "cy_m")
 head(cal)
 #>    coverage   calendar   dev      loss loss_incr   premium premium_incr
 #>      <char>     <Date> <int>     <num>     <num>     <num>        <num>
@@ -131,7 +131,7 @@ sequential index (1, 2, 3, …) within group, not “development period
 since cohort start”.
 
 Calendar aggregation is mathematically the **diagonal sum** of the
-triangle: cells with the same `cym` (regardless of `uym`/`dev_m`) are
+triangle: cells with the same `cy_m` (regardless of `uy_m`/`dev_m`) are
 combined.
 
 Use cases: - Trend analysis (“loss ratio is rising over calendar
@@ -159,7 +159,7 @@ plot(cal, x_by = "dev")         # x axis: sequential index
 tot <- build_total(
   exp,
   group_var = coverage,
-  cohort_var = "uym",
+  cohort_var = "uy_m",
   period_from = "2023-04-01",
   period_to   = "2024-03-01"
 )
@@ -208,8 +208,8 @@ attributes (used for plot labels and granularity-aware date formatting):
 
 ``` r
 
-attr(tri, "cohort_var")     # "uym"
-#> [1] "uym"
+attr(tri, "cohort_var")     # "uy_m"
+#> [1] "uy_m"
 attr(tri, "cohort_type")    # "month"
 #> NULL
 attr(tri, "dev_var")        # "dev_m"
@@ -217,8 +217,8 @@ attr(tri, "dev_var")        # "dev_m"
 attr(tri, "dev_type")       # "month"
 #> NULL
 
-attr(cal, "calendar_var")   # "cym"
-#> [1] "cym"
+attr(cal, "calendar_var")   # "cy_m"
+#> [1] "cy_m"
 attr(cal, "calendar_type")  # "month"
 #> NULL
 ```

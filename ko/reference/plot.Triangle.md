@@ -55,8 +55,8 @@ plot(
   `TRUE`, shows grey cohort trajectories with overlaid summary lines
   (mean, median, weighted mean). Summary overlay is supported only for
   `"lr"` and `"lr_incr"`, and only when the x-axis variable is a
-  development-period variable (for example, `dev_m`, `dev_q`, `dev_h`,
-  `dev_y`).
+  development-period variable (for example, `dev_m`, `dev_q`, `dev_s`,
+  `dev_a`).
 
 - summary_min_n:
 

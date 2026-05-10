@@ -1,7 +1,7 @@
 # Get the period type string for a period variable name
 
-Internal helper that maps a period variable name (e.g. `"uym"`, `"cyq"`)
-to the corresponding type string accepted by
+Internal helper that maps a period variable name (e.g. `"uy_m"`,
+`"cy_q"`) to the corresponding type string accepted by
 [`.format_period()`](https://seokhoonj.github.io/lossratio/reference/dot-format_period.md).
 
 Returns `NA_character_` for unrecognised variable names, which callers

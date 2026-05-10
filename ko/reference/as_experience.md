@@ -39,18 +39,18 @@ A data.frame with class `"Experience"` prepended.
 
 Minimum required columns are:
 
-- `cym` : Calendar year-month (`Date` or coercible to `Date`)
+- `cy_m` : Calendar year-month (`Date` or coercible to `Date`)
 
-- `uym` : Underwriting year-month (`Date` or coercible to `Date`)
+- `uy_m` : Underwriting year-month (`Date` or coercible to `Date`)
 
 - `loss_incr` : Per-period loss amount (`numeric` or coercible)
 
 - `premium_incr` : Per-period premium (`numeric` or coercible); for
   long-term health insurance, risk premium is commonly used
 
-If `add_period = TRUE`, additional period variables such as `uy`, `uyh`,
-`uyq`, `cy`, `cyh`, `cyq`, `dev_y`, `dev_h`, and `dev_q` may be added,
-depending on the available source columns.
+If `add_period = TRUE`, additional period variables such as `uy_a`,
+`uy_s`, `uy_q`, `cy_a`, `cy_s`, `cy_q`, `dev_a`, `dev_s`, and `dev_q`
+may be added, depending on the available source columns.
 
 ## See also
 

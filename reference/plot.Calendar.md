@@ -86,7 +86,7 @@ where `premium` denotes risk premium rather than written premium.
 
 ``` r
 if (FALSE) { # \dontrun{
-x <- build_calendar(df, coverage, cym)
+x <- build_calendar(df, coverage, cy_m)
 
 plot(x)
 plot(x, value_var = "lr")

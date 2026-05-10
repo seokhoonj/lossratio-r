@@ -134,8 +134,8 @@ when present.</p>
     <h2 id="required-columns">Required columns<a class="anchor" aria-label="anchor" href="#required-columns"></a></h2>
 
 
-<p>These columns must be present:</p><ul><li><p><code>cym</code>          : Calendar year-month (<code>Date</code>)</p></li>
-<li><p><code>uym</code>          : Underwriting year-month (<code>Date</code>)</p></li>
+<p>These columns must be present:</p><ul><li><p><code>cy_m</code>         : Calendar year-month (<code>Date</code>)</p></li>
+<li><p><code>uy_m</code>         : Underwriting year-month (<code>Date</code>)</p></li>
 <li><p><code>loss_incr</code>    : Per-period loss amount (<code>numeric</code>)</p></li>
 <li><p><code>premium_incr</code> : Per-period premium (<code>numeric</code>); for long-term
 health insurance, risk premium is commonly used</p></li>
@@ -161,9 +161,9 @@ Rider type/rider codes and names (<code>character</code>)</p></li>
 
 
 <p>The following columns may be derived later by
-<code><a href="add_experience_period.html">add_experience_period()</a></code> and are not validated here:</p><ul><li><p><code>uy</code>, <code>uyh</code>, <code>uyq</code> : Underwriting year, half-year, quarter</p></li>
-<li><p><code>cy</code>, <code>cyh</code>, <code>cyq</code> : Calendar year, half-year, quarter</p></li>
-<li><p><code>dev_y</code>, <code>dev_h</code>, <code>dev_q</code> : Development year, half-year, quarter</p></li>
+<code><a href="add_experience_period.html">add_experience_period()</a></code> and are not validated here:</p><ul><li><p><code>uy_a</code>, <code>uy_s</code>, <code>uy_q</code> : Underwriting year, half-year, quarter</p></li>
+<li><p><code>cy_a</code>, <code>cy_s</code>, <code>cy_q</code> : Calendar year, half-year, quarter</p></li>
+<li><p><code>dev_a</code>, <code>dev_s</code>, <code>dev_q</code> : Development year, half-year, quarter</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

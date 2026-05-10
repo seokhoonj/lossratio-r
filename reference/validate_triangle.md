@@ -20,7 +20,7 @@ Two checks are performed:
     missing `dev_var` values within the observed range.
 
 2.  **Row-level calendar consistency** — when `calendar_var` is supplied
-    (or auto-detected as `"cym"` if present), report rows where
+    (or auto-detected as `"cy_m"` if present), report rows where
     `calendar_var < cohort_var`. Such rows are logically impossible
     (claims cannot precede policy issue) and downstream they show up as
     negative `dev_m`, polluting cohort dev sequences.
@@ -31,9 +31,9 @@ Two checks are performed:
 validate_triangle(
   df,
   group_var,
-  cohort_var = "uym",
+  cohort_var = "uy_m",
   dev_var = "dev_m",
-  calendar_var = "cym"
+  calendar_var = "cy_m"
 )
 ```
 
@@ -49,7 +49,7 @@ validate_triangle(
 
 - cohort_var:
 
-  A single cohort variable. Default `"uym"`.
+  A single cohort variable. Default `"uy_m"`.
 
 - dev_var:
 
@@ -59,7 +59,7 @@ validate_triangle(
 
   Optional calendar period variable for row-level consistency check.
   When supplied, rows where `calendar_var < cohort_var` are flagged as
-  invalid. Default `"cym"`; pass `NULL` to skip this check, or a column
+  invalid. Default `"cy_m"`; pass `NULL` to skip this check, or a column
   name to override.
 
 ## Value

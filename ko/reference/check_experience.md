@@ -25,9 +25,9 @@ Invisibly returns the result of
 
 These columns must be present:
 
-- `cym` : Calendar year-month (`Date`)
+- `cy_m` : Calendar year-month (`Date`)
 
-- `uym` : Underwriting year-month (`Date`)
+- `uy_m` : Underwriting year-month (`Date`)
 
 - `loss_incr` : Per-period loss amount (`numeric`)
 
@@ -63,11 +63,11 @@ The following columns may be derived later by
 [`add_experience_period()`](https://seokhoonj.github.io/lossratio/ko/reference/add_experience_period.md)
 and are not validated here:
 
-- `uy`, `uyh`, `uyq` : Underwriting year, half-year, quarter
+- `uy_a`, `uy_s`, `uy_q` : Underwriting year, half-year, quarter
 
-- `cy`, `cyh`, `cyq` : Calendar year, half-year, quarter
+- `cy_a`, `cy_s`, `cy_q` : Calendar year, half-year, quarter
 
-- `dev_y`, `dev_h`, `dev_q` : Development year, half-year, quarter
+- `dev_a`, `dev_s`, `dev_q` : Development year, half-year, quarter
 
 ## See also
 

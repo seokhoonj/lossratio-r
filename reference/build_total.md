@@ -26,7 +26,7 @@ useful when comparing groups on a common period basis.
 build_total(
   df,
   group_var,
-  cohort_var = "uym",
+  cohort_var = "uy_m",
   dev_var = "dev_m",
   loss_var = "loss_incr",
   premium_var = "premium_incr",
@@ -48,9 +48,9 @@ build_total(
 
 - cohort_var:
 
-  A single period variable. This may be an underwriting period (`uym`,
-  `uyq`, `uyh`, `uy`) or a calendar period (`cym`, `cyq`, `cyh`, `cy`).
-  Default `"uym"`.
+  A single period variable. This may be an underwriting period (`uy_m`,
+  `uy_q`, `uy_s`, `uy_a`) or a calendar period (`cy_m`, `cy_q`, `cy_s`,
+  `cy_a`). Default `"uy_m"`.
 
 - dev_var:
 

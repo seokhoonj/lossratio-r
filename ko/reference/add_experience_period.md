@@ -4,8 +4,8 @@ Add underwriting, calendar, and development period variables to an
 experience dataset using standard column conventions for loss ratio
 analysis.
 
-The function detects the presence of key source columns such as `uym`,
-`cym`, and `dev_m`, and derives additional period variables when
+The function detects the presence of key source columns such as `uy_m`,
+`cy_m`, and `dev_m`, and derives additional period variables when
 possible.
 
 ## Usage
@@ -18,7 +18,7 @@ add_experience_period(df)
 
 - df:
 
-  A data.frame containing period variables such as `uym`, `cym`, and
+  A data.frame containing period variables such as `uy_m`, `cy_m`, and
   `dev_m`.
 
 ## Value
@@ -31,38 +31,38 @@ period variables.
 The following variables are added when the required source columns
 exist:
 
-**Underwriting period (from `uym`):**
+**Underwriting period (from `uy_m`):**
 
-- `uy` : underwriting year
+- `uy_a` : underwriting year
 
-- `uyh` : underwriting half-year
+- `uy_s` : underwriting half-year
 
-- `uyq` : underwriting quarter
+- `uy_q` : underwriting quarter
 
-**Calendar period (from `cym`):**
+**Calendar period (from `cy_m`):**
 
-- `cy` : calendar year
+- `cy_a` : calendar year
 
-- `cyh` : calendar half-year
+- `cy_s` : calendar half-year
 
-- `cyq` : calendar quarter
+- `cy_q` : calendar quarter
 
 **Development period:**
 
-- `dev_y` is derived from `dev_m` as yearly development index, where
+- `dev_a` is derived from `dev_m` as yearly development index, where
   months 1 to 12 map to 1, 13 to 24 map to 2, and so on.
 
-- `dev_h` is derived from `uym` and `cym` using calendar half-year
+- `dev_s` is derived from `uy_m` and `cy_m` using calendar half-year
   boundaries. For example, contracts issued in January to June are
   aligned to the same first development half-year block, and the next
   calendar half-year becomes development half-year 2.
 
-- `dev_q` is derived from `uym` and `cym` using calendar quarter
+- `dev_q` is derived from `uy_m` and `cy_m` using calendar quarter
   boundaries. For example, contracts issued in January to March are
   aligned to the same first development quarter block, and the next
   calendar quarter becomes development quarter 2.
 
-Therefore, `dev_h` and `dev_q` are not simple grouped versions of
+Therefore, `dev_s` and `dev_q` are not simple grouped versions of
 `dev_m`; they are aligned to calendar half-year and quarter boundaries
 so that underwriting cohorts such as Q1, Q2, H1, and H2 are compared
 consistently on the same cumulative development basis.
@@ -75,8 +75,8 @@ columns.
 ``` r
 if (FALSE) { # \dontrun{
 df <- data.frame(
-  uym   = as.Date("2023-01-01") + 0:5 * 30,
-  cym   = as.Date("2023-01-01") + 0:5 * 30,
+  uy_m  = as.Date("2023-01-01") + 0:5 * 30,
+  cy_m  = as.Date("2023-01-01") + 0:5 * 30,
   dev_m = 1:6
 )
 

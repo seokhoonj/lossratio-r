@@ -242,7 +242,7 @@ premium. Visualise as line plot or heatmap:</p>
 <span><span class="co"># cells. This fits the documentation's display size; in practice you</span></span>
 <span><span class="co"># can keep monthly resolution by enlarging the plot.</span></span>
 <span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">coverage</span>,</span>
-<span>                        cohort_var <span class="op">=</span> <span class="st">"uyq"</span>, dev_var <span class="op">=</span> <span class="st">"dev_q"</span><span class="op">)</span></span>
+<span>                        cohort_var <span class="op">=</span> <span class="st">"uy_q"</span>, dev_var <span class="op">=</span> <span class="st">"dev_q"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_q</span><span class="op">)</span>   <span class="co"># cohort × dev heatmap of lr</span></span></code></pre></div>
 <p><img src="aggregation-frameworks_files/figure-html/unnamed-chunk-2-2.png" class="r-plt" alt="" width="100%"></p>
 <p>Use <code>Triangle</code> as input to: - <code><a href="../reference/build_link.html">build_link()</a></code> —
@@ -255,7 +255,7 @@ detection</p>
 <h2 id="calendar-calendar-period-only">Calendar (calendar period only)<a class="anchor" aria-label="anchor" href="#calendar-calendar-period-only"></a>
 </h2>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_calendar.html">build_calendar</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">coverage</span>, calendar_var <span class="op">=</span> <span class="st">"cym"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_calendar.html">build_calendar</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">coverage</span>, calendar_var <span class="op">=</span> <span class="st">"cy_m"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cal</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    coverage   calendar   dev      loss loss_incr   premium premium_incr</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;        &lt;num&gt;</span></span>
@@ -285,8 +285,8 @@ detection</p>
 column here is a sequential index (1, 2, 3, …) within group, not
 “development period since cohort start”.</p>
 <p>Calendar aggregation is mathematically the <strong>diagonal
-sum</strong> of the triangle: cells with the same <code>cym</code>
-(regardless of <code>uym</code>/<code>dev_m</code>) are combined.</p>
+sum</strong> of the triangle: cells with the same <code>cy_m</code>
+(regardless of <code>uy_m</code>/<code>dev_m</code>) are combined.</p>
 <p>Use cases: - Trend analysis (“loss ratio is rising over calendar
 time”) - Calendar-year effect detection (e.g., regulatory shock, premium
 on-leveling event) - Portfolio monitoring dashboards</p>
@@ -304,7 +304,7 @@ on-leveling event) - Portfolio monitoring dashboards</p>
 <code class="sourceCode R"><span><span class="va">tot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_total.html">build_total</a></span><span class="op">(</span></span>
 <span>  <span class="va">exp</span>,</span>
 <span>  group_var <span class="op">=</span> <span class="va">coverage</span>,</span>
-<span>  cohort_var <span class="op">=</span> <span class="st">"uym"</span>,</span>
+<span>  cohort_var <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  period_from <span class="op">=</span> <span class="st">"2023-04-01"</span>,</span>
 <span>  period_to   <span class="op">=</span> <span class="st">"2024-03-01"</span></span>
 <span><span class="op">)</span></span>
@@ -352,8 +352,8 @@ analytical question.</p>
 attributes (used for plot labels and granularity-aware date
 formatting):</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tri</span>, <span class="st">"cohort_var"</span><span class="op">)</span>     <span class="co"># "uym"</span></span>
-<span><span class="co">#&gt; [1] "uym"</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tri</span>, <span class="st">"cohort_var"</span><span class="op">)</span>     <span class="co"># "uy_m"</span></span>
+<span><span class="co">#&gt; [1] "uy_m"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tri</span>, <span class="st">"cohort_type"</span><span class="op">)</span>    <span class="co"># "month"</span></span>
 <span><span class="co">#&gt; NULL</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tri</span>, <span class="st">"dev_var"</span><span class="op">)</span>        <span class="co"># "dev_m"</span></span>
@@ -361,8 +361,8 @@ formatting):</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tri</span>, <span class="st">"dev_type"</span><span class="op">)</span>       <span class="co"># "month"</span></span>
 <span><span class="co">#&gt; NULL</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">cal</span>, <span class="st">"calendar_var"</span><span class="op">)</span>   <span class="co"># "cym"</span></span>
-<span><span class="co">#&gt; [1] "cym"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">cal</span>, <span class="st">"calendar_var"</span><span class="op">)</span>   <span class="co"># "cy_m"</span></span>
+<span><span class="co">#&gt; [1] "cy_m"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">cal</span>, <span class="st">"calendar_type"</span><span class="op">)</span>  <span class="co"># "month"</span></span>
 <span><span class="co">#&gt; NULL</span></span></code></pre></div>
 <p>The data columns themselves are standardised to <code>cohort</code> /

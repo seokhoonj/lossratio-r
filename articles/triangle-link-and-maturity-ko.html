@@ -188,7 +188,7 @@ lr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗�
 <code class="sourceCode R"><span></span>
 <span><span class="co"># detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly 로 다시 빌드</span></span>
 <span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">coverage</span>,</span>
-<span>                        cohort_var <span class="op">=</span> <span class="st">"uyq"</span>, dev_var <span class="op">=</span> <span class="st">"dev_q"</span><span class="op">)</span></span>
+<span>                        cohort_var <span class="op">=</span> <span class="st">"uy_q"</span>, dev_var <span class="op">=</span> <span class="st">"dev_q"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span>  <span class="co"># 비율 + (loss / premium)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-3-3.png" class="r-plt" alt="" width="100%"></p>
 </div>
@@ -475,7 +475,7 @@ dev) 에서 CL (이후 dev) 로 전환되는 dev 를 결정한다.</p>
 전에 점검한다.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gaps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate_triangle.html">validate_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">coverage</span>,</span>
-<span>                          cohort_var <span class="op">=</span> <span class="st">"uym"</span>, dev_var <span class="op">=</span> <span class="st">"dev_m"</span><span class="op">)</span></span>
+<span>                          cohort_var <span class="op">=</span> <span class="st">"uy_m"</span>, dev_var <span class="op">=</span> <span class="st">"dev_m"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">gaps</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;TriangleValidation&gt;</span></span>
 <span><span class="co">#&gt; Cohort dev-sequence gaps : none</span></span></code></pre></div>
