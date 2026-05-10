@@ -10,10 +10,10 @@
 ## 입력 형태
 
 `lossratio` 는 long-format experience 데이터를 입력으로 사용한다 — 한
-행은 (코호트 × 경과 기간 × 인구통계) 셀 하나에 대응한다. 내장 데이터셋
-`experience` 는 33,480 행 테이블로, 여러 단위의 calendar / underwriting
-기간 컬럼, 인구통계 차원 (`coverage`, `age_band`, `gender`), 기간별 금액
-컬럼 (`loss_incr`, `premium_incr`) 을 포함한다.
+행은 (코호트 × 경과 기간 × 그룹) 셀 하나에 대응한다. 내장 데이터셋
+`experience` 는 2,664 행 테이블로, 여러 집계 주기의 calendar /
+underwriting 기간 컬럼, `coverage` 그룹 컬럼, 기간별 금액 컬럼
+(`loss_incr`, `premium_incr`) 을 포함한다.
 
 ``` r
 

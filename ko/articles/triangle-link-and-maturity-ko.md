@@ -36,7 +36,7 @@ plot(tri)                              # 코호트별 누적 손해율 궤적
 
 ``` r
 
-plot(tri, value_var = "lr")            # 누적 대신 증분 손해율
+plot(tri, value_var = "lr_incr")       # 누적 대신 증분 손해율
 ```
 
 ![](triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-2-2.png)
@@ -145,7 +145,7 @@ head(sm)
 - `mean`, `median`, `wt` — 각 링크에서 관측된 ATA 인자의 기술 평균 (해당
   링크가 관측되지 않은 코호트는 제외).
 - `cv` — 관측 인자의 변동계수 (상대 산포, alpha 와 무관).
-- `f` — WLS 로 추정된 인자 (`value_from^alpha` 로 볼륨 가중).
+- `f` — WLS 로 추정된 인자 (`loss_from^alpha` 로 볼륨 가중).
 - `f_se`, `rse` — WLS 표준오차 및 상대 표준오차.
 - `sigma` — 링크별 Mack 잔차 sigma.
 - `n_obs`, `n_valid`, `n_inf`, `n_nan`, `valid_ratio` — 관측 수와 링크별
@@ -192,15 +192,14 @@ plot(ata, type = "point")         # 링크별 관측 ata 의 산점도
 
 ``` r
 
-la <- list(size = 2.5)                            # 라벨 크기 줄임
-plot_triangle(ata, label_args = la)               # 관측 인자 히트맵
+plot_triangle(ata, label_size = 2.5)              # 관측 인자 히트맵
 ```
 
 ![](triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-7-1.png)
 
 ``` r
 
-plot_triangle(ata, label_args = la, show_maturity = TRUE)  # 성숙점 라인 overlay
+plot_triangle(ata, label_size = 2.5, show_maturity = TRUE)  # 성숙점 라인 overlay
 ```
 
 ![](triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-7-2.png)
@@ -210,8 +209,7 @@ plot_triangle(ata, label_args = la, show_maturity = TRUE)  # 성숙점 라인 ov
 
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly Link 로 다시 빌드
 ata_q <- build_link(tri_q, loss_var = "loss")
-plot_triangle(ata_q, label_style = "detail",
-              label_args = list(size = 2.2))      # 인자 + (loss / premium)
+plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / premium)
 ```
 
 ![](triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-7-3.png)
@@ -259,7 +257,7 @@ plot(ed, type = "box")
 
 ``` r
 
-plot_triangle(ed, label_args = list(size = 2.2))   # ED 셀 라벨이 더 길어 한 단계 더 작게
+plot_triangle(ed)                                  # ED triangle (default size)
 ```
 
 ![](triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-8-3.png)

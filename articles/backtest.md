@@ -11,11 +11,11 @@ from a triangle, refitting the model on the earlier portion, and
 comparing its projection to the actuals that were withheld. This is
 calendar-diagonal hold-out (rather than dev-period hold-out), because it
 simulates “what would the model have said *K* months ago at the
-valuation date?”. The cell-level metric follows the standard actuarial
-A/E convention,
-$`\mathrm{aeg} = v_{\mathrm{actual}} / v_{\mathrm{pred}} - 1`$, where
-positive values flag under-projection (actual exceeded expected) and
-negative values flag over-projection.
+valuation date?”. The cell-level metric (`ae_err`, “A/E Error”) follows
+the standard actuarial A/E convention,
+$`\mathrm{ae\_err} = v_{\mathrm{actual}} / v_{\mathrm{pred}} - 1`$,
+where positive values flag under-projection (the model under-estimated;
+actual exceeded expected) and negative values flag over-projection.
 
 ## Basic usage
 
@@ -30,18 +30,18 @@ bt <- backtest(tri_sur, holdout = 6L)
 print(bt)
 #> <Backtest>
 #>   fit_fn      : fit_lr
-#>   loss_var   : lr
+#>   loss_var    : lr
 #>   holdout     : 6 calendar diagonals
 #>   held-out    : 159 cells
-#>   AEG         : mean 0.21% / median -0.00%
+#>   A/E Error   : mean 0.21% / median -0.00%
 ```
 
 The returned object is a `"Backtest"` list with these key slots:
 
-- `aeg` — per-cell `data.table` (cohort, dev, actual, pred, aeg,
+- `ae_err` — per-cell `data.table` (cohort, dev, actual, pred, ae_err,
   calendar_idx).
-- `col_summary` — AEG aggregated by `dev`.
-- `diag_summary` — AEG aggregated by calendar diagonal.
+- `col_summary` — A/E Error aggregated by `dev`.
+- `diag_summary` — A/E Error aggregated by calendar diagonal.
 - `masked` — the triangle the fit was trained on (latest diagonals
   removed).
 - `fit` — the fit object returned by `fit_fn` (an `LRFit` or `CLFit`).
@@ -54,7 +54,7 @@ Masking the latest `holdout` diagonals shortens the triangle’s
 lower-right edge. Chain ladder can only project as far as the largest
 dev still observed in the masked data, so cells beyond that range — the
 oldest cohorts at their latest dev — have no projection to compare
-against. These unreachable cells are silently dropped, so `bt$aeg`
+against. These unreachable cells are silently dropped, so `bt$ae_err`
 contains only cells where both an actual and a finite projection exist.
 
 Practical takeaway: as `holdout` grows, the validation set shrinks
@@ -66,14 +66,15 @@ disappear.
 ## Output interpretation
 
 **`col_summary` — systematic bias by development period.** A
-consistently signed AEG at a given dev signals a structural mismatch
-between the model and that maturity. Early-dev positive values usually
-reflect inflated link factors; late-dev values flag tail miscalibration.
+consistently signed A/E Error at a given dev signals a structural
+mismatch between the model and that maturity. Early-dev positive values
+usually reflect inflated link factors; late-dev values flag tail
+miscalibration.
 
 ``` r
 
 head(bt$col_summary, 8)
-#>    coverage   dev     n    aeg_mean     aeg_med       aeg_wt
+#>    coverage   dev     n ae_err_mean  ae_err_med    ae_err_wt
 #>      <char> <int> <int>       <num>       <num>        <num>
 #> 1:      SUR     2     1 -0.36674932 -0.36674932 -0.366749322
 #> 2:      SUR     3     2 -0.09011955 -0.09011955 -0.154463503
@@ -85,11 +86,11 @@ head(bt$col_summary, 8)
 #> 8:      SUR     9     6  0.02445333  0.02775188  0.022389147
 ```
 
-`aeg_mean` averages cell-level AEG, `aeg_med` is the median, and
-`aeg_wt = sum(actual - pred) / sum(pred)` is the exposure-weighted
-pooled A/E ratio minus 1. Comparing the three columns flags whether a
-few large cells dominate (`aeg_wt` very different from `aeg_med`) or the
-bias is uniform.
+`ae_err_mean` averages cell-level A/E Error, `ae_err_med` is the median,
+and `ae_err_wt = sum(actual - pred) / sum(pred)` is the
+exposure-weighted pooled A/E ratio minus 1. Comparing the three columns
+flags whether a few large cells dominate (`ae_err_wt` very different
+from `ae_err_med`) or the bias is uniform.
 
 **`diag_summary` — calendar-year effect.** A single bad diagonal in
 otherwise unbiased output points at a calendar event (a rate change,
@@ -99,7 +100,7 @@ by construction.
 ``` r
 
 bt$diag_summary
-#>    coverage calendar_idx     n     aeg_mean       aeg_med        aeg_wt
+#>    coverage calendar_idx     n  ae_err_mean    ae_err_med     ae_err_wt
 #>      <char>        <int> <int>        <num>         <num>         <num>
 #> 1:      SUR           31    29 -0.011309409 -0.0036993121 -0.0107004532
 #> 2:      SUR           32    28 -0.002794292 -0.0095889605 -0.0089044276
@@ -110,19 +111,19 @@ bt$diag_summary
 ```
 
 A monotone drift across calendar diagonals (as in the SUR example above,
-where AEG becomes increasingly positive across `25, ..., 30`) typically
-indicates that actuals on the latest diagonals are running above what
-the earlier-cohort link factors imply, i.e. a regime shift the static
-model has not absorbed.
+where A/E Error becomes increasingly positive across `25, ..., 30`)
+typically indicates that actuals on the latest diagonals are running
+above what the earlier-cohort link factors imply, i.e. a regime shift
+the static model has not absorbed.
 
-**`aeg` — cell-level outliers.** For diagnosing specific cohort × dev
-cells, inspect `bt$aeg` directly:
+**`ae_err` — cell-level outliers.** For diagnosing specific cohort × dev
+cells, inspect `bt$ae_err` directly:
 
 ``` r
 
-head(bt$aeg, 5)
+head(bt$ae_err, 5)
 #> Key: <coverage>
-#>    coverage     cohort   dev value_actual value_pred          aeg calendar_idx
+#>    coverage     cohort   dev value_actual value_pred       ae_err calendar_idx
 #>      <char>     <Date> <int>        <num>      <num>        <num>        <int>
 #> 1:      SUR 2024-02-01    30     1.474656   1.485094 -0.007028587           31
 #> 2:      SUR 2024-03-01    29     1.441826   1.414305  0.019458534           31
@@ -137,21 +138,21 @@ Four plot views are registered on `"Backtest"`:
 
 ``` r
 
-plot(bt, type = "col")    # AEG by dev (point + dashed zero line)
+plot(bt, type = "col")    # A/E Error by dev (point + dashed zero line)
 ```
 
 ![](backtest_files/figure-html/unnamed-chunk-5-1.png)
 
 ``` r
 
-plot(bt, type = "diag")   # AEG by calendar diagonal
+plot(bt, type = "diag")   # A/E Error by calendar diagonal
 ```
 
 ![](backtest_files/figure-html/unnamed-chunk-5-2.png)
 
 ``` r
 
-plot(bt, type = "cell")   # per-cohort AEG trajectories over dev
+plot(bt, type = "cell")   # per-cohort A/E Error trajectories over dev
 ```
 
 ![](backtest_files/figure-html/unnamed-chunk-5-3.png)
@@ -167,10 +168,11 @@ plot_triangle(bt)         # diverging-color heatmap on the held-out wedge
 bias; `type = "diag"` reveals calendar-year drift; `type = "cell"`
 exposes which cohorts contribute the bias;
 [`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
-puts the cell-level AEG values on the same triangular layout as
+puts the cell-level A/E Error values on the same triangular layout as
 [`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
 for the underlying fit, with a red/blue diverging palette where red
-marks under-projection (actual \> pred).
+marks under-projection (actual \> pred) and blue marks over-projection
+(actual \< pred).
 
 ## Holdout selection
 
@@ -190,8 +192,8 @@ has at least 24–30 diagonals of history.
 
 The default fitter is `fit_lr` with `method = "sa"` and
 `loss_var = "lr"`. The loss ratio is unitless and dimension-free across
-cohorts of very different volume, so `aeg_mean` and `aeg_med` carry a
-consistent meaning across the triangle.
+cohorts of very different volume, so `ae_err_mean` and `ae_err_med`
+carry a consistent meaning across the triangle.
 
 > **A note on `loss_var`.** `backtest(loss_var = ...)` is the **score
 > column** — the column on which actual vs. predicted are compared
@@ -221,20 +223,20 @@ applied to `lr`.
 
 ``` r
 
-bt_sa  <- backtest(tri_sur, holdout = 6L, method = "sa")   # default
-bt_ed  <- backtest(tri_sur, holdout = 6L, method = "ed")
-bt_cl  <- backtest(tri_sur, holdout = 6L, method = "cl")
+bt_sa       <- backtest(tri_sur, holdout = 6L, method = "sa")  # default
+bt_ed       <- backtest(tri_sur, holdout = 6L, method = "ed")
+bt_cl       <- backtest(tri_sur, holdout = 6L, method = "cl")
 
-bt_loss <- backtest(tri_sur, holdout = 6L, loss_var = "loss")
-bt_rp   <- backtest(tri_sur, holdout = 6L, loss_var = "premium")
+bt_loss     <- backtest(tri_sur, holdout = 6L, loss_var = "loss")
+bt_premium  <- backtest(tri_sur, holdout = 6L, loss_var = "premium")
 
 print(bt_sa)
 #> <Backtest>
 #>   fit_fn      : fit_lr
-#>   loss_var   : lr
+#>   loss_var    : lr
 #>   holdout     : 6 calendar diagonals
 #>   held-out    : 159 cells
-#>   AEG         : mean 0.21% / median -0.00%
+#>   A/E Error   : mean 0.21% / median -0.00%
 ```
 
 Backtesting `loss` weights the result toward whichever cohorts happen to

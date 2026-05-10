@@ -151,6 +151,7 @@ Confidence interval for projected cells.
 <span>  <span class="va">x</span>,</span>
 <span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pred"</span>, <span class="st">"full"</span>, <span class="st">"data"</span><span class="op">)</span>,</span>
 <span>  label_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"value"</span>, <span class="st">"cv"</span>, <span class="st">"se"</span>, <span class="st">"ci"</span><span class="op">)</span>,</span>
+<span>  label_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  conf_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  amount_divisor <span class="op">=</span> <span class="fl">1e+08</span>,</span>
 <span>  theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"view"</span>, <span class="st">"save"</span>, <span class="st">"shiny"</span><span class="op">)</span>,</span>
@@ -175,6 +176,13 @@ Confidence interval for projected cells.
 <dt id="arg-label-style">label_style<a class="anchor" aria-label="anchor" href="#arg-label-style"></a></dt>
 <dd><p>One of <code>"value"</code> (default), <code>"cv"</code>, <code>"se"</code>, or
 <code>"ci"</code>. The uncertainty styles require <code>method = "mack"</code>.</p></dd>
+
+
+<dt id="arg-label-size">label_size<a class="anchor" aria-label="anchor" href="#arg-label-size"></a></dt>
+<dd><p>Numeric label text size forwarded to
+<code><a href="https://rdrr.io/pkg/ggshort/man/ggtable.html" class="external-link">ggshort::ggtable()</a></code>. Defaults to <code>3</code> for <code>label_style = "value"</code>,
+<code>"cv"</code>, or <code>"se"</code> and <code>2.5</code> for <code>label_style = "ci"</code> (two-line
+labels).</p></dd>
 
 
 <dt id="arg-conf-level">conf_level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>

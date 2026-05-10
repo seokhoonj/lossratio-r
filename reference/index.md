@@ -55,23 +55,34 @@ exposure-driven (ED) workflows. Built once, summarised differently via
 
 ## Estimation
 
-Per-link factor estimation (`fit_ata`, `fit_ed`) and full projection
-(`fit_cl`, `fit_lr`). `fit_lr` supports three methods — `"sa"`
-(stage-adaptive, default), `"ed"`, and `"cl"`.
-
-- [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)
-  : Fit age-to-age development factors
-
-- [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md)
-  : Fit ED intensity factors
+Models that produce full projections on a Triangle. `fit_cl` (chain
+ladder), `fit_ed` (exposure-driven / additive), `fit_lr` (loss-ratio
+umbrella with three methods — `"sa"` stage-adaptive default, `"ed"`,
+`"cl"`). All return an object carrying a `$full` projection table.
 
 - [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
   :
 
   Fit chain ladder projection from a `Triangle` object
 
+- [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md)
+  : Fit ED intensity factors
+
 - [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
   : Fit loss ratio projection model
+
+## Factor diagnostics
+
+Per-link ATA factor estimation (factor level). Returns factors, standard
+errors, and per-link diagnostic stats without producing a projection.
+Used as the building block of `fit_cl` and consumed internally by
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+and the stage transition in `fit_lr(method = "sa")`. The ED-side
+factor-level diagnostic is exposed via `summary.Link(model = "ed")`, not
+a dedicated fit function.
+
+- [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)
+  : Fit age-to-age development factors
 
 ## Cell-selection diagnostics
 
@@ -160,7 +171,7 @@ and
   : Triangle heatmap for an ata fit
 
 - [`plot_triangle(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.Backtest.md)
-  : Triangle heatmap of backtest AEG
+  : Triangle heatmap of backtest A/E Error
 
 - [`plot_triangle(`*`<CLFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.CLFit.md)
   : Plot chain ladder results as a triangle table

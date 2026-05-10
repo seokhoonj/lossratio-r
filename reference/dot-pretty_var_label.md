@@ -2,8 +2,8 @@
 
 Internal helper that maps a package convention variable name (e.g.
 `"uym"`, `"elap_m"`) to a human-readable axis label (e.g.
-`"underwriting ym"`, `"development months"`). Falls back to the input
-string when the variable is not recognised.
+`"underwriting months"`, `"development months"`). Falls back to the
+input string when the variable is not recognised.
 
 ## Usage
 

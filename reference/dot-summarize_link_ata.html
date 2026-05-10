@@ -194,7 +194,7 @@ stability.</p></dd>
 
 <dt><code>f</code></dt>
 <dd><p>WLS-estimated factor. Equals <code>wt</code> when <code>alpha = 2</code>
-and no zero <code>value_from</code> rows are present.</p></dd>
+and no zero <code>loss_from</code> rows are present.</p></dd>
 
 <dt><code>f_se</code></dt>
 <dd><p>Standard error of the WLS-estimated factor.</p></dd>
@@ -235,19 +235,19 @@ are included:</p>
 <dl><dt><code>wt</code></dt>
 <dd><p>Volume-weighted mean:
 \(wt = \sum C_{i,k+1} / \sum C_{i,k}\).
-Computed from all rows where <code>value_from</code> and <code>value_to</code> are
+Computed from all rows where <code>loss_from</code> and <code>loss_to</code> are
 finite, including rows where either value is zero.
 Independent of <code>alpha</code>.</p></dd>
 
 <dt><code>f</code></dt>
-<dd><p>WLS-estimated factor. Only rows where <code>value_from &gt; 0</code>
-are used, since <code>value_from = 0</code> causes numerical issues in the
+<dd><p>WLS-estimated factor. Only rows where <code>loss_from &gt; 0</code>
+are used, since <code>loss_from = 0</code> causes numerical issues in the
 WLS weights (\(w = value\_from^{\alpha}\)). When <code>alpha = 2</code>,
 <code>f</code> and <code>wt</code> are numerically equivalent (assuming no zero
-<code>value_from</code> rows). When <code>alpha \ne 2</code>, they diverge.</p></dd>
+<code>loss_from</code> rows). When <code>alpha \ne 2</code>, they diverge.</p></dd>
 
 
-</dl><p>Therefore <code>wt</code> and <code>f</code> can differ for two reasons:</p><ol><li><p><strong>Zero exclusion</strong>: rows with <code>value_from = 0</code> are
+</dl><p>Therefore <code>wt</code> and <code>f</code> can differ for two reasons:</p><ol><li><p><strong>Zero exclusion</strong>: rows with <code>loss_from = 0</code> are
 included in <code>wt</code> but excluded from <code>f</code>. This typically affects
 early development periods where some cohorts have not yet accumulated
 any claims.</p></li>
@@ -262,8 +262,8 @@ choice of <code>alpha</code> materially affects the estimated factor.</p></li>
 
 <p>When the input <code>"Link"</code> object contains a <code>weight</code> column (added by
 <code><a href="build_link.html">build_link()</a></code> when <code>weight_var</code> is supplied), that column is
-automatically used as the WLS weight in place of <code>value_from</code>. This
-is useful when <code>loss_var = "lr"</code>, where <code>value_from</code> carries no
+automatically used as the WLS weight in place of <code>loss_from</code>. This
+is useful when <code>loss_var = "lr"</code>, where <code>loss_from</code> carries no
 exposure information and an external exposure variable such as <code>premium</code>
 should be used instead.</p>
     </div>

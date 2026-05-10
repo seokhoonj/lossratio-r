@@ -63,7 +63,7 @@ build_link(
 - min_denom:
 
   Minimum denominator required to compute `ata` and `g`. If
-  `value_from <= min_denom`, `ata` becomes `NA`; if
+  `loss_from <= min_denom`, `ata` becomes `NA`; if
   `premium_from <= min_denom`, `g` becomes `NA`. Default `0`.
 
 - drop_invalid:
@@ -77,10 +77,10 @@ build_link(
 A `data.table` of class `"Link"` with columns:
 
 - Always: `[group_var]`, `cohort`, `ata_from`, `ata_to`, `ata_link`,
-  `value_from`, `value_to`, `delta_value`, `ata`.
+  `loss_from`, `loss_to`, `loss_delta`, `ata`.
 
 - If `premium_var` is set: also `premium_from`, `premium_to`,
-  `delta_premium`, `g`.
+  `premium_delta`, `g`.
 
 - If `weight_var` is set: also `weight`.
 

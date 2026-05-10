@@ -150,10 +150,11 @@ refitting the model on the earlier portion, and comparing its projection
 to the actuals that were withheld. This is calendar-diagonal hold-out
 (rather than dev-period hold-out), because it simulates “what would the
 model have said <em>K</em> months ago at the valuation date?”. The
-cell-level metric follows the standard actuarial A/E convention,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">g</mi></mrow><mo>=</mo><msub><mi>v</mi><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">l</mi></mrow></msub><mi>/</mi><msub><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">d</mi></mrow></msub><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\mathrm{aeg} = v_{\mathrm{actual}} / v_{\mathrm{pred}} - 1</annotation></semantics></math>,
-where positive values flag under-projection (actual exceeded expected)
-and negative values flag over-projection.</p>
+cell-level metric (<code>ae_err</code>, “A/E Error”) follows the
+standard actuarial A/E convention,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">r</mi></mrow><mo>=</mo><msub><mi>v</mi><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">l</mi></mrow></msub><mi>/</mi><msub><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">d</mi></mrow></msub><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\mathrm{ae\_err} = v_{\mathrm{actual}} / v_{\mathrm{pred}} - 1</annotation></semantics></math>,
+where positive values flag under-projection (the model under-estimated;
+actual exceeded expected) and negative values flag over-projection.</p>
 </div>
 <div class="section level2">
 <h2 id="basic-usage">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
@@ -168,20 +169,21 @@ and negative values flag over-projection.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Backtest&gt;</span></span>
 <span><span class="co">#&gt;   fit_fn      : fit_lr</span></span>
-<span><span class="co">#&gt;   loss_var   : lr</span></span>
+<span><span class="co">#&gt;   loss_var    : lr</span></span>
 <span><span class="co">#&gt;   holdout     : 6 calendar diagonals</span></span>
 <span><span class="co">#&gt;   held-out    : 159 cells</span></span>
-<span><span class="co">#&gt;   AEG         : mean 0.21% / median -0.00%</span></span></code></pre></div>
+<span><span class="co">#&gt;   A/E Error   : mean 0.21% / median -0.00%</span></span></code></pre></div>
 <p>The returned object is a <code>"Backtest"</code> list with these key
 slots:</p>
 <ul>
 <li>
-<code>aeg</code> — per-cell <code>data.table</code> (cohort, dev,
-actual, pred, aeg, calendar_idx).</li>
+<code>ae_err</code> — per-cell <code>data.table</code> (cohort, dev,
+actual, pred, ae_err, calendar_idx).</li>
 <li>
-<code>col_summary</code> — AEG aggregated by <code>dev</code>.</li>
+<code>col_summary</code> — A/E Error aggregated by
+<code>dev</code>.</li>
 <li>
-<code>diag_summary</code> — AEG aggregated by calendar
+<code>diag_summary</code> — A/E Error aggregated by calendar
 diagonal.</li>
 <li>
 <code>masked</code> — the triangle the fit was trained on (latest
@@ -201,7 +203,7 @@ triangle’s lower-right edge. Chain ladder can only project as far as the
 largest dev still observed in the masked data, so cells beyond that
 range — the oldest cohorts at their latest dev — have no projection to
 compare against. These unreachable cells are silently dropped, so
-<code>bt$aeg</code> contains only cells where both an actual and a
+<code>bt$ae_err</code> contains only cells where both an actual and a
 finite projection exist.</p>
 <p>Practical takeaway: as <code>holdout</code> grows, the validation set
 shrinks fastest in the oldest cohorts’ late-dev region — exactly where
@@ -213,13 +215,13 @@ disappear.</p>
 <h2 id="output-interpretation">Output interpretation<a class="anchor" aria-label="anchor" href="#output-interpretation"></a>
 </h2>
 <p><strong><code>col_summary</code> — systematic bias by development
-period.</strong> A consistently signed AEG at a given dev signals a
-structural mismatch between the model and that maturity. Early-dev
+period.</strong> A consistently signed A/E Error at a given dev signals
+a structural mismatch between the model and that maturity. Early-dev
 positive values usually reflect inflated link factors; late-dev values
 flag tail miscalibration.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">bt</span><span class="op">$</span><span class="va">col_summary</span>, <span class="fl">8</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    coverage   dev     n    aeg_mean     aeg_med       aeg_wt</span></span>
+<span><span class="co">#&gt;    coverage   dev     n ae_err_mean  ae_err_med    ae_err_wt</span></span>
 <span><span class="co">#&gt;      &lt;char&gt; &lt;int&gt; &lt;int&gt;       &lt;num&gt;       &lt;num&gt;        &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:      SUR     2     1 -0.36674932 -0.36674932 -0.366749322</span></span>
 <span><span class="co">#&gt; 2:      SUR     3     2 -0.09011955 -0.09011955 -0.154463503</span></span>
@@ -229,18 +231,19 @@ flag tail miscalibration.</p>
 <span><span class="co">#&gt; 6:      SUR     7     6  0.03540917  0.07574468  0.008863285</span></span>
 <span><span class="co">#&gt; 7:      SUR     8     6  0.05916242  0.07259077  0.055085668</span></span>
 <span><span class="co">#&gt; 8:      SUR     9     6  0.02445333  0.02775188  0.022389147</span></span></code></pre></div>
-<p><code>aeg_mean</code> averages cell-level AEG, <code>aeg_med</code>
-is the median, and <code>aeg_wt = sum(actual - pred) / sum(pred)</code>
-is the exposure-weighted pooled A/E ratio minus 1. Comparing the three
-columns flags whether a few large cells dominate (<code>aeg_wt</code>
-very different from <code>aeg_med</code>) or the bias is uniform.</p>
+<p><code>ae_err_mean</code> averages cell-level A/E Error,
+<code>ae_err_med</code> is the median, and
+<code>ae_err_wt = sum(actual - pred) / sum(pred)</code> is the
+exposure-weighted pooled A/E ratio minus 1. Comparing the three columns
+flags whether a few large cells dominate (<code>ae_err_wt</code> very
+different from <code>ae_err_med</code>) or the bias is uniform.</p>
 <p><strong><code>diag_summary</code> — calendar-year effect.</strong> A
 single bad diagonal in otherwise unbiased output points at a calendar
 event (a rate change, claim handling shift, or one-off shock) that a
 static fitter cannot see by construction.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bt</span><span class="op">$</span><span class="va">diag_summary</span></span>
-<span><span class="co">#&gt;    coverage calendar_idx     n     aeg_mean       aeg_med        aeg_wt</span></span>
+<span><span class="co">#&gt;    coverage calendar_idx     n  ae_err_mean    ae_err_med     ae_err_wt</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;        &lt;int&gt; &lt;int&gt;        &lt;num&gt;         &lt;num&gt;         &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:      SUR           31    29 -0.011309409 -0.0036993121 -0.0107004532</span></span>
 <span><span class="co">#&gt; 2:      SUR           32    28 -0.002794292 -0.0095889605 -0.0089044276</span></span>
@@ -249,17 +252,17 @@ static fitter cannot see by construction.</p>
 <span><span class="co">#&gt; 5:      SUR           35    25  0.007408947  0.0094557038 -0.0005997011</span></span>
 <span><span class="co">#&gt; 6:      SUR           36    24  0.005874139  0.0094502806 -0.0023535417</span></span></code></pre></div>
 <p>A monotone drift across calendar diagonals (as in the SUR example
-above, where AEG becomes increasingly positive across
+above, where A/E Error becomes increasingly positive across
 <code>25, ..., 30</code>) typically indicates that actuals on the latest
 diagonals are running above what the earlier-cohort link factors imply,
 i.e. a regime shift the static model has not absorbed.</p>
-<p><strong><code>aeg</code> — cell-level outliers.</strong> For
-diagnosing specific cohort × dev cells, inspect <code>bt$aeg</code>
+<p><strong><code>ae_err</code> — cell-level outliers.</strong> For
+diagnosing specific cohort × dev cells, inspect <code>bt$ae_err</code>
 directly:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">bt</span><span class="op">$</span><span class="va">aeg</span>, <span class="fl">5</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">bt</span><span class="op">$</span><span class="va">ae_err</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
-<span><span class="co">#&gt;    coverage     cohort   dev value_actual value_pred          aeg calendar_idx</span></span>
+<span><span class="co">#&gt;    coverage     cohort   dev value_actual value_pred       ae_err calendar_idx</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt; &lt;int&gt;        &lt;num&gt;      &lt;num&gt;        &lt;num&gt;        &lt;int&gt;</span></span>
 <span><span class="co">#&gt; 1:      SUR 2024-02-01    30     1.474656   1.485094 -0.007028587           31</span></span>
 <span><span class="co">#&gt; 2:      SUR 2024-03-01    29     1.441826   1.414305  0.019458534           31</span></span>
@@ -272,13 +275,13 @@ directly:</p>
 </h2>
 <p>Four plot views are registered on <code>"Backtest"</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bt</span>, type <span class="op">=</span> <span class="st">"col"</span><span class="op">)</span>    <span class="co"># AEG by dev (point + dashed zero line)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bt</span>, type <span class="op">=</span> <span class="st">"col"</span><span class="op">)</span>    <span class="co"># A/E Error by dev (point + dashed zero line)</span></span></code></pre></div>
 <p><img src="backtest_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bt</span>, type <span class="op">=</span> <span class="st">"diag"</span><span class="op">)</span>   <span class="co"># AEG by calendar diagonal</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bt</span>, type <span class="op">=</span> <span class="st">"diag"</span><span class="op">)</span>   <span class="co"># A/E Error by calendar diagonal</span></span></code></pre></div>
 <p><img src="backtest_files/figure-html/unnamed-chunk-5-2.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bt</span>, type <span class="op">=</span> <span class="st">"cell"</span><span class="op">)</span>   <span class="co"># per-cohort AEG trajectories over dev</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bt</span>, type <span class="op">=</span> <span class="st">"cell"</span><span class="op">)</span>   <span class="co"># per-cohort A/E Error trajectories over dev</span></span></code></pre></div>
 <p><img src="backtest_files/figure-html/unnamed-chunk-5-3.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span>         <span class="co"># diverging-color heatmap on the held-out wedge</span></span></code></pre></div>
@@ -286,10 +289,11 @@ directly:</p>
 <p><code>type = "col"</code> is the right place to look for systematic
 dev-period bias; <code>type = "diag"</code> reveals calendar-year drift;
 <code>type = "cell"</code> exposes which cohorts contribute the bias;
-<code><a href="../reference/plot_triangle.html">plot_triangle()</a></code> puts the cell-level AEG values on the same
-triangular layout as <code><a href="../reference/plot_triangle.html">plot_triangle()</a></code> for the underlying
-fit, with a red/blue diverging palette where red marks under-projection
-(actual &gt; pred).</p>
+<code><a href="../reference/plot_triangle.html">plot_triangle()</a></code> puts the cell-level A/E Error values on the
+same triangular layout as <code><a href="../reference/plot_triangle.html">plot_triangle()</a></code> for the
+underlying fit, with a red/blue diverging palette where red marks
+under-projection (actual &gt; pred) and blue marks over-projection
+(actual &lt; pred).</p>
 </div>
 <div class="section level2">
 <h2 id="holdout-selection">Holdout selection<a class="anchor" aria-label="anchor" href="#holdout-selection"></a>
@@ -314,7 +318,7 @@ history.</p>
 <p>The default fitter is <code>fit_lr</code> with
 <code>method = "sa"</code> and <code>loss_var = "lr"</code>. The loss
 ratio is unitless and dimension-free across cohorts of very different
-volume, so <code>aeg_mean</code> and <code>aeg_med</code> carry a
+volume, so <code>ae_err_mean</code> and <code>ae_err_med</code> carry a
 consistent meaning across the triangle.</p>
 <blockquote>
 <p><strong>A note on <code>loss_var</code>.</strong>
@@ -360,20 +364,20 @@ ladder afterwards; <code>"ed"</code> is purely exposure-driven;
 <code>"cl"</code> is the classical chain ladder applied to
 <code>lr</code>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">bt_sa</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span>   <span class="co"># default</span></span>
-<span><span class="va">bt_ed</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span></span>
-<span><span class="va">bt_cl</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">bt_sa</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span>  <span class="co"># default</span></span>
+<span><span class="va">bt_ed</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span></span>
+<span><span class="va">bt_cl</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">bt_loss</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
-<span><span class="va">bt_rp</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
+<span><span class="va">bt_loss</span>     <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
+<span><span class="va">bt_premium</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt_sa</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Backtest&gt;</span></span>
 <span><span class="co">#&gt;   fit_fn      : fit_lr</span></span>
-<span><span class="co">#&gt;   loss_var   : lr</span></span>
+<span><span class="co">#&gt;   loss_var    : lr</span></span>
 <span><span class="co">#&gt;   holdout     : 6 calendar diagonals</span></span>
 <span><span class="co">#&gt;   held-out    : 159 cells</span></span>
-<span><span class="co">#&gt;   AEG         : mean 0.21% / median -0.00%</span></span></code></pre></div>
+<span><span class="co">#&gt;   A/E Error   : mean 0.21% / median -0.00%</span></span></code></pre></div>
 <p>Backtesting <code>loss</code> weights the result toward whichever
 cohorts happen to be the largest at the held-out diagonals, which is
 useful when monetary impact matters more than a normalized

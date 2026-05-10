@@ -32,7 +32,7 @@ plot(tri)                              # cumulative loss-ratio trajectories per 
 
 ``` r
 
-plot(tri, value_var = "lr")            # incremental loss ratio instead of lr
+plot(tri, value_var = "lr_incr")       # incremental loss ratio instead of cumulative
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-2-2.png)
@@ -142,7 +142,7 @@ drive maturity detection:
   at each link (excluding cohorts where the link is not observed).
 - `cv` — coefficient of variation of the observed factors (relative
   spread, alpha-independent).
-- `f` — WLS-estimated factor (volume-weighted by `value_from^alpha`).
+- `f` — WLS-estimated factor (volume-weighted by `loss_from^alpha`).
 - `f_se`, `rse` — WLS standard error and relative standard error.
 - `sigma` — Mack residual sigma per link.
 - `n_obs`, `n_valid`, `n_inf`, `n_nan`, `valid_ratio` — observation
@@ -189,15 +189,14 @@ plot(ata, type = "point")         # scatter of observed ata per link
 
 ``` r
 
-la <- list(size = 2.5)                            # smaller labels
-plot_triangle(ata, label_args = la)               # heatmap of observed factors
+plot_triangle(ata, label_size = 2.5)              # heatmap of observed factors
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-7-1.png)
 
 ``` r
 
-plot_triangle(ata, label_args = la, show_maturity = TRUE)    # overlay maturity line
+plot_triangle(ata, label_size = 2.5, show_maturity = TRUE)   # overlay maturity line
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-7-2.png)
@@ -205,12 +204,11 @@ plot_triangle(ata, label_args = la, show_maturity = TRUE)    # overlay maturity 
 ``` r
 
 
-# detail labels are two lines and overlap on monthly cells — rebuild on the
-# quarterly triangle and shrink the labels another step so the
-# two-line "factor (loss / premium)" text fits inside each cell.
+# detail labels are two lines and overlap on monthly cells — rebuild on
+# the quarterly triangle so the two-line "factor (loss / premium)" text
+# has room (label_size auto-shrinks to 2.2 in detail mode).
 ata_q <- build_link(tri_q, loss_var = "loss")
-plot_triangle(ata_q, label_style = "detail",
-              label_args = list(size = 2.2))      # factor + (loss / premium)
+plot_triangle(ata_q, label_style = "detail")      # factor + (loss / premium)
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-7-3.png)
@@ -258,7 +256,7 @@ plot(ed, type = "box")
 
 ``` r
 
-plot_triangle(ed, label_args = list(size = 2.2))   # ED labels are longer; shrink another step
+plot_triangle(ed)                                  # ED triangle (default size)
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-8-3.png)

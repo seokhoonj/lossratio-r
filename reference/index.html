@@ -201,7 +201,37 @@
       </dl></div><div class="section level2">
       <h2 id="estimation">Estimation<a class="anchor" aria-label="anchor" href="#estimation"></a></h2>
 
-      <div class="section-desc"><p>Per-link factor estimation (<code>fit_ata</code>, <code>fit_ed</code>) and full projection (<code>fit_cl</code>, <code>fit_lr</code>). <code>fit_lr</code> supports three methods — <code>"sa"</code> (stage-adaptive, default), <code>"ed"</code>, and <code>"cl"</code>.</p></div>
+      <div class="section-desc"><p>Models that produce full projections on a Triangle. <code>fit_cl</code> (chain ladder), <code>fit_ed</code> (exposure-driven / additive), <code>fit_lr</code> (loss-ratio umbrella with three methods — <code>"sa"</code> stage-adaptive default, <code>"ed"</code>, <code>"cl"</code>). All return an object carrying a <code>$full</code> projection table.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="fit_cl.html">fit_cl()</a></code>
+
+        </dt>
+        <dd>Fit chain ladder projection from a <code>Triangle</code> object</dd>
+
+        <dt>
+
+          <code><a href="fit_ed.html">fit_ed()</a></code>
+
+        </dt>
+        <dd>Fit ED intensity factors</dd>
+
+        <dt>
+
+          <code><a href="fit_lr.html">fit_lr()</a></code>
+
+        </dt>
+        <dd>Fit loss ratio projection model</dd>
+      </dl></div><div class="section level2">
+      <h2 id="factor-diagnostics">Factor diagnostics<a class="anchor" aria-label="anchor" href="#factor-diagnostics"></a></h2>
+
+      <div class="section-desc"><p>Per-link ATA factor estimation (factor level). Returns factors, standard errors, and per-link diagnostic stats without producing a projection. Used as the building block of <code>fit_cl</code> and consumed internally by <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> and the stage transition in <code>fit_lr(method = "sa")</code>. The ED-side factor-level diagnostic is exposed via <code>summary.Link(model = "ed")</code>, not a dedicated fit function.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -214,27 +244,6 @@
 
         </dt>
         <dd>Fit age-to-age development factors</dd>
-
-        <dt>
-
-          <code><a href="fit_ed.html">fit_ed()</a></code>
-
-        </dt>
-        <dd>Fit ED intensity factors</dd>
-
-        <dt>
-
-          <code><a href="fit_cl.html">fit_cl()</a></code>
-
-        </dt>
-        <dd>Fit chain ladder projection from a <code>Triangle</code> object</dd>
-
-        <dt>
-
-          <code><a href="fit_lr.html">fit_lr()</a></code>
-
-        </dt>
-        <dd>Fit loss ratio projection model</dd>
       </dl></div><div class="section level2">
       <h2 id="cell-selection-diagnostics">Cell-selection diagnostics<a class="anchor" aria-label="anchor" href="#cell-selection-diagnostics"></a></h2>
 
@@ -396,7 +405,7 @@
           <code><a href="plot_triangle.Backtest.html">plot_triangle(<i>&lt;Backtest&gt;</i>)</a></code>
 
         </dt>
-        <dd>Triangle heatmap of backtest AEG</dd>
+        <dd>Triangle heatmap of backtest A/E Error</dd>
 
         <dt>
 

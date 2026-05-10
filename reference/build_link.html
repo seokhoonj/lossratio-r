@@ -213,7 +213,7 @@ workflow has its own anchor).</p></dd>
 
 <dt id="arg-min-denom">min_denom<a class="anchor" aria-label="anchor" href="#arg-min-denom"></a></dt>
 <dd><p>Minimum denominator required to compute <code>ata</code>
-and <code>g</code>. If <code>value_from &lt;= min_denom</code>, <code>ata</code> becomes <code>NA</code>; if
+and <code>g</code>. If <code>loss_from &lt;= min_denom</code>, <code>ata</code> becomes <code>NA</code>; if
 <code>premium_from &lt;= min_denom</code>, <code>g</code> becomes <code>NA</code>. Default <code>0</code>.</p></dd>
 
 
@@ -226,9 +226,9 @@ and <code>g</code>. If <code>value_from &lt;= min_denom</code>, <code>ata</code>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>data.table</code> of class <code>"Link"</code> with columns:</p><ul><li><p>Always: <code>[group_var]</code>, <code>cohort</code>, <code>ata_from</code>, <code>ata_to</code>, <code>ata_link</code>,
-<code>value_from</code>, <code>value_to</code>, <code>delta_value</code>, <code>ata</code>.</p></li>
+<code>loss_from</code>, <code>loss_to</code>, <code>loss_delta</code>, <code>ata</code>.</p></li>
 <li><p>If <code>premium_var</code> is set: also <code>premium_from</code>, <code>premium_to</code>,
-<code>delta_premium</code>, <code>g</code>.</p></li>
+<code>premium_delta</code>, <code>g</code>.</p></li>
 <li><p>If <code>weight_var</code> is set: also <code>weight</code>.</p></li>
 </ul><p>The returned object carries attributes <code>group_var</code>, <code>cohort_var</code>,
 <code>cohort_type</code>, <code>dev_var</code>, <code>dev_type</code>, <code>loss_var</code>, <code>premium_var</code>

@@ -5,12 +5,13 @@ Hold out the latest `holdout` calendar diagonals from the input
 cells, and compare the projection to the actual values that were
 withheld.
 
-The Actual-Expected Gap (AEG) follows the standard actuarial A/E
-convention and is computed cell-wise as \$\$aeg =
+The A/E Error (`ae_err`) follows the standard actuarial A/E convention
+and is computed cell-wise as \$\$ae\\err =
 \frac{value\_{actual}}{value\_{proj}} - 1\$\$ so that positive values
-flag under-projection (actual exceeded expected) and negative values
-flag over-projection. Aggregated by development period (`col_summary`)
-and by calendar diagonal (`diag_summary`).
+flag under-projection (the model under-estimated; actual exceeded
+expected) and negative values flag over-projection. Aggregated by
+development period (`col_summary`) and by calendar diagonal
+(`diag_summary`).
 
 ## Usage
 
@@ -103,18 +104,18 @@ An object of class `"Backtest"` with components:
 
   The fit object returned by `fit_fn`.
 
-- `aeg`:
+- `ae_err`:
 
   `data.table` of held-out cells with columns
-  `(group_var, cohort, dev, value_actual, value_pred, aeg, calendar_idx)`.
+  `(group_var, cohort, dev, value_actual, value_pred, ae_err, calendar_idx)`.
 
 - `col_summary`:
 
-  Per-`dev` aggregate AEG (mean / median / weighted / n).
+  Per-`dev` aggregate A/E Error (mean / median / weighted / n).
 
 - `diag_summary`:
 
-  Per-calendar-diagonal aggregate AEG.
+  Per-calendar-diagonal aggregate A/E Error.
 
 - `loss_var`, `holdout`, `fit_fn_name`:
 
@@ -128,9 +129,9 @@ An object of class `"Backtest"` with components:
 
 The `loss_var` argument plays two slightly different roles depending on
 the fitter, summarised below. In every case `loss_var` is the column
-that drives the AEG comparison; the difference is whether the fitter
-consumes the same name as input or whether the name is only resolved
-against the fit's projection table.
+that drives the A/E Error comparison; the difference is whether the
+fitter consumes the same name as input or whether the name is only
+resolved against the fit's projection table.
 
 |  |  |  |  |  |
 |----|----|----|----|----|

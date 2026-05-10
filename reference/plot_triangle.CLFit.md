@@ -43,6 +43,7 @@ plot_triangle(
   x,
   what = c("pred", "full", "data"),
   label_style = c("value", "cv", "se", "ci"),
+  label_size = NULL,
   conf_level = 0.95,
   amount_divisor = 1e+08,
   theme = c("view", "save", "shiny"),
@@ -66,6 +67,13 @@ plot_triangle(
 
   One of `"value"` (default), `"cv"`, `"se"`, or `"ci"`. The uncertainty
   styles require `method = "mack"`.
+
+- label_size:
+
+  Numeric label text size forwarded to
+  [`ggshort::ggtable()`](https://rdrr.io/pkg/ggshort/man/ggtable.html).
+  Defaults to `3` for `label_style = "value"`, `"cv"`, or `"se"` and
+  `2.5` for `label_style = "ci"` (two-line labels).
 
 - conf_level:
 

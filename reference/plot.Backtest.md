@@ -1,15 +1,15 @@
 # Plot a backtest object
 
-Visualise the Actual-Expected Gap (AEG) of a `"Backtest"` object.
+Visualise the A/E Error (`ae_err`) of a `"Backtest"` object.
 
 Three plot types:
 
-- `"col"`: AEG aggregated by development period (one line per summary
-  statistic).
+- `"col"`: A/E Error aggregated by development period (one line per
+  summary statistic).
 
-- `"diag"`: AEG aggregated by calendar diagonal.
+- `"diag"`: A/E Error aggregated by calendar diagonal.
 
-- `"cell"`: per-cell AEG as a scatter / line, faceted by group.
+- `"cell"`: per-cell A/E Error as a scatter / line, faceted by group.
 
 ## Usage
 

@@ -12,7 +12,7 @@ plot_triangle(
   x,
   what = c("full", "pred"),
   label_style = c("value", "detail"),
-  label_args = list(),
+  label_size = NULL,
   show_maturity = TRUE,
   digits = 0,
   amount_divisor = 1e+08,
@@ -39,9 +39,12 @@ plot_triangle(
   One of `"value"` (lr only) or `"detail"` (lr with loss/exposure
   amounts). Default is `"value"`.
 
-- label_args:
+- label_size:
 
-  Named list of label appearance arguments.
+  Numeric label text size forwarded to
+  [`ggshort::ggtable()`](https://rdrr.io/pkg/ggshort/man/ggtable.html).
+  Defaults to `3` for `label_style = "value"` and `2.5` for
+  `label_style = "detail"` (two-line labels).
 
 - show_maturity:
 

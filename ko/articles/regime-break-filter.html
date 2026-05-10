@@ -299,16 +299,17 @@ four variants:</p>
 </tr>
 </tbody>
 </table>
-<p>Two columns summarise the AEG = <code>actual / pred − 1</code>
-(positive = under- projection) measured on the held-out diagonals:</p>
+<p>Two columns summarise the A/E Error = <code>actual / pred − 1</code>
+(positive = under-projection) measured on the held-out diagonals:</p>
 <ul>
 <li>
-<strong>drift (cal30 − cal25)</strong>: AEG aggregated by calendar
-diagonal, then the (latest − earliest) difference. Captures whether the
-prediction error is monotonically changing across the hold-out window —
-the signature of a regime that the static model has not absorbed.</li>
+<strong>drift (cal30 − cal25)</strong>: A/E Error aggregated by
+calendar diagonal, then the (latest − earliest) difference. Captures
+whether the prediction error is monotonically changing across the
+hold-out window — the signature of a regime that the static model has
+not absorbed.</li>
 <li>
-<strong>overall mean</strong>: cell-level mean AEG across all
+<strong>overall mean</strong>: cell-level mean A/E Error across all
 held-out cells — the model’s directional bias.</li>
 </ul>
 <p>Drift collapses from +4.50pp under <code>full</code> to -0.69pp under

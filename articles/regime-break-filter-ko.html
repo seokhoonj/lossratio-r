@@ -357,18 +357,18 @@ backtest 를 돌리고 결과를 비교한다.</p>
 </tr>
 </tbody>
 </table>
-<p>두 컬럼은 hold-out 대각선들에서 측정한 AEG =
-<code>actual / pred − 1</code> (양수 = 과소예측) 을 두 가지 관점으로
+<p>두 컬럼은 hold-out 대각선들에서 측정한 A/E Error =
+<code>actual / pred − 1</code> (양수 = 과소 추정) 을 두 가지 관점으로
 요약한 값이다.</p>
 <ul>
 <li>
-<strong>drift (cal30 − cal25)</strong>: 대각선별로 평균낸 AEG 의
-(가장 최근 − 가장 오래된) 차이. hold-out 기간 동안 예측 오차가 단조롭게
-변하는지 — 즉 정적 모형이 흡수하지 못한 regime 변화의 시그니처 — 를
-포착한다.</li>
+<strong>drift (cal30 − cal25)</strong>: 대각선별로 평균낸 A/E Error
+의 (가장 최근 − 가장 오래된) 차이. hold-out 기간 동안 예측 오차가
+단조롭게 변하는지 — 즉 정적 모형이 흡수하지 못한 regime 변화의 시그니처
+— 를 포착한다.</li>
 <li>
-<strong>overall mean</strong>: hold-out 셀 전체의 셀단위 AEG 평균 —
-모형의 방향성 편향.</li>
+<strong>overall mean</strong>: hold-out 셀 전체의 셀단위 A/E Error
+평균 — 모형의 방향성 편향.</li>
 </ul>
 <p>drift 가 <code>full</code> 의 +4.50pp 에서 hybrid 의 -0.69pp 로 거의
 0 에 수렴하고 overall mean 도 편향이 사라진다. hybrid 모드는 ED 영역

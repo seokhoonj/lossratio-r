@@ -150,11 +150,11 @@ experience 데이터 위에서 따라간다. long-format raw 데이터에서 시
 <h2 id="입력-형태">입력 형태<a class="anchor" aria-label="anchor" href="#%EC%9E%85%EB%A0%A5-%ED%98%95%ED%83%9C"></a>
 </h2>
 <p><code>lossratio</code> 는 long-format experience 데이터를 입력으로
-사용한다 — 한 행은 (코호트 × 경과 기간 × 인구통계) 셀 하나에 대응한다.
-내장 데이터셋 <code>experience</code> 는 33,480 행 테이블로, 여러 단위의
-calendar / underwriting 기간 컬럼, 인구통계 차원 (<code>coverage</code>,
-<code>age_band</code>, <code>gender</code>), 기간별 금액 컬럼
-(<code>loss_incr</code>, <code>premium_incr</code>) 을 포함한다.</p>
+사용한다 — 한 행은 (코호트 × 경과 기간 × 그룹) 셀 하나에 대응한다. 내장
+데이터셋 <code>experience</code> 는 2,664 행 테이블로, 여러 집계 주기의
+calendar / underwriting 기간 컬럼, <code>coverage</code> 그룹 컬럼,
+기간별 금액 컬럼 (<code>loss_incr</code>, <code>premium_incr</code>) 을
+포함한다.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio">lossratio</a></span><span class="op">)</span></span>
 <span></span>

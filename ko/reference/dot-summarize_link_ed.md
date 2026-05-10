@@ -63,9 +63,9 @@ they differ in how weights are assigned:
 
 - `g`:
 
-  WLS-estimated intensity from `lm(delta_value ~ premium_from + 0)`.
-  Only rows where `premium_from > 0` are used. When `alpha = 2`, `g` and
-  `wt` are numerically equivalent.
+  WLS-estimated intensity from `lm(loss_delta ~ premium_from + 0)`. Only
+  rows where `premium_from > 0` are used. When `alpha = 2`, `g` and `wt`
+  are numerically equivalent.
 
 ## See also
 

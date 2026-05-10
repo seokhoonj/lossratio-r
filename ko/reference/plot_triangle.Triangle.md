@@ -26,7 +26,7 @@ plot_triangle(
   type = c("value", "usage"),
   value_var = "lr",
   label_style = c("value", "detail"),
-  label_args = list(),
+  label_size = NULL,
   amount_divisor = 1e+08,
   nrow = NULL,
   ncol = NULL,
@@ -79,13 +79,14 @@ plot_triangle(
       the associated loss / premium amounts. For amount and proportion
       metrics, this falls back to `"value"`.
 
-- label_args:
+- label_size:
 
-  A list of arguments forwarded to
-  [`ggshort::ggtable()`](https://rdrr.io/pkg/ggshort/man/ggtable.html)
-  to control label appearance (`family`, `size`, `angle`, `hjust`,
-  `vjust`, `color`). Slots not supplied fall back to ggshort defaults
-  (e.g. `size = 3.88`).
+  Numeric label text size forwarded to
+  [`ggshort::ggtable()`](https://rdrr.io/pkg/ggshort/man/ggtable.html).
+  Defaults to `3` for `label_style = "value"` and `2.5` for
+  `label_style = "detail"` (two-line labels need a smaller size to fit).
+  Other label appearance fields (family, color, hjust, ...) fall back to
+  ggshort defaults.
 
 - amount_divisor:
 
