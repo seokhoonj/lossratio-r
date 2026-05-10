@@ -88,6 +88,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-sa_proc_var.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-sa_proj.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-scale_color_by_month_gradientn.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-select_intensity.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-summarize_link_ata.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-summarize_link_ed.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-switch_theme.html</loc></url>
@@ -97,6 +98,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_intensity.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/get_recent_weights.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/index.html</loc></url>
@@ -127,11 +129,13 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.CLFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.EDFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.EDSummary.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.IntensityFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.LRFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.ATAFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.CLFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.Calendar.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.EDFit.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.IntensityFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.LRFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.Total.html</loc></url>

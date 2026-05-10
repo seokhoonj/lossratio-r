@@ -2,6 +2,20 @@
 
 ## lossratio (development version)
 
+- New
+  [`fit_intensity()`](https://seokhoonj.github.io/lossratio/reference/fit_intensity.md) +
+  `IntensityFit` S3 class (R/intensity.R) — factor-level ED diagnostic,
+  parallel to
+  [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)
+  for the multiplicative side. Returns per-link WLS-estimated
+  intensities `g_k` with standard errors and diagnostic stats; no
+  projection. ED has no maturity concept, so `fit_intensity`
+  deliberately omits `maturity_args`.
+- Link cell-level column `g` renamed to `intensity` (concept-based,
+  parallels ATA’s `ata`). Summary / fit per-link output columns (`g`,
+  `g_se`, `g_var`, `g_selected`) keep Mack-style symbol naming for
+  parallelism with ATA summary’s `f`, `f_se`. Layered naming: cell layer
+  uses concept (`intensity`), summary layer uses symbol (`g`).
 - [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md):
   cell-level metric and aggregation columns renamed from `aeg` to
   `ae_err` (column `ae_err`, aggregations `ae_err_mean` / `ae_err_med` /

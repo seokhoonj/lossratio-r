@@ -184,7 +184,7 @@
       </dl></div><div class="section level2">
       <h2 id="--4">인자 진단<a class="anchor" aria-label="anchor" href="#--4"></a></h2>
 
-      <div class="section-desc"><p>링크별 ATA 인자 추정 (factor level). projection 은 산출하지 않고 인자·SE·진단 stat 만 제공. <code>fit_cl</code> 의 building block 이며 <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> 와 <code>fit_lr(method = "sa")</code> 의 stage transition 에서 내부적으로 사용. ED 측 factor-level 진단은 별도 함수가 아닌 <code>summary.Link(model = "ed")</code> 로 노출.</p></div>
+      <div class="section-desc"><p>Factor level 의 링크별 인자 추정. <code>fit_ata</code> (multiplicative ATA 인자 <code>f_k</code>) 와 <code>fit_intensity</code> (ED 의 additive intensity <code>g_k</code>) 가 짝. 두 함수 모두 projection 은 산출하지 않고 인자·SE·진단 stat 만 반환. <code>fit_ata</code> 는 <code>fit_cl</code>, <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code>, <code>fit_lr(method = "sa")</code> 의 stage transition 에서 사용되고, <code>fit_intensity</code> 는 <code>fit_ed</code> 의 짝 diagnostic.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -197,6 +197,13 @@
 
         </dt>
         <dd>Fit age-to-age development factors</dd>
+
+        <dt>
+
+          <code><a href="fit_intensity.html">fit_intensity()</a></code>
+
+        </dt>
+        <dd>Fit per-link ED intensity factors</dd>
       </dl></div><div class="section level2">
       <h2 id="--5">추정 셀 선택 진단<a class="anchor" aria-label="anchor" href="#--5"></a></h2>
 
@@ -455,6 +462,13 @@
 
         <dt>
 
+          <code><a href="print.IntensityFit.html">print(<i>&lt;IntensityFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for <code>IntensityFit</code></dd>
+
+        <dt>
+
           <code><a href="print.LRFit.html">print(<i>&lt;LRFit&gt;</i>)</a></code>
 
         </dt>
@@ -487,6 +501,13 @@
 
         </dt>
         <dd>Summary method for <code>EDFit</code></dd>
+
+        <dt>
+
+          <code><a href="summary.IntensityFit.html">summary(<i>&lt;IntensityFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Summary method for <code>IntensityFit</code></dd>
 
         <dt>
 

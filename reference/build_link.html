@@ -14,10 +14,10 @@ factor is \(ata = value_{to} / value_{from}\), where
 Dual-variable mode (premium_var supplied)
 In addition to
 the loss-side ATA, the exposure-driven intensity
-\(g = \Delta loss / premium_{from}\) is computed. Premium
-measure used as denominator for loss ratio calculations; for
-long-term health insurance applications, risk premium is
-commonly used.
+\(g = \Delta loss / premium_{from}\) is computed and stored in
+the intensity column. Premium measure used as denominator for
+loss ratio calculations; for long-term health insurance
+applications, risk premium is commonly used.
 
 
 
@@ -36,10 +36,10 @@ factor is \(ata = value_{to} / value_{from}\), where
 Dual-variable mode (premium_var supplied)
 In addition to
 the loss-side ATA, the exposure-driven intensity
-\(g = \Delta loss / premium_{from}\) is computed. Premium
-measure used as denominator for loss ratio calculations; for
-long-term health insurance applications, risk premium is
-commonly used.
+\(g = \Delta loss / premium_{from}\) is computed and stored in
+the intensity column. Premium measure used as denominator for
+loss ratio calculations; for long-term health insurance
+applications, risk premium is commonly used.
 
 
 
@@ -162,10 +162,10 @@ factor is \(ata = value_{to} / value_{from}\), where
 <dt>Dual-variable mode (<code>premium_var</code> supplied)</dt>
 <dd><p>In addition to
 the loss-side ATA, the exposure-driven intensity
-\(g = \Delta loss / premium_{from}\) is computed. Premium
-measure used as denominator for loss ratio calculations; for
-long-term health insurance applications, risk premium is
-commonly used.</p></dd>
+\(g = \Delta loss / premium_{from}\) is computed and stored in
+the <code>intensity</code> column. Premium measure used as denominator for
+loss ratio calculations; for long-term health insurance
+applications, risk premium is commonly used.</p></dd>
 
 
 </dl></div>
@@ -213,14 +213,16 @@ workflow has its own anchor).</p></dd>
 
 <dt id="arg-min-denom">min_denom<a class="anchor" aria-label="anchor" href="#arg-min-denom"></a></dt>
 <dd><p>Minimum denominator required to compute <code>ata</code>
-and <code>g</code>. If <code>loss_from &lt;= min_denom</code>, <code>ata</code> becomes <code>NA</code>; if
-<code>premium_from &lt;= min_denom</code>, <code>g</code> becomes <code>NA</code>. Default <code>0</code>.</p></dd>
+and <code>intensity</code>. If <code>loss_from &lt;= min_denom</code>, <code>ata</code> becomes <code>NA</code>;
+if <code>premium_from &lt;= min_denom</code>, <code>intensity</code> becomes <code>NA</code>. Default
+<code>0</code>.</p></dd>
 
 
 <dt id="arg-drop-invalid">drop_invalid<a class="anchor" aria-label="anchor" href="#arg-drop-invalid"></a></dt>
 <dd><p>Logical; if <code>TRUE</code>, rows with non-finite <code>ata</code>
-(single-var) or non-finite <code>g</code> (dual-var) are dropped. Default
-<code>FALSE</code> so the full link grid is preserved for diagnostics.</p></dd>
+(single-var) or non-finite <code>intensity</code> (dual-var) are dropped.
+Default <code>FALSE</code> so the full link grid is preserved for
+diagnostics.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -228,7 +230,7 @@ and <code>g</code>. If <code>loss_from &lt;= min_denom</code>, <code>ata</code> 
     <p>A <code>data.table</code> of class <code>"Link"</code> with columns:</p><ul><li><p>Always: <code>[group_var]</code>, <code>cohort</code>, <code>ata_from</code>, <code>ata_to</code>, <code>ata_link</code>,
 <code>loss_from</code>, <code>loss_to</code>, <code>loss_delta</code>, <code>ata</code>.</p></li>
 <li><p>If <code>premium_var</code> is set: also <code>premium_from</code>, <code>premium_to</code>,
-<code>premium_delta</code>, <code>g</code>.</p></li>
+<code>premium_delta</code>, <code>intensity</code>.</p></li>
 <li><p>If <code>weight_var</code> is set: also <code>weight</code>.</p></li>
 </ul><p>The returned object carries attributes <code>group_var</code>, <code>cohort_var</code>,
 <code>cohort_type</code>, <code>dev_var</code>, <code>dev_type</code>, <code>loss_var</code>, <code>premium_var</code>

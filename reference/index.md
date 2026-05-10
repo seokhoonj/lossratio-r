@@ -73,16 +73,19 @@ umbrella with three methods — `"sa"` stage-adaptive default, `"ed"`,
 
 ## Factor diagnostics
 
-Per-link ATA factor estimation (factor level). Returns factors, standard
-errors, and per-link diagnostic stats without producing a projection.
-Used as the building block of `fit_cl` and consumed internally by
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
-and the stage transition in `fit_lr(method = "sa")`. The ED-side
-factor-level diagnostic is exposed via `summary.Link(model = "ed")`, not
-a dedicated fit function.
+Per-link factor estimation at the *factor level*. Both `fit_ata`
+(multiplicative ATA factors `f_k`) and `fit_intensity` (ED-style
+additive intensities `g_k`) return per-link factors with standard errors
+and diagnostic stats — without producing a full projection. `fit_ata`
+feeds into `fit_cl`,
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md),
+and the SA stage transition in `fit_lr`; `fit_intensity` feeds into
+`fit_ed` and is the ED counterpart diagnostic.
 
 - [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)
   : Fit age-to-age development factors
+- [`fit_intensity()`](https://seokhoonj.github.io/lossratio/reference/fit_intensity.md)
+  : Fit per-link ED intensity factors
 
 ## Cell-selection diagnostics
 
@@ -229,6 +232,11 @@ print / summary / longer methods registered on package classes.
 
   Print method for `EDSummary`
 
+- [`print(`*`<IntensityFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.IntensityFit.md)
+  :
+
+  Print method for `IntensityFit`
+
 - [`print(`*`<LRFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.LRFit.md)
   :
 
@@ -251,6 +259,11 @@ print / summary / longer methods registered on package classes.
   :
 
   Summary method for `EDFit`
+
+- [`summary(`*`<IntensityFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.IntensityFit.md)
+  :
+
+  Summary method for `IntensityFit`
 
 - [`summary(`*`<LRFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.LRFit.md)
   :

@@ -17,9 +17,10 @@ Two modes are produced depending on `premium_var`:
 - Dual-variable mode (`premium_var` supplied):
 
   In addition to the loss-side ATA, the exposure-driven intensity \\g =
-  \Delta loss / premium\_{from}\\ is computed. Premium measure used as
-  denominator for loss ratio calculations; for long-term health
-  insurance applications, risk premium is commonly used.
+  \Delta loss / premium\_{from}\\ is computed and stored in the
+  `intensity` column. Premium measure used as denominator for loss ratio
+  calculations; for long-term health insurance applications, risk
+  premium is commonly used.
 
 ## Usage
 
@@ -62,15 +63,15 @@ build_link(
 
 - min_denom:
 
-  Minimum denominator required to compute `ata` and `g`. If
+  Minimum denominator required to compute `ata` and `intensity`. If
   `loss_from <= min_denom`, `ata` becomes `NA`; if
-  `premium_from <= min_denom`, `g` becomes `NA`. Default `0`.
+  `premium_from <= min_denom`, `intensity` becomes `NA`. Default `0`.
 
 - drop_invalid:
 
   Logical; if `TRUE`, rows with non-finite `ata` (single-var) or
-  non-finite `g` (dual-var) are dropped. Default `FALSE` so the full
-  link grid is preserved for diagnostics.
+  non-finite `intensity` (dual-var) are dropped. Default `FALSE` so the
+  full link grid is preserved for diagnostics.
 
 ## Value
 
@@ -80,7 +81,7 @@ A `data.table` of class `"Link"` with columns:
   `loss_from`, `loss_to`, `loss_delta`, `ata`.
 
 - If `premium_var` is set: also `premium_from`, `premium_to`,
-  `premium_delta`, `g`.
+  `premium_delta`, `intensity`.
 
 - If `weight_var` is set: also `weight`.
 
