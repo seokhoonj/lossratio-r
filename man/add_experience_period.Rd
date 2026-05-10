@@ -7,8 +7,8 @@
 add_experience_period(df)
 }
 \arguments{
-\item{df}{A data.frame containing period variables such as \code{uym},
-\code{cym}, and \code{dev_m}.}
+\item{df}{A data.frame containing period variables such as \code{uy_m},
+\code{cy_m}, and \code{dev_m}.}
 }
 \value{
 A data.frame (or tibble/data.table depending on input) with
@@ -19,43 +19,43 @@ Add underwriting, calendar, and development period variables to an
 experience dataset using standard column conventions for loss ratio
 analysis.
 
-The function detects the presence of key source columns such as \code{uym},
-\code{cym}, and \code{dev_m}, and derives additional period variables when
+The function detects the presence of key source columns such as \code{uy_m},
+\code{cy_m}, and \code{dev_m}, and derives additional period variables when
 possible.
 }
 \details{
 The following variables are added when the required source columns
 exist:
 
-\strong{Underwriting period (from \code{uym}):}
+\strong{Underwriting period (from \code{uy_m}):}
 \itemize{
-\item \code{uy}  : underwriting year
-\item \code{uyh} : underwriting half-year
-\item \code{uyq} : underwriting quarter
+\item \code{uy_a} : underwriting year
+\item \code{uy_s} : underwriting half-year
+\item \code{uy_q} : underwriting quarter
 }
 
-\strong{Calendar period (from \code{cym}):}
+\strong{Calendar period (from \code{cy_m}):}
 \itemize{
-\item \code{cy}  : calendar year
-\item \code{cyh} : calendar half-year
-\item \code{cyq} : calendar quarter
+\item \code{cy_a} : calendar year
+\item \code{cy_s} : calendar half-year
+\item \code{cy_q} : calendar quarter
 }
 
 \strong{Development period:}
 \itemize{
-\item \code{dev_y} is derived from \code{dev_m} as yearly development
+\item \code{dev_a} is derived from \code{dev_m} as yearly development
 index, where months 1 to 12 map to 1, 13 to 24 map to 2, and so on.
-\item \code{dev_h} is derived from \code{uym} and \code{cym} using calendar half-year
+\item \code{dev_s} is derived from \code{uy_m} and \code{cy_m} using calendar half-year
 boundaries. For example, contracts issued in January to June are
 aligned to the same first development half-year block, and the next
 calendar half-year becomes development half-year 2.
-\item \code{dev_q} is derived from \code{uym} and \code{cym} using calendar quarter
+\item \code{dev_q} is derived from \code{uy_m} and \code{cy_m} using calendar quarter
 boundaries. For example, contracts issued in January to March are
 aligned to the same first development quarter block, and the next
 calendar quarter becomes development quarter 2.
 }
 
-Therefore, \code{dev_h} and \code{dev_q} are not simple grouped versions of
+Therefore, \code{dev_s} and \code{dev_q} are not simple grouped versions of
 \code{dev_m}; they are aligned to calendar half-year and quarter boundaries
 so that underwriting cohorts such as Q1, Q2, H1, and H2 are compared
 consistently on the same cumulative development basis.
@@ -66,8 +66,8 @@ columns.
 \examples{
 \dontrun{
 df <- data.frame(
-  uym   = as.Date("2023-01-01") + 0:5 * 30,
-  cym   = as.Date("2023-01-01") + 0:5 * 30,
+  uy_m  = as.Date("2023-01-01") + 0:5 * 30,
+  cy_m  = as.Date("2023-01-01") + 0:5 * 30,
   dev_m = 1:6
 )
 

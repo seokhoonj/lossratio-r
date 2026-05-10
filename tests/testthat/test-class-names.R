@@ -116,19 +116,19 @@ test_that("lowercase class names not introduced (CL / LR / regime / backtest)", 
 test_that("Triangle attribute names preserved (raw / standard split)", {
   tri <- make_tri()
   expect_identical(attr(tri, "dev_var"),     "dev_m")
-  expect_identical(attr(tri, "cohort_var"),  "uym")
+  expect_identical(attr(tri, "cohort_var"),  "uy_m")
   expect_identical(attr(tri, "group_var"),   "coverage")
 
   # standard column names rename happened (raw cohort/dev replaced).
   expect_true("cohort" %in% names(tri))
   expect_true("dev"    %in% names(tri))
-  expect_false("uym"   %in% names(tri))
+  expect_false("uy_m"  %in% names(tri))
   expect_false("dev_m" %in% names(tri))
 })
 
 test_that("Calendar attributes use calendar_var", {
   cal <- build_calendar(make_exp(), group_var = coverage)
-  expect_identical(attr(cal, "calendar_var"), "cym")
+  expect_identical(attr(cal, "calendar_var"), "cy_m")
   expect_identical(attr(cal, "group_var"),    "coverage")
 })
 
@@ -144,7 +144,7 @@ test_that("Forbidden legacy attribute names not present", {
 
 test_that("Triangle column names use standard cohort/dev (no legacy aliases)", {
   tri <- make_tri()
-  for (nm in c("duration", "elapsed", "uym", "dev_m",
+  for (nm in c("duration", "elapsed", "uy_m", "dev_m",
                "elpm", "elpq", "elph", "elpy")) {
     expect_false(nm %in% names(tri), info = paste("tri has column", nm))
   }

@@ -142,7 +142,7 @@ test_that("fit_ata with regime_break drops pre-break cohorts", {
   data(experience)
   exp <- as_experience(experience[coverage == "SUR"])
   tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uym", dev_var = "dev_m")
+                        cohort_var = "uy_m", dev_var = "dev_m")
   ata <- build_link(tri, loss_var = "loss")
 
   fit_full <- fit_ata(tri, loss_var = "loss")
@@ -159,7 +159,7 @@ test_that("fit_ata with NULL regime_break is unchanged from default", {
   data(experience)
   exp <- as_experience(experience[coverage == "SUR"])
   tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uym", dev_var = "dev_m")
+                        cohort_var = "uy_m", dev_var = "dev_m")
   ata <- build_link(tri, loss_var = "loss")
   fit_default <- fit_ata(tri, loss_var = "loss")
   fit_null    <- fit_ata(tri, loss_var = "loss", regime_break = NULL)
@@ -171,7 +171,7 @@ test_that("fit_ata with Regime input extracts last breakpoint", {
   data(experience)
   exp <- as_experience(experience[coverage == "SUR"])
   tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uym", dev_var = "dev_m")
+                        cohort_var = "uy_m", dev_var = "dev_m")
   reg <- detect_regime(tri)
   ata <- build_link(tri, loss_var = "loss")
   fit_reg <- fit_ata(tri, loss_var = "loss", regime_break = reg)

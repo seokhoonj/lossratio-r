@@ -14,7 +14,7 @@ A single character string.
 }
 \description{
 Internal helper that maps a package convention variable name (e.g.
-\code{"uym"}, \code{"dev_m"}) to a human-readable axis label (e.g.
+\code{"uy_m"}, \code{"dev_m"}) to a human-readable axis label (e.g.
 \code{"underwriting months"}, \code{"development months"}). Falls back to the
 input string when the variable is not recognised.
 }

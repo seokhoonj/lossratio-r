@@ -31,7 +31,7 @@ set.seed(20260501L)
 #   HOS  Hospitalisation (per-day fixed benefit)
 #   SUR  Surgery (per-event fixed benefit)
 calib <- data.table(
-  coverage     = c("CI",       "CAN",      "HOS",      "SUR"),
+  coverage  = c("CI",       "CAN",      "HOS",      "SUR"),
   target_lr = c(0.6041798,  0.4966633,  0.3533962,  1.4291995),
   prem_mean = c(490082826,  403465899,  32725571,   704738057),
   prem_cv   = c(0.9332768,  0.8684393,  0.8545352,  0.6738675),
@@ -44,9 +44,9 @@ shifts <- list("SUR" = list(at = 18L, scale = 0.60))
 
 # ---- Synthesis grid -------------------------------------------------------
 
-n_cohorts   <- 36L
-K           <- 36L
-max_cym_idx <- n_cohorts - 1L
+n_cohorts    <- 36L
+K            <- 36L
+max_cy_m_idx <- n_cohorts - 1L
 
 # Runoff: roughly constant incremental loss per dev with a small dev-1
 # dampening that mimics the waiting-period dip in real long-term
@@ -74,13 +74,13 @@ for (i in seq_len(nrow(calib))) {
 
     cy_u <- ci %/% 12L
     cm_u <- ci %% 12L + 1L
-    uym  <- as.Date(sprintf("%d-%02d-01", 2024L + cy_u, cm_u))
+    uy_m <- as.Date(sprintf("%d-%02d-01", 2024L + cy_u, cm_u))
 
     for (k in 0L:(K - 1L)) {
-      if (ci + k > max_cym_idx) break
+      if (ci + k > max_cy_m_idx) break
       cy_c <- (ci + k) %/% 12L
       cm_c <- (ci + k) %% 12L + 1L
-      cym  <- as.Date(sprintf("%d-%02d-01", 2024L + cy_c, cm_c))
+      cy_m <- as.Date(sprintf("%d-%02d-01", 2024L + cy_c, cm_c))
 
       incr_premium <- prem_base_ci * (1 + rnorm(1L, 0, 0.05))
       incr_premium <- max(incr_premium, 0)
@@ -89,9 +89,9 @@ for (i in seq_len(nrow(calib))) {
       incr_loss <- incr_premium * eff_target * weights[k + 1L] * K * noise
 
       records[[length(records) + 1L]] <- data.table(
-        coverage        = cv,
-        cym          = cym,
-        uym          = uym,
+        coverage     = cv,
+        cy_m         = cy_m,
+        uy_m         = uy_m,
         loss_incr    = incr_loss,
         premium_incr = incr_premium
       )
@@ -102,7 +102,8 @@ for (i in seq_len(nrow(calib))) {
 experience <- rbindlist(records)
 
 # ---- Derived time-axis columns ---------------------------------------------
-.year_of  <- function(d) data.table::year(d)
+.year_of  <- function(d) as.Date(sprintf(
+  "%d-01-01", data.table::year(d)))
 .half_of  <- function(d) as.Date(sprintf(
   "%d-%02d-01", data.table::year(d),
   ifelse(data.table::month(d) <= 6L, 1L, 7L)))
@@ -111,31 +112,30 @@ experience <- rbindlist(records)
   ((data.table::month(d) - 1L) %/% 3L) * 3L + 1L))
 
 experience[, `:=`(
-  uy     = .year_of(uym),
-  uyh    = .half_of(uym),
-  uyq    = .quart_of(uym),
-  cy     = .year_of(cym),
-  cyh    = .half_of(cym),
-  cyq    = .quart_of(cym),
-  dev_y = data.table::year(cym)  - data.table::year(uym) + 1L,
-  dev_h = 2L * (data.table::year(cym) - data.table::year(uym)) +
-          ((data.table::month(cym) - 1L) %/% 6L -
-           (data.table::month(uym) - 1L) %/% 6L) + 1L,
-  dev_q = 4L * (data.table::year(cym) - data.table::year(uym)) +
-          ((data.table::month(cym) - 1L) %/% 3L -
-           (data.table::month(uym) - 1L) %/% 3L) + 1L,
-  dev_m = 12L * (data.table::year(cym) - data.table::year(uym)) +
-          (data.table::month(cym) - data.table::month(uym)) + 1L
+  uy_a   = .year_of(uy_m),
+  uy_s   = .half_of(uy_m),
+  uy_q   = .quart_of(uy_m),
+  cy_a   = .year_of(cy_m),
+  cy_s   = .half_of(cy_m),
+  cy_q   = .quart_of(cy_m),
+  dev_a = data.table::year(cy_m) - data.table::year(uy_m) + 1L,
+  dev_s = 2L * (data.table::year(cy_m) - data.table::year(uy_m)) +
+          ((data.table::month(cy_m) - 1L) %/% 6L -
+           (data.table::month(uy_m) - 1L) %/% 6L) + 1L,
+  dev_q = 4L * (data.table::year(cy_m) - data.table::year(uy_m)) +
+          ((data.table::month(cy_m) - 1L) %/% 3L -
+           (data.table::month(uy_m) - 1L) %/% 3L) + 1L,
+  dev_m = 12L * (data.table::year(cy_m) - data.table::year(uy_m)) +
+          (data.table::month(cy_m) - data.table::month(uy_m)) + 1L
 )]
 
 setcolorder(experience, c(
   "coverage",
-  "uy", "uyh", "uyq", "uym",
-  "cy", "cyh", "cyq", "cym",
-  "dev_y", "dev_h", "dev_q", "dev_m",
+  "uy_a", "uy_s", "uy_q", "uy_m",
+  "cy_a", "cy_s", "cy_q", "cy_m",
+  "dev_a", "dev_s", "dev_q", "dev_m",
   "loss_incr", "premium_incr"
 ))
-setattr(experience$uy,  "class", "Date")  # year-as-Date convention
 
 cat(sprintf("experience: %d rows x %d cols, coverage = %s\n",
             nrow(experience), ncol(experience),

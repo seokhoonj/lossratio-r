@@ -54,7 +54,7 @@
 #' Get the period type string for a period variable name
 #'
 #' @description
-#' Internal helper that maps a period variable name (e.g. `"uym"`, `"cyq"`)
+#' Internal helper that maps a period variable name (e.g. `"uy_m"`, `"cy_q"`)
 #' to the corresponding type string accepted by [.format_period()].
 #'
 #' Returns `NA_character_` for unrecognised variable names, which callers
@@ -69,10 +69,10 @@
 .get_period_type <- function(var) {
   switch(
     var,
-    uym = , cym = "month",
-    uyq = , cyq = "quarter",
-    uyh = , cyh = "half",
-    uy  = , cy  = "year",
+    uy_m = , cy_m = "month",
+    uy_q = , cy_q = "quarter",
+    uy_s = , cy_s = "half",
+    uy_a = , cy_a = "year",
     NA_character_
   )
 }
@@ -81,7 +81,7 @@
 #' Granularity of a cohort or development variable
 #'
 #' Like [.get_period_type()] but also recognises the integer development-period
-#' columns (`dev_m` / `dev_q` / `dev_h` / `dev_y`). Used by
+#' columns (`dev_m` / `dev_q` / `dev_s` / `dev_a`). Used by
 #' [build_triangle()] to verify that `cohort_var` and `dev_var` share the
 #' same granularity. Not used for date formatting (these dev columns
 #' are integers, not Date).
@@ -94,8 +94,8 @@
     var,
     dev_m = "month",
     dev_q = "quarter",
-    dev_h = "half",
-    dev_y = "year",
+    dev_s = "half",
+    dev_a = "year",
     NA_character_
   )
 }
@@ -235,7 +235,7 @@
 #'
 #' @description
 #' Internal helper that maps a package convention variable name (e.g.
-#' `"uym"`, `"dev_m"`) to a human-readable axis label (e.g.
+#' `"uy_m"`, `"dev_m"`) to a human-readable axis label (e.g.
 #' `"underwriting months"`, `"development months"`). Falls back to the
 #' input string when the variable is not recognised.
 #'
@@ -248,18 +248,18 @@
   if (length(var) != 1L || is.na(var)) return(var)
   switch(
     var,
-    uym  = "underwriting months",
-    uyq  = "underwriting quarters",
-    uyh  = "underwriting halves",
-    uy   = "underwriting years",
-    cym  = "calendar months",
-    cyq  = "calendar quarters",
-    cyh  = "calendar halves",
-    cy   = "calendar years",
+    uy_m  = "underwriting months",
+    uy_q  = "underwriting quarters",
+    uy_s  = "underwriting halves",
+    uy_a  = "underwriting years",
+    cy_m  = "calendar months",
+    cy_q  = "calendar quarters",
+    cy_s  = "calendar halves",
+    cy_a  = "calendar years",
     dev_m = "development months",
     dev_q = "development quarters",
-    dev_h = "development halves",
-    dev_y = "development years",
+    dev_s = "development halves",
+    dev_a = "development years",
     var
   )
 }
@@ -276,7 +276,7 @@
 #' the development variable is a plain integer rather than a date-like period.
 #'
 #' @param x A vector to format.
-#' @param var A single character string naming the variable (e.g. `"uym"`,
+#' @param var A single character string naming the variable (e.g. `"uy_m"`,
 #'   `"dev_m"`).
 #'
 #' @return A character vector of formatted labels.
@@ -296,7 +296,7 @@
 #'
 #' @description
 #' Internal helper that formats a single column of facet label values.
-#' Period-like variables (`uym`, `cym`, `uyq`, ...) are formatted via
+#' Period-like variables (`uy_m`, `cy_m`, `uy_q`, ...) are formatted via
 #' [.format_period()] in abbreviated form (e.g. `"23.01"`); all
 #' other variables are coerced with [as.character()].
 #'

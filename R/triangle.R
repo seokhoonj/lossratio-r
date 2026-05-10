@@ -20,7 +20,7 @@
 #'   \item \strong{Cohort dev-sequence gaps} — for each `(group, cohort)`,
 #'     report missing `dev_var` values within the observed range.
 #'   \item \strong{Row-level calendar consistency} — when `calendar_var`
-#'     is supplied (or auto-detected as `"cym"` if present), report rows
+#'     is supplied (or auto-detected as `"cy_m"` if present), report rows
 #'     where `calendar_var < cohort_var`. Such rows are logically
 #'     impossible (claims cannot precede policy issue) and downstream
 #'     they show up as negative `dev_m`, polluting cohort dev sequences.
@@ -28,11 +28,11 @@
 #'
 #' @param df A data.frame.
 #' @param group_var Grouping variable(s).
-#' @param cohort_var A single cohort variable. Default `"uym"`.
+#' @param cohort_var A single cohort variable. Default `"uy_m"`.
 #' @param dev_var A single development variable. Default `"dev_m"`.
 #' @param calendar_var Optional calendar period variable for row-level
 #'   consistency check. When supplied, rows where `calendar_var <
-#'   cohort_var` are flagged as invalid. Default `"cym"`; pass `NULL`
+#'   cohort_var` are flagged as invalid. Default `"cy_m"`; pass `NULL`
 #'   to skip this check, or a column name to override.
 #'
 #' @return A `data.table` of class `"TriangleValidation"` with one row
@@ -57,9 +57,9 @@
 #' @export
 validate_triangle <- function(df,
                               group_var,
-                              cohort_var   = "uym",
+                              cohort_var   = "uy_m",
                               dev_var      = "dev_m",
-                              calendar_var = "cym") {
+                              calendar_var = "cy_m") {
   .assert_class(df, "data.frame")
 
   dt <- .ensure_dt(df)
@@ -216,7 +216,7 @@ print.TriangleValidation <- function(x, ...) {
 #' @param group_var Column(s) used for grouping (e.g., product, gender).
 #' @param cohort_var Column(s) defining the exposure period
 #'   (e.g., underwriting year-month, quarter, half-year, or year such as
-#'   `uym`, `uyq`, `uyh`, `uy`).
+#'   `uy_m`, `uy_q`, `uy_s`, `uy_a`).
 #' @param dev_var Column(s) defining development periods
 #'   (e.g., months since issue such as `dev_m`).
 #' @param loss_var Single character; per-period loss column in `df`.
@@ -255,7 +255,7 @@ print.TriangleValidation <- function(x, ...) {
 #' df <- data.frame(
 #'   pd_cd        = rep(c("P001", "P002"), each = 6),
 #'   pd_nm        = rep(c("cancer", "health"), each = 6),
-#'   uym          = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
+#'   uy_m         = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
 #'   dev_m        = rep(1:2, 6),
 #'   loss_incr    = runif(12, 80, 120),
 #'   premium_incr = runif(12, 90, 110)
@@ -264,7 +264,7 @@ print.TriangleValidation <- function(x, ...) {
 #' res <- build_triangle(
 #'   df,
 #'   group_var  = pd_cd,
-#'   cohort_var = "uym",
+#'   cohort_var = "uy_m",
 #'   dev_var    = "dev_m"
 #' )
 #'
@@ -275,7 +275,7 @@ print.TriangleValidation <- function(x, ...) {
 #' @export
 build_triangle <- function(df,
                            group_var,
-                           cohort_var  = "uym",
+                           cohort_var  = "uy_m",
                            dev_var     = "dev_m",
                            loss_var    = "loss_incr",
                            premium_var = "premium_incr",
@@ -585,11 +585,11 @@ longer.TriangleSummary <- function(x, ...) {
 #' @param calendar_var A single calendar-like period variable defining
 #'   the summary axis. Typical examples include:
 #'   \itemize{
-#'     \item `cym` (calendar year-month),
-#'     \item `cyq` (calendar year-quarter),
-#'     \item `cyh` (calendar year-half),
-#'     \item `cy`  (calendar year),
-#'     \item `uym`, `uyq`, `uyh`, `uy` when a single underwriting-period axis
+#'     \item `cy_m` (calendar year-month),
+#'     \item `cy_q` (calendar year-quarter),
+#'     \item `cy_s` (calendar year-half),
+#'     \item `cy_a` (calendar year),
+#'     \item `uy_m`, `uy_q`, `uy_s`, `uy_a` when a single underwriting-period axis
 #'       is to be summarised as a time series rather than as a development
 #'       structure.
 #'   }
@@ -633,13 +633,13 @@ longer.TriangleSummary <- function(x, ...) {
 #' res1 <- build_calendar(
 #'   df,
 #'   group_var    = pd_cd,
-#'   calendar_var = "cym"
+#'   calendar_var = "cy_m"
 #' )
 #'
 #' res2 <- build_calendar(
 #'   df,
 #'   group_var    = pd_cd,
-#'   calendar_var = "cyq",
+#'   calendar_var = "cy_q",
 #'   period_from  = "2023-01-01"
 #' )
 #'
@@ -650,7 +650,7 @@ longer.TriangleSummary <- function(x, ...) {
 #' @export
 build_calendar <- function(df,
                            group_var,
-                           calendar_var = "cym",
+                           calendar_var = "cy_m",
                            loss_var     = "loss_incr",
                            premium_var  = "premium_incr",
                            period_from  = NULL,
@@ -961,8 +961,8 @@ summary.Calendar <- function(object, ...) {
 #' @param df A data.frame containing experience data.
 #' @param group_var Grouping variable(s).
 #' @param cohort_var A single period variable. This may be an underwriting
-#'   period (`uym`, `uyq`, `uyh`, `uy`) or a calendar period
-#'   (`cym`, `cyq`, `cyh`, `cy`). Default `"uym"`.
+#'   period (`uy_m`, `uy_q`, `uy_s`, `uy_a`) or a calendar period
+#'   (`cy_m`, `cy_q`, `cy_s`, `cy_a`). Default `"uy_m"`.
 #' @param dev_var A single development variable used to count observed periods.
 #'   Default `"dev_m"`.
 #' @param loss_var Single character; per-period loss column in `df`.
@@ -1010,7 +1010,7 @@ summary.Calendar <- function(object, ...) {
 #' @export
 build_total <- function(df,
                         group_var,
-                        cohort_var  = "uym",
+                        cohort_var  = "uy_m",
                         dev_var     = "dev_m",
                         loss_var    = "loss_incr",
                         premium_var = "premium_incr",

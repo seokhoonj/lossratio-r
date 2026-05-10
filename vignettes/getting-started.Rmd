@@ -46,7 +46,7 @@ exp <- as_experience(experience)
 class(exp)
 ```
 
-`as_experience()` checks required columns (`cym`, `uym`, `loss_incr`,
+`as_experience()` checks required columns (`cy_m`, `uy_m`, `loss_incr`,
 `premium_incr`), coerces date columns, and tags the class. Use
 `check_experience(df)` for a non-mutating check.
 

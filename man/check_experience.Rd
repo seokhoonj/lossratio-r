@@ -21,8 +21,8 @@ when present.
 
 These columns must be present:
 \itemize{
-\item \code{cym}          : Calendar year-month (\code{Date})
-\item \code{uym}          : Underwriting year-month (\code{Date})
+\item \code{cy_m}         : Calendar year-month (\code{Date})
+\item \code{uy_m}         : Underwriting year-month (\code{Date})
 \item \code{loss_incr}    : Per-period loss amount (\code{numeric})
 \item \code{premium_incr} : Per-period premium (\code{numeric}); for long-term
 health insurance, risk premium is commonly used
@@ -52,9 +52,9 @@ Rider type/rider codes and names (\code{character})
 The following columns may be derived later by
 \code{\link[=add_experience_period]{add_experience_period()}} and are not validated here:
 \itemize{
-\item \code{uy}, \code{uyh}, \code{uyq} : Underwriting year, half-year, quarter
-\item \code{cy}, \code{cyh}, \code{cyq} : Calendar year, half-year, quarter
-\item \code{dev_y}, \code{dev_h}, \code{dev_q} : Development year, half-year, quarter
+\item \code{uy_a}, \code{uy_s}, \code{uy_q} : Underwriting year, half-year, quarter
+\item \code{cy_a}, \code{cy_s}, \code{cy_q} : Calendar year, half-year, quarter
+\item \code{dev_a}, \code{dev_s}, \code{dev_q} : Development year, half-year, quarter
 }
 }
 

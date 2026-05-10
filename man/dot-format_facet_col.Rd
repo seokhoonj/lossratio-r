@@ -16,7 +16,7 @@ Character vector.
 }
 \description{
 Internal helper that formats a single column of facet label values.
-Period-like variables (\code{uym}, \code{cym}, \code{uyq}, ...) are formatted via
+Period-like variables (\code{uy_m}, \code{cy_m}, \code{uy_q}, ...) are formatted via
 \code{\link[=.format_period]{.format_period()}} in abbreviated form (e.g. \code{"23.01"}); all
 other variables are coerced with \code{\link[=as.character]{as.character()}}.
 }

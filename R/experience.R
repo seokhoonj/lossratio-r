@@ -10,8 +10,8 @@
 #' @section Required columns:
 #' These columns must be present:
 #' \itemize{
-#'   \item `cym`          : Calendar year-month (`Date`)
-#'   \item `uym`          : Underwriting year-month (`Date`)
+#'   \item `cy_m`         : Calendar year-month (`Date`)
+#'   \item `uy_m`         : Underwriting year-month (`Date`)
 #'   \item `loss_incr`    : Per-period loss amount (`numeric`)
 #'   \item `premium_incr` : Per-period premium (`numeric`); for long-term
 #'     health insurance, risk premium is commonly used
@@ -37,9 +37,9 @@
 #' The following columns may be derived later by
 #' [add_experience_period()] and are not validated here:
 #' \itemize{
-#'   \item `uy`, `uyh`, `uyq` : Underwriting year, half-year, quarter
-#'   \item `cy`, `cyh`, `cyq` : Calendar year, half-year, quarter
-#'   \item `dev_y`, `dev_h`, `dev_q` : Development year, half-year, quarter
+#'   \item `uy_a`, `uy_s`, `uy_q` : Underwriting year, half-year, quarter
+#'   \item `cy_a`, `cy_s`, `cy_q` : Calendar year, half-year, quarter
+#'   \item `dev_a`, `dev_s`, `dev_q` : Development year, half-year, quarter
 #' }
 #'
 #' @return Invisibly returns the result of [.check_col_spec()].
@@ -52,14 +52,14 @@ check_experience <- function(df) {
   .assert_class(df, "data.frame")
 
   required_spec <- list(
-    cym          = "Date",
-    uym          = "Date",
+    cy_m         = "Date",
+    uy_m         = "Date",
     loss_incr    = "numeric",
     premium_incr = "numeric"
   )
 
   optional_spec <- list(
-    dev_m      = "integer",
+    dev_m    = "integer",
     pd_tp_cd = "character",
     pd_tp_nm = "character",
     pd_cd    = "character",
@@ -67,7 +67,7 @@ check_experience <- function(df) {
     cv_tp_cd = "character",
     cv_tp_nm = "character",
     cv_cd    = "character",
-    coverage    = "character",
+    coverage = "character",
     rd_tp_cd = "character",
     rd_tp_nm = "character",
     rd_cd    = "character",
@@ -98,43 +98,43 @@ check_experience <- function(df) {
 #' experience dataset using standard column conventions for loss ratio
 #' analysis.
 #'
-#' The function detects the presence of key source columns such as `uym`,
-#' `cym`, and `dev_m`, and derives additional period variables when
+#' The function detects the presence of key source columns such as `uy_m`,
+#' `cy_m`, and `dev_m`, and derives additional period variables when
 #' possible.
 #'
 #' @details
 #' The following variables are added when the required source columns
 #' exist:
 #'
-#' \strong{Underwriting period (from `uym`):}
+#' \strong{Underwriting period (from `uy_m`):}
 #' \itemize{
-#'   \item `uy`  : underwriting year
-#'   \item `uyh` : underwriting half-year
-#'   \item `uyq` : underwriting quarter
+#'   \item `uy_a` : underwriting year
+#'   \item `uy_s` : underwriting half-year
+#'   \item `uy_q` : underwriting quarter
 #' }
 #'
-#' \strong{Calendar period (from `cym`):}
+#' \strong{Calendar period (from `cy_m`):}
 #' \itemize{
-#'   \item `cy`  : calendar year
-#'   \item `cyh` : calendar half-year
-#'   \item `cyq` : calendar quarter
+#'   \item `cy_a` : calendar year
+#'   \item `cy_s` : calendar half-year
+#'   \item `cy_q` : calendar quarter
 #' }
 #'
 #' \strong{Development period:}
 #' \itemize{
-#'   \item `dev_y` is derived from `dev_m` as yearly development
+#'   \item `dev_a` is derived from `dev_m` as yearly development
 #'     index, where months 1 to 12 map to 1, 13 to 24 map to 2, and so on.
-#'   \item `dev_h` is derived from `uym` and `cym` using calendar half-year
+#'   \item `dev_s` is derived from `uy_m` and `cy_m` using calendar half-year
 #'     boundaries. For example, contracts issued in January to June are
 #'     aligned to the same first development half-year block, and the next
 #'     calendar half-year becomes development half-year 2.
-#'   \item `dev_q` is derived from `uym` and `cym` using calendar quarter
+#'   \item `dev_q` is derived from `uy_m` and `cy_m` using calendar quarter
 #'     boundaries. For example, contracts issued in January to March are
 #'     aligned to the same first development quarter block, and the next
 #'     calendar quarter becomes development quarter 2.
 #' }
 #'
-#' Therefore, `dev_h` and `dev_q` are not simple grouped versions of
+#' Therefore, `dev_s` and `dev_q` are not simple grouped versions of
 #' `dev_m`; they are aligned to calendar half-year and quarter boundaries
 #' so that underwriting cohorts such as Q1, Q2, H1, and H2 are compared
 #' consistently on the same cumulative development basis.
@@ -142,8 +142,8 @@ check_experience <- function(df) {
 #' Newly created columns are inserted before their corresponding base
 #' columns.
 #'
-#' @param df A data.frame containing period variables such as `uym`,
-#'   `cym`, and `dev_m`.
+#' @param df A data.frame containing period variables such as `uy_m`,
+#'   `cy_m`, and `dev_m`.
 #'
 #' @return A data.frame (or tibble/data.table depending on input) with
 #'   additional period variables.
@@ -151,8 +151,8 @@ check_experience <- function(df) {
 #' @examples
 #' \dontrun{
 #' df <- data.frame(
-#'   uym   = as.Date("2023-01-01") + 0:5 * 30,
-#'   cym   = as.Date("2023-01-01") + 0:5 * 30,
+#'   uy_m  = as.Date("2023-01-01") + 0:5 * 30,
+#'   cy_m  = as.Date("2023-01-01") + 0:5 * 30,
 #'   dev_m = 1:6
 #' )
 #'
@@ -166,67 +166,67 @@ add_experience_period <- function(df) {
 
   dt <- .ensure_dt(df)
 
-  has_uym   <- .has_cols(dt, "uym")
-  has_cym   <- .has_cols(dt, "cym")
+  has_uy_m  <- .has_cols(dt, "uy_m")
+  has_cy_m  <- .has_cols(dt, "cy_m")
   has_dev_m <- .has_cols(dt, "dev_m")
 
   # Extract year / month once per source column (C-level via data.table).
-  if (has_uym) {
-    uym_year <- data.table::year(dt[["uym"]])
-    uym_mon  <- data.table::month(dt[["uym"]])
+  if (has_uy_m) {
+    uy_m_year <- data.table::year(dt[["uy_m"]])
+    uy_m_mon  <- data.table::month(dt[["uy_m"]])
   }
-  if (has_cym) {
-    cym_year <- data.table::year(dt[["cym"]])
-    cym_mon  <- data.table::month(dt[["cym"]])
+  if (has_cy_m) {
+    cy_m_year <- data.table::year(dt[["cy_m"]])
+    cy_m_mon  <- data.table::month(dt[["cy_m"]])
   }
 
-  # underwriting period (uy, uyh, uyq) — calendar-anchored
+  # underwriting period (uy_a, uy_s, uy_q) — calendar-anchored
   # H1: Jan-Jun, H2: Jul-Dec; Q1: Jan-Mar, ..., Q4: Oct-Dec
-  if (has_uym) {
-    uy_h_mon <- data.table::fifelse(uym_mon <= 6L, 1L, 7L)
-    uy_q_mon <- ((uym_mon - 1L) %/% 3L) * 3L + 1L
+  if (has_uy_m) {
+    uy_s_mon <- data.table::fifelse(uy_m_mon <= 6L, 1L, 7L)
+    uy_q_mon <- ((uy_m_mon - 1L) %/% 3L) * 3L + 1L
     dt[, `:=`(
-      uy  = .first_of_month(uym_year, 1L),
-      uyh = .first_of_month(uym_year, uy_h_mon),
-      uyq = .first_of_month(uym_year, uy_q_mon)
+      uy_a = .first_of_month(uy_m_year, 1L),
+      uy_s = .first_of_month(uy_m_year, uy_s_mon),
+      uy_q = .first_of_month(uy_m_year, uy_q_mon)
     )]
-    data.table::setcolorder(dt, c("uy", "uyh", "uyq"), before = "uym")
+    data.table::setcolorder(dt, c("uy_a", "uy_s", "uy_q"), before = "uy_m")
   }
 
-  # calendar period (cy, cyh, cyq)
-  if (has_cym) {
-    cy_h_mon <- data.table::fifelse(cym_mon <= 6L, 1L, 7L)
-    cy_q_mon <- ((cym_mon - 1L) %/% 3L) * 3L + 1L
+  # calendar period (cy_a, cy_s, cy_q)
+  if (has_cy_m) {
+    cy_s_mon <- data.table::fifelse(cy_m_mon <= 6L, 1L, 7L)
+    cy_q_mon <- ((cy_m_mon - 1L) %/% 3L) * 3L + 1L
     dt[, `:=`(
-      cy  = .first_of_month(cym_year, 1L),
-      cyh = .first_of_month(cym_year, cy_h_mon),
-      cyq = .first_of_month(cym_year, cy_q_mon)
+      cy_a = .first_of_month(cy_m_year, 1L),
+      cy_s = .first_of_month(cy_m_year, cy_s_mon),
+      cy_q = .first_of_month(cy_m_year, cy_q_mon)
     )]
-    data.table::setcolorder(dt, c("cy", "cyh", "cyq"), before = "cym")
+    data.table::setcolorder(dt, c("cy_a", "cy_s", "cy_q"), before = "cy_m")
   }
 
   # development month (dev_m)
-  if (!has_dev_m && has_uym && has_cym) {
-    dt[, dev_m := (cym_year - uym_year) * 12L + (cym_mon - uym_mon) + 1L]
-    data.table::setcolorder(dt, "dev_m", after = "cym")
+  if (!has_dev_m && has_uy_m && has_cy_m) {
+    dt[, dev_m := (cy_m_year - uy_m_year) * 12L + (cy_m_mon - uy_m_mon) + 1L]
+    data.table::setcolorder(dt, "dev_m", after = "cy_m")
     has_dev_m <- TRUE
   }
 
-  # development period (dev_y, dev_h, dev_q) — calendar-anchored boundaries
-  if (has_uym && has_cym && has_dev_m) {
+  # development period (dev_a, dev_s, dev_q) — calendar-anchored boundaries
+  if (has_uy_m && has_cy_m && has_dev_m) {
     dev_m_local <- dt[["dev_m"]]
-    dev_y <- (dev_m_local - 1L) %/% 12L + 1L
+    dev_a <- (dev_m_local - 1L) %/% 12L + 1L
 
-    uy_half <- (uym_mon - 1L) %/% 6L   # 0 = H1, 1 = H2
-    cy_half <- (cym_mon - 1L) %/% 6L
-    dev_h <- (cym_year - uym_year) * 2L + (cy_half - uy_half) + 1L
+    uy_half <- (uy_m_mon - 1L) %/% 6L   # 0 = H1, 1 = H2
+    cy_half <- (cy_m_mon - 1L) %/% 6L
+    dev_s <- (cy_m_year - uy_m_year) * 2L + (cy_half - uy_half) + 1L
 
-    uy_q <- (uym_mon - 1L) %/% 3L      # 0 = Q1, ..., 3 = Q4
-    cy_q <- (cym_mon - 1L) %/% 3L
-    dev_q <- (cym_year - uym_year) * 4L + (cy_q - uy_q) + 1L
+    uy_quart <- (uy_m_mon - 1L) %/% 3L  # 0 = Q1, ..., 3 = Q4
+    cy_quart <- (cy_m_mon - 1L) %/% 3L
+    dev_q <- (cy_m_year - uy_m_year) * 4L + (cy_quart - uy_quart) + 1L
 
-    dt[, `:=`(dev_y = dev_y, dev_h = dev_h, dev_q = dev_q)]
-    data.table::setcolorder(dt, c("dev_y", "dev_h", "dev_q"), before = "dev_m")
+    dt[, `:=`(dev_a = dev_a, dev_s = dev_s, dev_q = dev_q)]
+    data.table::setcolorder(dt, c("dev_a", "dev_s", "dev_q"), before = "dev_m")
   }
 
   dt[]
@@ -266,15 +266,15 @@ add_experience_period <- function(df) {
 #' @details
 #' Minimum required columns are:
 #' \itemize{
-#'   \item `cym`          : Calendar year-month (`Date` or coercible to `Date`)
-#'   \item `uym`          : Underwriting year-month (`Date` or coercible to `Date`)
+#'   \item `cy_m`         : Calendar year-month (`Date` or coercible to `Date`)
+#'   \item `uy_m`         : Underwriting year-month (`Date` or coercible to `Date`)
 #'   \item `loss_incr`    : Per-period loss amount (`numeric` or coercible)
 #'   \item `premium_incr` : Per-period premium (`numeric` or coercible); for
 #'     long-term health insurance, risk premium is commonly used
 #' }
 #'
-#' If `add_period = TRUE`, additional period variables such as `uy`,
-#' `uyh`, `uyq`, `cy`, `cyh`, `cyq`, `dev_y`, `dev_h`, and `dev_q` may be
+#' If `add_period = TRUE`, additional period variables such as `uy_a`,
+#' `uy_s`, `uy_q`, `cy_a`, `cy_s`, `cy_q`, `dev_a`, `dev_s`, and `dev_q` may be
 #' added, depending on the available source columns.
 #'
 #' @return A data.frame with class `"Experience"` prepended.
@@ -297,7 +297,7 @@ as_experience <- function(df, add_period = TRUE) {
          call. = FALSE)
   }
 
-  required_cols <- c("cym", "uym", "loss_incr", "premium_incr")
+  required_cols <- c("cy_m", "uy_m", "loss_incr", "premium_incr")
   missing_cols  <- setdiff(required_cols, names(df))
 
   if (length(missing_cols)) {
@@ -316,12 +316,12 @@ as_experience <- function(df, add_period = TRUE) {
   dt <- .ensure_dt(df)
 
   # coerce required period columns
-  if (!inherits(dt[["cym"]], "Date")) {
-    data.table::set(dt, j = "cym", value = as.Date(dt[["cym"]]))
+  if (!inherits(dt[["cy_m"]], "Date")) {
+    data.table::set(dt, j = "cy_m", value = as.Date(dt[["cy_m"]]))
   }
 
-  if (!inherits(dt[["uym"]], "Date")) {
-    data.table::set(dt, j = "uym", value = as.Date(dt[["uym"]]))
+  if (!inherits(dt[["uy_m"]], "Date")) {
+    data.table::set(dt, j = "uy_m", value = as.Date(dt[["uy_m"]]))
   }
 
   # coerce required numeric columns
@@ -329,12 +329,12 @@ as_experience <- function(df, add_period = TRUE) {
   data.table::set(dt, j = "premium_incr", value = as.numeric(dt[["premium_incr"]]))
 
   # validate required columns after coercion
-  if (anyNA(dt[["cym"]])) {
-    stop("`cym` could not be safely coerced to `Date`.", call. = FALSE)
+  if (anyNA(dt[["cy_m"]])) {
+    stop("`cy_m` could not be safely coerced to `Date`.", call. = FALSE)
   }
 
-  if (anyNA(dt[["uym"]])) {
-    stop("`uym` could not be safely coerced to `Date`.", call. = FALSE)
+  if (anyNA(dt[["uy_m"]])) {
+    stop("`uy_m` could not be safely coerced to `Date`.", call. = FALSE)
   }
 
   if (anyNA(dt[["loss_incr"]])) {

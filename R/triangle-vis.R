@@ -31,7 +31,7 @@
 #'   If `TRUE`, shows grey cohort trajectories with overlaid summary lines
 #'   (mean, median, weighted mean). Summary overlay is supported only for
 #'   `"lr"` and `"lr_incr"`, and only when the x-axis variable is a development-period
-#'   variable (for example, `dev_m`, `dev_q`, `dev_h`, `dev_y`).
+#'   variable (for example, `dev_m`, `dev_q`, `dev_s`, `dev_a`).
 #' @param summary_min_n Optional minimum number of observations required for
 #'   the summary overlay to be considered reliable. When provided and
 #'   `summary = TRUE`, a vertical reference line is drawn at the midpoint just
@@ -125,7 +125,7 @@ plot.Triangle <- function(x,
 
   if (summary && !is_dev_axis) {
     warning(
-      "Summary overlay is only supported when `dev_var` is a development-period variable such as `dev_m`, `dev_q`, `dev_h`, or `dev_y`. Raw trajectories are shown only.",
+      "Summary overlay is only supported when `dev_var` is a development-period variable such as `dev_m`, `dev_q`, `dev_s`, or `dev_a`. Raw trajectories are shown only.",
       call. = FALSE
     )
     summary <- FALSE
@@ -307,7 +307,7 @@ plot.Triangle <- function(x,
 #'
 #' @examples
 #' \dontrun{
-#' x <- build_calendar(df, coverage, cym)
+#' x <- build_calendar(df, coverage, cy_m)
 #'
 #' plot(x)
 #' plot(x, value_var = "lr")
@@ -505,8 +505,8 @@ plot_triangle <- function(x, ...) {
 #' @details
 #' The x-axis uses the development variable stored in `attr(x, "dev_var")`, and
 #' the y-axis uses the period variable stored in `attr(x, "cohort_var")`.
-#' If either axis variable is a period-like variable such as `uym`, `cym`,
-#' `uyq`, `cyq`, `uyh`, `cyh`, `uy`, or `cy`, it is formatted using
+#' If either axis variable is a period-like variable such as `uy_m`, `cy_m`,
+#' `uy_q`, `cy_q`, `uy_s`, `cy_s`, `uy_a`, or `cy_a`, it is formatted using
 #' [.format_period()].
 #'
 #' Facets are created from `attr(x, "group_var")`.

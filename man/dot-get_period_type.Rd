@@ -14,7 +14,7 @@ One of \code{"month"}, \code{"quarter"}, \code{"half"}, \code{"year"}, or
 \code{NA_character_}.
 }
 \description{
-Internal helper that maps a period variable name (e.g. \code{"uym"}, \code{"cyq"})
+Internal helper that maps a period variable name (e.g. \code{"uy_m"}, \code{"cy_q"})
 to the corresponding type string accepted by \code{\link[=.format_period]{.format_period()}}.
 
 Returns \code{NA_character_} for unrecognised variable names, which callers

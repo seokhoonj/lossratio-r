@@ -55,8 +55,8 @@ A long-format `data.frame` / `data.table` with at minimum:
 
 | Column           | Meaning                                                       | Example            |
 |------------------|---------------------------------------------------------------|--------------------|
-| cohort           | Underwriting / accident period (any granularity)              | `uym`, `uy`        |
-| dev              | Development period since cohort start                         | `dev_m`, `dev_y`   |
+| cohort           | Underwriting / accident period (any granularity)              | `uy_m`, `uy_a`     |
+| dev              | Development period since cohort start                         | `dev_m`, `dev_a`   |
 | `loss_incr`      | Per-period claim amount in the cell                           | numeric            |
 | `premium_incr`   | Per-period premium in the cell (risk premium for long-term health) | numeric        |
 | group            | Optional — product, coverage, age, gender, sum insured, etc.  | character / factor |
@@ -145,7 +145,7 @@ The same long-format experience data can be viewed three ways:
 | `build_total()`    | `Total`       | portfolio total (0D, per group) | High-level comparison across groups   |
 
 After `build_triangle`, downstream columns are standardized to `cohort`
-and `dev` regardless of input granularity (`uym` / `uyq` / `uy`,
+and `dev` regardless of input granularity (`uy_m` / `uy_q` / `uy_a`,
 etc.). Original column names and granularity are preserved as attributes
 (`cohort_var`, `cohort_type`, `dev_var`, `dev_type`).
 

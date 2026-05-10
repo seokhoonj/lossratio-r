@@ -7,7 +7,7 @@
 build_total(
   df,
   group_var,
-  cohort_var = "uym",
+  cohort_var = "uy_m",
   dev_var = "dev_m",
   loss_var = "loss_incr",
   premium_var = "premium_incr",
@@ -22,8 +22,8 @@ build_total(
 \item{group_var}{Grouping variable(s).}
 
 \item{cohort_var}{A single period variable. This may be an underwriting
-period (\code{uym}, \code{uyq}, \code{uyh}, \code{uy}) or a calendar period
-(\code{cym}, \code{cyq}, \code{cyh}, \code{cy}). Default \code{"uym"}.}
+period (\code{uy_m}, \code{uy_q}, \code{uy_s}, \code{uy_a}) or a calendar period
+(\code{cy_m}, \code{cy_q}, \code{cy_s}, \code{cy_a}). Default \code{"uy_m"}.}
 
 \item{dev_var}{A single development variable used to count observed periods.
 Default \code{"dev_m"}.}

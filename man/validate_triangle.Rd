@@ -7,9 +7,9 @@
 validate_triangle(
   df,
   group_var,
-  cohort_var = "uym",
+  cohort_var = "uy_m",
   dev_var = "dev_m",
-  calendar_var = "cym"
+  calendar_var = "cy_m"
 )
 }
 \arguments{
@@ -17,12 +17,12 @@ validate_triangle(
 
 \item{group_var}{Grouping variable(s).}
 
-\item{cohort_var}{A single cohort variable. Default \code{"uym"}.}
+\item{cohort_var}{A single cohort variable. Default \code{"uy_m"}.}
 
 \item{dev_var}{A single development variable. Default \code{"dev_m"}.}
 
 \item{calendar_var}{Optional calendar period variable for row-level
-consistency check. When supplied, rows where \code{calendar_var < cohort_var} are flagged as invalid. Default \code{"cym"}; pass \code{NULL}
+consistency check. When supplied, rows where \code{calendar_var < cohort_var} are flagged as invalid. Default \code{"cy_m"}; pass \code{NULL}
 to skip this check, or a column name to override.}
 }
 \value{
@@ -60,7 +60,7 @@ Two checks are performed:
 \item \strong{Cohort dev-sequence gaps} — for each \verb{(group, cohort)},
 report missing \code{dev_var} values within the observed range.
 \item \strong{Row-level calendar consistency} — when \code{calendar_var}
-is supplied (or auto-detected as \code{"cym"} if present), report rows
+is supplied (or auto-detected as \code{"cy_m"} if present), report rows
 where \code{calendar_var < cohort_var}. Such rows are logically
 impossible (claims cannot precede policy issue) and downstream
 they show up as negative \code{dev_m}, polluting cohort dev sequences.

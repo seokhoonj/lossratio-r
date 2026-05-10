@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{A vector to format.}
 
-\item{var}{A single character string naming the variable (e.g. \code{"uym"},
+\item{var}{A single character string naming the variable (e.g. \code{"uy_m"},
 \code{"dev_m"}).}
 }
 \value{

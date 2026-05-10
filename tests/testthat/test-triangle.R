@@ -16,7 +16,7 @@ test_that("build_triangle output has expected columns", {
 
 test_that("build_triangle sets attributes correctly", {
   tri <- build_triangle(exp, group_var = coverage)
-  expect_equal(attr(tri, "cohort_var"),  "uym")
+  expect_equal(attr(tri, "cohort_var"),  "uy_m")
   expect_equal(attr(tri, "dev_var"),     "dev_m")
   expect_equal(attr(tri, "group_var"),   "coverage")
 })
@@ -56,7 +56,7 @@ test_that("build_calendar returns class 'Calendar' with expected columns", {
   cal <- build_calendar(exp, group_var = coverage)
   expect_s3_class(cal, "Calendar")
   expect_true(all(c("calendar", "dev") %in% names(cal)))
-  expect_equal(attr(cal, "calendar_var"), "cym")
+  expect_equal(attr(cal, "calendar_var"), "cy_m")
 })
 
 test_that("build_total returns class 'Total' with one row per group", {
@@ -88,7 +88,7 @@ test_that("summary.Calendar returns CalendarSummary with expected columns", {
                 "lr_incr_mean", "lr_incr_median", "lr_incr_wt")
   expect_true(all(expected %in% names(s)))
   expect_equal(attr(s, "group_var"),    "coverage")
-  expect_equal(attr(s, "calendar_var"), "cym")
+  expect_equal(attr(s, "calendar_var"), "cy_m")
   expect_false(inherits(s, "Calendar"))
 })
 
