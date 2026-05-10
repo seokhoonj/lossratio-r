@@ -52,7 +52,7 @@ if absent):}
 map to 1, 13-24 map to 2, and so on.
 \item \code{dev_s} and \code{dev_q} are aligned to calendar semi-annual
 and quarterly boundaries (not simple groupings of \code{dev_m}),
-so cohorts such as Q1 / Q2 / H1 / H2 are compared consistently
+so cohorts such as Q1 / Q2 / S1 / S2 are compared consistently
 on the same cumulative development basis.
 }
 

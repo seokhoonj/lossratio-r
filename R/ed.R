@@ -466,7 +466,7 @@ print.EDFit <- function(x, ...) {
 #'
 #' @description
 #' Internal helper computing \eqn{\mathrm{Var}(\hat{g}_k) = \sigma^2_k / W_k}
-#' where \eqn{W_k = \sum_i C^P_{i,k}^{2 - \alpha}}.
+#' where \eqn{W_k = \sum_i (C^P_{i,k})^{2 - \alpha}}.
 #'
 #' Used by [fit_ed()] when `method = "mack"` and by [fit_lr()] for the
 #' ED component.

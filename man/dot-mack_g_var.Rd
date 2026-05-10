@@ -16,7 +16,7 @@ The \verb{$selected} \code{data.table} with \code{g_var} column.
 }
 \description{
 Internal helper computing \eqn{\mathrm{Var}(\hat{g}_k) = \sigma^2_k / W_k}
-where \eqn{W_k = \sum_i C^P_{i,k}^{2 - \alpha}}.
+where \eqn{W_k = \sum_i (C^P_{i,k})^{2 - \alpha}}.
 
 Used by \code{\link[=fit_ed]{fit_ed()}} when \code{method = "mack"} and by \code{\link[=fit_lr]{fit_lr()}} for the
 ED component.

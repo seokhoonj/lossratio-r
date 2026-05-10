@@ -45,6 +45,12 @@ Default \code{"premium_incr"}. Premium measure used as denominator for
 loss ratio calculations. For long-term health insurance applications,
 risk premium is commonly used.}
 
+\item{cell_type}{One of \code{"incremental"} (default) or \code{"cumulative"}.
+Whether \code{loss_var} and \code{premium_var} in \code{df} already hold per-period
+(incremental) values or cumulative-within-cohort values. The
+internal triangle is always built on the incremental representation;
+\code{"cumulative"} inputs are differenced first.}
+
 \item{fill_gaps}{Logical; if \code{TRUE}, zero-fill missing
 \verb{(group_var, cohort, dev)} cells so that every cohort
 has a consecutive \code{dev} sequence. Default \code{FALSE}, which

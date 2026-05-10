@@ -237,6 +237,11 @@ print.TriangleValidation <- function(x, ...) {
 #'   Default `"premium_incr"`. Premium measure used as denominator for
 #'   loss ratio calculations. For long-term health insurance applications,
 #'   risk premium is commonly used.
+#' @param cell_type One of `"incremental"` (default) or `"cumulative"`.
+#'   Whether `loss_var` and `premium_var` in `df` already hold per-period
+#'   (incremental) values or cumulative-within-cohort values. The
+#'   internal triangle is always built on the incremental representation;
+#'   `"cumulative"` inputs are differenced first.
 #' @param fill_gaps Logical; if `TRUE`, zero-fill missing
 #'   `(group_var, cohort, dev)` cells so that every cohort
 #'   has a consecutive `dev` sequence. Default `FALSE`, which
