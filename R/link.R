@@ -212,7 +212,10 @@ build_link <- function(x,
   data.table::setattr(z, "premium_var", p_var)
   data.table::setattr(z, "weight_var" , wt_var)
 
-  .prepend_class(z, "Link")
+  # Link is *not* a Triangle (different data structure: edge-level pairs
+  # vs cell-level grid). Remove Triangle inheritance to prevent silent
+  # `inherits(x, "Triangle")` confusion at fit_* input gates.
+  .update_class(z, remove = "Triangle", prepend = "Link")
 }
 
 
