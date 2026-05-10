@@ -77,36 +77,45 @@ plot_triangle(tri)     # lr 셀의 heatmap
 summary(tri)           # 경과 기간별 그룹 통계량
 ```
 
-## 4단계 — 경과 기간 모형화
+## 4단계 — 링크 단계 진단
 
-코호트 발달을 보는 두 가지 상호 보완적 관점.
+링크(연속한 두 경과 기간) 단계 인자를 살피는 두 보완적 관점이다. 어느
+경과 기간까지 정보가 안정화되는가를 진단하며, 이후 예측 단계의 입력이
+된다.
 
 ```{r}
-# ATA 인자(age-to-age factor)
+# ATA 인자(age-to-age factor) — 곱셈형, chain ladder 의 입력
 fit_ata(tri, loss_var = "loss")
 
-# 노출 기반(exposure-driven) 강도
-fit_ed(tri, loss_var = "loss", premium_var = "premium")
+# 노출 기반(exposure-driven) 강도 인자 — 덧셈형, ED 의 입력
+fit_intensity(tri, loss_var = "loss", premium_var = "premium")
 ```
 
-`fit_ata()` 는 경과 기간 링크별로 선택된 ATA 인자를 반환한다.
-`fit_ed()` 는 강도 인자 $g_k = \Delta C^L_k / C^P_k$ 를 반환한다. 두
-출력 모두 아래 추정 방법의 입력으로 사용된다.
+`fit_ata()` 는 링크별 ATA 인자 $f_k$ 를, `fit_intensity()` 는 강도 인자
+$g_k = \Delta C^L_k / C^P_k$ 를 반환한다. 두 출력 모두 *factor 레벨*
+진단으로, 예측치 (`$full`) 는 갖지 않는다.
 
-## 5단계 — 추정
+## 5단계 — 예측
 
-`fit_cl()` 은 chain ladder 추정을 수행한다.
+예측 레벨 추정량은 세 가지로, `fit_cl()` 과 `fit_ed()` 가 한 쌍의
+sibling, `fit_lr()` 은 둘을 결합하는 통합 인터페이스이다.
 
 ```{r}
+# Chain ladder (곱셈형 예측)
 cl <- fit_cl(tri, loss_var = "loss", method = "mack")
 plot(cl, type = "projection")
 summary(cl)
+
+# Exposure-driven (덧셈형 예측)
+ed <- fit_ed(tri, loss_var = "loss", premium_var = "premium")
+summary(ed)
 ```
 
-`fit_lr()` 은 손해율 추정을 수행한다. 기본값으로 사용되는 단계 적응형(stage-adaptive)
-방식 (`method = "sa"`) 은 성숙점(maturity point) 이전에는 노출 기반 방식, 성숙점
-이후에는 chain ladder 를 적용한다. 전환 지점은 ATA 인자에서
-그룹별로 탐지된 성숙점이다.
+`fit_lr()` 은 손해율 통합 인터페이스이다. default 인 단계 적응형(stage-adaptive,
+SA) 방식 (`method = "sa"`) 은 성숙점(maturity point) 이전에는 노출 기반,
+성숙점 이후에는 chain ladder 를 적용한다. 전환 지점은 ATA 인자로부터
+그룹별로 탐지된 성숙점이다. `method = "ed"` 또는 `"cl"` 로 단일
+스테이지만 적용할 수도 있다.
 
 ```{r}
 lr <- fit_lr(tri, method = "sa")
