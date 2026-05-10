@@ -23,7 +23,7 @@ fit_intensity(
   loss_var = "loss",
   premium_var = "premium",
   alpha = 1,
-  na_method = c("locf", "none"),
+  na_method = c("locf", "zero", "none"),
   sigma_method = c("min_last2", "locf", "loglinear"),
   recent = NULL,
   regime_break = NULL,
@@ -55,7 +55,10 @@ fit_intensity(
 
   NA fill method for the selected intensity series used downstream by
   [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md).
-  One of `"locf"` (default) or `"none"`.
+  One of `"locf"` (default — carries the last observed intensity
+  forward, appropriate for long-term health where ageing keeps \\g_k\\
+  elevated rather than decaying to 0), `"zero"` (sets late-dev NAs to 0;
+  suits short-tail lines where claims fully settle), or `"none"`.
 
 - sigma_method:
 
@@ -144,7 +147,7 @@ rejects `IntensityFit` input with an informative error.
 ``` r
 if (FALSE) { # \dontrun{
 tri <- build_triangle(df, group_var = coverage)
-intf <- fit_intensity(tri, loss_var = "loss", premium_var = "premium")
-summary(intf)
+intensity_fit <- fit_intensity(tri, loss_var = "loss", premium_var = "premium")
+summary(intensity)
 } # }
 ```
