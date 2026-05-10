@@ -36,25 +36,25 @@ test_that("as_experience coerces date columns to Date class", {
 
 test_that("add_experience_period adds expected period columns", {
   base <- data.frame(
-    uym  = as.Date(c("2023-01-01", "2023-04-01", "2023-07-01")),
-    cym  = as.Date(c("2023-03-01", "2023-06-01", "2023-09-01")),
-    elap_m = c(3L, 3L, 3L)
+    uym   = as.Date(c("2023-01-01", "2023-04-01", "2023-07-01")),
+    cym   = as.Date(c("2023-03-01", "2023-06-01", "2023-09-01")),
+    dev_m = c(3L, 3L, 3L)
   )
   out <- add_experience_period(base)
   expected <- c("uy", "uyh", "uyq", "cy", "cyh", "cyq",
-                "elap_y", "elap_h", "elap_q")
+                "dev_y", "dev_h", "dev_q")
   expect_true(all(expected %in% names(out)))
   expect_s3_class(out$uy,  "Date")
   expect_s3_class(out$cy,  "Date")
-  expect_type(out$elap_y, "integer")
+  expect_type(out$dev_y, "integer")
 })
 
-test_that("add_experience_period derives elap_m when missing", {
+test_that("add_experience_period derives dev_m when missing", {
   base <- data.frame(
     uym = as.Date("2023-01-01"),
     cym = as.Date("2023-04-01")
   )
   out <- add_experience_period(base)
-  expect_true("elap_m" %in% names(out))
-  expect_equal(out$elap_m, 4L)
+  expect_true("dev_m" %in% names(out))
+  expect_equal(out$dev_m, 4L)
 })

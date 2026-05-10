@@ -54,8 +54,8 @@
 #'   * If `weight_var` is set: also `weight`.
 #'
 #'   The returned object carries attributes `group_var`, `cohort_var`,
-#'   `cohort_type`, `dev_var`, `dev_type`, `loss_var`, `premium_var`
-#'   (or `NULL`), `weight_var` (or `NULL`).
+#'   `dev_var`, `loss_var`, `premium_var` (or `NULL`), `weight_var`
+#'   (or `NULL`).
 #'
 #' @seealso [build_triangle()], [summary.Link()], [plot.Link()],
 #'   [fit_ata()], [fit_ed()]
@@ -95,9 +95,7 @@ build_link <- function(x,
 
   grp_var <- attr(dt, "group_var")
   coh_var <- attr(dt, "cohort_var")
-  coh_type <- attr(dt, "cohort_type")
-  dev_var  <- attr(dt, "dev_var")
-  dev_type <- attr(dt, "dev_type")
+  dev_var <- attr(dt, "dev_var")
 
   if (is.null(grp_var)) grp_var <- character(0)
   if (length(coh_var) != 1L)
@@ -205,9 +203,7 @@ build_link <- function(x,
 
   data.table::setattr(z, "group_var"  , grp_var)
   data.table::setattr(z, "cohort_var" , coh_var)
-  data.table::setattr(z, "cohort_type", coh_type)
   data.table::setattr(z, "dev_var"    , dev_var)
-  data.table::setattr(z, "dev_type"   , dev_type)
   data.table::setattr(z, "loss_var"   , l_var)
   data.table::setattr(z, "premium_var", p_var)
   data.table::setattr(z, "weight_var" , wt_var)

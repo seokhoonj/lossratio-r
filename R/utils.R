@@ -80,10 +80,10 @@
 
 #' Granularity of a cohort or development variable
 #'
-#' Like [.get_period_type()] but also recognises the integer elapsed-period
-#' columns (`elap_m` / `elap_q` / `elap_h` / `elap_y`). Used by
+#' Like [.get_period_type()] but also recognises the integer development-period
+#' columns (`dev_m` / `dev_q` / `dev_h` / `dev_y`). Used by
 #' [build_triangle()] to verify that `cohort_var` and `dev_var` share the
-#' same granularity. Not used for date formatting (these elap columns
+#' same granularity. Not used for date formatting (these dev columns
 #' are integers, not Date).
 #'
 #' @keywords internal
@@ -92,10 +92,10 @@
   if (!is.na(type)) return(type)
   switch(
     var,
-    elap_m = "month",
-    elap_q = "quarter",
-    elap_h = "half",
-    elap_y = "year",
+    dev_m = "month",
+    dev_q = "quarter",
+    dev_h = "half",
+    dev_y = "year",
     NA_character_
   )
 }
@@ -235,7 +235,7 @@
 #'
 #' @description
 #' Internal helper that maps a package convention variable name (e.g.
-#' `"uym"`, `"elap_m"`) to a human-readable axis label (e.g.
+#' `"uym"`, `"dev_m"`) to a human-readable axis label (e.g.
 #' `"underwriting months"`, `"development months"`). Falls back to the
 #' input string when the variable is not recognised.
 #'
@@ -256,10 +256,10 @@
     cyq  = "calendar quarters",
     cyh  = "calendar halves",
     cy   = "calendar years",
-    elap_m = "development months",
-    elap_q = "development quarters",
-    elap_h = "development halves",
-    elap_y = "development years",
+    dev_m = "development months",
+    dev_q = "development quarters",
+    dev_h = "development halves",
+    dev_y = "development years",
     var
   )
 }
@@ -277,7 +277,7 @@
 #'
 #' @param x A vector to format.
 #' @param var A single character string naming the variable (e.g. `"uym"`,
-#'   `"elap_m"`).
+#'   `"dev_m"`).
 #'
 #' @return A character vector of formatted labels.
 #'

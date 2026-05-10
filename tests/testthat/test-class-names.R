@@ -115,27 +115,21 @@ test_that("lowercase class names not introduced (CL / LR / regime / backtest)", 
 
 test_that("Triangle attribute names preserved (raw / standard split)", {
   tri <- make_tri()
-  expect_identical(attr(tri, "dev_var"),     "elap_m")
+  expect_identical(attr(tri, "dev_var"),     "dev_m")
   expect_identical(attr(tri, "cohort_var"),  "uym")
-  expect_identical(attr(tri, "cohort_type"), "month")
-  # dev_type uses .get_period_type() which returns NA for raw elap_*
-  # columns; .get_granularity() distinguishes them. Lock in the
-  # current attribute value (NA) so a future change is intentional.
-  expect_true(is.na(attr(tri, "dev_type")))
   expect_identical(attr(tri, "group_var"),   "coverage")
 
   # standard column names rename happened (raw cohort/dev replaced).
   expect_true("cohort" %in% names(tri))
   expect_true("dev"    %in% names(tri))
-  expect_false("uym"    %in% names(tri))
-  expect_false("elap_m" %in% names(tri))
+  expect_false("uym"   %in% names(tri))
+  expect_false("dev_m" %in% names(tri))
 })
 
-test_that("Calendar attributes use calendar_var / calendar_type", {
+test_that("Calendar attributes use calendar_var", {
   cal <- build_calendar(make_exp(), group_var = coverage)
-  expect_identical(attr(cal, "calendar_var"),  "cym")
-  expect_identical(attr(cal, "calendar_type"), "month")
-  expect_identical(attr(cal, "group_var"),     "coverage")
+  expect_identical(attr(cal, "calendar_var"), "cym")
+  expect_identical(attr(cal, "group_var"),    "coverage")
 })
 
 test_that("Forbidden legacy attribute names not present", {
@@ -150,7 +144,7 @@ test_that("Forbidden legacy attribute names not present", {
 
 test_that("Triangle column names use standard cohort/dev (no legacy aliases)", {
   tri <- make_tri()
-  for (nm in c("duration", "elapsed", "uym", "elap_m",
+  for (nm in c("duration", "elapsed", "uym", "dev_m",
                "elpm", "elpq", "elph", "elpy")) {
     expect_false(nm %in% names(tri), info = paste("tri has column", nm))
   }

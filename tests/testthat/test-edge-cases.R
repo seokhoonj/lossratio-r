@@ -84,48 +84,45 @@ test_that("as_experience refuses NA in required columns after coercion", {
 
 # Granularity (quarter / half / year) --------------------------------------
 
-test_that("build_triangle with cohort_var = 'uyq' / dev_var = 'elap_q' succeeds", {
+test_that("build_triangle with cohort_var = 'uyq' / dev_var = 'dev_q' succeeds", {
   exp <- make_exp()
-  skip_if_not("elap_q" %in% names(exp), "elap_q not present in experience")
+  skip_if_not("dev_q" %in% names(exp), "dev_q not present in experience")
   tri_q <- build_triangle(exp, group_var = coverage,
-                          cohort_var = "uyq", dev_var = "elap_q")
+                          cohort_var = "uyq", dev_var = "dev_q")
   expect_s3_class(tri_q, "Triangle")
   expect_identical(attr(tri_q, "cohort_var"), "uyq")
-  expect_identical(attr(tri_q, "cohort_type"), "quarter")
-  expect_identical(attr(tri_q, "dev_var"), "elap_q")
-  # dev_type from raw elap_* is NA (.get_period_type only knows uy*/cy*).
-  expect_true(is.na(attr(tri_q, "dev_type")))
+  expect_identical(attr(tri_q, "dev_var"),    "dev_q")
   expect_gt(nrow(tri_q), 0L)
 })
 
-test_that("build_triangle with cohort_var = 'uyh' / dev_var = 'elap_h' succeeds", {
+test_that("build_triangle with cohort_var = 'uyh' / dev_var = 'dev_h' succeeds", {
   exp <- make_exp()
-  skip_if_not("elap_h" %in% names(exp), "elap_h not present in experience")
+  skip_if_not("dev_h" %in% names(exp), "dev_h not present in experience")
   tri_h <- build_triangle(exp, group_var = coverage,
-                          cohort_var = "uyh", dev_var = "elap_h")
+                          cohort_var = "uyh", dev_var = "dev_h")
   expect_s3_class(tri_h, "Triangle")
-  expect_identical(attr(tri_h, "cohort_type"), "half")
-  expect_true(is.na(attr(tri_h, "dev_type")))
+  expect_identical(attr(tri_h, "cohort_var"), "uyh")
+  expect_identical(attr(tri_h, "dev_var"),    "dev_h")
   expect_gt(nrow(tri_h), 0L)
 })
 
-test_that("build_triangle with cohort_var = 'uy' / dev_var = 'elap_y' succeeds", {
+test_that("build_triangle with cohort_var = 'uy' / dev_var = 'dev_y' succeeds", {
   exp <- make_exp()
-  skip_if_not("elap_y" %in% names(exp), "elap_y not present in experience")
+  skip_if_not("dev_y" %in% names(exp), "dev_y not present in experience")
   tri_y <- build_triangle(exp, group_var = coverage,
-                          cohort_var = "uy", dev_var = "elap_y")
+                          cohort_var = "uy", dev_var = "dev_y")
   expect_s3_class(tri_y, "Triangle")
-  expect_identical(attr(tri_y, "cohort_type"), "year")
-  expect_true(is.na(attr(tri_y, "dev_type")))
+  expect_identical(attr(tri_y, "cohort_var"), "uy")
+  expect_identical(attr(tri_y, "dev_var"),    "dev_y")
   expect_gt(nrow(tri_y), 0L)
 })
 
-test_that("build_triangle errors on mismatched granularity (uym + elap_q)", {
+test_that("build_triangle errors on mismatched granularity (uym + dev_q)", {
   exp <- make_exp()
-  skip_if_not("elap_q" %in% names(exp), "elap_q not present in experience")
+  skip_if_not("dev_q" %in% names(exp), "dev_q not present in experience")
   expect_error(
     build_triangle(exp, group_var = coverage,
-                   cohort_var = "uym", dev_var = "elap_q"),
+                   cohort_var = "uym", dev_var = "dev_q"),
     regexp = "granularity"
   )
 })
@@ -135,6 +132,6 @@ test_that("build_calendar with calendar_var = 'cyq' returns Calendar quarter", {
   skip_if_not("cyq" %in% names(exp), "cyq not present in experience")
   cal_q <- build_calendar(exp, group_var = coverage, calendar_var = "cyq")
   expect_s3_class(cal_q, "Calendar")
-  expect_identical(attr(cal_q, "calendar_type"), "quarter")
+  expect_identical(attr(cal_q, "calendar_var"), "cyq")
   expect_gt(nrow(cal_q), 0L)
 })

@@ -28,7 +28,7 @@
 If \code{TRUE}, shows grey cohort trajectories with overlaid summary lines
 (mean, median, weighted mean). Summary overlay is supported only for
 \code{"lr"} and \code{"lr_incr"}, and only when the x-axis variable is a development-period
-variable (for example, \code{elap_m}, \code{elap_q}, \code{elap_h}, \code{elap_y}).}
+variable (for example, \code{dev_m}, \code{dev_q}, \code{dev_h}, \code{dev_y}).}
 
 \item{summary_min_n}{Optional minimum number of observations required for
 the summary overlay to be considered reliable. When provided and

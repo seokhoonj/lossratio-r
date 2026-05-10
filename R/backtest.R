@@ -189,8 +189,8 @@ backtest <- function(x,
 
   masked <- dm
   data.table::setattr(masked, "class", class(x))
-  for (a in c("group_var", "cohort_var", "cohort_type",
-              "dev_var", "dev_type", "longer")) {
+  for (a in c("group_var", "cohort_var",
+              "dev_var", "longer")) {
     av <- attr(x, a, exact = TRUE)
     if (!is.null(av)) data.table::setattr(masked, a, av)
   }

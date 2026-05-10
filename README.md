@@ -56,7 +56,7 @@ A long-format `data.frame` / `data.table` with at minimum:
 | Column           | Meaning                                                       | Example            |
 |------------------|---------------------------------------------------------------|--------------------|
 | cohort           | Underwriting / accident period (any granularity)              | `uym`, `uy`        |
-| dev              | Development period since cohort start                         | `elap_m`, `elap_y` |
+| dev              | Development period since cohort start                         | `dev_m`, `dev_y`   |
 | `loss_incr`      | Per-period claim amount in the cell                           | numeric            |
 | `premium_incr`   | Per-period premium in the cell (risk premium for long-term health) | numeric        |
 | group            | Optional — product, coverage, age, gender, sum insured, etc.  | character / factor |

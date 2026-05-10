@@ -7,10 +7,10 @@
 .get_granularity(var)
 }
 \description{
-Like \code{\link[=.get_period_type]{.get_period_type()}} but also recognises the integer elapsed-period
-columns (\code{elap_m} / \code{elap_q} / \code{elap_h} / \code{elap_y}). Used by
+Like \code{\link[=.get_period_type]{.get_period_type()}} but also recognises the integer development-period
+columns (\code{dev_m} / \code{dev_q} / \code{dev_h} / \code{dev_y}). Used by
 \code{\link[=build_triangle]{build_triangle()}} to verify that \code{cohort_var} and \code{dev_var} share the
-same granularity. Not used for date formatting (these elap columns
+same granularity. Not used for date formatting (these dev columns
 are integers, not Date).
 }
 \keyword{internal}

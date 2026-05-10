@@ -85,7 +85,7 @@ test_that("fit_ed with regime_break drops pre-break cohorts", {
   data(experience)
   exp <- as_experience(experience[coverage == "SUR"])
   tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uym", dev_var = "elap_m")
+                        cohort_var = "uym", dev_var = "dev_m")
   ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
   fit_full <- fit_ed(tri, loss_var = "loss", premium_var = "premium")
   fit_brk  <- fit_ed(tri, loss_var = "loss", premium_var = "premium", regime_break = "2025-07-01")
@@ -98,7 +98,7 @@ test_that("fit_ed with NULL regime_break is unchanged", {
   data(experience)
   exp <- as_experience(experience[coverage == "SUR"])
   tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uym", dev_var = "elap_m")
+                        cohort_var = "uym", dev_var = "dev_m")
   ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
   fit_default <- fit_ed(tri, loss_var = "loss", premium_var = "premium")
   fit_null    <- fit_ed(tri, loss_var = "loss", premium_var = "premium", regime_break = NULL)
@@ -110,7 +110,7 @@ test_that("fit_ed with Regime input extracts last breakpoint", {
   data(experience)
   exp <- as_experience(experience[coverage == "SUR"])
   tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uym", dev_var = "elap_m")
+                        cohort_var = "uym", dev_var = "dev_m")
   reg <- detect_regime(tri)
   ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
   fit_reg <- fit_ed(tri, loss_var = "loss", premium_var = "premium", regime_break = reg)
@@ -125,7 +125,7 @@ test_that("fit_ed returns $full with projection columns", {
   data(experience)
   exp <- as_experience(experience[coverage == "SUR"])
   tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uym", dev_var = "elap_m")
+                        cohort_var = "uym", dev_var = "dev_m")
   ef <- fit_ed(tri, loss_var = "loss", premium_var = "premium")
   expect_true("full" %in% names(ef))
   expect_s3_class(ef$full, "data.table")
@@ -144,7 +144,7 @@ test_that("fit_ed projection matches fit_lr method = 'ed'", {
   data(experience)
   exp <- as_experience(experience[coverage == "SUR"])
   tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uym", dev_var = "elap_m")
+                        cohort_var = "uym", dev_var = "dev_m")
   ef <- fit_ed(tri, loss_var = "loss", premium_var = "premium")
   lr <- fit_lr(tri, method = "ed", loss_var = "loss", premium_var = "premium")
 

@@ -17,8 +17,7 @@ test_that("build_triangle output has expected columns", {
 test_that("build_triangle sets attributes correctly", {
   tri <- build_triangle(exp, group_var = coverage)
   expect_equal(attr(tri, "cohort_var"),  "uym")
-  expect_equal(attr(tri, "cohort_type"), "month")
-  expect_equal(attr(tri, "dev_var"), "elap_m")
+  expect_equal(attr(tri, "dev_var"),     "dev_m")
   expect_equal(attr(tri, "group_var"),   "coverage")
 })
 

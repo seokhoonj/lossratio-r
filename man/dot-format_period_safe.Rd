@@ -10,7 +10,7 @@
 \item{x}{A vector to format.}
 
 \item{var}{A single character string naming the variable (e.g. \code{"uym"},
-\code{"elap_m"}).}
+\code{"dev_m"}).}
 }
 \value{
 A character vector of formatted labels.

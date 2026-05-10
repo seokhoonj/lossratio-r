@@ -31,7 +31,7 @@
 #'     }}
 #'   \item{uy, uyh, uyq, uym}{Underwriting period (year / half / quarter / month) as `Date`.}
 #'   \item{cy, cyh, cyq, cym}{Calendar period (year / half / quarter / month) as `Date`.}
-#'   \item{elap_y, elap_h, elap_q, elap_m}{Elapsed period (year / half / quarter / month) as integer.}
+#'   \item{dev_y, dev_h, dev_q, dev_m}{Development period (year / half / quarter / month) as integer.}
 #'   \item{loss_incr}{Per-period loss amount (numeric).}
 #'   \item{premium_incr}{Per-period premium amount (numeric); for
 #'     long-term health insurance applications, risk premium is

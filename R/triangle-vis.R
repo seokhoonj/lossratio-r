@@ -31,7 +31,7 @@
 #'   If `TRUE`, shows grey cohort trajectories with overlaid summary lines
 #'   (mean, median, weighted mean). Summary overlay is supported only for
 #'   `"lr"` and `"lr_incr"`, and only when the x-axis variable is a development-period
-#'   variable (for example, `elap_m`, `elap_q`, `elap_h`, `elap_y`).
+#'   variable (for example, `dev_m`, `dev_q`, `dev_h`, `dev_y`).
 #' @param summary_min_n Optional minimum number of observations required for
 #'   the summary overlay to be considered reliable. When provided and
 #'   `summary = TRUE`, a vertical reference line is drawn at the midpoint just
@@ -121,11 +121,11 @@ plot.Triangle <- function(x,
     summary <- FALSE
   }
 
-  is_dev_axis <- length(dev_var) == 1L && grepl("^elap", dev_var)
+  is_dev_axis <- length(dev_var) == 1L && grepl("^dev_", dev_var)
 
   if (summary && !is_dev_axis) {
     warning(
-      "Summary overlay is only supported when `dev_var` is a development-period variable such as `elap_m`, `elap_q`, `elap_h`, or `elap_y`. Raw trajectories are shown only.",
+      "Summary overlay is only supported when `dev_var` is a development-period variable such as `dev_m`, `dev_q`, `dev_h`, or `dev_y`. Raw trajectories are shown only.",
       call. = FALSE
     )
     summary <- FALSE
@@ -1015,7 +1015,7 @@ plot.Total <- function(x,
 
   grp_var <- attr(x, "group_var")
   coh_var <- attr(x, "cohort_var")
-  coh_type <- attr(x, "cohort_type")
+  coh_type <- .get_period_type(coh_var)
   dev_var <- attr(x, "dev_var")
   if (is.null(grp_var)) grp_var <- character(0)
 

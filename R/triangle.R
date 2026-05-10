@@ -23,13 +23,13 @@
 #'     is supplied (or auto-detected as `"cym"` if present), report rows
 #'     where `calendar_var < cohort_var`. Such rows are logically
 #'     impossible (claims cannot precede policy issue) and downstream
-#'     they show up as negative `elap_m`, polluting cohort dev sequences.
+#'     they show up as negative `dev_m`, polluting cohort dev sequences.
 #' }
 #'
 #' @param df A data.frame.
 #' @param group_var Grouping variable(s).
 #' @param cohort_var A single cohort variable. Default `"uym"`.
-#' @param dev_var A single development variable. Default `"elap_m"`.
+#' @param dev_var A single development variable. Default `"dev_m"`.
 #' @param calendar_var Optional calendar period variable for row-level
 #'   consistency check. When supplied, rows where `calendar_var <
 #'   cohort_var` are flagged as invalid. Default `"cym"`; pass `NULL`
@@ -41,7 +41,7 @@
 #'     \item{group_var(s), cohort_var}{Cohort identifier.}
 #'     \item{`n_observed`}{Number of distinct observed `dev_var`
 #'       values.}
-#'     \item{`n_expected`}{`max(elap_m) - min(elap_m) + 1` for that cohort.}
+#'     \item{`n_expected`}{`max(dev_m) - min(dev_m) + 1` for that cohort.}
 #'     \item{`missing`}{List column of missing `dev_var` values.}
 #'   }
 #'   Returns a zero-row data.table when no gaps are found.
@@ -58,7 +58,7 @@
 validate_triangle <- function(df,
                               group_var,
                               cohort_var   = "uym",
-                              dev_var      = "elap_m",
+                              dev_var      = "dev_m",
                               calendar_var = "cym") {
   .assert_class(df, "data.frame")
 
@@ -218,7 +218,7 @@ print.TriangleValidation <- function(x, ...) {
 #'   (e.g., underwriting year-month, quarter, half-year, or year such as
 #'   `uym`, `uyq`, `uyh`, `uy`).
 #' @param dev_var Column(s) defining development periods
-#'   (e.g., months since issue such as `elap_m`).
+#'   (e.g., months since issue such as `dev_m`).
 #' @param loss_var Single character; per-period loss column in `df`.
 #'   Default `"loss_incr"`.
 #' @param premium_var Single character; per-period premium column in `df`.
@@ -256,7 +256,7 @@ print.TriangleValidation <- function(x, ...) {
 #'   pd_cd        = rep(c("P001", "P002"), each = 6),
 #'   pd_nm        = rep(c("cancer", "health"), each = 6),
 #'   uym          = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
-#'   elap_m       = rep(1:2, 6),
+#'   dev_m        = rep(1:2, 6),
 #'   loss_incr    = runif(12, 80, 120),
 #'   premium_incr = runif(12, 90, 110)
 #' )
@@ -265,7 +265,7 @@ print.TriangleValidation <- function(x, ...) {
 #'   df,
 #'   group_var  = pd_cd,
 #'   cohort_var = "uym",
-#'   dev_var    = "elap_m"
+#'   dev_var    = "dev_m"
 #' )
 #'
 #' head(res)
@@ -276,7 +276,7 @@ print.TriangleValidation <- function(x, ...) {
 build_triangle <- function(df,
                            group_var,
                            cohort_var  = "uym",
-                           dev_var     = "elap_m",
+                           dev_var     = "dev_m",
                            loss_var    = "loss_incr",
                            premium_var = "premium_incr",
                            fill_gaps   = FALSE) {
@@ -424,9 +424,7 @@ build_triangle <- function(df,
 
   data.table::setattr(ds, "group_var"   , grp_var)
   data.table::setattr(ds, "cohort_var"  , coh_var)
-  data.table::setattr(ds, "cohort_type" , .get_period_type(coh_var))
   data.table::setattr(ds, "dev_var"     , dev_var)
-  data.table::setattr(ds, "dev_type"    , .get_period_type(dev_var))
   data.table::setattr(ds, "loss_var"    , l_var)
   data.table::setattr(ds, "premium_var" , p_var)
   data.table::setattr(ds, "longer"      , dm)
@@ -499,7 +497,6 @@ summary.Triangle <- function(object, ...) {
 
   grp_var       <- attr(dt, "group_var")
   dev_var       <- attr(dt, "dev_var")
-  dev_type      <- attr(dt, "dev_type")
   grp_dev_var   <- c(grp_var, "dev")
 
   ds <- dt[, .(
@@ -525,8 +522,7 @@ summary.Triangle <- function(object, ...) {
   dm <- .prepend_class(dm, "TriangleSummaryLonger")
 
   data.table::setattr(ds, "group_var"   , grp_var)
-  data.table::setattr(ds, "dev_var" , dev_var)
-  data.table::setattr(ds, "dev_type", dev_type)
+  data.table::setattr(ds, "dev_var"     , dev_var)
   data.table::setattr(ds, "longer"      , dm)
 
   .update_class(ds, "Triangle", "TriangleSummary")
@@ -817,7 +813,6 @@ build_calendar <- function(df,
 
   data.table::setattr(ds, "group_var"    , grp_var)
   data.table::setattr(ds, "calendar_var" , cal_var)
-  data.table::setattr(ds, "calendar_type", cal_type)
   data.table::setattr(ds, "loss_var"     , l_var)
   data.table::setattr(ds, "premium_var"  , p_var)
   data.table::setattr(ds, "longer"       , dm)
@@ -922,7 +917,6 @@ summary.Calendar <- function(object, ...) {
 
   grp_var       <- attr(dt, "group_var")
   cal_var       <- attr(dt, "calendar_var")
-  cal_type      <- attr(dt, "calendar_type")
   grp_cal_var   <- c(grp_var, "calendar")
 
   ds <- dt[, .(
@@ -937,7 +931,6 @@ summary.Calendar <- function(object, ...) {
 
   data.table::setattr(ds, "group_var"    , grp_var)
   data.table::setattr(ds, "calendar_var" , cal_var)
-  data.table::setattr(ds, "calendar_type", cal_type)
 
   .update_class(ds, "Calendar", "CalendarSummary")
 }
@@ -971,7 +964,7 @@ summary.Calendar <- function(object, ...) {
 #'   period (`uym`, `uyq`, `uyh`, `uy`) or a calendar period
 #'   (`cym`, `cyq`, `cyh`, `cy`). Default `"uym"`.
 #' @param dev_var A single development variable used to count observed periods.
-#'   Default `"elap_m"`.
+#'   Default `"dev_m"`.
 #' @param loss_var Single character; per-period loss column in `df`.
 #'   Default `"loss_incr"`.
 #' @param premium_var Single character; per-period premium column in `df`.
@@ -1018,7 +1011,7 @@ summary.Calendar <- function(object, ...) {
 build_total <- function(df,
                         group_var,
                         cohort_var  = "uym",
-                        dev_var     = "elap_m",
+                        dev_var     = "dev_m",
                         loss_var    = "loss_incr",
                         premium_var = "premium_incr",
                         period_from = NULL,

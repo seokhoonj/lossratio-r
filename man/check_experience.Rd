@@ -33,7 +33,7 @@ health insurance, risk premium is commonly used
 
 These columns are validated only when present:
 \itemize{
-\item \code{elap_m}     : Elapsed month (\code{integer})
+\item \code{dev_m}     : Development month (\code{integer})
 \item \code{pd_tp_cd}, \code{pd_tp_nm}, \code{pd_cd}, \code{pd_nm}:
 Product type/product codes and names (\code{character})
 \item \code{cv_tp_cd}, \code{cv_tp_nm}, \code{cv_cd}, \code{coverage}:
@@ -54,7 +54,7 @@ The following columns may be derived later by
 \itemize{
 \item \code{uy}, \code{uyh}, \code{uyq} : Underwriting year, half-year, quarter
 \item \code{cy}, \code{cyh}, \code{cyq} : Calendar year, half-year, quarter
-\item \code{elap_y}, \code{elap_h}, \code{elap_q} : Elapsed year, half-year, quarter
+\item \code{dev_y}, \code{dev_h}, \code{dev_q} : Development year, half-year, quarter
 }
 }
 

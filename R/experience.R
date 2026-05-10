@@ -20,7 +20,7 @@
 #' @section Optional columns:
 #' These columns are validated only when present:
 #' \itemize{
-#'   \item `elap_m`     : Elapsed month (`integer`)
+#'   \item `dev_m`     : Development month (`integer`)
 #'   \item `pd_tp_cd`, `pd_tp_nm`, `pd_cd`, `pd_nm`:
 #'     Product type/product codes and names (`character`)
 #'   \item `cv_tp_cd`, `cv_tp_nm`, `cv_cd`, `coverage`:
@@ -39,7 +39,7 @@
 #' \itemize{
 #'   \item `uy`, `uyh`, `uyq` : Underwriting year, half-year, quarter
 #'   \item `cy`, `cyh`, `cyq` : Calendar year, half-year, quarter
-#'   \item `elap_y`, `elap_h`, `elap_q` : Elapsed year, half-year, quarter
+#'   \item `dev_y`, `dev_h`, `dev_q` : Development year, half-year, quarter
 #' }
 #'
 #' @return Invisibly returns the result of [.check_col_spec()].
@@ -59,7 +59,7 @@ check_experience <- function(df) {
   )
 
   optional_spec <- list(
-    elap_m     = "integer",
+    dev_m      = "integer",
     pd_tp_cd = "character",
     pd_tp_nm = "character",
     pd_cd    = "character",
@@ -99,7 +99,7 @@ check_experience <- function(df) {
 #' analysis.
 #'
 #' The function detects the presence of key source columns such as `uym`,
-#' `cym`, and `elap_m`, and derives additional period variables when
+#' `cym`, and `dev_m`, and derives additional period variables when
 #' possible.
 #'
 #' @details
@@ -120,22 +120,22 @@ check_experience <- function(df) {
 #'   \item `cyq` : calendar quarter
 #' }
 #'
-#' \strong{Elapsed period:}
+#' \strong{Development period:}
 #' \itemize{
-#'   \item `elap_y` is derived from `elap_m` as yearly development
+#'   \item `dev_y` is derived from `dev_m` as yearly development
 #'     index, where months 1 to 12 map to 1, 13 to 24 map to 2, and so on.
-#'   \item `elap_h` is derived from `uym` and `cym` using calendar half-year
+#'   \item `dev_h` is derived from `uym` and `cym` using calendar half-year
 #'     boundaries. For example, contracts issued in January to June are
 #'     aligned to the same first development half-year block, and the next
 #'     calendar half-year becomes development half-year 2.
-#'   \item `elap_q` is derived from `uym` and `cym` using calendar quarter
+#'   \item `dev_q` is derived from `uym` and `cym` using calendar quarter
 #'     boundaries. For example, contracts issued in January to March are
 #'     aligned to the same first development quarter block, and the next
 #'     calendar quarter becomes development quarter 2.
 #' }
 #'
-#' Therefore, `elap_h` and `elap_q` are not simple grouped versions of
-#' `elap_m`; they are aligned to calendar half-year and quarter boundaries
+#' Therefore, `dev_h` and `dev_q` are not simple grouped versions of
+#' `dev_m`; they are aligned to calendar half-year and quarter boundaries
 #' so that underwriting cohorts such as Q1, Q2, H1, and H2 are compared
 #' consistently on the same cumulative development basis.
 #'
@@ -143,7 +143,7 @@ check_experience <- function(df) {
 #' columns.
 #'
 #' @param df A data.frame containing period variables such as `uym`,
-#'   `cym`, and `elap_m`.
+#'   `cym`, and `dev_m`.
 #'
 #' @return A data.frame (or tibble/data.table depending on input) with
 #'   additional period variables.
@@ -151,9 +151,9 @@ check_experience <- function(df) {
 #' @examples
 #' \dontrun{
 #' df <- data.frame(
-#'   uym  = as.Date("2023-01-01") + 0:5 * 30,
-#'   cym  = as.Date("2023-01-01") + 0:5 * 30,
-#'   elap_m = 1:6
+#'   uym   = as.Date("2023-01-01") + 0:5 * 30,
+#'   cym   = as.Date("2023-01-01") + 0:5 * 30,
+#'   dev_m = 1:6
 #' )
 #'
 #' df2 <- add_experience_period(df)
@@ -166,9 +166,9 @@ add_experience_period <- function(df) {
 
   dt <- .ensure_dt(df)
 
-  has_uym  <- .has_cols(dt, "uym")
-  has_cym  <- .has_cols(dt, "cym")
-  has_elap_m <- .has_cols(dt, "elap_m")
+  has_uym   <- .has_cols(dt, "uym")
+  has_cym   <- .has_cols(dt, "cym")
+  has_dev_m <- .has_cols(dt, "dev_m")
 
   # Extract year / month once per source column (C-level via data.table).
   if (has_uym) {
@@ -205,28 +205,28 @@ add_experience_period <- function(df) {
     data.table::setcolorder(dt, c("cy", "cyh", "cyq"), before = "cym")
   }
 
-  # development month (elap_m)
-  if (!has_elap_m && has_uym && has_cym) {
-    dt[, elap_m := (cym_year - uym_year) * 12L + (cym_mon - uym_mon) + 1L]
-    data.table::setcolorder(dt, "elap_m", after = "cym")
-    has_elap_m <- TRUE
+  # development month (dev_m)
+  if (!has_dev_m && has_uym && has_cym) {
+    dt[, dev_m := (cym_year - uym_year) * 12L + (cym_mon - uym_mon) + 1L]
+    data.table::setcolorder(dt, "dev_m", after = "cym")
+    has_dev_m <- TRUE
   }
 
-  # development period (elap_y, elap_h, elap_q) — calendar-anchored boundaries
-  if (has_uym && has_cym && has_elap_m) {
-    elap_m_local <- dt[["elap_m"]]
-    elap_y <- (elap_m_local - 1L) %/% 12L + 1L
+  # development period (dev_y, dev_h, dev_q) — calendar-anchored boundaries
+  if (has_uym && has_cym && has_dev_m) {
+    dev_m_local <- dt[["dev_m"]]
+    dev_y <- (dev_m_local - 1L) %/% 12L + 1L
 
     uy_half <- (uym_mon - 1L) %/% 6L   # 0 = H1, 1 = H2
     cy_half <- (cym_mon - 1L) %/% 6L
-    elap_h <- (cym_year - uym_year) * 2L + (cy_half - uy_half) + 1L
+    dev_h <- (cym_year - uym_year) * 2L + (cy_half - uy_half) + 1L
 
     uy_q <- (uym_mon - 1L) %/% 3L      # 0 = Q1, ..., 3 = Q4
     cy_q <- (cym_mon - 1L) %/% 3L
-    elap_q <- (cym_year - uym_year) * 4L + (cy_q - uy_q) + 1L
+    dev_q <- (cym_year - uym_year) * 4L + (cy_q - uy_q) + 1L
 
-    dt[, `:=`(elap_y = elap_y, elap_h = elap_h, elap_q = elap_q)]
-    data.table::setcolorder(dt, c("elap_y", "elap_h", "elap_q"), before = "elap_m")
+    dt[, `:=`(dev_y = dev_y, dev_h = dev_h, dev_q = dev_q)]
+    data.table::setcolorder(dt, c("dev_y", "dev_h", "dev_q"), before = "dev_m")
   }
 
   dt[]
@@ -274,7 +274,7 @@ add_experience_period <- function(df) {
 #' }
 #'
 #' If `add_period = TRUE`, additional period variables such as `uy`,
-#' `uyh`, `uyq`, `cy`, `cyh`, `cyq`, `elap_y`, `elap_h`, and `elap_q` may be
+#' `uyh`, `uyq`, `cy`, `cyh`, `cyq`, `dev_y`, `dev_h`, and `dev_q` may be
 #' added, depending on the available source columns.
 #'
 #' @return A data.frame with class `"Experience"` prepended.

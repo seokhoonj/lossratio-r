@@ -8,7 +8,7 @@ add_experience_period(df)
 }
 \arguments{
 \item{df}{A data.frame containing period variables such as \code{uym},
-\code{cym}, and \code{elap_m}.}
+\code{cym}, and \code{dev_m}.}
 }
 \value{
 A data.frame (or tibble/data.table depending on input) with
@@ -20,7 +20,7 @@ experience dataset using standard column conventions for loss ratio
 analysis.
 
 The function detects the presence of key source columns such as \code{uym},
-\code{cym}, and \code{elap_m}, and derives additional period variables when
+\code{cym}, and \code{dev_m}, and derives additional period variables when
 possible.
 }
 \details{
@@ -41,22 +41,22 @@ exist:
 \item \code{cyq} : calendar quarter
 }
 
-\strong{Elapsed period:}
+\strong{Development period:}
 \itemize{
-\item \code{elap_y} is derived from \code{elap_m} as yearly development
+\item \code{dev_y} is derived from \code{dev_m} as yearly development
 index, where months 1 to 12 map to 1, 13 to 24 map to 2, and so on.
-\item \code{elap_h} is derived from \code{uym} and \code{cym} using calendar half-year
+\item \code{dev_h} is derived from \code{uym} and \code{cym} using calendar half-year
 boundaries. For example, contracts issued in January to June are
 aligned to the same first development half-year block, and the next
 calendar half-year becomes development half-year 2.
-\item \code{elap_q} is derived from \code{uym} and \code{cym} using calendar quarter
+\item \code{dev_q} is derived from \code{uym} and \code{cym} using calendar quarter
 boundaries. For example, contracts issued in January to March are
 aligned to the same first development quarter block, and the next
 calendar quarter becomes development quarter 2.
 }
 
-Therefore, \code{elap_h} and \code{elap_q} are not simple grouped versions of
-\code{elap_m}; they are aligned to calendar half-year and quarter boundaries
+Therefore, \code{dev_h} and \code{dev_q} are not simple grouped versions of
+\code{dev_m}; they are aligned to calendar half-year and quarter boundaries
 so that underwriting cohorts such as Q1, Q2, H1, and H2 are compared
 consistently on the same cumulative development basis.
 
@@ -66,9 +66,9 @@ columns.
 \examples{
 \dontrun{
 df <- data.frame(
-  uym  = as.Date("2023-01-01") + 0:5 * 30,
-  cym  = as.Date("2023-01-01") + 0:5 * 30,
-  elap_m = 1:6
+  uym   = as.Date("2023-01-01") + 0:5 * 30,
+  cym   = as.Date("2023-01-01") + 0:5 * 30,
+  dev_m = 1:6
 )
 
 df2 <- add_experience_period(df)

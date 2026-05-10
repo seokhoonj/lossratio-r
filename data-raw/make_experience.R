@@ -117,22 +117,22 @@ experience[, `:=`(
   cy     = .year_of(cym),
   cyh    = .half_of(cym),
   cyq    = .quart_of(cym),
-  elap_y = data.table::year(cym)  - data.table::year(uym) + 1L,
-  elap_h = 2L * (data.table::year(cym) - data.table::year(uym)) +
-           ((data.table::month(cym) - 1L) %/% 6L -
-            (data.table::month(uym) - 1L) %/% 6L) + 1L,
-  elap_q = 4L * (data.table::year(cym) - data.table::year(uym)) +
-           ((data.table::month(cym) - 1L) %/% 3L -
-            (data.table::month(uym) - 1L) %/% 3L) + 1L,
-  elap_m = 12L * (data.table::year(cym) - data.table::year(uym)) +
-           (data.table::month(cym) - data.table::month(uym)) + 1L
+  dev_y = data.table::year(cym)  - data.table::year(uym) + 1L,
+  dev_h = 2L * (data.table::year(cym) - data.table::year(uym)) +
+          ((data.table::month(cym) - 1L) %/% 6L -
+           (data.table::month(uym) - 1L) %/% 6L) + 1L,
+  dev_q = 4L * (data.table::year(cym) - data.table::year(uym)) +
+          ((data.table::month(cym) - 1L) %/% 3L -
+           (data.table::month(uym) - 1L) %/% 3L) + 1L,
+  dev_m = 12L * (data.table::year(cym) - data.table::year(uym)) +
+          (data.table::month(cym) - data.table::month(uym)) + 1L
 )]
 
 setcolorder(experience, c(
   "coverage",
   "uy", "uyh", "uyq", "uym",
   "cy", "cyh", "cyq", "cym",
-  "elap_y", "elap_h", "elap_q", "elap_m",
+  "dev_y", "dev_h", "dev_q", "dev_m",
   "loss_incr", "premium_incr"
 ))
 setattr(experience$uy,  "class", "Date")  # year-as-Date convention

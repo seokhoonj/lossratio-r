@@ -52,8 +52,8 @@ A \code{data.table} of class \code{"Link"} with columns:
 }
 
 The returned object carries attributes \code{group_var}, \code{cohort_var},
-\code{cohort_type}, \code{dev_var}, \code{dev_type}, \code{loss_var}, \code{premium_var}
-(or \code{NULL}), \code{weight_var} (or \code{NULL}).
+\code{dev_var}, \code{loss_var}, \code{premium_var} (or \code{NULL}), \code{weight_var}
+(or \code{NULL}).
 }
 \description{
 Construct a development-link table from an object of class \code{Triangle},

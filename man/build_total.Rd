@@ -8,7 +8,7 @@ build_total(
   df,
   group_var,
   cohort_var = "uym",
-  dev_var = "elap_m",
+  dev_var = "dev_m",
   loss_var = "loss_incr",
   premium_var = "premium_incr",
   period_from = NULL,
@@ -26,7 +26,7 @@ period (\code{uym}, \code{uyq}, \code{uyh}, \code{uy}) or a calendar period
 (\code{cym}, \code{cyq}, \code{cyh}, \code{cy}). Default \code{"uym"}.}
 
 \item{dev_var}{A single development variable used to count observed periods.
-Default \code{"elap_m"}.}
+Default \code{"dev_m"}.}
 
 \item{loss_var}{Single character; per-period loss column in \code{df}.
 Default \code{"loss_incr"}.}

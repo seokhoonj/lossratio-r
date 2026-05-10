@@ -27,7 +27,7 @@ test_that("k_conv is >= k_star when non-NA", {
 
 test_that("insufficient history yields k_conv == NA", {
   k_star_guess <- 6L
-  short_exp <- exp[coverage == "SUR" & elap_m <= k_star_guess + 2L]
+  short_exp <- exp[coverage == "SUR" & dev_m <= k_star_guess + 2L]
   short_tri <- build_triangle(short_exp, group_var = coverage)
   res <- detect_convergence(short_tri, k_star = k_star_guess, min_run = 3L)
   expect_true(is.na(res$k_conv))

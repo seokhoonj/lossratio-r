@@ -39,7 +39,7 @@ long-term health insurance, risk premium is commonly used
 }
 
 If \code{add_period = TRUE}, additional period variables such as \code{uy},
-\code{uyh}, \code{uyq}, \code{cy}, \code{cyh}, \code{cyq}, \code{elap_y}, \code{elap_h}, and \code{elap_q} may be
+\code{uyh}, \code{uyq}, \code{cy}, \code{cyh}, \code{cyq}, \code{dev_y}, \code{dev_h}, and \code{dev_q} may be
 added, depending on the available source columns.
 }
 \examples{

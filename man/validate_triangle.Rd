@@ -8,7 +8,7 @@ validate_triangle(
   df,
   group_var,
   cohort_var = "uym",
-  dev_var = "elap_m",
+  dev_var = "dev_m",
   calendar_var = "cym"
 )
 }
@@ -19,7 +19,7 @@ validate_triangle(
 
 \item{cohort_var}{A single cohort variable. Default \code{"uym"}.}
 
-\item{dev_var}{A single development variable. Default \code{"elap_m"}.}
+\item{dev_var}{A single development variable. Default \code{"dev_m"}.}
 
 \item{calendar_var}{Optional calendar period variable for row-level
 consistency check. When supplied, rows where \code{calendar_var < cohort_var} are flagged as invalid. Default \code{"cym"}; pass \code{NULL}
@@ -32,7 +32,7 @@ per cohort containing gaps. Columns:
 \item{group_var(s), cohort_var}{Cohort identifier.}
 \item{\code{n_observed}}{Number of distinct observed \code{dev_var}
 values.}
-\item{\code{n_expected}}{\code{max(elap_m) - min(elap_m) + 1} for that cohort.}
+\item{\code{n_expected}}{\code{max(dev_m) - min(dev_m) + 1} for that cohort.}
 \item{\code{missing}}{List column of missing \code{dev_var} values.}
 }
 Returns a zero-row data.table when no gaps are found.
@@ -63,7 +63,7 @@ report missing \code{dev_var} values within the observed range.
 is supplied (or auto-detected as \code{"cym"} if present), report rows
 where \code{calendar_var < cohort_var}. Such rows are logically
 impossible (claims cannot precede policy issue) and downstream
-they show up as negative \code{elap_m}, polluting cohort dev sequences.
+they show up as negative \code{dev_m}, polluting cohort dev sequences.
 }
 }
 \seealso{
