@@ -84,47 +84,58 @@ test_that("as_experience refuses NA in required columns after coercion", {
 
 # Granularity (quarter / half / year) --------------------------------------
 
-test_that("build_triangle with cohort_var = 'uy_q' / dev_var = 'dev_q' succeeds", {
+test_that("build_triangle with cohort_var = 'uy_q' (Q grain) succeeds", {
   exp <- make_exp()
-  skip_if_not("dev_q" %in% names(exp), "dev_q not present in experience")
+  skip_if_not("uy_q" %in% names(exp), "uy_q not present in experience")
   tri_q <- build_triangle(exp, group_var = coverage,
-                          cohort_var = "uy_q", dev_var = "dev_q")
+                          cohort_var = "uy_q", calendar_var = "cy_q")
   expect_s3_class(tri_q, "Triangle")
   expect_identical(attr(tri_q, "cohort_var"), "uy_q")
   expect_identical(attr(tri_q, "dev_var"),    "dev_q")
+  expect_identical(attr(tri_q, "grain"),      "Q")
   expect_gt(nrow(tri_q), 0L)
 })
 
-test_that("build_triangle with cohort_var = 'uy_s' / dev_var = 'dev_s' succeeds", {
+test_that("build_triangle with cohort_var = 'uy_s' (S grain) succeeds", {
   exp <- make_exp()
-  skip_if_not("dev_s" %in% names(exp), "dev_s not present in experience")
+  skip_if_not("uy_s" %in% names(exp), "uy_s not present in experience")
   tri_s <- build_triangle(exp, group_var = coverage,
-                          cohort_var = "uy_s", dev_var = "dev_s")
+                          cohort_var = "uy_s", calendar_var = "cy_s")
   expect_s3_class(tri_s, "Triangle")
   expect_identical(attr(tri_s, "cohort_var"), "uy_s")
   expect_identical(attr(tri_s, "dev_var"),    "dev_s")
+  expect_identical(attr(tri_s, "grain"),      "S")
   expect_gt(nrow(tri_s), 0L)
 })
 
-test_that("build_triangle with cohort_var = 'uy_a' / dev_var = 'dev_a' succeeds", {
+test_that("build_triangle with cohort_var = 'uy_a' (A grain) succeeds", {
   exp <- make_exp()
-  skip_if_not("dev_a" %in% names(exp), "dev_a not present in experience")
+  skip_if_not("uy_a" %in% names(exp), "uy_a not present in experience")
   tri_a <- build_triangle(exp, group_var = coverage,
-                          cohort_var = "uy_a", dev_var = "dev_a")
+                          cohort_var = "uy_a", calendar_var = "cy_a")
   expect_s3_class(tri_a, "Triangle")
   expect_identical(attr(tri_a, "cohort_var"), "uy_a")
   expect_identical(attr(tri_a, "dev_var"),    "dev_a")
+  expect_identical(attr(tri_a, "grain"),      "A")
   expect_gt(nrow(tri_a), 0L)
 })
 
-test_that("build_triangle errors on mismatched granularity (uy_m + dev_q)", {
+test_that("build_triangle errors on grain finer than input (uy_a + grain='M')", {
   exp <- make_exp()
-  skip_if_not("dev_q" %in% names(exp), "dev_q not present in experience")
+  skip_if_not("uy_a" %in% names(exp), "uy_a not present in experience")
   expect_error(
     build_triangle(exp, group_var = coverage,
-                   cohort_var = "uy_m", dev_var = "dev_q"),
-    regexp = "granularity"
+                   cohort_var = "uy_a", calendar_var = "cy_a", grain = "M"),
+    regexp = "grain"
   )
+})
+
+test_that("build_triangle aggregates M input to Q grain via grain='Q'", {
+  exp <- make_exp()
+  tri_q <- build_triangle(exp, group_var = coverage, grain = "Q")
+  expect_s3_class(tri_q, "Triangle")
+  expect_identical(attr(tri_q, "grain"),   "Q")
+  expect_identical(attr(tri_q, "dev_var"), "dev_q")
 })
 
 test_that("build_calendar with calendar_var = 'cy_q' returns Calendar quarter", {

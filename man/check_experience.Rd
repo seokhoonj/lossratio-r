@@ -50,15 +50,20 @@ Rider type/rider codes and names (\code{character})
 \section{Derived columns}{
 
 The following columns may be derived later by
-\code{\link[=add_experience_period]{add_experience_period()}} and are not validated here:
+\code{\link[=derive_grain_columns]{derive_grain_columns()}} and are not validated here:
 \itemize{
-\item \code{uy_a}, \code{uy_s}, \code{uy_q} : Underwriting year, half-year, quarter
-\item \code{cy_a}, \code{cy_s}, \code{cy_q} : Calendar year, half-year, quarter
-\item \code{dev_a}, \code{dev_s}, \code{dev_q} : Development year, half-year, quarter
+\item \code{uy_a}, \code{uy_s}, \code{uy_q} : Underwriting annual, semi-annual, quarterly (and \code{uy_m} is monthly)
+\item \code{cy_a}, \code{cy_s}, \code{cy_q} : Calendar annual, semi-annual, quarterly (and \code{cy_m} is monthly)
+\item \code{dev_a}, \code{dev_s}, \code{dev_q} : Development annual, semi-annual, quarterly (and \code{dev_m} is monthly)
 }
+
+Letter-suffix family: \verb{_m} / \verb{_q} / \verb{_s} / \verb{_a} = monthly / quarterly /
+semi-annual / annual. The underwriting (\verb{uy_*}) and calendar (\verb{cy_*})
+columns are all \code{Date} (annual / semi-annual / quarterly anchored to
+the period's first day); \verb{dev_*} columns are integer counts.
 }
 
 \seealso{
-\code{\link[=as_experience]{as_experience()}}, \code{\link[=add_experience_period]{add_experience_period()}},
+\code{\link[=as_experience]{as_experience()}}, \code{\link[=derive_grain_columns]{derive_grain_columns()}},
 \code{\link[=.check_col_spec]{.check_col_spec()}}
 }

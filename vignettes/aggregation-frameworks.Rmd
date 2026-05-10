@@ -65,8 +65,7 @@ plot(tri)              # one trajectory per cohort, faceted by group
 # so use quarterly cohort and dev to bring each panel down to ~10 x 10
 # cells. This fits the documentation's display size; in practice you
 # can keep monthly resolution by enlarging the plot.
-tri_q <- build_triangle(exp, group_var = coverage,
-                        cohort_var = "uy_q", dev_var = "dev_q")
+tri_q <- build_triangle(exp, group_var = coverage, grain = "Q")
 plot_triangle(tri_q)   # cohort × dev heatmap of lr
 ```
 

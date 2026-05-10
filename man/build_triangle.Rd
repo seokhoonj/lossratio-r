@@ -8,24 +8,34 @@ build_triangle(
   df,
   group_var,
   cohort_var = "uy_m",
-  dev_var = "dev_m",
+  calendar_var = "cy_m",
+  grain = "auto",
   loss_var = "loss_incr",
   premium_var = "premium_incr",
+  cell_type = c("incremental", "cumulative"),
   fill_gaps = FALSE
 )
 }
 \arguments{
 \item{df}{A data.frame containing experience data with per-period loss and
-premium columns.}
+premium columns plus \code{cohort_var} and \code{calendar_var} Date columns
+(or any input that the internal Date coercion accepts: Date, POSIXt,
+integer \code{yyyy} / \code{yyyymm} / \code{yyyymmdd}, ISO string).}
 
 \item{group_var}{Column(s) used for grouping (e.g., product, gender).}
 
-\item{cohort_var}{Column(s) defining the exposure period
-(e.g., underwriting year-month, quarter, half-year, or year such as
-\code{uy_m}, \code{uy_q}, \code{uy_s}, \code{uy_a}).}
+\item{cohort_var}{Single column defining the underwriting/exposure
+period start (e.g., \code{"uy_m"}). Default \code{"uy_m"}.}
 
-\item{dev_var}{Column(s) defining development periods
-(e.g., months since issue such as \code{dev_m}).}
+\item{calendar_var}{Single column defining the calendar period of
+the observation (e.g., \code{"cy_m"}). Default \code{"cy_m"}. Used together
+with \code{cohort_var} to derive the development column at the resolved
+grain.}
+
+\item{grain}{One of \code{"auto"} (default), \code{"M"}, \code{"Q"}, \code{"S"}, \code{"A"}.
+\code{"auto"} infers the grain from the \code{cohort_var} value spacing.
+Explicit values must be at least as coarse as the input grain;
+the input is binned (floored) to that grain before aggregation.}
 
 \item{loss_var}{Single character; per-period loss column in \code{df}.
 Default \code{"loss_incr"}.}
@@ -36,8 +46,8 @@ loss ratio calculations. For long-term health insurance applications,
 risk premium is commonly used.}
 
 \item{fill_gaps}{Logical; if \code{TRUE}, zero-fill missing
-\verb{(group_var, cohort_var, dev_var)} cells so that every cohort
-has a consecutive \code{dev_var} sequence. Default \code{FALSE}, which
+\verb{(group_var, cohort, dev)} cells so that every cohort
+has a consecutive \code{dev} sequence. Default \code{FALSE}, which
 raises an error when gaps are detected. Use
 \code{\link[=validate_triangle]{validate_triangle()}} to inspect gaps before deciding.}
 }
@@ -58,12 +68,18 @@ of loss within each \verb{(cohort, dev)} cell}
 proportions of premium within each \verb{(cohort, dev)} cell}
 }
 
-The returned object also has an attribute \code{"longer"} containing
-a melted long-format version (\code{class = "TriangleLonger"}).
+Attributes set on the returned object: \code{group_var}, \code{cohort_var},
+\code{calendar_var}, \code{grain}, \code{dev_var} (= \code{"dev_<lower(grain)>"}, e.g.
+\code{"dev_m"}), \code{loss_var}, \code{premium_var}, \code{longer}.
 }
 \description{
-Aggregate experience data into a development structure by grouping,
-period, and development-period variables. The result contains:
+Aggregate experience data into a development structure by grouping
+and \verb{(cohort, calendar)} Date columns. Auto-detects input grain
+(M / Q / S / A) from \code{cohort_var} spacing and derives the
+development-period column internally; the user does not pre-bin
+data or supply a \verb{dev_*} column.
+
+The result contains:
 \itemize{
 \item cumulative loss and cumulative premium,
 \item per-period and cumulative proportions,
@@ -97,20 +113,19 @@ df <- data.frame(
   pd_cd        = rep(c("P001", "P002"), each = 6),
   pd_nm        = rep(c("cancer", "health"), each = 6),
   uy_m         = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
-  dev_m        = rep(1:2, 6),
+  cy_m         = rep(as.Date(c("2023-01-01", "2023-02-01")), 6),
   loss_incr    = runif(12, 80, 120),
   premium_incr = runif(12, 90, 110)
 )
 
-res <- build_triangle(
-  df,
-  group_var  = pd_cd,
-  cohort_var = "uy_m",
-  dev_var    = "dev_m"
-)
+# auto-detected monthly grain
+res_m <- build_triangle(df, group_var = pd_cd)
 
-head(res)
-attr(res, "longer")
+# explicit quarterly view (re-bins monthly input to quarterly)
+res_q <- build_triangle(df, group_var = pd_cd, grain = "Q")
+
+head(res_m)
+attr(res_m, "longer")
 }
 
 }

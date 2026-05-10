@@ -118,7 +118,7 @@ reference:
   - check_experience
   - is_experience
   - as_experience
-  - add_experience_period
+  - derive_grain_columns
   - validate_triangle
 
 - title: Aggregation builders

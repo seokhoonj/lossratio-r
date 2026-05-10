@@ -8,6 +8,7 @@ build_calendar(
   df,
   group_var,
   calendar_var = "cy_m",
+  grain = "auto",
   loss_var = "loss_incr",
   premium_var = "premium_incr",
   period_from = NULL,
@@ -17,21 +18,21 @@ build_calendar(
 }
 \arguments{
 \item{df}{A data.frame containing experience data with per-period loss
-and premium columns.}
+and premium columns plus a \code{calendar_var} Date column (or any input
+that the internal Date coercion accepts: Date, POSIXt, integer
+\code{yyyy} / \code{yyyymm} / \code{yyyymmdd}, ISO string).}
 
 \item{group_var}{Column(s) used for grouping (e.g., product, gender).}
 
-\item{calendar_var}{A single calendar-like period variable defining
-the summary axis. Typical examples include:
-\itemize{
-\item \code{cy_m} (calendar year-month),
-\item \code{cy_q} (calendar year-quarter),
-\item \code{cy_s} (calendar year-half),
-\item \code{cy_a} (calendar year),
-\item \code{uy_m}, \code{uy_q}, \code{uy_s}, \code{uy_a} when a single underwriting-period axis
-is to be summarised as a time series rather than as a development
-structure.
-}}
+\item{calendar_var}{A single column defining the calendar-like period
+axis. Default \code{"cy_m"}. May also be an underwriting axis
+(\code{"uy_m"} etc.) when a single underwriting-period axis is to be
+summarised as a time series rather than as a development structure.}
+
+\item{grain}{One of \code{"auto"} (default), \code{"M"}, \code{"Q"}, \code{"S"}, \code{"A"}.
+\code{"auto"} infers the grain from the \code{calendar_var} value spacing.
+Explicit values must be at least as coarse as the input grain;
+the input is binned (floored) to that grain before aggregation.}
 
 \item{loss_var}{Single character; per-period loss column in \code{df}.
 Default \code{"loss_incr"}.}
@@ -49,7 +50,7 @@ risk premium is commonly used.}
 
 \item{fill_gaps}{Logical; if \code{TRUE}, zero-fill missing
 \verb{(group_var, calendar_var)} cells so every group has a consecutive
-calendar sequence (monthly, quarterly, etc. based on \code{calendar_var}).
+calendar sequence at the resolved grain.
 Default \code{FALSE}, which raises an error when gaps are detected.}
 }
 \value{

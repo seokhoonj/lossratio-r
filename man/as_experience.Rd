@@ -10,7 +10,7 @@ as_experience(df, add_period = TRUE)
 \item{df}{A data.frame containing experience data.}
 
 \item{add_period}{Logical; if \code{TRUE}, derive additional period
-variables using \code{\link[=add_experience_period]{add_experience_period()}}. Default is \code{TRUE}.}
+variables using \code{\link[=derive_grain_columns]{derive_grain_columns()}}. Default is \code{TRUE}.}
 }
 \value{
 A data.frame with class \code{"Experience"} prepended.
@@ -21,7 +21,7 @@ analysis.
 
 This function checks that the input contains the minimum required
 columns, attempts to coerce them to the expected classes, optionally
-derives standard period variables via \code{\link[=add_experience_period]{add_experience_period()}}, and
+derives standard period variables via \code{\link[=derive_grain_columns]{derive_grain_columns()}}, and
 prepends class \code{"Experience"}.
 
 The function intentionally performs only minimal coercion. Other
@@ -50,5 +50,5 @@ class(x)
 
 }
 \seealso{
-\code{\link[=check_experience]{check_experience()}}, \code{\link[=add_experience_period]{add_experience_period()}}
+\code{\link[=check_experience]{check_experience()}}, \code{\link[=derive_grain_columns]{derive_grain_columns()}}
 }

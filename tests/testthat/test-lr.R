@@ -94,7 +94,7 @@ test_that("fit_lr with regime_break + method=sa applies hybrid filter", {
   data(experience)
   exp <- as_experience(experience[coverage == "SUR"])
   tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uy_m", dev_var = "dev_m")
+                        cohort_var = "uy_m")
   fit_full <- fit_lr(tri, method = "sa")
   fit_brk  <- fit_lr(tri, method = "sa", regime_break = "2025-07-01",
                      recent = 18L)
@@ -108,7 +108,7 @@ test_that("fit_lr with regime_break + method=ed drops pre-break cohorts", {
   data(experience)
   exp <- as_experience(experience[coverage == "SUR"])
   tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uy_m", dev_var = "dev_m")
+                        cohort_var = "uy_m")
   fit_full <- fit_lr(tri, method = "ed")
   fit_brk  <- fit_lr(tri, method = "ed", regime_break = "2025-07-01")
   expect_false(identical(fit_full$full$lr_proj, fit_brk$full$lr_proj))
@@ -118,7 +118,7 @@ test_that("fit_lr with NULL regime_break is unchanged", {
   data(experience)
   exp <- as_experience(experience[coverage == "SUR"])
   tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uy_m", dev_var = "dev_m")
+                        cohort_var = "uy_m")
   a <- fit_lr(tri, method = "sa")
   b <- fit_lr(tri, method = "sa", regime_break = NULL)
   expect_identical(a$full$lr_proj, b$full$lr_proj)
@@ -128,7 +128,7 @@ test_that("fit_lr with Regime extracts last breakpoint", {
   data(experience)
   exp <- as_experience(experience[coverage == "SUR"])
   tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uy_m", dev_var = "dev_m")
+                        cohort_var = "uy_m")
   reg <- detect_regime(tri)
   fit_reg <- fit_lr(tri, method = "sa", regime_break = reg, recent = 18L)
   if (length(reg$breakpoints) > 0L) {

@@ -34,13 +34,13 @@ test_that("as_experience coerces date columns to Date class", {
   expect_s3_class(exp$uy_m, "Date")
 })
 
-test_that("add_experience_period adds expected period columns", {
+test_that("derive_grain_columns adds expected period columns", {
   base <- data.frame(
     uy_m  = as.Date(c("2023-01-01", "2023-04-01", "2023-07-01")),
     cy_m  = as.Date(c("2023-03-01", "2023-06-01", "2023-09-01")),
     dev_m = c(3L, 3L, 3L)
   )
-  out <- add_experience_period(base)
+  out <- derive_grain_columns(base)
   expected <- c("uy_a", "uy_s", "uy_q", "cy_a", "cy_s", "cy_q",
                 "dev_a", "dev_s", "dev_q")
   expect_true(all(expected %in% names(out)))
@@ -49,12 +49,12 @@ test_that("add_experience_period adds expected period columns", {
   expect_type(out$dev_a, "integer")
 })
 
-test_that("add_experience_period derives dev_m when missing", {
+test_that("derive_grain_columns derives dev_m when missing", {
   base <- data.frame(
     uy_m = as.Date("2023-01-01"),
     cy_m = as.Date("2023-04-01")
   )
-  out <- add_experience_period(base)
+  out <- derive_grain_columns(base)
   expect_true("dev_m" %in% names(out))
   expect_equal(out$dev_m, 4L)
 })

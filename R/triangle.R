@@ -184,8 +184,13 @@ print.TriangleValidation <- function(x, ...) {
 #' Build a development structure from experience data
 #'
 #' @description
-#' Aggregate experience data into a development structure by grouping,
-#' period, and development-period variables. The result contains:
+#' Aggregate experience data into a development structure by grouping
+#' and `(cohort, calendar)` Date columns. Auto-detects input grain
+#' (M / Q / S / A) from `cohort_var` spacing and derives the
+#' development-period column internally; the user does not pre-bin
+#' data or supply a `dev_*` column.
+#'
+#' The result contains:
 #' - cumulative loss and cumulative premium,
 #' - per-period and cumulative proportions,
 #' - per-period and cumulative margin,
@@ -212,13 +217,20 @@ print.TriangleValidation <- function(x, ...) {
 #' each development cell across products or other grouping variables.
 #'
 #' @param df A data.frame containing experience data with per-period loss and
-#'   premium columns.
+#'   premium columns plus `cohort_var` and `calendar_var` Date columns
+#'   (or any input that the internal Date coercion accepts: Date, POSIXt,
+#'   integer `yyyy` / `yyyymm` / `yyyymmdd`, ISO string).
 #' @param group_var Column(s) used for grouping (e.g., product, gender).
-#' @param cohort_var Column(s) defining the exposure period
-#'   (e.g., underwriting year-month, quarter, half-year, or year such as
-#'   `uy_m`, `uy_q`, `uy_s`, `uy_a`).
-#' @param dev_var Column(s) defining development periods
-#'   (e.g., months since issue such as `dev_m`).
+#' @param cohort_var Single column defining the underwriting/exposure
+#'   period start (e.g., `"uy_m"`). Default `"uy_m"`.
+#' @param calendar_var Single column defining the calendar period of
+#'   the observation (e.g., `"cy_m"`). Default `"cy_m"`. Used together
+#'   with `cohort_var` to derive the development column at the resolved
+#'   grain.
+#' @param grain One of `"auto"` (default), `"M"`, `"Q"`, `"S"`, `"A"`.
+#'   `"auto"` infers the grain from the `cohort_var` value spacing.
+#'   Explicit values must be at least as coarse as the input grain;
+#'   the input is binned (floored) to that grain before aggregation.
 #' @param loss_var Single character; per-period loss column in `df`.
 #'   Default `"loss_incr"`.
 #' @param premium_var Single character; per-period premium column in `df`.
@@ -226,8 +238,8 @@ print.TriangleValidation <- function(x, ...) {
 #'   loss ratio calculations. For long-term health insurance applications,
 #'   risk premium is commonly used.
 #' @param fill_gaps Logical; if `TRUE`, zero-fill missing
-#'   `(group_var, cohort_var, dev_var)` cells so that every cohort
-#'   has a consecutive `dev_var` sequence. Default `FALSE`, which
+#'   `(group_var, cohort, dev)` cells so that every cohort
+#'   has a consecutive `dev` sequence. Default `FALSE`, which
 #'   raises an error when gaps are detected. Use
 #'   [validate_triangle()] to inspect gaps before deciding.
 #'
@@ -247,8 +259,9 @@ print.TriangleValidation <- function(x, ...) {
 #'       proportions of premium within each `(cohort, dev)` cell}
 #'   }
 #'
-#' The returned object also has an attribute `"longer"` containing
-#' a melted long-format version (`class = "TriangleLonger"`).
+#' Attributes set on the returned object: `group_var`, `cohort_var`,
+#' `calendar_var`, `grain`, `dev_var` (= `"dev_<lower(grain)>"`, e.g.
+#' `"dev_m"`), `loss_var`, `premium_var`, `longer`.
 #'
 #' @examples
 #' \dontrun{
@@ -256,31 +269,33 @@ print.TriangleValidation <- function(x, ...) {
 #'   pd_cd        = rep(c("P001", "P002"), each = 6),
 #'   pd_nm        = rep(c("cancer", "health"), each = 6),
 #'   uy_m         = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
-#'   dev_m        = rep(1:2, 6),
+#'   cy_m         = rep(as.Date(c("2023-01-01", "2023-02-01")), 6),
 #'   loss_incr    = runif(12, 80, 120),
 #'   premium_incr = runif(12, 90, 110)
 #' )
 #'
-#' res <- build_triangle(
-#'   df,
-#'   group_var  = pd_cd,
-#'   cohort_var = "uy_m",
-#'   dev_var    = "dev_m"
-#' )
+#' # auto-detected monthly grain
+#' res_m <- build_triangle(df, group_var = pd_cd)
 #'
-#' head(res)
-#' attr(res, "longer")
+#' # explicit quarterly view (re-bins monthly input to quarterly)
+#' res_q <- build_triangle(df, group_var = pd_cd, grain = "Q")
+#'
+#' head(res_m)
+#' attr(res_m, "longer")
 #' }
 #'
 #' @export
 build_triangle <- function(df,
                            group_var,
-                           cohort_var  = "uy_m",
-                           dev_var     = "dev_m",
-                           loss_var    = "loss_incr",
-                           premium_var = "premium_incr",
-                           fill_gaps   = FALSE) {
+                           cohort_var   = "uy_m",
+                           calendar_var = "cy_m",
+                           grain        = "auto",
+                           loss_var     = "loss_incr",
+                           premium_var  = "premium_incr",
+                           cell_type    = c("incremental", "cumulative"),
+                           fill_gaps    = FALSE) {
   .assert_class(df, "data.frame")
+  cell_type <- match.arg(cell_type)
 
   if (!is.logical(fill_gaps) || length(fill_gaps) != 1L || is.na(fill_gaps))
     stop("`fill_gaps` must be a single non-missing logical value.",
@@ -290,29 +305,64 @@ build_triangle <- function(df,
 
   grp_var <- .capture_names(dt, !!rlang::enquo(group_var))
   coh_var <- .capture_names(dt, !!rlang::enquo(cohort_var))
-  dev_var <- .capture_names(dt, !!rlang::enquo(dev_var))
+  cal_var <- .capture_names(dt, !!rlang::enquo(calendar_var))
   l_var   <- .capture_names(dt, !!rlang::enquo(loss_var))
   p_var   <- .capture_names(dt, !!rlang::enquo(premium_var))
 
   .assert_length(coh_var)
-  .assert_length(dev_var)
+  .assert_length(cal_var)
   .assert_length(l_var)
   .assert_length(p_var)
 
-  coh_gran <- .get_granularity(coh_var)
-  dev_gran <- .get_granularity(dev_var)
-  if (!is.na(coh_gran) && !is.na(dev_gran) && coh_gran != dev_gran)
-    stop(sprintf(
-      "`cohort_var` and `dev_var` must share the same granularity; got `%s` (%s) and `%s` (%s).",
-      coh_var, coh_gran, dev_var, dev_gran
-    ), call. = FALSE)
+  if (length(coh_var) != 1L)
+    stop("`cohort_var` must resolve to exactly one column.", call. = FALSE)
+  if (length(cal_var) != 1L)
+    stop("`calendar_var` must resolve to exactly one column.", call. = FALSE)
 
-  # standardize column names early: user's loss_var / premium_var → standard
-  # slot names loss_incr / premium_incr; cohort_var / dev_var → cohort / dev
+  # required columns presence check (capture_names already errors on missing,
+  # but explicit names list helps when user passes string defaults that may
+  # be missing).
+  required <- c(grp_var, coh_var, cal_var, l_var, p_var)
+  missing_cols <- setdiff(required, names(dt))
+  if (length(missing_cols))
+    stop(sprintf("Missing required columns: %s.",
+                 paste(sprintf("'%s'", missing_cols), collapse = ", ")),
+         call. = FALSE)
+
+  # coerce cohort / calendar to Date (Date / POSIXt / int / string)
+  .coerce_cols_to_date(dt, c(coh_var, cal_var))
+  data.table::set(dt, j = l_var, value = as.numeric(dt[[l_var]]))
+  data.table::set(dt, j = p_var, value = as.numeric(dt[[p_var]]))
+
+  # If input cells are cumulative, derive incremental via per-cohort diff
+  # at INPUT grain (before binning). After this, downstream flow treats
+  # values as incremental (same as the default path).
+  if (cell_type == "cumulative") {
+    data.table::setorderv(dt, c(grp_var, coh_var, cal_var))
+    dt[, (l_var) := .SD[[1L]] - data.table::shift(.SD[[1L]], fill = 0),
+       by = c(grp_var, coh_var), .SDcols = l_var]
+    dt[, (p_var) := .SD[[1L]] - data.table::shift(.SD[[1L]], fill = 0),
+       by = c(grp_var, coh_var), .SDcols = p_var]
+  }
+
+  # auto-detect input grain from cohort_var; resolve user-supplied grain.
+  input_grain <- .infer_grain(dt[[coh_var]])
+  grain       <- .resolve_grain(input_grain, grain)
+
+  # bin to requested grain (floor cohort + calendar). When grain matches
+  # input this is still safe (idempotent floor).
+  .floor_cols_to_period(dt, c(coh_var, cal_var), grain)
+
+  # derive dev (1, 2, ...) at the resolved grain.
+  dt[, dev := .count_periods(.SD[[1L]], .SD[[2L]], grain),
+     .SDcols = c(coh_var, cal_var)]
+
+  # standardize column names: user's loss_var / premium_var → standard
+  # slot names loss_incr / premium_incr; cohort_var → cohort.
   data.table::setnames(
     dt,
-    c(coh_var, dev_var, l_var, p_var),
-    c("cohort", "dev", "loss_incr", "premium_incr")
+    c(coh_var, l_var, p_var),
+    c("cohort", "loss_incr", "premium_incr")
   )
 
   grp_coh_var     <- c(grp_var, "cohort")
@@ -347,8 +397,8 @@ build_triangle <- function(df,
     } else {
       stop(
         sprintf(
-          "Non-consecutive `dev` (source `%s`) detected in %d cohort(s). %s\n%s",
-          dev_var,
+          "Non-consecutive `dev` (grain `%s`) detected in %d cohort(s). %s\n%s",
+          grain,
           nrow(gaps),
           "Call `validate_triangle()` to inspect, or pass `fill_gaps = TRUE` to zero-fill.",
           paste(utils::capture.output(print(head(gaps, 5L))), collapse = "\n")
@@ -424,7 +474,9 @@ build_triangle <- function(df,
 
   data.table::setattr(ds, "group_var"   , grp_var)
   data.table::setattr(ds, "cohort_var"  , coh_var)
-  data.table::setattr(ds, "dev_var"     , dev_var)
+  data.table::setattr(ds, "calendar_var", cal_var)
+  data.table::setattr(ds, "grain"       , grain)
+  data.table::setattr(ds, "dev_var"     , paste0("dev_", tolower(grain)))
   data.table::setattr(ds, "loss_var"    , l_var)
   data.table::setattr(ds, "premium_var" , p_var)
   data.table::setattr(ds, "longer"      , dm)
@@ -580,19 +632,18 @@ longer.TriangleSummary <- function(x, ...) {
 #' each calendar period across products or other grouping variables.
 #'
 #' @param df A data.frame containing experience data with per-period loss
-#'   and premium columns.
+#'   and premium columns plus a `calendar_var` Date column (or any input
+#'   that the internal Date coercion accepts: Date, POSIXt, integer
+#'   `yyyy` / `yyyymm` / `yyyymmdd`, ISO string).
 #' @param group_var Column(s) used for grouping (e.g., product, gender).
-#' @param calendar_var A single calendar-like period variable defining
-#'   the summary axis. Typical examples include:
-#'   \itemize{
-#'     \item `cy_m` (calendar year-month),
-#'     \item `cy_q` (calendar year-quarter),
-#'     \item `cy_s` (calendar year-half),
-#'     \item `cy_a` (calendar year),
-#'     \item `uy_m`, `uy_q`, `uy_s`, `uy_a` when a single underwriting-period axis
-#'       is to be summarised as a time series rather than as a development
-#'       structure.
-#'   }
+#' @param calendar_var A single column defining the calendar-like period
+#'   axis. Default `"cy_m"`. May also be an underwriting axis
+#'   (`"uy_m"` etc.) when a single underwriting-period axis is to be
+#'   summarised as a time series rather than as a development structure.
+#' @param grain One of `"auto"` (default), `"M"`, `"Q"`, `"S"`, `"A"`.
+#'   `"auto"` infers the grain from the `calendar_var` value spacing.
+#'   Explicit values must be at least as coarse as the input grain;
+#'   the input is binned (floored) to that grain before aggregation.
 #' @param loss_var Single character; per-period loss column in `df`.
 #'   Default `"loss_incr"`.
 #' @param premium_var Single character; per-period premium column in `df`.
@@ -605,7 +656,7 @@ longer.TriangleSummary <- function(x, ...) {
 #'   `calendar_var <= period_to` are kept.
 #' @param fill_gaps Logical; if `TRUE`, zero-fill missing
 #'   `(group_var, calendar_var)` cells so every group has a consecutive
-#'   calendar sequence (monthly, quarterly, etc. based on `calendar_var`).
+#'   calendar sequence at the resolved grain.
 #'   Default `FALSE`, which raises an error when gaps are detected.
 #'
 #' @return A data.frame with class `"Calendar"`, containing the following
@@ -651,6 +702,7 @@ longer.TriangleSummary <- function(x, ...) {
 build_calendar <- function(df,
                            group_var,
                            calendar_var = "cy_m",
+                           grain        = "auto",
                            loss_var     = "loss_incr",
                            premium_var  = "premium_incr",
                            period_from  = NULL,
@@ -673,8 +725,23 @@ build_calendar <- function(df,
   .assert_length(l_var)
   .assert_length(p_var)
 
-  cal_type <- .get_period_type(cal_var)
+  if (length(cal_var) != 1L)
+    stop("`calendar_var` must resolve to exactly one column.", call. = FALSE)
 
+  required <- c(grp_var, cal_var, l_var, p_var)
+  missing_cols <- setdiff(required, names(dt))
+  if (length(missing_cols))
+    stop(sprintf("Missing required columns: %s.",
+                 paste(sprintf("'%s'", missing_cols), collapse = ", ")),
+         call. = FALSE)
+
+  # coerce calendar_var to Date and numeric loss/premium
+  .coerce_cols_to_date(dt, cal_var)
+  data.table::set(dt, j = l_var, value = as.numeric(dt[[l_var]]))
+  data.table::set(dt, j = p_var, value = as.numeric(dt[[p_var]]))
+
+  # period filtering happens before grain binning so user's bounds are
+  # interpreted at the input scale.
   if (!is.null(period_from)) {
     period_from <- as.Date(period_from)
     dt <- dt[dt[[cal_var]] >= period_from]
@@ -684,6 +751,13 @@ build_calendar <- function(df,
     period_to <- as.Date(period_to)
     dt <- dt[dt[[cal_var]] <= period_to]
   }
+
+  # auto-detect grain from calendar_var; resolve user-supplied grain.
+  input_grain <- .infer_grain(dt[[cal_var]])
+  grain       <- .resolve_grain(input_grain, grain)
+
+  # bin to requested grain (idempotent floor when input already at grain).
+  .floor_cols_to_period(dt, cal_var, grain)
 
   # standardize column names: cal_var → calendar; loss/premium to standard slots
   data.table::setnames(
@@ -701,14 +775,14 @@ build_calendar <- function(df,
            by = grp_cal_var, .SDcols = incr_vars]
 
   # validate / fill calendar period consecutiveness per group
-  gaps <- .validate_calendar_continuity_impl(ds, grp_var, "calendar")
+  gaps <- .validate_calendar_continuity_impl_grain(ds, grp_var, "calendar", grain)
   if (nrow(gaps)) {
     if (fill_gaps) {
-      step <- switch(cal_type,
-                     month    = "month",
-                     quarter  = "3 months",
-                     half     = "6 months",
-                     year     = "year")
+      step <- switch(grain,
+                     M = "month",
+                     Q = "3 months",
+                     S = "6 months",
+                     A = "year")
       if (length(grp_var)) {
         grid <- ds[, .(calendar = seq(min(calendar, na.rm = TRUE),
                                       max(calendar, na.rm = TRUE),
@@ -726,8 +800,8 @@ build_calendar <- function(df,
     } else {
       stop(
         sprintf(
-          "Non-consecutive `calendar` (source `%s`) detected in %d group(s). %s\n%s",
-          cal_var,
+          "Non-consecutive `calendar` (grain `%s`) detected in %d group(s). %s\n%s",
+          grain,
           nrow(gaps),
           "Inspect gaps manually or pass `fill_gaps = TRUE` to zero-fill.",
           paste(utils::capture.output(print(head(gaps, 5L))), collapse = "\n")
@@ -813,6 +887,7 @@ build_calendar <- function(df,
 
   data.table::setattr(ds, "group_var"    , grp_var)
   data.table::setattr(ds, "calendar_var" , cal_var)
+  data.table::setattr(ds, "grain"        , grain)
   data.table::setattr(ds, "loss_var"     , l_var)
   data.table::setattr(ds, "premium_var"  , p_var)
   data.table::setattr(ds, "longer"       , dm)
@@ -820,13 +895,12 @@ build_calendar <- function(df,
   .prepend_class(ds, "Calendar")
 }
 
-.validate_calendar_continuity_impl <- function(dt, grp_var, cal_var) {
-  period_type <- .get_period_type(cal_var)
-  step <- switch(period_type,
-                 month    = "month",
-                 quarter  = "3 months",
-                 half     = "6 months",
-                 year     = "year",
+.validate_calendar_continuity_impl_grain <- function(dt, grp_var, cal_var, grain) {
+  step <- switch(grain,
+                 M = "month",
+                 Q = "3 months",
+                 S = "6 months",
+                 A = "year",
                  NA_character_)
 
   if (is.na(step)) {
