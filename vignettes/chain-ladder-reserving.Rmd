@@ -144,9 +144,9 @@ plot(cl_mack, type = "reserve", conf_level = 0.95)
 distinguishing observed cells from projected:
 
 ```{r}
-plot_triangle(cl_mack, what = "full")    # observed + projected
-plot_triangle(cl_mack, what = "pred")    # projected only
-plot_triangle(cl_mack, what = "data")    # observed only
+plot_triangle(cl_mack, region = "full")    # observed + projected
+plot_triangle(cl_mack, region = "pred")    # projected only
+plot_triangle(cl_mack, region = "data")    # observed only
 ```
 
 The `label_style = "cv"` mode shows coefficient of variation per

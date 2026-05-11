@@ -148,9 +148,9 @@ plot(cl_mack, type = "reserve", conf_level = 0.95)
 관측된 셀과 추정된 셀을 구분한다.
 
 ```{r}
-plot_triangle(cl_mack, what = "full")    # 관측 + 추정
-plot_triangle(cl_mack, what = "pred")    # 추정만
-plot_triangle(cl_mack, what = "data")    # 관측만
+plot_triangle(cl_mack, region = "full")    # 관측 + 추정
+plot_triangle(cl_mack, region = "pred")    # 추정만
+plot_triangle(cl_mack, region = "data")    # 관측만
 ```
 
 `label_style = "cv"` 모드는 셀별 변동계수를 표시하며, 신뢰성이

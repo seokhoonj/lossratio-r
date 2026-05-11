@@ -6,7 +6,8 @@
 \usage{
 \method{plot_triangle}{CLFit}(
   x,
-  what = c("pred", "full", "data"),
+  region = c("pred", "full", "data"),
+  view = c("value", "usage"),
   label_style = c("value", "cv", "se", "ci"),
   label_size = NULL,
   conf_level = 0.95,
@@ -20,7 +21,20 @@
 \arguments{
 \item{x}{An object of class \code{"CLFit"}.}
 
-\item{what}{One of \code{"pred"}, \code{"full"}, or \code{"data"}.}
+\item{region}{Cell region to plot (only used when \code{view = "value"}).
+One of \code{"pred"} (default; projected cells only, observed cells
+masked), \code{"full"} (observed + projected), or \code{"data"} (observed
+from \code{x$data} — the raw Triangle, no projection).}
+
+\item{view}{Plot mode. One of:
+\describe{
+\item{"value" (default)}{Per-cell metric heatmap. \code{region}
+selects which cells to display.}
+\item{"usage"}{Cell-status heatmap (\code{fit_data} / \code{excluded} /
+\code{future}) driven by the fit's \code{x$recent}. \code{region} is
+ignored. CL has no \code{regime_break} / maturity hooks, so the
+hybrid overlays do not apply.}
+}}
 
 \item{label_style}{One of \code{"value"} (default), \code{"cv"}, \code{"se"}, or
 \code{"ci"}. The uncertainty styles require \code{method = "mack"}.}

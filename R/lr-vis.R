@@ -212,8 +212,20 @@ plot.LRFit <- function(x,
 #' distinguished by border style.
 #'
 #' @param x An object of class `"LRFit"`.
-#' @param what One of `"full"` (observed + projected) or `"pred"`
-#'   (projected cells only). Default is `"full"`.
+#' @param region Cell region to plot (only used when `view = "value"`).
+#'   One of `"pred"` (projected cells only, observed cells masked),
+#'   `"full"` (observed + projected), or `"data"` (observed cumulative
+#'   loss / premium / lr from `x$data` — the raw Triangle, no
+#'   projection). Default is `"pred"`.
+#' @param view Plot mode. One of:
+#'   \describe{
+#'     \item{"value" (default)}{Per-cell `lr` heatmap with column-wise
+#'       relative fill. `region` selects which cells to display.}
+#'     \item{"usage"}{Cell-status heatmap (`fit_data` / `held_out` /
+#'       `excluded` / `future`) driven by the fit's own metadata
+#'       (`x$recent`, `x$regime_break`, `x$maturity`). `region` is
+#'       ignored.}
+#'   }
 #' @param label_style One of `"value"` (lr only) or `"detail"`
 #'   (lr with loss/exposure amounts). Default is `"value"`.
 #' @param label_size Numeric label text size forwarded to
@@ -234,7 +246,8 @@ plot.LRFit <- function(x,
 #' @method plot_triangle LRFit
 #' @export
 plot_triangle.LRFit <- function(x,
-                                 what           = c("full", "pred"),
+                                 region         = c("pred", "full", "data"),
+                                 view           = c("value", "usage"),
                                  label_style    = c("value", "detail"),
                                  label_size     = NULL,
                                  show_maturity  = TRUE,
@@ -247,9 +260,25 @@ plot_triangle.LRFit <- function(x,
 
   .assert_class(x, "LRFit")
 
-  what        <- match.arg(what)
+  region      <- match.arg(region)
+  view        <- match.arg(view)
   label_style <- match.arg(label_style)
   theme       <- match.arg(theme)
+
+  # view = "usage": cell-status heatmap (fit_data / held_out / excluded /
+  # future), driven by the fit's own metadata (`recent`, `regime_break`,
+  # `maturity`). Region is irrelevant in usage view.
+  if (view == "usage") {
+    return(.plot_triangle_usage(
+      x$data,
+      recent        = x$recent,
+      regime_break  = x$regime_break,
+      holdout       = NULL,
+      maturity_args = list(),
+      theme         = theme,
+      ...
+    ))
+  }
   if (is.null(label_size))
     label_size <- if (label_style == "detail") 2.5 else 3
 
@@ -259,17 +288,27 @@ plot_triangle.LRFit <- function(x,
 
   if (is.null(grp_var)) grp_var <- character(0)
 
-  # 1) select data source
+  # 1) select data source (value view)
   dt <- .ensure_dt(
-    if (what == "full") x$full else x$pred
+    switch(region, pred = x$pred, full = x$full, data = x$data)
   )
 
-  # 2) compute lr for all cells
-  dt[, lr := data.table::fifelse(
-    is.finite(loss_proj) & is.finite(premium_proj) & premium_proj != 0,
-    loss_proj / premium_proj,
-    NA_real_
-  )]
+  # `data` region uses raw Triangle which has no `is_observed` flag;
+  # synthesise it so the projected-cell overlay below sees an empty
+  # selection (data region has no projected cells by definition).
+  if (region == "data" && !"is_observed" %in% names(dt))
+    dt[, is_observed := TRUE]
+
+  # 2) compute lr for all cells. In `data` region the cumulative `lr`
+  # column is already present on the Triangle; in `pred` / `full`
+  # region lr is derived from the projection columns.
+  if (region != "data") {
+    dt[, lr := data.table::fifelse(
+      is.finite(loss_proj) & is.finite(premium_proj) & premium_proj != 0,
+      loss_proj / premium_proj,
+      NA_real_
+    )]
+  }
 
   # 3) build dev link labels
   link_levels <- sort(unique(dt[["dev"]]))
@@ -293,16 +332,31 @@ plot_triangle.LRFit <- function(x,
     )]
     caption_txt <- "Unit: lr % (column-wise relative fill)"
   } else {
-    dt[, label := data.table::fifelse(
-      is.finite(lr),
-      sprintf(
-        paste0(fmt, "\n(%.1f/%.1f)"),
-        lr * 100,
-        loss_proj / amount_divisor,
-        premium_proj / amount_divisor
-      ),
-      ""
-    )]
+    # In `data` region use cumulative observed loss/premium; in
+    # `pred` / `full` region use the projection columns.
+    if (region == "data") {
+      dt[, label := data.table::fifelse(
+        is.finite(lr),
+        sprintf(
+          paste0(fmt, "\n(%.1f/%.1f)"),
+          lr * 100,
+          loss / amount_divisor,
+          premium / amount_divisor
+        ),
+        ""
+      )]
+    } else {
+      dt[, label := data.table::fifelse(
+        is.finite(lr),
+        sprintf(
+          paste0(fmt, "\n(%.1f/%.1f)"),
+          lr * 100,
+          loss_proj / amount_divisor,
+          premium_proj / amount_divisor
+        ),
+        ""
+      )]
+    }
     caption_txt <- sprintf(
       "Unit: lr %% (%s, column-wise relative fill)",
       .get_amount_unit(amount_divisor)

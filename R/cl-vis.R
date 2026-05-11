@@ -319,7 +319,19 @@ plot.CLFit <- function(x,
 #' }
 #'
 #' @param x An object of class `"CLFit"`.
-#' @param what One of `"pred"`, `"full"`, or `"data"`.
+#' @param region Cell region to plot (only used when `view = "value"`).
+#'   One of `"pred"` (default; projected cells only, observed cells
+#'   masked), `"full"` (observed + projected), or `"data"` (observed
+#'   from `x$data` — the raw Triangle, no projection).
+#' @param view Plot mode. One of:
+#'   \describe{
+#'     \item{"value" (default)}{Per-cell metric heatmap. `region`
+#'       selects which cells to display.}
+#'     \item{"usage"}{Cell-status heatmap (`fit_data` / `excluded` /
+#'       `future`) driven by the fit's `x$recent`. `region` is
+#'       ignored. CL has no `regime_break` / maturity hooks, so the
+#'       hybrid overlays do not apply.}
+#'   }
 #' @param label_style One of `"value"` (default), `"cv"`, `"se"`, or
 #'   `"ci"`. The uncertainty styles require `method = "mack"`.
 #' @param label_size Numeric label text size forwarded to
@@ -339,7 +351,8 @@ plot.CLFit <- function(x,
 #' @method plot_triangle CLFit
 #' @export
 plot_triangle.CLFit <- function(x,
-                                 what           = c("pred", "full", "data"),
+                                 region         = c("pred", "full", "data"),
+                                 view           = c("value", "usage"),
                                  label_style    = c("value", "cv", "se", "ci"),
                                  label_size     = NULL,
                                  conf_level     = 0.95,
@@ -351,11 +364,26 @@ plot_triangle.CLFit <- function(x,
 
   .assert_class(x, "CLFit")
 
-  what        <- match.arg(what)
+  region      <- match.arg(region)
+  view        <- match.arg(view)
   label_style <- match.arg(label_style)
   theme       <- match.arg(theme)
   if (is.null(label_size))
     label_size <- if (label_style == "ci") 2.5 else 3
+
+  # view = "usage": cell-status heatmap driven by the fit's `recent`
+  # metadata (CL has no regime_break / maturity hooks).
+  if (view == "usage") {
+    return(.plot_triangle_usage(
+      x$data,
+      recent        = x$recent,
+      regime_break  = NULL,
+      holdout       = NULL,
+      maturity_args = list(),
+      theme         = theme,
+      ...
+    ))
+  }
 
   is_mack <- identical(x$method, "mack")
 
@@ -404,15 +432,18 @@ plot_triangle.CLFit <- function(x,
     val_var
   )
 
-  what_title <- switch(what, pred = "Predicted", full = "Full", data = "Observed")
-  title_txt  <- paste(what_title, base_title)
+  region_title <- switch(region,
+                         pred = "Predicted",
+                         full = "Full",
+                         data = "Observed")
+  title_txt    <- paste(region_title, base_title)
 
   # 1) select data source -----------------------------------------------
   dt <- .ensure_dt(
-    switch(what, data = x$data, full = x$full, pred = x$pred)
+    switch(region, data = x$data, full = x$full, pred = x$pred)
   )
 
-  if (what == "data") {
+  if (region == "data") {
     dt[, .value := .SD[[val_var]], .SDcols = val_var]
   } else {
     dt[, .value := value_proj]
@@ -428,7 +459,7 @@ plot_triangle.CLFit <- function(x,
   z_alpha  <- stats::qnorm((1 + conf_level) / 2)
   unit_txt <- .get_amount_unit(amount_divisor)
 
-  if (label_style == "value" || what == "data") {
+  if (label_style == "value" || region == "data") {
     if (is_ratio) {
       dt[, label := data.table::fifelse(
         is.na(.value), "", sprintf("%.0f", .value * 100)

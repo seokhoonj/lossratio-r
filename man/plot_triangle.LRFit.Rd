@@ -6,7 +6,8 @@
 \usage{
 \method{plot_triangle}{LRFit}(
   x,
-  what = c("full", "pred"),
+  region = c("pred", "full", "data"),
+  view = c("value", "usage"),
   label_style = c("value", "detail"),
   label_size = NULL,
   show_maturity = TRUE,
@@ -21,8 +22,21 @@
 \arguments{
 \item{x}{An object of class \code{"LRFit"}.}
 
-\item{what}{One of \code{"full"} (observed + projected) or \code{"pred"}
-(projected cells only). Default is \code{"full"}.}
+\item{region}{Cell region to plot (only used when \code{view = "value"}).
+One of \code{"pred"} (projected cells only, observed cells masked),
+\code{"full"} (observed + projected), or \code{"data"} (observed cumulative
+loss / premium / lr from \code{x$data} — the raw Triangle, no
+projection). Default is \code{"pred"}.}
+
+\item{view}{Plot mode. One of:
+\describe{
+\item{"value" (default)}{Per-cell \code{lr} heatmap with column-wise
+relative fill. \code{region} selects which cells to display.}
+\item{"usage"}{Cell-status heatmap (\code{fit_data} / \code{held_out} /
+\code{excluded} / \code{future}) driven by the fit's own metadata
+(\code{x$recent}, \code{x$regime_break}, \code{x$maturity}). \code{region} is
+ignored.}
+}}
 
 \item{label_style}{One of \code{"value"} (lr only) or \code{"detail"}
 (lr with loss/exposure amounts). Default is \code{"value"}.}

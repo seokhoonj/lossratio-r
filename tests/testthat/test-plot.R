@@ -92,14 +92,23 @@ test_that("plot_triangle.EDFit dispatches", {
   expect_true(is_plot(suppressWarnings(plot_triangle(ef))))
 })
 
-test_that("plot_triangle.CLFit dispatches across what variants", {
-  for (w in c("pred", "full", "data")) {
-    p <- suppressWarnings(plot_triangle(cl_m, what = w))
-    expect_true(is_plot(p), info = paste("what =", w))
+test_that("plot_triangle.CLFit dispatches across region variants", {
+  for (r in c("pred", "full", "data")) {
+    p <- suppressWarnings(plot_triangle(cl_m, region = r))
+    expect_true(is_plot(p), info = paste("region =", r))
   }
 })
 
 test_that("plot_triangle.LRFit dispatches", {
-  expect_true(is_plot(suppressWarnings(plot_triangle(lr, what = "pred"))))
-  expect_true(is_plot(suppressWarnings(plot_triangle(lr, what = "full"))))
+  expect_true(is_plot(suppressWarnings(plot_triangle(lr, region = "pred"))))
+  expect_true(is_plot(suppressWarnings(plot_triangle(lr, region = "full"))))
+  expect_true(is_plot(suppressWarnings(plot_triangle(lr, region = "data"))))
+})
+
+test_that("plot_triangle.LRFit view = 'usage' dispatches", {
+  expect_true(is_plot(suppressWarnings(plot_triangle(lr, view = "usage"))))
+})
+
+test_that("plot_triangle.CLFit view = 'usage' dispatches", {
+  expect_true(is_plot(suppressWarnings(plot_triangle(cl_m, view = "usage"))))
 })
