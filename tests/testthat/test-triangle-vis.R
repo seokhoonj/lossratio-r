@@ -23,6 +23,15 @@ test_that("plot_triangle(type = 'usage') with regime_break + recent activates hy
   p <- plot_triangle(tri, type = "usage", recent = 18L,
                      regime_break = "2024-07-01", holdout = 6L)
   expect_s3_class(p, "ggplot")
+
+  # Hybrid mode must draw the maturity vline. The 2-pass fit_ata call
+  # inside `.plot_triangle_usage` previously silently returned NULL
+  # because fit_ata was being fed a Link instead of a Triangle, leaving
+  # the geom_vline absent. Guard against that regression.
+  vline_layers <- vapply(p$layers, function(l) {
+    inherits(l$geom, "GeomVline")
+  }, logical(1L))
+  expect_true(any(vline_layers))
 })
 
 test_that(".compute_triangle_usage hybrid mask matches expected pattern", {
