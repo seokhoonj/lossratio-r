@@ -993,7 +993,7 @@ plot.Total <- function(x,
   )]
   expanded[, status := factor(
     status,
-    levels = c("used", "holdout", "unused", "future")
+    levels = c("unused", "used", "holdout", "future")
   )]
 
   expanded[, c(".pass_filter", ".max_cal_fit") := NULL]
@@ -1060,9 +1060,9 @@ plot.Total <- function(x,
   dt[, .y := factor(.y, levels = y_levels)]
 
   status_cols <- c(
+    unused  = "#dcdcdc",
     used    = "#1f77b4",
     holdout = "#d62728",
-    unused  = "#dcdcdc",
     future  = "#ffffff"
   )
 

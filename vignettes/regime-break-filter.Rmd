@@ -117,7 +117,7 @@ plot_triangle(tri_sur, type = "usage", recent = 12L,
 fit data, red = held out (last 6 calendar diagonals), light grey =
 excluded by the filter, white = future. Vertical dashed line marks the
 maturity switch $k^*$; horizontal dashed line marks the regime break
-cohort.](articles/figs/regime_break_data_usage.png)
+cohort.](articles/figs/triangle_usage_panels.png)
 
 The hybrid panel shows the dev-axis split that SA mode applies: a
 cohort cut on the ED side and a calendar diagonal cut on the CL side,
