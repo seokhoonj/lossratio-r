@@ -55,6 +55,13 @@ plot.Backtest <- function(x,
       ggplot2::aes(x = .data[["dev"]], y = .data[["ae_err"]],
                    color = .data[["stat"]], group = .data[["stat"]])
     ) +
+      ggplot2::annotate("rect",
+                        xmin = -Inf, xmax = Inf,
+                        ymin = -0.1, ymax = 0.1,
+                        fill = "grey60", alpha = 0.12) +
+      ggplot2::geom_hline(yintercept = c(-0.1, 0.1),
+                          linetype = "dotted", color = "grey50",
+                          linewidth = 0.3) +
       ggplot2::geom_hline(yintercept = 0, linetype = "dashed",
                           color = "grey50") +
       ggplot2::geom_line(linewidth = 0.8) +
@@ -88,6 +95,13 @@ plot.Backtest <- function(x,
       ggplot2::aes(x = .data[["calendar_idx"]], y = .data[["ae_err"]],
                    color = .data[["stat"]], group = .data[["stat"]])
     ) +
+      ggplot2::annotate("rect",
+                        xmin = -Inf, xmax = Inf,
+                        ymin = -0.1, ymax = 0.1,
+                        fill = "grey60", alpha = 0.12) +
+      ggplot2::geom_hline(yintercept = c(-0.1, 0.1),
+                          linetype = "dotted", color = "grey50",
+                          linewidth = 0.3) +
       ggplot2::geom_hline(yintercept = 0, linetype = "dashed",
                           color = "grey50") +
       ggplot2::geom_line(linewidth = 0.8) +
@@ -111,6 +125,13 @@ plot.Backtest <- function(x,
       ggplot2::aes(x = .data[["dev"]], y = .data[["ae_err"]],
                    color = .data[["cohort"]], group = .data[["cohort"]])
     ) +
+      ggplot2::annotate("rect",
+                        xmin = -Inf, xmax = Inf,
+                        ymin = -0.1, ymax = 0.1,
+                        fill = "grey60", alpha = 0.12) +
+      ggplot2::geom_hline(yintercept = c(-0.1, 0.1),
+                          linetype = "dotted", color = "grey50",
+                          linewidth = 0.3) +
       ggplot2::geom_hline(yintercept = 0, linetype = "dashed",
                           color = "grey50") +
       ggplot2::geom_line(alpha = 0.6) +
