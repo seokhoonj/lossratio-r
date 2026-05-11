@@ -5,7 +5,7 @@
 # cell noise CV) per coverage were measured once on a real long-term
 # Korean health-insurance portfolio and are baked in here as constants
 # so this script ships without any real-data dependency. SUR carries a
-# regime shift at cohort 18 (2025-07): target LR is scaled down to
+# regime shift at cohort 18 (2024-07): target LR is scaled down to
 # 0.6x to mimic the real portfolio's underwriting tightening.
 #
 # Run from the package root:
@@ -38,7 +38,7 @@ calib <- data.table(
   cell_cv   = c(1.3679838,  1.6660074,  0.8603264,  0.3589258)
 )
 
-# Single regime shift on SUR at cohort idx 18 (2025-07): scale target
+# Single regime shift on SUR at cohort idx 18 (2024-07): scale target
 # LR by 0.6 (1.43 -> ~0.86), reflecting an underwriting tightening.
 shifts <- list("SUR" = list(at = 18L, scale = 0.60))
 
@@ -74,13 +74,13 @@ for (i in seq_len(nrow(calib))) {
 
     cy_u <- ci %/% 12L
     cm_u <- ci %% 12L + 1L
-    uy_m <- as.Date(sprintf("%d-%02d-01", 2024L + cy_u, cm_u))
+    uy_m <- as.Date(sprintf("%d-%02d-01", 2023L + cy_u, cm_u))
 
     for (k in 0L:(K - 1L)) {
       if (ci + k > max_cy_m_idx) break
       cy_c <- (ci + k) %/% 12L
       cm_c <- (ci + k) %% 12L + 1L
-      cy_m <- as.Date(sprintf("%d-%02d-01", 2024L + cy_c, cm_c))
+      cy_m <- as.Date(sprintf("%d-%02d-01", 2023L + cy_c, cm_c))
 
       incr_premium <- prem_base_ci * (1 + rnorm(1L, 0, 0.05))
       incr_premium <- max(incr_premium, 0)

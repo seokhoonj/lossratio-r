@@ -146,13 +146,13 @@ test_that("fit_ata with regime_break drops pre-break cohorts", {
   ata <- build_link(tri, loss_var = "loss")
 
   fit_full <- fit_ata(tri, loss_var = "loss")
-  fit_brk  <- fit_ata(tri, loss_var = "loss", regime_break = "2025-07-01")
+  fit_brk  <- fit_ata(tri, loss_var = "loss", regime_break = "2024-07-01")
 
   # post-break fit should have fewer rows in the underlying ATA pairs
   # and possibly different f_selected for at least one ata_from
   expect_false(identical(fit_full$selected$f_selected,
                          fit_brk$selected$f_selected))
-  expect_equal(fit_brk$regime_break, as.Date("2025-07-01"))
+  expect_equal(fit_brk$regime_break, as.Date("2024-07-01"))
 })
 
 test_that("fit_ata with NULL regime_break is unchanged from default", {
