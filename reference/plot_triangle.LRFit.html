@@ -118,7 +118,8 @@ distinguished by border style.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'LRFit'</span></span>
 <span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"full"</span>, <span class="st">"pred"</span><span class="op">)</span>,</span>
+<span>  region <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pred"</span>, <span class="st">"full"</span>, <span class="st">"data"</span><span class="op">)</span>,</span>
+<span>  view <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"value"</span>, <span class="st">"usage"</span><span class="op">)</span>,</span>
 <span>  label_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"value"</span>, <span class="st">"detail"</span><span class="op">)</span>,</span>
 <span>  label_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  show_maturity <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -139,9 +140,27 @@ distinguished by border style.</p>
 <dd><p>An object of class <code>"LRFit"</code>.</p></dd>
 
 
-<dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
-<dd><p>One of <code>"full"</code> (observed + projected) or <code>"pred"</code>
-(projected cells only). Default is <code>"full"</code>.</p></dd>
+<dt id="arg-region">region<a class="anchor" aria-label="anchor" href="#arg-region"></a></dt>
+<dd><p>Cell region to plot (only used when <code>view = "value"</code>).
+One of <code>"pred"</code> (projected cells only, observed cells masked),
+<code>"full"</code> (observed + projected), or <code>"data"</code> (observed cumulative
+loss / premium / lr from <code>x$data</code> — the raw Triangle, no
+projection). Default is <code>"pred"</code>.</p></dd>
+
+
+<dt id="arg-view">view<a class="anchor" aria-label="anchor" href="#arg-view"></a></dt>
+<dd><p>Plot mode. One of:</p><dl><dt>"value" (default)</dt>
+<dd><p>Per-cell <code>lr</code> heatmap with column-wise
+relative fill. <code>region</code> selects which cells to display.</p></dd>
+
+<dt>"usage"</dt>
+<dd><p>Cell-status heatmap (<code>fit_data</code> / <code>held_out</code> /
+<code>excluded</code> / <code>future</code>) driven by the fit's own metadata
+(<code>x$recent</code>, <code>x$regime_break</code>, <code>x$maturity</code>). <code>region</code> is
+ignored.</p></dd>
+
+
+</dl></dd>
 
 
 <dt id="arg-label-style">label_style<a class="anchor" aria-label="anchor" href="#arg-label-style"></a></dt>

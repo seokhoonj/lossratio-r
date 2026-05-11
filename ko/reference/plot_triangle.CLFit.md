@@ -41,7 +41,8 @@ The `label_style` argument controls cell labels (only meaningful when
 # S3 method for class 'CLFit'
 plot_triangle(
   x,
-  what = c("pred", "full", "data"),
+  region = c("pred", "full", "data"),
+  view = c("value", "usage"),
   label_style = c("value", "cv", "se", "ci"),
   label_size = NULL,
   conf_level = 0.95,
@@ -59,9 +60,27 @@ plot_triangle(
 
   An object of class `"CLFit"`.
 
-- what:
+- region:
 
-  One of `"pred"`, `"full"`, or `"data"`.
+  Cell region to plot (only used when `view = "value"`). One of `"pred"`
+  (default; projected cells only, observed cells masked), `"full"`
+  (observed + projected), or `"data"` (observed from `x$data` — the raw
+  Triangle, no projection).
+
+- view:
+
+  Plot mode. One of:
+
+  "value" (default)
+
+  :   Per-cell metric heatmap. `region` selects which cells to display.
+
+  "usage"
+
+  :   Cell-status heatmap (`fit_data` / `excluded` / `future`) driven by
+      the fit's `x$recent`. `region` is ignored. CL has no
+      `regime_break` / maturity hooks, so the hybrid overlays do not
+      apply.
 
 - label_style:
 

@@ -10,7 +10,8 @@ style.
 # S3 method for class 'LRFit'
 plot_triangle(
   x,
-  what = c("full", "pred"),
+  region = c("pred", "full", "data"),
+  view = c("value", "usage"),
   label_style = c("value", "detail"),
   label_size = NULL,
   show_maturity = TRUE,
@@ -29,10 +30,27 @@ plot_triangle(
 
   An object of class `"LRFit"`.
 
-- what:
+- region:
 
-  One of `"full"` (observed + projected) or `"pred"` (projected cells
-  only). Default is `"full"`.
+  Cell region to plot (only used when `view = "value"`). One of `"pred"`
+  (projected cells only, observed cells masked), `"full"` (observed +
+  projected), or `"data"` (observed cumulative loss / premium / lr from
+  `x$data` — the raw Triangle, no projection). Default is `"pred"`.
+
+- view:
+
+  Plot mode. One of:
+
+  "value" (default)
+
+  :   Per-cell `lr` heatmap with column-wise relative fill. `region`
+      selects which cells to display.
+
+  "usage"
+
+  :   Cell-status heatmap (`fit_data` / `held_out` / `excluded` /
+      `future`) driven by the fit's own metadata (`x$recent`,
+      `x$regime_break`, `x$maturity`). `region` is ignored.
 
 - label_style:
 

@@ -196,7 +196,8 @@ Confidence interval for projected cells.
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'CLFit'</span></span>
 <span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pred"</span>, <span class="st">"full"</span>, <span class="st">"data"</span><span class="op">)</span>,</span>
+<span>  region <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pred"</span>, <span class="st">"full"</span>, <span class="st">"data"</span><span class="op">)</span>,</span>
+<span>  view <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"value"</span>, <span class="st">"usage"</span><span class="op">)</span>,</span>
 <span>  label_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"value"</span>, <span class="st">"cv"</span>, <span class="st">"se"</span>, <span class="st">"ci"</span><span class="op">)</span>,</span>
 <span>  label_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  conf_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
@@ -216,8 +217,26 @@ Confidence interval for projected cells.
 <dd><p>An object of class <code>"CLFit"</code>.</p></dd>
 
 
-<dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
-<dd><p>One of <code>"pred"</code>, <code>"full"</code>, or <code>"data"</code>.</p></dd>
+<dt id="arg-region">region<a class="anchor" aria-label="anchor" href="#arg-region"></a></dt>
+<dd><p>Cell region to plot (only used when <code>view = "value"</code>).
+One of <code>"pred"</code> (default; projected cells only, observed cells
+masked), <code>"full"</code> (observed + projected), or <code>"data"</code> (observed
+from <code>x$data</code> — the raw Triangle, no projection).</p></dd>
+
+
+<dt id="arg-view">view<a class="anchor" aria-label="anchor" href="#arg-view"></a></dt>
+<dd><p>Plot mode. One of:</p><dl><dt>"value" (default)</dt>
+<dd><p>Per-cell metric heatmap. <code>region</code>
+selects which cells to display.</p></dd>
+
+<dt>"usage"</dt>
+<dd><p>Cell-status heatmap (<code>fit_data</code> / <code>excluded</code> /
+<code>future</code>) driven by the fit's <code>x$recent</code>. <code>region</code> is
+ignored. CL has no <code>regime_break</code> / maturity hooks, so the
+hybrid overlays do not apply.</p></dd>
+
+
+</dl></dd>
 
 
 <dt id="arg-label-style">label_style<a class="anchor" aria-label="anchor" href="#arg-label-style"></a></dt>
