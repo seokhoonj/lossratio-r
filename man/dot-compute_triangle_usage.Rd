@@ -23,18 +23,19 @@ forms as \code{\link[=fit_lr]{fit_lr()}} (\code{NULL}, \code{Date}, character, v
 \code{Regime}).}
 
 \item{holdout}{Optional positive integer. When supplied, the last
-\code{holdout} calendar diagonals are flagged \code{"held_out"}. The \code{recent}
+\code{holdout} calendar diagonals are flagged \code{"holdout"}. The \code{recent}
 filter is then evaluated against the post-holdout boundary so the
-recent wedge sits \emph{before} the held_out wedge (no overlap), matching
+recent wedge sits \emph{before} the holdout wedge (no overlap), matching
 \code{backtest()} semantics — \code{fit_fn(masked, recent = N, ...)} operates
 on the masked triangle whose own max_cal is \code{original - holdout}.}
 
-\item{mat_k}{Optional integer. When both \code{recent} and \code{regime_break}
-are provided, the hybrid mask uses \code{mat_k} as the maturity switch:
-cells with \code{dev <= mat_k} apply the cohort cut, cells with
-\code{dev > mat_k} apply the calendar-diagonal cut. When \code{NULL}, the
-hybrid logic falls back to applying both filters jointly (cohort
-cut AND recent cut).}
+\item{mat_k}{Optional integer. The maturity switch as a \emph{target}
+development index (= \code{ata_to} of the first stable link). When
+both \code{recent} and \code{regime_break} are provided, the hybrid mask
+uses \code{mat_k} as the boundary: cells with \code{dev < mat_k} apply the
+cohort cut, cells with \code{dev >= mat_k} apply the calendar-diagonal
+cut. When \code{NULL}, the hybrid logic falls back to applying both
+filters jointly (cohort cut AND recent cut).}
 }
 \value{
 A \code{data.table} with one row per \verb{(group, cohort, dev)} cell
@@ -46,8 +47,8 @@ group columns (if any), \code{cohort}, \code{dev}, \code{.coh_rank}, \code{.cal_
 \description{
 Internal helper that classifies every \verb{(group, cohort, dev)} cell of a
 \code{Triangle} into one of four buckets given a fit-data filter
-configuration: \code{"fit_data"}, \code{"held_out"}, \code{"excluded"}, or \code{"future"}.
+configuration: \code{"used"}, \code{"holdout"}, \code{"unused"}, or \code{"future"}.
 
-Mask precedence: \code{held_out} > \code{fit_data} > \code{excluded} > \code{future}.
+Mask precedence: \code{holdout} > \code{used} > \code{unused} > \code{future}.
 }
 \keyword{internal}

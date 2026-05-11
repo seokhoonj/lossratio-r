@@ -10,7 +10,7 @@
   group_var = character(0),
   cohort_var,
   dev_var,
-  dev_min = NULL
+  dev_split = NULL
 )
 }
 \arguments{
@@ -26,10 +26,11 @@ is returned unchanged.}
 \item{dev_var}{Single column name for the development variable (e.g. \code{dev}
 for \code{Triangle} objects, or \code{ata_from} for \code{ATA}/\code{ED} objects).}
 
-\item{dev_min}{Optional numeric scalar. When supplied, the recent filter
-is applied only to rows where \code{dev_var > dev_min}; rows with
-\code{dev_var <= dev_min} are kept unconditionally (early-dev cells in the
-ED phase of stage-adaptive fits).}
+\item{dev_split}{Optional numeric scalar — the maturity target dev
+(= \code{ata_to}, equivalently the first CL-region dev). When supplied,
+the recent filter is applied only to rows where \code{dev_var >= dev_split}
+(CL region); rows with \code{dev_var < dev_split} (ED region) are kept
+unconditionally.}
 }
 \value{
 A filtered copy of \code{dt} (class preserved), keeping only rows

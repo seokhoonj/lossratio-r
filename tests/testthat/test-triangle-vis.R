@@ -42,14 +42,15 @@ test_that(".compute_triangle_usage hybrid mask matches expected pattern", {
     tri, recent = 18L, regime_break = as.Date("2024-07-01"),
     holdout = 6L, mat_k = 4L
   )
-  pre <- d[cohort < as.Date("2024-07-01") & dev <= 4L & is_held_out == FALSE]
+  # mat_k = 4: ED region is dev < 4. Cohort cut applies only to ED region.
+  pre <- d[cohort < as.Date("2024-07-01") & dev < 4L & is_held_out == FALSE]
   expect_true(nrow(pre) > 0L)
-  expect_true(all(pre$status == "excluded"))
+  expect_true(all(pre$status == "unused"))
 
-  post <- d[cohort >= as.Date("2024-07-01") & dev <= 4L &
+  post <- d[cohort >= as.Date("2024-07-01") & dev < 4L &
             is_held_out == FALSE & is_observed == TRUE]
   expect_true(nrow(post) > 0L)
-  expect_true(all(post$status == "fit_data"))
+  expect_true(all(post$status == "used"))
 })
 
 test_that(".compute_triangle_usage status counts add up", {
@@ -59,7 +60,7 @@ test_that(".compute_triangle_usage status counts add up", {
   d <- lossratio:::.compute_triangle_usage(tri, holdout = 6L)
   expect_equal(sum(d$is_observed), nrow(tri))
   expect_equal(
-    sum(d$status %in% c("fit_data", "held_out", "excluded")),
+    sum(d$status %in% c("used", "holdout", "unused")),
     sum(d$is_observed)
   )
   expect_equal(sum(d$status == "future"), nrow(d) - nrow(tri))

@@ -186,7 +186,7 @@ detect_convergence <- function(triangle,
   # 2) resolve k_star --------------------------------------------------
   if (is.null(k_star)) {
     mat     <- detect_maturity(triangle, loss_var = "lr", weight_var = "premium")
-    k_star  <- suppressWarnings(min(mat$ata_from, na.rm = TRUE))
+    k_star  <- suppressWarnings(min(mat$ata_to, na.rm = TRUE))
     if (!is.finite(k_star))
       stop("Could not derive `k_star` from `detect_maturity()`; ",
            "supply it explicitly.", call. = FALSE)

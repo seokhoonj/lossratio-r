@@ -208,7 +208,7 @@ fit_lr <- function(x,
         )
         regime_break <- NULL
       } else {
-        mat_k <- mat_dt$ata_from
+        mat_k <- mat_dt$ata_to
         if (length(unique(mat_k)) > 1L) {
           warning(
             "regime_break: maturity differs across groups; using max mat_k.",
@@ -217,18 +217,21 @@ fit_lr <- function(x,
         }
         mat_k <- max(mat_k)
 
+        # mat_k = ata_to = first CL-region dev. The break/recent helpers
+        # use `dev_split` with `dev < split` (ED) / `dev >= split` (CL),
+        # so mat_k passes through directly.
         x <- .apply_break_filter(
           x, regime_break,
           group_var = grp_var,
           cohort_var = "cohort", dev_var = "dev",
-          dev_max = mat_k
+          dev_split = mat_k
         )
         if (!is.null(recent)) {
           x <- .apply_recent_filter(
             x, recent,
             group_var = grp_var,
             cohort_var = "cohort", dev_var = "dev",
-            dev_min = mat_k
+            dev_split = mat_k
           )
           # already pre-filtered: avoid double application downstream
           recent <- NULL
@@ -653,10 +656,10 @@ print.LRFit <- function(x, ...) {
     if (length(grp_var)) {
       for (i in seq_len(nrow(mat))) {
         grp_txt <- paste(mat[i, grp_var, with = FALSE], collapse = "/")
-        cat(sprintf("maturity[%s] : %s\n", grp_txt, mat$ata_from[i]))
+        cat(sprintf("maturity[%s] : %s\n", grp_txt, mat$ata_to[i]))
       }
     } else {
-      cat("maturity      :", mat$ata_from[1L], "\n")
+      cat("maturity      :", mat$ata_to[1L], "\n")
     }
   }
 

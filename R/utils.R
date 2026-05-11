@@ -429,10 +429,11 @@ get_recent_weights <- function(weights, recent) {
 #' @param cohort_var Single column name for the cohort variable (e.g. `cohort`).
 #' @param dev_var Single column name for the development variable (e.g. `dev`
 #'   for `Triangle` objects, or `ata_from` for `ATA`/`ED` objects).
-#' @param dev_min Optional numeric scalar. When supplied, the recent filter
-#'   is applied only to rows where `dev_var > dev_min`; rows with
-#'   `dev_var <= dev_min` are kept unconditionally (early-dev cells in the
-#'   ED phase of stage-adaptive fits).
+#' @param dev_split Optional numeric scalar — the maturity target dev
+#'   (= `ata_to`, equivalently the first CL-region dev). When supplied,
+#'   the recent filter is applied only to rows where `dev_var >= dev_split`
+#'   (CL region); rows with `dev_var < dev_split` (ED region) are kept
+#'   unconditionally.
 #'
 #' @return A filtered copy of `dt` (class preserved), keeping only rows
 #'   within the recent-diagonal window.
@@ -440,7 +441,7 @@ get_recent_weights <- function(weights, recent) {
 #' @keywords internal
 .apply_recent_filter <- function(dt, recent,
                                  group_var = character(0),
-                                 cohort_var, dev_var, dev_min = NULL) {
+                                 cohort_var, dev_var, dev_split = NULL) {
 
   if (!data.table::is.data.table(dt))
     stop("`dt` must be a data.table.", call. = FALSE)
@@ -455,9 +456,9 @@ get_recent_weights <- function(weights, recent) {
 
   recent <- as.integer(recent)
 
-  if (!is.null(dev_min)) {
-    if (!is.numeric(dev_min) || length(dev_min) != 1L || is.na(dev_min))
-      stop("`dev_min` must be a single non-NA numeric scalar.", call. = FALSE)
+  if (!is.null(dev_split)) {
+    if (!is.numeric(dev_split) || length(dev_split) != 1L || is.na(dev_split))
+      stop("`dev_split` must be a single non-NA numeric scalar.", call. = FALSE)
   }
 
   out <- data.table::copy(dt)
@@ -469,12 +470,12 @@ get_recent_weights <- function(weights, recent) {
       .SDcols = dev_var]
   out[, .max_cal := max(.cal_idx, na.rm = TRUE), by = group_var]
 
-  if (is.null(dev_min)) {
+  if (is.null(dev_split)) {
     keep <- out[, is.finite(.cal_idx) & is.finite(.max_cal) &
                 .cal_idx > .max_cal - recent]
   } else {
     keep <- out[, is.finite(.cal_idx) & is.finite(.max_cal) &
-                (.cal_idx > .max_cal - recent | .SD[[1L]] <= dev_min),
+                (.cal_idx > .max_cal - recent | .SD[[1L]] < dev_split),
                 .SDcols = dev_var]
   }
 
@@ -516,8 +517,8 @@ get_recent_weights <- function(weights, recent) {
 #'
 #' @description
 #' Drops rows where `coh_var < break_date`. Optionally restrict the filter
-#' to rows with `dev_var <= dev_max` (apply only to ED-phase cells); rows
-#' with `dev_var > dev_max` are kept regardless of cohort.
+#' to rows with `dev_var < dev_split` (the ED region of an SA fit); rows
+#' with `dev_var >= dev_split` (CL region) are kept regardless of cohort.
 #'
 #' @param dt A data.table.
 #' @param break_date The cohort cutoff. Accepts:
@@ -528,16 +529,18 @@ get_recent_weights <- function(weights, recent) {
 #' @param group_var Character vector of group columns (may be empty).
 #' @param cohort_var Single column name for the cohort variable.
 #' @param dev_var Single column name for the development variable.
-#' @param dev_max Optional numeric scalar. When supplied, the cohort filter
-#'   is only applied to rows where `dev_var <= dev_max`; rows with
-#'   `dev_var > dev_max` are kept regardless of cohort.
+#' @param dev_split Optional numeric scalar — the maturity target dev
+#'   (= `ata_to`, equivalently the first CL-region dev). When supplied,
+#'   the cohort filter is only applied to rows where `dev_var < dev_split`
+#'   (ED region); rows with `dev_var >= dev_split` (CL region) are kept
+#'   regardless of cohort.
 #'
 #' @return A filtered copy of `dt` (class preserved).
 #'
 #' @keywords internal
 .apply_break_filter <- function(dt, break_date,
                                 group_var = character(0),
-                                cohort_var, dev_var, dev_max = NULL) {
+                                cohort_var, dev_var, dev_split = NULL) {
 
   if (!data.table::is.data.table(dt))
     stop("`dt` must be a data.table.", call. = FALSE)
@@ -548,9 +551,9 @@ get_recent_weights <- function(weights, recent) {
     return(data.table::copy(dt))
   }
 
-  if (!is.null(dev_max)) {
-    if (!is.numeric(dev_max) || length(dev_max) != 1L || is.na(dev_max))
-      stop("`dev_max` must be a single non-NA numeric scalar.", call. = FALSE)
+  if (!is.null(dev_split)) {
+    if (!is.numeric(dev_split) || length(dev_split) != 1L || is.na(dev_split))
+      stop("`dev_split` must be a single non-NA numeric scalar.", call. = FALSE)
   }
 
   coh_class <- class(dt[[cohort_var]])
@@ -561,14 +564,14 @@ get_recent_weights <- function(weights, recent) {
 
   out <- data.table::copy(dt)
 
-  if (is.null(dev_max)) {
+  if (is.null(dev_split)) {
     keep <- out[, .SD[[1L]] >= bd, .SDcols = cohort_var]
   } else {
-    # Drop rows where coh < bd AND dev <= dev_max.
-    # Keep if coh >= bd OR dev > dev_max.
+    # Drop rows where coh < bd AND dev < dev_split.
+    # Keep if coh >= bd OR dev >= dev_split.
     coh_vals <- out[[cohort_var]]
     dev_vals <- out[[dev_var]]
-    keep <- (coh_vals >= bd) | (dev_vals > dev_max)
+    keep <- (coh_vals >= bd) | (dev_vals >= dev_split)
   }
 
   out <- out[keep]

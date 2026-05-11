@@ -10,7 +10,7 @@
   group_var = character(0),
   cohort_var,
   dev_var,
-  dev_max = NULL
+  dev_split = NULL
 )
 }
 \arguments{
@@ -30,16 +30,18 @@
 
 \item{dev_var}{Single column name for the development variable.}
 
-\item{dev_max}{Optional numeric scalar. When supplied, the cohort filter
-is only applied to rows where \code{dev_var <= dev_max}; rows with
-\code{dev_var > dev_max} are kept regardless of cohort.}
+\item{dev_split}{Optional numeric scalar — the maturity target dev
+(= \code{ata_to}, equivalently the first CL-region dev). When supplied,
+the cohort filter is only applied to rows where \code{dev_var < dev_split}
+(ED region); rows with \code{dev_var >= dev_split} (CL region) are kept
+regardless of cohort.}
 }
 \value{
 A filtered copy of \code{dt} (class preserved).
 }
 \description{
 Drops rows where \code{coh_var < break_date}. Optionally restrict the filter
-to rows with \code{dev_var <= dev_max} (apply only to ED-phase cells); rows
-with \code{dev_var > dev_max} are kept regardless of cohort.
+to rows with \code{dev_var < dev_split} (the ED region of an SA fit); rows
+with \code{dev_var >= dev_split} (CL region) are kept regardless of cohort.
 }
 \keyword{internal}

@@ -24,7 +24,7 @@
 \describe{
 \item{"value"}{(default) Per-cell metric heatmap controlled by
 \code{value_var}, \code{label_style}, \code{amount_divisor}, \code{nrow}, \code{ncol}.}
-\item{"usage"}{Cell-status heatmap (fit_data / held_out / excluded /
+\item{"usage"}{Cell-status heatmap (used / holdout / unused /
 future). Accepts \code{recent}, \code{regime_break}, \code{holdout}, \code{maturity_args}
 via \code{...}. See \code{vignette("regime-break-filter")} for details.}
 }}

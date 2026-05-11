@@ -32,8 +32,8 @@ projection). Default is \code{"pred"}.}
 \describe{
 \item{"value" (default)}{Per-cell \code{lr} heatmap with column-wise
 relative fill. \code{region} selects which cells to display.}
-\item{"usage"}{Cell-status heatmap (\code{fit_data} / \code{held_out} /
-\code{excluded} / \code{future}) driven by the fit's own metadata
+\item{"usage"}{Cell-status heatmap (\code{used} / \code{holdout} /
+\code{unused} / \code{future}) driven by the fit's own metadata
 (\code{x$recent}, \code{x$regime_break}, \code{x$maturity}). \code{region} is
 ignored.}
 }}

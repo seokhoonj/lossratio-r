@@ -221,8 +221,8 @@ plot.LRFit <- function(x,
 #'   \describe{
 #'     \item{"value" (default)}{Per-cell `lr` heatmap with column-wise
 #'       relative fill. `region` selects which cells to display.}
-#'     \item{"usage"}{Cell-status heatmap (`fit_data` / `held_out` /
-#'       `excluded` / `future`) driven by the fit's own metadata
+#'     \item{"usage"}{Cell-status heatmap (`used` / `holdout` /
+#'       `unused` / `future`) driven by the fit's own metadata
 #'       (`x$recent`, `x$regime_break`, `x$maturity`). `region` is
 #'       ignored.}
 #'   }
@@ -265,7 +265,7 @@ plot_triangle.LRFit <- function(x,
   label_style <- match.arg(label_style)
   theme       <- match.arg(theme)
 
-  # view = "usage": cell-status heatmap (fit_data / held_out / excluded /
+  # view = "usage": cell-status heatmap (used / holdout / unused /
   # future), driven by the fit's own metadata (`recent`, `regime_break`,
   # `maturity`). Region is irrelevant in usage view.
   if (view == "usage") {
