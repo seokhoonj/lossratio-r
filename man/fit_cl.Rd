@@ -10,8 +10,9 @@ fit_cl(
   loss_var = "loss",
   weight_var = NULL,
   alpha = 1,
-  sigma_method = c("min_last2", "locf", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
+  regime_break = NULL,
   maturity_args = NULL,
   tail = FALSE
 )
@@ -32,7 +33,7 @@ Default is \code{NULL}.}
 \code{\link[=fit_ata]{fit_ata()}}. Default is \code{1}.}
 
 \item{sigma_method}{Sigma extrapolation method passed to \code{\link[=fit_ata]{fit_ata()}}.
-One of \code{"min_last2"} (default), \code{"locf"}, or \code{"loglinear"}. Only
+One of \code{"locf"} (default), \code{"min_last2"}, or \code{"loglinear"}. Only
 relevant when \code{method = "mack"}.}
 
 \item{recent}{Optional positive integer. When supplied, only the most

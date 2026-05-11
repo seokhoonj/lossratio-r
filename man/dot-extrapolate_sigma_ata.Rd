@@ -4,13 +4,13 @@
 \alias{.extrapolate_sigma_ata}
 \title{Extrapolate missing sigma values for age-to-age links}
 \usage{
-.extrapolate_sigma_ata(x, method = c("min_last2", "locf", "loglinear"))
+.extrapolate_sigma_ata(x, method = c("locf", "min_last2", "loglinear"))
 }
 \arguments{
 \item{x}{A \code{data.table} with \code{ata_from} and \code{sigma} columns, typically
 the output of \code{\link[=.filter_ata]{.filter_ata()}}.}
 
-\item{method}{One of \code{"min_last2"} (default), \code{"locf"}, or
+\item{method}{One of \code{"locf"} (default), \code{"min_last2"}, or
 \code{"loglinear"}.}
 }
 \value{

@@ -11,7 +11,7 @@ fit_ed(
   method = c("basic", "mack"),
   alpha = 1,
   na_method = c("locf", "zero", "none"),
-  sigma_method = c("min_last2", "locf", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   regime_break = NULL,
   ...
@@ -36,7 +36,7 @@ of \code{"zero"} (default, set \code{NA} to 0 meaning no further development)
 or \code{"locf"} or \code{"none"}.}
 
 \item{sigma_method}{Method used to extrapolate \code{sigma}. One of
-\code{"min_last2"} (default), \code{"locf"}, or \code{"loglinear"}.}
+\code{"locf"} (default), \code{"min_last2"}, or \code{"loglinear"}.}
 
 \item{recent}{Optional positive integer. When supplied, only the most
 recent \code{recent} periods are used for estimation. Default is \code{NULL}.}

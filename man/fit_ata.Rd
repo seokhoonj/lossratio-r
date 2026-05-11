@@ -10,7 +10,7 @@ fit_ata(
   weight_var = NULL,
   alpha = 1,
   na_method = c("locf", "none"),
-  sigma_method = c("min_last2", "locf", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   regime_break = NULL,
   maturity_args = NULL,
@@ -34,7 +34,7 @@ is \code{1}.}
 \code{"locf"} (default) or \code{"none"}. Passed to \code{\link[=.filter_ata]{.filter_ata()}}.}
 
 \item{sigma_method}{Method used to extrapolate \code{sigma} for links where it
-cannot be estimated. One of \code{"min_last2"} (default), \code{"locf"}, or
+cannot be estimated. One of \code{"locf"} (default), \code{"min_last2"}, or
 \code{"loglinear"}. Passed to \code{\link[=.extrapolate_sigma_ata]{.extrapolate_sigma_ata()}}.}
 
 \item{recent}{Optional positive integer. When supplied, only the most

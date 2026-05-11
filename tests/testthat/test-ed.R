@@ -32,8 +32,13 @@ test_that("loss_delta == loss_to - loss_from", {
                tolerance = 1e-6)
 })
 
-test_that("build_link errors when loss_var == premium_var", {
-  expect_error(build_link(tri, loss_var = "loss", premium_var = "loss"))
+test_that("build_link warns (self-anchored) when loss_var == premium_var", {
+  # Self-anchored ED is mathematically equivalent to chain ladder on
+  # the same column (f_k = 1 + g_k). Allowed, but warned.
+  expect_warning(
+    build_link(tri, loss_var = "loss", premium_var = "loss"),
+    "self-anchored"
+  )
 })
 
 # fit_ed -----------------------------------------------------------------

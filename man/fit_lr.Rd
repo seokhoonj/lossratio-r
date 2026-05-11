@@ -11,12 +11,14 @@ fit_lr(
   premium_var = "premium",
   loss_alpha = 1,
   premium_alpha = 1,
+  premium_method = c("cl", "ed"),
   delta_method = c("simple", "full"),
-  rho = 0,
+  rho = 0.95,
   conf_level = 0.95,
-  sigma_method = c("min_last2", "locf", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   regime_break = NULL,
+  premium_regime_break = regime_break,
   maturity_args = NULL,
   bootstrap = FALSE,
   B = 1000,
@@ -53,7 +55,10 @@ loss-exposure correlation:
 
 \item{rho}{Numeric scalar in \verb{(-1, 1)}; assumed correlation between
 ultimate loss and ultimate exposure. Only used when
-\code{delta_method = "full"}. Default is \code{0}.}
+\code{delta_method = "full"}. Default is \code{0.95}, matching the strong
+positive correlation typically observed between cumulative loss
+and cumulative exposure in long-tail health portfolios (analogous
+to the paid/incurred correlation used in Munich chain ladder).}
 
 \item{conf_level}{Confidence level used for \code{ci_lower}/\code{ci_upper} in
 the cohort summary. Default is \code{0.95}.}

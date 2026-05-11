@@ -48,7 +48,10 @@
 #'   }
 #' @param rho Numeric scalar in `(-1, 1)`; assumed correlation between
 #'   ultimate loss and ultimate exposure. Only used when
-#'   `delta_method = "full"`. Default is `0`.
+#'   `delta_method = "full"`. Default is `0.95`, matching the strong
+#'   positive correlation typically observed between cumulative loss
+#'   and cumulative exposure in long-tail health portfolios (analogous
+#'   to the paid/incurred correlation used in Munich chain ladder).
 #' @param conf_level Confidence level used for `ci_lower`/`ci_upper` in
 #'   the cohort summary. Default is `0.95`.
 #' @param sigma_method Sigma extrapolation method. One of `"min_last2"`
@@ -109,21 +112,24 @@ fit_lr <- function(x,
                    premium_var     = "premium",
                    loss_alpha      = 1,
                    premium_alpha   = 1,
+                   premium_method  = c("cl", "ed"),
                    delta_method    = c("simple", "full"),
-                   rho             = 0,
+                   rho             = 0.95,
                    conf_level      = 0.95,
                    sigma_method    = c("locf", "min_last2", "loglinear"),
                    recent          = NULL,
                    regime_break    = NULL,
+                   premium_regime_break = regime_break,
                    maturity_args   = NULL,
                    bootstrap       = FALSE,
                    B               = 1000,
                    seed            = NULL) {
 
   .assert_triangle_input(x, "fit_lr()")
-  sigma_method <- match.arg(sigma_method)
-  method       <- match.arg(method)
-  delta_method <- match.arg(delta_method)
+  sigma_method   <- match.arg(sigma_method)
+  method         <- match.arg(method)
+  delta_method   <- match.arg(delta_method)
+  premium_method <- match.arg(premium_method)
 
   if (!is.logical(bootstrap) || length(bootstrap) != 1L || is.na(bootstrap))
     stop("`bootstrap` must be a single non-missing logical value.",
@@ -158,7 +164,12 @@ fit_lr <- function(x,
   if (length(p_var) != 1L)
     stop("`premium_var` must resolve to exactly one column.", call. = FALSE)
   if (l_var == p_var)
-    stop("`loss_var` must differ from `premium_var`.", call. = FALSE)
+    warning(
+      "`loss_var` equals `premium_var` (\"", l_var, "\") -- self-anchored ",
+      "fit. Equivalent to chain ladder on the same column (f_k = 1 + g_k); ",
+      "use only when intentional.",
+      call. = FALSE
+    )
 
   grp_var <- attr(x, "group_var")
   coh_var <- attr(x, "cohort_var")
@@ -243,22 +254,33 @@ fit_lr <- function(x,
     # fit_ata / fit_ed below for a simple cohort cut.
   }
 
-  # 2) fit exposure chain ladder ------------------------------------------
-  premium_ata_fit <- fit_ata(
+  # 2) fit exposure chain ladder (delegated to fit_premium) -----------------
+  # `fit_premium()` always computes the Mack f_var. The CL vs ED choice
+  # only changes the cumulative variance recursion stored in $full$se_proj;
+  # the link-level `selected` (f_selected, sigma2, f_var) is identical
+  # under both methods.
+  premium_fit <- fit_premium(
     x,
-    loss_var    = p_var,
+    target       = p_var,
+    method       = premium_method,
     alpha        = premium_alpha,
     sigma_method = sigma_method,
-    regime_break = regime_break
+    regime_break = premium_regime_break
   )
-
-  # when delta_method = "full", compute exposure factor variance
-  if (delta_method == "full") {
-    premium_ata_fit$selected <- .mack_f_var(
-      ata_fit = premium_ata_fit,
-      alpha   = premium_alpha
-    )
-  }
+  # Wrap as an ATAFit-shaped object for compatibility with the downstream
+  # .expand_grid() / column-join code paths.
+  premium_ata_fit <- structure(
+    list(
+      selected     = premium_fit$selected,
+      link         = premium_fit$link,
+      data         = premium_fit$data,
+      method       = "mack",
+      alpha        = premium_alpha,
+      sigma_method = sigma_method,
+      maturity     = NULL
+    ),
+    class = "ATAFit"
+  )
 
   # 3) fit loss chain ladder ----------------------------------------------
   loss_ata_fit <- fit_ata(
@@ -431,35 +453,28 @@ fit_lr <- function(x,
   )]
 
   # 16) exposure variance (only for full delta method) ---------------------
+  # Delegated to fit_premium(): its $full carries proc_se2 / param_se2 /
+  # total_se2 (and corresponding SE/CV columns) under either the CL-
+  # multiplicative or ED-additive recursion as selected by
+  # `premium_method`. We join those columns under the `exp_*` alias used
+  # by the LR delta-method block below.
   if (delta_method == "full") {
-    full[, `:=`(
-      exp_proc_se2  = .mack_proc_var(
-        value_proj = premium_proj,
-        f_selected = exp_f_selected,
-        sigma2     = exp_sigma2,
-        last_obs   = last_obs_exp[1L],
-        alpha      = premium_alpha
-      ),
-      exp_param_se2 = .mack_param_var(
-        value_proj = premium_proj,
-        f_selected = exp_f_selected,
-        f_var      = exp_f_var,
-        last_obs   = last_obs_exp[1L]
-      )
-    ), by = c(grp_var, "cohort")]
-
-    full[, exp_total_se2 := exp_proc_se2 + exp_param_se2]
-
-    full[, `:=`(
-      exp_proc_se  = sqrt(exp_proc_se2),
-      exp_param_se = sqrt(exp_param_se2),
-      se_exposure  = sqrt(exp_total_se2)
-    )]
-
-    full[, cv_exposure := data.table::fifelse(
-      is.finite(premium_proj) & premium_proj != 0,
-      se_exposure / abs(premium_proj), NA_real_
-    )]
+    pf_full <- data.table::as.data.table(premium_fit$full)
+    pf_keep_keys <- intersect(c(grp_var, "cohort", "dev"), names(pf_full))
+    pf_join <- pf_full[, .SD,
+      .SDcols = c(pf_keep_keys,
+                  "proc_se2", "param_se2", "total_se2",
+                  "proc_se",  "param_se",  "se_proj",
+                  "cv_proj")
+    ]
+    data.table::setnames(
+      pf_join,
+      c("proc_se2",     "param_se2",     "total_se2",
+        "proc_se",      "param_se",      "se_proj",      "cv_proj"),
+      c("exp_proc_se2", "exp_param_se2", "exp_total_se2",
+        "exp_proc_se",  "exp_param_se",  "se_exposure",  "cv_exposure")
+    )
+    full <- pf_join[full, on = pf_keep_keys]
   }
 
   # 17) loss ratio projection -----------------------------------------------

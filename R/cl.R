@@ -102,6 +102,7 @@ fit_cl <- function(x,
                    alpha         = 1,
                    sigma_method  = c("locf", "min_last2", "loglinear"),
                    recent        = NULL,
+                   regime_break  = NULL,
                    maturity_args = NULL,
                    tail          = FALSE) {
 
@@ -144,6 +145,7 @@ fit_cl <- function(x,
     alpha         = alpha,
     sigma_method  = sigma_method,
     recent        = recent,
+    regime_break  = regime_break,
     maturity_args = maturity_args
   )
 

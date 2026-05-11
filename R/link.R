@@ -119,7 +119,12 @@ build_link <- function(x,
       stop("`premium_var` must be one of 'loss', 'premium', or 'lr'.",
            call. = FALSE)
     if (p_var == l_var)
-      stop("`premium_var` must differ from `loss_var`.", call. = FALSE)
+      warning(
+        "`premium_var` equals `loss_var` (\"", l_var, "\") -- self-anchored ",
+        "fit. Mathematically equivalent to chain ladder on the same column ",
+        "(f_k = 1 + g_k); use only when intentional.",
+        call. = FALSE
+      )
   } else {
     p_var <- NULL
   }
