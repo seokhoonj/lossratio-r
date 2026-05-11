@@ -55,7 +55,7 @@ tri_sur <- build_triangle(experience[coverage == "SUR"], coverage)
 
 # Single break date
 fit_lr(tri_sur, method = "sa", recent = 18L,
-       regime_break = "2025-07-01")
+       regime_break = "2024-07-01")
 
 # Regime object directly
 reg <- detect_regime(tri_sur)
@@ -63,7 +63,7 @@ fit_lr(tri_sur, method = "sa", recent = 18L, regime_break = reg)
 
 # Vector — latest is used (= 2024-04-01)
 fit_lr(tri_sur, method = "sa",
-       regime_break = c("2023-06-01", "2025-07-01"))
+       regime_break = c("2022-06-01", "2024-07-01"))
 ```
 
 In simple modes (`fit_ata`, `fit_ed`, or `fit_lr(method ∈ {"ed","cl"})`)
@@ -90,9 +90,9 @@ configuration feeds to `fit_lr`:
 
 plot_triangle(tri_sur, type = "usage", holdout = 6L)                                 # full
 plot_triangle(tri_sur, type = "usage", recent = 12L, holdout = 6L)                   # recent
-plot_triangle(tri_sur, type = "usage", regime_break = "2025-07-01", holdout = 6L)    # break
+plot_triangle(tri_sur, type = "usage", regime_break = "2024-07-01", holdout = 6L)    # break
 plot_triangle(tri_sur, type = "usage", recent = 12L,
-              regime_break = "2025-07-01", holdout = 6L)                             # hybrid
+              regime_break = "2024-07-01", holdout = 6L)                             # hybrid
 ```
 
 ![Cells used by each filter configuration on the SUR triangle. Blue =
@@ -167,7 +167,7 @@ fits <- lapply(unique(exp$coverage), function(g) {
 ```
 
 A future extension may accept
-`regime_break = list(SUR = "2025-07-01", CAN = "2023-12-01")`. Today
+`regime_break = list(SUR = "2024-07-01", CAN = "2022-12-01")`. Today
 only scalar / vector / `Regime` are supported.
 
 ## Limitations
