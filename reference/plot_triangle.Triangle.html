@@ -5,7 +5,7 @@ For ratio metrics (lr, lr), labels can show either the ratio alone or
 the ratio together with the associated loss / risk premium amounts.
 For amount metrics (loss, loss_incr, premium, premium_incr, margin, margin_incr),
 labels show the selected amount only.
-For proportion metrics (loss_prop, loss_incr_prop, premium_prop, premium_incr_prop),
+For proportion metrics (loss_share, loss_incr_share, premium_share, premium_incr_share),
 labels are displayed as percentages.
 The loss ratio is defined as:
 $$lr = loss / premium$$
@@ -15,7 +15,7 @@ For ratio metrics (lr, lr), labels can show either the ratio alone or
 the ratio together with the associated loss / risk premium amounts.
 For amount metrics (loss, loss_incr, premium, premium_incr, margin, margin_incr),
 labels show the selected amount only.
-For proportion metrics (loss_prop, loss_incr_prop, premium_prop, premium_incr_prop),
+For proportion metrics (loss_share, loss_incr_share, premium_share, premium_incr_share),
 labels are displayed as percentages.
 The loss ratio is defined as:
 $$lr = loss / premium$$
@@ -130,7 +130,7 @@ period and dev dimensions, and each cell displays the selected metric.</p>
 the ratio together with the associated loss / risk premium amounts.</p>
 <p>For amount metrics (<code>loss</code>, <code>loss_incr</code>, <code>premium</code>, <code>premium_incr</code>, <code>margin</code>, <code>margin_incr</code>),
 labels show the selected amount only.</p>
-<p>For proportion metrics (<code>loss_prop</code>, <code>loss_incr_prop</code>, <code>premium_prop</code>, <code>premium_incr_prop</code>),
+<p>For proportion metrics (<code>loss_share</code>, <code>loss_incr_share</code>, <code>premium_share</code>, <code>premium_incr_share</code>),
 labels are displayed as percentages.</p>
 <p>The loss ratio is defined as:
 $$lr = loss / premium$$</p>
@@ -180,7 +180,7 @@ via <code>...</code>. See <code><a href="../articles/regime-break-filter.html">v
 <dd><p>A single metric to plot. Must be one of:
 <code>"lr"</code>, <code>"lr_incr"</code>,
 <code>"loss"</code>, <code>"loss_incr"</code>, <code>"premium"</code>, <code>"premium_incr"</code>, <code>"margin"</code>, <code>"margin_incr"</code>,
-<code>"loss_prop"</code>, <code>"loss_incr_prop"</code>, <code>"premium_prop"</code>, or <code>"premium_incr_prop"</code>.</p></dd>
+<code>"loss_share"</code>, <code>"loss_incr_share"</code>, <code>"premium_share"</code>, or <code>"premium_incr_share"</code>.</p></dd>
 
 
 <dt id="arg-label-style">label_style<a class="anchor" aria-label="anchor" href="#arg-label-style"></a></dt>
@@ -248,8 +248,8 @@ displayed in units of 100 million KRW.</p>
 <span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, value_var <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, value_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, value_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, value_var <span class="op">=</span> <span class="st">"loss_prop"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, value_var <span class="op">=</span> <span class="st">"premium_prop"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, value_var <span class="op">=</span> <span class="st">"loss_share"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, value_var <span class="op">=</span> <span class="st">"premium_share"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, label_style <span class="op">=</span> <span class="st">"value"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>

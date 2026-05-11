@@ -120,12 +120,12 @@ every step generalises to multi-group input.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;CLFit&gt;</span></span>
 <span><span class="co">#&gt; method      : mack </span></span>
-<span><span class="co">#&gt; loss_var   : loss </span></span>
-<span><span class="co">#&gt; weight_var  : none </span></span>
+<span><span class="co">#&gt; target      : loss </span></span>
+<span><span class="co">#&gt; weight      : none </span></span>
 <span><span class="co">#&gt; alpha       : 1 </span></span>
 <span><span class="co">#&gt; sigma_method: locf </span></span>
 <span><span class="co">#&gt; recent      : all </span></span>
@@ -133,63 +133,44 @@ every step generalises to multi-group input.</p>
 <span><span class="co">#&gt; tail_factor : 1 </span></span>
 <span><span class="co">#&gt; groups      : coverage </span></span>
 <span><span class="co">#&gt; periods     : 36</span></span></code></pre></div>
-<p><code>loss_var</code> selects the cumulative column to project —
+<p><code>target</code> selects the cumulative column to project —
 typically <code>"loss"</code> (cumulative loss) for reserving, or
 <code>"premium"</code> (cumulative risk premium) for exposure
 projection.</p>
 </div>
 <div class="section level2">
-<h2 id="method-basic-vs-mack">Method: basic vs Mack<a class="anchor" aria-label="anchor" href="#method-basic-vs-mack"></a>
+<h2 id="mack-chain-ladder">Mack chain ladder<a class="anchor" aria-label="anchor" href="#mack-chain-ladder"></a>
 </h2>
-<p>Two estimation methods are available:</p>
-<table class="table">
-<thead><tr class="header">
-<th><code>method</code></th>
-<th>What it computes</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><code>"basic"</code></td>
-<td>Point projection only (selected age-to-age factors)</td>
-</tr>
-<tr class="even">
-<td><code>"mack"</code></td>
-<td>Point projection + factor / process / parameter SE</td>
-</tr>
-</tbody>
-</table>
+<p><code><a href="../reference/fit_cl.html">fit_cl()</a></code> implements the Mack (1993) chain ladder.
+Adjacent development links are summarised by age-to-age factors
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mi>k</mi></msub><mo>=</mo><msubsup><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mi>/</mi><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup></mrow><annotation encoding="application/x-tex">f_k = C^L_{k+1} / C^L_k</annotation></semantics></math>
+— selected per link and then chained to project each cohort forward to
+ultimate. On top of the point projection, Mack’s formulae decompose the
+prediction variance into process and parameter components, yielding
+per-cell standard errors and confidence intervals.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cl_basic</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"basic"</span><span class="op">)</span></span>
-<span><span class="va">cl_mack</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">cl_mack</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">cl_basic</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "call"          "data"          "method"        "group_var"    </span></span>
-<span><span class="co">#&gt;  [5] "cohort_var"    "dev_var"       "loss_var"      "full"         </span></span>
-<span><span class="co">#&gt;  [9] "pred"          "link"          "summary"       "factor"       </span></span>
-<span><span class="co">#&gt; [13] "selected"      "maturity"      "alpha"         "sigma_method" </span></span>
-<span><span class="co">#&gt; [17] "weight_var"    "recent"        "use_maturity"  "maturity_args"</span></span>
-<span><span class="co">#&gt; [21] "tail"          "tail_factor"</span></span>
-<span></span>
-<span><span class="co"># Mack adds variance estimates to $full and $summary</span></span>
+<span><span class="co"># $full and $summary carry both the projection and its variance</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cl_mack</span><span class="op">$</span><span class="va">summary</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    coverage     cohort     latest   loss_ult   reserve  proc_se param_se</span></span>
-<span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;    &lt;num&gt;    &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      SUR 2023-01-01  410248523  410248523         0        0        0</span></span>
-<span><span class="co">#&gt; 2:      SUR 2023-02-01  976330446 1001441304  25110859  2751818  4299411</span></span>
-<span><span class="co">#&gt; 3:      SUR 2023-03-01  978486044 1026151241  47665197  3967868  5021194</span></span>
-<span><span class="co">#&gt; 4:      SUR 2023-04-01 2029909922 2186771224 156861302  6942936 11297884</span></span>
-<span><span class="co">#&gt; 5:      SUR 2023-05-01  624219442  697669308  73449866  4455635  3696917</span></span>
-<span><span class="co">#&gt; 6:      SUR 2023-06-01  802880717  931393933 128513217 17869565  8694892</span></span>
-<span><span class="co">#&gt;          se          cv</span></span>
-<span><span class="co">#&gt;       &lt;num&gt;       &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:        0 0.000000000</span></span>
-<span><span class="co">#&gt; 2:  5104649 0.005097302</span></span>
-<span><span class="co">#&gt; 3:  6399717 0.006236621</span></span>
-<span><span class="co">#&gt; 4: 13260714 0.006064061</span></span>
-<span><span class="co">#&gt; 5:  5789636 0.008298539</span></span>
-<span><span class="co">#&gt; 6: 19872657 0.021336468</span></span></code></pre></div>
-<p><code>method = "mack"</code> enables the projection plot’s confidence
-bands (<code>show_interval = TRUE</code>):</p>
+<span><span class="co">#&gt;    coverage     cohort     latest   loss_ult   reserve target_proc_se</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;          &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:      SUR 2023-01-01  410248523  410248523         0              0</span></span>
+<span><span class="co">#&gt; 2:      SUR 2023-02-01  976330446 1001441304  25110859        2751818</span></span>
+<span><span class="co">#&gt; 3:      SUR 2023-03-01  978486044 1026151241  47665197        3967868</span></span>
+<span><span class="co">#&gt; 4:      SUR 2023-04-01 2029909922 2186771224 156861302        6942936</span></span>
+<span><span class="co">#&gt; 5:      SUR 2023-05-01  624219442  697669308  73449866        4455635</span></span>
+<span><span class="co">#&gt; 6:      SUR 2023-06-01  802880717  931393933 128513217       17869565</span></span>
+<span><span class="co">#&gt;    target_param_se target_total_se target_total_cv</span></span>
+<span><span class="co">#&gt;              &lt;num&gt;           &lt;num&gt;           &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:               0               0     0.000000000</span></span>
+<span><span class="co">#&gt; 2:         4299411         5104649     0.005097302</span></span>
+<span><span class="co">#&gt; 3:         5021194         6399717     0.006236621</span></span>
+<span><span class="co">#&gt; 4:        11297884        13260714     0.006064061</span></span>
+<span><span class="co">#&gt; 5:         3696917         5789636     0.008298539</span></span>
+<span><span class="co">#&gt; 6:         8694892        19872657     0.021336468</span></span></code></pre></div>
+<p>The projection plot’s confidence bands
+(<code>show_interval = TRUE</code>) use those variance estimates:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cl_mack</span>, type <span class="op">=</span> <span class="st">"projection"</span>, show_interval <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="chain-ladder-reserving_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="100%"></p>
@@ -201,10 +182,10 @@ bands (<code>show_interval = TRUE</code>):</p>
 developing, an extrapolated tail factor estimates ultimate:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Log-linear extrapolation from the selected ATA factors</span></span>
-<span><span class="va">cl_tail</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, tail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">cl_tail</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, tail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Or supply a literal tail factor</span></span>
-<span><span class="va">cl_tail</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, tail <span class="op">=</span> <span class="fl">1.025</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">cl_tail</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, tail <span class="op">=</span> <span class="fl">1.025</span><span class="op">)</span></span></code></pre></div>
 <p>The extrapolation fits
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>f</mi><mi>k</mi></msub><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo>∼</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">\log(f_k - 1) \sim k</annotation></semantics></math>
 to projected factors and extends the projection by the cumulative
@@ -220,7 +201,7 @@ mature region only:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cl_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span></span>
 <span>  <span class="va">tri</span>,</span>
-<span>  loss_var     <span class="op">=</span> <span class="st">"loss"</span>,</span>
+<span>  target        <span class="op">=</span> <span class="st">"loss"</span>,</span>
 <span>  method        <span class="op">=</span> <span class="st">"mack"</span>,</span>
 <span>  maturity_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>max_cv <span class="op">=</span> <span class="fl">0.10</span>, max_rse <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
@@ -246,102 +227,102 @@ mature region only:</p>
 variance into:</p>
 <ul>
 <li>
-<code>proc_se</code> — process variance, from
+<code>target_proc_se</code> — process variance, from
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>σ</mi><mi>k</mi><mn>2</mn></msubsup><annotation encoding="application/x-tex">\sigma^2_k</annotation></semantics></math>
 (residual link variance per development period).</li>
 <li>
-<code>param_se</code> — parameter variance, from the uncertainty of
-the selected age-to-age factors
+<code>target_param_se</code> — parameter variance, from the
+uncertainty of the selected age-to-age factors
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>f</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><annotation encoding="application/x-tex">\hat{f}_k</annotation></semantics></math>.</li>
 <li>
-<code>se</code> — total standard error,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msqrt><mrow><msup><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">s</mi><mi mathvariant="normal">e</mi></mrow><mn>2</mn></msup><mo>+</mo><msup><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">s</mi><mi mathvariant="normal">e</mi></mrow><mn>2</mn></msup></mrow></msqrt><annotation encoding="application/x-tex">\sqrt{\mathrm{proc\_se}^2 + \mathrm{param\_se}^2}</annotation></semantics></math>.</li>
+<code>target_total_se</code> — total standard error,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msqrt><mrow><msup><mrow><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">g</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">s</mi><mi mathvariant="normal">e</mi></mrow><mn>2</mn></msup><mo>+</mo><msup><mrow><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">g</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">s</mi><mi mathvariant="normal">e</mi></mrow><mn>2</mn></msup></mrow></msqrt><annotation encoding="application/x-tex">\sqrt{\mathrm{target\_proc\_se}^2 + \mathrm{target\_param\_se}^2}</annotation></semantics></math>.</li>
 <li>
-<code>cv</code> — coefficient of variation,
-<code>se / value_proj</code>.</li>
+<code>target_total_cv</code> — coefficient of variation,
+<code>target_total_se / target_proj</code>.</li>
 </ul>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cl_mack</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve   proc_se param_se</span></span>
-<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;    &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:      SUR 2023-01-01  410248523  410248523          0         0        0</span></span>
-<span><span class="co">#&gt;  2:      SUR 2023-02-01  976330446 1001441304   25110859   2751818  4299411</span></span>
-<span><span class="co">#&gt;  3:      SUR 2023-03-01  978486044 1026151241   47665197   3967868  5021194</span></span>
-<span><span class="co">#&gt;  4:      SUR 2023-04-01 2029909922 2186771224  156861302   6942936 11297884</span></span>
-<span><span class="co">#&gt;  5:      SUR 2023-05-01  624219442  697669308   73449866   4455635  3696917</span></span>
-<span><span class="co">#&gt;  6:      SUR 2023-06-01  802880717  931393933  128513217  17869565  8694892</span></span>
-<span><span class="co">#&gt;  7:      SUR 2023-07-01 2539141550 3050990158  511848609  35918003 30501064</span></span>
-<span><span class="co">#&gt;  8:      SUR 2023-08-01  393678329  488218204   94539875  15583801  5072721</span></span>
-<span><span class="co">#&gt;  9:      SUR 2023-09-01 1364052543 1751869309  387816766  38001618 20827314</span></span>
-<span><span class="co">#&gt; 10:      SUR 2023-10-01  979266044 1311793844  332527800  38496097 16992220</span></span>
-<span><span class="co">#&gt; 11:      SUR 2023-11-01  604685680  848103124  243417444  35719580 11901733</span></span>
-<span><span class="co">#&gt; 12:      SUR 2023-12-01 1026345365 1497869026  471523662  51405333 22008504</span></span>
-<span><span class="co">#&gt; 13:      SUR 2024-01-01 1912177598 2901492850  989315252  75674312 43971809</span></span>
-<span><span class="co">#&gt; 14:      SUR 2024-02-01  733902485 1160045952  426143467  51719398 18269126</span></span>
-<span><span class="co">#&gt; 15:      SUR 2024-03-01  415459872  686574146  271114274  41313265 11014492</span></span>
-<span><span class="co">#&gt; 16:      SUR 2024-04-01 3286053525 5687484009 2401430484 122770257 92689753</span></span>
-<span><span class="co">#&gt; 17:      SUR 2024-05-01 1451731151 2645801834 1194070683  93024106 45040850</span></span>
-<span><span class="co">#&gt; 18:      SUR 2024-06-01  629668308 1209024555  579356246  65346187 20907249</span></span>
-<span><span class="co">#&gt; 19:      SUR 2024-07-01 1250954692 2542927187 1291972495 103136527 45568403</span></span>
-<span><span class="co">#&gt; 20:      SUR 2024-08-01  425346694  918120581  492773887  65317866 16819267</span></span>
-<span><span class="co">#&gt; 21:      SUR 2024-09-01  278156543  635470027  357313485  56737053 11859688</span></span>
-<span><span class="co">#&gt; 22:      SUR 2024-10-01  352070325  856446527  504376201  68091257 16219630</span></span>
-<span><span class="co">#&gt; 23:      SUR 2024-11-01   99050502  260916098  161865596  41787166  5190764</span></span>
-<span><span class="co">#&gt; 24:      SUR 2024-12-01  103194015  295637302  192443287  49617196  6221683</span></span>
-<span><span class="co">#&gt; 25:      SUR 2025-01-01  227089023  710560088  483471065  83635489 15668259</span></span>
-<span><span class="co">#&gt; 26:      SUR 2025-02-01  939163073 3276849148 2337686075 192418633 75222223</span></span>
-<span><span class="co">#&gt; 27:      SUR 2025-03-01  112828843  434950050  322121207  72345359 10161412</span></span>
-<span><span class="co">#&gt; 28:      SUR 2025-04-01   82472453  356301149  273828696  68974257  8575343</span></span>
-<span><span class="co">#&gt; 29:      SUR 2025-05-01  141214851  697290588  556075737 119238986 19174475</span></span>
-<span><span class="co">#&gt; 30:      SUR 2025-06-01  136406104  789468809  653062706 136628653 22834478</span></span>
-<span><span class="co">#&gt; 31:      SUR 2025-07-01  149144024 1040451732  891307708 167039609 31445935</span></span>
-<span><span class="co">#&gt; 32:      SUR 2025-08-01  116327076 1008356737  892029661 183653360 32987225</span></span>
-<span><span class="co">#&gt; 33:      SUR 2025-09-01   67465470  783000254  715534784 179947036 27713231</span></span>
-<span><span class="co">#&gt; 34:      SUR 2025-10-01  121626172 2001214853 1879588681 337103186 80113491</span></span>
-<span><span class="co">#&gt; 35:      SUR 2025-11-01   15716444  449653411  433936967 194100660 21034521</span></span>
-<span><span class="co">#&gt; 36:      SUR 2025-12-01    4825085  850839165  846014080 472741777 66075502</span></span>
-<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve   proc_se param_se</span></span>
-<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;    &lt;num&gt;</span></span>
-<span><span class="co">#&gt;            se          cv</span></span>
-<span><span class="co">#&gt;         &lt;num&gt;       &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:         0 0.000000000</span></span>
-<span><span class="co">#&gt;  2:   5104649 0.005097302</span></span>
-<span><span class="co">#&gt;  3:   6399717 0.006236621</span></span>
-<span><span class="co">#&gt;  4:  13260714 0.006064061</span></span>
-<span><span class="co">#&gt;  5:   5789636 0.008298539</span></span>
-<span><span class="co">#&gt;  6:  19872657 0.021336468</span></span>
-<span><span class="co">#&gt;  7:  47121310 0.015444596</span></span>
-<span><span class="co">#&gt;  8:  16388635 0.033568259</span></span>
-<span><span class="co">#&gt;  9:  43334743 0.024736288</span></span>
-<span><span class="co">#&gt; 10:  42079509 0.032077837</span></span>
-<span><span class="co">#&gt; 11:  37650227 0.044393454</span></span>
-<span><span class="co">#&gt; 12:  55918535 0.037332059</span></span>
-<span><span class="co">#&gt; 13:  87522120 0.030164514</span></span>
-<span><span class="co">#&gt; 14:  54851227 0.047283667</span></span>
-<span><span class="co">#&gt; 15:  42756344 0.062274911</span></span>
-<span><span class="co">#&gt; 16: 153830837 0.027047256</span></span>
-<span><span class="co">#&gt; 17: 103354547 0.039063601</span></span>
-<span><span class="co">#&gt; 18:  68609309 0.056747655</span></span>
-<span><span class="co">#&gt; 19: 112754701 0.044340515</span></span>
-<span><span class="co">#&gt; 20:  67448583 0.073463753</span></span>
-<span><span class="co">#&gt; 21:  57963310 0.091213288</span></span>
-<span><span class="co">#&gt; 22:  69996398 0.081728860</span></span>
-<span><span class="co">#&gt; 23:  42108328 0.161386469</span></span>
-<span><span class="co">#&gt; 24:  50005754 0.169145618</span></span>
-<span><span class="co">#&gt; 25:  85090477 0.119751276</span></span>
-<span><span class="co">#&gt; 26: 206599402 0.063048188</span></span>
-<span><span class="co">#&gt; 27:  73055494 0.167962951</span></span>
-<span><span class="co">#&gt; 28:  69505285 0.195074548</span></span>
-<span><span class="co">#&gt; 29: 120770842 0.173200161</span></span>
-<span><span class="co">#&gt; 30: 138523652 0.175464376</span></span>
-<span><span class="co">#&gt; 31: 169973756 0.163365345</span></span>
-<span><span class="co">#&gt; 32: 186592373 0.185045992</span></span>
-<span><span class="co">#&gt; 33: 182068556 0.232526816</span></span>
-<span><span class="co">#&gt; 34: 346492034 0.173140847</span></span>
-<span><span class="co">#&gt; 35: 195237080 0.434194593</span></span>
-<span><span class="co">#&gt; 36: 477337155 0.561019255</span></span>
-<span><span class="co">#&gt;            se          cv</span></span>
-<span><span class="co">#&gt;         &lt;num&gt;       &lt;num&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve target_proc_se</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;          &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:      SUR 2023-01-01  410248523  410248523          0              0</span></span>
+<span><span class="co">#&gt;  2:      SUR 2023-02-01  976330446 1001441304   25110859        2751818</span></span>
+<span><span class="co">#&gt;  3:      SUR 2023-03-01  978486044 1026151241   47665197        3967868</span></span>
+<span><span class="co">#&gt;  4:      SUR 2023-04-01 2029909922 2186771224  156861302        6942936</span></span>
+<span><span class="co">#&gt;  5:      SUR 2023-05-01  624219442  697669308   73449866        4455635</span></span>
+<span><span class="co">#&gt;  6:      SUR 2023-06-01  802880717  931393933  128513217       17869565</span></span>
+<span><span class="co">#&gt;  7:      SUR 2023-07-01 2539141550 3050990158  511848609       35918003</span></span>
+<span><span class="co">#&gt;  8:      SUR 2023-08-01  393678329  488218204   94539875       15583801</span></span>
+<span><span class="co">#&gt;  9:      SUR 2023-09-01 1364052543 1751869309  387816766       38001618</span></span>
+<span><span class="co">#&gt; 10:      SUR 2023-10-01  979266044 1311793844  332527800       38496097</span></span>
+<span><span class="co">#&gt; 11:      SUR 2023-11-01  604685680  848103124  243417444       35719580</span></span>
+<span><span class="co">#&gt; 12:      SUR 2023-12-01 1026345365 1497869026  471523662       51405333</span></span>
+<span><span class="co">#&gt; 13:      SUR 2024-01-01 1912177598 2901492850  989315252       75674312</span></span>
+<span><span class="co">#&gt; 14:      SUR 2024-02-01  733902485 1160045952  426143467       51719398</span></span>
+<span><span class="co">#&gt; 15:      SUR 2024-03-01  415459872  686574146  271114274       41313265</span></span>
+<span><span class="co">#&gt; 16:      SUR 2024-04-01 3286053525 5687484009 2401430484      122770257</span></span>
+<span><span class="co">#&gt; 17:      SUR 2024-05-01 1451731151 2645801834 1194070683       93024106</span></span>
+<span><span class="co">#&gt; 18:      SUR 2024-06-01  629668308 1209024555  579356246       65346187</span></span>
+<span><span class="co">#&gt; 19:      SUR 2024-07-01 1250954692 2542927187 1291972495      103136527</span></span>
+<span><span class="co">#&gt; 20:      SUR 2024-08-01  425346694  918120581  492773887       65317866</span></span>
+<span><span class="co">#&gt; 21:      SUR 2024-09-01  278156543  635470027  357313485       56737053</span></span>
+<span><span class="co">#&gt; 22:      SUR 2024-10-01  352070325  856446527  504376201       68091257</span></span>
+<span><span class="co">#&gt; 23:      SUR 2024-11-01   99050502  260916098  161865596       41787166</span></span>
+<span><span class="co">#&gt; 24:      SUR 2024-12-01  103194015  295637302  192443287       49617196</span></span>
+<span><span class="co">#&gt; 25:      SUR 2025-01-01  227089023  710560088  483471065       83635489</span></span>
+<span><span class="co">#&gt; 26:      SUR 2025-02-01  939163073 3276849148 2337686075      192418633</span></span>
+<span><span class="co">#&gt; 27:      SUR 2025-03-01  112828843  434950050  322121207       72345359</span></span>
+<span><span class="co">#&gt; 28:      SUR 2025-04-01   82472453  356301149  273828696       68974257</span></span>
+<span><span class="co">#&gt; 29:      SUR 2025-05-01  141214851  697290588  556075737      119238986</span></span>
+<span><span class="co">#&gt; 30:      SUR 2025-06-01  136406104  789468809  653062706      136628653</span></span>
+<span><span class="co">#&gt; 31:      SUR 2025-07-01  149144024 1040451732  891307708      167039609</span></span>
+<span><span class="co">#&gt; 32:      SUR 2025-08-01  116327076 1008356737  892029661      183653360</span></span>
+<span><span class="co">#&gt; 33:      SUR 2025-09-01   67465470  783000254  715534784      179947036</span></span>
+<span><span class="co">#&gt; 34:      SUR 2025-10-01  121626172 2001214853 1879588681      337103186</span></span>
+<span><span class="co">#&gt; 35:      SUR 2025-11-01   15716444  449653411  433936967      194100660</span></span>
+<span><span class="co">#&gt; 36:      SUR 2025-12-01    4825085  850839165  846014080      472741777</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve target_proc_se</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;          &lt;num&gt;</span></span>
+<span><span class="co">#&gt;     target_param_se target_total_se target_total_cv</span></span>
+<span><span class="co">#&gt;               &lt;num&gt;           &lt;num&gt;           &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:               0               0     0.000000000</span></span>
+<span><span class="co">#&gt;  2:         4299411         5104649     0.005097302</span></span>
+<span><span class="co">#&gt;  3:         5021194         6399717     0.006236621</span></span>
+<span><span class="co">#&gt;  4:        11297884        13260714     0.006064061</span></span>
+<span><span class="co">#&gt;  5:         3696917         5789636     0.008298539</span></span>
+<span><span class="co">#&gt;  6:         8694892        19872657     0.021336468</span></span>
+<span><span class="co">#&gt;  7:        30501064        47121310     0.015444596</span></span>
+<span><span class="co">#&gt;  8:         5072721        16388635     0.033568259</span></span>
+<span><span class="co">#&gt;  9:        20827314        43334743     0.024736288</span></span>
+<span><span class="co">#&gt; 10:        16992220        42079509     0.032077837</span></span>
+<span><span class="co">#&gt; 11:        11901733        37650227     0.044393454</span></span>
+<span><span class="co">#&gt; 12:        22008504        55918535     0.037332059</span></span>
+<span><span class="co">#&gt; 13:        43971809        87522120     0.030164514</span></span>
+<span><span class="co">#&gt; 14:        18269126        54851227     0.047283667</span></span>
+<span><span class="co">#&gt; 15:        11014492        42756344     0.062274911</span></span>
+<span><span class="co">#&gt; 16:        92689753       153830837     0.027047256</span></span>
+<span><span class="co">#&gt; 17:        45040850       103354547     0.039063601</span></span>
+<span><span class="co">#&gt; 18:        20907249        68609309     0.056747655</span></span>
+<span><span class="co">#&gt; 19:        45568403       112754701     0.044340515</span></span>
+<span><span class="co">#&gt; 20:        16819267        67448583     0.073463753</span></span>
+<span><span class="co">#&gt; 21:        11859688        57963310     0.091213288</span></span>
+<span><span class="co">#&gt; 22:        16219630        69996398     0.081728860</span></span>
+<span><span class="co">#&gt; 23:         5190764        42108328     0.161386469</span></span>
+<span><span class="co">#&gt; 24:         6221683        50005754     0.169145618</span></span>
+<span><span class="co">#&gt; 25:        15668259        85090477     0.119751276</span></span>
+<span><span class="co">#&gt; 26:        75222223       206599402     0.063048188</span></span>
+<span><span class="co">#&gt; 27:        10161412        73055494     0.167962951</span></span>
+<span><span class="co">#&gt; 28:         8575343        69505285     0.195074548</span></span>
+<span><span class="co">#&gt; 29:        19174475       120770842     0.173200161</span></span>
+<span><span class="co">#&gt; 30:        22834478       138523652     0.175464376</span></span>
+<span><span class="co">#&gt; 31:        31445935       169973756     0.163365345</span></span>
+<span><span class="co">#&gt; 32:        32987225       186592373     0.185045992</span></span>
+<span><span class="co">#&gt; 33:        27713231       182068556     0.232526816</span></span>
+<span><span class="co">#&gt; 34:        80113491       346492034     0.173140847</span></span>
+<span><span class="co">#&gt; 35:        21034521       195237080     0.434194593</span></span>
+<span><span class="co">#&gt; 36:        66075502       477337155     0.561019255</span></span>
+<span><span class="co">#&gt;     target_param_se target_total_se target_total_cv</span></span>
+<span><span class="co">#&gt;               &lt;num&gt;           &lt;num&gt;           &lt;num&gt;</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="reserve-plot">Reserve plot<a class="anchor" aria-label="anchor" href="#reserve-plot"></a>
@@ -397,14 +378,14 @@ extrapolation:</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>"min_last2"</code></td>
-<td>(default) min of the last two estimable
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>σ</mi><annotation encoding="application/x-tex">\sigma</annotation></semantics></math>
-values — conservative</td>
+<td><code>"locf"</code></td>
+<td>(default) last observation carried forward</td>
 </tr>
 <tr class="even">
-<td><code>"locf"</code></td>
-<td>Last observation carried forward</td>
+<td><code>"min_last2"</code></td>
+<td>min of the last two estimable
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>σ</mi><annotation encoding="application/x-tex">\sigma</annotation></semantics></math>
+values — conservative</td>
 </tr>
 <tr class="odd">
 <td><code>"loglinear"</code></td>
@@ -415,11 +396,11 @@ sequence</td>
 </tbody>
 </table>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, sigma_method <span class="op">=</span> <span class="st">"loglinear"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, sigma_method <span class="op">=</span> <span class="st">"loglinear"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;CLFit&gt;</span></span>
 <span><span class="co">#&gt; method      : mack </span></span>
-<span><span class="co">#&gt; loss_var   : loss </span></span>
-<span><span class="co">#&gt; weight_var  : none </span></span>
+<span><span class="co">#&gt; target      : loss </span></span>
+<span><span class="co">#&gt; weight      : none </span></span>
 <span><span class="co">#&gt; alpha       : 1 </span></span>
 <span><span class="co">#&gt; sigma_method: loglinear </span></span>
 <span><span class="co">#&gt; recent      : all </span></span>

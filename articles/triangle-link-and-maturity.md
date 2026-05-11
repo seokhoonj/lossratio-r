@@ -106,12 +106,12 @@ ratios per (group, dev) cell.
 
 The `Link` object is the link table (age-to-age factor table) built from
 the triangle. In single-variable mode it carries the observed ATA
-factors; with `premium_var` it carries the ED-style intensities
+factors; with `exposure` it carries the ED-style intensities
 $`g_k = \Delta C^L_k / C^P_k`$.
 
 ``` r
 
-ata <- build_link(tri, loss_var = "loss")
+ata <- build_link(tri, target = "loss")
 sm  <- summary(ata, model = "ata", alpha = 1)
 head(sm)
 #> Key: <coverage>
@@ -206,7 +206,7 @@ plot_triangle(ata, label_size = 2.5, show_maturity = TRUE)   # overlay maturity 
 # detail labels are two lines and overlap on monthly cells — rebuild on
 # the quarterly triangle so the two-line "factor (loss / premium)" text
 # has room (label_size auto-shrinks to 2.2 in detail mode).
-ata_q <- build_link(tri_q, loss_var = "loss")
+ata_q <- build_link(tri_q, target = "loss")
 plot_triangle(ata_q, label_style = "detail")      # factor + (loss / premium)
 ```
 
@@ -220,7 +220,7 @@ link’s median.
 
 ``` r
 
-ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
+ed <- build_link(tri, target = "loss", exposure = "premium")
 sm <- summary(ed, model = "ed", alpha = 1)
 head(sm)
 #> Key: <coverage>
@@ -338,10 +338,10 @@ those callers):
 
 ``` r
 
-fit_ata(tri, loss_var = "loss",
+fit_ata(tri, target = "loss",
         maturity_args = list(max_cv = 0.08, min_run = 2L))
 
-fit_cl(tri, loss_var = "loss",
+fit_cl(tri, target = "loss",
        maturity_args = list(max_cv = 0.08))
 
 fit_lr(tri, method = "sa",
@@ -390,7 +390,7 @@ first drops below `max_cv`:
 
 ``` r
 
-plot(build_link(tri_all, loss_var = "loss"), type = "cv")
+plot(build_link(tri_all, target = "loss"), type = "cv")
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-12-1.png)
@@ -427,7 +427,7 @@ regime shift), restrict estimation to the recent calendar diagonals:
 
 ``` r
 
-fit_ata(tri, loss_var = "loss", alpha = 1, recent = 12)  # last 12 calendar diagonals
+fit_ata(tri, target = "loss", alpha = 1, recent = 12)  # last 12 calendar diagonals
 #> <ATAFit>
 #> alpha       : 1 
 #> sigma_method: locf 
@@ -437,12 +437,13 @@ fit_ata(tri, loss_var = "loss", alpha = 1, recent = 12)  # last 12 calendar diag
 #> groups      : coverage 
 #> n_groups    : 1 
 #> ata links   : 35
-fit_cl(tri, loss_var = "loss", recent = 12)
+fit_cl(tri, target = "loss", recent = 12)
 #> <CLFit>
-#> method      : basic 
-#> loss_var   : loss 
-#> weight_var  : none 
+#> method      : mack 
+#> target      : loss 
+#> weight      : none 
 #> alpha       : 1 
+#> sigma_method: locf 
 #> recent      : 12 
 #> use_maturity: FALSE 
 #> tail_factor : 1 
@@ -450,17 +451,16 @@ fit_cl(tri, loss_var = "loss", recent = 12)
 #> periods     : 36
 fit_lr(tri, recent = 12)
 #> <LRFit>
-#> method        : sa 
-#> loss_var      : loss 
-#> premium_var  : premium 
-#> loss_alpha    : 1 
-#> premium_alpha: 1 
-#> delta_method  : simple 
-#> conf_level    : 0.95 
-#> ci_type       : analytical  
-#> sigma_method  : locf 
-#> recent        : 12 
-#> regime_break  : none 
+#> method               : sa 
+#> loss_alpha           : 1 
+#> premium_alpha        : 1 
+#> se_method            : fixed 
+#> conf_level           : 0.95 
+#> ci_type              : analytical  
+#> sigma_method         : locf 
+#> recent               : 12 
+#> loss_regime_break    : none 
+#> premium_regime_break : none 
 #> maturity[SUR] : 25
 #> groups        : coverage 
 #> periods       : 36

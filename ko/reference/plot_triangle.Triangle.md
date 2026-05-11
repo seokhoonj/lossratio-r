@@ -10,8 +10,9 @@ or the ratio together with the associated loss / risk premium amounts.
 For amount metrics (`loss`, `loss_incr`, `premium`, `premium_incr`,
 `margin`, `margin_incr`), labels show the selected amount only.
 
-For proportion metrics (`loss_prop`, `loss_incr_prop`, `premium_prop`,
-`premium_incr_prop`), labels are displayed as percentages.
+For proportion metrics (`loss_share`, `loss_incr_share`,
+`premium_share`, `premium_incr_share`), labels are displayed as
+percentages.
 
 The loss ratio is defined as: \$\$lr = loss / premium\$\$
 
@@ -62,8 +63,8 @@ plot_triangle(
 
   A single metric to plot. Must be one of: `"lr"`, `"lr_incr"`,
   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`,
-  `"margin_incr"`, `"loss_prop"`, `"loss_incr_prop"`, `"premium_prop"`,
-  or `"premium_incr_prop"`.
+  `"margin_incr"`, `"loss_share"`, `"loss_incr_share"`,
+  `"premium_share"`, or `"premium_incr_share"`.
 
 - label_style:
 
@@ -138,8 +139,8 @@ plot_triangle(d)
 plot_triangle(d, value_var = "lr")
 plot_triangle(d, value_var = "loss")
 plot_triangle(d, value_var = "premium")
-plot_triangle(d, value_var = "loss_prop")
-plot_triangle(d, value_var = "premium_prop")
+plot_triangle(d, value_var = "loss_share")
+plot_triangle(d, value_var = "premium_share")
 plot_triangle(d, label_style = "value")
 plot_triangle(d, label_style = "detail")
 } # }

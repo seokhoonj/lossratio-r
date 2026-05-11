@@ -20,11 +20,11 @@ rebuild of the link table when factors are already computed).
 ``` r
 fit_intensity(
   x,
-  loss_var = "loss",
-  premium_var = "premium",
+  target = "loss",
+  exposure = "premium",
   alpha = 1,
   na_method = c("locf", "zero", "none"),
-  sigma_method = c("min_last2", "locf", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   regime_break = NULL,
   ...
@@ -37,12 +37,12 @@ fit_intensity(
 
   A `Triangle` object.
 
-- loss_var:
+- target:
 
   A single cumulative metric used as the link numerator. Default
   `"loss"`.
 
-- premium_var:
+- exposure:
 
   A single cumulative metric used as the exposure anchor. Default
   `"premium"`.
@@ -97,7 +97,7 @@ A list of class `"IntensityFit"` with components:
 
   The (possibly filtered) `Link` object used for estimation.
 
-- `group_var`, `cohort_var`, `dev_var`, `loss_var`, `premium_var`:
+- `group_var`, `cohort_var`, `dev_var`, `target`, `exposure`:
 
   Variable name relays from the input `Triangle`.
 
@@ -147,7 +147,7 @@ rejects `IntensityFit` input with an informative error.
 ``` r
 if (FALSE) { # \dontrun{
 tri <- build_triangle(df, group_var = coverage)
-intensity_fit <- fit_intensity(tri, loss_var = "loss", premium_var = "premium")
-summary(intensity)
+intensity_fit <- fit_intensity(tri, target = "loss", exposure = "premium")
+summary(intensity_fit)
 } # }
 ```

@@ -28,12 +28,12 @@ library(lossratio)
 data(experience)
 tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
 
-cl <- fit_cl(tri, loss_var = "loss", method = "mack")
+cl <- fit_cl(tri, target = "loss", method = "mack")
 print(cl)
 #> <CLFit>
 #> method      : mack 
-#> loss_var   : loss 
-#> weight_var  : none 
+#> target      : loss 
+#> weight      : none 
 #> alpha       : 1 
 #> sigma_method: locf 
 #> recent      : all 
@@ -43,54 +43,46 @@ print(cl)
 #> periods     : 36
 ```
 
-`loss_var` selects the cumulative column to project — typically `"loss"`
+`target` selects the cumulative column to project — typically `"loss"`
 (cumulative loss) for reserving, or `"premium"` (cumulative risk
 premium) for exposure projection.
 
-## Method: basic vs Mack
+## Mack chain ladder
 
-Two estimation methods are available:
-
-| `method`  | What it computes                                    |
-|-----------|-----------------------------------------------------|
-| `"basic"` | Point projection only (selected age-to-age factors) |
-| `"mack"`  | Point projection + factor / process / parameter SE  |
+[`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
+implements the Mack (1993) chain ladder. Adjacent development links are
+summarised by age-to-age factors $`f_k = C^L_{k+1} / C^L_k`$ — selected
+per link and then chained to project each cohort forward to ultimate. On
+top of the point projection, Mack’s formulae decompose the prediction
+variance into process and parameter components, yielding per-cell
+standard errors and confidence intervals.
 
 ``` r
 
-cl_basic <- fit_cl(tri, loss_var = "loss", method = "basic")
-cl_mack  <- fit_cl(tri, loss_var = "loss", method = "mack")
+cl_mack <- fit_cl(tri, target = "loss", method = "mack")
 
-names(cl_basic)
-#>  [1] "call"          "data"          "method"        "group_var"    
-#>  [5] "cohort_var"    "dev_var"       "loss_var"      "full"         
-#>  [9] "pred"          "link"          "summary"       "factor"       
-#> [13] "selected"      "maturity"      "alpha"         "sigma_method" 
-#> [17] "weight_var"    "recent"        "use_maturity"  "maturity_args"
-#> [21] "tail"          "tail_factor"
-
-# Mack adds variance estimates to $full and $summary
+# $full and $summary carry both the projection and its variance
 head(cl_mack$summary)
-#>    coverage     cohort     latest   loss_ult   reserve  proc_se param_se
-#>      <char>     <Date>      <num>      <num>     <num>    <num>    <num>
-#> 1:      SUR 2023-01-01  410248523  410248523         0        0        0
-#> 2:      SUR 2023-02-01  976330446 1001441304  25110859  2751818  4299411
-#> 3:      SUR 2023-03-01  978486044 1026151241  47665197  3967868  5021194
-#> 4:      SUR 2023-04-01 2029909922 2186771224 156861302  6942936 11297884
-#> 5:      SUR 2023-05-01  624219442  697669308  73449866  4455635  3696917
-#> 6:      SUR 2023-06-01  802880717  931393933 128513217 17869565  8694892
-#>          se          cv
-#>       <num>       <num>
-#> 1:        0 0.000000000
-#> 2:  5104649 0.005097302
-#> 3:  6399717 0.006236621
-#> 4: 13260714 0.006064061
-#> 5:  5789636 0.008298539
-#> 6: 19872657 0.021336468
+#>    coverage     cohort     latest   loss_ult   reserve target_proc_se
+#>      <char>     <Date>      <num>      <num>     <num>          <num>
+#> 1:      SUR 2023-01-01  410248523  410248523         0              0
+#> 2:      SUR 2023-02-01  976330446 1001441304  25110859        2751818
+#> 3:      SUR 2023-03-01  978486044 1026151241  47665197        3967868
+#> 4:      SUR 2023-04-01 2029909922 2186771224 156861302        6942936
+#> 5:      SUR 2023-05-01  624219442  697669308  73449866        4455635
+#> 6:      SUR 2023-06-01  802880717  931393933 128513217       17869565
+#>    target_param_se target_total_se target_total_cv
+#>              <num>           <num>           <num>
+#> 1:               0               0     0.000000000
+#> 2:         4299411         5104649     0.005097302
+#> 3:         5021194         6399717     0.006236621
+#> 4:        11297884        13260714     0.006064061
+#> 5:         3696917         5789636     0.008298539
+#> 6:         8694892        19872657     0.021336468
 ```
 
-`method = "mack"` enables the projection plot’s confidence bands
-(`show_interval = TRUE`):
+The projection plot’s confidence bands (`show_interval = TRUE`) use
+those variance estimates:
 
 ``` r
 
@@ -107,10 +99,10 @@ developing, an extrapolated tail factor estimates ultimate:
 ``` r
 
 # Log-linear extrapolation from the selected ATA factors
-cl_tail <- fit_cl(tri, loss_var = "loss", method = "mack", tail = TRUE)
+cl_tail <- fit_cl(tri, target = "loss", method = "mack", tail = TRUE)
 
 # Or supply a literal tail factor
-cl_tail <- fit_cl(tri, loss_var = "loss", method = "mack", tail = 1.025)
+cl_tail <- fit_cl(tri, target = "loss", method = "mack", tail = 1.025)
 ```
 
 The extrapolation fits $`\log(f_k - 1) \sim k`$ to projected factors and
@@ -126,7 +118,7 @@ region only:
 
 cl_mat <- fit_cl(
   tri,
-  loss_var     = "loss",
+  target        = "loss",
   method        = "mack",
   maturity_args = list(max_cv = 0.10, max_rse = 0.05)
 )
@@ -151,97 +143,98 @@ cl_mat$maturity
 
 `fit_cl(method = "mack")` decomposes the projection variance into:
 
-- `proc_se` — process variance, from $`\sigma^2_k`$ (residual link
-  variance per development period).
-- `param_se` — parameter variance, from the uncertainty of the selected
-  age-to-age factors $`\hat{f}_k`$.
-- `se` — total standard error,
-  $`\sqrt{\mathrm{proc\_se}^2 + \mathrm{param\_se}^2}`$.
-- `cv` — coefficient of variation, `se / value_proj`.
+- `target_proc_se` — process variance, from $`\sigma^2_k`$ (residual
+  link variance per development period).
+- `target_param_se` — parameter variance, from the uncertainty of the
+  selected age-to-age factors $`\hat{f}_k`$.
+- `target_total_se` — total standard error,
+  $`\sqrt{\mathrm{target\_proc\_se}^2 + \mathrm{target\_param\_se}^2}`$.
+- `target_total_cv` — coefficient of variation,
+  `target_total_se / target_proj`.
 
 ``` r
 
 summary(cl_mack)
-#>     coverage     cohort     latest   loss_ult    reserve   proc_se param_se
-#>       <char>     <Date>      <num>      <num>      <num>     <num>    <num>
-#>  1:      SUR 2023-01-01  410248523  410248523          0         0        0
-#>  2:      SUR 2023-02-01  976330446 1001441304   25110859   2751818  4299411
-#>  3:      SUR 2023-03-01  978486044 1026151241   47665197   3967868  5021194
-#>  4:      SUR 2023-04-01 2029909922 2186771224  156861302   6942936 11297884
-#>  5:      SUR 2023-05-01  624219442  697669308   73449866   4455635  3696917
-#>  6:      SUR 2023-06-01  802880717  931393933  128513217  17869565  8694892
-#>  7:      SUR 2023-07-01 2539141550 3050990158  511848609  35918003 30501064
-#>  8:      SUR 2023-08-01  393678329  488218204   94539875  15583801  5072721
-#>  9:      SUR 2023-09-01 1364052543 1751869309  387816766  38001618 20827314
-#> 10:      SUR 2023-10-01  979266044 1311793844  332527800  38496097 16992220
-#> 11:      SUR 2023-11-01  604685680  848103124  243417444  35719580 11901733
-#> 12:      SUR 2023-12-01 1026345365 1497869026  471523662  51405333 22008504
-#> 13:      SUR 2024-01-01 1912177598 2901492850  989315252  75674312 43971809
-#> 14:      SUR 2024-02-01  733902485 1160045952  426143467  51719398 18269126
-#> 15:      SUR 2024-03-01  415459872  686574146  271114274  41313265 11014492
-#> 16:      SUR 2024-04-01 3286053525 5687484009 2401430484 122770257 92689753
-#> 17:      SUR 2024-05-01 1451731151 2645801834 1194070683  93024106 45040850
-#> 18:      SUR 2024-06-01  629668308 1209024555  579356246  65346187 20907249
-#> 19:      SUR 2024-07-01 1250954692 2542927187 1291972495 103136527 45568403
-#> 20:      SUR 2024-08-01  425346694  918120581  492773887  65317866 16819267
-#> 21:      SUR 2024-09-01  278156543  635470027  357313485  56737053 11859688
-#> 22:      SUR 2024-10-01  352070325  856446527  504376201  68091257 16219630
-#> 23:      SUR 2024-11-01   99050502  260916098  161865596  41787166  5190764
-#> 24:      SUR 2024-12-01  103194015  295637302  192443287  49617196  6221683
-#> 25:      SUR 2025-01-01  227089023  710560088  483471065  83635489 15668259
-#> 26:      SUR 2025-02-01  939163073 3276849148 2337686075 192418633 75222223
-#> 27:      SUR 2025-03-01  112828843  434950050  322121207  72345359 10161412
-#> 28:      SUR 2025-04-01   82472453  356301149  273828696  68974257  8575343
-#> 29:      SUR 2025-05-01  141214851  697290588  556075737 119238986 19174475
-#> 30:      SUR 2025-06-01  136406104  789468809  653062706 136628653 22834478
-#> 31:      SUR 2025-07-01  149144024 1040451732  891307708 167039609 31445935
-#> 32:      SUR 2025-08-01  116327076 1008356737  892029661 183653360 32987225
-#> 33:      SUR 2025-09-01   67465470  783000254  715534784 179947036 27713231
-#> 34:      SUR 2025-10-01  121626172 2001214853 1879588681 337103186 80113491
-#> 35:      SUR 2025-11-01   15716444  449653411  433936967 194100660 21034521
-#> 36:      SUR 2025-12-01    4825085  850839165  846014080 472741777 66075502
-#>     coverage     cohort     latest   loss_ult    reserve   proc_se param_se
-#>       <char>     <Date>      <num>      <num>      <num>     <num>    <num>
-#>            se          cv
-#>         <num>       <num>
-#>  1:         0 0.000000000
-#>  2:   5104649 0.005097302
-#>  3:   6399717 0.006236621
-#>  4:  13260714 0.006064061
-#>  5:   5789636 0.008298539
-#>  6:  19872657 0.021336468
-#>  7:  47121310 0.015444596
-#>  8:  16388635 0.033568259
-#>  9:  43334743 0.024736288
-#> 10:  42079509 0.032077837
-#> 11:  37650227 0.044393454
-#> 12:  55918535 0.037332059
-#> 13:  87522120 0.030164514
-#> 14:  54851227 0.047283667
-#> 15:  42756344 0.062274911
-#> 16: 153830837 0.027047256
-#> 17: 103354547 0.039063601
-#> 18:  68609309 0.056747655
-#> 19: 112754701 0.044340515
-#> 20:  67448583 0.073463753
-#> 21:  57963310 0.091213288
-#> 22:  69996398 0.081728860
-#> 23:  42108328 0.161386469
-#> 24:  50005754 0.169145618
-#> 25:  85090477 0.119751276
-#> 26: 206599402 0.063048188
-#> 27:  73055494 0.167962951
-#> 28:  69505285 0.195074548
-#> 29: 120770842 0.173200161
-#> 30: 138523652 0.175464376
-#> 31: 169973756 0.163365345
-#> 32: 186592373 0.185045992
-#> 33: 182068556 0.232526816
-#> 34: 346492034 0.173140847
-#> 35: 195237080 0.434194593
-#> 36: 477337155 0.561019255
-#>            se          cv
-#>         <num>       <num>
+#>     coverage     cohort     latest   loss_ult    reserve target_proc_se
+#>       <char>     <Date>      <num>      <num>      <num>          <num>
+#>  1:      SUR 2023-01-01  410248523  410248523          0              0
+#>  2:      SUR 2023-02-01  976330446 1001441304   25110859        2751818
+#>  3:      SUR 2023-03-01  978486044 1026151241   47665197        3967868
+#>  4:      SUR 2023-04-01 2029909922 2186771224  156861302        6942936
+#>  5:      SUR 2023-05-01  624219442  697669308   73449866        4455635
+#>  6:      SUR 2023-06-01  802880717  931393933  128513217       17869565
+#>  7:      SUR 2023-07-01 2539141550 3050990158  511848609       35918003
+#>  8:      SUR 2023-08-01  393678329  488218204   94539875       15583801
+#>  9:      SUR 2023-09-01 1364052543 1751869309  387816766       38001618
+#> 10:      SUR 2023-10-01  979266044 1311793844  332527800       38496097
+#> 11:      SUR 2023-11-01  604685680  848103124  243417444       35719580
+#> 12:      SUR 2023-12-01 1026345365 1497869026  471523662       51405333
+#> 13:      SUR 2024-01-01 1912177598 2901492850  989315252       75674312
+#> 14:      SUR 2024-02-01  733902485 1160045952  426143467       51719398
+#> 15:      SUR 2024-03-01  415459872  686574146  271114274       41313265
+#> 16:      SUR 2024-04-01 3286053525 5687484009 2401430484      122770257
+#> 17:      SUR 2024-05-01 1451731151 2645801834 1194070683       93024106
+#> 18:      SUR 2024-06-01  629668308 1209024555  579356246       65346187
+#> 19:      SUR 2024-07-01 1250954692 2542927187 1291972495      103136527
+#> 20:      SUR 2024-08-01  425346694  918120581  492773887       65317866
+#> 21:      SUR 2024-09-01  278156543  635470027  357313485       56737053
+#> 22:      SUR 2024-10-01  352070325  856446527  504376201       68091257
+#> 23:      SUR 2024-11-01   99050502  260916098  161865596       41787166
+#> 24:      SUR 2024-12-01  103194015  295637302  192443287       49617196
+#> 25:      SUR 2025-01-01  227089023  710560088  483471065       83635489
+#> 26:      SUR 2025-02-01  939163073 3276849148 2337686075      192418633
+#> 27:      SUR 2025-03-01  112828843  434950050  322121207       72345359
+#> 28:      SUR 2025-04-01   82472453  356301149  273828696       68974257
+#> 29:      SUR 2025-05-01  141214851  697290588  556075737      119238986
+#> 30:      SUR 2025-06-01  136406104  789468809  653062706      136628653
+#> 31:      SUR 2025-07-01  149144024 1040451732  891307708      167039609
+#> 32:      SUR 2025-08-01  116327076 1008356737  892029661      183653360
+#> 33:      SUR 2025-09-01   67465470  783000254  715534784      179947036
+#> 34:      SUR 2025-10-01  121626172 2001214853 1879588681      337103186
+#> 35:      SUR 2025-11-01   15716444  449653411  433936967      194100660
+#> 36:      SUR 2025-12-01    4825085  850839165  846014080      472741777
+#>     coverage     cohort     latest   loss_ult    reserve target_proc_se
+#>       <char>     <Date>      <num>      <num>      <num>          <num>
+#>     target_param_se target_total_se target_total_cv
+#>               <num>           <num>           <num>
+#>  1:               0               0     0.000000000
+#>  2:         4299411         5104649     0.005097302
+#>  3:         5021194         6399717     0.006236621
+#>  4:        11297884        13260714     0.006064061
+#>  5:         3696917         5789636     0.008298539
+#>  6:         8694892        19872657     0.021336468
+#>  7:        30501064        47121310     0.015444596
+#>  8:         5072721        16388635     0.033568259
+#>  9:        20827314        43334743     0.024736288
+#> 10:        16992220        42079509     0.032077837
+#> 11:        11901733        37650227     0.044393454
+#> 12:        22008504        55918535     0.037332059
+#> 13:        43971809        87522120     0.030164514
+#> 14:        18269126        54851227     0.047283667
+#> 15:        11014492        42756344     0.062274911
+#> 16:        92689753       153830837     0.027047256
+#> 17:        45040850       103354547     0.039063601
+#> 18:        20907249        68609309     0.056747655
+#> 19:        45568403       112754701     0.044340515
+#> 20:        16819267        67448583     0.073463753
+#> 21:        11859688        57963310     0.091213288
+#> 22:        16219630        69996398     0.081728860
+#> 23:         5190764        42108328     0.161386469
+#> 24:         6221683        50005754     0.169145618
+#> 25:        15668259        85090477     0.119751276
+#> 26:        75222223       206599402     0.063048188
+#> 27:        10161412        73055494     0.167962951
+#> 28:         8575343        69505285     0.195074548
+#> 29:        19174475       120770842     0.173200161
+#> 30:        22834478       138523652     0.175464376
+#> 31:        31445935       169973756     0.163365345
+#> 32:        32987225       186592373     0.185045992
+#> 33:        27713231       182068556     0.232526816
+#> 34:        80113491       346492034     0.173140847
+#> 35:        21034521       195237080     0.434194593
+#> 36:        66075502       477337155     0.561019255
+#>     target_param_se target_total_se target_total_cv
+#>               <num>           <num>           <num>
 ```
 
 ## Reserve plot
@@ -315,17 +308,17 @@ the extrapolation:
 
 | `sigma_method` | Behaviour |
 |----|----|
-| `"min_last2"` | (default) min of the last two estimable $`\sigma`$ values — conservative |
-| `"locf"` | Last observation carried forward |
+| `"locf"` | (default) last observation carried forward |
+| `"min_last2"` | min of the last two estimable $`\sigma`$ values — conservative |
 | `"loglinear"` | Log-linear extrapolation from the observed $`\sigma_k`$ sequence |
 
 ``` r
 
-fit_cl(tri, loss_var = "loss", method = "mack", sigma_method = "loglinear")
+fit_cl(tri, target = "loss", method = "mack", sigma_method = "loglinear")
 #> <CLFit>
 #> method      : mack 
-#> loss_var   : loss 
-#> weight_var  : none 
+#> target      : loss 
+#> weight      : none 
 #> alpha       : 1 
 #> sigma_method: loglinear 
 #> recent      : all 

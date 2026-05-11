@@ -1,27 +1,17 @@
 # Fit chain ladder projection from a `Triangle` object
 
-Fit a chain ladder projection from an object of class `"Triangle"`. The
-function works on long-form cumulative data and does not require a
-complete triangle.
+Fit a Mack (1993) chain ladder projection from an object of class
+`"Triangle"`. The function works on long-form cumulative data and does
+not require a complete triangle. Age-to-age factors are estimated
+through
+[`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md)
+and
+[`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
+then applied recursively. The point forecast follows the standard
+recursion, and prediction uncertainty is decomposed into process
+variance and parameter variance.
 
-Two methods are supported via the `method` argument:
-
-- `"basic"` (default):
-
-  Classical chain ladder point projection. Age-to-age factors are
-  estimated through
-  [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md)
-  and
-  [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
-  then applied recursively.
-
-- `"mack"`:
-
-  Mack (1993) chain ladder. Point forecast follows the standard
-  recursion, and prediction uncertainty is decomposed into process
-  variance and parameter variance.
-
-When `weight_var` is supplied (e.g. `"premium"`), age-to-age factors and
+When `weight` is supplied (e.g. `"premium"`), age-to-age factors and
 their variance are estimated using the supplied WLS weights.
 
 ## Usage
@@ -29,12 +19,13 @@ their variance are estimated using the supplied WLS weights.
 ``` r
 fit_cl(
   x,
-  method = c("basic", "mack"),
-  loss_var = "loss",
-  weight_var = NULL,
+  method = c("mack"),
+  target = "loss",
+  weight = NULL,
   alpha = 1,
-  sigma_method = c("min_last2", "locf", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
+  regime_break = NULL,
   maturity_args = NULL,
   tail = FALSE
 )
@@ -48,19 +39,20 @@ fit_cl(
 
 - method:
 
-  One of `"basic"` or `"mack"`. Default is `"basic"`.
+  One of `"mack"`. Default is `"mack"`. The argument is retained for
+  future extensibility.
 
-- loss_var:
+- target:
 
-  A single cumulative variable to project. Typical choices are `"loss"`,
-  `"premium"`, or `"lr"`.
+  A single cumulative target variable (column to project). Typical
+  choices are `"loss"`, `"premium"`, or `"lr"`.
 
-- weight_var:
+- weight:
 
   An optional column name passed to
   [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md)
   as the WLS weight variable. Typically `"premium"` when
-  `loss_var = "lr"`. Default is `NULL`.
+  `target = "lr"`. Default is `NULL`.
 
 - alpha:
 
@@ -72,14 +64,20 @@ fit_cl(
 
   Sigma extrapolation method passed to
   [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md).
-  One of `"min_last2"` (default), `"locf"`, or `"loglinear"`. Only
-  relevant when `method = "mack"`.
+  One of `"locf"` (default), `"min_last2"`, or `"loglinear"`.
 
 - recent:
 
   Optional positive integer. When supplied, only the most recent
   `recent` periods are used for factor estimation. Default is `NULL`
   (use all periods).
+
+- regime_break:
+
+  Optional cohort cutoff for a regime break. `NULL` (default), a
+  `Date`/character coercible to Date, a vector of dates (uses the
+  latest), or a `Regime` object. Cohorts strictly before the break are
+  excluded from factor estimation.
 
 - maturity_args:
 
@@ -111,7 +109,7 @@ An object of class `"CLFit"` containing:
 
 - `method`:
 
-  The method used (`"basic"` or `"mack"`).
+  The method used (`"mack"`).
 
 - `group_var`:
 
@@ -125,14 +123,14 @@ An object of class `"CLFit"` containing:
 
   Character scalar of development variable name.
 
-- `loss_var`:
+- `target`:
 
-  Character scalar of value variable name.
+  Character scalar of target variable name.
 
 - `full`:
 
-  `data.table` with observed and projected values. For `"mack"`, also
-  includes process/parameter SE and CV columns.
+  `data.table` with observed and projected values, including
+  process/parameter SE and CV columns.
 
 - `pred`:
 
@@ -145,10 +143,8 @@ An object of class `"CLFit"` containing:
 
 - `summary`:
 
-  For `"basic"`: `data.table` of fitted factors from
-  [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md).
-  For `"mack"`: cohort-level summary with latest, ultimate, reserve, and
-  Mack standard errors.
+  Cohort-level summary with latest, ultimate, reserve, and Mack standard
+  errors.
 
 - `selected`:
 
@@ -156,7 +152,7 @@ An object of class `"CLFit"` containing:
 
 - `factor`:
 
-  For `"mack"` only: `data.table` of fitted factors from
+  `data.table` of fitted factors from
   [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md).
 
 - `maturity`:
@@ -171,9 +167,9 @@ An object of class `"CLFit"` containing:
 
 - `sigma_method`:
 
-  For `"mack"` only: sigma extrapolation method.
+  Sigma extrapolation method.
 
-- `weight_var`:
+- `weight`:
 
   Weight variable name used, or `NULL`.
 
@@ -209,16 +205,12 @@ if (FALSE) { # \dontrun{
 data(experience)
 tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
 
-# Basic chain ladder (point projection only)
-cl <- fit_cl(tri, loss_var = "loss", method = "basic")
-print(cl)
-
 # Mack chain ladder with process / parameter standard errors
-cl_mack <- fit_cl(tri, loss_var = "loss", method = "mack")
+cl_mack <- fit_cl(tri, target = "loss", method = "mack")
 summary(cl_mack)
 plot(cl_mack)
 
 # WLS factors for lr (loss ratio) using premium as the weight
-cl_clr <- fit_cl(tri, loss_var = "lr", weight_var = "premium")
+cl_clr <- fit_cl(tri, target = "lr", weight = "premium")
 } # }
 ```

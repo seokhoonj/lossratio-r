@@ -4,8 +4,8 @@ Visualise an object of class `Calendar` as a time-series plot. The
 selected metric is plotted over the calendar-style `calendar_var`, or
 over the calendar development variable stored in `attr(x, "dev_var")`.
 
-Ratio metrics (`lr`, `lr`) and proportion metrics (`loss_prop`,
-`loss_incr_prop`, `premium_prop`, `premium_incr_prop`) are plotted on
+Ratio metrics (`lr`, `lr`) and proportion metrics (`loss_share`,
+`loss_incr_share`, `premium_share`, `premium_incr_share`) are plotted on
 the original scale and displayed as percentages via y-axis labels.
 Amount metrics (`loss`, `loss_incr`, `premium`, `premium_incr`,
 `margin`, `margin_incr`) are plotted on the original scale and displayed
@@ -37,8 +37,8 @@ plot(
 
   A single metric to plot. Must be one of: `"lr"`, `"lr_incr"`,
   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`,
-  `"margin_incr"`, `"loss_prop"`, `"loss_incr_prop"`, `"premium_prop"`,
-  or `"premium_incr_prop"`.
+  `"margin_incr"`, `"loss_share"`, `"loss_incr_share"`,
+  `"premium_share"`, or `"premium_incr_share"`.
 
 - x_by:
 

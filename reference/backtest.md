@@ -1,9 +1,20 @@
-# Backtest a loss-ratio / chain ladder fit on existing data
+# Backtest a loss / premium / loss-ratio projection on existing data
 
 Hold out the latest `holdout` calendar diagonals from the input
-`Triangle`, refit the model on the earlier portion, project the held-out
-cells, and compare the projection to the actual values that were
-withheld.
+`Triangle`, refit a target-specific projection on the earlier portion,
+project the held-out cells, and compare the projection to the actual
+values that were withheld.
+
+The target is selected with `target`:
+
+- `target = "lr"` – score the loss-ratio projection from
+  [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md).
+
+- `target = "loss"` – score the loss projection from
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md).
+
+- `target = "premium"` – score the premium projection from
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md).
 
 The A/E Error (`ae_err`) follows the standard actuarial A/E convention
 and is computed cell-wise as \$\$ae\\err =
@@ -16,7 +27,27 @@ development period (`col_summary`) and by calendar diagonal
 ## Usage
 
 ``` r
-backtest(x, holdout = 6L, fit_fn = fit_lr, metric = "lr", ...)
+backtest(
+  x,
+  holdout = 6L,
+  target = c("lr", "loss", "premium"),
+  loss_method = c("sa", "ed", "cl"),
+  premium_method = c("cl", "ed"),
+  loss_alpha = 1,
+  premium_alpha = 1,
+  sigma_method = c("locf", "min_last2", "loglinear"),
+  recent = NULL,
+  loss_regime_break = NULL,
+  premium_regime_break = loss_regime_break,
+  maturity_args = NULL,
+  se_method = c("fixed", "delta"),
+  rho = 0.95,
+  conf_level = 0.95,
+  bootstrap = FALSE,
+  B = 1000,
+  seed = NULL,
+  ...
+)
 
 # S3 method for class 'Backtest'
 print(x, ...)
@@ -40,41 +71,83 @@ print(x, ...)
   Integer. Number of latest calendar diagonals to mask before refitting.
   Default `6L`.
 
-- fit_fn:
+- target:
 
-  Fitting function. Default `fit_lr` (stage-adaptive loss-ratio
-  projection); also supports `fit_cl` for single-column chain ladder and
-  `fit_ed` for exposure-driven projection. If `fit_fn` does not have a
-  `loss_var` formal (as is the case for `fit_lr` and `fit_ed`), `metric`
-  is used only to select the comparison column on the fit's `$full`
-  table; arguments for the fitter itself (e.g., `loss_var`,
-  `premium_var`, `method`) are passed through `...`.
+  Character scalar. Which projection to backtest. One of `"lr"`
+  (default), `"loss"`, `"premium"`. Determines which fitter is called on
+  the masked triangle and which column on `x` is treated as the held-out
+  actual.
 
-- metric:
+- loss_method:
 
-  Character scalar. The **score column** for the backtest — the column
-  whose held-out actual values are compared against the corresponding
-  model projection cell-by-cell. One of `"lr"` (default), `"loss"`, or
-  `"premium"`.
-
-  With `fit_fn = fit_cl`, `backtest()` forwards `metric` to
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)'s
-  `loss_var` argument (because `fit_cl` has its own `loss_var` formal
-  that selects which triangle column to accumulate), so the score column
-  and the chain-ladder accumulation column coincide.
-
-  With `fit_fn = fit_lr` (default),
+  Method for the loss-side projection. Passed to
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
-  does not take a `metric` argument — it always projects `loss`,
-  `premium`, and `lr` jointly. Here `metric` is used purely to pick
-  which projection column on `fit_lr$full` is treated as the prediction
-  for scoring. The three valid values map to `loss_proj`,
-  `premium_proj`, and `lr_proj` respectively.
+  /
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+  as their `method` argument. One of `"sa"`, `"ed"`, `"cl"`. Unused for
+  `target = "premium"`.
+
+- premium_method:
+
+  Method for the premium-side projection. Passed to
+  [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
+  /
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+  /
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md).
+  One of `"cl"`, `"ed"`.
+
+- loss_alpha, premium_alpha:
+
+  Mack alpha for loss-side / premium-side chain-ladder estimation.
+
+- sigma_method:
+
+  Tail sigma extrapolation method. Forwarded to the underlying fitter.
+
+- recent:
+
+  Calendar-diagonal recency filter forwarded to the fitter.
+
+- loss_regime_break, premium_regime_break:
+
+  Cohort-axis regime break(s) for loss / premium estimation.
+  `premium_regime_break` defaults to `loss_regime_break`.
+
+- maturity_args:
+
+  Maturity-detection args. Used only for `target = "lr"` and
+  `target = "loss"` (stage-adaptive).
+
+- se_method:
+
+  Standard-error composition for
+  [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md).
+  Unused for `target = "loss"` / `target = "premium"`.
+
+- rho:
+
+  Loss-premium correlation used by
+  [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
+  delta method. Unused for `target = "loss"` / `target = "premium"`.
+
+- conf_level:
+
+  Confidence level for
+  [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
+  /
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+  intervals. Unused for `target = "premium"`.
+
+- bootstrap, B, seed:
+
+  Bootstrap controls for
+  [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md).
+  Unused for `target = "loss"` / `target = "premium"`.
 
 - ...:
 
-  Additional arguments passed to `fit_fn` (e.g., `method`, `alpha`,
-  `recent`, `tail`).
+  Additional arguments passed to the underlying fitter.
 
 - object:
 
@@ -99,7 +172,7 @@ An object of class `"Backtest"` with components:
 
 - `fit`:
 
-  The fit object returned by `fit_fn`.
+  The fit object returned by the target-specific fitter.
 
 - `ae_err`:
 
@@ -114,7 +187,7 @@ An object of class `"Backtest"` with components:
 
   Per-calendar-diagonal aggregate A/E Error.
 
-- `metric`, `holdout`, `fit_fn_name`:
+- `target`, `holdout`, `fit_fn_name`:
 
   Call metadata.
 
@@ -122,32 +195,11 @@ An object of class `"Backtest"` with components:
 
   Variable name relays from `x`.
 
-## Details
-
-The `metric` argument plays two slightly different roles depending on
-the fitter, summarised below. In every case `metric` is the column that
-drives the A/E Error comparison; the difference is whether the fitter
-consumes the same name as input or whether the name is only resolved
-against the fit's projection table.
-
-|  |  |  |  |  |
-|----|----|----|----|----|
-| **`fit_fn`** | **Valid `metric`** | **Forwarded to fitter?** | **Compared column on `fit$full`** | **Notes** |
-| `fit_cl` | any numeric column in `x` | yes (as `loss_var`) | `value_proj` | Score column equals the column being accumulated by chain ladder. |
-| `fit_lr` | `"loss"`, `"premium"`, `"lr"` | no (fit_lr ignores `metric`) | `loss_proj`, `premium_proj`, `lr_proj` respectively | Fitter projects all three jointly; `metric` only selects the scoring lane. |
-| `fit_ed` | `"loss"`, `"premium"`, `"lr"` | no (fit_ed ignores `metric`) | `loss_proj`, `premium_proj`, `lr_proj` respectively | Pure exposure-driven projection (additive \\g_k \cdot C^P_k\\); `metric` only selects the scoring lane. |
-
-This means that `backtest(..., metric = "loss")` paired with `fit_lr` is
-*not* the same operation as `fit_cl(loss_var = "loss")` under the hood,
-even though both use the string `"loss"`. The former scores the loss
-projection that came out of a stage-adaptive loss-ratio fit; the latter
-scores a chain ladder applied directly to cumulative loss.
-
 ## See also
 
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md),
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
-[`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md),
+[`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md),
+[`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md),
 [`plot.Backtest()`](https://seokhoonj.github.io/lossratio/reference/plot.Backtest.md)
 
 ## Examples
@@ -156,9 +208,13 @@ scores a chain ladder applied directly to cumulative loss.
 if (FALSE) { # \dontrun{
 data(experience)
 tri <- build_triangle(experience, group_var = coverage)
-bt <- backtest(tri, holdout = 6L)
-print(bt)
-summary(bt)
-plot(bt)
+
+bt_lr      <- backtest(tri, holdout = 6L, target = "lr")
+bt_loss    <- backtest(tri, holdout = 6L, target = "loss")
+bt_premium <- backtest(tri, holdout = 6L, target = "premium")
+
+print(bt_lr)
+summary(bt_lr)
+plot(bt_lr)
 } # }
 ```

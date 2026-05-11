@@ -20,9 +20,8 @@ summary(object, model = NULL, alpha = 1, digits = NULL, ...)
 
   Either `"ata"` (multiplicative chain-ladder factors) or `"ed"`
   (additive exposure-driven intensities). When `model = "ed"`, the link
-  table must have been built with `premium_var` set. The default uses
-  `"ed"` if `attr(object, "premium_var")` is non-`NULL`, otherwise
-  `"ata"`.
+  table must have been built with `exposure` set. The default uses
+  `"ed"` if `attr(object, "exposure")` is non-`NULL`, otherwise `"ata"`.
 
 - alpha, digits, ...:
 

@@ -112,7 +112,6 @@ incremental-LR level (inertia-free per-period quantity).</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">detect_convergence</span><span class="op">(</span></span>
 <span>  <span class="va">triangle</span>,</span>
-<span>  fit_fn <span class="op">=</span> <span class="va">fit_lr</span>,</span>
 <span>  se_mult <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>  max_dv <span class="op">=</span> <span class="fl">0.15</span>,</span>
 <span>  min_run <span class="op">=</span> <span class="fl">3L</span>,</span>
@@ -129,12 +128,6 @@ incremental-LR level (inertia-free per-period quantity).</p>
 
 <dl><dt id="arg-triangle">triangle<a class="anchor" aria-label="anchor" href="#arg-triangle"></a></dt>
 <dd><p>A <code>Triangle</code> object (typically from <code><a href="build_triangle.html">build_triangle()</a></code>).</p></dd>
-
-
-<dt id="arg-fit-fn">fit_fn<a class="anchor" aria-label="anchor" href="#arg-fit-fn"></a></dt>
-<dd><p>Fitting function used to project. Default <a href="fit_lr.html">fit_lr</a>.
-<a href="fit_cl.html">fit_cl</a> is also accepted but <code>fit_lr</code> is recommended because it
-exposes both loss and exposure projections required for portfolio LR.</p></dd>
 
 
 <dt id="arg-se-mult">se_mult<a class="anchor" aria-label="anchor" href="#arg-se-mult"></a></dt>
@@ -168,7 +161,8 @@ backtest. When <code>NULL</code>, set to <code>max(min_run, floor((V - k_star) /
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments forwarded to <code>fit_fn</code>.</p></dd>
+<dd><p>Additional arguments forwarded to <code><a href="backtest.html">backtest()</a></code> (and thence
+to <code><a href="fit_lr.html">fit_lr()</a></code>), e.g. <code>loss_method</code>, <code>recent</code>, <code>regime_break</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

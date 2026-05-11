@@ -7,14 +7,14 @@ The link table is the long-format intermediate underlying both the chain
 ladder (CL) and exposure-driven (ED) workflows. Each row corresponds to
 one development link `(cohort, ata_from -> ata_to)`.
 
-Two modes are produced depending on `premium_var`:
+Two modes are produced depending on `exposure`:
 
-- Single-variable mode (`premium_var = NULL`):
+- Single-variable mode (`exposure = NULL`):
 
   The age-to-age factor is \\ata = value\_{to} / value\_{from}\\, where
-  \\value\\ is the column named by `loss_var`.
+  \\value\\ is the column named by `target`.
 
-- Dual-variable mode (`premium_var` supplied):
+- Dual-variable mode (`exposure` supplied):
 
   In addition to the loss-side ATA, the exposure-driven intensity \\g =
   \Delta loss / premium\_{from}\\ is computed and stored in the
@@ -27,9 +27,9 @@ Two modes are produced depending on `premium_var`:
 ``` r
 build_link(
   x,
-  loss_var = "loss",
-  premium_var = NULL,
-  weight_var = NULL,
+  target = "loss",
+  exposure = NULL,
+  weight = NULL,
   min_denom = 0,
   drop_invalid = FALSE
 )
@@ -41,31 +41,31 @@ build_link(
 
   A `Triangle` object.
 
-- loss_var:
+- target:
 
   A single cumulative metric used as the link numerator. Must be one of
-  `"loss"`, `"premium"`, or `"lr"`. Default `"loss"`. Despite the name,
-  this argument accepts any cumulative metric on the Triangle; `"loss"`
-  reflects the most common use.
+  `"loss"`, `"premium"`, or `"lr"`. Default `"loss"`. Generic worker
+  name; for loss-side ATA this is the cumulative loss column, but any
+  cumulative metric on the Triangle may be supplied.
 
-- premium_var:
+- exposure:
 
   Optional second cumulative metric, treated as the exposure anchor for
   the ED workflow. Must be one of `"loss"`, `"premium"`, `"lr"`, and
-  must differ from `loss_var`. When `NULL` (default), only the
+  must differ from `target`. When `NULL` (default), only the
   single-variable columns are produced.
 
-- weight_var:
+- weight:
 
   Optional cumulative metric used as WLS weight in downstream `summary`
-  / `fit_ata` calls. Must differ from `loss_var`. Cannot be combined
-  with `premium_var` (the dual workflow has its own anchor).
+  / `fit_ata` calls. Must differ from `target`. Cannot be combined with
+  `exposure` (the dual workflow has its own anchor).
 
 - min_denom:
 
   Minimum denominator required to compute `ata` and `intensity`. If
-  `loss_from <= min_denom`, `ata` becomes `NA`; if
-  `premium_from <= min_denom`, `intensity` becomes `NA`. Default `0`.
+  `target_from <= min_denom`, `ata` becomes `NA`; if
+  `exposure_from <= min_denom`, `intensity` becomes `NA`. Default `0`.
 
 - drop_invalid:
 
@@ -78,16 +78,15 @@ build_link(
 A `data.table` of class `"Link"` with columns:
 
 - Always: `[group_var]`, `cohort`, `ata_from`, `ata_to`, `ata_link`,
-  `loss_from`, `loss_to`, `loss_delta`, `ata`.
+  `target_from`, `target_to`, `target_delta`, `ata`.
 
-- If `premium_var` is set: also `premium_from`, `premium_to`,
-  `premium_delta`, `intensity`.
+- If `exposure` is set: also `exposure_from`, `exposure_to`,
+  `exposure_delta`, `intensity`.
 
-- If `weight_var` is set: also `weight`.
+- If `weight` is set: also `weight`.
 
 The returned object carries attributes `group_var`, `cohort_var`,
-`dev_var`, `loss_var`, `premium_var` (or `NULL`), `weight_var` (or
-`NULL`).
+`dev_var`, `target`, `exposure` (or `NULL`), `weight` (or `NULL`).
 
 ## See also
 
@@ -104,10 +103,10 @@ if (FALSE) { # \dontrun{
 tri <- build_triangle(df, group_var = coverage)
 
 # Single-variable: cumulative-loss link factors (ATA workflow)
-link_loss <- build_link(tri, loss_var = "loss")
+link_loss <- build_link(tri, target = "loss")
 
 # Dual-variable: ED-ready link table (loss + premium)
-link_ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
+link_ed <- build_link(tri, target = "loss", exposure = "premium")
 head(link_ed)
 } # }
 ```

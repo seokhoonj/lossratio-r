@@ -21,21 +21,21 @@ The `$full` projection table is produced by delegating to
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
 with `method = "ed"`, so cumulative loss / exposure / loss-ratio
 projections and their standard errors are numerically identical to those
-of `fit_lr(method = "ed")`. This makes
-[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
-usable with `fit_fn = fit_ed`.
+of `fit_lr(method = "ed")`. To validate an ED projection via
+[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md),
+call `backtest(tri, target = "lr", loss_method = "ed")`.
 
 ## Usage
 
 ``` r
 fit_ed(
   x,
-  loss_var = "loss",
-  premium_var = "premium",
+  target = "loss",
+  exposure = "premium",
   method = c("basic", "mack"),
   alpha = 1,
   na_method = c("locf", "zero", "none"),
-  sigma_method = c("min_last2", "locf", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   regime_break = NULL,
   ...
@@ -48,20 +48,17 @@ fit_ed(
 
   A `"Triangle"` object.
 
-- loss_var:
+- target:
 
   Cumulative loss variable. Default `"loss"`. Forwarded to
   [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md)
-  and to
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
-  as `loss_var`.
+  and to downstream workers.
 
-- premium_var:
+- exposure:
 
   Cumulative exposure variable. Default `"premium"`. Forwarded to
   [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md)
-  and to
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md).
+  and to downstream workers.
 
 - method:
 
@@ -79,8 +76,8 @@ fit_ed(
 
 - sigma_method:
 
-  Method used to extrapolate `sigma`. One of `"min_last2"` (default),
-  `"locf"`, or `"loglinear"`.
+  Method used to extrapolate `sigma`. One of `"locf"` (default),
+  `"min_last2"`, or `"loglinear"`.
 
 - recent:
 
@@ -115,11 +112,13 @@ An object of class `"EDFit"` (a named list) with components:
 
 - `full`:
 
-  `data.table` mirroring `LRFit$full` for `method = "ed"`: per-cell
-  cumulative loss / exposure / loss-ratio projection plus SE columns
-  (`loss_proj`, `premium_proj`, `lr_proj`, `se_proj`, `se_lr`, `cv_lr`,
-  ...). Available cells include both observed and projected;
-  `is_observed` flags observed cells.
+  `data.table` of per-cell cumulative target / exposure projection plus
+  role-prefixed SE / CV columns (`target_proj`, `target_incr_proj`,
+  `exposure_proj`, `exposure_incr_proj`, `target_proc_se2`,
+  `target_param_se2`, `target_total_se2`, `target_proc_se`,
+  `target_param_se`, `target_total_se`, `target_total_cv`). Available
+  cells include both observed and projected; `is_observed` flags
+  observed cells.
 
 - `link`:
 

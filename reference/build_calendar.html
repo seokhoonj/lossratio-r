@@ -17,10 +17,10 @@ $$lr = loss / premium$$
 For long-term health insurance applications, risk premium is commonly
 used as the premium measure.
 Proportion variables are computed within each calendar_var cell:
-loss_incr_prop    = loss_incr    / sum(loss_incr)
-premium_incr_prop = premium_incr / sum(premium_incr)
-loss_prop         = loss         / sum(loss)
-premium_prop      = premium      / sum(premium)
+loss_incr_share    = loss_incr    / sum(loss_incr)
+premium_incr_share = premium_incr / sum(premium_incr)
+loss_share         = loss         / sum(loss)
+premium_share      = premium      / sum(premium)
 
 
 Therefore, for a fixed calendar_var cell, the proportions
@@ -43,10 +43,10 @@ $$lr = loss / premium$$
 For long-term health insurance applications, risk premium is commonly
 used as the premium measure.
 Proportion variables are computed within each calendar_var cell:
-loss_incr_prop    = loss_incr    / sum(loss_incr)
-premium_incr_prop = premium_incr / sum(premium_incr)
-loss_prop         = loss         / sum(loss)
-premium_prop      = premium      / sum(premium)
+loss_incr_share    = loss_incr    / sum(loss_incr)
+premium_incr_share = premium_incr / sum(premium_incr)
+loss_share         = loss         / sum(loss)
+premium_share      = premium      / sum(premium)
 
 
 Therefore, for a fixed calendar_var cell, the proportions
@@ -170,10 +170,10 @@ a one-dimensional calendar axis.</p>
 $$lr = loss / premium$$</p>
 <p>For long-term health insurance applications, risk premium is commonly
 used as the <code>premium</code> measure.</p>
-<p>Proportion variables are computed within each <code>calendar_var</code> cell:</p><ul><li><p><code>loss_incr_prop    = loss_incr    / sum(loss_incr)</code></p></li>
-<li><p><code>premium_incr_prop = premium_incr / sum(premium_incr)</code></p></li>
-<li><p><code>loss_prop         = loss         / sum(loss)</code></p></li>
-<li><p><code>premium_prop      = premium      / sum(premium)</code></p></li>
+<p>Proportion variables are computed within each <code>calendar_var</code> cell:</p><ul><li><p><code>loss_incr_share    = loss_incr    / sum(loss_incr)</code></p></li>
+<li><p><code>premium_incr_share = premium_incr / sum(premium_incr)</code></p></li>
+<li><p><code>loss_share         = loss         / sum(loss)</code></p></li>
+<li><p><code>premium_share      = premium      / sum(premium)</code></p></li>
 </ul><p>Therefore, for a fixed <code>calendar_var</code> cell, the proportions
 sum to 1 across groups. These are useful for examining the composition of
 each calendar period across products or other grouping variables.</p>
@@ -277,7 +277,7 @@ different starting periods on a common index scale.</p></dd>
 <dt>profit, profit_incr</dt>
 <dd><p>Profit indicator</p></dd>
 
-<dt>loss_prop, loss_incr_prop, premium_prop, premium_incr_prop</dt>
+<dt>loss_share, loss_incr_share, premium_share, premium_incr_share</dt>
 <dd><p>Proportions within each <code>calendar_var</code> cell</p></dd>
 
 

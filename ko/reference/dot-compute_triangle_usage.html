@@ -104,8 +104,8 @@ forms as <code><a href="fit_lr.html">fit_lr()</a></code> (<code>NULL</code>, <co
 <code>holdout</code> calendar diagonals are flagged <code>"holdout"</code>. The <code>recent</code>
 filter is then evaluated against the post-holdout boundary so the
 recent wedge sits <em>before</em> the holdout wedge (no overlap), matching
-<code><a href="backtest.html">backtest()</a></code> semantics — <code>fit_fn(masked, recent = N, ...)</code> operates
-on the masked triangle whose own max_cal is <code>original - holdout</code>.</p></dd>
+<code><a href="backtest.html">backtest()</a></code> semantics — the internal fitter operates on the masked
+triangle whose own max_cal is <code>original - holdout</code>.</p></dd>
 
 
 <dt id="arg-mat-k">mat_k<a class="anchor" aria-label="anchor" href="#arg-mat-k"></a></dt>

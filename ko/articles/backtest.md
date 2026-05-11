@@ -29,7 +29,7 @@ bt <- backtest(tri_sur, holdout = 6L)
 print(bt)
 #> <Backtest>
 #>   fit_fn   : fit_lr
-#>   metric : lr
+#>   target   : lr
 #>   holdout  : 6 diagonals (159 cells)
 #>   A/E Error: mean 0.21% / median -0.00%
 ```
@@ -186,65 +186,55 @@ Typical choices are `holdout = 6L` (half-year) for monthly triangles, or
 `holdout = 12L` (full year) for stronger validation when the triangle
 has at least 24–30 diagonals of history.
 
-## Choosing the fit function
+## Choosing the projection target
 
-The default fitter is `fit_lr` with `method = "sa"` and `metric = "lr"`.
-The loss ratio is unitless and dimension-free across cohorts of very
-different volume, so `ae_err_mean` and `ae_err_med` carry a consistent
-meaning across the triangle.
+The default is `target = "lr"` with `loss_method = "sa"`. The loss ratio
+is unitless and dimension-free across cohorts of very different volume,
+so `ae_err_mean` and `ae_err_med` carry a consistent meaning across the
+triangle.
 
-> **A note on `loss_var`.** `backtest(loss_var = ...)` is the **score
-> column** — the column on which actual vs. predicted are compared
-> cell-by-cell. It is *not*, in general, the same thing as the
-> `loss_var` argument to a chain-ladder fitter (which selects which
-> column of the triangle to accumulate). With `fit_fn = fit_cl`, the two
-> coincide because
+> **A note on `target`.** `target` is the **score column** — the column
+> on which actual vs. predicted are compared cell-by-cell. It selects
+> which role-specific fitter
 > [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
-> forwards `loss_var` straight through to
-> [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md).
-> With `fit_fn = fit_lr`, the fitter does not take a `loss_var` at all —
-> it always projects `loss`, `premium`, and `lr` jointly — and
-> `loss_var` here only chooses which of those three projection columns
-> on `fit_lr$full` is compared against the held-out actuals:
+> runs internally and which projection column on the fit’s `$full` table
+> is compared against the held-out actuals:
 
-| `loss_var`  | Compared column on `fit_lr$full` |
-|-------------|----------------------------------|
-| `"loss"`    | `loss_proj`                      |
-| `"premium"` | `premium_proj`                   |
-| `"lr"`      | `lr_proj`                        |
+| `target` | Internal fitter | Method arg | Compared column |
+|----|----|----|----|
+| `"lr"` | [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md) | `loss_method` | `lr_proj` |
+| `"loss"` | [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md) | `loss_method` | `loss_proj` |
+| `"premium"` | [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md) | `premium_method` | `premium_proj` |
 
-The `method` argument selects the underlying loss-ratio projection
-strategy: `"sa"` (stage-adaptive, the default) blends exposure-driven
-projections before the maturity point with chain ladder afterwards;
-`"ed"` is purely exposure-driven; `"cl"` is the classical chain ladder
-applied to `lr`.
+The `loss_method` argument selects the underlying loss / loss-ratio
+projection strategy: `"sa"` (stage-adaptive, the default) blends
+exposure-driven projections before the maturity point with chain ladder
+afterwards; `"ed"` is purely exposure-driven; `"cl"` is the classical
+chain ladder. The `premium_method` argument selects the premium
+projection strategy when `target = "premium"`.
 
 ``` r
 
-bt_sa       <- backtest(tri_sur, holdout = 6L, method = "sa")  # default
-bt_ed       <- backtest(tri_sur, holdout = 6L, method = "ed")
-bt_cl       <- backtest(tri_sur, holdout = 6L, method = "cl")
+bt_sa       <- backtest(tri_sur, holdout = 6L, loss_method = "sa")  # default
+bt_ed       <- backtest(tri_sur, holdout = 6L, loss_method = "ed")
+bt_cl       <- backtest(tri_sur, holdout = 6L, loss_method = "cl")
 
 bt_loss     <- backtest(tri_sur, holdout = 6L,
-                        fit_fn = fit_cl, metric = "loss")
+                        target = "loss", loss_method = "cl")
 bt_premium  <- backtest(tri_sur, holdout = 6L,
-                        fit_fn = fit_cl, metric = "premium")
+                        target = "premium", premium_method = "cl")
 
 print(bt_sa)
 #> <Backtest>
 #>   fit_fn   : fit_lr
-#>   metric : lr
+#>   target   : lr
 #>   holdout  : 6 diagonals (159 cells)
 #>   A/E Error: mean 0.21% / median -0.00%
 ```
 
-For monetary impact (loss or premium) backtesting we use `fit_cl`
-directly — `fit_lr` / `fit_ed` are ratio-fits and only support
-`metric = "lr"` (use `fit_cl` for non-ratio columns).
-
-If you only need to project a single triangle column (e.g., raw
-cumulative loss without forming a ratio), `fit_fn = fit_cl` is also
-supported.
+For monetary impact (loss or premium) backtesting, set `target = "loss"`
+or `target = "premium"` to score the corresponding projection lane
+directly.
 
 ## See also
 

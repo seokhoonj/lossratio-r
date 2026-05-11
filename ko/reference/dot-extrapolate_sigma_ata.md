@@ -7,7 +7,7 @@ filtered ata factor table. Three methods are supported: `"min_last2"`,
 ## Usage
 
 ``` r
-.extrapolate_sigma_ata(x, method = c("min_last2", "locf", "loglinear"))
+.extrapolate_sigma_ata(x, method = c("locf", "min_last2", "loglinear"))
 ```
 
 ## Arguments
@@ -20,7 +20,7 @@ filtered ata factor table. Three methods are supported: `"min_last2"`,
 
 - method:
 
-  One of `"min_last2"` (default), `"locf"`, or `"loglinear"`.
+  One of `"locf"` (default), `"min_last2"`, or `"loglinear"`.
 
 ## Value
 

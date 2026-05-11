@@ -27,7 +27,12 @@ Equivalent to classical Mack model.
 
 
 In all cases, exposure is projected forward using chain ladder:
-$$\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}$$"><meta property="og:description" content="Unified interface for loss ratio projection from a &quot;Triangle&quot; object.
+$$\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}$$
+This function is the composition layer over fit_loss() and
+fit_premium(): it delegates loss projection to fit_loss(),
+retrieves the embedded PremiumFit, and composes the loss-ratio
+point + variance via the delta method (se_method = &quot;fixed&quot; or
+&quot;delta&quot;). See ARCHITECTURE.md for the layered design."><meta property="og:description" content="Unified interface for loss ratio projection from a &quot;Triangle&quot; object.
 Three projection methods are available:
 
 &quot;sa&quot; (default)
@@ -55,7 +60,12 @@ Equivalent to classical Mack model.
 
 
 In all cases, exposure is projected forward using chain ladder:
-$$\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}$$"><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
+$$\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}$$
+This function is the composition layer over fit_loss() and
+fit_premium(): it delegates loss projection to fit_loss(),
+retrieves the embedded PremiumFit, and composes the loss-ratio
+point + variance via the delta method (se_method = &quot;fixed&quot; or
+&quot;delta&quot;). See ARCHITECTURE.md for the layered design."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
@@ -138,6 +148,11 @@ Equivalent to classical Mack model.</p></dd>
 
 </dl><p>In all cases, exposure is projected forward using chain ladder:
 $$\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}$$</p>
+<p>This function is the <em>composition</em> layer over <code><a href="fit_loss.html">fit_loss()</a></code> and
+<code><a href="fit_premium.html">fit_premium()</a></code>: it delegates loss projection to <code><a href="fit_loss.html">fit_loss()</a></code>,
+retrieves the embedded <code>PremiumFit</code>, and composes the loss-ratio
+point + variance via the delta method (<code>se_method = "fixed"</code> or
+<code>"delta"</code>). See <code>ARCHITECTURE.md</code> for the layered design.</p>
     </div>
 
     <div class="section level2">
@@ -145,17 +160,17 @@ $$\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}$$</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fit_lr</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sa"</span>, <span class="st">"ed"</span>, <span class="st">"cl"</span><span class="op">)</span>,</span>
-<span>  loss_var <span class="op">=</span> <span class="st">"loss"</span>,</span>
-<span>  premium_var <span class="op">=</span> <span class="st">"premium"</span>,</span>
 <span>  loss_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  loss_regime_break <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  premium_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cl"</span>, <span class="st">"ed"</span><span class="op">)</span>,</span>
 <span>  premium_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  delta_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"simple"</span>, <span class="st">"full"</span><span class="op">)</span>,</span>
-<span>  rho <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  conf_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
-<span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"min_last2"</span>, <span class="st">"locf"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
+<span>  premium_regime_break <span class="op">=</span> <span class="va">loss_regime_break</span>,</span>
+<span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  regime_break <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maturity_args <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  se_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fixed"</span>, <span class="st">"delta"</span><span class="op">)</span>,</span>
+<span>  rho <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>  conf_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  bootstrap <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  B <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span></span>
@@ -167,20 +182,12 @@ $$\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}$$</p>
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>An object of class <code>"Triangle"</code>.</p></dd>
+<dd><p>An object of class <code>"Triangle"</code>. The standardized <code>"loss"</code>
+and <code>"premium"</code> columns are used (<code><a href="build_triangle.html">build_triangle()</a></code> produces these).</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>One of <code>"sa"</code>, <code>"ed"</code>, or <code>"cl"</code>.
-Default is <code>"sa"</code>.</p></dd>
-
-
-<dt id="arg-loss-var">loss_var<a class="anchor" aria-label="anchor" href="#arg-loss-var"></a></dt>
-<dd><p>Cumulative loss variable. Default is <code>"loss"</code>.</p></dd>
-
-
-<dt id="arg-premium-var">premium_var<a class="anchor" aria-label="anchor" href="#arg-premium-var"></a></dt>
-<dd><p>Cumulative exposure variable. Default is <code>"premium"</code>.</p></dd>
+<dd><p>One of <code>"sa"</code> (default), <code>"ed"</code>, or <code>"cl"</code>.</p></dd>
 
 
 <dt id="arg-loss-alpha">loss_alpha<a class="anchor" aria-label="anchor" href="#arg-loss-alpha"></a></dt>
@@ -188,53 +195,12 @@ Default is <code>"sa"</code>.</p></dd>
 loss estimation. Default is <code>1</code>.</p></dd>
 
 
-<dt id="arg-premium-alpha">premium_alpha<a class="anchor" aria-label="anchor" href="#arg-premium-alpha"></a></dt>
-<dd><p>Numeric scalar for exposure chain ladder. Default
-is <code>1</code>.</p></dd>
-
-
-<dt id="arg-delta-method">delta_method<a class="anchor" aria-label="anchor" href="#arg-delta-method"></a></dt>
-<dd><p>Method for computing <code>se_lr = SE(L/E)</code>. One of:</p><dl><dt><code>"simple"</code> (default)</dt>
-<dd><p><code>se_lr = se_proj / premium_proj</code>,
-treats exposure as fixed.</p></dd>
-
-<dt><code>"full"</code></dt>
-<dd><p>Full delta method with exposure uncertainty and
-loss-exposure correlation:
-$$\mathrm{Var}(L/E) \approx \frac{\mathrm{Var}(L)}{E^2}
-        + \frac{L^2 \mathrm{Var}(E)}{E^4}
-        - \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(E)}{E^3}$$</p></dd>
-
-
-</dl></dd>
-
-
-<dt id="arg-rho">rho<a class="anchor" aria-label="anchor" href="#arg-rho"></a></dt>
-<dd><p>Numeric scalar in <code>(-1, 1)</code>; assumed correlation between
-ultimate loss and ultimate exposure. Only used when
-<code>delta_method = "full"</code>. Default is <code>0</code>.</p></dd>
-
-
-<dt id="arg-conf-level">conf_level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
-<dd><p>Confidence level used for <code>ci_lower</code>/<code>ci_upper</code> in
-the cohort summary. Default is <code>0.95</code>.</p></dd>
-
-
-<dt id="arg-sigma-method">sigma_method<a class="anchor" aria-label="anchor" href="#arg-sigma-method"></a></dt>
-<dd><p>Sigma extrapolation method. One of <code>"min_last2"</code>
-(default), <code>"locf"</code>, or <code>"loglinear"</code>.</p></dd>
-
-
-<dt id="arg-recent">recent<a class="anchor" aria-label="anchor" href="#arg-recent"></a></dt>
-<dd><p>Optional positive integer for estimation window.
-Default is <code>NULL</code>.</p></dd>
-
-
-<dt id="arg-regime-break">regime_break<a class="anchor" aria-label="anchor" href="#arg-regime-break"></a></dt>
-<dd><p>Optional cohort cutoff for the regime break. Accepts:
-<code>NULL</code> (default, no filter), a single <code>Date</code>/character coercible to Date,
-a vector of dates (uses the latest), or a <code>Regime</code> object (extracts
-the latest from <code>$breakpoints</code>). Behavior depends on <code>method</code>:</p><dl><dt><code>"sa"</code></dt>
+<dt id="arg-loss-regime-break">loss_regime_break<a class="anchor" aria-label="anchor" href="#arg-loss-regime-break"></a></dt>
+<dd><p>Optional cohort cutoff for the loss-side regime
+break. Accepts: <code>NULL</code> (default, no filter), a single <code>Date</code>/character
+coercible to Date, a vector of dates (uses the latest), or a <code>Regime</code>
+object (extracts the latest from <code>$breakpoints</code>). Behavior depends on
+<code>method</code>:</p><dl><dt><code>"sa"</code></dt>
 <dd><p>Hybrid filter. Pre-break cohorts are dropped only for
 development periods at or before the maturity point (ED phase);
 post-maturity (CL) cells use the <code>recent</code>-diagonal window across
@@ -249,11 +215,69 @@ the break date are excluded from estimation.</p></dd>
 </dl></dd>
 
 
+<dt id="arg-premium-method">premium_method<a class="anchor" aria-label="anchor" href="#arg-premium-method"></a></dt>
+<dd><p>One of <code>"cl"</code> (default) or <code>"ed"</code>. Forwarded to
+<code><a href="fit_premium.html">fit_premium()</a></code> when constructing the premium projection.</p></dd>
+
+
+<dt id="arg-premium-alpha">premium_alpha<a class="anchor" aria-label="anchor" href="#arg-premium-alpha"></a></dt>
+<dd><p>Numeric scalar for premium chain ladder. Default
+is <code>1</code>.</p></dd>
+
+
+<dt id="arg-premium-regime-break">premium_regime_break<a class="anchor" aria-label="anchor" href="#arg-premium-regime-break"></a></dt>
+<dd><p>Premium-side regime break. Defaults to
+<code>loss_regime_break</code> (loss and premium share a cutoff unless explicitly
+separated).</p></dd>
+
+
+<dt id="arg-sigma-method">sigma_method<a class="anchor" aria-label="anchor" href="#arg-sigma-method"></a></dt>
+<dd><p>Sigma extrapolation method. One of <code>"locf"</code>
+(default), <code>"min_last2"</code>, or <code>"loglinear"</code>.</p></dd>
+
+
+<dt id="arg-recent">recent<a class="anchor" aria-label="anchor" href="#arg-recent"></a></dt>
+<dd><p>Optional positive integer for estimation window.
+Default is <code>NULL</code>.</p></dd>
+
+
 <dt id="arg-maturity-args">maturity_args<a class="anchor" aria-label="anchor" href="#arg-maturity-args"></a></dt>
 <dd><p>A named list forwarded to <code><a href="detect_maturity.html">detect_maturity()</a></code>,
 or <code>NULL</code> (default) to skip maturity filtering. When
 <code>method = "sa"</code>, this also determines the switch point between
 ED and CL. Pass <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> to use all defaults.</p></dd>
+
+
+<dt id="arg-se-method">se_method<a class="anchor" aria-label="anchor" href="#arg-se-method"></a></dt>
+<dd><p>Method for computing <code>lr_se = SE(L/P)</code>. One of:</p><dl><dt><code>"fixed"</code> (default)</dt>
+<dd><p>Premium treated as fixed (non-random).
+\(\mathrm{SE}(L/P) = \mathrm{SE}(L) / P\). Strictly, this is
+the delta method with <code>Var(P) = 0</code> and <code>Cov(L,P) = 0</code>, i.e., a
+degenerate case under the assumption that premium is known.</p></dd>
+
+<dt><code>"delta"</code></dt>
+<dd><p>Full delta method including premium uncertainty
+and the loss-premium correlation <code>rho</code>:
+$$\mathrm{Var}(L/P) \approx \frac{\mathrm{Var}(L)}{P^2}
+        + \frac{L^2 \mathrm{Var}(P)}{P^4}
+        - \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(P)}{P^3}$$</p></dd>
+
+
+</dl></dd>
+
+
+<dt id="arg-rho">rho<a class="anchor" aria-label="anchor" href="#arg-rho"></a></dt>
+<dd><p>Numeric scalar in <code>(-1, 1)</code>; assumed correlation between
+ultimate loss and ultimate premium. Only used when
+<code>se_method = "delta"</code>. Default is <code>0.95</code>, matching the strong
+positive correlation typically observed between cumulative loss
+and cumulative premium in long-tail health portfolios (analogous
+to the paid/incurred correlation used in Munich chain ladder).</p></dd>
+
+
+<dt id="arg-conf-level">conf_level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
+<dd><p>Confidence level used for <code>lr_ci_lower</code>/<code>lr_ci_upper</code>
+in the cohort summary. Default is <code>0.95</code>.</p></dd>
 
 
 <dt id="arg-bootstrap">bootstrap<a class="anchor" aria-label="anchor" href="#arg-bootstrap"></a></dt>
@@ -278,8 +302,8 @@ Default is <code>NULL</code>.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="build_triangle.html">build_triangle()</a></code>, <code><a href="build_link.html">build_link()</a></code>, <code><a href="fit_ata.html">fit_ata()</a></code>,
-<code><a href="fit_ed.html">fit_ed()</a></code>, <code><a href="detect_maturity.html">detect_maturity()</a></code></p></div>
+    <div class="dont-index"><p><code><a href="fit_loss.html">fit_loss()</a></code>, <code><a href="fit_premium.html">fit_premium()</a></code>, <code><a href="build_triangle.html">build_triangle()</a></code>,
+<code><a href="build_link.html">build_link()</a></code>, <code><a href="fit_ata.html">fit_ata()</a></code>, <code><a href="fit_ed.html">fit_ed()</a></code>, <code><a href="detect_maturity.html">detect_maturity()</a></code></p></div>
     </div>
 
     <div class="section level2">

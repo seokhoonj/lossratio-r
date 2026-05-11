@@ -29,23 +29,33 @@ Three projection methods are available:
 In all cases, exposure is projected forward using chain ladder:
 \$\$\hat{C}^P\_{i,k+1} = f^P_k \cdot \hat{C}^P\_{i,k}\$\$
 
+This function is the *composition* layer over
+[`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+and
+[`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md):
+it delegates loss projection to
+[`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md),
+retrieves the embedded `PremiumFit`, and composes the loss-ratio point +
+variance via the delta method (`se_method = "fixed"` or `"delta"`). See
+`ARCHITECTURE.md` for the layered design.
+
 ## Usage
 
 ``` r
 fit_lr(
   x,
   method = c("sa", "ed", "cl"),
-  loss_var = "loss",
-  premium_var = "premium",
   loss_alpha = 1,
+  loss_regime_break = NULL,
+  premium_method = c("cl", "ed"),
   premium_alpha = 1,
-  delta_method = c("simple", "full"),
-  rho = 0,
-  conf_level = 0.95,
-  sigma_method = c("min_last2", "locf", "loglinear"),
+  premium_regime_break = loss_regime_break,
+  sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  regime_break = NULL,
   maturity_args = NULL,
+  se_method = c("fixed", "delta"),
+  rho = 0.95,
+  conf_level = 0.95,
   bootstrap = FALSE,
   B = 1000,
   seed = NULL
@@ -56,70 +66,26 @@ fit_lr(
 
 - x:
 
-  An object of class `"Triangle"`.
+  An object of class `"Triangle"`. The standardized `"loss"` and
+  `"premium"` columns are used
+  ([`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
+  produces these).
 
 - method:
 
-  One of `"sa"`, `"ed"`, or `"cl"`. Default is `"sa"`.
-
-- loss_var:
-
-  Cumulative loss variable. Default is `"loss"`.
-
-- premium_var:
-
-  Cumulative exposure variable. Default is `"premium"`.
+  One of `"sa"` (default), `"ed"`, or `"cl"`.
 
 - loss_alpha:
 
   Numeric scalar controlling the variance structure for loss estimation.
   Default is `1`.
 
-- premium_alpha:
+- loss_regime_break:
 
-  Numeric scalar for exposure chain ladder. Default is `1`.
-
-- delta_method:
-
-  Method for computing `se_lr = SE(L/E)`. One of:
-
-  `"simple"` (default)
-
-  :   `se_lr = se_proj / premium_proj`, treats exposure as fixed.
-
-  `"full"`
-
-  :   Full delta method with exposure uncertainty and loss-exposure
-      correlation: \$\$\mathrm{Var}(L/E) \approx
-      \frac{\mathrm{Var}(L)}{E^2} + \frac{L^2 \mathrm{Var}(E)}{E^4} -
-      \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(E)}{E^3}\$\$
-
-- rho:
-
-  Numeric scalar in `(-1, 1)`; assumed correlation between ultimate loss
-  and ultimate exposure. Only used when `delta_method = "full"`. Default
-  is `0`.
-
-- conf_level:
-
-  Confidence level used for `ci_lower`/`ci_upper` in the cohort summary.
-  Default is `0.95`.
-
-- sigma_method:
-
-  Sigma extrapolation method. One of `"min_last2"` (default), `"locf"`,
-  or `"loglinear"`.
-
-- recent:
-
-  Optional positive integer for estimation window. Default is `NULL`.
-
-- regime_break:
-
-  Optional cohort cutoff for the regime break. Accepts: `NULL` (default,
-  no filter), a single `Date`/character coercible to Date, a vector of
-  dates (uses the latest), or a `Regime` object (extracts the latest
-  from `$breakpoints`). Behavior depends on `method`:
+  Optional cohort cutoff for the loss-side regime break. Accepts: `NULL`
+  (default, no filter), a single `Date`/character coercible to Date, a
+  vector of dates (uses the latest), or a `Regime` object (extracts the
+  latest from `$breakpoints`). Behavior depends on `method`:
 
   `"sa"`
 
@@ -134,6 +100,30 @@ fit_lr(
   :   Simple cohort cut: all cohorts strictly before the break date are
       excluded from estimation.
 
+- premium_method:
+
+  One of `"cl"` (default) or `"ed"`. Forwarded to
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+  when constructing the premium projection.
+
+- premium_alpha:
+
+  Numeric scalar for premium chain ladder. Default is `1`.
+
+- premium_regime_break:
+
+  Premium-side regime break. Defaults to `loss_regime_break` (loss and
+  premium share a cutoff unless explicitly separated).
+
+- sigma_method:
+
+  Sigma extrapolation method. One of `"locf"` (default), `"min_last2"`,
+  or `"loglinear"`.
+
+- recent:
+
+  Optional positive integer for estimation window. Default is `NULL`.
+
 - maturity_args:
 
   A named list forwarded to
@@ -141,6 +131,38 @@ fit_lr(
   or `NULL` (default) to skip maturity filtering. When `method = "sa"`,
   this also determines the switch point between ED and CL. Pass
   [`list()`](https://rdrr.io/r/base/list.html) to use all defaults.
+
+- se_method:
+
+  Method for computing `lr_se = SE(L/P)`. One of:
+
+  `"fixed"` (default)
+
+  :   Premium treated as fixed (non-random). \\\mathrm{SE}(L/P) =
+      \mathrm{SE}(L) / P\\. Strictly, this is the delta method with
+      `Var(P) = 0` and `Cov(L,P) = 0`, i.e., a degenerate case under the
+      assumption that premium is known.
+
+  `"delta"`
+
+  :   Full delta method including premium uncertainty and the
+      loss-premium correlation `rho`: \$\$\mathrm{Var}(L/P) \approx
+      \frac{\mathrm{Var}(L)}{P^2} + \frac{L^2 \mathrm{Var}(P)}{P^4} -
+      \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(P)}{P^3}\$\$
+
+- rho:
+
+  Numeric scalar in `(-1, 1)`; assumed correlation between ultimate loss
+  and ultimate premium. Only used when `se_method = "delta"`. Default is
+  `0.95`, matching the strong positive correlation typically observed
+  between cumulative loss and cumulative premium in long-tail health
+  portfolios (analogous to the paid/incurred correlation used in Munich
+  chain ladder).
+
+- conf_level:
+
+  Confidence level used for `lr_ci_lower`/`lr_ci_upper` in the cohort
+  summary. Default is `0.95`.
 
 - bootstrap:
 
@@ -163,6 +185,8 @@ An object of class `"LRFit"`.
 
 ## See also
 
+[`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md),
+[`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md),
 [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md),
 [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md),
 [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md),

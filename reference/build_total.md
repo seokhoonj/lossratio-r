@@ -119,11 +119,11 @@ A data.frame with class `"Total"` containing:
 
   Total loss ratio (`loss / premium`)
 
-- loss_prop:
+- loss_share:
 
   Share of total loss
 
-- premium_prop:
+- premium_share:
 
   Share of total premium
 

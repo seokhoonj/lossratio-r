@@ -32,13 +32,19 @@ It provides:
 - Three aggregation frameworks of the experience data: cohort × dev
   (`Triangle`), calendar period (`Calendar`), and portfolio total
   (`Total`)
-- Age-to-age (`ATA`) and exposure-driven (`ED`) development modeling
-- Chain ladder projection (`fit_cl`) and loss ratio projection
-  (`fit_lr`) with three methods:
+- Age-to-age (`ATA`) and exposure-driven (`ED`) development modeling via
+  the worker layer (`fit_cl`, `fit_ed`, `fit_ata`, `fit_intensity`)
+- Role-specific dispatchers (`fit_loss`, `fit_premium`) that project a
+  single side with standard errors and confidence intervals
+- Loss ratio projection (`fit_lr`) composes loss and premium fits with
+  three methods:
   - `"sa"` — **stage-adaptive** (default): exposure-driven before
     maturity, chain ladder after
   - `"ed"` — exposure-driven for all development periods
-  - `"cl"` — classical chain ladder (Mack model)
+  - `"cl"` — classical chain ladder (Mack model) Standard errors via
+    `se_method = "fixed"` (premium treated as known) or `"delta"` (delta
+    method on `L / P`); CIs via `conf_level`; bootstrap option for
+    empirical CIs.
 - Cell-selection diagnostics — which cells to use for estimation:
   - `detect_maturity` — dev axis: link beyond which ATA factors are
     stable
@@ -80,8 +86,12 @@ per-period values carry an `_incr` (incremental) suffix:
 
 Raw `experience` input is per-period only (`loss_incr`, `premium_incr`);
 [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
-produces both forms in the output. Fit functions take `loss_var` and
-`premium_var` arguments (defaults to the cumulative slot names).
+produces both forms in the output. Worker fit functions (`fit_cl`,
+`fit_ed`, `fit_ata`, `fit_intensity`) take generic `target` / `exposure`
+/ `weight` arguments; dispatcher functions (`fit_loss`, `fit_premium`)
+and the composition `fit_lr` use role-specific `loss_*` / `premium_*`
+argument names. Cumulative slots (`"loss"`, `"premium"`) are the
+defaults.
 
 ## Installation
 
@@ -116,10 +126,10 @@ plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
 
 # Exposure-driven fit (additive ED intensity)
-ed <- fit_ed(tri, value_var = "loss", premium_var = "premium")
+ed <- fit_ed(tri, target = "loss", exposure = "premium")
 
 # Chain ladder fit (multiplicative ATA factors)
-cl <- fit_cl(tri, value_var = "loss", method = "mack")
+cl <- fit_cl(tri, target = "loss")
 plot(cl, type = "projection")
 
 # Loss ratio fit (stage-adaptive by default — ED before maturity, CL after)
@@ -128,8 +138,8 @@ plot(lr, type = "lr")
 summary(lr)
 
 # Cell selection: maturity (dev axis) + regime (cohort axis)
-detect_maturity(tri[cv_nm == "SUR"])
-detect_regime(tri[cv_nm == "SUR"], K = 12, method = "ecp")
+detect_maturity(tri[coverage == "SUR"])
+detect_regime(tri[coverage == "SUR"], K = 12, method = "e_divisive")
 
 # Projection diagnostic: when does the projected ultimate LR stop revising?
 detect_convergence(lr)
@@ -147,8 +157,9 @@ The same long-format experience data can be viewed three ways:
 
 After `build_triangle`, downstream columns are standardized to `cohort`
 and `dev` regardless of input granularity (`uy_m` / `uy_q` / `uy_a`,
-etc.). Original column names and granularity are preserved as attributes
-(`cohort_var`, `cohort_type`, `dev_var`, `dev_type`).
+etc.). Original column names are preserved as attributes (`cohort_var`,
+`calendar_var`, `dev_var`); grain is stored as `grain` (`"M"`/`"Q"`/
+`"S"`/`"A"`).
 
 ## Methods
 

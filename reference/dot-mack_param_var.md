@@ -8,5 +8,5 @@ Internal helper computing:
 ## Usage
 
 ``` r
-.mack_param_var(value_proj, f_selected, f_var, last_obs)
+.mack_param_var(target_proj, f_selected, f_var, last_obs)
 ```

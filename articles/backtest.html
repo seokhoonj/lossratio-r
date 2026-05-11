@@ -168,7 +168,7 @@ actual exceeded expected) and negative values flag over-projection.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Backtest&gt;</span></span>
 <span><span class="co">#&gt;   fit_fn   : fit_lr</span></span>
-<span><span class="co">#&gt;   metric : lr</span></span>
+<span><span class="co">#&gt;   target   : lr</span></span>
 <span><span class="co">#&gt;   holdout  : 6 diagonals (159 cells)</span></span>
 <span><span class="co">#&gt;   A/E Error: mean 0.21% / median -0.00%</span></span></code></pre></div>
 <p>The returned object is a <code>"Backtest"</code> list with these key
@@ -311,79 +311,81 @@ validation when the triangle has at least 24–30 diagonals of
 history.</p>
 </div>
 <div class="section level2">
-<h2 id="choosing-the-fit-function">Choosing the fit function<a class="anchor" aria-label="anchor" href="#choosing-the-fit-function"></a>
+<h2 id="choosing-the-projection-target">Choosing the projection target<a class="anchor" aria-label="anchor" href="#choosing-the-projection-target"></a>
 </h2>
-<p>The default fitter is <code>fit_lr</code> with
-<code>method = "sa"</code> and <code>metric = "lr"</code>. The loss
-ratio is unitless and dimension-free across cohorts of very different
-volume, so <code>ae_err_mean</code> and <code>ae_err_med</code> carry a
-consistent meaning across the triangle.</p>
+<p>The default is <code>target = "lr"</code> with
+<code>loss_method = "sa"</code>. The loss ratio is unitless and
+dimension-free across cohorts of very different volume, so
+<code>ae_err_mean</code> and <code>ae_err_med</code> carry a consistent
+meaning across the triangle.</p>
 <blockquote>
-<p><strong>A note on <code>loss_var</code>.</strong>
-<code>backtest(loss_var = ...)</code> is the <strong>score
-column</strong> — the column on which actual vs. predicted are compared
-cell-by-cell. It is <em>not</em>, in general, the same thing as the
-<code>loss_var</code> argument to a chain-ladder fitter (which selects
-which column of the triangle to accumulate). With
-<code>fit_fn = fit_cl</code>, the two coincide because
-<code><a href="../reference/backtest.html">backtest()</a></code> forwards <code>loss_var</code> straight through
-to <code><a href="../reference/fit_cl.html">fit_cl()</a></code>. With <code>fit_fn = fit_lr</code>, the fitter
-does not take a <code>loss_var</code> at all — it always projects
-<code>loss</code>, <code>premium</code>, and <code>lr</code> jointly —
-and <code>loss_var</code> here only chooses which of those three
-projection columns on <code>fit_lr$full</code> is compared against the
+<p><strong>A note on <code>target</code>.</strong> <code>target</code>
+is the <strong>score column</strong> — the column on which actual
+vs. predicted are compared cell-by-cell. It selects which role-specific
+fitter <code><a href="../reference/backtest.html">backtest()</a></code> runs internally and which projection
+column on the fit’s <code>$full</code> table is compared against the
 held-out actuals:</p>
 </blockquote>
 <table class="table">
+<colgroup>
+<col width="18%">
+<col width="31%">
+<col width="25%">
+<col width="24%">
+</colgroup>
 <thead><tr class="header">
-<th><code>loss_var</code></th>
-<th>Compared column on <code>fit_lr$full</code>
-</th>
+<th><code>target</code></th>
+<th>Internal fitter</th>
+<th>Method arg</th>
+<th>Compared column</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>"loss"</code></td>
-<td><code>loss_proj</code></td>
+<td><code>"lr"</code></td>
+<td><code><a href="../reference/fit_lr.html">fit_lr()</a></code></td>
+<td><code>loss_method</code></td>
+<td><code>lr_proj</code></td>
 </tr>
 <tr class="even">
-<td><code>"premium"</code></td>
-<td><code>premium_proj</code></td>
+<td><code>"loss"</code></td>
+<td><code><a href="../reference/fit_loss.html">fit_loss()</a></code></td>
+<td><code>loss_method</code></td>
+<td><code>loss_proj</code></td>
 </tr>
 <tr class="odd">
-<td><code>"lr"</code></td>
-<td><code>lr_proj</code></td>
+<td><code>"premium"</code></td>
+<td><code><a href="../reference/fit_premium.html">fit_premium()</a></code></td>
+<td><code>premium_method</code></td>
+<td><code>premium_proj</code></td>
 </tr>
 </tbody>
 </table>
-<p>The <code>method</code> argument selects the underlying loss-ratio
-projection strategy: <code>"sa"</code> (stage-adaptive, the default)
-blends exposure-driven projections before the maturity point with chain
-ladder afterwards; <code>"ed"</code> is purely exposure-driven;
-<code>"cl"</code> is the classical chain ladder applied to
-<code>lr</code>.</p>
+<p>The <code>loss_method</code> argument selects the underlying loss /
+loss-ratio projection strategy: <code>"sa"</code> (stage-adaptive, the
+default) blends exposure-driven projections before the maturity point
+with chain ladder afterwards; <code>"ed"</code> is purely
+exposure-driven; <code>"cl"</code> is the classical chain ladder. The
+<code>premium_method</code> argument selects the premium projection
+strategy when <code>target = "premium"</code>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">bt_sa</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span>  <span class="co"># default</span></span>
-<span><span class="va">bt_ed</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span></span>
-<span><span class="va">bt_cl</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">bt_sa</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span>  <span class="co"># default</span></span>
+<span><span class="va">bt_ed</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span></span>
+<span><span class="va">bt_cl</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">bt_loss</span>     <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>,</span>
-<span>                        fit_fn <span class="op">=</span> <span class="va">fit_cl</span>, metric <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
+<span>                        target <span class="op">=</span> <span class="st">"loss"</span>, loss_method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
 <span><span class="va">bt_premium</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>,</span>
-<span>                        fit_fn <span class="op">=</span> <span class="va">fit_cl</span>, metric <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
+<span>                        target <span class="op">=</span> <span class="st">"premium"</span>, premium_method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt_sa</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Backtest&gt;</span></span>
 <span><span class="co">#&gt;   fit_fn   : fit_lr</span></span>
-<span><span class="co">#&gt;   metric : lr</span></span>
+<span><span class="co">#&gt;   target   : lr</span></span>
 <span><span class="co">#&gt;   holdout  : 6 diagonals (159 cells)</span></span>
 <span><span class="co">#&gt;   A/E Error: mean 0.21% / median -0.00%</span></span></code></pre></div>
-<p>For monetary impact (loss or premium) backtesting we use
-<code>fit_cl</code> directly — <code>fit_lr</code> / <code>fit_ed</code>
-are ratio-fits and only support <code>metric = "lr"</code> (use
-<code>fit_cl</code> for non-ratio columns).</p>
-<p>If you only need to project a single triangle column (e.g., raw
-cumulative loss without forming a ratio), <code>fit_fn = fit_cl</code>
-is also supported.</p>
+<p>For monetary impact (loss or premium) backtesting, set
+<code>target = "loss"</code> or <code>target = "premium"</code> to score
+the corresponding projection lane directly.</p>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>

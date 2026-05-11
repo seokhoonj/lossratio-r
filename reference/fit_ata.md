@@ -18,11 +18,11 @@ Estimate age-to-age (ata) development factors from an object of class
 ``` r
 fit_ata(
   x,
-  loss_var = "loss",
-  weight_var = NULL,
+  target = "loss",
+  weight = NULL,
   alpha = 1,
   na_method = c("locf", "none"),
-  sigma_method = c("min_last2", "locf", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   regime_break = NULL,
   maturity_args = NULL,
@@ -37,12 +37,12 @@ fit_ata(
   An object of class `"Link"`, typically produced by
   [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md).
 
-- loss_var:
+- target:
 
   Cumulative metric for the link factor. Default `"loss"`. Forwarded to
   [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md).
 
-- weight_var:
+- weight:
 
   Optional WLS weight variable. Forwarded to
   [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md).
@@ -60,7 +60,7 @@ fit_ata(
 - sigma_method:
 
   Method used to extrapolate `sigma` for links where it cannot be
-  estimated. One of `"min_last2"` (default), `"locf"`, or `"loglinear"`.
+  estimated. One of `"locf"` (default), `"min_last2"`, or `"loglinear"`.
   Passed to
   [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio/reference/dot-extrapolate_sigma_ata.md).
 

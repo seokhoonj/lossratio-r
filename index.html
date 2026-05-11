@@ -143,15 +143,16 @@
 <p>It provides:</p>
 <ul>
 <li>Three aggregation frameworks of the experience data: cohort × dev (<code>Triangle</code>), calendar period (<code>Calendar</code>), and portfolio total (<code>Total</code>)</li>
-<li>Age-to-age (<code>ATA</code>) and exposure-driven (<code>ED</code>) development modeling</li>
-<li>Chain ladder projection (<code>fit_cl</code>) and loss ratio projection (<code>fit_lr</code>) with three methods:
+<li>Age-to-age (<code>ATA</code>) and exposure-driven (<code>ED</code>) development modeling via the worker layer (<code>fit_cl</code>, <code>fit_ed</code>, <code>fit_ata</code>, <code>fit_intensity</code>)</li>
+<li>Role-specific dispatchers (<code>fit_loss</code>, <code>fit_premium</code>) that project a single side with standard errors and confidence intervals</li>
+<li>Loss ratio projection (<code>fit_lr</code>) composes loss and premium fits with three methods:
 <ul>
 <li>
 <code>"sa"</code> — <strong>stage-adaptive</strong> (default): exposure-driven before maturity, chain ladder after</li>
 <li>
 <code>"ed"</code> — exposure-driven for all development periods</li>
 <li>
-<code>"cl"</code> — classical chain ladder (Mack model)</li>
+<code>"cl"</code> — classical chain ladder (Mack model) Standard errors via <code>se_method = "fixed"</code> (premium treated as known) or <code>"delta"</code> (delta method on <code>L / P</code>); CIs via <code>conf_level</code>; bootstrap option for empirical CIs.</li>
 </ul>
 </li>
 <li>Cell-selection diagnostics — which cells to use for estimation:
@@ -257,7 +258,7 @@
 </tr>
 </tbody>
 </table>
-<p>Raw <code>experience</code> input is per-period only (<code>loss_incr</code>, <code>premium_incr</code>); <code><a href="reference/build_triangle.html">build_triangle()</a></code> produces both forms in the output. Fit functions take <code>loss_var</code> and <code>premium_var</code> arguments (defaults to the cumulative slot names).</p>
+<p>Raw <code>experience</code> input is per-period only (<code>loss_incr</code>, <code>premium_incr</code>); <code><a href="reference/build_triangle.html">build_triangle()</a></code> produces both forms in the output. Worker fit functions (<code>fit_cl</code>, <code>fit_ed</code>, <code>fit_ata</code>, <code>fit_intensity</code>) take generic <code>target</code> / <code>exposure</code> / <code>weight</code> arguments; dispatcher functions (<code>fit_loss</code>, <code>fit_premium</code>) and the composition <code>fit_lr</code> use role-specific <code>loss_*</code> / <code>premium_*</code> argument names. Cumulative slots (<code>"loss"</code>, <code>"premium"</code>) are the defaults.</p>
 </div>
 </div>
 <div class="section level2">
@@ -289,10 +290,10 @@
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>     <span class="co"># cell heatmap</span></span>
 <span></span>
 <span><span class="co"># Exposure-driven fit (additive ED intensity)</span></span>
-<span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"loss"</span>, premium_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
+<span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, exposure <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Chain ladder fit (multiplicative ATA factors)</span></span>
-<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cl</span>, type <span class="op">=</span> <span class="st">"projection"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Loss ratio fit (stage-adaptive by default — ED before maturity, CL after)</span></span>
@@ -301,8 +302,8 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Cell selection: maturity (dev axis) + regime (cohort axis)</span></span>
-<span><span class="fu"><a href="reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri</span><span class="op">[</span><span class="va">cv_nm</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri</span><span class="op">[</span><span class="va">cv_nm</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"ecp"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Projection diagnostic: when does the projected ultimate LR stop revising?</span></span>
 <span><span class="fu"><a href="reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span></code></pre></div>
@@ -345,7 +346,7 @@
 </tr>
 </tbody>
 </table>
-<p>After <code>build_triangle</code>, downstream columns are standardized to <code>cohort</code> and <code>dev</code> regardless of input granularity (<code>uy_m</code> / <code>uy_q</code> / <code>uy_a</code>, etc.). Original column names and granularity are preserved as attributes (<code>cohort_var</code>, <code>cohort_type</code>, <code>dev_var</code>, <code>dev_type</code>).</p>
+<p>After <code>build_triangle</code>, downstream columns are standardized to <code>cohort</code> and <code>dev</code> regardless of input granularity (<code>uy_m</code> / <code>uy_q</code> / <code>uy_a</code>, etc.). Original column names are preserved as attributes (<code>cohort_var</code>, <code>calendar_var</code>, <code>dev_var</code>); grain is stored as <code>grain</code> (<code>"M"</code>/<code>"Q"</code>/ <code>"S"</code>/<code>"A"</code>).</p>
 </div>
 <div class="section level2">
 <h2 id="methods">Methods<a class="anchor" aria-label="anchor" href="#methods"></a>

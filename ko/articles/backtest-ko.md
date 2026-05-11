@@ -31,22 +31,22 @@ bt <- backtest(tri_sur, holdout = 6L)
 print(bt)
 #> <Backtest>
 #>   fit_fn   : fit_lr
-#>   metric : lr
+#>   target   : lr
 #>   holdout  : 6 diagonals (159 cells)
 #>   A/E Error: mean 0.21% / median -0.00%
 ```
 
-기본 적합 함수는 단계 적응형(stage-adaptive, SA) 손해율 추정
-(`fit_lr(method = "sa")`) 이며, 기본 비교 컬럼은 `metric = "lr"` 이다
-(누적 손해율). 반환되는 객체는 `"Backtest"` 리스트이며, 주요 슬롯은
-다음과 같다.
+기본 추정 대상은 누적 손해율 (`target = "lr"`) 이며, 손해 측 method 는
+단계 적응형(stage-adaptive, SA, `loss_method = "sa"`) 이다. 반환되는
+객체는 `"Backtest"` 리스트이며, 주요 슬롯은 다음과 같다.
 
 - `ae_err` — 셀 단위 `data.table` (cohort, dev, actual, pred, ae_err,
   calendar_idx).
 - `col_summary` — `dev` 별로 집계된 A/E Error.
 - `diag_summary` — 대각선별로 집계된 A/E Error.
 - `masked` — 적합에 사용된 triangle (최근 대각선이 제거됨).
-- `fit` — `fit_fn` 이 반환한 적합 객체 (`LRFit` 또는 `CLFit`).
+- `fit` — 내부 적합 객체 (`LRFit`, `LossFit`, 또는 `PremiumFit`,
+  `target` 에 따라 결정).
 
 `summary(bt)` 는 호출 메타데이터와 함께 두 요약 표를 출력한다.
 
@@ -186,44 +186,37 @@ plot_triangle(bt)         # hold-out 영역에 대한 발산형 팔레트 히트
 대각선 이력이 있는 triangle 에서는 더 강한 검증을 위해 `holdout = 12L`
 (1년) 을 사용한다.
 
-## 7. 적합 함수 선택
+## 7. 추정 대상 선택
 
-기본값인 `fit_fn = fit_lr` (method = “sa”, metric = “lr”) 은 손해율
-관점의 진단을 직접 제공한다. `fit_lr` 의 method 와 `loss_var` 를 바꾸면
-다양한 변형을 백테스트할 수 있다.
+기본값인 `target = "lr"` (`loss_method = "sa"`) 은 손해율 관점의 진단을
+직접 제공한다. `target` 과 method 인자를 바꾸면 다양한 변형을 백테스트할
+수 있다.
 
-> **`loss_var` 에 대한 참고.** `backtest(loss_var = ...)` 는 **스코어
-> 컬럼(score column)** 이다. 즉, 셀 단위로 실제값과 추정값을 비교하는
-> 대상 컬럼을 가리킨다. 이는 chain ladder 적합 함수의 `loss_var` 인자 —
-> triangle 에서 어느 컬럼을 누적해 쌓을지 선택하는 인자 — 와 일반적으로
-> 같은 개념이 아니다. `fit_fn = fit_cl` 일 때는
+> **`target` 에 대한 참고.** `target` 은 **스코어 컬럼(score column)**
+> 으로, 셀 단위로 실제값과 추정값을 비교하는 대상 컬럼을 가리킨다.
 > [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
-> 가 `loss_var` 를 그대로
-> [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
-> 에 전달하므로 두 의미가 일치한다. 반면 `fit_fn = fit_lr` 일 때
-> `fit_lr` 자체는 `loss_var` 를 받지 않으며 — 항상 `loss`, `premium`,
-> `lr` 세 컬럼을 동시에 추정한다 — `loss_var` 는 `fit_lr$full` 의 세
-> 추정 컬럼 중 어느 것을 hold-out 실제값과 비교할지를 선택하는 역할만
-> 한다. 매핑은 다음과 같다.
+> 는 `target` 값에 따라 내부적으로 적절한 역할별 적합 함수 를 호출하고,
+> 해당 적합 객체의 `$full` 에서 대응되는 추정 컬럼을 비교 대상으로
+> 사용한다.
 
-| `loss_var`  | `fit_lr$full` 의 비교 컬럼 |
-|-------------|----------------------------|
-| `"loss"`    | `loss_proj`                |
-| `"premium"` | `premium_proj`             |
-| `"lr"`      | `lr_proj`                  |
+| `target` | 내부 적합 함수 | method 인자 | 비교 컬럼 |
+|----|----|----|----|
+| `"lr"` | [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md) | `loss_method` | `lr_proj` |
+| `"loss"` | [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md) | `loss_method` | `loss_proj` |
+| `"premium"` | [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md) | `premium_method` | `premium_proj` |
 
 ``` r
 
-bt_sa_lr    <- backtest(tri_sur, holdout = 6L)                     # default
+bt_sa_lr    <- backtest(tri_sur, holdout = 6L)                       # default
 bt_cl_loss  <- backtest(tri_sur, holdout = 6L,
-                        fit_fn = fit_cl, metric = "loss")
-bt_ed_lr    <- backtest(tri_sur, holdout = 6L, method = "ed")
-bt_cl_lr    <- backtest(tri_sur, holdout = 6L, method = "cl")
+                        target = "loss", loss_method = "cl")
+bt_ed_lr    <- backtest(tri_sur, holdout = 6L, loss_method = "ed")
+bt_cl_lr    <- backtest(tri_sur, holdout = 6L, loss_method = "cl")
 
 print(bt_sa_lr)
 #> <Backtest>
 #>   fit_fn   : fit_lr
-#>   metric : lr
+#>   target   : lr
 #>   holdout  : 6 diagonals (159 cells)
 #>   A/E Error: mean 0.21% / median -0.00%
 ```
@@ -234,8 +227,7 @@ print(bt_sa_lr)
 의미를 가진다. 반면 `loss` 를 백테스팅하면 결과가 hold-out 대각선에서
 가장 큰 코호트 쪽으로 가중된다.
 
-단일 컬럼만 추정하면 되는 경우 (누적손해 등 손해율 형태가 아닌 단일
-지표) `fit_fn = fit_cl` 도 지원한다.
+`premium` 백테스트는 `target = "premium"` 으로 직접 수행한다.
 
 ## 8. 함께 보기
 

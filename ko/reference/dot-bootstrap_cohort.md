@@ -20,10 +20,10 @@ percentiles.
   premium_proj,
   g_selected,
   f_selected,
-  ed_sigma2,
-  cl_sigma2,
-  ed_g_var,
-  cl_f_var,
+  g_sigma2,
+  f_sigma2,
+  g_var,
+  f_var,
   last_obs,
   maturity_from,
   B,
@@ -35,6 +35,6 @@ percentiles.
 
 ## Value
 
-A list with four vectors of length `length(premium_proj)`: `ci_lower`,
-`ci_upper` (for CLR), and `ci_lower_loss`, `ci_upper_loss` (for
-cumulative loss).
+A list with four vectors of length `length(premium_proj)`:
+`lr_ci_lower`, `lr_ci_upper` (for LR), and `loss_ci_lower`,
+`loss_ci_upper` (for cumulative loss).

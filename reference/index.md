@@ -45,10 +45,12 @@ exposure-driven (ED) workflows. Built once, summarised differently via
 
 ## Estimation
 
-Models that produce full projections on a Triangle. `fit_cl` (chain
-ladder), `fit_ed` (exposure-driven / additive), `fit_lr` (loss-ratio
-umbrella with three methods — `"sa"` stage-adaptive default, `"ed"`,
-`"cl"`). All return an object carrying a `$full` projection table.
+Models that produce full projections on a Triangle. Base algorithms:
+`fit_cl` (chain ladder / multiplicative), `fit_ed` (exposure-driven /
+additive). Role dispatchers: `fit_loss` (loss-side sa/ed/cl),
+`fit_premium` (premium-side ed/cl). Composition: `fit_lr` (loss-ratio
+umbrella with delta-method SE). All return an object carrying a `$full`
+projection table.
 
 - [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
   :
@@ -57,6 +59,12 @@ umbrella with three methods — `"sa"` stage-adaptive default, `"ed"`,
 
 - [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md)
   : Fit ED intensity factors
+
+- [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+  : Fit a loss projection on a Triangle
+
+- [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+  : Fit a chain ladder projection on the premium (exposure) triangle
 
 - [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
   : Fit loss ratio projection model
@@ -113,7 +121,7 @@ compare projections against the withheld actuals.
   [`print(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   [`summary(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   [`print(`*`<summary.Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
-  : Backtest a loss-ratio / chain ladder fit on existing data
+  : Backtest a loss / premium / loss-ratio projection on existing data
 
 ## Visualisation
 
@@ -189,7 +197,7 @@ print / summary / longer methods registered on package classes.
   [`print(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   [`summary(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   [`print(`*`<summary.Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
-  : Backtest a loss-ratio / chain ladder fit on existing data
+  : Backtest a loss / premium / loss-ratio projection on existing data
 
 - [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
   [`print(`*`<Regime>`*`)`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
@@ -232,6 +240,16 @@ print / summary / longer methods registered on package classes.
 
   Print an `LRFit` object
 
+- [`print(`*`<LossFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.LossFit.md)
+  :
+
+  Print method for `LossFit`
+
+- [`print(`*`<PremiumFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.PremiumFit.md)
+  :
+
+  Print method for `PremiumFit`
+
 - [`summary(`*`<ATAFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.ATAFit.md)
   :
 
@@ -264,6 +282,16 @@ print / summary / longer methods registered on package classes.
   :
 
   Summarise a `Link` table
+
+- [`summary(`*`<LossFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.LossFit.md)
+  :
+
+  Summary method for `LossFit`
+
+- [`summary(`*`<PremiumFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.PremiumFit.md)
+  :
+
+  Summary method for `PremiumFit`
 
 - [`summary(`*`<Total>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.Total.md)
   :

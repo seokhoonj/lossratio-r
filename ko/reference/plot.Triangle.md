@@ -46,8 +46,8 @@ plot(
 
   A single metric to plot. Must be one of: `"lr"`, `"lr_incr"`,
   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`,
-  `"margin_incr"`, `"loss_prop"`, `"loss_incr_prop"`, `"premium_prop"`,
-  or `"premium_incr_prop"`.
+  `"margin_incr"`, `"loss_share"`, `"loss_incr_share"`,
+  `"premium_share"`, or `"premium_incr_share"`.
 
 - summary:
 

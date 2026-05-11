@@ -14,8 +14,8 @@ Internal helper for parameter variance:
 .sa_param_var(
   loss_proj,
   premium_proj,
-  ed_g_var,
-  cl_f_var,
+  g_var,
+  f_var,
   f_selected,
   last_obs,
   maturity_from,

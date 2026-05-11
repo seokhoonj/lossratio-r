@@ -57,191 +57,157 @@
 
 <div id="lossratio-" class="section level1">
 
-<p><strong>장기 건강보험</strong> 손해율 분석 및 예측 도구 — 코호트 기반 경과 기간 분석, 단계 적응형 예측, regime 탐지, backtest 검증을 다룬다.</p>
-<div class="section level2">
-<h2 id="개요">개요<a class="anchor" aria-label="anchor" href="#%EA%B0%9C%EC%9A%94"></a></h2>
-<p><code>lossratio</code> 는 <strong>장기 건강보험</strong> 손해율 분석 및 예측 도구로, 코호트 기반 경과 기간 분석, 단계 적응형 예측, regime 탐지, backtest 검증을 지원한다. 입력은 long-format 경험 데이터로, 한 행(코호트 × 경과 기간 × 인구통계)이 Triangle 셀 하나에 대응하며, 손해액과 보험료 컬럼 (<code>loss</code>, <code>premium</code>) 을 가진다.</p>
-<p>장기 건강보험에서는 코호트 내 신규 클레임과 위험보험료가 지속적으로 발생·유입되므로, 누적 손해와 익스포저가 함께 증가하는 구조를 가진다. 초기 경과 기간의 age-to-age (ATA) factor는 높은 변동성을 보일 수 있으며, 상대적으로 익스포저(≈ 위험보험료)가 보다 안정적이고 신뢰할 수 있는 기준이 된다. 또한 상품 개정, 인수 기준 변경, 규제 조치 등으로 인해 구조적 변화(structural break)가 발생할 수 있으며, 이는 코호트 전반에 걸쳐 누적된다.</p>
-<p><code>lossratio</code> 는 이러한 환경에 맞춰 단계 적응형(stage-adaptive, SA) 손해율 추정과 이를 뒷받침하는 성숙점(maturity point) 및 regime 탐지 도구를 제공한다. SA 는 성숙점 이전에는 노출 기반(exposure-driven, ED) 모형을, 이후에는 chain ladder(CL) 를 사용한다. regime 탐지는 유사한 손해 추이를 공유하는 인수 코호트들의 묶음(regime) 을 식별해 구조적 변화 시점을 분리하며, 어떤 셀을 추정에 활용할지 결정한다.</p>
-<p>제공 기능:</p>
-<ul><li>경험 데이터의 세 가지 집계 프레임: 코호트 × 경과 기간 (<code>Triangle</code>), 달력 기간 (<code>Calendar</code>), 포트폴리오 전체 (<code>Total</code>)</li>
-<li>age-to-age (<code>ATA</code>) 와 노출 기반 (<code>ED</code>) 의 경과 기간 모형화</li>
-<li>chain ladder 추정 (<code>fit_cl</code>) 과 손해율 추정 (<code>fit_lr</code>), 세 가지 method 지원:
+<blockquote>
+<p><strong>장기 건강보험 손해율 분석 및 예측</strong> 도구. 성숙점(maturity point)을 활용한 단계 적응형(stage-adaptive: exposure-driven + chain ladder) 손해율 예측 + regime shift 탐지 + backtest 검증을 한 워크플로로 묶는다.</p>
+</blockquote>
+<p align="center">
+</p>
+<p><img src="articles/articles/figs/triangle_usage_panels.png" alt="Triangle: cells used by each filter configuration" width="100%"></p>
+
+<p>위 한 그림 — 패키지가 무엇을 하는지 한눈에:</p>
 <ul><li>
-<code>"sa"</code> — <strong>단계 적응형</strong> (default): 성숙점 이전은 노출 기반, 이후는 chain ladder</li>
+<strong>🟦 used</strong> — 적합에 사용된 셀</li>
 <li>
-<code>"ed"</code> — 모든 경과 기간에 대해 노출 기반</li>
+<strong>🟥 holdout</strong> — backtest 검증용으로 빼둔 최근 대각선</li>
 <li>
-<code>"cl"</code> — 고전적 chain ladder (Mack 모형)</li>
-</ul></li>
-<li>추정 셀 선택 진단 — 어떤 데이터로 fit 할지:
-<ul><li>
-<code>detect_maturity</code> — dev 축: ATA 인자가 안정화되는 링크 이후</li>
+<strong>⬜ unused</strong> — <code>regime_break</code> / <code>recent</code> 필터로 제외된 영역</li>
 <li>
-<code>detect_regime</code> — cohort 축: 인수 코호트 간 구조적 변화</li>
-</ul></li>
-<li>예측 진단:
-<ul><li>
-<code>detect_convergence</code> — 예측 손해율 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi>p</mi><mi>r</mi><mi>o</mi><mi>j</mi></mrow></msubsup><annotation encoding="application/x-tex">\hat{LR}^{proj}_v</annotation></semantics></math> 가 갱신을 멈추는 valuation <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math> (적합 결과 <code>LRFit</code> 위에서 동작)</li>
-</ul></li>
-<li>Backtest 및 Triangle 시각화</li>
-</ul></div>
-<div class="section level2">
-<h2 id="입력-형식">입력 형식<a class="anchor" aria-label="anchor" href="#%EC%9E%85%EB%A0%A5-%ED%98%95%EC%8B%9D"></a></h2>
-<p>최소한 다음 컬럼을 포함하는 long-format <code>data.frame</code> / <code>data.table</code>:</p>
-<table style="width:100%;" class="table"><colgroup><col width="18%"><col width="59%"><col width="21%"></colgroup><thead><tr><th>컬럼</th>
-<th>의미</th>
-<th>예시</th>
-</tr></thead><tbody><tr><td>cohort</td>
-<td>인수 / 사고 시점 (집계 주기 무관)</td>
+<strong>수직 dash선</strong> — maturity <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math> (ED → CL 전환 경계)</li>
+<li>
+<strong>수평 dash선</strong> — regime shift <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>k</mi><mo>*</mo></msup><mo>*</mo></mrow><annotation encoding="application/x-tex">k^**</annotation></semantics></math> (코호트 축 컷)</li>
+</ul><div class="section level2">
+<h2 id="왜-이-패키지인가">왜 이 패키지인가<a class="anchor" aria-label="anchor" href="#%EC%99%9C-%EC%9D%B4-%ED%8C%A8%ED%82%A4%EC%A7%80%EC%9D%B8%EA%B0%80"></a></h2>
+<p>장기 건강보험은 <em>손해가 길게 발달</em>하고 <em>신상품 출시, 보험료 갱신, 인수 정책 등 자주 바뀜</em>. 이 사실이 손해율 예측을 어렵게 만든다.</p>
+<table class="table"><colgroup><col width="26%"><col width="73%"></colgroup><thead><tr><th>도전 과제</th>
+<th>
+<code>lossratio</code> 의 응답</th>
+</tr></thead><tbody><tr><td>초기 dev 의 ATA 인자가 너무 Noisy</td>
 <td>
-<code>uy_m</code>, <code>uy_a</code>
-</td>
-</tr><tr><td>dev</td>
-<td>코호트 시작 시점 이후 경과 기간</td>
+<strong><code>fit_lr(method = "sa")</code></strong> — 성숙점 이전엔 노출 기반(ED) 으로 보험료에 고정, 이후엔 chain ladder</td>
+</tr><tr><td>인수 기준 변경 등 구조적 변화</td>
 <td>
-<code>dev_m</code>, <code>dev_a</code>
-</td>
-</tr><tr><td><code>loss_incr</code></td>
-<td>셀 내 기간별 클레임 금액</td>
-<td>numeric</td>
-</tr><tr><td><code>premium_incr</code></td>
-<td>셀 내 기간별 보험료 (장기건강보험은 위험보험료 사용)</td>
-<td>numeric</td>
-</tr><tr><td>group</td>
-<td>선택 — 상품, 담보, 연령, 성별, 가입금액 등</td>
-<td>character / factor</td>
-</tr></tbody></table><p><code><a href="reference/build_triangle.html">build_triangle()</a></code> 은 스키마를 검증하고 날짜 컬럼을 코어션한 뒤 표준 코호트 × 경과 기간 구조로 집계하며, 누적 컬럼과 파생 비율을 함께 산출한다.</p>
-<div class="section level3">
-<h3 id="컬럼-컨벤션">컬럼 컨벤션<a class="anchor" aria-label="anchor" href="#%EC%BB%AC%EB%9F%BC-%EC%BB%A8%EB%B2%A4%EC%85%98"></a></h3>
-<p>패키지 전반에서 누적값(cumulative)은 default 이름이고, 기간별 (per-period) 값은 <code>_incr</code> (incremental) suffix 를 사용한다:</p>
-<table class="table"><thead><tr><th>metric</th>
-<th>누적 (default)</th>
-<th>기간별 (<code>_incr</code>)</th>
-</tr></thead><tbody><tr><td>손해</td>
-<td><code>loss</code></td>
-<td><code>loss_incr</code></td>
-</tr><tr><td>보험료</td>
-<td><code>premium</code></td>
-<td><code>premium_incr</code></td>
-</tr><tr><td>손해율</td>
-<td><code>lr</code></td>
-<td><code>lr_incr</code></td>
-</tr><tr><td>마진</td>
-<td><code>margin</code></td>
-<td><code>margin_incr</code></td>
-</tr><tr><td>손익</td>
-<td><code>profit</code></td>
-<td><code>profit_incr</code></td>
-</tr></tbody></table><p>raw <code>experience</code> 입력은 기간별 컬럼만 가진다 (<code>loss_incr</code>, <code>premium_incr</code>). <code><a href="reference/build_triangle.html">build_triangle()</a></code> 은 출력에서 두 형태를 모두 생성한다. 적합 함수는 <code>loss_var</code> / <code>premium_var</code> 인자를 받으며 default 는 누적 형 컬럼명 (<code>"loss"</code>, <code>"premium"</code>).</p>
-</div>
+<strong><code><a href="reference/detect_regime.html">detect_regime()</a></code></strong> + <code>regime_break</code> 인자 — 변화 이전 코호트를 자동으로 분리</td>
+</tr><tr><td>“이 fit 이 얼마나 맞나?” 검증</td>
+<td>
+<strong><code><a href="reference/backtest.html">backtest()</a></code></strong> — 최근 N 대각선을 빼고 적합한 뒤 actual 과 비교</td>
+</tr></tbody></table><p>세 component 가 <strong>한 figure 에서 동시에</strong> 작동하는 것을 위 그림이 보여준다.</p>
 </div>
 <div class="section level2">
 <h2 id="설치">설치<a class="anchor" aria-label="anchor" href="#%EC%84%A4%EC%B9%98"></a></h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># pak (recommended)</span></span>
+<code class="sourceCode R"><span><span class="co"># pak (recommend)</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"seokhoonj/lossratio"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># remotes (alternative)</span></span>
+<span><span class="co"># or</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"seokhoonj/lossratio"</span><span class="op">)</span></span></code></pre></div>
-<p>이 패키지는 현재 seokhoonj/instead 와 seokhoonj/ggshort 에 의존한다 (Remotes: 를 통해 자동 설치, 추후 의존성 제거 예정).</p>
 </div>
 <div class="section level2">
-<h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a></h2>
+<h2 id="id_30초-quick-start">30초 Quick Start<a class="anchor" aria-label="anchor" href="#id_30%EC%B4%88-quick-start"></a></h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio" class="external-link">lossratio</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span>                                  <span class="co"># 번들 합성 데이터 (4 coverages)</span></span>
 <span></span>
-<span><span class="co"># 번들로 제공되는 합성 경험 데이터</span></span>
-<span><span class="co"># 경과에 따른 곡선 형태는 실제 포트폴리오의 전체 형태에 맞춰 보정</span></span>
-<span><span class="co"># 셀 값과 코호트 패턴은 무작위 생성</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
+<span><span class="co"># 1) Triangle 구축 — long-format 데이터 → 코호트 × dev 구조</span></span>
+<span><span class="va">exp_sur</span> <span class="op">&lt;-</span> <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span></span>
+<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp_sur</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 표준 코호트 × dev 구조 구축</span></span>
-<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>              <span class="co"># cohort trajectories</span></span>
-<span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>     <span class="co"># cell heatmap</span></span>
-<span></span>
-<span><span class="co"># 노출 기반 적합 (additive ED 강도)</span></span>
-<span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"loss"</span>, premium_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Chain ladder 적합 (multiplicative ATA 인자)</span></span>
-<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cl</span>, type <span class="op">=</span> <span class="st">"projection"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># 손해율 적합 (default: 단계 적응형 — 성숙점 이전은 ED, 이후는 CL)</span></span>
+<span><span class="co"># 2) 단계 적응형 손해율 적합 (default)</span></span>
 <span><span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lr</span>, type <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 추정 셀 선택: maturity (dev 축) + regime (cohort 축)</span></span>
-<span><span class="fu"><a href="reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri</span><span class="op">[</span><span class="va">cv_nm</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri</span><span class="op">[</span><span class="va">cv_nm</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"ecp"</span><span class="op">)</span></span>
+<span><span class="co"># 3) 환경변화 (regime shift) 자동 탐지 — 인수 정책 변경 시점</span></span>
+<span><span class="fu"><a href="reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 예측 진단: 예측 손해율이 갱신을 멈추는 시점</span></span>
-<span><span class="fu"><a href="reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># 4) backtest — 최근 6 대각선을 빼고 fit + actual 비교</span></span>
+<span><span class="va">bt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, target <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="집계-프레임">집계 프레임<a class="anchor" aria-label="anchor" href="#%EC%A7%91%EA%B3%84-%ED%94%84%EB%A0%88%EC%9E%84"></a></h2>
-<p>동일한 long-format 경험 데이터를 세 가지 관점으로 본다:</p>
-<table class="table"><colgroup><col width="16%"><col width="12%"><col width="33%"><col width="36%"></colgroup><thead><tr><th>Builder</th>
-<th>출력 객체</th>
-<th>차원</th>
-<th>활용</th>
+<h2 id="핵심-api">핵심 API<a class="anchor" aria-label="anchor" href="#%ED%95%B5%EC%8B%AC-api"></a></h2>
+<table class="table"><colgroup><col width="41%"><col width="58%"></colgroup><thead><tr><th>함수</th>
+<th>역할</th>
 </tr></thead><tbody><tr><td><code><a href="reference/build_triangle.html">build_triangle()</a></code></td>
-<td><code>Triangle</code></td>
-<td>코호트 × 경과 기간 (2D)</td>
-<td>Chain ladder, ED, SA 추정</td>
-</tr><tr><td><code><a href="reference/build_calendar.html">build_calendar()</a></code></td>
-<td><code>Calendar</code></td>
-<td>달력 기간 (1D)</td>
-<td>달력연도 추세 / 대각선 효과</td>
-</tr><tr><td><code><a href="reference/build_total.html">build_total()</a></code></td>
-<td><code>Total</code></td>
-<td>포트폴리오 전체 (0D, 그룹별)</td>
-<td>그룹 간 고수준 비교</td>
-</tr></tbody></table><p><code>build_triangle</code> 이후의 컬럼은 입력된 집계 주기 (<code>uy_m</code> / <code>uy_q</code> / <code>uy_a</code> 등) 와 무관하게 <code>cohort</code> 와 <code>dev</code> 로 표준화된다. 원본 컬럼명과 집계 주기는 attribute (<code>cohort_var</code>, <code>cohort_type</code>, <code>dev_var</code>, <code>dev_type</code>) 로 보존된다.</p>
-</div>
+<td>long-format 데이터 → <code>Triangle</code> (코호트 × dev)</td>
+</tr><tr><td><code>fit_lr(method = "sa" / "ed" / "cl")</code></td>
+<td>손해율 적합 — <em>통합 인터페이스</em> (loss + premium 합성)</td>
+</tr><tr><td>
+<code><a href="reference/fit_loss.html">fit_loss()</a></code> / <code><a href="reference/fit_premium.html">fit_premium()</a></code>
+</td>
+<td>역할별 디스패처 — 단일 측 (SE / CI 포함)</td>
+</tr><tr><td>
+<code><a href="reference/fit_cl.html">fit_cl()</a></code> / <code><a href="reference/fit_ed.html">fit_ed()</a></code>
+</td>
+<td>단일 stage (chain ladder / exposure-driven)</td>
+</tr><tr><td>
+<code><a href="reference/fit_ata.html">fit_ata()</a></code> / <code><a href="reference/fit_intensity.html">fit_intensity()</a></code>
+</td>
+<td>link 단계 진단 — 곱셈형 / 덧셈형</td>
+</tr><tr><td><code><a href="reference/detect_maturity.html">detect_maturity()</a></code></td>
+<td>ATA 인자가 안정되는 dev 위치</td>
+</tr><tr><td><code><a href="reference/detect_regime.html">detect_regime()</a></code></td>
+<td>코호트 축 구조적 변화 탐지</td>
+</tr><tr><td><code><a href="reference/detect_convergence.html">detect_convergence()</a></code></td>
+<td>예측 손해율이 갱신을 멈추는 시점</td>
+</tr><tr><td><code><a href="reference/backtest.html">backtest()</a></code></td>
+<td>대각선 hold-out 으로 fit 검증 (target = lr/loss/premium)</td>
+</tr><tr><td>
+<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> / <code><a href="reference/plot_triangle.html">plot_triangle()</a></code>
+</td>
+<td>S3 generic — 객체 클래스로 dispatch</td>
+</tr></tbody></table></div>
 <div class="section level2">
-<h2 id="methods">Methods<a class="anchor" aria-label="anchor" href="#methods"></a></h2>
-<div class="section level3">
-<h3 id="단계-적응형">단계 적응형<a class="anchor" aria-label="anchor" href="#%EB%8B%A8%EA%B3%84-%EC%A0%81%EC%9D%91%ED%98%95"></a></h3>
-<p><code>fit_lr(method = "sa")</code> (default). 노출 기반과 chain ladder 의 결합으로, 그룹별 성숙점에서 전환된다:</p>
-<ul><li>성숙점 이전: 노출 기반 추정 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><msup><mi>C</mi><mi>L</mi></msup><mo>=</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">\Delta C^L = g_k \cdot C^P_k</annotation></semantics></math> — ATA 인자가 변동성이 큰 구간에서 추정값을 보험료 규모에 고정한다.</li>
-<li>성숙점 이후: chain ladder 추정 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mo>=</mo><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup></mrow><annotation encoding="application/x-tex">C^L_{k+1} = f_k \cdot C^L_k</annotation></semantics></math> — ATA 인자가 안정된 이후 코호트의 관측 수준을 보존한다.</li>
-</ul></div>
-<div class="section level3">
-<h3 id="노출-기반">노출 기반<a class="anchor" aria-label="anchor" href="#%EB%85%B8%EC%B6%9C-%EA%B8%B0%EB%B0%98"></a></h3>
-<p><code>fit_lr(method = "ed")</code>. 모든 미래 손해 증가분이 익스포저(≈ 위험보험료)를 분모로 사용한다. ATA 인자가 정보량이 부족하거나 전 구간에 걸쳐 불안정할 때 적합하다.</p>
-</div>
-<div class="section level3">
-<h3 id="chain-ladder">Chain Ladder<a class="anchor" aria-label="anchor" href="#chain-ladder"></a></h3>
-<p><code>fit_lr(method = "cl")</code> 또는 <code><a href="reference/fit_cl.html">fit_cl()</a></code>. 고전적 Mack chain ladder. 선택적 log-linear tail factor 와 해석적 Mack 표준오차를 지원한다.</p>
-</div>
+<h2 id="입력-형식">입력 형식<a class="anchor" aria-label="anchor" href="#%EC%9E%85%EB%A0%A5-%ED%98%95%EC%8B%9D"></a></h2>
+<table class="table"><thead><tr><th>컬럼</th>
+<th>의미</th>
+</tr></thead><tbody><tr><td><code>uy_m</code></td>
+<td>인수 시점 (Date) — 자동 grain 감지 (M/Q/S/A)</td>
+</tr><tr><td><code>cy_m</code></td>
+<td>달력 시점 (Date)</td>
+</tr><tr><td><code>loss_incr</code></td>
+<td>셀 기간별 손해</td>
+</tr><tr><td><code>premium_incr</code></td>
+<td>셀 기간별 보험료 (장기 health 는 위험보험료)</td>
+</tr><tr><td>
+<code>group_var</code> <em>(선택)</em>
+</td>
+<td>상품 / 담보 / 연령 / 성별 / 가입금액</td>
+</tr></tbody></table><p><code><a href="reference/build_triangle.html">build_triangle()</a></code> 가 스키마 검증 + 날짜 코어션 + 코호트 × dev 집계 + 누적 컬럼 (<code>loss</code>, <code>premium</code>, <code>lr</code>) 까지 한 번에. 사용자는 raw 데이터만 넘기면 됨.</p>
 </div>
 <div class="section level2">
 <h2 id="시각화">시각화<a class="anchor" aria-label="anchor" href="#%EC%8B%9C%EA%B0%81%ED%99%94"></a></h2>
-<p>두 S3 generic 모두 객체 클래스에 따라 dispatch 된다:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>              <span class="co"># base plot generic — line / panel diagnostics</span></span>
-<span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>     <span class="co"># lossratio generic — cell heatmap layout</span></span></code></pre></div>
-<p><code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> 과 <code><a href="reference/plot_triangle.html">plot_triangle()</a></code> 은 <code>Triangle</code>, <code>Calendar</code>, <code>Link</code>, <code>ATAFit</code>, <code>EDFit</code>, <code>CLFit</code>, <code>LRFit</code>, <code>Maturity</code>, <code>Convergence</code>, <code>Regime</code> 객체 전반에 일관되게 작동한다.</p>
-</div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>                                                  <span class="co"># 코호트 trajectory</span></span>
+<span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>                                         <span class="co"># cell heatmap</span></span>
+<span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">lr</span>, view <span class="op">=</span> <span class="st">"value"</span>, region <span class="op">=</span> <span class="st">"pred"</span><span class="op">)</span>         <span class="co"># 예측 영역 LR</span></span>
+<span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">lr</span>, view <span class="op">=</span> <span class="st">"usage"</span><span class="op">)</span>                          <span class="co"># 위 hero figure 와 동일 모드</span></span></code></pre></div>
+<p><code><a href="reference/plot_triangle.html">plot_triangle()</a></code> 의 두 인자가 직교:</p>
+<ul><li>
+<strong><code>region</code></strong> — 어느 영역? <code>"pred"</code> / <code>"full"</code> / <code>"data"</code>
+</li>
+<li>
+<strong><code>view</code></strong> — 무엇을 보여줄지? <code>"value"</code> (metric) / <code>"usage"</code> (cell status)</li>
+</ul></div>
 <div class="section level2">
-<h2 id="문서">문서<a class="anchor" aria-label="anchor" href="#%EB%AC%B8%EC%84%9C"></a></h2>
+<h2 id="더-자세히">더 자세히<a class="anchor" aria-label="anchor" href="#%EB%8D%94-%EC%9E%90%EC%84%B8%ED%9E%88"></a></h2>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="op">?</span><span class="va">build_triangle</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"getting-started"</span>,        package <span class="op">=</span> <span class="st">"lossratio"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"regime-break-filter"</span>,    package <span class="op">=</span> <span class="st">"lossratio"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"backtest"</span>,               package <span class="op">=</span> <span class="st">"lossratio"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"triangle-link-and-maturity"</span>, package <span class="op">=</span> <span class="st">"lossratio"</span><span class="op">)</span></span>
 <span><span class="op">?</span><span class="va">fit_lr</span></span>
-<span><span class="op">?</span><span class="va">detect_regime</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"regime-detection"</span>, package <span class="op">=</span> <span class="st">"lossratio"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">?</span><span class="va">detect_regime</span></span></code></pre></div>
+<p>또는 <a href="https://seokhoonj.github.io/lossratio/ko/">패키지 사이트</a>.</p>
 </div>
 <div class="section level2">
-<h2 id="라이선스">라이선스<a class="anchor" aria-label="anchor" href="#%EB%9D%BC%EC%9D%B4%EC%84%A0%EC%8A%A4"></a></h2>
-<p>GPL (&gt;= 2). <a href="LICENSE.html">LICENSE.md</a> 참조.</p>
+<h2 id="python-sibling">Python sibling<a class="anchor" aria-label="anchor" href="#python-sibling"></a></h2>
+<p>같은 저자가 작성한 Python 구현: <a href="https://github.com/seokhoonj/lossratio-py" class="external-link"><code>lossratio-py</code></a> — sklearn-style estimator (<code>lr.LR().fit(tri)</code>), polars 기반.</p>
 </div>
 <div class="section level2">
-<h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
-<p>Seokhoon Joo (<a href="mailto:seokhoonj@gmail.com" class="email">seokhoonj@gmail.com</a>)</p>
+<h2 id="라이선스--저자">라이선스 / 저자<a class="anchor" aria-label="anchor" href="#%EB%9D%BC%EC%9D%B4%EC%84%A0%EC%8A%A4--%EC%A0%80%EC%9E%90"></a></h2>
+<p>GPL (≥ 2). Seokhoon Joo (<a href="mailto:seokhoonj@gmail.com" class="email">seokhoonj@gmail.com</a>)</p>
 </div>
 </div>
 

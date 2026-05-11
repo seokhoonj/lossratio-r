@@ -7,5 +7,5 @@ grid from an object of class `"Triangle"`, analogous to
 ## Usage
 
 ``` r
-.expand_triangle_grid(triangle, ata_fit, loss_var)
+.expand_triangle_grid(triangle, ata_fit, target)
 ```

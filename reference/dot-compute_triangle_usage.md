@@ -41,8 +41,8 @@ Mask precedence: `holdout` \> `used` \> `unused` \> `future`.
   evaluated against the post-holdout boundary so the recent wedge sits
   *before* the holdout wedge (no overlap), matching
   [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
-  semantics — `fit_fn(masked, recent = N, ...)` operates on the masked
-  triangle whose own max_cal is `original - holdout`.
+  semantics — the internal fitter operates on the masked triangle whose
+  own max_cal is `original - holdout`.
 
 - mat_k:
 

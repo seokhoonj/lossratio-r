@@ -29,7 +29,6 @@ This function corresponds to the paper's *convergence point*
 ``` r
 detect_convergence(
   triangle,
-  fit_fn = fit_lr,
   se_mult = 0.5,
   max_dv = 0.15,
   min_run = 3L,
@@ -46,14 +45,6 @@ detect_convergence(
 
   A `Triangle` object (typically from
   [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)).
-
-- fit_fn:
-
-  Fitting function used to project. Default
-  [fit_lr](https://seokhoonj.github.io/lossratio/reference/fit_lr.md).
-  [fit_cl](https://seokhoonj.github.io/lossratio/reference/fit_cl.md) is
-  also accepted but `fit_lr` is recommended because it exposes both loss
-  and exposure projections required for portfolio LR.
 
 - se_mult:
 
@@ -88,7 +79,11 @@ detect_convergence(
 
 - ...:
 
-  Additional arguments forwarded to `fit_fn`.
+  Additional arguments forwarded to
+  [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+  (and thence to
+  [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)),
+  e.g. `loss_method`, `recent`, `regime_break`.
 
 ## Value
 

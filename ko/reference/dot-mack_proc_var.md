@@ -11,7 +11,7 @@ When `scale` is supplied, the increment is divided by `scale`.
 
 ``` r
 .mack_proc_var(
-  value_proj,
+  target_proj,
   f_selected,
   sigma2,
   last_obs,

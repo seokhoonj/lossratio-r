@@ -2,7 +2,7 @@
 
 Internal helper that computes group-wise summary statistics for
 incremental loss intensity \\g\\ from a dual-variable `Link` object
-(built with `premium_var` set). Dispatched via
+(built with `exposure` set). Dispatched via
 [`summary.Link()`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md)
 when `model = "ed"`.
 
@@ -28,7 +28,7 @@ Two purposes:
 
 - object:
 
-  A `Link` object built with `premium_var` set, typically produced by
+  A `Link` object built with `exposure` set, typically produced by
   [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md).
 
 - alpha:
@@ -63,9 +63,9 @@ they differ in how weights are assigned:
 
 - `g`:
 
-  WLS-estimated intensity from `lm(loss_delta ~ premium_from + 0)`. Only
-  rows where `premium_from > 0` are used. When `alpha = 2`, `g` and `wt`
-  are numerically equivalent.
+  WLS-estimated intensity from `lm(target_delta ~ exposure_from + 0)`.
+  Only rows where `exposure_from > 0` are used. When `alpha = 2`, `g`
+  and `wt` are numerically equivalent.
 
 ## See also
 

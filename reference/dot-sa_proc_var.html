@@ -3,19 +3,19 @@
 
 ED phase (additive):
 \(\text{proc}_{k+1} = \text{proc}_k
-      + \sigma^2_{\text{ed},k} \cdot (C^P_k)^\alpha\)
+      + g_{\sigma^2,k} \cdot (C^P_k)^\alpha\)
 CL phase (multiplicative, Mack):
 \(\text{proc}_{k+1} = f_k^2 \cdot \text{proc}_k
-      + \sigma^2_{\text{cl},k} \cdot (C^L_k)^\alpha\)
+      + f_{\sigma^2,k} \cdot (C^L_k)^\alpha\)
 
 "><meta property="og:description" content="Internal helper for process variance:
 
 ED phase (additive):
 \(\text{proc}_{k+1} = \text{proc}_k
-      + \sigma^2_{\text{ed},k} \cdot (C^P_k)^\alpha\)
+      + g_{\sigma^2,k} \cdot (C^P_k)^\alpha\)
 CL phase (multiplicative, Mack):
 \(\text{proc}_{k+1} = f_k^2 \cdot \text{proc}_k
-      + \sigma^2_{\text{cl},k} \cdot (C^L_k)^\alpha\)
+      + f_{\sigma^2,k} \cdot (C^L_k)^\alpha\)
 
 "><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Browser-language redirect: send Korean visitors to /ko/ on the
      landing page only. Deep links remain untouched. We use string
@@ -117,7 +117,7 @@ CL phase (multiplicative, Mack):
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Hybrid process variance for a single cohort</h1>
-      <small class="dont-index">Source: <a href="https://github.com/seokhoonj/lossratio/blob/main/R/lr.R" class="external-link"><code>R/lr.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/seokhoonj/lossratio/blob/main/R/loss.R" class="external-link"><code>R/loss.R</code></a></small>
       <div class="d-none name"><code>dot-sa_proc_var.Rd</code></div>
     </div>
 
@@ -125,10 +125,10 @@ CL phase (multiplicative, Mack):
     <p>Internal helper for process variance:</p>
 <ul><li><p>ED phase (additive):
 \(\text{proc}_{k+1} = \text{proc}_k
-      + \sigma^2_{\text{ed},k} \cdot (C^P_k)^\alpha\)</p></li>
+      + g_{\sigma^2,k} \cdot (C^P_k)^\alpha\)</p></li>
 <li><p>CL phase (multiplicative, Mack):
 \(\text{proc}_{k+1} = f_k^2 \cdot \text{proc}_k
-      + \sigma^2_{\text{cl},k} \cdot (C^L_k)^\alpha\)</p></li>
+      + f_{\sigma^2,k} \cdot (C^L_k)^\alpha\)</p></li>
 </ul></div>
 
     <div class="section level2">
@@ -136,8 +136,8 @@ CL phase (multiplicative, Mack):
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.sa_proc_var</span><span class="op">(</span></span>
 <span>  <span class="va">loss_proj</span>,</span>
 <span>  <span class="va">premium_proj</span>,</span>
-<span>  <span class="va">ed_sigma2</span>,</span>
-<span>  <span class="va">cl_sigma2</span>,</span>
+<span>  <span class="va">g_sigma2</span>,</span>
+<span>  <span class="va">f_sigma2</span>,</span>
 <span>  <span class="va">f_selected</span>,</span>
 <span>  <span class="va">last_obs</span>,</span>
 <span>  <span class="va">maturity_from</span>,</span>

@@ -25,13 +25,13 @@ used as the `premium` measure.
 
 Proportion variables are computed within each `(cohort, dev)` cell:
 
-- `loss_incr_prop = loss_incr / sum(loss_incr)`
+- `loss_incr_share = loss_incr / sum(loss_incr)`
 
-- `premium_incr_prop = premium_incr / sum(premium_incr)`
+- `premium_incr_share = premium_incr / sum(premium_incr)`
 
-- `loss_prop = loss / sum(loss)`
+- `loss_share = loss / sum(loss)`
 
-- `premium_prop = premium / sum(premium)`
+- `premium_share = premium / sum(premium)`
 
 Therefore, for a fixed `(cohort, dev)` cell, the proportions sum to 1
 across groups. These are useful for examining the composition of each
@@ -141,12 +141,12 @@ columns:
 
   Profit indicator (factor `"pos"` / `"neg"`)
 
-- loss_prop, loss_incr_prop:
+- loss_share, loss_incr_share:
 
   Cumulative and per-period proportions of loss within each
   `(cohort, dev)` cell
 
-- premium_prop, premium_incr_prop:
+- premium_share, premium_incr_share:
 
   Cumulative and per-period proportions of premium within each
   `(cohort, dev)` cell
