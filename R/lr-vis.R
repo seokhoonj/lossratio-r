@@ -419,13 +419,15 @@ plot_triangle.LRFit <- function(x,
     )
   }
 
-  # 10) maturity vline
+  # 10) maturity vline. k* = ata_to (target dev). vline drawn at
+  # mat_x - 0.5 = midpoint between (ata_to - 1) and ata_to, i.e.
+  # the ED/CL boundary.
   if (show_maturity && !is.null(x$maturity)) {
     mat <- .ensure_dt(x$maturity)
-    mat <- mat[is.finite(ata_from)]
+    mat <- mat[is.finite(ata_to)]
 
     if (nrow(mat)) {
-      mat[, mat_x := match(ata_from, link_levels)]
+      mat[, mat_x := match(ata_to, link_levels)]
 
       if (length(grp_var)) {
         p <- p + ggplot2::geom_vline(
