@@ -28,7 +28,7 @@
 #' @param alpha Numeric scalar controlling the variance structure in
 #'   [fit_ata()]. Default is `1`.
 #' @param sigma_method Sigma extrapolation method passed to [fit_ata()].
-#'   One of `"min_last2"` (default), `"locf"`, or `"loglinear"`. Only
+#'   One of `"locf"` (default), `"min_last2"`, or `"loglinear"`. Only
 #'   relevant when `method = "mack"`.
 #' @param recent Optional positive integer. When supplied, only the most
 #'   recent `recent` periods are used for factor estimation. Default is
@@ -100,7 +100,7 @@ fit_cl <- function(x,
                    loss_var      = "loss",
                    weight_var    = NULL,
                    alpha         = 1,
-                   sigma_method  = c("min_last2", "locf", "loglinear"),
+                   sigma_method  = c("locf", "min_last2", "loglinear"),
                    recent        = NULL,
                    maturity_args = NULL,
                    tail          = FALSE) {

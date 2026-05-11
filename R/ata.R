@@ -248,7 +248,7 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #' @param na_method Method used to fill `NA` values in `f_selected`. One of
 #'   `"locf"` (default) or `"none"`. Passed to [.filter_ata()].
 #' @param sigma_method Method used to extrapolate `sigma` for links where it
-#'   cannot be estimated. One of `"min_last2"` (default), `"locf"`, or
+#'   cannot be estimated. One of `"locf"` (default), `"min_last2"`, or
 #'   `"loglinear"`. Passed to [.extrapolate_sigma_ata()].
 #' @param recent Optional positive integer. When supplied, only the most
 #'   recent `recent` periods in the `Link` triangle are used for factor
@@ -305,7 +305,7 @@ fit_ata <- function(x,
                     weight_var    = NULL,
                     alpha         = 1,
                     na_method     = c("locf", "none"),
-                    sigma_method  = c("min_last2", "locf", "loglinear"),
+                    sigma_method  = c("locf", "min_last2", "loglinear"),
                     recent        = NULL,
                     regime_break  = NULL,
                     maturity_args = NULL,
@@ -567,7 +567,7 @@ print.ATAFit <- function(x, ...) {
 #'
 #' @param x A `data.table` with `ata_from` and `sigma` columns, typically
 #'   the output of [.filter_ata()].
-#' @param method One of `"min_last2"` (default), `"locf"`, or
+#' @param method One of `"locf"` (default), `"min_last2"`, or
 #'   `"loglinear"`.
 #'
 #' @return A `data.table` with missing `sigma` values filled and a new
@@ -575,7 +575,7 @@ print.ATAFit <- function(x, ...) {
 #'
 #' @keywords internal
 .extrapolate_sigma_ata <- function(x,
-                                   method = c("min_last2", "locf", "loglinear")) {
+                                   method = c("locf", "min_last2", "loglinear")) {
 
   method <- match.arg(method)
 

@@ -195,7 +195,7 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'   of `"zero"` (default, set `NA` to 0 meaning no further development)
 #'   or `"locf"` or `"none"`.
 #' @param sigma_method Method used to extrapolate `sigma`. One of
-#'   `"min_last2"` (default), `"locf"`, or `"loglinear"`.
+#'   `"locf"` (default), `"min_last2"`, or `"loglinear"`.
 #' @param recent Optional positive integer. When supplied, only the most
 #'   recent `recent` periods are used for estimation. Default is `NULL`.
 #' @param regime_break Optional cohort cutoff for the regime break. Accepts:
@@ -227,7 +227,7 @@ fit_ed <- function(x,
                    method        = c("basic", "mack"),
                    alpha         = 1,
                    na_method     = c("locf", "zero", "none"),
-                   sigma_method  = c("min_last2", "locf", "loglinear"),
+                   sigma_method  = c("locf", "min_last2", "loglinear"),
                    recent        = NULL,
                    regime_break  = NULL,
                    ...) {
