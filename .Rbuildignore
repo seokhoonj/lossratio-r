@@ -19,6 +19,7 @@
 ^_pkgdown\.yml$
 ^_pkgdown\.ko\.yml$
 ^README\.ko\.md$
+^README\.ko\.bak\.md$
 ^docs$
 ^pkgdown$
 ^Rplots\.pdf$
