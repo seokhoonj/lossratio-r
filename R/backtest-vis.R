@@ -67,7 +67,7 @@ plot.Backtest <- function(x,
       ggplot2::scale_y_continuous(labels = function(v) paste0(round(v * 100), "%")) +
       ggplot2::labs(title = "Backtest A/E Error by development period",
                     x = .pretty_var_label(x$dev_var),
-                    y = "A/E Error = actual / pred - 1")
+                    y = "A/E ERROR = actual / pred - 1")
     if (length(grp_var))
       p <- p + ggplot2::facet_wrap(grp_var, scales = scales)
 
@@ -100,7 +100,7 @@ plot.Backtest <- function(x,
       ggplot2::scale_y_continuous(labels = function(v) paste0(round(v * 100), "%")) +
       ggplot2::labs(title = "Backtest A/E Error by calendar diagonal",
                     x = "calendar diagonal index",
-                    y = "A/E Error = actual / pred - 1")
+                    y = "A/E ERROR = actual / pred - 1")
     if (length(grp_var))
       p <- p + ggplot2::facet_wrap(grp_var, scales = scales)
 
@@ -119,7 +119,7 @@ plot.Backtest <- function(x,
       ggplot2::scale_y_continuous(labels = function(v) paste0(round(v * 100), "%")) +
       ggplot2::labs(title = "Backtest A/E Error per held-out cell",
                     x = .pretty_var_label(x$dev_var),
-                    y = "A/E Error = actual / pred - 1")
+                    y = "A/E ERROR = actual / pred - 1")
     if (length(grp_var))
       p <- p + ggplot2::facet_wrap(grp_var, scales = scales)
   }
