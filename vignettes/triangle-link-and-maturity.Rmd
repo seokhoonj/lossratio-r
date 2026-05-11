@@ -35,7 +35,7 @@ generalises to multi-group input.
 ```{r}
 library(lossratio)
 data(experience)
-exp <- as_experience(experience)[coverage == "SUR"]
+exp <- experience[coverage == "SUR"]
 tri <- build_triangle(exp, group_var = coverage)
 ```
 
@@ -219,7 +219,7 @@ For multi-group triangles `detect_maturity()` returns one row per
 group, each detected independently with the same thresholds:
 
 ```{r}
-tri_all <- build_triangle(as_experience(experience), group_var = coverage)
+tri_all <- build_triangle(experience, group_var = coverage)
 detect_maturity(tri_all, loss_var = "loss")
 ```
 

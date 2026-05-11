@@ -39,27 +39,18 @@ data(experience)
 str(experience)
 ```
 
-## Step 1 — Validate and coerce
+## Step 1 — Build the cohort × dev structure
 
 ```{r}
-exp <- as_experience(experience)
-class(exp)
-```
-
-`as_experience()` checks required columns (`cy_m`, `uy_m`, `loss_incr`,
-`premium_incr`), coerces date columns, and tags the class. Use
-`check_experience(df)` for a non-mutating check.
-
-## Step 2 — Build the cohort × dev structure
-
-```{r}
-tri <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
+tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
 class(tri)
 names(tri)
 ```
 
 `build_triangle()`:
 
+- validates required columns (`cy_m`, `uy_m`, `loss_incr`,
+  `premium_incr`) and coerces them to the expected types,
 - aggregates demographic dimensions away (here: `age_band`, `gender`),
 - standardises raw input names to the per-period slots `loss_incr`
   and `premium_incr`,
@@ -72,7 +63,7 @@ names(tri)
 - preserves original column names as attributes (`cohort_var`,
   `dev_var`, `loss_var`, `premium_var`) for downstream plot labels.
 
-## Step 3 — Diagnostics
+## Step 2 — Diagnostics
 
 ```{r}
 plot(tri)              # cohort trajectories of lr
@@ -80,7 +71,7 @@ plot_triangle(tri)     # heatmap of lr cells
 summary(tri)           # group-wise statistics by dev
 ```
 
-## Step 4 — Link-level diagnostics
+## Step 3 — Link-level diagnostics
 
 Two complementary views of the per-link factor that drives development.
 Both are *factor-level* — they return per-link estimates only; they do
@@ -99,7 +90,7 @@ fit_intensity(tri, loss_var = "loss", premium_var = "premium")
 Both feed the projection-level estimators below and are used to detect
 the maturity point.
 
-## Step 5 — Projection
+## Step 4 — Projection
 
 The projection-level estimators come as a pair of siblings,
 `fit_cl()` and `fit_ed()`, plus `fit_lr()` as the unified interface
@@ -128,14 +119,14 @@ plot(lr, type = "lr")
 summary(lr)
 ```
 
-## Step 6 — Structural change diagnostics
+## Step 5 — Structural change diagnostics
 
 `detect_regime()` checks whether recent cohorts behave
 differently from earlier ones. Useful as a preprocessing step before
 loss-ratio fitting on a homogeneous subset:
 
 ```{r}
-sub <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
+sub <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
 detect_regime(sub, K = 12, method = "e_divisive")
 ```
 

@@ -135,8 +135,7 @@
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' exp <- as_experience(experience)
-#' tri <- build_triangle(exp, group_var = coverage)
+#' tri <- build_triangle(experience, group_var = coverage)
 #' bt <- backtest(tri, holdout = 6L)
 #' print(bt)
 #' summary(bt)
@@ -295,17 +294,17 @@ backtest <- function(x,
 #' @export
 print.Backtest <- function(x, ...) {
   cat("<Backtest>\n")
-  cat(sprintf("  fit_fn      : %s\n", x$fit_fn_name))
-  cat(sprintf("  loss_var    : %s\n", x$loss_var))
-  cat(sprintf("  holdout     : %d calendar diagonals\n", x$holdout))
-  cat(sprintf("  held-out    : %d cells\n", nrow(x$ae_err)))
+  cat(sprintf("  fit_fn   : %s\n", x$fit_fn_name))
+  cat(sprintf("  loss_var : %s\n", x$loss_var))
+  cat(sprintf("  holdout  : %d diagonals (%d cells)\n",
+              x$holdout, nrow(x$ae_err)))
   err <- x$ae_err$ae_err
   err <- err[is.finite(err)]
   if (length(err)) {
-    cat(sprintf("  A/E Error   : mean %.2f%% / median %.2f%%\n",
+    cat(sprintf("  A/E Error: mean %.2f%% / median %.2f%%\n",
                 mean(err) * 100, stats::median(err) * 100))
   } else {
-    cat("  A/E Error   : (no finite values)\n")
+    cat("  A/E Error: (no finite values)\n")
   }
   invisible(x)
 }
@@ -333,10 +332,10 @@ summary.Backtest <- function(object, ...) {
 #' @export
 print.summary.Backtest <- function(x, ...) {
   cat("Backtest summary\n")
-  cat(sprintf("  fit_fn      : %s\n", x$fit_fn_name))
-  cat(sprintf("  loss_var    : %s\n", x$loss_var))
-  cat(sprintf("  holdout     : %d calendar diagonals\n", x$holdout))
-  cat(sprintf("  held-out    : %d cells\n\n", x$n_held_out))
+  cat(sprintf("  fit_fn  : %s\n", x$fit_fn_name))
+  cat(sprintf("  loss_var: %s\n", x$loss_var))
+  cat(sprintf("  holdout : %d diagonals (%d cells)\n\n",
+              x$holdout, x$n_held_out))
 
   cat("By dev:\n")
   print(x$col_summary)

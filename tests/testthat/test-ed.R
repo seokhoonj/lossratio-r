@@ -1,6 +1,6 @@
 # Setup
 data(experience)
-exp <- as_experience(experience)
+exp <- experience
 tri <- build_triangle(exp, group_var = coverage)
 ed  <- build_link(tri, loss_var = "loss", premium_var = "premium")
 
@@ -83,7 +83,7 @@ test_that("summary.Link (ed mode) returns EDSummary with expected columns", {
 
 test_that("fit_ed with regime_break drops pre-break cohorts", {
   data(experience)
-  exp <- as_experience(experience[coverage == "SUR"])
+  exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, group_var = "coverage",
                         cohort_var = "uy_m")
   ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
@@ -96,7 +96,7 @@ test_that("fit_ed with regime_break drops pre-break cohorts", {
 
 test_that("fit_ed with NULL regime_break is unchanged", {
   data(experience)
-  exp <- as_experience(experience[coverage == "SUR"])
+  exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, group_var = "coverage",
                         cohort_var = "uy_m")
   ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
@@ -108,7 +108,7 @@ test_that("fit_ed with NULL regime_break is unchanged", {
 
 test_that("fit_ed with Regime input extracts last breakpoint", {
   data(experience)
-  exp <- as_experience(experience[coverage == "SUR"])
+  exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, group_var = "coverage",
                         cohort_var = "uy_m")
   reg <- detect_regime(tri)
@@ -123,7 +123,7 @@ test_that("fit_ed with Regime input extracts last breakpoint", {
 
 test_that("fit_ed returns $full with projection columns", {
   data(experience)
-  exp <- as_experience(experience[coverage == "SUR"])
+  exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, group_var = "coverage",
                         cohort_var = "uy_m")
   ef <- fit_ed(tri, loss_var = "loss", premium_var = "premium")
@@ -142,7 +142,7 @@ test_that("fit_ed returns $full with projection columns", {
 
 test_that("fit_ed projection matches fit_lr method = 'ed'", {
   data(experience)
-  exp <- as_experience(experience[coverage == "SUR"])
+  exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, group_var = "coverage",
                         cohort_var = "uy_m")
   ef <- fit_ed(tri, loss_var = "loss", premium_var = "premium")

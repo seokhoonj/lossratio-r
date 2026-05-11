@@ -325,11 +325,11 @@ print.EDFit <- function(x, ...) {
   if (is.null(grp_var)) grp_var <- character(0)
 
   cat("<EDFit>\n")
-  cat("method      :", x$method,                      "\n")
-  cat("loss_var   :", attr(x$link, "loss_var"),    "\n")
-  cat("premium_var:", attr(x$link, "premium_var"), "\n")
-  cat("alpha       :", x$alpha,                      "\n")
-  cat("sigma_method:", x$sigma_method,             "\n")
+  cat("method      :", x$method,                    "\n")
+  cat("loss_var    :", attr(x$link, "loss_var"),    "\n")
+  cat("premium_var :", attr(x$link, "premium_var"), "\n")
+  cat("alpha       :", x$alpha,                     "\n")
+  cat("sigma_method:", x$sigma_method,              "\n")
   cat("recent      :",
       if (!is.null(x$recent)) x$recent else "all", "\n")
   cat("regime_break:",

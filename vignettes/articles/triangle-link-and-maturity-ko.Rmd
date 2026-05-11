@@ -36,7 +36,7 @@ chain ladder 또는 손해율 모형을 적합하기 전에 기반이 되는 tri
 ```{r}
 library(lossratio)
 data(experience)
-exp <- as_experience(experience)[coverage == "SUR"]
+exp <- experience[coverage == "SUR"]
 tri <- build_triangle(exp, group_var = coverage)
 ```
 
@@ -209,7 +209,7 @@ dev) 로 전환되는 dev 를 결정한다.
 반환하며, 각 그룹은 동일한 임계값 하에서 독립적으로 탐지된다.
 
 ```{r}
-tri_all <- build_triangle(as_experience(experience), group_var = coverage)
+tri_all <- build_triangle(experience, group_var = coverage)
 detect_maturity(tri_all, loss_var = "loss")
 ```
 

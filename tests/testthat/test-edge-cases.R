@@ -4,16 +4,8 @@
 
 # Empty input ---------------------------------------------------------------
 
-test_that("as_experience accepts a zero-row data.frame and returns Experience", {
-  data(experience)
-  empty <- experience[0L, ]
-  expect_no_error(out <- as_experience(empty))
-  expect_s3_class(out, "Experience")
-  expect_equal(nrow(out), 0L)
-})
-
-test_that("build_triangle accepts a zero-row Experience and returns empty Triangle", {
-  exp_empty <- as_experience(make_exp()[0L, ])
+test_that("build_triangle accepts a zero-row data.frame and returns empty Triangle", {
+  exp_empty <- make_exp()[0L, ]
   expect_no_error(tri <- build_triangle(exp_empty, group_var = coverage))
   expect_s3_class(tri, "Triangle")
   expect_equal(nrow(tri), 0L)
@@ -73,13 +65,6 @@ test_that("build_triangle propagates NA loss without erroring", {
   expect_s3_class(tri, "Triangle")
   # at least some NAs survive aggregation
   expect_true(anyNA(tri$loss_incr))
-})
-
-test_that("as_experience refuses NA in required columns after coercion", {
-  raw <- as.data.frame(make_exp())
-  raw$loss_incr[1:5] <- NA
-  expect_error(as_experience(raw),
-               regexp = "loss_incr.*coerced.*numeric")
 })
 
 # Granularity (quarter / half / year) --------------------------------------

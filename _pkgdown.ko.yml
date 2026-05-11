@@ -68,12 +68,11 @@ navbar:
 reference:
 - title: 입력 계층
   desc: >
-    원시 experience 데이터의 검증·코어션 헬퍼.
+    원시 experience 데이터의 검증·grain 헬퍼. `build_triangle()` 이 필수
+    검증·코어션을 내부에서 수행하므로 일반 흐름엔 불필요하며, Triangle 을
+    만들지 않고 검증·enrichment 만 하고 싶을 때 사용한다.
   contents:
-  - check_experience
-  - is_experience
-  - as_experience
-  - add_experience_period
+  - derive_grain_columns
   - validate_triangle
 
 - title: 집계 빌더

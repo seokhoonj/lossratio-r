@@ -113,11 +113,11 @@ navbar:
 reference:
 - title: Input layer
   desc: >
-    Validation, coercion, and helpers for raw experience data.
+    Validation and grain helpers for raw experience data. `build_triangle()`
+    already runs the required checks and coercions inline — these helpers
+    are exposed for users who want to validate or enrich without building
+    a triangle.
   contents:
-  - check_experience
-  - is_experience
-  - as_experience
   - derive_grain_columns
   - validate_triangle
 

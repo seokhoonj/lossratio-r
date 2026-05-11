@@ -1,6 +1,6 @@
 # Setup — use a single-group subset to keep test fast
 data(experience)
-exp <- as_experience(experience)
+exp <- experience
 sub <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
 
 test_that("detect_regime returns class 'Regime' (e_divisive default)", {

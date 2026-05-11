@@ -1,5 +1,13 @@
 # lossratio (development version)
 
+* **BREAKING** — `as_experience()`, `check_experience()`, and
+  `is_experience()` removed along with the `Experience` S3 class.
+  `build_triangle()` already validates required columns, coerces dates
+  and numerics, and aggregates inline, so the explicit coercion step is
+  no longer needed (and the class itself was never required by any
+  downstream function). Migration: replace
+  `exp <- as_experience(df); build_triangle(exp, ...)` with
+  `build_triangle(df, ...)`. Matches Python sibling 0.0.1.dev7.
 * New `fit_intensity()` + `IntensityFit` S3 class (R/intensity.R) —
   factor-level ED diagnostic, parallel to `fit_ata()` for the
   multiplicative side. Returns per-link WLS-estimated intensities
@@ -21,8 +29,7 @@
 
 ## Core API
 
-* Experience class: `as_experience()`, `is_experience()`, `check_experience()`, `add_experience_period()`.
-* Aggregation: `build_triangle()` (cohort × dev), `build_calendar()` (calendar period), `build_total()` (portfolio total).
+* Aggregation: `build_triangle()` (cohort × dev), `build_calendar()` (calendar period), `build_total()` (portfolio total). `build_triangle()` validates schema and coerces required columns inline.
 * Link table: `build_link()` returns a `Link` object covering both single-variable (ATA-style) and dual-variable (ED-style) workflows. `summary.Link(model = "ata"|"ed")` dispatches to the matching diagnostic.
 * Estimation: `fit_ata()` (per-link factors only); `fit_ed()`, `fit_cl()`, and `fit_lr()` (factors + projection). `fit_lr` supports three methods — `"sa"` (default), `"ed"`, `"cl"`.
 * Cell-selection diagnostics: `detect_maturity()` (dev axis — link beyond which ATA factors are stable), `detect_regime()` (cohort axis — structural breaks across underwriting cohorts).

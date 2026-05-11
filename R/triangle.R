@@ -486,7 +486,7 @@ build_triangle <- function(df,
   data.table::setattr(ds, "premium_var" , p_var)
   data.table::setattr(ds, "longer"      , dm)
 
-  .update_class(ds, "Experience", "Triangle")
+  .update_class(ds, prepend = "Triangle")
 }
 
 #' Summarise development statistics (Mean, Median, Weighted)

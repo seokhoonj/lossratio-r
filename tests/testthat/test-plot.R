@@ -1,6 +1,6 @@
 # Setup — full pipeline objects for plot dispatch tests
 data(experience)
-exp  <- as_experience(experience)
+exp  <- experience
 tri  <- build_triangle(exp, group_var = coverage)
 cal  <- build_calendar(exp, group_var = coverage)
 ata  <- build_link(tri, loss_var = "loss")

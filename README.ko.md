@@ -58,9 +58,9 @@
 | `premium_incr`  | 셀 내 기간별 보험료 (장기건강보험은 위험보험료 사용)  | numeric            |
 | group           | 선택 — 상품, 담보, 연령, 성별, 가입금액 등            | character / factor |
 
-`as_experience()` 는 스키마를 검증하고 날짜 컬럼을 코어션한다.
-이어서 `build_triangle()` 은 표준 코호트 × 경과 기간 구조로
-집계하며, 누적 컬럼과 파생 비율을 함께 산출한다.
+`build_triangle()` 은 스키마를 검증하고 날짜 컬럼을 코어션한 뒤
+표준 코호트 × 경과 기간 구조로 집계하며, 누적 컬럼과 파생 비율을
+함께 산출한다.
 
 ### 컬럼 컨벤션
 
@@ -102,10 +102,9 @@ library(lossratio)
 # 경과에 따른 곡선 형태는 실제 포트폴리오의 전체 형태에 맞춰 보정
 # 셀 값과 코호트 패턴은 무작위 생성
 data(experience)
-exp <- as_experience(experience)
 
 # 표준 코호트 × dev 구조 구축
-tri <- build_triangle(exp, group_var = cv_nm)
+tri <- build_triangle(experience, group_var = coverage)
 
 plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap

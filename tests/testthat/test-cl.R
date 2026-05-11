@@ -1,6 +1,6 @@
 # Setup
 data(experience)
-exp <- as_experience(experience)
+exp <- experience
 tri <- build_triangle(exp, group_var = coverage)
 
 test_that("fit_cl method = 'basic' returns class 'CLFit' with expected structure", {

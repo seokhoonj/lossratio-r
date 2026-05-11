@@ -7,9 +7,8 @@
 
 # Positive: PascalCase classes ----------------------------------------------
 
-test_that("Experience / Triangle / Calendar / Total carry PascalCase classes", {
+test_that("Triangle / Calendar / Total carry PascalCase classes", {
   fits <- make_fit_set()
-  expect_s3_class(fits$exp, "Experience")
   expect_s3_class(fits$tri, "Triangle")
   expect_s3_class(fits$cal, "Calendar")
   expect_s3_class(fits$tot, "Total")

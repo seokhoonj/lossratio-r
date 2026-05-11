@@ -1,6 +1,6 @@
 # Setup
 data(experience)
-exp <- as_experience(experience)
+exp <- experience
 tri <- build_triangle(exp, group_var = coverage)
 sub <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
 

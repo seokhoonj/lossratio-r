@@ -1,7 +1,7 @@
 data(experience, package = "lossratio")
 
 test_that("plot_triangle(type = 'usage') returns ggplot", {
-  exp <- as_experience(experience[coverage == "SUR"])
+  exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, group_var = "coverage",
                         cohort_var = "uy_m")
   p <- plot_triangle(tri, type = "usage", holdout = 6L)
@@ -9,7 +9,7 @@ test_that("plot_triangle(type = 'usage') returns ggplot", {
 })
 
 test_that("plot_triangle(type = 'usage', recent) marks excluded cells", {
-  exp <- as_experience(experience[coverage == "SUR"])
+  exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, group_var = "coverage",
                         cohort_var = "uy_m")
   p <- plot_triangle(tri, type = "usage", recent = 18L, holdout = 6L)
@@ -17,7 +17,7 @@ test_that("plot_triangle(type = 'usage', recent) marks excluded cells", {
 })
 
 test_that("plot_triangle(type = 'usage') with regime_break + recent activates hybrid", {
-  exp <- as_experience(experience[coverage == "SUR"])
+  exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, group_var = "coverage",
                         cohort_var = "uy_m")
   p <- plot_triangle(tri, type = "usage", recent = 18L,
@@ -26,7 +26,7 @@ test_that("plot_triangle(type = 'usage') with regime_break + recent activates hy
 })
 
 test_that(".compute_triangle_usage hybrid mask matches expected pattern", {
-  exp <- as_experience(experience[coverage == "SUR"])
+  exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, group_var = "coverage",
                         cohort_var = "uy_m")
   d <- lossratio:::.compute_triangle_usage(
@@ -44,7 +44,7 @@ test_that(".compute_triangle_usage hybrid mask matches expected pattern", {
 })
 
 test_that(".compute_triangle_usage status counts add up", {
-  exp <- as_experience(experience[coverage == "SUR"])
+  exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, group_var = "coverage",
                         cohort_var = "uy_m")
   d <- lossratio:::.compute_triangle_usage(tri, holdout = 6L)

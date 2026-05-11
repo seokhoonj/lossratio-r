@@ -1,5 +1,5 @@
 data(experience, package = "lossratio")
-exp <- as_experience(experience)
+exp <- experience
 
 test_that("build_triangle returns object inheriting class 'Triangle'", {
   tri <- build_triangle(exp, group_var = coverage)

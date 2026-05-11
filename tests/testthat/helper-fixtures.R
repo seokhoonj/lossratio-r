@@ -1,14 +1,14 @@
 # Shared test fixtures (auto-sourced by testthat)
 #
-# These helpers centralise the common construction of `Experience`,
-# `Triangle`, and the full fit set used across multiple test files.
-# Tests that only need a single object should call the focused helper
-# (`make_tri`, `make_sub_tri`); tests that exercise the whole pipeline
-# can pull a `make_fit_set()` list.
+# These helpers centralise the common construction of `Triangle` and the
+# full fit set used across multiple test files. Tests that only need a
+# single object should call the focused helper (`make_tri`,
+# `make_sub_tri`); tests that exercise the whole pipeline can pull a
+# `make_fit_set()` list.
 
 make_exp <- function() {
   data(experience, package = "lossratio", envir = environment())
-  as_experience(experience)
+  experience
 }
 
 make_tri <- function(group_var = "coverage", ...) {
