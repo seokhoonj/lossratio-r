@@ -206,10 +206,10 @@ print.TriangleValidation <- function(x, ...) {
 #'
 #' Proportion variables are computed within each `(cohort, dev)` cell:
 #' \itemize{
-#'   \item `loss_incr_prop    = loss_incr    / sum(loss_incr)`
-#'   \item `premium_incr_prop = premium_incr / sum(premium_incr)`
-#'   \item `loss_prop         = loss         / sum(loss)`
-#'   \item `premium_prop      = premium      / sum(premium)`
+#'   \item `loss_incr_share    = loss_incr    / sum(loss_incr)`
+#'   \item `premium_incr_share = premium_incr / sum(premium_incr)`
+#'   \item `loss_share         = loss         / sum(loss)`
+#'   \item `premium_share      = premium      / sum(premium)`
 #' }
 #'
 #' Therefore, for a fixed `(cohort, dev)` cell, the proportions
@@ -258,9 +258,9 @@ print.TriangleValidation <- function(x, ...) {
 #'     \item{margin, margin_incr}{Cumulative and per-period margin
 #'       (`premium - loss`)}
 #'     \item{profit, profit_incr}{Profit indicator (factor `"pos"` / `"neg"`)}
-#'     \item{loss_prop, loss_incr_prop}{Cumulative and per-period proportions
+#'     \item{loss_share, loss_incr_share}{Cumulative and per-period proportions
 #'       of loss within each `(cohort, dev)` cell}
-#'     \item{premium_prop, premium_incr_prop}{Cumulative and per-period
+#'     \item{premium_share, premium_incr_share}{Cumulative and per-period
 #'       proportions of premium within each `(cohort, dev)` cell}
 #'   }
 #'
@@ -454,10 +454,10 @@ build_triangle <- function(df,
                   value = ds[["loss_incr"]] / ds[["premium_incr"]])
 
   # proportions within each (cohort, dev) cell
-  ds[, loss_prop         := loss         / sum(loss),         by = coh_dev_var]
-  ds[, loss_incr_prop    := loss_incr    / sum(loss_incr),    by = coh_dev_var]
-  ds[, premium_prop      := premium      / sum(premium),      by = coh_dev_var]
-  ds[, premium_incr_prop := premium_incr / sum(premium_incr), by = coh_dev_var]
+  ds[, loss_share         := loss         / sum(loss),         by = coh_dev_var]
+  ds[, loss_incr_share    := loss_incr    / sum(loss_incr),    by = coh_dev_var]
+  ds[, premium_share      := premium      / sum(premium),      by = coh_dev_var]
+  ds[, premium_incr_share := premium_incr / sum(premium_incr), by = coh_dev_var]
 
   # final column order: cum-first paired
   out_cols <- c(
@@ -465,7 +465,7 @@ build_triangle <- function(df,
     "loss", "loss_incr", "premium", "premium_incr",
     "lr", "lr_incr",
     "margin", "margin_incr", "profit", "profit_incr",
-    "loss_prop", "loss_incr_prop", "premium_prop", "premium_incr_prop"
+    "loss_share", "loss_incr_share", "premium_share", "premium_incr_share"
   )
   data.table::setcolorder(ds, intersect(out_cols, names(ds)))
 
@@ -626,10 +626,10 @@ longer.TriangleSummary <- function(x, ...) {
 #'
 #' Proportion variables are computed within each `calendar_var` cell:
 #' \itemize{
-#'   \item `loss_incr_prop    = loss_incr    / sum(loss_incr)`
-#'   \item `premium_incr_prop = premium_incr / sum(premium_incr)`
-#'   \item `loss_prop         = loss         / sum(loss)`
-#'   \item `premium_prop      = premium      / sum(premium)`
+#'   \item `loss_incr_share    = loss_incr    / sum(loss_incr)`
+#'   \item `premium_incr_share = premium_incr / sum(premium_incr)`
+#'   \item `loss_share         = loss         / sum(loss)`
+#'   \item `premium_share      = premium      / sum(premium)`
 #' }
 #'
 #' Therefore, for a fixed `calendar_var` cell, the proportions
@@ -677,7 +677,7 @@ longer.TriangleSummary <- function(x, ...) {
 #'     \item{lr, lr_incr}{Cumulative and per-period loss ratio}
 #'     \item{margin, margin_incr}{Cumulative and per-period margin}
 #'     \item{profit, profit_incr}{Profit indicator}
-#'     \item{loss_prop, loss_incr_prop, premium_prop, premium_incr_prop}{
+#'     \item{loss_share, loss_incr_share, premium_share, premium_incr_share}{
 #'       Proportions within each `calendar_var` cell}
 #'   }
 #'
@@ -867,10 +867,10 @@ build_calendar <- function(df,
                   value = ds[["loss_incr"]] / ds[["premium_incr"]])
 
   # proportions within each calendar cell
-  ds[, loss_prop         := loss         / sum(loss),         by = "calendar"]
-  ds[, loss_incr_prop    := loss_incr    / sum(loss_incr),    by = "calendar"]
-  ds[, premium_prop      := premium      / sum(premium),      by = "calendar"]
-  ds[, premium_incr_prop := premium_incr / sum(premium_incr), by = "calendar"]
+  ds[, loss_share         := loss         / sum(loss),         by = "calendar"]
+  ds[, loss_incr_share    := loss_incr    / sum(loss_incr),    by = "calendar"]
+  ds[, premium_share      := premium      / sum(premium),      by = "calendar"]
+  ds[, premium_incr_share := premium_incr / sum(premium_incr), by = "calendar"]
 
   # final column order: cum-first paired
   out_cols <- c(
@@ -878,7 +878,7 @@ build_calendar <- function(df,
     "loss", "loss_incr", "premium", "premium_incr",
     "lr", "lr_incr",
     "margin", "margin_incr", "profit", "profit_incr",
-    "loss_prop", "loss_incr_prop", "premium_prop", "premium_incr_prop"
+    "loss_share", "loss_incr_share", "premium_share", "premium_incr_share"
   )
   data.table::setcolorder(ds, intersect(out_cols, names(ds)))
 
@@ -1070,8 +1070,8 @@ summary.Calendar <- function(object, ...) {
 #'     \item{loss}{Total loss}
 #'     \item{premium}{Total premium}
 #'     \item{lr}{Total loss ratio (`loss / premium`)}
-#'     \item{loss_prop}{Share of total loss}
-#'     \item{premium_prop}{Share of total premium}
+#'     \item{loss_share}{Share of total loss}
+#'     \item{premium_share}{Share of total premium}
 #'   }
 #'
 #' @examples
@@ -1174,8 +1174,8 @@ build_total <- function(df,
 
   # compute total loss ratio and shares
   data.table::set(ds, j = "lr"          , value = ds[["loss"]]    / ds[["premium"]])
-  data.table::set(ds, j = "loss_prop"   , value = ds[["loss"]]    / sum(ds[["loss"]]))
-  data.table::set(ds, j = "premium_prop", value = ds[["premium"]] / sum(ds[["premium"]]))
+  data.table::set(ds, j = "loss_share"   , value = ds[["loss"]]    / sum(ds[["loss"]]))
+  data.table::set(ds, j = "premium_share", value = ds[["premium"]] / sum(ds[["premium"]]))
 
   data.table::setattr(ds, "group_var"  , grp_var)
   data.table::setattr(ds, "loss_var"   , l_var)

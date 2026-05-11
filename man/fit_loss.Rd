@@ -6,54 +6,65 @@
 \usage{
 fit_loss(
   x,
-  loss = "loss",
-  premium = "premium",
   method = c("sa", "ed", "cl"),
-  premium_fit = NULL,
   alpha = 1,
+  loss_regime_break = NULL,
+  premium_fit = NULL,
+  premium_method = c("cl", "ed"),
+  premium_alpha = 1,
+  premium_regime_break = loss_regime_break,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  regime_break = NULL,
   maturity_args = NULL,
-  ...
+  conf_level = 0.95
 )
 }
 \arguments{
-\item{x}{A \code{"Triangle"} object.}
-
-\item{loss}{Loss column to project. Default \code{"loss"}. Accepts bare
-column reference (NSE) or string.}
-
-\item{premium}{Premium column (used as ED exposure). Default
-\code{"premium"}.}
+\item{x}{A \code{"Triangle"} object. The standardized \code{"loss"} and
+\code{"premium"} columns are used (\code{build_triangle()} produces these).}
 
 \item{method}{One of \code{"sa"} (default), \code{"ed"}, or \code{"cl"}.}
 
-\item{premium_fit}{Optional pre-fit \code{PremiumFit} (from
-\code{\link[=fit_premium]{fit_premium()}}) supplying the premium projection. When \code{NULL}
-(current default in this thin-wrapper phase) the legacy \code{fit_lr()}
-internals provide the premium chain ladder. Future phase will
-delegate to \code{\link[=fit_premium]{fit_premium()}} explicitly.}
+\item{alpha}{Variance-structure exponent for the loss fit. Default \code{1}.}
 
-\item{alpha}{Variance-structure exponent. Default \code{1}.}
+\item{loss_regime_break}{Optional cohort cutoff for the loss-side regime
+break. \code{NULL} (default), a \code{Date}/character coercible to Date, a vector
+of dates (uses the latest), or a \code{Regime} object. Behavior depends on
+\code{method}: SA uses a hybrid 2-pass filter (cohort cut for ED phase,
+calendar-diagonal wedge for CL phase); ED/CL use a simple cohort cut.}
+
+\item{premium_fit}{Optional pre-built \code{PremiumFit} (from
+\code{\link[=fit_premium]{fit_premium()}}) supplying the premium projection. When \code{NULL},
+\code{fit_loss()} calls \code{fit_premium()} internally using
+\code{premium_method}, \code{premium_alpha}, and \code{premium_regime_break}.}
+
+\item{premium_method}{One of \code{"cl"} (default) or \code{"ed"}. Used only
+when \code{premium_fit = NULL}. The default matches the historical
+\code{fit_lr()} premium choice.}
+
+\item{premium_alpha}{Variance-structure exponent for the premium fit.
+Default \code{1}.}
+
+\item{premium_regime_break}{Premium-side regime break. Defaults to
+\code{loss_regime_break} (loss-side and premium-side share a cutoff unless
+explicitly separated).}
 
 \item{sigma_method}{Sigma extrapolation. One of \code{"locf"} (default),
 \code{"min_last2"}, \code{"loglinear"}.}
 
 \item{recent}{Optional positive integer; calendar-diagonal filter.}
 
-\item{regime_break}{Optional cohort cutoff for regime break (loss
-side). See \code{\link[=fit_lr]{fit_lr()}} for the full spec.}
+\item{maturity_args}{A named list forwarded to \code{\link[=detect_maturity]{detect_maturity()}},
+or \code{NULL} (default) to skip maturity filtering. SA auto-defaults to
+\code{list()}.}
 
-\item{maturity_args}{A named list forwarded to \code{\link[=detect_maturity]{detect_maturity()}}.}
-
-\item{...}{Additional arguments forwarded to \code{\link[=fit_lr]{fit_lr()}}.}
+\item{conf_level}{Confidence level for analytical CI on the loss
+projection (\code{loss_ci_lower}, \code{loss_ci_upper}). Default \code{0.95}.}
 }
 \value{
-An object of class \code{"LossFit"}. Currently structured as the
-\code{LRFit} result (a thin wrapper around \code{\link[=fit_lr]{fit_lr()}}); future phase
-will strip the LR-specific columns and return a focused loss-only
-projection result.
+An object of class \code{"LossFit"}. List with components:
+\code{full}, \code{pred}, \code{maturity}, \code{loss_ata_fit}, \code{premium_ata_fit},
+\code{premium_fit}, \code{ed}, \code{factor}, \code{selected}, plus metadata.
 }
 \description{
 Project cumulative loss across the cohort x development grid. Three
@@ -69,16 +80,24 @@ periods.}
 
 This function is the \emph{loss-side} counterpart to \code{\link[=fit_premium]{fit_premium()}} in
 the role-specific dispatcher layer (see \code{ARCHITECTURE.md}). It owns
-loss projection only -- premium projection is handled by
-\code{\link[=fit_premium]{fit_premium()}} (when needed), and the loss-ratio composition with
-delta method is handled by \code{\link[=fit_lr]{fit_lr()}}.
+loss projection only -- premium projection is delegated to
+\code{\link[=fit_premium]{fit_premium()}} (called internally when \code{premium_fit = NULL}), and
+the loss-ratio composition with delta method is handled by \code{\link[=fit_lr]{fit_lr()}}.
 }
+\section{Internal columns}{
+
+\verb{$full} retains internal parameter columns (\code{g_selected}, \code{g_sigma2},
+\code{g_var}, \code{f_selected}, \code{f_sigma2}, \code{f_var}, \code{last_obs}) so that
+\code{\link[=fit_lr]{fit_lr()}} can run bootstrap CI on top without re-fitting. Standalone
+callers see them as implementation columns.
+}
+
 \examples{
 \dontrun{
 data(experience)
 tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
 
-lf <- fit_loss(tri)                    # SA (default)
+lf    <- fit_loss(tri)                    # SA (default)
 lf_ed <- fit_loss(tri, method = "ed")
 lf_cl <- fit_loss(tri, method = "cl")
 }

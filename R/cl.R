@@ -1,38 +1,35 @@
 #' Fit chain ladder projection from a `Triangle` object
 #'
 #' @description
-#' Fit a chain ladder projection from an object of class `"Triangle"`.
-#' The function works on long-form cumulative data and does not require
-#' a complete triangle.
+#' Fit a Mack (1993) chain ladder projection from an object of class
+#' `"Triangle"`. The function works on long-form cumulative data and does
+#' not require a complete triangle. Age-to-age factors are estimated
+#' through [build_link()] and [fit_ata()], then applied recursively. The
+#' point forecast follows the standard recursion, and prediction
+#' uncertainty is decomposed into process variance and parameter variance.
 #'
-#' Two methods are supported via the `method` argument:
-#' \describe{
-#'   \item{`"basic"` (default)}{Classical chain ladder point projection.
-#'     Age-to-age factors are estimated through [build_link()] and
-#'     [fit_ata()], then applied recursively.}
-#'   \item{`"mack"`}{Mack (1993) chain ladder. Point forecast follows the
-#'     standard recursion, and prediction uncertainty is decomposed into
-#'     process variance and parameter variance.}
-#' }
-#'
-#' When `weight_var` is supplied (e.g. `"premium"`), age-to-age factors and
+#' When `weight` is supplied (e.g. `"premium"`), age-to-age factors and
 #' their variance are estimated using the supplied WLS weights.
 #'
 #' @param x An object of class `"Triangle"`.
-#' @param method One of `"basic"` or `"mack"`. Default is `"basic"`.
-#' @param loss_var A single cumulative variable to project.
+#' @param method One of `"mack"`. Default is `"mack"`. The argument is
+#'   retained for future extensibility.
+#' @param target A single cumulative target variable (column to project).
 #'   Typical choices are `"loss"`, `"premium"`, or `"lr"`.
-#' @param weight_var An optional column name passed to [build_link()] as
-#'   the WLS weight variable. Typically `"premium"` when `loss_var = "lr"`.
+#' @param weight An optional column name passed to [build_link()] as
+#'   the WLS weight variable. Typically `"premium"` when `target = "lr"`.
 #'   Default is `NULL`.
 #' @param alpha Numeric scalar controlling the variance structure in
 #'   [fit_ata()]. Default is `1`.
 #' @param sigma_method Sigma extrapolation method passed to [fit_ata()].
-#'   One of `"locf"` (default), `"min_last2"`, or `"loglinear"`. Only
-#'   relevant when `method = "mack"`.
+#'   One of `"locf"` (default), `"min_last2"`, or `"loglinear"`.
 #' @param recent Optional positive integer. When supplied, only the most
 #'   recent `recent` periods are used for factor estimation. Default is
 #'   `NULL` (use all periods).
+#' @param regime_break Optional cohort cutoff for a regime break. `NULL`
+#'   (default), a `Date`/character coercible to Date, a vector of dates
+#'   (uses the latest), or a `Regime` object. Cohorts strictly before the
+#'   break are excluded from factor estimation.
 #' @param maturity_args A named list of arguments forwarded to
 #'   [detect_maturity()] via [fit_ata()], or `NULL` (default) to skip
 #'   maturity filtering. Pass `list()` to use all defaults with maturity
@@ -45,28 +42,26 @@
 #'   \describe{
 #'     \item{`call`}{The matched call.}
 #'     \item{`data`}{The input `"Triangle"` object.}
-#'     \item{`method`}{The method used (`"basic"` or `"mack"`).}
+#'     \item{`method`}{The method used (`"mack"`).}
 #'     \item{`group_var`}{Character vector of grouping variable names.}
 #'     \item{`cohort_var`}{Character scalar of period variable name.}
 #'     \item{`dev_var`}{Character scalar of development variable name.}
-#'     \item{`loss_var`}{Character scalar of value variable name.}
-#'     \item{`full`}{`data.table` with observed and projected values. For
-#'       `"mack"`, also includes process/parameter SE and CV columns.}
+#'     \item{`target`}{Character scalar of target variable name.}
+#'     \item{`full`}{`data.table` with observed and projected values,
+#'       including process/parameter SE and CV columns.}
 #'     \item{`pred`}{`data.table` identical to `full` with observed cells
 #'       set to `NA`.}
 #'     \item{`link`}{The `"Link"` object produced by [build_link()].}
-#'     \item{`summary`}{For `"basic"`: `data.table` of fitted factors from
-#'       [fit_ata()]. For `"mack"`: cohort-level summary with latest,
-#'       ultimate, reserve, and Mack standard errors.}
+#'     \item{`summary`}{Cohort-level summary with latest, ultimate,
+#'       reserve, and Mack standard errors.}
 #'     \item{`selected`}{`data.table` of selected factors used for
 #'       projection.}
-#'     \item{`factor`}{For `"mack"` only: `data.table` of fitted factors
-#'       from [fit_ata()].}
+#'     \item{`factor`}{`data.table` of fitted factors from [fit_ata()].}
 #'     \item{`maturity`}{Maturity diagnostics from [detect_maturity()],
 #'       or `NULL` when maturity filtering was not applied.}
 #'     \item{`alpha`}{Value of `alpha` used.}
-#'     \item{`sigma_method`}{For `"mack"` only: sigma extrapolation method.}
-#'     \item{`weight_var`}{Weight variable name used, or `NULL`.}
+#'     \item{`sigma_method`}{Sigma extrapolation method.}
+#'     \item{`weight`}{Weight variable name used, or `NULL`.}
 #'     \item{`recent`}{Number of recent periods used, or `NULL`.}
 #'     \item{`use_maturity`}{Logical; whether maturity filtering was applied.}
 #'     \item{`maturity_args`}{Resolved maturity arguments, or `NULL`.}
@@ -81,24 +76,20 @@
 #' data(experience)
 #' tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
 #'
-#' # Basic chain ladder (point projection only)
-#' cl <- fit_cl(tri, loss_var = "loss", method = "basic")
-#' print(cl)
-#'
 #' # Mack chain ladder with process / parameter standard errors
-#' cl_mack <- fit_cl(tri, loss_var = "loss", method = "mack")
+#' cl_mack <- fit_cl(tri, target = "loss", method = "mack")
 #' summary(cl_mack)
 #' plot(cl_mack)
 #'
 #' # WLS factors for lr (loss ratio) using premium as the weight
-#' cl_clr <- fit_cl(tri, loss_var = "lr", weight_var = "premium")
+#' cl_clr <- fit_cl(tri, target = "lr", weight = "premium")
 #' }
 #'
 #' @export
 fit_cl <- function(x,
-                   method        = c("basic", "mack"),
-                   loss_var      = "loss",
-                   weight_var    = NULL,
+                   method        = c("mack"),
+                   target        = "loss",
+                   weight        = NULL,
                    alpha         = 1,
                    sigma_method  = c("locf", "min_last2", "loglinear"),
                    recent        = NULL,
@@ -111,9 +102,9 @@ fit_cl <- function(x,
   sigma_method <- match.arg(sigma_method)
 
   # 1) resolve variable names -------------------------------------------
-  val_var <- .capture_names(x, !!rlang::enquo(loss_var))
-  if (length(val_var) != 1L)
-    stop("`loss_var` must resolve to exactly one column.", call. = FALSE)
+  tgt_var <- .capture_names(x, !!rlang::enquo(target))
+  if (length(tgt_var) != 1L)
+    stop("`target` must resolve to exactly one column.", call. = FALSE)
 
   grp_var <- attr(x, "group_var")
   coh_var <- attr(x, "cohort_var")
@@ -126,22 +117,22 @@ fit_cl <- function(x,
   if (length(dev_var) != 1L)
     stop("`x` must contain exactly one `dev_var`.", call. = FALSE)
 
-  # 2) validate weight_var ----------------------------------------------
-  use_external_weight <- !is.null(weight_var)
+  # 2) validate weight --------------------------------------------------
+  use_external_weight <- !is.null(weight)
 
   if (use_external_weight) {
-    wt_var <- .capture_names(x, !!rlang::enquo(weight_var))
+    wt_var <- .capture_names(x, !!rlang::enquo(weight))
     if (length(wt_var) != 1L)
-      stop("`weight_var` must resolve to exactly one column.", call. = FALSE)
-    if (wt_var == val_var)
-      stop("`weight_var` must differ from `loss_var`.", call. = FALSE)
+      stop("`weight` must resolve to exactly one column.", call. = FALSE)
+    if (wt_var == tgt_var)
+      stop("`weight` must differ from `target`.", call. = FALSE)
   }
 
   # 3) estimate ata factors (fit_ata builds the Link internally) -------
   ata_fit <- fit_ata(
     x,
-    loss_var     = val_var,
-    weight_var    = if (use_external_weight) wt_var else NULL,
+    target        = tgt_var,
+    weight        = if (use_external_weight) wt_var else NULL,
     alpha         = alpha,
     sigma_method  = sigma_method,
     recent        = recent,
@@ -149,140 +140,116 @@ fit_cl <- function(x,
     maturity_args = maturity_args
   )
 
-  # 4) compute factor variance when method = "mack" ---------------------
-  if (method == "mack") {
-    ata_fit$selected <- .mack_f_var(
-      ata_fit = ata_fit,
-      alpha   = alpha
-    )
-  }
+  # 4) compute factor variance ------------------------------------------
+  ata_fit$selected <- .mack_f_var(
+    ata_fit = ata_fit,
+    alpha   = alpha
+  )
 
   # 5) compute tail factor ----------------------------------------------
   tail_factor <- .compute_tail_factor(ata_fit$selected, tail)
 
   # 6) expand triangle to full cohort-by-development-period grid -----------
   full <- .expand_triangle_grid(
-    triangle  = x,
-    ata_fit   = ata_fit,
-    loss_var = val_var
+    triangle = x,
+    ata_fit  = ata_fit,
+    target   = tgt_var
   )
 
   # 7) join factor columns onto full grid -------------------------------
-  if (method == "mack") {
-    factor_cols <- c(grp_var, "ata_from", "f_selected", "sigma2", "f_var")
-  } else {
-    factor_cols <- c(grp_var, "ata_from", "f_selected")
-  }
+  factor_cols <- c(grp_var, "ata_from", "f_selected", "sigma2", "f_var")
   sel <- ata_fit$selected[, .SD, .SDcols = factor_cols]
   data.table::setnames(sel, "ata_from", "dev")
   full <- sel[full, on = c(grp_var, "dev")]
 
-  # 8) join RP scale for process variance when weight_var is used ------
-  if (method == "mack") {
-    if (use_external_weight) {
-      raw <- .ensure_dt(x)
-      wt_obs <- raw[
-        , .(wt_obs = .SD[[wt_var]]),
-        by = c(grp_var, "cohort", "dev")
-      ]
-      full <- wt_obs[full, on = c(grp_var, "cohort", "dev")]
-    } else {
-      full[, wt_obs := NA_real_]
-    }
-
-    # compute last observed index per cohort
-    full[, last_obs := {
-      idx <- which(is.finite(value_obs))
-      if (length(idx)) max(idx) else 0L
-    }, by = c(grp_var, "cohort")]
+  # 8) join RP scale for process variance when weight is used ---------
+  if (use_external_weight) {
+    raw <- .ensure_dt(x)
+    wt_obs <- raw[
+      , .(wt_obs = .SD[[wt_var]]),
+      by = c(grp_var, "cohort", "dev")
+    ]
+    full <- wt_obs[full, on = c(grp_var, "cohort", "dev")]
+  } else {
+    full[, wt_obs := NA_real_]
   }
 
+  # compute last observed index per cohort
+  full[, last_obs := {
+    idx <- which(is.finite(target_obs))
+    if (length(idx)) max(idx) else 0L
+  }, by = c(grp_var, "cohort")]
+
   # 9) point projection -------------------------------------------------
-  full[, value_proj := .cl_proj(
-    value_obs  = value_obs,
+  full[, target_proj := .cl_proj(
+    target_obs = target_obs,
     f_selected = f_selected
   ), by = c(grp_var, "cohort")]
 
-  # 10) variance (mack only) --------------------------------------------
-  if (method == "mack") {
+  # 10) incremental target projection -----------------------------------
+  full[, target_incr_proj := target_proj -
+         data.table::shift(target_proj, 1L, fill = 0),
+       by = c(grp_var, "cohort")]
 
-    full[, `:=`(
-      proc_se2  = .mack_proc_var(
-        value_proj = value_proj,
-        f_selected = f_selected,
-        sigma2     = sigma2,
-        last_obs   = last_obs[1L],
-        alpha      = alpha,
-        scale      = if (use_external_weight) wt_obs[last_obs[1L]] else NULL
-      ),
-      param_se2 = .mack_param_var(
-        value_proj = value_proj,
-        f_selected = f_selected,
-        f_var      = f_var,
-        last_obs   = last_obs[1L]
-      )
-    ), by = c(grp_var, "cohort")]
+  # 11) variance --------------------------------------------------------
+  full[, `:=`(
+    target_proc_se2  = .mack_proc_var(
+      target_proj = target_proj,
+      f_selected = f_selected,
+      sigma2     = sigma2,
+      last_obs   = last_obs[1L],
+      alpha      = alpha,
+      scale      = if (use_external_weight) wt_obs[last_obs[1L]] else NULL
+    ),
+    target_param_se2 = .mack_param_var(
+      target_proj = target_proj,
+      f_selected = f_selected,
+      f_var      = f_var,
+      last_obs   = last_obs[1L]
+    )
+  ), by = c(grp_var, "cohort")]
 
-    full[, total_se2 := proc_se2 + param_se2]
+  full[, target_total_se2 := target_proc_se2 + target_param_se2]
 
-    full[, `:=`(
-      proc_se  = sqrt(proc_se2),
-      param_se = sqrt(param_se2),
-      se_proj  = sqrt(total_se2)
-    )]
+  full[, `:=`(
+    target_proc_se  = sqrt(target_proc_se2),
+    target_param_se = sqrt(target_param_se2),
+    target_total_se = sqrt(target_total_se2)
+  )]
 
-    full[, `:=`(
-      proc_cv  = data.table::fifelse(
-        is.finite(value_proj) & value_proj != 0,
-        proc_se / value_proj, NA_real_
-      ),
-      param_cv = data.table::fifelse(
-        is.finite(value_proj) & value_proj != 0,
-        param_se / value_proj, NA_real_
-      ),
-      cv_proj  = data.table::fifelse(
-        is.finite(value_proj) & value_proj != 0,
-        se_proj / value_proj, NA_real_
-      )
-    )]
-  }
+  full[, `:=`(
+    target_proc_cv  = data.table::fifelse(
+      is.finite(target_proj) & target_proj != 0,
+      target_proc_se / target_proj, NA_real_
+    ),
+    target_param_cv = data.table::fifelse(
+      is.finite(target_proj) & target_proj != 0,
+      target_param_se / target_proj, NA_real_
+    ),
+    target_total_cv = data.table::fifelse(
+      is.finite(target_proj) & target_proj != 0,
+      target_total_se / target_proj, NA_real_
+    )
+  )]
 
-  # 11) drop intermediate columns ---------------------------------------
-  if (method == "mack") {
-    full[, `:=`(
-      f_selected = NULL,
-      sigma2     = NULL,
-      f_var      = NULL,
-      wt_obs     = NULL,
-      last_obs   = NULL
-    )]
-  } else {
-    full[, f_selected := NULL]
-  }
-
-  # 12) apply basic tail factor (mack handled separately below) ---------
-  if (method == "basic" && is.finite(tail_factor) && tail_factor > 1) {
-    latest <- full[, .SD[.N], by = c(grp_var, "cohort")]
-    latest <- latest[, c(grp_var, "cohort", "value_proj"), with = FALSE]
-    data.table::setnames(latest, "value_proj", "value_tail_base")
-    full <- latest[full, on = c(grp_var, "cohort")]
-    full[, value_tail := value_tail_base * tail_factor]
-    full[, value_tail_base := NULL]
-  }
+  # 12) drop intermediate columns ---------------------------------------
+  full[, `:=`(
+    f_selected = NULL,
+    sigma2     = NULL,
+    f_var      = NULL,
+    wt_obs     = NULL,
+    last_obs   = NULL
+  )]
 
   # 13) pred: NA out observed cells -------------------------------------
   pred <- data.table::copy(full)
-  if (method == "mack") {
-    na_cols <- c(
-      "value_proj",
-      "proc_se2", "param_se2", "total_se2",
-      "proc_se",  "param_se",  "se_proj",
-      "proc_cv",  "param_cv",  "cv_proj"
-    )
-    pred[is_observed == TRUE, (na_cols) := NA_real_]
-  } else {
-    pred[is_observed == TRUE, value_proj := NA_real_]
-  }
+  na_cols <- c(
+    "target_proj", "target_incr_proj",
+    "target_proc_se2", "target_param_se2", "target_total_se2",
+    "target_proc_se",  "target_param_se",  "target_total_se",
+    "target_proc_cv",  "target_param_cv",  "target_total_cv"
+  )
+  pred[is_observed == TRUE, (na_cols) := NA_real_]
 
   # 14) assemble output -------------------------------------------------
   out <- list(
@@ -290,9 +257,9 @@ fit_cl <- function(x,
     data          = x,
     method        = method,
     group_var     = grp_var,
-    cohort_var = coh_var,
-    dev_var   = dev_var,
-    loss_var     = val_var,
+    cohort_var    = coh_var,
+    dev_var       = dev_var,
+    target        = tgt_var,
     full          = full,
     pred          = pred,
     link          = ata_fit$link,
@@ -301,8 +268,8 @@ fit_cl <- function(x,
     selected      = ata_fit$selected,
     maturity      = ata_fit$maturity,
     alpha         = alpha,
-    sigma_method  = if (method == "mack") sigma_method else NULL,
-    weight_var    = if (use_external_weight) wt_var else NULL,
+    sigma_method  = sigma_method,
+    weight        = if (use_external_weight) wt_var else NULL,
     recent        = recent,
     use_maturity  = ata_fit$use_maturity,
     maturity_args = ata_fit$maturity_args,
@@ -312,8 +279,8 @@ fit_cl <- function(x,
 
   class(out) <- "CLFit"
 
-  # 15) apply tail factor for mack (scales SE columns) -------------------
-  if (method == "mack" && is.finite(tail_factor) && tail_factor > 1) {
+  # 15) apply tail factor (scales SE columns) ---------------------------
+  if (is.finite(tail_factor) && tail_factor > 1) {
     out <- .cl_tail_factor(out)
   }
 
@@ -338,13 +305,11 @@ print.CLFit <- function(x, ...) {
 
   cat("<CLFit>\n")
   cat("method      :", x$method, "\n")
-  cat("loss_var   :", x$loss_var, "\n")
-  cat("weight_var  :",
-      if (!is.null(x$weight_var)) x$weight_var else "none", "\n")
+  cat("target      :", x$target, "\n")
+  cat("weight      :",
+      if (!is.null(x$weight)) x$weight else "none", "\n")
   cat("alpha       :", x$alpha, "\n")
-  if (x$method == "mack") {
-    cat("sigma_method:", x$sigma_method, "\n")
-  }
+  cat("sigma_method:", x$sigma_method, "\n")
   cat("recent      :",
       if (!is.null(x$recent)) x$recent else "all", "\n")
   cat("use_maturity:", x$use_maturity, "\n")
@@ -356,7 +321,7 @@ print.CLFit <- function(x, ...) {
     cat("groups      : none\n")
   }
 
-  if (x$method == "mack" && !is.null(x$summary)) {
+  if (!is.null(x$summary)) {
     cat("periods     :", nrow(x$summary), "\n")
   } else {
     cat("periods     :",
@@ -382,22 +347,22 @@ print.CLFit <- function(x, ...) {
 #' Only cells beyond the last observed value are projected. Observed cells
 #' are returned unchanged.
 #'
-#' @param value_obs Numeric vector of cumulative observed values for a
+#' @param target_obs Numeric vector of cumulative observed values for a
 #'   single cohort, ordered by development period.
 #' @param f_selected Numeric vector of selected development factors.
 #'
-#' @return A numeric vector of the same length as `value_obs` with
+#' @return A numeric vector of the same length as `target_obs` with
 #'   unobserved cells filled by recursive chain ladder projection.
 #'
 #' @keywords internal
-.cl_proj <- function(value_obs, f_selected) {
+.cl_proj <- function(target_obs, f_selected) {
 
-  n        <- length(value_obs)
-  last_obs <- max(which(is.finite(value_obs)), 0L)
+  n        <- length(target_obs)
+  last_obs <- max(which(is.finite(target_obs)), 0L)
 
-  if (last_obs == 0L || last_obs == n) return(value_obs)
+  if (last_obs == 0L || last_obs == n) return(target_obs)
 
-  v <- value_obs
+  v <- target_obs
 
   for (i in seq(last_obs + 1L, n)) {
     f_now <- f_selected[i - 1L]
@@ -417,7 +382,7 @@ print.CLFit <- function(x, ...) {
 #' from an object of class `"Triangle"`, analogous to [base::expand.grid()].
 #'
 #' @keywords internal
-.expand_triangle_grid <- function(triangle, ata_fit, loss_var) {
+.expand_triangle_grid <- function(triangle, ata_fit, target) {
 
   grp_var <- attr(triangle, "group_var")
 
@@ -426,7 +391,7 @@ print.CLFit <- function(x, ...) {
   raw <- .ensure_dt(triangle)
 
   obs <- raw[
-    , .(value_obs = .SD[[loss_var]]),
+    , .(target_obs = .SD[[target]]),
     by = c(grp_var, "cohort", "dev")
   ]
 
@@ -438,7 +403,7 @@ print.CLFit <- function(x, ...) {
   full <- obs[full, on = c(grp_var, "cohort", "dev")]
   data.table::setorderv(full, c(grp_var, "cohort", "dev"))
 
-  full[, is_observed := is.finite(value_obs)]
+  full[, is_observed := is.finite(target_obs)]
 
   full
 }
@@ -516,10 +481,10 @@ print.CLFit <- function(x, ...) {
     link_long[, .wt := 1]
   }
 
-  link_long <- link_long[is.finite(.wt) & is.finite(loss_to) & loss_from > 0]
+  link_long <- link_long[is.finite(.wt) & is.finite(target_to) & target_from > 0]
 
   link_weights <- link_long[,
-                       .(denom = sum(.wt * loss_from^alpha, na.rm = TRUE)),
+                       .(denom = sum(.wt * target_from^alpha, na.rm = TRUE)),
                        by = c(grp_var, "ata_from")
   ]
 
@@ -551,14 +516,14 @@ print.CLFit <- function(x, ...) {
 #' When `scale` is supplied, the increment is divided by `scale`.
 #'
 #' @keywords internal
-.mack_proc_var <- function(value_proj,
+.mack_proc_var <- function(target_proj,
                            f_selected,
                            sigma2,
                            last_obs,
                            alpha = 1,
                            scale = NULL) {
 
-  n    <- length(value_proj)
+  n    <- length(target_proj)
   proc <- numeric(n)
 
   if (last_obs == n) return(proc)
@@ -568,7 +533,7 @@ print.CLFit <- function(x, ...) {
   for (i in seq(last_obs + 1L, n)) {
     f_now      <- f_selected[i - 1L]
     sigma2_now <- sigma2[i - 1L]
-    v_prev     <- value_proj[i - 1L]
+    v_prev     <- target_proj[i - 1L]
 
     if (!is.finite(f_now) || !is.finite(v_prev)) next
 
@@ -602,12 +567,12 @@ print.CLFit <- function(x, ...) {
 #' }
 #'
 #' @keywords internal
-.mack_param_var <- function(value_proj,
+.mack_param_var <- function(target_proj,
                             f_selected,
                             f_var,
                             last_obs) {
 
-  n     <- length(value_proj)
+  n     <- length(target_proj)
   param <- numeric(n)
 
   if (last_obs == n) return(param)
@@ -615,7 +580,7 @@ print.CLFit <- function(x, ...) {
   for (i in seq(last_obs + 1L, n)) {
     f_now     <- f_selected[i - 1L]
     f_var_now <- f_var[i - 1L]
-    v_prev    <- value_proj[i - 1L]
+    v_prev    <- target_proj[i - 1L]
 
     if (!is.finite(f_now) || !is.finite(v_prev)) next
 
@@ -653,30 +618,30 @@ print.CLFit <- function(x, ...) {
   latest <- full[, .SD[.N], by = c(grp_var, "cohort")]
 
   latest[, `:=`(
-    value_tail     = value_proj  * tail_factor,
-    proc_se2_tail  = proc_se2    * tail_factor^2,
-    param_se2_tail = param_se2   * tail_factor^2,
-    total_se2_tail = total_se2   * tail_factor^2
+    target_tail           = target_proj         * tail_factor,
+    target_proc_se2_tail  = target_proc_se2     * tail_factor^2,
+    target_param_se2_tail = target_param_se2    * tail_factor^2,
+    target_total_se2_tail = target_total_se2    * tail_factor^2
   )]
 
   latest[, `:=`(
-    proc_se_tail  = sqrt(proc_se2_tail),
-    param_se_tail = sqrt(param_se2_tail),
-    se_tail       = sqrt(total_se2_tail)
+    target_proc_se_tail  = sqrt(target_proc_se2_tail),
+    target_param_se_tail = sqrt(target_param_se2_tail),
+    target_total_se_tail = sqrt(target_total_se2_tail)
   )]
 
   latest[, `:=`(
-    proc_cv_tail  = data.table::fifelse(
-      is.finite(value_tail) & value_tail != 0,
-      proc_se_tail / value_tail, NA_real_
+    target_proc_cv_tail  = data.table::fifelse(
+      is.finite(target_tail) & target_tail != 0,
+      target_proc_se_tail / target_tail, NA_real_
     ),
-    param_cv_tail = data.table::fifelse(
-      is.finite(value_tail) & value_tail != 0,
-      param_se_tail / value_tail, NA_real_
+    target_param_cv_tail = data.table::fifelse(
+      is.finite(target_tail) & target_tail != 0,
+      target_param_se_tail / target_tail, NA_real_
     ),
-    cv_tail       = data.table::fifelse(
-      is.finite(value_tail) & value_tail != 0,
-      se_tail / value_tail, NA_real_
+    target_total_cv_tail = data.table::fifelse(
+      is.finite(target_tail) & target_tail != 0,
+      target_total_se_tail / target_tail, NA_real_
     )
   )]
 
@@ -690,50 +655,45 @@ print.CLFit <- function(x, ...) {
 #'
 #' @description
 #' Internal helper producing a one-row-per-cohort summary from the full
-#' development grid. Contains latest observed, ultimate projection, and
-#' reserve. When `method = "mack"`, also includes process/parameter
-#' standard errors and coefficient of variation.
+#' development grid. Contains latest observed, ultimate projection,
+#' reserve, process/parameter standard errors, and coefficient of
+#' variation.
 #'
 #' @keywords internal
 .cl_summary <- function(x) {
 
   .assert_class(x, "CLFit")
 
-  is_mack  <- identical(x$method, "mack")
   grp_var  <- x$group_var
   coh_var  <- x$cohort_var
-  val_var  <- x$loss_var
+  tgt_var  <- x$target
   full     <- x$full
-  is_ratio <- val_var == "lr"
+  is_ratio <- tgt_var == "lr"
 
   latest_obs <- full[is_observed == TRUE, .SD[.N], by = c(grp_var, "cohort")]
   ult        <- full[, .SD[.N],           by = c(grp_var, "cohort")]
   agg <- latest_obs[ult, on = c(grp_var, "cohort")]
 
-  ult_col <- paste0(val_var, "_ult")
+  ult_col <- paste0(tgt_var, "_ult")
   agg[, `:=`(
-    latest   = value_proj,
-    reserve  = if (is_ratio) NA_real_ else i.value_proj - value_proj
+    latest   = target_proj,
+    reserve  = if (is_ratio) NA_real_ else i.target_proj - target_proj
   )]
-  agg[, (ult_col) := i.value_proj]
+  agg[, (ult_col) := i.target_proj]
 
-  if (is_mack) {
-    agg[, `:=`(
-      proc_se  = i.proc_se,
-      param_se = i.param_se,
-      se       = i.se_proj,
-      cv       = data.table::fifelse(
-        is.finite(i.value_proj) & i.value_proj != 0,
-        i.se_proj / i.value_proj, NA_real_
-      )
-    )]
-    out_cols <- c(grp_var, "cohort",
-                  "latest", ult_col, "reserve",
-                  "proc_se", "param_se", "se", "cv")
-  } else {
-    out_cols <- c(grp_var, "cohort",
-                  "latest", ult_col, "reserve")
-  }
+  agg[, `:=`(
+    target_proc_se  = i.target_proc_se,
+    target_param_se = i.target_param_se,
+    target_total_se = i.target_total_se,
+    target_total_cv = data.table::fifelse(
+      is.finite(i.target_proj) & i.target_proj != 0,
+      i.target_total_se / i.target_proj, NA_real_
+    )
+  )]
+  out_cols <- c(grp_var, "cohort",
+                "latest", ult_col, "reserve",
+                "target_proc_se", "target_param_se",
+                "target_total_se", "target_total_cv")
 
   x$summary <- agg[, .SD, .SDcols = out_cols]
   x

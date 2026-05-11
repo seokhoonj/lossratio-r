@@ -7,7 +7,7 @@
 #' \itemize{
 #'   \item `"projection"`: observed and projected cumulative values by cohort
 #'     over development periods. When `method = "mack"`, optional confidence
-#'     bands are drawn using `se_proj`.
+#'     bands are drawn using `target_total_se`.
 #'   \item `"reserve"`: reserve summary by cohort with optional error bars.
 #'     Only available when `method = "mack"`.
 #' }
@@ -68,7 +68,7 @@ plot.CLFit <- function(x,
   grp_var <- x$group_var
   coh_var <- x$cohort_var
   dev_var <- x$dev_var
-  val_var <- x$loss_var
+  val_var <- x$target
 
   if (is.null(grp_var)) grp_var <- character(0)
 
@@ -81,31 +81,31 @@ plot.CLFit <- function(x,
 
     full <- .ensure_dt(x$full)
 
-    obs  <- full[is_observed == TRUE  & is.finite(value_obs)]
-    pred <- full[is_observed == FALSE & is.finite(value_proj)]
+    obs  <- full[is_observed == TRUE  & is.finite(target_obs)]
+    pred <- full[is_observed == FALSE & is.finite(target_proj)]
 
     latest_obs  <- obs[, .SD[.N],  by = c(grp_var, "cohort")]
     latest_proj <- full[
-      is.finite(value_proj), .SD[.N], by = c(grp_var, "cohort")
+      is.finite(target_proj), .SD[.N], by = c(grp_var, "cohort")
     ]
 
     first_pred <- pred[, .SD[1L], by = c(grp_var, "cohort")]
 
     bridge <- latest_obs[
-      , .SD, .SDcols = c(grp_var, "cohort", "dev", "value_obs")
+      , .SD, .SDcols = c(grp_var, "cohort", "dev", "target_obs")
     ]
     data.table::setnames(
       bridge,
-      c("dev", "value_obs"),
+      c("dev", "target_obs"),
       c("x_start", "y_start")
     )
 
     first_pred2 <- first_pred[
-      , .SD, .SDcols = c(grp_var, "cohort", "dev", "value_proj")
+      , .SD, .SDcols = c(grp_var, "cohort", "dev", "target_proj")
     ]
     data.table::setnames(
       first_pred2,
-      c("dev", "value_proj"),
+      c("dev", "target_proj"),
       c("x_end", "y_end")
     )
     bridge <- first_pred2[bridge, on = c(grp_var, "cohort")]
@@ -114,8 +114,8 @@ plot.CLFit <- function(x,
 
     if (show_interval && nrow(pred)) {
       pred[, `:=`(
-        lower = pmax(0, value_proj - z_alpha * se_proj),
-        upper = value_proj + z_alpha * se_proj
+        lower = pmax(0, target_proj - z_alpha * target_total_se),
+        upper = target_proj + z_alpha * target_total_se
       )]
     }
 
@@ -140,7 +140,7 @@ plot.CLFit <- function(x,
         data      = obs,
         mapping   = ggplot2::aes(
           x     = .data[["dev"]],
-          y     = .data$value_obs,
+          y     = .data$target_obs,
           group = .data[["cohort"]]
         ),
         linewidth = 0.8
@@ -159,7 +159,7 @@ plot.CLFit <- function(x,
         data      = pred,
         mapping   = ggplot2::aes(
           x     = .data[["dev"]],
-          y     = .data$value_proj,
+          y     = .data$target_proj,
           group = .data[["cohort"]]
         ),
         linewidth = 0.8,
@@ -169,7 +169,7 @@ plot.CLFit <- function(x,
         data    = latest_obs,
         mapping = ggplot2::aes(
           x = .data[["dev"]],
-          y = .data$value_obs
+          y = .data$target_obs
         ),
         size = 1.8
       ) +
@@ -177,7 +177,7 @@ plot.CLFit <- function(x,
         data    = latest_proj,
         mapping = ggplot2::aes(
           x = .data[["dev"]],
-          y = .data$value_proj
+          y = .data$target_proj
         ),
         size  = 1.8,
         shape = 1
@@ -239,8 +239,8 @@ plot.CLFit <- function(x,
 
   if (show_interval) {
     smr[, `:=`(
-      lower = pmax(0, reserve - z_alpha * se),
-      upper = reserve + z_alpha * se
+      lower = pmax(0, reserve - z_alpha * target_total_se),
+      upper = reserve + z_alpha * target_total_se
     )]
   }
 
@@ -401,7 +401,7 @@ plot_triangle.CLFit <- function(x,
   grp_var <- x$group_var
   coh_var <- x$cohort_var
   dev_var <- x$dev_var
-  val_var <- x$loss_var
+  val_var <- x$target
 
   if (is.null(grp_var)) grp_var <- character(0)
 
@@ -411,8 +411,8 @@ plot_triangle.CLFit <- function(x,
     stop("`x` must contain exactly one `dev_var`.", call. = FALSE)
 
   ratio_vars <- c("lr", "lr_incr")
-  prop_vars  <- c("loss_prop", "loss_incr_prop",
-                  "premium_prop", "premium_incr_prop")
+  prop_vars  <- c("loss_share", "loss_incr_share",
+                  "premium_share", "premium_incr_share")
   is_ratio   <- val_var %in% c(ratio_vars, prop_vars)
 
   base_title <- switch(
@@ -425,10 +425,10 @@ plot_triangle.CLFit <- function(x,
     premium_incr       = "Per-Period Premium",
     margin             = "Cumulative Margin",
     margin_incr        = "Per-Period Margin",
-    loss_prop          = "Cumulative Loss Proportion",
-    loss_incr_prop     = "Per-Period Loss Proportion",
-    premium_prop       = "Cumulative Premium Proportion",
-    premium_incr_prop  = "Per-Period Premium Proportion",
+    loss_share         = "Cumulative Loss Proportion",
+    loss_incr_share    = "Per-Period Loss Proportion",
+    premium_share      = "Cumulative Premium Proportion",
+    premium_incr_share = "Per-Period Premium Proportion",
     val_var
   )
 
@@ -446,7 +446,7 @@ plot_triangle.CLFit <- function(x,
   if (region == "data") {
     dt[, .value := .SD[[val_var]], .SDcols = val_var]
   } else {
-    dt[, .value := value_proj]
+    dt[, .value := target_proj]
   }
 
   # 2) period label -----------------------------------------------------
@@ -474,32 +474,32 @@ plot_triangle.CLFit <- function(x,
     dt[, label := ""]
 
     if (label_style == "cv") {
-      dt[is_observed == FALSE & is.finite(cv_proj),
-         label := sprintf("%.0f", cv_proj * 100)]
+      dt[is_observed == FALSE & is.finite(target_total_cv),
+         label := sprintf("%.0f", target_total_cv * 100)]
 
     } else if (label_style == "se") {
       if (is_ratio) {
-        dt[is_observed == FALSE & is.finite(se_proj),
-           label := sprintf("%.3f", se_proj)]
+        dt[is_observed == FALSE & is.finite(target_total_se),
+           label := sprintf("%.3f", target_total_se)]
       } else {
-        dt[is_observed == FALSE & is.finite(se_proj),
-           label := sprintf("%.1f", se_proj / amount_divisor)]
+        dt[is_observed == FALSE & is.finite(target_total_se),
+           label := sprintf("%.1f", target_total_se / amount_divisor)]
       }
 
     } else if (label_style == "ci") {
       if (is_ratio) {
-        dt[is_observed == FALSE & is.finite(se_proj),
+        dt[is_observed == FALSE & is.finite(target_total_se),
            label := sprintf(
              "[%.0f, %.0f]",
-             pmax(0, .value - z_alpha * se_proj) * 100,
-             (.value + z_alpha * se_proj) * 100
+             pmax(0, .value - z_alpha * target_total_se) * 100,
+             (.value + z_alpha * target_total_se) * 100
            )]
       } else {
-        dt[is_observed == FALSE & is.finite(se_proj),
+        dt[is_observed == FALSE & is.finite(target_total_se),
            label := sprintf(
              "[%.1f, %.1f]",
-             pmax(0, .value - z_alpha * se_proj) / amount_divisor,
-             (.value + z_alpha * se_proj) / amount_divisor
+             pmax(0, .value - z_alpha * target_total_se) / amount_divisor,
+             (.value + z_alpha * target_total_se) / amount_divisor
            )]
       }
     }

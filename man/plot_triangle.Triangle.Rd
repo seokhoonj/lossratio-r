@@ -32,7 +32,7 @@ via \code{...}. See \code{vignette("regime-break-filter")} for details.}
 \item{value_var}{A single metric to plot. Must be one of:
 \code{"lr"}, \code{"lr_incr"},
 \code{"loss"}, \code{"loss_incr"}, \code{"premium"}, \code{"premium_incr"}, \code{"margin"}, \code{"margin_incr"},
-\code{"loss_prop"}, \code{"loss_incr_prop"}, \code{"premium_prop"}, or \code{"premium_incr_prop"}.}
+\code{"loss_share"}, \code{"loss_incr_share"}, \code{"premium_share"}, or \code{"premium_incr_share"}.}
 
 \item{label_style}{Label display style. One of:
 \describe{
@@ -72,7 +72,7 @@ the ratio together with the associated loss / risk premium amounts.
 For amount metrics (\code{loss}, \code{loss_incr}, \code{premium}, \code{premium_incr}, \code{margin}, \code{margin_incr}),
 labels show the selected amount only.
 
-For proportion metrics (\code{loss_prop}, \code{loss_incr_prop}, \code{premium_prop}, \code{premium_incr_prop}),
+For proportion metrics (\code{loss_share}, \code{loss_incr_share}, \code{premium_share}, \code{premium_incr_share}),
 labels are displayed as percentages.
 
 The loss ratio is defined as:
@@ -100,8 +100,8 @@ plot_triangle(d)
 plot_triangle(d, value_var = "lr")
 plot_triangle(d, value_var = "loss")
 plot_triangle(d, value_var = "premium")
-plot_triangle(d, value_var = "loss_prop")
-plot_triangle(d, value_var = "premium_prop")
+plot_triangle(d, value_var = "loss_share")
+plot_triangle(d, value_var = "premium_share")
 plot_triangle(d, label_style = "value")
 plot_triangle(d, label_style = "detail")
 }

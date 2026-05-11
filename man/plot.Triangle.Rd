@@ -22,7 +22,7 @@
 \code{"lr"}, \code{"lr_incr"},
 \code{"loss"}, \code{"loss_incr"}, \code{"premium"}, \code{"premium_incr"},
 \code{"margin"}, \code{"margin_incr"},
-\code{"loss_prop"}, \code{"loss_incr_prop"}, \code{"premium_prop"}, or \code{"premium_incr_prop"}.}
+\code{"loss_share"}, \code{"loss_incr_share"}, \code{"premium_share"}, or \code{"premium_incr_share"}.}
 
 \item{summary}{Logical. If \code{FALSE} (default), shows raw cohort trajectories.
 If \code{TRUE}, shows grey cohort trajectories with overlaid summary lines

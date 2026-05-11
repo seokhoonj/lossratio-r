@@ -5,9 +5,29 @@
 \alias{print.Backtest}
 \alias{summary.Backtest}
 \alias{print.summary.Backtest}
-\title{Backtest a loss-ratio / chain ladder fit on existing data}
+\title{Backtest a loss / premium / loss-ratio projection on existing data}
 \usage{
-backtest(x, holdout = 6L, fit_fn = fit_lr, metric = "lr", ...)
+backtest(
+  x,
+  holdout = 6L,
+  target = c("lr", "loss", "premium"),
+  loss_method = c("sa", "ed", "cl"),
+  premium_method = c("cl", "ed"),
+  loss_alpha = 1,
+  premium_alpha = 1,
+  sigma_method = c("locf", "min_last2", "loglinear"),
+  recent = NULL,
+  loss_regime_break = NULL,
+  premium_regime_break = loss_regime_break,
+  maturity_args = NULL,
+  se_method = c("fixed", "delta"),
+  rho = 0.95,
+  conf_level = 0.95,
+  bootstrap = FALSE,
+  B = 1000,
+  seed = NULL,
+  ...
+)
 
 \method{print}{Backtest}(x, ...)
 
@@ -22,35 +42,48 @@ backtest(x, holdout = 6L, fit_fn = fit_lr, metric = "lr", ...)
 \item{holdout}{Integer. Number of latest calendar diagonals to mask
 before refitting. Default \code{6L}.}
 
-\item{fit_fn}{Fitting function. Default \code{fit_lr} (stage-adaptive
-loss-ratio projection); also supports \code{fit_cl} for single-column
-chain ladder and \code{fit_ed} for exposure-driven projection. If
-\code{fit_fn} does not have a \code{loss_var} formal (as is the case for
-\code{fit_lr} and \code{fit_ed}), \code{metric} is used only to select the
-comparison column on the fit's \verb{$full} table; arguments for the
-fitter itself (e.g., \code{loss_var}, \code{premium_var}, \code{method}) are
-passed through \code{...}.}
+\item{target}{Character scalar. Which projection to backtest. One
+of \code{"lr"} (default), \code{"loss"}, \code{"premium"}. Determines which
+fitter is called on the masked triangle and which column on \code{x}
+is treated as the held-out actual.}
 
-\item{metric}{Character scalar. The \strong{score column} for the
-backtest — the column whose held-out actual values are compared
-against the corresponding model projection cell-by-cell. One of
-\code{"lr"} (default), \code{"loss"}, or \code{"premium"}.
+\item{loss_method}{Method for the loss-side projection. Passed to
+\code{fit_lr()} / \code{fit_loss()} as their \code{method} argument. One of
+\code{"sa"}, \code{"ed"}, \code{"cl"}. Unused for \code{target = "premium"}.}
 
-With \code{fit_fn = fit_cl}, \code{backtest()} forwards \code{metric} to
-\code{fit_cl()}'s \code{loss_var} argument (because \code{fit_cl} has its own
-\code{loss_var} formal that selects which triangle column to
-accumulate), so the score column and the chain-ladder
-accumulation column coincide.
+\item{premium_method}{Method for the premium-side projection.
+Passed to \code{fit_lr()} / \code{fit_loss()} / \code{fit_premium()}. One of
+\code{"cl"}, \code{"ed"}.}
 
-With \code{fit_fn = fit_lr} (default), \code{fit_lr()} does not take a
-\code{metric} argument — it always projects \code{loss}, \code{premium}, and
-\code{lr} jointly. Here \code{metric} is used purely to pick which
-projection column on \code{fit_lr$full} is treated as the prediction
-for scoring. The three valid values map to \code{loss_proj},
-\code{premium_proj}, and \code{lr_proj} respectively.}
+\item{loss_alpha, premium_alpha}{Mack alpha for loss-side / premium-side
+chain-ladder estimation.}
 
-\item{...}{Additional arguments passed to \code{fit_fn} (e.g., \code{method},
-\code{alpha}, \code{recent}, \code{tail}).}
+\item{sigma_method}{Tail sigma extrapolation method. Forwarded to
+the underlying fitter.}
+
+\item{recent}{Calendar-diagonal recency filter forwarded to the
+fitter.}
+
+\item{loss_regime_break, premium_regime_break}{Cohort-axis regime
+break(s) for loss / premium estimation. \code{premium_regime_break}
+defaults to \code{loss_regime_break}.}
+
+\item{maturity_args}{Maturity-detection args. Used only for
+\code{target = "lr"} and \code{target = "loss"} (stage-adaptive).}
+
+\item{se_method}{Standard-error composition for \code{fit_lr()}. Unused
+for \code{target = "loss"} / \code{target = "premium"}.}
+
+\item{rho}{Loss-premium correlation used by \code{fit_lr()} delta
+method. Unused for \code{target = "loss"} / \code{target = "premium"}.}
+
+\item{conf_level}{Confidence level for \code{fit_lr()} / \code{fit_loss()}
+intervals. Unused for \code{target = "premium"}.}
+
+\item{bootstrap, B, seed}{Bootstrap controls for \code{fit_lr()}. Unused
+for \code{target = "loss"} / \code{target = "premium"}.}
+
+\item{...}{Additional arguments passed to the underlying fitter.}
 
 \item{object}{A \code{"Backtest"} object. Used by the S3 \code{summary()} method.}
 }
@@ -61,74 +94,56 @@ An object of class \code{"Backtest"} with components:
 \item{\code{data}}{Original \code{Triangle}.}
 \item{\code{masked}}{Triangle used for fitting (with held-out cells
 removed).}
-\item{\code{fit}}{The fit object returned by \code{fit_fn}.}
+\item{\code{fit}}{The fit object returned by the target-specific
+fitter.}
 \item{\code{ae_err}}{\code{data.table} of held-out cells with columns
 \verb{(group_var, cohort, dev, value_actual, value_pred, ae_err, calendar_idx)}.}
 \item{\code{col_summary}}{Per-\code{dev} aggregate A/E Error (mean /
 median / weighted / n).}
 \item{\code{diag_summary}}{Per-calendar-diagonal aggregate A/E Error.}
-\item{\code{metric}, \code{holdout}, \code{fit_fn_name}}{Call metadata.}
+\item{\code{target}, \code{holdout}, \code{fit_fn_name}}{Call metadata.}
 \item{\code{group_var}, \code{cohort_var}, \code{dev_var}}{Variable name relays
 from \code{x}.}
 }
 }
 \description{
 Hold out the latest \code{holdout} calendar diagonals from the input
-\code{Triangle}, refit the model on the earlier portion, project the
-held-out cells, and compare the projection to the actual values
-that were withheld.
+\code{Triangle}, refit a target-specific projection on the earlier
+portion, project the held-out cells, and compare the projection
+to the actual values that were withheld.
+
+The target is selected with \code{target}:
+\itemize{
+\item \code{target = "lr"} -- score the loss-ratio projection from
+\code{fit_lr()}.
+\item \code{target = "loss"} -- score the loss projection from \code{fit_loss()}.
+\item \code{target = "premium"} -- score the premium projection from
+\code{fit_premium()}.
+}
 
 The A/E Error (\code{ae_err}) follows the standard actuarial A/E
 convention and is computed cell-wise as
 \deqn{ae\_err = \frac{value_{actual}}{value_{proj}} - 1}
 so that positive values flag under-projection (the model
 under-estimated; actual exceeded expected) and negative values
-flag over-projection. Aggregated by
-development period (\code{col_summary}) and by calendar diagonal
-(\code{diag_summary}).
-}
-\details{
-The \code{metric} argument plays two slightly different roles
-depending on the fitter, summarised below. In every case \code{metric}
-is the column that drives the A/E Error comparison; the difference is
-whether the fitter consumes the same name as input or whether the
-name is only resolved against the fit's projection table.
-
-\tabular{lllll}{
-\strong{\code{fit_fn}} \tab \strong{Valid \code{metric}} \tab
-\strong{Forwarded to fitter?} \tab
-\strong{Compared column on \code{fit$full}} \tab \strong{Notes} \cr
-\code{fit_cl} \tab any numeric column in \code{x} \tab yes (as \code{loss_var})
-\tab \code{value_proj} \tab Score column equals the column being
-accumulated by chain ladder. \cr
-\code{fit_lr} \tab \code{"loss"}, \code{"premium"}, \code{"lr"} \tab no (fit_lr ignores
-\code{metric}) \tab \code{loss_proj}, \code{premium_proj}, \code{lr_proj}
-respectively \tab Fitter projects all three jointly; \code{metric}
-only selects the scoring lane. \cr
-\code{fit_ed} \tab \code{"loss"}, \code{"premium"}, \code{"lr"} \tab no (fit_ed ignores
-\code{metric}) \tab \code{loss_proj}, \code{premium_proj}, \code{lr_proj}
-respectively \tab Pure exposure-driven projection (additive
-\eqn{g_k \cdot C^P_k}); \code{metric} only selects the scoring lane.
-}
-
-This means that \code{backtest(..., metric = "loss")} paired with
-\code{fit_lr} is \emph{not} the same operation as \code{fit_cl(loss_var = "loss")}
-under the hood, even though both use the string \code{"loss"}. The
-former scores the loss projection that came out of a stage-adaptive
-loss-ratio fit; the latter scores a chain ladder applied directly
-to cumulative loss.
+flag over-projection. Aggregated by development period
+(\code{col_summary}) and by calendar diagonal (\code{diag_summary}).
 }
 \examples{
 \dontrun{
 data(experience)
 tri <- build_triangle(experience, group_var = coverage)
-bt <- backtest(tri, holdout = 6L)
-print(bt)
-summary(bt)
-plot(bt)
+
+bt_lr      <- backtest(tri, holdout = 6L, target = "lr")
+bt_loss    <- backtest(tri, holdout = 6L, target = "loss")
+bt_premium <- backtest(tri, holdout = 6L, target = "premium")
+
+print(bt_lr)
+summary(bt_lr)
+plot(bt_lr)
 }
 
 }
 \seealso{
-\code{\link[=fit_lr]{fit_lr()}}, \code{\link[=fit_cl]{fit_cl()}}, \code{\link[=fit_ed]{fit_ed()}}, \code{\link[=plot.Backtest]{plot.Backtest()}}
+\code{\link[=fit_lr]{fit_lr()}}, \code{\link[=fit_loss]{fit_loss()}}, \code{\link[=fit_premium]{fit_premium()}}, \code{\link[=plot.Backtest]{plot.Backtest()}}
 }

@@ -6,9 +6,9 @@
 \usage{
 fit_cl(
   x,
-  method = c("basic", "mack"),
-  loss_var = "loss",
-  weight_var = NULL,
+  method = c("mack"),
+  target = "loss",
+  weight = NULL,
   alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
@@ -20,25 +20,30 @@ fit_cl(
 \arguments{
 \item{x}{An object of class \code{"Triangle"}.}
 
-\item{method}{One of \code{"basic"} or \code{"mack"}. Default is \code{"basic"}.}
+\item{method}{One of \code{"mack"}. Default is \code{"mack"}. The argument is
+retained for future extensibility.}
 
-\item{loss_var}{A single cumulative variable to project.
+\item{target}{A single cumulative target variable (column to project).
 Typical choices are \code{"loss"}, \code{"premium"}, or \code{"lr"}.}
 
-\item{weight_var}{An optional column name passed to \code{\link[=build_link]{build_link()}} as
-the WLS weight variable. Typically \code{"premium"} when \code{loss_var = "lr"}.
+\item{weight}{An optional column name passed to \code{\link[=build_link]{build_link()}} as
+the WLS weight variable. Typically \code{"premium"} when \code{target = "lr"}.
 Default is \code{NULL}.}
 
 \item{alpha}{Numeric scalar controlling the variance structure in
 \code{\link[=fit_ata]{fit_ata()}}. Default is \code{1}.}
 
 \item{sigma_method}{Sigma extrapolation method passed to \code{\link[=fit_ata]{fit_ata()}}.
-One of \code{"locf"} (default), \code{"min_last2"}, or \code{"loglinear"}. Only
-relevant when \code{method = "mack"}.}
+One of \code{"locf"} (default), \code{"min_last2"}, or \code{"loglinear"}.}
 
 \item{recent}{Optional positive integer. When supplied, only the most
 recent \code{recent} periods are used for factor estimation. Default is
 \code{NULL} (use all periods).}
+
+\item{regime_break}{Optional cohort cutoff for a regime break. \code{NULL}
+(default), a \code{Date}/character coercible to Date, a vector of dates
+(uses the latest), or a \code{Regime} object. Cohorts strictly before the
+break are excluded from factor estimation.}
 
 \item{maturity_args}{A named list of arguments forwarded to
 \code{\link[=detect_maturity]{detect_maturity()}} via \code{\link[=fit_ata]{fit_ata()}}, or \code{NULL} (default) to skip
@@ -54,28 +59,26 @@ An object of class \code{"CLFit"} containing:
 \describe{
 \item{\code{call}}{The matched call.}
 \item{\code{data}}{The input \code{"Triangle"} object.}
-\item{\code{method}}{The method used (\code{"basic"} or \code{"mack"}).}
+\item{\code{method}}{The method used (\code{"mack"}).}
 \item{\code{group_var}}{Character vector of grouping variable names.}
 \item{\code{cohort_var}}{Character scalar of period variable name.}
 \item{\code{dev_var}}{Character scalar of development variable name.}
-\item{\code{loss_var}}{Character scalar of value variable name.}
-\item{\code{full}}{\code{data.table} with observed and projected values. For
-\code{"mack"}, also includes process/parameter SE and CV columns.}
+\item{\code{target}}{Character scalar of target variable name.}
+\item{\code{full}}{\code{data.table} with observed and projected values,
+including process/parameter SE and CV columns.}
 \item{\code{pred}}{\code{data.table} identical to \code{full} with observed cells
 set to \code{NA}.}
 \item{\code{link}}{The \code{"Link"} object produced by \code{\link[=build_link]{build_link()}}.}
-\item{\code{summary}}{For \code{"basic"}: \code{data.table} of fitted factors from
-\code{\link[=fit_ata]{fit_ata()}}. For \code{"mack"}: cohort-level summary with latest,
-ultimate, reserve, and Mack standard errors.}
+\item{\code{summary}}{Cohort-level summary with latest, ultimate,
+reserve, and Mack standard errors.}
 \item{\code{selected}}{\code{data.table} of selected factors used for
 projection.}
-\item{\code{factor}}{For \code{"mack"} only: \code{data.table} of fitted factors
-from \code{\link[=fit_ata]{fit_ata()}}.}
+\item{\code{factor}}{\code{data.table} of fitted factors from \code{\link[=fit_ata]{fit_ata()}}.}
 \item{\code{maturity}}{Maturity diagnostics from \code{\link[=detect_maturity]{detect_maturity()}},
 or \code{NULL} when maturity filtering was not applied.}
 \item{\code{alpha}}{Value of \code{alpha} used.}
-\item{\code{sigma_method}}{For \code{"mack"} only: sigma extrapolation method.}
-\item{\code{weight_var}}{Weight variable name used, or \code{NULL}.}
+\item{\code{sigma_method}}{Sigma extrapolation method.}
+\item{\code{weight}}{Weight variable name used, or \code{NULL}.}
 \item{\code{recent}}{Number of recent periods used, or \code{NULL}.}
 \item{\code{use_maturity}}{Logical; whether maturity filtering was applied.}
 \item{\code{maturity_args}}{Resolved maturity arguments, or \code{NULL}.}
@@ -84,21 +87,14 @@ or \code{NULL} when maturity filtering was not applied.}
 }
 }
 \description{
-Fit a chain ladder projection from an object of class \code{"Triangle"}.
-The function works on long-form cumulative data and does not require
-a complete triangle.
+Fit a Mack (1993) chain ladder projection from an object of class
+\code{"Triangle"}. The function works on long-form cumulative data and does
+not require a complete triangle. Age-to-age factors are estimated
+through \code{\link[=build_link]{build_link()}} and \code{\link[=fit_ata]{fit_ata()}}, then applied recursively. The
+point forecast follows the standard recursion, and prediction
+uncertainty is decomposed into process variance and parameter variance.
 
-Two methods are supported via the \code{method} argument:
-\describe{
-\item{\code{"basic"} (default)}{Classical chain ladder point projection.
-Age-to-age factors are estimated through \code{\link[=build_link]{build_link()}} and
-\code{\link[=fit_ata]{fit_ata()}}, then applied recursively.}
-\item{\code{"mack"}}{Mack (1993) chain ladder. Point forecast follows the
-standard recursion, and prediction uncertainty is decomposed into
-process variance and parameter variance.}
-}
-
-When \code{weight_var} is supplied (e.g. \code{"premium"}), age-to-age factors and
+When \code{weight} is supplied (e.g. \code{"premium"}), age-to-age factors and
 their variance are estimated using the supplied WLS weights.
 }
 \examples{
@@ -106,17 +102,13 @@ their variance are estimated using the supplied WLS weights.
 data(experience)
 tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
 
-# Basic chain ladder (point projection only)
-cl <- fit_cl(tri, loss_var = "loss", method = "basic")
-print(cl)
-
 # Mack chain ladder with process / parameter standard errors
-cl_mack <- fit_cl(tri, loss_var = "loss", method = "mack")
+cl_mack <- fit_cl(tri, target = "loss", method = "mack")
 summary(cl_mack)
 plot(cl_mack)
 
 # WLS factors for lr (loss ratio) using premium as the weight
-cl_clr <- fit_cl(tri, loss_var = "lr", weight_var = "premium")
+cl_clr <- fit_cl(tri, target = "lr", weight = "premium")
 }
 
 }

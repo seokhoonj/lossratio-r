@@ -68,7 +68,7 @@ detect_maturity <- function(x,
 
   .assert_triangle_input(x, "detect_maturity()")
 
-  link <- build_link(x, loss_var = loss_var, weight_var = weight_var)
+  link <- build_link(x, target = loss_var, weight = weight_var)
   ata_summary <- summary(link, model = "ata", alpha = alpha)
 
   .detect_maturity(
@@ -218,8 +218,8 @@ detect_maturity <- function(x,
   data.table::setattr(z, "min_n_valid",     min_n_valid)
   data.table::setattr(z, "min_run",         min_run)
   data.table::setattr(z, "group_var",       grp_var)
-  data.table::setattr(z, "loss_var",       attr(x, "loss_var"))
-  data.table::setattr(z, "weight_var",      attr(x, "weight_var"))
+  data.table::setattr(z, "loss_var",       attr(x, "target"))
+  data.table::setattr(z, "weight_var",      attr(x, "weight"))
 
   .prepend_class(z, "Maturity")
 }

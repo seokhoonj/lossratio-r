@@ -69,7 +69,7 @@ plot_triangle(tri_q)   # cohort × dev heatmap of lr
 ```
 
 Use `Triangle` as input to:
-- `build_link()` — development factors (ATA / ED via `loss_var` + optional `premium_var`)
+- `build_link()` — development factors (ATA / ED via `target` + optional `exposure`)
 - `fit_cl()`, `fit_lr()` — projection
 - `detect_regime()` — structural change detection
 

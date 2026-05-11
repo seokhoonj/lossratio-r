@@ -73,13 +73,13 @@ test_that("explicit k_star overrides detect_maturity()", {
   }
 })
 
-test_that("fit_fn argument is honored (fit_cl vs fit_lr both run)", {
-  res_cl <- detect_convergence(sub, fit_fn = fit_cl)
-  res_lr <- detect_convergence(sub, fit_fn = fit_lr)
-  expect_s3_class(res_cl, "Convergence")
-  expect_s3_class(res_lr, "Convergence")
-  expect_equal(attr(res_cl, "fit_fn_name"), "fit_cl")
-  expect_equal(attr(res_lr, "fit_fn_name"), "fit_lr")
+test_that("fit_fn_name attribute is fixed to 'fit_lr'", {
+  # detect_convergence() always backtests the LR projection from
+  # fit_lr; the fit_fn dispatch was removed and the attribute is now
+  # hard-coded for backwards compatibility with consumers that read it.
+  res <- detect_convergence(sub)
+  expect_s3_class(res, "Convergence")
+  expect_equal(attr(res, "fit_fn_name"), "fit_lr")
 })
 
 test_that("print and summary methods execute and return non-NULL", {

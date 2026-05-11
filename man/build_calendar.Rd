@@ -67,7 +67,7 @@ different starting periods on a common index scale.}
 \item{lr, lr_incr}{Cumulative and per-period loss ratio}
 \item{margin, margin_incr}{Cumulative and per-period margin}
 \item{profit, profit_incr}{Profit indicator}
-\item{loss_prop, loss_incr_prop, premium_prop, premium_incr_prop}{
+\item{loss_share, loss_incr_share, premium_share, premium_incr_share}{
 Proportions within each \code{calendar_var} cell}
 }
 
@@ -98,10 +98,10 @@ used as the \code{premium} measure.
 
 Proportion variables are computed within each \code{calendar_var} cell:
 \itemize{
-\item \code{loss_incr_prop    = loss_incr    / sum(loss_incr)}
-\item \code{premium_incr_prop = premium_incr / sum(premium_incr)}
-\item \code{loss_prop         = loss         / sum(loss)}
-\item \code{premium_prop      = premium      / sum(premium)}
+\item \code{loss_incr_share    = loss_incr    / sum(loss_incr)}
+\item \code{premium_incr_share = premium_incr / sum(premium_incr)}
+\item \code{loss_share         = loss         / sum(loss)}
+\item \code{premium_share      = premium      / sum(premium)}
 }
 
 Therefore, for a fixed \code{calendar_var} cell, the proportions

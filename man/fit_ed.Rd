@@ -6,8 +6,8 @@
 \usage{
 fit_ed(
   x,
-  loss_var = "loss",
-  premium_var = "premium",
+  target = "loss",
+  exposure = "premium",
   method = c("basic", "mack"),
   alpha = 1,
   na_method = c("locf", "zero", "none"),
@@ -20,11 +20,11 @@ fit_ed(
 \arguments{
 \item{x}{A \code{"Triangle"} object.}
 
-\item{loss_var}{Cumulative loss variable. Default \code{"loss"}.
-Forwarded to \code{\link[=build_link]{build_link()}} and to \code{\link[=fit_lr]{fit_lr()}} as \code{loss_var}.}
+\item{target}{Cumulative loss variable. Default \code{"loss"}.
+Forwarded to \code{\link[=build_link]{build_link()}} and to downstream workers.}
 
-\item{premium_var}{Cumulative exposure variable. Default \code{"premium"}.
-Forwarded to \code{\link[=build_link]{build_link()}} and to \code{\link[=fit_lr]{fit_lr()}}.}
+\item{exposure}{Cumulative exposure variable. Default \code{"premium"}.
+Forwarded to \code{\link[=build_link]{build_link()}} and to downstream workers.}
 
 \item{method}{One of \code{"basic"} or \code{"mack"}. Default is \code{"basic"}.}
 
@@ -55,11 +55,13 @@ An object of class \code{"EDFit"} (a named list) with components:
 \item{\code{factor}}{\code{EDSummary} of fitted intensities per development link.}
 \item{\code{selected}}{\code{data.table} of selected \code{g_selected}, \code{sigma2}
 (and \code{g_var} when \code{method = "mack"}).}
-\item{\code{full}}{\code{data.table} mirroring \code{LRFit$full} for \code{method = "ed"}:
-per-cell cumulative loss / exposure / loss-ratio projection plus
-SE columns (\code{loss_proj}, \code{premium_proj}, \code{lr_proj},
-\code{se_proj}, \code{se_lr}, \code{cv_lr}, ...). Available cells include both
-observed and projected; \code{is_observed} flags observed cells.}
+\item{\code{full}}{\code{data.table} of per-cell cumulative target / exposure
+projection plus role-prefixed SE / CV columns
+(\code{target_proj}, \code{target_incr_proj}, \code{exposure_proj},
+\code{exposure_incr_proj}, \code{target_proc_se2}, \code{target_param_se2},
+\code{target_total_se2}, \code{target_proc_se}, \code{target_param_se},
+\code{target_total_se}, \code{target_total_cv}). Available cells include
+both observed and projected; \code{is_observed} flags observed cells.}
 \item{\code{link}}{\code{Link} object used for factor estimation.}
 }
 }
@@ -80,8 +82,9 @@ added as \code{g_var} column in \verb{$selected}.}
 The \verb{$full} projection table is produced by delegating to
 \code{\link[=fit_lr]{fit_lr()}} with \code{method = "ed"}, so cumulative loss / exposure /
 loss-ratio projections and their standard errors are numerically
-identical to those of \code{fit_lr(method = "ed")}. This makes
-\code{\link[=backtest]{backtest()}} usable with \code{fit_fn = fit_ed}.
+identical to those of \code{fit_lr(method = "ed")}. To validate an ED
+projection via \code{\link[=backtest]{backtest()}}, call
+\code{backtest(tri, target = "lr", loss_method = "ed")}.
 }
 \seealso{
 \code{\link[=build_link]{build_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=fit_lr]{fit_lr()}}, \code{\link[=backtest]{backtest()}}

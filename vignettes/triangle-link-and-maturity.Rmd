@@ -76,11 +76,11 @@ loss ratios per (group, dev) cell.
 
 The `Link` object is the link table (age-to-age factor table) built
 from the triangle. In single-variable mode it carries the observed
-ATA factors; with `premium_var` it carries the ED-style intensities
+ATA factors; with `exposure` it carries the ED-style intensities
 $g_k = \Delta C^L_k / C^P_k$.
 
 ```{r}
-ata <- build_link(tri, loss_var = "loss")
+ata <- build_link(tri, target = "loss")
 sm  <- summary(ata, model = "ata", alpha = 1)
 head(sm)
 ```
@@ -118,7 +118,7 @@ plot_triangle(ata, label_size = 2.5, show_maturity = TRUE)   # overlay maturity 
 # detail labels are two lines and overlap on monthly cells — rebuild on
 # the quarterly triangle so the two-line "factor (loss / premium)" text
 # has room (label_size auto-shrinks to 2.2 in detail mode).
-ata_q <- build_link(tri_q, loss_var = "loss")
+ata_q <- build_link(tri_q, target = "loss")
 plot_triangle(ata_q, label_style = "detail")      # factor + (loss / premium)
 ```
 
@@ -129,7 +129,7 @@ the link's median.
 ### ED diagnostics
 
 ```{r}
-ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
+ed <- build_link(tri, target = "loss", exposure = "premium")
 sm <- summary(ed, model = "ed", alpha = 1)
 head(sm)
 
@@ -199,10 +199,10 @@ push it earlier.
 internal `summary()` step is taken from those callers):
 
 ```{r, eval = FALSE}
-fit_ata(tri, loss_var = "loss",
+fit_ata(tri, target = "loss",
         maturity_args = list(max_cv = 0.08, min_run = 2L))
 
-fit_cl(tri, loss_var = "loss",
+fit_cl(tri, target = "loss",
        maturity_args = list(max_cv = 0.08))
 
 fit_lr(tri, method = "sa",
@@ -228,7 +228,7 @@ gets its own panel and the vertical line marks the maturity point
 where CV first drops below `max_cv`:
 
 ```{r}
-plot(build_link(tri_all, loss_var = "loss"), type = "cv")
+plot(build_link(tri_all, target = "loss"), type = "cv")
 ```
 
 ## Validation before building
@@ -259,8 +259,8 @@ reserving regime shift), restrict estimation to the recent calendar
 diagonals:
 
 ```{r}
-fit_ata(tri, loss_var = "loss", alpha = 1, recent = 12)  # last 12 calendar diagonals
-fit_cl(tri, loss_var = "loss", recent = 12)
+fit_ata(tri, target = "loss", alpha = 1, recent = 12)  # last 12 calendar diagonals
+fit_cl(tri, target = "loss", recent = 12)
 fit_lr(tri, recent = 12)
 ```
 

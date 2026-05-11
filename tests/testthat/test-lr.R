@@ -12,9 +12,10 @@ test_that("fit_lr default (method = 'sa') returns class 'LRFit'", {
 test_that("LRFit has expected list elements", {
   lr <- fit_lr(tri, method = "sa")
   for (nm in c("data", "method", "group_var", "cohort_var", "dev_var",
-               "loss_var", "premium_var", "full", "pred", "summary",
+               "full", "pred", "summary",
                "ed", "loss_ata_fit", "premium_ata_fit", "maturity",
-               "delta_method", "rho", "conf_level")) {
+               "se_method", "rho", "conf_level",
+               "loss_regime_break", "premium_regime_break")) {
     expect_true(nm %in% names(lr), info = paste("missing", nm))
   }
 })
@@ -63,9 +64,9 @@ test_that("methods 'sa', 'ed', 'cl' all run", {
   }
 })
 
-test_that("delta_method 'simple' and 'full' both run", {
-  expect_s3_class(fit_lr(tri, delta_method = "simple"), "LRFit")
-  expect_s3_class(fit_lr(tri, delta_method = "full", rho = 0.3), "LRFit")
+test_that("se_method 'fixed' and 'delta' both run", {
+  expect_s3_class(fit_lr(tri, se_method = "fixed"), "LRFit")
+  expect_s3_class(fit_lr(tri, se_method = "delta", rho = 0.3), "LRFit")
 })
 
 test_that("bootstrap = TRUE runs and returns class 'LRFit'", {
@@ -77,7 +78,7 @@ test_that("bootstrap = TRUE runs and returns class 'LRFit'", {
 test_that("bootstrap reproducibility via seed", {
   lr_a <- fit_lr(tri, method = "sa", bootstrap = TRUE, B = 25, seed = 42)
   lr_b <- fit_lr(tri, method = "sa", bootstrap = TRUE, B = 25, seed = 42)
-  expect_equal(lr_a$summary$ci_lower, lr_b$summary$ci_lower)
+  expect_equal(lr_a$summary$lr_ci_lower, lr_b$summary$lr_ci_lower)
 })
 
 test_that("summary(LRFit) returns the $summary table", {
@@ -90,37 +91,37 @@ test_that("print.LRFit doesn't error", {
   expect_no_error(capture.output(print(lr)))
 })
 
-test_that("fit_lr with regime_break + method=sa applies hybrid filter", {
+test_that("fit_lr with loss_regime_break + method=sa applies hybrid filter", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, group_var = "coverage",
                         cohort_var = "uy_m")
   fit_full <- fit_lr(tri, method = "sa")
-  fit_brk  <- fit_lr(tri, method = "sa", regime_break = "2025-07-01",
+  fit_brk  <- fit_lr(tri, method = "sa", loss_regime_break = "2025-07-01",
                      recent = 18L)
   # ED parameters (g_selected) should differ for early dev (k < k*)
   expect_false(identical(fit_full$selected$g_selected,
                          fit_brk$selected$g_selected))
-  expect_equal(fit_brk$regime_break, as.Date("2025-07-01"))
+  expect_equal(fit_brk$loss_regime_break, as.Date("2025-07-01"))
 })
 
-test_that("fit_lr with regime_break + method=ed drops pre-break cohorts", {
+test_that("fit_lr with loss_regime_break + method=ed drops pre-break cohorts", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, group_var = "coverage",
                         cohort_var = "uy_m")
   fit_full <- fit_lr(tri, method = "ed")
-  fit_brk  <- fit_lr(tri, method = "ed", regime_break = "2025-07-01")
+  fit_brk  <- fit_lr(tri, method = "ed", loss_regime_break = "2025-07-01")
   expect_false(identical(fit_full$full$lr_proj, fit_brk$full$lr_proj))
 })
 
-test_that("fit_lr with NULL regime_break is unchanged", {
+test_that("fit_lr with NULL loss_regime_break is unchanged", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, group_var = "coverage",
                         cohort_var = "uy_m")
   a <- fit_lr(tri, method = "sa")
-  b <- fit_lr(tri, method = "sa", regime_break = NULL)
+  b <- fit_lr(tri, method = "sa", loss_regime_break = NULL)
   expect_identical(a$full$lr_proj, b$full$lr_proj)
 })
 
@@ -130,8 +131,8 @@ test_that("fit_lr with Regime extracts last breakpoint", {
   tri <- build_triangle(exp, group_var = "coverage",
                         cohort_var = "uy_m")
   reg <- detect_regime(tri)
-  fit_reg <- fit_lr(tri, method = "sa", regime_break = reg, recent = 18L)
+  fit_reg <- fit_lr(tri, method = "sa", loss_regime_break = reg, recent = 18L)
   if (length(reg$breakpoints) > 0L) {
-    expect_equal(fit_reg$regime_break, max(reg$breakpoints))
+    expect_equal(fit_reg$loss_regime_break, max(reg$breakpoints))
   }
 })

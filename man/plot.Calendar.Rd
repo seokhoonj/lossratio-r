@@ -19,7 +19,7 @@
 \item{value_var}{A single metric to plot. Must be one of:
 \code{"lr"}, \code{"lr_incr"},
 \code{"loss"}, \code{"loss_incr"}, \code{"premium"}, \code{"premium_incr"}, \code{"margin"}, \code{"margin_incr"},
-\code{"loss_prop"}, \code{"loss_incr_prop"}, \code{"premium_prop"}, or \code{"premium_incr_prop"}.}
+\code{"loss_share"}, \code{"loss_incr_share"}, \code{"premium_share"}, or \code{"premium_incr_share"}.}
 
 \item{x_by}{X-axis basis. One of:
 \describe{
@@ -44,7 +44,7 @@ The selected metric is plotted over the calendar-style \code{calendar_var},
 or over the calendar development variable stored in \code{attr(x, "dev_var")}.
 
 Ratio metrics (\code{lr}, \code{lr}) and proportion metrics
-(\code{loss_prop}, \code{loss_incr_prop}, \code{premium_prop}, \code{premium_incr_prop}) are plotted on the
+(\code{loss_share}, \code{loss_incr_share}, \code{premium_share}, \code{premium_incr_share}) are plotted on the
 original scale and displayed as percentages via y-axis labels.
 Amount metrics (\code{loss}, \code{loss_incr}, \code{premium}, \code{premium_incr}, \code{margin}, \code{margin_incr}) are
 plotted on the original scale and displayed using y-axis labels scaled by

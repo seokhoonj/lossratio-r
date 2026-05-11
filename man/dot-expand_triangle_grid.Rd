@@ -4,7 +4,7 @@
 \alias{.expand_triangle_grid}
 \title{Expand a \code{Triangle} object to a full development grid}
 \usage{
-.expand_triangle_grid(triangle, ata_fit, loss_var)
+.expand_triangle_grid(triangle, ata_fit, target)
 }
 \description{
 Internal helper that constructs a complete cohort-by-development-period grid

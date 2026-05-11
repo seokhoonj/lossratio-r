@@ -3,12 +3,11 @@ data(experience)
 exp  <- experience
 tri  <- build_triangle(exp, group_var = coverage)
 cal  <- build_calendar(exp, group_var = coverage)
-ata  <- build_link(tri, loss_var = "loss")
-af   <- fit_ata(tri, loss_var = "loss")
-ed   <- build_link(tri, loss_var = "loss", premium_var = "premium")
-ef   <- fit_ed(tri, loss_var = "loss", premium_var = "premium")
-cl_b <- fit_cl(tri, loss_var = "loss", method = "basic")
-cl_m <- fit_cl(tri, loss_var = "loss", method = "mack")
+ata  <- build_link(tri, target = "loss")
+af   <- fit_ata(tri, target = "loss")
+ed   <- build_link(tri, target = "loss", exposure = "premium")
+ef   <- fit_ed(tri, target = "loss", exposure = "premium")
+cl_m <- fit_cl(tri, target = "loss", method = "mack")
 lr   <- fit_lr(tri, method = "sa")
 sub  <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
 reg  <- detect_regime(sub, K = 12, method = "e_divisive")
@@ -48,10 +47,6 @@ test_that("plot.Link (ed mode) dispatches across types", {
 
 test_that("plot.EDFit dispatches", {
   expect_true(is_plot(suppressWarnings(plot(ef))))
-})
-
-test_that("plot.CLFit dispatches (basic, projection only)", {
-  expect_true(is_plot(suppressWarnings(plot(cl_b, type = "projection"))))
 })
 
 test_that("plot.CLFit dispatches (mack, both types)", {

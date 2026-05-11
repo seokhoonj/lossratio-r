@@ -27,7 +27,7 @@ test_that("build_link on a single cohort returns Link with valid links", {
   exp <- make_exp()
   single <- exp[uy_m == as.Date("2024-01-01")]
   tri <- build_triangle(single, group_var = coverage)
-  ata <- build_link(tri, loss_var = "loss")
+  ata <- build_link(tri, target = "loss")
   expect_s3_class(ata, "Link")
   expect_true(all(ata$ata_to == ata$ata_from + 1L))
 })
@@ -51,7 +51,7 @@ test_that("summary.Triangle on a single group returns one row per dev", {
 
 test_that("fit_cl runs on a single-group triangle", {
   tri <- make_sub_tri("SUR")
-  expect_no_error(cl <- fit_cl(tri, loss_var = "loss", method = "mack"))
+  expect_no_error(cl <- fit_cl(tri, target = "loss", method = "mack"))
   expect_s3_class(cl, "CLFit")
 })
 

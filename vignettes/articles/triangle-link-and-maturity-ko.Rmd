@@ -76,10 +76,10 @@ head(sm)
 
 `Link` 객체는 triangle 으로부터 빌드된 단계 연결 테이블(link table) 이다.
 단일 변수 모드에서는 관측된 **ATA 인자**(age-to-age factor) 를 담고,
-`premium_var` 를 지정하면 ED 강도 $g_k = \Delta C^L_k / C^P_k$ 를 담는다.
+`exposure` 를 지정하면 ED 강도 $g_k = \Delta C^L_k / C^P_k$ 를 담는다.
 
 ```{r}
-ata <- build_link(tri, loss_var = "loss")
+ata <- build_link(tri, target = "loss")
 sm  <- summary(ata, model = "ata", alpha = 1)
 head(sm)
 ```
@@ -113,7 +113,7 @@ plot_triangle(ata, label_size = 2.5)              # 관측 인자 히트맵
 plot_triangle(ata, label_size = 2.5, show_maturity = TRUE)  # 성숙점 라인 overlay
 
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly Link 로 다시 빌드
-ata_q <- build_link(tri_q, loss_var = "loss")
+ata_q <- build_link(tri_q, target = "loss")
 plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / premium)
 ```
 
@@ -123,7 +123,7 @@ plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / premium)
 ### ED 진단
 
 ```{r}
-ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
+ed <- build_link(tri, target = "loss", exposure = "premium")
 sm <- summary(ed, model = "ed", alpha = 1)
 head(sm)
 
@@ -190,10 +190,10 @@ attribute 로도 저장된다.
 값을 그대로 받는다).
 
 ```{r, eval = FALSE}
-fit_ata(tri, loss_var = "loss",
+fit_ata(tri, target = "loss",
         maturity_args = list(max_cv = 0.08, min_run = 2L))
 
-fit_cl(tri, loss_var = "loss",
+fit_cl(tri, target = "loss",
        maturity_args = list(max_cv = 0.08))
 
 fit_lr(tri, method = "sa",
@@ -218,7 +218,7 @@ detect_maturity(tri_all, loss_var = "loss")
 표시한다.
 
 ```{r}
-plot(build_link(tri_all, loss_var = "loss"), type = "cv")
+plot(build_link(tri_all, target = "loss"), type = "cv")
 ```
 
 ## 4. 빌드 전 검증
@@ -246,8 +246,8 @@ head(gaps)
 최근 대각선으로 제한한다.
 
 ```{r}
-fit_ata(tri, loss_var = "loss", alpha = 1, recent = 12)  # 최근 12개 대각선
-fit_cl(tri, loss_var = "loss", recent = 12)
+fit_ata(tri, target = "loss", alpha = 1, recent = 12)  # 최근 12개 대각선
+fit_cl(tri, target = "loss", recent = 12)
 fit_lr(tri, recent = 12)
 ```
 

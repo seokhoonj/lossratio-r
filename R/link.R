@@ -9,13 +9,13 @@
 #' exposure-driven (ED) workflows. Each row corresponds to one
 #' development link `(cohort, ata_from -> ata_to)`.
 #'
-#' Two modes are produced depending on `premium_var`:
+#' Two modes are produced depending on `exposure`:
 #'
 #' \describe{
-#'   \item{Single-variable mode (`premium_var = NULL`)}{The age-to-age
+#'   \item{Single-variable mode (`exposure = NULL`)}{The age-to-age
 #'     factor is \eqn{ata = value_{to} / value_{from}}, where
-#'     \eqn{value} is the column named by `loss_var`.}
-#'   \item{Dual-variable mode (`premium_var` supplied)}{In addition to
+#'     \eqn{value} is the column named by `target`.}
+#'   \item{Dual-variable mode (`exposure` supplied)}{In addition to
 #'     the loss-side ATA, the exposure-driven intensity
 #'     \eqn{g = \Delta loss / premium_{from}} is computed and stored in
 #'     the `intensity` column. Premium measure used as denominator for
@@ -24,21 +24,22 @@
 #' }
 #'
 #' @param x A `Triangle` object.
-#' @param loss_var A single cumulative metric used as the link
+#' @param target A single cumulative metric used as the link
 #'   numerator. Must be one of `"loss"`, `"premium"`, or `"lr"`. Default
-#'   `"loss"`. Despite the name, this argument accepts any cumulative
-#'   metric on the Triangle; `"loss"` reflects the most common use.
-#' @param premium_var Optional second cumulative metric, treated as the
+#'   `"loss"`. Generic worker name; for loss-side ATA this is the
+#'   cumulative loss column, but any cumulative metric on the Triangle
+#'   may be supplied.
+#' @param exposure Optional second cumulative metric, treated as the
 #'   exposure anchor for the ED workflow. Must be one of `"loss"`,
-#'   `"premium"`, `"lr"`, and must differ from `loss_var`. When `NULL`
+#'   `"premium"`, `"lr"`, and must differ from `target`. When `NULL`
 #'   (default), only the single-variable columns are produced.
-#' @param weight_var Optional cumulative metric used as WLS weight in
+#' @param weight Optional cumulative metric used as WLS weight in
 #'   downstream `summary` / `fit_ata` calls. Must differ from
-#'   `loss_var`. Cannot be combined with `premium_var` (the dual
+#'   `target`. Cannot be combined with `exposure` (the dual
 #'   workflow has its own anchor).
 #' @param min_denom Minimum denominator required to compute `ata`
-#'   and `intensity`. If `loss_from <= min_denom`, `ata` becomes `NA`;
-#'   if `premium_from <= min_denom`, `intensity` becomes `NA`. Default
+#'   and `intensity`. If `target_from <= min_denom`, `ata` becomes `NA`;
+#'   if `exposure_from <= min_denom`, `intensity` becomes `NA`. Default
 #'   `0`.
 #' @param drop_invalid Logical; if `TRUE`, rows with non-finite `ata`
 #'   (single-var) or non-finite `intensity` (dual-var) are dropped.
@@ -48,13 +49,13 @@
 #' @return A `data.table` of class `"Link"` with columns:
 #'
 #'   * Always: `[group_var]`, `cohort`, `ata_from`, `ata_to`, `ata_link`,
-#'     `loss_from`, `loss_to`, `loss_delta`, `ata`.
-#'   * If `premium_var` is set: also `premium_from`, `premium_to`,
-#'     `premium_delta`, `intensity`.
-#'   * If `weight_var` is set: also `weight`.
+#'     `target_from`, `target_to`, `target_delta`, `ata`.
+#'   * If `exposure` is set: also `exposure_from`, `exposure_to`,
+#'     `exposure_delta`, `intensity`.
+#'   * If `weight` is set: also `weight`.
 #'
 #'   The returned object carries attributes `group_var`, `cohort_var`,
-#'   `dev_var`, `loss_var`, `premium_var` (or `NULL`), `weight_var`
+#'   `dev_var`, `target`, `exposure` (or `NULL`), `weight`
 #'   (or `NULL`).
 #'
 #' @seealso [build_triangle()], [summary.Link()], [plot.Link()],
@@ -65,18 +66,18 @@
 #' tri <- build_triangle(df, group_var = coverage)
 #'
 #' # Single-variable: cumulative-loss link factors (ATA workflow)
-#' link_loss <- build_link(tri, loss_var = "loss")
+#' link_loss <- build_link(tri, target = "loss")
 #'
 #' # Dual-variable: ED-ready link table (loss + premium)
-#' link_ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
+#' link_ed <- build_link(tri, target = "loss", exposure = "premium")
 #' head(link_ed)
 #' }
 #'
 #' @export
 build_link <- function(x,
-                       loss_var     = "loss",
-                       premium_var  = NULL,
-                       weight_var   = NULL,
+                       target       = "loss",
+                       exposure     = NULL,
+                       weight       = NULL,
                        min_denom    = 0,
                        drop_invalid = FALSE) {
 
@@ -105,41 +106,41 @@ build_link <- function(x,
 
   valid_vars <- c("loss", "premium", "lr")
 
-  l_var <- .capture_names(dt, !!rlang::enquo(loss_var))
-  if (length(l_var) != 1L || !(l_var %in% valid_vars))
-    stop("`loss_var` must be one of 'loss', 'premium', or 'lr'.",
+  tgt <- .capture_names(dt, !!rlang::enquo(target))
+  if (length(tgt) != 1L || !(tgt %in% valid_vars))
+    stop("`target` must be one of 'loss', 'premium', or 'lr'.",
          call. = FALSE)
 
-  use_premium <- !is.null(premium_var)
-  use_weight  <- !is.null(weight_var)
+  use_exposure <- !is.null(exposure)
+  use_weight   <- !is.null(weight)
 
-  if (use_premium) {
-    p_var <- .capture_names(dt, !!rlang::enquo(premium_var))
-    if (length(p_var) != 1L || !(p_var %in% valid_vars))
-      stop("`premium_var` must be one of 'loss', 'premium', or 'lr'.",
+  if (use_exposure) {
+    exp_var <- .capture_names(dt, !!rlang::enquo(exposure))
+    if (length(exp_var) != 1L || !(exp_var %in% valid_vars))
+      stop("`exposure` must be one of 'loss', 'premium', or 'lr'.",
            call. = FALSE)
-    if (p_var == l_var)
+    if (exp_var == tgt)
       warning(
-        "`premium_var` equals `loss_var` (\"", l_var, "\") -- self-anchored ",
+        "`exposure` equals `target` (\"", tgt, "\") -- self-anchored ",
         "fit. Mathematically equivalent to chain ladder on the same column ",
         "(f_k = 1 + g_k); use only when intentional.",
         call. = FALSE
       )
   } else {
-    p_var <- NULL
+    exp_var <- NULL
   }
 
   if (use_weight) {
-    if (use_premium)
-      stop("`weight_var` cannot be combined with `premium_var`. ",
-           "The dual-variable mode uses `premium_from` as its anchor.",
+    if (use_exposure)
+      stop("`weight` cannot be combined with `exposure`. ",
+           "The dual-variable mode uses `exposure_from` as its anchor.",
            call. = FALSE)
-    wt_var <- .capture_names(dt, !!rlang::enquo(weight_var))
+    wt_var <- .capture_names(dt, !!rlang::enquo(weight))
     if (length(wt_var) != 1L || !(wt_var %in% valid_vars))
-      stop("`weight_var` must be one of 'loss', 'premium', or 'lr'.",
+      stop("`weight` must be one of 'loss', 'premium', or 'lr'.",
            call. = FALSE)
-    if (wt_var == l_var)
-      stop("`weight_var` must differ from `loss_var`.", call. = FALSE)
+    if (wt_var == tgt)
+      stop("`weight` must differ from `target`.", call. = FALSE)
   } else {
     wt_var <- NULL
   }
@@ -155,28 +156,28 @@ build_link <- function(x,
     by = grp_coh_var]
   z[, ata_link := sprintf("%s-%s", ata_from, ata_to)]
 
-  # 2) loss_from / loss_to / loss_delta / ata -----------------------
-  z[, loss_from := .SD[[l_var]], .SDcols = l_var]
-  z[, loss_to   := data.table::shift(.SD[[1L]], type = "lead"),
+  # 2) target_from / target_to / target_delta / ata -----------------------
+  z[, target_from := .SD[[tgt]], .SDcols = tgt]
+  z[, target_to   := data.table::shift(.SD[[1L]], type = "lead"),
     by      = grp_coh_var,
-    .SDcols = l_var]
-  z[, loss_delta := loss_to - loss_from]
+    .SDcols = tgt]
+  z[, target_delta := target_to - target_from]
   z[, ata := data.table::fifelse(
-    loss_from > min_denom,
-    loss_to / loss_from,
+    target_from > min_denom,
+    target_to / target_from,
     NA_real_
   )]
 
-  # 3) premium_from / premium_to / premium_delta / intensity -----------
-  if (use_premium) {
-    z[, premium_from := .SD[[p_var]], .SDcols = p_var]
-    z[, premium_to   := data.table::shift(.SD[[1L]], type = "lead"),
+  # 3) exposure_from / exposure_to / exposure_delta / intensity --------
+  if (use_exposure) {
+    z[, exposure_from := .SD[[exp_var]], .SDcols = exp_var]
+    z[, exposure_to   := data.table::shift(.SD[[1L]], type = "lead"),
       by      = grp_coh_var,
-      .SDcols = p_var]
-    z[, premium_delta := premium_to - premium_from]
+      .SDcols = exp_var]
+    z[, exposure_delta := exposure_to - exposure_from]
     z[, intensity := data.table::fifelse(
-      premium_from > min_denom,
-      loss_delta / premium_from,
+      exposure_from > min_denom,
+      target_delta / exposure_from,
       NA_real_
     )]
   }
@@ -191,27 +192,27 @@ build_link <- function(x,
 
   # 6) drop invalid rows if requested ----------------------------------
   if (drop_invalid) {
-    z <- if (use_premium) z[is.finite(intensity)] else z[is.finite(ata)]
+    z <- if (use_exposure) z[is.finite(intensity)] else z[is.finite(ata)]
   }
 
   # 7) keep relevant columns -------------------------------------------
   keep <- c(
     grp_var, "cohort",
     "ata_from", "ata_to", "ata_link",
-    "loss_from", "loss_to", "loss_delta", "ata",
-    if (use_premium)
-      c("premium_from", "premium_to", "premium_delta", "intensity"),
+    "target_from", "target_to", "target_delta", "ata",
+    if (use_exposure)
+      c("exposure_from", "exposure_to", "exposure_delta", "intensity"),
     if (use_weight) "weight"
   )
 
   z <- z[, .SD, .SDcols = keep]
 
-  data.table::setattr(z, "group_var"  , grp_var)
-  data.table::setattr(z, "cohort_var" , coh_var)
-  data.table::setattr(z, "dev_var"    , dev_var)
-  data.table::setattr(z, "loss_var"   , l_var)
-  data.table::setattr(z, "premium_var", p_var)
-  data.table::setattr(z, "weight_var" , wt_var)
+  data.table::setattr(z, "group_var" , grp_var)
+  data.table::setattr(z, "cohort_var", coh_var)
+  data.table::setattr(z, "dev_var"   , dev_var)
+  data.table::setattr(z, "target"    , tgt)
+  data.table::setattr(z, "exposure"  , exp_var)
+  data.table::setattr(z, "weight"    , wt_var)
 
   # Link is *not* a Triangle (different data structure: edge-level pairs
   # vs cell-level grid). Remove Triangle inheritance to prevent silent
@@ -227,8 +228,8 @@ build_link <- function(x,
 #' @param object A `Link` object from [build_link()].
 #' @param model Either `"ata"` (multiplicative chain-ladder factors) or
 #'   `"ed"` (additive exposure-driven intensities). When `model = "ed"`,
-#'   the link table must have been built with `premium_var` set. The
-#'   default uses `"ed"` if `attr(object, "premium_var")` is non-`NULL`,
+#'   the link table must have been built with `exposure` set. The
+#'   default uses `"ed"` if `attr(object, "exposure")` is non-`NULL`,
 #'   otherwise `"ata"`.
 #' @param alpha,digits,... Forwarded to the underlying summary helper.
 #'
@@ -248,12 +249,12 @@ summary.Link <- function(object,
   .assert_class(object, "Link")
 
   if (is.null(model)) {
-    model <- if (!is.null(attr(object, "premium_var"))) "ed" else "ata"
+    model <- if (!is.null(attr(object, "exposure"))) "ed" else "ata"
   }
   model <- match.arg(model, c("ata", "ed"))
 
-  if (identical(model, "ed") && is.null(attr(object, "premium_var")))
-    stop("`model = 'ed'` requires a Link built with `premium_var`.",
+  if (identical(model, "ed") && is.null(attr(object, "exposure")))
+    stop("`model = 'ed'` requires a Link built with `exposure`.",
          call. = FALSE)
 
   if (identical(model, "ata")) {
@@ -282,7 +283,7 @@ summary.Link <- function(object,
 #' \eqn{\mathrm{Var}(C_{i,k+1} \mid C_{i,k}) \propto C_{i,k}^{\alpha}}.
 #'
 #' When only one observation is available for a link, the factor is computed
-#' directly as `loss_to / loss_from` and standard errors are set to `NA`.
+#' directly as `target_to / target_from` and standard errors are set to `NA`.
 #'
 #' Near-zero values of `f_se` and `sigma` (below `tol`) are set to zero to
 #' avoid numerical noise from essentially perfect fits.
@@ -294,8 +295,8 @@ summary.Link <- function(object,
 #' @param alpha Numeric scalar controlling the variance structure. Default
 #'   is `1`.
 #' @param na_rm Logical; if `TRUE` (default), rows with non-finite or
-#'   non-positive `loss_from` are dropped before fitting. Note that
-#'   `loss_to = 0` is permitted, as zero cumulative values are valid
+#'   non-positive `target_from` are dropped before fitting. Note that
+#'   `target_to = 0` is permitted, as zero cumulative values are valid
 #'   observations (e.g. no claims yet developed in early development periods).
 #' @param tol Non-negative numeric scalar. Values below `tol` are set to
 #'   zero. Default is `1e-12`.
@@ -331,7 +332,7 @@ summary.Link <- function(object,
 
   # 1) drop invalid rows ------------------------------------------------
   if (na_rm) {
-    dt <- dt[is.finite(loss_from) & is.finite(loss_to) & loss_from > 0]
+    dt <- dt[is.finite(target_from) & is.finite(target_to) & target_from > 0]
   }
 
   # 2) attach weight column ---------------------------------------------
@@ -348,25 +349,25 @@ summary.Link <- function(object,
     dt[, w := weights]
   }
 
-  # regression weight: w / loss_from^(2 - alpha)
+  # regression weight: w / target_from^(2 - alpha)
   # this corresponds to Mack's variance assumption:
   # Var(C_{i,k+1} | C_{i,k}) proportional to C_{i,k}^alpha / w_{i,k}
   delta <- 2 - alpha
-  dt[, reg_w := w / loss_from^delta]
+  dt[, reg_w := w / target_from^delta]
   dt[, ata_link := sprintf("%s-%s", ata_from, ata_to)]
 
   # 3) fit one model per link -------------------------------------------
   res <- dt[, {
     if (.N == 1L) {
       data.table::data.table(
-        f     = loss_to[1L] / loss_from[1L],
+        f     = target_to[1L] / target_from[1L],
         f_se  = NA_real_,
         sigma = NA_real_,
         n_obs = 1L
       )
     } else {
       fit <- tryCatch(
-        stats::lm(loss_to ~ loss_from + 0, weights = reg_w),
+        stats::lm(target_to ~ target_from + 0, weights = reg_w),
         error = function(e) NULL
       )
 

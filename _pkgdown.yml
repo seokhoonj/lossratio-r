@@ -142,14 +142,16 @@ reference:
 
 - title: Estimation
   desc: >
-    Models that produce full projections on a Triangle. `fit_cl`
-    (chain ladder), `fit_ed` (exposure-driven / additive), `fit_lr`
-    (loss-ratio umbrella with three methods — `"sa"` stage-adaptive
-    default, `"ed"`, `"cl"`). All return an object carrying a `$full`
-    projection table.
+    Models that produce full projections on a Triangle. Worker layer:
+    `fit_cl` (chain ladder), `fit_ed` (exposure-driven / additive).
+    Role dispatchers: `fit_loss` (sa/ed/cl), `fit_premium` (ed/cl).
+    Composition: `fit_lr` (loss-ratio umbrella). All return an object
+    carrying a `$full` projection table.
   contents:
   - fit_cl
   - fit_ed
+  - fit_loss
+  - fit_premium
   - fit_lr
 
 - title: Factor diagnostics

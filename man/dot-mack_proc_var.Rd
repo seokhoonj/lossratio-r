@@ -5,7 +5,7 @@
 \title{Compute Mack process variance for a single cohort}
 \usage{
 .mack_proc_var(
-  value_proj,
+  target_proj,
   f_selected,
   sigma2,
   last_obs,

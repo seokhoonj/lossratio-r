@@ -26,19 +26,19 @@
 #' \describe{
 #'   \item{`wt`}{Volume-weighted mean:
 #'     \eqn{wt = \sum C_{i,k+1} / \sum C_{i,k}}.
-#'     Computed from all rows where `loss_from` and `loss_to` are
+#'     Computed from all rows where `target_from` and `target_to` are
 #'     finite, including rows where either value is zero.
 #'     Independent of `alpha`.}
-#'   \item{`f`}{WLS-estimated factor. Only rows where `loss_from > 0`
-#'     are used, since `loss_from = 0` causes numerical issues in the
+#'   \item{`f`}{WLS-estimated factor. Only rows where `target_from > 0`
+#'     are used, since `target_from = 0` causes numerical issues in the
 #'     WLS weights (\eqn{w = value\_from^{\alpha}}). When `alpha = 2`,
 #'     `f` and `wt` are numerically equivalent (assuming no zero
-#'     `loss_from` rows). When `alpha \ne 2`, they diverge.}
+#'     `target_from` rows). When `alpha \ne 2`, they diverge.}
 #' }
 #'
 #' Therefore `wt` and `f` can differ for two reasons:
 #' \enumerate{
-#'   \item \strong{Zero exclusion}: rows with `loss_from = 0` are
+#'   \item \strong{Zero exclusion}: rows with `target_from = 0` are
 #'     included in `wt` but excluded from `f`. This typically affects
 #'     early development periods where some cohorts have not yet accumulated
 #'     any claims.
@@ -50,9 +50,9 @@
 #'
 #' @section Weights:
 #' When the input `"Link"` object contains a `weight` column (added by
-#' [build_link()] when `weight_var` is supplied), that column is
-#' automatically used as the WLS weight in place of `loss_from`. This
-#' is useful when `loss_var = "lr"`, where `loss_from` carries no
+#' [build_link()] when `weight` is supplied), that column is
+#' automatically used as the WLS weight in place of `target_from`. This
+#' is useful when `target = "lr"`, where `target_from` carries no
 #' exposure information and an external exposure variable such as `premium`
 #' should be used instead.
 #'
@@ -97,7 +97,7 @@
 #'       (\eqn{SD / mean}). Used by [detect_maturity()] to assess
 #'       stability.}
 #'     \item{`f`}{WLS-estimated factor. Equals `wt` when `alpha = 2`
-#'       and no zero `loss_from` rows are present.}
+#'       and no zero `target_from` rows are present.}
 #'     \item{`f_se`}{Standard error of the WLS-estimated factor.}
 #'     \item{`rse`}{Relative standard error of the WLS-estimated factor
 #'       (\eqn{f\_se / f}).}
@@ -132,8 +132,8 @@
   # 1) descriptive statistics -------------------------------------------
   ds <- dt[, {
     vals <- ata[is.finite(ata)]
-    vf   <- loss_from
-    vt   <- loss_to
+    vf   <- target_from
+    vt   <- target_to
     m    <- mean(vals)
 
     .(
@@ -151,8 +151,8 @@
   ds[, valid_ratio := n_valid / n_obs]
 
   # 2) WLS estimation ---------------------------------------------------
-  # use weight column if present (added by build_link(weight_var = ...))
-  # otherwise fall back to loss_from (standard volume-weighted chain ladder)
+  # use weight column if present (added by build_link(weight = ...))
+  # otherwise fall back to target_from (standard volume-weighted chain ladder)
   wt_col    <- if ("weight" %in% names(dt)) "weight" else 1
   link_factors <- .lm_link(object, weights = wt_col, alpha = alpha, ...)
 
@@ -182,12 +182,12 @@
       stop("Non-numeric `digits` specified.", call. = FALSE)
   }
 
-  data.table::setattr(ds, "group_var",   grp_var)
-  data.table::setattr(ds, "cohort_var",  attr(object, "cohort_var"))
-  data.table::setattr(ds, "dev_var", attr(object, "dev_var"))
-  data.table::setattr(ds, "loss_var",   attr(object, "loss_var"))
-  data.table::setattr(ds, "weight_var",  attr(object, "weight_var"))
-  data.table::setattr(ds, "digits",      digits)
+  data.table::setattr(ds, "group_var",  grp_var)
+  data.table::setattr(ds, "cohort_var", attr(object, "cohort_var"))
+  data.table::setattr(ds, "dev_var",    attr(object, "dev_var"))
+  data.table::setattr(ds, "target",     attr(object, "target"))
+  data.table::setattr(ds, "weight",     attr(object, "weight"))
+  data.table::setattr(ds, "digits",     digits)
 
   .prepend_class(ds, "ATASummary")
 }
@@ -291,9 +291,9 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'     \item{`maturity_args`}{Resolved maturity arguments, or `NULL`.}
 #'   }
 #'
-#' @param loss_var Cumulative metric for the link factor. Default
+#' @param target Cumulative metric for the link factor. Default
 #'   `"loss"`. Forwarded to [build_link()].
-#' @param weight_var Optional WLS weight variable. Forwarded to
+#' @param weight Optional WLS weight variable. Forwarded to
 #'   [build_link()].
 #'
 #' @seealso [build_link()], [summary.Link()], [detect_maturity()],
@@ -301,8 +301,8 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'
 #' @export
 fit_ata <- function(x,
-                    loss_var      = "loss",
-                    weight_var    = NULL,
+                    target        = "loss",
+                    weight        = NULL,
                     alpha         = 1,
                     na_method     = c("locf", "none"),
                     sigma_method  = c("locf", "min_last2", "loglinear"),
@@ -313,7 +313,7 @@ fit_ata <- function(x,
 
   .assert_triangle_input(x, "fit_ata()")
 
-  link <- build_link(x, loss_var = loss_var, weight_var = weight_var)
+  link <- build_link(x, target = target, weight = weight)
 
   na_method    <- match.arg(na_method)
   sigma_method <- match.arg(sigma_method)
@@ -401,8 +401,8 @@ fit_ata <- function(x,
     group_var     = grp_var,
     cohort_var    = attr(link, "cohort_var"),
     dev_var       = attr(link, "dev_var"),
-    loss_var      = attr(link, "loss_var"),
-    weight_var    = attr(link, "weight_var"),
+    target        = attr(link, "target"),
+    weight        = attr(link, "weight"),
     link          = link,
     factor        = ata_summary,
     selected      = selected,

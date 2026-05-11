@@ -8,7 +8,7 @@
 }
 \arguments{
 \item{full}{The \verb{$full} data.table from a \code{CLFit} (must contain
-\code{cohort}, \code{dev}, \code{value_obs}, \code{value_proj}).}
+\code{cohort}, \code{dev}, \code{target_obs}, \code{target_proj}).}
 
 \item{selected}{The \verb{$selected} data.table (must contain \code{f_selected},
 \code{sigma2}, \code{f_var}).}
@@ -16,12 +16,15 @@
 \item{triangle}{The original \code{Triangle} (for \code{group_var} attribute).}
 }
 \value{
-Updated \code{full} data.table with \code{proc_se2}, \code{param_se2},
-\code{total_se2}, \code{proc_se}, \code{param_se}, \code{se_proj}, \code{proc_cv},
-\code{param_cv}, \code{cv_proj} columns rebuilt under the ED recursion.
+Updated \code{full} data.table with \code{target_proc_se2},
+\code{target_param_se2}, \code{target_total_se2}, \code{target_proc_se},
+\code{target_param_se}, \code{target_total_se}, \code{target_proc_cv},
+\code{target_param_cv}, \code{target_total_cv} columns rebuilt under the ED
+recursion (column names match the upstream \code{fit_cl} worker
+convention; the dispatcher renames them to \verb{premium_*} afterwards).
 }
 \description{
-Point projection (\code{value_proj}) is preserved -- it is identical under
+Point projection (\code{target_proj}) is preserved -- it is identical under
 both CL and self-weighted ED. Only the variance accumulation differs:
 
 \itemize{

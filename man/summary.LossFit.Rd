@@ -12,7 +12,5 @@
 \item{...}{Unused.}
 }
 \description{
-Per-cohort loss summary: ultimate, SE, and CV. Strips the LR-specific
-columns (\code{lr_ult}, \code{se_lr}, \code{cv_lr}) that the inherited LRFit summary
-would expose.
+Per-cohort ultimate loss, SE, and CV.
 }

@@ -6,7 +6,6 @@
 \usage{
 detect_convergence(
   triangle,
-  fit_fn = fit_lr,
   se_mult = 0.5,
   max_dv = 0.15,
   min_run = 3L,
@@ -18,10 +17,6 @@ detect_convergence(
 }
 \arguments{
 \item{triangle}{A \code{Triangle} object (typically from \code{\link[=build_triangle]{build_triangle()}}).}
-
-\item{fit_fn}{Fitting function used to project. Default \link{fit_lr}.
-\link{fit_cl} is also accepted but \code{fit_lr} is recommended because it
-exposes both loss and exposure projections required for portfolio LR.}
 
 \item{se_mult}{Multiplier on \eqn{\hat{SE}^{param}_v} (the symbol
 \code{c} in the math criterion above). Default \code{0.5}.}
@@ -41,7 +36,8 @@ backtest. When \code{NULL}, set to \code{max(min_run, floor((V - k_star) / 2))}.
 \item{min_n_cohorts}{Minimum number of cohorts required to compute
 \eqn{\hat{D}_v}. Default \code{5L}.}
 
-\item{...}{Additional arguments forwarded to \code{fit_fn}.}
+\item{...}{Additional arguments forwarded to \code{backtest()} (and thence
+to \code{fit_lr()}), e.g. \code{loss_method}, \code{recent}, \code{regime_break}.}
 }
 \value{
 An object of class \code{Convergence} (named list) containing the

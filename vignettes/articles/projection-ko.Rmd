@@ -110,7 +110,7 @@ $$
 
 특성:
 
-- 표준적인 적립 실무. 손해 예측에 한해서는 `fit_cl(tri, loss_var = "loss")`
+- 표준적인 적립 실무. 손해 예측에 한해서는 `fit_cl(tri, target = "loss")`
   과 동등하지만, `fit_lr()` 은 추가로 `premium` 에 대한 CL 로 익스포저를
   전방 추정하고 delta method 로 손해율 불확실성을 계산한다.
 - 초기 $f_k$ 에 노이즈가 있을 때 변동성이 크다 — 작은 분모가 link 오차를
@@ -143,18 +143,18 @@ summary(lrs$cl)$loss_ult
 
 ## 분산과 신뢰구간
 
-`fit_lr()` 은 delta method 로 해석적 표준오차를 산출한다.
-delta method 변형은 두 가지이다:
+`fit_lr()` 은 `L/P` 의 표준오차를 두 가지 방식으로 산출한다:
 
-- `delta_method = "simple"` (default) — 익스포저를 고정으로 취급,
-  $\mathrm{SE}(L/E) \approx \mathrm{SE}(L)/E$.
-- `delta_method = "full"` — 익스포저 불확실성과 손해-익스포저 상관계수
-  `rho` 를 반영한다:
+- `se_method = "fixed"` (default) — premium 을 고정 (비확률) 으로 취급,
+  $\mathrm{SE}(L/P) \approx \mathrm{SE}(L)/P$. 엄밀히는 `Var(P) = 0`,
+  `Cov(L,P) = 0` 을 가정한 delta method 의 degenerate case.
+- `se_method = "delta"` — premium 불확실성과 손해-premium 상관계수
+  `rho` 를 반영한 full delta method:
 
 $$
-\mathrm{Var}(L/E) \approx \frac{\mathrm{Var}(L)}{E^2}
-  + \frac{L^2 \mathrm{Var}(E)}{E^4}
-  - \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(E)}{E^3}
+\mathrm{Var}(L/P) \approx \frac{\mathrm{Var}(L)}{P^2}
+  + \frac{L^2 \mathrm{Var}(P)}{P^4}
+  - \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(P)}{P^3}
 $$
 
 부트스트랩 구간도 사용 가능하다:

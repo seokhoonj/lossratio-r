@@ -16,13 +16,13 @@
 #' the multiplicative ATA branch (`model = "ata"`) or the additive
 #' exposure-driven branch (`model = "ed"`).
 #'
-#' The default `model` is chosen from `attr(x, "premium_var")`: `NULL`
+#' The default `model` is chosen from `attr(x, "exposure")`: `NULL`
 #' (single-variable link) selects `"ata"`, a non-`NULL` exposure variable
 #' (dual-variable link) selects `"ed"`.
 #'
 #' @param x An object of class `"Link"`.
 #' @param model Either `"ata"` or `"ed"`. Default depends on
-#'   `attr(x, "premium_var")`.
+#'   `attr(x, "exposure")`.
 #' @param ... Arguments forwarded to the underlying plotting helper. See
 #'   the per-model parameter list in Details.
 #'
@@ -45,12 +45,12 @@ plot.Link <- function(x, model = NULL, ...) {
   .assert_class(x, "Link")
 
   if (is.null(model)) {
-    model <- if (!is.null(attr(x, "premium_var"))) "ed" else "ata"
+    model <- if (!is.null(attr(x, "exposure"))) "ed" else "ata"
   }
   model <- match.arg(model, c("ata", "ed"))
 
-  if (identical(model, "ed") && is.null(attr(x, "premium_var")))
-    stop("`model = 'ed'` requires a Link built with `premium_var`.",
+  if (identical(model, "ed") && is.null(attr(x, "exposure")))
+    stop("`model = 'ed'` requires a Link built with `exposure`.",
          call. = FALSE)
 
   if (identical(model, "ata")) {
@@ -70,12 +70,12 @@ plot.Link <- function(x, model = NULL, ...) {
 #' the multiplicative ATA branch (`model = "ata"`) or the additive
 #' exposure-driven branch (`model = "ed"`).
 #'
-#' The default `model` is chosen from `attr(x, "premium_var")`: `NULL`
+#' The default `model` is chosen from `attr(x, "exposure")`: `NULL`
 #' selects `"ata"`, non-`NULL` selects `"ed"`.
 #'
 #' @param x An object of class `"Link"`.
 #' @param model Either `"ata"` or `"ed"`. Default depends on
-#'   `attr(x, "premium_var")`.
+#'   `attr(x, "exposure")`.
 #' @param ... Arguments forwarded to the underlying plotting helper.
 #'
 #' @return A `ggplot` object.
@@ -87,12 +87,12 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   .assert_class(x, "Link")
 
   if (is.null(model)) {
-    model <- if (!is.null(attr(x, "premium_var"))) "ed" else "ata"
+    model <- if (!is.null(attr(x, "exposure"))) "ed" else "ata"
   }
   model <- match.arg(model, c("ata", "ed"))
 
-  if (identical(model, "ed") && is.null(attr(x, "premium_var")))
-    stop("`model = 'ed'` requires a Link built with `premium_var`.",
+  if (identical(model, "ed") && is.null(attr(x, "exposure")))
+    stop("`model = 'ed'` requires a Link built with `exposure`.",
          call. = FALSE)
 
   if (identical(model, "ata")) {
@@ -130,8 +130,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   grp_var <- attr(x, "group_var")
   if (is.null(grp_var)) grp_var <- character(0)
 
-  val_var <- attr(x, "loss_var")
-  meta    <- .get_plot_meta(val_var)
+  tgt_var <- attr(x, "target")
+  meta    <- .get_plot_meta(tgt_var)
 
   # 1) compute summary --------------------------------------------------
   smr <- summary(x, model = "ata", alpha = alpha)
@@ -617,7 +617,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   dt      <- .ensure_dt(x)
   grp_var <- attr(x, "group_var")
   coh_var <- attr(x, "cohort_var")
-  val_var <- attr(x, "loss_var")
+  tgt_var <- attr(x, "target")
 
   if (is.null(grp_var) || is.null(coh_var))
     stop("`x` must contain `group_var` and `cohort_var` attributes.",
@@ -645,8 +645,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     dt[, label := data.table::fifelse(
       is.finite(ata),
       sprintf("%.2f\n(%.1f->%.1f)", ata,
-              loss_from / amount_divisor,
-              loss_to   / amount_divisor),
+              target_from / amount_divisor,
+              target_to   / amount_divisor),
       ""
     )]
     caption_txt <- sprintf(
@@ -661,7 +661,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   dt[!is.finite(ata_fill), ata_fill := NA_real_]
 
   # 5) build title ------------------------------------------------------
-  title_txt <- switch(val_var,
+  title_txt <- switch(tgt_var,
                       loss    = "ATA Factor for Cumulative Loss",
                       premium = "ATA Factor for Cumulative Premium",
                       lr      = "ATA Factor for Cumulative Loss Ratio",
@@ -812,8 +812,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     dt[, label := data.table::fifelse(
       is.finite(intensity),
       sprintf("%.3f\n(%.1f/%.1f)", intensity,
-              loss_delta / amount_divisor,
-              premium_from / amount_divisor),
+              target_delta / amount_divisor,
+              exposure_from / amount_divisor),
       ""
     )]
     caption_txt <- sprintf(

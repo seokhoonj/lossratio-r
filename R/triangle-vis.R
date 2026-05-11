@@ -26,7 +26,7 @@
 #'   `"lr"`, `"lr_incr"`,
 #'   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`,
 #'   `"margin"`, `"margin_incr"`,
-#'   `"loss_prop"`, `"loss_incr_prop"`, `"premium_prop"`, or `"premium_incr_prop"`.
+#'   `"loss_share"`, `"loss_incr_share"`, `"premium_share"`, or `"premium_incr_share"`.
 #' @param summary Logical. If `FALSE` (default), shows raw cohort trajectories.
 #'   If `TRUE`, shows grey cohort trajectories with overlaid summary lines
 #'   (mean, median, weighted mean). Summary overlay is supported only for
@@ -95,8 +95,8 @@ plot.Triangle <- function(x,
     "loss", "loss_incr",
     "premium", "premium_incr",
     "margin", "margin_incr",
-    "loss_prop", "loss_incr_prop",
-    "premium_prop", "premium_incr_prop"
+    "loss_share", "loss_incr_share",
+    "premium_share", "premium_incr_share"
   )
 
   if (length(val_var) != 1L || !(val_var %in% valid_vars)) {
@@ -105,7 +105,7 @@ plot.Triangle <- function(x,
         "`value_var` must be one of ",
         "'lr', 'lr_incr', 'loss', 'loss_incr', 'premium', 'premium_incr', ",
         "'margin', 'margin_incr', ",
-        "'loss_prop', 'loss_incr_prop', 'premium_prop', or 'premium_incr_prop'."
+        "'loss_share', 'loss_incr_share', 'premium_share', or 'premium_incr_share'."
       ),
       call. = FALSE
     )
@@ -270,7 +270,7 @@ plot.Triangle <- function(x,
 #' or over the calendar development variable stored in `attr(x, "dev_var")`.
 #'
 #' Ratio metrics (`lr`, `lr`) and proportion metrics
-#' (`loss_prop`, `loss_incr_prop`, `premium_prop`, `premium_incr_prop`) are plotted on the
+#' (`loss_share`, `loss_incr_share`, `premium_share`, `premium_incr_share`) are plotted on the
 #' original scale and displayed as percentages via y-axis labels.
 #' Amount metrics (`loss`, `loss_incr`, `premium`, `premium_incr`, `margin`, `margin_incr`) are
 #' plotted on the original scale and displayed using y-axis labels scaled by
@@ -282,7 +282,7 @@ plot.Triangle <- function(x,
 #' @param value_var A single metric to plot. Must be one of:
 #'   `"lr"`, `"lr_incr"`,
 #'   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`, `"margin_incr"`,
-#'   `"loss_prop"`, `"loss_incr_prop"`, `"premium_prop"`, or `"premium_incr_prop"`.
+#'   `"loss_share"`, `"loss_incr_share"`, `"premium_share"`, or `"premium_incr_share"`.
 #' @param x_by X-axis basis. One of:
 #'   \describe{
 #'     \item{"period"}{Use the calendar variable stored in `attr(x, "calendar_var")`.}
@@ -337,8 +337,8 @@ plot.Calendar <- function(x,
     "loss", "loss_incr",
     "premium", "premium_incr",
     "margin", "margin_incr",
-    "loss_prop", "loss_incr_prop",
-    "premium_prop", "premium_incr_prop"
+    "loss_share", "loss_incr_share",
+    "premium_share", "premium_incr_share"
   )
 
   if (length(cal_var) != 1L) {
@@ -461,7 +461,7 @@ plot_triangle <- function(x, ...) {
 #' For amount metrics (`loss`, `loss_incr`, `premium`, `premium_incr`, `margin`, `margin_incr`),
 #' labels show the selected amount only.
 #'
-#' For proportion metrics (`loss_prop`, `loss_incr_prop`, `premium_prop`, `premium_incr_prop`),
+#' For proportion metrics (`loss_share`, `loss_incr_share`, `premium_share`, `premium_incr_share`),
 #' labels are displayed as percentages.
 #'
 #' The loss ratio is defined as:
@@ -481,7 +481,7 @@ plot_triangle <- function(x, ...) {
 #' @param value_var A single metric to plot. Must be one of:
 #'   `"lr"`, `"lr_incr"`,
 #'   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`, `"margin_incr"`,
-#'   `"loss_prop"`, `"loss_incr_prop"`, `"premium_prop"`, or `"premium_incr_prop"`.
+#'   `"loss_share"`, `"loss_incr_share"`, `"premium_share"`, or `"premium_incr_share"`.
 #' @param label_style Label display style. One of:
 #'   \describe{
 #'     \item{"value"}{Show only the selected metric.}
@@ -524,8 +524,8 @@ plot_triangle <- function(x, ...) {
 #' plot_triangle(d, value_var = "lr")
 #' plot_triangle(d, value_var = "loss")
 #' plot_triangle(d, value_var = "premium")
-#' plot_triangle(d, value_var = "loss_prop")
-#' plot_triangle(d, value_var = "premium_prop")
+#' plot_triangle(d, value_var = "loss_share")
+#' plot_triangle(d, value_var = "premium_share")
 #' plot_triangle(d, label_style = "value")
 #' plot_triangle(d, label_style = "detail")
 #' }
@@ -565,8 +565,8 @@ plot_triangle.Triangle <- function(x,
     "loss", "loss_incr",
     "premium", "premium_incr",
     "margin", "margin_incr",
-    "loss_prop", "loss_incr_prop",
-    "premium_prop", "premium_incr_prop"
+    "loss_share", "loss_incr_share",
+    "premium_share", "premium_incr_share"
   )
 
   if (length(coh_var) != 1L)
@@ -581,7 +581,7 @@ plot_triangle.Triangle <- function(x,
         "`value_var` must be one of ",
         "'lr', 'lr_incr', 'loss', 'loss_incr', 'premium', 'premium_incr', ",
         "'margin', 'margin_incr', ",
-        "'loss_prop', 'loss_incr_prop', 'premium_prop', or 'premium_incr_prop'."
+        "'loss_share', 'loss_incr_share', 'premium_share', or 'premium_incr_share'."
       ),
       call. = FALSE
     )
@@ -607,8 +607,8 @@ plot_triangle.Triangle <- function(x,
   amount_vars <- c("loss", "loss_incr",
                    "premium", "premium_incr",
                    "margin", "margin_incr")
-  prop_vars   <- c("loss_prop", "loss_incr_prop",
-                   "premium_prop", "premium_incr_prop")
+  prop_vars   <- c("loss_share", "loss_incr_share",
+                   "premium_share", "premium_incr_share")
 
   if (val_var %in% ratio_vars) {
 
@@ -678,10 +678,10 @@ plot_triangle.Triangle <- function(x,
 
     title_txt <- switch(
       val_var,
-      loss_prop          = "Cumulative Loss Proportion",
-      loss_incr_prop     = "Per-Period Loss Proportion",
-      premium_prop       = "Cumulative Premium Proportion",
-      premium_incr_prop  = "Per-Period Premium Proportion"
+      loss_share          = "Cumulative Loss Proportion",
+      loss_incr_share     = "Per-Period Loss Proportion",
+      premium_share       = "Cumulative Premium Proportion",
+      premium_incr_share  = "Per-Period Premium Proportion"
     )
 
     caption_txt <- "Unit: %"
@@ -724,8 +724,8 @@ plot_triangle.Triangle <- function(x,
 #'
 #' @param x An object of class `Total`.
 #' @param value_var A single metric to plot. Must be one of the columns
-#'   carried by a `Total`: `"lr"`, `"loss"`, `"premium"`, `"loss_prop"`, or
-#'   `"premium_prop"`. Default `"lr"`.
+#'   carried by a `Total`: `"lr"`, `"loss"`, `"premium"`, `"loss_share"`, or
+#'   `"premium_share"`. Default `"lr"`.
 #' @param amount_divisor Numeric scaling factor used only for y-axis
 #'   labels of amount variables. Default `1e8`.
 #' @param theme A string passed to [.switch_theme()]
@@ -766,13 +766,13 @@ plot.Total <- function(x,
   grp_var <- attr(x, "group_var")
   val_var <- .capture_names(x, !!rlang::enquo(value_var))
 
-  valid_vars <- c("lr", "loss", "premium", "loss_prop", "premium_prop")
+  valid_vars <- c("lr", "loss", "premium", "loss_share", "premium_share")
 
   if (length(val_var) != 1L || !(val_var %in% valid_vars)) {
     stop(
       paste0(
         "`value_var` must be one of ",
-        "'lr', 'loss', 'premium', 'loss_prop', or 'premium_prop'."
+        "'lr', 'loss', 'premium', 'loss_share', or 'premium_share'."
       ),
       call. = FALSE
     )
@@ -852,8 +852,8 @@ plot.Total <- function(x,
 #'   `holdout` calendar diagonals are flagged `"holdout"`. The `recent`
 #'   filter is then evaluated against the post-holdout boundary so the
 #'   recent wedge sits *before* the holdout wedge (no overlap), matching
-#'   `backtest()` semantics — `fit_fn(masked, recent = N, ...)` operates
-#'   on the masked triangle whose own max_cal is `original - holdout`.
+#'   `backtest()` semantics — the internal fitter operates on the masked
+#'   triangle whose own max_cal is `original - holdout`.
 #' @param mat_k Optional integer. The maturity switch as a *target*
 #'   development index (= `ata_to` of the first stable link). When
 #'   both `recent` and `regime_break` are provided, the hybrid mask
@@ -920,8 +920,8 @@ plot.Total <- function(x,
 
   # held-out flag, plus an effective max-cal for fit-data filters that
   # excludes the held_out region — this matches `backtest()` semantics,
-  # where `fit_fn(masked, recent = N, ...)` operates on the masked
-  # triangle whose own max_cal is `original_max_cal - holdout`.
+  # where the internal fitter operates on the masked triangle whose own
+  # max_cal is `original_max_cal - holdout`.
   if (!is.null(holdout)) {
     if (!is.numeric(holdout) || length(holdout) != 1L ||
         is.na(holdout) || holdout < 1L)
@@ -1031,7 +1031,7 @@ plot.Total <- function(x,
     margs <- if (is.null(maturity_args)) list() else maturity_args
     fit_for_mat <- tryCatch(
       do.call(fit_ata,
-              c(list(x = x, loss_var = value_var, maturity_args = margs))),
+              c(list(x = x, target = value_var, maturity_args = margs))),
       error = function(e) NULL
     )
     if (!is.null(fit_for_mat) &&

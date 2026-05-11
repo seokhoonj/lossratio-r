@@ -5,7 +5,7 @@
 #' @description
 #' Internal helper that computes group-wise summary statistics for
 #' incremental loss intensity \eqn{g} from a dual-variable `Link` object
-#' (built with `premium_var` set). Dispatched via [summary.Link()] when
+#' (built with `exposure` set). Dispatched via [summary.Link()] when
 #' `model = "ed"`.
 #'
 #' Two purposes:
@@ -32,12 +32,12 @@
 #'     Computed from all rows where both values are finite.
 #'     Independent of `alpha`.}
 #'   \item{`g`}{WLS-estimated intensity from
-#'     \code{lm(loss_delta ~ premium_from + 0)}. Only rows where
-#'     `premium_from > 0` are used. When `alpha = 2`, `g` and `wt`
+#'     \code{lm(target_delta ~ exposure_from + 0)}. Only rows where
+#'     `exposure_from > 0` are used. When `alpha = 2`, `g` and `wt`
 #'     are numerically equivalent.}
 #' }
 #'
-#' @param object A `Link` object built with `premium_var` set,
+#' @param object A `Link` object built with `exposure` set,
 #'   typically produced by [build_link()].
 #' @param alpha Numeric scalar controlling the variance structure in the
 #'   WLS fit. Default is `1`.
@@ -58,8 +58,8 @@
 
   .assert_class(object, "Link")
 
-  if (is.null(attr(object, "premium_var")))
-    stop("`.summarize_link_ed()` requires a Link built with `premium_var`.",
+  if (is.null(attr(object, "exposure")))
+    stop("`.summarize_link_ed()` requires a Link built with `exposure`.",
          call. = FALSE)
 
   grp_var <- attr(object, "group_var")
@@ -72,8 +72,8 @@
   # 1) descriptive statistics
   ds <- dt[, {
     vals <- intensity[is.finite(intensity)]
-    ef   <- premium_from
-    dl   <- loss_delta
+    ef   <- exposure_from
+    dl   <- target_delta
     m    <- mean(vals)
 
     .(
@@ -119,12 +119,12 @@
       stop("Non-numeric `digits` specified.", call. = FALSE)
   }
 
-  data.table::setattr(ds, "group_var"   , grp_var)
-  data.table::setattr(ds, "cohort_var"  , attr(object, "cohort_var"))
-  data.table::setattr(ds, "dev_var"     , attr(object, "dev_var"))
-  data.table::setattr(ds, "loss_var"   , attr(object, "loss_var"))
-  data.table::setattr(ds, "premium_var", attr(object, "premium_var"))
-  data.table::setattr(ds, "digits",       digits)
+  data.table::setattr(ds, "group_var" , grp_var)
+  data.table::setattr(ds, "cohort_var", attr(object, "cohort_var"))
+  data.table::setattr(ds, "dev_var"   , attr(object, "dev_var"))
+  data.table::setattr(ds, "target"    , attr(object, "target"))
+  data.table::setattr(ds, "exposure"  , attr(object, "exposure"))
+  data.table::setattr(ds, "digits"    , digits)
 
   .prepend_class(ds, "EDSummary")
 }
@@ -180,14 +180,15 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #' The `$full` projection table is produced by delegating to
 #' [fit_lr()] with `method = "ed"`, so cumulative loss / exposure /
 #' loss-ratio projections and their standard errors are numerically
-#' identical to those of `fit_lr(method = "ed")`. This makes
-#' [backtest()] usable with `fit_fn = fit_ed`.
+#' identical to those of `fit_lr(method = "ed")`. To validate an ED
+#' projection via [backtest()], call
+#' `backtest(tri, target = "lr", loss_method = "ed")`.
 #'
 #' @param x A `"Triangle"` object.
-#' @param loss_var Cumulative loss variable. Default `"loss"`.
-#'   Forwarded to [build_link()] and to [fit_lr()] as `loss_var`.
-#' @param premium_var Cumulative exposure variable. Default `"premium"`.
-#'   Forwarded to [build_link()] and to [fit_lr()].
+#' @param target Cumulative loss variable. Default `"loss"`.
+#'   Forwarded to [build_link()] and to downstream workers.
+#' @param exposure Cumulative exposure variable. Default `"premium"`.
+#'   Forwarded to [build_link()] and to downstream workers.
 #' @param method One of `"basic"` or `"mack"`. Default is `"basic"`.
 #' @param alpha Numeric scalar controlling the variance structure. Default
 #'   is `1`.
@@ -210,11 +211,13 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'     \item{`factor`}{`EDSummary` of fitted intensities per development link.}
 #'     \item{`selected`}{`data.table` of selected `g_selected`, `sigma2`
 #'       (and `g_var` when `method = "mack"`).}
-#'     \item{`full`}{`data.table` mirroring `LRFit$full` for `method = "ed"`:
-#'       per-cell cumulative loss / exposure / loss-ratio projection plus
-#'       SE columns (`loss_proj`, `premium_proj`, `lr_proj`,
-#'       `se_proj`, `se_lr`, `cv_lr`, ...). Available cells include both
-#'       observed and projected; `is_observed` flags observed cells.}
+#'     \item{`full`}{`data.table` of per-cell cumulative target / exposure
+#'       projection plus role-prefixed SE / CV columns
+#'       (`target_proj`, `target_incr_proj`, `exposure_proj`,
+#'       `exposure_incr_proj`, `target_proc_se2`, `target_param_se2`,
+#'       `target_total_se2`, `target_proc_se`, `target_param_se`,
+#'       `target_total_se`, `target_total_cv`). Available cells include
+#'       both observed and projected; `is_observed` flags observed cells.}
 #'     \item{`link`}{`Link` object used for factor estimation.}
 #'   }
 #'
@@ -222,8 +225,8 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'
 #' @export
 fit_ed <- function(x,
-                   loss_var      = "loss",
-                   premium_var   = "premium",
+                   target        = "loss",
+                   exposure      = "premium",
                    method        = c("basic", "mack"),
                    alpha         = 1,
                    na_method     = c("locf", "zero", "none"),
@@ -241,8 +244,8 @@ fit_ed <- function(x,
   # 1) factor-level fit (mirrors fit_cl's use of fit_ata) ------------------
   intensity_fit <- fit_intensity(
     x,
-    loss_var     = loss_var,
-    premium_var  = premium_var,
+    target       = target,
+    exposure     = exposure,
     alpha        = alpha,
     na_method    = na_method,
     sigma_method = sigma_method,
@@ -268,29 +271,189 @@ fit_ed <- function(x,
   )
   class(out) <- "EDFit"
 
-  # 3) compute factor variance when method = "mack" ------------------------
-  if (method == "mack") {
-    out$selected <- .mack_g_var(ed_fit = out, alpha = alpha)
-  }
+  # 3) compute factor variance (always — required by the projection in
+  # step 4). `method` is preserved as metadata; for "basic" the factor
+  # variance is still Mack-style (same algorithm), only the label differs.
+  out$selected <- .mack_g_var(ed_fit = out, alpha = alpha)
 
-  # 4) cell-level projection via fit_lr(method = "ed") ---------------------
-  # Reuses the SA infrastructure with maturity = -Inf so every cell uses
-  # the ED rule (additive g_k * exposure increment). Numerically
-  # equivalent to fit_lr(method = "ed").
-  lr_fit <- fit_lr(
+  # 4) cell-level projection (standalone worker) --------------------------
+  # ED rule: Delta loss_k = g_k * cumulative_premium_k. Factor pair is
+  # fit_intensity (loss-side g_k) + fit_cl on premium (premium projection).
+  # No fit_ata / CL factor needed — those are fit_cl's pair.
+  grp_var <- attr(x, "group_var")
+  if (is.null(grp_var)) grp_var <- character(0)
+
+  # 4a) premium projection: Mack CL on the premium column
+  premium_cl <- fit_cl(
     x,
-    method       = "ed",
-    loss_var     = loss_var,
-    premium_var  = premium_var,
-    loss_alpha   = alpha,
+    method       = "mack",
+    target       = exposure,
+    alpha        = 1,
     sigma_method = sigma_method,
     recent       = recent,
-    regime_break = regime_break
+    regime_break = out$regime_break
+  )
+  premium_ata_fit <- structure(
+    list(
+      selected     = premium_cl$selected,
+      link         = premium_cl$link,
+      data         = premium_cl$data,
+      method       = "mack",
+      alpha        = 1,
+      sigma_method = sigma_method,
+      maturity     = NULL
+    ),
+    class = "ATAFit"
   )
 
-  out$full <- data.table::copy(lr_fit$full)
+  # 4b) expand grid (joins premium_proj from premium_ata_fit)
+  full <- .expand_grid(
+    triangle        = x,
+    ed_fit          = out,
+    premium_ata_fit = premium_ata_fit,
+    target_var      = target,
+    exposure_var    = exposure
+  )
 
+  # rename .expand_grid output to generic worker names
+  data.table::setnames(
+    full,
+    c("loss_obs",   "premium_obs",  "premium_proj"),
+    c("target_obs", "exposure_obs", "exposure_proj")
+  )
+
+  # 4c) join ED factors (g_selected, g_sigma2, g_var)
+  ed_cols <- c(grp_var, "ata_from", "g_selected", "sigma2", "g_var")
+  ed_sel  <- out$selected[, .SD, .SDcols = ed_cols]
+  data.table::setnames(ed_sel, "ata_from", "dev")
+  data.table::setnames(ed_sel, "sigma2", "g_sigma2")
+  full <- ed_sel[full, on = c(grp_var, "dev")]
+
+  # 4d) last_obs per cohort
+  full[, last_obs := {
+    idx <- which(is.finite(target_obs))
+    if (length(idx)) max(idx) else 0L
+  }, by = c(grp_var, "cohort")]
+
+  # 4e) target point projection (ED-only, no maturity switch)
+  full[, target_proj := .ed_proj(
+    target_obs    = target_obs,
+    exposure_proj = exposure_proj,
+    g_selected    = g_selected
+  ), by = c(grp_var, "cohort")]
+
+  # 4f) target variance (ED additive recursion)
+  full[, `:=`(
+    target_proc_se2  = .ed_proc_var(
+      exposure_proj = exposure_proj,
+      g_sigma2      = g_sigma2,
+      last_obs      = last_obs[1L],
+      alpha         = alpha
+    ),
+    target_param_se2 = .ed_param_var(
+      exposure_proj = exposure_proj,
+      g_var         = g_var,
+      last_obs      = last_obs[1L]
+    )
+  ), by = c(grp_var, "cohort")]
+
+  full[, target_total_se2 := target_proc_se2 + target_param_se2]
+  full[, `:=`(
+    target_proc_se  = sqrt(target_proc_se2),
+    target_param_se = sqrt(target_param_se2),
+    target_total_se = sqrt(target_total_se2)
+  )]
+  full[, target_total_cv := data.table::fifelse(
+    is.finite(target_proj) & target_proj != 0,
+    target_total_se / abs(target_proj), NA_real_
+  )]
+
+  # 4g) drop intermediate factor columns
+  full[, c("g_selected", "g_sigma2", "g_var", "last_obs") := NULL]
+
+  # 4h) incremental projections (target + exposure)
+  full[, target_incr_proj := target_proj -
+         data.table::shift(target_proj, 1L, fill = 0),
+       by = c(grp_var, "cohort")]
+  full[, exposure_incr_proj := exposure_proj -
+         data.table::shift(exposure_proj, 1L, fill = 0),
+       by = c(grp_var, "cohort")]
+
+  out$full <- full
   out
+}
+
+
+# ED projection helpers -----------------------------------------------------
+
+#' ED point projection for a single cohort
+#'
+#' Cumulative target recursion: `target_{k+1} = target_k + g_k * exposure_k`.
+#'
+#' @keywords internal
+.ed_proj <- function(target_obs, exposure_proj, g_selected) {
+  n        <- length(target_obs)
+  last_obs <- max(which(is.finite(target_obs)), 0L)
+  if (last_obs == 0L || last_obs == n) return(target_obs)
+
+  v <- target_obs
+  for (i in seq(last_obs + 1L, n)) {
+    k      <- i - 1L
+    v_prev <- v[i - 1L]
+    if (!is.finite(v_prev)) next
+    g_now <- g_selected[k]
+    e_now <- exposure_proj[k]
+    if (is.finite(g_now) && is.finite(e_now)) {
+      v[i] <- v_prev + g_now * e_now
+    }
+  }
+  v
+}
+
+
+#' ED process variance for a single cohort
+#'
+#' Additive recursion: `proc_{k+1} = proc_k + sigma^2_{g,k} * (exposure_k)^alpha`.
+#'
+#' @keywords internal
+.ed_proc_var <- function(exposure_proj, g_sigma2, last_obs, alpha = 1) {
+  n    <- length(exposure_proj)
+  proc <- numeric(n)
+  if (last_obs >= n) return(proc)
+
+  for (i in seq(last_obs + 1L, n)) {
+    k  <- i - 1L
+    s2 <- g_sigma2[k]
+    e  <- exposure_proj[k]
+    proc[i] <- proc[i - 1L]
+    if (is.finite(s2) && is.finite(e) && e > 0) {
+      proc[i] <- proc[i] + s2 * e^alpha
+    }
+  }
+  proc
+}
+
+
+#' ED parameter variance for a single cohort
+#'
+#' Additive recursion: `param_{k+1} = param_k + (exposure_k)^2 * Var(g_k)`.
+#'
+#' @keywords internal
+.ed_param_var <- function(exposure_proj, g_var, last_obs) {
+  n     <- length(exposure_proj)
+  param <- numeric(n)
+  if (last_obs >= n) return(param)
+
+  for (i in seq(last_obs + 1L, n)) {
+    k  <- i - 1L
+    gv <- g_var[k]
+    e  <- exposure_proj[k]
+    param[i] <- param[i - 1L]
+    if (is.finite(gv) && is.finite(e)) {
+      param[i] <- param[i] + e^2 * gv
+    }
+  }
+  param
 }
 
 #' Summary method for `EDFit`
@@ -325,10 +488,10 @@ print.EDFit <- function(x, ...) {
   if (is.null(grp_var)) grp_var <- character(0)
 
   cat("<EDFit>\n")
-  cat("method      :", x$method,                    "\n")
-  cat("loss_var    :", attr(x$link, "loss_var"),    "\n")
-  cat("premium_var :", attr(x$link, "premium_var"), "\n")
-  cat("alpha       :", x$alpha,                     "\n")
+  cat("method      :", x$method,                  "\n")
+  cat("target      :", attr(x$link, "target"),    "\n")
+  cat("exposure    :", attr(x$link, "exposure"),  "\n")
+  cat("alpha       :", x$alpha,                   "\n")
   cat("sigma_method:", x$sigma_method,              "\n")
   cat("recent      :",
       if (!is.null(x$recent)) x$recent else "all", "\n")
@@ -374,8 +537,8 @@ print.EDFit <- function(x, ...) {
 
   .assert_class(x, "Link")
 
-  if (is.null(attr(x, "premium_var")))
-    stop("`.lm_ed()` requires a Link built with `premium_var`.",
+  if (is.null(attr(x, "exposure")))
+    stop("`.lm_ed()` requires a Link built with `exposure`.",
          call. = FALSE)
 
   if (!is.numeric(alpha) || length(alpha) != 1L || is.na(alpha))
@@ -394,29 +557,29 @@ print.EDFit <- function(x, ...) {
 
   # 1) drop invalid rows
   if (na_rm) {
-    dt <- dt[is.finite(premium_from) & is.finite(loss_delta) &
-               premium_from > 0]
+    dt <- dt[is.finite(exposure_from) & is.finite(target_delta) &
+               exposure_from > 0]
   }
 
   # 2) compute WLS weight
-  # Var(loss_delta) ~ premium_from^alpha
-  # => WLS weight = 1 / premium_from^(2 - alpha)
+  # Var(target_delta) ~ exposure_from^alpha
+  # => WLS weight = 1 / exposure_from^(2 - alpha)
   delta <- 2 - alpha
-  dt[, reg_w := 1 / premium_from^delta]
+  dt[, reg_w := 1 / exposure_from^delta]
   dt[, ata_link := sprintf("%s-%s", ata_from, ata_to)]
 
   # 3) fit one model per link
   res <- dt[, {
     if (.N == 1L) {
       data.table::data.table(
-        g     = loss_delta[1L] / premium_from[1L],
+        g     = target_delta[1L] / exposure_from[1L],
         g_se  = NA_real_,
         sigma = NA_real_,
         n_obs = 1L
       )
     } else {
       fit <- tryCatch(
-        stats::lm(loss_delta ~ premium_from + 0, weights = reg_w),
+        stats::lm(target_delta ~ exposure_from + 0, weights = reg_w),
         error = function(e) NULL
       )
 
@@ -491,12 +654,12 @@ print.EDFit <- function(x, ...) {
     stop("`ed_fit$selected` must contain a `sigma2` column.",
          call. = FALSE)
 
-  ed_valid <- ed_long[is.finite(premium_from) &
-                        is.finite(loss_delta) &
-                        premium_from > 0]
+  ed_valid <- ed_long[is.finite(exposure_from) &
+                        is.finite(target_delta) &
+                        exposure_from > 0]
 
   link_weights <- ed_valid[,
-                       .(denom = sum(premium_from^(2 - alpha), na.rm = TRUE)),
+                       .(denom = sum(exposure_from^(2 - alpha), na.rm = TRUE)),
                        by = c(grp_var, "ata_from")
   ]
 

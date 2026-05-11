@@ -26,9 +26,9 @@
 #' `IntensityFit` input with an informative error.
 #'
 #' @param x A `Triangle` object.
-#' @param loss_var A single cumulative metric used as the link
+#' @param target A single cumulative metric used as the link
 #'   numerator. Default `"loss"`.
-#' @param premium_var A single cumulative metric used as the
+#' @param exposure A single cumulative metric used as the
 #'   exposure anchor. Default `"premium"`.
 #' @param alpha WLS weight exponent. Default `1`.
 #' @param na_method NA fill method for the selected intensity series
@@ -55,8 +55,8 @@
 #'   \item{`call`}{The matched call.}
 #'   \item{`data`}{The (possibly filtered) `Link` object used for
 #'     estimation.}
-#'   \item{`group_var`, `cohort_var`, `dev_var`, `loss_var`,
-#'     `premium_var`}{Variable name relays from the input `Triangle`.}
+#'   \item{`group_var`, `cohort_var`, `dev_var`, `target`,
+#'     `exposure`}{Variable name relays from the input `Triangle`.}
 #'   \item{`link`}{Alias of `data` for parallelism with
 #'     [fit_ata()].}
 #'   \item{`factor`}{The `EDSummary` returned by
@@ -77,14 +77,14 @@
 #' @examples
 #' \dontrun{
 #' tri <- build_triangle(df, group_var = coverage)
-#' intensity_fit <- fit_intensity(tri, loss_var = "loss", premium_var = "premium")
-#' summary(intensity)
+#' intensity_fit <- fit_intensity(tri, target = "loss", exposure = "premium")
+#' summary(intensity_fit)
 #' }
 #'
 #' @export
 fit_intensity <- function(x,
-                          loss_var     = "loss",
-                          premium_var  = "premium",
+                          target       = "loss",
+                          exposure     = "premium",
                           alpha        = 1,
                           na_method    = c("locf", "zero", "none"),
                           sigma_method = c("locf", "min_last2", "loglinear"),
@@ -94,7 +94,7 @@ fit_intensity <- function(x,
 
   .assert_triangle_input(x, "fit_intensity()")
 
-  link <- build_link(x, loss_var = loss_var, premium_var = premium_var)
+  link <- build_link(x, target = target, exposure = exposure)
 
   na_method    <- match.arg(na_method)
   sigma_method <- match.arg(sigma_method)
@@ -145,8 +145,8 @@ fit_intensity <- function(x,
     group_var    = grp_var,
     cohort_var   = attr(link, "cohort_var"),
     dev_var      = attr(link, "dev_var"),
-    loss_var     = attr(link, "loss_var"),
-    premium_var  = attr(link, "premium_var"),
+    target       = attr(link, "target"),
+    exposure     = attr(link, "exposure"),
     link         = link,
     factor       = ed_summary,
     selected     = selected,

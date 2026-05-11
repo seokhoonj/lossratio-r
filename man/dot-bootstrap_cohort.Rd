@@ -10,10 +10,10 @@
   premium_proj,
   g_selected,
   f_selected,
-  ed_sigma2,
-  cl_sigma2,
-  ed_g_var,
-  cl_f_var,
+  g_sigma2,
+  f_sigma2,
+  g_var,
+  f_var,
   last_obs,
   maturity_from,
   B,
@@ -24,8 +24,8 @@
 }
 \value{
 A list with four vectors of length \code{length(premium_proj)}:
-\code{ci_lower}, \code{ci_upper} (for CLR), and \code{ci_lower_loss},
-\code{ci_upper_loss} (for cumulative loss).
+\code{lr_ci_lower}, \code{lr_ci_upper} (for LR), and \code{loss_ci_lower},
+\code{loss_ci_upper} (for cumulative loss).
 }
 \description{
 Internal helper for bootstrap CI calculation used by \code{\link[=fit_lr]{fit_lr()}} when

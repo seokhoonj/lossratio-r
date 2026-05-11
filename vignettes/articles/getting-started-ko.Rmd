@@ -76,10 +76,10 @@ summary(tri)           # 경과 기간별 그룹 통계량
 
 ```{r}
 # ATA 인자(age-to-age factor) — 곱셈형, chain ladder 의 입력
-fit_ata(tri, loss_var = "loss")
+fit_ata(tri, target = "loss")
 
 # 노출 기반(exposure-driven) 강도 인자 — 덧셈형, ED 의 입력
-fit_intensity(tri, loss_var = "loss", premium_var = "premium")
+fit_intensity(tri, target = "loss", exposure = "premium")
 ```
 
 `fit_ata()` 는 링크별 ATA 인자 $f_k$ 를, `fit_intensity()` 는 강도 인자
@@ -93,12 +93,12 @@ sibling, `fit_lr()` 은 둘을 결합하는 통합 인터페이스이다.
 
 ```{r}
 # Chain ladder (곱셈형 예측)
-cl <- fit_cl(tri, loss_var = "loss", method = "mack")
+cl <- fit_cl(tri, target = "loss", method = "mack")
 plot(cl, type = "projection")
 summary(cl)
 
 # Exposure-driven (덧셈형 예측)
-ed <- fit_ed(tri, loss_var = "loss", premium_var = "premium")
+ed <- fit_ed(tri, target = "loss", exposure = "premium")
 summary(ed)
 ```
 

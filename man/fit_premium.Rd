@@ -6,20 +6,18 @@
 \usage{
 fit_premium(
   x,
-  target = "premium",
   method = c("ed", "cl"),
   alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   regime_break = NULL,
-  tail = FALSE
+  tail = FALSE,
+  conf_level = 0.95
 )
 }
 \arguments{
-\item{x}{A \code{"Triangle"} object.}
-
-\item{target}{Column to project. Default \code{"premium"}. Accepts bare
-column reference (NSE) or string.}
+\item{x}{A \code{"Triangle"} object. The standardized \code{"premium"} column
+is used as the projection target.}
 
 \item{method}{One of \code{"ed"} (default) or \code{"cl"}.}
 
@@ -32,12 +30,24 @@ through to \code{\link[=fit_ata]{fit_ata()}}. Default \code{1}.}
 \item{recent}{Optional positive integer; recent calendar-diagonal
 filter for the underlying ATA fit. Default \code{NULL}.}
 
+\item{regime_break}{Optional cohort cutoff for a regime break (premium
+side). \code{NULL} (default), a \code{Date}/character, a vector (uses the
+latest), or a \code{Regime} object. Pre-break cohorts are excluded from
+premium factor estimation.}
+
 \item{tail}{Logical; whether to apply a tail factor. Default \code{FALSE}.}
+
+\item{conf_level}{Confidence level for analytical CI on the premium
+projection (\code{premium_ci_lower}, \code{premium_ci_upper}). Default \code{0.95}.}
 }
 \value{
 An object of class \code{"PremiumFit"} (a list with the same
 structure as \code{CLFit}). Components: \code{selected}, \code{full}, \code{data},
-plus attributes \code{premium_method} and \code{target}.
+plus attribute \code{premium_method}. The \verb{$full} data.table uses
+role-specific column names (\code{premium_obs}, \code{premium_proj},
+\code{premium_incr_proj}, \code{premium_proc_se}, \code{premium_param_se},
+\code{premium_total_se}, \code{premium_proc_cv}, \code{premium_param_cv},
+\code{premium_total_cv}, \code{premium_ci_lower}, \code{premium_ci_upper}).
 }
 \description{
 Project cumulative premium across the cohort x development grid with

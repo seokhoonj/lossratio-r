@@ -89,11 +89,11 @@
   if (is.null(bt) || is.null(bt$fit) || is.null(bt$fit$summary))
     return(NA_real_)
   s <- data.table::as.data.table(bt$fit$summary)
-  needed <- c("param_se", "premium_ult")
+  needed <- c("loss_param_se", "premium_ult")
   if (!all(needed %in% names(s))) return(NA_real_)
   total_exp <- sum(s$premium_ult, na.rm = TRUE)
   if (!is.finite(total_exp) || total_exp <= 0) return(NA_real_)
-  ss <- s$param_se
+  ss <- s$loss_param_se
   ss <- ss[is.finite(ss)]
   if (length(ss) == 0L) return(NA_real_)
   sqrt(sum(ss^2)) / total_exp
@@ -126,9 +126,6 @@
 #' \eqn{k^{**}}, paired with \eqn{k^*} (maturity point).
 #'
 #' @param triangle A `Triangle` object (typically from [build_triangle()]).
-#' @param fit_fn Fitting function used to project. Default [fit_lr].
-#'   [fit_cl] is also accepted but `fit_lr` is recommended because it
-#'   exposes both loss and exposure projections required for portfolio LR.
 #' @param se_mult Multiplier on \eqn{\hat{SE}^{param}_v} (the symbol
 #'   `c` in the math criterion above). Default `0.5`.
 #' @param max_dv Upper bound on \eqn{\hat{D}_v} (the symbol `\tau` in
@@ -141,7 +138,8 @@
 #'   backtest. When `NULL`, set to `max(min_run, floor((V - k_star) / 2))`.
 #' @param min_n_cohorts Minimum number of cohorts required to compute
 #'   \eqn{\hat{D}_v}. Default `5L`.
-#' @param ... Additional arguments forwarded to `fit_fn`.
+#' @param ... Additional arguments forwarded to `backtest()` (and thence
+#'   to `fit_lr()`), e.g. `loss_method`, `recent`, `regime_break`.
 #'
 #' @return An object of class `Convergence` (named list) containing the
 #'   detected `k_conv`, the candidate sequence `v`, and the diagnostic
@@ -152,7 +150,6 @@
 #'
 #' @export
 detect_convergence <- function(triangle,
-                              fit_fn        = fit_lr,
                               se_mult       = 0.5,
                               max_dv        = 0.15,
                               min_run       = 3L,
@@ -161,7 +158,11 @@ detect_convergence <- function(triangle,
                               min_n_cohorts = 5L,
                               ...) {
 
-  fit_fn_name <- deparse(substitute(fit_fn))
+  # LR convergence detection always backtests the LR projection from
+  # fit_lr; the fitter is fixed (no fit_fn dispatch). Recorded for
+  # backwards compatibility with consumers that read attr(.,
+  # "fit_fn_name").
+  fit_fn_name <- "fit_lr"
 
   # 1) validate inputs -------------------------------------------------
   .assert_class(triangle, "Triangle")
@@ -223,7 +224,7 @@ detect_convergence <- function(triangle,
       return(list(lr = lr_cache[idx], se = se_cache[idx]))
     }
     bt <- tryCatch(
-      backtest(triangle, holdout = h, fit_fn = fit_fn, loss_var = "lr", ...),
+      backtest(triangle, holdout = h, target = "lr", ...),
       error = function(e) NULL
     )
     lr <- .extract_portfolio_lr(bt)

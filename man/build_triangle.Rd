@@ -68,9 +68,9 @@ derived columns:
 \item{margin, margin_incr}{Cumulative and per-period margin
 (\code{premium - loss})}
 \item{profit, profit_incr}{Profit indicator (factor \code{"pos"} / \code{"neg"})}
-\item{loss_prop, loss_incr_prop}{Cumulative and per-period proportions
+\item{loss_share, loss_incr_share}{Cumulative and per-period proportions
 of loss within each \verb{(cohort, dev)} cell}
-\item{premium_prop, premium_incr_prop}{Cumulative and per-period
+\item{premium_share, premium_incr_share}{Cumulative and per-period
 proportions of premium within each \verb{(cohort, dev)} cell}
 }
 
@@ -103,10 +103,10 @@ used as the \code{premium} measure.
 
 Proportion variables are computed within each \verb{(cohort, dev)} cell:
 \itemize{
-\item \code{loss_incr_prop    = loss_incr    / sum(loss_incr)}
-\item \code{premium_incr_prop = premium_incr / sum(premium_incr)}
-\item \code{loss_prop         = loss         / sum(loss)}
-\item \code{premium_prop      = premium      / sum(premium)}
+\item \code{loss_incr_share    = loss_incr    / sum(loss_incr)}
+\item \code{premium_incr_share = premium_incr / sum(premium_incr)}
+\item \code{loss_share         = loss         / sum(loss)}
+\item \code{premium_share      = premium      / sum(premium)}
 }
 
 Therefore, for a fixed \verb{(cohort, dev)} cell, the proportions

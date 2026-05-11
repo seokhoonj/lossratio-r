@@ -59,8 +59,8 @@ A data.frame with class \code{"Total"} containing:
 \item{loss}{Total loss}
 \item{premium}{Total premium}
 \item{lr}{Total loss ratio (\code{loss / premium})}
-\item{loss_prop}{Share of total loss}
-\item{premium_prop}{Share of total premium}
+\item{loss_share}{Share of total loss}
+\item{premium_share}{Share of total premium}
 }
 }
 \description{

@@ -44,35 +44,33 @@ library(lossratio)
 data(experience)
 tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
 
-cl <- fit_cl(tri, loss_var = "loss", method = "mack")
+cl <- fit_cl(tri, target = "loss", method = "mack")
 print(cl)
 ```
 
-`loss_var` selects the cumulative column to project — typically
+`target` selects the cumulative column to project — typically
 `"loss"` (cumulative loss) for reserving, or `"premium"` (cumulative
 risk premium) for exposure projection.
 
-## Method: basic vs Mack
+## Mack chain ladder
 
-Two estimation methods are available:
-
-| `method`   | What it computes                                      |
-|------------|-------------------------------------------------------|
-| `"basic"`  | Point projection only (selected age-to-age factors)   |
-| `"mack"`   | Point projection + factor / process / parameter SE    |
+`fit_cl()` implements the Mack (1993) chain ladder. Adjacent
+development links are summarised by age-to-age factors
+$f_k = C^L_{k+1} / C^L_k$ — selected per link and then chained
+to project each cohort forward to ultimate. On top of the point
+projection, Mack's formulae decompose the prediction variance
+into process and parameter components, yielding per-cell
+standard errors and confidence intervals.
 
 ```{r}
-cl_basic <- fit_cl(tri, loss_var = "loss", method = "basic")
-cl_mack  <- fit_cl(tri, loss_var = "loss", method = "mack")
+cl_mack <- fit_cl(tri, target = "loss", method = "mack")
 
-names(cl_basic)
-
-# Mack adds variance estimates to $full and $summary
+# $full and $summary carry both the projection and its variance
 head(cl_mack$summary)
 ```
 
-`method = "mack"` enables the projection plot's confidence bands
-(`show_interval = TRUE`):
+The projection plot's confidence bands (`show_interval = TRUE`)
+use those variance estimates:
 
 ```{r}
 plot(cl_mack, type = "projection", show_interval = TRUE)
@@ -85,10 +83,10 @@ developing, an extrapolated tail factor estimates ultimate:
 
 ```{r}
 # Log-linear extrapolation from the selected ATA factors
-cl_tail <- fit_cl(tri, loss_var = "loss", method = "mack", tail = TRUE)
+cl_tail <- fit_cl(tri, target = "loss", method = "mack", tail = TRUE)
 
 # Or supply a literal tail factor
-cl_tail <- fit_cl(tri, loss_var = "loss", method = "mack", tail = 1.025)
+cl_tail <- fit_cl(tri, target = "loss", method = "mack", tail = 1.025)
 ```
 
 The extrapolation fits $\log(f_k - 1) \sim k$ to projected factors and
@@ -103,7 +101,7 @@ mature region only:
 ```{r}
 cl_mat <- fit_cl(
   tri,
-  loss_var     = "loss",
+  target        = "loss",
   method        = "mack",
   maturity_args = list(max_cv = 0.10, max_rse = 0.05)
 )
@@ -117,13 +115,14 @@ cl_mat$maturity
 
 `fit_cl(method = "mack")` decomposes the projection variance into:
 
-- `proc_se` — process variance, from $\sigma^2_k$ (residual link
+- `target_proc_se` — process variance, from $\sigma^2_k$ (residual link
   variance per development period).
-- `param_se` — parameter variance, from the uncertainty of the
+- `target_param_se` — parameter variance, from the uncertainty of the
   selected age-to-age factors $\hat{f}_k$.
-- `se` — total standard error,
-  $\sqrt{\mathrm{proc\_se}^2 + \mathrm{param\_se}^2}$.
-- `cv` — coefficient of variation, `se / value_proj`.
+- `target_total_se` — total standard error,
+  $\sqrt{\mathrm{target\_proc\_se}^2 + \mathrm{target\_param\_se}^2}$.
+- `target_total_cv` — coefficient of variation,
+  `target_total_se / target_proj`.
 
 ```{r}
 summary(cl_mack)
@@ -166,12 +165,12 @@ controls the extrapolation:
 
 | `sigma_method`  | Behaviour                                                             |
 |-----------------|-----------------------------------------------------------------------|
-| `"min_last2"`   | (default) min of the last two estimable $\sigma$ values — conservative |
-| `"locf"`        | Last observation carried forward                                      |
+| `"locf"`        | (default) last observation carried forward                            |
+| `"min_last2"`   | min of the last two estimable $\sigma$ values — conservative          |
 | `"loglinear"`   | Log-linear extrapolation from the observed $\sigma_k$ sequence        |
 
 ```{r}
-fit_cl(tri, loss_var = "loss", method = "mack", sigma_method = "loglinear")
+fit_cl(tri, target = "loss", method = "mack", sigma_method = "loglinear")
 ```
 
 ## See also

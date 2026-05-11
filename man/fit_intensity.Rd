@@ -6,8 +6,8 @@
 \usage{
 fit_intensity(
   x,
-  loss_var = "loss",
-  premium_var = "premium",
+  target = "loss",
+  exposure = "premium",
   alpha = 1,
   na_method = c("locf", "zero", "none"),
   sigma_method = c("locf", "min_last2", "loglinear"),
@@ -19,10 +19,10 @@ fit_intensity(
 \arguments{
 \item{x}{A \code{Triangle} object.}
 
-\item{loss_var}{A single cumulative metric used as the link
+\item{target}{A single cumulative metric used as the link
 numerator. Default \code{"loss"}.}
 
-\item{premium_var}{A single cumulative metric used as the
+\item{exposure}{A single cumulative metric used as the
 exposure anchor. Default \code{"premium"}.}
 
 \item{alpha}{WLS weight exponent. Default \code{1}.}
@@ -56,8 +56,8 @@ A list of class \code{"IntensityFit"} with components:
 \item{\code{call}}{The matched call.}
 \item{\code{data}}{The (possibly filtered) \code{Link} object used for
 estimation.}
-\item{\code{group_var}, \code{cohort_var}, \code{dev_var}, \code{loss_var},
-\code{premium_var}}{Variable name relays from the input \code{Triangle}.}
+\item{\code{group_var}, \code{cohort_var}, \code{dev_var}, \code{target},
+\code{exposure}}{Variable name relays from the input \code{Triangle}.}
 \item{\code{link}}{Alias of \code{data} for parallelism with
 \code{\link[=fit_ata]{fit_ata()}}.}
 \item{\code{factor}}{The \code{EDSummary} returned by
@@ -100,8 +100,8 @@ instability. \code{fit_intensity()} therefore deliberately omits a
 \examples{
 \dontrun{
 tri <- build_triangle(df, group_var = coverage)
-intensity_fit <- fit_intensity(tri, loss_var = "loss", premium_var = "premium")
-summary(intensity)
+intensity_fit <- fit_intensity(tri, target = "loss", exposure = "premium")
+summary(intensity_fit)
 }
 
 }

@@ -6,9 +6,9 @@
 \usage{
 build_link(
   x,
-  loss_var = "loss",
-  premium_var = NULL,
-  weight_var = NULL,
+  target = "loss",
+  exposure = NULL,
+  weight = NULL,
   min_denom = 0,
   drop_invalid = FALSE
 )
@@ -16,24 +16,25 @@ build_link(
 \arguments{
 \item{x}{A \code{Triangle} object.}
 
-\item{loss_var}{A single cumulative metric used as the link
+\item{target}{A single cumulative metric used as the link
 numerator. Must be one of \code{"loss"}, \code{"premium"}, or \code{"lr"}. Default
-\code{"loss"}. Despite the name, this argument accepts any cumulative
-metric on the Triangle; \code{"loss"} reflects the most common use.}
+\code{"loss"}. Generic worker name; for loss-side ATA this is the
+cumulative loss column, but any cumulative metric on the Triangle
+may be supplied.}
 
-\item{premium_var}{Optional second cumulative metric, treated as the
+\item{exposure}{Optional second cumulative metric, treated as the
 exposure anchor for the ED workflow. Must be one of \code{"loss"},
-\code{"premium"}, \code{"lr"}, and must differ from \code{loss_var}. When \code{NULL}
+\code{"premium"}, \code{"lr"}, and must differ from \code{target}. When \code{NULL}
 (default), only the single-variable columns are produced.}
 
-\item{weight_var}{Optional cumulative metric used as WLS weight in
+\item{weight}{Optional cumulative metric used as WLS weight in
 downstream \code{summary} / \code{fit_ata} calls. Must differ from
-\code{loss_var}. Cannot be combined with \code{premium_var} (the dual
+\code{target}. Cannot be combined with \code{exposure} (the dual
 workflow has its own anchor).}
 
 \item{min_denom}{Minimum denominator required to compute \code{ata}
-and \code{intensity}. If \code{loss_from <= min_denom}, \code{ata} becomes \code{NA};
-if \code{premium_from <= min_denom}, \code{intensity} becomes \code{NA}. Default
+and \code{intensity}. If \code{target_from <= min_denom}, \code{ata} becomes \code{NA};
+if \code{exposure_from <= min_denom}, \code{intensity} becomes \code{NA}. Default
 \code{0}.}
 
 \item{drop_invalid}{Logical; if \code{TRUE}, rows with non-finite \code{ata}
@@ -45,14 +46,14 @@ diagnostics.}
 A \code{data.table} of class \code{"Link"} with columns:
 \itemize{
 \item Always: \verb{[group_var]}, \code{cohort}, \code{ata_from}, \code{ata_to}, \code{ata_link},
-\code{loss_from}, \code{loss_to}, \code{loss_delta}, \code{ata}.
-\item If \code{premium_var} is set: also \code{premium_from}, \code{premium_to},
-\code{premium_delta}, \code{intensity}.
-\item If \code{weight_var} is set: also \code{weight}.
+\code{target_from}, \code{target_to}, \code{target_delta}, \code{ata}.
+\item If \code{exposure} is set: also \code{exposure_from}, \code{exposure_to},
+\code{exposure_delta}, \code{intensity}.
+\item If \code{weight} is set: also \code{weight}.
 }
 
 The returned object carries attributes \code{group_var}, \code{cohort_var},
-\code{dev_var}, \code{loss_var}, \code{premium_var} (or \code{NULL}), \code{weight_var}
+\code{dev_var}, \code{target}, \code{exposure} (or \code{NULL}), \code{weight}
 (or \code{NULL}).
 }
 \description{
@@ -62,13 +63,13 @@ long-format intermediate underlying both the chain ladder (CL) and
 exposure-driven (ED) workflows. Each row corresponds to one
 development link \verb{(cohort, ata_from -> ata_to)}.
 
-Two modes are produced depending on \code{premium_var}:
+Two modes are produced depending on \code{exposure}:
 
 \describe{
-\item{Single-variable mode (\code{premium_var = NULL})}{The age-to-age
+\item{Single-variable mode (\code{exposure = NULL})}{The age-to-age
 factor is \eqn{ata = value_{to} / value_{from}}, where
-\eqn{value} is the column named by \code{loss_var}.}
-\item{Dual-variable mode (\code{premium_var} supplied)}{In addition to
+\eqn{value} is the column named by \code{target}.}
+\item{Dual-variable mode (\code{exposure} supplied)}{In addition to
 the loss-side ATA, the exposure-driven intensity
 \eqn{g = \Delta loss / premium_{from}} is computed and stored in
 the \code{intensity} column. Premium measure used as denominator for
@@ -81,10 +82,10 @@ applications, risk premium is commonly used.}
 tri <- build_triangle(df, group_var = coverage)
 
 # Single-variable: cumulative-loss link factors (ATA workflow)
-link_loss <- build_link(tri, loss_var = "loss")
+link_loss <- build_link(tri, target = "loss")
 
 # Dual-variable: ED-ready link table (loss + premium)
-link_ed <- build_link(tri, loss_var = "loss", premium_var = "premium")
+link_ed <- build_link(tri, target = "loss", exposure = "premium")
 head(link_ed)
 }
 

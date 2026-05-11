@@ -51,7 +51,7 @@ Two plot types are supported:
 \itemize{
 \item \code{"projection"}: observed and projected cumulative values by cohort
 over development periods. When \code{method = "mack"}, optional confidence
-bands are drawn using \code{se_proj}.
+bands are drawn using \code{target_total_se}.
 \item \code{"reserve"}: reserve summary by cohort with optional error bars.
 Only available when \code{method = "mack"}.
 }

@@ -61,18 +61,18 @@ plot.LRFit <- function(x,
 
   if (type == "loss") {
     val_col      <- "loss_proj"
-    ci_lo_col    <- "ci_lower_loss"
-    ci_hi_col    <- "ci_upper_loss"
+    ci_lo_col    <- "loss_ci_lower"
+    ci_hi_col    <- "loss_ci_upper"
     obs_col      <- "loss_obs"
-    y_lab        <- x$loss_var
+    y_lab        <- attr(x$data, "loss_var")
     title        <- paste0("Projected Cumulative Loss",
                            " (method: ", x$method, ")")
     hline        <- 0
     meta         <- list(type = "amount")
   } else {
     val_col      <- "lr_proj"
-    ci_lo_col    <- "ci_lower"
-    ci_hi_col    <- "ci_upper"
+    ci_lo_col    <- "lr_ci_lower"
+    ci_hi_col    <- "lr_ci_upper"
     obs_col      <- NULL
     y_lab        <- "lr"
     title        <- paste0("Projected Cumulative Loss Ratio",

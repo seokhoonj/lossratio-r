@@ -131,8 +131,8 @@
   amount_vars <- c("loss", "loss_incr",
                    "premium", "premium_incr",
                    "margin", "margin_incr")
-  prop_vars   <- c("loss_prop", "loss_incr_prop",
-                   "premium_prop", "premium_incr_prop")
+  prop_vars   <- c("loss_share", "loss_incr_share",
+                   "premium_share", "premium_incr_share")
 
   if (value_var %in% ratio_vars) {
     list(
@@ -165,10 +165,10 @@
     list(
       type    = "prop",
       title   = switch(value_var,
-                       loss_prop         = "Cumulative Loss Proportion",
-                       loss_incr_prop    = "Per-Period Loss Proportion",
-                       premium_prop      = "Cumulative Premium Proportion",
-                       premium_incr_prop = "Per-Period Premium Proportion"
+                       loss_share         = "Cumulative Loss Proportion",
+                       loss_incr_share    = "Per-Period Loss Proportion",
+                       premium_share      = "Cumulative Premium Proportion",
+                       premium_incr_share = "Per-Period Premium Proportion"
       ),
       caption = "Unit: %",
       hline   = NULL
@@ -597,7 +597,7 @@ get_recent_weights <- function(weights, recent) {
   if (inherits(x, "Link")) {
     fn_bare <- sub("\\(\\)$", "", called_from)
     stop(sprintf(
-      "`%s` expects a Triangle, not a Link.\n  Link is built internally; pass the Triangle directly:\n    %s(tri, loss_var = \"loss\", ...)",
+      "`%s` expects a Triangle, not a Link.\n  Link is built internally; pass the Triangle directly:\n    %s(tri, target = \"loss\", ...)",
       called_from, fn_bare
     ), call. = FALSE)
   }

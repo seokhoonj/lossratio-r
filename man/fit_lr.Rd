@@ -7,72 +7,36 @@
 fit_lr(
   x,
   method = c("sa", "ed", "cl"),
-  loss_var = "loss",
-  premium_var = "premium",
   loss_alpha = 1,
-  premium_alpha = 1,
+  loss_regime_break = NULL,
   premium_method = c("cl", "ed"),
-  delta_method = c("simple", "full"),
-  rho = 0.95,
-  conf_level = 0.95,
+  premium_alpha = 1,
+  premium_regime_break = loss_regime_break,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  regime_break = NULL,
-  premium_regime_break = regime_break,
   maturity_args = NULL,
+  se_method = c("fixed", "delta"),
+  rho = 0.95,
+  conf_level = 0.95,
   bootstrap = FALSE,
   B = 1000,
   seed = NULL
 )
 }
 \arguments{
-\item{x}{An object of class \code{"Triangle"}.}
+\item{x}{An object of class \code{"Triangle"}. The standardized \code{"loss"}
+and \code{"premium"} columns are used (\code{build_triangle()} produces these).}
 
-\item{method}{One of \code{"sa"}, \code{"ed"}, or \code{"cl"}.
-Default is \code{"sa"}.}
-
-\item{loss_var}{Cumulative loss variable. Default is \code{"loss"}.}
-
-\item{premium_var}{Cumulative exposure variable. Default is \code{"premium"}.}
+\item{method}{One of \code{"sa"} (default), \code{"ed"}, or \code{"cl"}.}
 
 \item{loss_alpha}{Numeric scalar controlling the variance structure for
 loss estimation. Default is \code{1}.}
 
-\item{premium_alpha}{Numeric scalar for exposure chain ladder. Default
-is \code{1}.}
-
-\item{delta_method}{Method for computing \code{se_lr = SE(L/E)}. One of:
-\describe{
-\item{\code{"simple"} (default)}{\code{se_lr = se_proj / premium_proj},
-treats exposure as fixed.}
-\item{\code{"full"}}{Full delta method with exposure uncertainty and
-loss-exposure correlation:
-\deqn{\mathrm{Var}(L/E) \approx \frac{\mathrm{Var}(L)}{E^2}
-        + \frac{L^2 \mathrm{Var}(E)}{E^4}
-        - \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(E)}{E^3}}
-}
-}}
-
-\item{rho}{Numeric scalar in \verb{(-1, 1)}; assumed correlation between
-ultimate loss and ultimate exposure. Only used when
-\code{delta_method = "full"}. Default is \code{0.95}, matching the strong
-positive correlation typically observed between cumulative loss
-and cumulative exposure in long-tail health portfolios (analogous
-to the paid/incurred correlation used in Munich chain ladder).}
-
-\item{conf_level}{Confidence level used for \code{ci_lower}/\code{ci_upper} in
-the cohort summary. Default is \code{0.95}.}
-
-\item{sigma_method}{Sigma extrapolation method. One of \code{"min_last2"}
-(default), \code{"locf"}, or \code{"loglinear"}.}
-
-\item{recent}{Optional positive integer for estimation window.
-Default is \code{NULL}.}
-
-\item{regime_break}{Optional cohort cutoff for the regime break. Accepts:
-\code{NULL} (default, no filter), a single \code{Date}/character coercible to Date,
-a vector of dates (uses the latest), or a \code{Regime} object (extracts
-the latest from \verb{$breakpoints}). Behavior depends on \code{method}:
+\item{loss_regime_break}{Optional cohort cutoff for the loss-side regime
+break. Accepts: \code{NULL} (default, no filter), a single \code{Date}/character
+coercible to Date, a vector of dates (uses the latest), or a \code{Regime}
+object (extracts the latest from \verb{$breakpoints}). Behavior depends on
+\code{method}:
 \describe{
 \item{\code{"sa"}}{Hybrid filter. Pre-break cohorts are dropped only for
 development periods at or before the maturity point (ED phase);
@@ -83,10 +47,50 @@ intensities from a regime shift.}
 the break date are excluded from estimation.}
 }}
 
+\item{premium_method}{One of \code{"cl"} (default) or \code{"ed"}. Forwarded to
+\code{\link[=fit_premium]{fit_premium()}} when constructing the premium projection.}
+
+\item{premium_alpha}{Numeric scalar for premium chain ladder. Default
+is \code{1}.}
+
+\item{premium_regime_break}{Premium-side regime break. Defaults to
+\code{loss_regime_break} (loss and premium share a cutoff unless explicitly
+separated).}
+
+\item{sigma_method}{Sigma extrapolation method. One of \code{"locf"}
+(default), \code{"min_last2"}, or \code{"loglinear"}.}
+
+\item{recent}{Optional positive integer for estimation window.
+Default is \code{NULL}.}
+
 \item{maturity_args}{A named list forwarded to \code{\link[=detect_maturity]{detect_maturity()}},
 or \code{NULL} (default) to skip maturity filtering. When
 \code{method = "sa"}, this also determines the switch point between
 ED and CL. Pass \code{list()} to use all defaults.}
+
+\item{se_method}{Method for computing \code{lr_se = SE(L/P)}. One of:
+\describe{
+\item{\code{"fixed"} (default)}{Premium treated as fixed (non-random).
+\eqn{\mathrm{SE}(L/P) = \mathrm{SE}(L) / P}. Strictly, this is
+the delta method with \code{Var(P) = 0} and \code{Cov(L,P) = 0}, i.e., a
+degenerate case under the assumption that premium is known.}
+\item{\code{"delta"}}{Full delta method including premium uncertainty
+and the loss-premium correlation \code{rho}:
+\deqn{\mathrm{Var}(L/P) \approx \frac{\mathrm{Var}(L)}{P^2}
+        + \frac{L^2 \mathrm{Var}(P)}{P^4}
+        - \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(P)}{P^3}}
+}
+}}
+
+\item{rho}{Numeric scalar in \verb{(-1, 1)}; assumed correlation between
+ultimate loss and ultimate premium. Only used when
+\code{se_method = "delta"}. Default is \code{0.95}, matching the strong
+positive correlation typically observed between cumulative loss
+and cumulative premium in long-tail health portfolios (analogous
+to the paid/incurred correlation used in Munich chain ladder).}
+
+\item{conf_level}{Confidence level used for \code{lr_ci_lower}/\code{lr_ci_upper}
+in the cohort summary. Default is \code{0.95}.}
 
 \item{bootstrap}{Logical; if \code{TRUE}, parameter and process variance
 are derived via residual bootstrap rather than the analytical
@@ -126,6 +130,12 @@ Equivalent to classical Mack model.}
 
 In all cases, exposure is projected forward using chain ladder:
 \deqn{\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}}
+
+This function is the \emph{composition} layer over \code{\link[=fit_loss]{fit_loss()}} and
+\code{\link[=fit_premium]{fit_premium()}}: it delegates loss projection to \code{fit_loss()},
+retrieves the embedded \code{PremiumFit}, and composes the loss-ratio
+point + variance via the delta method (\code{se_method = "fixed"} or
+\code{"delta"}). See \code{ARCHITECTURE.md} for the layered design.
 }
 \examples{
 \dontrun{
@@ -146,6 +156,6 @@ lr_cl <- fit_lr(tri, method = "cl")
 
 }
 \seealso{
-\code{\link[=build_triangle]{build_triangle()}}, \code{\link[=build_link]{build_link()}}, \code{\link[=fit_ata]{fit_ata()}},
-\code{\link[=fit_ed]{fit_ed()}}, \code{\link[=detect_maturity]{detect_maturity()}}
+\code{\link[=fit_loss]{fit_loss()}}, \code{\link[=fit_premium]{fit_premium()}}, \code{\link[=build_triangle]{build_triangle()}},
+\code{\link[=build_link]{build_link()}}, \code{\link[=fit_ata]{fit_ata()}}, \code{\link[=fit_ed]{fit_ed()}}, \code{\link[=detect_maturity]{detect_maturity()}}
 }

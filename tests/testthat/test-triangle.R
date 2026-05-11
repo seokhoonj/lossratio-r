@@ -63,7 +63,7 @@ test_that("build_total returns class 'Total' with one row per group", {
   tot <- build_total(exp, group_var = coverage)
   expect_s3_class(tot, "Total")
   expected <- c("n_obs", "sales_start", "sales_end",
-                "loss", "premium", "lr", "loss_prop", "premium_prop")
+                "loss", "premium", "lr", "loss_share", "premium_share")
   expect_true(all(expected %in% names(tot)))
   expect_equal(nrow(tot), data.table::uniqueN(exp$coverage))
 })

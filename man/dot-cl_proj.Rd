@@ -4,16 +4,16 @@
 \alias{.cl_proj}
 \title{Compute chain ladder point projection for a single cohort}
 \usage{
-.cl_proj(value_obs, f_selected)
+.cl_proj(target_obs, f_selected)
 }
 \arguments{
-\item{value_obs}{Numeric vector of cumulative observed values for a
+\item{target_obs}{Numeric vector of cumulative observed values for a
 single cohort, ordered by development period.}
 
 \item{f_selected}{Numeric vector of selected development factors.}
 }
 \value{
-A numeric vector of the same length as \code{value_obs} with
+A numeric vector of the same length as \code{target_obs} with
 unobserved cells filled by recursive chain ladder projection.
 }
 \description{

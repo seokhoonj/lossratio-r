@@ -111,7 +111,7 @@ $$
 
 Behaviour:
 
-- Standard reserving practice. Equivalent to `fit_cl(tri, loss_var = "loss")`
+- Standard reserving practice. Equivalent to `fit_cl(tri, target = "loss")`
   for the loss projection, but `fit_lr()` additionally projects
   exposure forward via CL on `premium` and computes the loss-ratio
   uncertainty via the delta method.
@@ -147,18 +147,18 @@ summary(lrs$cl)$loss_ult
 
 ## Variance and confidence intervals
 
-`fit_lr()` reports analytical standard errors via the delta method.
-Two delta variants:
+`fit_lr()` reports analytical standard errors for `L/P`. Two variants:
 
-- `delta_method = "simple"` (default) — treats exposure as fixed,
-  $\mathrm{SE}(L/E) \approx \mathrm{SE}(L)/E$.
-- `delta_method = "full"` — accounts for exposure uncertainty and
-  loss-exposure correlation `rho`:
+- `se_method = "fixed"` (default) — premium treated as fixed,
+  $\mathrm{SE}(L/P) \approx \mathrm{SE}(L)/P$. Strictly the delta method
+  with `Var(P) = 0` and `Cov(L,P) = 0`.
+- `se_method = "delta"` — full delta method including premium uncertainty
+  and loss-premium correlation `rho`:
 
 $$
-\mathrm{Var}(L/E) \approx \frac{\mathrm{Var}(L)}{E^2}
-  + \frac{L^2 \mathrm{Var}(E)}{E^4}
-  - \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(E)}{E^3}
+\mathrm{Var}(L/P) \approx \frac{\mathrm{Var}(L)}{P^2}
+  + \frac{L^2 \mathrm{Var}(P)}{P^4}
+  - \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(P)}{P^3}
 $$
 
 Bootstrap intervals are also available:
