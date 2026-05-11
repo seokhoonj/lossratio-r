@@ -2,24 +2,13 @@
 
 ## 입력 계층
 
-원시 experience 데이터의 검증·코어션 헬퍼.
+원시 experience 데이터의 검증·grain 헬퍼.
+[`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md)
+이 필수 검증·코어션을 내부에서 수행하므로 일반 흐름엔 불필요하며,
+Triangle 을 만들지 않고 검증·enrichment 만 하고 싶을 때 사용한다.
 
-- [`check_experience()`](https://seokhoonj.github.io/lossratio/ko/reference/check_experience.md)
-  : Check an experience dataset
-
-- [`is_experience()`](https://seokhoonj.github.io/lossratio/ko/reference/is_experience.md)
-  :
-
-  Check whether an object is an `Experience`
-
-- [`as_experience()`](https://seokhoonj.github.io/lossratio/ko/reference/as_experience.md)
-  :
-
-  Coerce a dataset to an `Experience` object
-
-- [`add_experience_period()`](https://seokhoonj.github.io/lossratio/ko/reference/add_experience_period.md)
-  : Add standard period variables to an experience dataset
-
+- [`derive_grain_columns()`](https://seokhoonj.github.io/lossratio/ko/reference/derive_grain_columns.md)
+  : Derive monthly / quarterly / semi-annual / annual grain columns
 - [`validate_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/validate_triangle.md)
   : Validate triangle structure before building a development
 

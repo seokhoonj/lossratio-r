@@ -138,6 +138,7 @@ each calendar period across products or other grouping variables.</p>
 <span>  <span class="va">df</span>,</span>
 <span>  <span class="va">group_var</span>,</span>
 <span>  calendar_var <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
+<span>  grain <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  loss_var <span class="op">=</span> <span class="st">"loss_incr"</span>,</span>
 <span>  premium_var <span class="op">=</span> <span class="st">"premium_incr"</span>,</span>
 <span>  period_from <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -152,7 +153,9 @@ each calendar period across products or other grouping variables.</p>
 
 <dl><dt id="arg-df">df<a class="anchor" aria-label="anchor" href="#arg-df"></a></dt>
 <dd><p>A data.frame containing experience data with per-period loss
-and premium columns.</p></dd>
+and premium columns plus a <code>calendar_var</code> Date column (or any input
+that the internal Date coercion accepts: Date, POSIXt, integer
+<code>yyyy</code> / <code>yyyymm</code> / <code>yyyymmdd</code>, ISO string).</p></dd>
 
 
 <dt id="arg-group-var">group_var<a class="anchor" aria-label="anchor" href="#arg-group-var"></a></dt>
@@ -160,15 +163,17 @@ and premium columns.</p></dd>
 
 
 <dt id="arg-calendar-var">calendar_var<a class="anchor" aria-label="anchor" href="#arg-calendar-var"></a></dt>
-<dd><p>A single calendar-like period variable defining
-the summary axis. Typical examples include:</p><ul><li><p><code>cy_m</code> (calendar year-month),</p></li>
-<li><p><code>cy_q</code> (calendar year-quarter),</p></li>
-<li><p><code>cy_s</code> (calendar year-half),</p></li>
-<li><p><code>cy_a</code> (calendar year),</p></li>
-<li><p><code>uy_m</code>, <code>uy_q</code>, <code>uy_s</code>, <code>uy_a</code> when a single underwriting-period axis
-is to be summarised as a time series rather than as a development
-structure.</p></li>
-</ul></dd>
+<dd><p>A single column defining the calendar-like period
+axis. Default <code>"cy_m"</code>. May also be an underwriting axis
+(<code>"uy_m"</code> etc.) when a single underwriting-period axis is to be
+summarised as a time series rather than as a development structure.</p></dd>
+
+
+<dt id="arg-grain">grain<a class="anchor" aria-label="anchor" href="#arg-grain"></a></dt>
+<dd><p>One of <code>"auto"</code> (default), <code>"M"</code>, <code>"Q"</code>, <code>"S"</code>, <code>"A"</code>.
+<code>"auto"</code> infers the grain from the <code>calendar_var</code> value spacing.
+Explicit values must be at least as coarse as the input grain;
+the input is binned (floored) to that grain before aggregation.</p></dd>
 
 
 <dt id="arg-loss-var">loss_var<a class="anchor" aria-label="anchor" href="#arg-loss-var"></a></dt>
@@ -196,7 +201,7 @@ risk premium is commonly used.</p></dd>
 <dt id="arg-fill-gaps">fill_gaps<a class="anchor" aria-label="anchor" href="#arg-fill-gaps"></a></dt>
 <dd><p>Logical; if <code>TRUE</code>, zero-fill missing
 <code>(group_var, calendar_var)</code> cells so every group has a consecutive
-calendar sequence (monthly, quarterly, etc. based on <code>calendar_var</code>).
+calendar sequence at the resolved grain.
 Default <code>FALSE</code>, which raises an error when gaps are detected.</p></dd>
 
 </dl></div>

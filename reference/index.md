@@ -2,24 +2,14 @@
 
 ## Input layer
 
-Validation, coercion, and helpers for raw experience data.
+Validation and grain helpers for raw experience data.
+[`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
+already runs the required checks and coercions inline — these helpers
+are exposed for users who want to validate or enrich without building a
+triangle.
 
-- [`check_experience()`](https://seokhoonj.github.io/lossratio/reference/check_experience.md)
-  : Check an experience dataset
-
-- [`is_experience()`](https://seokhoonj.github.io/lossratio/reference/is_experience.md)
-  :
-
-  Check whether an object is an `Experience`
-
-- [`as_experience()`](https://seokhoonj.github.io/lossratio/reference/as_experience.md)
-  :
-
-  Coerce a dataset to an `Experience` object
-
-- [`add_experience_period()`](https://seokhoonj.github.io/lossratio/reference/add_experience_period.md)
-  : Add standard period variables to an experience dataset
-
+- [`derive_grain_columns()`](https://seokhoonj.github.io/lossratio/reference/derive_grain_columns.md)
+  : Derive monthly / quarterly / semi-annual / annual grain columns
 - [`validate_triangle()`](https://seokhoonj.github.io/lossratio/reference/validate_triangle.md)
   : Validate triangle structure before building a development
 

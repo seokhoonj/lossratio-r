@@ -22,14 +22,12 @@
 <url><loc>https://seokhoonj.github.io/lossratio/authors.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/index.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/news/index.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/reference/add_experience_period.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/reference/as_experience.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/backtest.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/build_calendar.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/build_link.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/build_total.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/build_triangle.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/reference/check_experience.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/reference/derive_grain_columns.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/detect_convergence.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/detect_maturity.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/detect_regime.html</loc></url>
@@ -100,7 +98,6 @@
 <url><loc>https://seokhoonj.github.io/lossratio/reference/fit_lr.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/get_recent_weights.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/index.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/reference/is_experience.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/longer.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/lossratio-package.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/plot.ATAFit.html</loc></url>

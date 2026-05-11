@@ -166,17 +166,15 @@ valuation 시점에서 모형은 무엇이라 말했을까?” 를 모사하기 
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio">lossratio</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
-<span><span class="va">exp</span>     <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_experience.html">as_experience</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
-<span><span class="va">tri_sur</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, <span class="va">coverage</span><span class="op">)</span></span>
+<span><span class="va">tri_sur</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, <span class="va">coverage</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">bt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Backtest&gt;</span></span>
-<span><span class="co">#&gt;   fit_fn      : fit_lr</span></span>
-<span><span class="co">#&gt;   loss_var    : lr</span></span>
-<span><span class="co">#&gt;   holdout     : 6 calendar diagonals</span></span>
-<span><span class="co">#&gt;   held-out    : 159 cells</span></span>
-<span><span class="co">#&gt;   A/E Error   : mean 0.21% / median -0.00%</span></span></code></pre></div>
+<span><span class="co">#&gt;   fit_fn   : fit_lr</span></span>
+<span><span class="co">#&gt;   loss_var : lr</span></span>
+<span><span class="co">#&gt;   holdout  : 6 diagonals (159 cells)</span></span>
+<span><span class="co">#&gt;   A/E Error: mean 0.21% / median -0.00%</span></span></code></pre></div>
 <p>기본 적합 함수는 단계 적응형(stage-adaptive, SA) 손해율 추정
 (<code>fit_lr(method = "sa")</code>) 이며, 기본 비교 컬럼은
 <code>loss_var = "lr"</code> 이다 (누적 손해율). 반환되는 객체는
@@ -364,11 +362,10 @@ column)</strong> 이다. 즉, 셀 단위로 실제값과 추정값을 비교하�
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt_sa_lr</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Backtest&gt;</span></span>
-<span><span class="co">#&gt;   fit_fn      : fit_lr</span></span>
-<span><span class="co">#&gt;   loss_var    : lr</span></span>
-<span><span class="co">#&gt;   holdout     : 6 calendar diagonals</span></span>
-<span><span class="co">#&gt;   held-out    : 159 cells</span></span>
-<span><span class="co">#&gt;   A/E Error   : mean 0.21% / median -0.00%</span></span></code></pre></div>
+<span><span class="co">#&gt;   fit_fn   : fit_lr</span></span>
+<span><span class="co">#&gt;   loss_var : lr</span></span>
+<span><span class="co">#&gt;   holdout  : 6 diagonals (159 cells)</span></span>
+<span><span class="co">#&gt;   A/E Error: mean 0.21% / median -0.00%</span></span></code></pre></div>
 <p><code>lr</code> 을 백테스팅하는 것이 보통 더 유익한 진단이 된다.
 손해율은 단위가 없고 차원이 없어 규모가 크게 다른 코호트 간에도 일관되게
 비교 가능하므로, <code>ae_err_mean</code> 과 <code>ae_err_med</code> 가

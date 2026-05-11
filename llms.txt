@@ -60,11 +60,10 @@ A long-format `data.frame` / `data.table` with at minimum:
 | `premium_incr` | Per-period premium in the cell (risk premium for long-term health) | numeric |
 | group | Optional — product, coverage, age, gender, sum insured, etc. | character / factor |
 
-[`as_experience()`](https://seokhoonj.github.io/lossratio/reference/as_experience.md)
-validates the schema and coerces date columns;
 [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
-then aggregates to the canonical cohort × dev structure with cumulative
-columns and derived ratios.
+validates the schema, coerces date columns, and aggregates to the
+canonical cohort × dev structure with cumulative columns and derived
+ratios.
 
 ### Column convention
 
@@ -109,10 +108,9 @@ library(lossratio)
 # (per-coverage dev curve calibrated to a real portfolio's broad shape;
 # cell-level values and cohort patterns are randomly generated)
 data(experience)
-exp <- as_experience(experience)
 
 # Build the canonical cohort × dev structure
-tri <- build_triangle(exp, group_var = cv_nm)
+tri <- build_triangle(experience, group_var = coverage)
 
 plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
@@ -217,24 +215,14 @@ Seokhoon Joo (<seokhoonj@gmail.com>)
 
 ## Input layer
 
-Validation, coercion, and helpers for raw experience data.
+Validation and grain helpers for raw experience data.
+[`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
+already runs the required checks and coercions inline — these helpers
+are exposed for users who want to validate or enrich without building a
+triangle.
 
-- [`check_experience()`](https://seokhoonj.github.io/lossratio/reference/check_experience.md)
-  : Check an experience dataset
-
-- [`is_experience()`](https://seokhoonj.github.io/lossratio/reference/is_experience.md)
-  :
-
-  Check whether an object is an `Experience`
-
-- [`as_experience()`](https://seokhoonj.github.io/lossratio/reference/as_experience.md)
-  :
-
-  Coerce a dataset to an `Experience` object
-
-- [`add_experience_period()`](https://seokhoonj.github.io/lossratio/reference/add_experience_period.md)
-  : Add standard period variables to an experience dataset
-
+- [`derive_grain_columns()`](https://seokhoonj.github.io/lossratio/reference/derive_grain_columns.md)
+  : Derive monthly / quarterly / semi-annual / annual grain columns
 - [`validate_triangle()`](https://seokhoonj.github.io/lossratio/reference/validate_triangle.md)
   : Validate triangle structure before building a development
 

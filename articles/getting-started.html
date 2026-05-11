@@ -175,22 +175,10 @@ underwriting period columns at multiple granularities, a
 <span><span class="co">#&gt;  - attr(*, ".internal.selfref")=&lt;pointer: (nil)&gt;</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="step-1-validate-and-coerce">Step 1 — Validate and coerce<a class="anchor" aria-label="anchor" href="#step-1-validate-and-coerce"></a>
+<h2 id="step-1-build-the-cohort-dev-structure">Step 1 — Build the cohort × dev structure<a class="anchor" aria-label="anchor" href="#step-1-build-the-cohort-dev-structure"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_experience.html">as_experience</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "Experience" "data.table" "data.frame"</span></span></code></pre></div>
-<p><code><a href="../reference/as_experience.html">as_experience()</a></code> checks required columns
-(<code>cy_m</code>, <code>uy_m</code>, <code>loss_incr</code>,
-<code>premium_incr</code>), coerces date columns, and tags the class.
-Use <code>check_experience(df)</code> for a non-mutating check.</p>
-</div>
-<div class="section level2">
-<h2 id="step-2-build-the-cohort-dev-structure">Step 2 — Build the cohort × dev structure<a class="anchor" aria-label="anchor" href="#step-2-build-the-cohort-dev-structure"></a>
-</h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "Triangle"   "data.table" "data.frame"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
@@ -202,6 +190,9 @@ Use <code>check_experience(df)</code> for a non-mutating check.</p>
 <span><span class="co">#&gt; [16] "loss_incr_prop"    "premium_prop"      "premium_incr_prop"</span></span></code></pre></div>
 <p><code><a href="../reference/build_triangle.html">build_triangle()</a></code>:</p>
 <ul>
+<li>validates required columns (<code>cy_m</code>, <code>uy_m</code>,
+<code>loss_incr</code>, <code>premium_incr</code>) and coerces them to
+the expected types,</li>
 <li>aggregates demographic dimensions away (here: <code>age_band</code>,
 <code>gender</code>),</li>
 <li>standardises raw input names to the per-period slots
@@ -220,15 +211,15 @@ proportions),</li>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="step-3-diagnostics">Step 3 — Diagnostics<a class="anchor" aria-label="anchor" href="#step-3-diagnostics"></a>
+<h2 id="step-2-diagnostics">Step 2 — Diagnostics<a class="anchor" aria-label="anchor" href="#step-2-diagnostics"></a>
 </h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>              <span class="co"># cohort trajectories of lr</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" alt="" width="100%"></p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p><img src="getting-started_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="100%"></p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>     <span class="co"># heatmap of lr cells</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-4-2.png" class="r-plt" alt="" width="100%"></p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p><img src="getting-started_files/figure-html/unnamed-chunk-3-2.png" class="r-plt" alt="" width="100%"></p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>           <span class="co"># group-wise statistics by dev</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage, dev&gt;</span></span>
 <span><span class="co">#&gt;     coverage   dev n_obs   lr_mean lr_median     lr_wt lr_incr_mean</span></span>
@@ -313,11 +304,14 @@ proportions),</li>
 <span><span class="co">#&gt;              &lt;num&gt;      &lt;num&gt;</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="step-4-development-modeling">Step 4 — Development modeling<a class="anchor" aria-label="anchor" href="#step-4-development-modeling"></a>
+<h2 id="step-3-link-level-diagnostics">Step 3 — Link-level diagnostics<a class="anchor" aria-label="anchor" href="#step-3-link-level-diagnostics"></a>
 </h2>
-<p>Two complementary views of cohort development:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Age-to-age factors</span></span>
+<p>Two complementary views of the per-link factor that drives
+development. Both are <em>factor-level</em> — they return per-link
+estimates only; they do not produce projections
+(<code>$full</code>).</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Age-to-age factors — multiplicative, input to chain ladder</span></span>
 <span><span class="fu"><a href="../reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;ATAFit&gt;</span></span>
 <span><span class="co">#&gt; alpha       : 1 </span></span>
@@ -329,33 +323,36 @@ proportions),</li>
 <span><span class="co">#&gt; n_groups    : 1 </span></span>
 <span><span class="co">#&gt; ata links   : 35</span></span>
 <span></span>
-<span><span class="co"># Exposure-driven intensities</span></span>
-<span><span class="fu"><a href="../reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, premium_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;EDFit&gt;</span></span>
-<span><span class="co">#&gt; method      : basic </span></span>
-<span><span class="co">#&gt; loss_var   : loss </span></span>
-<span><span class="co">#&gt; premium_var: premium </span></span>
+<span><span class="co"># Exposure-driven intensities — additive, input to ED</span></span>
+<span><span class="fu"><a href="../reference/fit_intensity.html">fit_intensity</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, premium_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;IntensityFit&gt;</span></span>
 <span><span class="co">#&gt; alpha       : 1 </span></span>
 <span><span class="co">#&gt; sigma_method: min_last2 </span></span>
 <span><span class="co">#&gt; recent      : all </span></span>
 <span><span class="co">#&gt; regime_break: none </span></span>
 <span><span class="co">#&gt; groups      : coverage </span></span>
 <span><span class="co">#&gt; n_groups    : 1 </span></span>
-<span><span class="co">#&gt; links       : 35</span></span></code></pre></div>
-<p><code><a href="../reference/fit_ata.html">fit_ata()</a></code> returns selected age-to-age factors per
-development link. <code><a href="../reference/fit_ed.html">fit_ed()</a></code> returns intensity factors
+<span><span class="co">#&gt; ata links   : 35</span></span></code></pre></div>
+<p><code><a href="../reference/fit_ata.html">fit_ata()</a></code> returns selected ATA factors
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
+per development link. <code><a href="../reference/fit_intensity.html">fit_intensity()</a></code> returns intensity
+factors
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>g</mi><mi>k</mi></msub><mo>=</mo><mi mathvariant="normal">Δ</mi><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup><mi>/</mi><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">g_k = \Delta C^L_k / C^P_k</annotation></semantics></math>.
-Both are inputs to the projection methods below.</p>
+Both feed the projection-level estimators below and are used to detect
+the maturity point.</p>
 </div>
 <div class="section level2">
-<h2 id="step-5-projection">Step 5 — Projection<a class="anchor" aria-label="anchor" href="#step-5-projection"></a>
+<h2 id="step-4-projection">Step 4 — Projection<a class="anchor" aria-label="anchor" href="#step-4-projection"></a>
 </h2>
-<p><code><a href="../reference/fit_cl.html">fit_cl()</a></code> runs a chain ladder projection:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
+<p>The projection-level estimators come as a pair of siblings,
+<code><a href="../reference/fit_cl.html">fit_cl()</a></code> and <code><a href="../reference/fit_ed.html">fit_ed()</a></code>, plus
+<code><a href="../reference/fit_lr.html">fit_lr()</a></code> as the unified interface that combines them.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Chain ladder (multiplicative projection)</span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cl</span>, type <span class="op">=</span> <span class="st">"projection"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="100%"></p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<p><img src="getting-started_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="100%"></p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve   proc_se param_se</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;    &lt;num&gt;</span></span>
@@ -436,16 +433,101 @@ Both are inputs to the projection methods below.</p>
 <span><span class="co">#&gt; 35: 195234274 0.434188352</span></span>
 <span><span class="co">#&gt; 36: 477333970 0.561015512</span></span>
 <span><span class="co">#&gt;            se          cv</span></span>
-<span><span class="co">#&gt;         &lt;num&gt;       &lt;num&gt;</span></span></code></pre></div>
-<p><code><a href="../reference/fit_lr.html">fit_lr()</a></code> runs a loss-ratio projection. The default
-<code>method = "sa"</code> (stage-adaptive) uses exposure-driven before
-maturity and chain ladder after, switching at the per-group maturity
-point detected from the ATA factors.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt;         &lt;num&gt;       &lt;num&gt;</span></span>
+<span></span>
+<span><span class="co"># Exposure-driven (additive projection)</span></span>
+<span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span>, premium_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ed</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
+<span><span class="co">#&gt;     coverage ata_from ata_to ata_link    mean  median      wt      cv       g</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;fctr&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:      SUR        1      2      1-2 1.34661 1.21766 1.31614 0.47327 1.31614</span></span>
+<span><span class="co">#&gt;  2:      SUR        2      3      2-3 0.58109 0.56432 0.58674 0.37381 0.58674</span></span>
+<span><span class="co">#&gt;  3:      SUR        3      4      3-4 0.39105 0.36751 0.38178 0.43535 0.38178</span></span>
+<span><span class="co">#&gt;  4:      SUR        4      5      4-5 0.31110 0.32321 0.33127 0.35969 0.33127</span></span>
+<span><span class="co">#&gt;  5:      SUR        5      6      5-6 0.27543 0.25088 0.25518 0.43531 0.25518</span></span>
+<span><span class="co">#&gt;  6:      SUR        6      7      6-7 0.21364 0.20479 0.22393 0.31371 0.22393</span></span>
+<span><span class="co">#&gt;  7:      SUR        7      8      7-8 0.18072 0.18227 0.19476 0.36392 0.19476</span></span>
+<span><span class="co">#&gt;  8:      SUR        8      9      8-9 0.16798 0.15484 0.16849 0.67814 0.16849</span></span>
+<span><span class="co">#&gt;  9:      SUR        9     10     9-10 0.14955 0.13195 0.14572 0.33906 0.14572</span></span>
+<span><span class="co">#&gt; 10:      SUR       10     11    10-11 0.12550 0.12095 0.12851 0.31241 0.12851</span></span>
+<span><span class="co">#&gt; 11:      SUR       11     12    11-12 0.13833 0.12898 0.14581 0.39551 0.14581</span></span>
+<span><span class="co">#&gt; 12:      SUR       12     13    12-13 0.12519 0.11356 0.12075 0.34186 0.12075</span></span>
+<span><span class="co">#&gt; 13:      SUR       13     14    13-14 0.11144 0.10927 0.11631 0.35239 0.11631</span></span>
+<span><span class="co">#&gt; 14:      SUR       14     15    14-15 0.10561 0.09421 0.11169 0.43662 0.11169</span></span>
+<span><span class="co">#&gt; 15:      SUR       15     16    15-16 0.08954 0.08726 0.08964 0.34359 0.08964</span></span>
+<span><span class="co">#&gt; 16:      SUR       16     17    16-17 0.08079 0.07993 0.08162 0.24700 0.08162</span></span>
+<span><span class="co">#&gt; 17:      SUR       17     18    17-18 0.08109 0.07612 0.08725 0.28780 0.08725</span></span>
+<span><span class="co">#&gt; 18:      SUR       18     19    18-19 0.08636 0.08620 0.08772 0.34300 0.08772</span></span>
+<span><span class="co">#&gt; 19:      SUR       19     20    19-20 0.07944 0.07838 0.08008 0.25109 0.08008</span></span>
+<span><span class="co">#&gt; 20:      SUR       20     21    20-21 0.07789 0.07935 0.08007 0.32197 0.08007</span></span>
+<span><span class="co">#&gt; 21:      SUR       21     22    21-22 0.06746 0.06606 0.06982 0.26290 0.06982</span></span>
+<span><span class="co">#&gt; 22:      SUR       22     23    22-23 0.06748 0.06394 0.06703 0.32299 0.06703</span></span>
+<span><span class="co">#&gt; 23:      SUR       23     24    23-24 0.06644 0.05971 0.06165 0.39463 0.06165</span></span>
+<span><span class="co">#&gt; 24:      SUR       24     25    24-25 0.06303 0.05711 0.05902 0.45911 0.05902</span></span>
+<span><span class="co">#&gt; 25:      SUR       25     26    25-26 0.06696 0.06136 0.06056 0.39347 0.06056</span></span>
+<span><span class="co">#&gt; 26:      SUR       26     27    26-27 0.06265 0.05387 0.07093 0.44081 0.07093</span></span>
+<span><span class="co">#&gt; 27:      SUR       27     28    27-28 0.06010 0.05136 0.06550 0.36862 0.06550</span></span>
+<span><span class="co">#&gt; 28:      SUR       28     29    28-29 0.06012 0.06544 0.05404 0.31348 0.05404</span></span>
+<span><span class="co">#&gt; 29:      SUR       29     30    29-30 0.05275 0.04745 0.04877 0.23587 0.04877</span></span>
+<span><span class="co">#&gt; 30:      SUR       30     31    30-31 0.05437 0.04834 0.05359 0.25583 0.05359</span></span>
+<span><span class="co">#&gt; 31:      SUR       31     32    31-32 0.06003 0.05618 0.05643 0.41162 0.05643</span></span>
+<span><span class="co">#&gt; 32:      SUR       32     33    32-33 0.05749 0.05671 0.05622 0.07265 0.05622</span></span>
+<span><span class="co">#&gt; 33:      SUR       33     34    33-34 0.04049 0.03873 0.04100 0.08481 0.04100</span></span>
+<span><span class="co">#&gt; 34:      SUR       34     35    34-35 0.03562 0.03562 0.03403 0.15183 0.03403</span></span>
+<span><span class="co">#&gt; 35:      SUR       35     36    35-36 0.03864 0.03864 0.03864      NA 0.03864</span></span>
+<span><span class="co">#&gt;     coverage ata_from ata_to ata_link    mean  median      wt      cv       g</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;fctr&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;</span></span>
+<span><span class="co">#&gt;        g_se     rse      sigma n_obs n_valid n_inf n_nan valid_ratio</span></span>
+<span><span class="co">#&gt;       &lt;num&gt;   &lt;num&gt;      &lt;num&gt; &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;       &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1: 0.09107 0.06919 2930.74378    35      35     0     0           1</span></span>
+<span><span class="co">#&gt;  2: 0.03508 0.05979 1580.26206    34      34     0     0           1</span></span>
+<span><span class="co">#&gt;  3: 0.02931 0.07677 1587.18689    33      33     0     0           1</span></span>
+<span><span class="co">#&gt;  4: 0.02135 0.06444 1319.11055    32      32     0     0           1</span></span>
+<span><span class="co">#&gt;  5: 0.02087 0.08178 1421.47805    31      31     0     0           1</span></span>
+<span><span class="co">#&gt;  6: 0.01273 0.05686  937.78642    30      30     0     0           1</span></span>
+<span><span class="co">#&gt;  7: 0.01141 0.05860  897.25757    29      29     0     0           1</span></span>
+<span><span class="co">#&gt;  8: 0.02169 0.12870 1792.82291    28      28     0     0           1</span></span>
+<span><span class="co">#&gt;  9: 0.00943 0.06471  819.85457    27      27     0     0           1</span></span>
+<span><span class="co">#&gt; 10: 0.00676 0.05263  614.41506    26      26     0     0           1</span></span>
+<span><span class="co">#&gt; 11: 0.01185 0.08130 1065.55643    25      25     0     0           1</span></span>
+<span><span class="co">#&gt; 12: 0.00987 0.08170  911.69544    24      24     0     0           1</span></span>
+<span><span class="co">#&gt; 13: 0.01111 0.09556 1061.51298    23      23     0     0           1</span></span>
+<span><span class="co">#&gt; 14: 0.01140 0.10209 1123.12990    22      22     0     0           1</span></span>
+<span><span class="co">#&gt; 15: 0.00630 0.07031  629.63157    21      21     0     0           1</span></span>
+<span><span class="co">#&gt; 16: 0.00475 0.05825  483.04483    20      20     0     0           1</span></span>
+<span><span class="co">#&gt; 17: 0.00628 0.07198  644.16296    19      19     0     0           1</span></span>
+<span><span class="co">#&gt; 18: 0.00745 0.08497  734.39264    18      18     0     0           1</span></span>
+<span><span class="co">#&gt; 19: 0.00438 0.05473  434.93473    17      17     0     0           1</span></span>
+<span><span class="co">#&gt; 20: 0.00692 0.08645  667.93909    16      16     0     0           1</span></span>
+<span><span class="co">#&gt; 21: 0.00444 0.06361  392.59515    15      15     0     0           1</span></span>
+<span><span class="co">#&gt; 22: 0.00501 0.07472  445.50688    14      14     0     0           1</span></span>
+<span><span class="co">#&gt; 23: 0.00644 0.10443  566.66985    13      13     0     0           1</span></span>
+<span><span class="co">#&gt; 24: 0.00532 0.09006  436.45243    12      12     0     0           1</span></span>
+<span><span class="co">#&gt; 25: 0.00638 0.10534  505.82971    11      11     0     0           1</span></span>
+<span><span class="co">#&gt; 26: 0.00878 0.12380  684.49355    10      10     0     0           1</span></span>
+<span><span class="co">#&gt; 27: 0.00834 0.12727  627.18471     9       9     0     0           1</span></span>
+<span><span class="co">#&gt; 28: 0.00853 0.15779  604.48158     8       8     0     0           1</span></span>
+<span><span class="co">#&gt; 29: 0.00428 0.08784  300.99606     7       7     0     0           1</span></span>
+<span><span class="co">#&gt; 30: 0.00553 0.10315  325.88933     6       6     0     0           1</span></span>
+<span><span class="co">#&gt; 31: 0.01155 0.20459  641.18962     5       5     0     0           1</span></span>
+<span><span class="co">#&gt; 32: 0.00153 0.02721   80.36414     4       4     0     0           1</span></span>
+<span><span class="co">#&gt; 33: 0.00211 0.05148   81.83368     3       3     0     0           1</span></span>
+<span><span class="co">#&gt; 34: 0.00348 0.10217  103.52598     2       2     0     0           1</span></span>
+<span><span class="co">#&gt; 35:      NA      NA         NA     1       1     0     0           1</span></span>
+<span><span class="co">#&gt;        g_se     rse      sigma n_obs n_valid n_inf n_nan valid_ratio</span></span>
+<span><span class="co">#&gt;       &lt;num&gt;   &lt;num&gt;      &lt;num&gt; &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;       &lt;num&gt;</span></span></code></pre></div>
+<p><code><a href="../reference/fit_lr.html">fit_lr()</a></code> is the unified loss-ratio interface. The
+default <code>method = "sa"</code> (stage-adaptive) uses exposure-driven
+before the maturity point and chain ladder after, switching at the
+per-group maturity detected from the ATA factors.
+<code>method = "ed"</code> or <code>"cl"</code> applies a single stage
+throughout.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lr</span>, type <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="100%"></p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<p><img src="getting-started_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="100%"></p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve premium_ult lr_latest</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;       &lt;num&gt;     &lt;num&gt;</span></span>
@@ -569,13 +651,13 @@ point detected from the ATA factors.</p>
 <span><span class="co">#&gt;           &lt;num&gt;       &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="step-6-structural-change-diagnostics">Step 6 — Structural change diagnostics<a class="anchor" aria-label="anchor" href="#step-6-structural-change-diagnostics"></a>
+<h2 id="step-5-structural-change-diagnostics">Step 5 — Structural change diagnostics<a class="anchor" aria-label="anchor" href="#step-5-structural-change-diagnostics"></a>
 </h2>
 <p><code><a href="../reference/detect_regime.html">detect_regime()</a></code> checks whether recent cohorts behave
 differently from earlier ones. Useful as a preprocessing step before
 loss-ratio fitting on a homogeneous subset:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">sub</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Regime&gt;</span></span>
 <span><span class="co">#&gt;   method      : e_divisive</span></span>

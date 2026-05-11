@@ -104,7 +104,7 @@
     <div class="section level2">
       <h2 id="input-layer">Input layer<a class="anchor" aria-label="anchor" href="#input-layer"></a></h2>
 
-      <div class="section-desc"><p>Validation, coercion, and helpers for raw experience data.</p></div>
+      <div class="section-desc"><p>Validation and grain helpers for raw experience data. <code><a href="../reference/build_triangle.html">build_triangle()</a></code> already runs the required checks and coercions inline — these helpers are exposed for users who want to validate or enrich without building a triangle.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -113,31 +113,10 @@
 
       <dl><dt>
 
-          <code><a href="check_experience.html">check_experience()</a></code>
+          <code><a href="derive_grain_columns.html">derive_grain_columns()</a></code>
 
         </dt>
-        <dd>Check an experience dataset</dd>
-
-        <dt>
-
-          <code><a href="is_experience.html">is_experience()</a></code>
-
-        </dt>
-        <dd>Check whether an object is an <code>Experience</code></dd>
-
-        <dt>
-
-          <code><a href="as_experience.html">as_experience()</a></code>
-
-        </dt>
-        <dd>Coerce a dataset to an <code>Experience</code> object</dd>
-
-        <dt>
-
-          <code><a href="add_experience_period.html">add_experience_period()</a></code>
-
-        </dt>
-        <dd>Add standard period variables to an experience dataset</dd>
+        <dd>Derive monthly / quarterly / semi-annual / annual grain columns</dd>
 
         <dt>
 

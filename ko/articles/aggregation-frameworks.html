@@ -157,9 +157,8 @@ ratio over the window?).</li>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio" class="external-link">lossratio</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
-<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_experience.html">as_experience</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    coverage n_obs     cohort   dev     loss loss_incr   premium premium_incr</span></span>
 <span><span class="co">#&gt;      &lt;char&gt; &lt;int&gt;     &lt;Date&gt; &lt;int&gt;    &lt;num&gt;     &lt;num&gt;     &lt;num&gt;        &lt;num&gt;</span></span>
@@ -196,8 +195,7 @@ premium. Visualise as line plot or heatmap:</p>
 <span><span class="co"># so use quarterly cohort and dev to bring each panel down to ~10 x 10</span></span>
 <span><span class="co"># cells. This fits the documentation's display size; in practice you</span></span>
 <span><span class="co"># can keep monthly resolution by enlarging the plot.</span></span>
-<span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">coverage</span>,</span>
-<span>                        cohort_var <span class="op">=</span> <span class="st">"uy_q"</span>, dev_var <span class="op">=</span> <span class="st">"dev_q"</span><span class="op">)</span></span>
+<span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span>, group_var <span class="op">=</span> <span class="va">coverage</span>, grain <span class="op">=</span> <span class="st">"Q"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_q</span><span class="op">)</span>   <span class="co"># cohort × dev heatmap of lr</span></span></code></pre></div>
 <p><img src="aggregation-frameworks_files/figure-html/unnamed-chunk-2-2.png" class="r-plt" alt="" width="100%"></p>
 <p>Use <code>Triangle</code> as input to: - <code><a href="../reference/build_link.html">build_link()</a></code> —
@@ -210,7 +208,7 @@ detection</p>
 <h2 id="calendar-calendar-period-only">Calendar (calendar period only)<a class="anchor" aria-label="anchor" href="#calendar-calendar-period-only"></a>
 </h2>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_calendar.html">build_calendar</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">coverage</span>, calendar_var <span class="op">=</span> <span class="st">"cy_m"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_calendar.html">build_calendar</a></span><span class="op">(</span><span class="va">experience</span>, group_var <span class="op">=</span> <span class="va">coverage</span>, calendar_var <span class="op">=</span> <span class="st">"cy_m"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cal</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    coverage   calendar   dev      loss loss_incr   premium premium_incr</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;        &lt;num&gt;</span></span>
@@ -257,7 +255,7 @@ on-leveling event) - Portfolio monitoring dashboards</p>
 </h2>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_total.html">build_total</a></span><span class="op">(</span></span>
-<span>  <span class="va">exp</span>,</span>
+<span>  <span class="va">experience</span>,</span>
 <span>  group_var <span class="op">=</span> <span class="va">coverage</span>,</span>
 <span>  cohort_var <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  period_from <span class="op">=</span> <span class="st">"2023-04-01"</span>,</span>

@@ -57,11 +57,9 @@ Triangle 셀 하나에 대응하며, 손해액과 보험료 컬럼 (`loss`, `pre
 | `premium_incr` | 셀 내 기간별 보험료 (장기건강보험은 위험보험료 사용) | numeric |
 | group | 선택 — 상품, 담보, 연령, 성별, 가입금액 등 | character / factor |
 
-[`as_experience()`](https://seokhoonj.github.io/lossratio/ko/reference/as_experience.md)
-는 스키마를 검증하고 날짜 컬럼을 코어션한다. 이어서
 [`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md)
-은 표준 코호트 × 경과 기간 구조로 집계하며, 누적 컬럼과 파생 비율을 함께
-산출한다.
+은 스키마를 검증하고 날짜 컬럼을 코어션한 뒤 표준 코호트 × 경과 기간
+구조로 집계하며, 누적 컬럼과 파생 비율을 함께 산출한다.
 
 ### 컬럼 컨벤션
 
@@ -107,10 +105,9 @@ library(lossratio)
 # 경과에 따른 곡선 형태는 실제 포트폴리오의 전체 형태에 맞춰 보정
 # 셀 값과 코호트 패턴은 무작위 생성
 data(experience)
-exp <- as_experience(experience)
 
 # 표준 코호트 × dev 구조 구축
-tri <- build_triangle(exp, group_var = cv_nm)
+tri <- build_triangle(experience, group_var = coverage)
 
 plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
@@ -213,24 +210,13 @@ Seokhoon Joo (<seokhoonj@gmail.com>)
 
 ## 입력 계층
 
-원시 experience 데이터의 검증·코어션 헬퍼.
+원시 experience 데이터의 검증·grain 헬퍼.
+[`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md)
+이 필수 검증·코어션을 내부에서 수행하므로 일반 흐름엔 불필요하며,
+Triangle 을 만들지 않고 검증·enrichment 만 하고 싶을 때 사용한다.
 
-- [`check_experience()`](https://seokhoonj.github.io/lossratio/ko/reference/check_experience.md)
-  : Check an experience dataset
-
-- [`is_experience()`](https://seokhoonj.github.io/lossratio/ko/reference/is_experience.md)
-  :
-
-  Check whether an object is an `Experience`
-
-- [`as_experience()`](https://seokhoonj.github.io/lossratio/ko/reference/as_experience.md)
-  :
-
-  Coerce a dataset to an `Experience` object
-
-- [`add_experience_period()`](https://seokhoonj.github.io/lossratio/ko/reference/add_experience_period.md)
-  : Add standard period variables to an experience dataset
-
+- [`derive_grain_columns()`](https://seokhoonj.github.io/lossratio/ko/reference/derive_grain_columns.md)
+  : Derive monthly / quarterly / semi-annual / annual grain columns
 - [`validate_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/validate_triangle.md)
   : Validate triangle structure before building a development
 

@@ -37,25 +37,11 @@ str(experience)
 #>  - attr(*, ".internal.selfref")=<pointer: (nil)>
 ```
 
-## Step 1 — Validate and coerce
+## Step 1 — Build the cohort × dev structure
 
 ``` r
 
-exp <- as_experience(experience)
-class(exp)
-#> [1] "Experience" "data.table" "data.frame"
-```
-
-[`as_experience()`](https://seokhoonj.github.io/lossratio/reference/as_experience.md)
-checks required columns (`cy_m`, `uy_m`, `loss_incr`, `premium_incr`),
-coerces date columns, and tags the class. Use `check_experience(df)` for
-a non-mutating check.
-
-## Step 2 — Build the cohort × dev structure
-
-``` r
-
-tri <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
+tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
 class(tri)
 #> [1] "Triangle"   "data.table" "data.frame"
 names(tri)
@@ -69,6 +55,8 @@ names(tri)
 
 [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md):
 
+- validates required columns (`cy_m`, `uy_m`, `loss_incr`,
+  `premium_incr`) and coerces them to the expected types,
 - aggregates demographic dimensions away (here: `age_band`, `gender`),
 - standardises raw input names to the per-period slots `loss_incr` and
   `premium_incr`,
@@ -81,21 +69,21 @@ names(tri)
 - preserves original column names as attributes (`cohort_var`,
   `dev_var`, `loss_var`, `premium_var`) for downstream plot labels.
 
-## Step 3 — Diagnostics
+## Step 2 — Diagnostics
 
 ``` r
 
 plot(tri)              # cohort trajectories of lr
 ```
 
-![](getting-started_files/figure-html/unnamed-chunk-4-1.png)
+![](getting-started_files/figure-html/unnamed-chunk-3-1.png)
 
 ``` r
 
 plot_triangle(tri)     # heatmap of lr cells
 ```
 
-![](getting-started_files/figure-html/unnamed-chunk-4-2.png)
+![](getting-started_files/figure-html/unnamed-chunk-3-2.png)
 
 ``` r
 
@@ -183,13 +171,15 @@ summary(tri)           # group-wise statistics by dev
 #>              <num>      <num>
 ```
 
-## Step 4 — Development modeling
+## Step 3 — Link-level diagnostics
 
-Two complementary views of cohort development:
+Two complementary views of the per-link factor that drives development.
+Both are *factor-level* — they return per-link estimates only; they do
+not produce projections (`$full`).
 
 ``` r
 
-# Age-to-age factors
+# Age-to-age factors — multiplicative, input to chain ladder
 fit_ata(tri, loss_var = "loss")
 #> <ATAFit>
 #> alpha       : 1 
@@ -201,39 +191,43 @@ fit_ata(tri, loss_var = "loss")
 #> n_groups    : 1 
 #> ata links   : 35
 
-# Exposure-driven intensities
-fit_ed(tri, loss_var = "loss", premium_var = "premium")
-#> <EDFit>
-#> method      : basic 
-#> loss_var   : loss 
-#> premium_var: premium 
+# Exposure-driven intensities — additive, input to ED
+fit_intensity(tri, loss_var = "loss", premium_var = "premium")
+#> <IntensityFit>
 #> alpha       : 1 
 #> sigma_method: min_last2 
 #> recent      : all 
 #> regime_break: none 
 #> groups      : coverage 
 #> n_groups    : 1 
-#> links       : 35
+#> ata links   : 35
 ```
 
 [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)
-returns selected age-to-age factors per development link.
-[`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md)
-returns intensity factors $`g_k = \Delta C^L_k / C^P_k`$. Both are
-inputs to the projection methods below.
+returns selected ATA factors $`f_k`$ per development link.
+[`fit_intensity()`](https://seokhoonj.github.io/lossratio/reference/fit_intensity.md)
+returns intensity factors $`g_k = \Delta C^L_k / C^P_k`$. Both feed the
+projection-level estimators below and are used to detect the maturity
+point.
 
-## Step 5 — Projection
+## Step 4 — Projection
 
+The projection-level estimators come as a pair of siblings,
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
-runs a chain ladder projection:
+and
+[`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md),
+plus
+[`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
+as the unified interface that combines them.
 
 ``` r
 
+# Chain ladder (multiplicative projection)
 cl <- fit_cl(tri, loss_var = "loss", method = "mack")
 plot(cl, type = "projection")
 ```
 
-![](getting-started_files/figure-html/unnamed-chunk-6-1.png)
+![](getting-started_files/figure-html/unnamed-chunk-5-1.png)
 
 ``` r
 
@@ -318,13 +312,97 @@ summary(cl)
 #> 36: 477333970 0.561015512
 #>            se          cv
 #>         <num>       <num>
+
+# Exposure-driven (additive projection)
+ed <- fit_ed(tri, loss_var = "loss", premium_var = "premium")
+summary(ed)
+#> Key: <coverage>
+#>     coverage ata_from ata_to ata_link    mean  median      wt      cv       g
+#>       <char>    <num>  <num>   <fctr>   <num>   <num>   <num>   <num>   <num>
+#>  1:      SUR        1      2      1-2 1.34661 1.21766 1.31614 0.47327 1.31614
+#>  2:      SUR        2      3      2-3 0.58109 0.56432 0.58674 0.37381 0.58674
+#>  3:      SUR        3      4      3-4 0.39105 0.36751 0.38178 0.43535 0.38178
+#>  4:      SUR        4      5      4-5 0.31110 0.32321 0.33127 0.35969 0.33127
+#>  5:      SUR        5      6      5-6 0.27543 0.25088 0.25518 0.43531 0.25518
+#>  6:      SUR        6      7      6-7 0.21364 0.20479 0.22393 0.31371 0.22393
+#>  7:      SUR        7      8      7-8 0.18072 0.18227 0.19476 0.36392 0.19476
+#>  8:      SUR        8      9      8-9 0.16798 0.15484 0.16849 0.67814 0.16849
+#>  9:      SUR        9     10     9-10 0.14955 0.13195 0.14572 0.33906 0.14572
+#> 10:      SUR       10     11    10-11 0.12550 0.12095 0.12851 0.31241 0.12851
+#> 11:      SUR       11     12    11-12 0.13833 0.12898 0.14581 0.39551 0.14581
+#> 12:      SUR       12     13    12-13 0.12519 0.11356 0.12075 0.34186 0.12075
+#> 13:      SUR       13     14    13-14 0.11144 0.10927 0.11631 0.35239 0.11631
+#> 14:      SUR       14     15    14-15 0.10561 0.09421 0.11169 0.43662 0.11169
+#> 15:      SUR       15     16    15-16 0.08954 0.08726 0.08964 0.34359 0.08964
+#> 16:      SUR       16     17    16-17 0.08079 0.07993 0.08162 0.24700 0.08162
+#> 17:      SUR       17     18    17-18 0.08109 0.07612 0.08725 0.28780 0.08725
+#> 18:      SUR       18     19    18-19 0.08636 0.08620 0.08772 0.34300 0.08772
+#> 19:      SUR       19     20    19-20 0.07944 0.07838 0.08008 0.25109 0.08008
+#> 20:      SUR       20     21    20-21 0.07789 0.07935 0.08007 0.32197 0.08007
+#> 21:      SUR       21     22    21-22 0.06746 0.06606 0.06982 0.26290 0.06982
+#> 22:      SUR       22     23    22-23 0.06748 0.06394 0.06703 0.32299 0.06703
+#> 23:      SUR       23     24    23-24 0.06644 0.05971 0.06165 0.39463 0.06165
+#> 24:      SUR       24     25    24-25 0.06303 0.05711 0.05902 0.45911 0.05902
+#> 25:      SUR       25     26    25-26 0.06696 0.06136 0.06056 0.39347 0.06056
+#> 26:      SUR       26     27    26-27 0.06265 0.05387 0.07093 0.44081 0.07093
+#> 27:      SUR       27     28    27-28 0.06010 0.05136 0.06550 0.36862 0.06550
+#> 28:      SUR       28     29    28-29 0.06012 0.06544 0.05404 0.31348 0.05404
+#> 29:      SUR       29     30    29-30 0.05275 0.04745 0.04877 0.23587 0.04877
+#> 30:      SUR       30     31    30-31 0.05437 0.04834 0.05359 0.25583 0.05359
+#> 31:      SUR       31     32    31-32 0.06003 0.05618 0.05643 0.41162 0.05643
+#> 32:      SUR       32     33    32-33 0.05749 0.05671 0.05622 0.07265 0.05622
+#> 33:      SUR       33     34    33-34 0.04049 0.03873 0.04100 0.08481 0.04100
+#> 34:      SUR       34     35    34-35 0.03562 0.03562 0.03403 0.15183 0.03403
+#> 35:      SUR       35     36    35-36 0.03864 0.03864 0.03864      NA 0.03864
+#>     coverage ata_from ata_to ata_link    mean  median      wt      cv       g
+#>       <char>    <num>  <num>   <fctr>   <num>   <num>   <num>   <num>   <num>
+#>        g_se     rse      sigma n_obs n_valid n_inf n_nan valid_ratio
+#>       <num>   <num>      <num> <num>   <num> <num> <num>       <num>
+#>  1: 0.09107 0.06919 2930.74378    35      35     0     0           1
+#>  2: 0.03508 0.05979 1580.26206    34      34     0     0           1
+#>  3: 0.02931 0.07677 1587.18689    33      33     0     0           1
+#>  4: 0.02135 0.06444 1319.11055    32      32     0     0           1
+#>  5: 0.02087 0.08178 1421.47805    31      31     0     0           1
+#>  6: 0.01273 0.05686  937.78642    30      30     0     0           1
+#>  7: 0.01141 0.05860  897.25757    29      29     0     0           1
+#>  8: 0.02169 0.12870 1792.82291    28      28     0     0           1
+#>  9: 0.00943 0.06471  819.85457    27      27     0     0           1
+#> 10: 0.00676 0.05263  614.41506    26      26     0     0           1
+#> 11: 0.01185 0.08130 1065.55643    25      25     0     0           1
+#> 12: 0.00987 0.08170  911.69544    24      24     0     0           1
+#> 13: 0.01111 0.09556 1061.51298    23      23     0     0           1
+#> 14: 0.01140 0.10209 1123.12990    22      22     0     0           1
+#> 15: 0.00630 0.07031  629.63157    21      21     0     0           1
+#> 16: 0.00475 0.05825  483.04483    20      20     0     0           1
+#> 17: 0.00628 0.07198  644.16296    19      19     0     0           1
+#> 18: 0.00745 0.08497  734.39264    18      18     0     0           1
+#> 19: 0.00438 0.05473  434.93473    17      17     0     0           1
+#> 20: 0.00692 0.08645  667.93909    16      16     0     0           1
+#> 21: 0.00444 0.06361  392.59515    15      15     0     0           1
+#> 22: 0.00501 0.07472  445.50688    14      14     0     0           1
+#> 23: 0.00644 0.10443  566.66985    13      13     0     0           1
+#> 24: 0.00532 0.09006  436.45243    12      12     0     0           1
+#> 25: 0.00638 0.10534  505.82971    11      11     0     0           1
+#> 26: 0.00878 0.12380  684.49355    10      10     0     0           1
+#> 27: 0.00834 0.12727  627.18471     9       9     0     0           1
+#> 28: 0.00853 0.15779  604.48158     8       8     0     0           1
+#> 29: 0.00428 0.08784  300.99606     7       7     0     0           1
+#> 30: 0.00553 0.10315  325.88933     6       6     0     0           1
+#> 31: 0.01155 0.20459  641.18962     5       5     0     0           1
+#> 32: 0.00153 0.02721   80.36414     4       4     0     0           1
+#> 33: 0.00211 0.05148   81.83368     3       3     0     0           1
+#> 34: 0.00348 0.10217  103.52598     2       2     0     0           1
+#> 35:      NA      NA         NA     1       1     0     0           1
+#>        g_se     rse      sigma n_obs n_valid n_inf n_nan valid_ratio
+#>       <num>   <num>      <num> <num>   <num> <num> <num>       <num>
 ```
 
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
-runs a loss-ratio projection. The default `method = "sa"`
-(stage-adaptive) uses exposure-driven before maturity and chain ladder
-after, switching at the per-group maturity point detected from the ATA
-factors.
+is the unified loss-ratio interface. The default `method = "sa"`
+(stage-adaptive) uses exposure-driven before the maturity point and
+chain ladder after, switching at the per-group maturity detected from
+the ATA factors. `method = "ed"` or `"cl"` applies a single stage
+throughout.
 
 ``` r
 
@@ -332,7 +410,7 @@ lr <- fit_lr(tri, method = "sa")
 plot(lr, type = "lr")
 ```
 
-![](getting-started_files/figure-html/unnamed-chunk-7-1.png)
+![](getting-started_files/figure-html/unnamed-chunk-6-1.png)
 
 ``` r
 
@@ -459,7 +537,7 @@ summary(lr)
 #>           <num>       <num>     <num>     <num>
 ```
 
-## Step 6 — Structural change diagnostics
+## Step 5 — Structural change diagnostics
 
 [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
 checks whether recent cohorts behave differently from earlier ones.
@@ -468,7 +546,7 @@ homogeneous subset:
 
 ``` r
 
-sub <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
+sub <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
 detect_regime(sub, K = 12, method = "e_divisive")
 #> <Regime>
 #>   method      : e_divisive

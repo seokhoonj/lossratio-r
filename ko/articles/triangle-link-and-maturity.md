@@ -17,7 +17,7 @@ generalises to multi-group input.
 
 library(lossratio)
 data(experience)
-exp <- as_experience(experience)[coverage == "SUR"]
+exp <- experience[coverage == "SUR"]
 tri <- build_triangle(exp, group_var = coverage)
 ```
 
@@ -68,8 +68,7 @@ plot_triangle(tri, value_var = "lr_incr")     # incremental lr
 
 
 # detail labels (ratio + loss/premium amounts) are 2-line — use quarterly cells
-tri_q <- build_triangle(exp, group_var = coverage,
-                        cohort_var = "uy_q", dev_var = "dev_q")
+tri_q <- build_triangle(exp, group_var = coverage, grain = "Q")
 plot_triangle(tri_q, label_style = "detail") # ratio + (loss / premium)
 ```
 
@@ -362,7 +361,7 @@ thresholds:
 
 ``` r
 
-tri_all <- build_triangle(as_experience(experience), group_var = coverage)
+tri_all <- build_triangle(experience, group_var = coverage)
 detect_maturity(tri_all, loss_var = "loss")
 #> Key: <coverage>
 #>    coverage ata_from ata_to ata_link     mean   median       wt         cv
@@ -403,8 +402,7 @@ If gaps in the development sequence are suspected, inspect them before
 
 ``` r
 
-gaps <- validate_triangle(exp, group_var = coverage,
-                          cohort_var = "uy_m", dev_var = "dev_m")
+gaps <- validate_triangle(exp, group_var = coverage, cohort_var = "uy_m", dev_var = "dev_m")
 head(gaps)
 #> <TriangleValidation>
 #> Cohort dev-sequence gaps : none

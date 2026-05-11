@@ -32,9 +32,8 @@
 
 library(lossratio)
 data(experience)
-exp <- as_experience(experience)
 
-tri <- build_triangle(exp, group_var = coverage)
+tri <- build_triangle(experience, group_var = coverage)
 head(tri)
 #>    coverage n_obs     cohort   dev     loss loss_incr   premium premium_incr
 #>      <char> <int>     <Date> <int>    <num>     <num>     <num>        <num>
@@ -79,8 +78,7 @@ plot(tri)              # 코호트별 궤적, 그룹별 facet
 # dev 축 모두 분기 단위로 다시 만들어 패널당 ~10 × 10 셀로 줄인다.
 # 문서 표시 크기에 맞춘 처리이며, 실제 분석에서는 플롯을 키우면 월
 # 단위 그대로 볼 수 있다.
-tri_q <- build_triangle(exp, group_var = coverage,
-                        cohort_var = "uy_q", dev_var = "dev_q")
+tri_q <- build_triangle(experience, group_var = coverage, grain = "Q")
 plot_triangle(tri_q)   # 코호트 × dev lr 히트맵
 ```
 
@@ -100,7 +98,7 @@ plot_triangle(tri_q)   # 코호트 × dev lr 히트맵
 
 ``` r
 
-cal <- build_calendar(exp, group_var = coverage, calendar_var = "cy_m")
+cal <- build_calendar(experience, group_var = coverage, calendar_var = "cy_m")
 head(cal)
 #>    coverage   calendar   dev      loss loss_incr   premium premium_incr
 #>      <char>     <Date> <int>     <num>     <num>     <num>        <num>
@@ -161,7 +159,7 @@ plot(cal, x_by = "dev")         # x axis: 순차 인덱스
 ``` r
 
 tot <- build_total(
-  exp,
+  experience,
   group_var = coverage,
   cohort_var = "uy_m",
   period_from = "2023-04-01",

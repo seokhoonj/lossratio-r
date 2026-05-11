@@ -25,17 +25,15 @@ $`\mathrm{ae\_err} = v_{\mathrm{actual}} / v_{\mathrm{pred}} - 1`$ 로
 
 library(lossratio)
 data(experience)
-exp     <- as_experience(experience)
-tri_sur <- build_triangle(exp[coverage == "SUR"], coverage)
+tri_sur <- build_triangle(experience[coverage == "SUR"], coverage)
 
 bt <- backtest(tri_sur, holdout = 6L)
 print(bt)
 #> <Backtest>
-#>   fit_fn      : fit_lr
-#>   loss_var    : lr
-#>   holdout     : 6 calendar diagonals
-#>   held-out    : 159 cells
-#>   A/E Error   : mean 0.21% / median -0.00%
+#>   fit_fn   : fit_lr
+#>   loss_var : lr
+#>   holdout  : 6 diagonals (159 cells)
+#>   A/E Error: mean 0.21% / median -0.00%
 ```
 
 기본 적합 함수는 단계 적응형(stage-adaptive, SA) 손해율 추정
@@ -223,11 +221,10 @@ bt_cl_lr    <- backtest(tri_sur, holdout = 6L, method = "cl")
 
 print(bt_sa_lr)
 #> <Backtest>
-#>   fit_fn      : fit_lr
-#>   loss_var    : lr
-#>   holdout     : 6 calendar diagonals
-#>   held-out    : 159 cells
-#>   A/E Error   : mean 0.21% / median -0.00%
+#>   fit_fn   : fit_lr
+#>   loss_var : lr
+#>   holdout  : 6 diagonals (159 cells)
+#>   A/E Error: mean 0.21% / median -0.00%
 ```
 
 `lr` 을 백테스팅하는 것이 보통 더 유익한 진단이 된다. 손해율은 단위가

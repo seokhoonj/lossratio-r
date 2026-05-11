@@ -218,7 +218,7 @@
 </tr>
 </tbody>
 </table>
-<p><code><a href="reference/as_experience.html">as_experience()</a></code> validates the schema and coerces date columns; <code><a href="reference/build_triangle.html">build_triangle()</a></code> then aggregates to the canonical cohort × dev structure with cumulative columns and derived ratios.</p>
+<p><code><a href="reference/build_triangle.html">build_triangle()</a></code> validates the schema, coerces date columns, and aggregates to the canonical cohort × dev structure with cumulative columns and derived ratios.</p>
 <div class="section level3">
 <h3 id="column-convention">Column convention<a class="anchor" aria-label="anchor" href="#column-convention"></a>
 </h3>
@@ -281,10 +281,9 @@
 <span><span class="co"># (per-coverage dev curve calibrated to a real portfolio's broad shape;</span></span>
 <span><span class="co"># cell-level values and cohort patterns are randomly generated)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
-<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/as_experience.html">as_experience</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Build the canonical cohort × dev structure</span></span>
-<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span><span class="op">)</span></span>
+<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>              <span class="co"># cohort trajectories</span></span>
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>     <span class="co"># cell heatmap</span></span>

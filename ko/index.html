@@ -173,7 +173,7 @@
 </tr>
 </tbody>
 </table>
-<p><code><a href="reference/as_experience.html">as_experience()</a></code> 는 스키마를 검증하고 날짜 컬럼을 코어션한다. 이어서 <code><a href="reference/build_triangle.html">build_triangle()</a></code> 은 표준 코호트 × 경과 기간 구조로 집계하며, 누적 컬럼과 파생 비율을 함께 산출한다.</p>
+<p><code><a href="reference/build_triangle.html">build_triangle()</a></code> 은 스키마를 검증하고 날짜 컬럼을 코어션한 뒤 표준 코호트 × 경과 기간 구조로 집계하며, 누적 컬럼과 파생 비율을 함께 산출한다.</p>
 <div class="section level3">
 <h3 id="컬럼-컨벤션">컬럼 컨벤션<a class="anchor" aria-label="anchor" href="#%EC%BB%AC%EB%9F%BC-%EC%BB%A8%EB%B2%A4%EC%85%98"></a>
 </h3>
@@ -236,10 +236,9 @@
 <span><span class="co"># 경과에 따른 곡선 형태는 실제 포트폴리오의 전체 형태에 맞춰 보정</span></span>
 <span><span class="co"># 셀 값과 코호트 패턴은 무작위 생성</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
-<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/as_experience.html">as_experience</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 표준 코호트 × dev 구조 구축</span></span>
-<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">cv_nm</span><span class="op">)</span></span>
+<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>              <span class="co"># cohort trajectories</span></span>
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>     <span class="co"># cell heatmap</span></span>

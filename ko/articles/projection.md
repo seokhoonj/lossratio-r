@@ -49,8 +49,7 @@ When to use:
 
 library(lossratio)
 data(experience)
-exp <- as_experience(experience)
-tri <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
+tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
 
 lr_sa <- fit_lr(tri, method = "sa")        # default
 plot(lr_sa, type = "lr")

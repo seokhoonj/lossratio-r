@@ -23,17 +23,15 @@ actual exceeded expected) and negative values flag over-projection.
 
 library(lossratio)
 data(experience)
-exp     <- as_experience(experience)
-tri_sur <- build_triangle(exp[coverage == "SUR"], coverage)
+tri_sur <- build_triangle(experience[coverage == "SUR"], coverage)
 
 bt <- backtest(tri_sur, holdout = 6L)
 print(bt)
 #> <Backtest>
-#>   fit_fn      : fit_lr
-#>   loss_var    : lr
-#>   holdout     : 6 calendar diagonals
-#>   held-out    : 159 cells
-#>   A/E Error   : mean 0.21% / median -0.00%
+#>   fit_fn   : fit_lr
+#>   loss_var : lr
+#>   holdout  : 6 diagonals (159 cells)
+#>   A/E Error: mean 0.21% / median -0.00%
 ```
 
 The returned object is a `"Backtest"` list with these key slots:
@@ -232,11 +230,10 @@ bt_premium  <- backtest(tri_sur, holdout = 6L, loss_var = "premium")
 
 print(bt_sa)
 #> <Backtest>
-#>   fit_fn      : fit_lr
-#>   loss_var    : lr
-#>   holdout     : 6 calendar diagonals
-#>   held-out    : 159 cells
-#>   A/E Error   : mean 0.21% / median -0.00%
+#>   fit_fn   : fit_lr
+#>   loss_var : lr
+#>   holdout  : 6 diagonals (159 cells)
+#>   A/E Error: mean 0.21% / median -0.00%
 ```
 
 Backtesting `loss` weights the result toward whichever cohorts happen to

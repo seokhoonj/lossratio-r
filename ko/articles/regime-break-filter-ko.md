@@ -56,8 +56,7 @@ post-break 통계량이 안정적이기 때문이다.
 
 library(lossratio)
 data(experience)
-exp     <- as_experience(experience)
-tri_sur <- build_triangle(exp[coverage == "SUR"], coverage)
+tri_sur <- build_triangle(experience[coverage == "SUR"], coverage)
 
 # 단일 break date — 24.04 이후 코호트만 사용
 fit_lr(tri_sur, method = "sa", recent = 18L,
@@ -132,7 +131,7 @@ hybrid 패널은 SA 모드가 적용하는 dev-축 split — ED 쪽은 cohort cu
 
 ``` r
 
-tri_sur <- build_triangle(exp[coverage == "SUR"], coverage)
+tri_sur <- build_triangle(experience[coverage == "SUR"], coverage)
 reg     <- detect_regime(tri_sur)
 
 bt_full   <- backtest(tri_sur, holdout = 6L)
@@ -180,7 +179,7 @@ recent 는 최근 평행사변형 밴드, hybrid 는 좌하단의 post-break 사
 
 groups <- unique(exp$coverage)
 fits <- lapply(groups, function(g) {
-  tri_g <- build_triangle(exp[coverage == g], coverage)
+  tri_g <- build_triangle(experience[coverage == g], coverage)
   reg_g <- detect_regime(tri_g)
   fit_lr(tri_g, method = "sa", recent = 18L,
          regime_break = reg_g)

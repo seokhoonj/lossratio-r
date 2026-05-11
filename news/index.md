@@ -2,6 +2,15 @@
 
 ## lossratio (development version)
 
+- **BREAKING** — `as_experience()`, `check_experience()`, and
+  `is_experience()` removed along with the `Experience` S3 class.
+  [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
+  already validates required columns, coerces dates and numerics, and
+  aggregates inline, so the explicit coercion step is no longer needed
+  (and the class itself was never required by any downstream function).
+  Migration: replace
+  `exp <- as_experience(df); build_triangle(exp, ...)` with
+  `build_triangle(df, ...)`. Matches Python sibling 0.0.1.dev7.
 - New
   [`fit_intensity()`](https://seokhoonj.github.io/lossratio/reference/fit_intensity.md) +
   `IntensityFit` S3 class (R/intensity.R) — factor-level ED diagnostic,
@@ -26,11 +35,6 @@
 
 ### Core API
 
-- Experience class:
-  [`as_experience()`](https://seokhoonj.github.io/lossratio/reference/as_experience.md),
-  [`is_experience()`](https://seokhoonj.github.io/lossratio/reference/is_experience.md),
-  [`check_experience()`](https://seokhoonj.github.io/lossratio/reference/check_experience.md),
-  [`add_experience_period()`](https://seokhoonj.github.io/lossratio/reference/add_experience_period.md).
 - Aggregation:
   [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
   (cohort × dev),
@@ -38,6 +42,8 @@
   (calendar period),
   [`build_total()`](https://seokhoonj.github.io/lossratio/reference/build_total.md)
   (portfolio total).
+  [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
+  validates schema and coerces required columns inline.
 - Link table:
   [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md)
   returns a `Link` object covering both single-variable (ATA-style) and

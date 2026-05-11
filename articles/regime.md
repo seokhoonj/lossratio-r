@@ -46,8 +46,7 @@ sequence.
 library(lossratio)
 
 data(experience)
-exp     <- as_experience(experience)
-tri_sur <- build_triangle(exp[coverage == "SUR"], coverage)
+tri_sur <- build_triangle(experience[coverage == "SUR"], coverage)
 ```
 
 ## Detecting regimes

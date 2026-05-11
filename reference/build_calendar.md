@@ -45,6 +45,7 @@ build_calendar(
   df,
   group_var,
   calendar_var = "cy_m",
+  grain = "auto",
   loss_var = "loss_incr",
   premium_var = "premium_incr",
   period_from = NULL,
@@ -58,7 +59,9 @@ build_calendar(
 - df:
 
   A data.frame containing experience data with per-period loss and
-  premium columns.
+  premium columns plus a `calendar_var` Date column (or any input that
+  the internal Date coercion accepts: Date, POSIXt, integer `yyyy` /
+  `yyyymm` / `yyyymmdd`, ISO string).
 
 - group_var:
 
@@ -66,20 +69,17 @@ build_calendar(
 
 - calendar_var:
 
-  A single calendar-like period variable defining the summary axis.
-  Typical examples include:
+  A single column defining the calendar-like period axis. Default
+  `"cy_m"`. May also be an underwriting axis (`"uy_m"` etc.) when a
+  single underwriting-period axis is to be summarised as a time series
+  rather than as a development structure.
 
-  - `cy_m` (calendar year-month),
+- grain:
 
-  - `cy_q` (calendar year-quarter),
-
-  - `cy_s` (calendar year-half),
-
-  - `cy_a` (calendar year),
-
-  - `uy_m`, `uy_q`, `uy_s`, `uy_a` when a single underwriting-period
-    axis is to be summarised as a time series rather than as a
-    development structure.
+  One of `"auto"` (default), `"M"`, `"Q"`, `"S"`, `"A"`. `"auto"` infers
+  the grain from the `calendar_var` value spacing. Explicit values must
+  be at least as coarse as the input grain; the input is binned
+  (floored) to that grain before aggregation.
 
 - loss_var:
 
@@ -106,9 +106,9 @@ build_calendar(
 - fill_gaps:
 
   Logical; if `TRUE`, zero-fill missing `(group_var, calendar_var)`
-  cells so every group has a consecutive calendar sequence (monthly,
-  quarterly, etc. based on `calendar_var`). Default `FALSE`, which
-  raises an error when gaps are detected.
+  cells so every group has a consecutive calendar sequence at the
+  resolved grain. Default `FALSE`, which raises an error when gaps are
+  detected.
 
 ## Value
 

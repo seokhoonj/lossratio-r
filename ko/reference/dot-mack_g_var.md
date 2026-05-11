@@ -1,7 +1,7 @@
 # Compute ED intensity variance for each development link
 
 Internal helper computing \\\mathrm{Var}(\hat{g}\_k) = \sigma^2_k /
-W_k\\ where \\W_k = \sum_i C^P\_{i,k}^{2 - \alpha}\\.
+W_k\\ where \\W_k = \sum_i (C^P\_{i,k})^{2 - \alpha}\\.
 
 Used by
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md)

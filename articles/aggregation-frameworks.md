@@ -30,9 +30,8 @@ Conceptually:
 
 library(lossratio)
 data(experience)
-exp <- as_experience(experience)
 
-tri <- build_triangle(exp, group_var = coverage)
+tri <- build_triangle(experience, group_var = coverage)
 head(tri)
 #>    coverage n_obs     cohort   dev     loss loss_incr   premium premium_incr
 #>      <char> <int>     <Date> <int>    <num>     <num>     <num>        <num>
@@ -77,8 +76,7 @@ plot(tri)              # one trajectory per cohort, faceted by group
 # so use quarterly cohort and dev to bring each panel down to ~10 x 10
 # cells. This fits the documentation's display size; in practice you
 # can keep monthly resolution by enlarging the plot.
-tri_q <- build_triangle(exp, group_var = coverage,
-                        cohort_var = "uy_q", dev_var = "dev_q")
+tri_q <- build_triangle(experience, group_var = coverage, grain = "Q")
 plot_triangle(tri_q)   # cohort × dev heatmap of lr
 ```
 
@@ -98,7 +96,7 @@ Use `Triangle` as input to: -
 
 ``` r
 
-cal <- build_calendar(exp, group_var = coverage, calendar_var = "cy_m")
+cal <- build_calendar(experience, group_var = coverage, calendar_var = "cy_m")
 head(cal)
 #>    coverage   calendar   dev      loss loss_incr   premium premium_incr
 #>      <char>     <Date> <int>     <num>     <num>     <num>        <num>
@@ -157,7 +155,7 @@ plot(cal, x_by = "dev")         # x axis: sequential index
 ``` r
 
 tot <- build_total(
-  exp,
+  experience,
   group_var = coverage,
   cohort_var = "uy_m",
   period_from = "2023-04-01",
