@@ -35,6 +35,8 @@ docs/
 # dev / local workspace
 dev/
 CLAUDE.md
+ARCHITECTURE.md
+README.ko.new.md
 .claude/
 *_files/
 *.html
