@@ -428,7 +428,7 @@ head(gaps)
 fit_ata(tri, loss_var = "loss", alpha = 1, recent = 12)  # 최근 12개 대각선
 #> <ATAFit>
 #> alpha       : 1 
-#> sigma_method: min_last2 
+#> sigma_method: locf 
 #> recent      : 12 
 #> regime_break: none 
 #> use_maturity: FALSE 
@@ -456,7 +456,7 @@ fit_lr(tri, recent = 12)
 #> delta_method  : simple 
 #> conf_level    : 0.95 
 #> ci_type       : analytical  
-#> sigma_method  : min_last2 
+#> sigma_method  : locf 
 #> recent        : 12 
 #> regime_break  : none 
 #> maturity[SUR] : 25
