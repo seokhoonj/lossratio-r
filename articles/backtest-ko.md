@@ -31,13 +31,13 @@ bt <- backtest(tri_sur, holdout = 6L)
 print(bt)
 #> <Backtest>
 #>   fit_fn   : fit_lr
-#>   loss_var : lr
+#>   metric : lr
 #>   holdout  : 6 diagonals (159 cells)
 #>   A/E Error: mean 0.21% / median -0.00%
 ```
 
 기본 적합 함수는 단계 적응형(stage-adaptive, SA) 손해율 추정
-(`fit_lr(method = "sa")`) 이며, 기본 비교 컬럼은 `loss_var = "lr"` 이다
+(`fit_lr(method = "sa")`) 이며, 기본 비교 컬럼은 `metric = "lr"` 이다
 (누적 손해율). 반환되는 객체는 `"Backtest"` 리스트이며, 주요 슬롯은
 다음과 같다.
 
@@ -188,7 +188,7 @@ plot_triangle(bt)         # hold-out 영역에 대한 발산형 팔레트 히트
 
 ## 7. 적합 함수 선택
 
-기본값인 `fit_fn = fit_lr` (method = “sa”, loss_var = “lr”) 은 손해율
+기본값인 `fit_fn = fit_lr` (method = “sa”, metric = “lr”) 은 손해율
 관점의 진단을 직접 제공한다. `fit_lr` 의 method 와 `loss_var` 를 바꾸면
 다양한 변형을 백테스트할 수 있다.
 
@@ -215,14 +215,15 @@ plot_triangle(bt)         # hold-out 영역에 대한 발산형 팔레트 히트
 ``` r
 
 bt_sa_lr    <- backtest(tri_sur, holdout = 6L)                     # default
-bt_sa_loss  <- backtest(tri_sur, holdout = 6L, loss_var = "loss")
+bt_cl_loss  <- backtest(tri_sur, holdout = 6L,
+                        fit_fn = fit_cl, metric = "loss")
 bt_ed_lr    <- backtest(tri_sur, holdout = 6L, method = "ed")
 bt_cl_lr    <- backtest(tri_sur, holdout = 6L, method = "cl")
 
 print(bt_sa_lr)
 #> <Backtest>
 #>   fit_fn   : fit_lr
-#>   loss_var : lr
+#>   metric : lr
 #>   holdout  : 6 diagonals (159 cells)
 #>   A/E Error: mean 0.21% / median -0.00%
 ```

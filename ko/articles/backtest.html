@@ -123,7 +123,7 @@ actual exceeded expected) and negative values flag over-projection.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Backtest&gt;</span></span>
 <span><span class="co">#&gt;   fit_fn   : fit_lr</span></span>
-<span><span class="co">#&gt;   loss_var : lr</span></span>
+<span><span class="co">#&gt;   metric : lr</span></span>
 <span><span class="co">#&gt;   holdout  : 6 diagonals (159 cells)</span></span>
 <span><span class="co">#&gt;   A/E Error: mean 0.21% / median -0.00%</span></span></code></pre></div>
 <p>The returned object is a <code>"Backtest"</code> list with these key
@@ -269,7 +269,7 @@ history.</p>
 <h2 id="choosing-the-fit-function">Choosing the fit function<a class="anchor" aria-label="anchor" href="#choosing-the-fit-function"></a>
 </h2>
 <p>The default fitter is <code>fit_lr</code> with
-<code>method = "sa"</code> and <code>loss_var = "lr"</code>. The loss
+<code>method = "sa"</code> and <code>metric = "lr"</code>. The loss
 ratio is unitless and dimension-free across cohorts of very different
 volume, so <code>ae_err_mean</code> and <code>ae_err_med</code> carry a
 consistent meaning across the triangle.</p>
@@ -321,19 +321,21 @@ ladder afterwards; <code>"ed"</code> is purely exposure-driven;
 <span><span class="va">bt_ed</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span></span>
 <span><span class="va">bt_cl</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">bt_loss</span>     <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
-<span><span class="va">bt_premium</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
+<span><span class="va">bt_loss</span>     <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>,</span>
+<span>                        fit_fn <span class="op">=</span> <span class="va">fit_cl</span>, metric <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
+<span><span class="va">bt_premium</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>,</span>
+<span>                        fit_fn <span class="op">=</span> <span class="va">fit_cl</span>, metric <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt_sa</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Backtest&gt;</span></span>
 <span><span class="co">#&gt;   fit_fn   : fit_lr</span></span>
-<span><span class="co">#&gt;   loss_var : lr</span></span>
+<span><span class="co">#&gt;   metric : lr</span></span>
 <span><span class="co">#&gt;   holdout  : 6 diagonals (159 cells)</span></span>
 <span><span class="co">#&gt;   A/E Error: mean 0.21% / median -0.00%</span></span></code></pre></div>
-<p>Backtesting <code>loss</code> weights the result toward whichever
-cohorts happen to be the largest at the held-out diagonals, which is
-useful when monetary impact matters more than a normalized
-comparison.</p>
+<p>For monetary impact (loss or premium) backtesting we use
+<code>fit_cl</code> directly — <code>fit_lr</code> / <code>fit_ed</code>
+are ratio-fits and only support <code>metric = "lr"</code> (use
+<code>fit_cl</code> for non-ratio columns).</p>
 <p>If you only need to project a single triangle column (e.g., raw
 cumulative loss without forming a ratio), <code>fit_fn = fit_cl</code>
 is also supported.</p>

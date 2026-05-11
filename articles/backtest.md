@@ -29,7 +29,7 @@ bt <- backtest(tri_sur, holdout = 6L)
 print(bt)
 #> <Backtest>
 #>   fit_fn   : fit_lr
-#>   loss_var : lr
+#>   metric : lr
 #>   holdout  : 6 diagonals (159 cells)
 #>   A/E Error: mean 0.21% / median -0.00%
 ```
@@ -188,10 +188,10 @@ has at least 24–30 diagonals of history.
 
 ## Choosing the fit function
 
-The default fitter is `fit_lr` with `method = "sa"` and
-`loss_var = "lr"`. The loss ratio is unitless and dimension-free across
-cohorts of very different volume, so `ae_err_mean` and `ae_err_med`
-carry a consistent meaning across the triangle.
+The default fitter is `fit_lr` with `method = "sa"` and `metric = "lr"`.
+The loss ratio is unitless and dimension-free across cohorts of very
+different volume, so `ae_err_mean` and `ae_err_med` carry a consistent
+meaning across the triangle.
 
 > **A note on `loss_var`.** `backtest(loss_var = ...)` is the **score
 > column** — the column on which actual vs. predicted are compared
@@ -225,20 +225,22 @@ bt_sa       <- backtest(tri_sur, holdout = 6L, method = "sa")  # default
 bt_ed       <- backtest(tri_sur, holdout = 6L, method = "ed")
 bt_cl       <- backtest(tri_sur, holdout = 6L, method = "cl")
 
-bt_loss     <- backtest(tri_sur, holdout = 6L, loss_var = "loss")
-bt_premium  <- backtest(tri_sur, holdout = 6L, loss_var = "premium")
+bt_loss     <- backtest(tri_sur, holdout = 6L,
+                        fit_fn = fit_cl, metric = "loss")
+bt_premium  <- backtest(tri_sur, holdout = 6L,
+                        fit_fn = fit_cl, metric = "premium")
 
 print(bt_sa)
 #> <Backtest>
 #>   fit_fn   : fit_lr
-#>   loss_var : lr
+#>   metric : lr
 #>   holdout  : 6 diagonals (159 cells)
 #>   A/E Error: mean 0.21% / median -0.00%
 ```
 
-Backtesting `loss` weights the result toward whichever cohorts happen to
-be the largest at the held-out diagonals, which is useful when monetary
-impact matters more than a normalized comparison.
+For monetary impact (loss or premium) backtesting we use `fit_cl`
+directly — `fit_lr` / `fit_ed` are ratio-fits and only support
+`metric = "lr"` (use `fit_cl` for non-ratio columns).
 
 If you only need to project a single triangle column (e.g., raw
 cumulative loss without forming a ratio), `fit_fn = fit_cl` is also
