@@ -99,7 +99,7 @@ plot_triangle(tri_sur, type = "usage", recent = 12L,
 fit data, red = held out (last 6 calendar diagonals), light grey =
 excluded by the filter, white = future. Vertical dashed line marks the
 maturity switch k^\*; horizontal dashed line marks the regime break
-cohort.](articles/figs/regime_break_data_usage.png)
+cohort.](articles/figs/triangle_usage_panels.png)
 
 Cells used by each filter configuration on the SUR triangle. Blue = fit
 data, red = held out (last 6 calendar diagonals), light grey = excluded
