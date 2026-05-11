@@ -1,8 +1,8 @@
 # Apply regime-break (cohort) filter to a triangle-shaped data.table
 
 Drops rows where `coh_var < break_date`. Optionally restrict the filter
-to rows with `dev_var <= dev_max` (apply only to ED-phase cells); rows
-with `dev_var > dev_max` are kept regardless of cohort.
+to rows with `dev_var < dev_split` (the ED region of an SA fit); rows
+with `dev_var >= dev_split` (CL region) are kept regardless of cohort.
 
 ## Usage
 
@@ -13,7 +13,7 @@ with `dev_var > dev_max` are kept regardless of cohort.
   group_var = character(0),
   cohort_var,
   dev_var,
-  dev_max = NULL
+  dev_split = NULL
 )
 ```
 
@@ -47,11 +47,13 @@ with `dev_var > dev_max` are kept regardless of cohort.
 
   Single column name for the development variable.
 
-- dev_max:
+- dev_split:
 
-  Optional numeric scalar. When supplied, the cohort filter is only
-  applied to rows where `dev_var <= dev_max`; rows with
-  `dev_var > dev_max` are kept regardless of cohort.
+  Optional numeric scalar — the maturity target dev (= `ata_to`,
+  equivalently the first CL-region dev). When supplied, the cohort
+  filter is only applied to rows where `dev_var < dev_split` (ED
+  region); rows with `dev_var >= dev_split` (CL region) are kept
+  regardless of cohort.
 
 ## Value
 

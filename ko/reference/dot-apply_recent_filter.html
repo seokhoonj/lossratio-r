@@ -86,7 +86,7 @@ to the group-wise long-form condition
 <span>  group_var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  <span class="va">cohort_var</span>,</span>
 <span>  <span class="va">dev_var</span>,</span>
-<span>  dev_min <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  dev_split <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -116,11 +116,12 @@ is returned unchanged.</p></dd>
 for <code>Triangle</code> objects, or <code>ata_from</code> for <code>ATA</code>/<code>ED</code> objects).</p></dd>
 
 
-<dt id="arg-dev-min">dev_min<a class="anchor" aria-label="anchor" href="#arg-dev-min"></a></dt>
-<dd><p>Optional numeric scalar. When supplied, the recent filter
-is applied only to rows where <code>dev_var &gt; dev_min</code>; rows with
-<code>dev_var &lt;= dev_min</code> are kept unconditionally (early-dev cells in the
-ED phase of stage-adaptive fits).</p></dd>
+<dt id="arg-dev-split">dev_split<a class="anchor" aria-label="anchor" href="#arg-dev-split"></a></dt>
+<dd><p>Optional numeric scalar — the maturity target dev
+(= <code>ata_to</code>, equivalently the first CL-region dev). When supplied,
+the recent filter is applied only to rows where <code>dev_var &gt;= dev_split</code>
+(CL region); rows with <code>dev_var &lt; dev_split</code> (ED region) are kept
+unconditionally.</p></dd>
 
 </dl></div>
     <div class="section level2">

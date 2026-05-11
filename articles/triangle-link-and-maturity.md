@@ -461,7 +461,7 @@ fit_lr(tri, recent = 12)
 #> sigma_method  : min_last2 
 #> recent        : 12 
 #> regime_break  : none 
-#> maturity[SUR] : 24
+#> maturity[SUR] : 25
 #> groups        : coverage 
 #> periods       : 36
 ```

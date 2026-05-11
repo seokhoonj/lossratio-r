@@ -2,9 +2,9 @@
 
 Internal helper that classifies every `(group, cohort, dev)` cell of a
 `Triangle` into one of four buckets given a fit-data filter
-configuration: `"fit_data"`, `"held_out"`, `"excluded"`, or `"future"`.
+configuration: `"used"`, `"holdout"`, `"unused"`, or `"future"`.
 
-Mask precedence: `held_out` \> `fit_data` \> `excluded` \> `future`.
+Mask precedence: `holdout` \> `used` \> `unused` \> `future`.
 
 ## Usage
 
@@ -37,20 +37,22 @@ Mask precedence: `held_out` \> `fit_data` \> `excluded` \> `future`.
 - holdout:
 
   Optional positive integer. When supplied, the last `holdout` calendar
-  diagonals are flagged `"held_out"`. The `recent` filter is then
+  diagonals are flagged `"holdout"`. The `recent` filter is then
   evaluated against the post-holdout boundary so the recent wedge sits
-  *before* the held_out wedge (no overlap), matching
+  *before* the holdout wedge (no overlap), matching
   [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   semantics — `fit_fn(masked, recent = N, ...)` operates on the masked
   triangle whose own max_cal is `original - holdout`.
 
 - mat_k:
 
-  Optional integer. When both `recent` and `regime_break` are provided,
-  the hybrid mask uses `mat_k` as the maturity switch: cells with
-  `dev <= mat_k` apply the cohort cut, cells with `dev > mat_k` apply
-  the calendar-diagonal cut. When `NULL`, the hybrid logic falls back to
-  applying both filters jointly (cohort cut AND recent cut).
+  Optional integer. The maturity switch as a *target* development index
+  (= `ata_to` of the first stable link). When both `recent` and
+  `regime_break` are provided, the hybrid mask uses `mat_k` as the
+  boundary: cells with `dev < mat_k` apply the cohort cut, cells with
+  `dev >= mat_k` apply the calendar-diagonal cut. When `NULL`, the
+  hybrid logic falls back to applying both filters jointly (cohort cut
+  AND recent cut).
 
 ## Value
 

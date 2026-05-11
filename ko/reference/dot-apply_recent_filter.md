@@ -19,7 +19,7 @@ the group-wise long-form condition
   group_var = character(0),
   cohort_var,
   dev_var,
-  dev_min = NULL
+  dev_split = NULL
 )
 ```
 
@@ -47,12 +47,13 @@ the group-wise long-form condition
   Single column name for the development variable (e.g. `dev` for
   `Triangle` objects, or `ata_from` for `ATA`/`ED` objects).
 
-- dev_min:
+- dev_split:
 
-  Optional numeric scalar. When supplied, the recent filter is applied
-  only to rows where `dev_var > dev_min`; rows with `dev_var <= dev_min`
-  are kept unconditionally (early-dev cells in the ED phase of
-  stage-adaptive fits).
+  Optional numeric scalar — the maturity target dev (= `ata_to`,
+  equivalently the first CL-region dev). When supplied, the recent
+  filter is applied only to rows where `dev_var >= dev_split` (CL
+  region); rows with `dev_var < dev_split` (ED region) are kept
+  unconditionally.
 
 ## Value
 
