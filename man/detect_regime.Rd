@@ -10,6 +10,7 @@
 detect_regime(
   x,
   target = "lr",
+  by = NULL,
   K = 12L,
   method = c("e_divisive", "pelt", "hclust"),
   n_regimes = NULL,
@@ -31,6 +32,12 @@ Also used by S3 \code{print()} method on \code{Regime} objects.}
 
 \item{target}{Column name of the trajectory variable. Default
 is \code{"lr"} (cumulative loss ratio).}
+
+\item{by}{Optional grouping column(s) for per-combination detection.
+\code{NULL} (default) uses the Triangle's \code{attr(x, "groups")} (backward-
+compat). \code{character(0)} pools all cohorts into a single sequence
+(group-agnostic detection). A character vector overrides the grouping
+columns explicitly — must be a subset of \code{names(x)}.}
 
 \item{K}{Integer. Common development-period window used to build the
 cohort feature matrix. Cohorts with fewer than \code{K} observed
@@ -58,24 +65,29 @@ An object of class \code{"Regime"}. For single-group input:
 \item{\code{method}}{Detection method used.}
 \item{\code{target}, \code{K}}{Trajectory variable and window.}
 \item{\code{cohort}}{Period variable from \code{x}.}
-\item{\code{labels}}{\code{data.table} with one row per analysed cohort:
-period, regime id, regime label.}
-\item{\code{breakpoints}}{\code{Date} vector of breakpoint dates (each is
-the first cohort of a new regime; excludes the initial regime
-start).}
-\item{\code{n_regimes}}{Number of regimes detected (scalar integer).}
-\item{\code{trajectory}}{Cohort feature matrix (rows = cohorts,
-columns = development periods \verb{1, ..., K}).}
-\item{\code{pca}}{\code{prcomp} object fitted to the feature matrix.}
+\item{\code{labels}}{\code{data.table} of one row per analysed cohort:
+\verb{[by..., cohort, regime, regime_id]}. Group columns are prepended
+when \code{by} resolves to a non-empty vector.}
+\item{\code{breakpoints}}{\code{data.table} of detected breakpoints with
+columns \verb{[by..., breakpoint, regime_id_from, regime_id_to, pre_value, post_value, magnitude]}. \code{regime_id_from} /
+\code{regime_id_to} identify the two regimes on either side of the
+break (matches \verb{$labels$regime_id}). \code{pre_value} / \code{post_value}
+are the mean \code{target} over the cohort × dev trajectory windows
+in each regime; \verb{magnitude = |post_value - pre_value|}. Empty
+(zero rows) when no break is detected.}
+\item{\code{n_regimes}}{Number of regimes detected. Scalar integer for
+single-combo detection; named integer vector (keyed by combo) for
+multi-combo.}
+\item{\code{trajectory}}{Cohort × dev feature matrix used for detection.
+Single matrix when single combo; named list of matrices for
+multi-combo.}
+\item{\code{pca}}{\code{prcomp} object (single combo) or named list of
+\code{prcomp} objects (multi-combo).}
 \item{\code{dropped}}{Cohorts excluded due to the \code{K} window
-constraint.}
+constraint. Vector (single) / named list (multi).}
+\item{\code{multi_group}}{Logical flag; \code{TRUE} when detection ran over
+multiple group combos.}
 }
-For multi-group input the same fields are returned but with
-per-group containers: \verb{$breakpoints} is a \code{data.table} with columns
-\verb{\{<group>, breakpoint\}}; \verb{$labels} gains a \verb{<group>} column;
-\verb{$n_regimes} is a named integer vector; \verb{$trajectory}, \verb{$pca}, and
-\verb{$dropped} are named lists keyed by group value. The \verb{$multi_group}
-logical flag distinguishes the two layouts.
 }
 \description{
 Detect structural change points in the sequence of cohort-level

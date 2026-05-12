@@ -118,8 +118,9 @@ test_that("fit_ed with Regime input extracts last breakpoint", {
   reg <- detect_regime(tri)
   ed <- build_link(tri, target = "loss", exposure = "premium")
   fit_reg <- fit_ed(tri, target = "loss", exposure = "premium", regime_break = reg)
-  if (length(reg$breakpoints) > 0L) {
-    expect_equal(fit_reg$regime_break, max(reg$breakpoints))
+  if (nrow(reg$breakpoints) > 0L) {
+    expect_equal(fit_reg$regime_break,
+                 max(reg$breakpoints[["breakpoint"]]))
   }
 })
 

@@ -323,7 +323,7 @@ fit_ata <- function(x,
   # break date so estimation uses only the post-break regime.
   if (!is.null(regime_break)) {
     if (inherits(regime_break, "Regime")) {
-      regime_break <- max(regime_break$breakpoints)
+      regime_break <- max(regime_break$breakpoints[["breakpoint"]])
     } else {
       regime_break <- max(as.Date(regime_break))
     }

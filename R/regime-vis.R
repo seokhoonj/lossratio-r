@@ -78,9 +78,10 @@ plot.Regime <- function(x,
     x$method, x$dev, x$K, nrow(df), ve[1L] * 100, ve[2L] * 100
   )
 
-  caption <- if (length(x$breakpoints)) {
+  caption <- if (nrow(x$breakpoints)) {
     sprintf("breakpoint(s): %s",
-            paste(format(x$breakpoints, "%y.%m"), collapse = ", "))
+            paste(format(x$breakpoints[["breakpoint"]], "%y.%m"),
+                  collapse = ", "))
   } else {
     "no breakpoint detected"
   }

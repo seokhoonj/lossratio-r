@@ -109,7 +109,7 @@ fit_intensity <- function(x,
   # 1) regime-break filter ----------------------------------------------
   if (!is.null(regime_break)) {
     if (inherits(regime_break, "Regime")) {
-      regime_break <- max(regime_break$breakpoints)
+      regime_break <- max(regime_break$breakpoints[["breakpoint"]])
     } else {
       regime_break <- max(as.Date(regime_break))
     }

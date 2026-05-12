@@ -132,7 +132,8 @@ test_that("fit_lr with Regime extracts last breakpoint", {
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   reg <- detect_regime(tri)
   fit_reg <- fit_lr(tri, method = "sa", loss_regime_break = reg, recent = 18L)
-  if (length(reg$breakpoints) > 0L) {
-    expect_equal(fit_reg$loss_regime_break, max(reg$breakpoints))
+  if (nrow(reg$breakpoints) > 0L) {
+    expect_equal(fit_reg$loss_regime_break,
+                 max(reg$breakpoints[["breakpoint"]]))
   }
 })

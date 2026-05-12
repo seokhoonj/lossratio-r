@@ -175,7 +175,8 @@ test_that("fit_ata with Regime input extracts last breakpoint", {
   reg <- detect_regime(tri)
   ata <- build_link(tri, target = "loss")
   fit_reg <- fit_ata(tri, target = "loss", regime_break = reg)
-  if (length(reg$breakpoints) > 0L) {
-    expect_equal(fit_reg$regime_break, max(reg$breakpoints))
+  if (nrow(reg$breakpoints) > 0L) {
+    expect_equal(fit_reg$regime_break,
+                 max(reg$breakpoints[["breakpoint"]]))
   }
 })

@@ -42,6 +42,11 @@
 #'   `summary()` method.
 #' @param target Column name of the trajectory variable. Default
 #'   is `"lr"` (cumulative loss ratio).
+#' @param by Optional grouping column(s) for per-combination detection.
+#'   `NULL` (default) uses the Triangle's `attr(x, "groups")` (backward-
+#'   compat). `character(0)` pools all cohorts into a single sequence
+#'   (group-agnostic detection). A character vector overrides the grouping
+#'   columns explicitly — must be a subset of `names(x)`.
 #' @param K Integer. Common development-period window used to build the
 #'   cohort feature matrix. Cohorts with fewer than `K` observed
 #'   periods are dropped. Default is `12`.
@@ -59,24 +64,30 @@
 #'     \item{`method`}{Detection method used.}
 #'     \item{`target`, `K`}{Trajectory variable and window.}
 #'     \item{`cohort`}{Period variable from `x`.}
-#'     \item{`labels`}{`data.table` with one row per analysed cohort:
-#'       period, regime id, regime label.}
-#'     \item{`breakpoints`}{`Date` vector of breakpoint dates (each is
-#'       the first cohort of a new regime; excludes the initial regime
-#'       start).}
-#'     \item{`n_regimes`}{Number of regimes detected (scalar integer).}
-#'     \item{`trajectory`}{Cohort feature matrix (rows = cohorts,
-#'       columns = development periods `1, ..., K`).}
-#'     \item{`pca`}{`prcomp` object fitted to the feature matrix.}
+#'     \item{`labels`}{`data.table` of one row per analysed cohort:
+#'       `[by..., cohort, regime, regime_id]`. Group columns are prepended
+#'       when `by` resolves to a non-empty vector.}
+#'     \item{`breakpoints`}{`data.table` of detected breakpoints with
+#'       columns `[by..., breakpoint, regime_id_from, regime_id_to,
+#'       pre_value, post_value, magnitude]`. `regime_id_from` /
+#'       `regime_id_to` identify the two regimes on either side of the
+#'       break (matches `$labels$regime_id`). `pre_value` / `post_value`
+#'       are the mean `target` over the cohort × dev trajectory windows
+#'       in each regime; `magnitude = |post_value - pre_value|`. Empty
+#'       (zero rows) when no break is detected.}
+#'     \item{`n_regimes`}{Number of regimes detected. Scalar integer for
+#'       single-combo detection; named integer vector (keyed by combo) for
+#'       multi-combo.}
+#'     \item{`trajectory`}{Cohort × dev feature matrix used for detection.
+#'       Single matrix when single combo; named list of matrices for
+#'       multi-combo.}
+#'     \item{`pca`}{`prcomp` object (single combo) or named list of
+#'       `prcomp` objects (multi-combo).}
 #'     \item{`dropped`}{Cohorts excluded due to the `K` window
-#'       constraint.}
+#'       constraint. Vector (single) / named list (multi).}
+#'     \item{`multi_group`}{Logical flag; `TRUE` when detection ran over
+#'       multiple group combos.}
 #'   }
-#'   For multi-group input the same fields are returned but with
-#'   per-group containers: `$breakpoints` is a `data.table` with columns
-#'   `{<group>, breakpoint}`; `$labels` gains a `<group>` column;
-#'   `$n_regimes` is a named integer vector; `$trajectory`, `$pca`, and
-#'   `$dropped` are named lists keyed by group value. The `$multi_group`
-#'   logical flag distinguishes the two layouts.
 #'
 #' @seealso [plot.Regime()], [build_triangle()]
 #'
@@ -118,6 +129,7 @@
 #' @export
 detect_regime <- function(x,
                           target    = "lr",
+                          by        = NULL,
                           K         = 12L,
                           method    = c("e_divisive", "pelt", "hclust"),
                           n_regimes = NULL,
@@ -130,7 +142,12 @@ detect_regime <- function(x,
 
   coh <- attr(x, "cohort")
   dev <- attr(x, "dev")
-  grp <- attr(x, "groups")
+
+  # resolve grouping: `by = NULL` falls back to the Triangle's `groups`
+  # attribute (backward compat); `by = character(0)` forces pooled
+  # detection (all cohorts in a single sequence regardless of group).
+  grp <- if (is.null(by)) attr(x, "groups") else by
+  if (is.null(grp)) grp <- character(0)
 
   if (length(coh) != 1L)
     stop("`x` must have exactly one `cohort`.", call. = FALSE)
@@ -143,56 +160,44 @@ detect_regime <- function(x,
     stop(sprintf("`target` = '%s' not found in `x`.", target),
          call. = FALSE)
 
+  missing_grp <- setdiff(grp, names(d))
+  if (length(missing_grp))
+    stop(sprintf("`by` columns not found in `x`: %s.",
+                 paste(sprintf("'%s'", missing_grp), collapse = ", ")),
+         call. = FALSE)
+
   K <- as.integer(K)
   if (is.na(K) || K < 2L)
     stop("`K` must be an integer >= 2.", call. = FALSE)
 
   call_obj <- match.call()
 
-  multi_group <- length(grp) > 0L && length(unique(d[[grp]])) > 1L
+  multi_group <- length(grp) > 0L &&
+                 nrow(unique(d[, grp, with = FALSE])) > 1L
 
-  if (!multi_group) {
-    res <- .detect_regime_single(
-      d         = d,
-      target    = target,
-      K         = K,
-      method    = method,
-      n_regimes = n_regimes,
-      sig_level = sig_level,
-      min_size  = min_size,
-      coh       = coh,
-      dev       = dev
-    )
-
-    out <- list(
-      call        = call_obj,
-      method      = method,
-      target      = target,
-      K           = K,
-      cohort      = coh,
-      dev         = dev,
-      groups      = grp,
-      multi_group = FALSE,
-      labels      = res$labels,
-      breakpoints = res$breakpoints,
-      n_regimes   = res$n_regimes,
-      trajectory  = res$trajectory,
-      pca         = res$pca,
-      dropped     = res$dropped
-    )
-    class(out) <- "Regime"
-    return(out)
+  # Unified dispatch — single combo when `grp` is empty (pooled detection),
+  # otherwise one combo per unique (group cols) row.
+  if (length(grp) > 0L) {
+    grp_combos <- unique(d[, grp, with = FALSE])
+    data.table::setorderv(grp_combos, grp)
+  } else {
+    grp_combos <- data.table::data.table()
   }
+  n_combos <- max(nrow(grp_combos), 1L)
 
-  # Multi-group dispatch ---------------------------------------------------
-  grp_vals <- sort(unique(d[[grp]]))
+  per_group <- vector("list", n_combos)
+  combo_keys <- character(n_combos)
 
-  per_group <- vector("list", length(grp_vals))
-  names(per_group) <- as.character(grp_vals)
-
-  for (gv in grp_vals) {
-    di <- d[d[[grp]] == gv]
-    per_group[[as.character(gv)]] <- tryCatch(
+  for (i in seq_len(n_combos)) {
+    if (nrow(grp_combos) > 0L) {
+      combo_row <- grp_combos[i]
+      combo_keys[i] <- paste(unlist(combo_row), collapse = " / ")
+      di <- d[combo_row, on = grp, nomatch = NULL]
+    } else {
+      combo_keys[i] <- "<all>"
+      di <- d
+    }
+    res_i <- tryCatch(
       .detect_regime_single(
         d         = di,
         target    = target,
@@ -205,52 +210,78 @@ detect_regime <- function(x,
         dev       = dev
       ),
       error = function(e) {
-        warning(sprintf("Group '%s': %s -- skipped.", gv, conditionMessage(e)),
-                call. = FALSE)
+        warning(sprintf("Group '%s': %s -- skipped.", combo_keys[i],
+                        conditionMessage(e)), call. = FALSE)
         NULL
       }
     )
+    per_group[i] <- list(res_i)  # preserve NULL slot
   }
+  names(per_group) <- combo_keys
 
-  ok_groups <- !vapply(per_group, is.null, logical(1L))
-  if (!any(ok_groups))
+  ok <- !vapply(per_group, is.null, logical(1L))
+  if (!any(ok))
     stop("No group produced a usable detection result.", call. = FALSE)
 
-  # Combine breakpoints into a data.table {grp, breakpoint}
-  bp_rows <- lapply(names(per_group)[ok_groups], function(nm) {
-    bp <- per_group[[nm]]$breakpoints
-    if (!length(bp)) return(NULL)
-    gval <- grp_vals[match(nm, as.character(grp_vals))]
-    data.table::data.table(
-      .grp       = gval,
-      breakpoint = bp
-    )
-  })
-  bp_dt <- if (length(bp_rows) && any(!vapply(bp_rows, is.null, logical(1L)))) {
-    data.table::rbindlist(bp_rows[!vapply(bp_rows, is.null, logical(1L))])
-  } else {
-    data.table::data.table(
-      .grp       = grp_vals[0],
-      breakpoint = as.Date(character(0))
-    )
-  }
-  data.table::setnames(bp_dt, ".grp", grp)
+  empty_bp <- data.table::data.table(
+    breakpoint     = as.Date(character(0)),
+    regime_id_from = integer(0),
+    regime_id_to   = integer(0),
+    pre_value      = numeric(0),
+    post_value     = numeric(0),
+    magnitude      = numeric(0)
+  )
 
-  # Combine labels with group column
-  label_rows <- lapply(names(per_group)[ok_groups], function(nm) {
-    lab <- data.table::copy(per_group[[nm]]$labels)
-    gval <- grp_vals[match(nm, as.character(grp_vals))]
-    lab[, .grp := gval]
-    data.table::setcolorder(lab, c(".grp", setdiff(names(lab), ".grp")))
+  # Combine breakpoints: prepend group columns when grp is non-empty.
+  bp_dt_list <- lapply(which(ok), function(i) {
+    bp <- per_group[[i]]$breakpoints
+    if (!nrow(bp)) return(NULL)
+    if (length(grp) > 0L) {
+      combo_rep <- grp_combos[rep(i, nrow(bp))]
+      bp <- cbind(combo_rep, bp)
+    }
+    bp
+  })
+  bp_dt_list <- bp_dt_list[!vapply(bp_dt_list, is.null, logical(1L))]
+  bp_dt <- if (length(bp_dt_list)) {
+    data.table::rbindlist(bp_dt_list)
+  } else if (length(grp) > 0L) {
+    cbind(grp_combos[0L], empty_bp)
+  } else {
+    empty_bp
+  }
+
+  # Combine labels: prepend group columns when grp is non-empty.
+  label_rows <- lapply(which(ok), function(i) {
+    lab <- data.table::copy(per_group[[i]]$labels)
+    if (length(grp) > 0L) {
+      combo_rep <- grp_combos[rep(i, nrow(lab))]
+      lab <- cbind(combo_rep, lab)
+    }
     lab
   })
   labels_dt <- data.table::rbindlist(label_rows)
-  data.table::setnames(labels_dt, ".grp", grp)
 
-  n_regimes_vec <- vapply(per_group[ok_groups], `[[`, integer(1L), "n_regimes")
-  trajectory_lst <- lapply(per_group[ok_groups], `[[`, "trajectory")
-  pca_lst        <- lapply(per_group[ok_groups], `[[`, "pca")
-  dropped_lst    <- lapply(per_group[ok_groups], `[[`, "dropped")
+  n_regimes_vec  <- vapply(per_group[ok], `[[`, integer(1L), "n_regimes")
+  trajectory_lst <- lapply(per_group[ok], `[[`, "trajectory")
+  pca_lst        <- lapply(per_group[ok], `[[`, "pca")
+  dropped_lst    <- lapply(per_group[ok], `[[`, "dropped")
+
+  # Single-combo unwrap — preserves the scalar / matrix / prcomp shapes
+  # that downstream code (and existing tests) expect when only one group
+  # combo is detected. `$breakpoints` and `$labels` remain data.tables.
+  is_single <- sum(ok) == 1L
+  if (is_single) {
+    n_regimes_out  <- n_regimes_vec[[1L]]
+    trajectory_out <- trajectory_lst[[1L]]
+    pca_out        <- pca_lst[[1L]]
+    dropped_out    <- dropped_lst[[1L]]
+  } else {
+    n_regimes_out  <- n_regimes_vec
+    trajectory_out <- trajectory_lst
+    pca_out        <- pca_lst
+    dropped_out    <- dropped_lst
+  }
 
   out <- list(
     call        = call_obj,
@@ -260,13 +291,13 @@ detect_regime <- function(x,
     cohort      = coh,
     dev         = dev,
     groups      = grp,
-    multi_group = TRUE,
+    multi_group = !is_single,
     labels      = labels_dt,
     breakpoints = bp_dt,
-    n_regimes   = n_regimes_vec,
-    trajectory  = trajectory_lst,
-    pca         = pca_lst,
-    dropped     = dropped_lst
+    n_regimes   = n_regimes_out,
+    trajectory  = trajectory_out,
+    pca         = pca_out,
+    dropped     = dropped_out
   )
   class(out) <- "Regime"
   out
@@ -299,7 +330,8 @@ detect_regime <- function(x,
 
   w <- data.table::dcast(
     d, stats::reformulate("dev", response = "cohort"),
-    value.var = target
+    value.var     = target,
+    fun.aggregate = function(v) mean(v, na.rm = TRUE)
   )
   data.table::setorderv(w, "cohort")
 
@@ -336,11 +368,12 @@ detect_regime <- function(x,
   )
   data.table::setnames(labels, "period", "cohort")
 
-  breakpoints <- if (length(breakpoints_idx)) {
-    w[["cohort"]][breakpoints_idx]
-  } else {
-    w[["cohort"]][0]
-  }
+  breakpoints <- .build_breakpoints_dt(
+    cohorts         = w[["cohort"]],
+    breakpoints_idx = breakpoints_idx,
+    mat             = mat,
+    regime_id       = regime_id
+  )
 
   list(
     labels      = labels,
@@ -349,6 +382,44 @@ detect_regime <- function(x,
     trajectory  = mat,
     pca         = pca,
     dropped     = dropped
+  )
+}
+
+#' @keywords internal
+.build_breakpoints_dt <- function(cohorts, breakpoints_idx, mat, regime_id) {
+  empty <- data.table::data.table(
+    breakpoint     = as.Date(character(0)),
+    regime_id_from = integer(0),
+    regime_id_to   = integer(0),
+    pre_value      = numeric(0),
+    post_value     = numeric(0),
+    magnitude      = numeric(0)
+  )
+  if (!length(breakpoints_idx)) return(empty)
+
+  bp_idx  <- as.integer(sort(unique(breakpoints_idx)))
+  bp_date <- cohorts[bp_idx]
+  bp_from <- seq_along(bp_idx)
+  bp_to   <- bp_from + 1L
+
+  metas <- vapply(seq_along(bp_idx), function(i) {
+    pre_rows  <- which(regime_id == bp_from[i])
+    post_rows <- which(regime_id == bp_to[i])
+    pre_val   <- if (length(pre_rows))  mean(mat[pre_rows,  , drop = FALSE], na.rm = TRUE) else NA_real_
+    post_val  <- if (length(post_rows)) mean(mat[post_rows, , drop = FALSE], na.rm = TRUE) else NA_real_
+    c(pre_val, post_val)
+  }, numeric(2L))
+
+  pre_vals  <- metas[1L, ]
+  post_vals <- metas[2L, ]
+
+  data.table::data.table(
+    breakpoint     = bp_date,
+    regime_id_from = bp_from,
+    regime_id_to   = bp_to,
+    pre_value      = pre_vals,
+    post_value     = post_vals,
+    magnitude      = abs(post_vals - pre_vals)
   )
 }
 
@@ -462,9 +533,10 @@ print.Regime <- function(x, ...) {
       cat(sprintf(" (%d dropped)", length(x$dropped)))
     cat("\n")
     cat(sprintf("  regimes     : %d\n", x$n_regimes))
-    if (length(x$breakpoints)) {
+    if (nrow(x$breakpoints)) {
       cat(sprintf("  breakpoints : %s\n",
-                  paste(format(x$breakpoints, "%y.%m"), collapse = ", ")))
+                  paste(format(x$breakpoints[["breakpoint"]], "%y.%m"),
+                        collapse = ", ")))
     } else {
       cat("  breakpoints : (none)\n")
     }
@@ -612,9 +684,10 @@ print.summary.Regime <- function(x, ...) {
                   r$n_cohorts))
     }
 
-    if (length(x$breakpoints)) {
+    if (nrow(x$breakpoints)) {
       cat(sprintf("\nBreakpoints: %s\n",
-                  paste(format(x$breakpoints, "%y.%m"), collapse = ", ")))
+                  paste(format(x$breakpoints[["breakpoint"]], "%y.%m"),
+                        collapse = ", ")))
     }
   }
   invisible(x)
