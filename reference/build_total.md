@@ -26,10 +26,10 @@ useful when comparing groups on a common period basis.
 build_total(
   df,
   groups,
-  cohort = "uy_m",
-  dev = "dev_m",
-  loss = "loss_incr",
-  premium = "premium_incr",
+  cohort,
+  dev,
+  loss,
+  premium,
   period_from = NULL,
   period_to = NULL,
   fill_gaps = FALSE
@@ -48,24 +48,24 @@ build_total(
 
 - cohort:
 
-  A single period variable. This may be an underwriting period (`uy_m`,
-  `uy_q`, `uy_s`, `uy_a`) or a calendar period (`cy_m`, `cy_q`, `cy_s`,
-  `cy_a`). Default `"uy_m"`.
+  A single period variable (raw name). This may be an underwriting
+  period (`"uy_m"`, `"uy_q"`, `"uy_s"`, `"uy_a"`) or a calendar period
+  (`"cy_m"`, `"cy_q"`, `"cy_s"`, `"cy_a"`).
 
 - dev:
 
-  A single development variable used to count observed periods. Default
-  `"dev_m"`.
+  A single development variable (raw name) used to count observed
+  periods.
 
 - loss:
 
-  Single character; per-period loss column in `df`. Default
-  `"loss_incr"`.
+  Single character; per-period loss column in `df` (raw name, e.g.,
+  `"loss_incr"`).
 
 - premium:
 
-  Single character; per-period premium column in `df`. Default
-  `"premium_incr"`. Premium measure used as denominator for loss ratio
+  Single character; per-period premium column in `df` (raw name, e.g.,
+  `"premium_incr"`). Premium measure used as denominator for loss ratio
   calculations. For long-term health insurance applications, risk
   premium is commonly used.
 

@@ -97,7 +97,7 @@ A list of class `"IntensityFit"` with components:
 
   The (possibly filtered) `Link` object used for estimation.
 
-- `group_var`, `cohort_var`, `dev_var`, `target`, `exposure`:
+- `groups`, `cohort`, `dev`, `target`, `exposure`:
 
   Variable name relays from the input `Triangle`.
 
@@ -146,7 +146,14 @@ rejects `IntensityFit` input with an informative error.
 
 ``` r
 if (FALSE) { # \dontrun{
-tri <- build_triangle(df, group_var = coverage)
+tri <- build_triangle(
+  df,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 intensity_fit <- fit_intensity(tri, target = "loss", exposure = "premium")
 summary(intensity_fit)
 } # }

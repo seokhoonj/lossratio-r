@@ -18,7 +18,14 @@ generalises to multi-group input.
 library(lossratio)
 data(experience)
 exp <- experience[coverage == "SUR"]
-tri <- build_triangle(exp, groups = coverage)
+tri <- build_triangle(
+  exp,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 ```
 
 ### Cohort trajectories
@@ -32,7 +39,7 @@ plot(tri)                              # cumulative loss-ratio trajectories per 
 
 ``` r
 
-plot(tri, value_var = "lr_incr")       # incremental loss ratio instead of cumulative
+plot(tri, metric = "lr_incr")       # incremental loss ratio instead of cumulative
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-2-2.png)
@@ -52,14 +59,14 @@ cohorts that deviate from the central tendency.
 
 ``` r
 
-plot_triangle(tri, value_var = "lr")          # cumulative lr
+plot_triangle(tri, metric = "lr")          # cumulative lr
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-1.png)
 
 ``` r
 
-plot_triangle(tri, value_var = "lr_incr")     # incremental lr
+plot_triangle(tri, metric = "lr_incr")     # incremental lr
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-2.png)
@@ -68,7 +75,7 @@ plot_triangle(tri, value_var = "lr_incr")     # incremental lr
 
 
 # detail labels (ratio + loss/premium amounts) are 2-line — use quarterly cells
-tri_q <- build_triangle(exp, groups = coverage, grain = "Q")
+tri_q <- build_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr", grain = "Q")
 plot_triangle(tri_q, label_style = "detail") # ratio + (loss / premium)
 ```
 
@@ -361,7 +368,14 @@ thresholds:
 
 ``` r
 
-tri_all <- build_triangle(experience, groups = coverage)
+tri_all <- build_triangle(
+  experience,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 detect_maturity(tri_all, target = "loss")
 #> Key: <coverage>
 #>    coverage ata_from ata_to ata_link     mean   median       wt         cv
@@ -402,7 +416,7 @@ If gaps in the development sequence are suspected, inspect them before
 
 ``` r
 
-gaps <- validate_triangle(exp, groups = coverage, cohort = "uy_m", dev = "dev_m")
+gaps <- validate_triangle(exp, groups = "coverage", cohort = "uy_m", dev = "dev_m")
 head(gaps)
 #> <TriangleValidation>
 #> Cohort dev-sequence gaps : none

@@ -11,7 +11,7 @@ etc.) rather than a trajectory.
 # S3 method for class 'Total'
 plot(
   x,
-  value_var = "lr",
+  metric = "lr",
   amount_divisor = 1e+08,
   theme = c("view", "save", "shiny"),
   ...
@@ -24,7 +24,7 @@ plot(
 
   An object of class `Total`.
 
-- value_var:
+- metric:
 
   A single metric to plot. Must be one of the columns carried by a
   `Total`: `"lr"`, `"loss"`, `"premium"`, `"loss_share"`, or
@@ -52,8 +52,8 @@ A `ggplot` object.
 
 ## Details
 
-Bars are ordered by the value of `value_var` (descending). When more
-than one grouping variable is present, an interaction is used as the bar
+Bars are ordered by the value of `metric` (descending). When more than
+one grouping variable is present, an interaction is used as the bar
 identifier.
 
 Ratio and proportion metrics are plotted on the original scale and
@@ -64,8 +64,15 @@ scale and labelled using `amount_divisor`.
 
 ``` r
 if (FALSE) { # \dontrun{
-tot <- build_total(df, groups = coverage)
+tot <- build_total(
+  df,
+  groups  = "coverage",
+  cohort  = "uy_m",
+  dev     = "dev_m",
+  loss    = "loss_incr",
+  premium = "premium_incr"
+)
 plot(tot)
-plot(tot, value_var = "loss")
+plot(tot, metric = "loss")
 } # }
 ```

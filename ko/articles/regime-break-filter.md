@@ -51,7 +51,14 @@ window has accumulated the largest number of cohorts.
 
 library(lossratio)
 data(experience)
-tri_sur <- build_triangle(experience[coverage == "SUR"], coverage)
+tri_sur <- build_triangle(
+  experience[coverage == "SUR"],
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 # Single break date
 fit_lr(tri_sur, method = "sa", recent = 18L,
@@ -159,7 +166,14 @@ assumes a single-group triangle. For a portfolio with multiple
 ``` r
 
 fits <- lapply(unique(exp$coverage), function(g) {
-  tri_g <- build_triangle(experience[coverage == g], coverage)
+  tri_g <- build_triangle(
+    experience[coverage == g],
+    groups   = "coverage",
+    cohort   = "uy_m",
+    calendar = "cy_m",
+    loss     = "loss_incr",
+    premium  = "premium_incr"
+  )
   reg_g <- detect_regime(tri_g)
   fit_lr(tri_g, method = "sa", recent = 18L,
          regime_break = reg_g)

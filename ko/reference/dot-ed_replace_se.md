@@ -32,7 +32,7 @@ estimates. The recursion is per (group, cohort).
 
 - triangle:
 
-  The original `Triangle` (for `group_var` attribute).
+  The original `Triangle` (for `groups` attribute).
 
 ## Value
 

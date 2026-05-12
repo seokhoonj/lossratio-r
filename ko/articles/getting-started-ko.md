@@ -44,7 +44,14 @@ str(experience)
 
 ``` r
 
-tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
+tri <- build_triangle(
+  experience[coverage == "SUR"],
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 class(tri)
 #> [1] "Triangle"   "data.table" "data.frame"
 names(tri)
@@ -65,8 +72,8 @@ names(tri)
 - 누적 컬럼 (`loss`, `premium`) 을 추가한다,
 - 파생 지표 (`margin`, `lr`, `lr`, 비율) 를 추가한다,
 - 코호트 / 경과 기간 컬럼을 표준명 `cohort` 와 `dev` 로 rename 한다,
-- 원본 컬럼명은 attribute (`cohort_var`, `dev_var`) 로 보존하여 이후
-  plot 라벨에서 활용 가능하게 한다.
+- 원본 컬럼명은 attribute (`cohort`, `dev`) 로 보존하여 이후 plot
+  라벨에서 활용 가능하게 한다.
 
 ## 2단계 — 진단
 
@@ -543,7 +550,14 @@ summary(lr)
 
 ``` r
 
-sub <- build_triangle(experience[coverage == "SUR"], groups = coverage)
+sub <- build_triangle(
+  experience[coverage == "SUR"],
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 detect_regime(sub, K = 12, method = "e_divisive")
 #> <Regime>
 #>   method      : e_divisive

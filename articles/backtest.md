@@ -23,7 +23,14 @@ actual exceeded expected) and negative values flag over-projection.
 
 library(lossratio)
 data(experience)
-tri_sur <- build_triangle(experience[coverage == "SUR"], coverage)
+tri_sur <- build_triangle(
+  experience[coverage == "SUR"],
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 bt <- backtest(tri_sur, holdout = 6L)
 print(bt)

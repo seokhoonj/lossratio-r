@@ -5,17 +5,8 @@ and return an `"EDFit"` object that bundles factor summaries, selected
 intensities, and a cell-level projection of cumulative loss and exposure
 (`$full`).
 
-Two methods are supported via the `method` argument:
-
-- `"basic"` (default):
-
-  Factor estimation only. Returns `g_selected` and `sigma2` in
-  `$selected`.
-
-- `"mack"`:
-
-  Basic plus factor variance \\\mathrm{Var}(\hat{g}\_k)\\ added as
-  `g_var` column in `$selected`.
+Returns `g_selected`, `sigma2`, and factor variance
+\\\mathrm{Var}(\hat{g}\_k)\\ (column `g_var`) in `$selected`.
 
 The `$full` projection table is produced by delegating to
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
@@ -32,7 +23,7 @@ fit_ed(
   x,
   target = "loss",
   exposure = "premium",
-  method = c("basic", "mack"),
+  method = c("mack"),
   alpha = 1,
   na_method = c("locf", "zero", "none"),
   sigma_method = c("locf", "min_last2", "loglinear"),
@@ -62,7 +53,7 @@ fit_ed(
 
 - method:
 
-  One of `"basic"` or `"mack"`. Default is `"basic"`.
+  Estimation method. Currently only `"mack"` is supported.
 
 - alpha:
 
@@ -107,8 +98,7 @@ An object of class `"EDFit"` (a named list) with components:
 
 - `selected`:
 
-  `data.table` of selected `g_selected`, `sigma2` (and `g_var` when
-  `method = "mack"`).
+  `data.table` of selected `g_selected`, `sigma2`, and `g_var`.
 
 - `full`:
 

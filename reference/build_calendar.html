@@ -184,10 +184,10 @@ each calendar period across products or other grouping variables.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">build_calendar</span><span class="op">(</span></span>
 <span>  <span class="va">df</span>,</span>
 <span>  <span class="va">groups</span>,</span>
-<span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
+<span>  <span class="va">calendar</span>,</span>
+<span>  <span class="va">loss</span>,</span>
+<span>  <span class="va">premium</span>,</span>
 <span>  grain <span class="op">=</span> <span class="st">"auto"</span>,</span>
-<span>  loss <span class="op">=</span> <span class="st">"loss_incr"</span>,</span>
-<span>  premium <span class="op">=</span> <span class="st">"premium_incr"</span>,</span>
 <span>  period_from <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  period_to <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fill_gaps <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -211,9 +211,21 @@ that the internal Date coercion accepts: Date, POSIXt, integer
 
 <dt id="arg-calendar">calendar<a class="anchor" aria-label="anchor" href="#arg-calendar"></a></dt>
 <dd><p>A single column defining the calendar-like period
-axis. Default <code>"cy_m"</code>. May also be an underwriting axis
+axis (raw name, e.g., <code>"cy_m"</code>). May also be an underwriting axis
 (<code>"uy_m"</code> etc.) when a single underwriting-period axis is to be
 summarised as a time series rather than as a development structure.</p></dd>
+
+
+<dt id="arg-loss">loss<a class="anchor" aria-label="anchor" href="#arg-loss"></a></dt>
+<dd><p>Single character; per-period loss column in <code>df</code>
+(raw name, e.g., <code>"loss_incr"</code>).</p></dd>
+
+
+<dt id="arg-premium">premium<a class="anchor" aria-label="anchor" href="#arg-premium"></a></dt>
+<dd><p>Single character; per-period premium column in <code>df</code>
+(raw name, e.g., <code>"premium_incr"</code>). Premium measure used as
+denominator for loss ratio calculations. For long-term health
+insurance applications, risk premium is commonly used.</p></dd>
 
 
 <dt id="arg-grain">grain<a class="anchor" aria-label="anchor" href="#arg-grain"></a></dt>
@@ -221,18 +233,6 @@ summarised as a time series rather than as a development structure.</p></dd>
 <code>"auto"</code> infers the grain from the <code>calendar</code> value spacing.
 Explicit values must be at least as coarse as the input grain;
 the input is binned (floored) to that grain before aggregation.</p></dd>
-
-
-<dt id="arg-loss">loss<a class="anchor" aria-label="anchor" href="#arg-loss"></a></dt>
-<dd><p>Single character; per-period loss column in <code>df</code>.
-Default <code>"loss_incr"</code>.</p></dd>
-
-
-<dt id="arg-premium">premium<a class="anchor" aria-label="anchor" href="#arg-premium"></a></dt>
-<dd><p>Single character; per-period premium column in <code>df</code>.
-Default <code>"premium_incr"</code>. Premium measure used as denominator for
-loss ratio calculations. For long-term health insurance applications,
-risk premium is commonly used.</p></dd>
 
 
 <dt id="arg-period-from">period_from<a class="anchor" aria-label="anchor" href="#arg-period-from"></a></dt>

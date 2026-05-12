@@ -2,8 +2,7 @@
 
 Builds one PCA panel per group via
 [`ggshort::plot_pca()`](https://rdrr.io/pkg/ggshort/man/plot_pca.html)
-and combines them with patchwork if available, otherwise returns a list
-of ggplot objects.
+and returns a named list of `ggplot` objects keyed by group value.
 
 ## Usage
 

@@ -43,11 +43,12 @@ development cell across products or other grouping variables.
 build_triangle(
   df,
   groups,
-  cohort = "uy_m",
-  calendar = "cy_m",
+  cohort,
+  calendar = NULL,
+  dev = NULL,
+  loss,
+  premium,
   grain = "auto",
-  loss = "loss_incr",
-  premium = "premium_incr",
   cell_type = c("incremental", "cumulative"),
   fill_gaps = FALSE
 )
@@ -68,14 +69,36 @@ build_triangle(
 
 - cohort:
 
-  Single column defining the underwriting/exposure period start (e.g.,
-  `"uy_m"`). Default `"uy_m"`.
+  Single column (raw name) defining the underwriting / exposure period
+  start (e.g., `"uy_m"`).
 
 - calendar:
 
-  Single column defining the calendar period of the observation (e.g.,
-  `"cy_m"`). Default `"cy_m"`. Used together with `cohort` to derive the
-  development column at the resolved grain.
+  Single column (raw name) defining the calendar period of the
+  observation (e.g., `"cy_m"`). Optional — supply either `calendar` or
+  `dev` (or both). When `calendar` is given, `dev` is derived internally
+  via `count_periods(cohort, calendar, grain)`.
+
+- dev:
+
+  Single column (raw name) holding pre-computed development periods
+  (e.g., `"dev_m"`). Optional — supply either `calendar` or `dev` (or
+  both). When only `dev` is given, the calendar axis is omitted from the
+  attribute (downstream calendar-diagonal logic uses cohort + dev). When
+  both are given, `dev` is cross-checked against
+  `count_periods(cohort, calendar, grain)`.
+
+- loss:
+
+  Single character; per-period loss column in `df` (raw name, e.g.,
+  `"loss_incr"`).
+
+- premium:
+
+  Single character; per-period premium column in `df` (raw name, e.g.,
+  `"premium_incr"`). Premium measure used as denominator for loss ratio
+  calculations. For long-term health insurance applications, risk
+  premium is commonly used.
 
 - grain:
 
@@ -83,18 +106,6 @@ build_triangle(
   the grain from the `cohort` value spacing. Explicit values must be at
   least as coarse as the input grain; the input is binned (floored) to
   that grain before aggregation.
-
-- loss:
-
-  Single character; per-period loss column in `df`. Default
-  `"loss_incr"`.
-
-- premium:
-
-  Single character; per-period premium column in `df`. Default
-  `"premium_incr"`. Premium measure used as denominator for loss ratio
-  calculations. For long-term health insurance applications, risk
-  premium is commonly used.
 
 - cell_type:
 
@@ -151,9 +162,9 @@ columns:
   Cumulative and per-period proportions of premium within each
   `(cohort, dev)` cell
 
-Attributes set on the returned object: `group_var`, `cohort_var`,
-`calendar_var`, `grain`, `dev_var` (= `"dev_<lower(grain)>"`, e.g.
-`"dev_m"`), `loss_var`, `premium_var`, `longer`.
+Attributes set on the returned object: `groups`, `cohort`, `calendar`,
+`grain`, `dev` (= `"dev_<lower(grain)>"`, e.g. `"dev_m"`), `loss`,
+`premium`, `longer`.
 
 ## Examples
 
@@ -169,7 +180,14 @@ df <- data.frame(
 )
 
 # auto-detected monthly grain
-res_m <- build_triangle(df, groups = pd_cd)
+res_m <- build_triangle(
+  df,
+  groups   = pd_cd,
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 # explicit quarterly view (re-bins monthly input to quarterly)
 res_q <- build_triangle(df, groups = pd_cd, grain = "Q")

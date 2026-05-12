@@ -110,7 +110,14 @@ every step generalises to multi-group input.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio" class="external-link">lossratio</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span></span>
-<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, groups <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span></span>
+<span>  <span class="va">exp</span>,</span>
+<span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
+<span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
+<span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
+<span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span>
+<span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="cohort-trajectories">Cohort trajectories<a class="anchor" aria-label="anchor" href="#cohort-trajectories"></a>
 </h3>
@@ -118,7 +125,7 @@ every step generalises to multi-group input.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>                              <span class="co"># cumulative loss-ratio trajectories per cohort</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"lr_incr"</span><span class="op">)</span>       <span class="co"># incremental loss ratio instead of cumulative</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span>, metric <span class="op">=</span> <span class="st">"lr_incr"</span><span class="op">)</span>       <span class="co"># incremental loss ratio instead of cumulative</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-2-2.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span>, summary <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>              <span class="co"># raw + overlay (mean / median / weighted)</span></span></code></pre></div>
@@ -131,15 +138,15 @@ for spotting cohorts that deviate from the central tendency.</p>
 <h3 id="cell-heatmap">Cell heatmap<a class="anchor" aria-label="anchor" href="#cell-heatmap"></a>
 </h3>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span>          <span class="co"># cumulative lr</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span>, metric <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span>          <span class="co"># cumulative lr</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span>, value_var <span class="op">=</span> <span class="st">"lr_incr"</span><span class="op">)</span>     <span class="co"># incremental lr</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span>, metric <span class="op">=</span> <span class="st">"lr_incr"</span><span class="op">)</span>     <span class="co"># incremental lr</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-2.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># detail labels (ratio + loss/premium amounts) are 2-line — use quarterly cells</span></span>
-<span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, groups <span class="op">=</span> <span class="va">coverage</span>, grain <span class="op">=</span> <span class="st">"Q"</span><span class="op">)</span></span>
+<span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, groups <span class="op">=</span> <span class="st">"coverage"</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>, calendar <span class="op">=</span> <span class="st">"cy_m"</span>, loss <span class="op">=</span> <span class="st">"loss_incr"</span>, premium <span class="op">=</span> <span class="st">"premium_incr"</span>, grain <span class="op">=</span> <span class="st">"Q"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span> <span class="co"># ratio + (loss / premium)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-3.png" class="r-plt" alt="" width="100%"></p>
 </div>
@@ -397,7 +404,14 @@ to CL (later dev).</p>
 <p>For multi-group triangles <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> returns one
 row per group, each detected independently with the same thresholds:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tri_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span>, groups <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">tri_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span></span>
+<span>  <span class="va">experience</span>,</span>
+<span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
+<span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
+<span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
+<span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span>
+<span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span>
+<span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri_all</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
 <span><span class="co">#&gt;    coverage ata_from ata_to ata_link     mean   median       wt         cv</span></span>
@@ -432,7 +446,7 @@ CV first drops below <code>max_cv</code>:</p>
 <p>If gaps in the development sequence are suspected, inspect them
 before <code><a href="../reference/build_triangle.html">build_triangle()</a></code>:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gaps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate_triangle.html">validate_triangle</a></span><span class="op">(</span><span class="va">exp</span>, groups <span class="op">=</span> <span class="va">coverage</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>, dev <span class="op">=</span> <span class="st">"dev_m"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">gaps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate_triangle.html">validate_triangle</a></span><span class="op">(</span><span class="va">exp</span>, groups <span class="op">=</span> <span class="st">"coverage"</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>, dev <span class="op">=</span> <span class="st">"dev_m"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">gaps</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;TriangleValidation&gt;</span></span>
 <span><span class="co">#&gt; Cohort dev-sequence gaps : none</span></span></code></pre></div>

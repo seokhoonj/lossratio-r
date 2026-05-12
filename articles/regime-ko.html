@@ -188,7 +188,14 @@ shifts across underwriting cohorts</a></p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio">lossratio</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
-<span><span class="va">tri_sur</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, <span class="va">coverage</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">tri_sur</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span></span>
+<span>  <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>,</span>
+<span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
+<span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
+<span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
+<span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span>
+<span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="regime-탐지">3. regime 탐지<a class="anchor" aria-label="anchor" href="#regime-%ED%83%90%EC%A7%80"></a>
@@ -331,7 +338,14 @@ Ward 계층 클러스터링을 적용하고 <code>n_regimes</code> 개 (default:
 <code><a href="../reference/detect_regime.html">detect_regime()</a></code> 에 전달할 수 있다. 그룹별로 독립적으로
 탐지가 수행되며 결과는 하나의 <code>Regime</code> 객체에 모인다.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tri_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span>, groups <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">tri_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span></span>
+<span>  <span class="va">experience</span>,</span>
+<span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
+<span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
+<span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
+<span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span>
+<span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span>
+<span><span class="op">)</span></span>
 <span><span class="va">r_all</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_all</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
 <span><span class="va">r_all</span><span class="op">$</span><span class="va">breakpoints</span></span>
 <span><span class="co">#&gt;    coverage breakpoint</span></span>
@@ -347,8 +361,8 @@ Ward 계층 클러스터링을 적용하고 <code>n_regimes</code> 개 (default:
 <p>특정 그룹의 코호트 수가 <code>K</code> 보다 적으면 그 그룹은 경고와
 함께 skip 되고 나머지 그룹은 정상 진행된다. <em>모든</em> 그룹이
 실패하면 <code><a href="../reference/detect_regime.html">detect_regime()</a></code> 은 오류를 발생시킨다.</p>
-<p><code>plot(r_all)</code> 은 그룹별 패널을 그린다
-(<code>patchwork</code> 가 설치되어 있으면 하나로 합성된다).</p>
+<p><code>plot(r_all)</code> 은 그룹별 패널 ggplot 객체의 named list 를
+반환한다 (그룹값을 key 로).</p>
 </div>
 <div class="section level2">
 <h2 id="fit_lr-과의-관계">9. <code>fit_lr()</code> 과의 관계<a class="anchor" aria-label="anchor" href="#fit_lr-%EA%B3%BC%EC%9D%98-%EA%B4%80%EA%B3%84"></a>

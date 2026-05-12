@@ -177,7 +177,7 @@ An object of class `"Backtest"` with components:
 - `ae_err`:
 
   `data.table` of held-out cells with columns
-  `(group_var, cohort, dev, value_actual, value_pred, ae_err, calendar_idx)`.
+  `(group, cohort, dev, value_actual, value_pred, ae_err, calendar_idx)`.
 
 - `col_summary`:
 
@@ -191,7 +191,7 @@ An object of class `"Backtest"` with components:
 
   Call metadata.
 
-- `group_var`, `cohort_var`, `dev_var`:
+- `groups`, `cohort`, `dev`:
 
   Variable name relays from `x`.
 
@@ -207,7 +207,14 @@ An object of class `"Backtest"` with components:
 ``` r
 if (FALSE) { # \dontrun{
 data(experience)
-tri <- build_triangle(experience, groups = coverage)
+tri <- build_triangle(
+  experience,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 bt_lr      <- backtest(tri, holdout = 6L, target = "lr")
 bt_loss    <- backtest(tri, holdout = 6L, target = "loss")

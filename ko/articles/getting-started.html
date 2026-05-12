@@ -133,7 +133,14 @@ underwriting period columns at multiple granularities, a
 <h2 id="step-1-build-the-cohort-dev-structure">Step 1 — Build the cohort × dev structure<a class="anchor" aria-label="anchor" href="#step-1-build-the-cohort-dev-structure"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, groups <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span></span>
+<span>  <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>,</span>
+<span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
+<span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
+<span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
+<span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span>
+<span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span>
+<span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "Triangle"   "data.table" "data.frame"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
@@ -160,9 +167,9 @@ the expected types,</li>
 proportions),</li>
 <li>standardises the cohort / development columns to the names
 <code>cohort</code> and <code>dev</code>,</li>
-<li>preserves original column names as attributes
-(<code>cohort_var</code>, <code>dev_var</code>, <code>loss_var</code>,
-<code>premium_var</code>) for downstream plot labels.</li>
+<li>preserves original column names as attributes (<code>cohort</code>,
+<code>dev</code>, <code>loss</code>, <code>premium</code>) for
+downstream plot labels.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -612,7 +619,14 @@ throughout.</p>
 differently from earlier ones. Useful as a preprocessing step before
 loss-ratio fitting on a homogeneous subset:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, groups <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span></span>
+<span>  <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>,</span>
+<span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
+<span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
+<span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
+<span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span>
+<span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span>
+<span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">sub</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Regime&gt;</span></span>
 <span><span class="co">#&gt;   method      : e_divisive</span></span>

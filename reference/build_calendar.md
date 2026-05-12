@@ -44,10 +44,10 @@ period across products or other grouping variables.
 build_calendar(
   df,
   groups,
-  calendar = "cy_m",
+  calendar,
+  loss,
+  premium,
   grain = "auto",
-  loss = "loss_incr",
-  premium = "premium_incr",
   period_from = NULL,
   period_to = NULL,
   fill_gaps = FALSE
@@ -69,10 +69,22 @@ build_calendar(
 
 - calendar:
 
-  A single column defining the calendar-like period axis. Default
-  `"cy_m"`. May also be an underwriting axis (`"uy_m"` etc.) when a
-  single underwriting-period axis is to be summarised as a time series
+  A single column defining the calendar-like period axis (raw name,
+  e.g., `"cy_m"`). May also be an underwriting axis (`"uy_m"` etc.) when
+  a single underwriting-period axis is to be summarised as a time series
   rather than as a development structure.
+
+- loss:
+
+  Single character; per-period loss column in `df` (raw name, e.g.,
+  `"loss_incr"`).
+
+- premium:
+
+  Single character; per-period premium column in `df` (raw name, e.g.,
+  `"premium_incr"`). Premium measure used as denominator for loss ratio
+  calculations. For long-term health insurance applications, risk
+  premium is commonly used.
 
 - grain:
 
@@ -80,18 +92,6 @@ build_calendar(
   the grain from the `calendar` value spacing. Explicit values must be
   at least as coarse as the input grain; the input is binned (floored)
   to that grain before aggregation.
-
-- loss:
-
-  Single character; per-period loss column in `df`. Default
-  `"loss_incr"`.
-
-- premium:
-
-  Single character; per-period premium column in `df`. Default
-  `"premium_incr"`. Premium measure used as denominator for loss ratio
-  calculations. For long-term health insurance applications, risk
-  premium is commonly used.
 
 - period_from:
 

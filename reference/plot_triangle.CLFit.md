@@ -16,8 +16,7 @@ The `what` argument controls which values are shown:
 
   Original observed data from `x$data`.
 
-The `label_style` argument controls cell labels (only meaningful when
-`method = "mack"`):
+The `label_style` argument controls cell labels:
 
 - `"value"`:
 
@@ -84,8 +83,7 @@ plot_triangle(
 
 - label_style:
 
-  One of `"value"` (default), `"cv"`, `"se"`, or `"ci"`. The uncertainty
-  styles require `method = "mack"`.
+  One of `"value"` (default), `"cv"`, `"se"`, or `"ci"`.
 
 - label_size:
 

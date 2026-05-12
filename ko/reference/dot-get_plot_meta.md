@@ -8,12 +8,12 @@ avoid repeating `switch` and `if` blocks for each variable type.
 ## Usage
 
 ``` r
-.get_plot_meta(value_var, amount_divisor = 1e+08)
+.get_plot_meta(metric, amount_divisor = 1e+08)
 ```
 
 ## Arguments
 
-- value_var:
+- metric:
 
   A single character string naming the variable to plot. Must be one of
   the recognised variable names in the `lossratio` package.

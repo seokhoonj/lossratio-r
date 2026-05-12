@@ -3,18 +3,8 @@
 object and return an "EDFit" object that bundles factor summaries,
 selected intensities, and a cell-level projection of cumulative loss
 and exposure ($full).
-Two methods are supported via the method argument:
-"basic" (default)
-Factor estimation only. Returns
-g_selected and sigma2 in $selected.
-
-"mack"
-Basic plus factor variance \(\mathrm{Var}(\hat{g}_k)\)
-added as g_var column in $selected.
-
-
-
-
+Returns g_selected, sigma2, and factor variance
+\(\mathrm{Var}(\hat{g}_k)\) (column g_var) in $selected.
 The $full projection table is produced by delegating to
 fit_lr() with method = "ed", so cumulative loss / exposure /
 loss-ratio projections and their standard errors are numerically
@@ -24,18 +14,8 @@ backtest(tri, target = "lr", loss_method = "ed").'><meta property="og:descriptio
 object and return an "EDFit" object that bundles factor summaries,
 selected intensities, and a cell-level projection of cumulative loss
 and exposure ($full).
-Two methods are supported via the method argument:
-"basic" (default)
-Factor estimation only. Returns
-g_selected and sigma2 in $selected.
-
-"mack"
-Basic plus factor variance \(\mathrm{Var}(\hat{g}_k)\)
-added as g_var column in $selected.
-
-
-
-
+Returns g_selected, sigma2, and factor variance
+\(\mathrm{Var}(\hat{g}_k)\) (column g_var) in $selected.
 The $full projection table is produced by delegating to
 fit_lr() with method = "ed", so cumulative loss / exposure /
 loss-ratio projections and their standard errors are numerically
@@ -150,16 +130,9 @@ backtest(tri, target = "lr", loss_method = "ed").'><meta property="og:image" con
 object and return an <code>"EDFit"</code> object that bundles factor summaries,
 selected intensities, and a cell-level projection of cumulative loss
 and exposure (<code>$full</code>).</p>
-<p>Two methods are supported via the <code>method</code> argument:</p><dl><dt><code>"basic"</code> (default)</dt>
-<dd><p>Factor estimation only. Returns
-<code>g_selected</code> and <code>sigma2</code> in <code>$selected</code>.</p></dd>
-
-<dt><code>"mack"</code></dt>
-<dd><p>Basic plus factor variance \(\mathrm{Var}(\hat{g}_k)\)
-added as <code>g_var</code> column in <code>$selected</code>.</p></dd>
-
-
-</dl><p>The <code>$full</code> projection table is produced by delegating to
+<p>Returns <code>g_selected</code>, <code>sigma2</code>, and factor variance
+\(\mathrm{Var}(\hat{g}_k)\) (column <code>g_var</code>) in <code>$selected</code>.</p>
+<p>The <code>$full</code> projection table is produced by delegating to
 <code><a href="fit_lr.html">fit_lr()</a></code> with <code>method = "ed"</code>, so cumulative loss / exposure /
 loss-ratio projections and their standard errors are numerically
 identical to those of <code>fit_lr(method = "ed")</code>. To validate an ED
@@ -173,7 +146,7 @@ projection via <code><a href="backtest.html">backtest()</a></code>, call
 <span>  <span class="va">x</span>,</span>
 <span>  target <span class="op">=</span> <span class="st">"loss"</span>,</span>
 <span>  exposure <span class="op">=</span> <span class="st">"premium"</span>,</span>
-<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"basic"</span>, <span class="st">"mack"</span><span class="op">)</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mack"</span><span class="op">)</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  na_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"zero"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
@@ -202,7 +175,7 @@ Forwarded to <code><a href="build_link.html">build_link()</a></code> and to down
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>One of <code>"basic"</code> or <code>"mack"</code>. Default is <code>"basic"</code>.</p></dd>
+<dd><p>Estimation method. Currently only <code>"mack"</code> is supported.</p></dd>
 
 
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
@@ -244,8 +217,8 @@ the latest from <code>$breakpoints</code>). When supplied, cohorts with
 <dd><p><code>EDSummary</code> of fitted intensities per development link.</p></dd>
 
 <dt><code>selected</code></dt>
-<dd><p><code>data.table</code> of selected <code>g_selected</code>, <code>sigma2</code>
-(and <code>g_var</code> when <code>method = "mack"</code>).</p></dd>
+<dd><p><code>data.table</code> of selected <code>g_selected</code>, <code>sigma2</code>,
+and <code>g_var</code>.</p></dd>
 
 <dt><code>full</code></dt>
 <dd><p><code>data.table</code> of per-cell cumulative target / exposure

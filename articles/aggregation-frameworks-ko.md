@@ -33,7 +33,14 @@
 library(lossratio)
 data(experience)
 
-tri <- build_triangle(experience, groups = coverage)
+tri <- build_triangle(
+  experience,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 head(tri)
 #>    coverage n_obs     cohort   dev     loss loss_incr   premium premium_incr
 #>      <char> <int>     <Date> <int>    <num>     <num>     <num>        <num>
@@ -78,7 +85,7 @@ plot(tri)              # 코호트별 궤적, 그룹별 facet
 # dev 축 모두 분기 단위로 다시 만들어 패널당 ~10 × 10 셀로 줄인다.
 # 문서 표시 크기에 맞춘 처리이며, 실제 분석에서는 플롯을 키우면 월
 # 단위 그대로 볼 수 있다.
-tri_q <- build_triangle(experience, groups = coverage, grain = "Q")
+tri_q <- build_triangle(experience, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr", grain = "Q")
 plot_triangle(tri_q)   # 코호트 × dev lr 히트맵
 ```
 
@@ -98,7 +105,7 @@ plot_triangle(tri_q)   # 코호트 × dev lr 히트맵
 
 ``` r
 
-cal <- build_calendar(experience, groups = coverage, calendar = "cy_m")
+cal <- build_calendar(experience, groups = "coverage", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
 head(cal)
 #>    coverage   calendar   dev      loss loss_incr   premium premium_incr
 #>      <char>     <Date> <int>     <num>     <num>     <num>        <num>
@@ -160,8 +167,11 @@ plot(cal, x_by = "dev")         # x axis: 순차 인덱스
 
 tot <- build_total(
   experience,
-  groups = coverage,
-  cohort = "uy_m",
+  groups      = "coverage",
+  cohort      = "uy_m",
+  dev         = "dev_m",
+  loss        = "loss_incr",
+  premium     = "premium_incr",
   period_from = "2023-04-01",
   period_to   = "2024-03-01"
 )
@@ -213,16 +223,16 @@ head(tot)
 
 ``` r
 
-attr(tri, "cohort_var")      # "uy_m"
+attr(tri, "cohort")      # "uy_m"
 #> [1] "uy_m"
 attr(tri, "cohort_type")     # "month"
 #> NULL
-attr(tri, "dev_var")         # "dev_m"
+attr(tri, "dev")         # "dev_m"
 #> [1] "dev_m"
 attr(tri, "dev_type")        # "month"
 #> NULL
 
-attr(cal, "calendar_var")    # "cy_m"
+attr(cal, "calendar")    # "cy_m"
 #> [1] "cy_m"
 attr(cal, "calendar_type")   # "month"
 #> NULL

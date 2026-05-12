@@ -60,14 +60,20 @@ A `data.table` of class `"CalendarSummary"` with one row per
 
   Weighted per-period loss ratio (`sum(loss_incr) / sum(premium_incr)`).
 
-The returned object preserves the attributes `group_var`,
-`calendar_var`, and `calendar_type`.
+The returned object preserves the attributes `groups`, `calendar`, and
+`calendar_type`.
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-cal <- build_calendar(df, groups = coverage)
+cal <- build_calendar(
+  df,
+  groups   = "coverage",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 smr  <- summary(cal)
 head(smr)
 } # }

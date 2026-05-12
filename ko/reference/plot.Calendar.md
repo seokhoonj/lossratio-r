@@ -1,8 +1,8 @@
 # Plot calendar-based development statistics
 
 Visualise an object of class `Calendar` as a time-series plot. The
-selected metric is plotted over the calendar-style `calendar_var`, or
-over the calendar development variable stored in `attr(x, "dev_var")`.
+selected metric is plotted over the calendar-style `calendar`, or over
+the calendar development variable stored in `attr(x, "dev")`.
 
 Ratio metrics (`lr`, `lr`) and proportion metrics (`loss_share`,
 `loss_incr_share`, `premium_share`, `premium_incr_share`) are plotted on
@@ -19,7 +19,7 @@ If grouping variables are present, lines are drawn separately by group.
 # S3 method for class 'Calendar'
 plot(
   x,
-  value_var = "lr",
+  metric = "lr",
   x_by = c("period", "dev"),
   amount_divisor = 1e+08,
   theme = c("view", "save", "shiny"),
@@ -33,7 +33,7 @@ plot(
 
   An object of class `Calendar`.
 
-- value_var:
+- metric:
 
   A single metric to plot. Must be one of: `"lr"`, `"lr_incr"`,
   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`,
@@ -46,7 +46,7 @@ plot(
 
   "period"
 
-  :   Use the calendar variable stored in `attr(x, "calendar_var")`.
+  :   Use the calendar variable stored in `attr(x, "calendar")`.
 
   "dev"
 
@@ -75,7 +75,7 @@ A `ggplot` object.
 ## Details
 
 The x-axis uses either the calendar variable stored in
-`attr(x, "calendar_var")` or the sequential `dev` column, depending on
+`attr(x, "calendar")` or the sequential `dev` column, depending on
 `x_by`.
 
 The loss ratio is defined as: \$\$lr = loss / premium\$\$
@@ -86,10 +86,16 @@ where `premium` denotes risk premium rather than written premium.
 
 ``` r
 if (FALSE) { # \dontrun{
-x <- build_calendar(df, coverage, cy_m)
+x <- build_calendar(
+  df,
+  groups   = "coverage",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 plot(x)
-plot(x, value_var = "lr")
+plot(x, metric = "lr")
 plot(x, x_by = "dev")
 } # }
 ```

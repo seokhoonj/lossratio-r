@@ -148,10 +148,10 @@ comparing groups on a common period basis.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">build_total</span><span class="op">(</span></span>
 <span>  <span class="va">df</span>,</span>
 <span>  <span class="va">groups</span>,</span>
-<span>  cohort <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
-<span>  dev <span class="op">=</span> <span class="st">"dev_m"</span>,</span>
-<span>  loss <span class="op">=</span> <span class="st">"loss_incr"</span>,</span>
-<span>  premium <span class="op">=</span> <span class="st">"premium_incr"</span>,</span>
+<span>  <span class="va">cohort</span>,</span>
+<span>  <span class="va">dev</span>,</span>
+<span>  <span class="va">loss</span>,</span>
+<span>  <span class="va">premium</span>,</span>
 <span>  period_from <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  period_to <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fill_gaps <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -171,26 +171,26 @@ comparing groups on a common period basis.</p>
 
 
 <dt id="arg-cohort">cohort<a class="anchor" aria-label="anchor" href="#arg-cohort"></a></dt>
-<dd><p>A single period variable. This may be an underwriting
-period (<code>uy_m</code>, <code>uy_q</code>, <code>uy_s</code>, <code>uy_a</code>) or a calendar period
-(<code>cy_m</code>, <code>cy_q</code>, <code>cy_s</code>, <code>cy_a</code>). Default <code>"uy_m"</code>.</p></dd>
+<dd><p>A single period variable (raw name). This may be an
+underwriting period (<code>"uy_m"</code>, <code>"uy_q"</code>, <code>"uy_s"</code>, <code>"uy_a"</code>) or a
+calendar period (<code>"cy_m"</code>, <code>"cy_q"</code>, <code>"cy_s"</code>, <code>"cy_a"</code>).</p></dd>
 
 
 <dt id="arg-dev">dev<a class="anchor" aria-label="anchor" href="#arg-dev"></a></dt>
-<dd><p>A single development variable used to count observed periods.
-Default <code>"dev_m"</code>.</p></dd>
+<dd><p>A single development variable (raw name) used to count
+observed periods.</p></dd>
 
 
 <dt id="arg-loss">loss<a class="anchor" aria-label="anchor" href="#arg-loss"></a></dt>
-<dd><p>Single character; per-period loss column in <code>df</code>.
-Default <code>"loss_incr"</code>.</p></dd>
+<dd><p>Single character; per-period loss column in <code>df</code>
+(raw name, e.g., <code>"loss_incr"</code>).</p></dd>
 
 
 <dt id="arg-premium">premium<a class="anchor" aria-label="anchor" href="#arg-premium"></a></dt>
-<dd><p>Single character; per-period premium column in <code>df</code>.
-Default <code>"premium_incr"</code>. Premium measure used as denominator for
-loss ratio calculations. For long-term health insurance applications,
-risk premium is commonly used.</p></dd>
+<dd><p>Single character; per-period premium column in <code>df</code>
+(raw name, e.g., <code>"premium_incr"</code>). Premium measure used as
+denominator for loss ratio calculations. For long-term health
+insurance applications, risk premium is commonly used.</p></dd>
 
 
 <dt id="arg-period-from">period_from<a class="anchor" aria-label="anchor" href="#arg-period-from"></a></dt>

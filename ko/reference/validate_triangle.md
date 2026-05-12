@@ -28,13 +28,7 @@ Two checks are performed:
 ## Usage
 
 ``` r
-validate_triangle(
-  df,
-  groups,
-  cohort = "uy_m",
-  dev = "dev_m",
-  calendar = "cy_m"
-)
+validate_triangle(df, groups, cohort, dev, calendar = NULL)
 ```
 
 ## Arguments
@@ -49,18 +43,17 @@ validate_triangle(
 
 - cohort:
 
-  A single cohort variable. Default `"uy_m"`.
+  A single cohort variable (raw column name).
 
 - dev:
 
-  A single development variable. Default `"dev_m"`.
+  A single development variable (raw column name).
 
 - calendar:
 
   Optional calendar period variable for row-level consistency check.
   When supplied, rows where `calendar < cohort` are flagged as invalid.
-  Default `"cy_m"`; pass `NULL` to skip this check, or a column name to
-  override.
+  Default `NULL` (skip this check).
 
 ## Value
 

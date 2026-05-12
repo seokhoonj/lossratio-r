@@ -5,8 +5,8 @@ S3 method for [`summary()`](https://rdrr.io/r/base/summary.html) on
 cumulative loss ratios (`lr`) and per-period loss ratios (`lr_incr`).
 
 The function aggregates data by the grouping variables stored in
-`attr(x, "group_var")` and the development variable stored in
-`attr(x, "dev_var")`.
+`attr(x, "groups")` and the development variable stored in
+`attr(x, "dev")`.
 
 The following statistics are computed:
 
@@ -35,7 +35,7 @@ summary(object, ...)
 
 ## Value
 
-A `data.table` grouped by `group_var` and `dev_var`, containing:
+A `data.table` grouped by `groups` and `dev`, containing:
 
 - n_obs:
 
@@ -65,8 +65,8 @@ A `data.table` grouped by `group_var` and `dev_var`, containing:
 
   Weighted per-period loss ratio (`sum(loss_incr) / sum(premium_incr)`)
 
-The returned object keeps the attributes `group_var` and `dev_var`, and
-its class is updated to `"TriangleSummary"`.
+The returned object keeps the attributes `groups` and `dev`, and its
+class is updated to `"TriangleSummary"`.
 
 ## Details
 
@@ -87,7 +87,14 @@ values.
 
 ``` r
 if (FALSE) { # \dontrun{
-d <- build_triangle(df, groups = coverage)
+d <- build_triangle(
+  df,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 smr <- summary(d)
 head(smr)
 attr(smr, "longer")

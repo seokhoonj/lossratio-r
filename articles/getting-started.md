@@ -41,7 +41,14 @@ str(experience)
 
 ``` r
 
-tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
+tri <- build_triangle(
+  experience[coverage == "SUR"],
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 class(tri)
 #> [1] "Triangle"   "data.table" "data.frame"
 names(tri)
@@ -66,8 +73,8 @@ names(tri)
   proportions),
 - standardises the cohort / development columns to the names `cohort`
   and `dev`,
-- preserves original column names as attributes (`cohort_var`,
-  `dev_var`, `loss_var`, `premium_var`) for downstream plot labels.
+- preserves original column names as attributes (`cohort`, `dev`,
+  `loss`, `premium`) for downstream plot labels.
 
 ## Step 2 — Diagnostics
 
@@ -546,7 +553,14 @@ homogeneous subset:
 
 ``` r
 
-sub <- build_triangle(experience[coverage == "SUR"], groups = coverage)
+sub <- build_triangle(
+  experience[coverage == "SUR"],
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 detect_regime(sub, K = 12, method = "e_divisive")
 #> <Regime>
 #>   method      : e_divisive

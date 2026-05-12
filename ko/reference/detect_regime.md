@@ -2,10 +2,10 @@
 
 Detect structural change points in the sequence of cohort-level
 development trajectories. Each underwriting cohort (indexed by the
-`cohort_var` of a `"Triangle"` object) is treated as a feature vector
-whose entries are the selected `target` metric observed at development
-periods `1, ..., K`. Cohorts are then ordered by underwriting period and
-tested for structural shifts in the multivariate sequence.
+`cohort` of a `"Triangle"` object) is treated as a feature vector whose
+entries are the selected `target` metric observed at development periods
+`1, ..., K`. Cohorts are then ordered by underwriting period and tested
+for structural shifts in the multivariate sequence.
 
 Multi-group `Triangle` inputs are supported: detection runs
 independently per group, and results are combined into a single `Regime`
@@ -124,7 +124,7 @@ An object of class `"Regime"`. For single-group input:
 
   Trajectory variable and window.
 
-- `cohort_var`:
+- `cohort`:
 
   Period variable from `x`.
 
@@ -157,7 +157,7 @@ An object of class `"Regime"`. For single-group input:
 
 For multi-group input the same fields are returned but with per-group
 containers: `$breakpoints` is a `data.table` with columns
-`{<group_var>, breakpoint}`; `$labels` gains a `<group_var>` column;
+`{<group>, breakpoint}`; `$labels` gains a `<group>` column;
 `$n_regimes` is a named integer vector; `$trajectory`, `$pca`, and
 `$dropped` are named lists keyed by group value. The `$multi_group`
 logical flag distinguishes the two layouts.
@@ -172,7 +172,14 @@ logical flag distinguishes the two layouts.
 ``` r
 if (FALSE) { # \dontrun{
 data(experience)
-tri_sur <- build_triangle(experience[coverage == "SUR"], groups = coverage)
+tri_sur <- build_triangle(
+  experience[coverage == "SUR"],
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 # Hierarchical clustering (no extra package dependency)
 r <- detect_regime(tri_sur, K = 12, method = "hclust",
@@ -185,7 +192,14 @@ plot(r)
 r_ecp <- detect_regime(tri_sur, K = 12, method = "e_divisive")
 
 # Multi-group: detection per coverage
-tri_all <- build_triangle(experience, groups = coverage)
+tri_all <- build_triangle(
+  experience,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 r_all <- detect_regime(tri_all, K = 12, method = "e_divisive")
 print(r_all$breakpoints)
 } # }

@@ -284,7 +284,14 @@
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Build the canonical cohort × dev structure</span></span>
-<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_triangle.html">build_triangle</a></span><span class="op">(</span></span>
+<span>  <span class="va">experience</span>,</span>
+<span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
+<span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
+<span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
+<span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span>
+<span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>              <span class="co"># cohort trajectories</span></span>
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>     <span class="co"># cell heatmap</span></span>
@@ -346,7 +353,7 @@
 </tr>
 </tbody>
 </table>
-<p>After <code>build_triangle</code>, downstream columns are standardized to <code>cohort</code> and <code>dev</code> regardless of input granularity (<code>uy_m</code> / <code>uy_q</code> / <code>uy_a</code>, etc.). Original column names are preserved as attributes (<code>cohort_var</code>, <code>calendar_var</code>, <code>dev_var</code>); grain is stored as <code>grain</code> (<code>"M"</code>/<code>"Q"</code>/ <code>"S"</code>/<code>"A"</code>).</p>
+<p>After <code>build_triangle</code>, downstream columns are standardized to <code>cohort</code> and <code>dev</code> regardless of input granularity (<code>uy_m</code> / <code>uy_q</code> / <code>uy_a</code>, etc.). Original column names are preserved as attributes (<code>cohort</code>, <code>calendar</code>, <code>dev</code>); grain is stored as <code>grain</code> (<code>"M"</code>/<code>"Q"</code>/ <code>"S"</code>/<code>"A"</code>).</p>
 </div>
 <div class="section level2">
 <h2 id="methods">Methods<a class="anchor" aria-label="anchor" href="#methods"></a>

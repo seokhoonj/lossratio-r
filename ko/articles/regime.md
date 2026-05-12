@@ -46,7 +46,14 @@ sequence.
 library(lossratio)
 
 data(experience)
-tri_sur <- build_triangle(experience[coverage == "SUR"], coverage)
+tri_sur <- build_triangle(
+  experience[coverage == "SUR"],
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 ```
 
 ## Detecting regimes
@@ -201,7 +208,14 @@ single `Regime` object.
 
 ``` r
 
-tri_all <- build_triangle(experience, groups = coverage)
+tri_all <- build_triangle(
+  experience,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 r_all   <- detect_regime(tri_all, K = 12, method = "e_divisive")
 r_all$breakpoints
 #>    coverage breakpoint
@@ -221,8 +235,8 @@ with a warning (others continue). If *all* groups fail,
 [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
 errors out.
 
-`plot(r_all)` produces a per-group panel (composited via `patchwork`
-when available).
+`plot(r_all)` returns a named list of per-group `ggplot` panels (keyed
+by group value).
 
 ## Relation to `fit_lr()`
 

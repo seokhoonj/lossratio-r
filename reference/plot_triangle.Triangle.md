@@ -25,7 +25,7 @@ where `premium` denotes risk premium rather than written premium.
 plot_triangle(
   x,
   type = c("value", "usage"),
-  value_var = "lr",
+  metric = "lr",
   label_style = c("value", "detail"),
   label_size = NULL,
   amount_divisor = 1e+08,
@@ -48,7 +48,7 @@ plot_triangle(
 
   "value"
 
-  :   (default) Per-cell metric heatmap controlled by `value_var`,
+  :   (default) Per-cell metric heatmap controlled by `metric`,
       `label_style`, `amount_divisor`, `nrow`, `ncol`.
 
   "usage"
@@ -59,7 +59,7 @@ plot_triangle(
       [`vignette("regime-break-filter")`](https://seokhoonj.github.io/lossratio/articles/regime-break-filter.md)
       for details.
 
-- value_var:
+- metric:
 
   A single metric to plot. Must be one of: `"lr"`, `"lr_incr"`,
   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`,
@@ -117,14 +117,13 @@ A ggplot object.
 
 ## Details
 
-The x-axis uses the development variable stored in `attr(x, "dev_var")`,
-and the y-axis uses the period variable stored in
-`attr(x, "cohort_var")`. If either axis variable is a period-like
-variable such as `uy_m`, `cy_m`, `uy_q`, `cy_q`, `uy_s`, `cy_s`, `uy_a`,
-or `cy_a`, it is formatted using
+The x-axis uses the development variable stored in `attr(x, "dev")`, and
+the y-axis uses the period variable stored in `attr(x, "cohort")`. If
+either axis variable is a period-like variable such as `uy_m`, `cy_m`,
+`uy_q`, `cy_q`, `uy_s`, `cy_s`, `uy_a`, or `cy_a`, it is formatted using
 [`.format_period()`](https://seokhoonj.github.io/lossratio/reference/dot-format_period.md).
 
-Facets are created from `attr(x, "group_var")`.
+Facets are created from `attr(x, "groups")`.
 
 Ratio and proportion values are displayed in percent. Amount values are
 displayed in units of 100 million KRW.
@@ -133,14 +132,21 @@ displayed in units of 100 million KRW.
 
 ``` r
 if (FALSE) { # \dontrun{
-d <- build_triangle(df, groups = pd_cat_nm)
+d <- build_triangle(
+  df,
+  groups   = pd_cat_nm,
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 plot_triangle(d)
-plot_triangle(d, value_var = "lr")
-plot_triangle(d, value_var = "loss")
-plot_triangle(d, value_var = "premium")
-plot_triangle(d, value_var = "loss_share")
-plot_triangle(d, value_var = "premium_share")
+plot_triangle(d, metric = "lr")
+plot_triangle(d, metric = "loss")
+plot_triangle(d, metric = "premium")
+plot_triangle(d, metric = "loss_share")
+plot_triangle(d, metric = "premium_share")
 plot_triangle(d, label_style = "value")
 plot_triangle(d, label_style = "detail")
 } # }

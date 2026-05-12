@@ -77,7 +77,7 @@ build_link(
 
 A `data.table` of class `"Link"` with columns:
 
-- Always: `[group_var]`, `cohort`, `ata_from`, `ata_to`, `ata_link`,
+- Always: `[group]`, `cohort`, `ata_from`, `ata_to`, `ata_link`,
   `target_from`, `target_to`, `target_delta`, `ata`.
 
 - If `exposure` is set: also `exposure_from`, `exposure_to`,
@@ -85,8 +85,8 @@ A `data.table` of class `"Link"` with columns:
 
 - If `weight` is set: also `weight`.
 
-The returned object carries attributes `group_var`, `cohort_var`,
-`dev_var`, `target`, `exposure` (or `NULL`), `weight` (or `NULL`).
+The returned object carries attributes `groups`, `cohort`, `dev`,
+`target`, `exposure` (or `NULL`), `weight` (or `NULL`).
 
 ## See also
 
@@ -100,7 +100,14 @@ The returned object carries attributes `group_var`, `cohort_var`,
 
 ``` r
 if (FALSE) { # \dontrun{
-tri <- build_triangle(df, group_var = coverage)
+tri <- build_triangle(
+  df,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 # Single-variable: cumulative-loss link factors (ATA workflow)
 link_loss <- build_link(tri, target = "loss")

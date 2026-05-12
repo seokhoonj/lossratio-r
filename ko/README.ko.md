@@ -1,8 +1,8 @@
 # lossratio
 
-> **장기 건강보험 손해율 분석 및 예측** 도구. 성숙점(maturity point)을
-> 활용한 단계 적응형(stage-adaptive: exposure-driven + chain ladder)
-> 손해율 예측 + regime shift 탐지 + backtest 검증을 한 워크플로로
+> **장기 건강보험 손해율 분석·예측·모니터링** 도구. Maturity 기반 단계
+> 적응형(stage-adaptive: ED → CL) 손해율 예측 + Regime break 탐지(인수
+> 정책 변경 등 코호트 축 구조 변화) + backtest 검증을 한 워크플로로
 > 묶는다.
 
 ![Triangle: cells used by each filter
@@ -11,19 +11,20 @@ configuration](articles/articles/figs/triangle_usage_panels.png)
 위 한 그림 — 패키지가 무엇을 하는지 한눈에:
 
 - **🟦 used** — 적합에 사용된 셀
-- **🟥 holdout** — backtest 검증용으로 빼둔 최근 대각선
+- **🟥 holdout** — `backtest` 검증용 대각셀
 - **⬜ unused** — `regime_break` / `recent` 필터로 제외된 영역
-- **수직 dash선** — maturity $`k^*`$ (ED → CL 전환 경계)
-- **수평 dash선** — regime shift $`k^**`$ (코호트 축 컷)
+- **수직 dash선** — `maturity` $`k^*`$ (ED → CL 전환 경계)
+- **수평 dash선** — `regime_break` $`k^{**}`$ (코호트 축 컷)
 
-## 왜 이 패키지인가
+## 주요 기능
 
-장기 건강보험은 *손해가 길게 발달*하고 *신상품 출시, 보험료 갱신, 인수
-정책 등 자주 바뀜*. 이 사실이 손해율 예측을 어렵게 만든다.
+장기 건강보험은 *코호트 안에서 클레임과 보험료가 오랜 기간 지속적으로
+발생하고* *신상품 출시·보험료 갱신·인수 정책 등 구조적 변화가 자주
+일어난다*. 이 사실이 손해율 예측을 어렵게 만든다.
 
 | 도전 과제 | `lossratio` 의 응답 |
 |----|----|
-| 초기 dev 의 ATA 인자가 너무 Noisy | **`fit_lr(method = "sa")`** — 성숙점 이전엔 노출 기반(ED) 으로 보험료에 고정, 이후엔 chain ladder |
+| 초기 dev 의 ATA 인자가 너무 Noisy | **`fit_lr(method = "sa")`** — maturity 이전엔 exposure-driven (ED), 이후엔 chain ladder (CL) |
 | 인수 기준 변경 등 구조적 변화 | **[`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)** + `regime_break` 인자 — 변화 이전 코호트를 자동으로 분리 |
 | “이 fit 이 얼마나 맞나?” 검증 | **[`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)** — 최근 N 대각선을 빼고 적합한 뒤 actual 과 비교 |
 
@@ -41,16 +42,23 @@ pak::pak("seokhoonj/lossratio")
 remotes::install_github("seokhoonj/lossratio")
 ```
 
-## 30초 Quick Start
+## Quick Start
 
 ``` r
 
 library(lossratio)
-data(experience)                                  # 번들 합성 데이터 (4 coverages)
+data(experience)           # 번들 합성 데이터 (4 coverages)
 
 # 1) Triangle 구축 — long-format 데이터 → 코호트 × dev 구조
 exp_sur <- experience[coverage == "SUR"]
-tri <- build_triangle(exp_sur, group_var = coverage)
+tri <- build_triangle(
+  exp_sur,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 plot(tri)
 
 # 2) 단계 적응형 손해율 적합 (default)
@@ -76,7 +84,7 @@ plot_triangle(bt)
 | [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md) / [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md) | 역할별 디스패처 — 단일 측 (SE / CI 포함) |
 | [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md) / [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md) | 단일 stage (chain ladder / exposure-driven) |
 | [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md) / [`fit_intensity()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_intensity.md) | link 단계 진단 — 곱셈형 / 덧셈형 |
-| [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md) | ATA 인자가 안정되는 dev 위치 |
+| [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md) | ATA 인자가 수렴하는 dev 위치 |
 | [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md) | 코호트 축 구조적 변화 탐지 |
 | [`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md) | 예측 손해율이 갱신을 멈추는 시점 |
 | [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md) | 대각선 hold-out 으로 fit 검증 (target = lr/loss/premium) |
@@ -84,13 +92,13 @@ plot_triangle(bt)
 
 ## 입력 형식
 
-| 컬럼                 | 의미                                         |
-|----------------------|----------------------------------------------|
-| `uy_m`               | 인수 시점 (Date) — 자동 grain 감지 (M/Q/S/A) |
-| `cy_m`               | 달력 시점 (Date)                             |
-| `loss_incr`          | 셀 기간별 손해                               |
-| `premium_incr`       | 셀 기간별 보험료 (장기 health 는 위험보험료) |
-| `group_var` *(선택)* | 상품 / 담보 / 연령 / 성별 / 가입금액         |
+| 컬럼              | 의미                                         |
+|-------------------|----------------------------------------------|
+| `uy_m`            | 인수 시점 (Date) — 자동 grain 감지 (M/Q/S/A) |
+| `cy_m`            | 달력 시점 (Date)                             |
+| `loss_incr`       | 셀 기간별 손해                               |
+| `premium_incr`    | 셀 기간별 보험료 (장기 health 는 위험보험료) |
+| `groups` *(선택)* | 상품 / 담보 / 연령 / 성별 / 가입금액         |
 
 [`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md)
 가 스키마 검증 + 날짜 코어션 + 코호트 × dev 집계 + 누적 컬럼 (`loss`,
@@ -100,10 +108,10 @@ plot_triangle(bt)
 
 ``` r
 
-plot(tri)                                                  # 코호트 trajectory
+plot(tri)                                                  # 코호트 궤적
 plot_triangle(tri)                                         # cell heatmap
 plot_triangle(lr, view = "value", region = "pred")         # 예측 영역 LR
-plot_triangle(lr, view = "usage")                          # 위 hero figure 와 동일 모드
+plot_triangle(lr, view = "usage")                          # 맨 위 이미지와 동일 모드
 ```
 
 [`plot_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.md)
@@ -129,9 +137,8 @@ vignette("triangle-link-and-maturity", package = "lossratio")
 
 ## Python sibling
 
-같은 저자가 작성한 Python 구현:
-[`lossratio-py`](https://github.com/seokhoonj/lossratio-py) —
-sklearn-style estimator (`lr.LR().fit(tri)`), polars 기반.
+Python 구현: [`lossratio-py`](https://github.com/seokhoonj/lossratio-py)
+— sklearn-style estimator (`lr.LR().fit(tri)`), polars 기반.
 
 ## 라이선스 / 저자
 

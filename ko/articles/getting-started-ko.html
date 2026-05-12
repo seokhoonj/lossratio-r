@@ -137,7 +137,14 @@ calendar / underwriting 기간 컬럼, <code>coverage</code> 그룹 컬럼,
 <h2 id="단계-코호트-경과-기간-구조-구축">1단계 — 코호트 × 경과 기간 구조 구축<a class="anchor" aria-label="anchor" href="#%EB%8B%A8%EA%B3%84-%EC%BD%94%ED%98%B8%ED%8A%B8-%EA%B2%BD%EA%B3%BC-%EA%B8%B0%EA%B0%84-%EA%B5%AC%EC%A1%B0-%EA%B5%AC%EC%B6%95"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, groups <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span></span>
+<span>  <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>,</span>
+<span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
+<span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
+<span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
+<span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span>
+<span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span>
+<span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "Triangle"   "data.table" "data.frame"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
@@ -160,9 +167,8 @@ expected type 으로 코어션한다,</li>
 비율) 를 추가한다,</li>
 <li>코호트 / 경과 기간 컬럼을 표준명 <code>cohort</code> 와
 <code>dev</code> 로 rename 한다,</li>
-<li>원본 컬럼명은 attribute (<code>cohort_var</code>,
-<code>dev_var</code>) 로 보존하여 이후 plot 라벨에서 활용 가능하게
-한다.</li>
+<li>원본 컬럼명은 attribute (<code>cohort</code>, <code>dev</code>) 로
+보존하여 이후 plot 라벨에서 활용 가능하게 한다.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -610,7 +616,14 @@ expected type 으로 코어션한다,</li>
 행동하는지 검사한다. 동질적 부분집합에 한하여 손해율 적합을 수행하기
 위한 전처리 단계로 활용된다.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, groups <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span></span>
+<span>  <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>,</span>
+<span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
+<span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
+<span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
+<span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span>
+<span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span>
+<span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">sub</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Regime&gt;</span></span>
 <span><span class="co">#&gt;   method      : e_divisive</span></span>

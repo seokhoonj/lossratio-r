@@ -90,7 +90,7 @@ detect_convergence(
 An object of class `Convergence` (named list) containing the detected
 `k_conv`, the candidate sequence `v`, and the diagnostic sequences
 `R_v`, `SE_param_v`, `D_v`, `pass_v`. Metadata is carried on attributes
-(`group_var`, `target`, `fit_fn_name`).
+(`groups`, `target`, `fit_fn_name`).
 
 ## See also
 

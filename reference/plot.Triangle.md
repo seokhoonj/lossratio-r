@@ -26,7 +26,7 @@ Summary statistics are computed from
 # S3 method for class 'Triangle'
 plot(
   x,
-  value_var = "lr",
+  metric = "lr",
   summary = FALSE,
   summary_min_n = 5L,
   amount_divisor = 1e+08,
@@ -42,7 +42,7 @@ plot(
 
   An object of class `Triangle`.
 
-- value_var:
+- metric:
 
   A single metric to plot. Must be one of: `"lr"`, `"lr_incr"`,
   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`,
@@ -93,10 +93,9 @@ A `ggplot` object.
 
 ## Details
 
-The x-axis uses the development variable stored in `attr(x, "dev_var")`.
+The x-axis uses the development variable stored in `attr(x, "dev")`.
 Cohort lines are grouped by the period variable stored in
-`attr(x, "cohort_var")`, and facets are created from
-`attr(x, "group_var")`.
+`attr(x, "cohort")`, and facets are created from `attr(x, "groups")`.
 
 The cumulative loss ratio is defined here as: \$\$lr = loss /
 premium\$\$

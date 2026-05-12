@@ -73,8 +73,8 @@ plot(
 
 ## Value
 
-A `ggplot` object (single-group) or a `patchwork` / list-of-`ggplot`
-composite (multi-group; one panel per group).
+A `ggplot` object (single-group), or a named list of `ggplot` objects
+(multi-group; one entry per group).
 
 ## See also
 

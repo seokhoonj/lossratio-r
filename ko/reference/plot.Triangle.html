@@ -100,7 +100,7 @@ in grey and overlays three summary statistics:</p><ul><li><p>Mean</p></li>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'Triangle'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  value_var <span class="op">=</span> <span class="st">"lr"</span>,</span>
+<span>  metric <span class="op">=</span> <span class="st">"lr"</span>,</span>
 <span>  summary <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  summary_min_n <span class="op">=</span> <span class="fl">5L</span>,</span>
 <span>  amount_divisor <span class="op">=</span> <span class="fl">1e+08</span>,</span>
@@ -118,7 +118,7 @@ in grey and overlays three summary statistics:</p><ul><li><p>Mean</p></li>
 <dd><p>An object of class <code>Triangle</code>.</p></dd>
 
 
-<dt id="arg-value-var">value_var<a class="anchor" aria-label="anchor" href="#arg-value-var"></a></dt>
+<dt id="arg-metric">metric<a class="anchor" aria-label="anchor" href="#arg-metric"></a></dt>
 <dd><p>A single metric to plot. Must be one of:
 <code>"lr"</code>, <code>"lr_incr"</code>,
 <code>"loss"</code>, <code>"loss_incr"</code>, <code>"premium"</code>, <code>"premium_incr"</code>,
@@ -167,10 +167,10 @@ or free in one dimension (<code>"free_x"</code>, <code>"free_y"</code>)?</p></dd
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The x-axis uses the development variable stored in <code>attr(x, "dev_var")</code>.
+    <p>The x-axis uses the development variable stored in <code>attr(x, "dev")</code>.
 Cohort lines are grouped by the period variable stored in
-<code>attr(x, "cohort_var")</code>, and facets are created from
-<code>attr(x, "group_var")</code>.</p>
+<code>attr(x, "cohort")</code>, and facets are created from
+<code>attr(x, "groups")</code>.</p>
 <p>The cumulative loss ratio is defined here as:
 $$lr = loss / premium$$</p>
 <p>For long-term health insurance applications, risk premium is commonly

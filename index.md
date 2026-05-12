@@ -120,7 +120,14 @@ library(lossratio)
 data(experience)
 
 # Build the canonical cohort × dev structure
-tri <- build_triangle(experience, group_var = coverage)
+tri <- build_triangle(
+  experience,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
@@ -157,8 +164,8 @@ The same long-format experience data can be viewed three ways:
 
 After `build_triangle`, downstream columns are standardized to `cohort`
 and `dev` regardless of input granularity (`uy_m` / `uy_q` / `uy_a`,
-etc.). Original column names are preserved as attributes (`cohort_var`,
-`calendar_var`, `dev_var`); grain is stored as `grain` (`"M"`/`"Q"`/
+etc.). Original column names are preserved as attributes (`cohort`,
+`calendar`, `dev`); grain is stored as `grain` (`"M"`/`"Q"`/
 `"S"`/`"A"`).
 
 ## Methods

@@ -111,15 +111,15 @@ An object of class `"CLFit"` containing:
 
   The method used (`"mack"`).
 
-- `group_var`:
+- `groups`:
 
   Character vector of grouping variable names.
 
-- `cohort_var`:
+- `cohort`:
 
   Character scalar of period variable name.
 
-- `dev_var`:
+- `dev`:
 
   Character scalar of development variable name.
 
@@ -203,7 +203,14 @@ An object of class `"CLFit"` containing:
 ``` r
 if (FALSE) { # \dontrun{
 data(experience)
-tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
+tri <- build_triangle(
+  experience[coverage == "SUR"],
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 # Mack chain ladder with process / parameter standard errors
 cl_mack <- fit_cl(tri, target = "loss", method = "mack")

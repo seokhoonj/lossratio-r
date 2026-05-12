@@ -32,13 +32,20 @@ summary(object, digits = 4L, ...)
 
 A `data.table` of class `"TotalSummary"` with the same rows as the input
 `Total` (one per group), ordered by descending `lr`. Preserves the
-`group_var` attribute.
+`groups` attribute.
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-tot <- build_total(df, groups = coverage)
+tot <- build_total(
+  df,
+  groups  = "coverage",
+  cohort  = "uy_m",
+  dev     = "dev_m",
+  loss    = "loss_incr",
+  premium = "premium_incr"
+)
 summary(tot)
 } # }
 ```

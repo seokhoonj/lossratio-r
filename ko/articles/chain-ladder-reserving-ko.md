@@ -29,7 +29,14 @@
 
 library(lossratio)
 data(experience)
-tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
+tri <- build_triangle(
+  experience[coverage == "SUR"],
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 cl <- fit_cl(tri, target = "loss", method = "mack")
 print(cl)

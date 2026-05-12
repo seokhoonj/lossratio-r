@@ -31,7 +31,14 @@ Conceptually:
 library(lossratio)
 data(experience)
 
-tri <- build_triangle(experience, groups = coverage)
+tri <- build_triangle(
+  experience,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 head(tri)
 #>    coverage n_obs     cohort   dev     loss loss_incr   premium premium_incr
 #>      <char> <int>     <Date> <int>    <num>     <num>     <num>        <num>
@@ -76,7 +83,7 @@ plot(tri)              # one trajectory per cohort, faceted by group
 # so use quarterly cohort and dev to bring each panel down to ~10 x 10
 # cells. This fits the documentation's display size; in practice you
 # can keep monthly resolution by enlarging the plot.
-tri_q <- build_triangle(experience, groups = coverage, grain = "Q")
+tri_q <- build_triangle(experience, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr", grain = "Q")
 plot_triangle(tri_q)   # cohort × dev heatmap of lr
 ```
 
@@ -95,7 +102,7 @@ Use `Triangle` as input to: -
 
 ``` r
 
-cal <- build_calendar(experience, groups = coverage, calendar = "cy_m")
+cal <- build_calendar(experience, groups = "coverage", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
 head(cal)
 #>    coverage   calendar   dev      loss loss_incr   premium premium_incr
 #>      <char>     <Date> <int>     <num>     <num>     <num>        <num>
@@ -155,8 +162,11 @@ plot(cal, x_by = "dev")         # x axis: sequential index
 
 tot <- build_total(
   experience,
-  groups = coverage,
-  cohort = "uy_m",
+  groups      = "coverage",
+  cohort      = "uy_m",
+  dev         = "dev_m",
+  loss        = "loss_incr",
+  premium     = "premium_incr",
   period_from = "2023-04-01",
   period_to   = "2024-03-01"
 )
@@ -205,16 +215,16 @@ attributes (used for plot labels and granularity-aware date formatting):
 
 ``` r
 
-attr(tri, "cohort_var")     # "uy_m"
+attr(tri, "cohort")     # "uy_m"
 #> [1] "uy_m"
 attr(tri, "cohort_type")    # "month"
 #> NULL
-attr(tri, "dev_var")        # "dev_m"
+attr(tri, "dev")        # "dev_m"
 #> [1] "dev_m"
 attr(tri, "dev_type")       # "month"
 #> NULL
 
-attr(cal, "calendar_var")   # "cy_m"
+attr(cal, "calendar")   # "cy_m"
 #> [1] "cy_m"
 attr(cal, "calendar_type")  # "month"
 #> NULL

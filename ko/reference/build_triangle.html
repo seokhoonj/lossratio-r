@@ -140,11 +140,12 @@ each development cell across products or other grouping variables.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">build_triangle</span><span class="op">(</span></span>
 <span>  <span class="va">df</span>,</span>
 <span>  <span class="va">groups</span>,</span>
-<span>  cohort <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
-<span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
+<span>  <span class="va">cohort</span>,</span>
+<span>  calendar <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  dev <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">loss</span>,</span>
+<span>  <span class="va">premium</span>,</span>
 <span>  grain <span class="op">=</span> <span class="st">"auto"</span>,</span>
-<span>  loss <span class="op">=</span> <span class="st">"loss_incr"</span>,</span>
-<span>  premium <span class="op">=</span> <span class="st">"premium_incr"</span>,</span>
 <span>  cell_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"incremental"</span>, <span class="st">"cumulative"</span><span class="op">)</span>,</span>
 <span>  fill_gaps <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -166,15 +167,36 @@ integer <code>yyyy</code> / <code>yyyymm</code> / <code>yyyymmdd</code>, ISO str
 
 
 <dt id="arg-cohort">cohort<a class="anchor" aria-label="anchor" href="#arg-cohort"></a></dt>
-<dd><p>Single column defining the underwriting/exposure
-period start (e.g., <code>"uy_m"</code>). Default <code>"uy_m"</code>.</p></dd>
+<dd><p>Single column (raw name) defining the underwriting /
+exposure period start (e.g., <code>"uy_m"</code>).</p></dd>
 
 
 <dt id="arg-calendar">calendar<a class="anchor" aria-label="anchor" href="#arg-calendar"></a></dt>
-<dd><p>Single column defining the calendar period of
-the observation (e.g., <code>"cy_m"</code>). Default <code>"cy_m"</code>. Used together
-with <code>cohort</code> to derive the development column at the resolved
-grain.</p></dd>
+<dd><p>Single column (raw name) defining the calendar period of
+the observation (e.g., <code>"cy_m"</code>). Optional — supply either <code>calendar</code>
+or <code>dev</code> (or both). When <code>calendar</code> is given, <code>dev</code> is derived
+internally via <code>count_periods(cohort, calendar, grain)</code>.</p></dd>
+
+
+<dt id="arg-dev">dev<a class="anchor" aria-label="anchor" href="#arg-dev"></a></dt>
+<dd><p>Single column (raw name) holding pre-computed development
+periods (e.g., <code>"dev_m"</code>). Optional — supply either <code>calendar</code>
+or <code>dev</code> (or both). When only <code>dev</code> is given, the calendar
+axis is omitted from the attribute (downstream calendar-diagonal
+logic uses cohort + dev). When both are given, <code>dev</code> is
+cross-checked against <code>count_periods(cohort, calendar, grain)</code>.</p></dd>
+
+
+<dt id="arg-loss">loss<a class="anchor" aria-label="anchor" href="#arg-loss"></a></dt>
+<dd><p>Single character; per-period loss column in <code>df</code>
+(raw name, e.g., <code>"loss_incr"</code>).</p></dd>
+
+
+<dt id="arg-premium">premium<a class="anchor" aria-label="anchor" href="#arg-premium"></a></dt>
+<dd><p>Single character; per-period premium column in <code>df</code>
+(raw name, e.g., <code>"premium_incr"</code>). Premium measure used as
+denominator for loss ratio calculations. For long-term health
+insurance applications, risk premium is commonly used.</p></dd>
 
 
 <dt id="arg-grain">grain<a class="anchor" aria-label="anchor" href="#arg-grain"></a></dt>
@@ -182,18 +204,6 @@ grain.</p></dd>
 <code>"auto"</code> infers the grain from the <code>cohort</code> value spacing.
 Explicit values must be at least as coarse as the input grain;
 the input is binned (floored) to that grain before aggregation.</p></dd>
-
-
-<dt id="arg-loss">loss<a class="anchor" aria-label="anchor" href="#arg-loss"></a></dt>
-<dd><p>Single character; per-period loss column in <code>df</code>.
-Default <code>"loss_incr"</code>.</p></dd>
-
-
-<dt id="arg-premium">premium<a class="anchor" aria-label="anchor" href="#arg-premium"></a></dt>
-<dd><p>Single character; per-period premium column in <code>df</code>.
-Default <code>"premium_incr"</code>. Premium measure used as denominator for
-loss ratio calculations. For long-term health insurance applications,
-risk premium is commonly used.</p></dd>
 
 
 <dt id="arg-cell-type">cell_type<a class="anchor" aria-label="anchor" href="#arg-cell-type"></a></dt>
@@ -243,9 +253,9 @@ of loss within each <code>(cohort, dev)</code> cell</p></dd>
 proportions of premium within each <code>(cohort, dev)</code> cell</p></dd>
 
 
-</dl><p>Attributes set on the returned object: <code>group_var</code>, <code>cohort_var</code>,
-<code>calendar_var</code>, <code>grain</code>, <code>dev_var</code> (= <code>"dev_&lt;lower(grain)&gt;"</code>, e.g.
-<code>"dev_m"</code>), <code>loss_var</code>, <code>premium_var</code>, <code>longer</code>.</p>
+</dl><p>Attributes set on the returned object: <code>groups</code>, <code>cohort</code>,
+<code>calendar</code>, <code>grain</code>, <code>dev</code> (= <code>"dev_&lt;lower(grain)&gt;"</code>, e.g.
+<code>"dev_m"</code>), <code>loss</code>, <code>premium</code>, <code>longer</code>.</p>
     </div>
 
     <div class="section level2">
@@ -261,7 +271,14 @@ proportions of premium within each <code>(cohort, dev)</code> cell</p></dd>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># auto-detected monthly grain</span></span></span>
-<span class="r-in"><span><span class="va">res_m</span> <span class="op">&lt;-</span> <span class="fu">build_triangle</span><span class="op">(</span><span class="va">df</span>, groups <span class="op">=</span> <span class="va">pd_cd</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">res_m</span> <span class="op">&lt;-</span> <span class="fu">build_triangle</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">df</span>,</span></span>
+<span class="r-in"><span>  groups   <span class="op">=</span> <span class="va">pd_cd</span>,</span></span>
+<span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
+<span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
+<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># explicit quarterly view (re-bins monthly input to quarterly)</span></span></span>
 <span class="r-in"><span><span class="va">res_q</span> <span class="op">&lt;-</span> <span class="fu">build_triangle</span><span class="op">(</span><span class="va">df</span>, groups <span class="op">=</span> <span class="va">pd_cd</span>, grain <span class="op">=</span> <span class="st">"Q"</span><span class="op">)</span></span></span>

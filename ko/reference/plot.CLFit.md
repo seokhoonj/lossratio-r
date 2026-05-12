@@ -5,11 +5,10 @@ Visualise an object of class `"CLFit"`.
 Two plot types are supported:
 
 - `"projection"`: observed and projected cumulative values by cohort
-  over development periods. When `method = "mack"`, optional confidence
-  bands are drawn using `target_total_se`.
+  over development periods. Optional confidence bands are drawn using
+  `target_total_se`.
 
-- `"reserve"`: reserve summary by cohort with optional error bars. Only
-  available when `method = "mack"`.
+- `"reserve"`: reserve summary by cohort with optional error bars.
 
 ## Usage
 
@@ -41,13 +40,12 @@ plot(
 
 - conf_level:
 
-  Confidence level for interval display. Default is `0.95`. Only used
-  when `method = "mack"`.
+  Confidence level for interval display. Default is `0.95`.
 
 - show_interval:
 
   Logical; if `TRUE`, show normal-approximation confidence intervals.
-  Default is `TRUE`. Silently ignored when `method = "basic"`.
+  Default is `TRUE`.
 
 - amount_divisor:
 

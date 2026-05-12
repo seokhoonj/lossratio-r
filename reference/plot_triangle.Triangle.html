@@ -143,7 +143,7 @@ $$lr = loss / premium$$</p>
 <span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"value"</span>, <span class="st">"usage"</span><span class="op">)</span>,</span>
-<span>  value_var <span class="op">=</span> <span class="st">"lr"</span>,</span>
+<span>  metric <span class="op">=</span> <span class="st">"lr"</span>,</span>
 <span>  label_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"value"</span>, <span class="st">"detail"</span><span class="op">)</span>,</span>
 <span>  label_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  amount_divisor <span class="op">=</span> <span class="fl">1e+08</span>,</span>
@@ -165,7 +165,7 @@ $$lr = loss / premium$$</p>
 <dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
 <dd><p>Plot type. One of:</p><dl><dt>"value"</dt>
 <dd><p>(default) Per-cell metric heatmap controlled by
-<code>value_var</code>, <code>label_style</code>, <code>amount_divisor</code>, <code>nrow</code>, <code>ncol</code>.</p></dd>
+<code>metric</code>, <code>label_style</code>, <code>amount_divisor</code>, <code>nrow</code>, <code>ncol</code>.</p></dd>
 
 <dt>"usage"</dt>
 <dd><p>Cell-status heatmap (used / holdout / unused /
@@ -176,7 +176,7 @@ via <code>...</code>. See <code><a href="../articles/regime-break-filter.html">v
 </dl></dd>
 
 
-<dt id="arg-value-var">value_var<a class="anchor" aria-label="anchor" href="#arg-value-var"></a></dt>
+<dt id="arg-metric">metric<a class="anchor" aria-label="anchor" href="#arg-metric"></a></dt>
 <dd><p>A single metric to plot. Must be one of:
 <code>"lr"</code>, <code>"lr_incr"</code>,
 <code>"loss"</code>, <code>"loss_incr"</code>, <code>"premium"</code>, <code>"premium_incr"</code>, <code>"margin"</code>, <code>"margin_incr"</code>,
@@ -229,12 +229,12 @@ Default is <code>1e8</code></p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The x-axis uses the development variable stored in <code>attr(x, "dev_var")</code>, and
-the y-axis uses the period variable stored in <code>attr(x, "cohort_var")</code>.
+    <p>The x-axis uses the development variable stored in <code>attr(x, "dev")</code>, and
+the y-axis uses the period variable stored in <code>attr(x, "cohort")</code>.
 If either axis variable is a period-like variable such as <code>uy_m</code>, <code>cy_m</code>,
 <code>uy_q</code>, <code>cy_q</code>, <code>uy_s</code>, <code>cy_s</code>, <code>uy_a</code>, or <code>cy_a</code>, it is formatted using
 <code><a href="dot-format_period.html">.format_period()</a></code>.</p>
-<p>Facets are created from <code>attr(x, "group_var")</code>.</p>
+<p>Facets are created from <code>attr(x, "groups")</code>.</p>
 <p>Ratio and proportion values are displayed in percent. Amount values are
 displayed in units of 100 million KRW.</p>
     </div>
@@ -242,14 +242,21 @@ displayed in units of 100 million KRW.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">df</span>, groups <span class="op">=</span> <span class="va">pd_cat_nm</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="build_triangle.html">build_triangle</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">df</span>,</span></span>
+<span class="r-in"><span>  groups   <span class="op">=</span> <span class="va">pd_cat_nm</span>,</span></span>
+<span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
+<span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
+<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, value_var <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, value_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, value_var <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, value_var <span class="op">=</span> <span class="st">"loss_share"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, value_var <span class="op">=</span> <span class="st">"premium_share"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, metric <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, metric <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, metric <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, metric <span class="op">=</span> <span class="st">"loss_share"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, metric <span class="op">=</span> <span class="st">"premium_share"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, label_style <span class="op">=</span> <span class="st">"value"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
