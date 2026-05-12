@@ -63,7 +63,14 @@
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
+#' tri <- build_triangle(
+#'   experience[coverage == "SUR"],
+#'   groups   = "coverage",
+#'   cohort   = "uy_m",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr"
+#' )
 #'
 #' lf    <- fit_loss(tri)                    # SA (default)
 #' lf_ed <- fit_loss(tri, method = "ed")
@@ -103,22 +110,19 @@ fit_loss <- function(x,
     maturity_args <- list()
   }
 
-  # 1) standardized columns + Triangle structural attrs ------------------
+  # 1) Triangle structural attrs ----------------------------------------
   # Triangle is guaranteed to carry standardized `loss` / `premium`
-  # columns (build_triangle convention). No need to accept column args.
-  l_var <- "loss"
-  p_var <- "premium"
-
-  grp <- attr(x, "group_var")
-  coh <- attr(x, "cohort_var")
-  dev <- attr(x, "dev_var")
+  # columns (build_triangle convention).
+  grp <- attr(x, "groups")
+  coh <- attr(x, "cohort")
+  dev <- attr(x, "dev")
 
   if (is.null(grp)) grp <- character(0)
 
   if (length(coh) != 1L)
-    stop("`x` must contain exactly one `cohort_var`.", call. = FALSE)
+    stop("`x` must contain exactly one `cohort`.", call. = FALSE)
   if (length(dev) != 1L)
-    stop("`x` must contain exactly one `dev_var`.", call. = FALSE)
+    stop("`x` must contain exactly one `dev`.", call. = FALSE)
 
   # preserve original user input — nullified below for SA hybrid path
   loss_regime_break_user <- loss_regime_break
@@ -131,7 +135,7 @@ fit_loss <- function(x,
     if (!is.null(bd) && method == "sa") {
       pre_loss_fit <- fit_ata(
         x,
-        target        = l_var,
+        target        = "loss",
         alpha         = alpha,
         sigma_method  = sigma_method,
         maturity_args = maturity_args
@@ -162,15 +166,15 @@ fit_loss <- function(x,
 
         x <- .apply_break_filter(
           x, loss_regime_break,
-          grp = grp,
-          coh = "cohort", dev = "dev",
+          grp       = grp,
+          coh       = "cohort", dev = "dev",
           dev_split = mat_k
         )
         if (!is.null(recent)) {
           x <- .apply_recent_filter(
             x, recent,
-            grp = grp,
-            coh = "cohort", dev = "dev",
+            grp       = grp,
+            coh       = "cohort", dev = "dev",
             dev_split = mat_k
           )
           recent <- NULL
@@ -208,7 +212,7 @@ fit_loss <- function(x,
   # 4) loss ATA + Mack f_var ---------------------------------------------
   loss_ata_fit <- fit_ata(
     x,
-    target        = l_var,
+    target        = "loss",
     alpha         = alpha,
     sigma_method  = sigma_method,
     recent        = recent,
@@ -223,8 +227,8 @@ fit_loss <- function(x,
   # 5) ED intensities g_k + Mack g_var -----------------------------------
   intensity_fit <- fit_intensity(
     x,
-    target       = l_var,
-    exposure     = p_var,
+    target       = "loss",
+    exposure     = "premium",
     alpha        = alpha,
     sigma_method = sigma_method,
     recent       = recent,
@@ -251,8 +255,8 @@ fit_loss <- function(x,
     triangle        = x,
     ed_fit          = ed_fit,
     premium_ata_fit = premium_ata_fit,
-    target_var      = l_var,
-    exposure_var    = p_var
+    target          = "loss",
+    exposure        = "premium"
   )
 
   # 8) join ED factors (g_selected, g_sigma2, g_var) --------------------
@@ -376,9 +380,9 @@ fit_loss <- function(x,
   out <- list(
     call              = match.call(),
     data              = x,
-    group_var         = grp,
-    cohort_var        = coh,
-    dev_var           = dev,
+    groups            = grp,
+    cohort            = coh,
+    dev               = dev,
     full              = full,
     pred              = pred,
     maturity          = maturity,
@@ -407,7 +411,7 @@ fit_loss <- function(x,
 #' @param ... Unused.
 #' @export
 print.LossFit <- function(x, ...) {
-  grp <- x$group_var
+  grp <- x$groups
   if (is.null(grp)) grp <- character(0)
 
   cat("<LossFit>\n")
@@ -451,7 +455,7 @@ print.LossFit <- function(x, ...) {
 #' @param ... Unused.
 #' @export
 summary.LossFit <- function(object, ...) {
-  grp <- object$group_var
+  grp <- object$groups
   if (is.null(grp)) grp <- character(0)
 
   full <- .ensure_dt(object$full)
@@ -683,18 +687,18 @@ summary.LossFit <- function(object, ...) {
 .expand_grid <- function(triangle,
                          ed_fit,
                          premium_ata_fit,
-                         target_var,
-                         exposure_var) {
+                         target,
+                         exposure) {
 
-  grp <- attr(triangle, "group_var")
+  grp <- attr(triangle, "groups")
 
   if (is.null(grp)) grp <- character(0)
 
   raw <- .ensure_dt(triangle)
 
   obs <- raw[, .(
-    loss_obs    = .SD[[target_var]],
-    premium_obs = .SD[[exposure_var]]
+    loss_obs    = .SD[[target]],
+    premium_obs = .SD[[exposure]]
   ), by = c(grp, "cohort", "dev")]
 
   max_dev_ed   <- max(ed_fit$selected$ata_to, na.rm = TRUE)

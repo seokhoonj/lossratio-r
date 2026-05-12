@@ -18,8 +18,7 @@
 )
 }
 \description{
-Builds one PCA panel per group via \code{\link[ggshort:plot_pca]{ggshort::plot_pca()}} and combines
-them with patchwork if available, otherwise returns a list of ggplot
-objects.
+Builds one PCA panel per group via \code{\link[ggshort:plot_pca]{ggshort::plot_pca()}} and returns
+a named list of \code{ggplot} objects keyed by group value.
 }
 \keyword{internal}

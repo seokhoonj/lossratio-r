@@ -24,7 +24,7 @@
 .compute_dv <- function(triangle, min_n_cohorts = 5L) {
 
   .assert_class(triangle, "Triangle")
-  grp <- attr(triangle, "group_var")
+  grp <- attr(triangle, "groups")
   near_zero_floor <- 1e-8
 
   dt <- .ensure_dt(triangle)
@@ -144,7 +144,7 @@
 #' @return An object of class `Convergence` (named list) containing the
 #'   detected `k_conv`, the candidate sequence `v`, and the diagnostic
 #'   sequences `R_v`, `SE_param_v`, `D_v`, `pass_v`. Metadata is carried
-#'   on attributes (`group_var`, `target`, `fit_fn_name`).
+#'   on attributes (`groups`, `target`, `fit_fn_name`).
 #'
 #' @seealso [detect_maturity()], [backtest()], [fit_lr()]
 #'
@@ -180,9 +180,9 @@ detect_convergence <- function(triangle,
     stop("`min_run` must be a single integer >= 1.", call. = FALSE)
   min_run <- as.integer(min_run)
 
-  grp <- attr(triangle, "group_var")
+  grp <- attr(triangle, "groups")
   if (is.null(grp)) grp <- character(0)
-  dev <- attr(triangle, "dev_var")
+  dev <- attr(triangle, "dev")
 
   # 2) resolve k_star --------------------------------------------------
   if (is.null(k_star)) {
@@ -281,7 +281,7 @@ detect_convergence <- function(triangle,
   # 8) assemble return object ------------------------------------------
   out <- list(
     call          = match.call(),
-    k_conv      = k_conv,
+    k_conv        = k_conv,
     k_star        = k_star,
     V             = V,
     v             = v_seq,
@@ -296,10 +296,10 @@ detect_convergence <- function(triangle,
     min_n_cohorts = min_n_cohorts
   )
 
-  data.table::setattr(out, "group_var",   grp)
+  data.table::setattr(out, "groups",   grp)
   data.table::setattr(out, "target",     "lr")
   data.table::setattr(out, "fit_fn_name", fit_fn_name)
-  data.table::setattr(out, "dev_var",     dev)
+  data.table::setattr(out, "dev",     dev)
   class(out) <- "Convergence"
   out
 }
@@ -395,41 +395,41 @@ plot.Convergence <- function(x,
     ggplot2::aes(x = .data[["v"]], y = .data[["value"]])
   ) +
     ggplot2::geom_hline(
-      data = threshold_tbl,
-      mapping = ggplot2::aes(yintercept = .data[["threshold"]]),
+      data     = threshold_tbl,
+      mapping  = ggplot2::aes(yintercept = .data[["threshold"]]),
       linetype = "dashed",
-      color = "#d62728"
+      color    = "#d62728"
     ) +
     ggplot2::geom_vline(
       xintercept = x$k_star,
-      linetype = "dotted",
-      color = "grey40"
+      linetype   = "dotted",
+      color      = "grey40"
     ) +
     ggplot2::geom_line(linewidth = 0.6, color = "#1f77b4") +
     ggplot2::geom_point(size = 1.6, color = "#1f77b4") +
     ggplot2::facet_wrap(
       ggplot2::vars(.data[["metric"]]),
-      ncol = 1, scales = "free_y",
+      ncol     = 1, scales = "free_y",
       labeller = ggplot2::label_parsed
     ) +
     ggplot2::labs(
-      title = "LR stability diagnostic",
+      title    = "LR stability diagnostic",
       subtitle = sprintf(
         "k_star = %s   k_conv = %s   (se_mult = %s, max_dv = %s, min_run = %d)",
         x$k_star,
         ifelse(is.na(x$k_conv), "NA", x$k_conv),
         x$se_mult, x$max_dv, x$min_run
       ),
-      x = .pretty_var_label(attr(x, "dev_var")),
+      x = .pretty_var_label(attr(x, "dev")),
       y = NULL
     )
 
   if (!is.na(x$k_conv)) {
     p <- p + ggplot2::geom_vline(
       xintercept = x$k_conv,
-      linetype = "solid",
-      color = "#2ca02c",
-      linewidth = 0.8
+      linetype   = "solid",
+      color      = "#2ca02c",
+      linewidth  = 0.8
     )
   }
 

@@ -50,7 +50,14 @@ Conceptually:
 library(lossratio)
 data(experience)
 
-tri <- build_triangle(experience, groups = coverage)
+tri <- build_triangle(
+  experience,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 head(tri)
 ```
 
@@ -64,7 +71,7 @@ plot(tri)              # one trajectory per cohort, faceted by group
 # so use quarterly cohort and dev to bring each panel down to ~10 x 10
 # cells. This fits the documentation's display size; in practice you
 # can keep monthly resolution by enlarging the plot.
-tri_q <- build_triangle(experience, groups = coverage, grain = "Q")
+tri_q <- build_triangle(experience, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr", grain = "Q")
 plot_triangle(tri_q)   # cohort × dev heatmap of lr
 ```
 
@@ -76,7 +83,7 @@ Use `Triangle` as input to:
 ## Calendar (calendar period only)
 
 ```{r}
-cal <- build_calendar(experience, groups = coverage, calendar = "cy_m")
+cal <- build_calendar(experience, groups = "coverage", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
 head(cal)
 ```
 
@@ -104,8 +111,11 @@ plot(cal, x_by = "dev")         # x axis: sequential index
 ```{r}
 tot <- build_total(
   experience,
-  groups = coverage,
-  cohort = "uy_m",
+  groups      = "coverage",
+  cohort      = "uy_m",
+  dev         = "dev_m",
+  loss        = "loss_incr",
+  premium     = "premium_incr",
   period_from = "2023-04-01",
   period_to   = "2024-03-01"
 )
@@ -147,12 +157,12 @@ attributes (used for plot labels and granularity-aware date
 formatting):
 
 ```{r}
-attr(tri, "cohort_var")     # "uy_m"
+attr(tri, "cohort")     # "uy_m"
 attr(tri, "cohort_type")    # "month"
-attr(tri, "dev_var")        # "dev_m"
+attr(tri, "dev")        # "dev_m"
 attr(tri, "dev_type")       # "month"
 
-attr(cal, "calendar_var")   # "cy_m"
+attr(cal, "calendar")   # "cy_m"
 attr(cal, "calendar_type")  # "month"
 ```
 

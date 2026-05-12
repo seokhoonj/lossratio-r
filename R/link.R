@@ -48,14 +48,14 @@
 #'
 #' @return A `data.table` of class `"Link"` with columns:
 #'
-#'   * Always: `[group_var]`, `cohort`, `ata_from`, `ata_to`, `ata_link`,
+#'   * Always: `[group]`, `cohort`, `ata_from`, `ata_to`, `ata_link`,
 #'     `target_from`, `target_to`, `target_delta`, `ata`.
 #'   * If `exposure` is set: also `exposure_from`, `exposure_to`,
 #'     `exposure_delta`, `intensity`.
 #'   * If `weight` is set: also `weight`.
 #'
-#'   The returned object carries attributes `group_var`, `cohort_var`,
-#'   `dev_var`, `target`, `exposure` (or `NULL`), `weight`
+#'   The returned object carries attributes `groups`, `cohort`,
+#'   `dev`, `target`, `exposure` (or `NULL`), `weight`
 #'   (or `NULL`).
 #'
 #' @seealso [build_triangle()], [summary.Link()], [plot.Link()],
@@ -63,7 +63,14 @@
 #'
 #' @examples
 #' \dontrun{
-#' tri <- build_triangle(df, group_var = coverage)
+#' tri <- build_triangle(
+#'   df,
+#'   groups   = "coverage",
+#'   cohort   = "uy_m",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr"
+#' )
 #'
 #' # Single-variable: cumulative-loss link factors (ATA workflow)
 #' link_loss <- build_link(tri, target = "loss")
@@ -94,15 +101,15 @@ build_link <- function(x,
 
   dt <- .ensure_dt(x)
 
-  grp <- attr(dt, "group_var")
-  coh <- attr(dt, "cohort_var")
-  dev <- attr(dt, "dev_var")
+  grp <- attr(dt, "groups")
+  coh <- attr(dt, "cohort")
+  dev <- attr(dt, "dev")
 
   if (is.null(grp)) grp <- character(0)
   if (length(coh) != 1L)
-    stop("`x` must contain exactly one `cohort_var`.", call. = FALSE)
+    stop("`x` must contain exactly one `cohort`.", call. = FALSE)
   if (length(dev) != 1L)
-    stop("`x` must contain exactly one `dev_var`.", call. = FALSE)
+    stop("`x` must contain exactly one `dev`.", call. = FALSE)
 
   valid_vars <- c("loss", "premium", "lr")
 
@@ -207,9 +214,9 @@ build_link <- function(x,
 
   z <- z[, .SD, .SDcols = keep]
 
-  data.table::setattr(z, "group_var" , grp)
-  data.table::setattr(z, "cohort_var", coh)
-  data.table::setattr(z, "dev_var"   , dev)
+  data.table::setattr(z, "groups" , grp)
+  data.table::setattr(z, "cohort", coh)
+  data.table::setattr(z, "dev"   , dev)
   data.table::setattr(z, "target"    , tgt)
   data.table::setattr(z, "exposure"  , exp)
   data.table::setattr(z, "weight"    , wt)
@@ -325,7 +332,7 @@ summary.Link <- function(object,
   if (!is.numeric(tol) || length(tol) != 1L || is.na(tol) || tol < 0)
     stop("`tol` must be a single non-negative numeric value.", call. = FALSE)
 
-  grp <- attr(x, "group_var")
+  grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
   dt <- .ensure_dt(x)

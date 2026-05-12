@@ -1,8 +1,8 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- build_triangle(exp, groups = coverage)
-sub <- build_triangle(exp[coverage == "SUR"], groups = coverage)
+tri <- build_triangle(exp, groups = coverage, cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+sub <- build_triangle(exp[coverage == "SUR"], groups = coverage, cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
 
 test_that("backtest returns class 'Backtest'", {
   bt <- backtest(sub, holdout = 6L, target = "loss", loss_method = "cl")
@@ -14,7 +14,7 @@ test_that("Backtest has expected list elements", {
   for (nm in c("call", "data", "masked", "fit",
                "ae_err", "col_summary", "diag_summary",
                "target", "holdout", "fit_fn_name",
-               "group_var", "cohort_var", "dev_var")) {
+               "groups", "cohort", "dev")) {
     expect_true(nm %in% names(bt), info = paste("missing", nm))
   }
 })

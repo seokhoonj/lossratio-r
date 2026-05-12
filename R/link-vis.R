@@ -127,7 +127,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   scales <- match.arg(scales)
   theme  <- match.arg(theme)
 
-  grp <- attr(x, "group_var")
+  grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
   tgt <- attr(x, "target")
@@ -309,8 +309,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   if (type == "summary") {
     dm <- data.table::melt(
       smr,
-      id.vars      = c(grp, "ata_from", "ata_link_chr"),
-      measure.vars = c("mean", "median", "wt"),
+      id.vars       = c(grp, "ata_from", "ata_link_chr"),
+      measure.vars  = c("mean", "median", "wt"),
       variable.name = "stat",
       value.name    = "value"
     )
@@ -451,7 +451,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   scales <- match.arg(scales)
   theme  <- match.arg(theme)
 
-  grp <- attr(x, "group_var")
+  grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
   # 1) compute summary
@@ -615,15 +615,15 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     label_size <- if (label_style == "detail") 2.5 else 3
 
   dt  <- .ensure_dt(x)
-  grp <- attr(x, "group_var")
-  coh <- attr(x, "cohort_var")
+  grp <- attr(x, "groups")
+  coh <- attr(x, "cohort")
   tgt <- attr(x, "target")
 
   if (is.null(grp) || is.null(coh))
-    stop("`x` must contain `group_var` and `cohort_var` attributes.",
+    stop("`x` must contain `groups` and `cohort` attributes.",
          call. = FALSE)
   if (length(coh) != 1L)
-    stop("`x` must contain exactly one `cohort_var`.", call. = FALSE)
+    stop("`x` must contain exactly one `cohort`.", call. = FALSE)
 
   # 1) build ata_link factor with correct ordering ----------------------
   link_levels <- dt[order(ata_from), unique(sprintf("%s-%s", ata_from, ata_to))]
@@ -697,13 +697,13 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   # 8) base heatmap -----------------------------------------------------
   p <- ggshort::ggheatmap(
-    data      = dt,
-    x         = ata_link,
-    y         = .y,
-    label     = label,
+    data       = dt,
+    x          = ata_link,
+    y          = .y,
+    label      = label,
     label_args = label_args,
-    fill      = ata_fill,
-    fill_args = list(
+    fill       = ata_fill,
+    fill_args  = list(
       low       = "#D9ECFF",
       mid       = "white",
       high      = "#F8D7DA",
@@ -788,8 +788,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     label_size <- if (label_style == "detail") 2.5 else 3
 
   dt  <- .ensure_dt(x)
-  grp <- attr(x, "group_var")
-  coh <- attr(x, "cohort_var")
+  grp <- attr(x, "groups")
+  coh <- attr(x, "cohort")
 
   if (is.null(grp)) grp <- character(0)
 

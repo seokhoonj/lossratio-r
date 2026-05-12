@@ -6,19 +6,17 @@
 #' Two plot types are supported:
 #' \itemize{
 #'   \item `"projection"`: observed and projected cumulative values by cohort
-#'     over development periods. When `method = "mack"`, optional confidence
-#'     bands are drawn using `target_total_se`.
+#'     over development periods. Optional confidence bands are drawn using
+#'     `target_total_se`.
 #'   \item `"reserve"`: reserve summary by cohort with optional error bars.
-#'     Only available when `method = "mack"`.
 #' }
 #'
 #' @param x An object of class `"CLFit"`.
 #' @param type Plot type. One of `"projection"` or `"reserve"`.
 #' @param conf_level Confidence level for interval display. Default is
-#'   `0.95`. Only used when `method = "mack"`.
+#'   `0.95`.
 #' @param show_interval Logical; if `TRUE`, show normal-approximation
-#'   confidence intervals. Default is `TRUE`. Silently ignored when
-#'   `method = "basic"`.
+#'   confidence intervals. Default is `TRUE`.
 #' @param amount_divisor Numeric scaling factor for y-axis labels of amount
 #'   variables. Default is `1e8`.
 #' @param scales Facet scale argument passed to [ggplot2::facet_wrap()].
@@ -65,14 +63,14 @@ plot.CLFit <- function(x,
     stop("`show_interval` must be a single non-missing logical value.",
          call. = FALSE)
 
-  grp     <- x$group_var
-  coh     <- x$cohort_var
-  dev_var <- x$dev_var
-  val_var <- x$target
+  grp     <- x$groups
+  coh     <- x$cohort
+  dev <- x$dev
+  metric <- x$target
 
   if (is.null(grp)) grp <- character(0)
 
-  meta         <- .get_plot_meta(val_var, amount_divisor)
+  meta         <- .get_plot_meta(metric, amount_divisor)
   z_alpha      <- stats::qnorm((1 + conf_level) / 2)
   caption_base <- meta$caption
 
@@ -131,14 +129,14 @@ plot.CLFit <- function(x,
           group = 1
         ),
         inherit.aes = FALSE,
-        alpha = 0.15
+        alpha       = 0.15
       )
     }
 
     p <- p +
       ggplot2::geom_line(
-        data      = obs,
-        mapping   = ggplot2::aes(
+        data    = obs,
+        mapping = ggplot2::aes(
           x     = .data[["dev"]],
           y     = .data$target_obs,
           group = .data[["cohort"]]
@@ -156,8 +154,8 @@ plot.CLFit <- function(x,
         linewidth = 0.8
       ) +
       ggplot2::geom_line(
-        data      = pred,
-        mapping   = ggplot2::aes(
+        data    = pred,
+        mapping = ggplot2::aes(
           x     = .data[["dev"]],
           y     = .data$target_proj,
           group = .data[["cohort"]]
@@ -194,7 +192,7 @@ plot.CLFit <- function(x,
     # scales
     p <- p +
       ggplot2::scale_x_continuous(
-        labels = function(z) .format_period_safe(z, dev_var)
+        labels = function(z) .format_period_safe(z, dev)
       ) +
       .resolve_y_scale(meta, amount_divisor)
 
@@ -212,8 +210,8 @@ plot.CLFit <- function(x,
     # labs
     p <- p + ggplot2::labs(
       title   = paste0(meta$title, " Projection"),
-      x       = .pretty_var_label(dev_var),
-      y       = val_var,
+      x       = .pretty_var_label(dev),
+      y       = metric,
       caption = if (show_interval) {
         paste0(caption_base, " | Interval: ", round(conf_level * 100), "%")
       } else {
@@ -309,8 +307,7 @@ plot.CLFit <- function(x,
 #'   \item{`"data"`}{Original observed data from `x$data`.}
 #' }
 #'
-#' The `label_style` argument controls cell labels (only meaningful when
-#' `method = "mack"`):
+#' The `label_style` argument controls cell labels:
 #' \describe{
 #'   \item{`"value"`}{Projected value only. Applied to all cells.}
 #'   \item{`"cv"`}{Coefficient of variation (%) for projected cells.}
@@ -333,7 +330,7 @@ plot.CLFit <- function(x,
 #'       hybrid overlays do not apply.}
 #'   }
 #' @param label_style One of `"value"` (default), `"cv"`, `"se"`, or
-#'   `"ci"`. The uncertainty styles require `method = "mack"`.
+#'   `"ci"`.
 #' @param label_size Numeric label text size forwarded to
 #'   [ggshort::ggtable()]. Defaults to `3` for `label_style = "value"`,
 #'   `"cv"`, or `"se"` and `2.5` for `label_style = "ci"` (two-line
@@ -398,25 +395,25 @@ plot_triangle.CLFit <- function(x,
       is.na(conf_level) || conf_level <= 0 || conf_level >= 1)
     stop("`conf_level` must be a single numeric value in (0, 1).", call. = FALSE)
 
-  grp     <- x$group_var
-  coh     <- x$cohort_var
-  dev_var <- x$dev_var
-  val_var <- x$target
+  grp     <- x$groups
+  coh     <- x$cohort
+  dev <- x$dev
+  metric <- x$target
 
   if (is.null(grp)) grp <- character(0)
 
   if (length(coh) != 1L)
-    stop("`x` must contain exactly one `cohort_var`.", call. = FALSE)
-  if (length(dev_var) != 1L)
-    stop("`x` must contain exactly one `dev_var`.", call. = FALSE)
+    stop("`x` must contain exactly one `cohort`.", call. = FALSE)
+  if (length(dev) != 1L)
+    stop("`x` must contain exactly one `dev`.", call. = FALSE)
 
   ratio_vars <- c("lr", "lr_incr")
   prop_vars  <- c("loss_share", "loss_incr_share",
                   "premium_share", "premium_incr_share")
-  is_ratio   <- val_var %in% c(ratio_vars, prop_vars)
+  is_ratio   <- metric %in% c(ratio_vars, prop_vars)
 
   base_title <- switch(
-    val_var,
+    metric,
     lr                 = "Cumulative Loss Ratio",
     lr_incr            = "Per-Period Loss Ratio",
     loss               = "Cumulative Loss",
@@ -429,7 +426,7 @@ plot_triangle.CLFit <- function(x,
     loss_incr_share    = "Per-Period Loss Proportion",
     premium_share      = "Cumulative Premium Proportion",
     premium_incr_share = "Per-Period Premium Proportion",
-    val_var
+    metric
   )
 
   region_title <- switch(region,
@@ -444,7 +441,7 @@ plot_triangle.CLFit <- function(x,
   )
 
   if (region == "data") {
-    dt[, .value := .SD[[val_var]], .SDcols = val_var]
+    dt[, .value := .SD[[metric]], .SDcols = metric]
   } else {
     dt[, .value := target_proj]
   }
@@ -540,9 +537,9 @@ plot_triangle.CLFit <- function(x,
   }
 
   # 5) fill args --------------------------------------------------------
-  fill_args <- if (val_var %in% ratio_vars) {
+  fill_args <- if (metric %in% ratio_vars) {
     list(threshold = 1)
-  } else if (val_var %in% prop_vars) {
+  } else if (metric %in% prop_vars) {
     list(threshold = 0.05)
   } else {
     list(when = "<", threshold = 0)

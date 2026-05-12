@@ -41,19 +41,19 @@
 #'
 #' @keywords internal
 .switch_theme <- function(theme = c("view", "save", "shiny"),
-                          family = getOption("lossratio.font"),
-                          x.size = NULL, y.size = NULL,
-                          t.size = NULL, s.size = NULL, l.size = NULL,
-                          x.face = "plain", y.face = "plain",
-                          t.face = "plain", s.face = "plain", l.face = "plain",
-                          x.angle = 0, y.angle = 0,
-                          x.hjust = .5, x.vjust = .5,
-                          y.hjust = NULL, y.vjust = NULL,
-                          show_grid_major = FALSE,
-                          show_grid_minor = FALSE,
-                          legend.key.height = NULL,
-                          legend.key.width  = NULL,
-                          legend.position   = "right",
+                          family               = getOption("lossratio.font"),
+                          x.size               = NULL, y.size = NULL,
+                          t.size               = NULL, s.size = NULL, l.size = NULL,
+                          x.face               = "plain", y.face = "plain",
+                          t.face               = "plain", s.face = "plain", l.face = "plain",
+                          x.angle              = 0, y.angle = 0,
+                          x.hjust              = .5, x.vjust = .5,
+                          y.hjust              = NULL, y.vjust = NULL,
+                          show_grid_major      = FALSE,
+                          show_grid_minor      = FALSE,
+                          legend.key.height    = NULL,
+                          legend.key.width     = NULL,
+                          legend.position      = "right",
                           legend.justification = "center",
                           plot.background.fill = "transparent") {
 
@@ -70,24 +70,24 @@
   }
 
   out <- ggplot2::theme(
-    text  = ggplot2::element_text(family = family),
-    title = ggplot2::element_text(family = family, size = t.size, face = t.face),
-    strip.text.x = ggplot2::element_text(size = s.size, face = s.face),
-    axis.text.x  = .element_axis_text(x.size, x.face, x.angle, x.hjust, x.vjust, family),
-    axis.text.y  = .element_axis_text(y.size, y.face, y.angle, y.hjust, y.vjust, family),
-    axis.ticks.x = .element_ticks(x.size),
-    axis.ticks.y = .element_ticks(y.size),
-    legend.title = ggplot2::element_text(size = l.size, face = l.face),
-    legend.text  = ggplot2::element_text(size = l.size, face = l.face),
-    legend.key.height = legend.key.height,
-    legend.key.width  = legend.key.width,
-    legend.position   = legend.position,
+    text                 = ggplot2::element_text(family = family),
+    title                = ggplot2::element_text(family = family, size = t.size, face = t.face),
+    strip.text.x         = ggplot2::element_text(size = s.size, face = s.face),
+    axis.text.x          = .element_axis_text(x.size, x.face, x.angle, x.hjust, x.vjust, family),
+    axis.text.y          = .element_axis_text(y.size, y.face, y.angle, y.hjust, y.vjust, family),
+    axis.ticks.x         = .element_ticks(x.size),
+    axis.ticks.y         = .element_ticks(y.size),
+    legend.title         = ggplot2::element_text(size = l.size, face = l.face),
+    legend.text          = ggplot2::element_text(size = l.size, face = l.face),
+    legend.key.height    = legend.key.height,
+    legend.key.width     = legend.key.width,
+    legend.position      = legend.position,
     legend.justification = legend.justification,
-    panel.border     = ggplot2::element_rect(colour = "black", fill = "transparent"),
-    panel.grid.major = .element_grid(show_grid_major, "gray80", 0.5),
-    panel.grid.minor = .element_grid(show_grid_minor, "gray90", 0.3),
-    panel.background = ggplot2::element_rect(fill = "transparent"),
-    strip.background = ggplot2::element_rect(colour = "black")
+    panel.border         = ggplot2::element_rect(colour = "black", fill = "transparent"),
+    panel.grid.major     = .element_grid(show_grid_major, "gray80", 0.5),
+    panel.grid.minor     = .element_grid(show_grid_minor, "gray90", 0.3),
+    panel.background     = ggplot2::element_rect(fill = "transparent"),
+    strip.background     = ggplot2::element_rect(colour = "black")
   )
 
   # shiny-only: transparent plot background (blends with app CSS)
@@ -114,7 +114,7 @@
     ggplot2::element_blank()
   } else {
     ggplot2::element_text(
-      size = size, face = face, angle = angle,
+      size  = size, face = face, angle = angle,
       hjust = hjust, vjust = vjust, family = family
     )
   }
@@ -170,10 +170,10 @@
 #'
 #' @keywords internal
 .scale_color_by_month_gradientn <- function(by_month = 6,
-                                            palette = "ylgnbu",
-                                            n = 256,
-                                            begin = 0,
-                                            end = 1,
+                                            palette           = "ylgnbu",
+                                            n                 = 256,
+                                            begin             = 0,
+                                            end               = 1,
                                             include_endpoints = FALSE,
                                             ...) {
   if (!is.numeric(begin) || !is.numeric(end) ||

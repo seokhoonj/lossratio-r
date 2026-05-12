@@ -43,9 +43,9 @@
 #'     \item{`call`}{The matched call.}
 #'     \item{`data`}{The input `"Triangle"` object.}
 #'     \item{`method`}{The method used (`"mack"`).}
-#'     \item{`group_var`}{Character vector of grouping variable names.}
-#'     \item{`cohort_var`}{Character scalar of period variable name.}
-#'     \item{`dev_var`}{Character scalar of development variable name.}
+#'     \item{`groups`}{Character vector of grouping variable names.}
+#'     \item{`cohort`}{Character scalar of period variable name.}
+#'     \item{`dev`}{Character scalar of development variable name.}
 #'     \item{`target`}{Character scalar of target variable name.}
 #'     \item{`full`}{`data.table` with observed and projected values,
 #'       including process/parameter SE and CV columns.}
@@ -74,7 +74,14 @@
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
+#' tri <- build_triangle(
+#'   experience[coverage == "SUR"],
+#'   groups   = "coverage",
+#'   cohort   = "uy_m",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr"
+#' )
 #'
 #' # Mack chain ladder with process / parameter standard errors
 #' cl_mack <- fit_cl(tri, target = "loss", method = "mack")
@@ -106,16 +113,16 @@ fit_cl <- function(x,
   if (length(tgt) != 1L)
     stop("`target` must resolve to exactly one column.", call. = FALSE)
 
-  grp <- attr(x, "group_var")
-  coh <- attr(x, "cohort_var")
-  dev <- attr(x, "dev_var")
+  grp <- attr(x, "groups")
+  coh <- attr(x, "cohort")
+  dev <- attr(x, "dev")
 
   if (is.null(grp)) grp <- character(0)
 
   if (length(coh) != 1L)
-    stop("`x` must contain exactly one `cohort_var`.", call. = FALSE)
+    stop("`x` must contain exactly one `cohort`.", call. = FALSE)
   if (length(dev) != 1L)
-    stop("`x` must contain exactly one `dev_var`.", call. = FALSE)
+    stop("`x` must contain exactly one `dev`.", call. = FALSE)
 
   # 2) validate weight --------------------------------------------------
   use_external_weight <- !is.null(weight)
@@ -195,17 +202,17 @@ fit_cl <- function(x,
   full[, `:=`(
     target_proc_se2  = .mack_proc_var(
       target_proj = target_proj,
-      f_selected = f_selected,
-      sigma2     = sigma2,
-      last_obs   = last_obs[1L],
-      alpha      = alpha,
-      scale      = if (use_external_weight) wt_obs[last_obs[1L]] else NULL
+      f_selected  = f_selected,
+      sigma2      = sigma2,
+      last_obs    = last_obs[1L],
+      alpha       = alpha,
+      scale       = if (use_external_weight) wt_obs[last_obs[1L]] else NULL
     ),
     target_param_se2 = .mack_param_var(
       target_proj = target_proj,
-      f_selected = f_selected,
-      f_var      = f_var,
-      last_obs   = last_obs[1L]
+      f_selected  = f_selected,
+      f_var       = f_var,
+      last_obs    = last_obs[1L]
     )
   ), by = c(grp, "cohort")]
 
@@ -256,9 +263,9 @@ fit_cl <- function(x,
     call          = match.call(),
     data          = x,
     method        = method,
-    group_var     = grp,
-    cohort_var    = coh,
-    dev_var       = dev,
+    groups        = grp,
+    cohort        = coh,
+    dev           = dev,
     target        = tgt,
     full          = full,
     pred          = pred,
@@ -300,7 +307,7 @@ fit_cl <- function(x,
 #' @export
 print.CLFit <- function(x, ...) {
 
-  grp <- x$group_var
+  grp <- x$groups
   if (is.null(grp)) grp <- character(0)
 
   cat("<CLFit>\n")
@@ -384,7 +391,7 @@ print.CLFit <- function(x, ...) {
 #' @keywords internal
 .expand_triangle_grid <- function(triangle, ata_fit, target) {
 
-  grp <- attr(triangle, "group_var")
+  grp <- attr(triangle, "groups")
 
   if (is.null(grp)) grp <- character(0)
 
@@ -462,7 +469,7 @@ print.CLFit <- function(x, ...) {
 
   .assert_class(ata_fit, "ATAFit")
 
-  grp <- attr(ata_fit$link, "group_var")
+  grp <- attr(ata_fit$link, "groups")
   if (is.null(grp)) grp <- character(0)
 
   link_long <- .ensure_dt(ata_fit$link)
@@ -609,9 +616,9 @@ print.CLFit <- function(x, ...) {
 
   .assert_class(x, "CLFit")
 
-  grp     <- x$group_var
-  coh     <- x$cohort_var
-  dev     <- x$dev_var
+  grp     <- x$groups
+  coh     <- x$cohort
+  dev     <- x$dev
   tail_factor <- x$tail_factor
   full        <- x$full
 
@@ -664,8 +671,8 @@ print.CLFit <- function(x, ...) {
 
   .assert_class(x, "CLFit")
 
-  grp  <- x$group_var
-  coh  <- x$cohort_var
+  grp  <- x$groups
+  coh  <- x$cohort
   tgt  <- x$target
   full     <- x$full
   is_ratio <- tgt == "lr"
@@ -676,8 +683,8 @@ print.CLFit <- function(x, ...) {
 
   ult_col <- paste0(tgt, "_ult")
   agg[, `:=`(
-    latest   = target_proj,
-    reserve  = if (is_ratio) NA_real_ else i.target_proj - target_proj
+    latest  = target_proj,
+    reserve = if (is_ratio) NA_real_ else i.target_proj - target_proj
   )]
   agg[, (ult_col) := i.target_proj]
 

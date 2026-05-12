@@ -56,7 +56,7 @@ A list of class \code{"IntensityFit"} with components:
 \item{\code{call}}{The matched call.}
 \item{\code{data}}{The (possibly filtered) \code{Link} object used for
 estimation.}
-\item{\code{group_var}, \code{cohort_var}, \code{dev_var}, \code{target},
+\item{\code{groups}, \code{cohort}, \code{dev}, \code{target},
 \code{exposure}}{Variable name relays from the input \code{Triangle}.}
 \item{\code{link}}{Alias of \code{data} for parallelism with
 \code{\link[=fit_ata]{fit_ata()}}.}
@@ -99,7 +99,14 @@ instability. \code{fit_intensity()} therefore deliberately omits a
 
 \examples{
 \dontrun{
-tri <- build_triangle(df, group_var = coverage)
+tri <- build_triangle(
+  df,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 intensity_fit <- fit_intensity(tri, target = "loss", exposure = "premium")
 summary(intensity_fit)
 }

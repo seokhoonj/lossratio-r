@@ -62,10 +62,10 @@ test_that("TriangleSummary / TriangleLonger / TriangleSummaryLonger classes set"
 
 test_that("CalendarLonger and validation classes set", {
   exp <- make_exp()
-  cal <- build_calendar(exp, groups = coverage)
+  cal <- build_calendar(exp, groups = coverage, calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   expect_s3_class(attr(cal, "longer"), "CalendarLonger")
 
-  val_tri <- validate_triangle(exp, groups = coverage)
+  val_tri <- validate_triangle(exp, groups = coverage, cohort = "uy_m", dev = "dev_m")
   expect_s3_class(val_tri, "TriangleValidation")
 })
 
@@ -112,9 +112,9 @@ test_that("lowercase class names not introduced (CL / LR / regime / backtest)", 
 
 test_that("Triangle attribute names preserved (raw / standard split)", {
   tri <- make_tri()
-  expect_identical(attr(tri, "dev_var"),     "dev_m")
-  expect_identical(attr(tri, "cohort_var"),  "uy_m")
-  expect_identical(attr(tri, "group_var"),   "coverage")
+  expect_identical(attr(tri, "dev"),     "dev_m")
+  expect_identical(attr(tri, "cohort"),  "uy_m")
+  expect_identical(attr(tri, "groups"),   "coverage")
 
   # standard column names rename happened (raw cohort/dev replaced).
   expect_true("cohort" %in% names(tri))
@@ -123,15 +123,15 @@ test_that("Triangle attribute names preserved (raw / standard split)", {
   expect_false("dev_m" %in% names(tri))
 })
 
-test_that("Calendar attributes use calendar_var", {
-  cal <- build_calendar(make_exp(), groups = coverage)
-  expect_identical(attr(cal, "calendar_var"), "cy_m")
-  expect_identical(attr(cal, "group_var"),    "coverage")
+test_that("Calendar attributes use calendar", {
+  cal <- build_calendar(make_exp(), groups = coverage, calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+  expect_identical(attr(cal, "calendar"), "cy_m")
+  expect_identical(attr(cal, "groups"),    "coverage")
 })
 
 test_that("Forbidden legacy attribute names not present", {
   tri <- make_tri()
-  cal <- build_calendar(make_exp(), groups = coverage)
+  cal <- build_calendar(make_exp(), groups = coverage, calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   for (a in c("period_var", "duration_var", "duration_type",
               "elapsed_var", "elp_var", "elp_type", "dur_var", "dur_type")) {
     expect_null(attr(tri, a, exact = TRUE), info = paste("tri attr", a))

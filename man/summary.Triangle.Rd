@@ -12,7 +12,7 @@
 \item{...}{Unused; included for S3 compatibility.}
 }
 \value{
-A \code{data.table} grouped by \code{group_var} and \code{dev_var}, containing:
+A \code{data.table} grouped by \code{groups} and \code{dev}, containing:
 \describe{
 \item{n_obs}{Number of observations in the cell}
 \item{lr_mean}{Mean of cumulative loss ratios}
@@ -24,7 +24,7 @@ A \code{data.table} grouped by \code{group_var} and \code{dev_var}, containing:
 (\code{sum(loss_incr) / sum(premium_incr)})}
 }
 
-The returned object keeps the attributes \code{group_var} and \code{dev_var},
+The returned object keeps the attributes \code{groups} and \code{dev},
 and its class is updated to \code{"TriangleSummary"}.
 }
 \description{
@@ -33,8 +33,8 @@ statistics for cumulative loss ratios (\code{lr}) and per-period loss ratios
 (\code{lr_incr}).
 
 The function aggregates data by the grouping variables stored in
-\code{attr(x, "group_var")} and the development variable stored in
-\code{attr(x, "dev_var")}.
+\code{attr(x, "groups")} and the development variable stored in
+\code{attr(x, "dev")}.
 
 The following statistics are computed:
 \itemize{
@@ -58,7 +58,14 @@ It is assumed that the input \code{Triangle} object does not contain missing val
 }
 \examples{
 \dontrun{
-d <- build_triangle(df, groups = coverage)
+d <- build_triangle(
+  df,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 smr <- summary(d)
 head(smr)
 attr(smr, "longer")

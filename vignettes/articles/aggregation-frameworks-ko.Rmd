@@ -52,7 +52,14 @@ knitr::opts_chunk$set(
 library(lossratio)
 data(experience)
 
-tri <- build_triangle(experience, groups = coverage)
+tri <- build_triangle(
+  experience,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 head(tri)
 ```
 
@@ -66,7 +73,7 @@ plot(tri)              # 코호트별 궤적, 그룹별 facet
 # dev 축 모두 분기 단위로 다시 만들어 패널당 ~10 × 10 셀로 줄인다.
 # 문서 표시 크기에 맞춘 처리이며, 실제 분석에서는 플롯을 키우면 월
 # 단위 그대로 볼 수 있다.
-tri_q <- build_triangle(experience, groups = coverage, grain = "Q")
+tri_q <- build_triangle(experience, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr", grain = "Q")
 plot_triangle(tri_q)   # 코호트 × dev lr 히트맵
 ```
 
@@ -79,7 +86,7 @@ plot_triangle(tri_q)   # 코호트 × dev lr 히트맵
 ## 3. Calendar (달력 기간만)
 
 ```{r}
-cal <- build_calendar(experience, groups = coverage, calendar = "cy_m")
+cal <- build_calendar(experience, groups = "coverage", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
 head(cal)
 ```
 
@@ -107,8 +114,11 @@ plot(cal, x_by = "dev")         # x axis: 순차 인덱스
 ```{r}
 tot <- build_total(
   experience,
-  groups = coverage,
-  cohort = "uy_m",
+  groups      = "coverage",
+  cohort      = "uy_m",
+  dev         = "dev_m",
+  loss        = "loss_incr",
+  premium     = "premium_incr",
   period_from = "2023-04-01",
   period_to   = "2024-03-01"
 )
@@ -149,12 +159,12 @@ head(tot)
 라벨과 집계 주기에 맞는 날짜 표기에 사용된다.
 
 ```{r}
-attr(tri, "cohort_var")      # "uy_m"
+attr(tri, "cohort")      # "uy_m"
 attr(tri, "cohort_type")     # "month"
-attr(tri, "dev_var")         # "dev_m"
+attr(tri, "dev")         # "dev_m"
 attr(tri, "dev_type")        # "month"
 
-attr(cal, "calendar_var")    # "cy_m"
+attr(cal, "calendar")    # "cy_m"
 attr(cal, "calendar_type")   # "month"
 ```
 

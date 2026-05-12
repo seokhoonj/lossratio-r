@@ -123,7 +123,14 @@ outlier-resistant coefficient of variation of incremental LR.
 ```{r, eval = FALSE}
 library(lossratio)
 data(experience)
-tri <- build_triangle(experience[coverage == "SUR"], coverage)
+tri <- build_triangle(
+  experience[coverage == "SUR"],
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 res <- detect_convergence(tri)
 print(res)
@@ -152,7 +159,7 @@ The returned `Convergence` object reports:
 - `v`, `R_v`, `SE_param_v`, `D_v`, `pass_v` — per-valuation diagnostic
   sequences indexed by $v$.
 - `se_mult`, `max_dv`, `min_run`, `holdout_max`, `min_n_cohorts` — settings used.
-- attributes `group_var`, `target`, `fit_fn_name`, `dev_var`.
+- attributes `groups`, `target`, `fit_fn_name`, `dev`.
 
 `summary(res)` returns a `data.table` with one row per candidate
 valuation and an extra `R_over_SE = R_v / SE_param_v` column for

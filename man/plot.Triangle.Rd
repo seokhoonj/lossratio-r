@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{Triangle}(
   x,
-  value_var = "lr",
+  metric = "lr",
   summary = FALSE,
   summary_min_n = 5L,
   amount_divisor = 1e+08,
@@ -18,7 +18,7 @@
 \arguments{
 \item{x}{An object of class \code{Triangle}.}
 
-\item{value_var}{A single metric to plot. Must be one of:
+\item{metric}{A single metric to plot. Must be one of:
 \code{"lr"}, \code{"lr_incr"},
 \code{"loss"}, \code{"loss_incr"}, \code{"premium"}, \code{"premium_incr"},
 \code{"margin"}, \code{"margin_incr"},
@@ -70,10 +70,10 @@ in grey and overlays three summary statistics:
 Summary statistics are computed from \code{\link[=summary.Triangle]{summary.Triangle()}}.
 }
 \details{
-The x-axis uses the development variable stored in \code{attr(x, "dev_var")}.
+The x-axis uses the development variable stored in \code{attr(x, "dev")}.
 Cohort lines are grouped by the period variable stored in
-\code{attr(x, "cohort_var")}, and facets are created from
-\code{attr(x, "group_var")}.
+\code{attr(x, "cohort")}, and facets are created from
+\code{attr(x, "groups")}.
 
 The cumulative loss ratio is defined here as:
 \deqn{lr = loss / premium}

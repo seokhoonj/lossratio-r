@@ -164,6 +164,36 @@ NULL
 }
 
 
+.add_periods <- function(start_x, k, grain) {
+  if (!inherits(start_x, "Date"))
+    stop(sprintf(".add_periods expects Date, got %s",
+                 paste(class(start_x), collapse = "/")), call. = FALSE)
+  k  <- as.integer(k) - 1L
+  yr <- data.table::year(start_x)
+  mo <- data.table::month(start_x)
+  if (grain == "M") {
+    total <- yr * 12L + (mo - 1L) + k
+    return(.first_of_month(total %/% 12L, (total %% 12L) + 1L))
+  }
+  if (grain == "Q") {
+    total  <- yr * 4L + (mo - 1L) %/% 3L + k
+    new_yr <- total %/% 4L
+    new_q  <- total %% 4L
+    return(.first_of_month(new_yr, new_q * 3L + 1L))
+  }
+  if (grain == "S") {
+    total  <- yr * 2L + (mo - 1L) %/% 6L + k
+    new_yr <- total %/% 2L
+    new_s  <- total %% 2L
+    return(.first_of_month(new_yr, new_s * 6L + 1L))
+  }
+  if (grain == "A") {
+    return(.first_of_month(yr + k, 1L))
+  }
+  stop(sprintf("Unknown grain: '%s'.", grain), call. = FALSE)
+}
+
+
 .count_periods <- function(start_x, end_x, grain) {
   yr_diff <- data.table::year(end_x) - data.table::year(start_x)
   if (grain == "M") {

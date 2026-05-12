@@ -180,11 +180,11 @@
   actual   <- vapply(df, function(x) class(x)[1L], character(1L))
 
   df_act <- data.frame(
-    column = names(actual), actual = actual,
+    column           = names(actual), actual = actual,
     stringsAsFactors = FALSE
   )
   df_exp <- data.frame(
-    column = cols_exp, expected = unlist(col_spec, use.names = FALSE),
+    column           = cols_exp, expected = unlist(col_spec, use.names = FALSE),
     stringsAsFactors = FALSE
   )
 
@@ -230,8 +230,8 @@
         ifelse(!is.na(sub$note), paste0(": ", sub$note), ""), ")",
         collapse = ", "
       ),
-      missing  = paste(sub$column, collapse = ", "),
-      extra    = paste(sub$column, collapse = ", ")
+      missing = paste(sub$column, collapse = ", "),
+      extra   = paste(sub$column, collapse = ", ")
     )
     color_msg <- switch(
       stat,

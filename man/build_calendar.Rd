@@ -7,10 +7,10 @@
 build_calendar(
   df,
   groups,
-  calendar = "cy_m",
+  calendar,
+  loss,
+  premium,
   grain = "auto",
-  loss = "loss_incr",
-  premium = "premium_incr",
   period_from = NULL,
   period_to = NULL,
   fill_gaps = FALSE
@@ -25,22 +25,22 @@ that the internal Date coercion accepts: Date, POSIXt, integer
 \item{groups}{Column(s) used for grouping (e.g., product, gender).}
 
 \item{calendar}{A single column defining the calendar-like period
-axis. Default \code{"cy_m"}. May also be an underwriting axis
+axis (raw name, e.g., \code{"cy_m"}). May also be an underwriting axis
 (\code{"uy_m"} etc.) when a single underwriting-period axis is to be
 summarised as a time series rather than as a development structure.}
+
+\item{loss}{Single character; per-period loss column in \code{df}
+(raw name, e.g., \code{"loss_incr"}).}
+
+\item{premium}{Single character; per-period premium column in \code{df}
+(raw name, e.g., \code{"premium_incr"}). Premium measure used as
+denominator for loss ratio calculations. For long-term health
+insurance applications, risk premium is commonly used.}
 
 \item{grain}{One of \code{"auto"} (default), \code{"M"}, \code{"Q"}, \code{"S"}, \code{"A"}.
 \code{"auto"} infers the grain from the \code{calendar} value spacing.
 Explicit values must be at least as coarse as the input grain;
 the input is binned (floored) to that grain before aggregation.}
-
-\item{loss}{Single character; per-period loss column in \code{df}.
-Default \code{"loss_incr"}.}
-
-\item{premium}{Single character; per-period premium column in \code{df}.
-Default \code{"premium_incr"}. Premium measure used as denominator for
-loss ratio calculations. For long-term health insurance applications,
-risk premium is commonly used.}
 
 \item{period_from}{Optional lower bound for \code{calendar}. Only rows with
 \code{calendar >= period_from} are kept.}

@@ -4,26 +4,19 @@
 \alias{validate_triangle}
 \title{Validate triangle structure before building a development}
 \usage{
-validate_triangle(
-  df,
-  groups,
-  cohort = "uy_m",
-  dev = "dev_m",
-  calendar = "cy_m"
-)
+validate_triangle(df, groups, cohort, dev, calendar = NULL)
 }
 \arguments{
 \item{df}{A data.frame.}
 
 \item{groups}{Grouping variable(s).}
 
-\item{cohort}{A single cohort variable. Default \code{"uy_m"}.}
+\item{cohort}{A single cohort variable (raw column name).}
 
-\item{dev}{A single development variable. Default \code{"dev_m"}.}
+\item{dev}{A single development variable (raw column name).}
 
 \item{calendar}{Optional calendar period variable for row-level
-consistency check. When supplied, rows where \code{calendar < cohort} are flagged as invalid. Default \code{"cy_m"}; pass \code{NULL}
-to skip this check, or a column name to override.}
+consistency check. When supplied, rows where \code{calendar < cohort} are flagged as invalid. Default \code{NULL} (skip this check).}
 }
 \value{
 A \code{data.table} of class \code{"TriangleValidation"} with one row

@@ -26,8 +26,8 @@ A \code{data.table} of class \code{"CalendarSummary"} with one row per
 (\code{sum(loss_incr) / sum(premium_incr)}).}
 }
 
-The returned object preserves the attributes \code{group_var},
-\code{calendar_var}, and \code{calendar_type}.
+The returned object preserves the attributes \code{groups},
+\code{calendar}, and \code{calendar_type}.
 }
 \description{
 S3 method for \code{summary()} on \code{Calendar} objects. Computes
@@ -41,7 +41,13 @@ diagonals rather than development periods.
 }
 \examples{
 \dontrun{
-cal <- build_calendar(df, groups = coverage)
+cal <- build_calendar(
+  df,
+  groups   = "coverage",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 smr  <- summary(cal)
 head(smr)
 }

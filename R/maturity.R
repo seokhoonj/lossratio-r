@@ -122,7 +122,7 @@ detect_maturity <- function(x,
   min_run     <- as.integer(min_run)
 
   smr <- .ensure_dt(x)
-  grp <- attr(x, "group_var")
+  grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
   # internal: find first mature row in a single-group summary table
@@ -217,7 +217,7 @@ detect_maturity <- function(x,
   data.table::setattr(z, "min_valid_ratio", min_valid_ratio)
   data.table::setattr(z, "min_n_valid",     min_n_valid)
   data.table::setattr(z, "min_run",         min_run)
-  data.table::setattr(z, "group_var",       grp)
+  data.table::setattr(z, "groups",       grp)
   data.table::setattr(z, "target",          attr(x, "target"))
   data.table::setattr(z, "weight",          attr(x, "weight"))
 

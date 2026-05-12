@@ -36,7 +36,7 @@ plot.Backtest <- function(x,
   scales <- match.arg(scales)
   theme  <- match.arg(theme)
 
-  grp <- x$group_var
+  grp <- x$groups
 
   if (type == "col") {
     smr <- .ensure_dt(x$col_summary)
@@ -60,7 +60,7 @@ plot.Backtest <- function(x,
                         ymin = -0.1, ymax = 0.1,
                         fill = "grey60", alpha = 0.12) +
       ggplot2::geom_hline(yintercept = c(-0.1, 0.1),
-                          linetype = "dotted", color = "grey50",
+                          linetype  = "dotted", color = "grey50",
                           linewidth = 0.3) +
       ggplot2::geom_hline(yintercept = 0, linetype = "dashed",
                           color = "grey50") +
@@ -73,7 +73,7 @@ plot.Backtest <- function(x,
       ) +
       ggplot2::scale_y_continuous(labels = function(v) paste0(round(v * 100), "%")) +
       ggplot2::labs(title = "Backtest A/E Error by development period",
-                    x = .pretty_var_label(x$dev_var),
+                    x = .pretty_var_label(x$dev),
                     y = "A/E ERROR = actual / pred - 1")
     if (length(grp))
       p <- p + ggplot2::facet_wrap(grp, scales = scales)
@@ -100,7 +100,7 @@ plot.Backtest <- function(x,
                         ymin = -0.1, ymax = 0.1,
                         fill = "grey60", alpha = 0.12) +
       ggplot2::geom_hline(yintercept = c(-0.1, 0.1),
-                          linetype = "dotted", color = "grey50",
+                          linetype  = "dotted", color = "grey50",
                           linewidth = 0.3) +
       ggplot2::geom_hline(yintercept = 0, linetype = "dashed",
                           color = "grey50") +
@@ -130,7 +130,7 @@ plot.Backtest <- function(x,
                         ymin = -0.1, ymax = 0.1,
                         fill = "grey60", alpha = 0.12) +
       ggplot2::geom_hline(yintercept = c(-0.1, 0.1),
-                          linetype = "dotted", color = "grey50",
+                          linetype  = "dotted", color = "grey50",
                           linewidth = 0.3) +
       ggplot2::geom_hline(yintercept = 0, linetype = "dashed",
                           color = "grey50") +
@@ -139,7 +139,7 @@ plot.Backtest <- function(x,
       .scale_color_by_month_gradientn(begin = 0.25) +
       ggplot2::scale_y_continuous(labels = function(v) paste0(round(v * 100), "%")) +
       ggplot2::labs(title = "Backtest A/E Error per held-out cell",
-                    x = .pretty_var_label(x$dev_var),
+                    x = .pretty_var_label(x$dev),
                     y = "A/E ERROR = actual / pred - 1")
     if (length(grp))
       p <- p + ggplot2::facet_wrap(grp, scales = scales)
@@ -175,7 +175,7 @@ plot_triangle.Backtest <- function(x,
   .assert_class(x, "Backtest")
   theme <- match.arg(theme)
 
-  grp <- x$group_var
+  grp <- x$groups
   dt <- .ensure_dt(x$ae_err)
 
   dt[, .label := sprintf("%.1f", ae_err * 100)]
@@ -206,8 +206,8 @@ plot_triangle.Backtest <- function(x,
       name     = "A/E Error"
     ) +
     ggplot2::labs(title = "Backtest A/E Error (held-out cells)",
-                  x = .pretty_var_label(x$dev_var),
-                  y = .pretty_var_label(x$cohort_var),
+                  x       = .pretty_var_label(x$dev),
+                  y       = .pretty_var_label(x$cohort),
                   caption = "Unit: %")
 
   if (length(grp))

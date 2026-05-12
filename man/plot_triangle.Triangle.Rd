@@ -7,7 +7,7 @@
 \method{plot_triangle}{Triangle}(
   x,
   type = c("value", "usage"),
-  value_var = "lr",
+  metric = "lr",
   label_style = c("value", "detail"),
   label_size = NULL,
   amount_divisor = 1e+08,
@@ -23,13 +23,13 @@
 \item{type}{Plot type. One of:
 \describe{
 \item{"value"}{(default) Per-cell metric heatmap controlled by
-\code{value_var}, \code{label_style}, \code{amount_divisor}, \code{nrow}, \code{ncol}.}
+\code{metric}, \code{label_style}, \code{amount_divisor}, \code{nrow}, \code{ncol}.}
 \item{"usage"}{Cell-status heatmap (used / holdout / unused /
 future). Accepts \code{recent}, \code{regime_break}, \code{holdout}, \code{maturity_args}
 via \code{...}. See \code{vignette("regime-break-filter")} for details.}
 }}
 
-\item{value_var}{A single metric to plot. Must be one of:
+\item{metric}{A single metric to plot. Must be one of:
 \code{"lr"}, \code{"lr_incr"},
 \code{"loss"}, \code{"loss_incr"}, \code{"premium"}, \code{"premium_incr"}, \code{"margin"}, \code{"margin_incr"},
 \code{"loss_share"}, \code{"loss_incr_share"}, \code{"premium_share"}, or \code{"premium_incr_share"}.}
@@ -81,27 +81,34 @@ The loss ratio is defined as:
 where \code{premium} denotes risk premium rather than written premium.
 }
 \details{
-The x-axis uses the development variable stored in \code{attr(x, "dev_var")}, and
-the y-axis uses the period variable stored in \code{attr(x, "cohort_var")}.
+The x-axis uses the development variable stored in \code{attr(x, "dev")}, and
+the y-axis uses the period variable stored in \code{attr(x, "cohort")}.
 If either axis variable is a period-like variable such as \code{uy_m}, \code{cy_m},
 \code{uy_q}, \code{cy_q}, \code{uy_s}, \code{cy_s}, \code{uy_a}, or \code{cy_a}, it is formatted using
 \code{\link[=.format_period]{.format_period()}}.
 
-Facets are created from \code{attr(x, "group_var")}.
+Facets are created from \code{attr(x, "groups")}.
 
 Ratio and proportion values are displayed in percent. Amount values are
 displayed in units of 100 million KRW.
 }
 \examples{
 \dontrun{
-d <- build_triangle(df, groups = pd_cat_nm)
+d <- build_triangle(
+  df,
+  groups   = pd_cat_nm,
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 plot_triangle(d)
-plot_triangle(d, value_var = "lr")
-plot_triangle(d, value_var = "loss")
-plot_triangle(d, value_var = "premium")
-plot_triangle(d, value_var = "loss_share")
-plot_triangle(d, value_var = "premium_share")
+plot_triangle(d, metric = "lr")
+plot_triangle(d, metric = "loss")
+plot_triangle(d, metric = "premium")
+plot_triangle(d, metric = "loss_share")
+plot_triangle(d, metric = "premium_share")
 plot_triangle(d, label_style = "value")
 plot_triangle(d, label_style = "detail")
 }

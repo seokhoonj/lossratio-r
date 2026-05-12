@@ -1,7 +1,7 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- build_triangle(exp, groups = coverage)
+tri <- build_triangle(exp, groups = coverage, cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
 
 test_that("fit_lr default (method = 'sa') returns class 'LRFit'", {
   lr <- fit_lr(tri)
@@ -11,7 +11,7 @@ test_that("fit_lr default (method = 'sa') returns class 'LRFit'", {
 
 test_that("LRFit has expected list elements", {
   lr <- fit_lr(tri, method = "sa")
-  for (nm in c("data", "method", "group_var", "cohort_var", "dev_var",
+  for (nm in c("data", "method", "groups", "cohort", "dev",
                "full", "pred", "summary",
                "ed", "loss_ata_fit", "premium_ata_fit", "maturity",
                "se_method", "rho", "conf_level",
@@ -95,7 +95,7 @@ test_that("fit_lr with loss_regime_break + method=sa applies hybrid filter", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
-                        cohort = "uy_m")
+                        cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   fit_full <- fit_lr(tri, method = "sa")
   fit_brk  <- fit_lr(tri, method = "sa", loss_regime_break = "2025-07-01",
                      recent = 18L)
@@ -109,7 +109,7 @@ test_that("fit_lr with loss_regime_break + method=ed drops pre-break cohorts", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
-                        cohort = "uy_m")
+                        cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   fit_full <- fit_lr(tri, method = "ed")
   fit_brk  <- fit_lr(tri, method = "ed", loss_regime_break = "2025-07-01")
   expect_false(identical(fit_full$full$lr_proj, fit_brk$full$lr_proj))
@@ -119,7 +119,7 @@ test_that("fit_lr with NULL loss_regime_break is unchanged", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
-                        cohort = "uy_m")
+                        cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   a <- fit_lr(tri, method = "sa")
   b <- fit_lr(tri, method = "sa", loss_regime_break = NULL)
   expect_identical(a$full$lr_proj, b$full$lr_proj)
@@ -129,7 +129,7 @@ test_that("fit_lr with Regime extracts last breakpoint", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
-                        cohort = "uy_m")
+                        cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   reg <- detect_regime(tri)
   fit_reg <- fit_lr(tri, method = "sa", loss_regime_break = reg, recent = 18L)
   if (length(reg$breakpoints) > 0L) {

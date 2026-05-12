@@ -5,7 +5,7 @@
 #' @description
 #' Detect structural change points in the sequence of cohort-level
 #' development trajectories. Each underwriting cohort (indexed by the
-#' `cohort_var` of a `"Triangle"` object) is treated as a feature vector
+#' `cohort` of a `"Triangle"` object) is treated as a feature vector
 #' whose entries are the selected `target` metric observed at development
 #' periods `1, ..., K`. Cohorts are then ordered by underwriting
 #' period and tested for structural shifts in the multivariate
@@ -58,7 +58,7 @@
 #'     \item{`call`}{Matched call.}
 #'     \item{`method`}{Detection method used.}
 #'     \item{`target`, `K`}{Trajectory variable and window.}
-#'     \item{`cohort_var`}{Period variable from `x`.}
+#'     \item{`cohort`}{Period variable from `x`.}
 #'     \item{`labels`}{`data.table` with one row per analysed cohort:
 #'       period, regime id, regime label.}
 #'     \item{`breakpoints`}{`Date` vector of breakpoint dates (each is
@@ -73,7 +73,7 @@
 #'   }
 #'   For multi-group input the same fields are returned but with
 #'   per-group containers: `$breakpoints` is a `data.table` with columns
-#'   `{<group_var>, breakpoint}`; `$labels` gains a `<group_var>` column;
+#'   `{<group>, breakpoint}`; `$labels` gains a `<group>` column;
 #'   `$n_regimes` is a named integer vector; `$trajectory`, `$pca`, and
 #'   `$dropped` are named lists keyed by group value. The `$multi_group`
 #'   logical flag distinguishes the two layouts.
@@ -83,7 +83,14 @@
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' tri_sur <- build_triangle(experience[coverage == "SUR"], groups = coverage)
+#' tri_sur <- build_triangle(
+#'   experience[coverage == "SUR"],
+#'   groups   = "coverage",
+#'   cohort   = "uy_m",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr"
+#' )
 #'
 #' # Hierarchical clustering (no extra package dependency)
 #' r <- detect_regime(tri_sur, K = 12, method = "hclust",
@@ -96,7 +103,14 @@
 #' r_ecp <- detect_regime(tri_sur, K = 12, method = "e_divisive")
 #'
 #' # Multi-group: detection per coverage
-#' tri_all <- build_triangle(experience, groups = coverage)
+#' tri_all <- build_triangle(
+#'   experience,
+#'   groups   = "coverage",
+#'   cohort   = "uy_m",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr"
+#' )
 #' r_all <- detect_regime(tri_all, K = 12, method = "e_divisive")
 #' print(r_all$breakpoints)
 #' }
@@ -114,14 +128,14 @@ detect_regime <- function(x,
   .assert_triangle_input(x, "detect_regime()")
   method <- match.arg(method)
 
-  coh <- attr(x, "cohort_var")
-  dev <- attr(x, "dev_var")
-  grp <- attr(x, "group_var")
+  coh <- attr(x, "cohort")
+  dev <- attr(x, "dev")
+  grp <- attr(x, "groups")
 
   if (length(coh) != 1L)
-    stop("`x` must have exactly one `cohort_var`.", call. = FALSE)
+    stop("`x` must have exactly one `cohort`.", call. = FALSE)
   if (length(dev) != 1L)
-    stop("`x` must have exactly one `dev_var`.", call. = FALSE)
+    stop("`x` must have exactly one `dev`.", call. = FALSE)
 
   d <- .ensure_dt(x)
 
@@ -155,9 +169,9 @@ detect_regime <- function(x,
       method      = method,
       target      = target,
       K           = K,
-      cohort_var  = coh,
-      dev_var     = dev,
-      group_var   = grp,
+      cohort      = coh,
+      dev         = dev,
+      groups      = grp,
       multi_group = FALSE,
       labels      = res$labels,
       breakpoints = res$breakpoints,
@@ -208,8 +222,8 @@ detect_regime <- function(x,
     if (!length(bp)) return(NULL)
     gval <- grp_vals[match(nm, as.character(grp_vals))]
     data.table::data.table(
-      .grp        = gval,
-      breakpoint  = bp
+      .grp       = gval,
+      breakpoint = bp
     )
   })
   bp_dt <- if (length(bp_rows) && any(!vapply(bp_rows, is.null, logical(1L)))) {
@@ -243,9 +257,9 @@ detect_regime <- function(x,
     method      = method,
     target      = target,
     K           = K,
-    cohort_var  = coh,
-    dev_var     = dev,
-    group_var   = grp,
+    cohort      = coh,
+    dev         = dev,
+    groups      = grp,
     multi_group = TRUE,
     labels      = labels_dt,
     breakpoints = bp_dt,
@@ -304,12 +318,12 @@ detect_regime <- function(x,
   pca <- stats::prcomp(mat, scale. = TRUE)
 
   breakpoints_idx <- .regime_breakpoints(
-    mat        = mat,
-    pca        = pca,
-    method     = method,
-    n_regimes  = n_regimes,
-    sig_level  = sig_level,
-    min_size   = min_size
+    mat       = mat,
+    pca       = pca,
+    method    = method,
+    n_regimes = n_regimes,
+    sig_level = sig_level,
+    min_size  = min_size
   )
 
   regime_id <- .regime_ids_from_breaks(n_cohorts, breakpoints_idx)
@@ -369,7 +383,7 @@ detect_regime <- function(x,
                                    minseglen = as.integer(min_size))
     } else {
       cpt <- changepoint::cpt.mean(pc1, method = "BinSeg",
-                                   Q = as.integer(n_regimes - 1L),
+                                   Q         = as.integer(n_regimes - 1L),
                                    minseglen = as.integer(min_size))
     }
     # changepoint returns last index of each segment; convert to starts
@@ -419,10 +433,10 @@ print.Regime <- function(x, ...) {
   cat("<Regime>\n")
   cat(sprintf("  method      : %s\n", x$method))
   cat(sprintf("  target      : %s\n", x$target))
-  cat(sprintf("  window (K)  : %s 1-%d\n", x$dev_var, x$K))
+  cat(sprintf("  window (K)  : %s 1-%d\n", x$dev, x$K))
 
   if (isTRUE(x$multi_group)) {
-    grp <- x$group_var
+    grp <- x$groups
     grp_vals <- names(x$n_regimes)
     cat(sprintf("  groups      : %d (%s)\n",
                 length(grp_vals), grp))
@@ -494,7 +508,7 @@ print.Regime <- function(x, ...) {
 summary.Regime <- function(object, ...) {
 
   if (isTRUE(object$multi_group)) {
-    grp <- object$group_var
+    grp <- object$groups
     labels <- object$labels
 
     tbl <- labels[, .(
@@ -507,9 +521,9 @@ summary.Regime <- function(object, ...) {
     out <- list(
       method      = object$method,
       target      = object$target,
-      dev_var     = object$dev_var,
+      dev         = object$dev,
       K           = object$K,
-      group_var   = grp,
+      groups      = grp,
       multi_group = TRUE,
       n_cohorts   = nrow(labels),
       n_dropped   = sum(vapply(object$dropped, length, integer(1L))),
@@ -530,9 +544,9 @@ summary.Regime <- function(object, ...) {
     out <- list(
       method      = object$method,
       target      = object$target,
-      dev_var     = object$dev_var,
+      dev         = object$dev,
       K           = object$K,
-      group_var   = object$group_var,
+      groups      = object$groups,
       multi_group = FALSE,
       n_cohorts   = nrow(labels),
       n_dropped   = length(object$dropped),
@@ -553,10 +567,10 @@ print.summary.Regime <- function(x, ...) {
   cat("Cohort regime detection summary\n")
   cat(sprintf("  method    : %s\n", x$method))
   cat(sprintf("  target    : %s\n", x$target))
-  cat(sprintf("  window    : %s 1-%d\n", x$dev_var, x$K))
+  cat(sprintf("  window    : %s 1-%d\n", x$dev, x$K))
 
   if (isTRUE(x$multi_group)) {
-    grp <- x$group_var
+    grp <- x$groups
     cat(sprintf("  groups    : %d (%s)\n",
                 length(x$n_regimes), grp))
     cat(sprintf("  cohorts   : %d analysed", x$n_cohorts))

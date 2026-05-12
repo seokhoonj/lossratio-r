@@ -8,7 +8,7 @@ fit_ed(
   x,
   target = "loss",
   exposure = "premium",
-  method = c("basic", "mack"),
+  method = c("mack"),
   alpha = 1,
   na_method = c("locf", "zero", "none"),
   sigma_method = c("locf", "min_last2", "loglinear"),
@@ -26,7 +26,7 @@ Forwarded to \code{\link[=build_link]{build_link()}} and to downstream workers.}
 \item{exposure}{Cumulative exposure variable. Default \code{"premium"}.
 Forwarded to \code{\link[=build_link]{build_link()}} and to downstream workers.}
 
-\item{method}{One of \code{"basic"} or \code{"mack"}. Default is \code{"basic"}.}
+\item{method}{Estimation method. Currently only \code{"mack"} is supported.}
 
 \item{alpha}{Numeric scalar controlling the variance structure. Default
 is \code{1}.}
@@ -53,8 +53,8 @@ the latest from \verb{$breakpoints}). When supplied, cohorts with
 An object of class \code{"EDFit"} (a named list) with components:
 \describe{
 \item{\code{factor}}{\code{EDSummary} of fitted intensities per development link.}
-\item{\code{selected}}{\code{data.table} of selected \code{g_selected}, \code{sigma2}
-(and \code{g_var} when \code{method = "mack"}).}
+\item{\code{selected}}{\code{data.table} of selected \code{g_selected}, \code{sigma2},
+and \code{g_var}.}
 \item{\code{full}}{\code{data.table} of per-cell cumulative target / exposure
 projection plus role-prefixed SE / CV columns
 (\code{target_proj}, \code{target_incr_proj}, \code{exposure_proj},
@@ -71,13 +71,8 @@ object and return an \code{"EDFit"} object that bundles factor summaries,
 selected intensities, and a cell-level projection of cumulative loss
 and exposure (\verb{$full}).
 
-Two methods are supported via the \code{method} argument:
-\describe{
-\item{\code{"basic"} (default)}{Factor estimation only. Returns
-\code{g_selected} and \code{sigma2} in \verb{$selected}.}
-\item{\code{"mack"}}{Basic plus factor variance \eqn{\mathrm{Var}(\hat{g}_k)}
-added as \code{g_var} column in \verb{$selected}.}
-}
+Returns \code{g_selected}, \code{sigma2}, and factor variance
+\eqn{\mathrm{Var}(\hat{g}_k)} (column \code{g_var}) in \verb{$selected}.
 
 The \verb{$full} projection table is produced by delegating to
 \code{\link[=fit_lr]{fit_lr()}} with \code{method = "ed"}, so cumulative loss / exposure /

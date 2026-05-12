@@ -60,9 +60,9 @@ An object of class \code{"CLFit"} containing:
 \item{\code{call}}{The matched call.}
 \item{\code{data}}{The input \code{"Triangle"} object.}
 \item{\code{method}}{The method used (\code{"mack"}).}
-\item{\code{group_var}}{Character vector of grouping variable names.}
-\item{\code{cohort_var}}{Character scalar of period variable name.}
-\item{\code{dev_var}}{Character scalar of development variable name.}
+\item{\code{groups}}{Character vector of grouping variable names.}
+\item{\code{cohort}}{Character scalar of period variable name.}
+\item{\code{dev}}{Character scalar of development variable name.}
 \item{\code{target}}{Character scalar of target variable name.}
 \item{\code{full}}{\code{data.table} with observed and projected values,
 including process/parameter SE and CV columns.}
@@ -100,7 +100,14 @@ their variance are estimated using the supplied WLS weights.
 \examples{
 \dontrun{
 data(experience)
-tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
+tri <- build_triangle(
+  experience[coverage == "SUR"],
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 # Mack chain ladder with process / parameter standard errors
 cl_mack <- fit_cl(tri, target = "loss", method = "mack")

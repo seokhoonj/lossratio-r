@@ -22,7 +22,7 @@
 #' Summary statistics are computed from [summary.Triangle()].
 #'
 #' @param x An object of class `Triangle`.
-#' @param value_var A single metric to plot. Must be one of:
+#' @param metric A single metric to plot. Must be one of:
 #'   `"lr"`, `"lr_incr"`,
 #'   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`,
 #'   `"margin"`, `"margin_incr"`,
@@ -46,10 +46,10 @@
 #' @param ... Additional arguments passed to [.switch_theme()].
 #'
 #' @details
-#' The x-axis uses the development variable stored in `attr(x, "dev_var")`.
+#' The x-axis uses the development variable stored in `attr(x, "dev")`.
 #' Cohort lines are grouped by the period variable stored in
-#' `attr(x, "cohort_var")`, and facets are created from
-#' `attr(x, "group_var")`.
+#' `attr(x, "cohort")`, and facets are created from
+#' `attr(x, "groups")`.
 #'
 #' The cumulative loss ratio is defined here as:
 #' \deqn{lr = loss / premium}
@@ -72,7 +72,7 @@
 #' @method plot Triangle
 #' @export
 plot.Triangle <- function(x,
-                          value_var      = "lr",
+                          metric         = "lr",
                           summary        = FALSE,
                           summary_min_n  = 5L,
                           amount_divisor = 1e8,
@@ -85,10 +85,10 @@ plot.Triangle <- function(x,
   scales <- match.arg(scales)
   theme  <- match.arg(theme)
 
-  grp     <- attr(x, "group_var")
-  coh     <- attr(x, "cohort_var")
-  dev_var <- attr(x, "dev_var")
-  val_var <- .capture_names(x, !!rlang::enquo(value_var))
+  grp     <- attr(x, "groups")
+  coh     <- attr(x, "cohort")
+  dev <- attr(x, "dev")
+  metric <- .capture_names(x, !!rlang::enquo(metric))
 
   valid_vars <- c(
     "lr", "lr_incr",
@@ -99,10 +99,10 @@ plot.Triangle <- function(x,
     "premium_share", "premium_incr_share"
   )
 
-  if (length(val_var) != 1L || !(val_var %in% valid_vars)) {
+  if (length(metric) != 1L || !(metric %in% valid_vars)) {
     stop(
       paste0(
-        "`value_var` must be one of ",
+        "`metric` must be one of ",
         "'lr', 'lr_incr', 'loss', 'loss_incr', 'premium', 'premium_incr', ",
         "'margin', 'margin_incr', ",
         "'loss_share', 'loss_incr_share', 'premium_share', or 'premium_incr_share'."
@@ -111,7 +111,7 @@ plot.Triangle <- function(x,
     )
   }
 
-  meta <- .get_plot_meta(val_var, amount_divisor = amount_divisor)
+  meta <- .get_plot_meta(metric, amount_divisor = amount_divisor)
 
   if (summary && meta$type != "ratio") {
     warning(
@@ -121,11 +121,11 @@ plot.Triangle <- function(x,
     summary <- FALSE
   }
 
-  is_dev_axis <- length(dev_var) == 1L && grepl("^dev_", dev_var)
+  is_dev_axis <- length(dev) == 1L && grepl("^dev_", dev)
 
   if (summary && !is_dev_axis) {
     warning(
-      "Summary overlay is only supported when `dev_var` is a development-period variable such as `dev_m`, `dev_q`, `dev_s`, or `dev_a`. Raw trajectories are shown only.",
+      "Summary overlay is only supported when `dev` is a development-period variable such as `dev_m`, `dev_q`, `dev_s`, or `dev_a`. Raw trajectories are shown only.",
       call. = FALSE
     )
     summary <- FALSE
@@ -138,7 +138,7 @@ plot.Triangle <- function(x,
       data = dt,
       ggplot2::aes(
         x     = .data[["dev"]],
-        y     = .data[[val_var]],
+        y     = .data[[metric]],
         color = .data[["cohort"]],
         group = .data[["cohort"]]
       )
@@ -152,7 +152,7 @@ plot.Triangle <- function(x,
         data = dt,
         ggplot2::aes(
           x     = .data[["dev"]],
-          y     = .data[[val_var]],
+          y     = .data[[metric]],
           group = .data[["cohort"]]
         ),
         color     = "grey70",
@@ -165,7 +165,7 @@ plot.Triangle <- function(x,
     smr <- summary(x)
 
     sm_long <- longer(smr)
-    target_types <- paste0(val_var, c("_mean", "_median", "_wt"))
+    target_types <- paste0(metric, c("_mean", "_median", "_wt"))
     sm_long <- sm_long[type %in% target_types]
 
     sm_long[smr, on = c(grp, "dev"), n_obs := i.n_obs]
@@ -177,13 +177,13 @@ plot.Triangle <- function(x,
 
     sm_long[, type := factor(
       type,
-      levels = paste0(val_var, c("_mean", "_median", "_wt")),
+      levels = paste0(metric, c("_mean", "_median", "_wt")),
       labels = c("Mean", "Median", "Weighted")
     )]
 
     p <- p +
       ggplot2::geom_line(
-        data = sm_long,
+        data    = sm_long,
         mapping = ggplot2::aes(
           x     = .data[["dev"]],
           y     = .data$value,
@@ -191,8 +191,8 @@ plot.Triangle <- function(x,
           group = .data$type
         ),
         inherit.aes = FALSE,
-        linewidth = 0.8,
-        na.rm = TRUE
+        linewidth   = 0.8,
+        na.rm       = TRUE
       ) +
       ggplot2::scale_color_manual(
         values = c(
@@ -241,7 +241,7 @@ plot.Triangle <- function(x,
     p <- p + ggplot2::scale_x_date(labels = function(x) .format_period(x, abb = TRUE))
   }
   p <- p + .resolve_y_scale(
-    meta = meta,
+    meta           = meta,
     amount_divisor = amount_divisor
   )
 
@@ -251,8 +251,8 @@ plot.Triangle <- function(x,
   # labs
   p <- p + ggplot2::labs(
     title   = meta$title,
-    x       = .pretty_var_label(dev_var),
-    y       = val_var,
+    x       = .pretty_var_label(dev),
+    y       = metric,
     caption = meta$caption
   )
 
@@ -266,8 +266,8 @@ plot.Triangle <- function(x,
 #'
 #' @description
 #' Visualise an object of class `Calendar` as a time-series plot.
-#' The selected metric is plotted over the calendar-style `calendar_var`,
-#' or over the calendar development variable stored in `attr(x, "dev_var")`.
+#' The selected metric is plotted over the calendar-style `calendar`,
+#' or over the calendar development variable stored in `attr(x, "dev")`.
 #'
 #' Ratio metrics (`lr`, `lr`) and proportion metrics
 #' (`loss_share`, `loss_incr_share`, `premium_share`, `premium_incr_share`) are plotted on the
@@ -279,13 +279,13 @@ plot.Triangle <- function(x,
 #' If grouping variables are present, lines are drawn separately by group.
 #'
 #' @param x An object of class `Calendar`.
-#' @param value_var A single metric to plot. Must be one of:
+#' @param metric A single metric to plot. Must be one of:
 #'   `"lr"`, `"lr_incr"`,
 #'   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`, `"margin_incr"`,
 #'   `"loss_share"`, `"loss_incr_share"`, `"premium_share"`, or `"premium_incr_share"`.
 #' @param x_by X-axis basis. One of:
 #'   \describe{
-#'     \item{"period"}{Use the calendar variable stored in `attr(x, "calendar_var")`.}
+#'     \item{"period"}{Use the calendar variable stored in `attr(x, "calendar")`.}
 #'     \item{"dev"}{Use the sequential `dev` column.}
 #'   }
 #' @param amount_divisor Numeric scaling factor used only for y-axis labels of
@@ -295,7 +295,7 @@ plot.Triangle <- function(x,
 #' @param ... Additional arguments passed to [.switch_theme()].
 #'
 #' @details
-#' The x-axis uses either the calendar variable stored in `attr(x, "calendar_var")`
+#' The x-axis uses either the calendar variable stored in `attr(x, "calendar")`
 #' or the sequential `dev` column, depending on `x_by`.
 #'
 #' The loss ratio is defined as:
@@ -307,20 +307,26 @@ plot.Triangle <- function(x,
 #'
 #' @examples
 #' \dontrun{
-#' x <- build_calendar(df, coverage, cy_m)
+#' x <- build_calendar(
+#'   df,
+#'   groups   = "coverage",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr"
+#' )
 #'
 #' plot(x)
-#' plot(x, value_var = "lr")
+#' plot(x, metric = "lr")
 #' plot(x, x_by = "dev")
 #' }
 #'
 #' @method plot Calendar
 #' @export
 plot.Calendar <- function(x,
-                          value_var       = "lr",
-                          x_by            = c("period", "dev"),
-                          amount_divisor  = 1e8,
-                          theme           = c("view", "save", "shiny"),
+                          metric         = "lr",
+                          x_by           = c("period", "dev"),
+                          amount_divisor = 1e8,
+                          theme          = c("view", "save", "shiny"),
                           ...) {
 
   .assert_class(x, "Calendar")
@@ -328,9 +334,9 @@ plot.Calendar <- function(x,
   theme <- match.arg(theme)
   x_by <- match.arg(x_by)
 
-  grp     <- attr(x, "group_var")
-  cal     <- attr(x, "calendar_var")
-  val_var <- .capture_names(x, !!rlang::enquo(value_var))
+  grp     <- attr(x, "groups")
+  cal     <- attr(x, "calendar")
+  metric <- .capture_names(x, !!rlang::enquo(metric))
 
   valid_vars <- c(
     "lr", "lr_incr",
@@ -342,16 +348,16 @@ plot.Calendar <- function(x,
   )
 
   if (length(cal) != 1L) {
-    stop("`x` must contain exactly one `calendar_var`.", call. = FALSE)
+    stop("`x` must contain exactly one `calendar`.", call. = FALSE)
   }
 
-  if (length(val_var) != 1L || !(val_var %in% valid_vars)) {
-    stop("Invalid `value_var`.", call. = FALSE)
+  if (length(metric) != 1L || !(metric %in% valid_vars)) {
+    stop("Invalid `metric`.", call. = FALSE)
   }
 
   dt <- .ensure_dt(x)
 
-  meta <- .get_plot_meta(val_var, amount_divisor = amount_divisor)
+  meta <- .get_plot_meta(metric, amount_divisor = amount_divisor)
 
   x_axis <- if (x_by == "dev") "dev" else "calendar"
   axis_label <- if (x_by == "dev") "dev" else cal
@@ -369,7 +375,7 @@ plot.Calendar <- function(x,
       dt,
       ggplot2::aes(
         x = .data[[x_axis]],
-        y = .data[[val_var]]
+        y = .data[[metric]]
       )
     ) +
       ggplot2::geom_line()
@@ -380,7 +386,7 @@ plot.Calendar <- function(x,
       dt,
       ggplot2::aes(
         x      = .data[[x_axis]],
-        y      = .data[[val_var]],
+        y      = .data[[metric]],
         colour = .data[[grp]],
         group  = .data[[grp]]
       )
@@ -395,7 +401,7 @@ plot.Calendar <- function(x,
       dt,
       ggplot2::aes(
         x      = .data[[x_axis]],
-        y      = .data[[val_var]],
+        y      = .data[[metric]],
         colour = .data$.group,
         group  = .data$.group
       )
@@ -417,7 +423,7 @@ plot.Calendar <- function(x,
       labels = function(z) .format_period_safe(z, axis_label)
     ) +
     .resolve_y_scale(
-      meta = meta,
+      meta           = meta,
       amount_divisor = amount_divisor
     )
 
@@ -425,7 +431,7 @@ plot.Calendar <- function(x,
   p <- p + ggplot2::labs(
     title   = title_txt,
     x       = axis_label,
-    y       = val_var,
+    y       = metric,
     caption = meta$caption
   )
 
@@ -473,12 +479,12 @@ plot_triangle <- function(x, ...) {
 #' @param type Plot type. One of:
 #'   \describe{
 #'     \item{"value"}{(default) Per-cell metric heatmap controlled by
-#'       `value_var`, `label_style`, `amount_divisor`, `nrow`, `ncol`.}
+#'       `metric`, `label_style`, `amount_divisor`, `nrow`, `ncol`.}
 #'     \item{"usage"}{Cell-status heatmap (used / holdout / unused /
 #'       future). Accepts `recent`, `regime_break`, `holdout`, `maturity_args`
 #'       via `...`. See `vignette("regime-break-filter")` for details.}
 #'   }
-#' @param value_var A single metric to plot. Must be one of:
+#' @param metric A single metric to plot. Must be one of:
 #'   `"lr"`, `"lr_incr"`,
 #'   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`, `"margin_incr"`,
 #'   `"loss_share"`, `"loss_incr_share"`, `"premium_share"`, or `"premium_incr_share"`.
@@ -503,13 +509,13 @@ plot_triangle <- function(x, ...) {
 #' @param ... Additional arguments passed to [.switch_theme()].
 #'
 #' @details
-#' The x-axis uses the development variable stored in `attr(x, "dev_var")`, and
-#' the y-axis uses the period variable stored in `attr(x, "cohort_var")`.
+#' The x-axis uses the development variable stored in `attr(x, "dev")`, and
+#' the y-axis uses the period variable stored in `attr(x, "cohort")`.
 #' If either axis variable is a period-like variable such as `uy_m`, `cy_m`,
 #' `uy_q`, `cy_q`, `uy_s`, `cy_s`, `uy_a`, or `cy_a`, it is formatted using
 #' [.format_period()].
 #'
-#' Facets are created from `attr(x, "group_var")`.
+#' Facets are created from `attr(x, "groups")`.
 #'
 #' Ratio and proportion values are displayed in percent. Amount values are
 #' displayed in units of 100 million KRW.
@@ -518,14 +524,21 @@ plot_triangle <- function(x, ...) {
 #'
 #' @examples
 #' \dontrun{
-#' d <- build_triangle(df, groups = pd_cat_nm)
+#' d <- build_triangle(
+#'   df,
+#'   groups   = pd_cat_nm,
+#'   cohort   = "uy_m",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr"
+#' )
 #'
 #' plot_triangle(d)
-#' plot_triangle(d, value_var = "lr")
-#' plot_triangle(d, value_var = "loss")
-#' plot_triangle(d, value_var = "premium")
-#' plot_triangle(d, value_var = "loss_share")
-#' plot_triangle(d, value_var = "premium_share")
+#' plot_triangle(d, metric = "lr")
+#' plot_triangle(d, metric = "loss")
+#' plot_triangle(d, metric = "premium")
+#' plot_triangle(d, metric = "loss_share")
+#' plot_triangle(d, metric = "premium_share")
 #' plot_triangle(d, label_style = "value")
 #' plot_triangle(d, label_style = "detail")
 #' }
@@ -533,13 +546,13 @@ plot_triangle <- function(x, ...) {
 #' @method plot_triangle Triangle
 #' @export
 plot_triangle.Triangle <- function(x,
-                                   type = c("value", "usage"),
-                                   value_var = "lr",
-                                   label_style = c("value", "detail"),
-                                   label_size = NULL,
+                                   type           = c("value", "usage"),
+                                   metric         = "lr",
+                                   label_style    = c("value", "detail"),
+                                   label_size     = NULL,
                                    amount_divisor = 1e8,
-                                   nrow = NULL, ncol = NULL,
-                                   theme = c("view", "save", "shiny"),
+                                   nrow           = NULL, ncol = NULL,
+                                   theme          = c("view", "save", "shiny"),
                                    ...) {
 
   .assert_class(x, "Triangle")
@@ -555,10 +568,10 @@ plot_triangle.Triangle <- function(x,
     label_size <- if (label_style == "detail") 2.5 else 3
   label_args  <- .modify_label_args(list(size = label_size))
 
-  grp     <- attr(x, "group_var")
-  coh     <- attr(x, "cohort_var")
-  dev_var <- attr(x, "dev_var")
-  val_var <- .capture_names(x, !!rlang::enquo(value_var))
+  grp     <- attr(x, "groups")
+  coh     <- attr(x, "cohort")
+  dev <- attr(x, "dev")
+  metric <- .capture_names(x, !!rlang::enquo(metric))
 
   valid_vars <- c(
     "lr", "lr_incr",
@@ -570,15 +583,15 @@ plot_triangle.Triangle <- function(x,
   )
 
   if (length(coh) != 1L)
-    stop("`x` must contain exactly one `calendar_var`.", call. = FALSE)
+    stop("`x` must contain exactly one `calendar`.", call. = FALSE)
 
-  if (length(dev_var) != 1L)
-    stop("`x` must contain exactly one `dev_var`.", call. = FALSE)
+  if (length(dev) != 1L)
+    stop("`x` must contain exactly one `dev`.", call. = FALSE)
 
-  if (length(val_var) != 1L || !(val_var %in% valid_vars))
+  if (length(metric) != 1L || !(metric %in% valid_vars))
     stop(
       paste0(
-        "`value_var` must be one of ",
+        "`metric` must be one of ",
         "'lr', 'lr_incr', 'loss', 'loss_incr', 'premium', 'premium_incr', ",
         "'margin', 'margin_incr', ",
         "'loss_share', 'loss_incr_share', 'premium_share', or 'premium_incr_share'."
@@ -589,7 +602,7 @@ plot_triangle.Triangle <- function(x,
   dt <- .ensure_dt(x)
 
   coh_type <- .get_period_type(coh)
-  dev_type <- .get_period_type(dev_var)
+  dev_type <- .get_period_type(dev)
 
   if (!is.na(coh_type)) {
     dt[, .y := .format_period(dt[["cohort"]], type = coh_type)]
@@ -610,25 +623,25 @@ plot_triangle.Triangle <- function(x,
   prop_vars   <- c("loss_share", "loss_incr_share",
                    "premium_share", "premium_incr_share")
 
-  if (val_var %in% ratio_vars) {
+  if (metric %in% ratio_vars) {
 
-    is_cum <- val_var == "lr"
+    is_cum <- metric == "lr"
     loss_col    <- if (is_cum) "loss"    else "loss_incr"
     premium_col <- if (is_cum) "premium" else "premium_incr"
 
     if (label_style == "value") {
-      dt[, label := sprintf("%.0f", dt[[val_var]] * 100)]
+      dt[, label := sprintf("%.0f", dt[[metric]] * 100)]
     } else {
       dt[, label := sprintf(
         "%.0f\n(%.1f/%.1f)",
-        dt[[val_var]]    * 100,
+        dt[[metric]]    * 100,
         dt[[loss_col]]    / amount_divisor,
         dt[[premium_col]] / amount_divisor
       )]
     }
 
     title_txt <- if (is_cum) "Cumulative Loss Ratio" else "Per-Period Loss Ratio"
-    fill_col  <- val_var
+    fill_col  <- metric
 
     caption_txt <- if (label_style == "detail") {
       sprintf("Unit: %% (%s)", .get_amount_unit(amount_divisor))
@@ -646,18 +659,18 @@ plot_triangle.Triangle <- function(x,
       fill_args  = list(threshold = 1)
     )
 
-  } else if (val_var %in% amount_vars) {
+  } else if (metric %in% amount_vars) {
 
-    dt[, label := sprintf("%.1f", dt[[val_var]] / amount_divisor)]
+    dt[, label := sprintf("%.1f", dt[[metric]] / amount_divisor)]
 
     title_txt <- switch(
-      val_var,
-      loss          = "Cumulative Loss",
-      loss_incr     = "Per-Period Loss",
-      premium       = "Cumulative Premium",
-      premium_incr  = "Per-Period Premium",
-      margin        = "Cumulative Margin",
-      margin_incr   = "Per-Period Margin"
+      metric,
+      loss         = "Cumulative Loss",
+      loss_incr    = "Per-Period Loss",
+      premium      = "Cumulative Premium",
+      premium_incr = "Per-Period Premium",
+      margin       = "Cumulative Margin",
+      margin_incr  = "Per-Period Margin"
     )
 
     caption_txt <- sprintf("Unit: %s", .get_amount_unit(amount_divisor))
@@ -668,20 +681,20 @@ plot_triangle.Triangle <- function(x,
       y          = .data[[".y"]],
       label      = .data[["label"]],
       label_args = label_args,
-      fill       = .data[[val_var]],
+      fill       = .data[[metric]],
       fill_args  = list(when = "<", threshold = 0)
     )
 
-  } else if (val_var %in% prop_vars) {
+  } else if (metric %in% prop_vars) {
 
-    dt[, label := sprintf("%.1f", dt[[val_var]] * 100)]
+    dt[, label := sprintf("%.1f", dt[[metric]] * 100)]
 
     title_txt <- switch(
-      val_var,
-      loss_share          = "Cumulative Loss Proportion",
-      loss_incr_share     = "Per-Period Loss Proportion",
-      premium_share       = "Cumulative Premium Proportion",
-      premium_incr_share  = "Per-Period Premium Proportion"
+      metric,
+      loss_share         = "Cumulative Loss Proportion",
+      loss_incr_share    = "Per-Period Loss Proportion",
+      premium_share      = "Cumulative Premium Proportion",
+      premium_incr_share = "Per-Period Premium Proportion"
     )
 
     caption_txt <- "Unit: %"
@@ -692,7 +705,7 @@ plot_triangle.Triangle <- function(x,
       y          = .data[[".y"]],
       label      = .data[["label"]],
       label_args = label_args,
-      fill       = .data[[val_var]],
+      fill       = .data[[metric]],
       fill_args  = list(threshold = 0.05)
     )
   }
@@ -703,7 +716,7 @@ plot_triangle.Triangle <- function(x,
   # labs
   p <- p + ggplot2::labs(
     title   = title_txt,
-    x       = .pretty_var_label(dev_var),
+    x       = .pretty_var_label(dev),
     y       = .pretty_var_label(coh),
     caption = caption_txt
   )
@@ -723,7 +736,7 @@ plot_triangle.Triangle <- function(x,
 #' loss, etc.) rather than a trajectory.
 #'
 #' @param x An object of class `Total`.
-#' @param value_var A single metric to plot. Must be one of the columns
+#' @param metric A single metric to plot. Must be one of the columns
 #'   carried by a `Total`: `"lr"`, `"loss"`, `"premium"`, `"loss_share"`, or
 #'   `"premium_share"`. Default `"lr"`.
 #' @param amount_divisor Numeric scaling factor used only for y-axis
@@ -733,7 +746,7 @@ plot_triangle.Triangle <- function(x,
 #' @param ... Additional arguments passed to [.switch_theme()].
 #'
 #' @details
-#' Bars are ordered by the value of `value_var` (descending). When more
+#' Bars are ordered by the value of `metric` (descending). When more
 #' than one grouping variable is present, an interaction is used as the
 #' bar identifier.
 #'
@@ -745,16 +758,23 @@ plot_triangle.Triangle <- function(x,
 #'
 #' @examples
 #' \dontrun{
-#' tot <- build_total(df, groups = coverage)
+#' tot <- build_total(
+#'   df,
+#'   groups  = "coverage",
+#'   cohort  = "uy_m",
+#'   dev     = "dev_m",
+#'   loss    = "loss_incr",
+#'   premium = "premium_incr"
+#' )
 #' plot(tot)
-#' plot(tot, value_var = "loss")
+#' plot(tot, metric = "loss")
 #' }
 #'
 #' @method plot Total
 #' @export
 #' @import ggplot2
 plot.Total <- function(x,
-                       value_var      = "lr",
+                       metric         = "lr",
                        amount_divisor = 1e8,
                        theme          = c("view", "save", "shiny"),
                        ...) {
@@ -763,15 +783,15 @@ plot.Total <- function(x,
 
   theme <- match.arg(theme)
 
-  grp     <- attr(x, "group_var")
-  val_var <- .capture_names(x, !!rlang::enquo(value_var))
+  grp     <- attr(x, "groups")
+  metric <- .capture_names(x, !!rlang::enquo(metric))
 
   valid_vars <- c("lr", "loss", "premium", "loss_share", "premium_share")
 
-  if (length(val_var) != 1L || !(val_var %in% valid_vars)) {
+  if (length(metric) != 1L || !(metric %in% valid_vars)) {
     stop(
       paste0(
-        "`value_var` must be one of ",
+        "`metric` must be one of ",
         "'lr', 'loss', 'premium', 'loss_share', or 'premium_share'."
       ),
       call. = FALSE
@@ -779,7 +799,7 @@ plot.Total <- function(x,
   }
 
   if (!length(grp)) {
-    stop("`Total` has no `group_var`; nothing to plot.", call. = FALSE)
+    stop("`Total` has no `groups`; nothing to plot.", call. = FALSE)
   }
 
   dt <- .ensure_dt(x)
@@ -792,16 +812,16 @@ plot.Total <- function(x,
   }
 
   # order bars by value (ascending so largest is at the top after coord_flip)
-  data.table::setorderv(dt, val_var)
+  data.table::setorderv(dt, metric)
   dt[, .group := factor(.group, levels = .group)]
 
-  meta <- .get_plot_meta(val_var, amount_divisor = amount_divisor)
+  meta <- .get_plot_meta(metric, amount_divisor = amount_divisor)
 
   p <- ggplot2::ggplot(
     dt,
     ggplot2::aes(
       x = .data$.group,
-      y = .data[[val_var]]
+      y = .data[[metric]]
     )
   ) +
     ggplot2::geom_col(fill = "#4C78A8")
@@ -815,7 +835,7 @@ plot.Total <- function(x,
   }
 
   p <- p + .resolve_y_scale(
-    meta = meta,
+    meta           = meta,
     amount_divisor = amount_divisor
   )
 
@@ -824,7 +844,7 @@ plot.Total <- function(x,
     ggplot2::labs(
       title   = meta$title,
       x       = paste(grp, collapse = " | "),
-      y       = val_var,
+      y       = metric,
       caption = meta$caption
     )
 
@@ -877,7 +897,7 @@ plot.Total <- function(x,
 
   .assert_class(x, "Triangle")
 
-  grp <- attr(x, "group_var")
+  grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
   obs <- .ensure_dt(x)
@@ -1008,17 +1028,17 @@ plot.Total <- function(x,
                                  regime_break  = NULL,
                                  holdout       = NULL,
                                  maturity_args = NULL,
-                                 value_var     = "loss",
+                                 metric        = "loss",
                                  theme         = c("view", "save", "shiny"),
                                  ...) {
 
   .assert_class(x, "Triangle")
   theme <- match.arg(theme)
 
-  grp      <- attr(x, "group_var")
-  coh      <- attr(x, "cohort_var")
+  grp      <- attr(x, "groups")
+  coh      <- attr(x, "cohort")
   coh_type <- .get_period_type(coh)
-  dev_var  <- attr(x, "dev_var")
+  dev  <- attr(x, "dev")
   if (is.null(grp)) grp <- character(0)
 
   # 2-pass maturity detection: needed whenever regime_break is set, so the
@@ -1031,7 +1051,7 @@ plot.Total <- function(x,
     margs <- if (is.null(maturity_args)) list() else maturity_args
     fit_for_mat <- tryCatch(
       do.call(fit_ata,
-              c(list(x = x, target = value_var, maturity_args = margs))),
+              c(list(x = x, target = metric, maturity_args = margs))),
       error = function(e) NULL
     )
     if (!is.null(fit_for_mat) &&
@@ -1082,7 +1102,7 @@ plot.Total <- function(x,
   if (!is.null(mat_k)) {
     p <- p + ggplot2::geom_vline(
       xintercept = mat_k - 0.5,
-      linetype = "dashed", color = "black", linewidth = 0.4
+      linetype   = "dashed", color = "black", linewidth = 0.4
     )
   }
 
@@ -1104,7 +1124,7 @@ plot.Total <- function(x,
       if (!is.na(idx)) {
         p <- p + ggplot2::geom_hline(
           yintercept = idx + 0.5,
-          linetype = "dashed", color = "black", linewidth = 0.4
+          linetype   = "dashed", color = "black", linewidth = 0.4
         )
       }
     }
@@ -1135,7 +1155,7 @@ plot.Total <- function(x,
   p <- p + ggplot2::labs(
     title    = title_txt,
     subtitle = subtitle_txt,
-    x        = .pretty_var_label(dev_var),
+    x        = .pretty_var_label(dev),
     y        = .pretty_var_label(coh)
   )
 

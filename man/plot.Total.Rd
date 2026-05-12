@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{Total}(
   x,
-  value_var = "lr",
+  metric = "lr",
   amount_divisor = 1e+08,
   theme = c("view", "save", "shiny"),
   ...
@@ -15,7 +15,7 @@
 \arguments{
 \item{x}{An object of class \code{Total}.}
 
-\item{value_var}{A single metric to plot. Must be one of the columns
+\item{metric}{A single metric to plot. Must be one of the columns
 carried by a \code{Total}: \code{"lr"}, \code{"loss"}, \code{"premium"}, \code{"loss_share"}, or
 \code{"premium_share"}. Default \code{"lr"}.}
 
@@ -37,7 +37,7 @@ simple group-level comparison of the chosen metric (loss ratio, total
 loss, etc.) rather than a trajectory.
 }
 \details{
-Bars are ordered by the value of \code{value_var} (descending). When more
+Bars are ordered by the value of \code{metric} (descending). When more
 than one grouping variable is present, an interaction is used as the
 bar identifier.
 
@@ -47,9 +47,16 @@ scale and labelled using \code{amount_divisor}.
 }
 \examples{
 \dontrun{
-tot <- build_total(df, groups = coverage)
+tot <- build_total(
+  df,
+  groups  = "coverage",
+  cohort  = "uy_m",
+  dev     = "dev_m",
+  loss    = "loss_incr",
+  premium = "premium_incr"
+)
 plot(tot)
-plot(tot, value_var = "loss")
+plot(tot, metric = "loss")
 }
 
 }

@@ -41,8 +41,8 @@ point. Defaults \code{TRUE}.}
 \item{...}{Additional arguments passed to \code{\link[ggshort:plot_pca]{ggshort::plot_pca()}}.}
 }
 \value{
-A \code{ggplot} object (single-group) or a \code{patchwork} /
-list-of-\code{ggplot} composite (multi-group; one panel per group).
+A \code{ggplot} object (single-group), or a named list of \code{ggplot}
+objects (multi-group; one entry per group).
 }
 \description{
 Visualise an object of class \code{"Regime"} as a PCA scatter of

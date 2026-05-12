@@ -49,6 +49,13 @@
 #' data(experience)
 #' head(experience)
 #'
-#' tri <- build_triangle(experience, groups = coverage)
+#' tri <- build_triangle(
+#'   experience,
+#'   groups   = "coverage",
+#'   cohort   = "uy_m",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr"
+#' )
 #' }
 "experience"

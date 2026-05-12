@@ -45,15 +45,15 @@ diagnostics.}
 \value{
 A \code{data.table} of class \code{"Link"} with columns:
 \itemize{
-\item Always: \verb{[group_var]}, \code{cohort}, \code{ata_from}, \code{ata_to}, \code{ata_link},
+\item Always: \verb{[group]}, \code{cohort}, \code{ata_from}, \code{ata_to}, \code{ata_link},
 \code{target_from}, \code{target_to}, \code{target_delta}, \code{ata}.
 \item If \code{exposure} is set: also \code{exposure_from}, \code{exposure_to},
 \code{exposure_delta}, \code{intensity}.
 \item If \code{weight} is set: also \code{weight}.
 }
 
-The returned object carries attributes \code{group_var}, \code{cohort_var},
-\code{dev_var}, \code{target}, \code{exposure} (or \code{NULL}), \code{weight}
+The returned object carries attributes \code{groups}, \code{cohort},
+\code{dev}, \code{target}, \code{exposure} (or \code{NULL}), \code{weight}
 (or \code{NULL}).
 }
 \description{
@@ -79,7 +79,14 @@ applications, risk premium is commonly used.}
 }
 \examples{
 \dontrun{
-tri <- build_triangle(df, group_var = coverage)
+tri <- build_triangle(
+  df,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 # Single-variable: cumulative-loss link factors (ATA workflow)
 link_loss <- build_link(tri, target = "loss")

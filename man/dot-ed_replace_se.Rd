@@ -13,7 +13,7 @@
 \item{selected}{The \verb{$selected} data.table (must contain \code{f_selected},
 \code{sigma2}, \code{f_var}).}
 
-\item{triangle}{The original \code{Triangle} (for \code{group_var} attribute).}
+\item{triangle}{The original \code{Triangle} (for \code{groups} attribute).}
 }
 \value{
 Updated \code{full} data.table with \code{target_proc_se2},

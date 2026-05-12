@@ -1,8 +1,8 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- build_triangle(exp, groups = coverage)
-sub <- build_triangle(exp[coverage == "SUR"], groups = coverage)
+tri <- build_triangle(exp, groups = coverage, cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+sub <- build_triangle(exp[coverage == "SUR"], groups = coverage, cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
 
 
 test_that("fit_intensity returns class 'IntensityFit'", {
@@ -12,7 +12,7 @@ test_that("fit_intensity returns class 'IntensityFit'", {
 
 test_that("fit_intensity bundles expected components", {
   intensity_fit <- fit_intensity(sub)
-  for (nm in c("call", "data", "group_var", "cohort_var", "dev_var",
+  for (nm in c("call", "data", "groups", "cohort", "dev",
                "target", "exposure", "link", "factor", "selected",
                "alpha", "na_method", "sigma_method", "recent",
                "regime_break")) {

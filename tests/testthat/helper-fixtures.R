@@ -11,13 +11,17 @@ make_exp <- function() {
   experience
 }
 
-make_tri <- function(group_var = "coverage", ...) {
-  build_triangle(make_exp(), groups = !!group_var, ...)
+make_tri <- function(group = "coverage", ...) {
+  build_triangle(make_exp(), groups = !!group,
+                 cohort = "uy_m", calendar = "cy_m",
+                 loss = "loss_incr", premium = "premium_incr", ...)
 }
 
 make_sub_tri <- function(cv = "SUR") {
   exp <- make_exp()
-  build_triangle(exp[coverage == cv], groups = "coverage")
+  build_triangle(exp[coverage == cv], groups = "coverage",
+                 cohort = "uy_m", calendar = "cy_m",
+                 loss = "loss_incr", premium = "premium_incr")
 }
 
 make_link_set <- function() {
@@ -35,8 +39,12 @@ make_link_set <- function() {
     ed_sm   = summary(ed),
     cl      = fit_cl(tri, target = "loss", method = "mack"),
     lr      = fit_lr(tri, method = "sa"),
-    cal     = build_calendar(make_exp(), groups = "coverage"),
-    tot     = build_total(make_exp(), groups = "coverage")
+    cal     = build_calendar(make_exp(), groups = "coverage",
+                             calendar = "cy_m",
+                             loss = "loss_incr", premium = "premium_incr"),
+    tot     = build_total(make_exp(), groups = "coverage",
+                          cohort = "uy_m", dev = "dev_m",
+                          loss = "loss_incr", premium = "premium_incr")
   )
 }
 

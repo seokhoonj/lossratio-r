@@ -23,11 +23,10 @@
 \item{type}{Plot type. One of \code{"projection"} or \code{"reserve"}.}
 
 \item{conf_level}{Confidence level for interval display. Default is
-\code{0.95}. Only used when \code{method = "mack"}.}
+\code{0.95}.}
 
 \item{show_interval}{Logical; if \code{TRUE}, show normal-approximation
-confidence intervals. Default is \code{TRUE}. Silently ignored when
-\code{method = "basic"}.}
+confidence intervals. Default is \code{TRUE}.}
 
 \item{amount_divisor}{Numeric scaling factor for y-axis labels of amount
 variables. Default is \code{1e8}.}
@@ -50,9 +49,8 @@ Visualise an object of class \code{"CLFit"}.
 Two plot types are supported:
 \itemize{
 \item \code{"projection"}: observed and projected cumulative values by cohort
-over development periods. When \code{method = "mack"}, optional confidence
-bands are drawn using \code{target_total_se}.
+over development periods. Optional confidence bands are drawn using
+\code{target_total_se}.
 \item \code{"reserve"}: reserve summary by cohort with optional error bars.
-Only available when \code{method = "mack"}.
 }
 }

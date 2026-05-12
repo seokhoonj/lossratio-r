@@ -55,7 +55,7 @@
 #'   \item{`call`}{The matched call.}
 #'   \item{`data`}{The (possibly filtered) `Link` object used for
 #'     estimation.}
-#'   \item{`group_var`, `cohort_var`, `dev_var`, `target`,
+#'   \item{`groups`, `cohort`, `dev`, `target`,
 #'     `exposure`}{Variable name relays from the input `Triangle`.}
 #'   \item{`link`}{Alias of `data` for parallelism with
 #'     [fit_ata()].}
@@ -76,7 +76,14 @@
 #'
 #' @examples
 #' \dontrun{
-#' tri <- build_triangle(df, group_var = coverage)
+#' tri <- build_triangle(
+#'   df,
+#'   groups   = "coverage",
+#'   cohort   = "uy_m",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr"
+#' )
 #' intensity_fit <- fit_intensity(tri, target = "loss", exposure = "premium")
 #' summary(intensity_fit)
 #' }
@@ -108,7 +115,7 @@ fit_intensity <- function(x,
     }
     link <- .apply_break_filter(
       link, regime_break,
-      grp = if (is.null(attr(link, "group_var"))) character(0) else attr(link, "group_var"),
+      grp = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
       coh = "cohort",
       dev = "ata_from"
     )
@@ -118,13 +125,13 @@ fit_intensity <- function(x,
   if (!is.null(recent)) {
     link <- .apply_recent_filter(
       link, recent,
-      grp = if (is.null(attr(link, "group_var"))) character(0) else attr(link, "group_var"),
+      grp = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
       coh = "cohort",
       dev = "ata_from"
     )
   }
 
-  grp <- attr(link, "group_var")
+  grp <- attr(link, "groups")
   if (is.null(grp)) grp <- character(0)
 
   # 3) WLS intensity per link -------------------------------------------
@@ -142,9 +149,9 @@ fit_intensity <- function(x,
   out <- list(
     call         = match.call(),
     data         = x,
-    group_var    = grp,
-    cohort_var   = attr(link, "cohort_var"),
-    dev_var      = attr(link, "dev_var"),
+    groups       = grp,
+    cohort       = attr(link, "cohort"),
+    dev          = attr(link, "dev"),
     target       = attr(link, "target"),
     exposure     = attr(link, "exposure"),
     link         = link,
@@ -194,7 +201,7 @@ summary.IntensityFit <- function(object, ...) {
 #' @export
 print.IntensityFit <- function(x, ...) {
 
-  grp <- attr(x$link, "group_var")
+  grp <- attr(x$link, "groups")
   if (is.null(grp)) grp <- character(0)
 
   cat("<IntensityFit>\n")

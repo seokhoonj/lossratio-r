@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{Calendar}(
   x,
-  value_var = "lr",
+  metric = "lr",
   x_by = c("period", "dev"),
   amount_divisor = 1e+08,
   theme = c("view", "save", "shiny"),
@@ -16,14 +16,14 @@
 \arguments{
 \item{x}{An object of class \code{Calendar}.}
 
-\item{value_var}{A single metric to plot. Must be one of:
+\item{metric}{A single metric to plot. Must be one of:
 \code{"lr"}, \code{"lr_incr"},
 \code{"loss"}, \code{"loss_incr"}, \code{"premium"}, \code{"premium_incr"}, \code{"margin"}, \code{"margin_incr"},
 \code{"loss_share"}, \code{"loss_incr_share"}, \code{"premium_share"}, or \code{"premium_incr_share"}.}
 
 \item{x_by}{X-axis basis. One of:
 \describe{
-\item{"period"}{Use the calendar variable stored in \code{attr(x, "calendar_var")}.}
+\item{"period"}{Use the calendar variable stored in \code{attr(x, "calendar")}.}
 \item{"dev"}{Use the sequential \code{dev} column.}
 }}
 
@@ -40,8 +40,8 @@ A \code{ggplot} object.
 }
 \description{
 Visualise an object of class \code{Calendar} as a time-series plot.
-The selected metric is plotted over the calendar-style \code{calendar_var},
-or over the calendar development variable stored in \code{attr(x, "dev_var")}.
+The selected metric is plotted over the calendar-style \code{calendar},
+or over the calendar development variable stored in \code{attr(x, "dev")}.
 
 Ratio metrics (\code{lr}, \code{lr}) and proportion metrics
 (\code{loss_share}, \code{loss_incr_share}, \code{premium_share}, \code{premium_incr_share}) are plotted on the
@@ -53,7 +53,7 @@ plotted on the original scale and displayed using y-axis labels scaled by
 If grouping variables are present, lines are drawn separately by group.
 }
 \details{
-The x-axis uses either the calendar variable stored in \code{attr(x, "calendar_var")}
+The x-axis uses either the calendar variable stored in \code{attr(x, "calendar")}
 or the sequential \code{dev} column, depending on \code{x_by}.
 
 The loss ratio is defined as:
@@ -63,10 +63,16 @@ where \code{premium} denotes risk premium rather than written premium.
 }
 \examples{
 \dontrun{
-x <- build_calendar(df, coverage, cy_m)
+x <- build_calendar(
+  df,
+  groups   = "coverage",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 plot(x)
-plot(x, value_var = "lr")
+plot(x, metric = "lr")
 plot(x, x_by = "dev")
 }
 

@@ -28,12 +28,11 @@
 #'
 #' @param df A data.frame.
 #' @param groups Grouping variable(s).
-#' @param cohort A single cohort variable. Default `"uy_m"`.
-#' @param dev A single development variable. Default `"dev_m"`.
+#' @param cohort A single cohort variable (raw column name).
+#' @param dev A single development variable (raw column name).
 #' @param calendar Optional calendar period variable for row-level
 #'   consistency check. When supplied, rows where `calendar <
-#'   cohort` are flagged as invalid. Default `"cy_m"`; pass `NULL`
-#'   to skip this check, or a column name to override.
+#'   cohort` are flagged as invalid. Default `NULL` (skip this check).
 #'
 #' @return A `data.table` of class `"TriangleValidation"` with one row
 #'   per cohort containing gaps. Columns:
@@ -57,9 +56,9 @@
 #' @export
 validate_triangle <- function(df,
                               groups,
-                              cohort   = "uy_m",
-                              dev      = "dev_m",
-                              calendar = "cy_m") {
+                              cohort,
+                              dev,
+                              calendar = NULL) {
   .assert_class(df, "data.frame")
 
   dt <- .ensure_dt(df)
@@ -72,11 +71,9 @@ validate_triangle <- function(df,
   .assert_length(dev)
 
   # calendar: NULL skips, otherwise auto-skip if column missing
-  cal <- NULL
-  if (!is.null(calendar)) {
-    cal <- .capture_names(dt, !!rlang::enquo(calendar))
-    if (length(cal) != 1L || !(cal %in% names(dt))) cal <- NULL
-  }
+  cal_quo <- rlang::enquo(calendar)
+  cal <- if (rlang::quo_is_null(cal_quo)) NULL else .capture_names(dt, !!cal_quo)
+  if (!is.null(cal) && (length(cal) != 1L || !(cal %in% names(dt)))) cal <- NULL
 
   # 1) row-level calendar consistency first — invalid rows pollute the
   #    dev sequence and would surface as spurious negative gaps if we
@@ -126,9 +123,9 @@ validate_triangle <- function(df,
 
   gaps <- gaps[n_observed != n_expected]
 
-  data.table::setattr(gaps, "group_var" , grp)
-  data.table::setattr(gaps, "cohort_var", coh)
-  data.table::setattr(gaps, "dev_var"   , dev)
+  data.table::setattr(gaps, "groups" , grp)
+  data.table::setattr(gaps, "cohort", coh)
+  data.table::setattr(gaps, "dev"   , dev)
 
   .prepend_class(gaps, "TriangleValidation")
 }
@@ -221,22 +218,28 @@ print.TriangleValidation <- function(x, ...) {
 #'   (or any input that the internal Date coercion accepts: Date, POSIXt,
 #'   integer `yyyy` / `yyyymm` / `yyyymmdd`, ISO string).
 #' @param groups Column(s) used for grouping (e.g., product, gender).
-#' @param cohort Single column defining the underwriting/exposure
-#'   period start (e.g., `"uy_m"`). Default `"uy_m"`.
-#' @param calendar Single column defining the calendar period of
-#'   the observation (e.g., `"cy_m"`). Default `"cy_m"`. Used together
-#'   with `cohort` to derive the development column at the resolved
-#'   grain.
+#' @param cohort Single column (raw name) defining the underwriting /
+#'   exposure period start (e.g., `"uy_m"`).
+#' @param calendar Single column (raw name) defining the calendar period of
+#'   the observation (e.g., `"cy_m"`). Optional — supply either `calendar`
+#'   or `dev` (or both). When `calendar` is given, `dev` is derived
+#'   internally via `count_periods(cohort, calendar, grain)`.
+#' @param dev Single column (raw name) holding pre-computed development
+#'   periods (e.g., `"dev_m"`). Optional — supply either `calendar`
+#'   or `dev` (or both). When only `dev` is given, the calendar
+#'   axis is omitted from the attribute (downstream calendar-diagonal
+#'   logic uses cohort + dev). When both are given, `dev` is
+#'   cross-checked against `count_periods(cohort, calendar, grain)`.
+#' @param loss Single character; per-period loss column in `df`
+#'   (raw name, e.g., `"loss_incr"`).
+#' @param premium Single character; per-period premium column in `df`
+#'   (raw name, e.g., `"premium_incr"`). Premium measure used as
+#'   denominator for loss ratio calculations. For long-term health
+#'   insurance applications, risk premium is commonly used.
 #' @param grain One of `"auto"` (default), `"M"`, `"Q"`, `"S"`, `"A"`.
 #'   `"auto"` infers the grain from the `cohort` value spacing.
 #'   Explicit values must be at least as coarse as the input grain;
 #'   the input is binned (floored) to that grain before aggregation.
-#' @param loss Single character; per-period loss column in `df`.
-#'   Default `"loss_incr"`.
-#' @param premium Single character; per-period premium column in `df`.
-#'   Default `"premium_incr"`. Premium measure used as denominator for
-#'   loss ratio calculations. For long-term health insurance applications,
-#'   risk premium is commonly used.
 #' @param cell_type One of `"incremental"` (default) or `"cumulative"`.
 #'   Whether `loss` and `premium` in `df` already hold per-period
 #'   (incremental) values or cumulative-within-cohort values. The
@@ -264,9 +267,9 @@ print.TriangleValidation <- function(x, ...) {
 #'       proportions of premium within each `(cohort, dev)` cell}
 #'   }
 #'
-#' Attributes set on the returned object: `group_var`, `cohort_var`,
-#' `calendar_var`, `grain`, `dev_var` (= `"dev_<lower(grain)>"`, e.g.
-#' `"dev_m"`), `loss_var`, `premium_var`, `longer`.
+#' Attributes set on the returned object: `groups`, `cohort`,
+#' `calendar`, `grain`, `dev` (= `"dev_<lower(grain)>"`, e.g.
+#' `"dev_m"`), `loss`, `premium`, `longer`.
 #'
 #' @examples
 #' \dontrun{
@@ -280,7 +283,14 @@ print.TriangleValidation <- function(x, ...) {
 #' )
 #'
 #' # auto-detected monthly grain
-#' res_m <- build_triangle(df, groups = pd_cd)
+#' res_m <- build_triangle(
+#'   df,
+#'   groups   = pd_cd,
+#'   cohort   = "uy_m",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr"
+#' )
 #'
 #' # explicit quarterly view (re-bins monthly input to quarterly)
 #' res_q <- build_triangle(df, groups = pd_cd, grain = "Q")
@@ -292,11 +302,12 @@ print.TriangleValidation <- function(x, ...) {
 #' @export
 build_triangle <- function(df,
                            groups,
-                           cohort    = "uy_m",
-                           calendar  = "cy_m",
+                           cohort,
+                           calendar  = NULL,
+                           dev       = NULL,
+                           loss,
+                           premium,
                            grain     = "auto",
-                           loss      = "loss_incr",
-                           premium   = "premium_incr",
                            cell_type = c("incremental", "cumulative"),
                            fill_gaps = FALSE) {
   .assert_class(df, "data.frame")
@@ -308,65 +319,98 @@ build_triangle <- function(df,
 
   dt <- .ensure_dt(df)
 
-  grp   <- .capture_names(dt, !!rlang::enquo(groups))
-  coh   <- .capture_names(dt, !!rlang::enquo(cohort))
-  cal   <- .capture_names(dt, !!rlang::enquo(calendar))
-  l_var <- .capture_names(dt, !!rlang::enquo(loss))
-  p_var <- .capture_names(dt, !!rlang::enquo(premium))
+  grp  <- .capture_names(dt, !!rlang::enquo(groups))
+  coh  <- .capture_names(dt, !!rlang::enquo(cohort))
+  loss <- .capture_names(dt, !!rlang::enquo(loss))
+  prem <- .capture_names(dt, !!rlang::enquo(premium))
+
+  # axis columns: at least one of `calendar` or `dev` must be supplied.
+  # Use enquo to distinguish `NULL` (explicit absence) from a captured value.
+  cal_quo <- rlang::enquo(calendar)
+  dev_quo <- rlang::enquo(dev)
+  cal <- if (rlang::quo_is_null(cal_quo)) NULL else .capture_names(dt, !!cal_quo)
+  dev_col <- if (rlang::quo_is_null(dev_quo)) NULL else .capture_names(dt, !!dev_quo)
+
+  if (is.null(cal) && is.null(dev_col))
+    stop("Must supply at least one of `calendar` or `dev`.", call. = FALSE)
 
   .assert_length(coh)
-  .assert_length(cal)
-  .assert_length(l_var)
-  .assert_length(p_var)
+  .assert_length(loss)
+  .assert_length(prem)
+  if (!is.null(cal))     .assert_length(cal)
+  if (!is.null(dev_col)) .assert_length(dev_col)
 
   if (length(coh) != 1L)
     stop("`cohort` must resolve to exactly one column.", call. = FALSE)
-  if (length(cal) != 1L)
+  if (!is.null(cal) && length(cal) != 1L)
     stop("`calendar` must resolve to exactly one column.", call. = FALSE)
+  if (!is.null(dev_col) && length(dev_col) != 1L)
+    stop("`dev` must resolve to exactly one column.", call. = FALSE)
 
-  # required columns presence check (capture_names already errors on missing,
-  # but explicit names list helps when user passes string defaults that may
-  # be missing).
-  required <- c(grp, coh, cal, l_var, p_var)
+  # required columns presence check
+  required <- c(grp, coh, loss, prem,
+                if (!is.null(cal)) cal,
+                if (!is.null(dev_col)) dev_col)
   missing_cols <- setdiff(required, names(dt))
   if (length(missing_cols))
     stop(sprintf("Missing required columns: %s.",
                  paste(sprintf("'%s'", missing_cols), collapse = ", ")),
          call. = FALSE)
 
-  # coerce cohort / calendar to Date (Date / POSIXt / int / string)
-  .coerce_cols_to_date(dt, c(coh, cal))
-  data.table::set(dt, j = l_var, value = as.numeric(dt[[l_var]]))
-  data.table::set(dt, j = p_var, value = as.numeric(dt[[p_var]]))
+  # coerce cohort (and calendar if present) to Date
+  .coerce_cols_to_date(dt, coh)
+  if (!is.null(cal)) .coerce_cols_to_date(dt, cal)
+  data.table::set(dt, j = loss, value = as.numeric(dt[[loss]]))
+  data.table::set(dt, j = prem, value = as.numeric(dt[[prem]]))
 
   # If input cells are cumulative, derive incremental via per-cohort diff
-  # at INPUT grain (before binning). After this, downstream flow treats
-  # values as incremental (same as the default path).
+  # at INPUT grain (before binning). Sort key prefers calendar when present
+  # else falls back to dev (both monotone within cohort).
   if (cell_type == "cumulative") {
-    data.table::setorderv(dt, c(grp, coh, cal))
-    dt[, (l_var) := .SD[[1L]] - data.table::shift(.SD[[1L]], fill = 0),
-       by = c(grp, coh), .SDcols = l_var]
-    dt[, (p_var) := .SD[[1L]] - data.table::shift(.SD[[1L]], fill = 0),
-       by = c(grp, coh), .SDcols = p_var]
+    sort_axis <- if (!is.null(cal)) cal else dev_col
+    data.table::setorderv(dt, c(grp, coh, sort_axis))
+    dt[, (loss) := .SD[[1L]] - data.table::shift(.SD[[1L]], fill = 0),
+       by = c(grp, coh), .SDcols = loss]
+    dt[, (prem) := .SD[[1L]] - data.table::shift(.SD[[1L]], fill = 0),
+       by = c(grp, coh), .SDcols = prem]
   }
 
   # auto-detect input grain from cohort; resolve user-supplied grain.
   input_grain <- .infer_grain(dt[[coh]])
   grain       <- .resolve_grain(input_grain, grain)
 
-  # bin to requested grain (floor cohort + calendar). When grain matches
-  # input this is still safe (idempotent floor).
-  .floor_cols_to_period(dt, c(coh, cal), grain)
+  # bin cohort (and calendar if present) to grain.
+  .floor_cols_to_period(dt, coh, grain)
+  if (!is.null(cal)) .floor_cols_to_period(dt, cal, grain)
 
-  # derive dev (1, 2, ...) at the resolved grain.
-  dt[, dev := .count_periods(.SD[[1L]], .SD[[2L]], grain),
-     .SDcols = c(coh, cal)]
+  # derive / validate dev under three modes:
+  #   mode 1 (calendar only): dev = count_periods(cohort, calendar, grain)
+  #   mode 2 (dev only):      use given dev as-is (calendar attribute = NA)
+  #   mode 3 (both):          cross-check given dev vs derived
+  if (!is.null(cal) && !is.null(dev_col)) {
+    computed_dev <- .count_periods(dt[[coh]], dt[[cal]], grain)
+    given_dev    <- as.integer(dt[[dev_col]])
+    mismatch <- !is.na(computed_dev) & !is.na(given_dev) &
+                computed_dev != given_dev
+    if (any(mismatch))
+      stop(sprintf(
+        "`dev` is inconsistent with `cohort` + `calendar` (grain `%s`) in %d row(s).",
+        grain, sum(mismatch)), call. = FALSE)
+    dt[, dev := given_dev]
+    if (dev_col != "dev") dt[, (dev_col) := NULL]
+  } else if (!is.null(cal)) {
+    dt[, dev := .count_periods(.SD[[1L]], .SD[[2L]], grain),
+       .SDcols = c(coh, cal)]
+  } else {
+    dt[, dev := as.integer(dt[[dev_col]])]
+    if (dev_col != "dev") dt[, (dev_col) := NULL]
+  }
 
   # standardize column names: user's loss / premium → standard
   # slot names loss_incr / premium_incr; cohort → cohort.
   data.table::setnames(
     dt,
-    c(coh, l_var, p_var),
+    c(coh, loss, prem),
     c("cohort", "loss_incr", "premium_incr")
   )
 
@@ -477,14 +521,14 @@ build_triangle <- function(df,
   )
   dm <- .prepend_class(dm, "TriangleLonger")
 
-  data.table::setattr(ds, "group_var"   , grp)
-  data.table::setattr(ds, "cohort_var"  , coh)
-  data.table::setattr(ds, "calendar_var", cal)
-  data.table::setattr(ds, "grain"       , grain)
-  data.table::setattr(ds, "dev_var"     , paste0("dev_", tolower(grain)))
-  data.table::setattr(ds, "loss_var"    , l_var)
-  data.table::setattr(ds, "premium_var" , p_var)
-  data.table::setattr(ds, "longer"      , dm)
+  data.table::setattr(ds, "groups"  , grp)
+  data.table::setattr(ds, "cohort"  , coh)
+  data.table::setattr(ds, "calendar", cal)
+  data.table::setattr(ds, "grain"   , grain)
+  data.table::setattr(ds, "dev"     , paste0("dev_", tolower(grain)))
+  data.table::setattr(ds, "loss"    , loss)
+  data.table::setattr(ds, "premium" , prem)
+  data.table::setattr(ds, "longer"  , dm)
 
   .update_class(ds, prepend = "Triangle")
 }
@@ -497,8 +541,8 @@ build_triangle <- function(df,
 #' (`lr_incr`).
 #'
 #' The function aggregates data by the grouping variables stored in
-#' `attr(x, "group_var")` and the development variable stored in
-#' `attr(x, "dev_var")`.
+#' `attr(x, "groups")` and the development variable stored in
+#' `attr(x, "dev")`.
 #'
 #' The following statistics are computed:
 #' - arithmetic mean,
@@ -522,7 +566,7 @@ build_triangle <- function(df,
 #' It is assumed that the input `Triangle` object does not contain missing values.
 #'
 #' @return
-#' A `data.table` grouped by `group_var` and `dev_var`, containing:
+#' A `data.table` grouped by `groups` and `dev`, containing:
 #' \describe{
 #'   \item{n_obs}{Number of observations in the cell}
 #'   \item{lr_mean}{Mean of cumulative loss ratios}
@@ -534,12 +578,19 @@ build_triangle <- function(df,
 #'     (`sum(loss_incr) / sum(premium_incr)`)}
 #' }
 #'
-#' The returned object keeps the attributes `group_var` and `dev_var`,
+#' The returned object keeps the attributes `groups` and `dev`,
 #' and its class is updated to `"TriangleSummary"`.
 #'
 #' @examples
 #' \dontrun{
-#' d <- build_triangle(df, groups = coverage)
+#' d <- build_triangle(
+#'   df,
+#'   groups   = "coverage",
+#'   cohort   = "uy_m",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr"
+#' )
 #' smr <- summary(d)
 #' head(smr)
 #' attr(smr, "longer")
@@ -552,8 +603,8 @@ summary.Triangle <- function(object, ...) {
 
   dt <- .ensure_dt(object)
 
-  grp     <- attr(dt, "group_var")
-  dev     <- attr(dt, "dev_var")
+  grp     <- attr(dt, "groups")
+  dev     <- attr(dt, "dev")
   grp_dev <- c(grp, "dev")
 
   ds <- dt[, .(
@@ -567,9 +618,9 @@ summary.Triangle <- function(object, ...) {
   ), keyby = grp_dev]
 
   dm <- data.table::melt(
-    data          = ds,
-    id.vars       = grp_dev,
-    measure.vars  = c(
+    data         = ds,
+    id.vars      = grp_dev,
+    measure.vars = c(
       "lr_mean"     , "lr_median"     , "lr_wt",
       "lr_incr_mean", "lr_incr_median", "lr_incr_wt"
     ),
@@ -578,8 +629,8 @@ summary.Triangle <- function(object, ...) {
   )
   dm <- .prepend_class(dm, "TriangleSummaryLonger")
 
-  data.table::setattr(ds, "group_var", grp)
-  data.table::setattr(ds, "dev_var"  , dev)
+  data.table::setattr(ds, "groups", grp)
+  data.table::setattr(ds, "dev"  , dev)
   data.table::setattr(ds, "longer"   , dm)
 
   .update_class(ds, "Triangle", "TriangleSummary")
@@ -642,19 +693,19 @@ longer.TriangleSummary <- function(x, ...) {
 #'   `yyyy` / `yyyymm` / `yyyymmdd`, ISO string).
 #' @param groups Column(s) used for grouping (e.g., product, gender).
 #' @param calendar A single column defining the calendar-like period
-#'   axis. Default `"cy_m"`. May also be an underwriting axis
+#'   axis (raw name, e.g., `"cy_m"`). May also be an underwriting axis
 #'   (`"uy_m"` etc.) when a single underwriting-period axis is to be
 #'   summarised as a time series rather than as a development structure.
+#' @param loss Single character; per-period loss column in `df`
+#'   (raw name, e.g., `"loss_incr"`).
+#' @param premium Single character; per-period premium column in `df`
+#'   (raw name, e.g., `"premium_incr"`). Premium measure used as
+#'   denominator for loss ratio calculations. For long-term health
+#'   insurance applications, risk premium is commonly used.
 #' @param grain One of `"auto"` (default), `"M"`, `"Q"`, `"S"`, `"A"`.
 #'   `"auto"` infers the grain from the `calendar` value spacing.
 #'   Explicit values must be at least as coarse as the input grain;
 #'   the input is binned (floored) to that grain before aggregation.
-#' @param loss Single character; per-period loss column in `df`.
-#'   Default `"loss_incr"`.
-#' @param premium Single character; per-period premium column in `df`.
-#'   Default `"premium_incr"`. Premium measure used as denominator for
-#'   loss ratio calculations. For long-term health insurance applications,
-#'   risk premium is commonly used.
 #' @param period_from Optional lower bound for `calendar`. Only rows with
 #'   `calendar >= period_from` are kept.
 #' @param period_to Optional upper bound for `calendar`. Only rows with
@@ -706,10 +757,10 @@ longer.TriangleSummary <- function(x, ...) {
 #' @export
 build_calendar <- function(df,
                            groups,
-                           calendar    = "cy_m",
+                           calendar,
+                           loss,
+                           premium,
                            grain       = "auto",
-                           loss        = "loss_incr",
-                           premium     = "premium_incr",
                            period_from = NULL,
                            period_to   = NULL,
                            fill_gaps   = FALSE) {
@@ -723,17 +774,17 @@ build_calendar <- function(df,
 
   grp   <- .capture_names(dt, !!rlang::enquo(groups))
   cal   <- .capture_names(dt, !!rlang::enquo(calendar))
-  l_var <- .capture_names(dt, !!rlang::enquo(loss))
-  p_var <- .capture_names(dt, !!rlang::enquo(premium))
+  loss  <- .capture_names(dt, !!rlang::enquo(loss))
+  prem  <- .capture_names(dt, !!rlang::enquo(premium))
 
   .assert_length(cal)
-  .assert_length(l_var)
-  .assert_length(p_var)
+  .assert_length(loss)
+  .assert_length(prem)
 
   if (length(cal) != 1L)
     stop("`calendar` must resolve to exactly one column.", call. = FALSE)
 
-  required <- c(grp, cal, l_var, p_var)
+  required <- c(grp, cal, loss, prem)
   missing_cols <- setdiff(required, names(dt))
   if (length(missing_cols))
     stop(sprintf("Missing required columns: %s.",
@@ -742,8 +793,8 @@ build_calendar <- function(df,
 
   # coerce calendar column to Date and numeric loss/premium
   .coerce_cols_to_date(dt, cal)
-  data.table::set(dt, j = l_var, value = as.numeric(dt[[l_var]]))
-  data.table::set(dt, j = p_var, value = as.numeric(dt[[p_var]]))
+  data.table::set(dt, j = loss, value = as.numeric(dt[[loss]]))
+  data.table::set(dt, j = prem, value = as.numeric(dt[[prem]]))
 
   # period filtering happens before grain binning so user's bounds are
   # interpreted at the input scale.
@@ -767,7 +818,7 @@ build_calendar <- function(df,
   # standardize column names: cal → calendar; loss/premium to standard slots
   data.table::setnames(
     dt,
-    c(cal, l_var, p_var),
+    c(cal, loss, prem),
     c("calendar", "loss_incr", "premium_incr")
   )
 
@@ -890,11 +941,11 @@ build_calendar <- function(df,
   )
   dm <- .prepend_class(dm, "CalendarLonger")
 
-  data.table::setattr(ds, "group_var"   , grp)
-  data.table::setattr(ds, "calendar_var", cal)
+  data.table::setattr(ds, "groups"   , grp)
+  data.table::setattr(ds, "calendar", cal)
   data.table::setattr(ds, "grain"       , grain)
-  data.table::setattr(ds, "loss_var"    , l_var)
-  data.table::setattr(ds, "premium_var" , p_var)
+  data.table::setattr(ds, "loss"    , loss)
+  data.table::setattr(ds, "premium" , prem)
   data.table::setattr(ds, "longer"      , dm)
 
   .prepend_class(ds, "Calendar")
@@ -941,8 +992,8 @@ build_calendar <- function(df,
 
   gaps <- gaps[n_observed != n_expected]
 
-  data.table::setattr(gaps, "group_var" , grp)
-  data.table::setattr(gaps, "cohort_var", cal)
+  data.table::setattr(gaps, "groups" , grp)
+  data.table::setattr(gaps, "cohort", cal)
 
   .prepend_class(gaps, "CalendarValidation")
 }
@@ -977,12 +1028,18 @@ build_calendar <- function(df,
 #'     (`sum(loss_incr) / sum(premium_incr)`).}
 #' }
 #'
-#' The returned object preserves the attributes `group_var`,
-#' `calendar_var`, and `calendar_type`.
+#' The returned object preserves the attributes `groups`,
+#' `calendar`, and `calendar_type`.
 #'
 #' @examples
 #' \dontrun{
-#' cal <- build_calendar(df, groups = coverage)
+#' cal <- build_calendar(
+#'   df,
+#'   groups   = "coverage",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr"
+#' )
 #' smr  <- summary(cal)
 #' head(smr)
 #' }
@@ -994,8 +1051,8 @@ summary.Calendar <- function(object, ...) {
 
   dt <- .ensure_dt(object)
 
-  grp     <- attr(dt, "group_var")
-  cal     <- attr(dt, "calendar_var")
+  grp     <- attr(dt, "groups")
+  cal     <- attr(dt, "calendar")
   grp_cal <- c(grp, "calendar")
 
   ds <- dt[, .(
@@ -1008,8 +1065,8 @@ summary.Calendar <- function(object, ...) {
     lr_incr_wt     = sum(loss_incr) / sum(premium_incr)
   ), keyby = grp_cal]
 
-  data.table::setattr(ds, "group_var"   , grp)
-  data.table::setattr(ds, "calendar_var", cal)
+  data.table::setattr(ds, "groups"   , grp)
+  data.table::setattr(ds, "calendar", cal)
 
   .update_class(ds, "Calendar", "CalendarSummary")
 }
@@ -1039,17 +1096,17 @@ summary.Calendar <- function(object, ...) {
 #'
 #' @param df A data.frame containing experience data.
 #' @param groups Grouping variable(s).
-#' @param cohort A single period variable. This may be an underwriting
-#'   period (`uy_m`, `uy_q`, `uy_s`, `uy_a`) or a calendar period
-#'   (`cy_m`, `cy_q`, `cy_s`, `cy_a`). Default `"uy_m"`.
-#' @param dev A single development variable used to count observed periods.
-#'   Default `"dev_m"`.
-#' @param loss Single character; per-period loss column in `df`.
-#'   Default `"loss_incr"`.
-#' @param premium Single character; per-period premium column in `df`.
-#'   Default `"premium_incr"`. Premium measure used as denominator for
-#'   loss ratio calculations. For long-term health insurance applications,
-#'   risk premium is commonly used.
+#' @param cohort A single period variable (raw name). This may be an
+#'   underwriting period (`"uy_m"`, `"uy_q"`, `"uy_s"`, `"uy_a"`) or a
+#'   calendar period (`"cy_m"`, `"cy_q"`, `"cy_s"`, `"cy_a"`).
+#' @param dev A single development variable (raw name) used to count
+#'   observed periods.
+#' @param loss Single character; per-period loss column in `df`
+#'   (raw name, e.g., `"loss_incr"`).
+#' @param premium Single character; per-period premium column in `df`
+#'   (raw name, e.g., `"premium_incr"`). Premium measure used as
+#'   denominator for loss ratio calculations. For long-term health
+#'   insurance applications, risk premium is commonly used.
 #' @param period_from Optional lower bound for `cohort`. Only rows with
 #'   `cohort >= period_from` are kept. May be supplied as `Date`,
 #'   character, or any value coercible to `Date`. Default `NULL`.
@@ -1089,10 +1146,10 @@ summary.Calendar <- function(object, ...) {
 #' @export
 build_total <- function(df,
                         groups,
-                        cohort      = "uy_m",
-                        dev         = "dev_m",
-                        loss        = "loss_incr",
-                        premium     = "premium_incr",
+                        cohort,
+                        dev,
+                        loss,
+                        premium,
                         period_from = NULL,
                         period_to   = NULL,
                         fill_gaps   = FALSE) {
@@ -1107,8 +1164,8 @@ build_total <- function(df,
   grp   <- .capture_names(dt, !!rlang::enquo(groups))
   coh   <- .capture_names(dt, !!rlang::enquo(cohort))
   dev   <- .capture_names(dt, !!rlang::enquo(dev))
-  l_var <- .capture_names(dt, !!rlang::enquo(loss))
-  p_var <- .capture_names(dt, !!rlang::enquo(premium))
+  loss  <- .capture_names(dt, !!rlang::enquo(loss))
+  prem  <- .capture_names(dt, !!rlang::enquo(premium))
 
   if (length(coh) != 1L)
     stop("`cohort` must resolve to exactly one column.", call. = FALSE)
@@ -1116,10 +1173,10 @@ build_total <- function(df,
   if (length(dev) != 1L)
     stop("`dev` must resolve to exactly one column.", call. = FALSE)
 
-  .assert_length(l_var)
-  .assert_length(p_var)
+  .assert_length(loss)
+  .assert_length(prem)
 
-  incr_vars <- c(l_var, p_var)
+  incr_vars <- c(loss, prem)
 
   # filter by cohort range
   if (!is.null(period_from)) {
@@ -1170,16 +1227,16 @@ build_total <- function(df,
     sales_end   = max(.SD[[2L]]),
     loss        = sum(.SD[[3L]]),
     premium     = sum(.SD[[4L]])
-  ), by = grp, .SDcols = c(dev, coh, l_var, p_var)]
+  ), by = grp, .SDcols = c(dev, coh, loss, prem)]
 
   # compute total loss ratio and shares
   data.table::set(ds, j = "lr"           , value = ds[["loss"]]    / ds[["premium"]])
   data.table::set(ds, j = "loss_share"   , value = ds[["loss"]]    / sum(ds[["loss"]]))
   data.table::set(ds, j = "premium_share", value = ds[["premium"]] / sum(ds[["premium"]]))
 
-  data.table::setattr(ds, "group_var"  , grp)
-  data.table::setattr(ds, "loss_var"   , l_var)
-  data.table::setattr(ds, "premium_var", p_var)
+  data.table::setattr(ds, "groups"  , grp)
+  data.table::setattr(ds, "loss"   , loss)
+  data.table::setattr(ds, "premium", prem)
 
   .prepend_class(ds, "Total")
 }
@@ -1199,11 +1256,18 @@ build_total <- function(df,
 #'
 #' @return A `data.table` of class `"TotalSummary"` with the same rows
 #'   as the input `Total` (one per group), ordered by descending `lr`.
-#'   Preserves the `group_var` attribute.
+#'   Preserves the `groups` attribute.
 #'
 #' @examples
 #' \dontrun{
-#' tot <- build_total(df, groups = coverage)
+#' tot <- build_total(
+#'   df,
+#'   groups  = "coverage",
+#'   cohort  = "uy_m",
+#'   dev     = "dev_m",
+#'   loss    = "loss_incr",
+#'   premium = "premium_incr"
+#' )
 #' summary(tot)
 #' }
 #'
@@ -1214,7 +1278,7 @@ summary.Total <- function(object, digits = 4L, ...) {
 
   dt <- .ensure_dt(object)
 
-  grp <- attr(dt, "group_var")
+  grp <- attr(dt, "groups")
 
   if ("lr" %in% names(dt)) {
     data.table::setorderv(dt, "lr", order = -1L)
@@ -1234,7 +1298,7 @@ summary.Total <- function(object, digits = 4L, ...) {
     }
   }
 
-  data.table::setattr(dt, "group_var", grp)
+  data.table::setattr(dt, "groups", grp)
 
   .update_class(dt, "Total", "TotalSummary")
 }

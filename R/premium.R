@@ -49,7 +49,14 @@
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
+#' tri <- build_triangle(
+#'   experience[coverage == "SUR"],
+#'   groups   = "coverage",
+#'   cohort   = "uy_m",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr"
+#' )
 #'
 #' # ED-additive recursion (default; robust on long projections)
 #' pf <- fit_premium(tri)
@@ -97,7 +104,7 @@ fit_premium <- function(x,
   }
 
   # Rename target_* columns to role-specific premium_* names on $full.
-  grp <- attr(x, "group_var")
+  grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
   cl_fit$full <- .premium_rename_full(cl_fit$full, grp, conf_level)
@@ -181,7 +188,7 @@ fit_premium <- function(x,
 #'   `cohort`, `dev`, `target_obs`, `target_proj`).
 #' @param selected The `$selected` data.table (must contain `f_selected`,
 #'   `sigma2`, `f_var`).
-#' @param triangle The original `Triangle` (for `group_var` attribute).
+#' @param triangle The original `Triangle` (for `groups` attribute).
 #'
 #' @return Updated `full` data.table with `target_proc_se2`,
 #'   `target_param_se2`, `target_total_se2`, `target_proc_se`,
@@ -195,7 +202,7 @@ fit_premium <- function(x,
   full <- data.table::copy(.ensure_dt(full))
   selected <- .ensure_dt(selected)
 
-  grp <- attr(triangle, "group_var")
+  grp <- attr(triangle, "groups")
   if (is.null(grp)) grp <- character(0)
 
   f  <- selected$f_selected

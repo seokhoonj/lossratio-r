@@ -62,7 +62,7 @@
     stop("`.summarize_link_ed()` requires a Link built with `exposure`.",
          call. = FALSE)
 
-  grp <- attr(object, "group_var")
+  grp <- attr(object, "groups")
   if (is.null(grp)) grp <- character(0)
 
   dt <- .ensure_dt(object)
@@ -77,14 +77,14 @@
     m    <- mean(vals)
 
     .(
-      mean        = m,
-      median      = stats::median(vals),
-      wt          = sum(dl, na.rm = TRUE) / sum(ef, na.rm = TRUE),
-      cv          = stats::sd(vals, na.rm = TRUE) / abs(m),
-      n_obs       = .N,
-      n_valid     = sum(is.finite(intensity)),
-      n_inf       = sum(is.infinite(intensity)),
-      n_nan       = sum(is.nan(intensity))
+      mean    = m,
+      median  = stats::median(vals),
+      wt      = sum(dl, na.rm = TRUE) / sum(ef, na.rm = TRUE),
+      cv      = stats::sd(vals, na.rm = TRUE) / abs(m),
+      n_obs   = .N,
+      n_valid = sum(is.finite(intensity)),
+      n_inf   = sum(is.infinite(intensity)),
+      n_nan   = sum(is.nan(intensity))
     )
   }, by = grp_link]
 
@@ -119,9 +119,9 @@
       stop("Non-numeric `digits` specified.", call. = FALSE)
   }
 
-  data.table::setattr(ds, "group_var" , grp)
-  data.table::setattr(ds, "cohort_var", attr(object, "cohort_var"))
-  data.table::setattr(ds, "dev_var"   , attr(object, "dev_var"))
+  data.table::setattr(ds, "groups" , grp)
+  data.table::setattr(ds, "cohort", attr(object, "cohort"))
+  data.table::setattr(ds, "dev"   , attr(object, "dev"))
   data.table::setattr(ds, "target"    , attr(object, "target"))
   data.table::setattr(ds, "exposure"  , attr(object, "exposure"))
   data.table::setattr(ds, "digits"    , digits)
@@ -169,13 +169,8 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #' selected intensities, and a cell-level projection of cumulative loss
 #' and exposure (`$full`).
 #'
-#' Two methods are supported via the `method` argument:
-#' \describe{
-#'   \item{`"basic"` (default)}{Factor estimation only. Returns
-#'     `g_selected` and `sigma2` in `$selected`.}
-#'   \item{`"mack"`}{Basic plus factor variance \eqn{\mathrm{Var}(\hat{g}_k)}
-#'     added as `g_var` column in `$selected`.}
-#' }
+#' Returns `g_selected`, `sigma2`, and factor variance
+#' \eqn{\mathrm{Var}(\hat{g}_k)} (column `g_var`) in `$selected`.
 #'
 #' The `$full` projection table is produced by delegating to
 #' [fit_lr()] with `method = "ed"`, so cumulative loss / exposure /
@@ -189,7 +184,7 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'   Forwarded to [build_link()] and to downstream workers.
 #' @param exposure Cumulative exposure variable. Default `"premium"`.
 #'   Forwarded to [build_link()] and to downstream workers.
-#' @param method One of `"basic"` or `"mack"`. Default is `"basic"`.
+#' @param method Estimation method. Currently only `"mack"` is supported.
 #' @param alpha Numeric scalar controlling the variance structure. Default
 #'   is `1`.
 #' @param na_method Method used to fill `NA` values in `g_selected`. One
@@ -209,8 +204,8 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #' @return An object of class `"EDFit"` (a named list) with components:
 #'   \describe{
 #'     \item{`factor`}{`EDSummary` of fitted intensities per development link.}
-#'     \item{`selected`}{`data.table` of selected `g_selected`, `sigma2`
-#'       (and `g_var` when `method = "mack"`).}
+#'     \item{`selected`}{`data.table` of selected `g_selected`, `sigma2`,
+#'       and `g_var`.}
 #'     \item{`full`}{`data.table` of per-cell cumulative target / exposure
 #'       projection plus role-prefixed SE / CV columns
 #'       (`target_proj`, `target_incr_proj`, `exposure_proj`,
@@ -225,14 +220,14 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'
 #' @export
 fit_ed <- function(x,
-                   target        = "loss",
-                   exposure      = "premium",
-                   method        = c("basic", "mack"),
-                   alpha         = 1,
-                   na_method     = c("locf", "zero", "none"),
-                   sigma_method  = c("locf", "min_last2", "loglinear"),
-                   recent        = NULL,
-                   regime_break  = NULL,
+                   target       = "loss",
+                   exposure     = "premium",
+                   method       = c("mack"),
+                   alpha        = 1,
+                   na_method    = c("locf", "zero", "none"),
+                   sigma_method = c("locf", "min_last2", "loglinear"),
+                   recent       = NULL,
+                   regime_break = NULL,
                    ...) {
 
   .assert_triangle_input(x, "fit_ed()")
@@ -271,16 +266,15 @@ fit_ed <- function(x,
   )
   class(out) <- "EDFit"
 
-  # 3) compute factor variance (always — required by the projection in
-  # step 4). `method` is preserved as metadata; for "basic" the factor
-  # variance is still Mack-style (same algorithm), only the label differs.
+  # 3) compute factor variance (Mack-style — required by the projection
+  # in step 4).
   out$selected <- .mack_g_var(ed_fit = out, alpha = alpha)
 
   # 4) cell-level projection (standalone worker) --------------------------
   # ED rule: Delta loss_k = g_k * cumulative_premium_k. Factor pair is
   # fit_intensity (loss-side g_k) + fit_cl on premium (premium projection).
   # No fit_ata / CL factor needed — those are fit_cl's pair.
-  grp <- attr(x, "group_var")
+  grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
   # 4a) premium projection: Mack CL on the premium column
@@ -311,8 +305,8 @@ fit_ed <- function(x,
     triangle        = x,
     ed_fit          = out,
     premium_ata_fit = premium_ata_fit,
-    target_var      = target,
-    exposure_var    = exposure
+    target          = target,
+    exposure        = exposure
   )
 
   # rename .expand_grid output to generic worker names
@@ -484,7 +478,7 @@ summary.EDFit <- function(object, ...) {
 #' @export
 print.EDFit <- function(x, ...) {
 
-  grp <- attr(x$link, "group_var")
+  grp <- attr(x$link, "groups")
   if (is.null(grp)) grp <- character(0)
 
   cat("<EDFit>\n")
@@ -550,7 +544,7 @@ print.EDFit <- function(x, ...) {
   if (!is.numeric(tol) || length(tol) != 1L || is.na(tol) || tol < 0)
     stop("`tol` must be a single non-negative numeric value.", call. = FALSE)
 
-  grp <- attr(x, "group_var")
+  grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
   dt <- .ensure_dt(x)
@@ -644,7 +638,7 @@ print.EDFit <- function(x, ...) {
 
   .assert_class(ed_fit, "EDFit")
 
-  grp <- attr(ed_fit$link, "group_var")
+  grp <- attr(ed_fit$link, "groups")
   if (is.null(grp)) grp <- character(0)
 
   ed_long <- .ensure_dt(ed_fit$link)

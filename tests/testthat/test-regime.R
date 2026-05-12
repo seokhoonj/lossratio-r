@@ -1,7 +1,7 @@
 # Setup — use a single-group subset to keep test fast
 data(experience)
 exp <- experience
-sub <- build_triangle(exp[coverage == "SUR"], groups = coverage)
+sub <- build_triangle(exp[coverage == "SUR"], groups = coverage, cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
 
 test_that("detect_regime returns class 'Regime' (e_divisive default)", {
   r <- detect_regime(sub, K = 12, method = "e_divisive")
@@ -12,8 +12,8 @@ test_that("detect_regime returns class 'Regime' (e_divisive default)", {
 
 test_that("Regime has expected list elements", {
   r <- detect_regime(sub, K = 12, method = "e_divisive")
-  for (nm in c("method", "target", "K", "cohort_var", "dev_var",
-               "group_var", "labels", "breakpoints", "n_regimes",
+  for (nm in c("method", "target", "K", "cohort", "dev",
+               "groups", "labels", "breakpoints", "n_regimes",
                "trajectory", "pca")) {
     expect_true(nm %in% names(r), info = paste("missing", nm))
   }
@@ -71,7 +71,7 @@ test_that("print methods don't error", {
 
 # Multi-group regime detection --------------------------------------------
 
-tri_all <- build_triangle(exp, groups = coverage)
+tri_all <- build_triangle(exp, groups = coverage, cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
 
 test_that("multi-group detect_regime returns class 'Regime'", {
   r <- detect_regime(tri_all, K = 12, method = "e_divisive")
@@ -79,7 +79,7 @@ test_that("multi-group detect_regime returns class 'Regime'", {
   expect_true(isTRUE(r$multi_group))
 })
 
-test_that("multi-group $breakpoints is a data.table with group_var + breakpoint", {
+test_that("multi-group $breakpoints is a data.table with group + breakpoint", {
   r <- detect_regime(tri_all, K = 12, method = "e_divisive")
   expect_true(data.table::is.data.table(r$breakpoints))
   expect_true("coverage" %in% names(r$breakpoints))
@@ -87,7 +87,7 @@ test_that("multi-group $breakpoints is a data.table with group_var + breakpoint"
   expect_true(inherits(r$breakpoints$breakpoint, "Date"))
 })
 
-test_that("multi-group $labels has group_var column", {
+test_that("multi-group $labels has group column", {
   r <- detect_regime(tri_all, K = 12, method = "e_divisive")
   expect_true(data.table::is.data.table(r$labels))
   expect_true("coverage" %in% names(r$labels))
@@ -153,7 +153,7 @@ test_that("detect_regime warns and skips groups that fail individually", {
   # others remain valid. Drop most of one coverage's cohorts.
   big_K <- 12L
   exp_part <- experience[!(coverage == "CI" & uy_m > as.Date("2023-03-01"))]
-  tri_part <- build_triangle(exp_part, groups = coverage)
+  tri_part <- build_triangle(exp_part, groups = coverage, cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   expect_warning(
     r_part <- detect_regime(tri_part, K = big_K, method = "e_divisive"),
     "skipped"

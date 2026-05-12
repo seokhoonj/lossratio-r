@@ -97,12 +97,12 @@ removed).}
 \item{\code{fit}}{The fit object returned by the target-specific
 fitter.}
 \item{\code{ae_err}}{\code{data.table} of held-out cells with columns
-\verb{(group_var, cohort, dev, value_actual, value_pred, ae_err, calendar_idx)}.}
+\verb{(group, cohort, dev, value_actual, value_pred, ae_err, calendar_idx)}.}
 \item{\code{col_summary}}{Per-\code{dev} aggregate A/E Error (mean /
 median / weighted / n).}
 \item{\code{diag_summary}}{Per-calendar-diagonal aggregate A/E Error.}
 \item{\code{target}, \code{holdout}, \code{fit_fn_name}}{Call metadata.}
-\item{\code{group_var}, \code{cohort_var}, \code{dev_var}}{Variable name relays
+\item{\code{groups}, \code{cohort}, \code{dev}}{Variable name relays
 from \code{x}.}
 }
 }
@@ -132,7 +132,14 @@ flag over-projection. Aggregated by development period
 \examples{
 \dontrun{
 data(experience)
-tri <- build_triangle(experience, groups = coverage)
+tri <- build_triangle(
+  experience,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 bt_lr      <- backtest(tri, holdout = 6L, target = "lr")
 bt_loss    <- backtest(tri, holdout = 6L, target = "loss")

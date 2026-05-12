@@ -17,7 +17,7 @@ numeric columns. Default \code{4L}. Pass \code{NULL} to skip rounding.}
 \value{
 A \code{data.table} of class \code{"TotalSummary"} with the same rows
 as the input \code{Total} (one per group), ordered by descending \code{lr}.
-Preserves the \code{group_var} attribute.
+Preserves the \code{groups} attribute.
 }
 \description{
 S3 method for \code{summary()} on \code{Total} objects. \code{Total} already carries
@@ -27,7 +27,14 @@ numeric columns for display.
 }
 \examples{
 \dontrun{
-tot <- build_total(df, groups = coverage)
+tot <- build_total(
+  df,
+  groups  = "coverage",
+  cohort  = "uy_m",
+  dev     = "dev_m",
+  loss    = "loss_incr",
+  premium = "premium_incr"
+)
 summary(tot)
 }
 

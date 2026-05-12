@@ -57,7 +57,14 @@ knitr::opts_chunk$set(
 library(lossratio)
 
 data(experience)
-tri_sur <- build_triangle(experience[coverage == "SUR"], coverage)
+tri_sur <- build_triangle(
+  experience[coverage == "SUR"],
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 ```
 
 ## 3. regime 탐지
@@ -139,7 +146,14 @@ summary(r2)
 모인다.
 
 ```{r}
-tri_all <- build_triangle(experience, groups = coverage)
+tri_all <- build_triangle(
+  experience,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 r_all   <- detect_regime(tri_all, K = 12, method = "e_divisive")
 r_all$breakpoints
 ```
@@ -153,8 +167,7 @@ r_all$breakpoints
 나머지 그룹은 정상 진행된다. *모든* 그룹이 실패하면 `detect_regime()` 은
 오류를 발생시킨다.
 
-`plot(r_all)` 은 그룹별 패널을 그린다 (`patchwork` 가 설치되어 있으면
-하나로 합성된다).
+`plot(r_all)` 은 그룹별 패널 ggplot 객체의 named list 를 반환한다 (그룹값을 key 로).
 
 ## 9. `fit_lr()` 과의 관계
 

@@ -7,10 +7,10 @@
 build_total(
   df,
   groups,
-  cohort = "uy_m",
-  dev = "dev_m",
-  loss = "loss_incr",
-  premium = "premium_incr",
+  cohort,
+  dev,
+  loss,
+  premium,
   period_from = NULL,
   period_to = NULL,
   fill_gaps = FALSE
@@ -21,20 +21,20 @@ build_total(
 
 \item{groups}{Grouping variable(s).}
 
-\item{cohort}{A single period variable. This may be an underwriting
-period (\code{uy_m}, \code{uy_q}, \code{uy_s}, \code{uy_a}) or a calendar period
-(\code{cy_m}, \code{cy_q}, \code{cy_s}, \code{cy_a}). Default \code{"uy_m"}.}
+\item{cohort}{A single period variable (raw name). This may be an
+underwriting period (\code{"uy_m"}, \code{"uy_q"}, \code{"uy_s"}, \code{"uy_a"}) or a
+calendar period (\code{"cy_m"}, \code{"cy_q"}, \code{"cy_s"}, \code{"cy_a"}).}
 
-\item{dev}{A single development variable used to count observed periods.
-Default \code{"dev_m"}.}
+\item{dev}{A single development variable (raw name) used to count
+observed periods.}
 
-\item{loss}{Single character; per-period loss column in \code{df}.
-Default \code{"loss_incr"}.}
+\item{loss}{Single character; per-period loss column in \code{df}
+(raw name, e.g., \code{"loss_incr"}).}
 
-\item{premium}{Single character; per-period premium column in \code{df}.
-Default \code{"premium_incr"}. Premium measure used as denominator for
-loss ratio calculations. For long-term health insurance applications,
-risk premium is commonly used.}
+\item{premium}{Single character; per-period premium column in \code{df}
+(raw name, e.g., \code{"premium_incr"}). Premium measure used as
+denominator for loss ratio calculations. For long-term health
+insurance applications, risk premium is commonly used.}
 
 \item{period_from}{Optional lower bound for \code{cohort}. Only rows with
 \code{cohort >= period_from} are kept. May be supplied as \code{Date},

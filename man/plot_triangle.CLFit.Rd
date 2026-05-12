@@ -37,7 +37,7 @@ hybrid overlays do not apply.}
 }}
 
 \item{label_style}{One of \code{"value"} (default), \code{"cv"}, \code{"se"}, or
-\code{"ci"}. The uncertainty styles require \code{method = "mack"}.}
+\code{"ci"}.}
 
 \item{label_size}{Numeric label text size forwarded to
 \code{\link[ggshort:ggtable]{ggshort::ggtable()}}. Defaults to \code{3} for \code{label_style = "value"},
@@ -69,8 +69,7 @@ The \code{what} argument controls which values are shown:
 \item{\code{"data"}}{Original observed data from \code{x$data}.}
 }
 
-The \code{label_style} argument controls cell labels (only meaningful when
-\code{method = "mack"}):
+The \code{label_style} argument controls cell labels:
 \describe{
 \item{\code{"value"}}{Projected value only. Applied to all cells.}
 \item{\code{"cv"}}{Coefficient of variation (\%) for projected cells.}

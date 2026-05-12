@@ -69,13 +69,13 @@
 #'     \item{`fit`}{The fit object returned by the target-specific
 #'       fitter.}
 #'     \item{`ae_err`}{`data.table` of held-out cells with columns
-#'       `(group_var, cohort, dev, value_actual, value_pred, ae_err,
+#'       `(group, cohort, dev, value_actual, value_pred, ae_err,
 #'       calendar_idx)`.}
 #'     \item{`col_summary`}{Per-`dev` aggregate A/E Error (mean /
 #'       median / weighted / n).}
 #'     \item{`diag_summary`}{Per-calendar-diagonal aggregate A/E Error.}
 #'     \item{`target`, `holdout`, `fit_fn_name`}{Call metadata.}
-#'     \item{`group_var`, `cohort_var`, `dev_var`}{Variable name relays
+#'     \item{`groups`, `cohort`, `dev`}{Variable name relays
 #'       from `x`.}
 #'   }
 #'
@@ -84,7 +84,14 @@
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' tri <- build_triangle(experience, groups = coverage)
+#' tri <- build_triangle(
+#'   experience,
+#'   groups   = "coverage",
+#'   cohort   = "uy_m",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr"
+#' )
 #'
 #' bt_lr      <- backtest(tri, holdout = 6L, target = "lr")
 #' bt_loss    <- backtest(tri, holdout = 6L, target = "loss")
@@ -145,9 +152,9 @@ backtest <- function(x,
     stop(sprintf("`target` = '%s' not found in `x`.", target),
          call. = FALSE)
 
-  grp <- attr(x, "group_var")
-  coh <- attr(x, "cohort_var")
-  dev <- attr(x, "dev_var")
+  grp <- attr(x, "groups")
+  coh <- attr(x, "cohort")
+  dev <- attr(x, "dev")
 
   # 1) Tag held-out cells on the original (long-format) triangle ----------
   full <- .ensure_dt(x)
@@ -170,8 +177,8 @@ backtest <- function(x,
 
   masked <- dm
   data.table::setattr(masked, "class", class(x))
-  for (a in c("group_var", "cohort_var",
-              "dev_var", "longer")) {
+  for (a in c("groups", "cohort",
+              "dev", "longer")) {
     av <- attr(x, a, exact = TRUE)
     if (!is.null(av)) data.table::setattr(masked, a, av)
   }
@@ -240,7 +247,7 @@ backtest <- function(x,
   data.table::setnames(obs, ".cal_idx", "calendar_idx")
 
   ae_err <- pred[obs,
-                 on = c(grp, "cohort", "dev"),
+                 on      = c(grp, "cohort", "dev"),
                  nomatch = NULL]
   data.table::setnames(ae_err, score_col, "value_pred")
 
@@ -291,9 +298,9 @@ backtest <- function(x,
     target       = target,
     holdout      = holdout,
     fit_fn_name  = fit_fn_name,
-    group_var    = grp,
-    cohort_var   = coh,
-    dev_var      = dev
+    groups       = grp,
+    cohort       = coh,
+    dev          = dev
   )
   class(out) <- "Backtest"
   out

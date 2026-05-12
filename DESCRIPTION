@@ -33,7 +33,6 @@ Imports:
     rlang (>= 1.1.7)
 Suggests:
     knitr,
-    patchwork,
     pkgdown,
     rmarkdown,
     testthat (>= 3.0.0)

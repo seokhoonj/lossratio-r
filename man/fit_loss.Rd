@@ -95,7 +95,14 @@ callers see them as implementation columns.
 \examples{
 \dontrun{
 data(experience)
-tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
+tri <- build_triangle(
+  experience[coverage == "SUR"],
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
 
 lf    <- fit_loss(tri)                    # SA (default)
 lf_ed <- fit_loss(tri, method = "ed")

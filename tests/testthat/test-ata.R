@@ -1,7 +1,7 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- build_triangle(exp, groups = coverage)
+tri <- build_triangle(exp, groups = coverage, cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
 ata <- build_link(tri, target = "loss")
 
 test_that("build_link returns class 'Link' with expected columns", {
@@ -13,7 +13,7 @@ test_that("build_link returns class 'Link' with expected columns", {
 })
 
 test_that("build_link sets attributes", {
-  for (a in c("group_var", "cohort_var", "dev_var", "target")) {
+  for (a in c("groups", "cohort", "dev", "target")) {
     expect_false(is.null(attr(ata, a)), info = paste("missing attr", a))
   }
   expect_equal(attr(ata, "target"), "loss")
@@ -142,7 +142,7 @@ test_that("fit_ata with regime_break drops pre-break cohorts", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
-                        cohort = "uy_m")
+                        cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   ata <- build_link(tri, target = "loss")
 
   fit_full <- fit_ata(tri, target = "loss")
@@ -159,7 +159,7 @@ test_that("fit_ata with NULL regime_break is unchanged from default", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
-                        cohort = "uy_m")
+                        cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   ata <- build_link(tri, target = "loss")
   fit_default <- fit_ata(tri, target = "loss")
   fit_null    <- fit_ata(tri, target = "loss", regime_break = NULL)
@@ -171,7 +171,7 @@ test_that("fit_ata with Regime input extracts last breakpoint", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
-                        cohort = "uy_m")
+                        cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   reg <- detect_regime(tri)
   ata <- build_link(tri, target = "loss")
   fit_reg <- fit_ata(tri, target = "loss", regime_break = reg)

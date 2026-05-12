@@ -111,7 +111,7 @@
 #' variable type classification. Used across plot functions to avoid
 #' repeating `switch` and `if` blocks for each variable type.
 #'
-#' @param value_var A single character string naming the variable to plot.
+#' @param metric A single character string naming the variable to plot.
 #'   Must be one of the recognised variable names in the `lossratio` package.
 #' @param amount_divisor Numeric scaling factor for amount variables.
 #'   Default is `1e8`.
@@ -125,7 +125,7 @@
 #'   }
 #'
 #' @keywords internal
-.get_plot_meta <- function(value_var, amount_divisor = 1e8) {
+.get_plot_meta <- function(metric, amount_divisor = 1e8) {
 
   ratio_vars  <- c("lr", "lr_incr")
   amount_vars <- c("loss", "loss_incr",
@@ -134,10 +134,10 @@
   prop_vars   <- c("loss_share", "loss_incr_share",
                    "premium_share", "premium_incr_share")
 
-  if (value_var %in% ratio_vars) {
+  if (metric %in% ratio_vars) {
     list(
-      type    = "ratio",
-      title   = switch(value_var,
+      type  = "ratio",
+      title = switch(metric,
                        lr      = "Cumulative Loss Ratio",
                        lr_incr = "Per-Period Loss Ratio"
       ),
@@ -145,11 +145,11 @@
       hline   = 1
     )
 
-  } else if (value_var %in% amount_vars) {
+  } else if (metric %in% amount_vars) {
     unit_txt <- .get_amount_unit(amount_divisor)
     list(
-      type    = "amount",
-      title   = switch(value_var,
+      type  = "amount",
+      title = switch(metric,
                        loss         = "Cumulative Loss",
                        loss_incr    = "Per-Period Loss",
                        premium      = "Cumulative Premium",
@@ -161,10 +161,10 @@
       hline   = 0
     )
 
-  } else if (value_var %in% prop_vars) {
+  } else if (metric %in% prop_vars) {
     list(
-      type    = "prop",
-      title   = switch(value_var,
+      type  = "prop",
+      title = switch(metric,
                        loss_share         = "Cumulative Loss Proportion",
                        loss_incr_share    = "Per-Period Loss Proportion",
                        premium_share      = "Cumulative Premium Proportion",
@@ -176,7 +176,7 @@
 
   } else {
     stop(
-      sprintf("Unknown `value_var`: '%s'.", value_var),
+      sprintf("Unknown `metric`: '%s'.", metric),
       call. = FALSE
     )
   }

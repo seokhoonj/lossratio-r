@@ -30,8 +30,8 @@
 #' @param theme Theme string passed to [.switch_theme()].
 #' @param ... Additional arguments passed to [ggshort::plot_pca()].
 #'
-#' @return A `ggplot` object (single-group) or a `patchwork` /
-#'   list-of-`ggplot` composite (multi-group; one panel per group).
+#' @return A `ggplot` object (single-group), or a named list of `ggplot`
+#'   objects (multi-group; one entry per group).
 #'
 #' @seealso [detect_regime()]
 #'
@@ -75,7 +75,7 @@ plot.Regime <- function(x,
   ve <- (x$pca$sdev ^ 2) / sum(x$pca$sdev ^ 2)
   subtitle <- sprintf(
     "method: %s | window: %s 1, ..., %d | %d cohorts | PC1 %.1f%% / PC2 %.1f%%",
-    x$method, x$dev_var, x$K, nrow(df), ve[1L] * 100, ve[2L] * 100
+    x$method, x$dev, x$K, nrow(df), ve[1L] * 100, ve[2L] * 100
   )
 
   caption <- if (length(x$breakpoints)) {
@@ -107,9 +107,8 @@ plot.Regime <- function(x,
 
 #' Multi-group plot helper for `Regime`
 #'
-#' Builds one PCA panel per group via [ggshort::plot_pca()] and combines
-#' them with patchwork if available, otherwise returns a list of ggplot
-#' objects.
+#' Builds one PCA panel per group via [ggshort::plot_pca()] and returns
+#' a named list of `ggplot` objects keyed by group value.
 #'
 #' @keywords internal
 .plot_regime_multi <- function(x,
@@ -117,7 +116,7 @@ plot.Regime <- function(x,
                                show_mean, show_median, alpha, palette,
                                theme, ...) {
 
-  grp <- x$group_var
+  grp <- x$groups
   grp_names <- names(x$trajectory)
 
   plots <- lapply(grp_names, function(gv) {
@@ -164,9 +163,5 @@ plot.Regime <- function(x,
   })
   names(plots) <- grp_names
 
-  if (requireNamespace("patchwork", quietly = TRUE)) {
-    Reduce(`+`, plots) + patchwork::plot_layout(ncol = min(length(plots), 2L))
-  } else {
-    plots
-  }
+  plots
 }

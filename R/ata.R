@@ -122,7 +122,7 @@
 
   .assert_class(object, "Link")
 
-  grp <- attr(object, "group_var")
+  grp <- attr(object, "groups")
   if (is.null(grp)) grp <- character(0)
 
   dt <- .ensure_dt(object)
@@ -137,14 +137,14 @@
     m    <- mean(vals)
 
     .(
-      mean        = m,
-      median      = stats::median(vals),
-      wt          = sum(vt, na.rm = TRUE) / sum(vf, na.rm = TRUE),
-      cv          = stats::sd(vals, na.rm = TRUE) / m,
-      n_obs       = .N,
-      n_valid     = sum(is.finite(ata)),
-      n_inf       = sum(is.infinite(ata)),
-      n_nan       = sum(is.nan(ata))
+      mean    = m,
+      median  = stats::median(vals),
+      wt      = sum(vt, na.rm = TRUE) / sum(vf, na.rm = TRUE),
+      cv      = stats::sd(vals, na.rm = TRUE) / m,
+      n_obs   = .N,
+      n_valid = sum(is.finite(ata)),
+      n_inf   = sum(is.infinite(ata)),
+      n_nan   = sum(is.nan(ata))
     )
   }, by = grp_link]
 
@@ -182,9 +182,9 @@
       stop("Non-numeric `digits` specified.", call. = FALSE)
   }
 
-  data.table::setattr(ds, "group_var",  grp)
-  data.table::setattr(ds, "cohort_var", attr(object, "cohort_var"))
-  data.table::setattr(ds, "dev_var",    attr(object, "dev_var"))
+  data.table::setattr(ds, "groups",  grp)
+  data.table::setattr(ds, "cohort", attr(object, "cohort"))
+  data.table::setattr(ds, "dev",    attr(object, "dev"))
   data.table::setattr(ds, "target",     attr(object, "target"))
   data.table::setattr(ds, "weight",     attr(object, "weight"))
   data.table::setattr(ds, "digits",     digits)
@@ -329,7 +329,7 @@ fit_ata <- function(x,
     }
     link <- .apply_break_filter(
       link, regime_break,
-      grp = if (is.null(attr(link, "group_var"))) character(0) else attr(link, "group_var"),
+      grp = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
       coh = "cohort",
       dev = "ata_from"
     )
@@ -341,7 +341,7 @@ fit_ata <- function(x,
   if (!is.null(recent)) {
     link <- .apply_recent_filter(
       link, recent,
-      grp = if (is.null(attr(link, "group_var"))) character(0) else attr(link, "group_var"),
+      grp = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
       coh = "cohort",
       dev = "ata_from"
     )
@@ -368,7 +368,7 @@ fit_ata <- function(x,
 
   use_maturity <- !is.null(maturity_args)
 
-  grp <- attr(link, "group_var")
+  grp <- attr(link, "groups")
   if (is.null(grp)) grp <- character(0)
 
   # 4) compute summary statistics and WLS estimates ---------------------
@@ -398,9 +398,9 @@ fit_ata <- function(x,
   out <- list(
     call          = match.call(),
     data          = x,
-    group_var     = grp,
-    cohort_var    = attr(link, "cohort_var"),
-    dev_var       = attr(link, "dev_var"),
+    groups        = grp,
+    cohort        = attr(link, "cohort"),
+    dev           = attr(link, "dev"),
     target        = attr(link, "target"),
     weight        = attr(link, "weight"),
     link          = link,
@@ -449,7 +449,7 @@ summary.ATAFit <- function(object, ...) {
 #' @export
 print.ATAFit <- function(x, ...) {
 
-  grp <- attr(x$link, "group_var")
+  grp <- attr(x$link, "groups")
   if (is.null(grp)) grp <- character(0)
 
   cat("<ATAFit>\n")
@@ -530,7 +530,7 @@ print.ATAFit <- function(x, ...) {
     } else {
       if (nrow(mat_from) != 1L)
         stop(
-          "When there is no `group_var`, `maturity` must have exactly one row.",
+          "When there is no `groups`, `maturity` must have exactly one row.",
           call. = FALSE
         )
       z[, maturity_from := mat_from$maturity_from[1L]]

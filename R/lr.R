@@ -103,7 +103,14 @@
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
+#' tri <- build_triangle(
+#'   experience[coverage == "SUR"],
+#'   groups   = "coverage",
+#'   cohort   = "uy_m",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr"
+#' )
 #'
 #' # Stage-adaptive (default): ED before maturity, CL after
 #' lr_sa <- fit_lr(tri, method = "sa")
@@ -173,25 +180,25 @@ fit_lr <- function(x,
   # `loss_regime_break` inside fit_loss, premium_regime_break also evaluates
   # to NULL (matching pre-refactor `fit_lr()` behavior).
   loss_args <- list(
-    x                    = x,
-    method               = method,
-    alpha                = loss_alpha,
-    sigma_method         = sigma_method,
-    recent               = recent,
-    loss_regime_break    = loss_regime_break,
-    maturity_args        = maturity_args,
-    conf_level           = conf_level,
-    premium_method       = premium_method,
-    premium_alpha        = premium_alpha
+    x                 = x,
+    method            = method,
+    alpha             = loss_alpha,
+    sigma_method      = sigma_method,
+    recent            = recent,
+    loss_regime_break = loss_regime_break,
+    maturity_args     = maturity_args,
+    conf_level        = conf_level,
+    premium_method    = premium_method,
+    premium_alpha     = premium_alpha
   )
   if (!missing(premium_regime_break)) {
     loss_args$premium_regime_break <- premium_regime_break
   }
   loss_fit <- do.call(fit_loss, loss_args)
 
-  grp         <- loss_fit$group_var
-  coh         <- loss_fit$cohort_var
-  dev         <- loss_fit$dev_var
+  grp         <- loss_fit$groups
+  coh         <- loss_fit$cohort
+  dev         <- loss_fit$dev
   premium_fit     <- loss_fit$premium_fit
   premium_ata_fit <- loss_fit$premium_ata_fit
 
@@ -304,9 +311,9 @@ fit_lr <- function(x,
   out <- list(
     call                 = match.call(),
     data                 = loss_fit$data,
-    group_var            = grp,
-    cohort_var           = coh,
-    dev_var              = dev,
+    groups               = grp,
+    cohort               = coh,
+    dev                  = dev,
     full                 = full,
     pred                 = pred,
     summary              = NULL,
@@ -351,7 +358,7 @@ fit_lr <- function(x,
 #' @export
 print.LRFit <- function(x, ...) {
 
-  grp <- x$group_var
+  grp <- x$groups
   if (is.null(grp)) grp <- character(0)
 
   cat("<LRFit>\n")
@@ -652,8 +659,8 @@ summary.LRFit <- function(object, ...) {
 
   .assert_class(x, "LRFit")
 
-  grp    <- x$group_var
-  coh    <- x$cohort_var
+  grp    <- x$groups
+  coh    <- x$cohort
   full       <- x$full
   se_method  <- x$se_method
   rho        <- x$rho
@@ -665,27 +672,27 @@ summary.LRFit <- function(object, ...) {
   agg <- latest_obs[ult, on = c(grp, "cohort")]
 
   agg[, `:=`(
-    latest         = loss_obs,
-    loss_ult       = i.loss_proj,
-    reserve        = i.loss_proj - loss_obs,
-    premium_ult    = i.premium_proj,
-    lr_latest      = data.table::fifelse(
+    latest      = loss_obs,
+    loss_ult    = i.loss_proj,
+    reserve     = i.loss_proj - loss_obs,
+    premium_ult = i.premium_proj,
+    lr_latest   = data.table::fifelse(
       is.finite(premium_obs) & premium_obs != 0,
       loss_obs / premium_obs, NA_real_
     ),
-    lr_ult         = i.lr_proj,
-    maturity_from  = maturity_from,
-    loss_proc_se   = i.loss_proc_se,
-    loss_param_se  = i.loss_param_se,
-    loss_total_se  = i.loss_total_se,
-    loss_total_cv  = data.table::fifelse(
+    lr_ult        = i.lr_proj,
+    maturity_from = maturity_from,
+    loss_proc_se  = i.loss_proc_se,
+    loss_param_se = i.loss_param_se,
+    loss_total_se = i.loss_total_se,
+    loss_total_cv = data.table::fifelse(
       is.finite(i.loss_proj) & i.loss_proj != 0,
       i.loss_total_se / abs(i.loss_proj), NA_real_
     ),
-    lr_se          = i.lr_se,
-    lr_cv          = i.lr_cv,
-    lr_ci_lower    = i.lr_ci_lower,
-    lr_ci_upper    = i.lr_ci_upper
+    lr_se       = i.lr_se,
+    lr_cv       = i.lr_cv,
+    lr_ci_lower = i.lr_ci_lower,
+    lr_ci_upper = i.lr_ci_upper
   )]
 
   keep_cols <- c(

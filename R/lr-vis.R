@@ -36,9 +36,9 @@ plot.LRFit <- function(x,
                         amount_divisor = 1e8,
                         scales         = c("fixed", "free_y",
                                            "free_x", "free"),
-                        theme          = c("view", "save", "shiny"),
-                        nrow           = NULL,
-                        ncol           = NULL,
+                        theme = c("view", "save", "shiny"),
+                        nrow  = NULL,
+                        ncol  = NULL,
                         ...) {
 
   .assert_class(x, "LRFit")
@@ -47,9 +47,9 @@ plot.LRFit <- function(x,
   scales <- match.arg(scales)
   theme  <- match.arg(theme)
 
-  grp     <- x$group_var
-  coh     <- x$cohort_var
-  dev_var <- x$dev_var
+  grp     <- x$groups
+  coh     <- x$cohort
+  dev <- x$dev
 
   if (is.null(grp)) grp <- character(0)
 
@@ -64,7 +64,7 @@ plot.LRFit <- function(x,
     ci_lo_col    <- "loss_ci_lower"
     ci_hi_col    <- "loss_ci_upper"
     obs_col      <- "loss_obs"
-    y_lab        <- attr(x$data, "loss_var")
+    y_lab        <- attr(x$data, "loss")
     title        <- paste0("Projected Cumulative Loss",
                            " (method: ", x$method, ")")
     hline        <- 0
@@ -151,8 +151,8 @@ plot.LRFit <- function(x,
       linewidth = 0.8
     ) +
     ggplot2::geom_line(
-      data      = pred,
-      mapping   = ggplot2::aes(
+      data    = pred,
+      mapping = ggplot2::aes(
         x = .data[["dev"]], y = .y, group = 1
       ),
       linewidth = 0.8,
@@ -187,7 +187,7 @@ plot.LRFit <- function(x,
   # labs
   p <- p + ggplot2::labs(
     title   = title,
-    x       = .pretty_var_label(dev_var),
+    x       = .pretty_var_label(dev),
     y       = y_lab,
     caption = if (show_interval) {
       sprintf("Interval: %d%% (%s)",
@@ -282,9 +282,9 @@ plot_triangle.LRFit <- function(x,
   if (is.null(label_size))
     label_size <- if (label_style == "detail") 2.5 else 3
 
-  grp     <- x$group_var
-  coh     <- x$cohort_var
-  dev_var <- x$dev_var
+  grp     <- x$groups
+  coh     <- x$cohort
+  dev <- x$dev
 
   if (is.null(grp)) grp <- character(0)
 
@@ -460,7 +460,7 @@ plot_triangle.LRFit <- function(x,
   p <- p + ggplot2::labs(
     title   = paste0("Cumulative Loss Ratio Triangle",
                      " (method: ", x$method, ")"),
-    x       = .pretty_var_label(dev_var),
+    x       = .pretty_var_label(dev),
     y       = .pretty_var_label(coh),
     caption = caption_txt
   )
