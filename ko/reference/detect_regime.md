@@ -43,6 +43,7 @@ Three detection strategies are supported:
 detect_regime(
   x,
   target = "lr",
+  by = NULL,
   K = 12L,
   method = c("e_divisive", "pelt", "hclust"),
   n_regimes = NULL,
@@ -74,6 +75,14 @@ print(x, ...)
 
   Column name of the trajectory variable. Default is `"lr"` (cumulative
   loss ratio).
+
+- by:
+
+  Optional grouping column(s) for per-combination detection. `NULL`
+  (default) uses the Triangle's `attr(x, "groups")` (backward- compat).
+  `character(0)` pools all cohorts into a single sequence
+  (group-agnostic detection). A character vector overrides the grouping
+  columns explicitly — must be a subset of `names(x)`.
 
 - K:
 
@@ -130,37 +139,43 @@ An object of class `"Regime"`. For single-group input:
 
 - `labels`:
 
-  `data.table` with one row per analysed cohort: period, regime id,
-  regime label.
+  `data.table` of one row per analysed cohort:
+  `[by..., cohort, regime, regime_id]`. Group columns are prepended when
+  `by` resolves to a non-empty vector.
 
 - `breakpoints`:
 
-  `Date` vector of breakpoint dates (each is the first cohort of a new
-  regime; excludes the initial regime start).
+  `data.table` of detected breakpoints with columns
+  `[by..., breakpoint, regime_id_from, regime_id_to, pre_value, post_value, magnitude]`.
+  `regime_id_from` / `regime_id_to` identify the two regimes on either
+  side of the break (matches `$labels$regime_id`). `pre_value` /
+  `post_value` are the mean `target` over the cohort × dev trajectory
+  windows in each regime; `magnitude = |post_value - pre_value|`. Empty
+  (zero rows) when no break is detected.
 
 - `n_regimes`:
 
-  Number of regimes detected (scalar integer).
+  Number of regimes detected. Scalar integer for single-combo detection;
+  named integer vector (keyed by combo) for multi-combo.
 
 - `trajectory`:
 
-  Cohort feature matrix (rows = cohorts, columns = development periods
-  `1, ..., K`).
+  Cohort × dev feature matrix used for detection. Single matrix when
+  single combo; named list of matrices for multi-combo.
 
 - `pca`:
 
-  `prcomp` object fitted to the feature matrix.
+  `prcomp` object (single combo) or named list of `prcomp` objects
+  (multi-combo).
 
 - `dropped`:
 
-  Cohorts excluded due to the `K` window constraint.
+  Cohorts excluded due to the `K` window constraint. Vector (single) /
+  named list (multi).
 
-For multi-group input the same fields are returned but with per-group
-containers: `$breakpoints` is a `data.table` with columns
-`{<group>, breakpoint}`; `$labels` gains a `<group>` column;
-`$n_regimes` is a named integer vector; `$trajectory`, `$pca`, and
-`$dropped` are named lists keyed by group value. The `$multi_group`
-logical flag distinguishes the two layouts.
+- `multi_group`:
+
+  Logical flag; `TRUE` when detection ran over multiple group combos.
 
 ## See also
 

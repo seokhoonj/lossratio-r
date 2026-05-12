@@ -214,6 +214,7 @@ strictly chronological.</p></dd>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">detect_regime</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  target <span class="op">=</span> <span class="st">"lr"</span>,</span>
+<span>  by <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  K <span class="op">=</span> <span class="fl">12L</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"e_divisive"</span>, <span class="st">"pelt"</span>, <span class="st">"hclust"</span><span class="op">)</span>,</span>
 <span>  n_regimes <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -245,6 +246,14 @@ Also used by S3 <code><a href="https://rdrr.io/r/base/print.html" class="externa
 <dt id="arg-target">target<a class="anchor" aria-label="anchor" href="#arg-target"></a></dt>
 <dd><p>Column name of the trajectory variable. Default
 is <code>"lr"</code> (cumulative loss ratio).</p></dd>
+
+
+<dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
+<dd><p>Optional grouping column(s) for per-combination detection.
+<code>NULL</code> (default) uses the Triangle's <code>attr(x, "groups")</code> (backward-
+compat). <code>character(0)</code> pools all cohorts into a single sequence
+(group-agnostic detection). A character vector overrides the grouping
+columns explicitly — must be a subset of <code>names(x)</code>.</p></dd>
 
 
 <dt id="arg-k">K<a class="anchor" aria-label="anchor" href="#arg-k"></a></dt>
@@ -295,36 +304,43 @@ the requested value) for <code>"hclust"</code>, where the default is <code>2</co
 <dd><p>Period variable from <code>x</code>.</p></dd>
 
 <dt><code>labels</code></dt>
-<dd><p><code>data.table</code> with one row per analysed cohort:
-period, regime id, regime label.</p></dd>
+<dd><p><code>data.table</code> of one row per analysed cohort:
+<code>[by..., cohort, regime, regime_id]</code>. Group columns are prepended
+when <code>by</code> resolves to a non-empty vector.</p></dd>
 
 <dt><code>breakpoints</code></dt>
-<dd><p><code>Date</code> vector of breakpoint dates (each is
-the first cohort of a new regime; excludes the initial regime
-start).</p></dd>
+<dd><p><code>data.table</code> of detected breakpoints with
+columns <code>[by..., breakpoint, regime_id_from, regime_id_to, pre_value, post_value, magnitude]</code>. <code>regime_id_from</code> /
+<code>regime_id_to</code> identify the two regimes on either side of the
+break (matches <code>$labels$regime_id</code>). <code>pre_value</code> / <code>post_value</code>
+are the mean <code>target</code> over the cohort × dev trajectory windows
+in each regime; <code>magnitude = |post_value - pre_value|</code>. Empty
+(zero rows) when no break is detected.</p></dd>
 
 <dt><code>n_regimes</code></dt>
-<dd><p>Number of regimes detected (scalar integer).</p></dd>
+<dd><p>Number of regimes detected. Scalar integer for
+single-combo detection; named integer vector (keyed by combo) for
+multi-combo.</p></dd>
 
 <dt><code>trajectory</code></dt>
-<dd><p>Cohort feature matrix (rows = cohorts,
-columns = development periods <code>1, ..., K</code>).</p></dd>
+<dd><p>Cohort × dev feature matrix used for detection.
+Single matrix when single combo; named list of matrices for
+multi-combo.</p></dd>
 
 <dt><code>pca</code></dt>
-<dd><p><code>prcomp</code> object fitted to the feature matrix.</p></dd>
+<dd><p><code>prcomp</code> object (single combo) or named list of
+<code>prcomp</code> objects (multi-combo).</p></dd>
 
 <dt><code>dropped</code></dt>
 <dd><p>Cohorts excluded due to the <code>K</code> window
-constraint.</p></dd>
+constraint. Vector (single) / named list (multi).</p></dd>
+
+<dt><code>multi_group</code></dt>
+<dd><p>Logical flag; <code>TRUE</code> when detection ran over
+multiple group combos.</p></dd>
 
 
-</dl><p>For multi-group input the same fields are returned but with
-per-group containers: <code>$breakpoints</code> is a <code>data.table</code> with columns
-<code>{&lt;group&gt;, breakpoint}</code>; <code>$labels</code> gains a <code>&lt;group&gt;</code> column;
-<code>$n_regimes</code> is a named integer vector; <code>$trajectory</code>, <code>$pca</code>, and
-<code>$dropped</code> are named lists keyed by group value. The <code>$multi_group</code>
-logical flag distinguishes the two layouts.</p>
-    </div>
+</dl></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="plot.Regime.html">plot.Regime()</a></code>, <code><a href="build_triangle.html">build_triangle()</a></code></p></div>
