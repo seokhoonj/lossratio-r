@@ -130,7 +130,7 @@ print(res)
   시퀀스.
 - `se_mult`, `max_dv`, `min_run`, `holdout_max`, `min_n_cohorts` —
   사용된 설정값.
-- attribute: `group_var`, `loss_var`, `fit_fn_name`, `dev_var`.
+- attribute: `group_var`, `target`, `fit_fn_name`, `dev_var`.
 
 `summary(res)` 는 후보 시점별 한 행 + `R_over_SE = R_v / SE_param_v`
 컬럼이 있는 `data.table` 을 반환한다:

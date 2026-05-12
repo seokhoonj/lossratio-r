@@ -24,22 +24,22 @@ raw variability of observed ata factors across cohorts, while `rse`
 reflects the precision of the WLS-estimated factor. Using both criteria
 together provides a more robust maturity assessment than either alone.
 
-Default `loss_var = "loss"` (cumulative loss). Maturity in chain ladder
-is methodologically a property of *loss* development: the ATA factors of
+Default `target = "loss"` (cumulative loss). Maturity in chain ladder is
+methodologically a property of *loss* development: the ATA factors of
 cumulative loss stabilize when chain ladder becomes reliable, which in
 turn makes downstream LR projection reliable. ATA factors of `lr` itself
 (a ratio of two cumulative quantities) carry additional noise and tend
-to give less precise maturity decisions. Override `loss_var` only when
-you specifically want maturity of premium development or another
-cumulative metric.
+to give less precise maturity decisions. Override `target` only when you
+specifically want maturity of premium development or another cumulative
+metric.
 
 ## Usage
 
 ``` r
 detect_maturity(
   x,
-  loss_var = "loss",
-  weight_var = NULL,
+  target = "loss",
+  weight = NULL,
   alpha = 1,
   max_cv = 0.15,
   max_rse = 0.05,
@@ -55,13 +55,13 @@ detect_maturity(
 
   A `Triangle` object.
 
-- loss_var:
+- target:
 
   Cumulative metric for the link factor. Default `"loss"` (chain-ladder
   convention; see Description). Forwarded to
   [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md).
 
-- weight_var:
+- weight:
 
   Optional WLS weight variable. Forwarded to
   [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md).

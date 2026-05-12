@@ -77,6 +77,6 @@ if (FALSE) { # \dontrun{
 data(experience)
 head(experience)
 
-tri <- build_triangle(experience, group_var = coverage)
+tri <- build_triangle(experience, groups = coverage)
 } # }
 ```

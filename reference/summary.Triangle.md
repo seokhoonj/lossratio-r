@@ -87,7 +87,7 @@ values.
 
 ``` r
 if (FALSE) { # \dontrun{
-d <- build_triangle(df, group_var = coverage)
+d <- build_triangle(df, groups = coverage)
 smr <- summary(d)
 head(smr)
 attr(smr, "longer")

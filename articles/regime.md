@@ -61,7 +61,7 @@ r <- detect_regime(tri_sur, K = 12, method = "e_divisive")
 r
 #> <Regime>
 #>   method      : e_divisive
-#>   loss_var   : lr
+#>   target      : lr
 #>   window (K)  : dev_m 1-12
 #>   cohorts     : 25 analysed (11 dropped)
 #>   regimes     : 2
@@ -81,7 +81,7 @@ captures more of the trajectory but drops more recent cohorts.
 summary(r)
 #> Cohort regime detection summary
 #>   method    : e_divisive
-#>   loss_var : lr
+#>   target    : lr
 #>   window    : dev_m 1-12
 #>   cohorts   : 25 analysed (11 dropped)
 #> 
@@ -177,7 +177,7 @@ r2 <- detect_regime(tri_sur, K = 12, method = "e_divisive", n_regimes = 3)
 summary(r2)
 #> Cohort regime detection summary
 #>   method    : e_divisive
-#>   loss_var : lr
+#>   target    : lr
 #>   window    : dev_m 1-12
 #>   cohorts   : 25 analysed (11 dropped)
 #> 
@@ -192,6 +192,37 @@ summary(r2)
 For `"e_divisive"` and `"pelt"`, `n_regimes` is a request (the algorithm
 will return up to that many regimes if supported by the data). For
 `"hclust"`, it is a hard cut.
+
+## Multi-group detection
+
+A `Triangle` built with multiple groups can be passed directly —
+detection runs independently per group and results are gathered into a
+single `Regime` object.
+
+``` r
+
+tri_all <- build_triangle(experience, groups = coverage)
+r_all   <- detect_regime(tri_all, K = 12, method = "e_divisive")
+r_all$breakpoints
+#>    coverage breakpoint
+#>      <char>     <Date>
+#> 1:      CAN 2023-09-01
+#> 2:      SUR 2024-07-01
+```
+
+In multi-group mode `r_all$breakpoints` is a `data.table` with the group
+column plus a `breakpoint` Date column; `r_all$labels` likewise gains
+the group column; `r_all$n_regimes` is a named integer vector keyed by
+group value. The `r_all$multi_group` flag distinguishes the layout from
+the single-group scalar form.
+
+If a group has too few cohorts for the chosen `K`, that group is skipped
+with a warning (others continue). If *all* groups fail,
+[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+errors out.
+
+`plot(r_all)` produces a per-group panel (composited via `patchwork`
+when available).
 
 ## Relation to `fit_lr()`
 

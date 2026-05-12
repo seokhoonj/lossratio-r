@@ -2,7 +2,7 @@
 
 Aggregate experience data into a development structure by grouping and
 `(cohort, calendar)` Date columns. Auto-detects input grain (M / Q / S /
-A) from `cohort_var` spacing and derives the development-period column
+A) from `cohort` spacing and derives the development-period column
 internally; the user does not pre-bin data or supply a `dev_*` column.
 
 The result contains:
@@ -42,12 +42,12 @@ development cell across products or other grouping variables.
 ``` r
 build_triangle(
   df,
-  group_var,
-  cohort_var = "uy_m",
-  calendar_var = "cy_m",
+  groups,
+  cohort = "uy_m",
+  calendar = "cy_m",
   grain = "auto",
-  loss_var = "loss_incr",
-  premium_var = "premium_incr",
+  loss = "loss_incr",
+  premium = "premium_incr",
   cell_type = c("incremental", "cumulative"),
   fill_gaps = FALSE
 )
@@ -58,38 +58,38 @@ build_triangle(
 - df:
 
   A data.frame containing experience data with per-period loss and
-  premium columns plus `cohort_var` and `calendar_var` Date columns (or
-  any input that the internal Date coercion accepts: Date, POSIXt,
-  integer `yyyy` / `yyyymm` / `yyyymmdd`, ISO string).
+  premium columns plus `cohort` and `calendar` Date columns (or any
+  input that the internal Date coercion accepts: Date, POSIXt, integer
+  `yyyy` / `yyyymm` / `yyyymmdd`, ISO string).
 
-- group_var:
+- groups:
 
   Column(s) used for grouping (e.g., product, gender).
 
-- cohort_var:
+- cohort:
 
   Single column defining the underwriting/exposure period start (e.g.,
   `"uy_m"`). Default `"uy_m"`.
 
-- calendar_var:
+- calendar:
 
   Single column defining the calendar period of the observation (e.g.,
-  `"cy_m"`). Default `"cy_m"`. Used together with `cohort_var` to derive
-  the development column at the resolved grain.
+  `"cy_m"`). Default `"cy_m"`. Used together with `cohort` to derive the
+  development column at the resolved grain.
 
 - grain:
 
   One of `"auto"` (default), `"M"`, `"Q"`, `"S"`, `"A"`. `"auto"` infers
-  the grain from the `cohort_var` value spacing. Explicit values must be
-  at least as coarse as the input grain; the input is binned (floored)
-  to that grain before aggregation.
+  the grain from the `cohort` value spacing. Explicit values must be at
+  least as coarse as the input grain; the input is binned (floored) to
+  that grain before aggregation.
 
-- loss_var:
+- loss:
 
   Single character; per-period loss column in `df`. Default
   `"loss_incr"`.
 
-- premium_var:
+- premium:
 
   Single character; per-period premium column in `df`. Default
   `"premium_incr"`. Premium measure used as denominator for loss ratio
@@ -98,17 +98,17 @@ build_triangle(
 
 - cell_type:
 
-  One of `"incremental"` (default) or `"cumulative"`. Whether `loss_var`
-  and `premium_var` in `df` already hold per-period (incremental) values
-  or cumulative-within-cohort values. The internal triangle is always
-  built on the incremental representation; `"cumulative"` inputs are
+  One of `"incremental"` (default) or `"cumulative"`. Whether `loss` and
+  `premium` in `df` already hold per-period (incremental) values or
+  cumulative-within-cohort values. The internal triangle is always built
+  on the incremental representation; `"cumulative"` inputs are
   differenced first.
 
 - fill_gaps:
 
-  Logical; if `TRUE`, zero-fill missing `(group_var, cohort, dev)` cells
-  so that every cohort has a consecutive `dev` sequence. Default
-  `FALSE`, which raises an error when gaps are detected. Use
+  Logical; if `TRUE`, zero-fill missing `(groups, cohort, dev)` cells so
+  that every cohort has a consecutive `dev` sequence. Default `FALSE`,
+  which raises an error when gaps are detected. Use
   [`validate_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/validate_triangle.md)
   to inspect gaps before deciding.
 
@@ -169,10 +169,10 @@ df <- data.frame(
 )
 
 # auto-detected monthly grain
-res_m <- build_triangle(df, group_var = pd_cd)
+res_m <- build_triangle(df, groups = pd_cd)
 
 # explicit quarterly view (re-bins monthly input to quarterly)
-res_q <- build_triangle(df, group_var = pd_cd, grain = "Q")
+res_q <- build_triangle(df, groups = pd_cd, grain = "Q")
 
 head(res_m)
 attr(res_m, "longer")

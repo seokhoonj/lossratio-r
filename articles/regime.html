@@ -202,7 +202,7 @@ regimes from the data:</p>
 <span><span class="va">r</span></span>
 <span><span class="co">#&gt; &lt;Regime&gt;</span></span>
 <span><span class="co">#&gt;   method      : e_divisive</span></span>
-<span><span class="co">#&gt;   loss_var   : lr</span></span>
+<span><span class="co">#&gt;   target      : lr</span></span>
 <span><span class="co">#&gt;   window (K)  : dev_m 1-12</span></span>
 <span><span class="co">#&gt;   cohorts     : 25 analysed (11 dropped)</span></span>
 <span><span class="co">#&gt;   regimes     : 2</span></span>
@@ -221,7 +221,7 @@ drops more recent cohorts.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Cohort regime detection summary</span></span>
 <span><span class="co">#&gt;   method    : e_divisive</span></span>
-<span><span class="co">#&gt;   loss_var : lr</span></span>
+<span><span class="co">#&gt;   target    : lr</span></span>
 <span><span class="co">#&gt;   window    : dev_m 1-12</span></span>
 <span><span class="co">#&gt;   cohorts   : 25 analysed (11 dropped)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -314,7 +314,7 @@ two-vs-three regime hypotheses — pass <code>n_regimes</code>:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">r2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Cohort regime detection summary</span></span>
 <span><span class="co">#&gt;   method    : e_divisive</span></span>
-<span><span class="co">#&gt;   loss_var : lr</span></span>
+<span><span class="co">#&gt;   target    : lr</span></span>
 <span><span class="co">#&gt;   window    : dev_m 1-12</span></span>
 <span><span class="co">#&gt;   cohorts   : 25 analysed (11 dropped)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -328,6 +328,32 @@ two-vs-three regime hypotheses — pass <code>n_regimes</code>:</p>
 <code>n_regimes</code> is a request (the algorithm will return up to
 that many regimes if supported by the data). For <code>"hclust"</code>,
 it is a hard cut.</p>
+</div>
+<div class="section level2">
+<h2 id="multi-group-detection">Multi-group detection<a class="anchor" aria-label="anchor" href="#multi-group-detection"></a>
+</h2>
+<p>A <code>Triangle</code> built with multiple groups can be passed
+directly — detection runs independently per group and results are
+gathered into a single <code>Regime</code> object.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tri_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span>, groups <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<span><span class="va">r_all</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_all</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
+<span><span class="va">r_all</span><span class="op">$</span><span class="va">breakpoints</span></span>
+<span><span class="co">#&gt;    coverage breakpoint</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt;</span></span>
+<span><span class="co">#&gt; 1:      CAN 2023-09-01</span></span>
+<span><span class="co">#&gt; 2:      SUR 2024-07-01</span></span></code></pre></div>
+<p>In multi-group mode <code>r_all$breakpoints</code> is a
+<code>data.table</code> with the group column plus a
+<code>breakpoint</code> Date column; <code>r_all$labels</code> likewise
+gains the group column; <code>r_all$n_regimes</code> is a named integer
+vector keyed by group value. The <code>r_all$multi_group</code> flag
+distinguishes the layout from the single-group scalar form.</p>
+<p>If a group has too few cohorts for the chosen <code>K</code>, that
+group is skipped with a warning (others continue). If <em>all</em>
+groups fail, <code><a href="../reference/detect_regime.html">detect_regime()</a></code> errors out.</p>
+<p><code>plot(r_all)</code> produces a per-group panel (composited via
+<code>patchwork</code> when available).</p>
 </div>
 <div class="section level2">
 <h2 id="relation-to-fit_lr">Relation to <code>fit_lr()</code><a class="anchor" aria-label="anchor" href="#relation-to-fit_lr"></a>

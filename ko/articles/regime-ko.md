@@ -58,7 +58,7 @@ r <- detect_regime(tri_sur, K = 12, method = "e_divisive")
 r
 #> <Regime>
 #>   method      : e_divisive
-#>   loss_var   : lr
+#>   target      : lr
 #>   window (K)  : dev_m 1-12
 #>   cohorts     : 25 analysed (11 dropped)
 #>   regimes     : 2
@@ -77,7 +77,7 @@ r
 summary(r)
 #> Cohort regime detection summary
 #>   method    : e_divisive
-#>   loss_var : lr
+#>   target    : lr
 #>   window    : dev_m 1-12
 #>   cohorts   : 25 analysed (11 dropped)
 #> 
@@ -170,7 +170,7 @@ r2 <- detect_regime(tri_sur, K = 12, method = "e_divisive", n_regimes = 3)
 summary(r2)
 #> Cohort regime detection summary
 #>   method    : e_divisive
-#>   loss_var : lr
+#>   target    : lr
 #>   window    : dev_m 1-12
 #>   cohorts   : 25 analysed (11 dropped)
 #> 
@@ -186,7 +186,38 @@ summary(r2)
 허용하면 알고리즘이 그 수까지 regime 을 반환한다). `"hclust"` 의
 경우에는 강제 컷이다.
 
-## 8. `fit_lr()` 과의 관계
+## 8. 다중 그룹 탐지
+
+여러 그룹으로 구축한 `Triangle` 은 그대로
+[`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
+에 전달할 수 있다. 그룹별로 독립적으로 탐지가 수행되며 결과는 하나의
+`Regime` 객체에 모인다.
+
+``` r
+
+tri_all <- build_triangle(experience, groups = coverage)
+r_all   <- detect_regime(tri_all, K = 12, method = "e_divisive")
+r_all$breakpoints
+#>    coverage breakpoint
+#>      <char>     <Date>
+#> 1:      CAN 2023-09-01
+#> 2:      SUR 2024-07-01
+```
+
+다중 그룹 모드에서 `r_all$breakpoints` 는 그룹 컬럼과 `breakpoint` Date
+컬럼을 가진 `data.table` 이고, `r_all$labels` 에도 그룹 컬럼이 추가된다.
+`r_all$n_regimes` 는 그룹값을 이름으로 하는 정수 벡터이며,
+`r_all$multi_group` 플래그가 단일 그룹 스칼라 형식과 구분해준다.
+
+특정 그룹의 코호트 수가 `K` 보다 적으면 그 그룹은 경고와 함께 skip 되고
+나머지 그룹은 정상 진행된다. *모든* 그룹이 실패하면
+[`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
+은 오류를 발생시킨다.
+
+`plot(r_all)` 은 그룹별 패널을 그린다 (`patchwork` 가 설치되어 있으면
+하나로 합성된다).
+
+## 9. `fit_lr()` 과의 관계
 
 [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
 은

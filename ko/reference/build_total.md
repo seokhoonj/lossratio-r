@@ -25,11 +25,11 @@ useful when comparing groups on a common period basis.
 ``` r
 build_total(
   df,
-  group_var,
-  cohort_var = "uy_m",
-  dev_var = "dev_m",
-  loss_var = "loss_incr",
-  premium_var = "premium_incr",
+  groups,
+  cohort = "uy_m",
+  dev = "dev_m",
+  loss = "loss_incr",
+  premium = "premium_incr",
   period_from = NULL,
   period_to = NULL,
   fill_gaps = FALSE
@@ -42,27 +42,27 @@ build_total(
 
   A data.frame containing experience data.
 
-- group_var:
+- groups:
 
   Grouping variable(s).
 
-- cohort_var:
+- cohort:
 
   A single period variable. This may be an underwriting period (`uy_m`,
   `uy_q`, `uy_s`, `uy_a`) or a calendar period (`cy_m`, `cy_q`, `cy_s`,
   `cy_a`). Default `"uy_m"`.
 
-- dev_var:
+- dev:
 
   A single development variable used to count observed periods. Default
   `"dev_m"`.
 
-- loss_var:
+- loss:
 
   Single character; per-period loss column in `df`. Default
   `"loss_incr"`.
 
-- premium_var:
+- premium:
 
   Single character; per-period premium column in `df`. Default
   `"premium_incr"`. Premium measure used as denominator for loss ratio
@@ -71,23 +71,22 @@ build_total(
 
 - period_from:
 
-  Optional lower bound for `cohort_var`. Only rows with
-  `cohort_var >= period_from` are kept. May be supplied as `Date`,
+  Optional lower bound for `cohort`. Only rows with
+  `cohort >= period_from` are kept. May be supplied as `Date`,
   character, or any value coercible to `Date`. Default `NULL`.
 
 - period_to:
 
-  Optional upper bound for `cohort_var`. Only rows with
-  `cohort_var <= period_to` are kept. May be supplied as `Date`,
-  character, or any value coercible to `Date`. Default `NULL`.
+  Optional upper bound for `cohort`. Only rows with
+  `cohort <= period_to` are kept. May be supplied as `Date`, character,
+  or any value coercible to `Date`. Default `NULL`.
 
 - fill_gaps:
 
-  Logical; if `TRUE`, zero-fill missing
-  `(group_var, cohort_var, dev_var)` cells before aggregation so that
-  every cohort has a consecutive `dev_var` sequence. Default `FALSE`.
-  Note that filling inflates `n_obs` (counts filled rows as observed
-  periods); use
+  Logical; if `TRUE`, zero-fill missing `(groups, cohort, dev)` cells
+  before aggregation so that every cohort has a consecutive `dev`
+  sequence. Default `FALSE`. Note that filling inflates `n_obs` (counts
+  filled rows as observed periods); use
   [`validate_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/validate_triangle.md)
   to inspect first.
 

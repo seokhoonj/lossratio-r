@@ -141,7 +141,7 @@ them as implementation columns.
 ``` r
 if (FALSE) { # \dontrun{
 data(experience)
-tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
+tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
 
 lf    <- fit_loss(tri)                    # SA (default)
 lf_ed <- fit_loss(tri, method = "ed")

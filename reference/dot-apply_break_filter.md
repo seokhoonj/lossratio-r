@@ -1,8 +1,8 @@
 # Apply regime-break (cohort) filter to a triangle-shaped data.table
 
-Drops rows where `coh_var < break_date`. Optionally restrict the filter
-to rows with `dev_var < dev_split` (the ED region of an SA fit); rows
-with `dev_var >= dev_split` (CL region) are kept regardless of cohort.
+Drops rows where `coh < break_date`. Optionally restrict the filter to
+rows with `dev < dev_split` (the ED region of an SA fit); rows with
+`dev >= dev_split` (CL region) are kept regardless of cohort.
 
 ## Usage
 
@@ -10,9 +10,9 @@ with `dev_var >= dev_split` (CL region) are kept regardless of cohort.
 .apply_break_filter(
   dt,
   break_date,
-  group_var = character(0),
-  cohort_var,
-  dev_var,
+  grp = character(0),
+  coh,
+  dev,
   dev_split = NULL
 )
 ```
@@ -35,15 +35,15 @@ with `dev_var >= dev_split` (CL region) are kept regardless of cohort.
 
   - A `Regime` object – extracts the latest from `$breakpoints`.
 
-- group_var:
+- grp:
 
   Character vector of group columns (may be empty).
 
-- cohort_var:
+- coh:
 
   Single column name for the cohort variable.
 
-- dev_var:
+- dev:
 
   Single column name for the development variable.
 
@@ -51,9 +51,9 @@ with `dev_var >= dev_split` (CL region) are kept regardless of cohort.
 
   Optional numeric scalar — the maturity target dev (= `ata_to`,
   equivalently the first CL-region dev). When supplied, the cohort
-  filter is only applied to rows where `dev_var < dev_split` (ED
-  region); rows with `dev_var >= dev_split` (CL region) are kept
-  regardless of cohort.
+  filter is only applied to rows where `dev < dev_split` (ED region);
+  rows with `dev >= dev_split` (CL region) are kept regardless of
+  cohort.
 
 ## Value
 

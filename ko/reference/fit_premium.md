@@ -100,7 +100,7 @@ An object of class `"PremiumFit"` (a list with the same structure as
 ``` r
 if (FALSE) { # \dontrun{
 data(experience)
-tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
+tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
 
 # ED-additive recursion (default; robust on long projections)
 pf <- fit_premium(tri)

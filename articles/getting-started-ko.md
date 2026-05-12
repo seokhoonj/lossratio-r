@@ -44,7 +44,7 @@ str(experience)
 
 ``` r
 
-tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
+tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
 class(tri)
 #> [1] "Triangle"   "data.table" "data.frame"
 names(tri)
@@ -543,11 +543,11 @@ summary(lr)
 
 ``` r
 
-sub <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
+sub <- build_triangle(experience[coverage == "SUR"], groups = coverage)
 detect_regime(sub, K = 12, method = "e_divisive")
 #> <Regime>
 #>   method      : e_divisive
-#>   loss_var   : lr
+#>   target      : lr
 #>   window (K)  : dev_m 1-12
 #>   cohorts     : 25 analysed (11 dropped)
 #>   regimes     : 2

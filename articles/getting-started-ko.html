@@ -182,7 +182,7 @@ calendar / underwriting 기간 컬럼, <code>coverage</code> 그룹 컬럼,
 <h2 id="단계-코호트-경과-기간-구조-구축">1단계 — 코호트 × 경과 기간 구조 구축<a class="anchor" aria-label="anchor" href="#%EB%8B%A8%EA%B3%84-%EC%BD%94%ED%98%B8%ED%8A%B8-%EA%B2%BD%EA%B3%BC-%EA%B8%B0%EA%B0%84-%EA%B5%AC%EC%A1%B0-%EA%B5%AC%EC%B6%95"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, groups <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "Triangle"   "data.table" "data.frame"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
@@ -655,11 +655,11 @@ expected type 으로 코어션한다,</li>
 행동하는지 검사한다. 동질적 부분집합에 한하여 손해율 적합을 수행하기
 위한 전처리 단계로 활용된다.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, groups <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">sub</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Regime&gt;</span></span>
 <span><span class="co">#&gt;   method      : e_divisive</span></span>
-<span><span class="co">#&gt;   loss_var   : lr</span></span>
+<span><span class="co">#&gt;   target      : lr</span></span>
 <span><span class="co">#&gt;   window (K)  : dev_m 1-12</span></span>
 <span><span class="co">#&gt;   cohorts     : 25 analysed (11 dropped)</span></span>
 <span><span class="co">#&gt;   regimes     : 2</span></span>

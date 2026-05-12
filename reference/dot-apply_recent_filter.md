@@ -16,9 +16,9 @@ the group-wise long-form condition
 .apply_recent_filter(
   dt,
   recent,
-  group_var = character(0),
-  cohort_var,
-  dev_var,
+  grp = character(0),
+  coh,
+  dev,
   dev_split = NULL
 )
 ```
@@ -34,15 +34,15 @@ the group-wise long-form condition
   Positive integer or `NULL`. When `NULL` or missing, `dt` is returned
   unchanged.
 
-- group_var:
+- grp:
 
   Character vector of group columns (may be empty).
 
-- cohort_var:
+- coh:
 
   Single column name for the cohort variable (e.g. `cohort`).
 
-- dev_var:
+- dev:
 
   Single column name for the development variable (e.g. `dev` for
   `Triangle` objects, or `ata_from` for `ATA`/`ED` objects).
@@ -51,9 +51,8 @@ the group-wise long-form condition
 
   Optional numeric scalar — the maturity target dev (= `ata_to`,
   equivalently the first CL-region dev). When supplied, the recent
-  filter is applied only to rows where `dev_var >= dev_split` (CL
-  region); rows with `dev_var < dev_split` (ED region) are kept
-  unconditionally.
+  filter is applied only to rows where `dev >= dev_split` (CL region);
+  rows with `dev < dev_split` (ED region) are kept unconditionally.
 
 ## Value
 

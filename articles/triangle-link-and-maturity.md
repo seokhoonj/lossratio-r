@@ -18,7 +18,7 @@ generalises to multi-group input.
 library(lossratio)
 data(experience)
 exp <- experience[coverage == "SUR"]
-tri <- build_triangle(exp, group_var = coverage)
+tri <- build_triangle(exp, groups = coverage)
 ```
 
 ### Cohort trajectories
@@ -68,7 +68,7 @@ plot_triangle(tri, value_var = "lr_incr")     # incremental lr
 
 
 # detail labels (ratio + loss/premium amounts) are 2-line — use quarterly cells
-tri_q <- build_triangle(exp, group_var = coverage, grain = "Q")
+tri_q <- build_triangle(exp, groups = coverage, grain = "Q")
 plot_triangle(tri_q, label_style = "detail") # ratio + (loss / premium)
 ```
 
@@ -281,9 +281,9 @@ its WLS summary are built internally:
 
 mat <- detect_maturity(
   tri,
-  loss_var       = "loss",
-  max_cv    = 0.15,    # CV must be below this
-  max_rse   = 0.05,    # RSE must be below this
+  target          = "loss",
+  max_cv          = 0.15,    # CV must be below this
+  max_rse         = 0.05,    # RSE must be below this
   min_valid_ratio = 0.5,     # at least 50% finite cohorts at the link
   min_n_valid     = 3L,      # at least 3 finite cohorts
   min_run         = 1L       # at least 1 consecutive mature link
@@ -361,8 +361,8 @@ thresholds:
 
 ``` r
 
-tri_all <- build_triangle(experience, group_var = coverage)
-detect_maturity(tri_all, loss_var = "loss")
+tri_all <- build_triangle(experience, groups = coverage)
+detect_maturity(tri_all, target = "loss")
 #> Key: <coverage>
 #>    coverage ata_from ata_to ata_link     mean   median       wt         cv
 #>      <char>    <int>  <int>   <char>    <num>    <num>    <num>      <num>
@@ -402,7 +402,7 @@ If gaps in the development sequence are suspected, inspect them before
 
 ``` r
 
-gaps <- validate_triangle(exp, group_var = coverage, cohort_var = "uy_m", dev_var = "dev_m")
+gaps <- validate_triangle(exp, groups = coverage, cohort = "uy_m", dev = "dev_m")
 head(gaps)
 #> <TriangleValidation>
 #> Cohort dev-sequence gaps : none

@@ -22,7 +22,7 @@ chain ladder 또는 손해율 모형을 적합하기 전에 기반이 되는 tri
 library(lossratio)
 data(experience)
 exp <- experience[coverage == "SUR"]
-tri <- build_triangle(exp, group_var = coverage)
+tri <- build_triangle(exp, groups = coverage)
 ```
 
 ### 코호트 궤적
@@ -72,7 +72,7 @@ plot_triangle(tri, value_var = "lr_incr")     # 증분 lr
 
 
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly 로 다시 빌드
-tri_q <- build_triangle(exp, group_var = coverage, grain = "Q")
+tri_q <- build_triangle(exp, groups = coverage, grain = "Q")
 plot_triangle(tri_q, label_style = "detail")  # 비율 + (loss / premium)
 ```
 
@@ -282,9 +282,9 @@ WLS 요약을 자동으로 빌드한다.
 
 mat <- detect_maturity(
   tri,
-  loss_var       = "loss",
-  max_cv    = 0.15,    # CV 가 이 값보다 작아야 함
-  max_rse   = 0.05,    # RSE 가 이 값보다 작아야 함
+  target          = "loss",
+  max_cv          = 0.15,    # CV 가 이 값보다 작아야 함
+  max_rse         = 0.05,    # RSE 가 이 값보다 작아야 함
   min_valid_ratio = 0.5,     # 해당 링크에서 유한 코호트가 50% 이상
   min_n_valid     = 3L,      # 유한 코호트가 최소 3개
   min_run         = 1L       # 연속 성숙 링크 최소 1개
@@ -360,8 +360,8 @@ fit_lr(tri, method = "sa",
 
 ``` r
 
-tri_all <- build_triangle(experience, group_var = coverage)
-detect_maturity(tri_all, loss_var = "loss")
+tri_all <- build_triangle(experience, groups = coverage)
+detect_maturity(tri_all, target = "loss")
 #> Key: <coverage>
 #>    coverage ata_from ata_to ata_link     mean   median       wt         cv
 #>      <char>    <int>  <int>   <char>    <num>    <num>    <num>      <num>
@@ -401,7 +401,7 @@ plot(build_link(tri_all, target = "loss"), type = "cv")
 
 ``` r
 
-gaps <- validate_triangle(exp, group_var = coverage, cohort_var = "uy_m", dev_var = "dev_m")
+gaps <- validate_triangle(exp, groups = coverage, cohort = "uy_m", dev = "dev_m")
 head(gaps)
 #> <TriangleValidation>
 #> Cohort dev-sequence gaps : none

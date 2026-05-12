@@ -16,15 +16,15 @@ calendar-style period axis, including:
 
 In contrast to
 [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md),
-which builds a development structure using `cohort_var × dev_var`, this
-function aggregates values over a one-dimensional calendar axis.
+which builds a development structure using `cohort × dev`, this function
+aggregates values over a one-dimensional calendar axis.
 
 The cumulative loss ratio is defined as: \$\$lr = loss / premium\$\$
 
 For long-term health insurance applications, risk premium is commonly
 used as the `premium` measure.
 
-Proportion variables are computed within each `calendar_var` cell:
+Proportion variables are computed within each `calendar` cell:
 
 - `loss_incr_share = loss_incr / sum(loss_incr)`
 
@@ -34,20 +34,20 @@ Proportion variables are computed within each `calendar_var` cell:
 
 - `premium_share = premium / sum(premium)`
 
-Therefore, for a fixed `calendar_var` cell, the proportions sum to 1
-across groups. These are useful for examining the composition of each
-calendar period across products or other grouping variables.
+Therefore, for a fixed `calendar` cell, the proportions sum to 1 across
+groups. These are useful for examining the composition of each calendar
+period across products or other grouping variables.
 
 ## Usage
 
 ``` r
 build_calendar(
   df,
-  group_var,
-  calendar_var = "cy_m",
+  groups,
+  calendar = "cy_m",
   grain = "auto",
-  loss_var = "loss_incr",
-  premium_var = "premium_incr",
+  loss = "loss_incr",
+  premium = "premium_incr",
   period_from = NULL,
   period_to = NULL,
   fill_gaps = FALSE
@@ -59,15 +59,15 @@ build_calendar(
 - df:
 
   A data.frame containing experience data with per-period loss and
-  premium columns plus a `calendar_var` Date column (or any input that
-  the internal Date coercion accepts: Date, POSIXt, integer `yyyy` /
+  premium columns plus a `calendar` Date column (or any input that the
+  internal Date coercion accepts: Date, POSIXt, integer `yyyy` /
   `yyyymm` / `yyyymmdd`, ISO string).
 
-- group_var:
+- groups:
 
   Column(s) used for grouping (e.g., product, gender).
 
-- calendar_var:
+- calendar:
 
   A single column defining the calendar-like period axis. Default
   `"cy_m"`. May also be an underwriting axis (`"uy_m"` etc.) when a
@@ -77,16 +77,16 @@ build_calendar(
 - grain:
 
   One of `"auto"` (default), `"M"`, `"Q"`, `"S"`, `"A"`. `"auto"` infers
-  the grain from the `calendar_var` value spacing. Explicit values must
-  be at least as coarse as the input grain; the input is binned
-  (floored) to that grain before aggregation.
+  the grain from the `calendar` value spacing. Explicit values must be
+  at least as coarse as the input grain; the input is binned (floored)
+  to that grain before aggregation.
 
-- loss_var:
+- loss:
 
   Single character; per-period loss column in `df`. Default
   `"loss_incr"`.
 
-- premium_var:
+- premium:
 
   Single character; per-period premium column in `df`. Default
   `"premium_incr"`. Premium measure used as denominator for loss ratio
@@ -95,20 +95,19 @@ build_calendar(
 
 - period_from:
 
-  Optional lower bound for `calendar_var`. Only rows with
-  `calendar_var >= period_from` are kept.
+  Optional lower bound for `calendar`. Only rows with
+  `calendar >= period_from` are kept.
 
 - period_to:
 
-  Optional upper bound for `calendar_var`. Only rows with
-  `calendar_var <= period_to` are kept.
+  Optional upper bound for `calendar`. Only rows with
+  `calendar <= period_to` are kept.
 
 - fill_gaps:
 
-  Logical; if `TRUE`, zero-fill missing `(group_var, calendar_var)`
-  cells so every group has a consecutive calendar sequence at the
-  resolved grain. Default `FALSE`, which raises an error when gaps are
-  detected.
+  Logical; if `TRUE`, zero-fill missing `(groups, calendar)` cells so
+  every group has a consecutive calendar sequence at the resolved grain.
+  Default `FALSE`, which raises an error when gaps are detected.
 
 ## Value
 
@@ -118,7 +117,7 @@ columns:
 - dev:
 
   Calendar index within each group, defined as the sequential order of
-  `calendar_var` after sorting in ascending order. This represents the
+  `calendar` after sorting in ascending order. This represents the
   progression of calendar periods for each group (e.g., 1 = first
   observed period, 2 = second, ...), and can be used to align groups
   with different starting periods on a common index scale.
@@ -145,7 +144,7 @@ columns:
 
 - loss_share, loss_incr_share, premium_share, premium_incr_share:
 
-  Proportions within each `calendar_var` cell
+  Proportions within each `calendar` cell
 
 The returned object also has an attribute `"longer"` containing a melted
 long-format version (`class = "CalendarLonger"`).
@@ -156,15 +155,15 @@ long-format version (`class = "CalendarLonger"`).
 if (FALSE) { # \dontrun{
 res1 <- build_calendar(
   df,
-  group_var    = pd_cd,
-  calendar_var = "cy_m"
+  groups   = pd_cd,
+  calendar = "cy_m"
 )
 
 res2 <- build_calendar(
   df,
-  group_var    = pd_cd,
-  calendar_var = "cy_q",
-  period_from  = "2023-01-01"
+  groups      = pd_cd,
+  calendar    = "cy_q",
+  period_from = "2023-01-01"
 )
 
 head(res1)

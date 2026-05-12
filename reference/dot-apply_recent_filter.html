@@ -130,9 +130,9 @@ to the group-wise long-form condition
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.apply_recent_filter</span><span class="op">(</span></span>
 <span>  <span class="va">dt</span>,</span>
 <span>  <span class="va">recent</span>,</span>
-<span>  group_var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
-<span>  <span class="va">cohort_var</span>,</span>
-<span>  <span class="va">dev_var</span>,</span>
+<span>  grp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
+<span>  <span class="va">coh</span>,</span>
+<span>  <span class="va">dev</span>,</span>
 <span>  dev_split <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -150,15 +150,15 @@ to the group-wise long-form condition
 is returned unchanged.</p></dd>
 
 
-<dt id="arg-group-var">group_var<a class="anchor" aria-label="anchor" href="#arg-group-var"></a></dt>
+<dt id="arg-grp">grp<a class="anchor" aria-label="anchor" href="#arg-grp"></a></dt>
 <dd><p>Character vector of group columns (may be empty).</p></dd>
 
 
-<dt id="arg-cohort-var">cohort_var<a class="anchor" aria-label="anchor" href="#arg-cohort-var"></a></dt>
+<dt id="arg-coh">coh<a class="anchor" aria-label="anchor" href="#arg-coh"></a></dt>
 <dd><p>Single column name for the cohort variable (e.g. <code>cohort</code>).</p></dd>
 
 
-<dt id="arg-dev-var">dev_var<a class="anchor" aria-label="anchor" href="#arg-dev-var"></a></dt>
+<dt id="arg-dev">dev<a class="anchor" aria-label="anchor" href="#arg-dev"></a></dt>
 <dd><p>Single column name for the development variable (e.g. <code>dev</code>
 for <code>Triangle</code> objects, or <code>ata_from</code> for <code>ATA</code>/<code>ED</code> objects).</p></dd>
 
@@ -166,8 +166,8 @@ for <code>Triangle</code> objects, or <code>ata_from</code> for <code>ATA</code>
 <dt id="arg-dev-split">dev_split<a class="anchor" aria-label="anchor" href="#arg-dev-split"></a></dt>
 <dd><p>Optional numeric scalar — the maturity target dev
 (= <code>ata_to</code>, equivalently the first CL-region dev). When supplied,
-the recent filter is applied only to rows where <code>dev_var &gt;= dev_split</code>
-(CL region); rows with <code>dev_var &lt; dev_split</code> (ED region) are kept
+the recent filter is applied only to rows where <code>dev &gt;= dev_split</code>
+(CL region); rows with <code>dev &lt; dev_split</code> (ED region) are kept
 unconditionally.</p></dd>
 
 </dl></div>

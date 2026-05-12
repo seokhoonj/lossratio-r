@@ -155,7 +155,7 @@ every step generalises to multi-group input.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio">lossratio</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span></span>
-<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, groups <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="cohort-trajectories">Cohort trajectories<a class="anchor" aria-label="anchor" href="#cohort-trajectories"></a>
 </h3>
@@ -184,7 +184,7 @@ for spotting cohorts that deviate from the central tendency.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># detail labels (ratio + loss/premium amounts) are 2-line — use quarterly cells</span></span>
-<span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">coverage</span>, grain <span class="op">=</span> <span class="st">"Q"</span><span class="op">)</span></span>
+<span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, groups <span class="op">=</span> <span class="va">coverage</span>, grain <span class="op">=</span> <span class="st">"Q"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span> <span class="co"># ratio + (loss / premium)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-3.png" class="r-plt" alt="" width="100%"></p>
 </div>
@@ -363,9 +363,9 @@ are built internally:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span></span>
 <span>  <span class="va">tri</span>,</span>
-<span>  loss_var       <span class="op">=</span> <span class="st">"loss"</span>,</span>
-<span>  max_cv    <span class="op">=</span> <span class="fl">0.15</span>,    <span class="co"># CV must be below this</span></span>
-<span>  max_rse   <span class="op">=</span> <span class="fl">0.05</span>,    <span class="co"># RSE must be below this</span></span>
+<span>  target          <span class="op">=</span> <span class="st">"loss"</span>,</span>
+<span>  max_cv          <span class="op">=</span> <span class="fl">0.15</span>,    <span class="co"># CV must be below this</span></span>
+<span>  max_rse         <span class="op">=</span> <span class="fl">0.05</span>,    <span class="co"># RSE must be below this</span></span>
 <span>  min_valid_ratio <span class="op">=</span> <span class="fl">0.5</span>,     <span class="co"># at least 50% finite cohorts at the link</span></span>
 <span>  min_n_valid     <span class="op">=</span> <span class="fl">3L</span>,      <span class="co"># at least 3 finite cohorts</span></span>
 <span>  min_run         <span class="op">=</span> <span class="fl">1L</span>       <span class="co"># at least 1 consecutive mature link</span></span>
@@ -442,8 +442,8 @@ to CL (later dev).</p>
 <p>For multi-group triangles <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> returns one
 row per group, each detected independently with the same thresholds:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tri_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri_all</span>, loss_var <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">tri_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span>, groups <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri_all</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
 <span><span class="co">#&gt;    coverage ata_from ata_to ata_link     mean   median       wt         cv</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;    &lt;int&gt;  &lt;int&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;      &lt;num&gt;</span></span>
@@ -477,7 +477,7 @@ CV first drops below <code>max_cv</code>:</p>
 <p>If gaps in the development sequence are suspected, inspect them
 before <code><a href="../reference/build_triangle.html">build_triangle()</a></code>:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gaps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate_triangle.html">validate_triangle</a></span><span class="op">(</span><span class="va">exp</span>, group_var <span class="op">=</span> <span class="va">coverage</span>, cohort_var <span class="op">=</span> <span class="st">"uy_m"</span>, dev_var <span class="op">=</span> <span class="st">"dev_m"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">gaps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate_triangle.html">validate_triangle</a></span><span class="op">(</span><span class="va">exp</span>, groups <span class="op">=</span> <span class="va">coverage</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>, dev <span class="op">=</span> <span class="st">"dev_m"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">gaps</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;TriangleValidation&gt;</span></span>
 <span><span class="co">#&gt; Cohort dev-sequence gaps : none</span></span></code></pre></div>

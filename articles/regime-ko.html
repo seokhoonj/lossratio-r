@@ -200,7 +200,7 @@ shifts across underwriting cohorts</a></p>
 <span><span class="va">r</span></span>
 <span><span class="co">#&gt; &lt;Regime&gt;</span></span>
 <span><span class="co">#&gt;   method      : e_divisive</span></span>
-<span><span class="co">#&gt;   loss_var   : lr</span></span>
+<span><span class="co">#&gt;   target      : lr</span></span>
 <span><span class="co">#&gt;   window (K)  : dev_m 1-12</span></span>
 <span><span class="co">#&gt;   cohorts     : 25 analysed (11 dropped)</span></span>
 <span><span class="co">#&gt;   regimes     : 2</span></span>
@@ -218,7 +218,7 @@ shifts across underwriting cohorts</a></p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Cohort regime detection summary</span></span>
 <span><span class="co">#&gt;   method    : e_divisive</span></span>
-<span><span class="co">#&gt;   loss_var : lr</span></span>
+<span><span class="co">#&gt;   target    : lr</span></span>
 <span><span class="co">#&gt;   window    : dev_m 1-12</span></span>
 <span><span class="co">#&gt;   cohorts   : 25 analysed (11 dropped)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -309,7 +309,7 @@ Ward 계층 클러스터링을 적용하고 <code>n_regimes</code> 개 (default:
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">r2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Cohort regime detection summary</span></span>
 <span><span class="co">#&gt;   method    : e_divisive</span></span>
-<span><span class="co">#&gt;   loss_var : lr</span></span>
+<span><span class="co">#&gt;   target    : lr</span></span>
 <span><span class="co">#&gt;   window    : dev_m 1-12</span></span>
 <span><span class="co">#&gt;   cohorts   : 25 analysed (11 dropped)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -325,7 +325,33 @@ Ward 계층 클러스터링을 적용하고 <code>n_regimes</code> 개 (default:
 컷이다.</p>
 </div>
 <div class="section level2">
-<h2 id="fit_lr-과의-관계">8. <code>fit_lr()</code> 과의 관계<a class="anchor" aria-label="anchor" href="#fit_lr-%EA%B3%BC%EC%9D%98-%EA%B4%80%EA%B3%84"></a>
+<h2 id="다중-그룹-탐지">8. 다중 그룹 탐지<a class="anchor" aria-label="anchor" href="#%EB%8B%A4%EC%A4%91-%EA%B7%B8%EB%A3%B9-%ED%83%90%EC%A7%80"></a>
+</h2>
+<p>여러 그룹으로 구축한 <code>Triangle</code> 은 그대로
+<code><a href="../reference/detect_regime.html">detect_regime()</a></code> 에 전달할 수 있다. 그룹별로 독립적으로
+탐지가 수행되며 결과는 하나의 <code>Regime</code> 객체에 모인다.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tri_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span>, groups <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<span><span class="va">r_all</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_all</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
+<span><span class="va">r_all</span><span class="op">$</span><span class="va">breakpoints</span></span>
+<span><span class="co">#&gt;    coverage breakpoint</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt;</span></span>
+<span><span class="co">#&gt; 1:      CAN 2023-09-01</span></span>
+<span><span class="co">#&gt; 2:      SUR 2024-07-01</span></span></code></pre></div>
+<p>다중 그룹 모드에서 <code>r_all$breakpoints</code> 는 그룹 컬럼과
+<code>breakpoint</code> Date 컬럼을 가진 <code>data.table</code> 이고,
+<code>r_all$labels</code> 에도 그룹 컬럼이 추가된다.
+<code>r_all$n_regimes</code> 는 그룹값을 이름으로 하는 정수 벡터이며,
+<code>r_all$multi_group</code> 플래그가 단일 그룹 스칼라 형식과
+구분해준다.</p>
+<p>특정 그룹의 코호트 수가 <code>K</code> 보다 적으면 그 그룹은 경고와
+함께 skip 되고 나머지 그룹은 정상 진행된다. <em>모든</em> 그룹이
+실패하면 <code><a href="../reference/detect_regime.html">detect_regime()</a></code> 은 오류를 발생시킨다.</p>
+<p><code>plot(r_all)</code> 은 그룹별 패널을 그린다
+(<code>patchwork</code> 가 설치되어 있으면 하나로 합성된다).</p>
+</div>
+<div class="section level2">
+<h2 id="fit_lr-과의-관계">9. <code>fit_lr()</code> 과의 관계<a class="anchor" aria-label="anchor" href="#fit_lr-%EA%B3%BC%EC%9D%98-%EA%B4%80%EA%B3%84"></a>
 </h2>
 <p><code><a href="../reference/detect_regime.html">detect_regime()</a></code> 은 <code><a href="../reference/fit_lr.html">fit_lr()</a></code> 프레임워크의
 수정이 아니라 <em>전처리 진단</em> 이다. 그 출력은 두 가지로

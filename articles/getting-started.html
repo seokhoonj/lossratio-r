@@ -178,7 +178,7 @@ underwriting period columns at multiple granularities, a
 <h2 id="step-1-build-the-cohort-dev-structure">Step 1 — Build the cohort × dev structure<a class="anchor" aria-label="anchor" href="#step-1-build-the-cohort-dev-structure"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, groups <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "Triangle"   "data.table" "data.frame"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
@@ -657,11 +657,11 @@ throughout.</p>
 differently from earlier ones. Useful as a preprocessing step before
 loss-ratio fitting on a homogeneous subset:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, group_var <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, groups <span class="op">=</span> <span class="va">coverage</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">sub</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Regime&gt;</span></span>
 <span><span class="co">#&gt;   method      : e_divisive</span></span>
-<span><span class="co">#&gt;   loss_var   : lr</span></span>
+<span><span class="co">#&gt;   target      : lr</span></span>
 <span><span class="co">#&gt;   window (K)  : dev_m 1-12</span></span>
 <span><span class="co">#&gt;   cohorts     : 25 analysed (11 dropped)</span></span>
 <span><span class="co">#&gt;   regimes     : 2</span></span>

@@ -7,6 +7,12 @@ feature matrix (development-period trajectories), and ellipses indicate
 the 90% contour per regime. Arrows show the loadings of the original
 development-period features on PC1/PC2.
 
+For a multi-group `Regime`, plots are faceted by group: each group's PCA
+is rendered in its own panel using its own feature matrix and loadings
+(PCA cannot be meaningfully shared across groups with different
+`K`-period bases or scale, so per-group PCA is the correct
+representation).
+
 ## Usage
 
 ``` r
@@ -67,7 +73,8 @@ plot(
 
 ## Value
 
-A `ggplot` object.
+A `ggplot` object (single-group) or a `patchwork` / list-of-`ggplot`
+composite (multi-group; one panel per group).
 
 ## See also
 

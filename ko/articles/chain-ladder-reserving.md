@@ -26,7 +26,7 @@ generalises to multi-group input.
 
 library(lossratio)
 data(experience)
-tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
+tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
 
 cl <- fit_cl(tri, target = "loss", method = "mack")
 print(cl)

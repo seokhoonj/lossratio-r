@@ -6,8 +6,8 @@ cumulative loss ratios (`lr`) and per-period loss ratios (`lr_incr`).
 
 Where
 [`summary.Triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Triangle.md)
-aggregates by `(group_var, dev)` (cohort × development), this method
-aggregates by `(group_var, calendar)` (calendar period) so the resulting
+aggregates by `(groups, dev)` (cohort × development), this method
+aggregates by `(groups, calendar)` (calendar period) so the resulting
 table is indexed by calendar diagonals rather than development periods.
 
 ## Usage
@@ -30,7 +30,7 @@ summary(object, ...)
 ## Value
 
 A `data.table` of class `"CalendarSummary"` with one row per
-`(group_var, calendar)` combination, containing:
+`(groups, calendar)` combination, containing:
 
 - n_obs:
 
@@ -67,7 +67,7 @@ The returned object preserves the attributes `group_var`,
 
 ``` r
 if (FALSE) { # \dontrun{
-cal <- build_calendar(df, group_var = coverage)
+cal <- build_calendar(df, groups = coverage)
 smr  <- summary(cal)
 head(smr)
 } # }

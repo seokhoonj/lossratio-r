@@ -5,8 +5,8 @@ Like
 but also recognises the integer development-period columns (`dev_m` /
 `dev_q` / `dev_s` / `dev_a`). Used by
 [`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md)
-to verify that `cohort_var` and `dev_var` share the same granularity.
-Not used for date formatting (these dev columns are integers, not Date).
+to verify that `cohort` and `dev` share the same granularity. Not used
+for date formatting (these dev columns are integers, not Date).
 
 ## Usage
 

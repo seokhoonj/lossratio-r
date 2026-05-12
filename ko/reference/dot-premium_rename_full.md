@@ -9,5 +9,5 @@ analytical CI bounds (`premium_ci_lower`, `premium_ci_upper`) from
 ## Usage
 
 ``` r
-.premium_rename_full(full, grp_var, conf_level)
+.premium_rename_full(full, grp, conf_level)
 ```

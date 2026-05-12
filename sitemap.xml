@@ -44,12 +44,14 @@
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-cl_proj.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-cl_summary.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-cl_tail_factor.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/reference/dot-coerce_match.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-combined_facet_labeller.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-compute_dv.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-compute_lr_se.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-compute_tail_factor.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-compute_triangle_usage.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-detect_maturity.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/reference/dot-detect_regime_single.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-ed_param_var.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-ed_proc_var.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-ed_proj.html</loc></url>
@@ -80,6 +82,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-mack_param_var.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-mack_proc_var.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-modify_label_args.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/reference/dot-plot_regime_multi.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-premium_rename_full.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-prepend_class.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-pretty_var_label.html</loc></url>

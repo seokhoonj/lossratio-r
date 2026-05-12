@@ -16,7 +16,7 @@ steps:
   ata_summary,
   maturity = NULL,
   use_maturity = FALSE,
-  grp_var = character(0),
+  grp = character(0),
   na_method = c("locf", "none")
 )
 ```
@@ -40,7 +40,7 @@ steps:
   Logical; if `TRUE`, apply the maturity filter. When `FALSE`,
   `maturity` is ignored entirely.
 
-- grp_var:
+- grp:
 
   Character vector of grouping variable names.
 
