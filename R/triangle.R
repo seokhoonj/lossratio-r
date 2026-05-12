@@ -299,6 +299,12 @@ plot.TriangleValidation <- function(x, ...) {
 #' `invisible(NULL)`.
 #'
 #' @param x A `TriangleValidation` object.
+#' @param view Axis layout. One of `"calendar"` (cohort x calendar grid,
+#'   default) or `"dev"` (cohort x dev grid). `"calendar"` requires the
+#'   calendar column to have been supplied to [validate_triangle()];
+#'   `"dev"` works when either calendar or dev was supplied.
+#' @param show_label Logical; when `TRUE`, overlay each cell with the
+#'   input row count (`.N`). Default `FALSE`.
 #' @param theme String passed to [.switch_theme()].
 #' @param ... Extra arguments passed to [.switch_theme()].
 #'

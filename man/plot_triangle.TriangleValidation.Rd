@@ -15,6 +15,14 @@
 \arguments{
 \item{x}{A \code{TriangleValidation} object.}
 
+\item{view}{Axis layout. One of \code{"calendar"} (cohort x calendar grid,
+default) or \code{"dev"} (cohort x dev grid). \code{"calendar"} requires the
+calendar column to have been supplied to \code{\link[=validate_triangle]{validate_triangle()}};
+\code{"dev"} works when either calendar or dev was supplied.}
+
+\item{show_label}{Logical; when \code{TRUE}, overlay each cell with the
+input row count (\code{.N}). Default \code{FALSE}.}
+
 \item{theme}{String passed to \code{\link[=.switch_theme]{.switch_theme()}}.}
 
 \item{...}{Extra arguments passed to \code{\link[=.switch_theme]{.switch_theme()}}.}
