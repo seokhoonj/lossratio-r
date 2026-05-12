@@ -1,6 +1,6 @@
 # lossratio <img src="man/figures/logo.png" align="right" height="120"/>
 
-> **장기 건강보험 손해율 분석 및 예측** 도구. Maturity 기반 단계 적응형(stage-adaptive: ED → CL) 손해율 예측 + Regime break 탐지(인수 정책 변경 등 코호트 축 구조 변화) + backtest 검증을 한 워크플로로 묶는다.
+> **장기 건강보험 손해율 분석·예측·모니터링** 도구. Maturity 기반 단계 적응형(stage-adaptive: ED → CL) 손해율 예측 + Regime break 탐지(인수 정책 변경 등 코호트 축 구조 변화) + backtest 검증을 한 워크플로로 묶는다.
 
 <p align="center">
 
@@ -13,18 +13,18 @@
 -   **🟦 used** — 적합에 사용된 셀
 -   **🟥 holdout** — `backtest` 검증용 대각셀
 -   **⬜ unused** — `regime_break` / `recent` 필터로 제외된 영역
--   **수직 dash선** — maturity $k^*$ (ED → CL 전환 경계)
--   **수평 dash선** — regime break $k^{**}$ (코호트 축 컷)
+-   **수직 dash선** — `maturity` $k^*$ (ED → CL 전환 경계)
+-   **수평 dash선** — `regime_break` $k^{**}$ (코호트 축 컷)
 
 ## 주요 기능
 
-장기 건강보험은 *코호트 안에서 클레임과 보험료가 오래 지속적으로 발생하고* *신상품 출시·보험료 갱신·인수 정책 등 구조적 변화가 자주 일어난다*. 이 사실이 손해율 예측을 어렵게 만든다.
+장기 건강보험은 *코호트 안에서 클레임과 보험료가 오랜 기간 지속적으로 발생하고* *신상품 출시·보험료 갱신·인수 정책 등 구조적 변화가 자주 일어난다*. 이 사실이 손해율 예측을 어렵게 만든다.
 
-| 도전 과제                         | `lossratio` 의 응답                                                                               |
-|-----------------------------------|---------------------------------------------------------------------------------------------------|
-| 초기 dev 의 ATA 인자가 너무 Noisy | **`fit_lr(method = "sa")`** — maturity 이전엔 노출 기반(ED) 으로 보험료에 고정, 이후엔 chain ladder |
-| 인수 기준 변경 등 구조적 변화     | **`detect_regime()`** + `regime_break` 인자 — 변화 이전 코호트를 자동으로 분리                    |
-| "이 fit 이 얼마나 맞나?" 검증     | **`backtest()`** — 최근 N 대각선을 빼고 적합한 뒤 actual 과 비교                                  |
+| 도전 과제                         | `lossratio` 의 응답                                                                          |
+|-----------------------------------|----------------------------------------------------------------------------------------------|
+| 초기 dev 의 ATA 인자가 너무 Noisy | **`fit_lr(method = "sa")`** — maturity 이전엔 exposure-driven (ED), 이후엔 chain ladder (CL) |
+| 인수 기준 변경 등 구조적 변화     | **`detect_regime()`** + `regime_break` 인자 — 변화 이전 코호트를 자동으로 분리               |
+| "이 fit 이 얼마나 맞나?" 검증     | **`backtest()`** — 최근 N 대각선을 빼고 적합한 뒤 actual 과 비교                             |
 
 세 component 가 **한 figure 에서 동시에** 작동하는 것을 위 그림이 보여준다.
 
@@ -42,7 +42,7 @@ remotes::install_github("seokhoonj/lossratio")
 
 ``` r
 library(lossratio)
-data(experience)                                  # 번들 합성 데이터 (4 coverages)
+data(experience)           # 번들 합성 데이터 (4 coverages)
 
 # 1) Triangle 구축 — long-format 데이터 → 코호트 × dev 구조
 exp_sur <- experience[coverage == "SUR"]
@@ -72,38 +72,38 @@ plot_triangle(bt)
 
 ## 핵심 API
 
-| 함수                                  | 역할                                                   |
-|---------------------------------------|--------------------------------------------------------|
-| `build_triangle()`                    | long-format 데이터 → `Triangle` (코호트 × dev)         |
-| `fit_lr(method = "sa" / "ed" / "cl")` | 손해율 적합 — *통합 인터페이스* (loss + premium 합성)  |
-| `fit_loss()` / `fit_premium()`        | 역할별 디스패처 — 단일 측 (SE / CI 포함)               |
-| `fit_cl()` / `fit_ed()`               | 단일 stage (chain ladder / exposure-driven)            |
-| `fit_ata()` / `fit_intensity()`       | link 단계 진단 — 곱셈형 / 덧셈형                       |
-| `detect_maturity()`                   | ATA 인자가 수렴하는 dev 위치                           |
-| `detect_regime()`                     | 코호트 축 구조적 변화 탐지                             |
-| `detect_convergence()`                | 예측 손해율이 갱신을 멈추는 시점                       |
+| 함수                                  | 역할                                                     |
+|---------------------------------------|----------------------------------------------------------|
+| `build_triangle()`                    | long-format 데이터 → `Triangle` (코호트 × dev)           |
+| `fit_lr(method = "sa" / "ed" / "cl")` | 손해율 적합 — *통합 인터페이스* (loss + premium 합성)    |
+| `fit_loss()` / `fit_premium()`        | 역할별 디스패처 — 단일 측 (SE / CI 포함)                 |
+| `fit_cl()` / `fit_ed()`               | 단일 stage (chain ladder / exposure-driven)              |
+| `fit_ata()` / `fit_intensity()`       | link 단계 진단 — 곱셈형 / 덧셈형                         |
+| `detect_maturity()`                   | ATA 인자가 수렴하는 dev 위치                             |
+| `detect_regime()`                     | 코호트 축 구조적 변화 탐지                               |
+| `detect_convergence()`                | 예측 손해율이 갱신을 멈추는 시점                         |
 | `backtest()`                          | 대각선 hold-out 으로 fit 검증 (target = lr/loss/premium) |
-| `plot()` / `plot_triangle()`          | S3 generic — 객체 클래스로 dispatch                    |
+| `plot()` / `plot_triangle()`          | S3 generic — 객체 클래스로 dispatch                      |
 
 ## 입력 형식
 
-| 컬럼                 | 의미                                         |
-|----------------------|----------------------------------------------|
-| `uy_m`               | 인수 시점 (Date) — 자동 grain 감지 (M/Q/S/A) |
-| `cy_m`               | 달력 시점 (Date)                             |
-| `loss_incr`          | 셀 기간별 손해                               |
-| `premium_incr`       | 셀 기간별 보험료 (장기 health 는 위험보험료) |
-| `groups` *(선택)*    | 상품 / 담보 / 연령 / 성별 / 가입금액         |
+| 컬럼              | 의미                                         |
+|-------------------|----------------------------------------------|
+| `uy_m`            | 인수 시점 (Date) — 자동 grain 감지 (M/Q/S/A) |
+| `cy_m`            | 달력 시점 (Date)                             |
+| `loss_incr`       | 셀 기간별 손해                               |
+| `premium_incr`    | 셀 기간별 보험료 (장기 health 는 위험보험료) |
+| `groups` *(선택)* | 상품 / 담보 / 연령 / 성별 / 가입금액         |
 
 `build_triangle()` 가 스키마 검증 + 날짜 코어션 + 코호트 × dev 집계 + 누적 컬럼 (`loss`, `premium`, `lr`) 까지 한 번에. 사용자는 raw 데이터만 넘기면 됨.
 
 ## 시각화
 
 ``` r
-plot(tri)                                                  # 코호트 trajectory
+plot(tri)                                                  # 코호트 궤적
 plot_triangle(tri)                                         # cell heatmap
 plot_triangle(lr, view = "value", region = "pred")         # 예측 영역 LR
-plot_triangle(lr, view = "usage")                          # 위 hero figure 와 동일 모드
+plot_triangle(lr, view = "usage")                          # 맨 위 이미지와 동일 모드
 ```
 
 `plot_triangle()` 의 두 인자가 직교:
