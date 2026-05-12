@@ -7,9 +7,9 @@
 .apply_recent_filter(
   dt,
   recent,
-  group_var = character(0),
-  cohort_var,
-  dev_var,
+  grp = character(0),
+  coh,
+  dev,
   dev_split = NULL
 )
 }
@@ -19,17 +19,17 @@
 \item{recent}{Positive integer or \code{NULL}. When \code{NULL} or missing, \code{dt}
 is returned unchanged.}
 
-\item{group_var}{Character vector of group columns (may be empty).}
+\item{grp}{Character vector of group columns (may be empty).}
 
-\item{cohort_var}{Single column name for the cohort variable (e.g. \code{cohort}).}
+\item{coh}{Single column name for the cohort variable (e.g. \code{cohort}).}
 
-\item{dev_var}{Single column name for the development variable (e.g. \code{dev}
+\item{dev}{Single column name for the development variable (e.g. \code{dev}
 for \code{Triangle} objects, or \code{ata_from} for \code{ATA}/\code{ED} objects).}
 
 \item{dev_split}{Optional numeric scalar — the maturity target dev
 (= \code{ata_to}, equivalently the first CL-region dev). When supplied,
-the recent filter is applied only to rows where \code{dev_var >= dev_split}
-(CL region); rows with \code{dev_var < dev_split} (ED region) are kept
+the recent filter is applied only to rows where \code{dev >= dev_split}
+(CL region); rows with \code{dev < dev_split} (ED region) are kept
 unconditionally.}
 }
 \value{

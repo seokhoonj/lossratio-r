@@ -94,7 +94,7 @@ displayed in units of 100 million KRW.
 }
 \examples{
 \dontrun{
-d <- build_triangle(df, group_var = pd_cat_nm)
+d <- build_triangle(df, groups = pd_cat_nm)
 
 plot_triangle(d)
 plot_triangle(d, value_var = "lr")

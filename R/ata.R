@@ -122,12 +122,12 @@
 
   .assert_class(object, "Link")
 
-  grp_var <- attr(object, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- attr(object, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
   dt <- .ensure_dt(object)
 
-  grp_link_var <- c(grp_var, "ata_from", "ata_to", "ata_link")
+  grp_link <- c(grp, "ata_from", "ata_to", "ata_link")
 
   # 1) descriptive statistics -------------------------------------------
   ds <- dt[, {
@@ -146,7 +146,7 @@
       n_inf       = sum(is.infinite(ata)),
       n_nan       = sum(is.nan(ata))
     )
-  }, by = grp_link_var]
+  }, by = grp_link]
 
   ds[, valid_ratio := n_valid / n_obs]
 
@@ -157,7 +157,7 @@
   link_factors <- .lm_link(object, weights = wt_col, alpha = alpha, ...)
 
   # 3) join WLS results onto descriptive statistics ---------------------
-  join_cols <- c(grp_var, "ata_from", "ata_to", "ata_link")
+  join_cols <- c(grp, "ata_from", "ata_to", "ata_link")
   ds <- link_factors[
     , .SD,
     .SDcols = c(join_cols, "f", "f_se", "rse", "sigma")
@@ -182,7 +182,7 @@
       stop("Non-numeric `digits` specified.", call. = FALSE)
   }
 
-  data.table::setattr(ds, "group_var",  grp_var)
+  data.table::setattr(ds, "group_var",  grp)
   data.table::setattr(ds, "cohort_var", attr(object, "cohort_var"))
   data.table::setattr(ds, "dev_var",    attr(object, "dev_var"))
   data.table::setattr(ds, "target",     attr(object, "target"))
@@ -329,9 +329,9 @@ fit_ata <- function(x,
     }
     link <- .apply_break_filter(
       link, regime_break,
-      group_var  = if (is.null(attr(link, "group_var"))) character(0) else attr(link, "group_var"),
-      cohort_var = "cohort",
-      dev_var    = "ata_from"
+      grp = if (is.null(attr(link, "group_var"))) character(0) else attr(link, "group_var"),
+      coh = "cohort",
+      dev = "ata_from"
     )
   }
 
@@ -341,9 +341,9 @@ fit_ata <- function(x,
   if (!is.null(recent)) {
     link <- .apply_recent_filter(
       link, recent,
-      group_var  = if (is.null(attr(link, "group_var"))) character(0) else attr(link, "group_var"),
-      cohort_var = "cohort",
-      dev_var    = "ata_from"
+      grp = if (is.null(attr(link, "group_var"))) character(0) else attr(link, "group_var"),
+      coh = "cohort",
+      dev = "ata_from"
     )
   }
 
@@ -368,8 +368,8 @@ fit_ata <- function(x,
 
   use_maturity <- !is.null(maturity_args)
 
-  grp_var <- attr(link, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- attr(link, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
   # 4) compute summary statistics and WLS estimates ---------------------
   ata_summary <- summary(link, alpha = alpha, model = "ata", ...)
@@ -387,7 +387,7 @@ fit_ata <- function(x,
     ata_summary  = ata_summary,
     maturity     = maturity,
     use_maturity = use_maturity,
-    grp_var      = grp_var,
+    grp          = grp,
     na_method    = na_method
   )
 
@@ -398,7 +398,7 @@ fit_ata <- function(x,
   out <- list(
     call          = match.call(),
     data          = x,
-    group_var     = grp_var,
+    group_var     = grp,
     cohort_var    = attr(link, "cohort_var"),
     dev_var       = attr(link, "dev_var"),
     target        = attr(link, "target"),
@@ -449,8 +449,8 @@ summary.ATAFit <- function(object, ...) {
 #' @export
 print.ATAFit <- function(x, ...) {
 
-  grp_var <- attr(x$link, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- attr(x$link, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
   cat("<ATAFit>\n")
   cat("alpha       :", x$alpha,  "\n")
@@ -462,10 +462,10 @@ print.ATAFit <- function(x, ...) {
       "\n")
   cat("use_maturity:", x$use_maturity, "\n")
 
-  if (length(grp_var)) {
-    cat("groups      :", paste(grp_var, collapse = ", "), "\n")
+  if (length(grp)) {
+    cat("groups      :", paste(grp, collapse = ", "), "\n")
     cat("n_groups    :",
-        nrow(unique(x$factor[, grp_var, with = FALSE])), "\n")
+        nrow(unique(x$factor[, grp, with = FALSE])), "\n")
   } else {
     cat("groups      : none\n")
   }
@@ -493,7 +493,7 @@ print.ATAFit <- function(x, ...) {
 #'   [summary.Link()] with `model = "ata"`.
 #' @param maturity A `data.table` from [detect_maturity()], or `NULL`
 #'   when `use_maturity = FALSE`.
-#' @param grp_var Character vector of grouping variable names.
+#' @param grp Character vector of grouping variable names.
 #' @param use_maturity Logical; if `TRUE`, apply the maturity filter.
 #'   When `FALSE`, `maturity` is ignored entirely.
 #' @param na_method One of `"locf"` or `"none"`.
@@ -504,7 +504,7 @@ print.ATAFit <- function(x, ...) {
 .filter_ata <- function(ata_summary,
                         maturity     = NULL,
                         use_maturity = FALSE,
-                        grp_var      = character(0),
+                        grp          = character(0),
                         na_method    = c("locf", "none")) {
 
   na_method <- match.arg(na_method)
@@ -521,12 +521,12 @@ print.ATAFit <- function(x, ...) {
     mat <- .ensure_dt(maturity)
 
     # keep only group vars and maturity_from
-    keep_cols <- c(grp_var, "ata_from")
+    keep_cols <- c(grp, "ata_from")
     mat_from  <- mat[, .SD, .SDcols = intersect(keep_cols, names(mat))]
     data.table::setnames(mat_from, "ata_from", "maturity_from")
 
-    if (length(grp_var)) {
-      z <- mat_from[z, on = grp_var]
+    if (length(grp)) {
+      z <- mat_from[z, on = grp]
     } else {
       if (nrow(mat_from) != 1L)
         stop(
@@ -545,15 +545,15 @@ print.ATAFit <- function(x, ...) {
 
   # --- LOCF fill --------------------------------------------------------
   if (na_method == "locf") {
-    if (length(grp_var)) {
+    if (length(grp)) {
       z[, f_selected := data.table::nafill(f_selected, type = "locf"),
-        by = grp_var]
+        by = grp]
     } else {
       z[, f_selected := data.table::nafill(f_selected, type = "locf")]
     }
   }
 
-  data.table::setorderv(z, c(grp_var, "ata_from", "ata_to"))
+  data.table::setorderv(z, c(grp, "ata_from", "ata_to"))
   z
 }
 

@@ -41,7 +41,8 @@ point. Defaults \code{TRUE}.}
 \item{...}{Additional arguments passed to \code{\link[ggshort:plot_pca]{ggshort::plot_pca()}}.}
 }
 \value{
-A \code{ggplot} object.
+A \code{ggplot} object (single-group) or a \code{patchwork} /
+list-of-\code{ggplot} composite (multi-group; one panel per group).
 }
 \description{
 Visualise an object of class \code{"Regime"} as a PCA scatter of
@@ -50,6 +51,12 @@ underwriting cohorts, axes are the first two principal components of
 the cohort feature matrix (development-period trajectories), and
 ellipses indicate the 90\% contour per regime. Arrows show the
 loadings of the original development-period features on PC1/PC2.
+
+For a multi-group \code{Regime}, plots are faceted by group: each group's
+PCA is rendered in its own panel using its own feature matrix and
+loadings (PCA cannot be meaningfully shared across groups with
+different \code{K}-period bases or scale, so per-group PCA is the
+correct representation).
 }
 \seealso{
 \code{\link[=detect_regime]{detect_regime()}}

@@ -132,7 +132,7 @@ flag over-projection. Aggregated by development period
 \examples{
 \dontrun{
 data(experience)
-tri <- build_triangle(experience, group_var = coverage)
+tri <- build_triangle(experience, groups = coverage)
 
 bt_lr      <- backtest(tri, holdout = 6L, target = "lr")
 bt_loss    <- backtest(tri, holdout = 6L, target = "loss")

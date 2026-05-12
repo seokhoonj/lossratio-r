@@ -1,7 +1,7 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- build_triangle(exp, group_var = coverage)
+tri <- build_triangle(exp, groups = coverage)
 ata <- build_link(tri, target = "loss")
 
 test_that("build_link returns class 'Link' with expected columns", {
@@ -141,8 +141,8 @@ test_that("summary.ATAFit returns the link-level ATASummary", {
 test_that("fit_ata with regime_break drops pre-break cohorts", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uy_m")
+  tri <- build_triangle(exp, groups = "coverage",
+                        cohort = "uy_m")
   ata <- build_link(tri, target = "loss")
 
   fit_full <- fit_ata(tri, target = "loss")
@@ -158,8 +158,8 @@ test_that("fit_ata with regime_break drops pre-break cohorts", {
 test_that("fit_ata with NULL regime_break is unchanged from default", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uy_m")
+  tri <- build_triangle(exp, groups = "coverage",
+                        cohort = "uy_m")
   ata <- build_link(tri, target = "loss")
   fit_default <- fit_ata(tri, target = "loss")
   fit_null    <- fit_ata(tri, target = "loss", regime_break = NULL)
@@ -170,8 +170,8 @@ test_that("fit_ata with NULL regime_break is unchanged from default", {
 test_that("fit_ata with Regime input extracts last breakpoint", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uy_m")
+  tri <- build_triangle(exp, groups = "coverage",
+                        cohort = "uy_m")
   reg <- detect_regime(tri)
   ata <- build_link(tri, target = "loss")
   fit_reg <- fit_ata(tri, target = "loss", regime_break = reg)

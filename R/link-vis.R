@@ -127,11 +127,11 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   scales <- match.arg(scales)
   theme  <- match.arg(theme)
 
-  grp_var <- attr(x, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- attr(x, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
-  tgt_var <- attr(x, "target")
-  meta    <- .get_plot_meta(tgt_var)
+  tgt <- attr(x, "target")
+  meta <- .get_plot_meta(tgt)
 
   # 1) compute summary --------------------------------------------------
   smr <- summary(x, model = "ata", alpha = alpha)
@@ -180,8 +180,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   .add_shade <- function(p, ymax = Inf) {
     if (is.null(mat) || !nrow(mat)) return(p)
 
-    shade <- if (length(grp_var)) {
-      mat[smr[, .(xmax = max(ata_from)), by = grp_var], on = grp_var]
+    shade <- if (length(grp)) {
+      mat[smr[, .(xmax = max(ata_from)), by = grp], on = grp]
     } else {
       data.table::data.table(
         ata_from = mat$ata_from[1L],
@@ -206,8 +206,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   .add_label <- function(p) {
     if (is.null(mat) || !nrow(mat)) return(p)
 
-    labels <- if (length(grp_var)) {
-      mat[, c(grp_var, "ata_from", "ata_to", "cv", "rse"), with = FALSE]
+    labels <- if (length(grp)) {
+      mat[, c(grp, "ata_from", "ata_to", "cv", "rse"), with = FALSE]
     } else {
       mat[, .(ata_from, ata_to, cv, rse)]
     }
@@ -233,9 +233,9 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     )
   }
 
-  facet_layer <- if (length(grp_var)) {
+  facet_layer <- if (length(grp)) {
     ggplot2::facet_wrap(
-      stats::reformulate(grp_var),
+      stats::reformulate(grp),
       scales = scales,
       nrow   = nrow,
       ncol   = ncol
@@ -309,7 +309,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   if (type == "summary") {
     dm <- data.table::melt(
       smr,
-      id.vars      = c(grp_var, "ata_from", "ata_link_chr"),
+      id.vars      = c(grp, "ata_from", "ata_link_chr"),
       measure.vars = c("mean", "median", "wt"),
       variable.name = "stat",
       value.name    = "value"
@@ -451,8 +451,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   scales <- match.arg(scales)
   theme  <- match.arg(theme)
 
-  grp_var <- attr(x, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- attr(x, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
   # 1) compute summary
   smr <- summary(x, model = "ed", alpha = alpha)
@@ -470,9 +470,9 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     )
   }
 
-  facet_layer <- if (length(grp_var)) {
+  facet_layer <- if (length(grp)) {
     ggplot2::facet_wrap(
-      stats::reformulate(grp_var),
+      stats::reformulate(grp),
       scales = scales,
       nrow   = nrow,
       ncol   = ncol
@@ -486,7 +486,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   if (type == "summary") {
     dm <- data.table::melt(
       smr,
-      id.vars       = c(grp_var, "ata_from", "ata_link_chr"),
+      id.vars       = c(grp, "ata_from", "ata_link_chr"),
       measure.vars  = c("mean", "median", "wt"),
       variable.name = "stat",
       value.name    = "value"
@@ -614,15 +614,15 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   if (is.null(label_size))
     label_size <- if (label_style == "detail") 2.5 else 3
 
-  dt      <- .ensure_dt(x)
-  grp_var <- attr(x, "group_var")
-  coh_var <- attr(x, "cohort_var")
-  tgt_var <- attr(x, "target")
+  dt  <- .ensure_dt(x)
+  grp <- attr(x, "group_var")
+  coh <- attr(x, "cohort_var")
+  tgt <- attr(x, "target")
 
-  if (is.null(grp_var) || is.null(coh_var))
+  if (is.null(grp) || is.null(coh))
     stop("`x` must contain `group_var` and `cohort_var` attributes.",
          call. = FALSE)
-  if (length(coh_var) != 1L)
+  if (length(coh) != 1L)
     stop("`x` must contain exactly one `cohort_var`.", call. = FALSE)
 
   # 1) build ata_link factor with correct ordering ----------------------
@@ -631,7 +631,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
                           levels = link_levels)]
 
   # 2) format period labels for y axis ----------------------------------
-  coh_type <- .get_period_type(coh_var)
+  coh_type <- .get_period_type(coh)
   dt[, .y := .format_period(.SD[["cohort"]], type = coh_type, abb = TRUE),
      .SDcols = "cohort"]
 
@@ -657,11 +657,11 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   # 4) compute column-wise relative fill --------------------------------
   dt[, ata_fill := log(ata / stats::median(ata, na.rm = TRUE)),
-     by = c(grp_var, "ata_link")]
+     by = c(grp, "ata_link")]
   dt[!is.finite(ata_fill), ata_fill := NA_real_]
 
   # 5) build title ------------------------------------------------------
-  title_txt <- switch(tgt_var,
+  title_txt <- switch(tgt,
                       loss    = "ATA Factor for Cumulative Loss",
                       premium = "ATA Factor for Cumulative Premium",
                       lr      = "ATA Factor for Cumulative Loss Ratio",
@@ -724,8 +724,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
       inherit.aes = FALSE
     )
 
-    labels <- if (length(grp_var)) {
-      mat[, c(grp_var, "ata_from", "ata_to", "cv", "rse"), with = FALSE]
+    labels <- if (length(grp)) {
+      mat[, c(grp, "ata_from", "ata_to", "cv", "rse"), with = FALSE]
     } else {
       mat[, .(ata_from, ata_to, cv, rse)]
     }
@@ -753,13 +753,13 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   }
 
   # 10) facet
-  p <- p + ggplot2::facet_wrap(grp_var, nrow = nrow, ncol = ncol)
+  p <- p + ggplot2::facet_wrap(grp, nrow = nrow, ncol = ncol)
 
   # 11) labs
   p <- p + ggplot2::labs(
     title   = title_txt,
     x       = "Age-to-Age",
-    y       = .pretty_var_label(coh_var),
+    y       = .pretty_var_label(coh),
     caption = caption_txt
   )
 
@@ -787,11 +787,11 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   if (is.null(label_size))
     label_size <- if (label_style == "detail") 2.5 else 3
 
-  dt      <- .ensure_dt(x)
-  grp_var <- attr(x, "group_var")
-  coh_var <- attr(x, "cohort_var")
+  dt  <- .ensure_dt(x)
+  grp <- attr(x, "group_var")
+  coh <- attr(x, "cohort_var")
 
-  if (is.null(grp_var)) grp_var <- character(0)
+  if (is.null(grp)) grp <- character(0)
 
   # 1) build ata_link factor
   link_levels <- dt[order(ata_from), unique(sprintf("%s-%s", ata_from, ata_to))]
@@ -799,7 +799,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
                           levels = link_levels)]
 
   # 2) format period labels
-  coh_type <- .get_period_type(coh_var)
+  coh_type <- .get_period_type(coh)
   dt[, .y := .format_period(.SD[["cohort"]], type = coh_type, abb = TRUE),
      .SDcols = "cohort"]
 
@@ -824,7 +824,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   # 4) column-wise relative fill
   dt[, intensity_fill := intensity - stats::median(intensity, na.rm = TRUE),
-     by = c(grp_var, "ata_link")]
+     by = c(grp, "ata_link")]
   dt[!is.finite(intensity_fill), intensity_fill := NA_real_]
 
   # 5) resolve label_args
@@ -850,13 +850,13 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   )
 
   # 7) facet
-  p <- p + ggplot2::facet_wrap(grp_var, nrow = nrow, ncol = ncol)
+  p <- p + ggplot2::facet_wrap(grp, nrow = nrow, ncol = ncol)
 
   # 8) labs
   p <- p + ggplot2::labs(
     title   = "Incremental Loss Intensity (g)",
     x       = "Development Link",
-    y       = .pretty_var_label(coh_var),
+    y       = .pretty_var_label(coh),
     caption = caption_txt
   )
 

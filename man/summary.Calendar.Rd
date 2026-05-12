@@ -13,7 +13,7 @@
 }
 \value{
 A \code{data.table} of class \code{"CalendarSummary"} with one row per
-\verb{(group_var, calendar)} combination, containing:
+\verb{(groups, calendar)} combination, containing:
 \describe{
 \item{n_obs}{Number of observations in the cell.}
 \item{lr_mean}{Mean of cumulative loss ratios.}
@@ -34,14 +34,14 @@ S3 method for \code{summary()} on \code{Calendar} objects. Computes
 calendar-period summary statistics for cumulative loss ratios (\code{lr})
 and per-period loss ratios (\code{lr_incr}).
 
-Where \code{\link[=summary.Triangle]{summary.Triangle()}} aggregates by \verb{(group_var, dev)} (cohort
-× development), this method aggregates by \verb{(group_var, calendar)}
+Where \code{\link[=summary.Triangle]{summary.Triangle()}} aggregates by \verb{(groups, dev)} (cohort
+× development), this method aggregates by \verb{(groups, calendar)}
 (calendar period) so the resulting table is indexed by calendar
 diagonals rather than development periods.
 }
 \examples{
 \dontrun{
-cal <- build_calendar(df, group_var = coverage)
+cal <- build_calendar(df, groups = coverage)
 smr  <- summary(cal)
 head(smr)
 }

@@ -62,12 +62,12 @@
     stop("`.summarize_link_ed()` requires a Link built with `exposure`.",
          call. = FALSE)
 
-  grp_var <- attr(object, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- attr(object, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
   dt <- .ensure_dt(object)
 
-  grp_link_var <- c(grp_var, "ata_from", "ata_to", "ata_link")
+  grp_link <- c(grp, "ata_from", "ata_to", "ata_link")
 
   # 1) descriptive statistics
   ds <- dt[, {
@@ -86,7 +86,7 @@
       n_inf       = sum(is.infinite(intensity)),
       n_nan       = sum(is.nan(intensity))
     )
-  }, by = grp_link_var]
+  }, by = grp_link]
 
   ds[, valid_ratio := n_valid / n_obs]
 
@@ -94,7 +94,7 @@
   link_factors <- .lm_ed(object, alpha = alpha, ...)
 
   # 3) join WLS results onto descriptive statistics
-  join_cols <- c(grp_var, "ata_from", "ata_to", "ata_link")
+  join_cols <- c(grp, "ata_from", "ata_to", "ata_link")
   ds <- link_factors[
     , .SD,
     .SDcols = c(join_cols, "g", "g_se", "rse", "sigma")
@@ -119,7 +119,7 @@
       stop("Non-numeric `digits` specified.", call. = FALSE)
   }
 
-  data.table::setattr(ds, "group_var" , grp_var)
+  data.table::setattr(ds, "group_var" , grp)
   data.table::setattr(ds, "cohort_var", attr(object, "cohort_var"))
   data.table::setattr(ds, "dev_var"   , attr(object, "dev_var"))
   data.table::setattr(ds, "target"    , attr(object, "target"))
@@ -280,8 +280,8 @@ fit_ed <- function(x,
   # ED rule: Delta loss_k = g_k * cumulative_premium_k. Factor pair is
   # fit_intensity (loss-side g_k) + fit_cl on premium (premium projection).
   # No fit_ata / CL factor needed — those are fit_cl's pair.
-  grp_var <- attr(x, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- attr(x, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
   # 4a) premium projection: Mack CL on the premium column
   premium_cl <- fit_cl(
@@ -323,24 +323,24 @@ fit_ed <- function(x,
   )
 
   # 4c) join ED factors (g_selected, g_sigma2, g_var)
-  ed_cols <- c(grp_var, "ata_from", "g_selected", "sigma2", "g_var")
+  ed_cols <- c(grp, "ata_from", "g_selected", "sigma2", "g_var")
   ed_sel  <- out$selected[, .SD, .SDcols = ed_cols]
   data.table::setnames(ed_sel, "ata_from", "dev")
   data.table::setnames(ed_sel, "sigma2", "g_sigma2")
-  full <- ed_sel[full, on = c(grp_var, "dev")]
+  full <- ed_sel[full, on = c(grp, "dev")]
 
   # 4d) last_obs per cohort
   full[, last_obs := {
     idx <- which(is.finite(target_obs))
     if (length(idx)) max(idx) else 0L
-  }, by = c(grp_var, "cohort")]
+  }, by = c(grp, "cohort")]
 
   # 4e) target point projection (ED-only, no maturity switch)
   full[, target_proj := .ed_proj(
     target_obs    = target_obs,
     exposure_proj = exposure_proj,
     g_selected    = g_selected
-  ), by = c(grp_var, "cohort")]
+  ), by = c(grp, "cohort")]
 
   # 4f) target variance (ED additive recursion)
   full[, `:=`(
@@ -355,7 +355,7 @@ fit_ed <- function(x,
       g_var         = g_var,
       last_obs      = last_obs[1L]
     )
-  ), by = c(grp_var, "cohort")]
+  ), by = c(grp, "cohort")]
 
   full[, target_total_se2 := target_proc_se2 + target_param_se2]
   full[, `:=`(
@@ -374,10 +374,10 @@ fit_ed <- function(x,
   # 4h) incremental projections (target + exposure)
   full[, target_incr_proj := target_proj -
          data.table::shift(target_proj, 1L, fill = 0),
-       by = c(grp_var, "cohort")]
+       by = c(grp, "cohort")]
   full[, exposure_incr_proj := exposure_proj -
          data.table::shift(exposure_proj, 1L, fill = 0),
-       by = c(grp_var, "cohort")]
+       by = c(grp, "cohort")]
 
   out$full <- full
   out
@@ -484,8 +484,8 @@ summary.EDFit <- function(object, ...) {
 #' @export
 print.EDFit <- function(x, ...) {
 
-  grp_var <- attr(x$link, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- attr(x$link, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
   cat("<EDFit>\n")
   cat("method      :", x$method,                  "\n")
@@ -499,10 +499,10 @@ print.EDFit <- function(x, ...) {
       if (!is.null(x$regime_break)) format(x$regime_break) else "none",
       "\n")
 
-  if (length(grp_var)) {
-    cat("groups      :", paste(grp_var, collapse = ", "), "\n")
+  if (length(grp)) {
+    cat("groups      :", paste(grp, collapse = ", "), "\n")
     cat("n_groups    :",
-        nrow(unique(x$factor[, grp_var, with = FALSE])), "\n")
+        nrow(unique(x$factor[, grp, with = FALSE])), "\n")
   } else {
     cat("groups      : none\n")
   }
@@ -550,8 +550,8 @@ print.EDFit <- function(x, ...) {
   if (!is.numeric(tol) || length(tol) != 1L || is.na(tol) || tol < 0)
     stop("`tol` must be a single non-negative numeric value.", call. = FALSE)
 
-  grp_var <- attr(x, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- attr(x, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
   dt <- .ensure_dt(x)
 
@@ -605,7 +605,7 @@ print.EDFit <- function(x, ...) {
         )
       }
     }
-  }, keyby = c(grp_var, "ata_from", "ata_to", "ata_link")]
+  }, keyby = c(grp, "ata_from", "ata_to", "ata_link")]
 
   # 4) compute rse = g_se / |g|
   data.table::set(
@@ -644,8 +644,8 @@ print.EDFit <- function(x, ...) {
 
   .assert_class(ed_fit, "EDFit")
 
-  grp_var <- attr(ed_fit$link, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- attr(ed_fit$link, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
   ed_long <- .ensure_dt(ed_fit$link)
   sel     <- data.table::copy(ed_fit$selected)
@@ -660,10 +660,10 @@ print.EDFit <- function(x, ...) {
 
   link_weights <- ed_valid[,
                        .(denom = sum(exposure_from^(2 - alpha), na.rm = TRUE)),
-                       by = c(grp_var, "ata_from")
+                       by = c(grp, "ata_from")
   ]
 
-  sel <- link_weights[sel, on = c(grp_var, "ata_from")]
+  sel <- link_weights[sel, on = c(grp, "ata_from")]
 
   sel[, g_var := data.table::fifelse(
     is.finite(sigma2) & is.finite(denom) & denom > 0,

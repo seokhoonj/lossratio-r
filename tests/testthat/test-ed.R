@@ -1,7 +1,7 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- build_triangle(exp, group_var = coverage)
+tri <- build_triangle(exp, groups = coverage)
 ed  <- build_link(tri, target = "loss", exposure = "premium")
 
 test_that("build_link (ED mode) returns class 'Link' with expected columns", {
@@ -88,8 +88,8 @@ test_that("summary.Link (ed mode) returns EDSummary with expected columns", {
 test_that("fit_ed with regime_break drops pre-break cohorts", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uy_m")
+  tri <- build_triangle(exp, groups = "coverage",
+                        cohort = "uy_m")
   ed <- build_link(tri, target = "loss", exposure = "premium")
   fit_full <- fit_ed(tri, target = "loss", exposure = "premium")
   fit_brk  <- fit_ed(tri, target = "loss", exposure = "premium", regime_break = "2025-07-01")
@@ -101,8 +101,8 @@ test_that("fit_ed with regime_break drops pre-break cohorts", {
 test_that("fit_ed with NULL regime_break is unchanged", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uy_m")
+  tri <- build_triangle(exp, groups = "coverage",
+                        cohort = "uy_m")
   ed <- build_link(tri, target = "loss", exposure = "premium")
   fit_default <- fit_ed(tri, target = "loss", exposure = "premium")
   fit_null    <- fit_ed(tri, target = "loss", exposure = "premium", regime_break = NULL)
@@ -113,8 +113,8 @@ test_that("fit_ed with NULL regime_break is unchanged", {
 test_that("fit_ed with Regime input extracts last breakpoint", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uy_m")
+  tri <- build_triangle(exp, groups = "coverage",
+                        cohort = "uy_m")
   reg <- detect_regime(tri)
   ed <- build_link(tri, target = "loss", exposure = "premium")
   fit_reg <- fit_ed(tri, target = "loss", exposure = "premium", regime_break = reg)
@@ -128,8 +128,8 @@ test_that("fit_ed with Regime input extracts last breakpoint", {
 test_that("fit_ed returns $full with projection columns", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uy_m")
+  tri <- build_triangle(exp, groups = "coverage",
+                        cohort = "uy_m")
   ef <- fit_ed(tri, target = "loss", exposure = "premium")
   expect_true("full" %in% names(ef))
   expect_s3_class(ef$full, "data.table")
@@ -148,8 +148,8 @@ test_that("fit_ed returns $full with projection columns", {
 test_that("fit_ed target projection matches fit_lr method = 'ed'", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uy_m")
+  tri <- build_triangle(exp, groups = "coverage",
+                        cohort = "uy_m")
   ef <- fit_ed(tri, target = "loss", exposure = "premium")
   lr <- fit_lr(tri, method = "ed")
 

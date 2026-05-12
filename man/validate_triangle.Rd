@@ -6,45 +6,45 @@
 \usage{
 validate_triangle(
   df,
-  group_var,
-  cohort_var = "uy_m",
-  dev_var = "dev_m",
-  calendar_var = "cy_m"
+  groups,
+  cohort = "uy_m",
+  dev = "dev_m",
+  calendar = "cy_m"
 )
 }
 \arguments{
 \item{df}{A data.frame.}
 
-\item{group_var}{Grouping variable(s).}
+\item{groups}{Grouping variable(s).}
 
-\item{cohort_var}{A single cohort variable. Default \code{"uy_m"}.}
+\item{cohort}{A single cohort variable. Default \code{"uy_m"}.}
 
-\item{dev_var}{A single development variable. Default \code{"dev_m"}.}
+\item{dev}{A single development variable. Default \code{"dev_m"}.}
 
-\item{calendar_var}{Optional calendar period variable for row-level
-consistency check. When supplied, rows where \code{calendar_var < cohort_var} are flagged as invalid. Default \code{"cy_m"}; pass \code{NULL}
+\item{calendar}{Optional calendar period variable for row-level
+consistency check. When supplied, rows where \code{calendar < cohort} are flagged as invalid. Default \code{"cy_m"}; pass \code{NULL}
 to skip this check, or a column name to override.}
 }
 \value{
 A \code{data.table} of class \code{"TriangleValidation"} with one row
 per cohort containing gaps. Columns:
 \describe{
-\item{group_var(s), cohort_var}{Cohort identifier.}
-\item{\code{n_observed}}{Number of distinct observed \code{dev_var}
+\item{groups, cohort}{Cohort identifier.}
+\item{\code{n_observed}}{Number of distinct observed \code{dev}
 values.}
-\item{\code{n_expected}}{\code{max(dev_m) - min(dev_m) + 1} for that cohort.}
-\item{\code{missing}}{List column of missing \code{dev_var} values.}
+\item{\code{n_expected}}{\code{max(dev) - min(dev) + 1} for that cohort.}
+\item{\code{missing}}{List column of missing \code{dev} values.}
 }
 Returns a zero-row data.table when no gaps are found.
 
-Row-level violations (when \code{calendar_var} is supplied and the check
+Row-level violations (when \code{calendar} is supplied and the check
 finds any) are attached as the \code{"invalid_rows"} attribute — a
-\code{data.table} with columns \verb{[group_var, cohort_var, calendar_var, dev_var (if present), reason]}. Use \code{attr(out, "invalid_rows")}
+\code{data.table} with columns \verb{[groups, cohort, calendar, dev (if present), reason]}. Use \code{attr(out, "invalid_rows")}
 or rely on \code{print.TriangleValidation} which displays both sections.
 }
 \description{
-Check that each \verb{(group_var, cohort_var)} cohort has a consecutive
-\code{dev_var} sequence within its observed range. Non-consecutive
+Check that each \verb{(groups, cohort)} cohort has a consecutive
+\code{dev} sequence within its observed range. Non-consecutive
 cohorts produce non-consecutive age-to-age links downstream (e.g.,
 \code{14 -> 17} instead of \code{14 -> 15}), which breaks
 \code{\link[=summary.Link]{summary.Link()}} key uniqueness and causes cartesian joins in
@@ -58,10 +58,10 @@ Two checks are performed:
 
 \enumerate{
 \item \strong{Cohort dev-sequence gaps} — for each \verb{(group, cohort)},
-report missing \code{dev_var} values within the observed range.
-\item \strong{Row-level calendar consistency} — when \code{calendar_var}
+report missing \code{dev} values within the observed range.
+\item \strong{Row-level calendar consistency} — when \code{calendar}
 is supplied (or auto-detected as \code{"cy_m"} if present), report rows
-where \code{calendar_var < cohort_var}. Such rows are logically
+where \code{calendar < cohort}. Such rows are logically
 impossible (claims cannot precede policy issue) and downstream
 they show up as negative \code{dev_m}, polluting cohort dev sequences.
 }

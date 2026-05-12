@@ -24,13 +24,13 @@
 .compute_dv <- function(triangle, min_n_cohorts = 5L) {
 
   .assert_class(triangle, "Triangle")
-  grp_var <- attr(triangle, "group_var")
+  grp <- attr(triangle, "group_var")
   near_zero_floor <- 1e-8
 
   dt <- .ensure_dt(triangle)
   dt <- dt[!is.na(dt$lr)]
 
-  by_cols <- c(grp_var, "dev")
+  by_cols <- c(grp, "dev")
 
   out <- dt[, list(
     n_cohorts = .N,
@@ -144,7 +144,7 @@
 #' @return An object of class `Convergence` (named list) containing the
 #'   detected `k_conv`, the candidate sequence `v`, and the diagnostic
 #'   sequences `R_v`, `SE_param_v`, `D_v`, `pass_v`. Metadata is carried
-#'   on attributes (`group_var`, `loss_var`, `fit_fn_name`).
+#'   on attributes (`group_var`, `target`, `fit_fn_name`).
 #'
 #' @seealso [detect_maturity()], [backtest()], [fit_lr()]
 #'
@@ -180,13 +180,13 @@ detect_convergence <- function(triangle,
     stop("`min_run` must be a single integer >= 1.", call. = FALSE)
   min_run <- as.integer(min_run)
 
-  grp_var <- attr(triangle, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
-  dev_var <- attr(triangle, "dev_var")
+  grp <- attr(triangle, "group_var")
+  if (is.null(grp)) grp <- character(0)
+  dev <- attr(triangle, "dev_var")
 
   # 2) resolve k_star --------------------------------------------------
   if (is.null(k_star)) {
-    mat     <- detect_maturity(triangle, loss_var = "lr", weight_var = "premium")
+    mat     <- detect_maturity(triangle, target = "lr", weight = "premium")
     k_star  <- suppressWarnings(min(mat$ata_to, na.rm = TRUE))
     if (!is.finite(k_star))
       stop("Could not derive `k_star` from `detect_maturity()`; ",
@@ -255,7 +255,7 @@ detect_convergence <- function(triangle,
   D_v <- rep(NA_real_, length(v_seq))
   if (length(v_seq)) {
     dv_tbl <- .compute_dv(triangle, min_n_cohorts = min_n_cohorts)
-    if (length(grp_var)) {
+    if (length(grp)) {
       # collapse across groups: take median D_v across groups at each dev
       dv_tbl <- dv_tbl[, list(D_v = stats::median(D_v, na.rm = TRUE)),
                        by = "dev"]
@@ -296,10 +296,10 @@ detect_convergence <- function(triangle,
     min_n_cohorts = min_n_cohorts
   )
 
-  data.table::setattr(out, "group_var",   grp_var)
-  data.table::setattr(out, "loss_var",   "lr")
+  data.table::setattr(out, "group_var",   grp)
+  data.table::setattr(out, "target",     "lr")
   data.table::setattr(out, "fit_fn_name", fit_fn_name)
-  data.table::setattr(out, "dev_var",     dev_var)
+  data.table::setattr(out, "dev_var",     dev)
   class(out) <- "Convergence"
   out
 }

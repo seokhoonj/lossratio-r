@@ -44,7 +44,7 @@ str(experience)
 ## 1단계 — 코호트 × 경과 기간 구조 구축
 
 ```{r}
-tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
+tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
 class(tri)
 names(tri)
 ```
@@ -121,7 +121,7 @@ summary(lr)
 단계로 활용된다.
 
 ```{r}
-sub <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
+sub <- build_triangle(experience[coverage == "SUR"], groups = coverage)
 detect_regime(sub, K = 12, method = "e_divisive")
 ```
 

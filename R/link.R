@@ -94,14 +94,14 @@ build_link <- function(x,
 
   dt <- .ensure_dt(x)
 
-  grp_var <- attr(dt, "group_var")
-  coh_var <- attr(dt, "cohort_var")
-  dev_var <- attr(dt, "dev_var")
+  grp <- attr(dt, "group_var")
+  coh <- attr(dt, "cohort_var")
+  dev <- attr(dt, "dev_var")
 
-  if (is.null(grp_var)) grp_var <- character(0)
-  if (length(coh_var) != 1L)
+  if (is.null(grp)) grp <- character(0)
+  if (length(coh) != 1L)
     stop("`x` must contain exactly one `cohort_var`.", call. = FALSE)
-  if (length(dev_var) != 1L)
+  if (length(dev) != 1L)
     stop("`x` must contain exactly one `dev_var`.", call. = FALSE)
 
   valid_vars <- c("loss", "premium", "lr")
@@ -115,11 +115,11 @@ build_link <- function(x,
   use_weight   <- !is.null(weight)
 
   if (use_exposure) {
-    exp_var <- .capture_names(dt, !!rlang::enquo(exposure))
-    if (length(exp_var) != 1L || !(exp_var %in% valid_vars))
+    exp <- .capture_names(dt, !!rlang::enquo(exposure))
+    if (length(exp) != 1L || !(exp %in% valid_vars))
       stop("`exposure` must be one of 'loss', 'premium', or 'lr'.",
            call. = FALSE)
-    if (exp_var == tgt)
+    if (exp == tgt)
       warning(
         "`exposure` equals `target` (\"", tgt, "\") -- self-anchored ",
         "fit. Mathematically equivalent to chain ladder on the same column ",
@@ -127,7 +127,7 @@ build_link <- function(x,
         call. = FALSE
       )
   } else {
-    exp_var <- NULL
+    exp <- NULL
   }
 
   if (use_weight) {
@@ -135,31 +135,31 @@ build_link <- function(x,
       stop("`weight` cannot be combined with `exposure`. ",
            "The dual-variable mode uses `exposure_from` as its anchor.",
            call. = FALSE)
-    wt_var <- .capture_names(dt, !!rlang::enquo(weight))
-    if (length(wt_var) != 1L || !(wt_var %in% valid_vars))
+    wt <- .capture_names(dt, !!rlang::enquo(weight))
+    if (length(wt) != 1L || !(wt %in% valid_vars))
       stop("`weight` must be one of 'loss', 'premium', or 'lr'.",
            call. = FALSE)
-    if (wt_var == tgt)
+    if (wt == tgt)
       stop("`weight` must differ from `target`.", call. = FALSE)
   } else {
-    wt_var <- NULL
+    wt <- NULL
   }
 
-  grp_coh_var <- c(grp_var, "cohort")
+  grp_coh <- c(grp, "cohort")
 
   z <- .ensure_dt(x)
-  data.table::setorderv(z, c(grp_coh_var, "dev"))
+  data.table::setorderv(z, c(grp_coh, "dev"))
 
   # 1) link metadata ----------------------------------------------------
   z[, ata_from := dev]
   z[, ata_to   := data.table::shift(dev, type = "lead"),
-    by = grp_coh_var]
+    by = grp_coh]
   z[, ata_link := sprintf("%s-%s", ata_from, ata_to)]
 
   # 2) target_from / target_to / target_delta / ata -----------------------
   z[, target_from := .SD[[tgt]], .SDcols = tgt]
   z[, target_to   := data.table::shift(.SD[[1L]], type = "lead"),
-    by      = grp_coh_var,
+    by      = grp_coh,
     .SDcols = tgt]
   z[, target_delta := target_to - target_from]
   z[, ata := data.table::fifelse(
@@ -170,10 +170,10 @@ build_link <- function(x,
 
   # 3) exposure_from / exposure_to / exposure_delta / intensity --------
   if (use_exposure) {
-    z[, exposure_from := .SD[[exp_var]], .SDcols = exp_var]
+    z[, exposure_from := .SD[[exp]], .SDcols = exp]
     z[, exposure_to   := data.table::shift(.SD[[1L]], type = "lead"),
-      by      = grp_coh_var,
-      .SDcols = exp_var]
+      by      = grp_coh,
+      .SDcols = exp]
     z[, exposure_delta := exposure_to - exposure_from]
     z[, intensity := data.table::fifelse(
       exposure_from > min_denom,
@@ -184,7 +184,7 @@ build_link <- function(x,
 
   # 4) attach weight column --------------------------------------------
   if (use_weight) {
-    z[, weight := .SD[[wt_var]], .SDcols = wt_var]
+    z[, weight := .SD[[wt]], .SDcols = wt]
   }
 
   # 5) remove last dev row per cohort (no lead available) --------------
@@ -197,7 +197,7 @@ build_link <- function(x,
 
   # 7) keep relevant columns -------------------------------------------
   keep <- c(
-    grp_var, "cohort",
+    grp, "cohort",
     "ata_from", "ata_to", "ata_link",
     "target_from", "target_to", "target_delta", "ata",
     if (use_exposure)
@@ -207,12 +207,12 @@ build_link <- function(x,
 
   z <- z[, .SD, .SDcols = keep]
 
-  data.table::setattr(z, "group_var" , grp_var)
-  data.table::setattr(z, "cohort_var", coh_var)
-  data.table::setattr(z, "dev_var"   , dev_var)
+  data.table::setattr(z, "group_var" , grp)
+  data.table::setattr(z, "cohort_var", coh)
+  data.table::setattr(z, "dev_var"   , dev)
   data.table::setattr(z, "target"    , tgt)
-  data.table::setattr(z, "exposure"  , exp_var)
-  data.table::setattr(z, "weight"    , wt_var)
+  data.table::setattr(z, "exposure"  , exp)
+  data.table::setattr(z, "weight"    , wt)
 
   # Link is *not* a Triangle (different data structure: edge-level pairs
   # vs cell-level grid). Remove Triangle inheritance to prevent silent
@@ -325,8 +325,8 @@ summary.Link <- function(object,
   if (!is.numeric(tol) || length(tol) != 1L || is.na(tol) || tol < 0)
     stop("`tol` must be a single non-negative numeric value.", call. = FALSE)
 
-  grp_var <- attr(x, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- attr(x, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
   dt <- .ensure_dt(x)
 
@@ -393,7 +393,7 @@ summary.Link <- function(object,
         )
       }
     }
-  }, keyby = c(grp_var, "ata_from", "ata_to", "ata_link")]
+  }, keyby = c(grp, "ata_from", "ata_to", "ata_link")]
 
   # 4) compute rse = f_se / f -------------------------------------------
   data.table::set(

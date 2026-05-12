@@ -1,7 +1,7 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- build_triangle(exp, group_var = coverage)
+tri <- build_triangle(exp, groups = coverage)
 
 test_that("fit_cl method = 'mack' returns class 'CLFit' with expected structure", {
   cl <- fit_cl(tri, target = "loss", method = "mack")

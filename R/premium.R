@@ -49,7 +49,7 @@
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
+#' tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
 #'
 #' # ED-additive recursion (default; robust on long projections)
 #' pf <- fit_premium(tri)
@@ -97,10 +97,10 @@ fit_premium <- function(x,
   }
 
   # Rename target_* columns to role-specific premium_* names on $full.
-  grp_var <- attr(x, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- attr(x, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
-  cl_fit$full <- .premium_rename_full(cl_fit$full, grp_var, conf_level)
+  cl_fit$full <- .premium_rename_full(cl_fit$full, grp, conf_level)
 
   attr(cl_fit, "premium_method") <- method
   attr(cl_fit, "conf_level")     <- conf_level
@@ -119,7 +119,7 @@ fit_premium <- function(x,
 #' `premium_proj` +/- z * `premium_total_se`.
 #'
 #' @keywords internal
-.premium_rename_full <- function(full, grp_var, conf_level) {
+.premium_rename_full <- function(full, grp, conf_level) {
   full <- data.table::copy(.ensure_dt(full))
 
   rename_map <- c(
@@ -143,7 +143,7 @@ fit_premium <- function(x,
 
   # Derive incremental projection if not already present.
   if (!"premium_incr_proj" %in% names(full)) {
-    by_cols <- c(grp_var, "cohort")
+    by_cols <- c(grp, "cohort")
     full[, premium_incr_proj := premium_proj -
            data.table::shift(premium_proj, 1L, fill = 0),
          by = by_cols]
@@ -195,8 +195,8 @@ fit_premium <- function(x,
   full <- data.table::copy(.ensure_dt(full))
   selected <- .ensure_dt(selected)
 
-  grp_var <- attr(triangle, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- attr(triangle, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
   f  <- selected$f_selected
   s2 <- selected$sigma2
@@ -236,7 +236,7 @@ fit_premium <- function(x,
     list(proc = proc, par = par)
   }
 
-  by_cols <- c(grp_var, "cohort")
+  by_cols <- c(grp, "cohort")
   full[, c("target_proc_se2", "target_param_se2") := {
     r <- ed_one_cohort(dev, .is_obs, target_proj)
     list(r$proc, r$par)

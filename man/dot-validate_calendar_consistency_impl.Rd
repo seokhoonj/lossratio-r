@@ -4,10 +4,10 @@
 \alias{.validate_calendar_consistency_impl}
 \title{Internal: row-level cohort vs calendar consistency check}
 \usage{
-.validate_calendar_consistency_impl(dt, grp_var, coh_var, dev_var, cal_var)
+.validate_calendar_consistency_impl(dt, grp, coh, dev, cal)
 }
 \description{
-Flag rows where \code{calendar_var < cohort_var} — claims/events recorded
+Flag rows where \code{calendar < cohort} — claims/events recorded
 as occurring before the cohort start, which is logically impossible.
 }
 \keyword{internal}

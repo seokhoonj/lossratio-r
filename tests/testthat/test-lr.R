@@ -1,7 +1,7 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- build_triangle(exp, group_var = coverage)
+tri <- build_triangle(exp, groups = coverage)
 
 test_that("fit_lr default (method = 'sa') returns class 'LRFit'", {
   lr <- fit_lr(tri)
@@ -94,8 +94,8 @@ test_that("print.LRFit doesn't error", {
 test_that("fit_lr with loss_regime_break + method=sa applies hybrid filter", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uy_m")
+  tri <- build_triangle(exp, groups = "coverage",
+                        cohort = "uy_m")
   fit_full <- fit_lr(tri, method = "sa")
   fit_brk  <- fit_lr(tri, method = "sa", loss_regime_break = "2025-07-01",
                      recent = 18L)
@@ -108,8 +108,8 @@ test_that("fit_lr with loss_regime_break + method=sa applies hybrid filter", {
 test_that("fit_lr with loss_regime_break + method=ed drops pre-break cohorts", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uy_m")
+  tri <- build_triangle(exp, groups = "coverage",
+                        cohort = "uy_m")
   fit_full <- fit_lr(tri, method = "ed")
   fit_brk  <- fit_lr(tri, method = "ed", loss_regime_break = "2025-07-01")
   expect_false(identical(fit_full$full$lr_proj, fit_brk$full$lr_proj))
@@ -118,8 +118,8 @@ test_that("fit_lr with loss_regime_break + method=ed drops pre-break cohorts", {
 test_that("fit_lr with NULL loss_regime_break is unchanged", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uy_m")
+  tri <- build_triangle(exp, groups = "coverage",
+                        cohort = "uy_m")
   a <- fit_lr(tri, method = "sa")
   b <- fit_lr(tri, method = "sa", loss_regime_break = NULL)
   expect_identical(a$full$lr_proj, b$full$lr_proj)
@@ -128,8 +128,8 @@ test_that("fit_lr with NULL loss_regime_break is unchanged", {
 test_that("fit_lr with Regime extracts last breakpoint", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, group_var = "coverage",
-                        cohort_var = "uy_m")
+  tri <- build_triangle(exp, groups = "coverage",
+                        cohort = "uy_m")
   reg <- detect_regime(tri)
   fit_reg <- fit_lr(tri, method = "sa", loss_regime_break = reg, recent = 18L)
   if (length(reg$breakpoints) > 0L) {

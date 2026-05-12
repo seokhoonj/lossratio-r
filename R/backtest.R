@@ -84,7 +84,7 @@
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' tri <- build_triangle(experience, group_var = coverage)
+#' tri <- build_triangle(experience, groups = coverage)
 #'
 #' bt_lr      <- backtest(tri, holdout = 6L, target = "lr")
 #' bt_loss    <- backtest(tri, holdout = 6L, target = "loss")
@@ -145,16 +145,16 @@ backtest <- function(x,
     stop(sprintf("`target` = '%s' not found in `x`.", target),
          call. = FALSE)
 
-  grp_var <- attr(x, "group_var")
-  coh_var <- attr(x, "cohort_var")
-  dev_var <- attr(x, "dev_var")
+  grp <- attr(x, "group_var")
+  coh <- attr(x, "cohort_var")
+  dev <- attr(x, "dev_var")
 
   # 1) Tag held-out cells on the original (long-format) triangle ----------
   full <- .ensure_dt(x)
   full[, .coh_rank := data.table::frank(cohort, ties.method = "dense"),
-       by = grp_var]
+       by = grp]
   full[, .cal_idx := .coh_rank + dev - 1L]
-  full[, .max_cal := max(.cal_idx, na.rm = TRUE), by = grp_var]
+  full[, .max_cal := max(.cal_idx, na.rm = TRUE), by = grp]
   full[, .is_held_out := .cal_idx > .max_cal - holdout]
 
   if (!any(full$.is_held_out))
@@ -231,16 +231,16 @@ backtest <- function(x,
 
   # 4) Compare predicted (from fit) to actual (from original x) -------
   pred <- fit_obj$full[, .SD,
-    .SDcols = c(grp_var, "cohort", "dev", score_col)]
+    .SDcols = c(grp, "cohort", "dev", score_col)]
 
   obs <- full[.is_held_out == TRUE,
     .SD,
-    .SDcols = c(grp_var, "cohort", "dev", target, ".cal_idx")]
+    .SDcols = c(grp, "cohort", "dev", target, ".cal_idx")]
   data.table::setnames(obs, target, "value_actual")
   data.table::setnames(obs, ".cal_idx", "calendar_idx")
 
   ae_err <- pred[obs,
-                 on = c(grp_var, "cohort", "dev"),
+                 on = c(grp, "cohort", "dev"),
                  nomatch = NULL]
   data.table::setnames(ae_err, score_col, "value_pred")
 
@@ -253,13 +253,13 @@ backtest <- function(x,
     NA_real_
   )]
 
-  data.table::setcolorder(ae_err, c(grp_var, "cohort", "dev",
+  data.table::setcolorder(ae_err, c(grp, "cohort", "dev",
                                     "value_actual", "value_pred",
                                     "ae_err", "calendar_idx"))
-  data.table::setorderv(ae_err, c(grp_var, "cohort", "dev"))
+  data.table::setorderv(ae_err, c(grp, "cohort", "dev"))
 
   # 5) Summaries --------------------------------------------------------
-  col_by   <- c(grp_var, "dev")
+  col_by   <- c(grp, "dev")
   col_summary <- ae_err[, .(
     n           = sum(is.finite(ae_err)),
     ae_err_mean = mean(ae_err, na.rm = TRUE),
@@ -269,7 +269,7 @@ backtest <- function(x,
   ), by = col_by]
   data.table::setorderv(col_summary, col_by)
 
-  diag_by <- c(grp_var, "calendar_idx")
+  diag_by <- c(grp, "calendar_idx")
   diag_summary <- ae_err[, .(
     n           = sum(is.finite(ae_err)),
     ae_err_mean = mean(ae_err, na.rm = TRUE),
@@ -291,9 +291,9 @@ backtest <- function(x,
     target       = target,
     holdout      = holdout,
     fit_fn_name  = fit_fn_name,
-    group_var    = grp_var,
-    cohort_var   = coh_var,
-    dev_var      = dev_var
+    group_var    = grp,
+    cohort_var   = coh,
+    dev_var      = dev
   )
   class(out) <- "Backtest"
   out

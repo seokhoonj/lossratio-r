@@ -108,9 +108,9 @@ fit_intensity <- function(x,
     }
     link <- .apply_break_filter(
       link, regime_break,
-      group_var  = if (is.null(attr(link, "group_var"))) character(0) else attr(link, "group_var"),
-      cohort_var = "cohort",
-      dev_var    = "ata_from"
+      grp = if (is.null(attr(link, "group_var"))) character(0) else attr(link, "group_var"),
+      coh = "cohort",
+      dev = "ata_from"
     )
   }
 
@@ -118,14 +118,14 @@ fit_intensity <- function(x,
   if (!is.null(recent)) {
     link <- .apply_recent_filter(
       link, recent,
-      group_var  = if (is.null(attr(link, "group_var"))) character(0) else attr(link, "group_var"),
-      cohort_var = "cohort",
-      dev_var    = "ata_from"
+      grp = if (is.null(attr(link, "group_var"))) character(0) else attr(link, "group_var"),
+      coh = "cohort",
+      dev = "ata_from"
     )
   }
 
-  grp_var <- attr(link, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- attr(link, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
   # 3) WLS intensity per link -------------------------------------------
   ed_summary <- summary(link, alpha = alpha, model = "ed", ...)
@@ -133,7 +133,7 @@ fit_intensity <- function(x,
   # 4) selected intensity series with LOCF + sigma extrapolation --------
   selected <- .select_intensity(
     ed_summary = ed_summary,
-    grp_var    = grp_var,
+    grp        = grp,
     na_method  = na_method
   )
   selected <- .extrapolate_sigma_ata(selected, method = sigma_method)
@@ -142,7 +142,7 @@ fit_intensity <- function(x,
   out <- list(
     call         = match.call(),
     data         = x,
-    group_var    = grp_var,
+    group_var    = grp,
     cohort_var   = attr(link, "cohort_var"),
     dev_var      = attr(link, "dev_var"),
     target       = attr(link, "target"),
@@ -194,8 +194,8 @@ summary.IntensityFit <- function(object, ...) {
 #' @export
 print.IntensityFit <- function(x, ...) {
 
-  grp_var <- attr(x$link, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- attr(x$link, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
   cat("<IntensityFit>\n")
   cat("alpha       :", x$alpha, "\n")
@@ -206,10 +206,10 @@ print.IntensityFit <- function(x, ...) {
       if (!is.null(x$regime_break)) format(x$regime_break) else "none",
       "\n")
 
-  if (length(grp_var)) {
-    cat("groups      :", paste(grp_var, collapse = ", "), "\n")
+  if (length(grp)) {
+    cat("groups      :", paste(grp, collapse = ", "), "\n")
     cat("n_groups    :",
-        nrow(unique(x$factor[, grp_var, with = FALSE])), "\n")
+        nrow(unique(x$factor[, grp, with = FALSE])), "\n")
   } else {
     cat("groups      : none\n")
   }
@@ -231,14 +231,14 @@ print.IntensityFit <- function(x, ...) {
 #' has no maturity concept).
 #'
 #' @param ed_summary An `EDSummary`.
-#' @param grp_var Character vector of group columns.
+#' @param grp Character vector of group columns.
 #' @param na_method One of `"locf"` (default) or `"none"`.
 #'
 #' @return A `data.table` with `g_selected` added.
 #'
 #' @keywords internal
 .select_intensity <- function(ed_summary,
-                              grp_var   = character(0),
+                              grp       = character(0),
                               na_method = c("zero", "locf", "none")) {
 
   na_method <- match.arg(na_method)
@@ -249,14 +249,14 @@ print.IntensityFit <- function(x, ...) {
   if (na_method == "zero") {
     z[is.na(g_selected), g_selected := 0]
   } else if (na_method == "locf") {
-    if (length(grp_var)) {
+    if (length(grp)) {
       z[, g_selected := data.table::nafill(g_selected, type = "locf"),
-        by = grp_var]
+        by = grp]
     } else {
       z[, g_selected := data.table::nafill(g_selected, type = "locf")]
     }
   }
 
-  data.table::setorderv(z, c(grp_var, "ata_from", "ata_to"))
+  data.table::setorderv(z, c(grp, "ata_from", "ata_to"))
   z
 }

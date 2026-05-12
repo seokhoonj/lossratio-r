@@ -140,7 +140,7 @@ point + variance via the delta method (\code{se_method = "fixed"} or
 \examples{
 \dontrun{
 data(experience)
-tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
+tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
 
 # Stage-adaptive (default): ED before maturity, CL after
 lr_sa <- fit_lr(tri, method = "sa")

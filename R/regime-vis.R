@@ -10,6 +10,12 @@
 #' ellipses indicate the 90% contour per regime. Arrows show the
 #' loadings of the original development-period features on PC1/PC2.
 #'
+#' For a multi-group `Regime`, plots are faceted by group: each group's
+#' PCA is rendered in its own panel using its own feature matrix and
+#' loadings (PCA cannot be meaningfully shared across groups with
+#' different `K`-period bases or scale, so per-group PCA is the
+#' correct representation).
+#'
 #' @param x An object of class `"Regime"`.
 #' @param show_arrow Logical; draw loading arrows. Default `TRUE`.
 #' @param show_label Logical; label arrows with development-period index.
@@ -24,25 +30,41 @@
 #' @param theme Theme string passed to [.switch_theme()].
 #' @param ... Additional arguments passed to [ggshort::plot_pca()].
 #'
-#' @return A `ggplot` object.
+#' @return A `ggplot` object (single-group) or a `patchwork` /
+#'   list-of-`ggplot` composite (multi-group; one panel per group).
 #'
 #' @seealso [detect_regime()]
 #'
 #' @method plot Regime
 #' @export
 plot.Regime <- function(x,
-                               show_arrow   = TRUE,
-                               show_label   = TRUE,
-                               show_ellipse = TRUE,
-                               show_mean    = TRUE,
-                               show_median  = TRUE,
-                               alpha        = 0.5,
-                               palette      = "Set1",
-                               theme        = c("view", "save", "shiny"),
-                               ...) {
+                        show_arrow   = TRUE,
+                        show_label   = TRUE,
+                        show_ellipse = TRUE,
+                        show_mean    = TRUE,
+                        show_median  = TRUE,
+                        alpha        = 0.5,
+                        palette      = "Set1",
+                        theme        = c("view", "save", "shiny"),
+                        ...) {
 
   .assert_class(x, "Regime")
   theme <- match.arg(theme)
+
+  if (isTRUE(x$multi_group)) {
+    return(.plot_regime_multi(
+      x            = x,
+      show_arrow   = show_arrow,
+      show_label   = show_label,
+      show_ellipse = show_ellipse,
+      show_mean    = show_mean,
+      show_median  = show_median,
+      alpha        = alpha,
+      palette      = palette,
+      theme        = theme,
+      ...
+    ))
+  }
 
   mat <- x$trajectory
   df  <- as.data.frame(mat)
@@ -80,4 +102,71 @@ plot.Regime <- function(x,
     theme        = theme,
     ...
   )
+}
+
+
+#' Multi-group plot helper for `Regime`
+#'
+#' Builds one PCA panel per group via [ggshort::plot_pca()] and combines
+#' them with patchwork if available, otherwise returns a list of ggplot
+#' objects.
+#'
+#' @keywords internal
+.plot_regime_multi <- function(x,
+                               show_arrow, show_label, show_ellipse,
+                               show_mean, show_median, alpha, palette,
+                               theme, ...) {
+
+  grp <- x$group_var
+  grp_names <- names(x$trajectory)
+
+  plots <- lapply(grp_names, function(gv) {
+    mat <- x$trajectory[[gv]]
+    pca <- x$pca[[gv]]
+    df  <- as.data.frame(mat)
+    lab_sub <- x$labels[x$labels[[grp]] ==
+                          .coerce_match(gv, x$labels[[grp]])]
+    df$regime <- lab_sub$regime
+
+    measure_vars <- setdiff(names(df), "regime")
+    ve <- (pca$sdev ^ 2) / sum(pca$sdev ^ 2)
+    subtitle <- sprintf(
+      "%s | %d cohorts | PC1 %.1f%% / PC2 %.1f%%",
+      x$method, nrow(df), ve[1L] * 100, ve[2L] * 100
+    )
+
+    bp_g <- x$breakpoints[x$breakpoints[[grp]] ==
+                            .coerce_match(gv, x$breakpoints[[grp]])][["breakpoint"]]
+    caption <- if (length(bp_g)) {
+      sprintf("breakpoint(s): %s",
+              paste(format(bp_g, "%y.%m"), collapse = ", "))
+    } else {
+      "no breakpoint detected"
+    }
+
+    ggshort::plot_pca(
+      data         = df,
+      measure_vars = !!measure_vars,
+      color_var    = regime,
+      show_arrow   = show_arrow,
+      show_label   = show_label,
+      show_ellipse = show_ellipse,
+      show_mean    = show_mean,
+      show_median  = show_median,
+      alpha        = alpha,
+      palette      = palette,
+      title        = sprintf("[%s] cohort regime detection", gv),
+      subtitle     = subtitle,
+      caption      = caption,
+      theme        = theme,
+      ...
+    )
+  })
+  names(plots) <- grp_names
+
+  if (requireNamespace("patchwork", quietly = TRUE)) {
+    Reduce(`+`, plots) + patchwork::plot_layout(ncol = min(length(plots), 2L))
+  } else {
+    plots
+  }
 }

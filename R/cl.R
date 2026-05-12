@@ -74,7 +74,7 @@
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
+#' tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
 #'
 #' # Mack chain ladder with process / parameter standard errors
 #' cl_mack <- fit_cl(tri, target = "loss", method = "mack")
@@ -102,37 +102,37 @@ fit_cl <- function(x,
   sigma_method <- match.arg(sigma_method)
 
   # 1) resolve variable names -------------------------------------------
-  tgt_var <- .capture_names(x, !!rlang::enquo(target))
-  if (length(tgt_var) != 1L)
+  tgt <- .capture_names(x, !!rlang::enquo(target))
+  if (length(tgt) != 1L)
     stop("`target` must resolve to exactly one column.", call. = FALSE)
 
-  grp_var <- attr(x, "group_var")
-  coh_var <- attr(x, "cohort_var")
-  dev_var <- attr(x, "dev_var")
+  grp <- attr(x, "group_var")
+  coh <- attr(x, "cohort_var")
+  dev <- attr(x, "dev_var")
 
-  if (is.null(grp_var)) grp_var <- character(0)
+  if (is.null(grp)) grp <- character(0)
 
-  if (length(coh_var) != 1L)
+  if (length(coh) != 1L)
     stop("`x` must contain exactly one `cohort_var`.", call. = FALSE)
-  if (length(dev_var) != 1L)
+  if (length(dev) != 1L)
     stop("`x` must contain exactly one `dev_var`.", call. = FALSE)
 
   # 2) validate weight --------------------------------------------------
   use_external_weight <- !is.null(weight)
 
   if (use_external_weight) {
-    wt_var <- .capture_names(x, !!rlang::enquo(weight))
-    if (length(wt_var) != 1L)
+    wt <- .capture_names(x, !!rlang::enquo(weight))
+    if (length(wt) != 1L)
       stop("`weight` must resolve to exactly one column.", call. = FALSE)
-    if (wt_var == tgt_var)
+    if (wt == tgt)
       stop("`weight` must differ from `target`.", call. = FALSE)
   }
 
   # 3) estimate ata factors (fit_ata builds the Link internally) -------
   ata_fit <- fit_ata(
     x,
-    target        = tgt_var,
-    weight        = if (use_external_weight) wt_var else NULL,
+    target        = tgt,
+    weight        = if (use_external_weight) wt else NULL,
     alpha         = alpha,
     sigma_method  = sigma_method,
     recent        = recent,
@@ -153,23 +153,23 @@ fit_cl <- function(x,
   full <- .expand_triangle_grid(
     triangle = x,
     ata_fit  = ata_fit,
-    target   = tgt_var
+    target   = tgt
   )
 
   # 7) join factor columns onto full grid -------------------------------
-  factor_cols <- c(grp_var, "ata_from", "f_selected", "sigma2", "f_var")
+  factor_cols <- c(grp, "ata_from", "f_selected", "sigma2", "f_var")
   sel <- ata_fit$selected[, .SD, .SDcols = factor_cols]
   data.table::setnames(sel, "ata_from", "dev")
-  full <- sel[full, on = c(grp_var, "dev")]
+  full <- sel[full, on = c(grp, "dev")]
 
   # 8) join RP scale for process variance when weight is used ---------
   if (use_external_weight) {
     raw <- .ensure_dt(x)
     wt_obs <- raw[
-      , .(wt_obs = .SD[[wt_var]]),
-      by = c(grp_var, "cohort", "dev")
+      , .(wt_obs = .SD[[wt]]),
+      by = c(grp, "cohort", "dev")
     ]
-    full <- wt_obs[full, on = c(grp_var, "cohort", "dev")]
+    full <- wt_obs[full, on = c(grp, "cohort", "dev")]
   } else {
     full[, wt_obs := NA_real_]
   }
@@ -178,18 +178,18 @@ fit_cl <- function(x,
   full[, last_obs := {
     idx <- which(is.finite(target_obs))
     if (length(idx)) max(idx) else 0L
-  }, by = c(grp_var, "cohort")]
+  }, by = c(grp, "cohort")]
 
   # 9) point projection -------------------------------------------------
   full[, target_proj := .cl_proj(
     target_obs = target_obs,
     f_selected = f_selected
-  ), by = c(grp_var, "cohort")]
+  ), by = c(grp, "cohort")]
 
   # 10) incremental target projection -----------------------------------
   full[, target_incr_proj := target_proj -
          data.table::shift(target_proj, 1L, fill = 0),
-       by = c(grp_var, "cohort")]
+       by = c(grp, "cohort")]
 
   # 11) variance --------------------------------------------------------
   full[, `:=`(
@@ -207,7 +207,7 @@ fit_cl <- function(x,
       f_var      = f_var,
       last_obs   = last_obs[1L]
     )
-  ), by = c(grp_var, "cohort")]
+  ), by = c(grp, "cohort")]
 
   full[, target_total_se2 := target_proc_se2 + target_param_se2]
 
@@ -256,10 +256,10 @@ fit_cl <- function(x,
     call          = match.call(),
     data          = x,
     method        = method,
-    group_var     = grp_var,
-    cohort_var    = coh_var,
-    dev_var       = dev_var,
-    target        = tgt_var,
+    group_var     = grp,
+    cohort_var    = coh,
+    dev_var       = dev,
+    target        = tgt,
     full          = full,
     pred          = pred,
     link          = ata_fit$link,
@@ -269,7 +269,7 @@ fit_cl <- function(x,
     maturity      = ata_fit$maturity,
     alpha         = alpha,
     sigma_method  = sigma_method,
-    weight        = if (use_external_weight) wt_var else NULL,
+    weight        = if (use_external_weight) wt else NULL,
     recent        = recent,
     use_maturity  = ata_fit$use_maturity,
     maturity_args = ata_fit$maturity_args,
@@ -300,8 +300,8 @@ fit_cl <- function(x,
 #' @export
 print.CLFit <- function(x, ...) {
 
-  grp_var <- x$group_var
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- x$group_var
+  if (is.null(grp)) grp <- character(0)
 
   cat("<CLFit>\n")
   cat("method      :", x$method, "\n")
@@ -315,8 +315,8 @@ print.CLFit <- function(x, ...) {
   cat("use_maturity:", x$use_maturity, "\n")
   cat("tail_factor :", x$tail_factor, "\n")
 
-  if (length(grp_var)) {
-    cat("groups      :", paste(grp_var, collapse = ", "), "\n")
+  if (length(grp)) {
+    cat("groups      :", paste(grp, collapse = ", "), "\n")
   } else {
     cat("groups      : none\n")
   }
@@ -384,24 +384,24 @@ print.CLFit <- function(x, ...) {
 #' @keywords internal
 .expand_triangle_grid <- function(triangle, ata_fit, target) {
 
-  grp_var <- attr(triangle, "group_var")
+  grp <- attr(triangle, "group_var")
 
-  if (is.null(grp_var)) grp_var <- character(0)
+  if (is.null(grp)) grp <- character(0)
 
   raw <- .ensure_dt(triangle)
 
   obs <- raw[
     , .(target_obs = .SD[[target]]),
-    by = c(grp_var, "cohort", "dev")
+    by = c(grp, "cohort", "dev")
   ]
 
   max_dev <- max(ata_fit$selected$ata_to, na.rm = TRUE)
 
-  full <- unique(obs[, .SD, .SDcols = c(grp_var, "cohort")])
-  full <- full[, .(dev = seq_len(max_dev)), by = c(grp_var, "cohort")]
+  full <- unique(obs[, .SD, .SDcols = c(grp, "cohort")])
+  full <- full[, .(dev = seq_len(max_dev)), by = c(grp, "cohort")]
 
-  full <- obs[full, on = c(grp_var, "cohort", "dev")]
-  data.table::setorderv(full, c(grp_var, "cohort", "dev"))
+  full <- obs[full, on = c(grp, "cohort", "dev")]
+  data.table::setorderv(full, c(grp, "cohort", "dev"))
 
   full[, is_observed := is.finite(target_obs)]
 
@@ -462,8 +462,8 @@ print.CLFit <- function(x, ...) {
 
   .assert_class(ata_fit, "ATAFit")
 
-  grp_var <- attr(ata_fit$link, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- attr(ata_fit$link, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
   link_long <- .ensure_dt(ata_fit$link)
   sel       <- data.table::copy(ata_fit$selected)
@@ -485,10 +485,10 @@ print.CLFit <- function(x, ...) {
 
   link_weights <- link_long[,
                        .(denom = sum(.wt * target_from^alpha, na.rm = TRUE)),
-                       by = c(grp_var, "ata_from")
+                       by = c(grp, "ata_from")
   ]
 
-  sel <- link_weights[sel, on = c(grp_var, "ata_from")]
+  sel <- link_weights[sel, on = c(grp, "ata_from")]
 
   sel[, f_var := data.table::fifelse(
     is.finite(sigma2) & is.finite(denom) & denom > 0,
@@ -609,13 +609,13 @@ print.CLFit <- function(x, ...) {
 
   .assert_class(x, "CLFit")
 
-  grp_var     <- x$group_var
-  coh_var     <- x$cohort_var
-  dev_var     <- x$dev_var
+  grp     <- x$group_var
+  coh     <- x$cohort_var
+  dev     <- x$dev_var
   tail_factor <- x$tail_factor
   full        <- x$full
 
-  latest <- full[, .SD[.N], by = c(grp_var, "cohort")]
+  latest <- full[, .SD[.N], by = c(grp, "cohort")]
 
   latest[, `:=`(
     target_tail           = target_proj         * tail_factor,
@@ -645,7 +645,7 @@ print.CLFit <- function(x, ...) {
     )
   )]
 
-  x$full <- latest[full, on = c(grp_var, "cohort", "dev")]
+  x$full <- latest[full, on = c(grp, "cohort", "dev")]
 
   x
 }
@@ -664,17 +664,17 @@ print.CLFit <- function(x, ...) {
 
   .assert_class(x, "CLFit")
 
-  grp_var  <- x$group_var
-  coh_var  <- x$cohort_var
-  tgt_var  <- x$target
+  grp  <- x$group_var
+  coh  <- x$cohort_var
+  tgt  <- x$target
   full     <- x$full
-  is_ratio <- tgt_var == "lr"
+  is_ratio <- tgt == "lr"
 
-  latest_obs <- full[is_observed == TRUE, .SD[.N], by = c(grp_var, "cohort")]
-  ult        <- full[, .SD[.N],           by = c(grp_var, "cohort")]
-  agg <- latest_obs[ult, on = c(grp_var, "cohort")]
+  latest_obs <- full[is_observed == TRUE, .SD[.N], by = c(grp, "cohort")]
+  ult        <- full[, .SD[.N],           by = c(grp, "cohort")]
+  agg <- latest_obs[ult, on = c(grp, "cohort")]
 
-  ult_col <- paste0(tgt_var, "_ult")
+  ult_col <- paste0(tgt, "_ult")
   agg[, `:=`(
     latest   = target_proj,
     reserve  = if (is_ratio) NA_real_ else i.target_proj - target_proj
@@ -690,7 +690,7 @@ print.CLFit <- function(x, ...) {
       i.target_total_se / i.target_proj, NA_real_
     )
   )]
-  out_cols <- c(grp_var, "cohort",
+  out_cols <- c(grp, "cohort",
                 "latest", ult_col, "reserve",
                 "target_proc_se", "target_param_se",
                 "target_total_se", "target_total_cv")

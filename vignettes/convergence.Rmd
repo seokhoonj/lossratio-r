@@ -152,7 +152,7 @@ The returned `Convergence` object reports:
 - `v`, `R_v`, `SE_param_v`, `D_v`, `pass_v` — per-valuation diagnostic
   sequences indexed by $v$.
 - `se_mult`, `max_dv`, `min_run`, `holdout_max`, `min_n_cohorts` — settings used.
-- attributes `group_var`, `loss_var`, `fit_fn_name`, `dev_var`.
+- attributes `group_var`, `target`, `fit_fn_name`, `dev_var`.
 
 `summary(res)` returns a `data.table` with one row per candidate
 valuation and an extra `R_over_SE = R_v / SE_param_v` column for

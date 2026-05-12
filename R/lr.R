@@ -103,7 +103,7 @@
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
+#' tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
 #'
 #' # Stage-adaptive (default): ED before maturity, CL after
 #' lr_sa <- fit_lr(tri, method = "sa")
@@ -189,9 +189,9 @@ fit_lr <- function(x,
   }
   loss_fit <- do.call(fit_loss, loss_args)
 
-  grp_var         <- loss_fit$group_var
-  coh_var         <- loss_fit$cohort_var
-  dev_var         <- loss_fit$dev_var
+  grp         <- loss_fit$group_var
+  coh         <- loss_fit$cohort_var
+  dev         <- loss_fit$dev_var
   premium_fit     <- loss_fit$premium_fit
   premium_ata_fit <- loss_fit$premium_ata_fit
 
@@ -202,7 +202,7 @@ fit_lr <- function(x,
   # output -- no `exp_*` intermediary aliasing.
   if (se_method == "delta") {
     pf_full <- data.table::as.data.table(premium_fit$full)
-    pf_keep_keys <- intersect(c(grp_var, "cohort", "dev"), names(pf_full))
+    pf_keep_keys <- intersect(c(grp, "cohort", "dev"), names(pf_full))
     pf_cols <- c(pf_keep_keys, "premium_total_se", "premium_total_cv")
     pf_cols <- intersect(pf_cols, names(pf_full))
     pf_join <- pf_full[, .SD, .SDcols = pf_cols]
@@ -265,7 +265,7 @@ fit_lr <- function(x,
         loss_alpha    = loss_alpha,
         method        = method,
         probs         = .probs
-      ), by = c(grp_var, "cohort")
+      ), by = c(grp, "cohort")
     ]
     ci_type <- "bootstrap"
   }
@@ -304,9 +304,9 @@ fit_lr <- function(x,
   out <- list(
     call                 = match.call(),
     data                 = loss_fit$data,
-    group_var            = grp_var,
-    cohort_var           = coh_var,
-    dev_var              = dev_var,
+    group_var            = grp,
+    cohort_var           = coh,
+    dev_var              = dev,
     full                 = full,
     pred                 = pred,
     summary              = NULL,
@@ -351,8 +351,8 @@ fit_lr <- function(x,
 #' @export
 print.LRFit <- function(x, ...) {
 
-  grp_var <- x$group_var
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- x$group_var
+  if (is.null(grp)) grp <- character(0)
 
   cat("<LRFit>\n")
   cat("method               :", x$method,         "\n")
@@ -381,9 +381,9 @@ print.LRFit <- function(x, ...) {
 
   if (!is.null(x$maturity) && nrow(x$maturity)) {
     mat <- .ensure_dt(x$maturity)
-    if (length(grp_var)) {
+    if (length(grp)) {
       for (i in seq_len(nrow(mat))) {
-        grp_txt <- paste(mat[i, grp_var, with = FALSE], collapse = "/")
+        grp_txt <- paste(mat[i, grp, with = FALSE], collapse = "/")
         cat(sprintf("maturity[%s] : %s\n", grp_txt, mat$ata_to[i]))
       }
     } else {
@@ -391,8 +391,8 @@ print.LRFit <- function(x, ...) {
     }
   }
 
-  if (length(grp_var)) {
-    cat("groups        :", paste(grp_var, collapse = ", "), "\n")
+  if (length(grp)) {
+    cat("groups        :", paste(grp, collapse = ", "), "\n")
   } else {
     cat("groups        : none\n")
   }
@@ -652,17 +652,17 @@ summary.LRFit <- function(object, ...) {
 
   .assert_class(x, "LRFit")
 
-  grp_var    <- x$group_var
-  coh_var    <- x$cohort_var
+  grp    <- x$group_var
+  coh    <- x$cohort_var
   full       <- x$full
   se_method  <- x$se_method
   rho        <- x$rho
   conf_level <- x$conf_level
   z_alpha    <- stats::qnorm((1 + conf_level) / 2)
 
-  latest_obs <- full[is_observed == TRUE, .SD[.N], by = c(grp_var, "cohort")]
-  ult        <- full[, .SD[.N],                    by = c(grp_var, "cohort")]
-  agg <- latest_obs[ult, on = c(grp_var, "cohort")]
+  latest_obs <- full[is_observed == TRUE, .SD[.N], by = c(grp, "cohort")]
+  ult        <- full[, .SD[.N],                    by = c(grp, "cohort")]
+  agg <- latest_obs[ult, on = c(grp, "cohort")]
 
   agg[, `:=`(
     latest         = loss_obs,
@@ -689,7 +689,7 @@ summary.LRFit <- function(object, ...) {
   )]
 
   keep_cols <- c(
-    grp_var, "cohort",
+    grp, "cohort",
     "latest", "loss_ult", "reserve", "premium_ult",
     "lr_latest", "lr_ult", "maturity_from",
     "loss_proc_se", "loss_param_se", "loss_total_se", "loss_total_cv",

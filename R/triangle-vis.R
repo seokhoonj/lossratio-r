@@ -85,8 +85,8 @@ plot.Triangle <- function(x,
   scales <- match.arg(scales)
   theme  <- match.arg(theme)
 
-  grp_var <- attr(x, "group_var")
-  coh_var <- attr(x, "cohort_var")
+  grp     <- attr(x, "group_var")
+  coh     <- attr(x, "cohort_var")
   dev_var <- attr(x, "dev_var")
   val_var <- .capture_names(x, !!rlang::enquo(value_var))
 
@@ -168,7 +168,7 @@ plot.Triangle <- function(x,
     target_types <- paste0(val_var, c("_mean", "_median", "_wt"))
     sm_long <- sm_long[type %in% target_types]
 
-    sm_long[smr, on = c(grp_var, "dev"), n_obs := i.n_obs]
+    sm_long[smr, on = c(grp, "dev"), n_obs := i.n_obs]
 
     if (!is.null(summary_min_n) && is.finite(summary_min_n)) {
       summary_min_n <- as.integer(summary_min_n)
@@ -213,7 +213,7 @@ plot.Triangle <- function(x,
         } else {
           .(xint = sd1[idx])
         }
-      }, by = grp_var, .SDcols = "dev"]
+      }, by = grp, .SDcols = "dev"]
 
       vline <- vline[!is.na(xint)]
 
@@ -246,7 +246,7 @@ plot.Triangle <- function(x,
   )
 
   # facet
-  p <- p + ggplot2::facet_wrap(grp_var, scales = scales)
+  p <- p + ggplot2::facet_wrap(grp, scales = scales)
 
   # labs
   p <- p + ggplot2::labs(
@@ -328,8 +328,8 @@ plot.Calendar <- function(x,
   theme <- match.arg(theme)
   x_by <- match.arg(x_by)
 
-  grp_var <- attr(x, "group_var")
-  cal_var <- attr(x, "calendar_var")
+  grp     <- attr(x, "group_var")
+  cal     <- attr(x, "calendar_var")
   val_var <- .capture_names(x, !!rlang::enquo(value_var))
 
   valid_vars <- c(
@@ -341,7 +341,7 @@ plot.Calendar <- function(x,
     "premium_share", "premium_incr_share"
   )
 
-  if (length(cal_var) != 1L) {
+  if (length(cal) != 1L) {
     stop("`x` must contain exactly one `calendar_var`.", call. = FALSE)
   }
 
@@ -354,7 +354,7 @@ plot.Calendar <- function(x,
   meta <- .get_plot_meta(val_var, amount_divisor = amount_divisor)
 
   x_axis <- if (x_by == "dev") "dev" else "calendar"
-  axis_label <- if (x_by == "dev") "dev" else cal_var
+  axis_label <- if (x_by == "dev") "dev" else cal
 
   title_txt <- paste0(
     meta$title,
@@ -363,7 +363,7 @@ plot.Calendar <- function(x,
     ")"
   )
 
-  if (!length(grp_var)) {
+  if (!length(grp)) {
 
     p <- ggplot2::ggplot(
       dt,
@@ -374,22 +374,22 @@ plot.Calendar <- function(x,
     ) +
       ggplot2::geom_line()
 
-  } else if (length(grp_var) == 1L) {
+  } else if (length(grp) == 1L) {
 
     p <- ggplot2::ggplot(
       dt,
       ggplot2::aes(
         x      = .data[[x_axis]],
         y      = .data[[val_var]],
-        colour = .data[[grp_var]],
-        group  = .data[[grp_var]]
+        colour = .data[[grp]],
+        group  = .data[[grp]]
       )
     ) +
       ggplot2::geom_line()
 
   } else {
 
-    dt[, .group := interaction(.SD, drop = TRUE), .SDcols = grp_var]
+    dt[, .group := interaction(.SD, drop = TRUE), .SDcols = grp]
 
     p <- ggplot2::ggplot(
       dt,
@@ -518,7 +518,7 @@ plot_triangle <- function(x, ...) {
 #'
 #' @examples
 #' \dontrun{
-#' d <- build_triangle(df, group_var = pd_cat_nm)
+#' d <- build_triangle(df, groups = pd_cat_nm)
 #'
 #' plot_triangle(d)
 #' plot_triangle(d, value_var = "lr")
@@ -555,8 +555,8 @@ plot_triangle.Triangle <- function(x,
     label_size <- if (label_style == "detail") 2.5 else 3
   label_args  <- .modify_label_args(list(size = label_size))
 
-  grp_var <- attr(x, "group_var")
-  coh_var <- attr(x, "cohort_var")
+  grp     <- attr(x, "group_var")
+  coh     <- attr(x, "cohort_var")
   dev_var <- attr(x, "dev_var")
   val_var <- .capture_names(x, !!rlang::enquo(value_var))
 
@@ -569,7 +569,7 @@ plot_triangle.Triangle <- function(x,
     "premium_share", "premium_incr_share"
   )
 
-  if (length(coh_var) != 1L)
+  if (length(coh) != 1L)
     stop("`x` must contain exactly one `calendar_var`.", call. = FALSE)
 
   if (length(dev_var) != 1L)
@@ -588,7 +588,7 @@ plot_triangle.Triangle <- function(x,
 
   dt <- .ensure_dt(x)
 
-  coh_type <- .get_period_type(coh_var)
+  coh_type <- .get_period_type(coh)
   dev_type <- .get_period_type(dev_var)
 
   if (!is.na(coh_type)) {
@@ -698,13 +698,13 @@ plot_triangle.Triangle <- function(x,
   }
 
   # facet
-  p <- p + ggplot2::facet_wrap(grp_var, nrow = nrow, ncol = ncol)
+  p <- p + ggplot2::facet_wrap(grp, nrow = nrow, ncol = ncol)
 
   # labs
   p <- p + ggplot2::labs(
     title   = title_txt,
     x       = .pretty_var_label(dev_var),
-    y       = .pretty_var_label(coh_var),
+    y       = .pretty_var_label(coh),
     caption = caption_txt
   )
 
@@ -745,7 +745,7 @@ plot_triangle.Triangle <- function(x,
 #'
 #' @examples
 #' \dontrun{
-#' tot <- build_total(df, group_var = coverage)
+#' tot <- build_total(df, groups = coverage)
 #' plot(tot)
 #' plot(tot, value_var = "loss")
 #' }
@@ -763,7 +763,7 @@ plot.Total <- function(x,
 
   theme <- match.arg(theme)
 
-  grp_var <- attr(x, "group_var")
+  grp     <- attr(x, "group_var")
   val_var <- .capture_names(x, !!rlang::enquo(value_var))
 
   valid_vars <- c("lr", "loss", "premium", "loss_share", "premium_share")
@@ -778,17 +778,17 @@ plot.Total <- function(x,
     )
   }
 
-  if (!length(grp_var)) {
+  if (!length(grp)) {
     stop("`Total` has no `group_var`; nothing to plot.", call. = FALSE)
   }
 
   dt <- .ensure_dt(x)
 
-  if (length(grp_var) == 1L) {
-    dt[, .group := as.character(.SD[[1L]]), .SDcols = grp_var]
+  if (length(grp) == 1L) {
+    dt[, .group := as.character(.SD[[1L]]), .SDcols = grp]
   } else {
     dt[, .group := as.character(interaction(.SD, drop = TRUE, sep = " | ")),
-       .SDcols = grp_var]
+       .SDcols = grp]
   }
 
   # order bars by value (ascending so largest is at the top after coord_flip)
@@ -823,7 +823,7 @@ plot.Total <- function(x,
     ggplot2::coord_flip() +
     ggplot2::labs(
       title   = meta$title,
-      x       = paste(grp_var, collapse = " | "),
+      x       = paste(grp, collapse = " | "),
       y       = val_var,
       caption = meta$caption
     )
@@ -877,22 +877,22 @@ plot.Total <- function(x,
 
   .assert_class(x, "Triangle")
 
-  grp_var <- attr(x, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- attr(x, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
   obs <- .ensure_dt(x)
 
   # full grid (observed plus future) per group
-  grp_coh_dev_var <- c(grp_var, "cohort", "dev")
-  full <- obs[, .SD, .SDcols = grp_coh_dev_var]
+  grp_coh_dev <- c(grp, "cohort", "dev")
+  full <- obs[, .SD, .SDcols = grp_coh_dev]
   full[, is_observed := TRUE]
 
-  if (length(grp_var)) {
-    grid_list <- split(full, by = grp_var, keep.by = TRUE)
+  if (length(grp)) {
+    grid_list <- split(full, by = grp, keep.by = TRUE)
     expanded <- data.table::rbindlist(lapply(grid_list, function(d) {
       cohorts <- sort(unique(d$cohort))
       devs    <- sort(unique(d$dev))
-      g_vals  <- d[1L, .SD, .SDcols = grp_var]
+      g_vals  <- d[1L, .SD, .SDcols = grp]
       grid <- data.table::CJ(cohort = cohorts, dev = devs)
       cbind(g_vals[rep(1L, nrow(grid))], grid)
     }))
@@ -902,16 +902,16 @@ plot.Total <- function(x,
     expanded <- data.table::CJ(cohort = cohorts, dev = devs)
   }
 
-  expanded[full, on = grp_coh_dev_var, is_observed := i.is_observed]
+  expanded[full, on = grp_coh_dev, is_observed := i.is_observed]
   expanded[is.na(is_observed), is_observed := FALSE]
 
   # cohort rank (1 = earliest) and calendar index per group
-  if (length(grp_var)) {
+  if (length(grp)) {
     expanded[, .coh_rank := data.table::frank(cohort, ties.method = "dense"),
-             by = grp_var]
+             by = grp]
     expanded[, .cal_idx := .coh_rank + dev - 1L]
     expanded[, .max_cal := max(.cal_idx[is_observed], na.rm = TRUE),
-             by = grp_var]
+             by = grp]
   } else {
     expanded[, .coh_rank := data.table::frank(cohort, ties.method = "dense")]
     expanded[, .cal_idx := .coh_rank + dev - 1L]
@@ -1015,11 +1015,11 @@ plot.Total <- function(x,
   .assert_class(x, "Triangle")
   theme <- match.arg(theme)
 
-  grp_var <- attr(x, "group_var")
-  coh_var <- attr(x, "cohort_var")
-  coh_type <- .get_period_type(coh_var)
-  dev_var <- attr(x, "dev_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp      <- attr(x, "group_var")
+  coh      <- attr(x, "cohort_var")
+  coh_type <- .get_period_type(coh)
+  dev_var  <- attr(x, "dev_var")
+  if (is.null(grp)) grp <- character(0)
 
   # 2-pass maturity detection: needed whenever regime_break is set, so the
   # SA-mode dev split (cohort cut on dev < k*; CL region unfiltered, or
@@ -1111,8 +1111,8 @@ plot.Total <- function(x,
   }
 
   # facet for multi-group triangles
-  if (length(grp_var)) {
-    p <- p + ggplot2::facet_wrap(grp_var)
+  if (length(grp)) {
+    p <- p + ggplot2::facet_wrap(grp)
   }
 
   # title summarising active filters
@@ -1136,7 +1136,7 @@ plot.Total <- function(x,
     title    = title_txt,
     subtitle = subtitle_txt,
     x        = .pretty_var_label(dev_var),
-    y        = .pretty_var_label(coh_var)
+    y        = .pretty_var_label(coh)
   )
 
   p + .switch_theme(theme = theme, ...)

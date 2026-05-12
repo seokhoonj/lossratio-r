@@ -1,8 +1,8 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- build_triangle(exp, group_var = coverage)
-sub <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
+tri <- build_triangle(exp, groups = coverage)
+sub <- build_triangle(exp[coverage == "SUR"], groups = coverage)
 
 
 test_that("fit_intensity returns class 'IntensityFit'", {

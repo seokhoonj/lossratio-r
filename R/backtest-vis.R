@@ -36,13 +36,13 @@ plot.Backtest <- function(x,
   scales <- match.arg(scales)
   theme  <- match.arg(theme)
 
-  grp_var <- x$group_var
+  grp <- x$group_var
 
   if (type == "col") {
     smr <- .ensure_dt(x$col_summary)
     long <- data.table::melt(
       smr,
-      id.vars       = c(grp_var, "dev", "n"),
+      id.vars       = c(grp, "dev", "n"),
       measure.vars  = c("ae_err_mean", "ae_err_med", "ae_err_wt"),
       variable.name = "stat",
       value.name    = "ae_err"
@@ -75,14 +75,14 @@ plot.Backtest <- function(x,
       ggplot2::labs(title = "Backtest A/E Error by development period",
                     x = .pretty_var_label(x$dev_var),
                     y = "A/E ERROR = actual / pred - 1")
-    if (length(grp_var))
-      p <- p + ggplot2::facet_wrap(grp_var, scales = scales)
+    if (length(grp))
+      p <- p + ggplot2::facet_wrap(grp, scales = scales)
 
   } else if (type == "diag") {
     smr <- .ensure_dt(x$diag_summary)
     long <- data.table::melt(
       smr,
-      id.vars       = c(grp_var, "calendar_idx", "n"),
+      id.vars       = c(grp, "calendar_idx", "n"),
       measure.vars  = c("ae_err_mean", "ae_err_med", "ae_err_wt"),
       variable.name = "stat",
       value.name    = "ae_err"
@@ -115,8 +115,8 @@ plot.Backtest <- function(x,
       ggplot2::labs(title = "Backtest A/E Error by calendar diagonal",
                     x = "calendar diagonal index",
                     y = "A/E ERROR = actual / pred - 1")
-    if (length(grp_var))
-      p <- p + ggplot2::facet_wrap(grp_var, scales = scales)
+    if (length(grp))
+      p <- p + ggplot2::facet_wrap(grp, scales = scales)
 
   } else { # cell
     dt <- .ensure_dt(x$ae_err)
@@ -141,8 +141,8 @@ plot.Backtest <- function(x,
       ggplot2::labs(title = "Backtest A/E Error per held-out cell",
                     x = .pretty_var_label(x$dev_var),
                     y = "A/E ERROR = actual / pred - 1")
-    if (length(grp_var))
-      p <- p + ggplot2::facet_wrap(grp_var, scales = scales)
+    if (length(grp))
+      p <- p + ggplot2::facet_wrap(grp, scales = scales)
   }
 
   p + .switch_theme(theme = theme, ...)
@@ -175,7 +175,7 @@ plot_triangle.Backtest <- function(x,
   .assert_class(x, "Backtest")
   theme <- match.arg(theme)
 
-  grp_var <- x$group_var
+  grp <- x$group_var
   dt <- .ensure_dt(x$ae_err)
 
   dt[, .label := sprintf("%.1f", ae_err * 100)]
@@ -210,8 +210,8 @@ plot_triangle.Backtest <- function(x,
                   y = .pretty_var_label(x$cohort_var),
                   caption = "Unit: %")
 
-  if (length(grp_var))
-    p <- p + ggplot2::facet_wrap(grp_var, scales = "free_y")
+  if (length(grp))
+    p <- p + ggplot2::facet_wrap(grp, scales = "free_y")
 
   p + .switch_theme(theme = theme, ...)
 }

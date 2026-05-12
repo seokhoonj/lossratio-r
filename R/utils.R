@@ -82,7 +82,7 @@
 #'
 #' Like [.get_period_type()] but also recognises the integer development-period
 #' columns (`dev_m` / `dev_q` / `dev_s` / `dev_a`). Used by
-#' [build_triangle()] to verify that `cohort_var` and `dev_var` share the
+#' [build_triangle()] to verify that `cohort` and `dev` share the
 #' same granularity. Not used for date formatting (these dev columns
 #' are integers, not Date).
 #'
@@ -425,14 +425,14 @@ get_recent_weights <- function(weights, recent) {
 #' @param dt A long-format development `data.table`.
 #' @param recent Positive integer or `NULL`. When `NULL` or missing, `dt`
 #'   is returned unchanged.
-#' @param group_var Character vector of group columns (may be empty).
-#' @param cohort_var Single column name for the cohort variable (e.g. `cohort`).
-#' @param dev_var Single column name for the development variable (e.g. `dev`
+#' @param grp Character vector of group columns (may be empty).
+#' @param coh Single column name for the cohort variable (e.g. `cohort`).
+#' @param dev Single column name for the development variable (e.g. `dev`
 #'   for `Triangle` objects, or `ata_from` for `ATA`/`ED` objects).
 #' @param dev_split Optional numeric scalar — the maturity target dev
 #'   (= `ata_to`, equivalently the first CL-region dev). When supplied,
-#'   the recent filter is applied only to rows where `dev_var >= dev_split`
-#'   (CL region); rows with `dev_var < dev_split` (ED region) are kept
+#'   the recent filter is applied only to rows where `dev >= dev_split`
+#'   (CL region); rows with `dev < dev_split` (ED region) are kept
 #'   unconditionally.
 #'
 #' @return A filtered copy of `dt` (class preserved), keeping only rows
@@ -440,8 +440,8 @@ get_recent_weights <- function(weights, recent) {
 #'
 #' @keywords internal
 .apply_recent_filter <- function(dt, recent,
-                                 group_var = character(0),
-                                 cohort_var, dev_var, dev_split = NULL) {
+                                 grp = character(0),
+                                 coh, dev, dev_split = NULL) {
 
   if (!data.table::is.data.table(dt))
     stop("`dt` must be a data.table.", call. = FALSE)
@@ -465,10 +465,10 @@ get_recent_weights <- function(weights, recent) {
 
   # rank of cohort within group (1 = earliest), then calendar index
   out[, .coh_rank := data.table::frank(.SD[[1L]], ties.method = "dense"),
-      by = group_var, .SDcols = cohort_var]
+      by = grp, .SDcols = coh]
   out[, .cal_idx := .coh_rank + .SD[[1L]] - 1L,
-      .SDcols = dev_var]
-  out[, .max_cal := max(.cal_idx, na.rm = TRUE), by = group_var]
+      .SDcols = dev]
+  out[, .max_cal := max(.cal_idx, na.rm = TRUE), by = grp]
 
   if (is.null(dev_split)) {
     keep <- out[, is.finite(.cal_idx) & is.finite(.max_cal) &
@@ -476,7 +476,7 @@ get_recent_weights <- function(weights, recent) {
   } else {
     keep <- out[, is.finite(.cal_idx) & is.finite(.max_cal) &
                 (.cal_idx > .max_cal - recent | .SD[[1L]] < dev_split),
-                .SDcols = dev_var]
+                .SDcols = dev]
   }
 
   out <- out[keep]
@@ -502,6 +502,11 @@ get_recent_weights <- function(weights, recent) {
   if (is.null(break_date)) return(NULL)
   if (inherits(break_date, "Regime")) {
     bp <- break_date$breakpoints
+    # Multi-group: $breakpoints is a data.table with a `breakpoint` column
+    if (data.table::is.data.table(bp)) {
+      if (!nrow(bp) || !"breakpoint" %in% names(bp)) return(NULL)
+      return(max(bp[["breakpoint"]]))
+    }
     if (length(bp) == 0L) return(NULL)
     return(max(bp))
   }
@@ -516,9 +521,9 @@ get_recent_weights <- function(weights, recent) {
 #' Apply regime-break (cohort) filter to a triangle-shaped data.table
 #'
 #' @description
-#' Drops rows where `coh_var < break_date`. Optionally restrict the filter
-#' to rows with `dev_var < dev_split` (the ED region of an SA fit); rows
-#' with `dev_var >= dev_split` (CL region) are kept regardless of cohort.
+#' Drops rows where `coh < break_date`. Optionally restrict the filter
+#' to rows with `dev < dev_split` (the ED region of an SA fit); rows
+#' with `dev >= dev_split` (CL region) are kept regardless of cohort.
 #'
 #' @param dt A data.table.
 #' @param break_date The cohort cutoff. Accepts:
@@ -526,21 +531,21 @@ get_recent_weights <- function(weights, recent) {
 #'   * A single Date or character (coercible to Date).
 #'   * A Date/character vector -- uses the latest (max) date.
 #'   * A `Regime` object -- extracts the latest from `$breakpoints`.
-#' @param group_var Character vector of group columns (may be empty).
-#' @param cohort_var Single column name for the cohort variable.
-#' @param dev_var Single column name for the development variable.
+#' @param grp Character vector of group columns (may be empty).
+#' @param coh Single column name for the cohort variable.
+#' @param dev Single column name for the development variable.
 #' @param dev_split Optional numeric scalar — the maturity target dev
 #'   (= `ata_to`, equivalently the first CL-region dev). When supplied,
-#'   the cohort filter is only applied to rows where `dev_var < dev_split`
-#'   (ED region); rows with `dev_var >= dev_split` (CL region) are kept
+#'   the cohort filter is only applied to rows where `dev < dev_split`
+#'   (ED region); rows with `dev >= dev_split` (CL region) are kept
 #'   regardless of cohort.
 #'
 #' @return A filtered copy of `dt` (class preserved).
 #'
 #' @keywords internal
 .apply_break_filter <- function(dt, break_date,
-                                group_var = character(0),
-                                cohort_var, dev_var, dev_split = NULL) {
+                                grp = character(0),
+                                coh, dev, dev_split = NULL) {
 
   if (!data.table::is.data.table(dt))
     stop("`dt` must be a data.table.", call. = FALSE)
@@ -556,21 +561,21 @@ get_recent_weights <- function(weights, recent) {
       stop("`dev_split` must be a single non-NA numeric scalar.", call. = FALSE)
   }
 
-  coh_class <- class(dt[[cohort_var]])
+  coh_class <- class(dt[[coh]])
   if (!any(coh_class %in% c("Date", "POSIXct", "POSIXt"))) {
-    stop("Column `", cohort_var, "` must be of class Date or POSIXct/POSIXt.",
+    stop("Column `", coh, "` must be of class Date or POSIXct/POSIXt.",
          call. = FALSE)
   }
 
   out <- data.table::copy(dt)
 
   if (is.null(dev_split)) {
-    keep <- out[, .SD[[1L]] >= bd, .SDcols = cohort_var]
+    keep <- out[, .SD[[1L]] >= bd, .SDcols = coh]
   } else {
     # Drop rows where coh < bd AND dev < dev_split.
     # Keep if coh >= bd OR dev >= dev_split.
-    coh_vals <- out[[cohort_var]]
-    dev_vals <- out[[dev_var]]
+    coh_vals <- out[[coh]]
+    dev_vals <- out[[dev]]
     keep <- (coh_vals >= bd) | (dev_vals >= dev_split)
   }
 

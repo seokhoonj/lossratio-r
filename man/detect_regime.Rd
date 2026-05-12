@@ -9,7 +9,7 @@
 \usage{
 detect_regime(
   x,
-  loss_var = "lr",
+  target = "lr",
   K = 12L,
   method = c("e_divisive", "pelt", "hclust"),
   n_regimes = NULL,
@@ -25,11 +25,11 @@ detect_regime(
 \method{print}{summary.Regime}(x, ...)
 }
 \arguments{
-\item{x}{An object of class \code{"Triangle"}. Must correspond to a single
-group (no \code{group_var} or a single-value \code{group_var} subset).
+\item{x}{An object of class \code{"Triangle"}. May contain one or more
+groups (per-group detection runs independently).
 Also used by S3 \code{print()} method on \code{Regime} objects.}
 
-\item{loss_var}{Column name of the trajectory variable. Default
+\item{target}{Column name of the trajectory variable. Default
 is \code{"lr"} (cumulative loss ratio).}
 
 \item{K}{Integer. Common development-period window used to build the
@@ -52,33 +52,45 @@ the requested value) for \code{"hclust"}, where the default is \code{2}.}
 \code{summary()} method.}
 }
 \value{
-An object of class \code{"Regime"} with components:
+An object of class \code{"Regime"}. For single-group input:
 \describe{
 \item{\code{call}}{Matched call.}
 \item{\code{method}}{Detection method used.}
-\item{\code{loss_var}, \code{K}}{Trajectory variable and window.}
+\item{\code{target}, \code{K}}{Trajectory variable and window.}
 \item{\code{cohort_var}}{Period variable from \code{x}.}
 \item{\code{labels}}{\code{data.table} with one row per analysed cohort:
 period, regime id, regime label.}
 \item{\code{breakpoints}}{\code{Date} vector of breakpoint dates (each is
 the first cohort of a new regime; excludes the initial regime
 start).}
-\item{\code{n_regimes}}{Number of regimes detected.}
+\item{\code{n_regimes}}{Number of regimes detected (scalar integer).}
 \item{\code{trajectory}}{Cohort feature matrix (rows = cohorts,
 columns = development periods \verb{1, ..., K}).}
 \item{\code{pca}}{\code{prcomp} object fitted to the feature matrix.}
 \item{\code{dropped}}{Cohorts excluded due to the \code{K} window
 constraint.}
 }
+For multi-group input the same fields are returned but with
+per-group containers: \verb{$breakpoints} is a \code{data.table} with columns
+\verb{\{<group_var>, breakpoint\}}; \verb{$labels} gains a \verb{<group_var>} column;
+\verb{$n_regimes} is a named integer vector; \verb{$trajectory}, \verb{$pca}, and
+\verb{$dropped} are named lists keyed by group value. The \verb{$multi_group}
+logical flag distinguishes the two layouts.
 }
 \description{
 Detect structural change points in the sequence of cohort-level
 development trajectories. Each underwriting cohort (indexed by the
 \code{cohort_var} of a \code{"Triangle"} object) is treated as a feature vector
-whose entries are the selected \code{loss_var} observed at development
+whose entries are the selected \code{target} metric observed at development
 periods \verb{1, ..., K}. Cohorts are then ordered by underwriting
 period and tested for structural shifts in the multivariate
 sequence.
+
+Multi-group \code{Triangle} inputs are supported: detection runs
+independently per group, and results are combined into a single
+\code{Regime} object whose \verb{$breakpoints}, \verb{$labels}, etc. carry the
+group column. Single-group input retains the original scalar /
+Date-vector / matrix layout for backward compatibility.
 
 Three detection strategies are supported:
 \describe{
@@ -93,7 +105,7 @@ first principal component of the cohort feature matrix. Fast
 and may return multiple breakpoints.}
 \item{\code{"hclust"}}{Ward hierarchical clustering on the scaled
 cohort feature matrix, cut to \code{n_regimes} clusters. Ignores
-time ordering — useful as a sanity check since non-adjacent
+time ordering -- useful as a sanity check since non-adjacent
 cohorts may cluster together if the trajectory pattern is not
 strictly chronological.}
 }
@@ -101,7 +113,7 @@ strictly chronological.}
 \examples{
 \dontrun{
 data(experience)
-tri_sur <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
+tri_sur <- build_triangle(experience[coverage == "SUR"], groups = coverage)
 
 # Hierarchical clustering (no extra package dependency)
 r <- detect_regime(tri_sur, K = 12, method = "hclust",
@@ -112,6 +124,11 @@ plot(r)
 
 # ecp divisive change-point detection (requires the ecp package)
 r_ecp <- detect_regime(tri_sur, K = 12, method = "e_divisive")
+
+# Multi-group: detection per coverage
+tri_all <- build_triangle(experience, groups = coverage)
+r_all <- detect_regime(tri_all, K = 12, method = "e_divisive")
+print(r_all$breakpoints)
 }
 
 }

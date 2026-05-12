@@ -6,11 +6,11 @@
 \usage{
 build_calendar(
   df,
-  group_var,
-  calendar_var = "cy_m",
+  groups,
+  calendar = "cy_m",
   grain = "auto",
-  loss_var = "loss_incr",
-  premium_var = "premium_incr",
+  loss = "loss_incr",
+  premium = "premium_incr",
   period_from = NULL,
   period_to = NULL,
   fill_gaps = FALSE
@@ -18,38 +18,38 @@ build_calendar(
 }
 \arguments{
 \item{df}{A data.frame containing experience data with per-period loss
-and premium columns plus a \code{calendar_var} Date column (or any input
+and premium columns plus a \code{calendar} Date column (or any input
 that the internal Date coercion accepts: Date, POSIXt, integer
 \code{yyyy} / \code{yyyymm} / \code{yyyymmdd}, ISO string).}
 
-\item{group_var}{Column(s) used for grouping (e.g., product, gender).}
+\item{groups}{Column(s) used for grouping (e.g., product, gender).}
 
-\item{calendar_var}{A single column defining the calendar-like period
+\item{calendar}{A single column defining the calendar-like period
 axis. Default \code{"cy_m"}. May also be an underwriting axis
 (\code{"uy_m"} etc.) when a single underwriting-period axis is to be
 summarised as a time series rather than as a development structure.}
 
 \item{grain}{One of \code{"auto"} (default), \code{"M"}, \code{"Q"}, \code{"S"}, \code{"A"}.
-\code{"auto"} infers the grain from the \code{calendar_var} value spacing.
+\code{"auto"} infers the grain from the \code{calendar} value spacing.
 Explicit values must be at least as coarse as the input grain;
 the input is binned (floored) to that grain before aggregation.}
 
-\item{loss_var}{Single character; per-period loss column in \code{df}.
+\item{loss}{Single character; per-period loss column in \code{df}.
 Default \code{"loss_incr"}.}
 
-\item{premium_var}{Single character; per-period premium column in \code{df}.
+\item{premium}{Single character; per-period premium column in \code{df}.
 Default \code{"premium_incr"}. Premium measure used as denominator for
 loss ratio calculations. For long-term health insurance applications,
 risk premium is commonly used.}
 
-\item{period_from}{Optional lower bound for \code{calendar_var}. Only rows with
-\code{calendar_var >= period_from} are kept.}
+\item{period_from}{Optional lower bound for \code{calendar}. Only rows with
+\code{calendar >= period_from} are kept.}
 
-\item{period_to}{Optional upper bound for \code{calendar_var}. Only rows with
-\code{calendar_var <= period_to} are kept.}
+\item{period_to}{Optional upper bound for \code{calendar}. Only rows with
+\code{calendar <= period_to} are kept.}
 
 \item{fill_gaps}{Logical; if \code{TRUE}, zero-fill missing
-\verb{(group_var, calendar_var)} cells so every group has a consecutive
+\verb{(groups, calendar)} cells so every group has a consecutive
 calendar sequence at the resolved grain.
 Default \code{FALSE}, which raises an error when gaps are detected.}
 }
@@ -58,7 +58,7 @@ A data.frame with class \code{"Calendar"}, containing the following
 derived columns:
 \describe{
 \item{dev}{Calendar index within each group, defined as the sequential
-order of \code{calendar_var} after sorting in ascending order. This represents
+order of \code{calendar} after sorting in ascending order. This represents
 the progression of calendar periods for each group (e.g., 1 = first
 observed period, 2 = second, ...), and can be used to align groups with
 different starting periods on a common index scale.}
@@ -68,7 +68,7 @@ different starting periods on a common index scale.}
 \item{margin, margin_incr}{Cumulative and per-period margin}
 \item{profit, profit_incr}{Profit indicator}
 \item{loss_share, loss_incr_share, premium_share, premium_incr_share}{
-Proportions within each \code{calendar_var} cell}
+Proportions within each \code{calendar} cell}
 }
 
 The returned object also has an attribute \code{"longer"} containing
@@ -87,7 +87,7 @@ cumulative loss ratio (\code{lr = loss / premium}).
 }
 
 In contrast to \code{\link[=build_triangle]{build_triangle()}}, which builds a development structure using
-\verb{cohort_var × dev_var}, this function aggregates values over
+\verb{cohort × dev}, this function aggregates values over
 a one-dimensional calendar axis.
 
 The cumulative loss ratio is defined as:
@@ -96,7 +96,7 @@ The cumulative loss ratio is defined as:
 For long-term health insurance applications, risk premium is commonly
 used as the \code{premium} measure.
 
-Proportion variables are computed within each \code{calendar_var} cell:
+Proportion variables are computed within each \code{calendar} cell:
 \itemize{
 \item \code{loss_incr_share    = loss_incr    / sum(loss_incr)}
 \item \code{premium_incr_share = premium_incr / sum(premium_incr)}
@@ -104,7 +104,7 @@ Proportion variables are computed within each \code{calendar_var} cell:
 \item \code{premium_share      = premium      / sum(premium)}
 }
 
-Therefore, for a fixed \code{calendar_var} cell, the proportions
+Therefore, for a fixed \code{calendar} cell, the proportions
 sum to 1 across groups. These are useful for examining the composition of
 each calendar period across products or other grouping variables.
 }
@@ -112,15 +112,15 @@ each calendar period across products or other grouping variables.
 \dontrun{
 res1 <- build_calendar(
   df,
-  group_var    = pd_cd,
-  calendar_var = "cy_m"
+  groups   = pd_cd,
+  calendar = "cy_m"
 )
 
 res2 <- build_calendar(
   df,
-  group_var    = pd_cd,
-  calendar_var = "cy_q",
-  period_from  = "2023-01-01"
+  groups      = pd_cd,
+  calendar    = "cy_q",
+  period_from = "2023-01-01"
 )
 
 head(res1)

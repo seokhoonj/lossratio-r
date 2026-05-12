@@ -47,7 +47,7 @@ scale and labelled using \code{amount_divisor}.
 }
 \examples{
 \dontrun{
-tot <- build_total(df, group_var = coverage)
+tot <- build_total(df, groups = coverage)
 plot(tot)
 plot(tot, value_var = "loss")
 }

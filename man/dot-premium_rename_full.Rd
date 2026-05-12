@@ -4,7 +4,7 @@
 \alias{.premium_rename_full}
 \title{Rename target_* columns to premium_* and add incr/CI columns}
 \usage{
-.premium_rename_full(full, grp_var, conf_level)
+.premium_rename_full(full, grp, conf_level)
 }
 \description{
 Translates the worker (\code{fit_cl}) output's \verb{target_*} columns to the

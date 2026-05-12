@@ -58,7 +58,7 @@ It is assumed that the input \code{Triangle} object does not contain missing val
 }
 \examples{
 \dontrun{
-d <- build_triangle(df, group_var = coverage)
+d <- build_triangle(df, groups = coverage)
 smr <- summary(d)
 head(smr)
 attr(smr, "longer")

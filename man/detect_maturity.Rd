@@ -6,8 +6,8 @@
 \usage{
 detect_maturity(
   x,
-  loss_var = "loss",
-  weight_var = NULL,
+  target = "loss",
+  weight = NULL,
   alpha = 1,
   max_cv = 0.15,
   max_rse = 0.05,
@@ -19,11 +19,11 @@ detect_maturity(
 \arguments{
 \item{x}{A \code{Triangle} object.}
 
-\item{loss_var}{Cumulative metric for the link factor. Default
+\item{target}{Cumulative metric for the link factor. Default
 \code{"loss"} (chain-ladder convention; see Description). Forwarded to
 \code{\link[=build_link]{build_link()}}.}
 
-\item{weight_var}{Optional WLS weight variable. Forwarded to
+\item{weight}{Optional WLS weight variable. Forwarded to
 \code{\link[=build_link]{build_link()}}.}
 
 \item{alpha}{Numeric scalar controlling the variance structure in
@@ -70,12 +70,12 @@ the raw variability of observed ata factors across cohorts, while \code{rse}
 reflects the precision of the WLS-estimated factor. Using both criteria
 together provides a more robust maturity assessment than either alone.
 
-Default \code{loss_var = "loss"} (cumulative loss). Maturity in chain
+Default \code{target = "loss"} (cumulative loss). Maturity in chain
 ladder is methodologically a property of \emph{loss} development:
 the ATA factors of cumulative loss stabilize when chain ladder
 becomes reliable, which in turn makes downstream LR projection
 reliable. ATA factors of \code{lr} itself (a ratio of two cumulative
 quantities) carry additional noise and tend to give less precise
-maturity decisions. Override \code{loss_var} only when you specifically
+maturity decisions. Override \code{target} only when you specifically
 want maturity of premium development or another cumulative metric.
 }

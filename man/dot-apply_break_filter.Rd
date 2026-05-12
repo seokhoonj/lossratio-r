@@ -7,9 +7,9 @@
 .apply_break_filter(
   dt,
   break_date,
-  group_var = character(0),
-  cohort_var,
-  dev_var,
+  grp = character(0),
+  coh,
+  dev,
   dev_split = NULL
 )
 }
@@ -24,24 +24,24 @@
 \item A \code{Regime} object -- extracts the latest from \verb{$breakpoints}.
 }}
 
-\item{group_var}{Character vector of group columns (may be empty).}
+\item{grp}{Character vector of group columns (may be empty).}
 
-\item{cohort_var}{Single column name for the cohort variable.}
+\item{coh}{Single column name for the cohort variable.}
 
-\item{dev_var}{Single column name for the development variable.}
+\item{dev}{Single column name for the development variable.}
 
 \item{dev_split}{Optional numeric scalar — the maturity target dev
 (= \code{ata_to}, equivalently the first CL-region dev). When supplied,
-the cohort filter is only applied to rows where \code{dev_var < dev_split}
-(ED region); rows with \code{dev_var >= dev_split} (CL region) are kept
+the cohort filter is only applied to rows where \code{dev < dev_split}
+(ED region); rows with \code{dev >= dev_split} (CL region) are kept
 regardless of cohort.}
 }
 \value{
 A filtered copy of \code{dt} (class preserved).
 }
 \description{
-Drops rows where \code{coh_var < break_date}. Optionally restrict the filter
-to rows with \code{dev_var < dev_split} (the ED region of an SA fit); rows
-with \code{dev_var >= dev_split} (CL region) are kept regardless of cohort.
+Drops rows where \code{coh < break_date}. Optionally restrict the filter
+to rows with \code{dev < dev_split} (the ED region of an SA fit); rows
+with \code{dev >= dev_split} (CL region) are kept regardless of cohort.
 }
 \keyword{internal}

@@ -1,8 +1,8 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- build_triangle(exp, group_var = coverage)
-sub <- build_triangle(exp[coverage == "SUR"], group_var = coverage)
+tri <- build_triangle(exp, groups = coverage)
+sub <- build_triangle(exp[coverage == "SUR"], groups = coverage)
 
 test_that("backtest returns class 'Backtest'", {
   bt <- backtest(sub, holdout = 6L, target = "loss", loss_method = "cl")

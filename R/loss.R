@@ -63,7 +63,7 @@
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
+#' tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
 #'
 #' lf    <- fit_loss(tri)                    # SA (default)
 #' lf_ed <- fit_loss(tri, method = "ed")
@@ -109,15 +109,15 @@ fit_loss <- function(x,
   l_var <- "loss"
   p_var <- "premium"
 
-  grp_var <- attr(x, "group_var")
-  coh_var <- attr(x, "cohort_var")
-  dev_var <- attr(x, "dev_var")
+  grp <- attr(x, "group_var")
+  coh <- attr(x, "cohort_var")
+  dev <- attr(x, "dev_var")
 
-  if (is.null(grp_var)) grp_var <- character(0)
+  if (is.null(grp)) grp <- character(0)
 
-  if (length(coh_var) != 1L)
+  if (length(coh) != 1L)
     stop("`x` must contain exactly one `cohort_var`.", call. = FALSE)
-  if (length(dev_var) != 1L)
+  if (length(dev) != 1L)
     stop("`x` must contain exactly one `dev_var`.", call. = FALSE)
 
   # preserve original user input — nullified below for SA hybrid path
@@ -145,9 +145,9 @@ fit_loss <- function(x,
         )
         x <- .apply_break_filter(
           x, loss_regime_break,
-          group_var  = grp_var,
-          cohort_var = "cohort",
-          dev_var    = "dev"
+          grp = grp,
+          coh = "cohort",
+          dev = "dev"
         )
         loss_regime_break <- NULL
       } else {
@@ -162,16 +162,16 @@ fit_loss <- function(x,
 
         x <- .apply_break_filter(
           x, loss_regime_break,
-          group_var  = grp_var,
-          cohort_var = "cohort", dev_var = "dev",
-          dev_split  = mat_k
+          grp = grp,
+          coh = "cohort", dev = "dev",
+          dev_split = mat_k
         )
         if (!is.null(recent)) {
           x <- .apply_recent_filter(
             x, recent,
-            group_var  = grp_var,
-            cohort_var = "cohort", dev_var = "dev",
-            dev_split  = mat_k
+            grp = grp,
+            coh = "cohort", dev = "dev",
+            dev_split = mat_k
           )
           recent <- NULL
         }
@@ -256,28 +256,28 @@ fit_loss <- function(x,
   )
 
   # 8) join ED factors (g_selected, g_sigma2, g_var) --------------------
-  ed_cols <- c(grp_var, "ata_from", "g_selected", "sigma2", "g_var")
+  ed_cols <- c(grp, "ata_from", "g_selected", "sigma2", "g_var")
   ed_sel  <- ed_fit$selected[, .SD, .SDcols = ed_cols]
   data.table::setnames(ed_sel, "ata_from", "dev")
   data.table::setnames(ed_sel, "sigma2", "g_sigma2")
-  full <- ed_sel[full, on = c(grp_var, "dev")]
+  full <- ed_sel[full, on = c(grp, "dev")]
 
   # 9) join CL factors (f_selected, f_sigma2, f_var) --------------------
-  cl_cols <- c(grp_var, "ata_from", "f_selected", "sigma2", "f_var")
+  cl_cols <- c(grp, "ata_from", "f_selected", "sigma2", "f_var")
   cl_sel  <- loss_ata_fit$selected[, .SD, .SDcols = cl_cols]
   data.table::setnames(cl_sel, "ata_from", "dev")
   data.table::setnames(cl_sel, "sigma2", "f_sigma2")
-  full <- cl_sel[full, on = c(grp_var, "dev")]
+  full <- cl_sel[full, on = c(grp, "dev")]
 
   # 10) maturity join per group -----------------------------------------
   if (!is.null(maturity)) {
     mat_join <- .ensure_dt(maturity)
-    mat_keep <- c(grp_var, "ata_from")
+    mat_keep <- c(grp, "ata_from")
     mat_join <- mat_join[, .SD, .SDcols = intersect(mat_keep, names(mat_join))]
     data.table::setnames(mat_join, "ata_from", "maturity_from")
 
-    if (length(grp_var)) {
-      full <- mat_join[full, on = grp_var]
+    if (length(grp)) {
+      full <- mat_join[full, on = grp]
     } else {
       if (nrow(mat_join) == 1L) {
         full[, maturity_from := mat_join$maturity_from[1L]]
@@ -293,7 +293,7 @@ fit_loss <- function(x,
   full[, last_obs := {
     idx <- which(is.finite(loss_obs))
     if (length(idx)) max(idx) else 0L
-  }, by = c(grp_var, "cohort")]
+  }, by = c(grp, "cohort")]
 
   # 12) loss point projection -------------------------------------------
   full[, loss_proj := .sa_proj(
@@ -303,7 +303,7 @@ fit_loss <- function(x,
     f_selected    = f_selected,
     maturity_from = maturity_from[1L],
     method        = method
-  ), by = c(grp_var, "cohort")]
+  ), by = c(grp, "cohort")]
 
   # 13) loss variance (process + parameter) ----------------------------
   full[, `:=`(
@@ -328,7 +328,7 @@ fit_loss <- function(x,
       maturity_from = maturity_from[1L],
       method        = method
     )
-  ), by = c(grp_var, "cohort")]
+  ), by = c(grp, "cohort")]
 
   # 14) total loss variance and SE -------------------------------------
   full[, loss_total_se2 := loss_proc_se2 + loss_param_se2]
@@ -353,9 +353,9 @@ fit_loss <- function(x,
 
   # 16) incremental projections (loss + premium) ----------------------
   full[, loss_incr_proj := loss_proj - data.table::shift(loss_proj, 1L, fill = 0),
-       by = c(grp_var, "cohort")]
+       by = c(grp, "cohort")]
   full[, premium_incr_proj := premium_proj - data.table::shift(premium_proj, 1L, fill = 0),
-       by = c(grp_var, "cohort")]
+       by = c(grp, "cohort")]
 
   # 17) $pred: NA-mask observed cells (loss-side columns only) --------
   pred    <- data.table::copy(full)
@@ -376,9 +376,9 @@ fit_loss <- function(x,
   out <- list(
     call              = match.call(),
     data              = x,
-    group_var         = grp_var,
-    cohort_var        = coh_var,
-    dev_var           = dev_var,
+    group_var         = grp,
+    cohort_var        = coh,
+    dev_var           = dev,
     full              = full,
     pred              = pred,
     maturity          = maturity,
@@ -407,8 +407,8 @@ fit_loss <- function(x,
 #' @param ... Unused.
 #' @export
 print.LossFit <- function(x, ...) {
-  grp_var <- x$group_var
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- x$group_var
+  if (is.null(grp)) grp <- character(0)
 
   cat("<LossFit>\n")
   cat("method            :", x$method,       "\n")
@@ -421,9 +421,9 @@ print.LossFit <- function(x, ...) {
 
   if (!is.null(x$maturity) && nrow(x$maturity)) {
     mat <- .ensure_dt(x$maturity)
-    if (length(grp_var)) {
+    if (length(grp)) {
       for (i in seq_len(nrow(mat))) {
-        grp_txt <- paste(mat[i, grp_var, with = FALSE], collapse = "/")
+        grp_txt <- paste(mat[i, grp, with = FALSE], collapse = "/")
         cat(sprintf("maturity[%s] : %s\n", grp_txt, mat$ata_to[i]))
       }
     } else {
@@ -431,8 +431,8 @@ print.LossFit <- function(x, ...) {
     }
   }
 
-  if (length(grp_var)) {
-    cat("groups       :", paste(grp_var, collapse = ", "), "\n")
+  if (length(grp)) {
+    cat("groups       :", paste(grp, collapse = ", "), "\n")
   } else {
     cat("groups       : none\n")
   }
@@ -451,11 +451,11 @@ print.LossFit <- function(x, ...) {
 #' @param ... Unused.
 #' @export
 summary.LossFit <- function(object, ...) {
-  grp_var <- object$group_var
-  if (is.null(grp_var)) grp_var <- character(0)
+  grp <- object$group_var
+  if (is.null(grp)) grp <- character(0)
 
   full <- .ensure_dt(object$full)
-  by_cols <- c(grp_var, "cohort")
+  by_cols <- c(grp, "cohort")
   out <- full[, .SD[which.max(dev)], by = by_cols]
   keep <- c(by_cols, "loss_proj", "loss_total_se", "loss_total_cv")
   out <- out[, .SD, .SDcols = keep]
@@ -686,41 +686,41 @@ summary.LossFit <- function(object, ...) {
                          target_var,
                          exposure_var) {
 
-  grp_var <- attr(triangle, "group_var")
+  grp <- attr(triangle, "group_var")
 
-  if (is.null(grp_var)) grp_var <- character(0)
+  if (is.null(grp)) grp <- character(0)
 
   raw <- .ensure_dt(triangle)
 
   obs <- raw[, .(
     loss_obs    = .SD[[target_var]],
     premium_obs = .SD[[exposure_var]]
-  ), by = c(grp_var, "cohort", "dev")]
+  ), by = c(grp, "cohort", "dev")]
 
   max_dev_ed   <- max(ed_fit$selected$ata_to, na.rm = TRUE)
   max_dev_prem <- max(premium_ata_fit$selected$ata_to, na.rm = TRUE)
   max_dev      <- max(max_dev_ed, max_dev_prem)
 
-  full <- unique(obs[, .SD, .SDcols = c(grp_var, "cohort")])
-  full <- full[, .(dev = seq_len(max_dev)), by = c(grp_var, "cohort")]
+  full <- unique(obs[, .SD, .SDcols = c(grp, "cohort")])
+  full <- full[, .(dev = seq_len(max_dev)), by = c(grp, "cohort")]
 
-  full <- obs[full, on = c(grp_var, "cohort", "dev")]
-  data.table::setorderv(full, c(grp_var, "cohort", "dev"))
+  full <- obs[full, on = c(grp, "cohort", "dev")]
+  data.table::setorderv(full, c(grp, "cohort", "dev"))
 
   full[, is_observed := is.finite(loss_obs)]
 
   prem_sel <- premium_ata_fit$selected[
     , .SD,
-    .SDcols = c(grp_var, "ata_from", "f_selected")
+    .SDcols = c(grp, "ata_from", "f_selected")
   ]
   data.table::setnames(prem_sel, c("ata_from", "f_selected"),
                        c("dev", "f_exposure"))
-  full <- prem_sel[full, on = c(grp_var, "dev")]
+  full <- prem_sel[full, on = c(grp, "dev")]
 
   full[, premium_proj := .cl_proj(
     target_obs = premium_obs,
     f_selected = f_exposure
-  ), by = c(grp_var, "cohort")]
+  ), by = c(grp, "cohort")]
 
   full[, f_exposure := NULL]
   full

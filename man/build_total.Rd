@@ -6,11 +6,11 @@
 \usage{
 build_total(
   df,
-  group_var,
-  cohort_var = "uy_m",
-  dev_var = "dev_m",
-  loss_var = "loss_incr",
-  premium_var = "premium_incr",
+  groups,
+  cohort = "uy_m",
+  dev = "dev_m",
+  loss = "loss_incr",
+  premium = "premium_incr",
   period_from = NULL,
   period_to = NULL,
   fill_gaps = FALSE
@@ -19,34 +19,34 @@ build_total(
 \arguments{
 \item{df}{A data.frame containing experience data.}
 
-\item{group_var}{Grouping variable(s).}
+\item{groups}{Grouping variable(s).}
 
-\item{cohort_var}{A single period variable. This may be an underwriting
+\item{cohort}{A single period variable. This may be an underwriting
 period (\code{uy_m}, \code{uy_q}, \code{uy_s}, \code{uy_a}) or a calendar period
 (\code{cy_m}, \code{cy_q}, \code{cy_s}, \code{cy_a}). Default \code{"uy_m"}.}
 
-\item{dev_var}{A single development variable used to count observed periods.
+\item{dev}{A single development variable used to count observed periods.
 Default \code{"dev_m"}.}
 
-\item{loss_var}{Single character; per-period loss column in \code{df}.
+\item{loss}{Single character; per-period loss column in \code{df}.
 Default \code{"loss_incr"}.}
 
-\item{premium_var}{Single character; per-period premium column in \code{df}.
+\item{premium}{Single character; per-period premium column in \code{df}.
 Default \code{"premium_incr"}. Premium measure used as denominator for
 loss ratio calculations. For long-term health insurance applications,
 risk premium is commonly used.}
 
-\item{period_from}{Optional lower bound for \code{cohort_var}. Only rows with
-\code{cohort_var >= period_from} are kept. May be supplied as \code{Date},
+\item{period_from}{Optional lower bound for \code{cohort}. Only rows with
+\code{cohort >= period_from} are kept. May be supplied as \code{Date},
 character, or any value coercible to \code{Date}. Default \code{NULL}.}
 
-\item{period_to}{Optional upper bound for \code{cohort_var}. Only rows with
-\code{cohort_var <= period_to} are kept. May be supplied as \code{Date},
+\item{period_to}{Optional upper bound for \code{cohort}. Only rows with
+\code{cohort <= period_to} are kept. May be supplied as \code{Date},
 character, or any value coercible to \code{Date}. Default \code{NULL}.}
 
 \item{fill_gaps}{Logical; if \code{TRUE}, zero-fill missing
-\verb{(group_var, cohort_var, dev_var)} cells before aggregation so
-that every cohort has a consecutive \code{dev_var} sequence. Default
+\verb{(groups, cohort, dev)} cells before aggregation so
+that every cohort has a consecutive \code{dev} sequence. Default
 \code{FALSE}. Note that filling inflates \code{n_obs} (counts filled rows as
 observed periods); use \code{\link[=validate_triangle]{validate_triangle()}} to inspect first.}
 }

@@ -6,53 +6,53 @@
 \usage{
 build_triangle(
   df,
-  group_var,
-  cohort_var = "uy_m",
-  calendar_var = "cy_m",
+  groups,
+  cohort = "uy_m",
+  calendar = "cy_m",
   grain = "auto",
-  loss_var = "loss_incr",
-  premium_var = "premium_incr",
+  loss = "loss_incr",
+  premium = "premium_incr",
   cell_type = c("incremental", "cumulative"),
   fill_gaps = FALSE
 )
 }
 \arguments{
 \item{df}{A data.frame containing experience data with per-period loss and
-premium columns plus \code{cohort_var} and \code{calendar_var} Date columns
+premium columns plus \code{cohort} and \code{calendar} Date columns
 (or any input that the internal Date coercion accepts: Date, POSIXt,
 integer \code{yyyy} / \code{yyyymm} / \code{yyyymmdd}, ISO string).}
 
-\item{group_var}{Column(s) used for grouping (e.g., product, gender).}
+\item{groups}{Column(s) used for grouping (e.g., product, gender).}
 
-\item{cohort_var}{Single column defining the underwriting/exposure
+\item{cohort}{Single column defining the underwriting/exposure
 period start (e.g., \code{"uy_m"}). Default \code{"uy_m"}.}
 
-\item{calendar_var}{Single column defining the calendar period of
+\item{calendar}{Single column defining the calendar period of
 the observation (e.g., \code{"cy_m"}). Default \code{"cy_m"}. Used together
-with \code{cohort_var} to derive the development column at the resolved
+with \code{cohort} to derive the development column at the resolved
 grain.}
 
 \item{grain}{One of \code{"auto"} (default), \code{"M"}, \code{"Q"}, \code{"S"}, \code{"A"}.
-\code{"auto"} infers the grain from the \code{cohort_var} value spacing.
+\code{"auto"} infers the grain from the \code{cohort} value spacing.
 Explicit values must be at least as coarse as the input grain;
 the input is binned (floored) to that grain before aggregation.}
 
-\item{loss_var}{Single character; per-period loss column in \code{df}.
+\item{loss}{Single character; per-period loss column in \code{df}.
 Default \code{"loss_incr"}.}
 
-\item{premium_var}{Single character; per-period premium column in \code{df}.
+\item{premium}{Single character; per-period premium column in \code{df}.
 Default \code{"premium_incr"}. Premium measure used as denominator for
 loss ratio calculations. For long-term health insurance applications,
 risk premium is commonly used.}
 
 \item{cell_type}{One of \code{"incremental"} (default) or \code{"cumulative"}.
-Whether \code{loss_var} and \code{premium_var} in \code{df} already hold per-period
+Whether \code{loss} and \code{premium} in \code{df} already hold per-period
 (incremental) values or cumulative-within-cohort values. The
 internal triangle is always built on the incremental representation;
 \code{"cumulative"} inputs are differenced first.}
 
 \item{fill_gaps}{Logical; if \code{TRUE}, zero-fill missing
-\verb{(group_var, cohort, dev)} cells so that every cohort
+\verb{(groups, cohort, dev)} cells so that every cohort
 has a consecutive \code{dev} sequence. Default \code{FALSE}, which
 raises an error when gaps are detected. Use
 \code{\link[=validate_triangle]{validate_triangle()}} to inspect gaps before deciding.}
@@ -81,7 +81,7 @@ Attributes set on the returned object: \code{group_var}, \code{cohort_var},
 \description{
 Aggregate experience data into a development structure by grouping
 and \verb{(cohort, calendar)} Date columns. Auto-detects input grain
-(M / Q / S / A) from \code{cohort_var} spacing and derives the
+(M / Q / S / A) from \code{cohort} spacing and derives the
 development-period column internally; the user does not pre-bin
 data or supply a \verb{dev_*} column.
 
@@ -125,10 +125,10 @@ df <- data.frame(
 )
 
 # auto-detected monthly grain
-res_m <- build_triangle(df, group_var = pd_cd)
+res_m <- build_triangle(df, groups = pd_cd)
 
 # explicit quarterly view (re-bins monthly input to quarterly)
-res_q <- build_triangle(df, group_var = pd_cd, grain = "Q")
+res_q <- build_triangle(df, groups = pd_cd, grain = "Q")
 
 head(res_m)
 attr(res_m, "longer")

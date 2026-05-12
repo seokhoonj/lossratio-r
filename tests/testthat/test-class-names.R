@@ -62,10 +62,10 @@ test_that("TriangleSummary / TriangleLonger / TriangleSummaryLonger classes set"
 
 test_that("CalendarLonger and validation classes set", {
   exp <- make_exp()
-  cal <- build_calendar(exp, group_var = coverage)
+  cal <- build_calendar(exp, groups = coverage)
   expect_s3_class(attr(cal, "longer"), "CalendarLonger")
 
-  val_tri <- validate_triangle(exp, group_var = coverage)
+  val_tri <- validate_triangle(exp, groups = coverage)
   expect_s3_class(val_tri, "TriangleValidation")
 })
 
@@ -124,14 +124,14 @@ test_that("Triangle attribute names preserved (raw / standard split)", {
 })
 
 test_that("Calendar attributes use calendar_var", {
-  cal <- build_calendar(make_exp(), group_var = coverage)
+  cal <- build_calendar(make_exp(), groups = coverage)
   expect_identical(attr(cal, "calendar_var"), "cy_m")
   expect_identical(attr(cal, "group_var"),    "coverage")
 })
 
 test_that("Forbidden legacy attribute names not present", {
   tri <- make_tri()
-  cal <- build_calendar(make_exp(), group_var = coverage)
+  cal <- build_calendar(make_exp(), groups = coverage)
   for (a in c("period_var", "duration_var", "duration_type",
               "elapsed_var", "elp_var", "elp_type", "dur_var", "dur_type")) {
     expect_null(attr(tri, a, exact = TRUE), info = paste("tri attr", a))

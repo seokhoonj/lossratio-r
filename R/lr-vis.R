@@ -47,11 +47,11 @@ plot.LRFit <- function(x,
   scales <- match.arg(scales)
   theme  <- match.arg(theme)
 
-  grp_var <- x$group_var
-  coh_var <- x$cohort_var
+  grp     <- x$group_var
+  coh     <- x$cohort_var
   dev_var <- x$dev_var
 
-  if (is.null(grp_var)) grp_var <- character(0)
+  if (is.null(grp)) grp <- character(0)
 
   z_alpha <- stats::qnorm((1 + conf_level) / 2)
 
@@ -105,19 +105,19 @@ plot.LRFit <- function(x,
   }
 
   # bridge segment
-  latest_obs <- obs[, .SD[.N], by = c(grp_var, "cohort")]
-  first_pred <- pred[, .SD[1L], by = c(grp_var, "cohort")]
+  latest_obs <- obs[, .SD[.N], by = c(grp, "cohort")]
+  first_pred <- pred[, .SD[1L], by = c(grp, "cohort")]
 
   bridge <- latest_obs[
-    , .SD, .SDcols = c(grp_var, "cohort", "dev", ".y")
+    , .SD, .SDcols = c(grp, "cohort", "dev", ".y")
   ]
   data.table::setnames(bridge, c("dev", ".y"), c("x_start", "y_start"))
 
   first_pred2 <- first_pred[
-    , .SD, .SDcols = c(grp_var, "cohort", "dev", ".y")
+    , .SD, .SDcols = c(grp, "cohort", "dev", ".y")
   ]
   data.table::setnames(first_pred2, c("dev", ".y"), c("x_end", "y_end"))
-  bridge <- first_pred2[bridge, on = c(grp_var, "cohort")]
+  bridge <- first_pred2[bridge, on = c(grp, "cohort")]
   bridge <- bridge[is.finite(x_start) & is.finite(y_start) &
                    is.finite(x_end)   & is.finite(y_end)]
 
@@ -174,13 +174,13 @@ plot.LRFit <- function(x,
   }
 
   # facet
-  if (length(c(grp_var, "cohort"))) {
+  if (length(c(grp, "cohort"))) {
     p <- p + ggplot2::facet_wrap(
-      ggplot2::vars(!!!rlang::syms(c(grp_var, "cohort"))),
+      ggplot2::vars(!!!rlang::syms(c(grp, "cohort"))),
       scales   = scales,
       nrow     = nrow,
       ncol     = ncol,
-      labeller = .combined_facet_labeller(c(grp_var, "cohort"))
+      labeller = .combined_facet_labeller(c(grp, "cohort"))
     )
   }
 
@@ -282,11 +282,11 @@ plot_triangle.LRFit <- function(x,
   if (is.null(label_size))
     label_size <- if (label_style == "detail") 2.5 else 3
 
-  grp_var <- x$group_var
-  coh_var <- x$cohort_var
+  grp     <- x$group_var
+  coh     <- x$cohort_var
   dev_var <- x$dev_var
 
-  if (is.null(grp_var)) grp_var <- character(0)
+  if (is.null(grp)) grp <- character(0)
 
   # 1) select data source (value view)
   dt <- .ensure_dt(
@@ -317,7 +317,7 @@ plot_triangle.LRFit <- function(x,
      .SDcols = "dev"]
 
   # 4) format period labels
-  coh_type <- .get_period_type(coh_var)
+  coh_type <- .get_period_type(coh)
   dt[, .y := .format_period(.SD[["cohort"]], type = coh_type, abb = TRUE),
      .SDcols = "cohort"]
 
@@ -365,7 +365,7 @@ plot_triangle.LRFit <- function(x,
 
   # 6) column-wise relative fill
   dt[, lr_fill := lr - stats::median(lr, na.rm = TRUE),
-     by = c(grp_var, "dev")]
+     by = c(grp, "dev")]
   dt[!is.finite(lr_fill), lr_fill := NA_real_]
 
   # 7) resolve label_args
@@ -429,7 +429,7 @@ plot_triangle.LRFit <- function(x,
     if (nrow(mat)) {
       mat[, mat_x := match(ata_to, link_levels)]
 
-      if (length(grp_var)) {
+      if (length(grp)) {
         p <- p + ggplot2::geom_vline(
           data        = mat,
           mapping     = ggplot2::aes(xintercept = mat_x - 0.5),
@@ -448,9 +448,9 @@ plot_triangle.LRFit <- function(x,
   }
 
   # 11) facet
-  if (length(grp_var)) {
+  if (length(grp)) {
     p <- p + ggplot2::facet_wrap(
-      stats::reformulate(grp_var),
+      stats::reformulate(grp),
       nrow = nrow,
       ncol = ncol
     )
@@ -461,7 +461,7 @@ plot_triangle.LRFit <- function(x,
     title   = paste0("Cumulative Loss Ratio Triangle",
                      " (method: ", x$method, ")"),
     x       = .pretty_var_label(dev_var),
-    y       = .pretty_var_label(coh_var),
+    y       = .pretty_var_label(coh),
     caption = caption_txt
   )
 

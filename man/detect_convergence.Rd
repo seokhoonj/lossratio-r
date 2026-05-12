@@ -43,7 +43,7 @@ to \code{fit_lr()}), e.g. \code{loss_method}, \code{recent}, \code{regime_break}
 An object of class \code{Convergence} (named list) containing the
 detected \code{k_conv}, the candidate sequence \code{v}, and the diagnostic
 sequences \code{R_v}, \code{SE_param_v}, \code{D_v}, \code{pass_v}. Metadata is carried
-on attributes (\code{group_var}, \code{loss_var}, \code{fit_fn_name}).
+on attributes (\code{group_var}, \code{target}, \code{fit_fn_name}).
 }
 \description{
 Identify the first valuation \eqn{k^{**}} from which the projected

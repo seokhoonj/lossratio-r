@@ -23,20 +23,20 @@
 #' reflects the precision of the WLS-estimated factor. Using both criteria
 #' together provides a more robust maturity assessment than either alone.
 #'
-#' Default `loss_var = "loss"` (cumulative loss). Maturity in chain
+#' Default `target = "loss"` (cumulative loss). Maturity in chain
 #' ladder is methodologically a property of *loss* development:
 #' the ATA factors of cumulative loss stabilize when chain ladder
 #' becomes reliable, which in turn makes downstream LR projection
 #' reliable. ATA factors of `lr` itself (a ratio of two cumulative
 #' quantities) carry additional noise and tend to give less precise
-#' maturity decisions. Override `loss_var` only when you specifically
+#' maturity decisions. Override `target` only when you specifically
 #' want maturity of premium development or another cumulative metric.
 #'
 #' @param x A `Triangle` object.
-#' @param loss_var Cumulative metric for the link factor. Default
+#' @param target Cumulative metric for the link factor. Default
 #'   `"loss"` (chain-ladder convention; see Description). Forwarded to
 #'   [build_link()].
-#' @param weight_var Optional WLS weight variable. Forwarded to
+#' @param weight Optional WLS weight variable. Forwarded to
 #'   [build_link()].
 #' @param alpha Numeric scalar controlling the variance structure in
 #'   the underlying WLS fit. Default `1`. Forwarded to [summary.Link()].
@@ -57,8 +57,8 @@
 #'
 #' @export
 detect_maturity <- function(x,
-                            loss_var        = "loss",
-                            weight_var      = NULL,
+                            target          = "loss",
+                            weight          = NULL,
                             alpha           = 1,
                             max_cv          = 0.15,
                             max_rse         = 0.05,
@@ -68,7 +68,7 @@ detect_maturity <- function(x,
 
   .assert_triangle_input(x, "detect_maturity()")
 
-  link <- build_link(x, target = loss_var, weight = weight_var)
+  link <- build_link(x, target = target, weight = weight)
   ata_summary <- summary(link, model = "ata", alpha = alpha)
 
   .detect_maturity(
@@ -121,9 +121,9 @@ detect_maturity <- function(x,
   min_n_valid <- as.integer(min_n_valid)
   min_run     <- as.integer(min_run)
 
-  smr     <- .ensure_dt(x)
-  grp_var <- attr(x, "group_var")
-  if (is.null(grp_var)) grp_var <- character(0)
+  smr <- .ensure_dt(x)
+  grp <- attr(x, "group_var")
+  if (is.null(grp)) grp <- character(0)
 
   # internal: find first mature row in a single-group summary table
   .first_mature_row <- function(d,
@@ -192,7 +192,7 @@ detect_maturity <- function(x,
     )
   }
 
-  if (length(grp_var)) {
+  if (length(grp)) {
     z <- smr[, .first_mature_row(
       .SD,
       max_cv          = max_cv,
@@ -200,7 +200,7 @@ detect_maturity <- function(x,
       min_valid_ratio = min_valid_ratio,
       min_n_valid     = min_n_valid,
       min_run         = min_run
-    ), by = grp_var]
+    ), by = grp]
   } else {
     z <- .first_mature_row(
       smr,
@@ -217,9 +217,9 @@ detect_maturity <- function(x,
   data.table::setattr(z, "min_valid_ratio", min_valid_ratio)
   data.table::setattr(z, "min_n_valid",     min_n_valid)
   data.table::setattr(z, "min_run",         min_run)
-  data.table::setattr(z, "group_var",       grp_var)
-  data.table::setattr(z, "loss_var",       attr(x, "target"))
-  data.table::setattr(z, "weight_var",      attr(x, "weight"))
+  data.table::setattr(z, "group_var",       grp)
+  data.table::setattr(z, "target",          attr(x, "target"))
+  data.table::setattr(z, "weight",          attr(x, "weight"))
 
   .prepend_class(z, "Maturity")
 }

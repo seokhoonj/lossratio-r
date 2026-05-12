@@ -5,10 +5,10 @@ test_that(".apply_recent_filter with dev_min keeps early-dev cells", {
     dev    = rep(1:5, times = 10)
   )
   out_no_min <- lossratio:::.apply_recent_filter(
-    dt, recent = 4L, cohort_var = "cohort", dev_var = "dev"
+    dt, recent = 4L, coh = "cohort", dev = "dev"
   )
   out_with_min <- lossratio:::.apply_recent_filter(
-    dt, recent = 4L, cohort_var = "cohort", dev_var = "dev", dev_split = 3L
+    dt, recent = 4L, coh = "cohort", dev = "dev", dev_split = 3L
   )
   # all cells with dev <= 3 must be in out_with_min
   expect_true(all(dt[dev <= 3L]$cohort %in% out_with_min$cohort |
@@ -24,7 +24,7 @@ test_that(".apply_break_filter with single Date drops pre-break cohorts", {
   )
   out <- lossratio:::.apply_break_filter(
     dt, break_date = "2023-06-01",
-    cohort_var = "cohort", dev_var = "dev"
+    coh = "cohort", dev = "dev"
   )
   expect_true(all(out$cohort >= as.Date("2023-06-01")))
 })
@@ -40,7 +40,7 @@ test_that(".apply_break_filter with Regime extracts last breakpoint", {
     dev    = rep(1:5, times = 10)
   )
   out <- lossratio:::.apply_break_filter(
-    dt, break_date = reg, cohort_var = "cohort", dev_var = "dev"
+    dt, break_date = reg, coh = "cohort", dev = "dev"
   )
   expect_true(all(out$cohort >= as.Date("2023-08-01")))
 })
@@ -55,7 +55,7 @@ test_that(".apply_break_filter with dev_split keeps CL-region cells", {
   # dev >= 4 (dev = 4, 5). Cohort filter applies only to ED region.
   out <- lossratio:::.apply_break_filter(
     dt, break_date = "2023-06-01",
-    cohort_var = "cohort", dev_var = "dev", dev_split = 4L
+    coh = "cohort", dev = "dev", dev_split = 4L
   )
   # CL region (dev >= 4) must include pre-break cohorts (kept regardless).
   expect_true(any(out$cohort < as.Date("2023-06-01") & out$dev >= 4L))
@@ -66,11 +66,11 @@ test_that(".apply_break_filter with dev_split keeps CL-region cells", {
 test_that(".apply_break_filter with NULL/empty returns unchanged", {
   dt <- data.table::data.table(cohort = as.Date("2023-01-01"), dev = 1L)
   expect_equal(nrow(lossratio:::.apply_break_filter(dt, NULL,
-                      cohort_var = "cohort", dev_var = "dev")), 1L)
+                      coh = "cohort", dev = "dev")), 1L)
   reg_empty <- structure(list(breakpoints = as.Date(character(0))),
                          class = "Regime")
   expect_equal(nrow(lossratio:::.apply_break_filter(dt, reg_empty,
-                      cohort_var = "cohort", dev_var = "dev")), 1L)
+                      coh = "cohort", dev = "dev")), 1L)
 })
 
 test_that(".apply_break_filter with vector uses latest date", {
@@ -81,7 +81,7 @@ test_that(".apply_break_filter with vector uses latest date", {
   )
   out <- lossratio:::.apply_break_filter(
     dt, break_date = c("2023-03-01", "2023-08-01"),
-    cohort_var = "cohort", dev_var = "dev"
+    coh = "cohort", dev = "dev"
   )
   expect_true(all(out$cohort >= as.Date("2023-08-01")))
 })

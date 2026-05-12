@@ -100,7 +100,7 @@ their variance are estimated using the supplied WLS weights.
 \examples{
 \dontrun{
 data(experience)
-tri <- build_triangle(experience[coverage == "SUR"], group_var = coverage)
+tri <- build_triangle(experience[coverage == "SUR"], groups = coverage)
 
 # Mack chain ladder with process / parameter standard errors
 cl_mack <- fit_cl(tri, target = "loss", method = "mack")

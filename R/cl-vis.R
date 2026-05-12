@@ -65,12 +65,12 @@ plot.CLFit <- function(x,
     stop("`show_interval` must be a single non-missing logical value.",
          call. = FALSE)
 
-  grp_var <- x$group_var
-  coh_var <- x$cohort_var
+  grp     <- x$group_var
+  coh     <- x$cohort_var
   dev_var <- x$dev_var
   val_var <- x$target
 
-  if (is.null(grp_var)) grp_var <- character(0)
+  if (is.null(grp)) grp <- character(0)
 
   meta         <- .get_plot_meta(val_var, amount_divisor)
   z_alpha      <- stats::qnorm((1 + conf_level) / 2)
@@ -84,15 +84,15 @@ plot.CLFit <- function(x,
     obs  <- full[is_observed == TRUE  & is.finite(target_obs)]
     pred <- full[is_observed == FALSE & is.finite(target_proj)]
 
-    latest_obs  <- obs[, .SD[.N],  by = c(grp_var, "cohort")]
+    latest_obs  <- obs[, .SD[.N],  by = c(grp, "cohort")]
     latest_proj <- full[
-      is.finite(target_proj), .SD[.N], by = c(grp_var, "cohort")
+      is.finite(target_proj), .SD[.N], by = c(grp, "cohort")
     ]
 
-    first_pred <- pred[, .SD[1L], by = c(grp_var, "cohort")]
+    first_pred <- pred[, .SD[1L], by = c(grp, "cohort")]
 
     bridge <- latest_obs[
-      , .SD, .SDcols = c(grp_var, "cohort", "dev", "target_obs")
+      , .SD, .SDcols = c(grp, "cohort", "dev", "target_obs")
     ]
     data.table::setnames(
       bridge,
@@ -101,14 +101,14 @@ plot.CLFit <- function(x,
     )
 
     first_pred2 <- first_pred[
-      , .SD, .SDcols = c(grp_var, "cohort", "dev", "target_proj")
+      , .SD, .SDcols = c(grp, "cohort", "dev", "target_proj")
     ]
     data.table::setnames(
       first_pred2,
       c("dev", "target_proj"),
       c("x_end", "y_end")
     )
-    bridge <- first_pred2[bridge, on = c(grp_var, "cohort")]
+    bridge <- first_pred2[bridge, on = c(grp, "cohort")]
     bridge <- bridge[is.finite(x_start) & is.finite(y_start) &
                      is.finite(x_end)   & is.finite(y_end)]
 
@@ -199,13 +199,13 @@ plot.CLFit <- function(x,
       .resolve_y_scale(meta, amount_divisor)
 
     # facet
-    if (length(c(grp_var, "cohort"))) {
+    if (length(c(grp, "cohort"))) {
       p <- p + ggplot2::facet_wrap(
-        ggplot2::vars(!!!rlang::syms(c(grp_var, "cohort"))),
+        ggplot2::vars(!!!rlang::syms(c(grp, "cohort"))),
         scales   = scales,
         nrow     = nrow,
         ncol     = ncol,
-        labeller = .combined_facet_labeller(c(grp_var, "cohort"))
+        labeller = .combined_facet_labeller(c(grp, "cohort"))
       )
     }
 
@@ -231,7 +231,7 @@ plot.CLFit <- function(x,
   coh_raw <- smr[["cohort"]]
   coh_lab <- .format_period(
     coh_raw,
-    type = .get_period_type(coh_var),
+    type = .get_period_type(coh),
     abb  = TRUE
   )
 
@@ -271,9 +271,9 @@ plot.CLFit <- function(x,
   p <- p + ggplot2::coord_flip()
 
   # facet
-  if (length(grp_var)) {
+  if (length(grp)) {
     p <- p + ggplot2::facet_wrap(
-      ggplot2::vars(!!!rlang::syms(grp_var)),
+      ggplot2::vars(!!!rlang::syms(grp)),
       scales = scales,
       nrow   = nrow,
       ncol   = ncol
@@ -283,7 +283,7 @@ plot.CLFit <- function(x,
   # labs
   p <- p + ggplot2::labs(
     title   = paste0(meta$title, " Reserve"),
-    x       = .pretty_var_label(coh_var),
+    x       = .pretty_var_label(coh),
     y       = "reserve",
     caption = if (show_interval) {
       paste0(caption_base, " | Interval: ", round(conf_level * 100), "%")
@@ -398,14 +398,14 @@ plot_triangle.CLFit <- function(x,
       is.na(conf_level) || conf_level <= 0 || conf_level >= 1)
     stop("`conf_level` must be a single numeric value in (0, 1).", call. = FALSE)
 
-  grp_var <- x$group_var
-  coh_var <- x$cohort_var
+  grp     <- x$group_var
+  coh     <- x$cohort_var
   dev_var <- x$dev_var
   val_var <- x$target
 
-  if (is.null(grp_var)) grp_var <- character(0)
+  if (is.null(grp)) grp <- character(0)
 
-  if (length(coh_var) != 1L)
+  if (length(coh) != 1L)
     stop("`x` must contain exactly one `cohort_var`.", call. = FALSE)
   if (length(dev_var) != 1L)
     stop("`x` must contain exactly one `dev_var`.", call. = FALSE)
@@ -450,7 +450,7 @@ plot_triangle.CLFit <- function(x,
   }
 
   # 2) period label -----------------------------------------------------
-  coh_type <- .get_period_type(coh_var)
+  coh_type <- .get_period_type(coh)
   dt[, .y := .format_period(
     .SD[["cohort"]], type = coh_type, abb = TRUE
   ), .SDcols = "cohort"]
@@ -561,9 +561,9 @@ plot_triangle.CLFit <- function(x,
   )
 
   # 7) facet
-  if (length(grp_var)) {
+  if (length(grp)) {
     p <- p + ggplot2::facet_wrap(
-      ggplot2::vars(!!!rlang::syms(grp_var)),
+      ggplot2::vars(!!!rlang::syms(grp)),
       nrow = nrow,
       ncol = ncol
     )
@@ -572,7 +572,7 @@ plot_triangle.CLFit <- function(x,
   # 8) labs
   p <- p + ggplot2::labs(
     title   = title_txt,
-    y       = .pretty_var_label(coh_var),
+    y       = .pretty_var_label(coh),
     caption = caption_txt
   )
 
