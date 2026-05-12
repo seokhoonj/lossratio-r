@@ -40,9 +40,9 @@ test_that(".compute_triangle_usage hybrid mask matches expected pattern", {
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   d <- lossratio:::.compute_triangle_usage(
     tri, recent = 18L, regime_break = as.Date("2024-07-01"),
-    holdout = 6L, mat_k = 4L
+    holdout = 6L, m_k = 4L
   )
-  # mat_k = 4: ED region is dev < 4. Cohort cut applies only to ED region.
+  # m_k = 4: ED region is dev < 4. Cohort cut applies only to ED region.
   pre <- d[cohort < as.Date("2024-07-01") & dev < 4L & is_held_out == FALSE]
   expect_true(nrow(pre) > 0L)
   expect_true(all(pre$status == "unused"))

@@ -36,9 +36,12 @@
 #'   `fit_lr()` premium choice.
 #' @param premium_alpha Variance-structure exponent for the premium fit.
 #'   Default `1`.
-#' @param premium_regime_break Premium-side regime break. Defaults to
-#'   `loss_regime_break` (loss-side and premium-side share a cutoff unless
-#'   explicitly separated).
+#' @param premium_regime_break Optional cohort cutoff for the
+#'   premium-side regime break. Default `NULL` — premium is fit on the
+#'   full triangle. Pass an explicit value (Date / Regime) when the
+#'   regime shift affects premium accrual too. NOTE: filtering premium
+#'   aggressively can produce thin post-break data and break factor
+#'   estimation; only set when the premium really shifted.
 #' @param sigma_method Sigma extrapolation. One of `"locf"` (default),
 #'   `"min_last2"`, `"loglinear"`.
 #' @param recent Optional positive integer; calendar-diagonal filter.
@@ -49,7 +52,7 @@
 #'   projection (`loss_ci_lower`, `loss_ci_upper`). Default `0.95`.
 #'
 #' @return An object of class `"LossFit"`. List with components:
-#'   `full`, `pred`, `maturity`, `loss_ata_fit`, `premium_ata_fit`,
+#'   `full`, `proj`, `maturity`, `loss_ata_fit`, `premium_ata_fit`,
 #'   `premium_fit`, `ed`, `factor`, `selected`, plus metadata.
 #'
 #' @section Internal columns:
@@ -85,7 +88,7 @@ fit_loss <- function(x,
                      premium_fit          = NULL,
                      premium_method       = c("cl", "ed"),
                      premium_alpha        = 1,
-                     premium_regime_break = loss_regime_break,
+                     premium_regime_break = NULL,
                      sigma_method         = c("locf", "min_last2", "loglinear"),
                      recent               = NULL,
                      maturity_args        = NULL,
@@ -130,7 +133,7 @@ fit_loss <- function(x,
 
   # 2) SA hybrid filter (loss-side, 2-pass maturity) ---------------------
   if (!is.null(loss_regime_break)) {
-    bd <- .resolve_break_date(loss_regime_break)
+    bd <- .resolve_regime_break_date(loss_regime_break, by = grp)
 
     if (!is.null(bd) && method == "sa") {
       pre_loss_fit <- fit_ata(
@@ -140,14 +143,14 @@ fit_loss <- function(x,
         sigma_method  = sigma_method,
         maturity_args = maturity_args
       )
-      mat_dt <- pre_loss_fit$maturity
+      m_dt <- pre_loss_fit$maturity
 
-      if (is.null(mat_dt) || nrow(mat_dt) == 0L) {
+      if (is.null(m_dt) || nrow(m_dt) == 0L) {
         warning(
           "loss_regime_break: cannot detect maturity; falling back to ",
           "simple cohort cut.", call. = FALSE
         )
-        x <- .apply_break_filter(
+        x <- .apply_regime_filter(
           x, loss_regime_break,
           grp = grp,
           coh = "cohort",
@@ -155,27 +158,39 @@ fit_loss <- function(x,
         )
         loss_regime_break <- NULL
       } else {
-        mat_k <- mat_dt$ata_to
-        if (length(unique(mat_k)) > 1L) {
-          warning(
-            "loss_regime_break: maturity differs across groups; using max mat_k.",
-            call. = FALSE
-          )
-        }
-        mat_k <- max(mat_k)
+        # Per-group `m_k` for SA hybrid: each group uses its own
+        # maturity (ED/CL boundary). With multi-group `regime_break`,
+        # this means a group with a fast maturity (small k*) only
+        # cuts its narrow ED region, retaining pre-break CL data for
+        # factor estimation. (Earlier `max(k*)` fallback over-cut
+        # fast-maturing groups.)
+        m_k_vec <- m_dt$ata_to
+        m_k_max <- max(m_k_vec, na.rm = TRUE)
 
-        x <- .apply_break_filter(
+        dev_split_arg <- if (length(grp) > 0L &&
+                             length(unique(m_k_vec)) > 1L) {
+          m_k_dt <- m_dt[, c(grp, "ata_to"), with = FALSE]
+          data.table::setnames(m_k_dt, "ata_to", "dev_split")
+          m_k_dt
+        } else {
+          m_k_max
+        }
+
+        x <- .apply_regime_filter(
           x, loss_regime_break,
           grp       = grp,
           coh       = "cohort", dev = "dev",
-          dev_split = mat_k
+          dev_split = dev_split_arg
         )
         if (!is.null(recent)) {
+          # `.apply_recent_filter` still uses scalar dev_split (recent
+          # filter is calendar-diagonal-based; per-group boundary
+          # extension is a separate change).
           x <- .apply_recent_filter(
             x, recent,
             grp       = grp,
             coh       = "cohort", dev = "dev",
-            dev_split = mat_k
+            dev_split = m_k_max
           )
           recent <- NULL
         }
@@ -275,16 +290,16 @@ fit_loss <- function(x,
 
   # 10) maturity join per group -----------------------------------------
   if (!is.null(maturity)) {
-    mat_join <- .ensure_dt(maturity)
-    mat_keep <- c(grp, "ata_from")
-    mat_join <- mat_join[, .SD, .SDcols = intersect(mat_keep, names(mat_join))]
-    data.table::setnames(mat_join, "ata_from", "maturity_from")
+    m_join <- .ensure_dt(maturity)
+    m_keep <- c(grp, "ata_from")
+    m_join <- m_join[, .SD, .SDcols = intersect(m_keep, names(m_join))]
+    data.table::setnames(m_join, "ata_from", "maturity_from")
 
     if (length(grp)) {
-      full <- mat_join[full, on = grp]
+      full <- m_join[full, on = grp]
     } else {
-      if (nrow(mat_join) == 1L) {
-        full[, maturity_from := mat_join$maturity_from[1L]]
+      if (nrow(m_join) == 1L) {
+        full[, maturity_from := m_join$maturity_from[1L]]
       } else {
         full[, maturity_from := NA_real_]
       }
@@ -361,8 +376,8 @@ fit_loss <- function(x,
   full[, premium_incr_proj := premium_proj - data.table::shift(premium_proj, 1L, fill = 0),
        by = c(grp, "cohort")]
 
-  # 17) $pred: NA-mask observed cells (loss-side columns only) --------
-  pred    <- data.table::copy(full)
+  # 17) $proj: NA-mask observed cells (loss-side columns only) --------
+  proj    <- data.table::copy(full)
   na_cols <- c(
     "loss_proj", "premium_proj",
     "loss_incr_proj", "premium_incr_proj",
@@ -371,7 +386,7 @@ fit_loss <- function(x,
     "loss_total_cv",
     "loss_ci_lower", "loss_ci_upper"
   )
-  pred[is_observed == TRUE, (na_cols) := NA_real_]
+  proj[is_observed == TRUE, (na_cols) := NA_real_]
 
   # 18) assemble LossFit ----------------------------------------------
   # NOTE: $full retains internal columns (g_selected, g_sigma2, g_var,
@@ -384,7 +399,7 @@ fit_loss <- function(x,
     cohort            = coh,
     dev               = dev,
     full              = full,
-    pred              = pred,
+    proj              = proj,
     maturity          = maturity,
     loss_ata_fit      = loss_ata_fit,
     premium_ata_fit   = premium_ata_fit,
@@ -396,7 +411,7 @@ fit_loss <- function(x,
     alpha             = alpha,
     sigma_method      = sigma_method,
     recent            = recent_user,
-    loss_regime_break = .resolve_break_date(loss_regime_break_user),
+    loss_regime_break = .resolve_regime_break_date(loss_regime_break_user),
     maturity_args     = maturity_args,
     conf_level        = conf_level
   )
@@ -426,10 +441,17 @@ print.LossFit <- function(x, ...) {
   if (!is.null(x$maturity) && nrow(x$maturity)) {
     mat <- .ensure_dt(x$maturity)
     if (length(grp)) {
-      for (i in seq_len(nrow(mat))) {
-        grp_txt <- paste(mat[i, grp, with = FALSE], collapse = "/")
-        cat(sprintf("maturity[%s] : %s\n", grp_txt, mat$ata_to[i]))
-      }
+      grp_txt <- vapply(seq_len(nrow(mat)), function(i)
+        paste(mat[i, grp, with = FALSE], collapse = "/"), character(1L))
+      rows <- .format_record_table(
+        list(
+          label = sprintf("maturity[%s]", grp_txt),
+          value = sprintf(": %d", mat$ata_to)
+        ),
+        justify = c("left", "left"),
+        sep     = " "
+      )
+      for (row in rows) cat(row, "\n", sep = "")
     } else {
       cat("maturity     :", mat$ata_to[1L], "\n")
     }

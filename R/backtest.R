@@ -47,7 +47,16 @@
 #'   fitter.
 #' @param loss_regime_break,premium_regime_break Cohort-axis regime
 #'   break(s) for loss / premium estimation. `premium_regime_break`
-#'   defaults to `loss_regime_break`.
+#'   defaults to `loss_regime_break`. Cannot be combined with
+#'   `auto_detect_regime = TRUE`.
+#' @param auto_detect_regime Logical. When `TRUE`, [detect_regime()] is
+#'   run *inside* the backtest loop on the **masked** triangle (i.e.,
+#'   the data the analyst would have at the simulated cutoff) and the
+#'   result is used for both `loss_regime_break` and
+#'   `premium_regime_break`. Avoids the look-ahead bias of detecting
+#'   regimes on the full triangle (including the held-out diagonals)
+#'   before backtesting. Mutually exclusive with an explicit
+#'   `loss_regime_break`. Default `FALSE`.
 #' @param maturity_args Maturity-detection args. Used only for
 #'   `target = "lr"` and `target = "loss"` (stage-adaptive).
 #' @param se_method Standard-error composition for `fit_lr()`. Unused
@@ -69,11 +78,17 @@
 #'     \item{`fit`}{The fit object returned by the target-specific
 #'       fitter.}
 #'     \item{`ae_err`}{`data.table` of held-out cells with columns
-#'       `(group, cohort, dev, value_actual, value_pred, ae_err,
-#'       calendar_idx)`.}
-#'     \item{`col_summary`}{Per-`dev` aggregate A/E Error (mean /
-#'       median / weighted / n).}
-#'     \item{`diag_summary`}{Per-calendar-diagonal aggregate A/E Error.}
+#'       `(group, cohort, dev, value_actual, value_proj, aeg, ae_err,
+#'       value_actual_incr, value_proj_incr, aeg_incr, ae_err_incr,
+#'       calendar_idx)`. `aeg = value_actual - value_proj` (signed
+#'       error in target units); `ae_err = value_actual / value_proj
+#'       - 1` (relative error). `_incr` siblings are the same metrics
+#'       on the incremental view.}
+#'     \item{`col_summary`}{Per-`dev` aggregate A/E Error and AEG
+#'       (mean / median / weighted) with `_incr` variants and `n`.}
+#'     \item{`diag_summary`}{Per-calendar-diagonal aggregate A/E
+#'       Error and AEG (same columns as `col_summary`, keyed by
+#'       `calendar_idx`).}
 #'     \item{`target`, `holdout`, `fit_fn_name`}{Call metadata.}
 #'     \item{`groups`, `cohort`, `dev`}{Variable name relays
 #'       from `x`.}
@@ -113,7 +128,8 @@ backtest <- function(x,
                      sigma_method         = c("locf", "min_last2", "loglinear"),
                      recent               = NULL,
                      loss_regime_break    = NULL,
-                     premium_regime_break = loss_regime_break,
+                     premium_regime_break = NULL,
+                     auto_detect_regime   = FALSE,
                      maturity_args        = NULL,
                      se_method            = c("fixed", "delta"),
                      rho                  = 0.95,
@@ -136,21 +152,32 @@ backtest <- function(x,
     stop("`holdout` must be a single positive integer.", call. = FALSE)
   holdout <- as.integer(holdout)
 
-  # Map target -> (actual column on x, score column on fit$full,
-  # fitter name).
-  score_col <- switch(target,
-                      lr      = "lr_proj",
-                      loss    = "loss_proj",
-                      premium = "premium_proj")
+  if (!is.logical(auto_detect_regime) || length(auto_detect_regime) != 1L ||
+      is.na(auto_detect_regime))
+    stop("`auto_detect_regime` must be a single non-missing logical.",
+         call. = FALSE)
+  if (auto_detect_regime && !is.null(loss_regime_break))
+    stop("`auto_detect_regime = TRUE` cannot be combined with an explicit ",
+         "`loss_regime_break` -- pick one or the other.", call. = FALSE)
+
+  # Map target -> bare column key (`lr` / `loss` / `premium`). The fit
+  # output's `$full` has both cumulative (`<key>_proj`) and incremental
+  # (`<key>_incr_proj`) projections, and the raw Triangle has both
+  # `<key>` and `<key>_incr` columns -- so a single backtest call yields
+  # both views (`plot.Backtest(cell_type = ...)` selects which to show).
+  actual_cum  <- target
+  actual_incr <- paste0(target, "_incr")
+  proj_cum    <- paste0(target, "_proj")
+  proj_incr   <- paste0(target, "_incr_proj")
   fit_fn_name <- switch(target,
                         lr      = "fit_lr",
                         loss    = "fit_loss",
                         premium = "fit_premium")
 
-  # The actual column on the raw triangle is the bare target name.
-  if (!(target %in% names(x)))
-    stop(sprintf("`target` = '%s' not found in `x`.", target),
-         call. = FALSE)
+  for (col in c(actual_cum, actual_incr)) {
+    if (!(col %in% names(x)))
+      stop(sprintf("column '%s' not found in `x`.", col), call. = FALSE)
+  }
 
   grp <- attr(x, "groups")
   coh <- attr(x, "cohort")
@@ -167,20 +194,32 @@ backtest <- function(x,
   if (!any(full$.is_held_out))
     stop("`holdout` exceeds available calendar diagonals.", call. = FALSE)
 
-  # 2) Build masked triangle -------------------------------------------
-  dm <- full[.is_held_out == FALSE]
-  dm[, c(".coh_rank", ".cal_idx", ".max_cal", ".is_held_out") := NULL]
+  # 2) Build masked triangle via the shared `mask_triangle()` helper ----
+  masked <- mask_triangle(x, holdout = holdout)
 
-  if (!nrow(dm))
+  if (!nrow(masked))
     stop("After masking, no observations remain. Reduce `holdout`.",
          call. = FALSE)
 
-  masked <- dm
-  data.table::setattr(masked, "class", class(x))
-  for (a in c("groups", "cohort",
-              "dev", "longer")) {
-    av <- attr(x, a, exact = TRUE)
-    if (!is.null(av)) data.table::setattr(masked, a, av)
+  # 2b) Auto-detect regime on the MASKED triangle (no look-ahead) -----
+  # When `auto_detect_regime = TRUE`, run `detect_regime()` on the
+  # masked triangle so the break date only uses information available
+  # at the simulated backtest cutoff. Skipping this and passing a
+  # `Regime` detected on the full triangle would leak future data into
+  # the held-out evaluation.
+  if (auto_detect_regime) {
+    detected <- tryCatch(
+      detect_regime(masked, target = "lr"),
+      error = function(e) NULL
+    )
+    if (!is.null(detected)) {
+      # Only set loss-side break -- auto-applying the same break to
+      # premium often filters premium too aggressively (thin post-break
+      # data -> factor estimation fails -> projection NA -> backtest
+      # coverage collapses). User can pass `premium_regime_break`
+      # explicitly when premium really shifts too.
+      loss_regime_break <- detected
+    }
   }
 
   # 3) Fit on masked ----------------------------------------------------
@@ -230,59 +269,95 @@ backtest <- function(x,
   )
 
   if (!("full" %in% names(fit_obj)) ||
-      !all(c("cohort", "dev", score_col) %in% names(fit_obj$full)))
+      !all(c("cohort", "dev", proj_cum, proj_incr) %in% names(fit_obj$full)))
     stop(sprintf(
-      "fitter output must contain `$full` with `cohort`, `dev`, and `%s` columns.",
-      score_col
+      "fitter output must contain `$full` with `cohort`, `dev`, `%s`, `%s` columns.",
+      proj_cum, proj_incr
     ), call. = FALSE)
 
-  # 4) Compare predicted (from fit) to actual (from original x) -------
-  pred <- fit_obj$full[, .SD,
-    .SDcols = c(grp, "cohort", "dev", score_col)]
+  # 4) Compare projected (from fit) to actual (from original x) for
+  # both cumulative and incremental views -----------------------------
+  proj <- fit_obj$full[, .SD,
+    .SDcols = c(grp, "cohort", "dev", proj_cum, proj_incr)]
 
   obs <- full[.is_held_out == TRUE,
     .SD,
-    .SDcols = c(grp, "cohort", "dev", target, ".cal_idx")]
-  data.table::setnames(obs, target, "value_actual")
-  data.table::setnames(obs, ".cal_idx", "calendar_idx")
+    .SDcols = c(grp, "cohort", "dev", actual_cum, actual_incr, ".cal_idx")]
+  data.table::setnames(obs,
+    c(actual_cum, actual_incr, ".cal_idx"),
+    c("value_actual", "value_actual_incr", "calendar_idx")
+  )
 
-  ae_err <- pred[obs,
+  ae_err <- proj[obs,
                  on      = c(grp, "cohort", "dev"),
                  nomatch = NULL]
-  data.table::setnames(ae_err, score_col, "value_pred")
+  data.table::setnames(ae_err,
+    c(proj_cum, proj_incr),
+    c("value_proj", "value_proj_incr")
+  )
 
-  # Drop cells the masked fit cannot reach (no projection produced)
-  ae_err <- ae_err[is.finite(value_pred)]
+  # Drop cells the masked fit cannot reach (cumulative side); the
+  # incremental columns may still be NA on those edges, which is fine.
+  ae_err <- ae_err[is.finite(value_proj)]
 
+  # Cumulative ae_err / aeg
+  ae_err[, aeg := value_actual - value_proj]
   ae_err[, ae_err := data.table::fifelse(
-    is.finite(value_pred) & value_pred != 0,
-    value_actual / value_pred - 1,
+    is.finite(value_proj) & value_proj != 0,
+    value_actual / value_proj - 1,
     NA_real_
   )]
 
-  data.table::setcolorder(ae_err, c(grp, "cohort", "dev",
-                                    "value_actual", "value_pred",
-                                    "ae_err", "calendar_idx"))
+  # Incremental ae_err / aeg
+  ae_err[, aeg_incr := value_actual_incr - value_proj_incr]
+  ae_err[, ae_err_incr := data.table::fifelse(
+    is.finite(value_proj_incr) & value_proj_incr != 0,
+    value_actual_incr / value_proj_incr - 1,
+    NA_real_
+  )]
+
+  data.table::setcolorder(ae_err, c(
+    grp, "cohort", "dev",
+    "value_actual",      "value_proj",      "aeg",      "ae_err",
+    "value_actual_incr", "value_proj_incr", "aeg_incr", "ae_err_incr",
+    "calendar_idx"
+  ))
   data.table::setorderv(ae_err, c(grp, "cohort", "dev"))
 
-  # 5) Summaries --------------------------------------------------------
+  # 5) Summaries (per dev and per calendar diagonal) -- both views ----
   col_by   <- c(grp, "dev")
   col_summary <- ae_err[, .(
-    n           = sum(is.finite(ae_err)),
-    ae_err_mean = mean(ae_err, na.rm = TRUE),
-    ae_err_med  = stats::median(ae_err, na.rm = TRUE),
-    ae_err_wt   = sum(value_actual - value_pred, na.rm = TRUE) /
-                  sum(value_pred, na.rm = TRUE)
+    n                = sum(is.finite(ae_err)),
+    aeg_mean         = mean(aeg, na.rm = TRUE),
+    aeg_med          = stats::median(aeg, na.rm = TRUE),
+    ae_err_mean      = mean(ae_err, na.rm = TRUE),
+    ae_err_med       = stats::median(ae_err, na.rm = TRUE),
+    ae_err_wt        = sum(value_actual - value_proj, na.rm = TRUE) /
+                       sum(value_proj, na.rm = TRUE),
+    aeg_incr_mean    = mean(aeg_incr, na.rm = TRUE),
+    aeg_incr_med     = stats::median(aeg_incr, na.rm = TRUE),
+    ae_err_incr_mean = mean(ae_err_incr, na.rm = TRUE),
+    ae_err_incr_med  = stats::median(ae_err_incr, na.rm = TRUE),
+    ae_err_incr_wt   = sum(value_actual_incr - value_proj_incr, na.rm = TRUE) /
+                       sum(value_proj_incr, na.rm = TRUE)
   ), by = col_by]
   data.table::setorderv(col_summary, col_by)
 
   diag_by <- c(grp, "calendar_idx")
   diag_summary <- ae_err[, .(
-    n           = sum(is.finite(ae_err)),
-    ae_err_mean = mean(ae_err, na.rm = TRUE),
-    ae_err_med  = stats::median(ae_err, na.rm = TRUE),
-    ae_err_wt   = sum(value_actual - value_pred, na.rm = TRUE) /
-                  sum(value_pred, na.rm = TRUE)
+    n                = sum(is.finite(ae_err)),
+    aeg_mean         = mean(aeg, na.rm = TRUE),
+    aeg_med          = stats::median(aeg, na.rm = TRUE),
+    ae_err_mean      = mean(ae_err, na.rm = TRUE),
+    ae_err_med       = stats::median(ae_err, na.rm = TRUE),
+    ae_err_wt        = sum(value_actual - value_proj, na.rm = TRUE) /
+                       sum(value_proj, na.rm = TRUE),
+    aeg_incr_mean    = mean(aeg_incr, na.rm = TRUE),
+    aeg_incr_med     = stats::median(aeg_incr, na.rm = TRUE),
+    ae_err_incr_mean = mean(ae_err_incr, na.rm = TRUE),
+    ae_err_incr_med  = stats::median(ae_err_incr, na.rm = TRUE),
+    ae_err_incr_wt   = sum(value_actual_incr - value_proj_incr, na.rm = TRUE) /
+                       sum(value_proj_incr, na.rm = TRUE)
   ), by = diag_by]
   data.table::setorderv(diag_summary, diag_by)
 

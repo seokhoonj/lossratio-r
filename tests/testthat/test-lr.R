@@ -12,7 +12,7 @@ test_that("fit_lr default (method = 'sa') returns class 'LRFit'", {
 test_that("LRFit has expected list elements", {
   lr <- fit_lr(tri, method = "sa")
   for (nm in c("data", "method", "groups", "cohort", "dev",
-               "full", "pred", "summary",
+               "full", "proj", "summary",
                "ed", "loss_ata_fit", "premium_ata_fit", "maturity",
                "se_method", "rho", "conf_level",
                "loss_regime_break", "premium_regime_break")) {

@@ -96,7 +96,7 @@ displayed in units of 100 million KRW.
 \dontrun{
 d <- build_triangle(
   df,
-  groups   = pd_cat_nm,
+  groups   = "pd_cat_nm",
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "loss_incr",

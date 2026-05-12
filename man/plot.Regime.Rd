@@ -55,7 +55,7 @@ loadings of the original development-period features on PC1/PC2.
 For a multi-group \code{Regime}, plots are faceted by group: each group's
 PCA is rendered in its own panel using its own feature matrix and
 loadings (PCA cannot be meaningfully shared across groups with
-different \code{K}-period bases or scale, so per-group PCA is the
+different \code{window}-period bases or scale, so per-group PCA is the
 correct representation).
 }
 \seealso{

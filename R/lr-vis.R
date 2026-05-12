@@ -7,16 +7,32 @@
 #' @description
 #' Visualise an object of class `"LRFit"`.
 #'
-#' Two plot types are supported:
+#' The plotted metric is the cross-product of `metric` and `cell_type`:
 #' \itemize{
-#'   \item `"lr"`: projected cumulative loss ratio by cohort with
-#'     optional confidence bands.
-#'   \item `"loss"`: observed and projected cumulative loss by
-#'     cohort with optional confidence bands.
+#'   \item `metric = "lr"`, `cell_type = "cumulative"`: cumulative loss
+#'     ratio (default).
+#'   \item `metric = "lr_incr"` (i.e., `cell_type = "incremental"`):
+#'     per-period loss ratio.
+#'   \item `metric = "loss"` / `"premium"`: same split — cumulative or
+#'     per-period amounts.
 #' }
+#' Confidence bands are drawn only for cumulative metrics
+#' (`cell_type = "cumulative"`), since the fit output does not carry SE
+#' columns for incremental projections.
 #'
 #' @param x An object of class `"LRFit"`.
-#' @param type One of `"lr"` or `"loss"`.
+#' @param metric Metric to plot. One of `"lr"` (default), `"loss"`,
+#'   `"premium"`.
+#' @param cell_type Aggregation. One of `"cumulative"` (default) or
+#'   `"incremental"`.
+#' @param per_group Logical or `NULL`. When `TRUE` (auto for multi-group
+#'   fits), produce one ggplot per group and print them sequentially
+#'   with [devAskNewPage()] — mirrors base R's `plot.lm()` pattern of
+#'   stepping through related diagnostic plots. Returns the list of
+#'   plots invisibly. When `FALSE` (auto for single-group fits), facets
+#'   every (group, cohort) combination in a single ggplot.
+#' @param ask Passed to [devAskNewPage()] when `per_group = TRUE`.
+#'   Defaults to `dev.interactive()`.
 #' @param conf_level Confidence level. Default is `0.95`.
 #' @param show_interval Logical. Default is `TRUE`.
 #' @param amount_divisor Numeric. Default is `1e8`.
@@ -30,7 +46,10 @@
 #' @method plot LRFit
 #' @export
 plot.LRFit <- function(x,
-                        type           = c("lr", "loss"),
+                        metric         = c("lr", "loss", "premium"),
+                        cell_type      = c("cumulative", "incremental"),
+                        per_group      = NULL,
+                        ask            = grDevices::dev.interactive(),
                         conf_level     = 0.95,
                         show_interval  = TRUE,
                         amount_divisor = 1e8,
@@ -43,9 +62,10 @@ plot.LRFit <- function(x,
 
   .assert_class(x, "LRFit")
 
-  type   <- match.arg(type)
-  scales <- match.arg(scales)
-  theme  <- match.arg(theme)
+  metric    <- match.arg(metric)
+  cell_type <- match.arg(cell_type)
+  scales    <- match.arg(scales)
+  theme     <- match.arg(theme)
 
   grp     <- x$groups
   coh     <- x$cohort
@@ -59,146 +79,227 @@ plot.LRFit <- function(x,
 
   ci_type <- if (!is.null(x$ci_type)) x$ci_type else "analytical"
 
-  if (type == "loss") {
-    val_col      <- "loss_proj"
-    ci_lo_col    <- "loss_ci_lower"
-    ci_hi_col    <- "loss_ci_upper"
-    obs_col      <- "loss_obs"
-    y_lab        <- attr(x$data, "loss")
-    title        <- paste0("Projected Cumulative Loss",
-                           " (method: ", x$method, ")")
-    hline        <- 0
-    meta         <- list(type = "amount")
+  is_incr  <- cell_type == "incremental"
+  is_ratio <- metric == "lr"
+
+  # column key combines metric + cell_type — e.g., "lr" + "incremental" = "lr_incr_proj"
+  col_key <- if (is_incr) paste0(metric, "_incr") else metric
+  val_col <- paste0(col_key, "_proj")
+
+  # Only cumulative metrics have CI columns; incremental projections
+  # don't carry SE / CI columns in the fit output.
+  if (!is_incr && is_ratio) {
+    ci_lo_col <- "lr_ci_lower";   ci_hi_col <- "lr_ci_upper"
+  } else if (!is_incr && metric == "loss") {
+    ci_lo_col <- "loss_ci_lower"; ci_hi_col <- "loss_ci_upper"
+  } else if (!is_incr && metric == "premium") {
+    ci_lo_col <- "premium_ci_lower"; ci_hi_col <- "premium_ci_upper"
   } else {
-    val_col      <- "lr_proj"
-    ci_lo_col    <- "lr_ci_lower"
-    ci_hi_col    <- "lr_ci_upper"
-    obs_col      <- NULL
-    y_lab        <- "lr"
-    title        <- paste0("Projected Cumulative Loss Ratio",
-                           " (method: ", x$method, ")")
-    hline        <- 1
-    meta         <- list(type = "ratio")
+    ci_lo_col <- NA_character_;   ci_hi_col <- NA_character_
   }
 
-  obs  <- full[is_observed == TRUE  & is.finite(loss_obs)]
-  pred <- full[is_observed == FALSE & is.finite(full[[val_col]])]
+  cum_word <- if (is_incr) "Per-Period" else "Cumulative"
+  base_lab <- switch(
+    metric,
+    lr      = "Loss Ratio",
+    loss    = "Loss",
+    premium = "Premium"
+  )
+  y_lab <- if (is_ratio) col_key else attr(x$data, metric)
+  title <- paste0("Projected ", cum_word, " ", base_lab,
+                  " (method: ", x$method, ")")
+  hline <- if (is_ratio && !is_incr) 1
+           else if (!is_ratio)       0
+           else                       NULL
+  meta  <- list(type = if (is_ratio) "ratio" else "amount")
 
-  if (type == "loss") {
+  obs  <- full[is_observed == TRUE  & is.finite(loss_obs)]
+  proj <- full[is_observed == FALSE & is.finite(full[[val_col]])]
+
+  # Observed-cell value:
+  #   * Cumulative loss / premium read the raw `_obs` column.
+  #   * Cumulative lr is derived as loss_obs / premium_obs.
+  #   * Incremental metrics reuse `<metric>_incr_proj` since
+  #     loss/premium_proj equals their `_obs` counterparts on observed rows.
+  if (is_incr) {
+    obs[, .y := .SD[[1L]], .SDcols = val_col]
+  } else if (metric == "loss") {
     obs[, .y := loss_obs]
-  } else {
+  } else if (metric == "premium") {
+    obs[, .y := premium_obs]
+  } else {  # cumulative lr
     obs[, .y := data.table::fifelse(
       is.finite(premium_obs) & premium_obs != 0,
       loss_obs / premium_obs, NA_real_
     )]
   }
 
-  pred[, .y := pred[[val_col]]]
+  proj[, .y := proj[[val_col]]]
 
   # CI bounds read directly from $full (works for both analytical and bootstrap)
-  if (show_interval && nrow(pred) &&
-      ci_lo_col %in% names(pred) && ci_hi_col %in% names(pred)) {
-    pred[, `:=`(
-      lower = pred[[ci_lo_col]],
-      upper = pred[[ci_hi_col]]
+  if (show_interval && nrow(proj) &&
+      ci_lo_col %in% names(proj) && ci_hi_col %in% names(proj)) {
+    proj[, `:=`(
+      lower = proj[[ci_lo_col]],
+      upper = proj[[ci_hi_col]]
     )]
   }
 
   # bridge segment
   latest_obs <- obs[, .SD[.N], by = c(grp, "cohort")]
-  first_pred <- pred[, .SD[1L], by = c(grp, "cohort")]
+  first_proj <- proj[, .SD[1L], by = c(grp, "cohort")]
 
   bridge <- latest_obs[
     , .SD, .SDcols = c(grp, "cohort", "dev", ".y")
   ]
   data.table::setnames(bridge, c("dev", ".y"), c("x_start", "y_start"))
 
-  first_pred2 <- first_pred[
+  first_proj2 <- first_proj[
     , .SD, .SDcols = c(grp, "cohort", "dev", ".y")
   ]
-  data.table::setnames(first_pred2, c("dev", ".y"), c("x_end", "y_end"))
-  bridge <- first_pred2[bridge, on = c(grp, "cohort")]
+  data.table::setnames(first_proj2, c("dev", ".y"), c("x_end", "y_end"))
+  bridge <- first_proj2[bridge, on = c(grp, "cohort")]
   bridge <- bridge[is.finite(x_start) & is.finite(y_start) &
                    is.finite(x_end)   & is.finite(y_end)]
 
-  p <- ggplot2::ggplot()
+  # Internal builder: assemble one ggplot from (obs, proj, bridge)
+  # subsets and a list of facet variables. Called once for the combined
+  # plot (length(grp) <= 1 OR per_group = FALSE) or once per group.
+  build_plot <- function(obs_, proj_, bridge_, facet_vars, title_) {
+    p <- ggplot2::ggplot()
 
-  if (show_interval && nrow(pred) &&
-      "lower" %in% names(pred)) {
-    p <- p + ggplot2::geom_ribbon(
-      data    = pred,
-      mapping = ggplot2::aes(
-        x = .data[["dev"]], ymin = lower, ymax = upper, group = 1
-      ),
-      inherit.aes = FALSE,
-      alpha       = 0.15
-    )
-  }
+    if (show_interval && nrow(proj_) &&
+        "lower" %in% names(proj_)) {
+      p <- p + ggplot2::geom_ribbon(
+        data    = proj_,
+        mapping = ggplot2::aes(
+          x = .data[["dev"]], ymin = lower, ymax = upper, group = 1
+        ),
+        inherit.aes = FALSE,
+        alpha       = 0.15
+      )
+    }
 
-  p <- p +
-    ggplot2::geom_line(
-      data    = obs,
-      mapping = ggplot2::aes(
-        x = .data[["dev"]], y = .y, group = 1
-      ),
-      linewidth = 0.8
-    ) +
-    ggplot2::geom_segment(
-      data    = bridge,
+    # Skip geom_line for cohorts with <2 rows (single point would emit
+    # ggplot2's "Each group consists of only one observation" warning).
+    # Render them with geom_point instead so the value is still visible.
+    obs_line  <- obs_[,  if (.N >= 2L) .SD, by = c(grp, "cohort")]
+    obs_pt    <- obs_[,  if (.N <  2L) .SD, by = c(grp, "cohort")]
+    proj_line <- proj_[, if (.N >= 2L) .SD, by = c(grp, "cohort")]
+    proj_pt   <- proj_[, if (.N <  2L) .SD, by = c(grp, "cohort")]
+
+    if (nrow(obs_line)) {
+      p <- p + ggplot2::geom_line(
+        data      = obs_line,
+        mapping   = ggplot2::aes(x = .data[["dev"]], y = .y,
+                                 group = .data[["cohort"]]),
+        linewidth = 0.8
+      )
+    }
+    if (nrow(obs_pt)) {
+      p <- p + ggplot2::geom_point(
+        data    = obs_pt,
+        mapping = ggplot2::aes(x = .data[["dev"]], y = .y),
+        size    = 1.8
+      )
+    }
+    p <- p + ggplot2::geom_segment(
+      data    = bridge_,
       mapping = ggplot2::aes(
         x = x_start, y = y_start, xend = x_end, yend = y_end
       ),
       linewidth = 0.8
-    ) +
-    ggplot2::geom_line(
-      data    = pred,
-      mapping = ggplot2::aes(
-        x = .data[["dev"]], y = .y, group = 1
-      ),
-      linewidth = 0.8,
-      linetype  = "dashed"
-    ) +
-    ggplot2::geom_hline(
-      yintercept = hline,
-      linetype   = "dashed",
-      color      = "red"
     )
-
-  # y scale
-  if (meta$type == "ratio") {
-    p <- p + ggplot2::scale_y_continuous(
-      labels = function(z) paste0(round(z * 100), "%")
-    )
-  } else {
-    p <- p + .resolve_y_scale(meta, amount_divisor)
-  }
-
-  # facet
-  if (length(c(grp, "cohort"))) {
-    p <- p + ggplot2::facet_wrap(
-      ggplot2::vars(!!!rlang::syms(c(grp, "cohort"))),
-      scales   = scales,
-      nrow     = nrow,
-      ncol     = ncol,
-      labeller = .combined_facet_labeller(c(grp, "cohort"))
-    )
-  }
-
-  # labs
-  p <- p + ggplot2::labs(
-    title   = title,
-    x       = .pretty_var_label(dev),
-    y       = y_lab,
-    caption = if (show_interval) {
-      sprintf("Interval: %d%% (%s)",
-              round(conf_level * 100), ci_type)
-    } else {
-      NULL
+    if (nrow(proj_line)) {
+      p <- p + ggplot2::geom_line(
+        data      = proj_line,
+        mapping   = ggplot2::aes(x = .data[["dev"]], y = .y,
+                                 group = .data[["cohort"]]),
+        linewidth = 0.8,
+        linetype  = "dashed"
+      )
     }
-  )
+    if (nrow(proj_pt)) {
+      p <- p + ggplot2::geom_point(
+        data    = proj_pt,
+        mapping = ggplot2::aes(x = .data[["dev"]], y = .y),
+        size    = 1.8,
+        shape   = 1
+      )
+    }
 
-  # theme
-  p + .switch_theme(theme = theme, ...)
+    if (!is.null(hline)) {
+      p <- p + ggplot2::geom_hline(
+        yintercept = hline,
+        linetype   = "dashed",
+        color      = "red"
+      )
+    }
+
+    if (meta$type == "ratio") {
+      p <- p + ggplot2::scale_y_continuous(
+        labels = function(z) paste0(round(z * 100), "%")
+      )
+    } else {
+      p <- p + .resolve_y_scale(meta, amount_divisor)
+    }
+
+    if (length(facet_vars)) {
+      p <- p + ggplot2::facet_wrap(
+        ggplot2::vars(!!!rlang::syms(facet_vars)),
+        scales   = scales,
+        nrow     = nrow,
+        ncol     = ncol,
+        labeller = .combined_facet_labeller(facet_vars)
+      )
+    }
+
+    p <- p + ggplot2::labs(
+      title   = title_,
+      x       = .pretty_var_label(dev),
+      y       = y_lab,
+      caption = if (show_interval) {
+        sprintf("Interval: %d%% (%s)",
+                round(conf_level * 100), ci_type)
+      } else {
+        NULL
+      }
+    )
+
+    p + .switch_theme(theme = theme, ...)
+  }
+
+  # Default per_group: TRUE iff the fit has >1 group value on >=1 group
+  # column. Single-group fits keep the combined-facet behaviour.
+  if (is.null(per_group)) {
+    per_group <- length(grp) > 0L &&
+                 nrow(unique(full[, grp, with = FALSE])) > 1L
+  }
+
+  if (per_group && length(grp) > 0L) {
+    # split obs/proj/bridge per first group column; each group becomes a
+    # standalone ggplot faceted by cohort only.
+    g0       <- grp[1L]
+    grp_vals <- sort(unique(full[[g0]]))
+    grDevices::devAskNewPage(ask)
+    on.exit(grDevices::devAskNewPage(FALSE), add = TRUE)
+
+    plots <- lapply(grp_vals, function(gv) {
+      o  <- obs[obs[[g0]] == gv]
+      pr <- proj[proj[[g0]] == gv]
+      br <- bridge[bridge[[g0]] == gv]
+      title_g <- sprintf("%s [%s = %s]", title, g0, gv)
+      p <- build_plot(o, pr, br, facet_vars = "cohort", title_ = title_g)
+      print(p)
+      p
+    })
+    names(plots) <- as.character(grp_vals)
+    return(invisible(plots))
+  }
+
+  build_plot(obs, proj, bridge,
+             facet_vars = c(grp, "cohort"),
+             title_     = title)
 }
 
 
@@ -212,18 +313,23 @@ plot.LRFit <- function(x,
 #' distinguished by border style.
 #'
 #' @param x An object of class `"LRFit"`.
+#' @param metric Metric shown in the heatmap cells. One of `"lr"`
+#'   (default), `"loss"`, `"premium"`.
+#' @param cell_type Aggregation. One of `"cumulative"` (default) or
+#'   `"incremental"`. Combined with `metric` to select the column
+#'   (e.g., `metric = "lr"`, `cell_type = "incremental"` → `lr_incr`).
 #' @param region Cell region to plot (only used when `view = "value"`).
-#'   One of `"pred"` (projected cells only, observed cells masked),
+#'   One of `"proj"` (projected cells only, observed cells masked),
 #'   `"full"` (observed + projected), or `"data"` (observed cumulative
 #'   loss / premium / lr from `x$data` — the raw Triangle, no
-#'   projection). Default is `"pred"`.
+#'   projection). Default is `"proj"`.
 #' @param view Plot mode. One of:
 #'   \describe{
 #'     \item{"value" (default)}{Per-cell `lr` heatmap with column-wise
 #'       relative fill. `region` selects which cells to display.}
 #'     \item{"usage"}{Cell-status heatmap (`used` / `holdout` /
 #'       `unused` / `future`) driven by the fit's own metadata
-#'       (`x$recent`, `x$regime_break`, `x$maturity`). `region` is
+#'       (`x$recent`, `x$loss_regime_break`, `x$maturity`). `region` is
 #'       ignored.}
 #'   }
 #' @param label_style One of `"value"` (lr only) or `"detail"`
@@ -246,7 +352,9 @@ plot.LRFit <- function(x,
 #' @method plot_triangle LRFit
 #' @export
 plot_triangle.LRFit <- function(x,
-                                 region         = c("pred", "full", "data"),
+                                 metric         = c("lr", "loss", "premium"),
+                                 cell_type      = c("cumulative", "incremental"),
+                                 region         = c("proj", "full", "data"),
                                  view           = c("value", "usage"),
                                  label_style    = c("value", "detail"),
                                  label_size     = NULL,
@@ -260,10 +368,16 @@ plot_triangle.LRFit <- function(x,
 
   .assert_class(x, "LRFit")
 
+  metric      <- match.arg(metric)
+  cell_type   <- match.arg(cell_type)
   region      <- match.arg(region)
   view        <- match.arg(view)
   label_style <- match.arg(label_style)
   theme       <- match.arg(theme)
+
+  is_incr  <- cell_type == "incremental"
+  is_ratio <- metric == "lr"
+  col_key  <- if (is_incr) paste0(metric, "_incr") else metric
 
   # view = "usage": cell-status heatmap (used / holdout / unused /
   # future), driven by the fit's own metadata (`recent`, `regime_break`,
@@ -272,7 +386,7 @@ plot_triangle.LRFit <- function(x,
     return(.plot_triangle_usage(
       x$data,
       recent        = x$recent,
-      regime_break  = x$regime_break,
+      regime_break  = x$loss_regime_break,
       holdout       = NULL,
       maturity_args = list(),
       theme         = theme,
@@ -290,7 +404,7 @@ plot_triangle.LRFit <- function(x,
 
   # 1) select data source (value view)
   dt <- .ensure_dt(
-    switch(region, pred = x$pred, full = x$full, data = x$data)
+    switch(region, proj = x$proj, full = x$full, data = x$data)
   )
 
   # `data` region uses raw Triangle which has no `is_observed` flag;
@@ -299,15 +413,20 @@ plot_triangle.LRFit <- function(x,
   if (region == "data" && !"is_observed" %in% names(dt))
     dt[, is_observed := TRUE]
 
-  # 2) compute lr for all cells. In `data` region the cumulative `lr`
-  # column is already present on the Triangle; in `pred` / `full`
-  # region lr is derived from the projection columns.
-  if (region != "data") {
-    dt[, lr := data.table::fifelse(
-      is.finite(loss_proj) & is.finite(premium_proj) & premium_proj != 0,
-      loss_proj / premium_proj,
-      NA_real_
-    )]
+  # 2) compute .value for (metric, cell_type). The `data` region (raw
+  # Triangle) has bare column names (lr, loss_incr, premium, ...). The
+  # `proj` / `full` regions have the `_proj` suffix on the same base.
+  if (region == "data") {
+    if (!(col_key %in% names(dt)))
+      stop(sprintf("column '%s' not found in `x$data`.", col_key),
+           call. = FALSE)
+    dt[, .value := .SD[[col_key]], .SDcols = col_key]
+  } else {
+    val_col <- paste0(col_key, "_proj")
+    if (!(val_col %in% names(dt)))
+      stop(sprintf("column '%s' not found in region '%s'.",
+                   val_col, region), call. = FALSE)
+    dt[, .value := .SD[[val_col]], .SDcols = val_col]
   }
 
   # 3) build dev link labels
@@ -324,54 +443,58 @@ plot_triangle.LRFit <- function(x,
   # 5) build cell labels
   fmt <- paste0("%.", digits, "f")
 
-  if (label_style == "value") {
-    dt[, label := data.table::fifelse(
-      is.finite(lr),
-      sprintf(fmt, lr * 100),
-      ""
-    )]
-    caption_txt <- "Unit: lr % (column-wise relative fill)"
-  } else {
-    # In `data` region use cumulative observed loss/premium; in
-    # `pred` / `full` region use the projection columns.
-    if (region == "data") {
+  # Ratio metrics (lr / lr_incr) render as %. Amount metrics
+  # (loss / loss_incr / premium / premium_incr) render scaled by
+  # `amount_divisor`. `detail` label_style adds the loss/premium
+  # breakdown only for ratio metrics — meaningless for amounts.
+  if (label_style == "value" || !is_ratio) {
+    if (is_ratio) {
       dt[, label := data.table::fifelse(
-        is.finite(lr),
-        sprintf(
-          paste0(fmt, "\n(%.1f/%.1f)"),
-          lr * 100,
-          loss / amount_divisor,
-          premium / amount_divisor
-        ),
-        ""
+        is.finite(.value), sprintf(fmt, .value * 100), ""
       )]
     } else {
       dt[, label := data.table::fifelse(
-        is.finite(lr),
-        sprintf(
-          paste0(fmt, "\n(%.1f/%.1f)"),
-          lr * 100,
-          loss_proj / amount_divisor,
-          premium_proj / amount_divisor
-        ),
-        ""
+        is.finite(.value),
+        sprintf("%.1f", .value / amount_divisor), ""
       )]
     }
+    caption_txt <- if (is_ratio) {
+      sprintf("Unit: %s %% (column-wise relative fill)", col_key)
+    } else {
+      sprintf("Unit: %s (%s, column-wise relative fill)",
+              col_key, .get_amount_unit(amount_divisor))
+    }
+  } else {
+    # ratio + detail: show loss/premium breakdown beneath the lr value
+    loss_base <- if (is_incr) "loss_incr"    else "loss"
+    prem_base <- if (is_incr) "premium_incr" else "premium"
+    loss_col  <- if (region == "data") loss_base else paste0(loss_base, "_proj")
+    prem_col  <- if (region == "data") prem_base else paste0(prem_base, "_proj")
+    dt[, label := data.table::fifelse(
+      is.finite(.value),
+      sprintf(
+        paste0(fmt, "\n(%.1f/%.1f)"),
+        .value * 100,
+        .SD[[1L]] / amount_divisor,
+        .SD[[2L]] / amount_divisor
+      ),
+      ""
+    ), .SDcols = c(loss_col, prem_col)]
     caption_txt <- sprintf(
-      "Unit: lr %% (%s, column-wise relative fill)",
-      .get_amount_unit(amount_divisor)
+      "Unit: %s %% (%s, column-wise relative fill)",
+      col_key, .get_amount_unit(amount_divisor)
     )
   }
 
-  # 6) column-wise relative fill
-  dt[, lr_fill := lr - stats::median(lr, na.rm = TRUE),
+  # 6) column-wise relative fill (centered on per-dev median)
+  dt[, .fill := .value - stats::median(.value, na.rm = TRUE),
      by = c(grp, "dev")]
-  dt[!is.finite(lr_fill), lr_fill := NA_real_]
+  dt[!is.finite(.fill), .fill := NA_real_]
 
   # 7) resolve label_args
   label_args <- .modify_label_args(list(size = label_size))
 
-  plot_data <- dt[is.finite(lr)]
+  plot_data <- dt[is.finite(.value)]
 
   # ensure .y is a factor with stable levels matching ggheatmap's internal
   # coercion (factor with levels = sort(unique(.y))), so overlays can map
@@ -386,7 +509,7 @@ plot_triangle.LRFit <- function(x,
     y          = .y,
     label      = label,
     label_args = label_args,
-    fill       = lr_fill,
+    fill       = .fill,
     fill_args  = list(
       low       = "#D9ECFF",
       mid       = "white",
@@ -415,6 +538,35 @@ plot_triangle.LRFit <- function(x,
       color       = "grey50",
       linewidth   = 0.6,
       linetype    = "dashed",
+      inherit.aes = FALSE
+    )
+  }
+
+  # 9b) data / proj boundary (solid black staircase). Only meaningful
+  # when both regions are visible (region = "full") and at least one
+  # projected cell exists. The path connects (last_obs_px + 0.5,
+  # cohort_py +/- 0.5) corners; consecutive cohorts with different
+  # last_obs_px naturally fall on a horizontal connector since the
+  # y-values share an edge (.py + 0.5 == next .py - 0.5).
+  if (region == "full" && nrow(proj)) {
+    plot_data[, `:=`(
+      .px = as.integer(ata_link),
+      .py = as.integer(.y)
+    )]
+    bdy_path <- plot_data[is_observed == TRUE,
+                          .(.px_max = max(.px)),
+                          by = c(grp, ".py")]
+    data.table::setorderv(bdy_path, c(grp, ".py"))
+    bdy_path <- bdy_path[, data.table::data.table(
+      .x_pt = as.numeric(rbind(.px_max + 0.5, .px_max + 0.5)),
+      .y_pt = as.numeric(rbind(.py - 0.5,     .py + 0.5))
+    ), by = grp]
+
+    p <- p + ggplot2::geom_path(
+      data        = bdy_path,
+      mapping     = ggplot2::aes(x = .x_pt, y = .y_pt),
+      color       = "black",
+      linewidth   = 0.7,
       inherit.aes = FALSE
     )
   }
@@ -457,11 +609,16 @@ plot_triangle.LRFit <- function(x,
   }
 
   # 12) labs
+  cum_word   <- if (is_incr) "Per-Period" else "Cumulative"
+  base_word  <- switch(metric,
+                       lr      = "Loss Ratio",
+                       loss    = "Loss",
+                       premium = "Premium")
   p <- p + ggplot2::labs(
-    title   = paste0("Cumulative Loss Ratio Triangle",
+    title   = paste0(cum_word, " ", base_word, " Triangle",
                      " (method: ", x$method, ")"),
     x       = .pretty_var_label(dev),
-    y       = .pretty_var_label(coh),
+    y       = .cohort_label(coh),
     caption = caption_txt
   )
 

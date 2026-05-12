@@ -6,7 +6,10 @@
 \usage{
 \method{plot}{LRFit}(
   x,
-  type = c("lr", "loss"),
+  metric = c("lr", "loss", "premium"),
+  cell_type = c("cumulative", "incremental"),
+  per_group = NULL,
+  ask = grDevices::dev.interactive(),
   conf_level = 0.95,
   show_interval = TRUE,
   amount_divisor = 1e+08,
@@ -20,7 +23,21 @@
 \arguments{
 \item{x}{An object of class \code{"LRFit"}.}
 
-\item{type}{One of \code{"lr"} or \code{"loss"}.}
+\item{metric}{Metric to plot. One of \code{"lr"} (default), \code{"loss"},
+\code{"premium"}.}
+
+\item{cell_type}{Aggregation. One of \code{"cumulative"} (default) or
+\code{"incremental"}.}
+
+\item{per_group}{Logical or \code{NULL}. When \code{TRUE} (auto for multi-group
+fits), produce one ggplot per group and print them sequentially
+with \code{\link[=devAskNewPage]{devAskNewPage()}} — mirrors base R's \code{plot.lm()} pattern of
+stepping through related diagnostic plots. Returns the list of
+plots invisibly. When \code{FALSE} (auto for single-group fits), facets
+every (group, cohort) combination in a single ggplot.}
+
+\item{ask}{Passed to \code{\link[=devAskNewPage]{devAskNewPage()}} when \code{per_group = TRUE}.
+Defaults to \code{dev.interactive()}.}
 
 \item{conf_level}{Confidence level. Default is \code{0.95}.}
 
@@ -42,11 +59,16 @@ A \code{ggplot} object.
 \description{
 Visualise an object of class \code{"LRFit"}.
 
-Two plot types are supported:
+The plotted metric is the cross-product of \code{metric} and \code{cell_type}:
 \itemize{
-\item \code{"lr"}: projected cumulative loss ratio by cohort with
-optional confidence bands.
-\item \code{"loss"}: observed and projected cumulative loss by
-cohort with optional confidence bands.
+\item \code{metric = "lr"}, \code{cell_type = "cumulative"}: cumulative loss
+ratio (default).
+\item \code{metric = "lr_incr"} (i.e., \code{cell_type = "incremental"}):
+per-period loss ratio.
+\item \code{metric = "loss"} / \code{"premium"}: same split — cumulative or
+per-period amounts.
 }
+Confidence bands are drawn only for cumulative metrics
+(\code{cell_type = "cumulative"}), since the fit output does not carry SE
+columns for incremental projections.
 }

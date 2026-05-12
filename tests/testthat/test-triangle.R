@@ -74,9 +74,47 @@ test_that("validate_triangle returns class 'TriangleValidation' with no gaps", {
   expect_equal(nrow(res), 0L)
 })
 
+test_that("plot.TriangleValidation handles empty and non-empty cases", {
+  # Empty: message + invisible(NULL); no error.
+  res_empty <- validate_triangle(experience, groups = "coverage",
+                                 cohort = "uy_m", dev = "dev_m")
+  expect_null(suppressMessages(plot(res_empty)))
+
+  # Non-empty: induce gaps by dropping all dev=3 rows for one coverage.
+  exp_drop  <- experience[!(coverage == "SUR" & dev_m == 3)]
+  res_gaps  <- validate_triangle(exp_drop, groups = "coverage",
+                                 cohort = "uy_m", dev = "dev_m")
+  expect_gt(nrow(res_gaps), 0L)
+  p <- plot(res_gaps)
+  expect_s3_class(p, "ggplot")
+
+  # plot_triangle (heatmap view) requires calendar column.
+  res_cal <- validate_triangle(exp_drop, groups = "coverage",
+                              cohort = "uy_m", calendar = "cy_m")
+  ph_cal <- plot_triangle(res_cal)
+  expect_s3_class(ph_cal, "ggplot")
+  ph_dev <- plot_triangle(res_cal, view = "dev")
+  expect_s3_class(ph_dev, "ggplot")
+
+  # No calendar => plot_triangle returns NULL + message
+  expect_null(suppressMessages(plot_triangle(res_gaps)))
+
+  # Empty validation → message + invisible(NULL)
+  expect_null(suppressMessages(plot_triangle(res_empty)))
+})
+
+test_that("TriangleValidation carries dev_min / dev_max columns", {
+  exp_drop <- experience[!(coverage == "SUR" & dev_m == 3)]
+  res <- validate_triangle(exp_drop, groups = "coverage",
+                          cohort = "uy_m", dev = "dev_m")
+  expect_true(all(c("dev_min", "dev_max") %in% names(res)))
+  expect_true(is.integer(res$dev_min))
+  expect_true(is.integer(res$dev_max))
+})
+
 test_that("build_triangle errors when group is invalid", {
-  expect_error(build_triangle(exp, groups = nonexistent_col, cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr"),
-               regexp = "Unknown column")
+  expect_error(build_triangle(exp, groups = "nonexistent_col", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr"),
+               regexp = "not found")
 })
 
 test_that("summary.Calendar returns CalendarSummary with expected columns", {

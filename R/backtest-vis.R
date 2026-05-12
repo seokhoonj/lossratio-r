@@ -16,6 +16,10 @@
 #'
 #' @param x An object of class `"Backtest"`.
 #' @param type Plot type. One of `"col"`, `"diag"`, `"cell"`.
+#' @param cell_type Which projection view to display. One of
+#'   `"cumulative"` (default; uses `ae_err`) or `"incremental"` (uses
+#'   `ae_err_incr`). Both are stored on every `Backtest` object -- pick
+#'   the view at plot time.
 #' @param scales Facet scale argument. One of `"fixed"`, `"free"`,
 #'   `"free_x"`, `"free_y"`.
 #' @param theme String passed to [.switch_theme()].
@@ -26,29 +30,39 @@
 #' @method plot Backtest
 #' @export
 plot.Backtest <- function(x,
-                          type   = c("col", "diag", "cell"),
-                          scales = c("fixed", "free_y", "free_x", "free"),
-                          theme  = c("view", "save", "shiny"),
+                          type      = c("col", "diag", "cell"),
+                          cell_type = c("cumulative", "incremental"),
+                          scales    = c("fixed", "free_y", "free_x", "free"),
+                          theme     = c("view", "save", "shiny"),
                           ...) {
 
   .assert_class(x, "Backtest")
-  type   <- match.arg(type)
-  scales <- match.arg(scales)
-  theme  <- match.arg(theme)
+  type      <- match.arg(type)
+  cell_type <- match.arg(cell_type)
+  scales    <- match.arg(scales)
+  theme     <- match.arg(theme)
+
+  is_incr <- cell_type == "incremental"
+  # column suffix for selecting the requested view from wide summaries
+  sfx <- if (is_incr) "_incr" else ""
+  ae_err_col <- paste0("ae_err", sfx)
+  stat_cols  <- paste0(c("ae_err", "ae_err", "ae_err"), sfx,
+                       c("_mean", "_med", "_wt"))
+  cum_word <- if (is_incr) "incremental" else "cumulative"
 
   grp <- x$groups
 
   if (type == "col") {
-    smr <- .ensure_dt(x$col_summary)
+    smr  <- .ensure_dt(x$col_summary)
     long <- data.table::melt(
       smr,
       id.vars       = c(grp, "dev", "n"),
-      measure.vars  = c("ae_err_mean", "ae_err_med", "ae_err_wt"),
+      measure.vars  = stat_cols,
       variable.name = "stat",
       value.name    = "ae_err"
     )
     long[, stat := factor(stat,
-                          levels = c("ae_err_mean", "ae_err_med", "ae_err_wt"),
+                          levels = stat_cols,
                           labels = c("Mean", "Median", "Weighted"))]
     p <- ggplot2::ggplot(
       long,
@@ -72,23 +86,24 @@ plot.Backtest <- function(x,
         name = NULL
       ) +
       ggplot2::scale_y_continuous(labels = function(v) paste0(round(v * 100), "%")) +
-      ggplot2::labs(title = "Backtest A/E Error by development period",
+      ggplot2::labs(title = sprintf("Backtest A/E Error by development period (%s)",
+                                    cum_word),
                     x = .pretty_var_label(x$dev),
-                    y = "A/E ERROR = actual / pred - 1")
+                    y = "A/E Error = Actual / Projected - 1")
     if (length(grp))
       p <- p + ggplot2::facet_wrap(grp, scales = scales)
 
   } else if (type == "diag") {
-    smr <- .ensure_dt(x$diag_summary)
+    smr  <- .ensure_dt(x$diag_summary)
     long <- data.table::melt(
       smr,
       id.vars       = c(grp, "calendar_idx", "n"),
-      measure.vars  = c("ae_err_mean", "ae_err_med", "ae_err_wt"),
+      measure.vars  = stat_cols,
       variable.name = "stat",
       value.name    = "ae_err"
     )
     long[, stat := factor(stat,
-                          levels = c("ae_err_mean", "ae_err_med", "ae_err_wt"),
+                          levels = stat_cols,
                           labels = c("Mean", "Median", "Weighted"))]
     p <- ggplot2::ggplot(
       long,
@@ -112,9 +127,10 @@ plot.Backtest <- function(x,
         name = NULL
       ) +
       ggplot2::scale_y_continuous(labels = function(v) paste0(round(v * 100), "%")) +
-      ggplot2::labs(title = "Backtest A/E Error by calendar diagonal",
+      ggplot2::labs(title = sprintf("Backtest A/E Error by calendar diagonal (%s)",
+                                    cum_word),
                     x = "calendar diagonal index",
-                    y = "A/E ERROR = actual / pred - 1")
+                    y = "A/E Error = Actual / Projected - 1")
     if (length(grp))
       p <- p + ggplot2::facet_wrap(grp, scales = scales)
 
@@ -122,7 +138,7 @@ plot.Backtest <- function(x,
     dt <- .ensure_dt(x$ae_err)
     p <- ggplot2::ggplot(
       dt,
-      ggplot2::aes(x = .data[["dev"]], y = .data[["ae_err"]],
+      ggplot2::aes(x = .data[["dev"]], y = .data[[ae_err_col]],
                    color = .data[["cohort"]], group = .data[["cohort"]])
     ) +
       ggplot2::annotate("rect",
@@ -138,9 +154,10 @@ plot.Backtest <- function(x,
       ggplot2::geom_point(alpha = 0.6, size = 1.2) +
       .scale_color_by_month_gradientn(begin = 0.25) +
       ggplot2::scale_y_continuous(labels = function(v) paste0(round(v * 100), "%")) +
-      ggplot2::labs(title = "Backtest A/E Error per held-out cell",
+      ggplot2::labs(title = sprintf("Backtest A/E Error per held-out cell (%s)",
+                                    cum_word),
                     x = .pretty_var_label(x$dev),
-                    y = "A/E ERROR = actual / pred - 1")
+                    y = "A/E Error = Actual / Projected - 1")
     if (length(grp))
       p <- p + ggplot2::facet_wrap(grp, scales = scales)
   }
@@ -153,10 +170,23 @@ plot.Backtest <- function(x,
 #'
 #' @description
 #' Display the held-out cells as a `cohort x dev` heatmap coloured by
-#' A/E Error (red = under-projected (actual > pred), blue =
-#' over-projected (actual < pred), white at 0).
+#' A/E Error (red = under-projected (actual > proj), blue =
+#' over-projected (actual < proj), white at 0).
 #'
 #' @param x An object of class `"Backtest"`.
+#' @param view Plot mode:
+#'   \describe{
+#'     \item{`"value"` (default)}{Held-out-cell heatmap coloured by
+#'       A/E Error.}
+#'     \item{`"usage"`}{Cell-status heatmap (training / held-out /
+#'       dropped (regime-filtered) / future) driven by `x$holdout` and
+#'       the fit's `regime_break`. Useful to inspect what data the
+#'       masked refit actually saw, especially when combined with
+#'       multi-group `regime_break`.}
+#'   }
+#' @param cell_type Which projection view to display in `view =
+#'   "value"`. One of `"cumulative"` (default; uses `ae_err`) or
+#'   `"incremental"` (uses `ae_err_incr`).
 #' @param label_size Numeric label text size for cell labels. Default
 #'   `2.5` (single-line A/E Error percent labels on the held-out
 #'   wedge).
@@ -168,18 +198,45 @@ plot.Backtest <- function(x,
 #' @method plot_triangle Backtest
 #' @export
 plot_triangle.Backtest <- function(x,
+                                   view       = c("value", "usage"),
+                                   cell_type  = c("cumulative", "incremental"),
                                    label_size = 2.5,
                                    theme      = c("view", "save", "shiny"),
                                    ...) {
 
   .assert_class(x, "Backtest")
-  theme <- match.arg(theme)
+  view      <- match.arg(view)
+  cell_type <- match.arg(cell_type)
+  theme     <- match.arg(theme)
+
+  # view = "usage": dispatch to the shared usage renderer with the fit's
+  # `regime_break` and the backtest's `holdout`. The fit may carry
+  # either `loss_regime_break` (LRFit / LossFit) or `regime_break`
+  # (PremiumFit) -- try both.
+  if (view == "usage") {
+    rb <- x$fit$loss_regime_break
+    if (is.null(rb)) rb <- x$fit$regime_break
+    return(.plot_triangle_usage(
+      x$data,
+      recent        = x$fit$recent,
+      regime_break  = rb,
+      holdout       = x$holdout,
+      maturity_args = x$fit$maturity_args,
+      theme         = theme,
+      ...
+    ))
+  }
+
+  is_incr    <- cell_type == "incremental"
+  ae_err_col <- if (is_incr) "ae_err_incr" else "ae_err"
+  cum_word   <- if (is_incr) "incremental" else "cumulative"
 
   grp <- x$groups
   dt <- .ensure_dt(x$ae_err)
 
-  dt[, .label := sprintf("%.1f", ae_err * 100)]
-  lim <- max(abs(dt$ae_err), na.rm = TRUE)
+  dt[, .ae := .SD[[1L]], .SDcols = ae_err_col]
+  dt[, .label := sprintf("%.1f", .ae * 100)]
+  lim <- max(abs(dt$.ae), na.rm = TRUE)
   if (!is.finite(lim) || lim == 0) lim <- 1
 
   # Encode cohort as a factor with levels in reverse-chronological order
@@ -191,7 +248,7 @@ plot_triangle.Backtest <- function(x,
   p <- ggplot2::ggplot(
     dt,
     ggplot2::aes(x = .data[["dev"]], y = .data[[".y_lab"]],
-                 fill = .data[["ae_err"]])
+                 fill = .data[[".ae"]])
   ) +
     ggplot2::geom_tile(color = "white") +
     ggplot2::geom_text(ggplot2::aes(label = .data[[".label"]]),
@@ -205,9 +262,10 @@ plot_triangle.Backtest <- function(x,
       labels   = function(v) paste0(round(v * 100), "%"),
       name     = "A/E Error"
     ) +
-    ggplot2::labs(title = "Backtest A/E Error (held-out cells)",
+    ggplot2::labs(title = sprintf("Backtest A/E Error -- held-out cells (%s)",
+                                  cum_word),
                   x       = .pretty_var_label(x$dev),
-                  y       = .pretty_var_label(x$cohort),
+                  y       = .cohort_label(x$cohort),
                   caption = "Unit: %")
 
   if (length(grp))

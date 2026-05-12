@@ -21,18 +21,45 @@ test_that("Backtest has expected list elements", {
 
 test_that("ae_err has expected columns", {
   bt <- backtest(sub, holdout = 6L, target = "loss", loss_method = "cl")
-  for (nm in c("coverage", "cohort", "dev", "value_actual", "value_pred",
+  for (nm in c("coverage", "cohort", "dev", "value_actual", "value_proj",
                "ae_err", "calendar_idx")) {
     expect_true(nm %in% names(bt$ae_err), info = paste("missing", nm))
   }
 })
 
-test_that("ae_err = actual / pred - 1 (cell-wise, A/E convention)", {
+test_that("backtest stores both cumulative and incremental views", {
+  for (t in c("lr", "loss", "premium")) {
+    bt <- backtest(sub, holdout = 6L, target = t, loss_method = "cl")
+    expect_s3_class(bt, "Backtest")
+    # Cumulative columns
+    for (nm in c("value_actual", "value_proj", "aeg", "ae_err"))
+      expect_true(nm %in% names(bt$ae_err),
+                  info = paste(t, "missing", nm))
+    # Incremental columns
+    for (nm in c("value_actual_incr", "value_proj_incr",
+                 "aeg_incr", "ae_err_incr"))
+      expect_true(nm %in% names(bt$ae_err),
+                  info = paste(t, "missing", nm))
+  }
+})
+
+test_that("ae_err = actual / proj - 1 (cell-wise, A/E convention)", {
   bt <- backtest(sub, holdout = 6L, target = "loss", loss_method = "cl")
-  ok <- with(bt$ae_err, is.finite(value_pred) & value_pred != 0 &
+  ok <- with(bt$ae_err, is.finite(value_proj) & value_proj != 0 &
                      is.finite(value_actual))
   expect_equal(bt$ae_err$ae_err[ok],
-               (bt$ae_err$value_actual[ok] / bt$ae_err$value_pred[ok]) - 1,
+               (bt$ae_err$value_actual[ok] / bt$ae_err$value_proj[ok]) - 1,
+               tolerance = 1e-8)
+})
+
+test_that("aeg = actual - proj (raw gap, cumulative + incremental)", {
+  bt <- backtest(sub, holdout = 6L, target = "loss", loss_method = "cl")
+  expect_equal(bt$ae_err$aeg,
+               bt$ae_err$value_actual - bt$ae_err$value_proj,
+               tolerance = 1e-8)
+  ok <- with(bt$ae_err, is.finite(value_actual_incr) & is.finite(value_proj_incr))
+  expect_equal(bt$ae_err$aeg_incr[ok],
+               (bt$ae_err$value_actual_incr - bt$ae_err$value_proj_incr)[ok],
                tolerance = 1e-8)
 })
 
@@ -107,7 +134,7 @@ test_that("backtest works with target = 'lr', loss_method = 'sa'", {
   bt <- backtest(sub, holdout = 6L, target = "lr", loss_method = "sa")
   expect_s3_class(bt, "Backtest")
   expect_s3_class(bt$fit, "LRFit")
-  expect_true("value_pred" %in% names(bt$ae_err))
+  expect_true("value_proj" %in% names(bt$ae_err))
   expect_true(any(is.finite(bt$ae_err$ae_err)))
 })
 
@@ -127,11 +154,11 @@ test_that("backtest works with target = 'lr', loss_method = 'cl'", {
 
 test_that("backtest target = 'lr' uses lr_proj", {
   bt <- backtest(sub, holdout = 6L, target = "lr", loss_method = "sa")
-  cell <- bt$ae_err[is.finite(bt$ae_err$value_pred), ][1L, ]
+  cell <- bt$ae_err[is.finite(bt$ae_err$value_proj), ][1L, ]
   full <- bt$fit$full
   match_row <- full[full$cohort == cell$cohort & full$dev == cell$dev, ]
   expect_equal(nrow(match_row), 1L)
-  expect_equal(cell$value_pred, match_row$lr_proj, tolerance = 1e-8)
+  expect_equal(cell$value_proj, match_row$lr_proj, tolerance = 1e-8)
 })
 
 test_that("backtest preserves multi-group structure with target = 'lr'", {
@@ -153,6 +180,6 @@ test_that("backtest works with target = 'premium', premium_method = 'ed'", {
   bt <- backtest(sub, holdout = 6L, target = "premium",
                  premium_method = "ed")
   expect_s3_class(bt, "Backtest")
-  expect_true("value_pred" %in% names(bt$ae_err))
+  expect_true("value_proj" %in% names(bt$ae_err))
   expect_true(any(is.finite(bt$ae_err$ae_err)))
 })

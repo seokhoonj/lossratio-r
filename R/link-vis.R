@@ -759,7 +759,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   p <- p + ggplot2::labs(
     title   = title_txt,
     x       = "Age-to-Age",
-    y       = .pretty_var_label(coh),
+    y       = .cohort_label(coh),
     caption = caption_txt
   )
 
@@ -856,7 +856,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   p <- p + ggplot2::labs(
     title   = "Incremental Loss Intensity (g)",
     x       = "Development Link",
-    y       = .pretty_var_label(coh),
+    y       = .cohort_label(coh),
     caption = caption_txt
   )
 

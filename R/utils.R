@@ -21,6 +21,35 @@
 }
 
 
+# Cohort axis label ------------------------------------------------------
+
+#' Period axis label with grain qualifier
+#'
+#' Maps a raw period variable name (uy_m / uy_q / uy_s / uy_a or the
+#' calendar siblings) to a heatmap-friendly label like
+#' \code{"cohort (month)"}, \code{"calendar (quarter)"},
+#' \code{"cohort (semi-annual)"}, \code{"calendar (annual)"}. Falls
+#' back to the bare \code{prefix} for unrecognised inputs.
+#'
+#' @keywords internal
+.period_axis_label <- function(var, prefix = "cohort") {
+  type <- .get_period_type(var)
+  qualifier <- switch(type,
+    month   = "month",
+    quarter = "quarter",
+    half    = "semi-annual",
+    year    = "annual",
+    NA_character_
+  )
+  if (is.na(qualifier)) prefix else sprintf("%s (%s)", prefix, qualifier)
+}
+
+#' @keywords internal
+.cohort_label   <- function(var) .period_axis_label(var, "cohort")
+#' @keywords internal
+.calendar_label <- function(var) .period_axis_label(var, "calendar")
+
+
 # Amount unit -------------------------------------------------------------
 
 #' Get a human-readable label for an amount divisor
@@ -488,21 +517,53 @@ get_recent_weights <- function(weights, recent) {
 #' Resolve a regime-break specifier to a single Date
 #'
 #' @description
-#' Internal helper used by [.apply_break_filter()] to coerce a heterogeneous
-#' `break_date` argument (NULL, Date scalar/vector, character coercible to
-#' Date, or a `Regime` object) into a single Date scalar (the latest
-#' break) or `NULL`.
+#' Internal helper used by [.apply_regime_filter()] to coerce a
+#' heterogeneous `regime_break` argument (NULL, Date scalar/vector,
+#' character coercible to Date, or a `Regime` object) into either a
+#' single Date scalar or a per-group `data.table` keyed by the
+#' caller-supplied `by` columns.
 #'
-#' @param break_date See [.apply_break_filter()].
+#' @param regime_break See [.apply_regime_filter()].
+#' @param by Optional character vector of group columns the caller wants
+#'   the break dispatched on. When `NULL` (default) or empty, the
+#'   function always returns a scalar (the maximum break date),
+#'   preserving the historical single-value contract. When non-empty and
+#'   `regime_break` is a multi-group `Regime` whose `$groups` intersect
+#'   `by`, returns a `data.table` with `[intersect(by, regime$groups)...,
+#'   break_date]` (one row per group combo, holding `max(breakpoint)`).
+#'   Otherwise falls back to scalar.
 #'
-#' @return A single Date, or `NULL` when no break is specified.
+#' @return One of:
+#'   * `NULL` when no break is specified.
+#'   * A single Date (the latest break) — the scalar path.
+#'   * A `data.table` `[join_cols..., break_date]` — the per-group path.
 #'
 #' @keywords internal
-.resolve_break_date <- function(break_date) {
-  if (is.null(break_date)) return(NULL)
-  if (inherits(break_date, "Regime")) {
-    bp <- break_date$breakpoints
-    # Multi-group: $breakpoints is a data.table with a `breakpoint` column
+.resolve_regime_break_date <- function(regime_break, by = NULL) {
+  if (is.null(regime_break)) return(NULL)
+
+  if (inherits(regime_break, "Regime")) {
+    bp <- regime_break$breakpoints
+
+    # Per-group path: multi-group Regime + caller-supplied `by` that
+    # intersects the Regime's own group columns.
+    if (!is.null(by) && length(by) > 0L &&
+        isTRUE(regime_break$multi_group) &&
+        data.table::is.data.table(bp) && nrow(bp) > 0L &&
+        "breakpoint" %in% names(bp)) {
+
+      rgrp <- regime_break$groups
+      if (is.null(rgrp)) rgrp <- character(0)
+      join_cols <- intersect(by, rgrp)
+
+      if (length(join_cols) > 0L && all(join_cols %in% names(bp))) {
+        bd <- bp[, .(break_date = max(.SD[["breakpoint"]])),
+                 by = join_cols, .SDcols = "breakpoint"]
+        return(bd)
+      }
+    }
+
+    # Scalar path
     if (data.table::is.data.table(bp)) {
       if (!nrow(bp) || !"breakpoint" %in% names(bp)) return(NULL)
       return(max(bp[["breakpoint"]]))
@@ -510,10 +571,11 @@ get_recent_weights <- function(weights, recent) {
     if (length(bp) == 0L) return(NULL)
     return(max(bp))
   }
-  d <- as.Date(break_date)
+
+  d <- as.Date(regime_break)
   if (length(d) == 0L) return(NULL)
   if (any(is.na(d)))
-    stop("`break_date` contains NA after coercion to Date.", call. = FALSE)
+    stop("`regime_break` contains NA after coercion to Date.", call. = FALSE)
   max(d)
 }
 
@@ -525,12 +587,22 @@ get_recent_weights <- function(weights, recent) {
 #' to rows with `dev < dev_split` (the ED region of an SA fit); rows
 #' with `dev >= dev_split` (CL region) are kept regardless of cohort.
 #'
+#' Supports both **scalar** dispatch (single break date applied to every
+#' row) and **per-group** dispatch (different break date per group,
+#' broadcast via left-join). The mode is auto-selected from
+#' `regime_break` and `grp`: a multi-group `Regime` whose `$groups`
+#' intersect `grp` triggers the per-group path. Groups in `dt` that have
+#' no matching break date (NA after the left-join) are kept unfiltered.
+#'
 #' @param dt A data.table.
-#' @param break_date The cohort cutoff. Accepts:
+#' @param regime_break The cohort cutoff. Accepts:
 #'   * `NULL` -- no filter (return copy of `dt` unchanged).
 #'   * A single Date or character (coercible to Date).
 #'   * A Date/character vector -- uses the latest (max) date.
-#'   * A `Regime` object -- extracts the latest from `$breakpoints`.
+#'   * A single-group `Regime` object -- extracts the latest from
+#'     `$breakpoints`.
+#'   * A multi-group `Regime` object -- dispatches per group on the
+#'     intersection of `Regime$groups` and `grp`.
 #' @param grp Character vector of group columns (may be empty).
 #' @param coh Single column name for the cohort variable.
 #' @param dev Single column name for the development variable.
@@ -543,23 +615,32 @@ get_recent_weights <- function(weights, recent) {
 #' @return A filtered copy of `dt` (class preserved).
 #'
 #' @keywords internal
-.apply_break_filter <- function(dt, break_date,
-                                grp = character(0),
-                                coh, dev, dev_split = NULL) {
+.apply_regime_filter <- function(dt, regime_break,
+                                 grp = character(0),
+                                 coh, dev, dev_split = NULL) {
 
   if (!data.table::is.data.table(dt))
     stop("`dt` must be a data.table.", call. = FALSE)
 
-  bd <- .resolve_break_date(break_date)
+  bd <- .resolve_regime_break_date(regime_break, by = grp)
 
   if (is.null(bd)) {
     return(data.table::copy(dt))
   }
 
-  if (!is.null(dev_split)) {
+  # `dev_split` may be either a scalar (single ED/CL boundary applied
+  # to every group) or a `[grp..., dev_split]` data.table for
+  # per-group SA hybrid (m_k differs across groups).
+  dev_split_is_dt <- data.table::is.data.table(dev_split)
+  if (!is.null(dev_split) && !dev_split_is_dt) {
     if (!is.numeric(dev_split) || length(dev_split) != 1L || is.na(dev_split))
-      stop("`dev_split` must be a single non-NA numeric scalar.", call. = FALSE)
+      stop("`dev_split` must be a single non-NA numeric scalar, ",
+           "or a `[grp..., dev_split]` data.table for per-group SA hybrid.",
+           call. = FALSE)
   }
+  if (dev_split_is_dt && !"dev_split" %in% names(dev_split))
+    stop("per-group `dev_split` data.table must have a column named ",
+         "`dev_split`.", call. = FALSE)
 
   coh_class <- class(dt[[coh]])
   if (!any(coh_class %in% c("Date", "POSIXct", "POSIXt"))) {
@@ -569,18 +650,133 @@ get_recent_weights <- function(weights, recent) {
 
   out <- data.table::copy(dt)
 
-  if (is.null(dev_split)) {
-    keep <- out[, .SD[[1L]] >= bd, .SDcols = coh]
-  } else {
-    # Drop rows where coh < bd AND dev < dev_split.
-    # Keep if coh >= bd OR dev >= dev_split.
+  if (data.table::is.data.table(bd)) {
+    # Per-group path: bd is `[join_cols..., break_date]`. Look up
+    # break_date row-aligned via a right outer join driven by `out`.
+    join_cols <- setdiff(names(bd), "break_date")
+    bd_vals <- bd[out, on = join_cols, x.break_date]
+
     coh_vals <- out[[coh]]
     dev_vals <- out[[dev]]
-    keep <- (coh_vals >= bd) | (dev_vals >= dev_split)
+    matched  <- !is.na(bd_vals)
+
+    if (is.null(dev_split)) {
+      keep <- !matched | (coh_vals >= bd_vals)
+    } else if (dev_split_is_dt) {
+      ds_join_cols <- setdiff(names(dev_split), "dev_split")
+      ds_vals <- dev_split[out, on = ds_join_cols, x.dev_split]
+      # Group with NA dev_split: no ED region declared → cohort cut
+      # applies to all dev (full filter).
+      keep <- !matched | (coh_vals >= bd_vals) |
+              (!is.na(ds_vals) & dev_vals >= ds_vals)
+    } else {
+      keep <- !matched | (coh_vals >= bd_vals) | (dev_vals >= dev_split)
+    }
+  } else {
+    # Scalar break path (backward-compat)
+    coh_vals <- out[[coh]]
+    dev_vals <- out[[dev]]
+    if (is.null(dev_split)) {
+      keep <- coh_vals >= bd
+    } else if (dev_split_is_dt) {
+      ds_join_cols <- setdiff(names(dev_split), "dev_split")
+      ds_vals <- dev_split[out, on = ds_join_cols, x.dev_split]
+      keep <- (coh_vals >= bd) |
+              (!is.na(ds_vals) & dev_vals >= ds_vals)
+    } else {
+      keep <- (coh_vals >= bd) | (dev_vals >= dev_split)
+    }
   }
 
   out <- out[keep]
   out[]
+}
+
+
+#' Validate a column-name argument
+#'
+#' @description
+#' Internal helper used by entry-point functions (`build_triangle`,
+#' `build_link`, `fit_cl`, ...) that take column names as plain
+#' character arguments (no NSE). Performs:
+#'   * type check — must be a non-empty character vector
+#'   * optional length-one check — for arguments expected to resolve to
+#'     a single column (e.g., `cohort`, `loss`)
+#'   * presence check — every name must exist in `df`'s columns
+#'
+#' Produces clear, argument-named error messages.
+#'
+#' @param arg The argument value (already extracted from the call).
+#' @param arg_name The argument name as a string, used in error
+#'   messages (e.g., `"loss"`, `"cohort"`).
+#' @param df The data.frame/data.table the columns must be present in.
+#' @param length_one If `TRUE`, the argument must have length exactly 1.
+#'
+#' @return Invisibly returns `arg` on success; aborts otherwise.
+#'
+#' @keywords internal
+.assert_column_arg <- function(arg, arg_name, df, length_one = FALSE) {
+  if (is.null(arg) || (is.character(arg) && length(arg) == 0L))
+    stop(sprintf(
+      "`%s` is required (pass a character vector of column names).",
+      arg_name), call. = FALSE)
+  if (!is.character(arg))
+    stop(sprintf(
+      "`%s` must be a character vector of column names, not <%s>.",
+      arg_name, class(arg)[1L]), call. = FALSE)
+  if (length_one && length(arg) != 1L)
+    stop(sprintf("`%s` must be exactly one column name (got %d).",
+                 arg_name, length(arg)), call. = FALSE)
+  missing_cols <- setdiff(arg, names(df))
+  if (length(missing_cols))
+    stop(sprintf("`%s` column(s) not found in `df`: %s.",
+                 arg_name,
+                 paste(sprintf("'%s'", missing_cols), collapse = ", ")),
+         call. = FALSE)
+  invisible(arg)
+}
+
+
+#' Format a list of records as column-aligned strings
+#'
+#' @description
+#' Internal helper for print methods. Takes a named list of equal-length
+#' character vectors (one entry per column, vectors aligned row-wise)
+#' and returns a character vector of formatted rows where each column
+#' is padded to its widest value with a configurable justification.
+#'
+#' Useful for printing multi-record summaries (e.g., per-group regime
+#' info) without manually computing widths in each `print.*` method.
+#'
+#' @param cols A named list of equal-length character vectors. Each
+#'   entry is one column of the table; the entry's name is unused
+#'   (kept for caller readability).
+#' @param justify Either a single string (`"left"`, `"right"`,
+#'   `"centre"`) applied to all columns, or a character vector of the
+#'   same length as `cols` to set per-column justification.
+#' @param sep Separator inserted between columns (default `" | "`).
+#'
+#' @return A character vector of length `length(cols[[1L]])`, one
+#'   formatted row per record.
+#'
+#' @keywords internal
+.format_record_table <- function(cols, justify = "left", sep = " | ") {
+  if (!is.list(cols) || !length(cols))
+    return(character(0))
+  n <- length(cols[[1L]])
+  if (n == 0L) return(character(0))
+
+  if (length(justify) == 1L) justify <- rep(justify, length(cols))
+  if (length(justify) != length(cols))
+    stop("`justify` must be length 1 or length(cols).", call. = FALSE)
+
+  formatted <- Map(function(col, just) {
+    vals  <- as.character(col)
+    width <- max(nchar(vals, type = "width"), 0L)
+    format(vals, width = width, justify = just)
+  }, cols, justify)
+
+  do.call(paste, c(formatted, list(sep = sep)))
 }
 
 

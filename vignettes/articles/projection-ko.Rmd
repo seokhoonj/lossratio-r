@@ -78,7 +78,7 @@ tri <- build_triangle(
 )
 
 lr_sa <- fit_lr(tri, method = "sa")        # default
-plot(lr_sa, type = "lr")
+plot(lr_sa, metric = "lr")
 summary(lr_sa)
 ```
 
@@ -104,7 +104,7 @@ $$
 
 ```{r}
 lr_ed <- fit_lr(tri, method = "ed")
-plot(lr_ed, type = "lr")
+plot(lr_ed, metric = "lr")
 ```
 
 ## 방법 3: 고전적 chain ladder (`"cl"`)
@@ -130,7 +130,7 @@ $$
 
 ```{r}
 lr_cl <- fit_lr(tri, method = "cl")
-plot(lr_cl, type = "lr")
+plot(lr_cl, metric = "lr")
 ```
 
 ## 비교
@@ -183,7 +183,7 @@ SA 는 성숙점 이전엔 ED, 이후엔 CL 로 자연 전환하는 결합이다
 특수 케이스로만 "cl" 또는 "ed":
   ├── 모든 코호트가 이미 성숙점 이후
   │     → "cl"  (ED 영역이 비어있어 SA = CL)
-  └── 손해 전개가 전 기간 불안정하고 익스포저(rp) 가 더 신뢰할 만한 신호
+  └── 손해 전개가 전 기간 불안정하고 익스포저(premium) 가 더 신뢰할 만한 신호
         → "ed"  (CL 영역도 노출 기반이 적절)
 ```
 

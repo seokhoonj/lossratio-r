@@ -172,12 +172,11 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #' Returns `g_selected`, `sigma2`, and factor variance
 #' \eqn{\mathrm{Var}(\hat{g}_k)} (column `g_var`) in `$selected`.
 #'
-#' The `$full` projection table is produced by delegating to
-#' [fit_lr()] with `method = "ed"`, so cumulative loss / exposure /
-#' loss-ratio projections and their standard errors are numerically
-#' identical to those of `fit_lr(method = "ed")`. To validate an ED
-#' projection via [backtest()], call
-#' `backtest(tri, target = "lr", loss_method = "ed")`.
+#' The `$full` projection table holds cumulative loss / exposure
+#' projections and their standard errors, computed directly from the
+#' Mack-style ED recursion (see `.ed_proj`, `.ed_proc_var`,
+#' `.ed_param_var`). To validate an ED projection via [backtest()],
+#' call `backtest(tri, target = "lr", loss_method = "ed")`.
 #'
 #' @param x A `"Triangle"` object.
 #' @param target Cumulative loss variable. Default `"loss"`.

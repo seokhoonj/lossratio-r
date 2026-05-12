@@ -66,7 +66,7 @@ An object of class \code{"CLFit"} containing:
 \item{\code{target}}{Character scalar of target variable name.}
 \item{\code{full}}{\code{data.table} with observed and projected values,
 including process/parameter SE and CV columns.}
-\item{\code{pred}}{\code{data.table} identical to \code{full} with observed cells
+\item{\code{proj}}{\code{data.table} identical to \code{full} with observed cells
 set to \code{NA}.}
 \item{\code{link}}{The \code{"Link"} object produced by \code{\link[=build_link]{build_link()}}.}
 \item{\code{summary}}{Cohort-level summary with latest, ultimate,

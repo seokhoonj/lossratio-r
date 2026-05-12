@@ -1,78 +1,78 @@
-#' Detect an optimal trajectory window `K` for e-divisive regime detection
+#' Detect an optimal trajectory window `window` for e-divisive regime detection
 #'
 #' @description
 #' Run [detect_regime()] with `method = "e_divisive"` across a sequence
-#' of trajectory windows `K_seq`, then recommend an "optimal" `K` based
-#' on the *elbow* (knee point) of the *break count vs K* curve.
+#' of trajectory windows `window_seq`, then recommend an "optimal" `window` based
+#' on the *elbow* (knee point) of the *break count vs window* curve.
 #'
-#' Intuition: small `K` is over-sensitive (early-dev noise produces
-#' spurious breaks), large `K` is under-sensitive (high-dim noise
+#' Intuition: small `window` is over-sensitive (early-dev noise produces
+#' spurious breaks), large `window` is under-sensitive (high-dim noise
 #' obscures real shifts). The break count typically drops sharply at
-#' small `K` and plateaus once `K` reaches the genuine information
+#' small `window` and plateaus once `window` reaches the genuine information
 #' window — that elbow is a reasonable choice.
 #'
 #' @param x A `"Triangle"` object.
 #' @param by Grouping column(s) for per-combination detection, passed
 #'   through to [detect_regime()]. `NULL` (default) pools all cohorts.
-#' @param K_seq Integer vector of trajectory windows to sweep. Default
-#'   `2:24` — typical actuarial range. Each `K` becomes one
+#' @param window_seq Integer vector of trajectory windows to sweep. Default
+#'   `2:24` — typical actuarial range. Each `window` becomes one
 #'   `detect_regime()` call.
 #' @param target Trajectory variable. Passed to [detect_regime()].
 #' @param method Elbow-detection method. Currently only `"elbow"` is
-#'   supported (Kneedle algorithm on `break_count` vs `K`). Reserved
+#'   supported (Kneedle algorithm on `break_count` vs `window`). Reserved
 #'   for future extensions (Jaccard stability, BIC, etc.).
 #' @param sig_level Significance level for `e_divisive`. Default `0.05`.
 #' @param min_size Minimum segment size. Default `3L`.
 #'
-#' @return An object of class `"RegimeOptimalK"` (named list):
+#' @return An object of class `"RegimeOptimalWindow"` (named list):
 #'   \describe{
-#'     \item{`optimal_k`}{Recommended `K` (scalar integer) via the
-#'       Kneedle elbow heuristic on `break_count` vs `K`.}
-#'     \item{`diagnostics`}{`data.table` with one row per `K` and (when
-#'       grouped) per combo: `[by..., K, n_cohorts, break_count,
-#'       mean_magnitude]`. Missing K (too few cohorts, etc.) are
+#'     \item{`optimal_window`}{Recommended `window` (scalar integer) via the
+#'       Kneedle elbow heuristic on `break_count` vs `window`.}
+#'     \item{`diagnostics`}{`data.table` with one row per `window` and (when
+#'       grouped) per combo: `[by..., window, n_cohorts, break_count,
+#'       mean_magnitude]`. Missing window (too few cohorts, etc.) are
 #'       omitted.}
-#'     \item{`details`}{Named list of `Regime` objects keyed by `K`
+#'     \item{`details`}{Named list of `Regime` objects keyed by `window`
 #'       (preserved for downstream inspection / plotting).}
 #'     \item{`call`}{Matched call.}
-#'     \item{`K_seq`}{Sweep grid actually attempted.}
+#'     \item{`window_seq`}{Sweep grid actually attempted.}
 #'   }
 #'
 #' @seealso [detect_regime()]
 #'
 #' @keywords internal
 #' @noRd
-detect_regime_optimal_k <- function(x,
+detect_regime_optimal_window <- function(x,
                                     by        = NULL,
-                                    K_seq     = 2:24,
+                                    window_seq     = 2:24,
                                     method    = c("elbow"),
                                     target    = "lr",
                                     sig_level = 0.05,
                                     min_size  = 3L) {
 
-  .assert_triangle_input(x, "detect_regime_optimal_k()")
+  .assert_triangle_input(x, "detect_regime_optimal_window()")
   method <- match.arg(method)
 
-  K_seq <- as.integer(K_seq)
-  if (length(K_seq) < 2L || any(is.na(K_seq)) || any(K_seq < 2L))
-    stop("`K_seq` must be at least two integers, all >= 2.", call. = FALSE)
+  window_seq <- as.integer(window_seq)
+  if (length(window_seq) < 2L || any(is.na(window_seq)) || any(window_seq < 2L))
+    stop("`window_seq` must be at least two integers, all >= 2.", call. = FALSE)
 
   call_obj <- match.call()
 
-  # 1) Run detect_regime over the K grid. Errors (e.g., not enough
-  # cohorts at large K) are swallowed and the K is dropped from the
+  # 1) Run detect_regime over the window grid. Errors (e.g., not enough
+  # cohorts at large window) are swallowed and the window is dropped from the
   # diagnostics table.
-  details <- vector("list", length(K_seq))
-  names(details) <- paste0("K=", K_seq)
+  details <- vector("list", length(window_seq))
+  names(details) <- paste0("window=", window_seq)
 
-  for (i in seq_along(K_seq)) {
-    k <- K_seq[i]
+  for (i in seq_along(window_seq)) {
+    k <- window_seq[i]
     res <- tryCatch(
       suppressWarnings(detect_regime(
         x,
         target    = target,
         by        = by,
-        K         = k,
+        window         = k,
         method    = "e_divisive",
         sig_level = sig_level,
         min_size  = min_size
@@ -82,8 +82,8 @@ detect_regime_optimal_k <- function(x,
     details[i] <- list(res)
   }
 
-  # 2) Diagnostics — break_count + mean_magnitude per (combo, K).
-  diag_rows <- lapply(seq_along(K_seq), function(i) {
+  # 2) Diagnostics — break_count + mean_magnitude per (combo, window).
+  diag_rows <- lapply(seq_along(window_seq), function(i) {
     res <- details[[i]]
     if (is.null(res)) return(NULL)
     bp <- res$breakpoints
@@ -94,7 +94,7 @@ detect_regime_optimal_k <- function(x,
         head_row <- bpg[1L, by, with = FALSE]
         data.table::data.table(
           head_row,
-          K              = K_seq[i],
+          window              = window_seq[i],
           break_count    = nrow(bpg),
           mean_magnitude = if (nrow(bpg)) mean(bpg$magnitude, na.rm = TRUE) else NA_real_
         )
@@ -102,7 +102,7 @@ detect_regime_optimal_k <- function(x,
       data.table::rbindlist(rows)
     } else {
       data.table::data.table(
-        K              = K_seq[i],
+        window              = window_seq[i],
         break_count    = nrow(bp),
         mean_magnitude = if (nrow(bp)) mean(bp$magnitude, na.rm = TRUE) else NA_real_
       )
@@ -113,25 +113,25 @@ detect_regime_optimal_k <- function(x,
   )
 
   if (!nrow(diagnostics))
-    stop("No K in `K_seq` produced a usable detection.", call. = FALSE)
+    stop("No window in `window_seq` produced a usable detection.", call. = FALSE)
 
-  # 3) Elbow heuristic — Kneedle on (K, break_count). For grouped input,
+  # 3) Elbow heuristic — Kneedle on (window, break_count). For grouped input,
   # aggregate break_count across combos (sum) so the elbow reflects the
   # whole portfolio response. Users who want per-group elbows can call
   # this function once per group.
   agg <- diagnostics[, .(break_count = sum(break_count, na.rm = TRUE)),
-                     by = "K"]
-  data.table::setorderv(agg, "K")
-  optimal_k <- .kneedle_elbow(agg$K, agg$break_count)
+                     by = "window"]
+  data.table::setorderv(agg, "window")
+  optimal_window <- .kneedle_elbow(agg$window, agg$break_count)
 
   out <- list(
     call        = call_obj,
-    optimal_k   = optimal_k,
+    optimal_window   = optimal_window,
     diagnostics = diagnostics,
     details     = details,
-    K_seq       = K_seq
+    window_seq       = window_seq
   )
-  class(out) <- "RegimeOptimalK"
+  class(out) <- "RegimeOptimalWindow"
   out
 }
 
@@ -139,21 +139,21 @@ detect_regime_optimal_k <- function(x,
 #' Kneedle elbow heuristic for a decreasing curve.
 #'
 #' Implements the Kneedle algorithm (Satopaa et al., 2011) restricted
-#' to the *decreasing convex* shape we expect for break_count vs K:
+#' to the *decreasing convex* shape we expect for break_count vs window:
 #' normalise both axes to `[0, 1]`, find the index with maximum
-#' distance from the diagonal `y = 1 - x`, return the corresponding `K`.
+#' distance from the diagonal `y = 1 - x`, return the corresponding `window`.
 #'
 #' Returns `NA_integer_` when the curve is flat (no variation) or has
 #' fewer than 3 points.
 #'
 #' @keywords internal
-.kneedle_elbow <- function(K, break_count) {
-  n <- length(K)
+.kneedle_elbow <- function(window, break_count) {
+  n <- length(window)
   if (n < 3L) return(NA_integer_)
   rng_y <- range(break_count, na.rm = TRUE)
   if (!is.finite(diff(rng_y)) || diff(rng_y) == 0) return(NA_integer_)
 
-  k_norm  <- (K - min(K)) / (max(K) - min(K))
+  k_norm  <- (window - min(window)) / (max(window) - min(window))
   bc_norm <- (break_count - rng_y[1L]) / (rng_y[2L] - rng_y[1L])
 
   # For a decreasing curve, the expected line from (0, 1) to (1, 0) is
@@ -162,47 +162,47 @@ detect_regime_optimal_k <- function(x,
   # plateauing).
   deficit <- (1 - k_norm) - bc_norm
   idx <- which.max(deficit)
-  as.integer(K[idx])
+  as.integer(window[idx])
 }
 
 
-#' @method print RegimeOptimalK
+#' @method print RegimeOptimalWindow
 #' @export
-print.RegimeOptimalK <- function(x, ...) {
-  cat("<RegimeOptimalK>\n")
-  cat(sprintf("  K_seq        : %d..%d (%d values)\n",
-              min(x$K_seq), max(x$K_seq), length(x$K_seq)))
-  cat(sprintf("  optimal_k    : %s\n",
-              if (is.na(x$optimal_k)) "<flat curve>" else x$optimal_k))
+print.RegimeOptimalWindow <- function(x, ...) {
+  cat("<RegimeOptimalWindow>\n")
+  cat(sprintf("  window_seq        : %d..%d (%d values)\n",
+              min(x$window_seq), max(x$window_seq), length(x$window_seq)))
+  cat(sprintf("  optimal_window    : %s\n",
+              if (is.na(x$optimal_window)) "<flat curve>" else x$optimal_window))
   cat(sprintf("  diagnostics  : %d rows\n", nrow(x$diagnostics)))
   invisible(x)
 }
 
 
-#' @method summary RegimeOptimalK
+#' @method summary RegimeOptimalWindow
 #' @export
-summary.RegimeOptimalK <- function(object, ...) {
+summary.RegimeOptimalWindow <- function(object, ...) {
   print(object, ...)
-  cat("\n# Break count by K (aggregated):\n")
+  cat("\n# Break count by window (aggregated):\n")
   agg <- object$diagnostics[
     , .(break_count = sum(break_count, na.rm = TRUE),
         mean_magnitude = mean(mean_magnitude, na.rm = TRUE)),
-    by = "K"
+    by = "window"
   ]
-  data.table::setorderv(agg, "K")
+  data.table::setorderv(agg, "window")
   print(agg)
   invisible(object)
 }
 
 
-#' Plot break-count vs K with the elbow marker
+#' Plot break-count vs window with the elbow marker
 #'
 #' @description
-#' Diagnostic plot for a `detect_regime_optimal_k()` result: shows
+#' Diagnostic plot for a `detect_regime_optimal_window()` result: shows
 #' `break_count` (and optionally `mean_magnitude`) against the
-#' trajectory window `K`, with a vertical line at `optimal_k`.
+#' trajectory window `window`, with a vertical line at `optimal_window`.
 #'
-#' @param x A `"RegimeOptimalK"` object.
+#' @param x A `"RegimeOptimalWindow"` object.
 #' @param show_magnitude Logical; if `TRUE` (default), overlay
 #'   `mean_magnitude` on a secondary y axis (right). Set `FALSE` for
 #'   a cleaner break-count-only plot.
@@ -211,13 +211,13 @@ summary.RegimeOptimalK <- function(object, ...) {
 #'
 #' @return A `ggplot` object.
 #'
-#' @method plot RegimeOptimalK
+#' @method plot RegimeOptimalWindow
 #' @export
-plot.RegimeOptimalK <- function(x,
+plot.RegimeOptimalWindow <- function(x,
                                 show_magnitude = TRUE,
                                 theme          = c("view", "save", "shiny"),
                                 ...) {
-  .assert_class(x, "RegimeOptimalK")
+  .assert_class(x, "RegimeOptimalWindow")
   theme <- match.arg(theme)
 
   # Aggregate diagnostics across groups (sum break_count, mean magnitude)
@@ -225,9 +225,9 @@ plot.RegimeOptimalK <- function(x,
   agg <- x$diagnostics[
     , .(break_count    = sum(break_count, na.rm = TRUE),
         mean_magnitude = mean(mean_magnitude, na.rm = TRUE)),
-    by = "K"
+    by = "window"
   ]
-  data.table::setorderv(agg, "K")
+  data.table::setorderv(agg, "window")
 
   bc_max <- max(agg$break_count, na.rm = TRUE)
   mag_max <- if (show_magnitude) {
@@ -236,7 +236,7 @@ plot.RegimeOptimalK <- function(x,
     NA_real_
   }
 
-  p <- ggplot2::ggplot(agg, ggplot2::aes(x = K)) +
+  p <- ggplot2::ggplot(agg, ggplot2::aes(x = window)) +
     ggplot2::geom_line(ggplot2::aes(y = break_count),
                        linewidth = 0.7, color = "#1f77b4") +
     ggplot2::geom_point(ggplot2::aes(y = break_count),
@@ -263,23 +263,23 @@ plot.RegimeOptimalK <- function(x,
     p <- p + ggplot2::ylab("break count")
   }
 
-  if (!is.na(x$optimal_k)) {
+  if (!is.na(x$optimal_window)) {
     p <- p +
-      ggplot2::geom_vline(xintercept = x$optimal_k,
+      ggplot2::geom_vline(xintercept = x$optimal_window,
                           linetype = "dotted", color = "grey30") +
       ggplot2::annotate(
-        "text", x = x$optimal_k, y = bc_max,
-        label = sprintf("optimal K = %d", x$optimal_k),
+        "text", x = x$optimal_window, y = bc_max,
+        label = sprintf("optimal window = %d", x$optimal_window),
         hjust = -0.1, vjust = 1, color = "grey30"
       )
   }
 
   p +
-    ggplot2::scale_x_continuous(breaks = unique(agg$K)) +
+    ggplot2::scale_x_continuous(breaks = unique(agg$window)) +
     ggplot2::labs(
-      title    = "Optimal K for e-divisive regime detection",
-      subtitle = "Elbow on break-count vs trajectory window K",
-      x        = "K (trajectory window)"
+      title    = "Optimal window for e-divisive regime detection",
+      subtitle = "Elbow on break-count vs trajectory window window",
+      x        = "window (trajectory window)"
     ) +
     .switch_theme(theme, ...)
 }

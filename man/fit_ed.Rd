@@ -74,12 +74,11 @@ and exposure (\verb{$full}).
 Returns \code{g_selected}, \code{sigma2}, and factor variance
 \eqn{\mathrm{Var}(\hat{g}_k)} (column \code{g_var}) in \verb{$selected}.
 
-The \verb{$full} projection table is produced by delegating to
-\code{\link[=fit_lr]{fit_lr()}} with \code{method = "ed"}, so cumulative loss / exposure /
-loss-ratio projections and their standard errors are numerically
-identical to those of \code{fit_lr(method = "ed")}. To validate an ED
-projection via \code{\link[=backtest]{backtest()}}, call
-\code{backtest(tri, target = "lr", loss_method = "ed")}.
+The \verb{$full} projection table holds cumulative loss / exposure
+projections and their standard errors, computed directly from the
+Mack-style ED recursion (see \code{.ed_proj}, \code{.ed_proc_var},
+\code{.ed_param_var}). To validate an ED projection via \code{\link[=backtest]{backtest()}},
+call \code{backtest(tri, target = "lr", loss_method = "ed")}.
 }
 \seealso{
 \code{\link[=build_link]{build_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=fit_lr]{fit_lr()}}, \code{\link[=backtest]{backtest()}}

@@ -4,10 +4,31 @@
 \alias{plot_triangle.Backtest}
 \title{Triangle heatmap of backtest A/E Error}
 \usage{
-\method{plot_triangle}{Backtest}(x, label_size = 2.5, theme = c("view", "save", "shiny"), ...)
+\method{plot_triangle}{Backtest}(
+  x,
+  view = c("value", "usage"),
+  cell_type = c("cumulative", "incremental"),
+  label_size = 2.5,
+  theme = c("view", "save", "shiny"),
+  ...
+)
 }
 \arguments{
 \item{x}{An object of class \code{"Backtest"}.}
+
+\item{view}{Plot mode:
+\describe{
+\item{\code{"value"} (default)}{Held-out-cell heatmap coloured by
+A/E Error.}
+\item{\code{"usage"}}{Cell-status heatmap (training / held-out /
+dropped (regime-filtered) / future) driven by \code{x$holdout} and
+the fit's \code{regime_break}. Useful to inspect what data the
+masked refit actually saw, especially when combined with
+multi-group \code{regime_break}.}
+}}
+
+\item{cell_type}{Which projection view to display in \code{view = "value"}. One of \code{"cumulative"} (default; uses \code{ae_err}) or
+\code{"incremental"} (uses \code{ae_err_incr}).}
 
 \item{label_size}{Numeric label text size for cell labels. Default
 \code{2.5} (single-line A/E Error percent labels on the held-out
@@ -22,6 +43,6 @@ A \code{ggplot} object.
 }
 \description{
 Display the held-out cells as a \verb{cohort x dev} heatmap coloured by
-A/E Error (red = under-projected (actual > pred), blue =
-over-projected (actual < pred), white at 0).
+A/E Error (red = under-projected (actual > proj), blue =
+over-projected (actual < proj), white at 0).
 }

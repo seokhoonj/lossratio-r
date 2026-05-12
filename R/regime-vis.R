@@ -13,7 +13,7 @@
 #' For a multi-group `Regime`, plots are faceted by group: each group's
 #' PCA is rendered in its own panel using its own feature matrix and
 #' loadings (PCA cannot be meaningfully shared across groups with
-#' different `K`-period bases or scale, so per-group PCA is the
+#' different `window`-period bases or scale, so per-group PCA is the
 #' correct representation).
 #'
 #' @param x An object of class `"Regime"`.
@@ -75,7 +75,7 @@ plot.Regime <- function(x,
   ve <- (x$pca$sdev ^ 2) / sum(x$pca$sdev ^ 2)
   subtitle <- sprintf(
     "method: %s | window: %s 1, ..., %d | %d cohorts | PC1 %.1f%% / PC2 %.1f%%",
-    x$method, x$dev, x$K, nrow(df), ve[1L] * 100, ve[2L] * 100
+    x$method, x$dev, x$window, nrow(df), ve[1L] * 100, ve[2L] * 100
   )
 
   caption <- if (nrow(x$breakpoints)) {

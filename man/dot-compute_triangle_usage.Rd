@@ -9,7 +9,7 @@
   recent = NULL,
   regime_break = NULL,
   holdout = NULL,
-  mat_k = NULL
+  m_k = NULL
 )
 }
 \arguments{
@@ -29,11 +29,11 @@ recent wedge sits \emph{before} the holdout wedge (no overlap), matching
 \code{backtest()} semantics — the internal fitter operates on the masked
 triangle whose own max_cal is \code{original - holdout}.}
 
-\item{mat_k}{Optional integer. The maturity switch as a \emph{target}
+\item{m_k}{Optional integer. The maturity switch as a \emph{target}
 development index (= \code{ata_to} of the first stable link). When
 both \code{recent} and \code{regime_break} are provided, the hybrid mask
-uses \code{mat_k} as the boundary: cells with \code{dev < mat_k} apply the
-cohort cut, cells with \code{dev >= mat_k} apply the calendar-diagonal
+uses \code{m_k} as the boundary: cells with \code{dev < m_k} apply the
+cohort cut, cells with \code{dev >= m_k} apply the calendar-diagonal
 cut. When \code{NULL}, the hybrid logic falls back to applying both
 filters jointly (cohort cut AND recent cut).}
 }

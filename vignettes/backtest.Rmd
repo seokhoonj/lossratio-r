@@ -55,11 +55,13 @@ print(bt)
 
 The returned object is a `"Backtest"` list with these key slots:
 
-- `ae_err` — per-cell `data.table` (cohort, dev, actual, pred, ae_err, calendar_idx).
+- `ae_err` — per-cell `data.table` (cohort, dev, value_actual,
+  value_proj, aeg, ae_err + `_incr` siblings, calendar_idx).
 - `col_summary` — A/E Error aggregated by `dev`.
 - `diag_summary` — A/E Error aggregated by calendar diagonal.
 - `masked` — the triangle the fit was trained on (latest diagonals removed).
-- `fit` — the fit object returned by `fit_fn` (an `LRFit` or `CLFit`).
+- `fit` — the fit object returned by the target-specific dispatcher
+  (`fit_lr` / `fit_loss` / `fit_premium`) chosen by `target=`.
 
 `summary(bt)` prints the two summary tables alongside the call metadata.
 
@@ -91,7 +93,7 @@ head(bt$col_summary, 8)
 ```
 
 `ae_err_mean` averages cell-level A/E Error, `ae_err_med` is the
-median, and `ae_err_wt = sum(actual - pred) / sum(pred)` is the
+median, and `ae_err_wt = sum(actual - proj) / sum(proj)` is the
 exposure-weighted pooled A/E ratio minus 1. Comparing the three
 columns flags whether a few large cells dominate (`ae_err_wt` very
 different from `ae_err_med`) or the bias is uniform.

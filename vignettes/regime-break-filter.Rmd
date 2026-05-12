@@ -154,7 +154,7 @@ Reproduced from `dev/regime_backtest_hybrid.R`:
 | recent = 18                        | +2.03pp               | -3.45%       |
 | **regime_break + recent = 18**     | **-0.69pp**           | **+0.03%**   |
 
-Two columns summarise the A/E Error = `actual / pred − 1`
+Two columns summarise the A/E Error = `actual / proj − 1`
 (positive = under-projection) measured on the held-out diagonals:
 
 - **drift (cal30 − cal25)**: A/E Error aggregated by calendar diagonal,

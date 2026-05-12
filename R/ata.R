@@ -320,14 +320,11 @@ fit_ata <- function(x,
 
   # 1) regime-break filter -----------------------------------------------
   # when `regime_break` is supplied, drop cohorts strictly before the
-  # break date so estimation uses only the post-break regime.
+  # break date so estimation uses only the post-break regime. A
+  # multi-group `Regime` triggers per-group dispatch inside
+  # `.apply_regime_filter()`.
   if (!is.null(regime_break)) {
-    if (inherits(regime_break, "Regime")) {
-      regime_break <- max(regime_break$breakpoints[["breakpoint"]])
-    } else {
-      regime_break <- max(as.Date(regime_break))
-    }
-    link <- .apply_break_filter(
+    link <- .apply_regime_filter(
       link, regime_break,
       grp = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
       coh = "cohort",
@@ -411,7 +408,7 @@ fit_ata <- function(x,
     na_method     = na_method,
     sigma_method  = sigma_method,
     recent        = recent,
-    regime_break  = regime_break,
+    regime_break  = .resolve_regime_break_date(regime_break),
     use_maturity  = use_maturity,
     maturity_args = maturity_args
   )

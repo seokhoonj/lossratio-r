@@ -11,7 +11,7 @@ detect_regime(
   x,
   target = "lr",
   by = NULL,
-  K = "auto",
+  window = "auto",
   method = c("e_divisive", "pelt", "hclust"),
   n_regimes = NULL,
   sig_level = 0.05,
@@ -34,18 +34,18 @@ Also used by S3 \code{print()} method on \code{Regime} objects.}
 is \code{"lr"} (cumulative loss ratio).}
 
 \item{by}{Grouping column(s) for per-combination detection. \code{NULL}
-(default) runs pooled detection — all cohorts treated as a single
-sequence regardless of any group attribute on \code{x}. Supply a character
-vector (subset of \code{names(x)}) to dispatch per combo, e.g.
-\code{by = "coverage"} or \code{by = c("channel", "coverage")}. The Triangle's
-\code{attr(x, "groups")} is \emph{not} used as a fallback — explicit \code{by} is
-required for per-group detection.}
+(default) reuses the Triangle's \code{attr(x, "groups")} when non-empty —
+so \code{detect_regime(tri)} dispatches per group automatically — and
+otherwise falls back to pooled detection. Pass \code{by = character(0)}
+to force pooled detection on a multi-group Triangle, or a character
+vector (subset of \code{names(x)}) to dispatch on an explicit combo,
+e.g. \code{by = "coverage"} or \code{by = c("channel", "coverage")}.}
 
-\item{K}{Trajectory window. Integer (e.g., \code{12L}) for a fixed K, or
+\item{window}{Trajectory window. Integer (e.g., \code{12L}) for a fixed window, or
 the string \code{"auto"} (default) — resolves to each group's maturity
 via \code{\link[=detect_maturity]{detect_maturity()}}, falling back to \code{6L} when maturity is
 unavailable (NA, pooled mode, or \code{by} mismatching the Triangle's
-\code{attr("groups")}). Cohorts with fewer than the resolved \code{K}
+\code{attr("groups")}). Cohorts with fewer than the resolved \code{window}
 observed periods are dropped.}
 
 \item{method}{One of \code{"e_divisive"}, \code{"pelt"}, \code{"hclust"}.}
@@ -69,11 +69,11 @@ An object of class \code{"Regime"}. For single-group input:
 \item{\code{call}}{Matched call.}
 \item{\code{method}}{Detection method used.}
 \item{\code{target}}{Trajectory variable used for detection.}
-\item{\code{K}}{Trajectory window per combo. Scalar integer when a
+\item{\code{window}}{Trajectory window per combo. Scalar integer when a
 single combo was analysed; integer vector (one per surviving
 combo, in the order of \verb{$labels} / \verb{$breakpoints} group rows)
 otherwise.}
-\item{\code{K_mode}}{Either \code{"auto"} (resolved per group via
+\item{\code{window_mode}}{Either \code{"auto"} (resolved per group via
 \code{\link[=detect_maturity]{detect_maturity()}}) or \code{"manual"} (user-supplied integer).}
 \item{\code{cohort}}{Period variable from \code{x}.}
 \item{\code{labels}}{\code{data.table} of one row per analysed cohort:
@@ -94,7 +94,7 @@ Single matrix when single combo; named list of matrices for
 multi-combo.}
 \item{\code{pca}}{\code{prcomp} object (single combo) or named list of
 \code{prcomp} objects (multi-combo).}
-\item{\code{dropped}}{Cohorts excluded due to the \code{K} window
+\item{\code{dropped}}{Cohorts excluded due to the \code{window} window
 constraint. Vector (single) / named list (multi).}
 \item{\code{multi_group}}{Logical flag; \code{TRUE} when detection ran over
 multiple group combos.}
@@ -105,7 +105,7 @@ Detect structural change points in the sequence of cohort-level
 development trajectories. Each underwriting cohort (indexed by the
 \code{cohort} of a \code{"Triangle"} object) is treated as a feature vector
 whose entries are the selected \code{target} metric observed at development
-periods \verb{1, ..., K}. Cohorts are then ordered by underwriting
+periods \verb{1, ..., window}. Cohorts are then ordered by underwriting
 period and tested for structural shifts in the multivariate
 sequence.
 

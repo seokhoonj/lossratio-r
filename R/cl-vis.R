@@ -80,14 +80,14 @@ plot.CLFit <- function(x,
     full <- .ensure_dt(x$full)
 
     obs  <- full[is_observed == TRUE  & is.finite(target_obs)]
-    pred <- full[is_observed == FALSE & is.finite(target_proj)]
+    proj <- full[is_observed == FALSE & is.finite(target_proj)]
 
     latest_obs  <- obs[, .SD[.N],  by = c(grp, "cohort")]
     latest_proj <- full[
       is.finite(target_proj), .SD[.N], by = c(grp, "cohort")
     ]
 
-    first_pred <- pred[, .SD[1L], by = c(grp, "cohort")]
+    first_proj <- proj[, .SD[1L], by = c(grp, "cohort")]
 
     bridge <- latest_obs[
       , .SD, .SDcols = c(grp, "cohort", "dev", "target_obs")
@@ -98,20 +98,20 @@ plot.CLFit <- function(x,
       c("x_start", "y_start")
     )
 
-    first_pred2 <- first_pred[
+    first_proj2 <- first_proj[
       , .SD, .SDcols = c(grp, "cohort", "dev", "target_proj")
     ]
     data.table::setnames(
-      first_pred2,
+      first_proj2,
       c("dev", "target_proj"),
       c("x_end", "y_end")
     )
-    bridge <- first_pred2[bridge, on = c(grp, "cohort")]
+    bridge <- first_proj2[bridge, on = c(grp, "cohort")]
     bridge <- bridge[is.finite(x_start) & is.finite(y_start) &
                      is.finite(x_end)   & is.finite(y_end)]
 
-    if (show_interval && nrow(pred)) {
-      pred[, `:=`(
+    if (show_interval && nrow(proj)) {
+      proj[, `:=`(
         lower = pmax(0, target_proj - z_alpha * target_total_se),
         upper = target_proj + z_alpha * target_total_se
       )]
@@ -119,9 +119,9 @@ plot.CLFit <- function(x,
 
     p <- ggplot2::ggplot()
 
-    if (show_interval && nrow(pred)) {
+    if (show_interval && nrow(proj)) {
       p <- p + ggplot2::geom_ribbon(
-        data    = pred,
+        data    = proj,
         mapping = ggplot2::aes(
           x     = .data[["dev"]],
           ymin  = .data$lower,
@@ -154,7 +154,7 @@ plot.CLFit <- function(x,
         linewidth = 0.8
       ) +
       ggplot2::geom_line(
-        data    = pred,
+        data    = proj,
         mapping = ggplot2::aes(
           x     = .data[["dev"]],
           y     = .data$target_proj,
@@ -281,7 +281,7 @@ plot.CLFit <- function(x,
   # labs
   p <- p + ggplot2::labs(
     title   = paste0(meta$title, " Reserve"),
-    x       = .pretty_var_label(coh),
+    x       = "cohort",
     y       = "reserve",
     caption = if (show_interval) {
       paste0(caption_base, " | Interval: ", round(conf_level * 100), "%")
@@ -300,10 +300,10 @@ plot.CLFit <- function(x,
 #' @description
 #' Visualise a `"CLFit"` object as a triangle-style heatmap table.
 #'
-#' The `what` argument controls which values are shown:
+#' The `region` argument controls which values are shown:
 #' \describe{
-#'   \item{`"pred"`}{Predicted cells only.}
-#'   \item{`"full"`}{Observed and predicted full triangle.}
+#'   \item{`"proj"`}{Projected cells only.}
+#'   \item{`"full"`}{Observed and projected full triangle.}
 #'   \item{`"data"`}{Original observed data from `x$data`.}
 #' }
 #'
@@ -317,7 +317,7 @@ plot.CLFit <- function(x,
 #'
 #' @param x An object of class `"CLFit"`.
 #' @param region Cell region to plot (only used when `view = "value"`).
-#'   One of `"pred"` (default; projected cells only, observed cells
+#'   One of `"proj"` (default; projected cells only, observed cells
 #'   masked), `"full"` (observed + projected), or `"data"` (observed
 #'   from `x$data` — the raw Triangle, no projection).
 #' @param view Plot mode. One of:
@@ -348,7 +348,7 @@ plot.CLFit <- function(x,
 #' @method plot_triangle CLFit
 #' @export
 plot_triangle.CLFit <- function(x,
-                                 region         = c("pred", "full", "data"),
+                                 region         = c("proj", "full", "data"),
                                  view           = c("value", "usage"),
                                  label_style    = c("value", "cv", "se", "ci"),
                                  label_size     = NULL,
@@ -430,14 +430,14 @@ plot_triangle.CLFit <- function(x,
   )
 
   region_title <- switch(region,
-                         pred = "Predicted",
+                         proj = "Projected",
                          full = "Full",
                          data = "Observed")
   title_txt    <- paste(region_title, base_title)
 
   # 1) select data source -----------------------------------------------
   dt <- .ensure_dt(
-    switch(region, data = x$data, full = x$full, pred = x$pred)
+    switch(region, data = x$data, full = x$full, proj = x$proj)
   )
 
   if (region == "data") {
@@ -569,7 +569,7 @@ plot_triangle.CLFit <- function(x,
   # 8) labs
   p <- p + ggplot2::labs(
     title   = title_txt,
-    y       = .pretty_var_label(coh),
+    y       = .cohort_label(coh),
     caption = caption_txt
   )
 

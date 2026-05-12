@@ -172,23 +172,26 @@ detect_maturity <- function(x,
       ))
     }
 
+    # Coerce all numeric outputs to double so the no-match branch
+    # (NA_real_) and the match branch share types across groups
+    # (data.table grouped-j requires stable column types).
     data.table::data.table(
-      ata_from    = d$ata_from[idx],
-      ata_to      = d$ata_to[idx],
+      ata_from    = as.numeric(d$ata_from[idx]),
+      ata_to      = as.numeric(d$ata_to[idx]),
       ata_link    = as.character(d$ata_link[idx]),
-      mean        = d$mean[idx],
-      median      = d$median[idx],
-      wt          = d$wt[idx],
-      cv          = d$cv[idx],
-      f           = d$f[idx],
-      f_se        = d$f_se[idx],
-      rse         = d$rse[idx],
-      sigma       = d$sigma[idx],
-      n_obs       = d$n_obs[idx],
-      n_valid     = d$n_valid[idx],
-      n_inf       = d$n_inf[idx],
-      n_nan       = d$n_nan[idx],
-      valid_ratio = d$valid_ratio[idx]
+      mean        = as.numeric(d$mean[idx]),
+      median      = as.numeric(d$median[idx]),
+      wt          = as.numeric(d$wt[idx]),
+      cv          = as.numeric(d$cv[idx]),
+      f           = as.numeric(d$f[idx]),
+      f_se        = as.numeric(d$f_se[idx]),
+      rse         = as.numeric(d$rse[idx]),
+      sigma       = as.numeric(d$sigma[idx]),
+      n_obs       = as.numeric(d$n_obs[idx]),
+      n_valid     = as.numeric(d$n_valid[idx]),
+      n_inf       = as.numeric(d$n_inf[idx]),
+      n_nan       = as.numeric(d$n_nan[idx]),
+      valid_ratio = as.numeric(d$valid_ratio[idx])
     )
   }
 

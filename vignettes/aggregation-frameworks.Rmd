@@ -158,13 +158,17 @@ formatting):
 
 ```{r}
 attr(tri, "cohort")     # "uy_m"
-attr(tri, "cohort_type")    # "month"
 attr(tri, "dev")        # "dev_m"
-attr(tri, "dev_type")       # "month"
+attr(tri, "grain")      # "M"
 
 attr(cal, "calendar")   # "cy_m"
-attr(cal, "calendar_type")  # "month"
+attr(cal, "grain")      # "M"
 ```
+
+Granularity (`"month"` / `"quarter"` / `"semi-annual"` / `"annual"`)
+is derived on demand from the raw column name via
+`lossratio:::.get_period_type()`, so no `_type` cache attributes are
+stored.
 
 The data columns themselves are standardised to `cohort` / `dev`
 / `calendar`, so downstream code is granularity-agnostic.

@@ -107,13 +107,10 @@ fit_intensity <- function(x,
   sigma_method <- match.arg(sigma_method)
 
   # 1) regime-break filter ----------------------------------------------
+  # Multi-group `Regime` triggers per-group dispatch inside
+  # `.apply_regime_filter()`.
   if (!is.null(regime_break)) {
-    if (inherits(regime_break, "Regime")) {
-      regime_break <- max(regime_break$breakpoints[["breakpoint"]])
-    } else {
-      regime_break <- max(as.Date(regime_break))
-    }
-    link <- .apply_break_filter(
+    link <- .apply_regime_filter(
       link, regime_break,
       grp = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
       coh = "cohort",
@@ -161,7 +158,7 @@ fit_intensity <- function(x,
     na_method    = na_method,
     sigma_method = sigma_method,
     recent       = recent,
-    regime_break = regime_break
+    regime_break = .resolve_regime_break_date(regime_break)
   )
 
   class(out) <- "IntensityFit"

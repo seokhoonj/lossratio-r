@@ -122,7 +122,7 @@ applies a single stage throughout.
 
 ```{r}
 lr <- fit_lr(tri, method = "sa")
-plot(lr, type = "lr")
+plot(lr, metric = "lr")
 summary(lr)
 ```
 

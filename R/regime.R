@@ -7,7 +7,7 @@
 #' development trajectories. Each underwriting cohort (indexed by the
 #' `cohort` of a `"Triangle"` object) is treated as a feature vector
 #' whose entries are the selected `target` metric observed at development
-#' periods `1, ..., K`. Cohorts are then ordered by underwriting
+#' periods `1, ..., window`. Cohorts are then ordered by underwriting
 #' period and tested for structural shifts in the multivariate
 #' sequence.
 #'
@@ -43,17 +43,17 @@
 #' @param target Column name of the trajectory variable. Default
 #'   is `"lr"` (cumulative loss ratio).
 #' @param by Grouping column(s) for per-combination detection. `NULL`
-#'   (default) runs pooled detection — all cohorts treated as a single
-#'   sequence regardless of any group attribute on `x`. Supply a character
-#'   vector (subset of `names(x)`) to dispatch per combo, e.g.
-#'   `by = "coverage"` or `by = c("channel", "coverage")`. The Triangle's
-#'   `attr(x, "groups")` is *not* used as a fallback — explicit `by` is
-#'   required for per-group detection.
-#' @param K Trajectory window. Integer (e.g., `12L`) for a fixed K, or
+#'   (default) reuses the Triangle's `attr(x, "groups")` when non-empty —
+#'   so `detect_regime(tri)` dispatches per group automatically — and
+#'   otherwise falls back to pooled detection. Pass `by = character(0)`
+#'   to force pooled detection on a multi-group Triangle, or a character
+#'   vector (subset of `names(x)`) to dispatch on an explicit combo,
+#'   e.g. `by = "coverage"` or `by = c("channel", "coverage")`.
+#' @param window Trajectory window. Integer (e.g., `12L`) for a fixed window, or
 #'   the string `"auto"` (default) — resolves to each group's maturity
 #'   via [detect_maturity()], falling back to `6L` when maturity is
 #'   unavailable (NA, pooled mode, or `by` mismatching the Triangle's
-#'   `attr("groups")`). Cohorts with fewer than the resolved `K`
+#'   `attr("groups")`). Cohorts with fewer than the resolved `window`
 #'   observed periods are dropped.
 #' @param method One of `"e_divisive"`, `"pelt"`, `"hclust"`.
 #' @param n_regimes Integer. Number of regimes to force. `NULL` means
@@ -68,11 +68,11 @@
 #'     \item{`call`}{Matched call.}
 #'     \item{`method`}{Detection method used.}
 #'     \item{`target`}{Trajectory variable used for detection.}
-#'     \item{`K`}{Trajectory window per combo. Scalar integer when a
+#'     \item{`window`}{Trajectory window per combo. Scalar integer when a
 #'       single combo was analysed; integer vector (one per surviving
 #'       combo, in the order of `$labels` / `$breakpoints` group rows)
 #'       otherwise.}
-#'     \item{`K_mode`}{Either `"auto"` (resolved per group via
+#'     \item{`window_mode`}{Either `"auto"` (resolved per group via
 #'       [detect_maturity()]) or `"manual"` (user-supplied integer).}
 #'     \item{`cohort`}{Period variable from `x`.}
 #'     \item{`labels`}{`data.table` of one row per analysed cohort:
@@ -94,7 +94,7 @@
 #'       multi-combo.}
 #'     \item{`pca`}{`prcomp` object (single combo) or named list of
 #'       `prcomp` objects (multi-combo).}
-#'     \item{`dropped`}{Cohorts excluded due to the `K` window
+#'     \item{`dropped`}{Cohorts excluded due to the `window` window
 #'       constraint. Vector (single) / named list (multi).}
 #'     \item{`multi_group`}{Logical flag; `TRUE` when detection ran over
 #'       multiple group combos.}
@@ -141,7 +141,7 @@
 detect_regime <- function(x,
                           target    = "lr",
                           by        = NULL,
-                          K         = "auto",
+                          window         = "auto",
                           method    = c("e_divisive", "pelt", "hclust"),
                           n_regimes = NULL,
                           sig_level = 0.05,
@@ -154,24 +154,29 @@ detect_regime <- function(x,
   coh <- attr(x, "cohort")
   dev <- attr(x, "dev")
 
-  # `K = "auto"` falls back to maturity (`detect_maturity()`). The
+  # `window = "auto"` falls back to maturity (`detect_maturity()`). The
   # default fallback when no maturity is detected (or pooled mode) is
-  # `K_AUTO_FALLBACK` — small enough to keep recent cohorts in the
+  # `WINDOW_AUTO_FALLBACK` — small enough to keep recent cohorts in the
   # window for most coverages.
-  K_AUTO_FALLBACK <- 6L
-  K_is_auto <- identical(K, "auto")
-  if (!K_is_auto) {
-    K <- as.integer(K)
-    if (is.na(K) || K < 2L)
-      stop("`K` must be an integer >= 2 or the string \"auto\".",
+  WINDOW_AUTO_FALLBACK <- 6L
+  window_is_auto <- identical(window, "auto")
+  if (!window_is_auto) {
+    window <- as.integer(window)
+    if (is.na(window) || window < 2L)
+      stop("`window` must be an integer >= 2 or the string \"auto\".",
            call. = FALSE)
   }
 
   # resolve grouping:
-  #   by = NULL (default) → pooled detection (single cohort sequence,
-  #                         group attribute on `x` ignored)
+  #   by = NULL (default) → use `attr(x, "groups")` if non-empty, else pooled
+  #   by = character(0)   → force pooled (single cohort sequence)
   #   by = character(.)   → explicit grouping columns
-  grp <- if (is.null(by)) character(0) else by
+  grp <- if (is.null(by)) {
+    g <- attr(x, "groups")
+    if (is.null(g)) character(0) else g
+  } else {
+    by
+  }
 
   if (length(coh) != 1L)
     stop("`x` must have exactly one `cohort`.", call. = FALSE)
@@ -205,11 +210,11 @@ detect_regime <- function(x,
   }
   n_combos <- max(nrow(grp_combos), 1L)
 
-  # `K = "auto"`: resolve per-combo trajectory window via detect_maturity.
-  # Falls back to `K_AUTO_FALLBACK` when maturity is unavailable for that
+  # `window = "auto"`: resolve per-combo trajectory window via detect_maturity.
+  # Falls back to `WINDOW_AUTO_FALLBACK` when maturity is unavailable for that
   # combo (pooled detection, NA maturity, or by-columns mismatching the
   # Triangle's `attr("groups")`).
-  K_per_combo <- if (K_is_auto) {
+  window_per_combo <- if (window_is_auto) {
     # detect_maturity supports cumulative targets only — map _incr to its
     # cumulative counterpart, fall back to "lr" otherwise.
     mat_target <- switch(target,
@@ -219,24 +224,24 @@ detect_regime <- function(x,
       "premium_incr" = "premium",
       "lr"
     )
-    mat_dt <- tryCatch(
+    m_dt <- tryCatch(
       detect_maturity(x, target = mat_target),
       error = function(e) NULL
     )
-    if (!is.null(mat_dt) && length(grp) > 0L &&
-        all(grp %in% names(mat_dt)) &&
-        "ata_to" %in% names(mat_dt)) {
+    if (!is.null(m_dt) && length(grp) > 0L &&
+        all(grp %in% names(m_dt)) &&
+        "ata_to" %in% names(m_dt)) {
       vapply(seq_len(n_combos), function(i) {
         combo_row <- grp_combos[i]
-        m <- mat_dt[combo_row, on = grp, nomatch = NULL]
+        m <- m_dt[combo_row, on = grp, nomatch = NULL]
         v <- if (nrow(m)) m[["ata_to"]][1L] else NA_integer_
-        if (is.na(v)) K_AUTO_FALLBACK else as.integer(v)
+        if (is.na(v)) WINDOW_AUTO_FALLBACK else as.integer(v)
       }, integer(1L))
     } else {
-      rep(K_AUTO_FALLBACK, n_combos)
+      rep(WINDOW_AUTO_FALLBACK, n_combos)
     }
   } else {
-    rep(as.integer(K), n_combos)
+    rep(as.integer(window), n_combos)
   }
 
   per_group <- vector("list", n_combos)
@@ -255,7 +260,7 @@ detect_regime <- function(x,
       .detect_regime_single(
         d         = di,
         target    = target,
-        K         = K_per_combo[i],
+        window         = window_per_combo[i],
         method    = method,
         n_regimes = n_regimes,
         sig_level = sig_level,
@@ -324,27 +329,27 @@ detect_regime <- function(x,
   # that downstream code (and existing tests) expect when only one group
   # combo is detected. `$breakpoints` and `$labels` remain data.tables.
   is_single <- sum(ok) == 1L
-  K_used <- K_per_combo[ok]
+  window_used <- window_per_combo[ok]
   if (is_single) {
     n_regimes_out  <- n_regimes_vec[[1L]]
     trajectory_out <- trajectory_lst[[1L]]
     pca_out        <- pca_lst[[1L]]
     dropped_out    <- dropped_lst[[1L]]
-    K_out          <- K_used[[1L]]
+    window_out          <- window_used[[1L]]
   } else {
     n_regimes_out  <- n_regimes_vec
     trajectory_out <- trajectory_lst
     pca_out        <- pca_lst
     dropped_out    <- dropped_lst
-    K_out          <- K_used
+    window_out          <- window_used
   }
 
   out <- list(
     call        = call_obj,
     method      = method,
     target      = target,
-    K           = K_out,
-    K_mode      = if (K_is_auto) "auto" else "manual",
+    window           = window_out,
+    window_mode      = if (window_is_auto) "auto" else "manual",
     cohort      = coh,
     dev         = dev,
     groups      = grp,
@@ -371,18 +376,18 @@ detect_regime <- function(x,
 #' [detect_regime()] itself.
 #'
 #' @keywords internal
-.detect_regime_single <- function(d, target, K, method,
+.detect_regime_single <- function(d, target, window, method,
                                   n_regimes, sig_level, min_size,
                                   coh, dev) {
 
-  d <- d[d[["dev"]] <= K]
+  d <- d[d[["dev"]] <= window]
   n_obs <- d[, .(n = .N), by = c("cohort")]
-  ok <- n_obs[n >= K][["cohort"]]
+  ok <- n_obs[n >= window][["cohort"]]
   dropped <- setdiff(unique(d[["cohort"]]), ok)
 
   d <- d[d[["cohort"]] %in% ok]
   if (!nrow(d))
-    stop("No cohorts have >= K observed development periods. Reduce `K`.",
+    stop("No cohorts have >= window observed development periods. Reduce `window`.",
          call. = FALSE)
 
   w <- data.table::dcast(
@@ -396,12 +401,12 @@ detect_regime <- function(x,
   rownames(mat) <- as.character(w[["cohort"]])
 
   if (anyNA(mat))
-    stop("Feature matrix contains NA. Reduce `K` or check input.",
+    stop("Feature matrix contains NA. Reduce `window` or check input.",
          call. = FALSE)
 
   n_cohorts <- nrow(mat)
   if (n_cohorts < 2L * max(min_size, 1L))
-    stop("Too few cohorts after filtering. Reduce `K` or `min_size`.",
+    stop("Too few cohorts after filtering. Reduce `window` or `min_size`.",
          call. = FALSE)
 
   pca <- stats::prcomp(mat, scale. = TRUE)
@@ -558,46 +563,70 @@ detect_regime <- function(x,
 #' @export
 print.Regime <- function(x, ...) {
   cat("<Regime>\n")
-  cat(sprintf("  method      : %s\n", x$method))
-  cat(sprintf("  target      : %s\n", x$target))
-  cat(sprintf("  window (K)  : %s 1-%d\n", x$dev, x$K))
+  cat(sprintf("  method : %s\n", x$method))
+  cat(sprintf("  target : %s\n", x$target))
 
   if (isTRUE(x$multi_group)) {
-    grp <- x$groups
+    grp      <- x$groups
     grp_vals <- names(x$n_regimes)
-    cat(sprintf("  groups      : %d (%s)\n",
-                length(grp_vals), grp))
-    for (gv in grp_vals) {
-      n_coh <- nrow(x$labels[x$labels[[grp]] == .coerce_match(gv, x$labels[[grp]])])
-      n_drop <- length(x$dropped[[gv]])
-      bp_g <- x$breakpoints[x$breakpoints[[grp]] ==
-                              .coerce_match(gv, x$breakpoints[[grp]])][["breakpoint"]]
-      cat(sprintf("    [%s] cohorts: %d", gv, n_coh))
-      if (n_drop) cat(sprintf(" (%d dropped)", n_drop))
-      cat(sprintf(" | regimes: %d", x$n_regimes[[gv]]))
-      if (length(bp_g)) {
-        cat(sprintf(" | breakpoints: %s",
-                    paste(format(bp_g, "%y.%m"), collapse = ", ")))
-      } else {
-        cat(" | breakpoints: (none)")
-      }
-      cat("\n")
+    K_vec    <- if (length(x$window) == length(grp_vals)) x$window
+                else rep(x$window[[1L]], length(grp_vals))
+
+    cat(sprintf("  groups : %d (%s)\n", length(grp_vals), grp))
+
+    n_coh  <- integer(length(grp_vals))
+    n_drop <- integer(length(grp_vals))
+    bp_str <- character(length(grp_vals))
+    for (i in seq_along(grp_vals)) {
+      gv         <- grp_vals[i]
+      n_coh[i]   <- nrow(x$labels[x$labels[[grp]] ==
+                                    .coerce_match(gv, x$labels[[grp]])])
+      n_drop[i]  <- length(x$dropped[[gv]])
+      bp_g       <- x$breakpoints[x$breakpoints[[grp]] ==
+                                    .coerce_match(gv, x$breakpoints[[grp]])][["breakpoint"]]
+      bp_str[i]  <- if (length(bp_g))
+                      paste(format(bp_g, "%y.%m"), collapse = ", ")
+                    else "(none)"
     }
+
+    # Right-align the dropped-count digit so paren contents line up
+    # vertically across groups (e.g., "( 8 dropped)" vs "(11 dropped)").
+    drop_w   <- max(nchar(format(n_drop)), 0L)
+    drop_str <- ifelse(
+      n_drop > 0L,
+      sprintf(paste0("(%", drop_w, "d dropped)"), n_drop),
+      ""
+    )
+
+    cols <- list(
+      label    = sprintf("[%s]",          grp_vals),
+      window   = sprintf("%s 1-%d",       x$dev, K_vec),
+      cohorts  = sprintf("cohorts: %d",   n_coh),
+      dropped  = drop_str,
+      regimes  = sprintf("regimes: %d",   as.integer(x$n_regimes[grp_vals])),
+      brkpts   = sprintf("breakpoints: %s", bp_str)
+    )
+    rows <- .format_record_table(
+      cols,
+      justify = c("left", "left", "left", "left", "left", "left")
+    )
+    for (row in rows) cat("    ", row, "\n", sep = "")
   } else {
-    cat(sprintf("  cohorts     : %d analysed", nrow(x$labels)))
+    cat(sprintf("  window (window) : %s 1-%d\n", x$dev, x$window))
+    cat(sprintf("  cohorts    : %d analysed", nrow(x$labels)))
     if (length(x$dropped))
       cat(sprintf(" (%d dropped)", length(x$dropped)))
     cat("\n")
-    cat(sprintf("  regimes     : %d\n", x$n_regimes))
+    cat(sprintf("  regimes    : %d\n", x$n_regimes))
     if (nrow(x$breakpoints)) {
-      cat(sprintf("  breakpoints : %s\n",
+      cat(sprintf("  breakpoints: %s\n",
                   paste(format(x$breakpoints[["breakpoint"]], "%y.%m"),
                         collapse = ", ")))
     } else {
-      cat("  breakpoints : (none)\n")
+      cat("  breakpoints: (none)\n")
     }
     ve <- (x$pca$sdev ^ 2) / sum(x$pca$sdev ^ 2)
-    cat(sprintf("  PC1 / PC2   : %.1f%% / %.1f%%\n",
+    cat(sprintf("  PC1 / PC2  : %.1f%% / %.1f%%\n",
                 ve[1L] * 100, ve[2L] * 100))
   }
   invisible(x)
@@ -650,7 +679,7 @@ summary.Regime <- function(object, ...) {
       method      = object$method,
       target      = object$target,
       dev         = object$dev,
-      K           = object$K,
+      window           = object$window,
       groups      = grp,
       multi_group = TRUE,
       n_cohorts   = nrow(labels),
@@ -673,7 +702,7 @@ summary.Regime <- function(object, ...) {
       method      = object$method,
       target      = object$target,
       dev         = object$dev,
-      K           = object$K,
+      window           = object$window,
       groups      = object$groups,
       multi_group = FALSE,
       n_cohorts   = nrow(labels),
@@ -695,7 +724,7 @@ print.summary.Regime <- function(x, ...) {
   cat("Cohort regime detection summary\n")
   cat(sprintf("  method    : %s\n", x$method))
   cat(sprintf("  target    : %s\n", x$target))
-  cat(sprintf("  window    : %s 1-%d\n", x$dev, x$K))
+  cat(sprintf("  window    : %s 1-%d\n", x$dev, x$window))
 
   if (isTRUE(x$multi_group)) {
     grp <- x$groups

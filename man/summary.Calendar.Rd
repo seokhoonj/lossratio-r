@@ -35,7 +35,7 @@ calendar-period summary statistics for cumulative loss ratios (\code{lr})
 and per-period loss ratios (\code{lr_incr}).
 
 Where \code{\link[=summary.Triangle]{summary.Triangle()}} aggregates by \verb{(groups, dev)} (cohort
-× development), this method aggregates by \verb{(groups, calendar)}
+x development), this method aggregates by \verb{(groups, calendar)}
 (calendar period) so the resulting table is indexed by calendar
 diagonals rather than development periods.
 }

@@ -12,7 +12,7 @@ fit_loss(
   premium_fit = NULL,
   premium_method = c("cl", "ed"),
   premium_alpha = 1,
-  premium_regime_break = loss_regime_break,
+  premium_regime_break = NULL,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   maturity_args = NULL,
@@ -45,9 +45,12 @@ when \code{premium_fit = NULL}. The default matches the historical
 \item{premium_alpha}{Variance-structure exponent for the premium fit.
 Default \code{1}.}
 
-\item{premium_regime_break}{Premium-side regime break. Defaults to
-\code{loss_regime_break} (loss-side and premium-side share a cutoff unless
-explicitly separated).}
+\item{premium_regime_break}{Optional cohort cutoff for the
+premium-side regime break. Default \code{NULL} — premium is fit on the
+full triangle. Pass an explicit value (Date / Regime) when the
+regime shift affects premium accrual too. NOTE: filtering premium
+aggressively can produce thin post-break data and break factor
+estimation; only set when the premium really shifted.}
 
 \item{sigma_method}{Sigma extrapolation. One of \code{"locf"} (default),
 \code{"min_last2"}, \code{"loglinear"}.}
@@ -63,7 +66,7 @@ projection (\code{loss_ci_lower}, \code{loss_ci_upper}). Default \code{0.95}.}
 }
 \value{
 An object of class \code{"LossFit"}. List with components:
-\code{full}, \code{pred}, \code{maturity}, \code{loss_ata_fit}, \code{premium_ata_fit},
+\code{full}, \code{proj}, \code{maturity}, \code{loss_ata_fit}, \code{premium_ata_fit},
 \code{premium_fit}, \code{ed}, \code{factor}, \code{selected}, plus metadata.
 }
 \description{

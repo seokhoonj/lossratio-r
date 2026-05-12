@@ -88,12 +88,17 @@ for (i in seq_len(nrow(calib))) {
       noise <- exp(rnorm(1L, 0, log(1 + cell_cv)))
       incr_loss <- incr_premium * eff_target * weights[k + 1L] * K * noise
 
+      # Real-world premium / loss are recorded in won (integer);
+      # round to match that convention but keep `numeric` (double)
+      # storage — actuarial values may exceed R's int32 ceiling once
+      # portfolios scale, and downstream computations (cumulative
+      # sums, projections, ratios) produce non-integer values anyway.
       records[[length(records) + 1L]] <- data.table(
         coverage     = cv,
         cy_m         = cy_m,
         uy_m         = uy_m,
-        loss_incr    = incr_loss,
-        premium_incr = incr_premium
+        loss_incr    = round(incr_loss),
+        premium_incr = round(incr_premium)
       )
     }
   }

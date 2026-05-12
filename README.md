@@ -139,7 +139,7 @@ plot(cl, type = "projection")
 
 # Loss ratio fit (stage-adaptive by default — ED before maturity, CL after)
 lr <- fit_lr(tri, method = "sa")
-plot(lr, type = "lr")
+plot(lr, metric = "lr", cell_type = "cumulative")
 summary(lr)
 
 # Cell selection: maturity (dev axis) + regime (cohort axis)

@@ -113,19 +113,21 @@ build_link <- function(x,
 
   valid_vars <- c("loss", "premium", "lr")
 
-  tgt <- .capture_names(dt, !!rlang::enquo(target))
-  if (length(tgt) != 1L || !(tgt %in% valid_vars))
+  if (!is.character(target) || length(target) != 1L ||
+      !(target %in% valid_vars))
     stop("`target` must be one of 'loss', 'premium', or 'lr'.",
          call. = FALSE)
+  tgt <- target
 
   use_exposure <- !is.null(exposure)
   use_weight   <- !is.null(weight)
 
   if (use_exposure) {
-    exp <- .capture_names(dt, !!rlang::enquo(exposure))
-    if (length(exp) != 1L || !(exp %in% valid_vars))
+    if (!is.character(exposure) || length(exposure) != 1L ||
+        !(exposure %in% valid_vars))
       stop("`exposure` must be one of 'loss', 'premium', or 'lr'.",
            call. = FALSE)
+    exp <- exposure
     if (exp == tgt)
       warning(
         "`exposure` equals `target` (\"", tgt, "\") -- self-anchored ",
@@ -142,10 +144,11 @@ build_link <- function(x,
       stop("`weight` cannot be combined with `exposure`. ",
            "The dual-variable mode uses `exposure_from` as its anchor.",
            call. = FALSE)
-    wt <- .capture_names(dt, !!rlang::enquo(weight))
-    if (length(wt) != 1L || !(wt %in% valid_vars))
+    if (!is.character(weight) || length(weight) != 1L ||
+        !(weight %in% valid_vars))
       stop("`weight` must be one of 'loss', 'premium', or 'lr'.",
            call. = FALSE)
+    wt <- weight
     if (wt == tgt)
       stop("`weight` must differ from `target`.", call. = FALSE)
   } else {

@@ -430,7 +430,7 @@
 
   if (type == "half") {
     h <- (m > 6L) + 1L
-    return(paste0(yr, sep, "H", h))
+    return(paste0(yr, sep, "S", h))
   }
 
   if (type == "day") {

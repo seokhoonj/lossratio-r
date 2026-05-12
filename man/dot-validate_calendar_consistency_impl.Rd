@@ -7,7 +7,7 @@
 .validate_calendar_consistency_impl(dt, grp, coh, dev, cal)
 }
 \description{
-Flag rows where \code{calendar < cohort} — claims/events recorded
+Flag rows where \code{calendar < cohort} -- claims/events recorded
 as occurring before the cohort start, which is logically impossible.
 }
 \keyword{internal}

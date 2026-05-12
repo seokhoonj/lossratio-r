@@ -102,13 +102,13 @@ plot_triangle(bt)
 ``` r
 plot(tri)                                                  # 코호트 궤적
 plot_triangle(tri)                                         # cell heatmap
-plot_triangle(lr, view = "value", region = "pred")         # 예측 영역 LR
+plot_triangle(lr, view = "value", region = "proj")         # 예측 영역 LR
 plot_triangle(lr, view = "usage")                          # 맨 위 이미지와 동일 모드
 ```
 
 `plot_triangle()` 의 두 인자가 직교:
 
--   **`region`** — 어느 영역? `"pred"` / `"full"` / `"data"`
+-   **`region`** — 어느 영역? `"proj"` / `"full"` / `"data"`
 -   **`view`** — 무엇을 보여줄지? `"value"` (metric) / `"usage"` (cell status)
 
 ## 더 자세히

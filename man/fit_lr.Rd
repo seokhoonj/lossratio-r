@@ -11,7 +11,7 @@ fit_lr(
   loss_regime_break = NULL,
   premium_method = c("cl", "ed"),
   premium_alpha = 1,
-  premium_regime_break = loss_regime_break,
+  premium_regime_break = NULL,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   maturity_args = NULL,

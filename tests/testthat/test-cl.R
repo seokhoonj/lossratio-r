@@ -7,7 +7,7 @@ test_that("fit_cl method = 'mack' returns class 'CLFit' with expected structure"
   cl <- fit_cl(tri, target = "loss", method = "mack")
   expect_s3_class(cl, "CLFit")
   for (nm in c("data", "method", "groups", "cohort", "dev",
-               "target", "full", "pred", "link", "summary",
+               "target", "full", "proj", "link", "summary",
                "factor", "selected")) {
     expect_true(nm %in% names(cl), info = paste("missing", nm))
   }

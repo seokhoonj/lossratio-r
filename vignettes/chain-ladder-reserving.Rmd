@@ -151,7 +151,7 @@ distinguishing observed cells from projected:
 
 ```{r}
 plot_triangle(cl_mack, region = "full")    # observed + projected
-plot_triangle(cl_mack, region = "pred")    # projected only
+plot_triangle(cl_mack, region = "proj")    # projected only
 plot_triangle(cl_mack, region = "data")    # observed only
 ```
 

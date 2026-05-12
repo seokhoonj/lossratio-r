@@ -526,7 +526,7 @@ plot_triangle <- function(x, ...) {
 #' \dontrun{
 #' d <- build_triangle(
 #'   df,
-#'   groups   = pd_cat_nm,
+#'   groups   = "pd_cat_nm",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "loss_incr",
@@ -717,7 +717,7 @@ plot_triangle.Triangle <- function(x,
   p <- p + ggplot2::labs(
     title   = title_txt,
     x       = .pretty_var_label(dev),
-    y       = .pretty_var_label(coh),
+    y       = .cohort_label(coh),
     caption = caption_txt
   )
 
@@ -874,11 +874,11 @@ plot.Total <- function(x,
 #'   recent wedge sits *before* the holdout wedge (no overlap), matching
 #'   `backtest()` semantics — the internal fitter operates on the masked
 #'   triangle whose own max_cal is `original - holdout`.
-#' @param mat_k Optional integer. The maturity switch as a *target*
+#' @param m_k Optional integer. The maturity switch as a *target*
 #'   development index (= `ata_to` of the first stable link). When
 #'   both `recent` and `regime_break` are provided, the hybrid mask
-#'   uses `mat_k` as the boundary: cells with `dev < mat_k` apply the
-#'   cohort cut, cells with `dev >= mat_k` apply the calendar-diagonal
+#'   uses `m_k` as the boundary: cells with `dev < m_k` apply the
+#'   cohort cut, cells with `dev >= m_k` apply the calendar-diagonal
 #'   cut. When `NULL`, the hybrid logic falls back to applying both
 #'   filters jointly (cohort cut AND recent cut).
 #'
@@ -893,7 +893,7 @@ plot.Total <- function(x,
                                 recent       = NULL,
                                 regime_break = NULL,
                                 holdout      = NULL,
-                                mat_k        = NULL) {
+                                m_k        = NULL) {
 
   .assert_class(x, "Triangle")
 
@@ -954,8 +954,14 @@ plot.Total <- function(x,
     expanded[, .max_cal_fit := .max_cal]
   }
 
-  # resolve regime break date
-  bd <- if (!is.null(regime_break)) .resolve_break_date(regime_break) else NULL
+  # resolve regime break date — scalar (single group / scalar input)
+  # or a per-group `[join_cols..., break_date]` data.table when a
+  # multi-group `Regime` matches `grp`. Auto-dispatched inside the helper.
+  bd <- if (!is.null(regime_break)) {
+    .resolve_regime_break_date(regime_break, by = grp)
+  } else {
+    NULL
+  }
 
   # fit-data mask
   has_recent <- !is.null(recent)
@@ -968,39 +974,62 @@ plot.Total <- function(x,
     recent <- as.integer(recent)
   }
 
-  if (!is.null(mat_k)) {
-    if (!is.numeric(mat_k) || length(mat_k) != 1L || is.na(mat_k))
-      stop("`mat_k` must be a single non-missing numeric value.",
+  if (!is.null(m_k)) {
+    if (!is.numeric(m_k) || length(m_k) != 1L || is.na(m_k))
+      stop("`m_k` must be a single non-missing numeric value.",
            call. = FALSE)
   }
 
+  # If bd is per-group, broadcast it as a row-aligned `.bd_join` column
+  # so the filter expressions can reference a single column regardless
+  # of dispatch mode. NA `.bd_join` (group not in bd) => no filter for
+  # that group.
+  per_group_bd <- has_break && data.table::is.data.table(bd)
+  if (per_group_bd) {
+    join_cols <- setdiff(names(bd), "break_date")
+    expanded[, .bd_join := bd[expanded, on = join_cols, x.break_date]]
+  }
+
+  break_pass <- if (!has_break) {
+    quote(TRUE)
+  } else if (per_group_bd) {
+    quote(is.na(.bd_join) | cohort >= .bd_join)
+  } else {
+    bquote(cohort >= .(bd))
+  }
+
   if (has_recent && has_break) {
-    # hybrid: cohort cut on dev < mat_k (ED region), calendar cut on
-    # dev >= mat_k (CL region). when mat_k is NULL, fall back to both
+    # hybrid: cohort cut on dev < m_k (ED region), calendar cut on
+    # dev >= m_k (CL region). when m_k is NULL, fall back to both
     # filters jointly.
-    if (!is.null(mat_k)) {
-      expanded[, .pass_filter := (
-        (dev <  mat_k & cohort >= bd) |
-        (dev >= mat_k & .cal_idx > .max_cal_fit - recent)
-      )]
+    if (!is.null(m_k)) {
+      expanded[, .pass_filter := eval(bquote(
+        (dev <  .(m_k) & .(break_pass)) |
+        (dev >= .(m_k) & .cal_idx > .max_cal_fit - .(recent))
+      ))]
     } else {
-      expanded[, .pass_filter := (cohort >= bd) &
-                                  (.cal_idx > .max_cal_fit - recent)]
+      expanded[, .pass_filter := eval(bquote(
+        .(break_pass) & (.cal_idx > .max_cal_fit - .(recent))
+      ))]
     }
   } else if (has_recent) {
     expanded[, .pass_filter := .cal_idx > .max_cal_fit - recent]
   } else if (has_break) {
-    # SA semantics: cohort cut applies only on dev < mat_k (ED region);
-    # CL region (dev >= mat_k) keeps all cohorts. When mat_k is NULL,
+    # SA semantics: cohort cut applies only on dev < m_k (ED region);
+    # CL region (dev >= m_k) keeps all cohorts. When m_k is NULL,
     # fall back to a simple cohort cut across all dev.
-    if (!is.null(mat_k)) {
-      expanded[, .pass_filter := (dev >= mat_k) | (cohort >= bd)]
+    if (!is.null(m_k)) {
+      expanded[, .pass_filter := eval(bquote(
+        (dev >= .(m_k)) | .(break_pass)
+      ))]
     } else {
-      expanded[, .pass_filter := cohort >= bd]
+      expanded[, .pass_filter := eval(break_pass)]
     }
   } else {
     expanded[, .pass_filter := TRUE]
   }
+
+  if (per_group_bd) expanded[, .bd_join := NULL]
 
   expanded[, is_fit_data := is_observed & !is_held_out & .pass_filter]
   expanded[, is_excluded := is_observed & !is_held_out & !is_fit_data]
@@ -1044,8 +1073,14 @@ plot.Total <- function(x,
   # 2-pass maturity detection: needed whenever regime_break is set, so the
   # SA-mode dev split (cohort cut on dev < k*; CL region unfiltered, or
   # recent wedge on dev >= k* when `recent` is also set) is reflected.
-  mat_k <- NULL
-  bd <- if (!is.null(regime_break)) .resolve_break_date(regime_break) else NULL
+  # `bd` may be scalar Date or `[grp..., break_date]` data.table (when a
+  # multi-group Regime is passed and grp is non-empty).
+  m_k <- NULL
+  bd <- if (!is.null(regime_break)) {
+    .resolve_regime_break_date(regime_break, by = grp)
+  } else {
+    NULL
+  }
 
   if (!is.null(bd)) {
     margs <- if (is.null(maturity_args)) list() else maturity_args
@@ -1058,7 +1093,7 @@ plot.Total <- function(x,
         !is.null(fit_for_mat$maturity) &&
         nrow(fit_for_mat$maturity) > 0L &&
         !all(is.na(fit_for_mat$maturity$ata_to))) {
-      mat_k <- max(fit_for_mat$maturity$ata_to, na.rm = TRUE)
+      m_k <- max(fit_for_mat$maturity$ata_to, na.rm = TRUE)
     }
   }
 
@@ -1067,7 +1102,7 @@ plot.Total <- function(x,
     recent       = recent,
     regime_break = regime_break,
     holdout      = holdout,
-    mat_k        = mat_k
+    m_k        = m_k
   )
 
   # cohort labels: most recent at top
@@ -1096,12 +1131,12 @@ plot.Total <- function(x,
                                drop = FALSE) +
     ggplot2::scale_x_continuous(expand = c(0, 0))
 
-  # vertical maturity line in hybrid mode: drawn just before dev = mat_k
-  # so the boundary visually separates ED region (dev < mat_k) on the
-  # left from CL region (dev >= mat_k) on the right.
-  if (!is.null(mat_k)) {
+  # vertical maturity line in hybrid mode: drawn just before dev = m_k
+  # so the boundary visually separates ED region (dev < m_k) on the
+  # left from CL region (dev >= m_k) on the right.
+  if (!is.null(m_k)) {
     p <- p + ggplot2::geom_vline(
-      xintercept = mat_k - 0.5,
+      xintercept = m_k - 0.5,
       linetype   = "dashed", color = "black", linewidth = 0.4
     )
   }
@@ -1110,17 +1145,42 @@ plot.Total <- function(x,
   # levels sorted descending; the break row is the row whose label
   # corresponds to the smallest cohort >= bd. Draw the line just above
   # that row (toward older cohorts).
+  #
+  # `bd` may be a scalar Date (single break applied to every facet) or a
+  # per-group `[grp..., break_date]` data.table (each facet draws its
+  # own break). In the per-group case the grp-keyed data.frame is
+  # passed via `data = ...` so ggplot2's faceting machinery maps each
+  # hline to the correct facet.
   if (!is.null(bd)) {
-    cohorts_sorted <- sort(unique(dt$cohort))
-    post_break <- cohorts_sorted[cohorts_sorted >= bd]
-    if (length(post_break)) {
+    .first_post_idx <- function(bd_scalar) {
+      cohorts_sorted <- sort(unique(dt$cohort))
+      post_break <- cohorts_sorted[cohorts_sorted >= bd_scalar]
+      if (!length(post_break)) return(NA_integer_)
       first_post <- min(post_break)
       lab <- if (!is.na(coh_type)) {
         .format_period(first_post, type = coh_type)
       } else {
         as.character(first_post)
       }
-      idx <- match(lab, y_levels)
+      match(lab, y_levels)
+    }
+
+    if (data.table::is.data.table(bd) && length(grp)) {
+      hline_df <- data.table::copy(bd)
+      data.table::setnames(hline_df, "break_date", ".bd")
+      hline_df[, .yint := vapply(.bd, .first_post_idx, integer(1L)) + 0.5]
+      hline_df <- hline_df[is.finite(.yint)]
+      if (nrow(hline_df)) {
+        p <- p + ggplot2::geom_hline(
+          data        = hline_df,
+          mapping     = ggplot2::aes(yintercept = .yint),
+          linetype    = "dashed", color = "black", linewidth = 0.4,
+          inherit.aes = FALSE
+        )
+      }
+    } else {
+      bd_scalar <- if (data.table::is.data.table(bd)) max(bd$break_date) else bd
+      idx <- .first_post_idx(bd_scalar)
       if (!is.na(idx)) {
         p <- p + ggplot2::geom_hline(
           yintercept = idx + 0.5,
@@ -1146,8 +1206,8 @@ plot.Total <- function(x,
     "Data usage (full)"
   }
 
-  subtitle_txt <- if (!is.null(mat_k)) {
-    sprintf("hybrid mode: maturity k* = %g", mat_k)
+  subtitle_txt <- if (!is.null(m_k)) {
+    sprintf("hybrid mode: maturity k* = %g", m_k)
   } else {
     NULL
   }
@@ -1156,7 +1216,7 @@ plot.Total <- function(x,
     title    = title_txt,
     subtitle = subtitle_txt,
     x        = .pretty_var_label(dev),
-    y        = .pretty_var_label(coh)
+    y        = .cohort_label(coh)
   )
 
   p + .switch_theme(theme = theme, ...)

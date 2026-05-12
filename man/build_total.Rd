@@ -6,7 +6,7 @@
 \usage{
 build_total(
   df,
-  groups,
+  groups = character(0),
   cohort,
   dev,
   loss,
@@ -83,11 +83,22 @@ comparing groups on a common period basis.
 }
 \examples{
 \dontrun{
-build_total(df, coverage)
+build_total(
+  df,
+  groups  = "coverage",
+  cohort  = "uy_m",
+  dev     = "dev_m",
+  loss    = "loss_incr",
+  premium = "premium_incr"
+)
 
 build_total(
   df,
-  coverage,
+  groups      = "coverage",
+  cohort      = "uy_m",
+  dev         = "dev_m",
+  loss        = "loss_incr",
+  premium     = "premium_incr",
   period_from = "2023-01-01",
   period_to   = "2023-12-01"
 )

@@ -17,22 +17,28 @@
 #' Two checks are performed:
 #'
 #' \enumerate{
-#'   \item \strong{Cohort dev-sequence gaps} — for each `(group, cohort)`,
+#'   \item \strong{Cohort dev-sequence gaps} -- for each `(group, cohort)`,
 #'     report missing `dev` values within the observed range.
-#'   \item \strong{Row-level calendar consistency} — when `calendar`
-#'     is supplied (or auto-detected as `"cy_m"` if present), report rows
-#'     where `calendar < cohort`. Such rows are logically
-#'     impossible (claims cannot precede policy issue) and downstream
-#'     they show up as negative `dev_m`, polluting cohort dev sequences.
+#'   \item \strong{Row-level calendar consistency} -- when `calendar`
+#'     is supplied, report rows where `calendar < cohort`. Such rows are
+#'     logically impossible (claims cannot precede policy issue) and
+#'     downstream they show up as negative `dev_m`, polluting cohort
+#'     dev sequences.
 #' }
 #'
 #' @param df A data.frame.
 #' @param groups Grouping variable(s).
 #' @param cohort A single cohort variable (raw column name).
 #' @param dev A single development variable (raw column name).
+#'   Optional when `calendar` is supplied -- `dev` is then derived from
+#'   `(cohort, calendar)` at the resolved `grain` (same dispatch as
+#'   [build_triangle()]).
 #' @param calendar Optional calendar period variable for row-level
 #'   consistency check. When supplied, rows where `calendar <
 #'   cohort` are flagged as invalid. Default `NULL` (skip this check).
+#' @param grain Grain string (`"M"` / `"Q"` / `"S"` / `"A"`) or
+#'   `"auto"` (default) -- used only when `dev` is derived from
+#'   `(cohort, calendar)`. Ignored when `dev` is supplied.
 #'
 #' @return A `data.table` of class `"TriangleValidation"` with one row
 #'   per cohort containing gaps. Columns:
@@ -46,7 +52,7 @@
 #'   Returns a zero-row data.table when no gaps are found.
 #'
 #'   Row-level violations (when `calendar` is supplied and the check
-#'   finds any) are attached as the `"invalid_rows"` attribute — a
+#'   finds any) are attached as the `"invalid_rows"` attribute -- a
 #'   `data.table` with columns `[groups, cohort, calendar,
 #'   dev (if present), reason]`. Use `attr(out, "invalid_rows")`
 #'   or rely on `print.TriangleValidation` which displays both sections.
@@ -55,27 +61,28 @@
 #'
 #' @export
 validate_triangle <- function(df,
-                              groups,
+                              groups   = character(0),
                               cohort,
-                              dev,
-                              calendar = NULL) {
+                              calendar = NULL,
+                              dev      = NULL,
+                              grain    = "auto") {
   .assert_class(df, "data.frame")
+  if (missing(cohort)) stop("`cohort` is required.", call. = FALSE)
+  if (is.null(calendar) && is.null(dev))
+    stop("Must supply at least one of `calendar` or `dev`.", call. = FALSE)
 
   dt <- .ensure_dt(df)
 
-  grp <- .capture_names(dt, !!rlang::enquo(groups))
-  coh <- .capture_names(dt, !!rlang::enquo(cohort))
-  dev <- .capture_names(dt, !!rlang::enquo(dev))
+  if (length(groups))     .assert_column_arg(groups,   "groups",   dt)
+  .assert_column_arg(cohort, "cohort", dt, length_one = TRUE)
+  if (!is.null(calendar)) .assert_column_arg(calendar, "calendar", dt, length_one = TRUE)
+  if (!is.null(dev))      .assert_column_arg(dev,      "dev",      dt, length_one = TRUE)
 
-  .assert_length(coh)
-  .assert_length(dev)
+  grp <- groups
+  coh <- cohort
+  cal <- calendar
 
-  # calendar: NULL skips, otherwise auto-skip if column missing
-  cal_quo <- rlang::enquo(calendar)
-  cal <- if (rlang::quo_is_null(cal_quo)) NULL else .capture_names(dt, !!cal_quo)
-  if (!is.null(cal) && (length(cal) != 1L || !(cal %in% names(dt)))) cal <- NULL
-
-  # 1) row-level calendar consistency first — invalid rows pollute the
+  # 1) row-level calendar consistency first -- invalid rows pollute the
   #    dev sequence and would surface as spurious negative gaps if we
   #    ran the gap check on the raw data.
   invalid <- NULL
@@ -92,11 +99,40 @@ validate_triangle <- function(df,
     }
   }
 
-  # 2) dev-sequence gaps on the cleaned data
-  out <- .validate_dev_continuity_impl(dt_clean, grp, coh, dev)
+  # 2) derive dev when only calendar is given -- mirrors build_triangle's
+  #    3-mode dispatch so the same arg combo works in both functions.
+  if (is.null(dev)) {
+    .coerce_cols_to_date(dt_clean, c(coh, cal))
+    input_grain <- .infer_grain(dt_clean[[coh]])
+    g           <- .resolve_grain(input_grain, grain)
+    dt_clean    <- data.table::copy(dt_clean)
+    dt_clean[, .dev_derived := .count_periods(.SD[[1L]], .SD[[2L]], g),
+             .SDcols = c(coh, cal)]
+    dev_col <- ".dev_derived"
+  } else {
+    dev_col <- dev
+  }
+
+  # 3) dev-sequence gaps on the cleaned data
+  out <- .validate_dev_continuity_impl(dt_clean, grp, coh, dev_col)
 
   if (!is.null(invalid) && nrow(invalid) > 0L) {
     data.table::setattr(out, "invalid_rows", invalid)
+  }
+
+  # Store input cell counts so `plot_triangle.TriangleValidation` can
+  # render the full data footprint as a heatmap and optionally label
+  # each cell with the row count (`show_label = TRUE`).
+  # Aggregate by whatever axes the user provided: `cal` enables the
+  # calendar view, `dev` enables the dev view. At least one is
+  # required for plotting.
+  pair_cols <- c(grp, coh,
+                 if (!is.null(cal)) cal,
+                 if (!is.null(dev)) dev)
+  if (!is.null(cal) || !is.null(dev)) {
+    obs_pairs <- dt[, .N, by = pair_cols]
+    data.table::setattr(out, "observed_pairs", obs_pairs)
+    if (!is.null(cal)) data.table::setattr(out, "calendar", cal)
   }
 
   out
@@ -109,11 +145,14 @@ validate_triangle <- function(df,
     e <- .SD[[1L]]
     e <- e[!is.na(e)]
     if (length(e) == 0L) {
-      list(n_observed = 0L, n_expected = 0L, missing = list(integer(0)))
+      list(dev_min = NA_integer_, dev_max = NA_integer_,
+           n_observed = 0L, n_expected = 0L, missing = list(integer(0)))
     } else {
       rng  <- seq.int(min(e), max(e))
       miss <- setdiff(rng, e)
       list(
+        dev_min    = as.integer(min(e)),
+        dev_max    = as.integer(max(e)),
         n_observed = length(unique(e)),
         n_expected = length(rng),
         missing    = list(miss)
@@ -132,7 +171,7 @@ validate_triangle <- function(df,
 
 #' Internal: row-level cohort vs calendar consistency check
 #'
-#' Flag rows where `calendar < cohort` — claims/events recorded
+#' Flag rows where `calendar < cohort` -- claims/events recorded
 #' as occurring before the cohort start, which is logically impossible.
 #'
 #' @keywords internal
@@ -143,7 +182,9 @@ validate_triangle <- function(df,
     return(data.table::data.table())
   }
 
-  keep <- c(grp, coh, cal, dev)
+  # `dev` may be NULL when validate_triangle is called without an
+  # explicit dev column; skip duplicating coh in that case.
+  keep <- unique(c(grp, coh, cal, if (!is.null(dev)) dev))
   keep <- keep[keep %in% names(dt)]
   z <- dt[bad_idx, .SD, .SDcols = keep]
   z[, reason := sprintf("%s < %s", cal, coh)]
@@ -159,20 +200,321 @@ print.TriangleValidation <- function(x, ...) {
   if (nrow(x) == 0L) {
     cat("Cohort dev-sequence gaps : none\n")
   } else {
-    cat(sprintf("Cohort dev-sequence gaps : %d cohort(s) with gaps\n",
-                nrow(x)))
+    cat(sprintf("Cohort dev-sequence gaps : %s cohort(s) with gaps\n",
+                formatC(nrow(x), big.mark = ",", format = "d")))
     NextMethod("print", x, ...)
   }
 
   # invalid rows section
   inv <- attr(x, "invalid_rows", exact = TRUE)
   if (!is.null(inv) && nrow(inv) > 0L) {
-    cat(sprintf("\nRow-level violations     : %d row(s) where %s\n",
-                nrow(inv), inv$reason[1L]))
+    cat(sprintf("\nRow-level violations     : %s row(s) where %s\n",
+                formatC(nrow(inv), big.mark = ",", format = "d"),
+                inv$reason[1L]))
     print(inv, ...)
   }
 
   invisible(x)
+}
+
+
+#' Plot a TriangleValidation result
+#'
+#' @description
+#' Visualise dev-sequence gaps. Each cohort with gaps is a row; observed
+#' vs. expected dev counts render as side-by-side bars. When the
+#' validation found no gaps (and no row-level violations), prints a
+#' message and returns `invisible(NULL)` instead of erroring.
+#'
+#' @param x A `TriangleValidation` object.
+#' @param ... Unused. Present for S3 compatibility.
+#'
+#' @return A `ggplot` object, or `invisible(NULL)` when there is nothing
+#'   to visualise.
+#'
+#' @method plot TriangleValidation
+#' @export
+plot.TriangleValidation <- function(x, ...) {
+  inv <- attr(x, "invalid_rows", exact = TRUE)
+  has_gaps <- nrow(x) > 0L
+  has_invalid <- !is.null(inv) && nrow(inv) > 0L
+
+  if (!has_gaps && !has_invalid) {
+    message("No gaps or row-level violations to plot.")
+    return(invisible(NULL))
+  }
+
+  if (!has_gaps) {
+    message("No dev-sequence gaps; row-level violations are stored in ",
+            "attr(x, \"invalid_rows\").")
+    return(invisible(NULL))
+  }
+
+  grp <- attr(x, "groups", exact = TRUE)
+  coh <- attr(x, "cohort", exact = TRUE)
+  if (is.null(grp)) grp <- character(0)
+
+  dt   <- .ensure_dt(x)
+  long <- data.table::melt(
+    dt,
+    id.vars       = c(grp, coh),
+    measure.vars  = c("n_observed", "n_expected"),
+    variable.name = "kind",
+    value.name    = "n"
+  )
+
+  p <- ggplot2::ggplot(
+    long,
+    ggplot2::aes(x = factor(.data[[coh]]),
+                 y = .data[["n"]],
+                 fill = .data[["kind"]])
+  ) +
+    ggplot2::geom_col(position = "dodge") +
+    ggplot2::scale_fill_manual(
+      values = c(n_observed = "#1f77b4", n_expected = "#bdbdbd"),
+      name   = NULL
+    ) +
+    ggplot2::labs(
+      title = "Cohort dev-sequence gaps",
+      x = "cohort", y = "dev count"
+    ) +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+
+  if (length(grp))
+    p <- p + ggplot2::facet_wrap(grp, scales = "free_x")
+  p
+}
+
+
+#' Triangle-heatmap view of dev-sequence gaps
+#'
+#' @description
+#' Visualise gap positions on a `cohort x dev` grid: for every cohort
+#' with gaps, expanded dev cells are coloured by status (`observed` /
+#' `missing`). Complements [plot.TriangleValidation()] (which shows
+#' observed-vs-expected counts as bars) -- this heatmap shows *where*
+#' the gaps are.
+#'
+#' When the validation found no gaps, prints a message and returns
+#' `invisible(NULL)`.
+#'
+#' @param x A `TriangleValidation` object.
+#' @param theme String passed to [.switch_theme()].
+#' @param ... Extra arguments passed to [.switch_theme()].
+#'
+#' @return A `ggplot` object, or `invisible(NULL)` when there is nothing
+#'   to visualise.
+#'
+#' @method plot_triangle TriangleValidation
+#' @export
+plot_triangle.TriangleValidation <- function(x,
+                                             view       = c("calendar", "dev"),
+                                             show_label = FALSE,
+                                             theme      = c("view", "save", "shiny"),
+                                             ...) {
+  view <- match.arg(view)
+  inv         <- attr(x, "invalid_rows", exact = TRUE)
+  obs_pairs   <- attr(x, "observed_pairs", exact = TRUE)
+  cal_var     <- attr(x, "calendar", exact = TRUE)
+  has_gaps    <- nrow(x) > 0L
+  has_invalid <- !is.null(inv) && nrow(inv) > 0L
+
+  if (!has_gaps && !has_invalid) {
+    message("No gaps or row-level violations to plot.")
+    return(invisible(NULL))
+  }
+
+  theme <- match.arg(theme)
+
+  grp <- attr(x, "groups", exact = TRUE)
+  coh <- attr(x, "cohort", exact = TRUE)
+  dev_var <- attr(x, "dev", exact = TRUE)
+  if (is.null(grp)) grp <- character(0)
+
+  if (is.null(obs_pairs)) {
+    message("plot_triangle.TriangleValidation requires at least one of ",
+            "`calendar` or `dev` to be supplied to `validate_triangle()`.")
+    return(invisible(NULL))
+  }
+
+  has_cal <- !is.null(cal_var) && cal_var %in% names(obs_pairs)
+  has_dev <- !is.null(dev_var) && dev_var %in% names(obs_pairs)
+
+  if (view == "calendar" && !has_cal) {
+    message("plot_triangle.TriangleValidation(view = \"calendar\") ",
+            "requires a calendar column. Re-run `validate_triangle(..., ",
+            "calendar = ...)` or use `view = \"dev\"`.")
+    return(invisible(NULL))
+  }
+  if (view == "dev" && !has_cal && !has_dev) {
+    message("plot_triangle.TriangleValidation(view = \"dev\") requires ",
+            "either a calendar or a dev column on the input.")
+    return(invisible(NULL))
+  }
+
+  # Pick the second-axis column for this view.
+  axis_col <- if (view == "dev" && has_dev) dev_var else cal_var
+
+  bg <- data.table::copy(obs_pairs)
+  # When obs_pairs has both cal and dev, drop the unused axis and
+  # re-aggregate so `bg` is keyed on (grp, coh, axis_col).
+  keep <- c(grp, coh, axis_col)
+  bg <- bg[, .(N = sum(N)), by = keep]
+  data.table::setnames(bg, c(coh, axis_col), c(".coh", ".axis"))
+  bg[, .status := "observed"]
+
+  if (has_invalid) {
+    if (axis_col %in% names(inv)) {
+      inv_dt <- data.table::copy(inv)[, c(grp, coh, axis_col), with = FALSE]
+      inv_dt <- inv_dt[, .N, by = c(grp, coh, axis_col)]
+      data.table::setnames(inv_dt, c(coh, axis_col), c(".coh", ".axis"))
+      inv_dt[, .status := "invalid"]
+      # `obs_pairs` already aggregates ALL input rows (valid + invalid).
+      # For cells in `inv_dt`, drop the corresponding row from `bg` so we
+      # don't double-count -- invalid count comes from `inv_dt` alone.
+      bg <- bg[!inv_dt, on = c(grp, ".coh", ".axis")]
+      bg <- data.table::rbindlist(list(bg, inv_dt), fill = TRUE)
+    }
+  }
+
+  grid <- bg
+  grid[, .status := factor(.status, levels = c("observed", "invalid"))]
+
+  # Cohort axis (y): newest at top, abbreviated `%y.%m` style.
+  coh_type <- .get_period_type(coh)
+  fmt_coh  <- function(d) {
+    if (!is.na(coh_type)) .format_period(d, type = coh_type, abb = TRUE)
+    else as.character(d)
+  }
+  coh_levels <- sort(unique(grid$.coh), decreasing = TRUE)
+  grid[, .y := factor(fmt_coh(.coh), levels = fmt_coh(coh_levels))]
+
+  # Common: dev view also needs grain to convert (coh, cal) -> dev int
+  grain <- .infer_grain(coh_levels)
+
+  if (view == "dev") {
+    if (axis_col == cal_var) {
+      grid[, .x := .count_periods(.coh, .axis, grain)]
+    } else {
+      grid[, .x := as.integer(.axis)]
+    }
+    n_cohorts <- length(coh_levels)
+
+    title <- "TriangleValidation: cohort x dev"
+    if (has_invalid)
+      title <- paste0(title, sprintf(" (%s invalid row(s))",
+                                     formatC(nrow(inv), big.mark = ",",
+                                             format = "d")))
+
+    p <- ggplot2::ggplot(
+      grid,
+      ggplot2::aes(x = .data[[".x"]], y = .data[[".y"]],
+                   fill = .data[[".status"]])
+    ) +
+      ggplot2::geom_tile(color = "black", linewidth = 0.3) +
+      # Boundary at dev = 0.5 (between invalid dev<=0 and valid dev>=1)
+      ggplot2::geom_vline(xintercept = 0.5,
+                          color = "black", linewidth = 0.7) +
+      ggplot2::scale_fill_manual(
+        values = c(observed = "#1f77b4", invalid = "#d62728"),
+        name = NULL, drop = FALSE
+      ) +
+      ggplot2::scale_x_continuous(expand = c(0, 0)) +
+      ggplot2::scale_y_discrete(expand = c(0, 0)) +
+      ggplot2::labs(
+        title   = title,
+        x       = "dev (1 = first observed period; <=0 = invalid)",
+        y       = .cohort_label(coh),
+        caption = "Blue = observed (dev >= 1), red = invalid (dev <= 0); blanks = gap"
+      )
+  } else {
+    # view == "calendar"
+    title <- "TriangleValidation: cohort x calendar"
+    if (has_invalid)
+      title <- paste0(title, sprintf(" (%s invalid row(s))",
+                                     formatC(nrow(inv), big.mark = ",",
+                                             format = "d")))
+
+    # Cell-edge staircase: trace cal == coh boundary on cell corners.
+    asc_coh  <- sort(unique(grid$.coh))
+    n_coh    <- length(asc_coh)
+    coh_pos  <- match(format(asc_coh), format(coh_levels))
+    diffs    <- diff(asc_coh)
+    spacing  <- if (length(diffs)) as.numeric(stats::median(diffs)) else 30
+    half_off <- spacing / 2
+    xs <- numeric(0)
+    ys <- numeric(0)
+    for (i in seq_len(n_coh)) {
+      c_i <- asc_coh[i] - half_off
+      p_i <- coh_pos[i]
+      xs <- c(xs, c_i, c_i)
+      ys <- c(ys, p_i + 0.5, p_i - 0.5)
+      if (i < n_coh) {
+        xs <- c(xs, asc_coh[i + 1L] - half_off)
+        ys <- c(ys, p_i - 0.5)
+      }
+    }
+    diag_path <- data.frame(.x = as.Date(xs, origin = "1970-01-01"),
+                            .y_pos = ys)
+
+    # Convert calendar to factor so tiles get uniform unit width
+    # (matches `ggshort::ggheatmap`/`ggtable` behaviour). Date axis
+    # would otherwise leak thin white gaps from 28/30/31-day month
+    # lengths.
+    cal_levels <- sort(unique(grid$.axis))
+    grid[, .cal_lab := factor(fmt_coh(.axis), levels = fmt_coh(cal_levels))]
+    cal_pos <- match(format(asc_coh), format(cal_levels))
+    # Re-build staircase corners in factor-index x coordinates.
+    xs2 <- numeric(0)
+    ys2 <- numeric(0)
+    for (i in seq_len(n_coh)) {
+      p_i <- coh_pos[i]
+      x_i <- cal_pos[i] - 0.5
+      xs2 <- c(xs2, x_i, x_i)
+      ys2 <- c(ys2, p_i + 0.5, p_i - 0.5)
+      if (i < n_coh) {
+        xs2 <- c(xs2, cal_pos[i + 1L] - 0.5)
+        ys2 <- c(ys2, p_i - 0.5)
+      }
+    }
+    diag_path <- data.frame(.x_pos = xs2, .y_pos = ys2)
+
+    p <- ggplot2::ggplot(
+      grid,
+      ggplot2::aes(x = .data[[".cal_lab"]], y = .data[[".y"]],
+                   fill = .data[[".status"]])
+    ) +
+      ggplot2::geom_tile(color = "black", linewidth = 0.3) +
+      ggplot2::geom_path(
+        data        = diag_path,
+        mapping     = ggplot2::aes(x = .x_pos, y = .y_pos),
+        color       = "black", linewidth = 0.7,
+        inherit.aes = FALSE
+      ) +
+      ggplot2::scale_fill_manual(
+        values = c(observed = "#1f77b4", invalid = "#d62728"),
+        name = NULL, drop = FALSE
+      ) +
+      ggplot2::scale_x_discrete(expand = c(0, 0)) +
+      ggplot2::scale_y_discrete(expand = c(0, 0)) +
+      ggplot2::labs(
+        title   = title,
+        x       = .calendar_label(cal_var), y = .cohort_label(coh),
+        caption = "Blue = observed (cal >= coh), red = invalid (cal < coh); blanks = gap"
+      )
+  }
+
+  if (isTRUE(show_label)) {
+    p <- p + ggplot2::geom_text(
+      ggplot2::aes(label = formatC(N, big.mark = ",", format = "d")),
+      color = "white", size = 2.8
+    )
+  }
+
+  if (length(grp))
+    p <- p + ggplot2::facet_wrap(grp)
+
+  p + .switch_theme(theme = theme, ...)
 }
 
 
@@ -221,11 +563,11 @@ print.TriangleValidation <- function(x, ...) {
 #' @param cohort Single column (raw name) defining the underwriting /
 #'   exposure period start (e.g., `"uy_m"`).
 #' @param calendar Single column (raw name) defining the calendar period of
-#'   the observation (e.g., `"cy_m"`). Optional — supply either `calendar`
+#'   the observation (e.g., `"cy_m"`). Optional -- supply either `calendar`
 #'   or `dev` (or both). When `calendar` is given, `dev` is derived
 #'   internally via `count_periods(cohort, calendar, grain)`.
 #' @param dev Single column (raw name) holding pre-computed development
-#'   periods (e.g., `"dev_m"`). Optional — supply either `calendar`
+#'   periods (e.g., `"dev_m"`). Optional -- supply either `calendar`
 #'   or `dev` (or both). When only `dev` is given, the calendar
 #'   axis is omitted from the attribute (downstream calendar-diagonal
 #'   logic uses cohort + dev). When both are given, `dev` is
@@ -285,7 +627,7 @@ print.TriangleValidation <- function(x, ...) {
 #' # auto-detected monthly grain
 #' res_m <- build_triangle(
 #'   df,
-#'   groups   = pd_cd,
+#'   groups   = "pd_cd",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "loss_incr",
@@ -293,7 +635,15 @@ print.TriangleValidation <- function(x, ...) {
 #' )
 #'
 #' # explicit quarterly view (re-bins monthly input to quarterly)
-#' res_q <- build_triangle(df, groups = pd_cd, grain = "Q")
+#' res_q <- build_triangle(
+#'   df,
+#'   groups   = "pd_cd",
+#'   cohort   = "uy_m",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr",
+#'   grain    = "Q"
+#' )
 #'
 #' head(res_m)
 #' attr(res_m, "longer")
@@ -301,7 +651,7 @@ print.TriangleValidation <- function(x, ...) {
 #'
 #' @export
 build_triangle <- function(df,
-                           groups,
+                           groups    = character(0),
                            cohort,
                            calendar  = NULL,
                            dev       = NULL,
@@ -313,49 +663,31 @@ build_triangle <- function(df,
   .assert_class(df, "data.frame")
   cell_type <- match.arg(cell_type)
 
+  if (missing(cohort))  stop("`cohort` is required.",  call. = FALSE)
+  if (missing(loss))    stop("`loss` is required.",    call. = FALSE)
+  if (missing(premium)) stop("`premium` is required.", call. = FALSE)
+
   if (!is.logical(fill_gaps) || length(fill_gaps) != 1L || is.na(fill_gaps))
     stop("`fill_gaps` must be a single non-missing logical value.",
          call. = FALSE)
 
-  dt <- .ensure_dt(df)
-
-  grp  <- .capture_names(dt, !!rlang::enquo(groups))
-  coh  <- .capture_names(dt, !!rlang::enquo(cohort))
-  loss <- .capture_names(dt, !!rlang::enquo(loss))
-  prem <- .capture_names(dt, !!rlang::enquo(premium))
-
-  # axis columns: at least one of `calendar` or `dev` must be supplied.
-  # Use enquo to distinguish `NULL` (explicit absence) from a captured value.
-  cal_quo <- rlang::enquo(calendar)
-  dev_quo <- rlang::enquo(dev)
-  cal <- if (rlang::quo_is_null(cal_quo)) NULL else .capture_names(dt, !!cal_quo)
-  dev_col <- if (rlang::quo_is_null(dev_quo)) NULL else .capture_names(dt, !!dev_quo)
-
-  if (is.null(cal) && is.null(dev_col))
+  if (is.null(calendar) && is.null(dev))
     stop("Must supply at least one of `calendar` or `dev`.", call. = FALSE)
 
-  .assert_length(coh)
-  .assert_length(loss)
-  .assert_length(prem)
-  if (!is.null(cal))     .assert_length(cal)
-  if (!is.null(dev_col)) .assert_length(dev_col)
+  dt <- .ensure_dt(df)
 
-  if (length(coh) != 1L)
-    stop("`cohort` must resolve to exactly one column.", call. = FALSE)
-  if (!is.null(cal) && length(cal) != 1L)
-    stop("`calendar` must resolve to exactly one column.", call. = FALSE)
-  if (!is.null(dev_col) && length(dev_col) != 1L)
-    stop("`dev` must resolve to exactly one column.", call. = FALSE)
+  if (length(groups)) .assert_column_arg(groups, "groups", dt)
+  .assert_column_arg(cohort,  "cohort",  dt, length_one = TRUE)
+  .assert_column_arg(loss,    "loss",    dt, length_one = TRUE)
+  .assert_column_arg(premium, "premium", dt, length_one = TRUE)
+  if (!is.null(calendar)) .assert_column_arg(calendar, "calendar", dt, length_one = TRUE)
+  if (!is.null(dev))      .assert_column_arg(dev,      "dev",      dt, length_one = TRUE)
 
-  # required columns presence check
-  required <- c(grp, coh, loss, prem,
-                if (!is.null(cal)) cal,
-                if (!is.null(dev_col)) dev_col)
-  missing_cols <- setdiff(required, names(dt))
-  if (length(missing_cols))
-    stop(sprintf("Missing required columns: %s.",
-                 paste(sprintf("'%s'", missing_cols), collapse = ", ")),
-         call. = FALSE)
+  grp     <- groups
+  coh     <- cohort
+  prem    <- premium
+  cal     <- calendar
+  dev_col <- dev
 
   # coerce cohort (and calendar if present) to Date
   .coerce_cols_to_date(dt, coh)
@@ -406,8 +738,8 @@ build_triangle <- function(df,
     if (dev_col != "dev") dt[, (dev_col) := NULL]
   }
 
-  # standardize column names: user's loss / premium → standard
-  # slot names loss_incr / premium_incr; cohort → cohort.
+  # standardize column names: user's loss / premium -> standard
+  # slot names loss_incr / premium_incr; cohort -> cohort.
   data.table::setnames(
     dt,
     c(coh, loss, prem),
@@ -449,7 +781,7 @@ build_triangle <- function(df,
           "Non-consecutive `dev` (grain `%s`) detected in %d cohort(s). %s\n%s",
           grain,
           nrow(gaps),
-          "Call `validate_triangle()` to inspect, or pass `fill_gaps = TRUE` to zero-fill.",
+          "Call `validate_triangle()` to inspect; `plot_triangle(validate_triangle(...))` to visualise; or pass `fill_gaps = TRUE` to zero-fill.",
           paste(utils::capture.output(print(head(gaps, 5L))), collapse = "\n")
         ),
         call. = FALSE
@@ -666,7 +998,7 @@ longer.TriangleSummary <- function(x, ...) {
 #'   cumulative loss ratio (`lr = loss / premium`).
 #'
 #' In contrast to [build_triangle()], which builds a development structure using
-#' `cohort × dev`, this function aggregates values over
+#' `cohort x dev`, this function aggregates values over
 #' a one-dimensional calendar axis.
 #'
 #' The cumulative loss ratio is defined as:
@@ -739,14 +1071,18 @@ longer.TriangleSummary <- function(x, ...) {
 #' \dontrun{
 #' res1 <- build_calendar(
 #'   df,
-#'   groups   = pd_cd,
-#'   calendar = "cy_m"
+#'   groups   = "pd_cd",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr"
 #' )
 #'
 #' res2 <- build_calendar(
 #'   df,
-#'   groups      = pd_cd,
+#'   groups      = "pd_cd",
 #'   calendar    = "cy_q",
+#'   loss        = "loss_incr",
+#'   premium     = "premium_incr",
 #'   period_from = "2023-01-01"
 #' )
 #'
@@ -756,7 +1092,7 @@ longer.TriangleSummary <- function(x, ...) {
 #'
 #' @export
 build_calendar <- function(df,
-                           groups,
+                           groups      = character(0),
                            calendar,
                            loss,
                            premium,
@@ -766,30 +1102,24 @@ build_calendar <- function(df,
                            fill_gaps   = FALSE) {
   .assert_class(df, "data.frame")
 
+  if (missing(calendar)) stop("`calendar` is required.", call. = FALSE)
+  if (missing(loss))     stop("`loss` is required.",     call. = FALSE)
+  if (missing(premium))  stop("`premium` is required.",  call. = FALSE)
+
   if (!is.logical(fill_gaps) || length(fill_gaps) != 1L || is.na(fill_gaps))
     stop("`fill_gaps` must be a single non-missing logical value.",
          call. = FALSE)
 
   dt <- .ensure_dt(df)
 
-  grp   <- .capture_names(dt, !!rlang::enquo(groups))
-  cal   <- .capture_names(dt, !!rlang::enquo(calendar))
-  loss  <- .capture_names(dt, !!rlang::enquo(loss))
-  prem  <- .capture_names(dt, !!rlang::enquo(premium))
+  if (length(groups)) .assert_column_arg(groups, "groups", dt)
+  .assert_column_arg(calendar, "calendar", dt, length_one = TRUE)
+  .assert_column_arg(loss,     "loss",     dt, length_one = TRUE)
+  .assert_column_arg(premium,  "premium",  dt, length_one = TRUE)
 
-  .assert_length(cal)
-  .assert_length(loss)
-  .assert_length(prem)
-
-  if (length(cal) != 1L)
-    stop("`calendar` must resolve to exactly one column.", call. = FALSE)
-
-  required <- c(grp, cal, loss, prem)
-  missing_cols <- setdiff(required, names(dt))
-  if (length(missing_cols))
-    stop(sprintf("Missing required columns: %s.",
-                 paste(sprintf("'%s'", missing_cols), collapse = ", ")),
-         call. = FALSE)
+  grp  <- groups
+  cal  <- calendar
+  prem <- premium
 
   # coerce calendar column to Date and numeric loss/premium
   .coerce_cols_to_date(dt, cal)
@@ -815,7 +1145,7 @@ build_calendar <- function(df,
   # bin to requested grain (idempotent floor when input already at grain).
   .floor_cols_to_period(dt, cal, grain)
 
-  # standardize column names: cal → calendar; loss/premium to standard slots
+  # standardize column names: cal -> calendar; loss/premium to standard slots
   data.table::setnames(
     dt,
     c(cal, loss, prem),
@@ -1006,7 +1336,7 @@ build_calendar <- function(df,
 #' and per-period loss ratios (`lr_incr`).
 #'
 #' Where [summary.Triangle()] aggregates by `(groups, dev)` (cohort
-#' × development), this method aggregates by `(groups, calendar)`
+#' x development), this method aggregates by `(groups, calendar)`
 #' (calendar period) so the resulting table is indexed by calendar
 #' diagonals rather than development periods.
 #'
@@ -1133,11 +1463,22 @@ summary.Calendar <- function(object, ...) {
 #'
 #' @examples
 #' \dontrun{
-#' build_total(df, coverage)
+#' build_total(
+#'   df,
+#'   groups  = "coverage",
+#'   cohort  = "uy_m",
+#'   dev     = "dev_m",
+#'   loss    = "loss_incr",
+#'   premium = "premium_incr"
+#' )
 #'
 #' build_total(
 #'   df,
-#'   coverage,
+#'   groups      = "coverage",
+#'   cohort      = "uy_m",
+#'   dev         = "dev_m",
+#'   loss        = "loss_incr",
+#'   premium     = "premium_incr",
 #'   period_from = "2023-01-01",
 #'   period_to   = "2023-12-01"
 #' )
@@ -1145,7 +1486,7 @@ summary.Calendar <- function(object, ...) {
 #'
 #' @export
 build_total <- function(df,
-                        groups,
+                        groups      = character(0),
                         cohort,
                         dev,
                         loss,
@@ -1155,26 +1496,26 @@ build_total <- function(df,
                         fill_gaps   = FALSE) {
   .assert_class(df, "data.frame")
 
+  if (missing(cohort))  stop("`cohort` is required.",  call. = FALSE)
+  if (missing(dev))     stop("`dev` is required.",     call. = FALSE)
+  if (missing(loss))    stop("`loss` is required.",    call. = FALSE)
+  if (missing(premium)) stop("`premium` is required.", call. = FALSE)
+
   if (!is.logical(fill_gaps) || length(fill_gaps) != 1L || is.na(fill_gaps))
     stop("`fill_gaps` must be a single non-missing logical value.",
          call. = FALSE)
 
   dt <- .ensure_dt(df)
 
-  grp   <- .capture_names(dt, !!rlang::enquo(groups))
-  coh   <- .capture_names(dt, !!rlang::enquo(cohort))
-  dev   <- .capture_names(dt, !!rlang::enquo(dev))
-  loss  <- .capture_names(dt, !!rlang::enquo(loss))
-  prem  <- .capture_names(dt, !!rlang::enquo(premium))
+  if (length(groups)) .assert_column_arg(groups, "groups", dt)
+  .assert_column_arg(cohort,  "cohort",  dt, length_one = TRUE)
+  .assert_column_arg(dev,     "dev",     dt, length_one = TRUE)
+  .assert_column_arg(loss,    "loss",    dt, length_one = TRUE)
+  .assert_column_arg(premium, "premium", dt, length_one = TRUE)
 
-  if (length(coh) != 1L)
-    stop("`cohort` must resolve to exactly one column.", call. = FALSE)
-
-  if (length(dev) != 1L)
-    stop("`dev` must resolve to exactly one column.", call. = FALSE)
-
-  .assert_length(loss)
-  .assert_length(prem)
+  grp  <- groups
+  coh  <- cohort
+  prem <- premium
 
   incr_vars <- c(loss, prem)
 
@@ -1212,7 +1553,7 @@ build_total <- function(df,
           "Non-consecutive `%s` detected in %d cohort(s). %s\n%s",
           dev,
           nrow(gaps),
-          "Call `validate_triangle()` to inspect, or pass `fill_gaps = TRUE` to zero-fill.",
+          "Call `validate_triangle()` to inspect; `plot_triangle(validate_triangle(...))` to visualise; or pass `fill_gaps = TRUE` to zero-fill.",
           paste(utils::capture.output(print(head(gaps, 5L))), collapse = "\n")
         ),
         call. = FALSE
@@ -1301,4 +1642,83 @@ summary.Total <- function(object, digits = 4L, ...) {
   data.table::setattr(dt, "groups", grp)
 
   .update_class(dt, "Total", "TotalSummary")
+}
+
+
+# === mask_triangle ==========================================================
+
+#' Mask the last N calendar diagonals from a Triangle
+#'
+#' @description
+#' Drops the most recent `holdout` calendar diagonals (per group) from
+#' a `Triangle`, returning a new `Triangle` of the same class with all
+#' attributes preserved. Useful for simulating a historical analyst's
+#' view -- the same masking [backtest()] and `detect_regime(holdout=)`
+#' apply internally.
+#'
+#' The calendar diagonal index is built as `rank(cohort) + dev - 1`,
+#' with `rank()` computed within group. The `holdout` most recent
+#' calendar indices are dropped.
+#'
+#' @param x A `Triangle` object.
+#' @param holdout Non-negative integer. Number of latest calendar
+#'   diagonals to mask. `0L` (default) returns a copy of `x`
+#'   unchanged.
+#'
+#' @return A `Triangle` with the held-out cells removed.
+#'
+#' @examples
+#' \dontrun{
+#' data(experience)
+#' tri <- build_triangle(experience, groups = "coverage",
+#'                       cohort = "uy_m", calendar = "cy_m",
+#'                       loss = "loss_incr", premium = "premium_incr")
+#'
+#' # Inspect what the analyst at a 6-month historical cutoff would see
+#' tri_masked <- mask_triangle(tri, holdout = 6L)
+#' plot_triangle(tri_masked)
+#'
+#' # Use same masked tri to detect regime + fit
+#' r   <- detect_regime(tri_masked)
+#' fit <- fit_lr(tri_masked, loss_regime_break = r)
+#' }
+#'
+#' @export
+mask_triangle <- function(x, holdout = 0L) {
+  .assert_class(x, "Triangle")
+
+  if (!is.numeric(holdout) || length(holdout) != 1L ||
+      is.na(holdout) || holdout < 0L)
+    stop("`holdout` must be a single non-negative integer.",
+         call. = FALSE)
+  holdout <- as.integer(holdout)
+
+  if (holdout == 0L) return(data.table::copy(x))
+
+  grp <- attr(x, "groups")
+  if (is.null(grp)) grp <- character(0)
+
+  dt <- .ensure_dt(x)
+  dt[, .coh_rank := data.table::frank(cohort, ties.method = "dense"),
+     by = grp]
+  dt[, .cal_idx := .coh_rank + dev - 1L]
+  dt[, .max_cal := max(.cal_idx, na.rm = TRUE), by = grp]
+  dt <- dt[.cal_idx <= .max_cal - holdout]
+  dt[, c(".coh_rank", ".cal_idx", ".max_cal") := NULL]
+
+  if (!nrow(dt))
+    stop(sprintf(
+      "After masking with `holdout = %d`, no observations remain. ",
+      holdout
+    ), "Reduce `holdout`.", call. = FALSE)
+
+  # restore class + attrs from the original Triangle
+  data.table::setattr(dt, "class", class(x))
+  attr_names <- setdiff(names(attributes(x)),
+                        c("names", "row.names", ".internal.selfref"))
+  for (a in attr_names) {
+    av <- attr(x, a, exact = TRUE)
+    if (!is.null(av)) data.table::setattr(dt, a, av)
+  }
+  dt
 }

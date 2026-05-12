@@ -131,7 +131,7 @@ fit_lr <- function(x,
                    loss_regime_break    = NULL,
                    premium_method       = c("cl", "ed"),
                    premium_alpha        = 1,
-                   premium_regime_break = loss_regime_break,
+                   premium_regime_break = NULL,
                    sigma_method         = c("locf", "min_last2", "loglinear"),
                    recent               = NULL,
                    maturity_args        = NULL,
@@ -291,8 +291,8 @@ fit_lr <- function(x,
     loss_incr_proj / premium_incr_proj, NA_real_
   )]
 
-  # 10) pred: NA-mask observed cells -----------------------------------
-  pred    <- data.table::copy(full)
+  # 10) proj: NA-mask observed cells -----------------------------------
+  proj    <- data.table::copy(full)
   na_cols <- c(
     "loss_proj", "premium_proj", "lr_proj",
     "loss_incr_proj", "premium_incr_proj", "lr_incr_proj",
@@ -304,8 +304,8 @@ fit_lr <- function(x,
   if (se_method == "delta") {
     na_cols <- c(na_cols, "premium_total_se", "premium_total_cv")
   }
-  na_cols <- intersect(na_cols, names(pred))
-  pred[is_observed == TRUE, (na_cols) := NA_real_]
+  na_cols <- intersect(na_cols, names(proj))
+  proj[is_observed == TRUE, (na_cols) := NA_real_]
 
   # 12) assemble LRFit -------------------------------------------------
   out <- list(
@@ -315,7 +315,7 @@ fit_lr <- function(x,
     cohort               = coh,
     dev                  = dev,
     full                 = full,
-    pred                 = pred,
+    proj                 = proj,
     summary              = NULL,
     ed                   = loss_fit$ed,
     factor               = loss_fit$factor,
@@ -334,7 +334,7 @@ fit_lr <- function(x,
     sigma_method         = sigma_method,
     recent               = loss_fit$recent,
     loss_regime_break    = loss_fit$loss_regime_break,
-    premium_regime_break = .resolve_break_date(
+    premium_regime_break = .resolve_regime_break_date(
       if (!missing(premium_regime_break)) premium_regime_break
       else loss_fit$loss_regime_break
     ),
@@ -386,25 +386,31 @@ print.LRFit <- function(x, ...) {
   cat("premium_regime_break :",
       if (!is.null(x$premium_regime_break)) format(x$premium_regime_break) else "none", "\n")
 
+  # Use the same label width as the top block (`premium_regime_break`
+  # is the longest at 20 chars) so colons align across the printout.
+  lw <- 20L
+  pad <- function(label) formatC(label, width = lw, flag = "-")
+
   if (!is.null(x$maturity) && nrow(x$maturity)) {
     mat <- .ensure_dt(x$maturity)
     if (length(grp)) {
-      for (i in seq_len(nrow(mat))) {
-        grp_txt <- paste(mat[i, grp, with = FALSE], collapse = "/")
-        cat(sprintf("maturity[%s] : %s\n", grp_txt, mat$ata_to[i]))
-      }
+      grp_txt <- vapply(seq_len(nrow(mat)), function(i)
+        paste(mat[i, grp, with = FALSE], collapse = "/"), character(1L))
+      for (i in seq_along(grp_txt))
+        cat(pad(sprintf("maturity[%s]", grp_txt[i])), ":",
+            mat$ata_to[i], "\n")
     } else {
-      cat("maturity      :", mat$ata_to[1L], "\n")
+      cat(pad("maturity"), ":", mat$ata_to[1L], "\n")
     }
   }
 
   if (length(grp)) {
-    cat("groups        :", paste(grp, collapse = ", "), "\n")
+    cat(pad("groups"), ":", paste(grp, collapse = ", "), "\n")
   } else {
-    cat("groups        : none\n")
+    cat(pad("groups"), ": none\n", sep = "")
   }
 
-  cat("periods       :", nrow(x$summary), "\n")
+  cat(pad("periods"), ":", nrow(x$summary), "\n")
 
   invisible(x)
 }

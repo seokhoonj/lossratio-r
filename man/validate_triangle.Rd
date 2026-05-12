@@ -4,7 +4,14 @@
 \alias{validate_triangle}
 \title{Validate triangle structure before building a development}
 \usage{
-validate_triangle(df, groups, cohort, dev, calendar = NULL)
+validate_triangle(
+  df,
+  groups = character(0),
+  cohort,
+  calendar = NULL,
+  dev = NULL,
+  grain = "auto"
+)
 }
 \arguments{
 \item{df}{A data.frame.}
@@ -13,10 +20,17 @@ validate_triangle(df, groups, cohort, dev, calendar = NULL)
 
 \item{cohort}{A single cohort variable (raw column name).}
 
-\item{dev}{A single development variable (raw column name).}
-
 \item{calendar}{Optional calendar period variable for row-level
 consistency check. When supplied, rows where \code{calendar < cohort} are flagged as invalid. Default \code{NULL} (skip this check).}
+
+\item{dev}{A single development variable (raw column name).
+Optional when \code{calendar} is supplied -- \code{dev} is then derived from
+\verb{(cohort, calendar)} at the resolved \code{grain} (same dispatch as
+\code{\link[=build_triangle]{build_triangle()}}).}
+
+\item{grain}{Grain string (\code{"M"} / \code{"Q"} / \code{"S"} / \code{"A"}) or
+\code{"auto"} (default) -- used only when \code{dev} is derived from
+\verb{(cohort, calendar)}. Ignored when \code{dev} is supplied.}
 }
 \value{
 A \code{data.table} of class \code{"TriangleValidation"} with one row
@@ -31,7 +45,7 @@ values.}
 Returns a zero-row data.table when no gaps are found.
 
 Row-level violations (when \code{calendar} is supplied and the check
-finds any) are attached as the \code{"invalid_rows"} attribute — a
+finds any) are attached as the \code{"invalid_rows"} attribute -- a
 \code{data.table} with columns \verb{[groups, cohort, calendar, dev (if present), reason]}. Use \code{attr(out, "invalid_rows")}
 or rely on \code{print.TriangleValidation} which displays both sections.
 }
@@ -50,13 +64,13 @@ offending cohorts, or pass \code{fill_gaps = TRUE} to \code{\link[=build_triangl
 Two checks are performed:
 
 \enumerate{
-\item \strong{Cohort dev-sequence gaps} — for each \verb{(group, cohort)},
+\item \strong{Cohort dev-sequence gaps} -- for each \verb{(group, cohort)},
 report missing \code{dev} values within the observed range.
-\item \strong{Row-level calendar consistency} — when \code{calendar}
-is supplied (or auto-detected as \code{"cy_m"} if present), report rows
-where \code{calendar < cohort}. Such rows are logically
-impossible (claims cannot precede policy issue) and downstream
-they show up as negative \code{dev_m}, polluting cohort dev sequences.
+\item \strong{Row-level calendar consistency} -- when \code{calendar}
+is supplied, report rows where \code{calendar < cohort}. Such rows are
+logically impossible (claims cannot precede policy issue) and
+downstream they show up as negative \code{dev_m}, polluting cohort
+dev sequences.
 }
 }
 \seealso{

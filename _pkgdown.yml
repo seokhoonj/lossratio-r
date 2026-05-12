@@ -216,6 +216,7 @@ reference:
   contents:
   - get_recent_weights
   - longer
+  - mask_triangle
 
 - title: Datasets
   contents:

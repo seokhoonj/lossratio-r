@@ -91,7 +91,7 @@ head(bt$col_summary, 8)
 ```
 
 `ae_err_mean` 은 셀 단위 A/E Error 의 평균, `ae_err_med` 는 중앙값,
-`ae_err_wt = sum(actual - pred) / sum(pred)` 는 노출 가중 pooled A/E ratio
+`ae_err_wt = sum(actual - proj) / sum(proj)` 는 노출 가중 pooled A/E ratio
 에서 1 을 뺀 값이다. 세 컬럼을 비교하면 소수의 큰 셀이 결과를 지배하는지
 (`ae_err_wt` 가 `ae_err_med` 와 크게 다른 경우) 또는 편향이 균일한지 식별할
 수 있다.

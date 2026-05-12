@@ -49,7 +49,7 @@
 #'     \item{`target`}{Character scalar of target variable name.}
 #'     \item{`full`}{`data.table` with observed and projected values,
 #'       including process/parameter SE and CV columns.}
-#'     \item{`pred`}{`data.table` identical to `full` with observed cells
+#'     \item{`proj`}{`data.table` identical to `full` with observed cells
 #'       set to `NA`.}
 #'     \item{`link`}{The `"Link"` object produced by [build_link()].}
 #'     \item{`summary`}{Cohort-level summary with latest, ultimate,
@@ -109,9 +109,13 @@ fit_cl <- function(x,
   sigma_method <- match.arg(sigma_method)
 
   # 1) resolve variable names -------------------------------------------
-  tgt <- .capture_names(x, !!rlang::enquo(target))
-  if (length(tgt) != 1L)
-    stop("`target` must resolve to exactly one column.", call. = FALSE)
+  if (!is.character(target) || length(target) != 1L)
+    stop("`target` must be a single column name (character).",
+         call. = FALSE)
+  if (!(target %in% names(x)))
+    stop(sprintf("`target` column '%s' not found in `x`.", target),
+         call. = FALSE)
+  tgt <- target
 
   grp <- attr(x, "groups")
   coh <- attr(x, "cohort")
@@ -128,9 +132,13 @@ fit_cl <- function(x,
   use_external_weight <- !is.null(weight)
 
   if (use_external_weight) {
-    wt <- .capture_names(x, !!rlang::enquo(weight))
-    if (length(wt) != 1L)
-      stop("`weight` must resolve to exactly one column.", call. = FALSE)
+    if (!is.character(weight) || length(weight) != 1L)
+      stop("`weight` must be a single column name (character).",
+           call. = FALSE)
+    if (!(weight %in% names(x)))
+      stop(sprintf("`weight` column '%s' not found in `x`.", weight),
+           call. = FALSE)
+    wt <- weight
     if (wt == tgt)
       stop("`weight` must differ from `target`.", call. = FALSE)
   }
@@ -248,15 +256,15 @@ fit_cl <- function(x,
     last_obs   = NULL
   )]
 
-  # 13) pred: NA out observed cells -------------------------------------
-  pred <- data.table::copy(full)
+  # 13) proj: NA out observed cells -------------------------------------
+  proj <- data.table::copy(full)
   na_cols <- c(
     "target_proj", "target_incr_proj",
     "target_proc_se2", "target_param_se2", "target_total_se2",
     "target_proc_se",  "target_param_se",  "target_total_se",
     "target_proc_cv",  "target_param_cv",  "target_total_cv"
   )
-  pred[is_observed == TRUE, (na_cols) := NA_real_]
+  proj[is_observed == TRUE, (na_cols) := NA_real_]
 
   # 14) assemble output -------------------------------------------------
   out <- list(
@@ -268,7 +276,7 @@ fit_cl <- function(x,
     dev           = dev,
     target        = tgt,
     full          = full,
-    pred          = pred,
+    proj          = proj,
     link          = ata_fit$link,
     summary       = NULL,
     factor        = ata_fit$factor,

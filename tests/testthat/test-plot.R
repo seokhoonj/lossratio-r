@@ -10,7 +10,7 @@ ef   <- fit_ed(tri, target = "loss", exposure = "premium")
 cl_m <- fit_cl(tri, target = "loss", method = "mack")
 lr   <- fit_lr(tri, method = "sa")
 sub  <- build_triangle(exp[coverage == "SUR"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
-reg  <- detect_regime(sub, K = 12, method = "e_divisive")
+reg  <- detect_regime(sub, window = 12, method = "e_divisive")
 
 is_plot <- function(x) inherits(x, "ggplot") || inherits(x, "gtable")
 
@@ -54,9 +54,31 @@ test_that("plot.CLFit dispatches (mack, both types)", {
   expect_true(is_plot(suppressWarnings(plot(cl_m, type = "reserve"))))
 })
 
-test_that("plot.LRFit dispatches across types", {
-  expect_true(is_plot(suppressWarnings(plot(lr, type = "lr"))))
-  expect_true(is_plot(suppressWarnings(plot(lr, type = "loss"))))
+test_that("plot.LRFit dispatches across metrics and cell_types", {
+  for (m in c("lr", "loss", "premium")) {
+    for (ct in c("cumulative", "incremental")) {
+      p <- suppressWarnings(plot(lr, metric = m, cell_type = ct,
+                                 per_group = FALSE))
+      expect_true(is_plot(p),
+                  info = sprintf("metric = %s, cell_type = %s", m, ct))
+    }
+  }
+})
+
+test_that("plot.LRFit per_group = TRUE returns list of ggplots", {
+  res <- suppressWarnings(
+    plot(lr, per_group = TRUE, ask = FALSE)
+  )
+  expect_type(res, "list")
+  expect_true(all(vapply(res, inherits, logical(1L), "ggplot")))
+  # one entry per group value
+  expect_equal(length(res),
+               length(unique(lr$full[[lr$groups[[1L]]]])))
+})
+
+test_that("plot.LRFit per_group = FALSE returns single ggplot", {
+  p <- suppressWarnings(plot(lr, per_group = FALSE))
+  expect_true(is_plot(p))
 })
 
 test_that("plot.Regime dispatches", {
@@ -88,14 +110,14 @@ test_that("plot_triangle.EDFit dispatches", {
 })
 
 test_that("plot_triangle.CLFit dispatches across region variants", {
-  for (r in c("pred", "full", "data")) {
+  for (r in c("proj", "full", "data")) {
     p <- suppressWarnings(plot_triangle(cl_m, region = r))
     expect_true(is_plot(p), info = paste("region =", r))
   }
 })
 
 test_that("plot_triangle.LRFit dispatches", {
-  expect_true(is_plot(suppressWarnings(plot_triangle(lr, region = "pred"))))
+  expect_true(is_plot(suppressWarnings(plot_triangle(lr, region = "proj"))))
   expect_true(is_plot(suppressWarnings(plot_triangle(lr, region = "full"))))
   expect_true(is_plot(suppressWarnings(plot_triangle(lr, region = "data"))))
 })

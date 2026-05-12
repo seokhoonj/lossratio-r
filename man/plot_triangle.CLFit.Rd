@@ -6,7 +6,7 @@
 \usage{
 \method{plot_triangle}{CLFit}(
   x,
-  region = c("pred", "full", "data"),
+  region = c("proj", "full", "data"),
   view = c("value", "usage"),
   label_style = c("value", "cv", "se", "ci"),
   label_size = NULL,
@@ -22,7 +22,7 @@
 \item{x}{An object of class \code{"CLFit"}.}
 
 \item{region}{Cell region to plot (only used when \code{view = "value"}).
-One of \code{"pred"} (default; projected cells only, observed cells
+One of \code{"proj"} (default; projected cells only, observed cells
 masked), \code{"full"} (observed + projected), or \code{"data"} (observed
 from \code{x$data} — the raw Triangle, no projection).}
 
@@ -62,10 +62,10 @@ A ggplot object.
 \description{
 Visualise a \code{"CLFit"} object as a triangle-style heatmap table.
 
-The \code{what} argument controls which values are shown:
+The \code{region} argument controls which values are shown:
 \describe{
-\item{\code{"pred"}}{Predicted cells only.}
-\item{\code{"full"}}{Observed and predicted full triangle.}
+\item{\code{"proj"}}{Projected cells only.}
+\item{\code{"full"}}{Observed and projected full triangle.}
 \item{\code{"data"}}{Original observed data from \code{x$data}.}
 }
 

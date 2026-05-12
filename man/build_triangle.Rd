@@ -6,7 +6,7 @@
 \usage{
 build_triangle(
   df,
-  groups,
+  groups = character(0),
   cohort,
   calendar = NULL,
   dev = NULL,
@@ -29,12 +29,12 @@ integer \code{yyyy} / \code{yyyymm} / \code{yyyymmdd}, ISO string).}
 exposure period start (e.g., \code{"uy_m"}).}
 
 \item{calendar}{Single column (raw name) defining the calendar period of
-the observation (e.g., \code{"cy_m"}). Optional — supply either \code{calendar}
+the observation (e.g., \code{"cy_m"}). Optional -- supply either \code{calendar}
 or \code{dev} (or both). When \code{calendar} is given, \code{dev} is derived
 internally via \code{count_periods(cohort, calendar, grain)}.}
 
 \item{dev}{Single column (raw name) holding pre-computed development
-periods (e.g., \code{"dev_m"}). Optional — supply either \code{calendar}
+periods (e.g., \code{"dev_m"}). Optional -- supply either \code{calendar}
 or \code{dev} (or both). When only \code{dev} is given, the calendar
 axis is omitted from the attribute (downstream calendar-diagonal
 logic uses cohort + dev). When both are given, \code{dev} is
@@ -135,7 +135,7 @@ df <- data.frame(
 # auto-detected monthly grain
 res_m <- build_triangle(
   df,
-  groups   = pd_cd,
+  groups   = "pd_cd",
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "loss_incr",
@@ -143,7 +143,15 @@ res_m <- build_triangle(
 )
 
 # explicit quarterly view (re-bins monthly input to quarterly)
-res_q <- build_triangle(df, groups = pd_cd, grain = "Q")
+res_q <- build_triangle(
+  df,
+  groups   = "pd_cd",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr",
+  grain    = "Q"
+)
 
 head(res_m)
 attr(res_m, "longer")

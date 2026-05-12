@@ -52,9 +52,9 @@ especially when observation windows differ across cohorts.
 underwriting cohorts into **regimes** (groups of cohorts that share
 similar loss dynamics) and reporting the break dates between groups.
 It treats each underwriting cohort as a feature vector (its trajectory
-over development periods `1, ..., K`), orders cohorts by underwriting
-date, and applies a change-point or clustering method to the resulting
-multivariate sequence.
+over the first `window` development periods), orders cohorts by
+underwriting date, and applies a change-point or clustering method to
+the resulting multivariate sequence.
 
 ## Data and setup
 
@@ -83,10 +83,12 @@ r <- detect_regime(tri_sur, method = "e_divisive")
 r
 ```
 
-The window `K` controls how many development periods define the cohort
-feature vector. Only cohorts observed for at least `K` periods are
-analysed; cohorts with shorter windows are dropped. Increasing `K`
-captures more of the trajectory but drops more recent cohorts.
+The `window` argument controls how many development periods define
+the cohort feature vector. Only cohorts observed for at least `window`
+periods are analysed; cohorts with shorter windows are dropped.
+Increasing `window` captures more of the trajectory but drops more
+recent cohorts. With the default `window = "auto"`, a maturity-aware
+sweep picks the largest window that retains enough cohorts.
 
 ## Summary and per-regime membership
 
@@ -175,9 +177,9 @@ group column; `r_all$n_regimes` is a named integer vector keyed by group
 value. The `r_all$multi_group` flag distinguishes the layout from the
 single-group scalar form.
 
-If a group has too few cohorts for the chosen `K`, that group is skipped
-with a warning (others continue). If *all* groups fail, `detect_regime()`
-errors out.
+If a group has too few cohorts for the chosen `window`, that group is
+skipped with a warning (others continue). If *all* groups fail,
+`detect_regime()` errors out.
 
 `plot(r_all)` returns a named list of per-group `ggplot` panels (keyed
 by group value).

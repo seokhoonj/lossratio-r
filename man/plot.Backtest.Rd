@@ -7,6 +7,7 @@
 \method{plot}{Backtest}(
   x,
   type = c("col", "diag", "cell"),
+  cell_type = c("cumulative", "incremental"),
   scales = c("fixed", "free_y", "free_x", "free"),
   theme = c("view", "save", "shiny"),
   ...
@@ -16,6 +17,11 @@
 \item{x}{An object of class \code{"Backtest"}.}
 
 \item{type}{Plot type. One of \code{"col"}, \code{"diag"}, \code{"cell"}.}
+
+\item{cell_type}{Which projection view to display. One of
+\code{"cumulative"} (default; uses \code{ae_err}) or \code{"incremental"} (uses
+\code{ae_err_incr}). Both are stored on every \code{Backtest} object -- pick
+the view at plot time.}
 
 \item{scales}{Facet scale argument. One of \code{"fixed"}, \code{"free"},
 \code{"free_x"}, \code{"free_y"}.}

@@ -12,7 +12,7 @@ make_exp <- function() {
 }
 
 make_tri <- function(group = "coverage", ...) {
-  build_triangle(make_exp(), groups = !!group,
+  build_triangle(make_exp(), groups = group,
                  cohort = "uy_m", calendar = "cy_m",
                  loss = "loss_incr", premium = "premium_incr", ...)
 }

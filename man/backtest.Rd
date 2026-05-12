@@ -18,7 +18,8 @@ backtest(
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   loss_regime_break = NULL,
-  premium_regime_break = loss_regime_break,
+  premium_regime_break = NULL,
+  auto_detect_regime = FALSE,
   maturity_args = NULL,
   se_method = c("fixed", "delta"),
   rho = 0.95,
@@ -66,7 +67,17 @@ fitter.}
 
 \item{loss_regime_break, premium_regime_break}{Cohort-axis regime
 break(s) for loss / premium estimation. \code{premium_regime_break}
-defaults to \code{loss_regime_break}.}
+defaults to \code{loss_regime_break}. Cannot be combined with
+\code{auto_detect_regime = TRUE}.}
+
+\item{auto_detect_regime}{Logical. When \code{TRUE}, \code{\link[=detect_regime]{detect_regime()}} is
+run \emph{inside} the backtest loop on the \strong{masked} triangle (i.e.,
+the data the analyst would have at the simulated cutoff) and the
+result is used for both \code{loss_regime_break} and
+\code{premium_regime_break}. Avoids the look-ahead bias of detecting
+regimes on the full triangle (including the held-out diagonals)
+before backtesting. Mutually exclusive with an explicit
+\code{loss_regime_break}. Default \code{FALSE}.}
 
 \item{maturity_args}{Maturity-detection args. Used only for
 \code{target = "lr"} and \code{target = "loss"} (stage-adaptive).}
@@ -97,10 +108,14 @@ removed).}
 \item{\code{fit}}{The fit object returned by the target-specific
 fitter.}
 \item{\code{ae_err}}{\code{data.table} of held-out cells with columns
-\verb{(group, cohort, dev, value_actual, value_pred, ae_err, calendar_idx)}.}
-\item{\code{col_summary}}{Per-\code{dev} aggregate A/E Error (mean /
-median / weighted / n).}
-\item{\code{diag_summary}}{Per-calendar-diagonal aggregate A/E Error.}
+\verb{(group, cohort, dev, value_actual, value_proj, aeg, ae_err, value_actual_incr, value_proj_incr, aeg_incr, ae_err_incr, calendar_idx)}. \code{aeg = value_actual - value_proj} (signed
+error in target units); \code{ae_err = value_actual / value_proj - 1} (relative error). \verb{_incr} siblings are the same metrics
+on the incremental view.}
+\item{\code{col_summary}}{Per-\code{dev} aggregate A/E Error and AEG
+(mean / median / weighted) with \verb{_incr} variants and \code{n}.}
+\item{\code{diag_summary}}{Per-calendar-diagonal aggregate A/E
+Error and AEG (same columns as \code{col_summary}, keyed by
+\code{calendar_idx}).}
 \item{\code{target}, \code{holdout}, \code{fit_fn_name}}{Call metadata.}
 \item{\code{groups}, \code{cohort}, \code{dev}}{Variable name relays
 from \code{x}.}
