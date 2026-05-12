@@ -18,6 +18,7 @@ Three plot types:
 plot(
   x,
   type = c("col", "diag", "cell"),
+  cell_type = c("cumulative", "incremental"),
   scales = c("fixed", "free_y", "free_x", "free"),
   theme = c("view", "save", "shiny"),
   ...
@@ -33,6 +34,12 @@ plot(
 - type:
 
   Plot type. One of `"col"`, `"diag"`, `"cell"`.
+
+- cell_type:
+
+  Which projection view to display. One of `"cumulative"` (default; uses
+  `ae_err`) or `"incremental"` (uses `ae_err_incr`). Both are stored on
+  every `Backtest` object – pick the view at plot time.
 
 - scales:
 

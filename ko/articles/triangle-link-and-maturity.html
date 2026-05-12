@@ -171,7 +171,7 @@ for spotting cohorts that deviate from the central tendency.</p>
 <span><span class="co">#&gt; 2:      1.2618216  1.3280769</span></span>
 <span><span class="co">#&gt; 3:      1.1517980  1.1728982</span></span>
 <span><span class="co">#&gt; 4:      1.1167740  1.1742272</span></span>
-<span><span class="co">#&gt; 5:      1.2663384  1.3110155</span></span>
+<span><span class="co">#&gt; 5:      1.2663383  1.3110155</span></span>
 <span><span class="co">#&gt; 6:      1.2676379  1.2752751</span></span></code></pre></div>
 <p>Returns a <code>TriangleSummary</code> object with mean / median /
 weighted loss ratios per (group, dev) cell.</p>
@@ -336,10 +336,10 @@ are built internally:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">mat</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
 <span><span class="co">#&gt;    coverage ata_from ata_to ata_link     mean   median       wt        cv</span></span>
-<span><span class="co">#&gt;      &lt;char&gt;    &lt;int&gt;  &lt;int&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;     &lt;num&gt;</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;     &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.1053282</span></span>
 <span><span class="co">#&gt;           f       f_se        rse    sigma n_obs n_valid n_inf n_nan</span></span>
-<span><span class="co">#&gt;       &lt;num&gt;      &lt;num&gt;      &lt;num&gt;    &lt;num&gt; &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt;       &lt;num&gt;      &lt;num&gt;      &lt;num&gt;    &lt;num&gt; &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1: 1.417706 0.02651852 0.01870522 1372.883    33      33     0     0</span></span>
 <span><span class="co">#&gt;    valid_ratio</span></span>
 <span><span class="co">#&gt;          &lt;num&gt;</span></span>
@@ -415,16 +415,16 @@ row per group, each detected independently with the same thresholds:</p>
 <span><span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri_all</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
 <span><span class="co">#&gt;    coverage ata_from ata_to ata_link     mean   median       wt         cv</span></span>
-<span><span class="co">#&gt;      &lt;char&gt;    &lt;int&gt;  &lt;int&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;      &lt;num&gt;</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;      &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:      CAN        8      9      8-9 1.079323 1.060341 1.065354 0.07131509</span></span>
 <span><span class="co">#&gt; 2:       CI       11     12    11-12 1.094403 1.070561 1.114066 0.07563394</span></span>
-<span><span class="co">#&gt; 3:      HOS        6      7      6-7 1.244842 1.184287 1.205542 0.13563426</span></span>
+<span><span class="co">#&gt; 3:      HOS        6      7      6-7 1.244842 1.184287 1.205542 0.13563431</span></span>
 <span><span class="co">#&gt; 4:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.10532824</span></span>
 <span><span class="co">#&gt;           f       f_se        rse     sigma n_obs n_valid n_inf n_nan</span></span>
-<span><span class="co">#&gt;       &lt;num&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt; &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt;       &lt;num&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt; &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1: 1.065354 0.01384183 0.01299271  637.2413    28      28     0     0</span></span>
 <span><span class="co">#&gt; 2: 1.114066 0.01954799 0.01754653 1459.6221    25      25     0     0</span></span>
-<span><span class="co">#&gt; 3: 1.205542 0.02746025 0.02277835  220.8771    30      30     0     0</span></span>
+<span><span class="co">#&gt; 3: 1.205542 0.02746026 0.02277835  220.8771    30      30     0     0</span></span>
 <span><span class="co">#&gt; 4: 1.417706 0.02651852 0.01870522 1372.8834    33      33     0     0</span></span>
 <span><span class="co">#&gt;    valid_ratio</span></span>
 <span><span class="co">#&gt;          &lt;num&gt;</span></span>
@@ -503,9 +503,9 @@ diagonals:</p>
 <span><span class="co">#&gt; recent               : 12 </span></span>
 <span><span class="co">#&gt; loss_regime_break    : none </span></span>
 <span><span class="co">#&gt; premium_regime_break : none </span></span>
-<span><span class="co">#&gt; maturity[SUR] : 25</span></span>
-<span><span class="co">#&gt; groups        : coverage </span></span>
-<span><span class="co">#&gt; periods       : 36</span></span></code></pre></div>
+<span><span class="co">#&gt; maturity[SUR]        : 25 </span></span>
+<span><span class="co">#&gt; groups               : coverage </span></span>
+<span><span class="co">#&gt; periods              : 36</span></span></code></pre></div>
 <p><code>recent = K</code> keeps only rows whose calendar position
 (<code>rank(cohort) + dev - 1</code>) is among the latest <code>K</code>
 per group.</p>

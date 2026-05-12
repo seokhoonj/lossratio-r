@@ -38,7 +38,8 @@ backtest(
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   loss_regime_break = NULL,
-  premium_regime_break = loss_regime_break,
+  premium_regime_break = NULL,
+  auto_detect_regime = FALSE,
   maturity_args = NULL,
   se_method = c("fixed", "delta"),
   rho = 0.95,
@@ -112,7 +113,20 @@ print(x, ...)
 - loss_regime_break, premium_regime_break:
 
   Cohort-axis regime break(s) for loss / premium estimation.
-  `premium_regime_break` defaults to `loss_regime_break`.
+  `premium_regime_break` defaults to `loss_regime_break`. Cannot be
+  combined with `auto_detect_regime = TRUE`.
+
+- auto_detect_regime:
+
+  Logical. When `TRUE`,
+  [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
+  is run *inside* the backtest loop on the **masked** triangle (i.e.,
+  the data the analyst would have at the simulated cutoff) and the
+  result is used for both `loss_regime_break` and
+  `premium_regime_break`. Avoids the look-ahead bias of detecting
+  regimes on the full triangle (including the held-out diagonals) before
+  backtesting. Mutually exclusive with an explicit `loss_regime_break`.
+  Default `FALSE`.
 
 - maturity_args:
 
@@ -177,15 +191,20 @@ An object of class `"Backtest"` with components:
 - `ae_err`:
 
   `data.table` of held-out cells with columns
-  `(group, cohort, dev, value_actual, value_pred, ae_err, calendar_idx)`.
+  `(group, cohort, dev, value_actual, value_proj, aeg, ae_err, value_actual_incr, value_proj_incr, aeg_incr, ae_err_incr, calendar_idx)`.
+  `aeg = value_actual - value_proj` (signed error in target units);
+  `ae_err = value_actual / value_proj - 1` (relative error). `_incr`
+  siblings are the same metrics on the incremental view.
 
 - `col_summary`:
 
-  Per-`dev` aggregate A/E Error (mean / median / weighted / n).
+  Per-`dev` aggregate A/E Error and AEG (mean / median / weighted) with
+  `_incr` variants and `n`.
 
 - `diag_summary`:
 
-  Per-calendar-diagonal aggregate A/E Error.
+  Per-calendar-diagonal aggregate A/E Error and AEG (same columns as
+  `col_summary`, keyed by `calendar_idx`).
 
 - `target`, `holdout`, `fit_fn_name`:
 

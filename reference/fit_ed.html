@@ -5,23 +5,21 @@ selected intensities, and a cell-level projection of cumulative loss
 and exposure ($full).
 Returns g_selected, sigma2, and factor variance
 \(\mathrm{Var}(\hat{g}_k)\) (column g_var) in $selected.
-The $full projection table is produced by delegating to
-fit_lr() with method = "ed", so cumulative loss / exposure /
-loss-ratio projections and their standard errors are numerically
-identical to those of fit_lr(method = "ed"). To validate an ED
-projection via backtest(), call
-backtest(tri, target = "lr", loss_method = "ed").'><meta property="og:description" content='Estimate incremental loss intensities \(g_k\) from a "Triangle"
+The $full projection table holds cumulative loss / exposure
+projections and their standard errors, computed directly from the
+Mack-style ED recursion (see .ed_proj, .ed_proc_var,
+.ed_param_var). To validate an ED projection via backtest(),
+call backtest(tri, target = "lr", loss_method = "ed").'><meta property="og:description" content='Estimate incremental loss intensities \(g_k\) from a "Triangle"
 object and return an "EDFit" object that bundles factor summaries,
 selected intensities, and a cell-level projection of cumulative loss
 and exposure ($full).
 Returns g_selected, sigma2, and factor variance
 \(\mathrm{Var}(\hat{g}_k)\) (column g_var) in $selected.
-The $full projection table is produced by delegating to
-fit_lr() with method = "ed", so cumulative loss / exposure /
-loss-ratio projections and their standard errors are numerically
-identical to those of fit_lr(method = "ed"). To validate an ED
-projection via backtest(), call
-backtest(tri, target = "lr", loss_method = "ed").'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Browser-language redirect: send Korean visitors to /ko/ on the
+The $full projection table holds cumulative loss / exposure
+projections and their standard errors, computed directly from the
+Mack-style ED recursion (see .ed_proj, .ed_proc_var,
+.ed_param_var). To validate an ED projection via backtest(),
+call backtest(tri, target = "lr", loss_method = "ed").'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Browser-language redirect: send Korean visitors to /ko/ on the
      landing page only. Deep links remain untouched. We use string
      slicing rather than a regex with end-anchor, because pandoc
      treats the dollar sign as a template variable delimiter. --><script>
@@ -132,12 +130,11 @@ selected intensities, and a cell-level projection of cumulative loss
 and exposure (<code>$full</code>).</p>
 <p>Returns <code>g_selected</code>, <code>sigma2</code>, and factor variance
 \(\mathrm{Var}(\hat{g}_k)\) (column <code>g_var</code>) in <code>$selected</code>.</p>
-<p>The <code>$full</code> projection table is produced by delegating to
-<code><a href="fit_lr.html">fit_lr()</a></code> with <code>method = "ed"</code>, so cumulative loss / exposure /
-loss-ratio projections and their standard errors are numerically
-identical to those of <code>fit_lr(method = "ed")</code>. To validate an ED
-projection via <code><a href="backtest.html">backtest()</a></code>, call
-<code>backtest(tri, target = "lr", loss_method = "ed")</code>.</p>
+<p>The <code>$full</code> projection table holds cumulative loss / exposure
+projections and their standard errors, computed directly from the
+Mack-style ED recursion (see <code>.ed_proj</code>, <code>.ed_proc_var</code>,
+<code>.ed_param_var</code>). To validate an ED projection via <code><a href="backtest.html">backtest()</a></code>,
+call <code>backtest(tri, target = "lr", loss_method = "ed")</code>.</p>
     </div>
 
     <div class="section level2">

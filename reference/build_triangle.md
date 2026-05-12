@@ -42,7 +42,7 @@ development cell across products or other grouping variables.
 ``` r
 build_triangle(
   df,
-  groups,
+  groups = character(0),
   cohort,
   calendar = NULL,
   dev = NULL,
@@ -75,14 +75,14 @@ build_triangle(
 - calendar:
 
   Single column (raw name) defining the calendar period of the
-  observation (e.g., `"cy_m"`). Optional — supply either `calendar` or
+  observation (e.g., `"cy_m"`). Optional – supply either `calendar` or
   `dev` (or both). When `calendar` is given, `dev` is derived internally
   via `count_periods(cohort, calendar, grain)`.
 
 - dev:
 
   Single column (raw name) holding pre-computed development periods
-  (e.g., `"dev_m"`). Optional — supply either `calendar` or `dev` (or
+  (e.g., `"dev_m"`). Optional – supply either `calendar` or `dev` (or
   both). When only `dev` is given, the calendar axis is omitted from the
   attribute (downstream calendar-diagonal logic uses cohort + dev). When
   both are given, `dev` is cross-checked against
@@ -182,7 +182,7 @@ df <- data.frame(
 # auto-detected monthly grain
 res_m <- build_triangle(
   df,
-  groups   = pd_cd,
+  groups   = "pd_cd",
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "loss_incr",
@@ -190,7 +190,15 @@ res_m <- build_triangle(
 )
 
 # explicit quarterly view (re-bins monthly input to quarterly)
-res_q <- build_triangle(df, groups = pd_cd, grain = "Q")
+res_q <- build_triangle(
+  df,
+  groups   = "pd_cd",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr",
+  grain    = "Q"
+)
 
 head(res_m)
 attr(res_m, "longer")

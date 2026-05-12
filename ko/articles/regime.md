@@ -34,8 +34,8 @@ especially when observation windows differ across cohorts.
 answers both questions in one call — grouping underwriting cohorts into
 **regimes** (groups of cohorts that share similar loss dynamics) and
 reporting the break dates between groups. It treats each underwriting
-cohort as a feature vector (its trajectory over development periods
-`1, ..., K`), orders cohorts by underwriting date, and applies a
+cohort as a feature vector (its trajectory over the first `window`
+development periods), orders cohorts by underwriting date, and applies a
 change-point or clustering method to the resulting multivariate
 sequence.
 
@@ -67,19 +67,21 @@ data:
 r <- detect_regime(tri_sur, method = "e_divisive")
 r
 #> <Regime>
-#>   method      : e_divisive
-#>   target      : lr
-#>   window (K)  : dev_m 1-6
-#>   cohorts     : 31 analysed (5 dropped)
-#>   regimes     : 2
-#>   breakpoints : 24.07
-#>   PC1 / PC2   : 80.0% / 12.7%
+#>   method : e_divisive
+#>   target : lr
+#>   window (window) : dev_m 1-4
+#>   cohorts    : 33 analysed (3 dropped)
+#>   regimes    : 2
+#>   breakpoints: 24.07
+#>   PC1 / PC2  : 75.6% / 18.9%
 ```
 
-The window `K` controls how many development periods define the cohort
-feature vector. Only cohorts observed for at least `K` periods are
-analysed; cohorts with shorter windows are dropped. Increasing `K`
-captures more of the trajectory but drops more recent cohorts.
+The `window` argument controls how many development periods define the
+cohort feature vector. Only cohorts observed for at least `window`
+periods are analysed; cohorts with shorter windows are dropped.
+Increasing `window` captures more of the trajectory but drops more
+recent cohorts. With the default `window = "auto"`, a maturity-aware
+sweep picks the largest window that retains enough cohorts.
 
 ## Summary and per-regime membership
 
@@ -89,51 +91,53 @@ summary(r)
 #> Cohort regime detection summary
 #>   method    : e_divisive
 #>   target    : lr
-#>   window    : dev_m 1-6
-#>   cohorts   : 31 analysed (5 dropped)
+#>   window    : dev_m 1-4
+#>   cohorts   : 33 analysed (3 dropped)
 #> 
 #> Regimes (2):
 #>   1: 23.01-24.06 (18 cohorts)
-#>   2: 24.07-25.07 (13 cohorts)
+#>   2: 24.07-25.09 (15 cohorts)
 #> 
 #> Breakpoints: 24.07
 
 r$labels
-#>         cohort      regime regime_id
-#>         <Date>      <fctr>     <int>
-#>  1: 2023-01-01 23.01-24.06         1
-#>  2: 2023-02-01 23.01-24.06         1
-#>  3: 2023-03-01 23.01-24.06         1
-#>  4: 2023-04-01 23.01-24.06         1
-#>  5: 2023-05-01 23.01-24.06         1
-#>  6: 2023-06-01 23.01-24.06         1
-#>  7: 2023-07-01 23.01-24.06         1
-#>  8: 2023-08-01 23.01-24.06         1
-#>  9: 2023-09-01 23.01-24.06         1
-#> 10: 2023-10-01 23.01-24.06         1
-#> 11: 2023-11-01 23.01-24.06         1
-#> 12: 2023-12-01 23.01-24.06         1
-#> 13: 2024-01-01 23.01-24.06         1
-#> 14: 2024-02-01 23.01-24.06         1
-#> 15: 2024-03-01 23.01-24.06         1
-#> 16: 2024-04-01 23.01-24.06         1
-#> 17: 2024-05-01 23.01-24.06         1
-#> 18: 2024-06-01 23.01-24.06         1
-#> 19: 2024-07-01 24.07-25.07         2
-#> 20: 2024-08-01 24.07-25.07         2
-#> 21: 2024-09-01 24.07-25.07         2
-#> 22: 2024-10-01 24.07-25.07         2
-#> 23: 2024-11-01 24.07-25.07         2
-#> 24: 2024-12-01 24.07-25.07         2
-#> 25: 2025-01-01 24.07-25.07         2
-#> 26: 2025-02-01 24.07-25.07         2
-#> 27: 2025-03-01 24.07-25.07         2
-#> 28: 2025-04-01 24.07-25.07         2
-#> 29: 2025-05-01 24.07-25.07         2
-#> 30: 2025-06-01 24.07-25.07         2
-#> 31: 2025-07-01 24.07-25.07         2
-#>         cohort      regime regime_id
-#>         <Date>      <fctr>     <int>
+#>     coverage     cohort      regime regime_id
+#>       <char>     <Date>      <fctr>     <int>
+#>  1:      SUR 2023-01-01 23.01-24.06         1
+#>  2:      SUR 2023-02-01 23.01-24.06         1
+#>  3:      SUR 2023-03-01 23.01-24.06         1
+#>  4:      SUR 2023-04-01 23.01-24.06         1
+#>  5:      SUR 2023-05-01 23.01-24.06         1
+#>  6:      SUR 2023-06-01 23.01-24.06         1
+#>  7:      SUR 2023-07-01 23.01-24.06         1
+#>  8:      SUR 2023-08-01 23.01-24.06         1
+#>  9:      SUR 2023-09-01 23.01-24.06         1
+#> 10:      SUR 2023-10-01 23.01-24.06         1
+#> 11:      SUR 2023-11-01 23.01-24.06         1
+#> 12:      SUR 2023-12-01 23.01-24.06         1
+#> 13:      SUR 2024-01-01 23.01-24.06         1
+#> 14:      SUR 2024-02-01 23.01-24.06         1
+#> 15:      SUR 2024-03-01 23.01-24.06         1
+#> 16:      SUR 2024-04-01 23.01-24.06         1
+#> 17:      SUR 2024-05-01 23.01-24.06         1
+#> 18:      SUR 2024-06-01 23.01-24.06         1
+#> 19:      SUR 2024-07-01 24.07-25.09         2
+#> 20:      SUR 2024-08-01 24.07-25.09         2
+#> 21:      SUR 2024-09-01 24.07-25.09         2
+#> 22:      SUR 2024-10-01 24.07-25.09         2
+#> 23:      SUR 2024-11-01 24.07-25.09         2
+#> 24:      SUR 2024-12-01 24.07-25.09         2
+#> 25:      SUR 2025-01-01 24.07-25.09         2
+#> 26:      SUR 2025-02-01 24.07-25.09         2
+#> 27:      SUR 2025-03-01 24.07-25.09         2
+#> 28:      SUR 2025-04-01 24.07-25.09         2
+#> 29:      SUR 2025-05-01 24.07-25.09         2
+#> 30:      SUR 2025-06-01 24.07-25.09         2
+#> 31:      SUR 2025-07-01 24.07-25.09         2
+#> 32:      SUR 2025-08-01 24.07-25.09         2
+#> 33:      SUR 2025-09-01 24.07-25.09         2
+#>     coverage     cohort      regime regime_id
+#>       <char>     <Date>      <fctr>     <int>
 ```
 
 ## Visualisation
@@ -191,15 +195,15 @@ summary(r2)
 #> Cohort regime detection summary
 #>   method    : e_divisive
 #>   target    : lr
-#>   window    : dev_m 1-6
-#>   cohorts   : 31 analysed (5 dropped)
+#>   window    : dev_m 1-4
+#>   cohorts   : 33 analysed (3 dropped)
 #> 
 #> Regimes (3):
-#>   1: 23.01-23.08 (8 cohorts)
-#>   2: 23.09-24.06 (10 cohorts)
-#>   3: 24.07-25.07 (13 cohorts)
+#>   1: 23.01-24.06 (18 cohorts)
+#>   2: 24.07-25.06 (12 cohorts)
+#>   3: 25.07-25.09 (3 cohorts)
 #> 
-#> Breakpoints: 23.09, 24.07
+#> Breakpoints: 24.07, 25.07
 ```
 
 For `"e_divisive"` and `"pelt"`, `n_regimes` is a request (the algorithm
@@ -226,7 +230,7 @@ r_all   <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 r_all$breakpoints
 #>    coverage breakpoint regime_id pre_value post_value magnitude
 #>      <char>     <Date>     <int>     <num>      <num>     <num>
-#> 1:      SUR 2024-07-01         2 0.9065895  0.5479919 0.3585975
+#> 1:      SUR 2024-07-01         2 0.9065895  0.5479919 0.3585976
 ```
 
 In multi-group mode `r_all$breakpoints` is a `data.table` with the group
@@ -235,8 +239,8 @@ the group column; `r_all$n_regimes` is a named integer vector keyed by
 group value. The `r_all$multi_group` flag distinguishes the layout from
 the single-group scalar form.
 
-If a group has too few cohorts for the chosen `K`, that group is skipped
-with a warning (others continue). If *all* groups fail,
+If a group has too few cohorts for the chosen `window`, that group is
+skipped with a warning (others continue). If *all* groups fail,
 [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
 errors out.
 

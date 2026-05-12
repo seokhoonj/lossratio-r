@@ -14,7 +14,7 @@ Mask precedence: `holdout` \> `used` \> `unused` \> `future`.
   recent = NULL,
   regime_break = NULL,
   holdout = NULL,
-  mat_k = NULL
+  m_k = NULL
 )
 ```
 
@@ -44,15 +44,15 @@ Mask precedence: `holdout` \> `used` \> `unused` \> `future`.
   semantics — the internal fitter operates on the masked triangle whose
   own max_cal is `original - holdout`.
 
-- mat_k:
+- m_k:
 
   Optional integer. The maturity switch as a *target* development index
   (= `ata_to` of the first stable link). When both `recent` and
-  `regime_break` are provided, the hybrid mask uses `mat_k` as the
-  boundary: cells with `dev < mat_k` apply the cohort cut, cells with
-  `dev >= mat_k` apply the calendar-diagonal cut. When `NULL`, the
-  hybrid logic falls back to applying both filters jointly (cohort cut
-  AND recent cut).
+  `regime_break` are provided, the hybrid mask uses `m_k` as the
+  boundary: cells with `dev < m_k` apply the cohort cut, cells with
+  `dev >= m_k` apply the calendar-diagonal cut. When `NULL`, the hybrid
+  logic falls back to applying both filters jointly (cohort cut AND
+  recent cut).
 
 ## Value
 

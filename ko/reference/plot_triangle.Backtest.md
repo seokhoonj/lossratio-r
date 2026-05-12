@@ -1,14 +1,21 @@
 # Triangle heatmap of backtest A/E Error
 
 Display the held-out cells as a `cohort x dev` heatmap coloured by A/E
-Error (red = under-projected (actual \> pred), blue = over-projected
-(actual \< pred), white at 0).
+Error (red = under-projected (actual \> proj), blue = over-projected
+(actual \< proj), white at 0).
 
 ## Usage
 
 ``` r
 # S3 method for class 'Backtest'
-plot_triangle(x, label_size = 2.5, theme = c("view", "save", "shiny"), ...)
+plot_triangle(
+  x,
+  view = c("value", "usage"),
+  cell_type = c("cumulative", "incremental"),
+  label_size = 2.5,
+  theme = c("view", "save", "shiny"),
+  ...
+)
 ```
 
 ## Arguments
@@ -16,6 +23,28 @@ plot_triangle(x, label_size = 2.5, theme = c("view", "save", "shiny"), ...)
 - x:
 
   An object of class `"Backtest"`.
+
+- view:
+
+  Plot mode:
+
+  `"value"` (default)
+
+  :   Held-out-cell heatmap coloured by A/E Error.
+
+  `"usage"`
+
+  :   Cell-status heatmap (training / held-out / dropped
+      (regime-filtered) / future) driven by `x$holdout` and the fit's
+      `regime_break`. Useful to inspect what data the masked refit
+      actually saw, especially when combined with multi-group
+      `regime_break`.
+
+- cell_type:
+
+  Which projection view to display in `view = "value"`. One of
+  `"cumulative"` (default; uses `ae_err`) or `"incremental"` (uses
+  `ae_err_incr`).
 
 - label_size:
 

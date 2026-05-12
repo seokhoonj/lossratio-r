@@ -71,7 +71,9 @@ distinguished by border style.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'LRFit'</span></span>
 <span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  region <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pred"</span>, <span class="st">"full"</span>, <span class="st">"data"</span><span class="op">)</span>,</span>
+<span>  metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lr"</span>, <span class="st">"loss"</span>, <span class="st">"premium"</span><span class="op">)</span>,</span>
+<span>  cell_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cumulative"</span>, <span class="st">"incremental"</span><span class="op">)</span>,</span>
+<span>  region <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"proj"</span>, <span class="st">"full"</span>, <span class="st">"data"</span><span class="op">)</span>,</span>
 <span>  view <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"value"</span>, <span class="st">"usage"</span><span class="op">)</span>,</span>
 <span>  label_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"value"</span>, <span class="st">"detail"</span><span class="op">)</span>,</span>
 <span>  label_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -93,12 +95,23 @@ distinguished by border style.</p>
 <dd><p>An object of class <code>"LRFit"</code>.</p></dd>
 
 
+<dt id="arg-metric">metric<a class="anchor" aria-label="anchor" href="#arg-metric"></a></dt>
+<dd><p>Metric shown in the heatmap cells. One of <code>"lr"</code>
+(default), <code>"loss"</code>, <code>"premium"</code>.</p></dd>
+
+
+<dt id="arg-cell-type">cell_type<a class="anchor" aria-label="anchor" href="#arg-cell-type"></a></dt>
+<dd><p>Aggregation. One of <code>"cumulative"</code> (default) or
+<code>"incremental"</code>. Combined with <code>metric</code> to select the column
+(e.g., <code>metric = "lr"</code>, <code>cell_type = "incremental"</code> → <code>lr_incr</code>).</p></dd>
+
+
 <dt id="arg-region">region<a class="anchor" aria-label="anchor" href="#arg-region"></a></dt>
 <dd><p>Cell region to plot (only used when <code>view = "value"</code>).
-One of <code>"pred"</code> (projected cells only, observed cells masked),
+One of <code>"proj"</code> (projected cells only, observed cells masked),
 <code>"full"</code> (observed + projected), or <code>"data"</code> (observed cumulative
 loss / premium / lr from <code>x$data</code> — the raw Triangle, no
-projection). Default is <code>"pred"</code>.</p></dd>
+projection). Default is <code>"proj"</code>.</p></dd>
 
 
 <dt id="arg-view">view<a class="anchor" aria-label="anchor" href="#arg-view"></a></dt>
@@ -109,7 +122,7 @@ relative fill. <code>region</code> selects which cells to display.</p></dd>
 <dt>"usage"</dt>
 <dd><p>Cell-status heatmap (<code>used</code> / <code>holdout</code> /
 <code>unused</code> / <code>future</code>) driven by the fit's own metadata
-(<code>x$recent</code>, <code>x$regime_break</code>, <code>x$maturity</code>). <code>region</code> is
+(<code>x$recent</code>, <code>x$loss_regime_break</code>, <code>x$maturity</code>). <code>region</code> is
 ignored.</p></dd>
 
 

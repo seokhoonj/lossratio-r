@@ -127,7 +127,6 @@ Mock output:
     #> k_star       : 9
     #> V (max dev)  : 30
     #> criterion    : R_v < 0.5 * SE_param_v  AND  D_v < 0.15  (run M = 3)
-    #> fit_fn       : fit_lr
     #> v candidates : 19 ( 0  pass both clauses)
 
 The returned `Convergence` object reports:
@@ -143,7 +142,7 @@ The returned `Convergence` object reports:
   sequences indexed by $`v`$.
 - `se_mult`, `max_dv`, `min_run`, `holdout_max`, `min_n_cohorts` —
   settings used.
-- attributes `groups`, `target`, `fit_fn_name`, `dev`.
+- attributes `groups`, `target`, `dev`.
 
 `summary(res)` returns a `data.table` with one row per candidate
 valuation and an extra `R_over_SE = R_v / SE_param_v` column for
@@ -273,9 +272,14 @@ calls and inherits their constraints:
 - **Identifiability**: $`k^{**}`$ can be declared only when
   $`V \ge k^* + M`$; short observation windows return `NA`.
 - **Model conditioning**: $`\hat{LR}^{\mathrm{proj}}_v`$ is computed by
-  `fit_fn` (default `fit_lr`). Different fitters yield different
-  $`k^{**}`$. Reporting under multiple `fit_fn` is recommended for
-  robustness.
+  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
+  which internally composes
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
+  (default `method = "sa"` – stage-adaptive) and
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md).
+  Choices made inside that composition (loss method, regime filter) feed
+  through to $`k^{**}`$; review the underlying `fit_lr` settings when
+  interpreting the result.
 - **Portfolio aggregation**: $`R_v`$ and $`\hat{SE}^{\mathrm{param}}_v`$
   are exposure-weighted across cohorts assuming inter-cohort
   independence. Calendar-year shocks (regulatory, healthcare cost trend)

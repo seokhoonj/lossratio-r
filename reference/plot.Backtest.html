@@ -134,6 +134,7 @@ group.</p></li>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"col"</span>, <span class="st">"diag"</span>, <span class="st">"cell"</span><span class="op">)</span>,</span>
+<span>  cell_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cumulative"</span>, <span class="st">"incremental"</span><span class="op">)</span>,</span>
 <span>  scales <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fixed"</span>, <span class="st">"free_y"</span>, <span class="st">"free_x"</span>, <span class="st">"free"</span><span class="op">)</span>,</span>
 <span>  theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"view"</span>, <span class="st">"save"</span>, <span class="st">"shiny"</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -150,6 +151,13 @@ group.</p></li>
 
 <dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
 <dd><p>Plot type. One of <code>"col"</code>, <code>"diag"</code>, <code>"cell"</code>.</p></dd>
+
+
+<dt id="arg-cell-type">cell_type<a class="anchor" aria-label="anchor" href="#arg-cell-type"></a></dt>
+<dd><p>Which projection view to display. One of
+<code>"cumulative"</code> (default; uses <code>ae_err</code>) or <code>"incremental"</code> (uses
+<code>ae_err_incr</code>). Both are stored on every <code>Backtest</code> object – pick
+the view at plot time.</p></dd>
 
 
 <dt id="arg-scales">scales<a class="anchor" aria-label="anchor" href="#arg-scales"></a></dt>

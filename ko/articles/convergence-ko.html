@@ -97,7 +97,7 @@
 <div class="section level2">
 <h2 id="동기">1. 동기<a class="anchor" aria-label="anchor" href="#%EB%8F%99%EA%B8%B0"></a>
 </h2>
-<p><code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> 는 <em>“어느 발전 기간부터 link factor
+<p><code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> 는 <em>“어느 경과 기간부터 link factor
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
 가 코호트 간에 재현 가능해지는가?”</em> 에 답한다. chain ladder 예측에는
 필요하지만, 포트폴리오의 예측 손해율이 수렴했다고 선언하기에는 충분하지
@@ -155,7 +155,7 @@ link factor
 여기서
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><mo>=</mo><mn>1.4826</mn><mo>⋅</mo><msub><mrow><mi mathvariant="normal">M</mi><mi mathvariant="normal">A</mi><mi mathvariant="normal">D</mi></mrow><mi>i</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mover><mrow><mi>l</mi><mi>r</mi></mrow><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>v</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mo stretchy="false" form="prefix">|</mo><msub><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">d</mi><mi mathvariant="normal">i</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow><mi>i</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mover><mrow><mi>l</mi><mi>r</mi></mrow><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>v</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="prefix">|</mo></mrow><annotation encoding="application/x-tex">\hat{D}_v = 1.4826 \cdot \mathrm{MAD}_i(\hat{lr}_{i,v}) /
 |\mathrm{median}_i(\hat{lr}_{i,v})|</annotation></semantics></math> 는
-발전 기간
+경과 기간
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
 에서 코호트 간 <em>증분</em> 손해율의 강건 분산.</li>
 </ol>
@@ -295,7 +295,7 @@ link factor
 <td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mrow><mi>l</mi><mi>r</mi></mrow><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>v</mi></mrow></msub><annotation encoding="application/x-tex">\hat{lr}_{i,v}</annotation></semantics></math></td>
 <td>코호트
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
-의 발전 기간
+의 경과 기간
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
 에서의 증분 손해율</td>
 </tr>
@@ -358,7 +358,6 @@ MAD<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics>
 <span><span class="co">#&gt; k_star       : 9</span></span>
 <span><span class="co">#&gt; V (max dev)  : 30</span></span>
 <span><span class="co">#&gt; criterion    : R_v &lt; 0.5 * SE_param_v  AND  D_v &lt; 0.15  (run M = 3)</span></span>
-<span><span class="co">#&gt; fit_fn       : fit_lr</span></span>
 <span><span class="co">#&gt; v candidates : 19 ( 0  pass both clauses)</span></span></code></pre>
 <p><code>Convergence</code> 객체의 주요 필드:</p>
 <ul>
@@ -373,7 +372,7 @@ MAD<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics>
 ATA 에 <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> 를 적용해 산출하거나, 호출 시 직접
 전달할 수 있다.</li>
 <li>
-<code>V</code> — triangle 에서 관측 가능한 최대 발전 기간.</li>
+<code>V</code> — triangle 에서 관측 가능한 최대 경과 기간.</li>
 <li>
 <code>v</code>, <code>R_v</code>, <code>SE_param_v</code>,
 <code>D_v</code>, <code>pass_v</code> — 후보 평가 시점별 진단
@@ -383,7 +382,7 @@ ATA 에 <code><a href="../reference/detect_maturity.html">detect_maturity()</a><
 <code>holdout_max</code>, <code>min_n_cohorts</code> — 사용된
 설정값.</li>
 <li>attribute: <code>groups</code>, <code>target</code>,
-<code>fit_fn_name</code>, <code>dev</code>.</li>
+<code>dev</code>.</li>
 </ul>
 <p><code>summary(res)</code> 는 후보 시점별 한 행 +
 <code>R_over_SE = R_v / SE_param_v</code> 컬럼이 있는
@@ -572,7 +571,7 @@ refit 자료가 줄어들어 신뢰도가 떨어진다.</p>
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>)</td>
 <td>link factor 가 재현 가능해지는 시점?</td>
 <td>dev 값</td>
-<td>발전 기간</td>
+<td>경과 기간</td>
 </tr>
 <tr class="odd">
 <td>
@@ -580,7 +579,7 @@ refit 자료가 줄어들어 신뢰도가 떨어진다.</p>
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>)</td>
 <td>LR 추정이 갱신을 멈추는 시점?</td>
 <td>dev 값</td>
-<td>발전 기간</td>
+<td>경과 기간</td>
 </tr>
 </tbody>
 </table>
@@ -620,11 +619,13 @@ refit 자료가 줄어들어 신뢰도가 떨어진다.</p>
 <li>
 <strong>모형 조건부</strong>:
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">j</mi></mrow></msubsup><annotation encoding="application/x-tex">\hat{LR}^{\mathrm{proj}}_v</annotation></semantics></math>
-는 <code>fit_fn</code> (default: <code>fit_lr</code>) 으로 산출. fitter
-가 다르면
+는 <code><a href="../reference/fit_lr.html">fit_lr()</a></code> 로 산출. <code><a href="../reference/fit_lr.html">fit_lr()</a></code> 이 내부적으로
+<code><a href="../reference/fit_loss.html">fit_loss()</a></code> (default <code>method = "sa"</code> — 단계
+적응형) 와 <code><a href="../reference/fit_premium.html">fit_premium()</a></code> 을 합성하므로, 그 안의 선택 (loss
+method, regime 필터) 이
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
-도 달라짐. robustness 를 위해 여러 <code>fit_fn</code> 하에서 결과 비교
-권장.</li>
+로 흘러간다. 결과 해석 시 <code>fit_lr</code> 설정을 같이 확인할
+것.</li>
 <li>
 <strong>포트폴리오 집계</strong>:
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>

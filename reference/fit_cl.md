@@ -132,7 +132,7 @@ An object of class `"CLFit"` containing:
   `data.table` with observed and projected values, including
   process/parameter SE and CV columns.
 
-- `pred`:
+- `proj`:
 
   `data.table` identical to `full` with observed cells set to `NA`.
 

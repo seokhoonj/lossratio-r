@@ -2,13 +2,20 @@
 
 Visualise an object of class `"LRFit"`.
 
-Two plot types are supported:
+The plotted metric is the cross-product of `metric` and `cell_type`:
 
-- `"lr"`: projected cumulative loss ratio by cohort with optional
-  confidence bands.
+- `metric = "lr"`, `cell_type = "cumulative"`: cumulative loss ratio
+  (default).
 
-- `"loss"`: observed and projected cumulative loss by cohort with
-  optional confidence bands.
+- `metric = "lr_incr"` (i.e., `cell_type = "incremental"`): per-period
+  loss ratio.
+
+- `metric = "loss"` / `"premium"`: same split — cumulative or per-period
+  amounts.
+
+Confidence bands are drawn only for cumulative metrics
+(`cell_type = "cumulative"`), since the fit output does not carry SE
+columns for incremental projections.
 
 ## Usage
 
@@ -16,7 +23,10 @@ Two plot types are supported:
 # S3 method for class 'LRFit'
 plot(
   x,
-  type = c("lr", "loss"),
+  metric = c("lr", "loss", "premium"),
+  cell_type = c("cumulative", "incremental"),
+  per_group = NULL,
+  ask = grDevices::dev.interactive(),
   conf_level = 0.95,
   show_interval = TRUE,
   amount_divisor = 1e+08,
@@ -34,9 +44,30 @@ plot(
 
   An object of class `"LRFit"`.
 
-- type:
+- metric:
 
-  One of `"lr"` or `"loss"`.
+  Metric to plot. One of `"lr"` (default), `"loss"`, `"premium"`.
+
+- cell_type:
+
+  Aggregation. One of `"cumulative"` (default) or `"incremental"`.
+
+- per_group:
+
+  Logical or `NULL`. When `TRUE` (auto for multi-group fits), produce
+  one ggplot per group and print them sequentially with
+  [`devAskNewPage()`](https://rdrr.io/r/grDevices/devAskNewPage.html) —
+  mirrors base R's `plot.lm()` pattern of stepping through related
+  diagnostic plots. Returns the list of plots invisibly. When `FALSE`
+  (auto for single-group fits), facets every (group, cohort) combination
+  in a single ggplot.
+
+- ask:
+
+  Passed to
+  [`devAskNewPage()`](https://rdrr.io/r/grDevices/devAskNewPage.html)
+  when `per_group = TRUE`. Defaults to
+  [`dev.interactive()`](https://rdrr.io/r/grDevices/dev.interactive.html).
 
 - conf_level:
 

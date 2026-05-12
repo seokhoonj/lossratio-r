@@ -6,7 +6,7 @@ cumulative loss ratios (`lr`) and per-period loss ratios (`lr_incr`).
 
 Where
 [`summary.Triangle()`](https://seokhoonj.github.io/lossratio/reference/summary.Triangle.md)
-aggregates by `(groups, dev)` (cohort × development), this method
+aggregates by `(groups, dev)` (cohort x development), this method
 aggregates by `(groups, calendar)` (calendar period) so the resulting
 table is indexed by calendar diagonals rather than development periods.
 

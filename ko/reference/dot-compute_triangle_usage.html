@@ -76,7 +76,7 @@ configuration: <code>"used"</code>, <code>"holdout"</code>, <code>"unused"</code
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  regime_break <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  holdout <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  mat_k <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  m_k <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -108,12 +108,12 @@ recent wedge sits <em>before</em> the holdout wedge (no overlap), matching
 triangle whose own max_cal is <code>original - holdout</code>.</p></dd>
 
 
-<dt id="arg-mat-k">mat_k<a class="anchor" aria-label="anchor" href="#arg-mat-k"></a></dt>
+<dt id="arg-m-k">m_k<a class="anchor" aria-label="anchor" href="#arg-m-k"></a></dt>
 <dd><p>Optional integer. The maturity switch as a <em>target</em>
 development index (= <code>ata_to</code> of the first stable link). When
 both <code>recent</code> and <code>regime_break</code> are provided, the hybrid mask
-uses <code>mat_k</code> as the boundary: cells with <code>dev &lt; mat_k</code> apply the
-cohort cut, cells with <code>dev &gt;= mat_k</code> apply the calendar-diagonal
+uses <code>m_k</code> as the boundary: cells with <code>dev &lt; m_k</code> apply the
+cohort cut, cells with <code>dev &gt;= m_k</code> apply the calendar-diagonal
 cut. When <code>NULL</code>, the hybrid logic falls back to applying both
 filters jointly (cohort cut AND recent cut).</p></dd>
 

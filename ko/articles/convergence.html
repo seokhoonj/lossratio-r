@@ -364,7 +364,6 @@ incremental LR.</p>
 <span><span class="co">#&gt; k_star       : 9</span></span>
 <span><span class="co">#&gt; V (max dev)  : 30</span></span>
 <span><span class="co">#&gt; criterion    : R_v &lt; 0.5 * SE_param_v  AND  D_v &lt; 0.15  (run M = 3)</span></span>
-<span><span class="co">#&gt; fit_fn       : fit_lr</span></span>
 <span><span class="co">#&gt; v candidates : 19 ( 0  pass both clauses)</span></span></code></pre>
 <p>The returned <code>Convergence</code> object reports:</p>
 <ul>
@@ -390,7 +389,7 @@ sequences indexed by
 <code>holdout_max</code>, <code>min_n_cohorts</code> — settings
 used.</li>
 <li>attributes <code>groups</code>, <code>target</code>,
-<code>fit_fn_name</code>, <code>dev</code>.</li>
+<code>dev</code>.</li>
 </ul>
 <p><code>summary(res)</code> returns a <code>data.table</code> with one
 row per candidate valuation and an extra
@@ -633,11 +632,13 @@ short observation windows return <code>NA</code>.</li>
 <li>
 <strong>Model conditioning</strong>:
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">j</mi></mrow></msubsup><annotation encoding="application/x-tex">\hat{LR}^{\mathrm{proj}}_v</annotation></semantics></math>
-is computed by <code>fit_fn</code> (default <code>fit_lr</code>).
-Different fitters yield different
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>.
-Reporting under multiple <code>fit_fn</code> is recommended for
-robustness.</li>
+is computed by <code><a href="../reference/fit_lr.html">fit_lr()</a></code>, which internally composes
+<code><a href="../reference/fit_loss.html">fit_loss()</a></code> (default <code>method = "sa"</code> –
+stage-adaptive) and <code><a href="../reference/fit_premium.html">fit_premium()</a></code>. Choices made inside that
+composition (loss method, regime filter) feed through to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>;
+review the underlying <code>fit_lr</code> settings when interpreting the
+result.</li>
 <li>
 <strong>Portfolio aggregation</strong>:
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>

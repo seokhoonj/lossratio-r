@@ -2,15 +2,15 @@
 
 Visualise a `"CLFit"` object as a triangle-style heatmap table.
 
-The `what` argument controls which values are shown:
+The `region` argument controls which values are shown:
 
-- `"pred"`:
+- `"proj"`:
 
-  Predicted cells only.
+  Projected cells only.
 
 - `"full"`:
 
-  Observed and predicted full triangle.
+  Observed and projected full triangle.
 
 - `"data"`:
 
@@ -40,7 +40,7 @@ The `label_style` argument controls cell labels:
 # S3 method for class 'CLFit'
 plot_triangle(
   x,
-  region = c("pred", "full", "data"),
+  region = c("proj", "full", "data"),
   view = c("value", "usage"),
   label_style = c("value", "cv", "se", "ci"),
   label_size = NULL,
@@ -61,7 +61,7 @@ plot_triangle(
 
 - region:
 
-  Cell region to plot (only used when `view = "value"`). One of `"pred"`
+  Cell region to plot (only used when `view = "value"`). One of `"proj"`
   (default; projected cells only, observed cells masked), `"full"`
   (observed + projected), or `"data"` (observed from `x$data` — the raw
   Triangle, no projection).

@@ -13,7 +13,7 @@ itself.
 .detect_regime_single(
   d,
   target,
-  K,
+  window,
   method,
   n_regimes,
   sig_level,

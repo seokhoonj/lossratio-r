@@ -16,7 +16,7 @@ calendar-style period axis, including:
 
 In contrast to
 [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md),
-which builds a development structure using `cohort × dev`, this function
+which builds a development structure using `cohort x dev`, this function
 aggregates values over a one-dimensional calendar axis.
 
 The cumulative loss ratio is defined as: \$\$lr = loss / premium\$\$
@@ -43,7 +43,7 @@ period across products or other grouping variables.
 ``` r
 build_calendar(
   df,
-  groups,
+  groups = character(0),
   calendar,
   loss,
   premium,
@@ -155,14 +155,18 @@ long-format version (`class = "CalendarLonger"`).
 if (FALSE) { # \dontrun{
 res1 <- build_calendar(
   df,
-  groups   = pd_cd,
-  calendar = "cy_m"
+  groups   = "pd_cd",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
 )
 
 res2 <- build_calendar(
   df,
-  groups      = pd_cd,
+  groups      = "pd_cd",
   calendar    = "cy_q",
+  loss        = "loss_incr",
+  premium     = "premium_incr",
   period_from = "2023-01-01"
 )
 

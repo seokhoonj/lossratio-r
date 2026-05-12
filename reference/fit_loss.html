@@ -177,7 +177,7 @@ the loss-ratio composition with delta method is handled by <code><a href="fit_lr
 <span>  premium_fit <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  premium_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cl"</span>, <span class="st">"ed"</span><span class="op">)</span>,</span>
 <span>  premium_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  premium_regime_break <span class="op">=</span> <span class="va">loss_regime_break</span>,</span>
+<span>  premium_regime_break <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maturity_args <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -229,9 +229,12 @@ Default <code>1</code>.</p></dd>
 
 
 <dt id="arg-premium-regime-break">premium_regime_break<a class="anchor" aria-label="anchor" href="#arg-premium-regime-break"></a></dt>
-<dd><p>Premium-side regime break. Defaults to
-<code>loss_regime_break</code> (loss-side and premium-side share a cutoff unless
-explicitly separated).</p></dd>
+<dd><p>Optional cohort cutoff for the
+premium-side regime break. Default <code>NULL</code> — premium is fit on the
+full triangle. Pass an explicit value (Date / Regime) when the
+regime shift affects premium accrual too. NOTE: filtering premium
+aggressively can produce thin post-break data and break factor
+estimation; only set when the premium really shifted.</p></dd>
 
 
 <dt id="arg-sigma-method">sigma_method<a class="anchor" aria-label="anchor" href="#arg-sigma-method"></a></dt>
@@ -257,7 +260,7 @@ projection (<code>loss_ci_lower</code>, <code>loss_ci_upper</code>). Default <co
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An object of class <code>"LossFit"</code>. List with components:
-<code>full</code>, <code>pred</code>, <code>maturity</code>, <code>loss_ata_fit</code>, <code>premium_ata_fit</code>,
+<code>full</code>, <code>proj</code>, <code>maturity</code>, <code>loss_ata_fit</code>, <code>premium_ata_fit</code>,
 <code>premium_fit</code>, <code>ed</code>, <code>factor</code>, <code>selected</code>, plus metadata.</p>
     </div>
     <div class="section level2">

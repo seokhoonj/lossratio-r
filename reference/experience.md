@@ -9,7 +9,7 @@ health-insurance portfolio and baked in as constants — no real-portfolio
 data is shipped. The runoff shape uses a small dev-1 "waiting-period"
 dip followed by roughly constant incremental loss per dev, so the
 cumulative LR rises monotonically toward the target. The SUR coverage
-carries a synthetic 2025-07 cohort regime break (target LR scaled by
+carries a synthetic 2024-07 cohort regime break (target LR scaled by
 0.6) so the
 [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
 example has a clear shift to find.

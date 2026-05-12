@@ -16,19 +16,25 @@ pass `fill_gaps = TRUE` to
 
 Two checks are performed:
 
-1.  **Cohort dev-sequence gaps** — for each `(group, cohort)`, report
+1.  **Cohort dev-sequence gaps** – for each `(group, cohort)`, report
     missing `dev` values within the observed range.
 
-2.  **Row-level calendar consistency** — when `calendar` is supplied (or
-    auto-detected as `"cy_m"` if present), report rows where
-    `calendar < cohort`. Such rows are logically impossible (claims
-    cannot precede policy issue) and downstream they show up as negative
-    `dev_m`, polluting cohort dev sequences.
+2.  **Row-level calendar consistency** – when `calendar` is supplied,
+    report rows where `calendar < cohort`. Such rows are logically
+    impossible (claims cannot precede policy issue) and downstream they
+    show up as negative `dev_m`, polluting cohort dev sequences.
 
 ## Usage
 
 ``` r
-validate_triangle(df, groups, cohort, dev, calendar = NULL)
+validate_triangle(
+  df,
+  groups = character(0),
+  cohort,
+  calendar = NULL,
+  dev = NULL,
+  grain = "auto"
+)
 ```
 
 ## Arguments
@@ -45,15 +51,24 @@ validate_triangle(df, groups, cohort, dev, calendar = NULL)
 
   A single cohort variable (raw column name).
 
-- dev:
-
-  A single development variable (raw column name).
-
 - calendar:
 
   Optional calendar period variable for row-level consistency check.
   When supplied, rows where `calendar < cohort` are flagged as invalid.
   Default `NULL` (skip this check).
+
+- dev:
+
+  A single development variable (raw column name). Optional when
+  `calendar` is supplied – `dev` is then derived from
+  `(cohort, calendar)` at the resolved `grain` (same dispatch as
+  [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)).
+
+- grain:
+
+  Grain string (`"M"` / `"Q"` / `"S"` / `"A"`) or `"auto"` (default) –
+  used only when `dev` is derived from `(cohort, calendar)`. Ignored
+  when `dev` is supplied.
 
 ## Value
 
@@ -79,7 +94,7 @@ containing gaps. Columns:
 Returns a zero-row data.table when no gaps are found.
 
 Row-level violations (when `calendar` is supplied and the check finds
-any) are attached as the `"invalid_rows"` attribute — a `data.table`
+any) are attached as the `"invalid_rows"` attribute – a `data.table`
 with columns `[groups, cohort, calendar, dev (if present), reason]`. Use
 `attr(out, "invalid_rows")` or rely on `print.TriangleValidation` which
 displays both sections.

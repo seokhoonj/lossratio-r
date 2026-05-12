@@ -3,7 +3,7 @@
 ## 1. 동기
 
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
-는 *“어느 발전 기간부터 link factor $`f_k`$ 가 코호트 간에 재현
+는 *“어느 경과 기간부터 link factor $`f_k`$ 가 코호트 간에 재현
 가능해지는가?”* 에 답한다. chain ladder 예측에는 필요하지만,
 포트폴리오의 예측 손해율이 수렴했다고 선언하기에는 충분하지 않다 — 장기
 건강보험에서 $`f_k \to 1`$ 과 $`g_k \to 0`$ 은 누적 분모가 자라면서
@@ -36,7 +36,7 @@ $`v`$:
     개가 추가될 때 portfolio 의 projected LR 이 변하는 크기.
 2.  **코호트 간 분산** 이 작음: $`\hat{D}_v < \tau`$, 여기서
     $`\hat{D}_v = 1.4826 \cdot \mathrm{MAD}_i(\hat{lr}_{i,v}) /
-    |\mathrm{median}_i(\hat{lr}_{i,v})|`$ 는 발전 기간 $`v`$ 에서 코호트
+    |\mathrm{median}_i(\hat{lr}_{i,v})|`$ 는 경과 기간 $`v`$ 에서 코호트
     간 *증분* 손해율의 강건 분산.
 
 $`\hat{D}_v`$ 를 누적이 아닌 **증분** 손해율로 정의해 관성에서 자유롭다
@@ -84,7 +84,7 @@ $`\hat{D}_v`$ 는 *기간별 경험* 이 코호트 간에 일관되는지를 검
 | $`\hat{LR}^{\mathrm{proj}}_v`$ | 평가 시점 $`v`$ 까지의 자료로 산출한 ultimate LR 예측 |
 | $`R_v`$ | 갱신 (revision): $`\lvert\hat{LR}^{\mathrm{proj}}_v - \hat{LR}^{\mathrm{proj}}_{v-1}\rvert`$ |
 | $`\hat{SE}^{\mathrm{param}}_v`$ | $`\hat{LR}^{\mathrm{proj}}_v`$ 의 파라미터 불확실성 SE (Mack-style) |
-| $`\hat{lr}_{i,v}`$ | 코호트 $`i`$ 의 발전 기간 $`v`$ 에서의 증분 손해율 |
+| $`\hat{lr}_{i,v}`$ | 코호트 $`i`$ 의 경과 기간 $`v`$ 에서의 증분 손해율 |
 | $`\hat{D}_v`$ | 코호트 간 $`\hat{lr}_{i,v}`$ 의 강건 척도불변 분산 |
 | $`c`$ | $`\hat{SE}^{\mathrm{param}}_v`$ 에 거는 배율, 갱신 절 임계 (default: `0.5`) |
 | $`\tau`$ | $`\hat{D}_v`$ 상한, 분산 절 임계 (default: `0.15`) |
@@ -122,7 +122,6 @@ print(res)
     #> k_star       : 9
     #> V (max dev)  : 30
     #> criterion    : R_v < 0.5 * SE_param_v  AND  D_v < 0.15  (run M = 3)
-    #> fit_fn       : fit_lr
     #> v candidates : 19 ( 0  pass both clauses)
 
 `Convergence` 객체의 주요 필드:
@@ -132,12 +131,12 @@ print(res)
 - `k_star` — 하한으로 사용된 성숙점. 함수 내부에서 lr 기반 ATA 에
   [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
   를 적용해 산출하거나, 호출 시 직접 전달할 수 있다.
-- `V` — triangle 에서 관측 가능한 최대 발전 기간.
+- `V` — triangle 에서 관측 가능한 최대 경과 기간.
 - `v`, `R_v`, `SE_param_v`, `D_v`, `pass_v` — 후보 평가 시점별 진단
   시퀀스.
 - `se_mult`, `max_dv`, `min_run`, `holdout_max`, `min_n_cohorts` —
   사용된 설정값.
-- attribute: `groups`, `target`, `fit_fn_name`, `dev`.
+- attribute: `groups`, `target`, `dev`.
 
 `summary(res)` 는 후보 시점별 한 행 + `R_over_SE = R_v / SE_param_v`
 컬럼이 있는 `data.table` 을 반환한다:
@@ -232,8 +231,8 @@ $`\hat{D}_v`$ 가 $`\tau \approx 0.05`$ 이하로 떨어지는 경우는 단일 
 | 도구 | 질문 | 결과 | 축 |
 |----|----|----|----|
 | [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md) | 코호트들이 동질적인가? | 코호트 그룹 | 인수 시기 |
-| [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md) ($`k^*`$) | link factor 가 재현 가능해지는 시점? | dev 값 | 발전 기간 |
-| [`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md) ($`k^{**}`$) | LR 추정이 갱신을 멈추는 시점? | dev 값 | 발전 기간 |
+| [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md) ($`k^*`$) | link factor 가 재현 가능해지는 시점? | dev 값 | 경과 기간 |
+| [`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md) ($`k^{**}`$) | LR 추정이 갱신을 멈추는 시점? | dev 값 | 경과 기간 |
 
 권장 워크플로:
 
@@ -259,9 +258,16 @@ $`\hat{D}_v`$ 가 $`\tau \approx 0.05`$ 이하로 떨어지는 경우는 단일 
 
 - **식별 가능성**: $`k^{**}`$ 는 $`V \ge k^* + M`$ 일 때만 선언 가능.
   관측 기간이 짧으면 `NA` 반환.
-- **모형 조건부**: $`\hat{LR}^{\mathrm{proj}}_v`$ 는 `fit_fn` (default:
-  `fit_lr`) 으로 산출. fitter 가 다르면 $`k^{**}`$ 도 달라짐. robustness
-  를 위해 여러 `fit_fn` 하에서 결과 비교 권장.
+- **모형 조건부**: $`\hat{LR}^{\mathrm{proj}}_v`$ 는
+  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  로 산출.
+  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  이 내부적으로
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
+  (default `method = "sa"` — 단계 적응형) 와
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
+  을 합성하므로, 그 안의 선택 (loss method, regime 필터) 이 $`k^{**}`$
+  로 흘러간다. 결과 해석 시 `fit_lr` 설정을 같이 확인할 것.
 - **포트폴리오 집계**: $`R_v`$ 와 $`\hat{SE}^{\mathrm{param}}_v`$ 는
   코호트 간 독립 가정 하에 익스포저 가중 집계. 달력 연도 충격 (요율
   개정, 의료비 인플레) 은 이 가정을 위배하며, 이 경우 두 절이 비코호트

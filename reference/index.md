@@ -160,8 +160,8 @@ and
 - [`plot(`*`<Regime>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.Regime.md)
   : Plot a cohort regime detection result
 
-- [`plot(`*`<RegimeOptimalK>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.RegimeOptimalK.md)
-  : Plot break-count vs K with the elbow marker
+- [`plot(`*`<RegimeOptimalWindow>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.RegimeOptimalWindow.md)
+  : Plot break-count vs window with the elbow marker
 
 - [`plot(`*`<Total>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.Total.md)
   :
@@ -170,6 +170,9 @@ and
 
 - [`plot(`*`<Triangle>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.Triangle.md)
   : Plot development trajectories with optional summary overlay
+
+- [`plot(`*`<TriangleValidation>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.TriangleValidation.md)
+  : Plot a TriangleValidation result
 
 - [`plot_triangle(`*`<ATAFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.ATAFit.md)
   : Triangle heatmap for an ata fit
@@ -191,6 +194,9 @@ and
 
 - [`plot_triangle(`*`<Triangle>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.Triangle.md)
   : Plot development values as a triangle table
+
+- [`plot_triangle(`*`<TriangleValidation>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.TriangleValidation.md)
+  : Triangle-heatmap view of dev-sequence gaps
 
 ## Other S3 methods
 
@@ -310,6 +316,8 @@ print / summary / longer methods registered on package classes.
   : Recent-diagonal weights for a development triangle
 - [`longer()`](https://seokhoonj.github.io/lossratio/reference/longer.md)
   : Reshape an object to long form (S3 generic)
+- [`mask_triangle()`](https://seokhoonj.github.io/lossratio/reference/mask_triangle.md)
+  : Mask the last N calendar diagonals from a Triangle
 
 ## Datasets
 

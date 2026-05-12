@@ -1,6 +1,6 @@
 # Internal: row-level cohort vs calendar consistency check
 
-Flag rows where `calendar < cohort` — claims/events recorded as
+Flag rows where `calendar < cohort` – claims/events recorded as
 occurring before the cohort start, which is logically impossible.
 
 ## Usage

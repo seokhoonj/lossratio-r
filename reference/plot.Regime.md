@@ -10,7 +10,7 @@ development-period features on PC1/PC2.
 For a multi-group `Regime`, plots are faceted by group: each group's PCA
 is rendered in its own panel using its own feature matrix and loadings
 (PCA cannot be meaningfully shared across groups with different
-`K`-period bases or scale, so per-group PCA is the correct
+`window`-period bases or scale, so per-group PCA is the correct
 representation).
 
 ## Usage

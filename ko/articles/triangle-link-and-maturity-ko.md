@@ -106,7 +106,7 @@ head(sm)
 #> 2:      1.2618216  1.3280769
 #> 3:      1.1517980  1.1728982
 #> 4:      1.1167740  1.1742272
-#> 5:      1.2663384  1.3110155
+#> 5:      1.2663383  1.3110155
 #> 6:      1.2676379  1.2752751
 ```
 
@@ -300,10 +300,10 @@ mat <- detect_maturity(
 print(mat)
 #> Key: <coverage>
 #>    coverage ata_from ata_to ata_link     mean   median       wt        cv
-#>      <char>    <int>  <int>   <char>    <num>    <num>    <num>     <num>
+#>      <char>    <num>  <num>   <char>    <num>    <num>    <num>     <num>
 #> 1:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.1053282
 #>           f       f_se        rse    sigma n_obs n_valid n_inf n_nan
-#>       <num>      <num>      <num>    <num> <int>   <int> <int> <int>
+#>       <num>      <num>      <num>    <num> <num>   <num> <num> <num>
 #> 1: 1.417706 0.02651852 0.01870522 1372.883    33      33     0     0
 #>    valid_ratio
 #>          <num>
@@ -378,16 +378,16 @@ tri_all <- build_triangle(
 detect_maturity(tri_all, target = "loss")
 #> Key: <coverage>
 #>    coverage ata_from ata_to ata_link     mean   median       wt         cv
-#>      <char>    <int>  <int>   <char>    <num>    <num>    <num>      <num>
+#>      <char>    <num>  <num>   <char>    <num>    <num>    <num>      <num>
 #> 1:      CAN        8      9      8-9 1.079323 1.060341 1.065354 0.07131509
 #> 2:       CI       11     12    11-12 1.094403 1.070561 1.114066 0.07563394
-#> 3:      HOS        6      7      6-7 1.244842 1.184287 1.205542 0.13563426
+#> 3:      HOS        6      7      6-7 1.244842 1.184287 1.205542 0.13563431
 #> 4:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.10532824
 #>           f       f_se        rse     sigma n_obs n_valid n_inf n_nan
-#>       <num>      <num>      <num>     <num> <int>   <int> <int> <int>
+#>       <num>      <num>      <num>     <num> <num>   <num> <num> <num>
 #> 1: 1.065354 0.01384183 0.01299271  637.2413    28      28     0     0
 #> 2: 1.114066 0.01954799 0.01754653 1459.6221    25      25     0     0
-#> 3: 1.205542 0.02746025 0.02277835  220.8771    30      30     0     0
+#> 3: 1.205542 0.02746026 0.02277835  220.8771    30      30     0     0
 #> 4: 1.417706 0.02651852 0.01870522 1372.8834    33      33     0     0
 #>    valid_ratio
 #>          <num>
@@ -473,9 +473,9 @@ fit_lr(tri, recent = 12)
 #> recent               : 12 
 #> loss_regime_break    : none 
 #> premium_regime_break : none 
-#> maturity[SUR] : 25
-#> groups        : coverage 
-#> periods       : 36
+#> maturity[SUR]        : 25 
+#> groups               : coverage 
+#> periods              : 36
 ```
 
 `recent = K` 는 calendar 위치 (`rank(cohort) + dev - 1`) 가 그룹 내 최근

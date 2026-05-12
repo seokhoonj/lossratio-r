@@ -43,13 +43,14 @@ print(bt)
 
 The returned object is a `"Backtest"` list with these key slots:
 
-- `ae_err` — per-cell `data.table` (cohort, dev, actual, pred, ae_err,
-  calendar_idx).
+- `ae_err` — per-cell `data.table` (cohort, dev, value_actual,
+  value_proj, aeg, ae_err + `_incr` siblings, calendar_idx).
 - `col_summary` — A/E Error aggregated by `dev`.
 - `diag_summary` — A/E Error aggregated by calendar diagonal.
 - `masked` — the triangle the fit was trained on (latest diagonals
   removed).
-- `fit` — the fit object returned by `fit_fn` (an `LRFit` or `CLFit`).
+- `fit` — the fit object returned by the target-specific dispatcher
+  (`fit_lr` / `fit_loss` / `fit_premium`) chosen by `target=`.
 
 `summary(bt)` prints the two summary tables alongside the call metadata.
 
@@ -79,20 +80,40 @@ miscalibration.
 ``` r
 
 head(bt$col_summary, 8)
-#>    coverage   dev     n ae_err_mean  ae_err_med    ae_err_wt
-#>      <char> <int> <int>       <num>       <num>        <num>
-#> 1:      SUR     2     1 -0.36674932 -0.36674932 -0.366749322
-#> 2:      SUR     3     2 -0.09011955 -0.09011955 -0.154463503
-#> 3:      SUR     4     3 -0.02300710  0.04378484 -0.065662205
-#> 4:      SUR     5     4  0.01186458  0.01235174 -0.016264772
-#> 5:      SUR     6     5  0.01349877  0.06211286 -0.022035200
-#> 6:      SUR     7     6  0.03540917  0.07574468  0.008863285
-#> 7:      SUR     8     6  0.05916242  0.07259077  0.055085668
-#> 8:      SUR     9     6  0.02445333  0.02775188  0.022389147
+#>    coverage   dev     n     aeg_mean      aeg_med ae_err_mean  ae_err_med
+#>      <char> <int> <int>        <num>        <num>       <num>       <num>
+#> 1:      SUR     2     1 -0.287972089 -0.287972089 -0.36674934 -0.36674934
+#> 2:      SUR     3     2 -0.105823621 -0.105823621 -0.09011956 -0.09011956
+#> 3:      SUR     4     3 -0.043897002  0.021766603 -0.02300711  0.04378485
+#> 4:      SUR     5     4 -0.011055827  0.005435137  0.01186457  0.01235174
+#> 5:      SUR     6     5 -0.016011400  0.037090206  0.01349876  0.06211287
+#> 6:      SUR     7     6  0.006639057  0.052051927  0.03540917  0.07574468
+#> 7:      SUR     8     6  0.038755683  0.046849343  0.05916241  0.07259077
+#> 8:      SUR     9     6  0.016598376  0.018133964  0.02445333  0.02775188
+#>      ae_err_wt aeg_incr_mean aeg_incr_med ae_err_incr_mean ae_err_incr_med
+#>          <num>         <num>        <num>            <num>           <num>
+#> 1: -0.36674934   -0.57495418 -0.574954175      -0.42911219    -0.429112189
+#> 2: -0.15446352   -0.03295105 -0.032951048       0.03104206     0.031042058
+#> 3: -0.06566221    0.03896663 -0.060404427       0.07170889    -0.051312889
+#> 4: -0.01626478    0.07049188  0.081146126       0.09271533     0.101566115
+#> 5: -0.02203521   -0.04049602  0.091444980       0.04486252     0.130130156
+#> 6:  0.00886328    0.12761981  0.080299453       0.16250805     0.136743653
+#> 7:  0.05508567    0.02069969  0.007197477       0.01564729     0.008088929
+#> 8:  0.02238914   -0.10613396 -0.136121764      -0.13147267    -0.163940480
+#>    ae_err_incr_wt
+#>             <num>
+#> 1:    -0.42911219
+#> 2:    -0.03788330
+#> 3:     0.04819216
+#> 4:     0.08262484
+#> 5:    -0.04711615
+#> 6:     0.14894131
+#> 7:     0.02505782
+#> 8:    -0.12387084
 ```
 
 `ae_err_mean` averages cell-level A/E Error, `ae_err_med` is the median,
-and `ae_err_wt = sum(actual - pred) / sum(pred)` is the
+and `ae_err_wt = sum(actual - proj) / sum(proj)` is the
 exposure-weighted pooled A/E ratio minus 1. Comparing the three columns
 flags whether a few large cells dominate (`ae_err_wt` very different
 from `ae_err_med`) or the bias is uniform.
@@ -105,14 +126,30 @@ by construction.
 ``` r
 
 bt$diag_summary
-#>    coverage calendar_idx     n  ae_err_mean    ae_err_med     ae_err_wt
-#>      <char>        <int> <int>        <num>         <num>         <num>
-#> 1:      SUR           31    29 -0.011309409 -0.0036993121 -0.0107004532
-#> 2:      SUR           32    28 -0.002794292 -0.0095889605 -0.0089044276
-#> 3:      SUR           33    27  0.007666313  0.0061548319  0.0004012161
-#> 4:      SUR           34    26  0.008094503  0.0004212464  0.0010973315
-#> 5:      SUR           35    25  0.007408947  0.0094557038 -0.0005997011
-#> 6:      SUR           36    24  0.005874139  0.0094502806 -0.0023535417
+#>    coverage calendar_idx     n      aeg_mean       aeg_med  ae_err_mean
+#>      <char>        <int> <int>         <num>         <num>        <num>
+#> 1:      SUR           31    29 -0.0125686252 -0.0056732350 -0.011309410
+#> 2:      SUR           32    28 -0.0104717812 -0.0114871218 -0.002794292
+#> 3:      SUR           33    27  0.0004718616  0.0050471735  0.007666312
+#> 4:      SUR           34    26  0.0012851467 -0.0002953897  0.008094503
+#> 5:      SUR           35    25 -0.0006986581  0.0145835308  0.007408947
+#> 6:      SUR           36    24 -0.0027175011  0.0105940082  0.005874139
+#>      ae_err_med     ae_err_wt aeg_incr_mean aeg_incr_med ae_err_incr_mean
+#>           <num>         <num>         <num>        <num>            <num>
+#> 1: -0.003699313 -0.0107004533   -0.08350070  -0.07460811     -0.036347452
+#> 2: -0.009588959 -0.0089044278   -0.07573837  -0.07440057     -0.003857981
+#> 3:  0.006154835  0.0004012161    0.18105966   0.09849605      0.147072061
+#> 4:  0.000421251  0.0010973317    0.01407124  -0.02312661      0.017058138
+#> 5:  0.009455704 -0.0005997009   -0.03104560  -0.09210258     -0.008476082
+#> 6:  0.009450279 -0.0023535415   -0.06224227  -0.09299902     -0.016968983
+#>    ae_err_incr_med ae_err_incr_wt
+#>              <num>          <num>
+#> 1:     -0.06750071    -0.06558617
+#> 2:     -0.07262916    -0.06014060
+#> 3:      0.12954698     0.14477037
+#> 4:     -0.02473897     0.01130928
+#> 5:     -0.07819464    -0.02508022
+#> 6:     -0.09358995    -0.05088339
 ```
 
 A monotone drift across calendar diagonals (as in the SUR example above,
@@ -128,13 +165,20 @@ cells, inspect `bt$ae_err` directly:
 
 head(bt$ae_err, 5)
 #> Key: <coverage>
-#>    coverage     cohort   dev value_actual value_pred       ae_err calendar_idx
-#>      <char>     <Date> <int>        <num>      <num>        <num>        <int>
-#> 1:      SUR 2023-02-01    30     1.474656   1.485094 -0.007028587           31
-#> 2:      SUR 2023-03-01    29     1.441826   1.414305  0.019458534           31
-#> 3:      SUR 2023-03-01    30     1.441234   1.418776  0.015828824           32
-#> 4:      SUR 2023-04-01    28     1.513021   1.510169  0.001888463           31
-#> 5:      SUR 2023-04-01    29     1.531922   1.504873  0.017974002           32
+#>    coverage     cohort   dev value_actual value_proj          aeg       ae_err
+#>      <char>     <Date> <int>        <num>      <num>        <num>        <num>
+#> 1:      SUR 2023-02-01    30     1.474656   1.485094 -0.010438112 -0.007028587
+#> 2:      SUR 2023-03-01    29     1.441826   1.414305  0.027520309  0.019458534
+#> 3:      SUR 2023-03-01    30     1.441234   1.418776  0.022457560  0.015828823
+#> 4:      SUR 2023-04-01    28     1.513021   1.510169  0.002851902  0.001888465
+#> 5:      SUR 2023-04-01    29     1.531922   1.504873  0.027048593  0.017974003
+#>    value_actual_incr value_proj_incr    aeg_incr ae_err_incr calendar_idx
+#>                <num>           <num>       <num>       <num>        <int>
+#> 1:          1.311699        1.616053 -0.30435387 -0.18833160           31
+#> 2:          2.057141        1.271304  0.78583659  0.61813407           31
+#> 3:          1.425549        1.543888 -0.11833820 -0.07664950           32
+#> 4:          1.573801        1.498421  0.07537995  0.05030625           31
+#> 5:          2.055572        1.352715  0.70285727  0.51959013           32
 ```
 
 ## Plot demos

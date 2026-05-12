@@ -10,7 +10,9 @@ style.
 # S3 method for class 'LRFit'
 plot_triangle(
   x,
-  region = c("pred", "full", "data"),
+  metric = c("lr", "loss", "premium"),
+  cell_type = c("cumulative", "incremental"),
+  region = c("proj", "full", "data"),
   view = c("value", "usage"),
   label_style = c("value", "detail"),
   label_size = NULL,
@@ -30,12 +32,23 @@ plot_triangle(
 
   An object of class `"LRFit"`.
 
+- metric:
+
+  Metric shown in the heatmap cells. One of `"lr"` (default), `"loss"`,
+  `"premium"`.
+
+- cell_type:
+
+  Aggregation. One of `"cumulative"` (default) or `"incremental"`.
+  Combined with `metric` to select the column (e.g., `metric = "lr"`,
+  `cell_type = "incremental"` → `lr_incr`).
+
 - region:
 
-  Cell region to plot (only used when `view = "value"`). One of `"pred"`
+  Cell region to plot (only used when `view = "value"`). One of `"proj"`
   (projected cells only, observed cells masked), `"full"` (observed +
   projected), or `"data"` (observed cumulative loss / premium / lr from
-  `x$data` — the raw Triangle, no projection). Default is `"pred"`.
+  `x$data` — the raw Triangle, no projection). Default is `"proj"`.
 
 - view:
 
@@ -49,8 +62,8 @@ plot_triangle(
   "usage"
 
   :   Cell-status heatmap (`used` / `holdout` / `unused` / `future`)
-      driven by the fit's own metadata (`x$recent`, `x$regime_break`,
-      `x$maturity`). `region` is ignored.
+      driven by the fit's own metadata (`x$recent`,
+      `x$loss_regime_break`, `x$maturity`). `region` is ignored.
 
 - label_style:
 

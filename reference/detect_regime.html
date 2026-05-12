@@ -3,7 +3,7 @@
 development trajectories. Each underwriting cohort (indexed by the
 cohort of a "Triangle" object) is treated as a feature vector
 whose entries are the selected target metric observed at development
-periods 1, ..., K. Cohorts are then ordered by underwriting
+periods 1, ..., window. Cohorts are then ordered by underwriting
 period and tested for structural shifts in the multivariate
 sequence.
 Multi-group Triangle inputs are supported: detection runs
@@ -38,7 +38,7 @@ strictly chronological.
 development trajectories. Each underwriting cohort (indexed by the
 cohort of a "Triangle" object) is treated as a feature vector
 whose entries are the selected target metric observed at development
-periods 1, ..., K. Cohorts are then ordered by underwriting
+periods 1, ..., window. Cohorts are then ordered by underwriting
 period and tested for structural shifts in the multivariate
 sequence.
 Multi-group Triangle inputs are supported: detection runs
@@ -178,7 +178,7 @@ strictly chronological.
 development trajectories. Each underwriting cohort (indexed by the
 <code>cohort</code> of a <code>"Triangle"</code> object) is treated as a feature vector
 whose entries are the selected <code>target</code> metric observed at development
-periods <code>1, ..., K</code>. Cohorts are then ordered by underwriting
+periods <code>1, ..., window</code>. Cohorts are then ordered by underwriting
 period and tested for structural shifts in the multivariate
 sequence.</p>
 <p>Multi-group <code>Triangle</code> inputs are supported: detection runs
@@ -215,7 +215,7 @@ strictly chronological.</p></dd>
 <span>  <span class="va">x</span>,</span>
 <span>  target <span class="op">=</span> <span class="st">"lr"</span>,</span>
 <span>  by <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  K <span class="op">=</span> <span class="st">"auto"</span>,</span>
+<span>  window <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"e_divisive"</span>, <span class="st">"pelt"</span>, <span class="st">"hclust"</span><span class="op">)</span>,</span>
 <span>  n_regimes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sig_level <span class="op">=</span> <span class="fl">0.05</span>,</span>
@@ -250,20 +250,20 @@ is <code>"lr"</code> (cumulative loss ratio).</p></dd>
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
 <dd><p>Grouping column(s) for per-combination detection. <code>NULL</code>
-(default) runs pooled detection — all cohorts treated as a single
-sequence regardless of any group attribute on <code>x</code>. Supply a character
-vector (subset of <code>names(x)</code>) to dispatch per combo, e.g.
-<code>by = "coverage"</code> or <code>by = c("channel", "coverage")</code>. The Triangle's
-<code>attr(x, "groups")</code> is <em>not</em> used as a fallback — explicit <code>by</code> is
-required for per-group detection.</p></dd>
+(default) reuses the Triangle's <code>attr(x, "groups")</code> when non-empty —
+so <code>detect_regime(tri)</code> dispatches per group automatically — and
+otherwise falls back to pooled detection. Pass <code>by = character(0)</code>
+to force pooled detection on a multi-group Triangle, or a character
+vector (subset of <code>names(x)</code>) to dispatch on an explicit combo,
+e.g. <code>by = "coverage"</code> or <code>by = c("channel", "coverage")</code>.</p></dd>
 
 
-<dt id="arg-k">K<a class="anchor" aria-label="anchor" href="#arg-k"></a></dt>
-<dd><p>Trajectory window. Integer (e.g., <code>12L</code>) for a fixed K, or
+<dt id="arg-window">window<a class="anchor" aria-label="anchor" href="#arg-window"></a></dt>
+<dd><p>Trajectory window. Integer (e.g., <code>12L</code>) for a fixed window, or
 the string <code>"auto"</code> (default) — resolves to each group's maturity
 via <code><a href="detect_maturity.html">detect_maturity()</a></code>, falling back to <code>6L</code> when maturity is
 unavailable (NA, pooled mode, or <code>by</code> mismatching the Triangle's
-<code>attr("groups")</code>). Cohorts with fewer than the resolved <code>K</code>
+<code>attr("groups")</code>). Cohorts with fewer than the resolved <code>window</code>
 observed periods are dropped.</p></dd>
 
 
@@ -305,13 +305,13 @@ the requested value) for <code>"hclust"</code>, where the default is <code>2</co
 <dt><code>target</code></dt>
 <dd><p>Trajectory variable used for detection.</p></dd>
 
-<dt><code>K</code></dt>
+<dt><code>window</code></dt>
 <dd><p>Trajectory window per combo. Scalar integer when a
 single combo was analysed; integer vector (one per surviving
 combo, in the order of <code>$labels</code> / <code>$breakpoints</code> group rows)
 otherwise.</p></dd>
 
-<dt><code>K_mode</code></dt>
+<dt><code>window_mode</code></dt>
 <dd><p>Either <code>"auto"</code> (resolved per group via
 <code><a href="detect_maturity.html">detect_maturity()</a></code>) or <code>"manual"</code> (user-supplied integer).</p></dd>
 
@@ -347,7 +347,7 @@ multi-combo.</p></dd>
 <code>prcomp</code> objects (multi-combo).</p></dd>
 
 <dt><code>dropped</code></dt>
-<dd><p>Cohorts excluded due to the <code>K</code> window
+<dd><p>Cohorts excluded due to the <code>window</code> window
 constraint. Vector (single) / named list (multi).</p></dd>
 
 <dt><code>multi_group</code></dt>

@@ -36,7 +36,7 @@ fit_loss(
   premium_fit = NULL,
   premium_method = c("cl", "ed"),
   premium_alpha = 1,
-  premium_regime_break = loss_regime_break,
+  premium_regime_break = NULL,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   maturity_args = NULL,
@@ -91,8 +91,11 @@ fit_loss(
 
 - premium_regime_break:
 
-  Premium-side regime break. Defaults to `loss_regime_break` (loss-side
-  and premium-side share a cutoff unless explicitly separated).
+  Optional cohort cutoff for the premium-side regime break. Default
+  `NULL` — premium is fit on the full triangle. Pass an explicit value
+  (Date / Regime) when the regime shift affects premium accrual too.
+  NOTE: filtering premium aggressively can produce thin post-break data
+  and break factor estimation; only set when the premium really shifted.
 
 - sigma_method:
 
@@ -117,7 +120,7 @@ fit_loss(
 
 ## Value
 
-An object of class `"LossFit"`. List with components: `full`, `pred`,
+An object of class `"LossFit"`. List with components: `full`, `proj`,
 `maturity`, `loss_ata_fit`, `premium_ata_fit`, `premium_fit`, `ed`,
 `factor`, `selected`, plus metadata.
 

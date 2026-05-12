@@ -171,7 +171,8 @@ flag over-projection. Aggregated by development period
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  loss_regime_break <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  premium_regime_break <span class="op">=</span> <span class="va">loss_regime_break</span>,</span>
+<span>  premium_regime_break <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  auto_detect_regime <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  maturity_args <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  se_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fixed"</span>, <span class="st">"delta"</span><span class="op">)</span>,</span>
 <span>  rho <span class="op">=</span> <span class="fl">0.95</span>,</span>
@@ -243,7 +244,19 @@ fitter.</p></dd>
 <dt id="arg-loss-regime-break-premium-regime-break">loss_regime_break, premium_regime_break<a class="anchor" aria-label="anchor" href="#arg-loss-regime-break-premium-regime-break"></a></dt>
 <dd><p>Cohort-axis regime
 break(s) for loss / premium estimation. <code>premium_regime_break</code>
-defaults to <code>loss_regime_break</code>.</p></dd>
+defaults to <code>loss_regime_break</code>. Cannot be combined with
+<code>auto_detect_regime = TRUE</code>.</p></dd>
+
+
+<dt id="arg-auto-detect-regime">auto_detect_regime<a class="anchor" aria-label="anchor" href="#arg-auto-detect-regime"></a></dt>
+<dd><p>Logical. When <code>TRUE</code>, <code><a href="detect_regime.html">detect_regime()</a></code> is
+run <em>inside</em> the backtest loop on the <strong>masked</strong> triangle (i.e.,
+the data the analyst would have at the simulated cutoff) and the
+result is used for both <code>loss_regime_break</code> and
+<code>premium_regime_break</code>. Avoids the look-ahead bias of detecting
+regimes on the full triangle (including the held-out diagonals)
+before backtesting. Mutually exclusive with an explicit
+<code>loss_regime_break</code>. Default <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-maturity-args">maturity_args<a class="anchor" aria-label="anchor" href="#arg-maturity-args"></a></dt>
@@ -297,14 +310,18 @@ fitter.</p></dd>
 
 <dt><code>ae_err</code></dt>
 <dd><p><code>data.table</code> of held-out cells with columns
-<code>(group, cohort, dev, value_actual, value_pred, ae_err, calendar_idx)</code>.</p></dd>
+<code>(group, cohort, dev, value_actual, value_proj, aeg, ae_err, value_actual_incr, value_proj_incr, aeg_incr, ae_err_incr, calendar_idx)</code>. <code>aeg = value_actual - value_proj</code> (signed
+error in target units); <code>ae_err = value_actual / value_proj - 1</code> (relative error). <code>_incr</code> siblings are the same metrics
+on the incremental view.</p></dd>
 
 <dt><code>col_summary</code></dt>
-<dd><p>Per-<code>dev</code> aggregate A/E Error (mean /
-median / weighted / n).</p></dd>
+<dd><p>Per-<code>dev</code> aggregate A/E Error and AEG
+(mean / median / weighted) with <code>_incr</code> variants and <code>n</code>.</p></dd>
 
 <dt><code>diag_summary</code></dt>
-<dd><p>Per-calendar-diagonal aggregate A/E Error.</p></dd>
+<dd><p>Per-calendar-diagonal aggregate A/E
+Error and AEG (same columns as <code>col_summary</code>, keyed by
+<code>calendar_idx</code>).</p></dd>
 
 <dt><code>target</code>, <code>holdout</code>, <code>fit_fn_name</code></dt>
 <dd><p>Call metadata.</p></dd>

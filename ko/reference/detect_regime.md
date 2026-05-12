@@ -4,8 +4,8 @@ Detect structural change points in the sequence of cohort-level
 development trajectories. Each underwriting cohort (indexed by the
 `cohort` of a `"Triangle"` object) is treated as a feature vector whose
 entries are the selected `target` metric observed at development periods
-`1, ..., K`. Cohorts are then ordered by underwriting period and tested
-for structural shifts in the multivariate sequence.
+`1, ..., window`. Cohorts are then ordered by underwriting period and
+tested for structural shifts in the multivariate sequence.
 
 Multi-group `Triangle` inputs are supported: detection runs
 independently per group, and results are combined into a single `Regime`
@@ -44,7 +44,7 @@ detect_regime(
   x,
   target = "lr",
   by = NULL,
-  K = "auto",
+  window = "auto",
   method = c("e_divisive", "pelt", "hclust"),
   n_regimes = NULL,
   sig_level = 0.05,
@@ -79,21 +79,21 @@ print(x, ...)
 - by:
 
   Grouping column(s) for per-combination detection. `NULL` (default)
-  runs pooled detection — all cohorts treated as a single sequence
-  regardless of any group attribute on `x`. Supply a character vector
-  (subset of `names(x)`) to dispatch per combo, e.g. `by = "coverage"`
-  or `by = c("channel", "coverage")`. The Triangle's `attr(x, "groups")`
-  is *not* used as a fallback — explicit `by` is required for per-group
-  detection.
+  reuses the Triangle's `attr(x, "groups")` when non-empty — so
+  `detect_regime(tri)` dispatches per group automatically — and
+  otherwise falls back to pooled detection. Pass `by = character(0)` to
+  force pooled detection on a multi-group Triangle, or a character
+  vector (subset of `names(x)`) to dispatch on an explicit combo, e.g.
+  `by = "coverage"` or `by = c("channel", "coverage")`.
 
-- K:
+- window:
 
-  Trajectory window. Integer (e.g., `12L`) for a fixed K, or the string
-  `"auto"` (default) — resolves to each group's maturity via
+  Trajectory window. Integer (e.g., `12L`) for a fixed window, or the
+  string `"auto"` (default) — resolves to each group's maturity via
   [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md),
   falling back to `6L` when maturity is unavailable (NA, pooled mode, or
   `by` mismatching the Triangle's `attr("groups")`). Cohorts with fewer
-  than the resolved `K` observed periods are dropped.
+  than the resolved `window` observed periods are dropped.
 
 - method:
 
@@ -138,13 +138,13 @@ An object of class `"Regime"`. For single-group input:
 
   Trajectory variable used for detection.
 
-- `K`:
+- `window`:
 
   Trajectory window per combo. Scalar integer when a single combo was
   analysed; integer vector (one per surviving combo, in the order of
   `$labels` / `$breakpoints` group rows) otherwise.
 
-- `K_mode`:
+- `window_mode`:
 
   Either `"auto"` (resolved per group via
   [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md))
@@ -188,8 +188,8 @@ An object of class `"Regime"`. For single-group input:
 
 - `dropped`:
 
-  Cohorts excluded due to the `K` window constraint. Vector (single) /
-  named list (multi).
+  Cohorts excluded due to the `window` window constraint. Vector
+  (single) / named list (multi).
 
 - `multi_group`:
 
