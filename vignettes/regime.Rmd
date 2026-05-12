@@ -79,7 +79,7 @@ change-point algorithm that determines the number of regimes from the
 data:
 
 ```{r}
-r <- detect_regime(tri_sur, K = 12, method = "e_divisive")
+r <- detect_regime(tri_sur, method = "e_divisive")
 r
 ```
 
@@ -142,7 +142,7 @@ If you want to compare a fixed number of regimes — for example,
 two-vs-three regime hypotheses — pass `n_regimes`:
 
 ```{r}
-r2 <- detect_regime(tri_sur, K = 12, method = "e_divisive", n_regimes = 3)
+r2 <- detect_regime(tri_sur, method = "e_divisive", n_regimes = 3)
 summary(r2)
 ```
 
@@ -165,7 +165,7 @@ tri_all <- build_triangle(
   loss     = "loss_incr",
   premium  = "premium_incr"
 )
-r_all   <- detect_regime(tri_all, K = 12, method = "e_divisive")
+r_all   <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 r_all$breakpoints
 ```
 

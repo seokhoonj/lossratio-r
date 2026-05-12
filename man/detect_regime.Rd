@@ -11,7 +11,7 @@ detect_regime(
   x,
   target = "lr",
   by = NULL,
-  K = 12L,
+  K = "auto",
   method = c("e_divisive", "pelt", "hclust"),
   n_regimes = NULL,
   sig_level = 0.05,
@@ -33,15 +33,20 @@ Also used by S3 \code{print()} method on \code{Regime} objects.}
 \item{target}{Column name of the trajectory variable. Default
 is \code{"lr"} (cumulative loss ratio).}
 
-\item{by}{Optional grouping column(s) for per-combination detection.
-\code{NULL} (default) uses the Triangle's \code{attr(x, "groups")} (backward-
-compat). \code{character(0)} pools all cohorts into a single sequence
-(group-agnostic detection). A character vector overrides the grouping
-columns explicitly — must be a subset of \code{names(x)}.}
+\item{by}{Grouping column(s) for per-combination detection. \code{NULL}
+(default) runs pooled detection — all cohorts treated as a single
+sequence regardless of any group attribute on \code{x}. Supply a character
+vector (subset of \code{names(x)}) to dispatch per combo, e.g.
+\code{by = "coverage"} or \code{by = c("channel", "coverage")}. The Triangle's
+\code{attr(x, "groups")} is \emph{not} used as a fallback — explicit \code{by} is
+required for per-group detection.}
 
-\item{K}{Integer. Common development-period window used to build the
-cohort feature matrix. Cohorts with fewer than \code{K} observed
-periods are dropped. Default is \code{12}.}
+\item{K}{Trajectory window. Integer (e.g., \code{12L}) for a fixed K, or
+the string \code{"auto"} (default) — resolves to each group's maturity
+via \code{\link[=detect_maturity]{detect_maturity()}}, falling back to \code{6L} when maturity is
+unavailable (NA, pooled mode, or \code{by} mismatching the Triangle's
+\code{attr("groups")}). Cohorts with fewer than the resolved \code{K}
+observed periods are dropped.}
 
 \item{method}{One of \code{"e_divisive"}, \code{"pelt"}, \code{"hclust"}.}
 
@@ -63,18 +68,24 @@ An object of class \code{"Regime"}. For single-group input:
 \describe{
 \item{\code{call}}{Matched call.}
 \item{\code{method}}{Detection method used.}
-\item{\code{target}, \code{K}}{Trajectory variable and window.}
+\item{\code{target}}{Trajectory variable used for detection.}
+\item{\code{K}}{Trajectory window per combo. Scalar integer when a
+single combo was analysed; integer vector (one per surviving
+combo, in the order of \verb{$labels} / \verb{$breakpoints} group rows)
+otherwise.}
+\item{\code{K_mode}}{Either \code{"auto"} (resolved per group via
+\code{\link[=detect_maturity]{detect_maturity()}}) or \code{"manual"} (user-supplied integer).}
 \item{\code{cohort}}{Period variable from \code{x}.}
 \item{\code{labels}}{\code{data.table} of one row per analysed cohort:
 \verb{[by..., cohort, regime, regime_id]}. Group columns are prepended
 when \code{by} resolves to a non-empty vector.}
 \item{\code{breakpoints}}{\code{data.table} of detected breakpoints with
-columns \verb{[by..., breakpoint, regime_id_from, regime_id_to, pre_value, post_value, magnitude]}. \code{regime_id_from} /
-\code{regime_id_to} identify the two regimes on either side of the
-break (matches \verb{$labels$regime_id}). \code{pre_value} / \code{post_value}
-are the mean \code{target} over the cohort × dev trajectory windows
-in each regime; \verb{magnitude = |post_value - pre_value|}. Empty
-(zero rows) when no break is detected.}
+columns \verb{[by..., breakpoint, regime_id, pre_value, post_value, magnitude]}. \code{regime_id} = id of the regime that STARTS at this
+break (the pre-break regime is \code{regime_id - 1}); matches
+\verb{$labels$regime_id}. \code{pre_value} / \code{post_value} are the mean
+\code{target} over the cohort × dev trajectory windows in the pre- /
+post-break regimes; \verb{magnitude = |post_value - pre_value|}.
+Empty (zero rows) when no break is detected.}
 \item{\code{n_regimes}}{Number of regimes detected. Scalar integer for
 single-combo detection; named integer vector (keyed by combo) for
 multi-combo.}
@@ -135,14 +146,14 @@ tri_sur <- build_triangle(
 )
 
 # Hierarchical clustering (no extra package dependency)
-r <- detect_regime(tri_sur, K = 12, method = "hclust",
+r <- detect_regime(tri_sur, method = "hclust",
                           n_regimes = 2L)
 print(r)
 summary(r)
 plot(r)
 
 # ecp divisive change-point detection (requires the ecp package)
-r_ecp <- detect_regime(tri_sur, K = 12, method = "e_divisive")
+r_ecp <- detect_regime(tri_sur, method = "e_divisive")
 
 # Multi-group: detection per coverage
 tri_all <- build_triangle(
@@ -153,7 +164,7 @@ tri_all <- build_triangle(
   loss     = "loss_incr",
   premium  = "premium_incr"
 )
-r_all <- detect_regime(tri_all, K = 12, method = "e_divisive")
+r_all <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 print(r_all$breakpoints)
 }
 

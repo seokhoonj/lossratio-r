@@ -42,14 +42,19 @@
 #'   `summary()` method.
 #' @param target Column name of the trajectory variable. Default
 #'   is `"lr"` (cumulative loss ratio).
-#' @param by Optional grouping column(s) for per-combination detection.
-#'   `NULL` (default) uses the Triangle's `attr(x, "groups")` (backward-
-#'   compat). `character(0)` pools all cohorts into a single sequence
-#'   (group-agnostic detection). A character vector overrides the grouping
-#'   columns explicitly — must be a subset of `names(x)`.
-#' @param K Integer. Common development-period window used to build the
-#'   cohort feature matrix. Cohorts with fewer than `K` observed
-#'   periods are dropped. Default is `12`.
+#' @param by Grouping column(s) for per-combination detection. `NULL`
+#'   (default) runs pooled detection — all cohorts treated as a single
+#'   sequence regardless of any group attribute on `x`. Supply a character
+#'   vector (subset of `names(x)`) to dispatch per combo, e.g.
+#'   `by = "coverage"` or `by = c("channel", "coverage")`. The Triangle's
+#'   `attr(x, "groups")` is *not* used as a fallback — explicit `by` is
+#'   required for per-group detection.
+#' @param K Trajectory window. Integer (e.g., `12L`) for a fixed K, or
+#'   the string `"auto"` (default) — resolves to each group's maturity
+#'   via [detect_maturity()], falling back to `6L` when maturity is
+#'   unavailable (NA, pooled mode, or `by` mismatching the Triangle's
+#'   `attr("groups")`). Cohorts with fewer than the resolved `K`
+#'   observed periods are dropped.
 #' @param method One of `"e_divisive"`, `"pelt"`, `"hclust"`.
 #' @param n_regimes Integer. Number of regimes to force. `NULL` means
 #'   auto-detect for `"e_divisive"` and `"pelt"`; ignored (required to equal
@@ -62,19 +67,25 @@
 #'   \describe{
 #'     \item{`call`}{Matched call.}
 #'     \item{`method`}{Detection method used.}
-#'     \item{`target`, `K`}{Trajectory variable and window.}
+#'     \item{`target`}{Trajectory variable used for detection.}
+#'     \item{`K`}{Trajectory window per combo. Scalar integer when a
+#'       single combo was analysed; integer vector (one per surviving
+#'       combo, in the order of `$labels` / `$breakpoints` group rows)
+#'       otherwise.}
+#'     \item{`K_mode`}{Either `"auto"` (resolved per group via
+#'       [detect_maturity()]) or `"manual"` (user-supplied integer).}
 #'     \item{`cohort`}{Period variable from `x`.}
 #'     \item{`labels`}{`data.table` of one row per analysed cohort:
 #'       `[by..., cohort, regime, regime_id]`. Group columns are prepended
 #'       when `by` resolves to a non-empty vector.}
 #'     \item{`breakpoints`}{`data.table` of detected breakpoints with
-#'       columns `[by..., breakpoint, regime_id_from, regime_id_to,
-#'       pre_value, post_value, magnitude]`. `regime_id_from` /
-#'       `regime_id_to` identify the two regimes on either side of the
-#'       break (matches `$labels$regime_id`). `pre_value` / `post_value`
-#'       are the mean `target` over the cohort × dev trajectory windows
-#'       in each regime; `magnitude = |post_value - pre_value|`. Empty
-#'       (zero rows) when no break is detected.}
+#'       columns `[by..., breakpoint, regime_id, pre_value, post_value,
+#'       magnitude]`. `regime_id` = id of the regime that STARTS at this
+#'       break (the pre-break regime is `regime_id - 1`); matches
+#'       `$labels$regime_id`. `pre_value` / `post_value` are the mean
+#'       `target` over the cohort × dev trajectory windows in the pre- /
+#'       post-break regimes; `magnitude = |post_value - pre_value|`.
+#'       Empty (zero rows) when no break is detected.}
 #'     \item{`n_regimes`}{Number of regimes detected. Scalar integer for
 #'       single-combo detection; named integer vector (keyed by combo) for
 #'       multi-combo.}
@@ -104,14 +115,14 @@
 #' )
 #'
 #' # Hierarchical clustering (no extra package dependency)
-#' r <- detect_regime(tri_sur, K = 12, method = "hclust",
+#' r <- detect_regime(tri_sur, method = "hclust",
 #'                           n_regimes = 2L)
 #' print(r)
 #' summary(r)
 #' plot(r)
 #'
 #' # ecp divisive change-point detection (requires the ecp package)
-#' r_ecp <- detect_regime(tri_sur, K = 12, method = "e_divisive")
+#' r_ecp <- detect_regime(tri_sur, method = "e_divisive")
 #'
 #' # Multi-group: detection per coverage
 #' tri_all <- build_triangle(
@@ -122,7 +133,7 @@
 #'   loss     = "loss_incr",
 #'   premium  = "premium_incr"
 #' )
-#' r_all <- detect_regime(tri_all, K = 12, method = "e_divisive")
+#' r_all <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 #' print(r_all$breakpoints)
 #' }
 #'
@@ -130,7 +141,7 @@
 detect_regime <- function(x,
                           target    = "lr",
                           by        = NULL,
-                          K         = 12L,
+                          K         = "auto",
                           method    = c("e_divisive", "pelt", "hclust"),
                           n_regimes = NULL,
                           sig_level = 0.05,
@@ -143,11 +154,24 @@ detect_regime <- function(x,
   coh <- attr(x, "cohort")
   dev <- attr(x, "dev")
 
-  # resolve grouping: `by = NULL` falls back to the Triangle's `groups`
-  # attribute (backward compat); `by = character(0)` forces pooled
-  # detection (all cohorts in a single sequence regardless of group).
-  grp <- if (is.null(by)) attr(x, "groups") else by
-  if (is.null(grp)) grp <- character(0)
+  # `K = "auto"` falls back to maturity (`detect_maturity()`). The
+  # default fallback when no maturity is detected (or pooled mode) is
+  # `K_AUTO_FALLBACK` — small enough to keep recent cohorts in the
+  # window for most coverages.
+  K_AUTO_FALLBACK <- 6L
+  K_is_auto <- identical(K, "auto")
+  if (!K_is_auto) {
+    K <- as.integer(K)
+    if (is.na(K) || K < 2L)
+      stop("`K` must be an integer >= 2 or the string \"auto\".",
+           call. = FALSE)
+  }
+
+  # resolve grouping:
+  #   by = NULL (default) → pooled detection (single cohort sequence,
+  #                         group attribute on `x` ignored)
+  #   by = character(.)   → explicit grouping columns
+  grp <- if (is.null(by)) character(0) else by
 
   if (length(coh) != 1L)
     stop("`x` must have exactly one `cohort`.", call. = FALSE)
@@ -166,10 +190,6 @@ detect_regime <- function(x,
                  paste(sprintf("'%s'", missing_grp), collapse = ", ")),
          call. = FALSE)
 
-  K <- as.integer(K)
-  if (is.na(K) || K < 2L)
-    stop("`K` must be an integer >= 2.", call. = FALSE)
-
   call_obj <- match.call()
 
   multi_group <- length(grp) > 0L &&
@@ -184,6 +204,40 @@ detect_regime <- function(x,
     grp_combos <- data.table::data.table()
   }
   n_combos <- max(nrow(grp_combos), 1L)
+
+  # `K = "auto"`: resolve per-combo trajectory window via detect_maturity.
+  # Falls back to `K_AUTO_FALLBACK` when maturity is unavailable for that
+  # combo (pooled detection, NA maturity, or by-columns mismatching the
+  # Triangle's `attr("groups")`).
+  K_per_combo <- if (K_is_auto) {
+    # detect_maturity supports cumulative targets only — map _incr to its
+    # cumulative counterpart, fall back to "lr" otherwise.
+    mat_target <- switch(target,
+      "lr" = , "loss" = , "premium" = target,
+      "lr_incr"      = "lr",
+      "loss_incr"    = "loss",
+      "premium_incr" = "premium",
+      "lr"
+    )
+    mat_dt <- tryCatch(
+      detect_maturity(x, target = mat_target),
+      error = function(e) NULL
+    )
+    if (!is.null(mat_dt) && length(grp) > 0L &&
+        all(grp %in% names(mat_dt)) &&
+        "ata_to" %in% names(mat_dt)) {
+      vapply(seq_len(n_combos), function(i) {
+        combo_row <- grp_combos[i]
+        m <- mat_dt[combo_row, on = grp, nomatch = NULL]
+        v <- if (nrow(m)) m[["ata_to"]][1L] else NA_integer_
+        if (is.na(v)) K_AUTO_FALLBACK else as.integer(v)
+      }, integer(1L))
+    } else {
+      rep(K_AUTO_FALLBACK, n_combos)
+    }
+  } else {
+    rep(as.integer(K), n_combos)
+  }
 
   per_group <- vector("list", n_combos)
   combo_keys <- character(n_combos)
@@ -201,7 +255,7 @@ detect_regime <- function(x,
       .detect_regime_single(
         d         = di,
         target    = target,
-        K         = K,
+        K         = K_per_combo[i],
         method    = method,
         n_regimes = n_regimes,
         sig_level = sig_level,
@@ -224,12 +278,11 @@ detect_regime <- function(x,
     stop("No group produced a usable detection result.", call. = FALSE)
 
   empty_bp <- data.table::data.table(
-    breakpoint     = as.Date(character(0)),
-    regime_id_from = integer(0),
-    regime_id_to   = integer(0),
-    pre_value      = numeric(0),
-    post_value     = numeric(0),
-    magnitude      = numeric(0)
+    breakpoint = as.Date(character(0)),
+    regime_id  = integer(0),
+    pre_value  = numeric(0),
+    post_value = numeric(0),
+    magnitude  = numeric(0)
   )
 
   # Combine breakpoints: prepend group columns when grp is non-empty.
@@ -271,23 +324,27 @@ detect_regime <- function(x,
   # that downstream code (and existing tests) expect when only one group
   # combo is detected. `$breakpoints` and `$labels` remain data.tables.
   is_single <- sum(ok) == 1L
+  K_used <- K_per_combo[ok]
   if (is_single) {
     n_regimes_out  <- n_regimes_vec[[1L]]
     trajectory_out <- trajectory_lst[[1L]]
     pca_out        <- pca_lst[[1L]]
     dropped_out    <- dropped_lst[[1L]]
+    K_out          <- K_used[[1L]]
   } else {
     n_regimes_out  <- n_regimes_vec
     trajectory_out <- trajectory_lst
     pca_out        <- pca_lst
     dropped_out    <- dropped_lst
+    K_out          <- K_used
   }
 
   out <- list(
     call        = call_obj,
     method      = method,
     target      = target,
-    K           = K,
+    K           = K_out,
+    K_mode      = if (K_is_auto) "auto" else "manual",
     cohort      = coh,
     dev         = dev,
     groups      = grp,
@@ -388,23 +445,23 @@ detect_regime <- function(x,
 #' @keywords internal
 .build_breakpoints_dt <- function(cohorts, breakpoints_idx, mat, regime_id) {
   empty <- data.table::data.table(
-    breakpoint     = as.Date(character(0)),
-    regime_id_from = integer(0),
-    regime_id_to   = integer(0),
-    pre_value      = numeric(0),
-    post_value     = numeric(0),
-    magnitude      = numeric(0)
+    breakpoint = as.Date(character(0)),
+    regime_id  = integer(0),
+    pre_value  = numeric(0),
+    post_value = numeric(0),
+    magnitude  = numeric(0)
   )
   if (!length(breakpoints_idx)) return(empty)
 
   bp_idx  <- as.integer(sort(unique(breakpoints_idx)))
   bp_date <- cohorts[bp_idx]
-  bp_from <- seq_along(bp_idx)
-  bp_to   <- bp_from + 1L
+  # `regime_id` on a break row = id of the regime that STARTS at this break
+  # (i.e. the post-break regime). `regime_id - 1` is the pre-break regime.
+  bp_id   <- seq_along(bp_idx) + 1L
 
   metas <- vapply(seq_along(bp_idx), function(i) {
-    pre_rows  <- which(regime_id == bp_from[i])
-    post_rows <- which(regime_id == bp_to[i])
+    pre_rows  <- which(regime_id == bp_id[i] - 1L)
+    post_rows <- which(regime_id == bp_id[i])
     pre_val   <- if (length(pre_rows))  mean(mat[pre_rows,  , drop = FALSE], na.rm = TRUE) else NA_real_
     post_val  <- if (length(post_rows)) mean(mat[post_rows, , drop = FALSE], na.rm = TRUE) else NA_real_
     c(pre_val, post_val)
@@ -414,12 +471,11 @@ detect_regime <- function(x,
   post_vals <- metas[2L, ]
 
   data.table::data.table(
-    breakpoint     = bp_date,
-    regime_id_from = bp_from,
-    regime_id_to   = bp_to,
-    pre_value      = pre_vals,
-    post_value     = post_vals,
-    magnitude      = abs(post_vals - pre_vals)
+    breakpoint = bp_date,
+    regime_id  = bp_id,
+    pre_value  = pre_vals,
+    post_value = post_vals,
+    magnitude  = abs(post_vals - pre_vals)
   )
 }
 

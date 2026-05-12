@@ -1,8 +1,8 @@
 # Setup
 data(experience)
 exp <- experience
-sub <- build_triangle(exp[coverage == "SUR"], groups = coverage, cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
-tri <- build_triangle(exp, groups = coverage, cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+sub <- build_triangle(exp[coverage == "SUR"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+tri <- build_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
 
 test_that("detect_convergence returns class 'Convergence' with required fields", {
   res <- detect_convergence(sub)
@@ -28,7 +28,7 @@ test_that("k_conv is >= k_star when non-NA", {
 test_that("insufficient history yields k_conv == NA", {
   k_star_guess <- 6L
   short_exp <- exp[coverage == "SUR" & dev_m <= k_star_guess + 2L]
-  short_tri <- build_triangle(short_exp, groups = coverage, cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+  short_tri <- build_triangle(short_exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   res <- detect_convergence(short_tri, k_star = k_star_guess, min_run = 3L)
   expect_true(is.na(res$k_conv))
 })

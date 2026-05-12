@@ -144,7 +144,7 @@ summary(lr)
 
 # Cell selection: maturity (dev axis) + regime (cohort axis)
 detect_maturity(tri[coverage == "SUR"])
-detect_regime(tri[coverage == "SUR"], K = 12, method = "e_divisive")
+detect_regime(tri[coverage == "SUR"], method = "e_divisive")
 
 # Projection diagnostic: when does the projected ultimate LR stop revising?
 detect_convergence(lr)

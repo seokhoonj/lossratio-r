@@ -136,7 +136,7 @@ sub <- build_triangle(
   loss     = "loss_incr",
   premium  = "premium_incr"
 )
-detect_regime(sub, K = 12, method = "e_divisive")
+detect_regime(sub, method = "e_divisive")
 ```
 
 상세 설명은 `vignette("regime")` 을 참고한다.
