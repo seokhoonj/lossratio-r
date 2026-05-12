@@ -74,6 +74,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-get_period_type.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-get_plot_meta.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-has_cols.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/reference/dot-kneedle_elbow.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-lm_ed.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-lm_link.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-lr_summary.html</loc></url>
@@ -120,6 +121,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/reference/plot.LRFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/plot.Link.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/plot.Regime.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/reference/plot.RegimeOptimalK.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/plot.Total.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/plot.Triangle.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/plot_triangle.ATAFit.html</loc></url>

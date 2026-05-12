@@ -158,16 +158,16 @@ shifts across underwriting cohorts</a></p>
 <p>기본 방법은 <code>"e_divisive"</code> 로, 데이터로부터 regime 의
 개수까지 결정하는 비모수 다변량 변화점 알고리즘이다.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
 <span><span class="va">r</span></span>
 <span><span class="co">#&gt; &lt;Regime&gt;</span></span>
 <span><span class="co">#&gt;   method      : e_divisive</span></span>
 <span><span class="co">#&gt;   target      : lr</span></span>
-<span><span class="co">#&gt;   window (K)  : dev_m 1-12</span></span>
-<span><span class="co">#&gt;   cohorts     : 25 analysed (11 dropped)</span></span>
+<span><span class="co">#&gt;   window (K)  : dev_m 1-6</span></span>
+<span><span class="co">#&gt;   cohorts     : 31 analysed (5 dropped)</span></span>
 <span><span class="co">#&gt;   regimes     : 2</span></span>
 <span><span class="co">#&gt;   breakpoints : 24.07</span></span>
-<span><span class="co">#&gt;   PC1 / PC2   : 81.6% / 8.8%</span></span></code></pre></div>
+<span><span class="co">#&gt;   PC1 / PC2   : 80.0% / 12.7%</span></span></code></pre></div>
 <p>창 <code>K</code> 는 코호트 특징 벡터를 정의하는 경과 기간 수를
 조절한다. 최소 <code>K</code> 기간 이상 관측된 코호트만 분석되며, 창이
 짧은 코호트는 제외된다. <code>K</code> 를 늘리면 궤적을 더 많이 담을 수
@@ -181,45 +181,51 @@ shifts across underwriting cohorts</a></p>
 <span><span class="co">#&gt; Cohort regime detection summary</span></span>
 <span><span class="co">#&gt;   method    : e_divisive</span></span>
 <span><span class="co">#&gt;   target    : lr</span></span>
-<span><span class="co">#&gt;   window    : dev_m 1-12</span></span>
-<span><span class="co">#&gt;   cohorts   : 25 analysed (11 dropped)</span></span>
+<span><span class="co">#&gt;   window    : dev_m 1-6</span></span>
+<span><span class="co">#&gt;   cohorts   : 31 analysed (5 dropped)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Regimes (2):</span></span>
 <span><span class="co">#&gt;   1: 23.01-24.06 (18 cohorts)</span></span>
-<span><span class="co">#&gt;   2: 24.07-25.01 (7 cohorts)</span></span>
+<span><span class="co">#&gt;   2: 24.07-25.07 (13 cohorts)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Breakpoints: 24.07</span></span>
 <span></span>
 <span><span class="va">r</span><span class="op">$</span><span class="va">labels</span></span>
-<span><span class="co">#&gt;     coverage     cohort      regime regime_id</span></span>
-<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;fctr&gt;     &lt;int&gt;</span></span>
-<span><span class="co">#&gt;  1:      SUR 2023-01-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt;  2:      SUR 2023-02-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt;  3:      SUR 2023-03-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt;  4:      SUR 2023-04-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt;  5:      SUR 2023-05-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt;  6:      SUR 2023-06-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt;  7:      SUR 2023-07-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt;  8:      SUR 2023-08-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt;  9:      SUR 2023-09-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 10:      SUR 2023-10-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 11:      SUR 2023-11-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 12:      SUR 2023-12-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 13:      SUR 2024-01-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 14:      SUR 2024-02-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 15:      SUR 2024-03-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 16:      SUR 2024-04-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 17:      SUR 2024-05-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 18:      SUR 2024-06-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 19:      SUR 2024-07-01 24.07-25.01         2</span></span>
-<span><span class="co">#&gt; 20:      SUR 2024-08-01 24.07-25.01         2</span></span>
-<span><span class="co">#&gt; 21:      SUR 2024-09-01 24.07-25.01         2</span></span>
-<span><span class="co">#&gt; 22:      SUR 2024-10-01 24.07-25.01         2</span></span>
-<span><span class="co">#&gt; 23:      SUR 2024-11-01 24.07-25.01         2</span></span>
-<span><span class="co">#&gt; 24:      SUR 2024-12-01 24.07-25.01         2</span></span>
-<span><span class="co">#&gt; 25:      SUR 2025-01-01 24.07-25.01         2</span></span>
-<span><span class="co">#&gt;     coverage     cohort      regime regime_id</span></span>
-<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;fctr&gt;     &lt;int&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt;         cohort      regime regime_id</span></span>
+<span><span class="co">#&gt;         &lt;Date&gt;      &lt;fctr&gt;     &lt;int&gt;</span></span>
+<span><span class="co">#&gt;  1: 2023-01-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt;  2: 2023-02-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt;  3: 2023-03-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt;  4: 2023-04-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt;  5: 2023-05-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt;  6: 2023-06-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt;  7: 2023-07-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt;  8: 2023-08-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt;  9: 2023-09-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 10: 2023-10-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 11: 2023-11-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 12: 2023-12-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 13: 2024-01-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 14: 2024-02-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 15: 2024-03-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 16: 2024-04-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 17: 2024-05-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 18: 2024-06-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 19: 2024-07-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 20: 2024-08-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 21: 2024-09-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 22: 2024-10-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 23: 2024-11-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 24: 2024-12-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 25: 2025-01-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 26: 2025-02-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 27: 2025-03-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 28: 2025-04-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 29: 2025-05-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 30: 2025-06-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 31: 2025-07-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt;         cohort      regime regime_id</span></span>
+<span><span class="co">#&gt;         &lt;Date&gt;      &lt;fctr&gt;     &lt;int&gt;</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="시각화">5. 시각화<a class="anchor" aria-label="anchor" href="#%EC%8B%9C%EA%B0%81%ED%99%94"></a>
@@ -267,18 +273,18 @@ Ward 계층 클러스터링을 적용하고 <code>n_regimes</code> 개 (default:
 <p>regime 개수를 고정해 비교하고 싶을 때 — 예를 들어 2-regime 가설과
 3-regime 가설을 비교할 때 — <code>n_regimes</code> 를 넘긴다.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">r2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span>, n_regimes <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">r2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span>, n_regimes <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">r2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Cohort regime detection summary</span></span>
 <span><span class="co">#&gt;   method    : e_divisive</span></span>
 <span><span class="co">#&gt;   target    : lr</span></span>
-<span><span class="co">#&gt;   window    : dev_m 1-12</span></span>
-<span><span class="co">#&gt;   cohorts   : 25 analysed (11 dropped)</span></span>
+<span><span class="co">#&gt;   window    : dev_m 1-6</span></span>
+<span><span class="co">#&gt;   cohorts   : 31 analysed (5 dropped)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Regimes (3):</span></span>
 <span><span class="co">#&gt;   1: 23.01-23.08 (8 cohorts)</span></span>
 <span><span class="co">#&gt;   2: 23.09-24.06 (10 cohorts)</span></span>
-<span><span class="co">#&gt;   3: 24.07-25.01 (7 cohorts)</span></span>
+<span><span class="co">#&gt;   3: 24.07-25.07 (13 cohorts)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Breakpoints: 23.09, 24.07</span></span></code></pre></div>
 <p><code>"e_divisive"</code> 와 <code>"pelt"</code> 의 경우
@@ -301,16 +307,11 @@ Ward 계층 클러스터링을 적용하고 <code>n_regimes</code> 개 (default:
 <span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span>
 <span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">r_all</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_all</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
+<span><span class="va">r_all</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_all</span>, by <span class="op">=</span> <span class="st">"coverage"</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
 <span><span class="va">r_all</span><span class="op">$</span><span class="va">breakpoints</span></span>
-<span><span class="co">#&gt;    coverage breakpoint regime_id_from regime_id_to pre_value post_value</span></span>
-<span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt;          &lt;int&gt;        &lt;int&gt;     &lt;num&gt;      &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      CAN 2023-09-01              1            2 0.6979438  0.5536355</span></span>
-<span><span class="co">#&gt; 2:      SUR 2024-07-01              1            2 1.2249429  0.6935662</span></span>
-<span><span class="co">#&gt;    magnitude</span></span>
-<span><span class="co">#&gt;        &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1: 0.1443083</span></span>
-<span><span class="co">#&gt; 2: 0.5313767</span></span></code></pre></div>
+<span><span class="co">#&gt;    coverage breakpoint regime_id pre_value post_value magnitude</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt;     &lt;int&gt;     &lt;num&gt;      &lt;num&gt;     &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:      SUR 2024-07-01         2 0.9065895  0.5479919 0.3585975</span></span></code></pre></div>
 <p>다중 그룹 모드에서 <code>r_all$breakpoints</code> 는 그룹 컬럼과
 <code>breakpoint</code> Date 컬럼을 가진 <code>data.table</code> 이고,
 <code>r_all$labels</code> 에도 그룹 컬럼이 추가된다.

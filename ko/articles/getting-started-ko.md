@@ -558,15 +558,15 @@ sub <- build_triangle(
   loss     = "loss_incr",
   premium  = "premium_incr"
 )
-detect_regime(sub, K = 12, method = "e_divisive")
+detect_regime(sub, method = "e_divisive")
 #> <Regime>
 #>   method      : e_divisive
 #>   target      : lr
-#>   window (K)  : dev_m 1-12
-#>   cohorts     : 25 analysed (11 dropped)
+#>   window (K)  : dev_m 1-6
+#>   cohorts     : 31 analysed (5 dropped)
 #>   regimes     : 2
 #>   breakpoints : 24.07
-#>   PC1 / PC2   : 81.6% / 8.8%
+#>   PC1 / PC2   : 80.0% / 12.7%
 ```
 
 상세 설명은

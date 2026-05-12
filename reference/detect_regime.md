@@ -44,7 +44,7 @@ detect_regime(
   x,
   target = "lr",
   by = NULL,
-  K = 12L,
+  K = "auto",
   method = c("e_divisive", "pelt", "hclust"),
   n_regimes = NULL,
   sig_level = 0.05,
@@ -78,17 +78,22 @@ print(x, ...)
 
 - by:
 
-  Optional grouping column(s) for per-combination detection. `NULL`
-  (default) uses the Triangle's `attr(x, "groups")` (backward- compat).
-  `character(0)` pools all cohorts into a single sequence
-  (group-agnostic detection). A character vector overrides the grouping
-  columns explicitly — must be a subset of `names(x)`.
+  Grouping column(s) for per-combination detection. `NULL` (default)
+  runs pooled detection — all cohorts treated as a single sequence
+  regardless of any group attribute on `x`. Supply a character vector
+  (subset of `names(x)`) to dispatch per combo, e.g. `by = "coverage"`
+  or `by = c("channel", "coverage")`. The Triangle's `attr(x, "groups")`
+  is *not* used as a fallback — explicit `by` is required for per-group
+  detection.
 
 - K:
 
-  Integer. Common development-period window used to build the cohort
-  feature matrix. Cohorts with fewer than `K` observed periods are
-  dropped. Default is `12`.
+  Trajectory window. Integer (e.g., `12L`) for a fixed K, or the string
+  `"auto"` (default) — resolves to each group's maturity via
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md),
+  falling back to `6L` when maturity is unavailable (NA, pooled mode, or
+  `by` mismatching the Triangle's `attr("groups")`). Cohorts with fewer
+  than the resolved `K` observed periods are dropped.
 
 - method:
 
@@ -129,9 +134,21 @@ An object of class `"Regime"`. For single-group input:
 
   Detection method used.
 
-- `target`, `K`:
+- `target`:
 
-  Trajectory variable and window.
+  Trajectory variable used for detection.
+
+- `K`:
+
+  Trajectory window per combo. Scalar integer when a single combo was
+  analysed; integer vector (one per surviving combo, in the order of
+  `$labels` / `$breakpoints` group rows) otherwise.
+
+- `K_mode`:
+
+  Either `"auto"` (resolved per group via
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md))
+  or `"manual"` (user-supplied integer).
 
 - `cohort`:
 
@@ -146,12 +163,13 @@ An object of class `"Regime"`. For single-group input:
 - `breakpoints`:
 
   `data.table` of detected breakpoints with columns
-  `[by..., breakpoint, regime_id_from, regime_id_to, pre_value, post_value, magnitude]`.
-  `regime_id_from` / `regime_id_to` identify the two regimes on either
-  side of the break (matches `$labels$regime_id`). `pre_value` /
-  `post_value` are the mean `target` over the cohort × dev trajectory
-  windows in each regime; `magnitude = |post_value - pre_value|`. Empty
-  (zero rows) when no break is detected.
+  `[by..., breakpoint, regime_id, pre_value, post_value, magnitude]`.
+  `regime_id` = id of the regime that STARTS at this break (the
+  pre-break regime is `regime_id - 1`); matches `$labels$regime_id`.
+  `pre_value` / `post_value` are the mean `target` over the cohort × dev
+  trajectory windows in the pre- / post-break regimes;
+  `magnitude = |post_value - pre_value|`. Empty (zero rows) when no
+  break is detected.
 
 - `n_regimes`:
 
@@ -197,14 +215,14 @@ tri_sur <- build_triangle(
 )
 
 # Hierarchical clustering (no extra package dependency)
-r <- detect_regime(tri_sur, K = 12, method = "hclust",
+r <- detect_regime(tri_sur, method = "hclust",
                           n_regimes = 2L)
 print(r)
 summary(r)
 plot(r)
 
 # ecp divisive change-point detection (requires the ecp package)
-r_ecp <- detect_regime(tri_sur, K = 12, method = "e_divisive")
+r_ecp <- detect_regime(tri_sur, method = "e_divisive")
 
 # Multi-group: detection per coverage
 tri_all <- build_triangle(
@@ -215,7 +233,7 @@ tri_all <- build_triangle(
   loss     = "loss_incr",
   premium  = "premium_incr"
 )
-r_all <- detect_regime(tri_all, K = 12, method = "e_divisive")
+r_all <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 print(r_all$breakpoints)
 } # }
 ```

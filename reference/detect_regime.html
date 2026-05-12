@@ -215,7 +215,7 @@ strictly chronological.</p></dd>
 <span>  <span class="va">x</span>,</span>
 <span>  target <span class="op">=</span> <span class="st">"lr"</span>,</span>
 <span>  by <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  K <span class="op">=</span> <span class="fl">12L</span>,</span>
+<span>  K <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"e_divisive"</span>, <span class="st">"pelt"</span>, <span class="st">"hclust"</span><span class="op">)</span>,</span>
 <span>  n_regimes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sig_level <span class="op">=</span> <span class="fl">0.05</span>,</span>
@@ -249,17 +249,22 @@ is <code>"lr"</code> (cumulative loss ratio).</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
-<dd><p>Optional grouping column(s) for per-combination detection.
-<code>NULL</code> (default) uses the Triangle's <code>attr(x, "groups")</code> (backward-
-compat). <code>character(0)</code> pools all cohorts into a single sequence
-(group-agnostic detection). A character vector overrides the grouping
-columns explicitly — must be a subset of <code>names(x)</code>.</p></dd>
+<dd><p>Grouping column(s) for per-combination detection. <code>NULL</code>
+(default) runs pooled detection — all cohorts treated as a single
+sequence regardless of any group attribute on <code>x</code>. Supply a character
+vector (subset of <code>names(x)</code>) to dispatch per combo, e.g.
+<code>by = "coverage"</code> or <code>by = c("channel", "coverage")</code>. The Triangle's
+<code>attr(x, "groups")</code> is <em>not</em> used as a fallback — explicit <code>by</code> is
+required for per-group detection.</p></dd>
 
 
 <dt id="arg-k">K<a class="anchor" aria-label="anchor" href="#arg-k"></a></dt>
-<dd><p>Integer. Common development-period window used to build the
-cohort feature matrix. Cohorts with fewer than <code>K</code> observed
-periods are dropped. Default is <code>12</code>.</p></dd>
+<dd><p>Trajectory window. Integer (e.g., <code>12L</code>) for a fixed K, or
+the string <code>"auto"</code> (default) — resolves to each group's maturity
+via <code><a href="detect_maturity.html">detect_maturity()</a></code>, falling back to <code>6L</code> when maturity is
+unavailable (NA, pooled mode, or <code>by</code> mismatching the Triangle's
+<code>attr("groups")</code>). Cohorts with fewer than the resolved <code>K</code>
+observed periods are dropped.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
@@ -297,8 +302,18 @@ the requested value) for <code>"hclust"</code>, where the default is <code>2</co
 <dt><code>method</code></dt>
 <dd><p>Detection method used.</p></dd>
 
-<dt><code>target</code>, <code>K</code></dt>
-<dd><p>Trajectory variable and window.</p></dd>
+<dt><code>target</code></dt>
+<dd><p>Trajectory variable used for detection.</p></dd>
+
+<dt><code>K</code></dt>
+<dd><p>Trajectory window per combo. Scalar integer when a
+single combo was analysed; integer vector (one per surviving
+combo, in the order of <code>$labels</code> / <code>$breakpoints</code> group rows)
+otherwise.</p></dd>
+
+<dt><code>K_mode</code></dt>
+<dd><p>Either <code>"auto"</code> (resolved per group via
+<code><a href="detect_maturity.html">detect_maturity()</a></code>) or <code>"manual"</code> (user-supplied integer).</p></dd>
 
 <dt><code>cohort</code></dt>
 <dd><p>Period variable from <code>x</code>.</p></dd>
@@ -310,12 +325,12 @@ when <code>by</code> resolves to a non-empty vector.</p></dd>
 
 <dt><code>breakpoints</code></dt>
 <dd><p><code>data.table</code> of detected breakpoints with
-columns <code>[by..., breakpoint, regime_id_from, regime_id_to, pre_value, post_value, magnitude]</code>. <code>regime_id_from</code> /
-<code>regime_id_to</code> identify the two regimes on either side of the
-break (matches <code>$labels$regime_id</code>). <code>pre_value</code> / <code>post_value</code>
-are the mean <code>target</code> over the cohort × dev trajectory windows
-in each regime; <code>magnitude = |post_value - pre_value|</code>. Empty
-(zero rows) when no break is detected.</p></dd>
+columns <code>[by..., breakpoint, regime_id, pre_value, post_value, magnitude]</code>. <code>regime_id</code> = id of the regime that STARTS at this
+break (the pre-break regime is <code>regime_id - 1</code>); matches
+<code>$labels$regime_id</code>. <code>pre_value</code> / <code>post_value</code> are the mean
+<code>target</code> over the cohort × dev trajectory windows in the pre- /
+post-break regimes; <code>magnitude = |post_value - pre_value|</code>.
+Empty (zero rows) when no break is detected.</p></dd>
 
 <dt><code>n_regimes</code></dt>
 <dd><p>Number of regimes detected. Scalar integer for
@@ -360,14 +375,14 @@ multiple group combos.</p></dd>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Hierarchical clustering (no extra package dependency)</span></span></span>
-<span class="r-in"><span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu">detect_regime</span><span class="op">(</span><span class="va">tri_sur</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"hclust"</span>,</span></span>
+<span class="r-in"><span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu">detect_regime</span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"hclust"</span>,</span></span>
 <span class="r-in"><span>                          n_regimes <span class="op">=</span> <span class="fl">2L</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># ecp divisive change-point detection (requires the ecp package)</span></span></span>
-<span class="r-in"><span><span class="va">r_ecp</span> <span class="op">&lt;-</span> <span class="fu">detect_regime</span><span class="op">(</span><span class="va">tri_sur</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">r_ecp</span> <span class="op">&lt;-</span> <span class="fu">detect_regime</span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Multi-group: detection per coverage</span></span></span>
 <span class="r-in"><span><span class="va">tri_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="build_triangle.html">build_triangle</a></span><span class="op">(</span></span></span>
@@ -378,7 +393,7 @@ multiple group combos.</p></dd>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
 <span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">r_all</span> <span class="op">&lt;-</span> <span class="fu">detect_regime</span><span class="op">(</span><span class="va">tri_all</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">r_all</span> <span class="op">&lt;-</span> <span class="fu">detect_regime</span><span class="op">(</span><span class="va">tri_all</span>, by <span class="op">=</span> <span class="st">"coverage"</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">r_all</span><span class="op">$</span><span class="va">breakpoints</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>

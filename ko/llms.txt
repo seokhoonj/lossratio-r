@@ -67,7 +67,7 @@ summary(lr)
 plot_triangle(lr)
 
 # 3) 환경변화 (regime shift) 자동 탐지 — 인수 정책 변경 시점
-detect_regime(tri, K = 12, method = "e_divisive")
+detect_regime(tri, by = "coverage", method = "e_divisive")
 
 # 4) backtest — 최근 6 대각선을 빼고 fit + actual 비교
 bt <- backtest(tri, holdout = 6L, target = "lr")
@@ -296,6 +296,9 @@ Triangle 의 최근 대각선을 보류한 뒤 재적합·예측을 보류된 �
 
 - [`plot(`*`<Regime>`*`)`](https://seokhoonj.github.io/lossratio/ko/reference/plot.Regime.md)
   : Plot a cohort regime detection result
+
+- [`plot(`*`<RegimeOptimalK>`*`)`](https://seokhoonj.github.io/lossratio/ko/reference/plot.RegimeOptimalK.md)
+  : Plot break-count vs K with the elbow marker
 
 - [`plot(`*`<Total>`*`)`](https://seokhoonj.github.io/lossratio/ko/reference/plot.Total.md)
   :

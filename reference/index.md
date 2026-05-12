@@ -160,6 +160,9 @@ and
 - [`plot(`*`<Regime>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.Regime.md)
   : Plot a cohort regime detection result
 
+- [`plot(`*`<RegimeOptimalK>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.RegimeOptimalK.md)
+  : Plot break-count vs K with the elbow marker
+
 - [`plot(`*`<Total>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.Total.md)
   :
 

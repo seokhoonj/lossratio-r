@@ -67,7 +67,7 @@ summary(lr)
 plot_triangle(lr)
 
 # 3) 환경변화 (regime shift) 자동 탐지 — 인수 정책 변경 시점
-detect_regime(tri, K = 12, method = "e_divisive")
+detect_regime(tri, by = "coverage", method = "e_divisive")
 
 # 4) backtest — 최근 6 대각선을 빼고 fit + actual 비교
 bt <- backtest(tri, holdout = 6L, target = "lr")

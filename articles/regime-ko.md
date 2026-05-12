@@ -61,16 +61,16 @@ tri_sur <- build_triangle(
 
 ``` r
 
-r <- detect_regime(tri_sur, K = 12, method = "e_divisive")
+r <- detect_regime(tri_sur, method = "e_divisive")
 r
 #> <Regime>
 #>   method      : e_divisive
 #>   target      : lr
-#>   window (K)  : dev_m 1-12
-#>   cohorts     : 25 analysed (11 dropped)
+#>   window (K)  : dev_m 1-6
+#>   cohorts     : 31 analysed (5 dropped)
 #>   regimes     : 2
 #>   breakpoints : 24.07
-#>   PC1 / PC2   : 81.6% / 8.8%
+#>   PC1 / PC2   : 80.0% / 12.7%
 ```
 
 창 `K` 는 코호트 특징 벡터를 정의하는 경과 기간 수를 조절한다. 최소 `K`
@@ -85,45 +85,51 @@ summary(r)
 #> Cohort regime detection summary
 #>   method    : e_divisive
 #>   target    : lr
-#>   window    : dev_m 1-12
-#>   cohorts   : 25 analysed (11 dropped)
+#>   window    : dev_m 1-6
+#>   cohorts   : 31 analysed (5 dropped)
 #> 
 #> Regimes (2):
 #>   1: 23.01-24.06 (18 cohorts)
-#>   2: 24.07-25.01 (7 cohorts)
+#>   2: 24.07-25.07 (13 cohorts)
 #> 
 #> Breakpoints: 24.07
 
 r$labels
-#>     coverage     cohort      regime regime_id
-#>       <char>     <Date>      <fctr>     <int>
-#>  1:      SUR 2023-01-01 23.01-24.06         1
-#>  2:      SUR 2023-02-01 23.01-24.06         1
-#>  3:      SUR 2023-03-01 23.01-24.06         1
-#>  4:      SUR 2023-04-01 23.01-24.06         1
-#>  5:      SUR 2023-05-01 23.01-24.06         1
-#>  6:      SUR 2023-06-01 23.01-24.06         1
-#>  7:      SUR 2023-07-01 23.01-24.06         1
-#>  8:      SUR 2023-08-01 23.01-24.06         1
-#>  9:      SUR 2023-09-01 23.01-24.06         1
-#> 10:      SUR 2023-10-01 23.01-24.06         1
-#> 11:      SUR 2023-11-01 23.01-24.06         1
-#> 12:      SUR 2023-12-01 23.01-24.06         1
-#> 13:      SUR 2024-01-01 23.01-24.06         1
-#> 14:      SUR 2024-02-01 23.01-24.06         1
-#> 15:      SUR 2024-03-01 23.01-24.06         1
-#> 16:      SUR 2024-04-01 23.01-24.06         1
-#> 17:      SUR 2024-05-01 23.01-24.06         1
-#> 18:      SUR 2024-06-01 23.01-24.06         1
-#> 19:      SUR 2024-07-01 24.07-25.01         2
-#> 20:      SUR 2024-08-01 24.07-25.01         2
-#> 21:      SUR 2024-09-01 24.07-25.01         2
-#> 22:      SUR 2024-10-01 24.07-25.01         2
-#> 23:      SUR 2024-11-01 24.07-25.01         2
-#> 24:      SUR 2024-12-01 24.07-25.01         2
-#> 25:      SUR 2025-01-01 24.07-25.01         2
-#>     coverage     cohort      regime regime_id
-#>       <char>     <Date>      <fctr>     <int>
+#>         cohort      regime regime_id
+#>         <Date>      <fctr>     <int>
+#>  1: 2023-01-01 23.01-24.06         1
+#>  2: 2023-02-01 23.01-24.06         1
+#>  3: 2023-03-01 23.01-24.06         1
+#>  4: 2023-04-01 23.01-24.06         1
+#>  5: 2023-05-01 23.01-24.06         1
+#>  6: 2023-06-01 23.01-24.06         1
+#>  7: 2023-07-01 23.01-24.06         1
+#>  8: 2023-08-01 23.01-24.06         1
+#>  9: 2023-09-01 23.01-24.06         1
+#> 10: 2023-10-01 23.01-24.06         1
+#> 11: 2023-11-01 23.01-24.06         1
+#> 12: 2023-12-01 23.01-24.06         1
+#> 13: 2024-01-01 23.01-24.06         1
+#> 14: 2024-02-01 23.01-24.06         1
+#> 15: 2024-03-01 23.01-24.06         1
+#> 16: 2024-04-01 23.01-24.06         1
+#> 17: 2024-05-01 23.01-24.06         1
+#> 18: 2024-06-01 23.01-24.06         1
+#> 19: 2024-07-01 24.07-25.07         2
+#> 20: 2024-08-01 24.07-25.07         2
+#> 21: 2024-09-01 24.07-25.07         2
+#> 22: 2024-10-01 24.07-25.07         2
+#> 23: 2024-11-01 24.07-25.07         2
+#> 24: 2024-12-01 24.07-25.07         2
+#> 25: 2025-01-01 24.07-25.07         2
+#> 26: 2025-02-01 24.07-25.07         2
+#> 27: 2025-03-01 24.07-25.07         2
+#> 28: 2025-04-01 24.07-25.07         2
+#> 29: 2025-05-01 24.07-25.07         2
+#> 30: 2025-06-01 24.07-25.07         2
+#> 31: 2025-07-01 24.07-25.07         2
+#>         cohort      regime regime_id
+#>         <Date>      <fctr>     <int>
 ```
 
 ## 5. 시각화
@@ -173,18 +179,18 @@ regime 개수를 고정해 비교하고 싶을 때 — 예를 들어 2-regime �
 
 ``` r
 
-r2 <- detect_regime(tri_sur, K = 12, method = "e_divisive", n_regimes = 3)
+r2 <- detect_regime(tri_sur, method = "e_divisive", n_regimes = 3)
 summary(r2)
 #> Cohort regime detection summary
 #>   method    : e_divisive
 #>   target    : lr
-#>   window    : dev_m 1-12
-#>   cohorts   : 25 analysed (11 dropped)
+#>   window    : dev_m 1-6
+#>   cohorts   : 31 analysed (5 dropped)
 #> 
 #> Regimes (3):
 #>   1: 23.01-23.08 (8 cohorts)
 #>   2: 23.09-24.06 (10 cohorts)
-#>   3: 24.07-25.01 (7 cohorts)
+#>   3: 24.07-25.07 (13 cohorts)
 #> 
 #> Breakpoints: 23.09, 24.07
 ```
@@ -210,16 +216,11 @@ tri_all <- build_triangle(
   loss     = "loss_incr",
   premium  = "premium_incr"
 )
-r_all   <- detect_regime(tri_all, K = 12, method = "e_divisive")
+r_all   <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 r_all$breakpoints
-#>    coverage breakpoint regime_id_from regime_id_to pre_value post_value
-#>      <char>     <Date>          <int>        <int>     <num>      <num>
-#> 1:      CAN 2023-09-01              1            2 0.6979438  0.5536355
-#> 2:      SUR 2024-07-01              1            2 1.2249429  0.6935662
-#>    magnitude
-#>        <num>
-#> 1: 0.1443083
-#> 2: 0.5313767
+#>    coverage breakpoint regime_id pre_value post_value magnitude
+#>      <char>     <Date>     <int>     <num>      <num>     <num>
+#> 1:      SUR 2024-07-01         2 0.9065895  0.5479919 0.3585975
 ```
 
 다중 그룹 모드에서 `r_all$breakpoints` 는 그룹 컬럼과 `breakpoint` Date

@@ -125,7 +125,7 @@
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 3) 환경변화 (regime shift) 자동 탐지 — 인수 정책 변경 시점</span></span>
-<span><span class="fu"><a href="reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri</span>, K <span class="op">=</span> <span class="fl">12</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri</span>, by <span class="op">=</span> <span class="st">"coverage"</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 4) backtest — 최근 6 대각선을 빼고 fit + actual 비교</span></span>
 <span><span class="va">bt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, target <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span>
