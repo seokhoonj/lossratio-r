@@ -47,7 +47,7 @@ Mask precedence: `holdout` \> `used` \> `unused` \> `future`.
 - m_k:
 
   Optional integer. The maturity switch as a *target* development index
-  (= `ata_to` of the first stable link). When both `recent` and `regime`
+  (= `change` of the first stable link). When both `recent` and `regime`
   are provided, the hybrid mask uses `m_k` as the boundary: cells with
   `dev < m_k` apply the cohort cut, cells with `dev >= m_k` apply the
   calendar-diagonal cut. When `NULL`, the hybrid logic falls back to

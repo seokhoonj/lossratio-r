@@ -10,8 +10,8 @@
   cohorts](https://seokhoonj.github.io/lossratio/articles/regime.md):
 - [Projection: SA, ED, CL
   methods](https://seokhoonj.github.io/lossratio/articles/projection.md):
-- [Regime break filter: hybrid cohort + diagonal cut for
-  fit\_\*](https://seokhoonj.github.io/lossratio/articles/regime-break-filter.md):
+- [Regime change filter: hybrid cohort + diagonal cut for
+  fit\_\*](https://seokhoonj.github.io/lossratio/articles/regime-change-filter.md):
 - [Backtest: holding out the latest diagonals to validate
   projections](https://seokhoonj.github.io/lossratio/articles/backtest.md):
 - [Convergence: detecting when projected loss ratio stops

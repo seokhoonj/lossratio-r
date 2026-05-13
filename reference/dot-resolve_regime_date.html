@@ -87,7 +87,7 @@ caller-supplied by columns."><meta property="og:image" content="https://seokhoon
     <li><a class="dropdown-item" href="../articles/triangle-link-and-maturity.html">Triangle, Link and Maturity</a></li>
     <li><a class="dropdown-item" href="../articles/regime.html">Regime</a></li>
     <li><a class="dropdown-item" href="../articles/projection.html">Projection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-break-filter.html">Regime break filter</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-change-filter.html">Regime change filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/convergence.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
@@ -138,7 +138,7 @@ the break dispatched on. When <code>NULL</code> (default) or empty, the
 function always returns a scalar (the maximum break date),
 preserving the historical single-value contract. When non-empty and
 <code>regime</code> is a multi-group <code>Regime</code> whose <code>$groups</code> intersect
-<code>by</code>, returns a <code>data.table</code> with <code>[intersect(by, regime$groups)..., break_date]</code> (one row per group combo, holding <code>max(breakpoint)</code>).
+<code>by</code>, returns a <code>data.table</code> with <code>[intersect(by, regime$groups)..., break_date]</code> (one row per group combo, holding <code>max(change)</code>).
 Otherwise falls back to scalar.</p></dd>
 
 </dl></div>

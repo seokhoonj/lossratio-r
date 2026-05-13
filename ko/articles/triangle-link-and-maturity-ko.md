@@ -299,7 +299,7 @@ mat <- detect_maturity(
 
 print(mat)
 #> Key: <coverage>
-#>    coverage ata_from ata_to ata_link     mean   median       wt        cv
+#>    coverage ata_from change ata_link     mean   median       wt        cv
 #>      <char>    <num>  <num>   <char>    <num>    <num>    <num>     <num>
 #> 1:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.1053282
 #>           f       f_se        rse    sigma n_obs n_valid n_inf n_nan
@@ -377,7 +377,7 @@ tri_all <- build_triangle(
 )
 detect_maturity(tri_all, target = "loss")
 #> Key: <coverage>
-#>    coverage ata_from ata_to ata_link     mean   median       wt         cv
+#>    coverage ata_from change ata_link     mean   median       wt         cv
 #>      <char>    <num>  <num>   <char>    <num>    <num>    <num>      <num>
 #> 1:      CAN        8      9      8-9 1.079323 1.060341 1.065354 0.07131509
 #> 2:       CI       11     12    11-12 1.094403 1.070561 1.114066 0.07563394

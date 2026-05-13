@@ -1,4 +1,4 @@
-# Apply regime-break (cohort) filter to a triangle-shaped data.table
+# Apply regime-change (cohort) filter to a triangle-shaped data.table
 
 Drops rows where `coh < break_date`. Optionally restrict the filter to
 rows with `dev < dev_split` (the ED region of an SA fit); rows with
@@ -41,7 +41,7 @@ after the left-join) are kept unfiltered.
   - A Date/character vector – uses the latest (max) date.
 
   - A single-group `Regime` object – extracts the latest from
-    `$breakpoints`.
+    `$changes`.
 
   - A multi-group `Regime` object – dispatches per group on the
     intersection of `Regime$groups` and `grp`.

@@ -52,7 +52,7 @@
     <li><a class="dropdown-item" href="../articles/triangle-link-and-maturity-ko.html">Triangle, Link and Maturity</a></li>
     <li><a class="dropdown-item" href="../articles/regime-ko.html">Regime</a></li>
     <li><a class="dropdown-item" href="../articles/projection-ko.html">Projection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-break-filter-ko.html">Regime break filter</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-change-filter-ko.html">Regime change filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/convergence-ko.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
@@ -165,11 +165,11 @@ regimes from the data:</p>
 <span><span class="co">#&gt; &lt;Regime&gt;</span></span>
 <span><span class="co">#&gt;   method : e_divisive</span></span>
 <span><span class="co">#&gt;   target : lr</span></span>
-<span><span class="co">#&gt;   window (window) : dev_m 1-4</span></span>
-<span><span class="co">#&gt;   cohorts    : 33 analysed (3 dropped)</span></span>
+<span><span class="co">#&gt;   window (window) : dev_m 1-6</span></span>
+<span><span class="co">#&gt;   cohorts    : 31 analysed (5 dropped)</span></span>
 <span><span class="co">#&gt;   regimes    : 2</span></span>
-<span><span class="co">#&gt;   breakpoints: 24.07</span></span>
-<span><span class="co">#&gt;   PC1 / PC2  : 75.6% / 18.9%</span></span></code></pre></div>
+<span><span class="co">#&gt;   changes    : 24.07</span></span>
+<span><span class="co">#&gt;   PC1 / PC2  : 80.0% / 12.7%</span></span></code></pre></div>
 <p>The <code>window</code> argument controls how many development
 periods define the cohort feature vector. Only cohorts observed for at
 least <code>window</code> periods are analysed; cohorts with shorter
@@ -186,14 +186,14 @@ window that retains enough cohorts.</p>
 <span><span class="co">#&gt; Cohort regime detection summary</span></span>
 <span><span class="co">#&gt;   method    : e_divisive</span></span>
 <span><span class="co">#&gt;   target    : lr</span></span>
-<span><span class="co">#&gt;   window    : dev_m 1-4</span></span>
-<span><span class="co">#&gt;   cohorts   : 33 analysed (3 dropped)</span></span>
+<span><span class="co">#&gt;   window    : dev_m 1-6</span></span>
+<span><span class="co">#&gt;   cohorts   : 31 analysed (5 dropped)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Regimes (2):</span></span>
 <span><span class="co">#&gt;   1: 23.01-24.06 (18 cohorts)</span></span>
-<span><span class="co">#&gt;   2: 24.07-25.09 (15 cohorts)</span></span>
+<span><span class="co">#&gt;   2: 24.07-25.07 (13 cohorts)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Breakpoints: 24.07</span></span>
+<span><span class="co">#&gt; Changes: 24.07</span></span>
 <span></span>
 <span><span class="va">r</span><span class="op">$</span><span class="va">labels</span></span>
 <span><span class="co">#&gt;     coverage     cohort      regime regime_id</span></span>
@@ -216,21 +216,19 @@ window that retains enough cohorts.</p>
 <span><span class="co">#&gt; 16:      SUR 2024-04-01 23.01-24.06         1</span></span>
 <span><span class="co">#&gt; 17:      SUR 2024-05-01 23.01-24.06         1</span></span>
 <span><span class="co">#&gt; 18:      SUR 2024-06-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 19:      SUR 2024-07-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 20:      SUR 2024-08-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 21:      SUR 2024-09-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 22:      SUR 2024-10-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 23:      SUR 2024-11-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 24:      SUR 2024-12-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 25:      SUR 2025-01-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 26:      SUR 2025-02-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 27:      SUR 2025-03-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 28:      SUR 2025-04-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 29:      SUR 2025-05-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 30:      SUR 2025-06-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 31:      SUR 2025-07-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 32:      SUR 2025-08-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 33:      SUR 2025-09-01 24.07-25.09         2</span></span>
+<span><span class="co">#&gt; 19:      SUR 2024-07-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 20:      SUR 2024-08-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 21:      SUR 2024-09-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 22:      SUR 2024-10-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 23:      SUR 2024-11-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 24:      SUR 2024-12-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 25:      SUR 2025-01-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 26:      SUR 2025-02-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 27:      SUR 2025-03-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 28:      SUR 2025-04-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 29:      SUR 2025-05-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 30:      SUR 2025-06-01 24.07-25.07         2</span></span>
+<span><span class="co">#&gt; 31:      SUR 2025-07-01 24.07-25.07         2</span></span>
 <span><span class="co">#&gt;     coverage     cohort      regime regime_id</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;fctr&gt;     &lt;int&gt;</span></span></code></pre></div>
 </div>
@@ -316,7 +314,7 @@ over-sensitive on</td>
 <code>"premium_ed"</code> <em>(alias)</em>
 </td>
 <td>Equivalent to <code>premium_ata</code> after PCA standardization —
-same breakpoints.</td>
+same changes.</td>
 </tr>
 <tr class="even">
 <td>Loss <em>level</em> shift (claim handling, coverage)</td>
@@ -349,16 +347,16 @@ positives — read every result alongside a known timeline of underwriting
 <code>"loss_ed"</code> are diagnostic targets derived inline (not stored
 on the <code>Triangle</code>). They map directly to the CL
 <code>f</code>-factor / ED <code>g</code>-factor used during fitting, so
-a break detected here corresponds to a violation of the model’s
+a change detected here corresponds to a violation of the model’s
 stationarity assumption. Use them when you want to attribute a regime
 change to a specific structural mechanism.</li>
 </ul>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Try several targets and compare the breakpoints they surface</span></span>
+<code class="sourceCode R"><span><span class="co"># Try several targets and compare the changes they surface</span></span>
 <span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, target <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, target <span class="op">=</span> <span class="st">"loss_ata"</span><span class="op">)</span></span></code></pre></div>
-<p>The breakpoints across targets are usually similar for strong, real
+<p>The changes across targets are usually similar for strong, real
 regime shifts and diverge when the signal is weak or driven by book-size
 growth — both useful diagnostics.</p>
 </div>
@@ -372,16 +370,16 @@ given significance level. Slightly slower than the alternatives but
 requires no a priori choice of <code>n_regimes</code>.</p></li>
 <li><p><strong><code>"pelt"</code></strong> — fast univariate
 change-point detection applied to the first principal component. May
-return multiple breakpoints and is useful when the trajectory variation
-is dominated by one axis (check <code>PC1 %</code> in the
+return multiple changes and is useful when the trajectory variation is
+dominated by one axis (check <code>PC1 %</code> in the
 <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> output — if &gt; 70%, PELT is reliable; if much
 lower, prefer <code>"e_divisive"</code>).</p></li>
 <li><p><strong><code>"hclust"</code></strong> — Ward hierarchical
 clustering on the scaled feature matrix, cut to <code>n_regimes</code>
 clusters (default <code>2</code>). Ignores chronological order and is
 best used as a sanity check: if the chronological methods locate a
-breakpoint at time <code>t</code> and <code>hclust</code> produces the
-same two groups (all pre-<code>t</code> in one cluster, all
+change at time <code>t</code> and <code>hclust</code> produces the same
+two groups (all pre-<code>t</code> in one cluster, all
 post-<code>t</code> in the other), the shift is structural rather than
 an artefact of the method.</p></li>
 </ul>
@@ -401,15 +399,15 @@ two-vs-three regime hypotheses — pass <code>n_regimes</code>:</p>
 <span><span class="co">#&gt; Cohort regime detection summary</span></span>
 <span><span class="co">#&gt;   method    : e_divisive</span></span>
 <span><span class="co">#&gt;   target    : lr</span></span>
-<span><span class="co">#&gt;   window    : dev_m 1-4</span></span>
-<span><span class="co">#&gt;   cohorts   : 33 analysed (3 dropped)</span></span>
+<span><span class="co">#&gt;   window    : dev_m 1-6</span></span>
+<span><span class="co">#&gt;   cohorts   : 31 analysed (5 dropped)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Regimes (3):</span></span>
-<span><span class="co">#&gt;   1: 23.01-24.06 (18 cohorts)</span></span>
-<span><span class="co">#&gt;   2: 24.07-25.06 (12 cohorts)</span></span>
-<span><span class="co">#&gt;   3: 25.07-25.09 (3 cohorts)</span></span>
+<span><span class="co">#&gt;   1: 23.01-23.08 (8 cohorts)</span></span>
+<span><span class="co">#&gt;   2: 23.09-24.06 (10 cohorts)</span></span>
+<span><span class="co">#&gt;   3: 24.07-25.07 (13 cohorts)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Breakpoints: 24.07, 25.07</span></span></code></pre></div>
+<span><span class="co">#&gt; Changes: 23.09, 24.07</span></span></code></pre></div>
 <p>For <code>"e_divisive"</code> and <code>"pelt"</code>,
 <code>n_regimes</code> is a request (the algorithm will return up to
 that many regimes if supported by the data). For <code>"hclust"</code>,
@@ -431,16 +429,16 @@ gathered into a single <code>Regime</code> object.</p>
 <span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">r_all</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_all</span>, by <span class="op">=</span> <span class="st">"coverage"</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
-<span><span class="va">r_all</span><span class="op">$</span><span class="va">breakpoints</span></span>
-<span><span class="co">#&gt;    coverage breakpoint regime_id pre_value post_value magnitude</span></span>
+<span><span class="va">r_all</span><span class="op">$</span><span class="va">changes</span></span>
+<span><span class="co">#&gt;    coverage     change regime_id pre_value post_value magnitude</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt;     &lt;int&gt;     &lt;num&gt;      &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      SUR 2024-07-01         2 0.9065895  0.5479919 0.3585976</span></span></code></pre></div>
-<p>In multi-group mode <code>r_all$breakpoints</code> is a
-<code>data.table</code> with the group column plus a
-<code>breakpoint</code> Date column; <code>r_all$labels</code> likewise
-gains the group column; <code>r_all$n_regimes</code> is a named integer
-vector keyed by group value. The <code>r_all$multi_group</code> flag
-distinguishes the layout from the single-group scalar form.</p>
+<span><span class="co">#&gt; 1:      SUR 2024-07-01         2  1.041267  0.5968553 0.4444118</span></span></code></pre></div>
+<p>In multi-group mode <code>r_all$changes</code> is a
+<code>data.table</code> with the group column plus a <code>change</code>
+Date column; <code>r_all$labels</code> likewise gains the group column;
+<code>r_all$n_regimes</code> is a named integer vector keyed by group
+value. The <code>r_all$multi_group</code> flag distinguishes the layout
+from the single-group scalar form.</p>
 <p>If a group has too few cohorts for the chosen <code>window</code>,
 that group is skipped with a warning (others continue). If <em>all</em>
 groups fail, <code><a href="../reference/detect_regime.html">detect_regime()</a></code> errors out.</p>
@@ -458,7 +456,7 @@ useful in two ways:</p>
 regimes are detected, fitting <code><a href="../reference/fit_lr.html">fit_lr()</a></code> separately on each
 regime subset often yields sharper stable-CLR estimates than a pooled
 fit.</p></li>
-<li><p><strong>Rate-change documentation</strong>: a detected breakpoint
+<li><p><strong>Rate-change documentation</strong>: a detected change
 provides a data-driven anchor for the preprocessing recommendations
 outlined in the <em>Limitations</em> section of the companion paper
 (premium on-leveling or exposure decomposition

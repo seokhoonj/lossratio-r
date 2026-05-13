@@ -8,14 +8,14 @@ period and tested for structural shifts in the multivariate
 sequence.
 Multi-group Triangle inputs are supported: detection runs
 independently per group, and results are combined into a single
-Regime object whose $breakpoints, $labels, etc. carry the
+Regime object whose $changes, $labels, etc. carry the
 group column. Single-group input retains the original scalar /
 Date-vector / matrix layout for backward compatibility.
 Three detection strategies are supported:
 "e_divisive"
 Multivariate non-parametric divisive change-point
 detection via ecp::e.divisive(). The number of regimes is
-determined by the data; only significant breakpoints at
+determined by the data; only significant changes at
 sig_level are retained. Preferred when the number of regimes
 is not known in advance.
 
@@ -23,7 +23,7 @@ is not known in advance.
 Univariate mean change-point detection via
 changepoint::cpt.mean() with the PELT algorithm applied to the
 first principal component of the cohort feature matrix. Fast
-and may return multiple breakpoints.
+and may return multiple changes.
 
 "hclust"
 Ward hierarchical clustering on the scaled
@@ -43,14 +43,14 @@ period and tested for structural shifts in the multivariate
 sequence.
 Multi-group Triangle inputs are supported: detection runs
 independently per group, and results are combined into a single
-Regime object whose $breakpoints, $labels, etc. carry the
+Regime object whose $changes, $labels, etc. carry the
 group column. Single-group input retains the original scalar /
 Date-vector / matrix layout for backward compatibility.
 Three detection strategies are supported:
 "e_divisive"
 Multivariate non-parametric divisive change-point
 detection via ecp::e.divisive(). The number of regimes is
-determined by the data; only significant breakpoints at
+determined by the data; only significant changes at
 sig_level are retained. Preferred when the number of regimes
 is not known in advance.
 
@@ -58,7 +58,7 @@ is not known in advance.
 Univariate mean change-point detection via
 changepoint::cpt.mean() with the PELT algorithm applied to the
 first principal component of the cohort feature matrix. Fast
-and may return multiple breakpoints.
+and may return multiple changes.
 
 "hclust"
 Ward hierarchical clustering on the scaled
@@ -99,7 +99,7 @@ strictly chronological.
     <li><a class="dropdown-item" href="../articles/triangle-link-and-maturity-ko.html">Triangle, Link and Maturity</a></li>
     <li><a class="dropdown-item" href="../articles/regime-ko.html">Regime</a></li>
     <li><a class="dropdown-item" href="../articles/projection-ko.html">Projection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-break-filter-ko.html">Regime break filter</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-change-filter-ko.html">Regime change filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/convergence-ko.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
@@ -136,13 +136,13 @@ period and tested for structural shifts in the multivariate
 sequence.</p>
 <p>Multi-group <code>Triangle</code> inputs are supported: detection runs
 independently per group, and results are combined into a single
-<code>Regime</code> object whose <code>$breakpoints</code>, <code>$labels</code>, etc. carry the
+<code>Regime</code> object whose <code>$changes</code>, <code>$labels</code>, etc. carry the
 group column. Single-group input retains the original scalar /
 Date-vector / matrix layout for backward compatibility.</p>
 <p>Three detection strategies are supported:</p><dl><dt><code>"e_divisive"</code></dt>
 <dd><p>Multivariate non-parametric divisive change-point
 detection via <code><a href="https://rdrr.io/pkg/ecp/man/e.divisive.html" class="external-link">ecp::e.divisive()</a></code>. The number of regimes is
-determined by the data; only significant breakpoints at
+determined by the data; only significant changes at
 <code>sig_level</code> are retained. Preferred when the number of regimes
 is not known in advance.</p></dd>
 
@@ -150,7 +150,7 @@ is not known in advance.</p></dd>
 <dd><p>Univariate mean change-point detection via
 <code><a href="https://rdrr.io/pkg/changepoint/man/cpt.mean.html" class="external-link">changepoint::cpt.mean()</a></code> with the PELT algorithm applied to the
 first principal component of the cohort feature matrix. Fast
-and may return multiple breakpoints.</p></dd>
+and may return multiple changes.</p></dd>
 
 <dt><code>"hclust"</code></dt>
 <dd><p>Ward hierarchical clustering on the scaled
@@ -218,7 +218,7 @@ exposure-anchored (ED model's $g_k$).</p></dd>
 <dd><p>Alias of <code>"premium_ata"</code> — the two differ
 only by a constant <code>(premium_ata - 1)</code>, and the PCA
 standardization in detection removes that shift, so they yield
-identical breakpoints. Provided for API symmetry with the
+identical regime changes. Provided for API symmetry with the
 <code>loss_ata</code> / <code>loss_ed</code> pair.</p></dd>
 
 
@@ -288,7 +288,7 @@ the requested value) for <code>"hclust"</code>, where the default is <code>2</co
 <dt><code>window</code></dt>
 <dd><p>Trajectory window per combo. Scalar integer when a
 single combo was analysed; integer vector (one per surviving
-combo, in the order of <code>$labels</code> / <code>$breakpoints</code> group rows)
+combo, in the order of <code>$labels</code> / <code>$changes</code> group rows)
 otherwise.</p></dd>
 
 <dt><code>window_mode</code></dt>
@@ -303,14 +303,14 @@ otherwise.</p></dd>
 <code>[by..., cohort, regime, regime_id]</code>. Group columns are prepended
 when <code>by</code> resolves to a non-empty vector.</p></dd>
 
-<dt><code>breakpoints</code></dt>
-<dd><p><code>data.table</code> of detected breakpoints with
-columns <code>[by..., breakpoint, regime_id, pre_value, post_value, magnitude]</code>. <code>regime_id</code> = id of the regime that STARTS at this
-break (the pre-break regime is <code>regime_id - 1</code>); matches
+<dt><code>changes</code></dt>
+<dd><p><code>data.table</code> of detected regime changes with
+columns <code>[by..., change, regime_id, pre_value, post_value, magnitude]</code>. <code>regime_id</code> = id of the regime that STARTS at this
+change (the pre-change regime is <code>regime_id - 1</code>); matches
 <code>$labels$regime_id</code>. <code>pre_value</code> / <code>post_value</code> are the mean
 <code>target</code> over the cohort × dev trajectory windows in the pre- /
-post-break regimes; <code>magnitude = |post_value - pre_value|</code>.
-Empty (zero rows) when no break is detected.</p></dd>
+post-change regimes; <code>magnitude = |post_value - pre_value|</code>.
+Empty (zero rows) when no change is detected.</p></dd>
 
 <dt><code>n_regimes</code></dt>
 <dd><p>Number of regimes detected. Scalar integer for
@@ -374,7 +374,7 @@ multiple group combos.</p></dd>
 <span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">r_all</span> <span class="op">&lt;-</span> <span class="fu">detect_regime</span><span class="op">(</span><span class="va">tri_all</span>, by <span class="op">=</span> <span class="st">"coverage"</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">r_all</span><span class="op">$</span><span class="va">breakpoints</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">r_all</span><span class="op">$</span><span class="va">changes</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

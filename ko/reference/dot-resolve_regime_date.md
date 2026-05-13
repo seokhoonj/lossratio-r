@@ -28,7 +28,7 @@ Date scalar or a per-group `data.table` keyed by the caller-supplied
   single-value contract. When non-empty and `regime` is a multi-group
   `Regime` whose `$groups` intersect `by`, returns a `data.table` with
   `[intersect(by, regime$groups)..., break_date]` (one row per group
-  combo, holding `max(breakpoint)`). Otherwise falls back to scalar.
+  combo, holding `max(change)`). Otherwise falls back to scalar.
 
 ## Value
 

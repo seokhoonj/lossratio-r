@@ -46,7 +46,7 @@ The four accepted input types are:
 
 - arg:
 
-  The regime-break input (NULL / Regime / `"auto"` / function).
+  The regime-change input (NULL / Regime / `"auto"` / function).
 
 - tri:
 

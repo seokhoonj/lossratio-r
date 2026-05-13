@@ -133,7 +133,7 @@ cl_mat <- fit_cl(
 
 cl_mat$maturity
 #> Key: <coverage>
-#>    coverage ata_from ata_to ata_link     mean  median       wt         cv
+#>    coverage ata_from change ata_link     mean  median       wt         cv
 #>      <char>    <num>  <num>   <char>    <num>   <num>    <num>      <num>
 #> 1:      SUR        4      5      4-5 1.324091 1.33133 1.338896 0.06783671
 #>           f       f_se        rse    sigma n_obs n_valid n_inf n_nan

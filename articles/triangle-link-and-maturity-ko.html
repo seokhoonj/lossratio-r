@@ -102,7 +102,7 @@
     <li><a class="dropdown-item" href="../articles/triangle-link-and-maturity.html">Triangle, Link and Maturity</a></li>
     <li><a class="dropdown-item" href="../articles/regime.html">Regime</a></li>
     <li><a class="dropdown-item" href="../articles/projection.html">Projection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-break-filter.html">Regime break filter</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-change-filter.html">Regime change filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/convergence.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
@@ -381,7 +381,7 @@ factor) 가 chain ladder 추정에 신뢰할 만큼 안정화되는 경과 기�
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">mat</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
-<span><span class="co">#&gt;    coverage ata_from ata_to ata_link     mean   median       wt        cv</span></span>
+<span><span class="co">#&gt;    coverage ata_from change ata_link     mean   median       wt        cv</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;     &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.1053282</span></span>
 <span><span class="co">#&gt;           f       f_se        rse    sigma n_obs n_valid n_inf n_nan</span></span>
@@ -455,7 +455,7 @@ dev) 에서 CL (이후 dev) 로 전환되는 dev 를 결정한다.</p>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri_all</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
-<span><span class="co">#&gt;    coverage ata_from ata_to ata_link     mean   median       wt         cv</span></span>
+<span><span class="co">#&gt;    coverage ata_from change ata_link     mean   median       wt         cv</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;      &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:      CAN        8      9      8-9 1.079323 1.060341 1.065354 0.07131509</span></span>
 <span><span class="co">#&gt; 2:       CI       11     12    11-12 1.094403 1.070561 1.114066 0.07563394</span></span>

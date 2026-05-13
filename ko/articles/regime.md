@@ -69,11 +69,11 @@ r
 #> <Regime>
 #>   method : e_divisive
 #>   target : lr
-#>   window (window) : dev_m 1-4
-#>   cohorts    : 33 analysed (3 dropped)
+#>   window (window) : dev_m 1-6
+#>   cohorts    : 31 analysed (5 dropped)
 #>   regimes    : 2
-#>   breakpoints: 24.07
-#>   PC1 / PC2  : 75.6% / 18.9%
+#>   changes    : 24.07
+#>   PC1 / PC2  : 80.0% / 12.7%
 ```
 
 The `window` argument controls how many development periods define the
@@ -91,14 +91,14 @@ summary(r)
 #> Cohort regime detection summary
 #>   method    : e_divisive
 #>   target    : lr
-#>   window    : dev_m 1-4
-#>   cohorts   : 33 analysed (3 dropped)
+#>   window    : dev_m 1-6
+#>   cohorts   : 31 analysed (5 dropped)
 #> 
 #> Regimes (2):
 #>   1: 23.01-24.06 (18 cohorts)
-#>   2: 24.07-25.09 (15 cohorts)
+#>   2: 24.07-25.07 (13 cohorts)
 #> 
-#> Breakpoints: 24.07
+#> Changes: 24.07
 
 r$labels
 #>     coverage     cohort      regime regime_id
@@ -121,21 +121,19 @@ r$labels
 #> 16:      SUR 2024-04-01 23.01-24.06         1
 #> 17:      SUR 2024-05-01 23.01-24.06         1
 #> 18:      SUR 2024-06-01 23.01-24.06         1
-#> 19:      SUR 2024-07-01 24.07-25.09         2
-#> 20:      SUR 2024-08-01 24.07-25.09         2
-#> 21:      SUR 2024-09-01 24.07-25.09         2
-#> 22:      SUR 2024-10-01 24.07-25.09         2
-#> 23:      SUR 2024-11-01 24.07-25.09         2
-#> 24:      SUR 2024-12-01 24.07-25.09         2
-#> 25:      SUR 2025-01-01 24.07-25.09         2
-#> 26:      SUR 2025-02-01 24.07-25.09         2
-#> 27:      SUR 2025-03-01 24.07-25.09         2
-#> 28:      SUR 2025-04-01 24.07-25.09         2
-#> 29:      SUR 2025-05-01 24.07-25.09         2
-#> 30:      SUR 2025-06-01 24.07-25.09         2
-#> 31:      SUR 2025-07-01 24.07-25.09         2
-#> 32:      SUR 2025-08-01 24.07-25.09         2
-#> 33:      SUR 2025-09-01 24.07-25.09         2
+#> 19:      SUR 2024-07-01 24.07-25.07         2
+#> 20:      SUR 2024-08-01 24.07-25.07         2
+#> 21:      SUR 2024-09-01 24.07-25.07         2
+#> 22:      SUR 2024-10-01 24.07-25.07         2
+#> 23:      SUR 2024-11-01 24.07-25.07         2
+#> 24:      SUR 2024-12-01 24.07-25.07         2
+#> 25:      SUR 2025-01-01 24.07-25.07         2
+#> 26:      SUR 2025-02-01 24.07-25.07         2
+#> 27:      SUR 2025-03-01 24.07-25.07         2
+#> 28:      SUR 2025-04-01 24.07-25.07         2
+#> 29:      SUR 2025-05-01 24.07-25.07         2
+#> 30:      SUR 2025-06-01 24.07-25.07         2
+#> 31:      SUR 2025-07-01 24.07-25.07         2
 #>     coverage     cohort      regime regime_id
 #>       <char>     <Date>      <fctr>     <int>
 ```
@@ -176,7 +174,7 @@ Order:
 |  |  | low-CV factors. |
 | Premium recognition *speed* change | `"premium_ata"` *(diagnostic)* | Same caveats as `"loss_ata"`. |
 | Loss *intensity* per unit exposure (ED `g`) | `"loss_ed"` *(diagnostic)* | Cross-normalised by premium; harder to interpret in isolation. |
-| Same as `premium_ata` (API symmetry) | `"premium_ed"` *(alias)* | Equivalent to `premium_ata` after PCA standardization — same breakpoints. |
+| Same as `premium_ata` (API symmetry) | `"premium_ed"` *(alias)* | Equivalent to `premium_ata` after PCA standardization — same changes. |
 | Loss *level* shift (claim handling, coverage) | `"loss"` | Raw cumulative — book-size growth dominates; false positives common. |
 | Premium *level* shift (rate, channel) | `"premium"` | Same caveat as `"loss"`. |
 
@@ -192,22 +190,22 @@ Notes:
   alongside a known timeline of underwriting / claims-handling events.
 - `"loss_ata"`, `"premium_ata"`, `"loss_ed"` are diagnostic targets
   derived inline (not stored on the `Triangle`). They map directly to
-  the CL `f`-factor / ED `g`-factor used during fitting, so a break
+  the CL `f`-factor / ED `g`-factor used during fitting, so a change
   detected here corresponds to a violation of the model’s stationarity
   assumption. Use them when you want to attribute a regime change to a
   specific structural mechanism.
 
 ``` r
 
-# Try several targets and compare the breakpoints they surface
+# Try several targets and compare the changes they surface
 detect_regime(tri_sur, target = "lr")
 detect_regime(tri_sur, target = "loss")
 detect_regime(tri_sur, target = "loss_ata")
 ```
 
-The breakpoints across targets are usually similar for strong, real
-regime shifts and diverge when the signal is weak or driven by book-size
-growth — both useful diagnostics.
+The changes across targets are usually similar for strong, real regime
+shifts and diverge when the signal is weak or driven by book-size growth
+— both useful diagnostics.
 
 ## Choice of method
 
@@ -217,15 +215,15 @@ growth — both useful diagnostics.
   of `n_regimes`.
 
 - **`"pelt"`** — fast univariate change-point detection applied to the
-  first principal component. May return multiple breakpoints and is
-  useful when the trajectory variation is dominated by one axis (check
-  `PC1 %` in the [`print()`](https://rdrr.io/r/base/print.html) output —
-  if \> 70%, PELT is reliable; if much lower, prefer `"e_divisive"`).
+  first principal component. May return multiple changes and is useful
+  when the trajectory variation is dominated by one axis (check `PC1 %`
+  in the [`print()`](https://rdrr.io/r/base/print.html) output — if \>
+  70%, PELT is reliable; if much lower, prefer `"e_divisive"`).
 
 - **`"hclust"`** — Ward hierarchical clustering on the scaled feature
   matrix, cut to `n_regimes` clusters (default `2`). Ignores
   chronological order and is best used as a sanity check: if the
-  chronological methods locate a breakpoint at time `t` and `hclust`
+  chronological methods locate a change at time `t` and `hclust`
   produces the same two groups (all pre-`t` in one cluster, all post-`t`
   in the other), the shift is structural rather than an artefact of the
   method.
@@ -247,15 +245,15 @@ summary(r2)
 #> Cohort regime detection summary
 #>   method    : e_divisive
 #>   target    : lr
-#>   window    : dev_m 1-4
-#>   cohorts   : 33 analysed (3 dropped)
+#>   window    : dev_m 1-6
+#>   cohorts   : 31 analysed (5 dropped)
 #> 
 #> Regimes (3):
-#>   1: 23.01-24.06 (18 cohorts)
-#>   2: 24.07-25.06 (12 cohorts)
-#>   3: 25.07-25.09 (3 cohorts)
+#>   1: 23.01-23.08 (8 cohorts)
+#>   2: 23.09-24.06 (10 cohorts)
+#>   3: 24.07-25.07 (13 cohorts)
 #> 
-#> Breakpoints: 24.07, 25.07
+#> Changes: 23.09, 24.07
 ```
 
 For `"e_divisive"` and `"pelt"`, `n_regimes` is a request (the algorithm
@@ -279,17 +277,17 @@ tri_all <- build_triangle(
   premium  = "premium_incr"
 )
 r_all   <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
-r_all$breakpoints
-#>    coverage breakpoint regime_id pre_value post_value magnitude
+r_all$changes
+#>    coverage     change regime_id pre_value post_value magnitude
 #>      <char>     <Date>     <int>     <num>      <num>     <num>
-#> 1:      SUR 2024-07-01         2 0.9065895  0.5479919 0.3585976
+#> 1:      SUR 2024-07-01         2  1.041267  0.5968553 0.4444118
 ```
 
-In multi-group mode `r_all$breakpoints` is a `data.table` with the group
-column plus a `breakpoint` Date column; `r_all$labels` likewise gains
-the group column; `r_all$n_regimes` is a named integer vector keyed by
-group value. The `r_all$multi_group` flag distinguishes the layout from
-the single-group scalar form.
+In multi-group mode `r_all$changes` is a `data.table` with the group
+column plus a `change` Date column; `r_all$labels` likewise gains the
+group column; `r_all$n_regimes` is a named integer vector keyed by group
+value. The `r_all$multi_group` flag distinguishes the layout from the
+single-group scalar form.
 
 If a group has too few cohorts for the chosen `window`, that group is
 skipped with a warning (others continue). If *all* groups fail,
@@ -312,7 +310,7 @@ framework. Its output is useful in two ways:
     separately on each regime subset often yields sharper stable-CLR
     estimates than a pooled fit.
 
-2.  **Rate-change documentation**: a detected breakpoint provides a
+2.  **Rate-change documentation**: a detected change provides a
     data-driven anchor for the preprocessing recommendations outlined in
     the *Limitations* section of the companion paper (premium
     on-leveling or exposure decomposition `V = C^P / r`).

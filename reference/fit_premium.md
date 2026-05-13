@@ -7,8 +7,9 @@ chain ladder estimator. Two variance recursions are supported:
 
   Additive recursion. Empirically more robust on long-projection premium
   triangles – the multiplicative scaling of the classical CL recursion
-  can blow up under cohort-wise heterogeneity (regime breaks in premium,
-  channel changes, amendments). See `dev/premium_projection.qmd`.
+  can blow up under cohort-wise heterogeneity (regime changes in
+  premium, channel changes, amendments). See
+  `dev/premium_projection.qmd`.
 
 - `"cl"`:
 
@@ -78,8 +79,8 @@ fit_premium(
   :   A user-supplied `function(tri) -> Regime` for deferred
       custom-config detection.
 
-  Pre-break cohorts (cohorts before the resolved `Regime`'s breakpoint)
-  are excluded from premium factor estimation.
+  Pre-change cohorts (cohorts before the resolved `Regime`'s change
+  date) are excluded from premium factor estimation.
 
 - sigma_method:
 

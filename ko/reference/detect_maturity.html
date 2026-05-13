@@ -77,7 +77,7 @@ want maturity of premium development or another cumulative metric.'><meta proper
     <li><a class="dropdown-item" href="../articles/triangle-link-and-maturity-ko.html">Triangle, Link and Maturity</a></li>
     <li><a class="dropdown-item" href="../articles/regime-ko.html">Regime</a></li>
     <li><a class="dropdown-item" href="../articles/projection-ko.html">Projection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-break-filter-ko.html">Regime break filter</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-change-filter-ko.html">Regime change filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/convergence-ko.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
@@ -213,8 +213,12 @@ maturity criteria. Default is <code>2L</code>.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>data.table</code> with class <code>"Maturity"</code> containing one row
-per group. If no mature link is found, all values for that group are
-<code>NA</code>.</p>
+per group. Columns include <code>ata_from</code>, <code>change</code> (the maturity
+point, i.e. the <code>to</code>-index of the first mature ata link),
+<code>ata_link</code>, and the diagnostic statistics (<code>mean</code>, <code>median</code>,
+<code>wt</code>, <code>cv</code>, <code>f</code>, <code>f_se</code>, <code>rse</code>, <code>sigma</code>, <code>n_obs</code>, <code>n_valid</code>,
+<code>n_inf</code>, <code>n_nan</code>, <code>valid_ratio</code>). If no mature link is found,
+all values for that group are <code>NA</code>.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

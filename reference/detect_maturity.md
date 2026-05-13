@@ -111,5 +111,9 @@ detect_maturity(
 
 ## Value
 
-A `data.table` with class `"Maturity"` containing one row per group. If
-no mature link is found, all values for that group are `NA`.
+A `data.table` with class `"Maturity"` containing one row per group.
+Columns include `ata_from`, `change` (the maturity point, i.e. the
+`to`-index of the first mature ata link), `ata_link`, and the diagnostic
+statistics (`mean`, `median`, `wt`, `cv`, `f`, `f_se`, `rse`, `sigma`,
+`n_obs`, `n_valid`, `n_inf`, `n_nan`, `valid_ratio`). If no mature link
+is found, all values for that group are `NA`.

@@ -9,7 +9,7 @@ tested for structural shifts in the multivariate sequence.
 
 Multi-group `Triangle` inputs are supported: detection runs
 independently per group, and results are combined into a single `Regime`
-object whose `$breakpoints`, `$labels`, etc. carry the group column.
+object whose `$changes`, `$labels`, etc. carry the group column.
 Single-group input retains the original scalar / Date-vector / matrix
 layout for backward compatibility.
 
@@ -20,7 +20,7 @@ Three detection strategies are supported:
   Multivariate non-parametric divisive change-point detection via
   [`ecp::e.divisive()`](https://rdrr.io/pkg/ecp/man/e.divisive.html).
   The number of regimes is determined by the data; only significant
-  breakpoints at `sig_level` are retained. Preferred when the number of
+  changes at `sig_level` are retained. Preferred when the number of
   regimes is not known in advance.
 
 - `"pelt"`:
@@ -28,7 +28,7 @@ Three detection strategies are supported:
   Univariate mean change-point detection via
   [`changepoint::cpt.mean()`](https://rdrr.io/pkg/changepoint/man/cpt.mean.html)
   with the PELT algorithm applied to the first principal component of
-  the cohort feature matrix. Fast and may return multiple breakpoints.
+  the cohort feature matrix. Fast and may return multiple changes.
 
 - `"hclust"`:
 
@@ -96,8 +96,8 @@ print(x, ...)
 
   :   Alias of `"premium_ata"` — the two differ only by a constant
       `(premium_ata - 1)`, and the PCA standardization in detection
-      removes that shift, so they yield identical breakpoints. Provided
-      for API symmetry with the `loss_ata` / `loss_ed` pair.
+      removes that shift, so they yield identical regime changes.
+      Provided for API symmetry with the `loss_ata` / `loss_ed` pair.
 
   Derived targets drop the first dev row per cohort (no predecessor),
   then re-index `dev` so detection sees a contiguous sequence. See the
@@ -171,7 +171,7 @@ An object of class `"Regime"`. For single-group input:
 
   Trajectory window per combo. Scalar integer when a single combo was
   analysed; integer vector (one per surviving combo, in the order of
-  `$labels` / `$breakpoints` group rows) otherwise.
+  `$labels` / `$changes` group rows) otherwise.
 
 - `window_mode`:
 
@@ -189,16 +189,16 @@ An object of class `"Regime"`. For single-group input:
   `[by..., cohort, regime, regime_id]`. Group columns are prepended when
   `by` resolves to a non-empty vector.
 
-- `breakpoints`:
+- `changes`:
 
-  `data.table` of detected breakpoints with columns
-  `[by..., breakpoint, regime_id, pre_value, post_value, magnitude]`.
-  `regime_id` = id of the regime that STARTS at this break (the
-  pre-break regime is `regime_id - 1`); matches `$labels$regime_id`.
+  `data.table` of detected regime changes with columns
+  `[by..., change, regime_id, pre_value, post_value, magnitude]`.
+  `regime_id` = id of the regime that STARTS at this change (the
+  pre-change regime is `regime_id - 1`); matches `$labels$regime_id`.
   `pre_value` / `post_value` are the mean `target` over the cohort × dev
-  trajectory windows in the pre- / post-break regimes;
+  trajectory windows in the pre- / post-change regimes;
   `magnitude = |post_value - pre_value|`. Empty (zero rows) when no
-  break is detected.
+  change is detected.
 
 - `n_regimes`:
 
@@ -263,6 +263,6 @@ tri_all <- build_triangle(
   premium  = "premium_incr"
 )
 r_all <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
-print(r_all$breakpoints)
+print(r_all$changes)
 } # }
 ```

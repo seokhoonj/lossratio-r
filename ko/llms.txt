@@ -126,7 +126,7 @@ plot_triangle(lr, view = "usage")                          # 맨 위 이미지�
 ``` r
 
 vignette("getting-started",        package = "lossratio")
-vignette("regime-break-filter",    package = "lossratio")
+vignette("regime-change-filter",   package = "lossratio")
 vignette("backtest",               package = "lossratio")
 vignette("triangle-link-and-maturity", package = "lossratio")
 ?fit_lr
@@ -240,7 +240,7 @@ Triangle 의 어떤 셀을 추정에 쓸지 결정. `detect_maturity` 는 dev �
   [`print(`*`<summary.Regime>`*`)`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
   : Detect structural regime shifts across underwriting cohorts
 - [`regime_at()`](https://seokhoonj.github.io/lossratio/ko/reference/regime_at.md)
-  : Construct a Regime object from manually specified breakpoints
+  : Construct a Regime object from manually specified regime changes
 
 ## 예측 진단
 
@@ -475,8 +475,8 @@ Triangle 의 최근 대각선을 보류한 뒤 재적합·예측을 보류된 �
   탐지](https://seokhoonj.github.io/lossratio/ko/articles/regime-ko.md):
 - [Projection: 손해율 예측 (SA, ED,
   CL)](https://seokhoonj.github.io/lossratio/ko/articles/projection-ko.md):
-- [Regime break filter: 탐지된 regime 을 fit\_\* 의
-  필터로](https://seokhoonj.github.io/lossratio/ko/articles/regime-break-filter-ko.md):
+- [Regime change filter: 탐지된 regime 을 fit\_\* 의
+  필터로](https://seokhoonj.github.io/lossratio/ko/articles/regime-change-filter-ko.md):
 - [Backtest: hold-out 대각선을 이용한 추정
   검증](https://seokhoonj.github.io/lossratio/ko/articles/backtest-ko.md):
 - [Convergence: 예측 손해율 수렴 시점

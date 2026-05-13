@@ -331,7 +331,7 @@ factors are stable); `detect_regime` works along the cohort axis
   [`print(`*`<summary.Regime>`*`)`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
   : Detect structural regime shifts across underwriting cohorts
 - [`regime_at()`](https://seokhoonj.github.io/lossratio/reference/regime_at.md)
-  : Construct a Regime object from manually specified breakpoints
+  : Construct a Regime object from manually specified regime changes
 
 ## Projection diagnostic
 
@@ -569,8 +569,8 @@ print / summary / longer methods registered on package classes.
   cohorts](https://seokhoonj.github.io/lossratio/articles/regime.md):
 - [Projection: SA, ED, CL
   methods](https://seokhoonj.github.io/lossratio/articles/projection.md):
-- [Regime break filter: hybrid cohort + diagonal cut for
-  fit\_\*](https://seokhoonj.github.io/lossratio/articles/regime-break-filter.md):
+- [Regime change filter: hybrid cohort + diagonal cut for
+  fit\_\*](https://seokhoonj.github.io/lossratio/articles/regime-change-filter.md):
 - [Backtest: holding out the latest diagonals to validate
   projections](https://seokhoonj.github.io/lossratio/articles/backtest.md):
 - [Convergence: detecting when projected loss ratio stops

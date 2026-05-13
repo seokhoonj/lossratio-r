@@ -100,7 +100,7 @@ factors are stable); `detect_regime` works along the cohort axis
   [`print(`*`<summary.Regime>`*`)`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
   : Detect structural regime shifts across underwriting cohorts
 - [`regime_at()`](https://seokhoonj.github.io/lossratio/reference/regime_at.md)
-  : Construct a Regime object from manually specified breakpoints
+  : Construct a Regime object from manually specified regime changes
 
 ## Projection diagnostic
 

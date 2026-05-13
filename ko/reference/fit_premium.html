@@ -6,7 +6,7 @@ a chain ladder estimator. Two variance recursions are supported:
 Additive recursion. Empirically more robust
 on long-projection premium triangles – the multiplicative
 scaling of the classical CL recursion can blow up under cohort-wise
-heterogeneity (regime breaks in premium, channel changes,
+heterogeneity (regime changes in premium, channel changes,
 amendments). See dev/premium_projection.qmd.
 
 "cl"
@@ -26,7 +26,7 @@ a chain ladder estimator. Two variance recursions are supported:
 Additive recursion. Empirically more robust
 on long-projection premium triangles – the multiplicative
 scaling of the classical CL recursion can blow up under cohort-wise
-heterogeneity (regime breaks in premium, channel changes,
+heterogeneity (regime changes in premium, channel changes,
 amendments). See dev/premium_projection.qmd.
 
 "cl"
@@ -69,7 +69,7 @@ cumulative variance is propagated forward.'><meta property="og:image" content="h
     <li><a class="dropdown-item" href="../articles/triangle-link-and-maturity-ko.html">Triangle, Link and Maturity</a></li>
     <li><a class="dropdown-item" href="../articles/regime-ko.html">Regime</a></li>
     <li><a class="dropdown-item" href="../articles/projection-ko.html">Projection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-break-filter-ko.html">Regime break filter</a></li>
+    <li><a class="dropdown-item" href="../articles/regime-change-filter-ko.html">Regime change filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/convergence-ko.html">Convergence</a></li>
     <li><hr class="dropdown-divider"></li>
@@ -103,7 +103,7 @@ a chain ladder estimator. Two variance recursions are supported:</p>
 <dd><p>Additive recursion. Empirically more robust
 on long-projection premium triangles – the multiplicative
 scaling of the classical CL recursion can blow up under cohort-wise
-heterogeneity (regime breaks in premium, channel changes,
+heterogeneity (regime changes in premium, channel changes,
 amendments). See <code>dev/premium_projection.qmd</code>.</p></dd>
 
 <dt><code>"cl"</code></dt>
@@ -167,8 +167,8 @@ four input types:</p><dl><dt><code>NULL</code> (default)</dt>
 <code>function(tri) -&gt; Regime</code> for deferred custom-config detection.</p></dd>
 
 
-</dl><p>Pre-break cohorts (cohorts before the resolved <code>Regime</code>'s breakpoint)
-are excluded from premium factor estimation.</p></dd>
+</dl><p>Pre-change cohorts (cohorts before the resolved <code>Regime</code>'s change
+date) are excluded from premium factor estimation.</p></dd>
 
 
 <dt id="arg-sigma-method">sigma_method<a class="anchor" aria-label="anchor" href="#arg-sigma-method"></a></dt>

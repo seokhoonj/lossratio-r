@@ -66,11 +66,11 @@ r
 #> <Regime>
 #>   method : e_divisive
 #>   target : lr
-#>   window (window) : dev_m 1-4
-#>   cohorts    : 33 analysed (3 dropped)
+#>   window (window) : dev_m 1-6
+#>   cohorts    : 31 analysed (5 dropped)
 #>   regimes    : 2
-#>   breakpoints: 24.07
-#>   PC1 / PC2  : 75.6% / 18.9%
+#>   changes    : 24.07
+#>   PC1 / PC2  : 80.0% / 12.7%
 ```
 
 `window` 인자는 코호트 특징 벡터를 정의하는 경과 기간 수를 조절한다.
@@ -87,14 +87,14 @@ summary(r)
 #> Cohort regime detection summary
 #>   method    : e_divisive
 #>   target    : lr
-#>   window    : dev_m 1-4
-#>   cohorts   : 33 analysed (3 dropped)
+#>   window    : dev_m 1-6
+#>   cohorts   : 31 analysed (5 dropped)
 #> 
 #> Regimes (2):
 #>   1: 23.01-24.06 (18 cohorts)
-#>   2: 24.07-25.09 (15 cohorts)
+#>   2: 24.07-25.07 (13 cohorts)
 #> 
-#> Breakpoints: 24.07
+#> Changes: 24.07
 
 r$labels
 #>     coverage     cohort      regime regime_id
@@ -117,21 +117,19 @@ r$labels
 #> 16:      SUR 2024-04-01 23.01-24.06         1
 #> 17:      SUR 2024-05-01 23.01-24.06         1
 #> 18:      SUR 2024-06-01 23.01-24.06         1
-#> 19:      SUR 2024-07-01 24.07-25.09         2
-#> 20:      SUR 2024-08-01 24.07-25.09         2
-#> 21:      SUR 2024-09-01 24.07-25.09         2
-#> 22:      SUR 2024-10-01 24.07-25.09         2
-#> 23:      SUR 2024-11-01 24.07-25.09         2
-#> 24:      SUR 2024-12-01 24.07-25.09         2
-#> 25:      SUR 2025-01-01 24.07-25.09         2
-#> 26:      SUR 2025-02-01 24.07-25.09         2
-#> 27:      SUR 2025-03-01 24.07-25.09         2
-#> 28:      SUR 2025-04-01 24.07-25.09         2
-#> 29:      SUR 2025-05-01 24.07-25.09         2
-#> 30:      SUR 2025-06-01 24.07-25.09         2
-#> 31:      SUR 2025-07-01 24.07-25.09         2
-#> 32:      SUR 2025-08-01 24.07-25.09         2
-#> 33:      SUR 2025-09-01 24.07-25.09         2
+#> 19:      SUR 2024-07-01 24.07-25.07         2
+#> 20:      SUR 2024-08-01 24.07-25.07         2
+#> 21:      SUR 2024-09-01 24.07-25.07         2
+#> 22:      SUR 2024-10-01 24.07-25.07         2
+#> 23:      SUR 2024-11-01 24.07-25.07         2
+#> 24:      SUR 2024-12-01 24.07-25.07         2
+#> 25:      SUR 2025-01-01 24.07-25.07         2
+#> 26:      SUR 2025-02-01 24.07-25.07         2
+#> 27:      SUR 2025-03-01 24.07-25.07         2
+#> 28:      SUR 2025-04-01 24.07-25.07         2
+#> 29:      SUR 2025-05-01 24.07-25.07         2
+#> 30:      SUR 2025-06-01 24.07-25.07         2
+#> 31:      SUR 2025-07-01 24.07-25.07         2
 #>     coverage     cohort      regime regime_id
 #>       <char>     <Date>      <fctr>     <int>
 ```
@@ -171,7 +169,7 @@ target 마다 검출하는 regime 종류가 다르고, 각자 고유한 *false p
 | Loss 발전 *속도* 변화 (CL `f`) | `"loss_ata"` *(진단용)* | dev=1 손실 + complete-row 요구 → sample 줄어듦; CV 가 낮아 작은 변동도 잡힘. |
 | Premium 인식 *속도* 변화 | `"premium_ata"` *(진단용)* | `"loss_ata"` 와 같은 주의사항. |
 | 노출 단위당 loss *세기* 변화 (ED `g`) | `"loss_ed"` *(진단용)* | premium 으로 cross-normalize — 단독 해석이 까다로움. |
-| `premium_ata` 와 동일 (API 대칭) | `"premium_ed"` *(alias)* | PCA 표준화 후 `premium_ata` 와 동일한 breakpoint — alias. |
+| `premium_ata` 와 동일 (API 대칭) | `"premium_ed"` *(alias)* | PCA 표준화 후 `premium_ata` 와 동일한 change — alias. |
 | Loss *level* 변화 (claims handling, 보장 변경) | `"loss"` | raw cumulative — book size 성장이 도미넌트, false positive 빈번. |
 | Premium *level* 변화 (요율, 채널 변경) | `"premium"` | `"loss"` 와 같은 주의사항. |
 
@@ -185,19 +183,19 @@ target 마다 검출하는 regime 종류가 다르고, 각자 고유한 *false p
   사건 타임라인* 과 대조 필수.
 - `"loss_ata"`, `"premium_ata"`, `"loss_ed"` 는 *진단용* target.
   Triangle 에 저장된 컬럼이 아니라 inline 으로 derive 된다. CL 의 `f` /
-  ED 의 `g` 인자와 직접 대응하므로 여기서 검출된 break 는 모델의
+  ED 의 `g` 인자와 직접 대응하므로 여기서 검출된 change 는 모델의
   stationarity 가정 위반에 해당. *구조적 메커니즘* 으로 regime 을
   귀속시키고 싶을 때 사용.
 
 ``` r
 
-# 여러 target 을 비교 — 어떤 break 가 일관되게 나오는지 확인
+# 여러 target 을 비교 — 어떤 change 가 일관되게 나오는지 확인
 detect_regime(tri_sur, target = "lr")
 detect_regime(tri_sur, target = "loss")
 detect_regime(tri_sur, target = "loss_ata")
 ```
 
-진짜 강한 regime shift 는 여러 target 에서 비슷한 break 를 보인다.
+진짜 강한 regime shift 는 여러 target 에서 비슷한 change 를 보인다.
 신호가 약하거나 book size 성장이 도미넌트일 때 target 간 결과가 갈라진다
 — 둘 다 유용한 진단 신호.
 
@@ -236,15 +234,15 @@ summary(r2)
 #> Cohort regime detection summary
 #>   method    : e_divisive
 #>   target    : lr
-#>   window    : dev_m 1-4
-#>   cohorts   : 33 analysed (3 dropped)
+#>   window    : dev_m 1-6
+#>   cohorts   : 31 analysed (5 dropped)
 #> 
 #> Regimes (3):
-#>   1: 23.01-24.06 (18 cohorts)
-#>   2: 24.07-25.06 (12 cohorts)
-#>   3: 25.07-25.09 (3 cohorts)
+#>   1: 23.01-23.08 (8 cohorts)
+#>   2: 23.09-24.06 (10 cohorts)
+#>   3: 24.07-25.07 (13 cohorts)
 #> 
-#> Breakpoints: 24.07, 25.07
+#> Changes: 23.09, 24.07
 ```
 
 `"e_divisive"` 와 `"pelt"` 의 경우 `n_regimes` 는 요청값이다 (데이터가
@@ -269,14 +267,14 @@ tri_all <- build_triangle(
   premium  = "premium_incr"
 )
 r_all   <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
-r_all$breakpoints
-#>    coverage breakpoint regime_id pre_value post_value magnitude
+r_all$changes
+#>    coverage     change regime_id pre_value post_value magnitude
 #>      <char>     <Date>     <int>     <num>      <num>     <num>
-#> 1:      SUR 2024-07-01         2 0.9065895  0.5479919 0.3585976
+#> 1:      SUR 2024-07-01         2  1.041267  0.5968553 0.4444118
 ```
 
-다중 그룹 모드에서 `r_all$breakpoints` 는 그룹 컬럼과 `breakpoint` Date
-컬럼을 가진 `data.table` 이고, `r_all$labels` 에도 그룹 컬럼이 추가된다.
+다중 그룹 모드에서 `r_all$changes` 는 그룹 컬럼과 `change` Date 컬럼을
+가진 `data.table` 이고, `r_all$labels` 에도 그룹 컬럼이 추가된다.
 `r_all$n_regimes` 는 그룹값을 이름으로 하는 정수 벡터이며,
 `r_all$multi_group` 플래그가 단일 그룹 스칼라 형식과 구분해준다.
 

@@ -10,8 +10,8 @@
   탐지](https://seokhoonj.github.io/lossratio/ko/articles/regime-ko.md):
 - [Projection: 손해율 예측 (SA, ED,
   CL)](https://seokhoonj.github.io/lossratio/ko/articles/projection-ko.md):
-- [Regime break filter: 탐지된 regime 을 fit\_\* 의
-  필터로](https://seokhoonj.github.io/lossratio/ko/articles/regime-break-filter-ko.md):
+- [Regime change filter: 탐지된 regime 을 fit\_\* 의
+  필터로](https://seokhoonj.github.io/lossratio/ko/articles/regime-change-filter-ko.md):
 - [Backtest: hold-out 대각선을 이용한 추정
   검증](https://seokhoonj.github.io/lossratio/ko/articles/backtest-ko.md):
 - [Convergence: 예측 손해율 수렴 시점
