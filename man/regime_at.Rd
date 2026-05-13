@@ -2,15 +2,16 @@
 % Please edit documentation in R/regime.R
 \name{regime_at}
 \alias{regime_at}
-\title{Construct a Regime object from manually specified breakpoints}
+\title{Construct a Regime object from manually specified regime changes}
 \usage{
 regime_at(...)
 }
 \arguments{
-\item{...}{Named vectors of equal length. Must include \code{breakpoint}
-(coercible to \code{Date}). Any other named arguments are interpreted
-as group column values (e.g. \code{coverage}, \code{channel}). With no
-group columns the result is a pooled (single-row) Regime.}
+\item{...}{Named vectors of equal length. Must include \code{change}
+(coercible to \code{Date}; the start-of-regime date for the post-change
+regime). Any other named arguments are interpreted as group column
+values (e.g. \code{coverage}, \code{channel}). With no group columns the
+result is a pooled (single-row) Regime.}
 }
 \value{
 An object of class \code{"Regime"} with the minimal schema needed
@@ -18,8 +19,8 @@ by downstream consumers:
 \describe{
 \item{\code{method}}{\code{"manual"}.}
 \item{\code{target}}{\code{NA_character_} (no detection target).}
-\item{\code{breakpoints}}{\code{data.table} with columns
-\verb{[<group cols>..., breakpoint, regime_id, pre_value, post_value, magnitude]}. \code{regime_id} is \code{2L} (post-break regime) for each
+\item{\code{changes}}{\code{data.table} with columns
+\verb{[<group cols>..., change, regime_id, pre_value, post_value, magnitude]}. \code{regime_id} is \code{2L} (post-change regime) for each
 row; the stats columns are \code{NA_real_}.}
 \item{\code{groups}}{Character vector of group column names (possibly
 empty).}
@@ -32,33 +33,33 @@ so the object can still be printed and consumed but is clearly
 distinguishable from a detected Regime.
 }
 \description{
-User-facing helper for hand-specifying a regime break (or a set of
-per-group breaks) without running \code{\link[=detect_regime]{detect_regime()}}. The returned
+User-facing helper for hand-specifying a regime change (or a set of
+per-group changes) without running \code{\link[=detect_regime]{detect_regime()}}. The returned
 \code{"Regime"} object plugs into any function that consumes a Regime —
 \code{fit_lr()}, \code{fit_loss()}, \code{fit_premium()}, \code{\link[=backtest]{backtest()}}, and the
-regime-break resolver — by carrying the same \verb{$breakpoints} schema as
+regime-change resolver — by carrying the same \verb{$changes} schema as
 \code{\link[=detect_regime]{detect_regime()}} output.
 
 Argument syntax mirrors \code{data.frame()} / \code{data.table()}: named
-vectors of equal length, one of which \strong{must} be \code{breakpoint}. Any
+vectors of equal length, one of which \strong{must} be \code{change}. Any
 other named arguments are treated as group columns.
 }
 \examples{
 \dontrun{
-# Pooled break (no group columns)
-regime_at(breakpoint = "2024-07-01")
+# Pooled change (no group columns)
+regime_at(change = "2024-07-01")
 
-# Single-group break
-regime_at(coverage = "SUR", breakpoint = "2024-04-01")
+# Single-group change
+regime_at(coverage = "SUR", change = "2024-04-01")
 
 # Multiple groups, one column
-regime_at(coverage   = c("SUR", "CAN"),
-          breakpoint = c("2024-04-01", "2023-09-01"))
+regime_at(coverage = c("SUR", "CAN"),
+          change   = c("2024-04-01", "2023-09-01"))
 
 # Multi-dimensional group keys
-regime_at(coverage   = c("SUR", "SUR"),
-          channel    = c("online", "agent"),
-          breakpoint = c("2024-04-01", "2024-05-01"))
+regime_at(coverage = c("SUR", "SUR"),
+          channel  = c("online", "agent"),
+          change   = c("2024-04-01", "2024-05-01"))
 }
 
 }

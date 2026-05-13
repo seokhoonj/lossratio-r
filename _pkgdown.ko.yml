@@ -44,8 +44,8 @@ navbar:
         href: articles/regime-ko.html
       - text: Projection
         href: articles/projection-ko.html
-      - text: Regime break filter
-        href: articles/regime-break-filter-ko.html
+      - text: Regime change filter
+        href: articles/regime-change-filter-ko.html
       - text: Backtest
         href: articles/backtest-ko.html
       - text: Convergence
@@ -179,7 +179,7 @@ articles:
   - "articles/triangle-link-and-maturity-ko"
   - "articles/regime-ko"
   - "articles/projection-ko"
-  - "articles/regime-break-filter-ko"
+  - "articles/regime-change-filter-ko"
   - "articles/backtest-ko"
   - "articles/convergence-ko"
 - title: 참고
@@ -194,7 +194,7 @@ articles:
   - triangle-link-and-maturity
   - regime
   - projection
-  - regime-break-filter
+  - regime-change-filter
   - backtest
   - convergence
   - chain-ladder-reserving

@@ -93,7 +93,7 @@ test_that("fit_ed with regime drops pre-break cohorts", {
   ed <- build_link(tri, target = "loss", exposure = "premium")
   fit_full <- fit_ed(tri, target = "loss", exposure = "premium")
   fit_brk  <- fit_ed(tri, target = "loss", exposure = "premium",
-                     regime = regime_at(breakpoint = "2025-07-01"))
+                     regime = regime_at(change = "2025-07-01"))
   expect_false(identical(fit_full$selected$g_selected,
                          fit_brk$selected$g_selected))
   expect_s3_class(fit_brk$regime, "Regime")
@@ -120,7 +120,7 @@ test_that("fit_ed with Regime input preserves the Regime object", {
   ed <- build_link(tri, target = "loss", exposure = "premium")
   fit_reg <- fit_ed(tri, target = "loss", exposure = "premium", regime = reg)
   expect_s3_class(fit_reg$regime, "Regime")
-  expect_identical(fit_reg$regime$breakpoints, reg$breakpoints)
+  expect_identical(fit_reg$regime$changes, reg$changes)
 })
 
 # fit_ed $full projection -----------------------------------------------

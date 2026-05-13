@@ -13,7 +13,7 @@
 #'
 #' Multi-group `Triangle` inputs are supported: detection runs
 #' independently per group, and results are combined into a single
-#' `Regime` object whose `$breakpoints`, `$labels`, etc. carry the
+#' `Regime` object whose `$changes`, `$labels`, etc. carry the
 #' group column. Single-group input retains the original scalar /
 #' Date-vector / matrix layout for backward compatibility.
 #'
@@ -21,13 +21,13 @@
 #' \describe{
 #'   \item{`"e_divisive"`}{Multivariate non-parametric divisive change-point
 #'     detection via [ecp::e.divisive()]. The number of regimes is
-#'     determined by the data; only significant breakpoints at
+#'     determined by the data; only significant changes at
 #'     `sig_level` are retained. Preferred when the number of regimes
 #'     is not known in advance.}
 #'   \item{`"pelt"`}{Univariate mean change-point detection via
 #'     [changepoint::cpt.mean()] with the PELT algorithm applied to the
 #'     first principal component of the cohort feature matrix. Fast
-#'     and may return multiple breakpoints.}
+#'     and may return multiple changes.}
 #'   \item{`"hclust"`}{Ward hierarchical clustering on the scaled
 #'     cohort feature matrix, cut to `n_regimes` clusters. Ignores
 #'     time ordering -- useful as a sanity check since non-adjacent
@@ -56,7 +56,7 @@
 #'     \item{`"premium_ed"`}{Alias of `"premium_ata"` — the two differ
 #'       only by a constant `(premium_ata - 1)`, and the PCA
 #'       standardization in detection removes that shift, so they yield
-#'       identical breakpoints. Provided for API symmetry with the
+#'       identical regime changes. Provided for API symmetry with the
 #'       `loss_ata` / `loss_ed` pair.}
 #'   }
 #'   Derived targets drop the first dev row per cohort (no predecessor),
@@ -91,7 +91,7 @@
 #'     \item{`target`}{Trajectory variable used for detection.}
 #'     \item{`window`}{Trajectory window per combo. Scalar integer when a
 #'       single combo was analysed; integer vector (one per surviving
-#'       combo, in the order of `$labels` / `$breakpoints` group rows)
+#'       combo, in the order of `$labels` / `$changes` group rows)
 #'       otherwise.}
 #'     \item{`window_mode`}{Either `"auto"` (resolved per group via
 #'       [detect_maturity()]) or `"manual"` (user-supplied integer).}
@@ -99,14 +99,14 @@
 #'     \item{`labels`}{`data.table` of one row per analysed cohort:
 #'       `[by..., cohort, regime, regime_id]`. Group columns are prepended
 #'       when `by` resolves to a non-empty vector.}
-#'     \item{`breakpoints`}{`data.table` of detected breakpoints with
-#'       columns `[by..., breakpoint, regime_id, pre_value, post_value,
+#'     \item{`changes`}{`data.table` of detected regime changes with
+#'       columns `[by..., change, regime_id, pre_value, post_value,
 #'       magnitude]`. `regime_id` = id of the regime that STARTS at this
-#'       break (the pre-break regime is `regime_id - 1`); matches
+#'       change (the pre-change regime is `regime_id - 1`); matches
 #'       `$labels$regime_id`. `pre_value` / `post_value` are the mean
 #'       `target` over the cohort × dev trajectory windows in the pre- /
-#'       post-break regimes; `magnitude = |post_value - pre_value|`.
-#'       Empty (zero rows) when no break is detected.}
+#'       post-change regimes; `magnitude = |post_value - pre_value|`.
+#'       Empty (zero rows) when no change is detected.}
 #'     \item{`n_regimes`}{Number of regimes detected. Scalar integer for
 #'       single-combo detection; named integer vector (keyed by combo) for
 #'       multi-combo.}
@@ -155,7 +155,7 @@
 #'   premium  = "premium_incr"
 #' )
 #' r_all <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
-#' print(r_all$breakpoints)
+#' print(r_all$changes)
 #' }
 #'
 #' @export
@@ -209,7 +209,7 @@ detect_regime <- function(x,
   # `premium_ed` is mathematically equivalent to `premium_ata - 1`
   # (Δpremium / cum_premium_prev vs cum_premium / cum_premium_prev), and
   # the PCA standardization (`center=TRUE, scale=TRUE`) removes the
-  # constant shift — so detection produces identical breakpoints. Treat
+  # constant shift — so detection produces identical changes. Treat
   # as alias.
   if (target == "premium_ed") target <- "premium_ata"
 
@@ -334,16 +334,16 @@ detect_regime <- function(x,
     stop("No group produced a usable detection result.", call. = FALSE)
 
   empty_bp <- data.table::data.table(
-    breakpoint = as.Date(character(0)),
+    change     = as.Date(character(0)),
     regime_id  = integer(0),
     pre_value  = numeric(0),
     post_value = numeric(0),
     magnitude  = numeric(0)
   )
 
-  # Combine breakpoints: prepend group columns when grp is non-empty.
+  # Combine changes: prepend group columns when grp is non-empty.
   bp_dt_list <- lapply(which(ok), function(i) {
-    bp <- per_group[[i]]$breakpoints
+    bp <- per_group[[i]]$changes
     if (!nrow(bp)) return(NULL)
     if (length(grp) > 0L) {
       combo_rep <- grp_combos[rep(i, nrow(bp))]
@@ -378,7 +378,7 @@ detect_regime <- function(x,
 
   # Single-combo unwrap — preserves the scalar / matrix / prcomp shapes
   # that downstream code (and existing tests) expect when only one group
-  # combo is detected. `$breakpoints` and `$labels` remain data.tables.
+  # combo is detected. `$changes` and `$labels` remain data.tables.
   is_single <- sum(ok) == 1L
   window_used <- window_per_combo[ok]
   if (is_single) {
@@ -406,7 +406,7 @@ detect_regime <- function(x,
     groups      = grp,
     multi_group = !is_single,
     labels      = labels_dt,
-    breakpoints = bp_dt,
+    changes     = bp_dt,
     n_regimes   = n_regimes_out,
     trajectory  = trajectory_out,
     pca         = pca_out,
@@ -509,7 +509,7 @@ detect_regime <- function(x,
 
   pca <- stats::prcomp(mat, scale. = TRUE)
 
-  breakpoints_idx <- .regime_breakpoints(
+  changes_idx <- .regime_changes(
     mat       = mat,
     pca       = pca,
     method    = method,
@@ -518,7 +518,7 @@ detect_regime <- function(x,
     min_size  = min_size
   )
 
-  regime_id <- .regime_ids_from_breaks(n_cohorts, breakpoints_idx)
+  regime_id <- .regime_ids_from_breaks(n_cohorts, changes_idx)
   regime_label <- .regime_label_from_range(w[["cohort"]], regime_id)
 
   labels <- data.table::data.table(
@@ -528,16 +528,16 @@ detect_regime <- function(x,
   )
   data.table::setnames(labels, "period", "cohort")
 
-  breakpoints <- .build_breakpoints_dt(
-    cohorts         = w[["cohort"]],
-    breakpoints_idx = breakpoints_idx,
-    mat             = mat,
-    regime_id       = regime_id
+  changes <- .build_changes_dt(
+    cohorts     = w[["cohort"]],
+    changes_idx = changes_idx,
+    mat         = mat,
+    regime_id   = regime_id
   )
 
   list(
     labels      = labels,
-    breakpoints = breakpoints,
+    changes     = changes,
     n_regimes   = as.integer(max(regime_id)),
     trajectory  = mat,
     pca         = pca,
@@ -546,20 +546,20 @@ detect_regime <- function(x,
 }
 
 #' @keywords internal
-.build_breakpoints_dt <- function(cohorts, breakpoints_idx, mat, regime_id) {
+.build_changes_dt <- function(cohorts, changes_idx, mat, regime_id) {
   empty <- data.table::data.table(
-    breakpoint = as.Date(character(0)),
+    change     = as.Date(character(0)),
     regime_id  = integer(0),
     pre_value  = numeric(0),
     post_value = numeric(0),
     magnitude  = numeric(0)
   )
-  if (!length(breakpoints_idx)) return(empty)
+  if (!length(changes_idx)) return(empty)
 
-  bp_idx  <- as.integer(sort(unique(breakpoints_idx)))
+  bp_idx  <- as.integer(sort(unique(changes_idx)))
   bp_date <- cohorts[bp_idx]
-  # `regime_id` on a break row = id of the regime that STARTS at this break
-  # (i.e. the post-break regime). `regime_id - 1` is the pre-break regime.
+  # `regime_id` on a change row = id of the regime that STARTS at this change
+  # (i.e. the post-change regime). `regime_id - 1` is the pre-change regime.
   bp_id   <- seq_along(bp_idx) + 1L
 
   metas <- vapply(seq_along(bp_idx), function(i) {
@@ -574,7 +574,7 @@ detect_regime <- function(x,
   post_vals <- metas[2L, ]
 
   data.table::data.table(
-    breakpoint = bp_date,
+    change     = bp_date,
     regime_id  = bp_id,
     pre_value  = pre_vals,
     post_value = post_vals,
@@ -584,8 +584,8 @@ detect_regime <- function(x,
 
 
 #' @keywords internal
-.regime_breakpoints <- function(mat, pca, method, n_regimes,
-                                sig_level, min_size) {
+.regime_changes <- function(mat, pca, method, n_regimes,
+                            sig_level, min_size) {
   n <- nrow(mat)
 
   if (method == "e_divisive") {
@@ -625,7 +625,7 @@ detect_regime <- function(x,
     if (k < 2L) stop("`n_regimes` must be >= 2.", call. = FALSE)
     h  <- stats::hclust(stats::dist(scale(mat)), method = "ward.D2")
     cl <- stats::cutree(h, k = k)
-    # breakpoints = indices where cluster id changes in sequential order
+    # change indices = positions where cluster id changes in sequential order
     which(diff(cl) != 0L) + 1L
   }
 }
@@ -680,8 +680,8 @@ print.Regime <- function(x, ...) {
       n_coh[i]   <- nrow(x$labels[x$labels[[grp]] ==
                                     .coerce_match(gv, x$labels[[grp]])])
       n_drop[i]  <- length(x$dropped[[gv]])
-      bp_g       <- x$breakpoints[x$breakpoints[[grp]] ==
-                                    .coerce_match(gv, x$breakpoints[[grp]])][["breakpoint"]]
+      bp_g       <- x$changes[x$changes[[grp]] ==
+                                .coerce_match(gv, x$changes[[grp]])][["change"]]
       bp_str[i]  <- if (length(bp_g))
                       paste(format(bp_g, "%y.%m"), collapse = ", ")
                     else "(none)"
@@ -702,7 +702,7 @@ print.Regime <- function(x, ...) {
       cohorts  = sprintf("cohorts: %d",   n_coh),
       dropped  = drop_str,
       regimes  = sprintf("regimes: %d",   as.integer(x$n_regimes[grp_vals])),
-      brkpts   = sprintf("breakpoints: %s", bp_str)
+      changes  = sprintf("changes: %s",   bp_str)
     )
     rows <- .format_record_table(
       cols,
@@ -716,12 +716,12 @@ print.Regime <- function(x, ...) {
       cat(sprintf(" (%d dropped)", length(x$dropped)))
     cat("\n")
     cat(sprintf("  regimes    : %d\n", x$n_regimes))
-    if (nrow(x$breakpoints)) {
-      cat(sprintf("  breakpoints: %s\n",
-                  paste(format(x$breakpoints[["breakpoint"]], "%y.%m"),
+    if (nrow(x$changes)) {
+      cat(sprintf("  changes    : %s\n",
+                  paste(format(x$changes[["change"]], "%y.%m"),
                         collapse = ", ")))
     } else {
-      cat("  breakpoints: (none)\n")
+      cat("  changes    : (none)\n")
     }
     ve <- (x$pca$sdev ^ 2) / sum(x$pca$sdev ^ 2)
     cat(sprintf("  PC1 / PC2  : %.1f%% / %.1f%%\n",
@@ -735,7 +735,7 @@ print.Regime <- function(x, ...) {
 #'
 #' Used internally by print.Regime / summary.Regime: group values are
 #' stored as names (character) on `$n_regimes`, `$trajectory`, etc., but
-#' the actual column type in `$labels[[grp]]` / `$breakpoints[[grp]]`
+#' the actual column type in `$labels[[grp]]` / `$changes[[grp]]`
 #' may be factor, character, or even Date. This converts the character
 #' name back to a scalar of the column's type for `==` filtering.
 #'
@@ -783,7 +783,7 @@ summary.Regime <- function(object, ...) {
       n_cohorts   = nrow(labels),
       n_dropped   = sum(vapply(object$dropped, length, integer(1L))),
       n_regimes   = object$n_regimes,
-      breakpoints = object$breakpoints,
+      changes     = object$changes,
       regimes     = tbl
     )
   } else {
@@ -806,7 +806,7 @@ summary.Regime <- function(object, ...) {
       n_cohorts   = nrow(labels),
       n_dropped   = length(object$dropped),
       n_regimes   = object$n_regimes,
-      breakpoints = object$breakpoints,
+      changes     = object$changes,
       regimes     = tbl
     )
   }
@@ -844,10 +844,10 @@ print.summary.Regime <- function(x, ...) {
                     format(r$end,   "%y.%m"),
                     r$n_cohorts))
       }
-      bp_g <- x$breakpoints[x$breakpoints[[grp]] ==
-                              .coerce_match(gv, x$breakpoints[[grp]])][["breakpoint"]]
+      bp_g <- x$changes[x$changes[[grp]] ==
+                          .coerce_match(gv, x$changes[[grp]])][["change"]]
       if (length(bp_g)) {
-        cat(sprintf("  breakpoints: %s\n",
+        cat(sprintf("  changes    : %s\n",
                     paste(format(bp_g, "%y.%m"), collapse = ", ")))
       }
       cat("\n")
@@ -867,9 +867,9 @@ print.summary.Regime <- function(x, ...) {
                   r$n_cohorts))
     }
 
-    if (nrow(x$breakpoints)) {
-      cat(sprintf("\nBreakpoints: %s\n",
-                  paste(format(x$breakpoints[["breakpoint"]], "%y.%m"),
+    if (nrow(x$changes)) {
+      cat(sprintf("\nChanges: %s\n",
+                  paste(format(x$changes[["change"]], "%y.%m"),
                         collapse = ", ")))
     }
   }
@@ -879,33 +879,34 @@ print.summary.Regime <- function(x, ...) {
 
 # Manual Regime construction ----------------------------------------------
 
-#' Construct a Regime object from manually specified breakpoints
+#' Construct a Regime object from manually specified regime changes
 #'
 #' @description
-#' User-facing helper for hand-specifying a regime break (or a set of
-#' per-group breaks) without running [detect_regime()]. The returned
+#' User-facing helper for hand-specifying a regime change (or a set of
+#' per-group changes) without running [detect_regime()]. The returned
 #' `"Regime"` object plugs into any function that consumes a Regime —
 #' `fit_lr()`, `fit_loss()`, `fit_premium()`, [backtest()], and the
-#' regime-break resolver — by carrying the same `$breakpoints` schema as
+#' regime-change resolver — by carrying the same `$changes` schema as
 #' [detect_regime()] output.
 #'
 #' Argument syntax mirrors `data.frame()` / `data.table()`: named
-#' vectors of equal length, one of which **must** be `breakpoint`. Any
+#' vectors of equal length, one of which **must** be `change`. Any
 #' other named arguments are treated as group columns.
 #'
-#' @param ... Named vectors of equal length. Must include `breakpoint`
-#'   (coercible to `Date`). Any other named arguments are interpreted
-#'   as group column values (e.g. `coverage`, `channel`). With no
-#'   group columns the result is a pooled (single-row) Regime.
+#' @param ... Named vectors of equal length. Must include `change`
+#'   (coercible to `Date`; the start-of-regime date for the post-change
+#'   regime). Any other named arguments are interpreted as group column
+#'   values (e.g. `coverage`, `channel`). With no group columns the
+#'   result is a pooled (single-row) Regime.
 #'
 #' @return An object of class `"Regime"` with the minimal schema needed
 #'   by downstream consumers:
 #'   \describe{
 #'     \item{`method`}{`"manual"`.}
 #'     \item{`target`}{`NA_character_` (no detection target).}
-#'     \item{`breakpoints`}{`data.table` with columns
-#'       `[<group cols>..., breakpoint, regime_id, pre_value, post_value,
-#'       magnitude]`. `regime_id` is `2L` (post-break regime) for each
+#'     \item{`changes`}{`data.table` with columns
+#'       `[<group cols>..., change, regime_id, pre_value, post_value,
+#'       magnitude]`. `regime_id` is `2L` (post-change regime) for each
 #'       row; the stats columns are `NA_real_`.}
 #'     \item{`groups`}{Character vector of group column names (possibly
 #'       empty).}
@@ -921,20 +922,20 @@ print.summary.Regime <- function(x, ...) {
 #'
 #' @examples
 #' \dontrun{
-#' # Pooled break (no group columns)
-#' regime_at(breakpoint = "2024-07-01")
+#' # Pooled change (no group columns)
+#' regime_at(change = "2024-07-01")
 #'
-#' # Single-group break
-#' regime_at(coverage = "SUR", breakpoint = "2024-04-01")
+#' # Single-group change
+#' regime_at(coverage = "SUR", change = "2024-04-01")
 #'
 #' # Multiple groups, one column
-#' regime_at(coverage   = c("SUR", "CAN"),
-#'           breakpoint = c("2024-04-01", "2023-09-01"))
+#' regime_at(coverage = c("SUR", "CAN"),
+#'           change   = c("2024-04-01", "2023-09-01"))
 #'
 #' # Multi-dimensional group keys
-#' regime_at(coverage   = c("SUR", "SUR"),
-#'           channel    = c("online", "agent"),
-#'           breakpoint = c("2024-04-01", "2024-05-01"))
+#' regime_at(coverage = c("SUR", "SUR"),
+#'           channel  = c("online", "agent"),
+#'           change   = c("2024-04-01", "2024-05-01"))
 #' }
 #'
 #' @export
@@ -944,8 +945,8 @@ regime_at <- function(...) {
 
   if (is.null(nms) || any(!nzchar(nms)))
     stop("All arguments to `regime_at()` must be named.", call. = FALSE)
-  if (!"breakpoint" %in% nms)
-    stop("`regime_at()` requires a `breakpoint` argument.", call. = FALSE)
+  if (!"change" %in% nms)
+    stop("`regime_at()` requires a `change` argument.", call. = FALSE)
 
   lens <- vapply(args, length, integer(1L))
   if (length(unique(lens)) != 1L)
@@ -956,25 +957,25 @@ regime_at <- function(...) {
   if (lens[[1L]] == 0L)
     stop("`regime_at()` arguments must have length >= 1.", call. = FALSE)
 
-  bp_raw <- args[["breakpoint"]]
+  bp_raw <- args[["change"]]
   # Coerce factor → character first so as.Date() picks the date
   # parser, not the factor-level integer.
   if (is.factor(bp_raw)) bp_raw <- as.character(bp_raw)
   bp <- tryCatch(as.Date(bp_raw),
                  error = function(e)
-                   stop(sprintf("Failed to coerce `breakpoint` to Date: %s",
+                   stop(sprintf("Failed to coerce `change` to Date: %s",
                                 conditionMessage(e)), call. = FALSE))
   if (any(is.na(bp)))
-    stop("`breakpoint` contains NA after coercion to Date.", call. = FALSE)
+    stop("`change` contains NA after coercion to Date.", call. = FALSE)
 
-  grp <- setdiff(nms, "breakpoint")
+  grp <- setdiff(nms, "change")
   grp_cols <- args[grp]
 
-  # Build breakpoints data.table: group cols (if any) + canonical columns.
+  # Build changes data.table: group cols (if any) + canonical columns.
   bp_dt <- if (length(grp)) {
     data.table::data.table(
       do.call(data.table::data.table, grp_cols),
-      breakpoint = bp,
+      change     = bp,
       regime_id  = rep(2L, length(bp)),
       pre_value  = rep(NA_real_, length(bp)),
       post_value = rep(NA_real_, length(bp)),
@@ -982,7 +983,7 @@ regime_at <- function(...) {
     )
   } else {
     data.table::data.table(
-      breakpoint = bp,
+      change     = bp,
       regime_id  = rep(2L, length(bp)),
       pre_value  = rep(NA_real_, length(bp)),
       post_value = rep(NA_real_, length(bp)),
@@ -1010,7 +1011,7 @@ regime_at <- function(...) {
     groups      = grp,
     multi_group = multi_group,
     labels      = empty_labels,
-    breakpoints = bp_dt,
+    changes     = bp_dt,
     n_regimes   = NA_integer_,
     trajectory  = NULL,
     pca         = NULL,
@@ -1046,7 +1047,7 @@ regime_at <- function(...) {
 #'     inherit `"Regime"`; an error is raised otherwise.}
 #' }
 #'
-#' @param arg The regime-break input (NULL / Regime / `"auto"` /
+#' @param arg The regime-change input (NULL / Regime / `"auto"` /
 #'   function).
 #' @param tri A `"Triangle"` object — used as the detection input when
 #'   `masked_tri` is `NULL`.

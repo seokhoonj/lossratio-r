@@ -13,7 +13,7 @@ test_that("detect_regime returns class 'Regime' (e_divisive default)", {
 test_that("Regime has expected list elements", {
   r <- detect_regime(sub, window = 12, method = "e_divisive")
   for (nm in c("method", "target", "window", "cohort", "dev",
-               "groups", "labels", "breakpoints", "n_regimes",
+               "groups", "labels", "changes", "n_regimes",
                "trajectory", "pca")) {
     expect_true(nm %in% names(r), info = paste("missing", nm))
   }
@@ -79,12 +79,12 @@ test_that("multi-group detect_regime returns class 'Regime'", {
   expect_true(isTRUE(r$multi_group))
 })
 
-test_that("multi-group $breakpoints is a data.table with group + breakpoint", {
+test_that("multi-group $changes is a data.table with group + change", {
   r <- detect_regime(tri_all, by = "coverage", window = 12, method = "e_divisive")
-  expect_true(data.table::is.data.table(r$breakpoints))
-  expect_true("coverage" %in% names(r$breakpoints))
-  expect_true("breakpoint" %in% names(r$breakpoints))
-  expect_true(inherits(r$breakpoints$breakpoint, "Date"))
+  expect_true(data.table::is.data.table(r$changes))
+  expect_true("coverage" %in% names(r$changes))
+  expect_true("change" %in% names(r$changes))
+  expect_true(inherits(r$changes$change, "Date"))
 })
 
 test_that("multi-group $labels has group column", {
@@ -124,10 +124,10 @@ test_that("multi-group print / summary don't error", {
 
 test_that(".resolve_regime_date handles multi-group Regime (scalar path)", {
   r <- detect_regime(tri_all, by = "coverage", window = 12, method = "e_divisive")
-  if (nrow(r$breakpoints)) {
+  if (nrow(r$changes)) {
     bd <- lossratio:::.resolve_regime_date(r)
     expect_true(inherits(bd, "Date"))
-    expect_equal(bd, max(r$breakpoints$breakpoint))
+    expect_equal(bd, max(r$changes$change))
   } else {
     expect_null(lossratio:::.resolve_regime_date(r))
   }
@@ -135,11 +135,11 @@ test_that(".resolve_regime_date handles multi-group Regime (scalar path)", {
 
 test_that(".resolve_regime_date with `by` returns per-group data.table", {
   r <- detect_regime(tri_all, by = "coverage", window = 12, method = "e_divisive")
-  if (nrow(r$breakpoints)) {
+  if (nrow(r$changes)) {
     bd <- lossratio:::.resolve_regime_date(r, by = "coverage")
     expect_true(data.table::is.data.table(bd))
     expect_true(all(c("coverage", "break_date") %in% names(bd)))
-    expect_lte(nrow(bd), length(unique(r$breakpoints$coverage)))
+    expect_lte(nrow(bd), length(unique(r$changes$coverage)))
   }
 })
 
@@ -211,12 +211,12 @@ test_that("multi-group Regime drives per-group fit_ata filtering", {
   fit <- fit_ata(tri_all, target = "loss", regime = r)
   expect_s3_class(fit, "ATAFit")
 
-  # Groups without a detected break keep all their link rows; groups
-  # with a break get filtered. So the row count is _>=_ the count from
-  # a uniform max-date scalar break.
-  bd_max <- max(r$breakpoints$breakpoint)
+  # Groups without a detected change keep all their link rows; groups
+  # with a change get filtered. So the row count is _>=_ the count from
+  # a uniform max-date scalar change.
+  bd_max <- max(r$changes$change)
   fit_scalar <- fit_ata(tri_all, target = "loss",
-                        regime = regime_at(breakpoint = bd_max))
+                        regime = regime_at(change = bd_max))
   expect_gte(nrow(fit$link), nrow(fit_scalar$link))
 })
 
@@ -229,7 +229,7 @@ test_that("multi-group Regime flows through fit_lr -> dispatcher -> worker", {
   # loss_regime preserves the original Regime object (multi-group
   # dispatch happens internally via .resolve_regime_date(by = grp))
   expect_s3_class(fit$loss_regime, "Regime")
-  expect_identical(fit$loss_regime$breakpoints, r$breakpoints)
+  expect_identical(fit$loss_regime$changes, r$changes)
 })
 
 test_that("backtest passes multi-group Regime through to dispatcher", {

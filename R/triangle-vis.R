@@ -482,7 +482,7 @@ plot_triangle <- function(x, ...) {
 #'       `metric`, `label_style`, `amount_divisor`, `nrow`, `ncol`.}
 #'     \item{"usage"}{Cell-status heatmap (used / holdout / unused /
 #'       future). Accepts `recent`, `regime`, `holdout`, `maturity_args`
-#'       via `...`. See `vignette("regime-break-filter")` for details.}
+#'       via `...`. See `vignette("regime-change-filter")` for details.}
 #'   }
 #' @param metric A single metric to plot. Must be one of:
 #'   `"lr"`, `"lr_incr"`,
@@ -875,7 +875,7 @@ plot.Total <- function(x,
 #'   `backtest()` semantics — the internal fitter operates on the masked
 #'   triangle whose own max_cal is `original - holdout`.
 #' @param m_k Optional integer. The maturity switch as a *target*
-#'   development index (= `ata_to` of the first stable link). When
+#'   development index (= `change` of the first stable link). When
 #'   both `recent` and `regime` are provided, the hybrid mask uses
 #'   `m_k` as the boundary: cells with `dev < m_k` apply the cohort
 #'   cut, cells with `dev >= m_k` apply the calendar-diagonal cut.
@@ -954,7 +954,7 @@ plot.Total <- function(x,
     expanded[, .max_cal_fit := .max_cal]
   }
 
-  # resolve regime break date — scalar (single group / scalar input)
+  # resolve regime change date — scalar (single group / scalar input)
   # or a per-group `[join_cols..., break_date]` data.table when a
   # multi-group `Regime` matches `grp`. Auto-dispatched inside the helper.
   bd <- if (!is.null(regime)) {
@@ -1093,17 +1093,17 @@ plot.Total <- function(x,
     if (!is.null(fit_for_mat) &&
         !is.null(fit_for_mat$maturity) &&
         nrow(fit_for_mat$maturity) > 0L &&
-        !all(is.na(fit_for_mat$maturity$ata_to))) {
+        !all(is.na(fit_for_mat$maturity$change))) {
       mat <- fit_for_mat$maturity
       if (length(grp) > 0L && nrow(mat) > 1L &&
           all(grp %in% names(mat))) {
-        m_k_dt <- mat[, c(grp, "ata_to"), with = FALSE]
-        data.table::setnames(m_k_dt, "ata_to", "m_k")
+        m_k_dt <- mat[, c(grp, "change"), with = FALSE]
+        data.table::setnames(m_k_dt, "change", "m_k")
         m_k_dt <- m_k_dt[is.finite(m_k)]
         if (!nrow(m_k_dt)) m_k_dt <- NULL
-        m_k <- max(mat$ata_to, na.rm = TRUE)
+        m_k <- max(mat$change, na.rm = TRUE)
       } else {
-        m_k <- max(mat$ata_to, na.rm = TRUE)
+        m_k <- max(mat$change, na.rm = TRUE)
       }
     }
   }
@@ -1148,7 +1148,7 @@ plot.Total <- function(x,
   #
   # `m_k_dt` (when present) is a `[grp..., m_k]` data.table — each facet
   # draws its own k* boundary. Falls back to scalar `m_k` for single
-  # group / pooled. Mirrors the regime-break hline dispatch below.
+  # group / pooled. Mirrors the regime-change hline dispatch below.
   if (!is.null(m_k_dt)) {
     vline_df <- data.table::copy(m_k_dt)
     vline_df[, .xint := m_k - 0.5]
@@ -1164,8 +1164,8 @@ plot.Total <- function(x,
     )
   }
 
-  # horizontal regime-break line. The y axis is a discrete factor with
-  # levels sorted descending; the break row is the row whose label
+  # horizontal regime-change line. The y axis is a discrete factor with
+  # levels sorted descending; the change row is the row whose label
   # corresponds to the smallest cohort >= bd. Draw the line just above
   # that row (toward older cohorts).
   #

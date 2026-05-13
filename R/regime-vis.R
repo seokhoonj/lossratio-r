@@ -78,12 +78,12 @@ plot.Regime <- function(x,
     x$method, x$dev, x$window, nrow(df), ve[1L] * 100, ve[2L] * 100
   )
 
-  caption <- if (nrow(x$breakpoints)) {
-    sprintf("breakpoint(s): %s",
-            paste(format(x$breakpoints[["breakpoint"]], "%y.%m"),
+  caption <- if (nrow(x$changes)) {
+    sprintf("change point(s): %s",
+            paste(format(x$changes[["change"]], "%y.%m"),
                   collapse = ", "))
   } else {
-    "no breakpoint detected"
+    "no change point detected"
   }
 
   ggshort::plot_pca(
@@ -135,13 +135,13 @@ plot.Regime <- function(x,
       x$method, nrow(df), ve[1L] * 100, ve[2L] * 100
     )
 
-    bp_g <- x$breakpoints[x$breakpoints[[grp]] ==
-                            .coerce_match(gv, x$breakpoints[[grp]])][["breakpoint"]]
+    bp_g <- x$changes[x$changes[[grp]] ==
+                        .coerce_match(gv, x$changes[[grp]])][["change"]]
     caption <- if (length(bp_g)) {
-      sprintf("breakpoint(s): %s",
+      sprintf("change point(s): %s",
               paste(format(bp_g, "%y.%m"), collapse = ", "))
     } else {
-      "no breakpoint detected"
+      "no change point detected"
     }
 
     ggshort::plot_pca(

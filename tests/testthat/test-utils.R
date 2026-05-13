@@ -29,9 +29,9 @@ test_that(".apply_regime_filter with single Date drops pre-break cohorts", {
   expect_true(all(out$cohort >= as.Date("2023-06-01")))
 })
 
-test_that(".apply_regime_filter with Regime extracts last breakpoint", {
+test_that(".apply_regime_filter with Regime extracts last change", {
   reg <- structure(
-    list(breakpoints = as.Date(c("2023-03-01", "2023-08-01"))),
+    list(changes = as.Date(c("2023-03-01", "2023-08-01"))),
     class = "Regime"
   )
   dt <- data.table::data.table(
@@ -67,7 +67,7 @@ test_that(".apply_regime_filter with NULL/empty returns unchanged", {
   dt <- data.table::data.table(cohort = as.Date("2023-01-01"), dev = 1L)
   expect_equal(nrow(lossratio:::.apply_regime_filter(dt, NULL,
                       coh = "cohort", dev = "dev")), 1L)
-  reg_empty <- structure(list(breakpoints = as.Date(character(0))),
+  reg_empty <- structure(list(changes = as.Date(character(0))),
                          class = "Regime")
   expect_equal(nrow(lossratio:::.apply_regime_filter(dt, reg_empty,
                       coh = "cohort", dev = "dev")), 1L)
@@ -87,17 +87,17 @@ test_that(".apply_regime_filter with vector uses latest date", {
 })
 
 test_that(".apply_regime_filter with multi-group Regime dispatches per group", {
-  # Two groups, distinct breakpoints
+  # Two groups, distinct changes
   bp <- data.table::data.table(
     coverage   = c("A", "B"),
-    breakpoint = as.Date(c("2023-04-01", "2023-08-01")),
+    change     = as.Date(c("2023-04-01", "2023-08-01")),
     regime_id  = c(2L, 2L),
     pre_value  = c(0.5, 0.6),
     post_value = c(0.7, 0.8),
     magnitude  = c(0.2, 0.2)
   )
   reg <- structure(
-    list(breakpoints = bp,
+    list(changes     = bp,
          multi_group = TRUE,
          groups      = "coverage"),
     class = "Regime"
@@ -126,14 +126,14 @@ test_that(".apply_regime_filter per-group keeps groups not in regime", {
   # Regime only knows about group A; group B should pass through unfiltered.
   bp <- data.table::data.table(
     coverage   = "A",
-    breakpoint = as.Date("2023-08-01"),
+    change     = as.Date("2023-08-01"),
     regime_id  = 2L,
     pre_value  = 0.5,
     post_value = 0.7,
     magnitude  = 0.2
   )
   reg <- structure(
-    list(breakpoints = bp,
+    list(changes     = bp,
          multi_group = TRUE,
          groups      = "coverage"),
     class = "Regime"

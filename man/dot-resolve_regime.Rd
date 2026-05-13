@@ -7,7 +7,7 @@
 .resolve_regime(arg, tri, masked_tri = NULL)
 }
 \arguments{
-\item{arg}{The regime-break input (NULL / Regime / \code{"auto"} /
+\item{arg}{The regime-change input (NULL / Regime / \code{"auto"} /
 function).}
 
 \item{tri}{A \code{"Triangle"} object — used as the detection input when

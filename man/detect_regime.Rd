@@ -46,7 +46,7 @@ exposure-anchored (ED model's $g_k$).}
 \item{\code{"premium_ed"}}{Alias of \code{"premium_ata"} — the two differ
 only by a constant \code{(premium_ata - 1)}, and the PCA
 standardization in detection removes that shift, so they yield
-identical breakpoints. Provided for API symmetry with the
+identical regime changes. Provided for API symmetry with the
 \code{loss_ata} / \code{loss_ed} pair.}
 }
 Derived targets drop the first dev row per cohort (no predecessor),
@@ -92,7 +92,7 @@ An object of class \code{"Regime"}. For single-group input:
 \item{\code{target}}{Trajectory variable used for detection.}
 \item{\code{window}}{Trajectory window per combo. Scalar integer when a
 single combo was analysed; integer vector (one per surviving
-combo, in the order of \verb{$labels} / \verb{$breakpoints} group rows)
+combo, in the order of \verb{$labels} / \verb{$changes} group rows)
 otherwise.}
 \item{\code{window_mode}}{Either \code{"auto"} (resolved per group via
 \code{\link[=detect_maturity]{detect_maturity()}}) or \code{"manual"} (user-supplied integer).}
@@ -100,13 +100,13 @@ otherwise.}
 \item{\code{labels}}{\code{data.table} of one row per analysed cohort:
 \verb{[by..., cohort, regime, regime_id]}. Group columns are prepended
 when \code{by} resolves to a non-empty vector.}
-\item{\code{breakpoints}}{\code{data.table} of detected breakpoints with
-columns \verb{[by..., breakpoint, regime_id, pre_value, post_value, magnitude]}. \code{regime_id} = id of the regime that STARTS at this
-break (the pre-break regime is \code{regime_id - 1}); matches
+\item{\code{changes}}{\code{data.table} of detected regime changes with
+columns \verb{[by..., change, regime_id, pre_value, post_value, magnitude]}. \code{regime_id} = id of the regime that STARTS at this
+change (the pre-change regime is \code{regime_id - 1}); matches
 \verb{$labels$regime_id}. \code{pre_value} / \code{post_value} are the mean
 \code{target} over the cohort × dev trajectory windows in the pre- /
-post-break regimes; \verb{magnitude = |post_value - pre_value|}.
-Empty (zero rows) when no break is detected.}
+post-change regimes; \verb{magnitude = |post_value - pre_value|}.
+Empty (zero rows) when no change is detected.}
 \item{\code{n_regimes}}{Number of regimes detected. Scalar integer for
 single-combo detection; named integer vector (keyed by combo) for
 multi-combo.}
@@ -132,7 +132,7 @@ sequence.
 
 Multi-group \code{Triangle} inputs are supported: detection runs
 independently per group, and results are combined into a single
-\code{Regime} object whose \verb{$breakpoints}, \verb{$labels}, etc. carry the
+\code{Regime} object whose \verb{$changes}, \verb{$labels}, etc. carry the
 group column. Single-group input retains the original scalar /
 Date-vector / matrix layout for backward compatibility.
 
@@ -140,13 +140,13 @@ Three detection strategies are supported:
 \describe{
 \item{\code{"e_divisive"}}{Multivariate non-parametric divisive change-point
 detection via \code{\link[ecp:e.divisive]{ecp::e.divisive()}}. The number of regimes is
-determined by the data; only significant breakpoints at
+determined by the data; only significant changes at
 \code{sig_level} are retained. Preferred when the number of regimes
 is not known in advance.}
 \item{\code{"pelt"}}{Univariate mean change-point detection via
 \code{\link[changepoint:cpt.mean]{changepoint::cpt.mean()}} with the PELT algorithm applied to the
 first principal component of the cohort feature matrix. Fast
-and may return multiple breakpoints.}
+and may return multiple changes.}
 \item{\code{"hclust"}}{Ward hierarchical clustering on the scaled
 cohort feature matrix, cut to \code{n_regimes} clusters. Ignores
 time ordering -- useful as a sanity check since non-adjacent
@@ -186,7 +186,7 @@ tri_all <- build_triangle(
   premium  = "premium_incr"
 )
 r_all <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
-print(r_all$breakpoints)
+print(r_all$changes)
 }
 
 }

@@ -147,9 +147,9 @@ test_that("fit_ata with regime drops pre-break cohorts", {
 
   fit_full <- fit_ata(tri, target = "loss")
   fit_brk  <- fit_ata(tri, target = "loss",
-                      regime = regime_at(breakpoint = "2024-07-01"))
+                      regime = regime_at(change = "2024-07-01"))
 
-  # post-break fit should have fewer rows in the underlying ATA pairs
+  # post-change fit should have fewer rows in the underlying ATA pairs
   # and possibly different f_selected for at least one ata_from
   expect_false(identical(fit_full$selected$f_selected,
                          fit_brk$selected$f_selected))
@@ -177,5 +177,5 @@ test_that("fit_ata with Regime input preserves the Regime object", {
   ata <- build_link(tri, target = "loss")
   fit_reg <- fit_ata(tri, target = "loss", regime = reg)
   expect_s3_class(fit_reg$regime, "Regime")
-  expect_identical(fit_reg$regime$breakpoints, reg$breakpoints)
+  expect_identical(fit_reg$regime$changes, reg$changes)
 })

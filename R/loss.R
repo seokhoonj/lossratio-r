@@ -179,12 +179,12 @@ fit_loss <- function(x,
         # narrow ED region, retaining pre-break CL data for factor
         # estimation. (Earlier `max(k*)` fallback over-cut
         # fast-maturing groups.)
-        m_k_vec <- m_dt$ata_to
+        m_k_vec <- m_dt$change
 
         dev_split_arg <- if (length(grp) > 0L &&
                              length(unique(m_k_vec)) > 1L) {
-          m_k_dt <- m_dt[, c(grp, "ata_to"), with = FALSE]
-          data.table::setnames(m_k_dt, "ata_to", "dev_split")
+          m_k_dt <- m_dt[, c(grp, "change"), with = FALSE]
+          data.table::setnames(m_k_dt, "change", "dev_split")
           m_k_dt
         } else {
           max(m_k_vec, na.rm = TRUE)
@@ -465,14 +465,14 @@ print.LossFit <- function(x, ...) {
       rows <- .format_record_table(
         list(
           label = sprintf("maturity[%s]", grp_txt),
-          value = sprintf(": %d", mat$ata_to)
+          value = sprintf(": %d", mat$change)
         ),
         justify = c("left", "left"),
         sep     = " "
       )
       for (row in rows) cat(row, "\n", sep = "")
     } else {
-      cat("maturity     :", mat$ata_to[1L], "\n")
+      cat("maturity     :", mat$change[1L], "\n")
     }
   }
 

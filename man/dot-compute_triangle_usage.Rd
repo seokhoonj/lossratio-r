@@ -30,7 +30,7 @@ recent wedge sits \emph{before} the holdout wedge (no overlap), matching
 triangle whose own max_cal is \code{original - holdout}.}
 
 \item{m_k}{Optional integer. The maturity switch as a \emph{target}
-development index (= \code{ata_to} of the first stable link). When
+development index (= \code{change} of the first stable link). When
 both \code{recent} and \code{regime} are provided, the hybrid mask uses
 \code{m_k} as the boundary: cells with \code{dev < m_k} apply the cohort
 cut, cells with \code{dev >= m_k} apply the calendar-diagonal cut.

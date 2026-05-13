@@ -207,14 +207,14 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     if (is.null(mat) || !nrow(mat)) return(p)
 
     labels <- if (length(grp)) {
-      mat[, c(grp, "ata_from", "ata_to", "cv", "rse"), with = FALSE]
+      mat[, c(grp, "ata_from", "change", "cv", "rse"), with = FALSE]
     } else {
-      mat[, .(ata_from, ata_to, cv, rse)]
+      mat[, .(ata_from, change, cv, rse)]
     }
 
     labels[, label_text := sprintf(
       "maturity: %s-%s\ncv: %.3f\nrse: %.3f\nmin_run: %d",
-      ata_from, ata_to, cv, rse, min_run
+      ata_from, change, cv, rse, min_run
     )]
 
     p + ggplot2::geom_label(
@@ -686,7 +686,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
     if (nrow(mat)) {
       mat[, ata_link := factor(
-        sprintf("%s-%s", ata_from, ata_to),
+        sprintf("%s-%s", ata_from, change),
         levels = link_levels
       )]
     }
@@ -725,14 +725,14 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     )
 
     labels <- if (length(grp)) {
-      mat[, c(grp, "ata_from", "ata_to", "cv", "rse"), with = FALSE]
+      mat[, c(grp, "ata_from", "change", "cv", "rse"), with = FALSE]
     } else {
-      mat[, .(ata_from, ata_to, cv, rse)]
+      mat[, .(ata_from, change, cv, rse)]
     }
 
     labels[, label_text := sprintf(
       "maturity: %s-%s\ncv: %.3f\nrse: %.3f\nmin_run: %d",
-      ata_from, ata_to, cv, rse, min_run
+      ata_from, change, cv, rse, min_run
     )]
 
     p <- p + ggplot2::geom_label(

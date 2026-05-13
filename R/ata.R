@@ -343,9 +343,9 @@ fit_ata <- function(x,
   na_method    <- match.arg(na_method)
   sigma_method <- match.arg(sigma_method)
 
-  # 1) regime-break filter -----------------------------------------------
+  # 1) regime-change filter ----------------------------------------------
   # when `regime` is supplied, drop cohorts strictly before the
-  # break date so estimation uses only the post-break regime. A
+  # change date so estimation uses only the post-change regime. A
   # multi-group `Regime` triggers per-group dispatch inside
   # `.apply_regime_filter()`.
   if (!is.null(regime)) {

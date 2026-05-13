@@ -97,8 +97,8 @@ navbar:
         href: articles/regime.html
       - text: Projection
         href: articles/projection.html
-      - text: Regime break filter
-        href: articles/regime-break-filter.html
+      - text: Regime change filter
+        href: articles/regime-change-filter.html
       - text: Backtest
         href: articles/backtest.html
       - text: Convergence
@@ -231,7 +231,7 @@ articles:
   - triangle-link-and-maturity
   - regime
   - projection
-  - regime-break-filter
+  - regime-change-filter
   - backtest
   - convergence
 - title: Reference
@@ -247,7 +247,7 @@ articles:
   - "articles/triangle-link-and-maturity-ko"
   - "articles/regime-ko"
   - "articles/projection-ko"
-  - "articles/regime-break-filter-ko"
+  - "articles/regime-change-filter-ko"
   - "articles/backtest-ko"
   - "articles/convergence-ko"
   - "articles/chain-ladder-reserving-ko"

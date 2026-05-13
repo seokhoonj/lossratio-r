@@ -8,7 +8,7 @@
 #'   \item{`"ed"` (default)}{Additive recursion. Empirically more robust
 #'     on long-projection premium triangles -- the multiplicative
 #'     scaling of the classical CL recursion can blow up under cohort-wise
-#'     heterogeneity (regime breaks in premium, channel changes,
+#'     heterogeneity (regime changes in premium, channel changes,
 #'     amendments). See `dev/premium_projection.qmd`.}
 #'   \item{`"cl"`}{Mack (1993) multiplicative recursion. Point projection
 #'     identical to ED; only the SE accumulation differs.}
@@ -37,8 +37,8 @@
 #'     \item{Function / closure}{A user-supplied
 #'       `function(tri) -> Regime` for deferred custom-config detection.}
 #'   }
-#'   Pre-break cohorts (cohorts before the resolved `Regime`'s breakpoint)
-#'   are excluded from premium factor estimation.
+#'   Pre-change cohorts (cohorts before the resolved `Regime`'s change
+#'   date) are excluded from premium factor estimation.
 #' @param recent Optional positive integer; recent calendar-diagonal
 #'   filter for the underlying ATA fit. Default `NULL`.
 #' @param tail Logical; whether to apply a tail factor. Default `FALSE`.

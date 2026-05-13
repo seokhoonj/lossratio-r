@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{.apply_regime_filter}
 \alias{.apply_regime_filter}
-\title{Apply regime-break (cohort) filter to a triangle-shaped data.table}
+\title{Apply regime-change (cohort) filter to a triangle-shaped data.table}
 \usage{
 .apply_regime_filter(
   dt,
@@ -22,7 +22,7 @@
 \item A single Date or character (coercible to Date).
 \item A Date/character vector -- uses the latest (max) date.
 \item A single-group \code{Regime} object -- extracts the latest from
-\verb{$breakpoints}.
+\verb{$changes}.
 \item A multi-group \code{Regime} object -- dispatches per group on the
 intersection of \code{Regime$groups} and \code{grp}.
 }}

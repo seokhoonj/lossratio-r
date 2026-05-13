@@ -14,7 +14,7 @@ the break dispatched on. When \code{NULL} (default) or empty, the
 function always returns a scalar (the maximum break date),
 preserving the historical single-value contract. When non-empty and
 \code{regime} is a multi-group \code{Regime} whose \verb{$groups} intersect
-\code{by}, returns a \code{data.table} with \verb{[intersect(by, regime$groups)..., break_date]} (one row per group combo, holding \code{max(breakpoint)}).
+\code{by}, returns a \code{data.table} with \verb{[intersect(by, regime$groups)..., break_date]} (one row per group combo, holding \code{max(change)}).
 Otherwise falls back to scalar.}
 }
 \value{

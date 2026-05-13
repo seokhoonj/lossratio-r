@@ -61,8 +61,12 @@ maturity criteria. Default is \code{2L}.}
 }
 \value{
 A \code{data.table} with class \code{"Maturity"} containing one row
-per group. If no mature link is found, all values for that group are
-\code{NA}.
+per group. Columns include \code{ata_from}, \code{change} (the maturity
+point, i.e. the \code{to}-index of the first mature ata link),
+\code{ata_link}, and the diagnostic statistics (\code{mean}, \code{median},
+\code{wt}, \code{cv}, \code{f}, \code{f_se}, \code{rse}, \code{sigma}, \code{n_obs}, \code{n_valid},
+\code{n_inf}, \code{n_nan}, \code{valid_ratio}). If no mature link is found,
+all values for that group are \code{NA}.
 }
 \description{
 Identify the first mature age-to-age (ata) link from a \code{Triangle}.

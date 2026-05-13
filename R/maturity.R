@@ -65,8 +65,12 @@
 #'   maturity criteria. Default is `2L`.
 #'
 #' @return A `data.table` with class `"Maturity"` containing one row
-#'   per group. If no mature link is found, all values for that group are
-#'   `NA`.
+#'   per group. Columns include `ata_from`, `change` (the maturity
+#'   point, i.e. the `to`-index of the first mature ata link),
+#'   `ata_link`, and the diagnostic statistics (`mean`, `median`,
+#'   `wt`, `cv`, `f`, `f_se`, `rse`, `sigma`, `n_obs`, `n_valid`,
+#'   `n_inf`, `n_nan`, `valid_ratio`). If no mature link is found,
+#'   all values for that group are `NA`.
 #'
 #' @export
 detect_maturity <- function(x,
@@ -170,7 +174,7 @@ detect_maturity <- function(x,
     if (length(idx) == 0L || is.na(idx)) {
       return(data.table::data.table(
         ata_from    = NA_real_,
-        ata_to      = NA_real_,
+        change      = NA_real_,
         ata_link    = NA_character_,
         mean        = NA_real_,
         median      = NA_real_,
@@ -193,7 +197,7 @@ detect_maturity <- function(x,
     # (data.table grouped-j requires stable column types).
     data.table::data.table(
       ata_from    = as.numeric(d$ata_from[idx]),
-      ata_to      = as.numeric(d$ata_to[idx]),
+      change      = as.numeric(d$ata_to[idx]),
       ata_link    = as.character(d$ata_link[idx]),
       mean        = as.numeric(d$mean[idx]),
       median      = as.numeric(d$median[idx]),

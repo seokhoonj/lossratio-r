@@ -86,7 +86,7 @@ detect_regime_optimal_window <- function(x,
   diag_rows <- lapply(seq_along(window_seq), function(i) {
     res <- details[[i]]
     if (is.null(res)) return(NULL)
-    bp <- res$breakpoints
+    bp <- res$changes
     if (length(by) > 0L) {
       bp_split <- split(bp, by = by, drop = FALSE, sorted = TRUE)
       rows <- lapply(names(bp_split), function(combo_key) {

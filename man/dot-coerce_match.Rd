@@ -9,7 +9,7 @@
 \description{
 Used internally by print.Regime / summary.Regime: group values are
 stored as names (character) on \verb{$n_regimes}, \verb{$trajectory}, etc., but
-the actual column type in \verb{$labels[[grp]]} / \verb{$breakpoints[[grp]]}
+the actual column type in \verb{$labels[[grp]]} / \verb{$changes[[grp]]}
 may be factor, character, or even Date. This converts the character
 name back to a scalar of the column's type for \code{==} filtering.
 }

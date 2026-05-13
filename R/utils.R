@@ -562,7 +562,7 @@ get_recent_weights <- function(weights, recent) {
 #'   preserving the historical single-value contract. When non-empty and
 #'   `regime` is a multi-group `Regime` whose `$groups` intersect
 #'   `by`, returns a `data.table` with `[intersect(by, regime$groups)...,
-#'   break_date]` (one row per group combo, holding `max(breakpoint)`).
+#'   break_date]` (one row per group combo, holding `max(change)`).
 #'   Otherwise falls back to scalar.
 #'
 #' @return One of:
@@ -575,30 +575,30 @@ get_recent_weights <- function(weights, recent) {
   if (is.null(regime)) return(NULL)
 
   if (inherits(regime, "Regime")) {
-    bp <- regime$breakpoints
+    bp <- regime$changes
 
     # Per-group path: multi-group Regime + caller-supplied `by` that
     # intersects the Regime's own group columns.
     if (!is.null(by) && length(by) > 0L &&
         isTRUE(regime$multi_group) &&
         data.table::is.data.table(bp) && nrow(bp) > 0L &&
-        "breakpoint" %in% names(bp)) {
+        "change" %in% names(bp)) {
 
       rgrp <- regime$groups
       if (is.null(rgrp)) rgrp <- character(0)
       join_cols <- intersect(by, rgrp)
 
       if (length(join_cols) > 0L && all(join_cols %in% names(bp))) {
-        bd <- bp[, .(break_date = max(.SD[["breakpoint"]])),
-                 by = join_cols, .SDcols = "breakpoint"]
+        bd <- bp[, .(break_date = max(.SD[["change"]])),
+                 by = join_cols, .SDcols = "change"]
         return(bd)
       }
     }
 
     # Scalar path
     if (data.table::is.data.table(bp)) {
-      if (!nrow(bp) || !"breakpoint" %in% names(bp)) return(NULL)
-      return(max(bp[["breakpoint"]]))
+      if (!nrow(bp) || !"change" %in% names(bp)) return(NULL)
+      return(max(bp[["change"]]))
     }
     if (length(bp) == 0L) return(NULL)
     return(max(bp))
@@ -612,7 +612,7 @@ get_recent_weights <- function(weights, recent) {
 }
 
 
-#' Apply regime-break (cohort) filter to a triangle-shaped data.table
+#' Apply regime-change (cohort) filter to a triangle-shaped data.table
 #'
 #' @description
 #' Drops rows where `coh < break_date`. Optionally restrict the filter
@@ -632,7 +632,7 @@ get_recent_weights <- function(weights, recent) {
 #'   * A single Date or character (coercible to Date).
 #'   * A Date/character vector -- uses the latest (max) date.
 #'   * A single-group `Regime` object -- extracts the latest from
-#'     `$breakpoints`.
+#'     `$changes`.
 #'   * A multi-group `Regime` object -- dispatches per group on the
 #'     intersection of `Regime$groups` and `grp`.
 #' @param grp Character vector of group columns (may be empty).

@@ -423,9 +423,9 @@ print.LRFit <- function(x, ...) {
         paste(mat[i, grp, with = FALSE], collapse = "/"), character(1L))
       for (i in seq_along(grp_txt))
         cat(pad(sprintf("maturity[%s]", grp_txt[i])), ":",
-            mat$ata_to[i], "\n")
+            mat$change[i], "\n")
     } else {
-      cat(pad("maturity"), ":", mat$ata_to[1L], "\n")
+      cat(pad("maturity"), ":", mat$change[1L], "\n")
     }
   }
 

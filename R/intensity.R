@@ -111,7 +111,7 @@ fit_intensity <- function(x,
   na_method    <- match.arg(na_method)
   sigma_method <- match.arg(sigma_method)
 
-  # 1) regime-break filter ----------------------------------------------
+  # 1) regime-change filter ---------------------------------------------
   # Multi-group `Regime` triggers per-group dispatch inside
   # `.apply_regime_filter()`.
   if (!is.null(regime)) {

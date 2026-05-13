@@ -35,8 +35,8 @@ four input types:
 \item{Function / closure}{A user-supplied
 \verb{function(tri) -> Regime} for deferred custom-config detection.}
 }
-Pre-break cohorts (cohorts before the resolved \code{Regime}'s breakpoint)
-are excluded from premium factor estimation.}
+Pre-change cohorts (cohorts before the resolved \code{Regime}'s change
+date) are excluded from premium factor estimation.}
 
 \item{sigma_method}{Sigma extrapolation method. One of \code{"locf"}
 (default), \code{"min_last2"}, or \code{"loglinear"}.}
@@ -66,7 +66,7 @@ a chain ladder estimator. Two variance recursions are supported:
 \item{\code{"ed"} (default)}{Additive recursion. Empirically more robust
 on long-projection premium triangles -- the multiplicative
 scaling of the classical CL recursion can blow up under cohort-wise
-heterogeneity (regime breaks in premium, channel changes,
+heterogeneity (regime changes in premium, channel changes,
 amendments). See \code{dev/premium_projection.qmd}.}
 \item{\code{"cl"}}{Mack (1993) multiplicative recursion. Point projection
 identical to ED; only the SE accumulation differs.}
