@@ -444,7 +444,7 @@ fit_ata(tri, target = "loss", alpha = 1, recent = 12)  # 최근 12개 대각선
 #> alpha       : 1 
 #> sigma_method: locf 
 #> recent      : 12 
-#> regime_break: none
+#> regime      : none
 #> use_maturity: FALSE 
 #> groups      : coverage 
 #> n_groups    : 1 
@@ -457,25 +457,26 @@ fit_cl(tri, target = "loss", recent = 12)
 #> alpha       : 1 
 #> sigma_method: locf 
 #> recent      : 12 
+#> regime      : none
 #> use_maturity: FALSE 
 #> tail_factor : 1 
 #> groups      : coverage 
 #> periods     : 36
 fit_lr(tri, recent = 12)
 #> <LRFit>
-#> method               : sa 
-#> loss_alpha           : 1 
-#> premium_alpha        : 1 
-#> se_method            : fixed 
-#> conf_level           : 0.95 
-#> ci_type              : analytical  
-#> sigma_method         : locf 
-#> recent               : 12 
-#> loss_regime_break    : none
-#> premium_regime_break : none
-#> maturity[SUR]        : 25 
-#> groups               : coverage 
-#> periods              : 36
+#> method         : sa 
+#> loss_alpha     : 1 
+#> premium_alpha  : 1 
+#> se_method      : fixed 
+#> conf_level     : 0.95 
+#> ci_type        : analytical  
+#> sigma_method   : locf 
+#> recent         : 12 
+#> loss_regime    : none
+#> premium_regime : none
+#> maturity[SUR]  : 25 
+#> groups         : coverage 
+#> periods        : 36
 ```
 
 `recent = K` 는 calendar 위치 (`rank(cohort) + dev - 1`) 가 그룹 내 최근

@@ -117,11 +117,11 @@
 <li>
 <strong>🟥 holdout</strong> — <code>backtest</code> 검증용 대각셀</li>
 <li>
-<strong>⬜ unused</strong> — <code>regime_break</code> / <code>recent</code> 필터로 제외된 영역</li>
+<strong>⬜ unused</strong> — <code>regime</code> / <code>recent</code> 필터로 제외된 영역</li>
 <li>
 <strong>수직 dash선</strong> — <code>maturity</code> <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math> (ED → CL 전환 경계)</li>
 <li>
-<strong>수평 dash선</strong> — <code>regime_break</code> <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math> (코호트 축 컷)</li>
+<strong>수평 dash선</strong> — <code>regime</code> <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math> (코호트 축 컷)</li>
 </ul><div class="section level2">
 <h2 id="주요-기능">주요 기능<a class="anchor" aria-label="anchor" href="#%EC%A3%BC%EC%9A%94-%EA%B8%B0%EB%8A%A5"></a></h2>
 <p>장기 건강보험은 <em>코호트 안에서 클레임과 보험료가 오랜 기간 지속적으로 발생하고</em> <em>신상품 출시·보험료 갱신·인수 정책 등 구조적 변화가 자주 일어난다</em>. 이 사실이 손해율 예측을 어렵게 만든다.</p>
@@ -133,7 +133,7 @@
 <strong><code>fit_lr(method = "sa")</code></strong> — maturity 이전엔 exposure-driven (ED), 이후엔 chain ladder (CL)</td>
 </tr><tr><td>인수 기준 변경 등 구조적 변화</td>
 <td>
-<strong><code><a href="reference/detect_regime.html">detect_regime()</a></code></strong> + <code>regime_break</code> 인자 — 변화 이전 코호트를 자동으로 분리</td>
+<strong><code><a href="reference/detect_regime.html">detect_regime()</a></code></strong> + <code>loss_regime</code> / <code>premium_regime</code> 인자 — 변화 이전 코호트를 자동으로 분리</td>
 </tr><tr><td>“이 fit 이 얼마나 맞나?” 검증</td>
 <td>
 <strong><code><a href="reference/backtest.html">backtest()</a></code></strong> — 최근 N 대각선을 빼고 적합한 뒤 actual 과 비교</td>

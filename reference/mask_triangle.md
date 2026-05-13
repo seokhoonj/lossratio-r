@@ -47,6 +47,6 @@ plot_triangle(tri_masked)
 
 # Use same masked tri to detect regime + fit
 r   <- detect_regime(tri_masked)
-fit <- fit_lr(tri_masked, loss_regime_break = r)
+fit <- fit_lr(tri_masked, loss_regime = r)
 } # }
 ```

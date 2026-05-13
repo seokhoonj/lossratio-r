@@ -121,7 +121,7 @@ configuration: <code>"used"</code>, <code>"holdout"</code>, <code>"unused"</code
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.compute_triangle_usage</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  regime_break <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  holdout <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  m_k <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -140,10 +140,10 @@ configuration: <code>"used"</code>, <code>"holdout"</code>, <code>"unused"</code
 <code>NULL</code>.</p></dd>
 
 
-<dt id="arg-regime-break">regime_break<a class="anchor" aria-label="anchor" href="#arg-regime-break"></a></dt>
+<dt id="arg-regime">regime<a class="anchor" aria-label="anchor" href="#arg-regime"></a></dt>
 <dd><p>Optional cohort cutoff. Accepts the same input
-forms as <code><a href="fit_lr.html">fit_lr()</a></code> (<code>NULL</code>, <code>Date</code>, character, vector, or
-<code>Regime</code>).</p></dd>
+forms handled by <code><a href="dot-resolve_regime_date.html">.resolve_regime_date()</a></code> (<code>NULL</code>, <code>Date</code>, character,
+vector, or <code>Regime</code>).</p></dd>
 
 
 <dt id="arg-holdout">holdout<a class="anchor" aria-label="anchor" href="#arg-holdout"></a></dt>
@@ -158,11 +158,11 @@ triangle whose own max_cal is <code>original - holdout</code>.</p></dd>
 <dt id="arg-m-k">m_k<a class="anchor" aria-label="anchor" href="#arg-m-k"></a></dt>
 <dd><p>Optional integer. The maturity switch as a <em>target</em>
 development index (= <code>ata_to</code> of the first stable link). When
-both <code>recent</code> and <code>regime_break</code> are provided, the hybrid mask
-uses <code>m_k</code> as the boundary: cells with <code>dev &lt; m_k</code> apply the
-cohort cut, cells with <code>dev &gt;= m_k</code> apply the calendar-diagonal
-cut. When <code>NULL</code>, the hybrid logic falls back to applying both
-filters jointly (cohort cut AND recent cut).</p></dd>
+both <code>recent</code> and <code>regime</code> are provided, the hybrid mask uses
+<code>m_k</code> as the boundary: cells with <code>dev &lt; m_k</code> apply the cohort
+cut, cells with <code>dev &gt;= m_k</code> apply the calendar-diagonal cut.
+When <code>NULL</code>, the hybrid logic falls back to applying both filters
+jointly (cohort cut AND recent cut).</p></dd>
 
 </dl></div>
     <div class="section level2">

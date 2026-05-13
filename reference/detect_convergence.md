@@ -83,7 +83,7 @@ detect_convergence(
   [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   (and thence to
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)),
-  e.g. `loss_method`, `recent`, `regime_break`.
+  e.g. `loss_method`, `recent`, `loss_regime`.
 
 ## Value
 

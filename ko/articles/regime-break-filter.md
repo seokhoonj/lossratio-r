@@ -19,7 +19,8 @@ The natural fix is asymmetric:
 - **Post-maturity (CL region):** diagonal cut — keep only the recent `N`
   calendar diagonals.
 
-`regime_break` implements that split.
+`loss_regime` (and its premium-side sibling `premium_regime`) implements
+that split.
 
 ## Two-axis asymmetry
 
@@ -31,21 +32,34 @@ The natural fix is asymmetric:
 The maturity point $`k^*`$ is a single internal switch produced by
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md).
 Regime breaks are exogenous events — there can be none, one, or several.
-When `regime_break` receives multiple values, the **most recent** is
-used, since post-break statistics are most stable when the post-break
+When a `Regime` object carries multiple breakpoints, the **most recent**
+is used, since post-break statistics are most stable when the post-break
 window has accumulated the largest number of cohorts.
 
 ## API
 
-`regime_break` is a shared argument on `fit_ata`, `fit_ed`, and
-`fit_lr`. It accepts:
+[`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+takes two role-specific regime arguments — `loss_regime` (loss-side
+filter) and `premium_regime` (premium-side filter; defaults to
+`loss_regime`).
+[`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
+/
+[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
+take a single `regime` argument.
+[`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+mirrors `fit_lr` with `loss_regime` / `premium_regime`. All four accept
+the same input types:
 
 | Input | Behaviour |
 |----|----|
 | `NULL` (default) | no filtering — backwards compatible |
-| `Date` or character scalar | single break date |
-| Date/character vector | uses the latest entry |
-| `Regime` object | output of [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md) passed in |
+| `Regime` object | output of [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md) or [`regime_at()`](https://seokhoonj.github.io/lossratio/ko/reference/regime_at.md) |
+| `"auto"` sentinel | calls [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md) internally on the triangle |
+| `function(tri) -> Regime` | closure that returns a `Regime` from a triangle |
+
+Raw `Date` / character / vector input is no longer accepted — wrap it in
+[`regime_at()`](https://seokhoonj.github.io/lossratio/ko/reference/regime_at.md)
+first to make the breakpoint explicit:
 
 ``` r
 
@@ -60,26 +74,33 @@ tri_sur <- build_triangle(
   premium  = "premium_incr"
 )
 
-# Single break date
+# Manual breakpoint via regime_at() — wrap a literal date in a Regime
 fit_lr(tri_sur, method = "sa", recent = 18L,
-       regime_break = "2024-07-01")
+       loss_regime = regime_at(breakpoint = "2024-07-01"))
 
-# Regime object directly
+# Regime object from detect_regime() directly
 reg <- detect_regime(tri_sur)
-fit_lr(tri_sur, method = "sa", recent = 18L, regime_break = reg)
+fit_lr(tri_sur, method = "sa", recent = 18L, loss_regime = reg)
 
-# Vector — latest is used (= 2024-04-01)
-fit_lr(tri_sur, method = "sa",
-       regime_break = c("2022-06-01", "2024-07-01"))
+# "auto" sentinel — detect_regime() is run internally
+fit_lr(tri_sur, method = "sa", recent = 18L, loss_regime = "auto")
+
+# Closure — defers detection until the fit sees the (filtered) triangle
+fit_lr(tri_sur, method = "sa", recent = 18L,
+       loss_regime = function(tri) detect_regime(tri))
 ```
 
-In simple modes (`fit_ata`, `fit_ed`, or `fit_lr(method ∈ {"ed","cl"})`)
-the same argument acts as a plain cohort cut.
+In simple modes (`fit_lr(method ∈ {"ed","cl"})`) the same argument acts
+as a plain cohort cut. The workers (`fit_ata`, `fit_ed`, `fit_cl`,
+`fit_intensity`) expose the same 4-type `regime` argument (`NULL` /
+`Regime` / `"auto"` / closure). Wrap a domain-knowledge date with
+`regime_at(breakpoint = "2024-07-01")` to construct a `Regime` without
+running detection.
 
 ## SA-mode hybrid behaviour
 
 The hybrid split activates only for `fit_lr(method = "sa")` with both
-`regime_break` and `recent`:
+`loss_regime` and `recent`:
 
 - dev ≤ $`k^*`$ — ED region: post-break cohorts only.
 - dev \> $`k^*`$ — CL region: latest `recent` diagonals only (full
@@ -95,11 +116,11 @@ configuration feeds to `fit_lr`:
 
 ``` r
 
-plot_triangle(tri_sur, type = "usage", holdout = 6L)                                 # full
-plot_triangle(tri_sur, type = "usage", recent = 12L, holdout = 6L)                   # recent
-plot_triangle(tri_sur, type = "usage", regime_break = "2024-07-01", holdout = 6L)    # break
+plot_triangle(tri_sur, type = "usage", holdout = 6L)                            # full
+plot_triangle(tri_sur, type = "usage", recent = 12L, holdout = 6L)              # recent
+plot_triangle(tri_sur, type = "usage", regime = "2024-07-01", holdout = 6L)     # break
 plot_triangle(tri_sur, type = "usage", recent = 12L,
-              regime_break = "2024-07-01", holdout = 6L)                             # hybrid
+              regime = "2024-07-01", holdout = 6L)                              # hybrid
 ```
 
 ![Cells used by each filter configuration on the SUR triangle. Blue =
@@ -129,18 +150,18 @@ reg <- detect_regime(tri_sur)
 bt_full   <- backtest(tri_sur, holdout = 6L)
 bt_recent <- backtest(tri_sur, holdout = 6L, recent = 18L)
 bt_break  <- backtest(tri_sur, holdout = 6L,
-                      regime_break = reg)
+                      loss_regime = reg)
 bt_hybrid <- backtest(tri_sur, holdout = 6L, recent = 18L,
-                      regime_break = reg)
+                      loss_regime = reg)
 ```
 
 Reproduced from `dev/regime_backtest_hybrid.R`:
 
-| Variant                        | drift (cal30 − cal25) | overall mean |
-|--------------------------------|-----------------------|--------------|
-| full                           | +4.50pp               | -1.25%       |
-| recent = 18                    | +2.03pp               | -3.45%       |
-| **regime_break + recent = 18** | **-0.69pp**           | **+0.03%**   |
+| Variant                       | drift (cal30 − cal25) | overall mean |
+|-------------------------------|-----------------------|--------------|
+| full                          | +4.50pp               | -1.25%       |
+| recent = 18                   | +2.03pp               | -3.45%       |
+| **loss_regime + recent = 18** | **-0.69pp**           | **+0.03%**   |
 
 Two columns summarise the A/E Error = `actual / proj − 1` (positive =
 under-projection) measured on the held-out diagonals:
@@ -176,13 +197,13 @@ fits <- lapply(unique(exp$coverage), function(g) {
   )
   reg_g <- detect_regime(tri_g)
   fit_lr(tri_g, method = "sa", recent = 18L,
-         regime_break = reg_g)
+         loss_regime = reg_g)
 })
 ```
 
 A future extension may accept
-`regime_break = list(SUR = "2024-07-01", CAN = "2022-12-01")`. Today
-only scalar / vector / `Regime` are supported.
+`loss_regime = list(SUR = regime_at(...), CAN = regime_at(...))`. Today
+only `NULL` / `Regime` / `"auto"` / closure are supported.
 
 ## Limitations
 
@@ -191,9 +212,9 @@ $`g_k`$ and link factors $`f_k`$ become noisy. A practical threshold is
 `n_post ≳ 6`. Below that, prefer `recent` alone, or wait for
 credibility-weighted blending of pre- and post-break factors (planned).
 
-Note also that `regime_break` only filters the data feeding link factor
-estimation. Once the factors are fixed, all cohorts share them, so
-pre-break ultimates inherit the post-break dynamics.
+Note also that `loss_regime` / `premium_regime` only filter the data
+feeding link factor estimation. Once the factors are fixed, all cohorts
+share them, so pre-break ultimates inherit the post-break dynamics.
 
 ## See also
 
@@ -202,7 +223,7 @@ pre-break ultimates inherit the post-break dynamics.
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
   and the `"sa"`, `"ed"`, `"cl"` methods.
 - [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/ko/articles/backtest.md)
-  — diagnosing the impact of `recent` and `regime_break`.
+  — diagnosing the impact of `recent` and `loss_regime`.
 - [`vignette("regime")`](https://seokhoonj.github.io/lossratio/ko/articles/regime.md)
   —
   [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
@@ -210,4 +231,5 @@ pre-break ultimates inherit the post-break dynamics.
 - [`?fit_lr`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
   [`?fit_ata`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
   [`?fit_ed`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md),
-  [`?detect_regime`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md).
+  [`?detect_regime`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md),
+  [`?regime_at`](https://seokhoonj.github.io/lossratio/ko/reference/regime_at.md).

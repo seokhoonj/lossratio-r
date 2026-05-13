@@ -36,9 +36,8 @@ plot_triangle(
 
   :   Cell-status heatmap (training / held-out / dropped
       (regime-filtered) / future) driven by `x$holdout` and the fit's
-      `regime_break`. Useful to inspect what data the masked refit
-      actually saw, especially when combined with multi-group
-      `regime_break`.
+      `regime`. Useful to inspect what data the masked refit actually
+      saw, especially when combined with multi-group `regime`.
 
 - cell_type:
 

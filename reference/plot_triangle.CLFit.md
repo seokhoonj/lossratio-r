@@ -77,9 +77,8 @@ plot_triangle(
   "usage"
 
   :   Cell-status heatmap (`fit_data` / `excluded` / `future`) driven by
-      the fit's `x$recent`. `region` is ignored. CL has no
-      `regime_break` / maturity hooks, so the hybrid overlays do not
-      apply.
+      the fit's `x$recent`. `region` is ignored. CL has no `regime` /
+      maturity hooks, so the hybrid overlays do not apply.
 
 - label_style:
 

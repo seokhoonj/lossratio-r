@@ -27,7 +27,7 @@ fit_ed(
   na_method = c("locf", "zero", "none"),
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  regime_break = NULL,
+  regime = NULL,
   ...
 )
 ```
@@ -74,13 +74,17 @@ fit_ed(
   Optional positive integer. When supplied, only the most recent
   `recent` periods are used for estimation. Default is `NULL`.
 
-- regime_break:
+- regime:
 
-  Optional cohort cutoff for the regime break. Accepts: `NULL` (default,
-  no filter), a single `Date`/character coercible to Date, a vector of
-  dates (uses the latest), or a `Regime` object (extracts the latest
-  from `$breakpoints`). When supplied, cohorts with
-  `cohort < break_date` are excluded from estimation. Default is `NULL`.
+  Optional regime specification for cohort cutoff. Accepts: `NULL`
+  (default — no filter), a `"Regime"` object (from
+  [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)),
+  the string `"auto"` (internal `detect_regime(tri, target = "lr")`
+  call), or a function `function(tri) -> Regime`. Resolved internally
+  via
+  [`.resolve_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_regime.md).
+  When supplied, cohorts with `cohort < break_date` are excluded from
+  estimation. Default is `NULL`.
 
 - ...:
 

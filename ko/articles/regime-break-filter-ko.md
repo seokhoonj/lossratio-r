@@ -24,7 +24,8 @@
   코호트만 사용).
 - 성숙점 이후의 CL 영역: 대각선 단위 컷 (`recent`).
 
-`regime_break` 인자는 이 직관을 그대로 구현한다.
+`loss_regime` (와 premium-side 짝 `premium_regime`) 인자가 이 직관을
+그대로 구현한다.
 
 ## 2. 두 축의 비대칭성
 
@@ -36,21 +37,33 @@
 x 축은 모형 단계의 단일 switch 이며
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
 가 한 점 ($`k^*`$) 을 반환한다. y 축은 외생적 사건이라 그룹 안에서 0
-회일 수도, 여러 번일 수도 있다. `regime_break` 가 다중 값을 받을 때는
-가장 최신 break 만 쓴다 — break 이후 누적된 코호트 수가 많을수록
-post-break 통계량이 안정적이기 때문이다.
+회일 수도, 여러 번일 수도 있다. `Regime` 객체가 다중 breakpoint 를 담고
+있을 때는 가장 최신 break 만 쓴다 — break 이후 누적된 코호트 수가
+많을수록 post-break 통계량이 안정적이기 때문이다.
 
 ## 3. API
 
-`regime_break` 는 `fit_ata`, `fit_ed`, `fit_lr` 의 공통 인자이며 다음 네
-가지 입력을 받는다.
+[`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+은 role 별 두 인자 — `loss_regime` (loss-side 필터) 와 `premium_regime`
+(premium-side 필터; default 는 `loss_regime` 와 동일) 을 받는다.
+[`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
+/
+[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
+은 단일 `regime` 인자.
+[`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+는 `fit_lr` 와 동일하게 `loss_regime` / `premium_regime` . 네 함수 모두
+다음 입력 타입을 공유한다.
 
 | 입력 | 동작 |
 |----|----|
 | `NULL` (default) | 필터링 없음 — 기존 동작과 동일 |
-| `Date` 또는 문자열 | 단일 break date |
-| Date/문자열 벡터 | 가장 최신 값 자동 선택 |
-| `Regime` 객체 | [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md) 결과를 직접 전달 |
+| `Regime` 객체 | [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md) 또는 [`regime_at()`](https://seokhoonj.github.io/lossratio/ko/reference/regime_at.md) 의 결과 |
+| `"auto"` sentinel | 내부적으로 [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md) 자동 호출 |
+| `function(tri) -> Regime` | Triangle 을 받아 Regime 을 반환하는 closure |
+
+raw `Date` / 문자열 / 벡터 입력은 더 이상 받지 않는다 —
+[`regime_at()`](https://seokhoonj.github.io/lossratio/ko/reference/regime_at.md)
+로 명시적으로 감싸 breakpoint 를 드러내야 한다.
 
 ``` r
 
@@ -65,26 +78,34 @@ tri_sur <- build_triangle(
   premium  = "premium_incr"
 )
 
-# 단일 break date — 24.04 이후 코호트만 사용
+# 수동 breakpoint — regime_at() 으로 literal 날짜를 Regime 으로 감싼다
 fit_lr(tri_sur, method = "sa", recent = 18L,
-       regime_break = "2024-07-01")
+       loss_regime = regime_at(breakpoint = "2024-07-01"))
 
-# Regime 객체 직접 전달
+# detect_regime() 의 Regime 객체 직접 전달
 reg <- detect_regime(tri_sur)
-fit_lr(tri_sur, method = "sa", recent = 18L, regime_break = reg)
+fit_lr(tri_sur, method = "sa", recent = 18L, loss_regime = reg)
 
-# 다중 break — 자동으로 최신 사용 (= 24.04)
-fit_lr(tri_sur, method = "sa",
-       regime_break = c("2022-06-01", "2024-07-01"))
+# "auto" sentinel — detect_regime() 을 내부적으로 호출
+fit_lr(tri_sur, method = "sa", recent = 18L, loss_regime = "auto")
+
+# closure — fit 이 보는 (필터링된) triangle 에 detect_regime 을 lazy 적용
+fit_lr(tri_sur, method = "sa", recent = 18L,
+       loss_regime = function(tri) detect_regime(tri))
 ```
 
-`fit_ata`, `fit_ed` 도 같은 인자 시그니처를 따른다. 단순 모드
-(`fit_ata`, `fit_ed`, 또는 `fit_lr(method ∈ {"ed","cl"})`) 에서는 break
-이전 코호트를 일괄 제거한 단일 cohort cut 으로 동작한다.
+단순 모드 (`fit_lr(method ∈ {"ed","cl"})`) 에서는 break 이전 코호트를
+일괄 제거한 단일 cohort cut 으로 동작한다. 워커 (`fit_ata`, `fit_ed`,
+`fit_cl`, `fit_intensity`) 도 동일한 4-type `regime` 인자 (`NULL` /
+`Regime` / `"auto"` / 클로저) 를 노출한다. 도메인 지식으로 break 날짜를
+직접 지정하려면 `regime_at(breakpoint = "2024-07-01")` 로 `Regime`
+객체를 만들어 전달한다
+([`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
+호출 없이).
 
 ## 4. SA mode 의 hybrid 동작
 
-`fit_lr(method = "sa")` + `regime_break` + `recent` 조합에서만 두 축의
+`fit_lr(method = "sa")` + `loss_regime` + `recent` 조합에서만 두 축의
 컷이 동시에 적용된다.
 
 - dev ≤ $`k^*`$ — ED 영역: post-break 코호트만 사용 (cohort cut)
@@ -109,11 +130,11 @@ factor noise 에 따라 흔들리지 않는다.
 
 ``` r
 
-plot_triangle(tri_sur, type = "usage", holdout = 6L)                                 # full
-plot_triangle(tri_sur, type = "usage", recent = 12L, holdout = 6L)                   # recent
-plot_triangle(tri_sur, type = "usage", regime_break = "2024-07-01", holdout = 6L)    # break
+plot_triangle(tri_sur, type = "usage", holdout = 6L)                            # full
+plot_triangle(tri_sur, type = "usage", recent = 12L, holdout = 6L)              # recent
+plot_triangle(tri_sur, type = "usage", regime = "2024-07-01", holdout = 6L)     # break
 plot_triangle(tri_sur, type = "usage", recent = 12L,
-              regime_break = "2024-07-01", holdout = 6L)                             # hybrid
+              regime = "2024-07-01", holdout = 6L)                              # hybrid
 ```
 
 ![SUR triangle 에서 네 가지 필터 설정이 사용하는 셀. 파랑 = 적합에 사용,
@@ -151,19 +172,19 @@ reg     <- detect_regime(tri_sur)
 bt_full   <- backtest(tri_sur, holdout = 6L)
 bt_recent <- backtest(tri_sur, holdout = 6L, recent = 18L)
 bt_break  <- backtest(tri_sur, holdout = 6L,
-                      regime_break = reg)
+                      loss_regime = reg)
 bt_hybrid <- backtest(tri_sur, holdout = 6L, recent = 18L,
-                      regime_break = reg)
+                      loss_regime = reg)
 ```
 
 내부 분석 스크립트 (`dev/regime_backtest_hybrid.R`) 의 결과는 다음과
 같다.
 
-| 변종                           | drift (cal30 − cal25) | overall mean |
-|--------------------------------|-----------------------|--------------|
-| full                           | +4.50pp               | -1.25%       |
-| recent = 18                    | +2.03pp               | -3.45%       |
-| **regime_break + recent = 18** | **-0.69pp**           | **+0.03%**   |
+| 변종                          | drift (cal30 − cal25) | overall mean |
+|-------------------------------|-----------------------|--------------|
+| full                          | +4.50pp               | -1.25%       |
+| recent = 18                   | +2.03pp               | -3.45%       |
+| **loss_regime + recent = 18** | **-0.69pp**           | **+0.03%**   |
 
 두 컬럼은 hold-out 대각선들에서 측정한 A/E Error = `actual / proj − 1`
 (양수 = 과소 추정) 을 두 가지 관점으로 요약한 값이다.
@@ -203,14 +224,14 @@ fits <- lapply(groups, function(g) {
   )
   reg_g <- detect_regime(tri_g)
   fit_lr(tri_g, method = "sa", recent = 18L,
-         regime_break = reg_g)
+         loss_regime = reg_g)
 })
 names(fits) <- groups
 ```
 
-향후 `regime_break = list(SUR = "2024-07-01", CAN = "2022-12-01")` 같은
-named list 입력을 지원할 수 있으나, 현재는 scalar/vector/`Regime` 세
-형태만 동작한다.
+향후 `loss_regime = list(SUR = regime_at(...), CAN = regime_at(...))`
+같은 named list 입력을 지원할 수 있으나, 현재는 `NULL` / `Regime` /
+`"auto"` / closure 네 형태만 동작한다.
 
 ## 7. 한계와 대안
 
@@ -218,14 +239,15 @@ post-break window 가 너무 짧으면 (`n_post` 가 작으면) ED 강도 $`g_k`
 link factor $`f_k`$ 가 noisy 해진다. 실용적 임계는 `n_post ≳ 6`
 정도이며, 이보다 작으면 다음 두 대안 중 하나를 권장한다.
 
-- regime_break 적용 없이 `recent` 만 사용해 calendar-side 표류만 누른다.
+- `loss_regime` 적용 없이 `recent` 만 사용해 calendar-side 표류만
+  누른다.
 - 향후 도입 예정인 credibility weighting 으로 pre-break 코호트의 link
   factor 에 부분 가중을 부여한다 (TODO).
 
-또한 `regime_break` 는 link factor 추정 단계에서만 작동하며, 추정이 끝난
-뒤에는 모든 코호트가 같은 link factor 를 공유한다. break 이전 코호트의
-ultimate 추정도 post-break 데이터로 전이되므로, 사용자는 이 점을
-인지하고 결과를 해석할 필요가 있다.
+또한 `loss_regime` / `premium_regime` 는 link factor 추정 단계에서만
+작동하며, 추정이 끝난 뒤에는 모든 코호트가 같은 link factor 를 공유한다.
+break 이전 코호트의 ultimate 추정도 post-break 데이터로 전이되므로,
+사용자는 이 점을 인지하고 결과를 해석할 필요가 있다.
 
 ## 8. 함께 보기
 
@@ -234,7 +256,7 @@ ultimate 추정도 post-break 데이터로 전이되므로, 사용자는 이 점
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
   과 `"sa"`, `"ed"`, `"cl"` 방법.
 - [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/ko/articles/backtest.md)
-  — `recent`, `regime_break` 가 결과에 미치는 영향을 진단하는 도구.
+  — `recent`, `loss_regime` 가 결과에 미치는 영향을 진단하는 도구.
 - [`vignette("regime")`](https://seokhoonj.github.io/lossratio/ko/articles/regime.md)
   —
   [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
@@ -242,4 +264,5 @@ ultimate 추정도 post-break 데이터로 전이되므로, 사용자는 이 점
 - [`?fit_lr`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
   [`?fit_ata`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
   [`?fit_ed`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md),
-  [`?detect_regime`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md).
+  [`?detect_regime`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md),
+  [`?regime_at`](https://seokhoonj.github.io/lossratio/ko/reference/regime_at.md).

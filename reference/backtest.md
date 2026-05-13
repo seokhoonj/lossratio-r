@@ -37,9 +37,8 @@ backtest(
   premium_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  loss_regime_break = NULL,
-  premium_regime_break = NULL,
-  auto_detect_regime = FALSE,
+  loss_regime = NULL,
+  premium_regime = NULL,
   maturity_args = NULL,
   se_method = c("fixed", "delta"),
   rho = 0.95,
@@ -110,23 +109,27 @@ print(x, ...)
 
   Calendar-diagonal recency filter forwarded to the fitter.
 
-- loss_regime_break, premium_regime_break:
+- loss_regime, premium_regime:
 
-  Cohort-axis regime break(s) for loss / premium estimation.
-  `premium_regime_break` defaults to `loss_regime_break`. Cannot be
-  combined with `auto_detect_regime = TRUE`.
+  Regime spec for the loss / premium side. Each accepts one of four
+  input types, dispatched by
+  [`.resolve_regime()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_regime.md):
 
-- auto_detect_regime:
+  - `NULL` (default) – no regime filter.
 
-  Logical. When `TRUE`,
-  [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
-  is run *inside* the backtest loop on the **masked** triangle (i.e.,
-  the data the analyst would have at the simulated cutoff) and the
-  result is used for both `loss_regime_break` and
-  `premium_regime_break`. Avoids the look-ahead bias of detecting
-  regimes on the full triangle (including the held-out diagonals) before
-  backtesting. Mutually exclusive with an explicit `loss_regime_break`.
-  Default `FALSE`.
+  - A `Regime` object (e.g. from
+    [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md))
+    – used as-is.
+
+  - The string `"auto"` – runs
+    [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+    on the **masked** triangle (leakage-safe; uses only data available
+    at the simulated backtest cutoff).
+
+  - A function `function(tri) -> Regime` – called on the masked triangle
+    for the same leakage-safe reason.
+
+  `premium_regime` is resolved independently from `loss_regime`.
 
 - maturity_args:
 

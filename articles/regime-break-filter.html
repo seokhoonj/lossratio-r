@@ -160,7 +160,8 @@ only post-break cohorts.</li>
 <strong>Post-maturity (CL region):</strong> diagonal cut — keep only
 the recent <code>N</code> calendar diagonals.</li>
 </ul>
-<p><code>regime_break</code> implements that split.</p>
+<p><code>loss_regime</code> (and its premium-side sibling
+<code>premium_regime</code>) implements that split.</p>
 </div>
 <div class="section level2">
 <h2 id="two-axis-asymmetry">Two-axis asymmetry<a class="anchor" aria-label="anchor" href="#two-axis-asymmetry"></a>
@@ -193,7 +194,7 @@ the recent <code>N</code> calendar diagonals.</li>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
 is a single internal switch produced by <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code>.
 Regime breaks are exogenous events — there can be none, one, or several.
-When <code>regime_break</code> receives multiple values, the
+When a <code>Regime</code> object carries multiple breakpoints, the
 <strong>most recent</strong> is used, since post-break statistics are
 most stable when the post-break window has accumulated the largest
 number of cohorts.</p>
@@ -201,9 +202,14 @@ number of cohorts.</p>
 <div class="section level2">
 <h2 id="api">API<a class="anchor" aria-label="anchor" href="#api"></a>
 </h2>
-<p><code>regime_break</code> is a shared argument on
-<code>fit_ata</code>, <code>fit_ed</code>, and <code>fit_lr</code>. It
-accepts:</p>
+<p><code><a href="../reference/fit_lr.html">fit_lr()</a></code> takes two role-specific regime arguments —
+<code>loss_regime</code> (loss-side filter) and
+<code>premium_regime</code> (premium-side filter; defaults to
+<code>loss_regime</code>). <code><a href="../reference/fit_loss.html">fit_loss()</a></code> /
+<code><a href="../reference/fit_premium.html">fit_premium()</a></code> take a single <code>regime</code> argument.
+<code><a href="../reference/backtest.html">backtest()</a></code> mirrors <code>fit_lr</code> with
+<code>loss_regime</code> / <code>premium_regime</code>. All four accept
+the same input types:</p>
 <table class="table">
 <colgroup>
 <col width="37%">
@@ -221,20 +227,25 @@ accepts:</p>
 </tr>
 <tr class="even">
 <td>
-<code>Date</code> or character scalar</td>
-<td>single break date</td>
+<code>Regime</code> object</td>
+<td>output of <code><a href="../reference/detect_regime.html">detect_regime()</a></code> or
+<code><a href="../reference/regime_at.html">regime_at()</a></code>
+</td>
 </tr>
 <tr class="odd">
-<td>Date/character vector</td>
-<td>uses the latest entry</td>
+<td>
+<code>"auto"</code> sentinel</td>
+<td>calls <code><a href="../reference/detect_regime.html">detect_regime()</a></code> internally on the triangle</td>
 </tr>
 <tr class="even">
-<td>
-<code>Regime</code> object</td>
-<td>output of <code><a href="../reference/detect_regime.html">detect_regime()</a></code> passed in</td>
+<td><code>function(tri) -&gt; Regime</code></td>
+<td>closure that returns a <code>Regime</code> from a triangle</td>
 </tr>
 </tbody>
 </table>
+<p>Raw <code>Date</code> / character / vector input is no longer
+accepted — wrap it in <code><a href="../reference/regime_at.html">regime_at()</a></code> first to make the
+breakpoint explicit:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio">lossratio</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
@@ -247,26 +258,34 @@ accepts:</p>
 <span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Single break date</span></span>
+<span><span class="co"># Manual breakpoint via regime_at() — wrap a literal date in a Regime</span></span>
 <span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
-<span>       regime_break <span class="op">=</span> <span class="st">"2024-07-01"</span><span class="op">)</span></span>
+<span>       loss_regime <span class="op">=</span> <span class="fu"><a href="../reference/regime_at.html">regime_at</a></span><span class="op">(</span>breakpoint <span class="op">=</span> <span class="st">"2024-07-01"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Regime object directly</span></span>
+<span><span class="co"># Regime object from detect_regime() directly</span></span>
 <span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>, regime_break <span class="op">=</span> <span class="va">reg</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>, loss_regime <span class="op">=</span> <span class="va">reg</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Vector — latest is used (= 2024-04-01)</span></span>
-<span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>,</span>
-<span>       regime_break <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2022-06-01"</span>, <span class="st">"2024-07-01"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>In simple modes (<code>fit_ata</code>, <code>fit_ed</code>, or
-<code>fit_lr(method ∈ {"ed","cl"})</code>) the same argument acts as a
-plain cohort cut.</p>
+<span><span class="co"># "auto" sentinel — detect_regime() is run internally</span></span>
+<span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>, loss_regime <span class="op">=</span> <span class="st">"auto"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Closure — defers detection until the fit sees the (filtered) triangle</span></span>
+<span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
+<span>       loss_regime <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">tri</span><span class="op">)</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>In simple modes (<code>fit_lr(method ∈ {"ed","cl"})</code>) the same
+argument acts as a plain cohort cut. The workers (<code>fit_ata</code>,
+<code>fit_ed</code>, <code>fit_cl</code>, <code>fit_intensity</code>)
+expose the same 4-type <code>regime</code> argument (<code>NULL</code> /
+<code>Regime</code> / <code>"auto"</code> / closure). Wrap a
+domain-knowledge date with
+<code>regime_at(breakpoint = "2024-07-01")</code> to construct a
+<code>Regime</code> without running detection.</p>
 </div>
 <div class="section level2">
 <h2 id="sa-mode-hybrid-behaviour">SA-mode hybrid behaviour<a class="anchor" aria-label="anchor" href="#sa-mode-hybrid-behaviour"></a>
 </h2>
 <p>The hybrid split activates only for
-<code>fit_lr(method = "sa")</code> with both <code>regime_break</code>
+<code>fit_lr(method = "sa")</code> with both <code>loss_regime</code>
 and <code>recent</code>:</p>
 <ul>
 <li>dev ≤
@@ -287,11 +306,11 @@ then the hybrid filter is applied to the actual fit using the fixed
 <p><code>plot_triangle(type = "usage")</code> visualises which cells
 each filter configuration feeds to <code>fit_lr</code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>                                 <span class="co"># full</span></span>
-<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, recent <span class="op">=</span> <span class="fl">12L</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>                   <span class="co"># recent</span></span>
-<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, regime_break <span class="op">=</span> <span class="st">"2024-07-01"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>    <span class="co"># break</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>                            <span class="co"># full</span></span>
+<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, recent <span class="op">=</span> <span class="fl">12L</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>              <span class="co"># recent</span></span>
+<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, regime <span class="op">=</span> <span class="st">"2024-07-01"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>     <span class="co"># break</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, recent <span class="op">=</span> <span class="fl">12L</span>,</span>
-<span>              regime_break <span class="op">=</span> <span class="st">"2024-07-01"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>                             <span class="co"># hybrid</span></span></code></pre></div>
+<span>              regime <span class="op">=</span> <span class="st">"2024-07-01"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>                              <span class="co"># hybrid</span></span></code></pre></div>
 <div class="float">
 <img src="articles/figs/triangle_usage_panels.png" alt="Cells used by each filter configuration on the SUR triangle. Blue = fit data, red = held out (last 6 calendar diagonals), light grey = excluded by the filter, white = future. Vertical dashed line marks the maturity switch k^*; horizontal dashed line marks the regime break cohort."><div class="figcaption">Cells used by each filter configuration on the
 SUR triangle. Blue = fit data, red = held out (last 6 calendar
@@ -317,9 +336,9 @@ four variants:</p>
 <span><span class="va">bt_full</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span></span>
 <span><span class="va">bt_recent</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, recent <span class="op">=</span> <span class="fl">18L</span><span class="op">)</span></span>
 <span><span class="va">bt_break</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>,</span>
-<span>                      regime_break <span class="op">=</span> <span class="va">reg</span><span class="op">)</span></span>
+<span>                      loss_regime <span class="op">=</span> <span class="va">reg</span><span class="op">)</span></span>
 <span><span class="va">bt_hybrid</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
-<span>                      regime_break <span class="op">=</span> <span class="va">reg</span><span class="op">)</span></span></code></pre></div>
+<span>                      loss_regime <span class="op">=</span> <span class="va">reg</span><span class="op">)</span></span></code></pre></div>
 <p>Reproduced from <code>dev/regime_backtest_hybrid.R</code>:</p>
 <table style="width:100%;" class="table">
 <colgroup>
@@ -344,7 +363,7 @@ four variants:</p>
 <td>-3.45%</td>
 </tr>
 <tr class="odd">
-<td><strong>regime_break + recent = 18</strong></td>
+<td><strong>loss_regime + recent = 18</strong></td>
 <td><strong>-0.69pp</strong></td>
 <td><strong>+0.03%</strong></td>
 </tr>
@@ -388,11 +407,12 @@ group:</p>
 <span>  <span class="op">)</span></span>
 <span>  <span class="va">reg_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_g</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_g</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
-<span>         regime_break <span class="op">=</span> <span class="va">reg_g</span><span class="op">)</span></span>
+<span>         loss_regime <span class="op">=</span> <span class="va">reg_g</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>A future extension may accept
-<code>regime_break = list(SUR = "2024-07-01", CAN = "2022-12-01")</code>.
-Today only scalar / vector / <code>Regime</code> are supported.</p>
+<code>loss_regime = list(SUR = regime_at(...), CAN = regime_at(...))</code>.
+Today only <code>NULL</code> / <code>Regime</code> / <code>"auto"</code>
+/ closure are supported.</p>
 </div>
 <div class="section level2">
 <h2 id="limitations">Limitations<a class="anchor" aria-label="anchor" href="#limitations"></a>
@@ -405,9 +425,10 @@ and link factors
 become noisy. A practical threshold is <code>n_post ≳ 6</code>. Below
 that, prefer <code>recent</code> alone, or wait for credibility-weighted
 blending of pre- and post-break factors (planned).</p>
-<p>Note also that <code>regime_break</code> only filters the data
-feeding link factor estimation. Once the factors are fixed, all cohorts
-share them, so pre-break ultimates inherit the post-break dynamics.</p>
+<p>Note also that <code>loss_regime</code> / <code>premium_regime</code>
+only filter the data feeding link factor estimation. Once the factors
+are fixed, all cohorts share them, so pre-break ultimates inherit the
+post-break dynamics.</p>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>
@@ -418,13 +439,13 @@ share them, so pre-break ultimates inherit the post-break dynamics.</p>
 <code>"sa"</code>, <code>"ed"</code>, <code>"cl"</code> methods.</li>
 <li>
 <code><a href="../articles/backtest.html">vignette("backtest")</a></code> — diagnosing the impact of
-<code>recent</code> and <code>regime_break</code>.</li>
+<code>recent</code> and <code>loss_regime</code>.</li>
 <li>
 <code><a href="../articles/regime.html">vignette("regime")</a></code> — <code><a href="../reference/detect_regime.html">detect_regime()</a></code>
 reference.</li>
 <li>
 <code><a href="../reference/fit_lr.html">?fit_lr</a></code>, <code><a href="../reference/fit_ata.html">?fit_ata</a></code>, <code><a href="../reference/fit_ed.html">?fit_ed</a></code>,
-<code><a href="../reference/detect_regime.html">?detect_regime</a></code>.</li>
+<code><a href="../reference/detect_regime.html">?detect_regime</a></code>, <code><a href="../reference/regime_at.html">?regime_at</a></code>.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

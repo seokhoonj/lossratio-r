@@ -192,7 +192,7 @@ fit_ata(tri, target = "loss")
 #> alpha       : 1 
 #> sigma_method: locf 
 #> recent      : all 
-#> regime_break: none
+#> regime      : none
 #> use_maturity: FALSE 
 #> groups      : coverage 
 #> n_groups    : 1 
@@ -204,7 +204,7 @@ fit_intensity(tri, target = "loss", exposure = "premium")
 #> alpha       : 1 
 #> sigma_method: locf 
 #> recent      : all 
-#> regime_break: none
+#> regime      : none
 #> groups      : coverage 
 #> n_groups    : 1 
 #> ata links   : 35

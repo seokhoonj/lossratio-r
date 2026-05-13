@@ -47,6 +47,7 @@ print(cl)
 #> alpha       : 1 
 #> sigma_method: locf 
 #> recent      : all 
+#> regime      : none
 #> use_maturity: FALSE 
 #> tail_factor : 1 
 #> groups      : coverage 
@@ -331,6 +332,7 @@ fit_cl(tri, target = "loss", method = "mack", sigma_method = "loglinear")
 #> alpha       : 1 
 #> sigma_method: loglinear 
 #> recent      : all 
+#> regime      : none
 #> use_maturity: FALSE 
 #> tail_factor : 1 
 #> groups      : coverage 

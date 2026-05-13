@@ -62,8 +62,8 @@ plot_triangle(
   "usage"
 
   :   Cell-status heatmap (`used` / `holdout` / `unused` / `future`)
-      driven by the fit's own metadata (`x$recent`,
-      `x$loss_regime_break`, `x$maturity`). `region` is ignored.
+      driven by the fit's own metadata (`x$recent`, `x$loss_regime`,
+      `x$maturity`). `region` is ignored.
 
 - label_style:
 

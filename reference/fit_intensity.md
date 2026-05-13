@@ -26,7 +26,7 @@ fit_intensity(
   na_method = c("locf", "zero", "none"),
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  regime_break = NULL,
+  regime = NULL,
   ...
 )
 ```
@@ -72,12 +72,17 @@ fit_intensity(
   filter; see
   [`.apply_recent_filter()`](https://seokhoonj.github.io/lossratio/reference/dot-apply_recent_filter.md)).
 
-- regime_break:
+- regime:
 
-  Optional cohort cutoff. Accepts a `Date`, character date, vector of
-  dates (uses the maximum), or a `"Regime"` object (uses
-  `max($breakpoints)`). When supplied, cohorts strictly before the break
-  are dropped before estimation.
+  Optional regime specification for cohort cutoff. Accepts: `NULL`
+  (default — no filter), a `"Regime"` object (from
+  [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)),
+  the string `"auto"` (internal `detect_regime(tri, target = "lr")`
+  call), or a function `function(tri) -> Regime`. Resolved internally
+  via
+  [`.resolve_regime()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_regime.md).
+  When supplied, cohorts strictly before the break are dropped before
+  estimation.
 
 - ...:
 
@@ -120,9 +125,11 @@ A list of class `"IntensityFit"` with components:
   `na_method = "locf"`; sigma extrapolation is applied per
   `sigma_method`.
 
-- `alpha`, `na_method`, `sigma_method`, `recent`, `regime_break`:
+- `alpha`, `na_method`, `sigma_method`, `recent`, `regime`:
 
-  Call metadata.
+  Call metadata. `regime` is the resolved `"Regime"` object (or `NULL`)
+  returned by
+  [`.resolve_regime()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_regime.md).
 
 ## ED has no maturity concept
 

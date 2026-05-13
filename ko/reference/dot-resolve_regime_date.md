@@ -1,0 +1,41 @@
+# Resolve a regime specifier to a single Date
+
+Internal helper used by
+[`.apply_regime_filter()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-apply_regime_filter.md)
+to coerce a heterogeneous `regime` argument (NULL, Date scalar/vector,
+character coercible to Date, or a `Regime` object) into either a single
+Date scalar or a per-group `data.table` keyed by the caller-supplied
+`by` columns.
+
+## Usage
+
+``` r
+.resolve_regime_date(regime, by = NULL)
+```
+
+## Arguments
+
+- regime:
+
+  See
+  [`.apply_regime_filter()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-apply_regime_filter.md).
+
+- by:
+
+  Optional character vector of group columns the caller wants the break
+  dispatched on. When `NULL` (default) or empty, the function always
+  returns a scalar (the maximum break date), preserving the historical
+  single-value contract. When non-empty and `regime` is a multi-group
+  `Regime` whose `$groups` intersect `by`, returns a `data.table` with
+  `[intersect(by, regime$groups)..., break_date]` (one row per group
+  combo, holding `max(breakpoint)`). Otherwise falls back to scalar.
+
+## Value
+
+One of:
+
+- `NULL` when no break is specified.
+
+- A single Date (the latest break) — the scalar path.
+
+- A `data.table` `[join_cols..., break_date]` — the per-group path.

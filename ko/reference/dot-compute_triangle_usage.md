@@ -12,7 +12,7 @@ Mask precedence: `holdout` \> `used` \> `unused` \> `future`.
 .compute_triangle_usage(
   x,
   recent = NULL,
-  regime_break = NULL,
+  regime = NULL,
   holdout = NULL,
   m_k = NULL
 )
@@ -28,10 +28,10 @@ Mask precedence: `holdout` \> `used` \> `unused` \> `future`.
 
   Optional positive integer (calendar-diagonal cut), or `NULL`.
 
-- regime_break:
+- regime:
 
-  Optional cohort cutoff. Accepts the same input forms as
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  Optional cohort cutoff. Accepts the same input forms handled by
+  [`.resolve_regime_date()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_regime_date.md)
   (`NULL`, `Date`, character, vector, or `Regime`).
 
 - holdout:
@@ -47,12 +47,11 @@ Mask precedence: `holdout` \> `used` \> `unused` \> `future`.
 - m_k:
 
   Optional integer. The maturity switch as a *target* development index
-  (= `ata_to` of the first stable link). When both `recent` and
-  `regime_break` are provided, the hybrid mask uses `m_k` as the
-  boundary: cells with `dev < m_k` apply the cohort cut, cells with
-  `dev >= m_k` apply the calendar-diagonal cut. When `NULL`, the hybrid
-  logic falls back to applying both filters jointly (cohort cut AND
-  recent cut).
+  (= `ata_to` of the first stable link). When both `recent` and `regime`
+  are provided, the hybrid mask uses `m_k` as the boundary: cells with
+  `dev < m_k` apply the cohort cut, cells with `dev >= m_k` apply the
+  calendar-diagonal cut. When `NULL`, the hybrid logic falls back to
+  applying both filters jointly (cohort cut AND recent cut).
 
 ## Value
 

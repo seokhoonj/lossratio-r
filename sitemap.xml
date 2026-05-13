@@ -93,7 +93,8 @@
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-pretty_var_label.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-rebucket_triangle_groups.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-remove_class.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/reference/dot-resolve_regime_break_date.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/reference/dot-resolve_regime.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/reference/dot-resolve_regime_date.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-resolve_y_scale.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-sa_param_var.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/dot-sa_proc_var.html</loc></url>
@@ -149,6 +150,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/reference/print.LRFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/print.LossFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/print.PremiumFit.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/reference/regime_at.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/summary.ATAFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/summary.CLFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/reference/summary.Calendar.html</loc></url>

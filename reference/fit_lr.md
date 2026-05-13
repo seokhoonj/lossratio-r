@@ -46,10 +46,10 @@ fit_lr(
   x,
   method = c("sa", "ed", "cl"),
   loss_alpha = 1,
-  loss_regime_break = NULL,
+  loss_regime = NULL,
   premium_method = c("cl", "ed"),
   premium_alpha = 1,
-  premium_regime_break = NULL,
+  premium_regime = NULL,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   maturity_args = NULL,
@@ -80,12 +80,33 @@ fit_lr(
   Numeric scalar controlling the variance structure for loss estimation.
   Default is `1`.
 
-- loss_regime_break:
+- loss_regime:
 
-  Optional cohort cutoff for the loss-side regime break. Accepts: `NULL`
-  (default, no filter), a single `Date`/character coercible to Date, a
-  vector of dates (uses the latest), or a `Regime` object (extracts the
-  latest from `$breakpoints`). Behavior depends on `method`:
+  Optional regime specification for the loss-side filter. Accepts four
+  input types:
+
+  `NULL` (default)
+
+  :   No regime filter.
+
+  `Regime` object
+
+  :   Use as-is. Typically built via
+      [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+      or
+      [`regime_at()`](https://seokhoonj.github.io/lossratio/reference/regime_at.md).
+
+  `"auto"`
+
+  :   Detect regime internally via `detect_regime(x)` on the input
+      triangle.
+
+  Function / closure
+
+  :   A user-supplied function taking the triangle and returning a
+      `Regime` object (or `NULL`).
+
+  Behavior depends on `method`:
 
   `"sa"`
 
@@ -110,10 +131,13 @@ fit_lr(
 
   Numeric scalar for premium chain ladder. Default is `1`.
 
-- premium_regime_break:
+- premium_regime:
 
-  Premium-side regime break. Defaults to `loss_regime_break` (loss and
-  premium share a cutoff unless explicitly separated).
+  Premium-side regime specification. Same four input types as
+  `loss_regime` (`NULL` / `Regime` / `"auto"` / function). Default
+  `NULL` – premium is fit on the full triangle independently of
+  `loss_regime` (no lazy default). Set explicitly when the regime shift
+  affects premium accrual too.
 
 - sigma_method:
 

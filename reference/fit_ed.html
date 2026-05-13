@@ -148,7 +148,7 @@ call <code>backtest(tri, target = "lr", loss_method = "ed")</code>.</p>
 <span>  na_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"zero"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  regime_break <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -196,11 +196,13 @@ or <code>"locf"</code> or <code>"none"</code>.</p></dd>
 recent <code>recent</code> periods are used for estimation. Default is <code>NULL</code>.</p></dd>
 
 
-<dt id="arg-regime-break">regime_break<a class="anchor" aria-label="anchor" href="#arg-regime-break"></a></dt>
-<dd><p>Optional cohort cutoff for the regime break. Accepts:
-<code>NULL</code> (default, no filter), a single <code>Date</code>/character coercible to Date,
-a vector of dates (uses the latest), or a <code>Regime</code> object (extracts
-the latest from <code>$breakpoints</code>). When supplied, cohorts with
+<dt id="arg-regime">regime<a class="anchor" aria-label="anchor" href="#arg-regime"></a></dt>
+<dd><p>Optional regime specification for cohort cutoff. Accepts:
+<code>NULL</code> (default — no filter), a <code>"Regime"</code> object (from
+<code><a href="detect_regime.html">detect_regime()</a></code>), the string <code>"auto"</code> (internal
+<code>detect_regime(tri, target = "lr")</code> call), or a function
+<code>function(tri) -&gt; Regime</code>. Resolved internally via
+<code><a href="dot-resolve_regime.html">.resolve_regime()</a></code>. When supplied, cohorts with
 <code>cohort &lt; break_date</code> are excluded from estimation. Default is <code>NULL</code>.</p></dd>
 
 

@@ -6,17 +6,17 @@ rows with `dev < dev_split` (the ED region of an SA fit); rows with
 
 Supports both **scalar** dispatch (single break date applied to every
 row) and **per-group** dispatch (different break date per group,
-broadcast via left-join). The mode is auto-selected from `regime_break`
-and `grp`: a multi-group `Regime` whose `$groups` intersect `grp`
-triggers the per-group path. Groups in `dt` that have no matching break
-date (NA after the left-join) are kept unfiltered.
+broadcast via left-join). The mode is auto-selected from `regime` and
+`grp`: a multi-group `Regime` whose `$groups` intersect `grp` triggers
+the per-group path. Groups in `dt` that have no matching break date (NA
+after the left-join) are kept unfiltered.
 
 ## Usage
 
 ``` r
 .apply_regime_filter(
   dt,
-  regime_break,
+  regime,
   grp = character(0),
   coh,
   dev,
@@ -30,7 +30,7 @@ date (NA after the left-join) are kept unfiltered.
 
   A data.table.
 
-- regime_break:
+- regime:
 
   The cohort cutoff. Accepts:
 

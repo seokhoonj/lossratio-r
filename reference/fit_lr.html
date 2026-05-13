@@ -208,10 +208,10 @@ point + variance via the delta method (<code>se_method = "fixed"</code> or
 <span>  <span class="va">x</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sa"</span>, <span class="st">"ed"</span>, <span class="st">"cl"</span><span class="op">)</span>,</span>
 <span>  loss_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  loss_regime_break <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  loss_regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  premium_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cl"</span>, <span class="st">"ed"</span><span class="op">)</span>,</span>
 <span>  premium_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  premium_regime_break <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  premium_regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maturity_args <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -242,12 +242,25 @@ and <code>"premium"</code> columns are used (<code><a href="build_triangle.html"
 loss estimation. Default is <code>1</code>.</p></dd>
 
 
-<dt id="arg-loss-regime-break">loss_regime_break<a class="anchor" aria-label="anchor" href="#arg-loss-regime-break"></a></dt>
-<dd><p>Optional cohort cutoff for the loss-side regime
-break. Accepts: <code>NULL</code> (default, no filter), a single <code>Date</code>/character
-coercible to Date, a vector of dates (uses the latest), or a <code>Regime</code>
-object (extracts the latest from <code>$breakpoints</code>). Behavior depends on
-<code>method</code>:</p><dl><dt><code>"sa"</code></dt>
+<dt id="arg-loss-regime">loss_regime<a class="anchor" aria-label="anchor" href="#arg-loss-regime"></a></dt>
+<dd><p>Optional regime specification for the loss-side
+filter. Accepts four input types:</p><dl><dt><code>NULL</code> (default)</dt>
+<dd><p>No regime filter.</p></dd>
+
+<dt><code>Regime</code> object</dt>
+<dd><p>Use as-is. Typically built via
+<code><a href="detect_regime.html">detect_regime()</a></code> or <code><a href="regime_at.html">regime_at()</a></code>.</p></dd>
+
+<dt><code>"auto"</code></dt>
+<dd><p>Detect regime internally via <code>detect_regime(x)</code> on
+the input triangle.</p></dd>
+
+<dt>Function / closure</dt>
+<dd><p>A user-supplied function taking the
+triangle and returning a <code>Regime</code> object (or <code>NULL</code>).</p></dd>
+
+
+</dl><p>Behavior depends on <code>method</code>:</p><dl><dt><code>"sa"</code></dt>
 <dd><p>Hybrid filter. Pre-break cohorts are dropped only for
 development periods at or before the maturity point (ED phase);
 post-maturity (CL) cells use the <code>recent</code>-diagonal window across
@@ -272,10 +285,12 @@ the break date are excluded from estimation.</p></dd>
 is <code>1</code>.</p></dd>
 
 
-<dt id="arg-premium-regime-break">premium_regime_break<a class="anchor" aria-label="anchor" href="#arg-premium-regime-break"></a></dt>
-<dd><p>Premium-side regime break. Defaults to
-<code>loss_regime_break</code> (loss and premium share a cutoff unless explicitly
-separated).</p></dd>
+<dt id="arg-premium-regime">premium_regime<a class="anchor" aria-label="anchor" href="#arg-premium-regime"></a></dt>
+<dd><p>Premium-side regime specification. Same four
+input types as <code>loss_regime</code> (<code>NULL</code> / <code>Regime</code> / <code>"auto"</code> / function).
+Default <code>NULL</code> – premium is fit on the full triangle independently
+of <code>loss_regime</code> (no lazy default). Set explicitly when the regime
+shift affects premium accrual too.</p></dd>
 
 
 <dt id="arg-sigma-method">sigma_method<a class="anchor" aria-label="anchor" href="#arg-sigma-method"></a></dt>

@@ -25,7 +25,7 @@ fit_cl(
   alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  regime_break = NULL,
+  regime = NULL,
   maturity_args = NULL,
   tail = FALSE
 )
@@ -72,12 +72,17 @@ fit_cl(
   `recent` periods are used for factor estimation. Default is `NULL`
   (use all periods).
 
-- regime_break:
+- regime:
 
-  Optional cohort cutoff for a regime break. `NULL` (default), a
-  `Date`/character coercible to Date, a vector of dates (uses the
-  latest), or a `Regime` object. Cohorts strictly before the break are
-  excluded from factor estimation.
+  Optional regime specification for cohort cutoff. Accepts: `NULL`
+  (default — no filter), a `Regime` object (from
+  [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
+  or
+  [`regime_at()`](https://seokhoonj.github.io/lossratio/ko/reference/regime_at.md)),
+  the string `"auto"` (internal `detect_regime(tri, target = "lr")`
+  call), or a function `function(tri) -> Regime` for deferred
+  custom-config detection. When supplied, cohorts strictly before the
+  resolved break date are excluded from factor estimation.
 
 - maturity_args:
 
@@ -176,6 +181,10 @@ An object of class `"CLFit"` containing:
 - `recent`:
 
   Number of recent periods used, or `NULL`.
+
+- `regime`:
+
+  Resolved `Regime` object, or `NULL`.
 
 - `use_maturity`:
 

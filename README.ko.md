@@ -12,9 +12,9 @@ configuration](articles/articles/figs/triangle_usage_panels.png)
 
 - **🟦 used** — 적합에 사용된 셀
 - **🟥 holdout** — `backtest` 검증용 대각셀
-- **⬜ unused** — `regime_break` / `recent` 필터로 제외된 영역
+- **⬜ unused** — `regime` / `recent` 필터로 제외된 영역
 - **수직 dash선** — `maturity` $`k^*`$ (ED → CL 전환 경계)
-- **수평 dash선** — `regime_break` $`k^{**}`$ (코호트 축 컷)
+- **수평 dash선** — `regime` $`k^{**}`$ (코호트 축 컷)
 
 ## 주요 기능
 
@@ -25,7 +25,7 @@ configuration](articles/articles/figs/triangle_usage_panels.png)
 | 도전 과제 | `lossratio` 의 응답 |
 |----|----|
 | 초기 dev 의 ATA 인자가 너무 Noisy | **`fit_lr(method = "sa")`** — maturity 이전엔 exposure-driven (ED), 이후엔 chain ladder (CL) |
-| 인수 기준 변경 등 구조적 변화 | **[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)** + `regime_break` 인자 — 변화 이전 코호트를 자동으로 분리 |
+| 인수 기준 변경 등 구조적 변화 | **[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)** + `loss_regime` / `premium_regime` 인자 — 변화 이전 코호트를 자동으로 분리 |
 | “이 fit 이 얼마나 맞나?” 검증 | **[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)** — 최근 N 대각선을 빼고 적합한 뒤 actual 과 비교 |
 
 세 component 가 **한 figure 에서 동시에** 작동하는 것을 위 그림이

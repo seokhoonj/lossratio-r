@@ -126,11 +126,10 @@ the loss-ratio composition with delta method is handled by <code><a href="fit_lr
 <span>  <span class="va">x</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sa"</span>, <span class="st">"ed"</span>, <span class="st">"cl"</span><span class="op">)</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  loss_regime_break <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  premium_fit <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  premium_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cl"</span>, <span class="st">"ed"</span><span class="op">)</span>,</span>
 <span>  premium_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  premium_regime_break <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maturity_args <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -155,19 +154,36 @@ the loss-ratio composition with delta method is handled by <code><a href="fit_lr
 <dd><p>Variance-structure exponent for the loss fit. Default <code>1</code>.</p></dd>
 
 
-<dt id="arg-loss-regime-break">loss_regime_break<a class="anchor" aria-label="anchor" href="#arg-loss-regime-break"></a></dt>
-<dd><p>Optional cohort cutoff for the loss-side regime
-break. <code>NULL</code> (default), a <code>Date</code>/character coercible to Date, a vector
-of dates (uses the latest), or a <code>Regime</code> object. Behavior depends on
-<code>method</code>: SA uses a hybrid 2-pass filter (cohort cut for ED phase,
-calendar-diagonal wedge for CL phase); ED/CL use a simple cohort cut.</p></dd>
+<dt id="arg-regime">regime<a class="anchor" aria-label="anchor" href="#arg-regime"></a></dt>
+<dd><p>Optional regime specification applied to both loss-side
+and premium-side estimation. Accepts four input types:</p><dl><dt><code>NULL</code> (default)</dt>
+<dd><p>No regime filter.</p></dd>
+
+<dt><code>Regime</code> object</dt>
+<dd><p>Use as-is. Typically built via
+<code><a href="detect_regime.html">detect_regime()</a></code> or <code><a href="regime_at.html">regime_at()</a></code>.</p></dd>
+
+<dt><code>"auto"</code></dt>
+<dd><p>Detect regime internally via <code>detect_regime(x)</code> on
+the input triangle.</p></dd>
+
+<dt>Function / closure</dt>
+<dd><p>A user-supplied function taking the
+triangle and returning a <code>Regime</code> object (or <code>NULL</code>).</p></dd>
+
+
+</dl><p>Behavior depends on <code>method</code>: SA uses a hybrid 2-pass filter (cohort
+cut for the ED phase, calendar-diagonal wedge for the CL phase);
+ED/CL use a simple cohort cut. The same resolved <code>Regime</code> is applied
+to the internal <code><a href="fit_premium.html">fit_premium()</a></code> call – callers needing an
+asymmetric loss/premium split should use <code><a href="fit_lr.html">fit_lr()</a></code> instead.</p></dd>
 
 
 <dt id="arg-premium-fit">premium_fit<a class="anchor" aria-label="anchor" href="#arg-premium-fit"></a></dt>
 <dd><p>Optional pre-built <code>PremiumFit</code> (from
 <code><a href="fit_premium.html">fit_premium()</a></code>) supplying the premium projection. When <code>NULL</code>,
 <code>fit_loss()</code> calls <code><a href="fit_premium.html">fit_premium()</a></code> internally using
-<code>premium_method</code>, <code>premium_alpha</code>, and <code>premium_regime_break</code>.</p></dd>
+<code>premium_method</code>, <code>premium_alpha</code>, and the resolved <code>regime</code>.</p></dd>
 
 
 <dt id="arg-premium-method">premium_method<a class="anchor" aria-label="anchor" href="#arg-premium-method"></a></dt>
@@ -179,15 +195,6 @@ when <code>premium_fit = NULL</code>. The default matches the historical
 <dt id="arg-premium-alpha">premium_alpha<a class="anchor" aria-label="anchor" href="#arg-premium-alpha"></a></dt>
 <dd><p>Variance-structure exponent for the premium fit.
 Default <code>1</code>.</p></dd>
-
-
-<dt id="arg-premium-regime-break">premium_regime_break<a class="anchor" aria-label="anchor" href="#arg-premium-regime-break"></a></dt>
-<dd><p>Optional cohort cutoff for the
-premium-side regime break. Default <code>NULL</code> — premium is fit on the
-full triangle. Pass an explicit value (Date / Regime) when the
-regime shift affects premium accrual too. NOTE: filtering premium
-aggressively can produce thin post-break data and break factor
-estimation; only set when the premium really shifted.</p></dd>
 
 
 <dt id="arg-sigma-method">sigma_method<a class="anchor" aria-label="anchor" href="#arg-sigma-method"></a></dt>

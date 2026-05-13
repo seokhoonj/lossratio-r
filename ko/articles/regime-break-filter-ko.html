@@ -119,7 +119,8 @@ ED 영역” 까지 좁은 창으로만 보게 만든다.</p>
 (post-break 코호트만 사용).</li>
 <li>성숙점 이후의 CL 영역: 대각선 단위 컷 (<code>recent</code>).</li>
 </ul>
-<p><code>regime_break</code> 인자는 이 직관을 그대로 구현한다.</p>
+<p><code>loss_regime</code> (와 premium-side 짝
+<code>premium_regime</code>) 인자가 이 직관을 그대로 구현한다.</p>
 </div>
 <div class="section level2">
 <h2 id="두-축의-비대칭성">2. 두 축의 비대칭성<a class="anchor" aria-label="anchor" href="#%EB%91%90-%EC%B6%95%EC%9D%98-%EB%B9%84%EB%8C%80%EC%B9%AD%EC%84%B1"></a>
@@ -152,17 +153,25 @@ ED 영역” 까지 좁은 창으로만 보게 만든다.</p>
 한 점
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>)
 을 반환한다. y 축은 외생적 사건이라 그룹 안에서 0 회일 수도, 여러 번일
-수도 있다. <code>regime_break</code> 가 다중 값을 받을 때는 가장 최신
-break 만 쓴다 — break 이후 누적된 코호트 수가 많을수록 post-break
-통계량이 안정적이기 때문이다.</p>
+수도 있다. <code>Regime</code> 객체가 다중 breakpoint 를 담고 있을 때는
+가장 최신 break 만 쓴다 — break 이후 누적된 코호트 수가 많을수록
+post-break 통계량이 안정적이기 때문이다.</p>
 </div>
 <div class="section level2">
 <h2 id="api">3. API<a class="anchor" aria-label="anchor" href="#api"></a>
 </h2>
-<p><code>regime_break</code> 는 <code>fit_ata</code>,
-<code>fit_ed</code>, <code>fit_lr</code> 의 공통 인자이며 다음 네 가지
-입력을 받는다.</p>
+<p><code><a href="../reference/fit_lr.html">fit_lr()</a></code> 은 role 별 두 인자 — <code>loss_regime</code>
+(loss-side 필터) 와 <code>premium_regime</code> (premium-side 필터;
+default 는 <code>loss_regime</code> 와 동일) 을 받는다.
+<code><a href="../reference/fit_loss.html">fit_loss()</a></code> / <code><a href="../reference/fit_premium.html">fit_premium()</a></code> 은 단일
+<code>regime</code> 인자. <code><a href="../reference/backtest.html">backtest()</a></code> 는 <code>fit_lr</code>
+와 동일하게 <code>loss_regime</code> / <code>premium_regime</code> . 네
+함수 모두 다음 입력 타입을 공유한다.</p>
 <table class="table">
+<colgroup>
+<col width="38%">
+<col width="61%">
+</colgroup>
 <thead><tr class="header">
 <th>입력</th>
 <th>동작</th>
@@ -175,21 +184,25 @@ break 만 쓴다 — break 이후 누적된 코호트 수가 많을수록 post-b
 </tr>
 <tr class="even">
 <td>
-<code>Date</code> 또는 문자열</td>
-<td>단일 break date</td>
-</tr>
-<tr class="odd">
-<td>Date/문자열 벡터</td>
-<td>가장 최신 값 자동 선택</td>
-</tr>
-<tr class="even">
-<td>
 <code>Regime</code> 객체</td>
 <td>
-<code><a href="../reference/detect_regime.html">detect_regime()</a></code> 결과를 직접 전달</td>
+<code><a href="../reference/detect_regime.html">detect_regime()</a></code> 또는 <code><a href="../reference/regime_at.html">regime_at()</a></code> 의
+결과</td>
+</tr>
+<tr class="odd">
+<td>
+<code>"auto"</code> sentinel</td>
+<td>내부적으로 <code><a href="../reference/detect_regime.html">detect_regime()</a></code> 자동 호출</td>
+</tr>
+<tr class="even">
+<td><code>function(tri) -&gt; Regime</code></td>
+<td>Triangle 을 받아 Regime 을 반환하는 closure</td>
 </tr>
 </tbody>
 </table>
+<p>raw <code>Date</code> / 문자열 / 벡터 입력은 더 이상 받지 않는다 —
+<code><a href="../reference/regime_at.html">regime_at()</a></code> 로 명시적으로 감싸 breakpoint 를 드러내야
+한다.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio" class="external-link">lossratio</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
@@ -202,26 +215,33 @@ break 만 쓴다 — break 이후 누적된 코호트 수가 많을수록 post-b
 <span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 단일 break date — 24.04 이후 코호트만 사용</span></span>
+<span><span class="co"># 수동 breakpoint — regime_at() 으로 literal 날짜를 Regime 으로 감싼다</span></span>
 <span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
-<span>       regime_break <span class="op">=</span> <span class="st">"2024-07-01"</span><span class="op">)</span></span>
+<span>       loss_regime <span class="op">=</span> <span class="fu"><a href="../reference/regime_at.html">regime_at</a></span><span class="op">(</span>breakpoint <span class="op">=</span> <span class="st">"2024-07-01"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Regime 객체 직접 전달</span></span>
+<span><span class="co"># detect_regime() 의 Regime 객체 직접 전달</span></span>
 <span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>, regime_break <span class="op">=</span> <span class="va">reg</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>, loss_regime <span class="op">=</span> <span class="va">reg</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 다중 break — 자동으로 최신 사용 (= 24.04)</span></span>
-<span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>,</span>
-<span>       regime_break <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2022-06-01"</span>, <span class="st">"2024-07-01"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><code>fit_ata</code>, <code>fit_ed</code> 도 같은 인자 시그니처를
-따른다. 단순 모드 (<code>fit_ata</code>, <code>fit_ed</code>, 또는
-<code>fit_lr(method ∈ {"ed","cl"})</code>) 에서는 break 이전 코호트를
-일괄 제거한 단일 cohort cut 으로 동작한다.</p>
+<span><span class="co"># "auto" sentinel — detect_regime() 을 내부적으로 호출</span></span>
+<span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>, loss_regime <span class="op">=</span> <span class="st">"auto"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># closure — fit 이 보는 (필터링된) triangle 에 detect_regime 을 lazy 적용</span></span>
+<span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
+<span>       loss_regime <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">tri</span><span class="op">)</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>단순 모드 (<code>fit_lr(method ∈ {"ed","cl"})</code>) 에서는 break
+이전 코호트를 일괄 제거한 단일 cohort cut 으로 동작한다. 워커
+(<code>fit_ata</code>, <code>fit_ed</code>, <code>fit_cl</code>,
+<code>fit_intensity</code>) 도 동일한 4-type <code>regime</code> 인자
+(<code>NULL</code> / <code>Regime</code> / <code>"auto"</code> / 클로저)
+를 노출한다. 도메인 지식으로 break 날짜를 직접 지정하려면
+<code>regime_at(breakpoint = "2024-07-01")</code> 로 <code>Regime</code>
+객체를 만들어 전달한다 (<code><a href="../reference/detect_regime.html">detect_regime()</a></code> 호출 없이).</p>
 </div>
 <div class="section level2">
 <h2 id="sa-mode-의-hybrid-동작">4. SA mode 의 hybrid 동작<a class="anchor" aria-label="anchor" href="#sa-mode-%EC%9D%98-hybrid-%EB%8F%99%EC%9E%91"></a>
 </h2>
-<p><code>fit_lr(method = "sa")</code> + <code>regime_break</code> +
+<p><code>fit_lr(method = "sa")</code> + <code>loss_regime</code> +
 <code>recent</code> 조합에서만 두 축의 컷이 동시에 적용된다.</p>
 <ul>
 <li>dev ≤
@@ -254,11 +274,11 @@ break 만 쓴다 — break 이후 누적된 코호트 수가 많을수록 post-b
 <p>각 필터 설정이 어떤 셀을 <code>fit_lr</code> 에 공급하는지는
 <code>plot_triangle(type = "usage")</code> 로 시각화할 수 있다.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>                                 <span class="co"># full</span></span>
-<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, recent <span class="op">=</span> <span class="fl">12L</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>                   <span class="co"># recent</span></span>
-<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, regime_break <span class="op">=</span> <span class="st">"2024-07-01"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>    <span class="co"># break</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>                            <span class="co"># full</span></span>
+<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, recent <span class="op">=</span> <span class="fl">12L</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>              <span class="co"># recent</span></span>
+<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, regime <span class="op">=</span> <span class="st">"2024-07-01"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>     <span class="co"># break</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, type <span class="op">=</span> <span class="st">"usage"</span>, recent <span class="op">=</span> <span class="fl">12L</span>,</span>
-<span>              regime_break <span class="op">=</span> <span class="st">"2024-07-01"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>                             <span class="co"># hybrid</span></span></code></pre></div>
+<span>              regime <span class="op">=</span> <span class="st">"2024-07-01"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>                              <span class="co"># hybrid</span></span></code></pre></div>
 <div class="float">
 <img src="figs/triangle_usage_panels.png" alt="SUR triangle 에서 네 가지 필터 설정이 사용하는 셀. 파랑 = 적합에 사용, 빨강 = hold-out (최근 6개 대각선), 연회색 = 필터로 제외된 셀, 흰색 = 미관측. 수직 점선은 성숙점 k^*, 수평 점선은 regime break 코호트 경계를 나타낸다."><div class="figcaption">SUR triangle 에서 네 가지 필터 설정이 사용하는
 셀. 파랑 = 적합에 사용, 빨강 = hold-out (최근 6개 대각선), 연회색 =
@@ -291,9 +311,9 @@ backtest 를 돌리고 결과를 비교한다.</p>
 <span><span class="va">bt_full</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span></span>
 <span><span class="va">bt_recent</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, recent <span class="op">=</span> <span class="fl">18L</span><span class="op">)</span></span>
 <span><span class="va">bt_break</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>,</span>
-<span>                      regime_break <span class="op">=</span> <span class="va">reg</span><span class="op">)</span></span>
+<span>                      loss_regime <span class="op">=</span> <span class="va">reg</span><span class="op">)</span></span>
 <span><span class="va">bt_hybrid</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
-<span>                      regime_break <span class="op">=</span> <span class="va">reg</span><span class="op">)</span></span></code></pre></div>
+<span>                      loss_regime <span class="op">=</span> <span class="va">reg</span><span class="op">)</span></span></code></pre></div>
 <p>내부 분석 스크립트 (<code>dev/regime_backtest_hybrid.R</code>) 의
 결과는 다음과 같다.</p>
 <table class="table">
@@ -319,7 +339,7 @@ backtest 를 돌리고 결과를 비교한다.</p>
 <td>-3.45%</td>
 </tr>
 <tr class="odd">
-<td><strong>regime_break + recent = 18</strong></td>
+<td><strong>loss_regime + recent = 18</strong></td>
 <td><strong>-0.69pp</strong></td>
 <td><strong>+0.03%</strong></td>
 </tr>
@@ -368,13 +388,14 @@ cut 의 두 axis 컷을
 <span>  <span class="op">)</span></span>
 <span>  <span class="va">reg_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_g</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_g</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
-<span>         regime_break <span class="op">=</span> <span class="va">reg_g</span><span class="op">)</span></span>
+<span>         loss_regime <span class="op">=</span> <span class="va">reg_g</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">fits</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">groups</span></span></code></pre></div>
 <p>향후
-<code>regime_break = list(SUR = "2024-07-01", CAN = "2022-12-01")</code>
-같은 named list 입력을 지원할 수 있으나, 현재는
-scalar/vector/<code>Regime</code> 세 형태만 동작한다.</p>
+<code>loss_regime = list(SUR = regime_at(...), CAN = regime_at(...))</code>
+같은 named list 입력을 지원할 수 있으나, 현재는 <code>NULL</code> /
+<code>Regime</code> / <code>"auto"</code> / closure 네 형태만
+동작한다.</p>
 </div>
 <div class="section level2">
 <h2 id="한계와-대안">7. 한계와 대안<a class="anchor" aria-label="anchor" href="#%ED%95%9C%EA%B3%84%EC%99%80-%EB%8C%80%EC%95%88"></a>
@@ -387,15 +408,17 @@ scalar/vector/<code>Regime</code> 세 형태만 동작한다.</p>
 가 noisy 해진다. 실용적 임계는 <code>n_post ≳ 6</code> 정도이며, 이보다
 작으면 다음 두 대안 중 하나를 권장한다.</p>
 <ul>
-<li>regime_break 적용 없이 <code>recent</code> 만 사용해 calendar-side
-표류만 누른다.</li>
+<li>
+<code>loss_regime</code> 적용 없이 <code>recent</code> 만 사용해
+calendar-side 표류만 누른다.</li>
 <li>향후 도입 예정인 credibility weighting 으로 pre-break 코호트의 link
 factor 에 부분 가중을 부여한다 (TODO).</li>
 </ul>
-<p>또한 <code>regime_break</code> 는 link factor 추정 단계에서만
-작동하며, 추정이 끝난 뒤에는 모든 코호트가 같은 link factor 를 공유한다.
-break 이전 코호트의 ultimate 추정도 post-break 데이터로 전이되므로,
-사용자는 이 점을 인지하고 결과를 해석할 필요가 있다.</p>
+<p>또한 <code>loss_regime</code> / <code>premium_regime</code> 는 link
+factor 추정 단계에서만 작동하며, 추정이 끝난 뒤에는 모든 코호트가 같은
+link factor 를 공유한다. break 이전 코호트의 ultimate 추정도 post-break
+데이터로 전이되므로, 사용자는 이 점을 인지하고 결과를 해석할 필요가
+있다.</p>
 </div>
 <div class="section level2">
 <h2 id="함께-보기">8. 함께 보기<a class="anchor" aria-label="anchor" href="#%ED%95%A8%EA%BB%98-%EB%B3%B4%EA%B8%B0"></a>
@@ -406,13 +429,13 @@ break 이전 코호트의 ultimate 추정도 post-break 데이터로 전이되�
 <code>"sa"</code>, <code>"ed"</code>, <code>"cl"</code> 방법.</li>
 <li>
 <code><a href="../articles/backtest.html">vignette("backtest")</a></code> — <code>recent</code>,
-<code>regime_break</code> 가 결과에 미치는 영향을 진단하는 도구.</li>
+<code>loss_regime</code> 가 결과에 미치는 영향을 진단하는 도구.</li>
 <li>
 <code><a href="../articles/regime.html">vignette("regime")</a></code> — <code><a href="../reference/detect_regime.html">detect_regime()</a></code>
 참고.</li>
 <li>
 <code><a href="../reference/fit_lr.html">?fit_lr</a></code>, <code><a href="../reference/fit_ata.html">?fit_ata</a></code>, <code><a href="../reference/fit_ed.html">?fit_ed</a></code>,
-<code><a href="../reference/detect_regime.html">?detect_regime</a></code>.</li>
+<code><a href="../reference/detect_regime.html">?detect_regime</a></code>, <code><a href="../reference/regime_at.html">?regime_at</a></code>.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

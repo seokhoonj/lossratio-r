@@ -150,7 +150,7 @@ table when factors are already computed).</p>
 <span>  na_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"zero"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  regime_break <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -198,12 +198,14 @@ estimation to rows within the last <code>recent</code> calendar diagonals
 (calendar-diagonal wedge filter; see <code><a href="dot-apply_recent_filter.html">.apply_recent_filter()</a></code>).</p></dd>
 
 
-<dt id="arg-regime-break">regime_break<a class="anchor" aria-label="anchor" href="#arg-regime-break"></a></dt>
-<dd><p>Optional cohort cutoff. Accepts a <code>Date</code>,
-character date, vector of dates (uses the maximum), or a
-<code>"Regime"</code> object (uses <code>max($breakpoints)</code>). When supplied,
-cohorts strictly before the break are dropped before
-estimation.</p></dd>
+<dt id="arg-regime">regime<a class="anchor" aria-label="anchor" href="#arg-regime"></a></dt>
+<dd><p>Optional regime specification for cohort cutoff. Accepts:
+<code>NULL</code> (default — no filter), a <code>"Regime"</code> object (from
+<code><a href="detect_regime.html">detect_regime()</a></code>), the string <code>"auto"</code> (internal
+<code>detect_regime(tri, target = "lr")</code> call), or a function
+<code>function(tri) -&gt; Regime</code>. Resolved internally via
+<code><a href="dot-resolve_regime.html">.resolve_regime()</a></code>. When supplied, cohorts strictly before the
+break are dropped before estimation.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -240,8 +242,9 @@ per link (<code>g_selected</code>, <code>sigma</code>, <code>sigma2</code>,
 <code>sigma_method</code>.</p></dd>
 
 <dt><code>alpha</code>, <code>na_method</code>, <code>sigma_method</code>, <code>recent</code>,
-<code>regime_break</code></dt>
-<dd><p>Call metadata.</p></dd>
+<code>regime</code></dt>
+<dd><p>Call metadata. <code>regime</code> is the resolved <code>"Regime"</code>
+object (or <code>NULL</code>) returned by <code><a href="dot-resolve_regime.html">.resolve_regime()</a></code>.</p></dd>
 
 
 </dl></div>

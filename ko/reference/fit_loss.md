@@ -32,11 +32,10 @@ fit_loss(
   x,
   method = c("sa", "ed", "cl"),
   alpha = 1,
-  loss_regime_break = NULL,
+  regime = NULL,
   premium_fit = NULL,
   premium_method = c("cl", "ed"),
   premium_alpha = 1,
-  premium_regime_break = NULL,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   maturity_args = NULL,
@@ -61,13 +60,40 @@ fit_loss(
 
   Variance-structure exponent for the loss fit. Default `1`.
 
-- loss_regime_break:
+- regime:
 
-  Optional cohort cutoff for the loss-side regime break. `NULL`
-  (default), a `Date`/character coercible to Date, a vector of dates
-  (uses the latest), or a `Regime` object. Behavior depends on `method`:
-  SA uses a hybrid 2-pass filter (cohort cut for ED phase,
-  calendar-diagonal wedge for CL phase); ED/CL use a simple cohort cut.
+  Optional regime specification applied to both loss-side and
+  premium-side estimation. Accepts four input types:
+
+  `NULL` (default)
+
+  :   No regime filter.
+
+  `Regime` object
+
+  :   Use as-is. Typically built via
+      [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
+      or
+      [`regime_at()`](https://seokhoonj.github.io/lossratio/ko/reference/regime_at.md).
+
+  `"auto"`
+
+  :   Detect regime internally via `detect_regime(x)` on the input
+      triangle.
+
+  Function / closure
+
+  :   A user-supplied function taking the triangle and returning a
+      `Regime` object (or `NULL`).
+
+  Behavior depends on `method`: SA uses a hybrid 2-pass filter (cohort
+  cut for the ED phase, calendar-diagonal wedge for the CL phase); ED/CL
+  use a simple cohort cut. The same resolved `Regime` is applied to the
+  internal
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
+  call – callers needing an asymmetric loss/premium split should use
+  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  instead.
 
 - premium_fit:
 
@@ -75,8 +101,8 @@ fit_loss(
   [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md))
   supplying the premium projection. When `NULL`, `fit_loss()` calls
   [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
-  internally using `premium_method`, `premium_alpha`, and
-  `premium_regime_break`.
+  internally using `premium_method`, `premium_alpha`, and the resolved
+  `regime`.
 
 - premium_method:
 
@@ -88,14 +114,6 @@ fit_loss(
 - premium_alpha:
 
   Variance-structure exponent for the premium fit. Default `1`.
-
-- premium_regime_break:
-
-  Optional cohort cutoff for the premium-side regime break. Default
-  `NULL` — premium is fit on the full triangle. Pass an explicit value
-  (Date / Regime) when the regime shift affects premium accrual too.
-  NOTE: filtering premium aggressively can produce thin post-break data
-  and break factor estimation; only set when the premium really shifted.
 
 - sigma_method:
 

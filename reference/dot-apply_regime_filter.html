@@ -5,7 +5,7 @@ with dev &amp;gt;= dev_split (CL region) are kept regardless of cohort.
 Supports both scalar dispatch (single break date applied to every
 row) and per-group dispatch (different break date per group,
 broadcast via left-join). The mode is auto-selected from
-regime_break and grp: a multi-group Regime whose $groups
+regime and grp: a multi-group Regime whose $groups
 intersect grp triggers the per-group path. Groups in dt that have
 no matching break date (NA after the left-join) are kept unfiltered."><meta property="og:description" content="Drops rows where coh &amp;lt; break_date. Optionally restrict the filter
 to rows with dev &amp;lt; dev_split (the ED region of an SA fit); rows
@@ -13,7 +13,7 @@ with dev &amp;gt;= dev_split (CL region) are kept regardless of cohort.
 Supports both scalar dispatch (single break date applied to every
 row) and per-group dispatch (different break date per group,
 broadcast via left-join). The mode is auto-selected from
-regime_break and grp: a multi-group Regime whose $groups
+regime and grp: a multi-group Regime whose $groups
 intersect grp triggers the per-group path. Groups in dt that have
 no matching break date (NA after the left-join) are kept unfiltered."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Browser-language redirect: send Korean visitors to /ko/ on the
      landing page only. Deep links remain untouched. We use string
@@ -126,7 +126,7 @@ with <code>dev &gt;= dev_split</code> (CL region) are kept regardless of cohort.
 <p>Supports both <strong>scalar</strong> dispatch (single break date applied to every
 row) and <strong>per-group</strong> dispatch (different break date per group,
 broadcast via left-join). The mode is auto-selected from
-<code>regime_break</code> and <code>grp</code>: a multi-group <code>Regime</code> whose <code>$groups</code>
+<code>regime</code> and <code>grp</code>: a multi-group <code>Regime</code> whose <code>$groups</code>
 intersect <code>grp</code> triggers the per-group path. Groups in <code>dt</code> that have
 no matching break date (NA after the left-join) are kept unfiltered.</p>
     </div>
@@ -135,7 +135,7 @@ no matching break date (NA after the left-join) are kept unfiltered.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.apply_regime_filter</span><span class="op">(</span></span>
 <span>  <span class="va">dt</span>,</span>
-<span>  <span class="va">regime_break</span>,</span>
+<span>  <span class="va">regime</span>,</span>
 <span>  grp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  <span class="va">coh</span>,</span>
 <span>  <span class="va">dev</span>,</span>
@@ -151,7 +151,7 @@ no matching break date (NA after the left-join) are kept unfiltered.</p>
 <dd><p>A data.table.</p></dd>
 
 
-<dt id="arg-regime-break">regime_break<a class="anchor" aria-label="anchor" href="#arg-regime-break"></a></dt>
+<dt id="arg-regime">regime<a class="anchor" aria-label="anchor" href="#arg-regime"></a></dt>
 <dd><p>The cohort cutoff. Accepts:</p><ul><li><p><code>NULL</code> – no filter (return copy of <code>dt</code> unchanged).</p></li>
 <li><p>A single Date or character (coercible to Date).</p></li>
 <li><p>A Date/character vector – uses the latest (max) date.</p></li>

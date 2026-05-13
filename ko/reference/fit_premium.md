@@ -27,9 +27,9 @@ fit_premium(
   x,
   method = c("ed", "cl"),
   alpha = 1,
+  regime = NULL,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  regime_break = NULL,
   tail = FALSE,
   conf_level = 0.95
 )
@@ -52,6 +52,35 @@ fit_premium(
   [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md).
   Default `1`.
 
+- regime:
+
+  Optional regime specification (premium side). Accepts four input
+  types:
+
+  `NULL` (default)
+
+  :   No regime filter.
+
+  `Regime` object
+
+  :   Use as-is. Typically built via
+      [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
+      or
+      [`regime_at()`](https://seokhoonj.github.io/lossratio/ko/reference/regime_at.md).
+
+  `"auto"`
+
+  :   Detect regime internally via `detect_regime(x, target = "lr")` on
+      the input triangle.
+
+  Function / closure
+
+  :   A user-supplied `function(tri) -> Regime` for deferred
+      custom-config detection.
+
+  Pre-break cohorts (cohorts before the resolved `Regime`'s breakpoint)
+  are excluded from premium factor estimation.
+
 - sigma_method:
 
   Sigma extrapolation method. One of `"locf"` (default), `"min_last2"`,
@@ -61,13 +90,6 @@ fit_premium(
 
   Optional positive integer; recent calendar-diagonal filter for the
   underlying ATA fit. Default `NULL`.
-
-- regime_break:
-
-  Optional cohort cutoff for a regime break (premium side). `NULL`
-  (default), a `Date`/character, a vector (uses the latest), or a
-  `Regime` object. Pre-break cohorts are excluded from premium factor
-  estimation.
 
 - tail:
 
