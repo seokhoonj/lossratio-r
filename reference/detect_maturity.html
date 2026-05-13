@@ -181,6 +181,7 @@ want maturity of premium development or another cumulative metric.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">detect_maturity</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  target <span class="op">=</span> <span class="st">"loss"</span>,</span>
+<span>  groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  weight <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  max_cv <span class="op">=</span> <span class="fl">0.15</span>,</span>
@@ -203,6 +204,22 @@ want maturity of premium development or another cumulative metric.</p>
 <dd><p>Cumulative metric for the link factor. Default
 <code>"loss"</code> (chain-ladder convention; see Description). Forwarded to
 <code><a href="build_link.html">build_link()</a></code>.</p></dd>
+
+
+<dt id="arg-groups">groups<a class="anchor" aria-label="anchor" href="#arg-groups"></a></dt>
+<dd><p>Optional <code>character</code> subset of <code>attr(x, "groups")</code>
+selecting which columns define the maturity partition. Maturity is
+typically a structural property of the development curve driven by
+coverage rather than by demographic mix (age, channel, ...), so a
+Triangle aggregated by <code>c("coverage", "age_band", "channel")</code> may
+still want a per-coverage maturity. <code>NULL</code> (default) keeps the
+current Triangle grouping (fully backward compatible).
+<code>character(0)</code> pools across all groups and returns a single global
+maturity row. Any non-<code>NULL</code>, non-empty value must be a subset of
+<code>attr(x, "groups")</code>; column order is irrelevant. When the requested
+<code>groups</code> is coarser than the Triangle grouping, the underlying
+<code>loss</code> / <code>premium</code> / <code>lr</code> columns are re-aggregated to the coarser
+partition before computing ata links.</p></dd>
 
 
 <dt id="arg-weight">weight<a class="anchor" aria-label="anchor" href="#arg-weight"></a></dt>

@@ -49,8 +49,8 @@ build_total(
 - cohort:
 
   A single period variable (raw name). This may be an underwriting
-  period (`"uy_m"`, `"uy_q"`, `"uy_s"`, `"uy_a"`) or a calendar period
-  (`"cy_m"`, `"cy_q"`, `"cy_s"`, `"cy_a"`).
+  period (`"uy_m"`, `"uy_q"`, `"uy_h"`, `"uy"`) or a calendar period
+  (`"cy_m"`, `"cy_q"`, `"cy_h"`, `"cy"`).
 
 - dev:
 

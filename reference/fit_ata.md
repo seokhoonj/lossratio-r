@@ -108,7 +108,13 @@ fit_ata(
   :   Default `2L`.
 
   Pass [`list()`](https://rdrr.io/r/base/list.html) to use all defaults
-  with maturity filtering enabled.
+  with maturity filtering enabled. The list may also include `groups`,
+  which re-aggregates the Triangle to a coarser partition before link
+  construction and maturity detection. Same semantics as
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md):
+  `NULL` (default) keeps the Triangle's current `attr(x, "groups")`,
+  `character(0)` pools to a single global maturity, and a subset of
+  `attr(x, "groups")` yields a coarser per-group result.
 
 - ...:
 

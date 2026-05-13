@@ -49,10 +49,21 @@ the group-wise long-form condition
 
 - dev_split:
 
-  Optional numeric scalar — the maturity target dev (= `ata_to`,
-  equivalently the first CL-region dev). When supplied, the recent
-  filter is applied only to rows where `dev >= dev_split` (CL region);
-  rows with `dev < dev_split` (ED region) are kept unconditionally.
+  Optional SA-boundary specifier. Accepts:
+
+  - `NULL` – no SA boundary; the recent wedge applies to every row.
+
+  - A single non-NA numeric scalar – the maturity target dev (=
+    `ata_to`, the first CL-region dev). The recent filter is applied
+    only to rows where `dev >= dev_split` (CL region); rows with
+    `dev < dev_split` (ED region) are kept unconditionally.
+
+  - A `data.table` `[grp..., dev_split]` – per-group SA boundary
+    (different `k*` per group). The group columns must be a subset of
+    `grp`. Each row of `dt` looks up its `dev_split` via left-join; rows
+    whose group has no matching entry (NA after the join) are treated as
+    if `dev_split = NULL` for that row (recent wedge applies to all dev
+    for them).
 
 ## Value
 

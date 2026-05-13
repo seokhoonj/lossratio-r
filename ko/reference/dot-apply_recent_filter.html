@@ -117,11 +117,18 @@ for <code>Triangle</code> objects, or <code>ata_from</code> for <code>ATA</code>
 
 
 <dt id="arg-dev-split">dev_split<a class="anchor" aria-label="anchor" href="#arg-dev-split"></a></dt>
-<dd><p>Optional numeric scalar — the maturity target dev
-(= <code>ata_to</code>, equivalently the first CL-region dev). When supplied,
-the recent filter is applied only to rows where <code>dev &gt;= dev_split</code>
-(CL region); rows with <code>dev &lt; dev_split</code> (ED region) are kept
-unconditionally.</p></dd>
+<dd><p>Optional SA-boundary specifier. Accepts:</p><ul><li><p><code>NULL</code> – no SA boundary; the recent wedge applies to every row.</p></li>
+<li><p>A single non-NA numeric scalar – the maturity target dev
+(= <code>ata_to</code>, the first CL-region dev). The recent filter is
+applied only to rows where <code>dev &gt;= dev_split</code> (CL region); rows
+with <code>dev &lt; dev_split</code> (ED region) are kept unconditionally.</p></li>
+<li><p>A <code>data.table</code> <code>[grp..., dev_split]</code> – per-group SA boundary
+(different <code>k*</code> per group). The group columns must be a subset
+of <code>grp</code>. Each row of <code>dt</code> looks up its <code>dev_split</code> via
+left-join; rows whose group has no matching entry (NA after the
+join) are treated as if <code>dev_split = NULL</code> for that row (recent
+wedge applies to all dev for them).</p></li>
+</ul></dd>
 
 </dl></div>
     <div class="section level2">

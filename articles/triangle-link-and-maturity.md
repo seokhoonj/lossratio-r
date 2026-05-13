@@ -446,7 +446,7 @@ fit_ata(tri, target = "loss", alpha = 1, recent = 12)  # last 12 calendar diagon
 #> alpha       : 1 
 #> sigma_method: locf 
 #> recent      : 12 
-#> regime_break: none 
+#> regime_break: none
 #> use_maturity: FALSE 
 #> groups      : coverage 
 #> n_groups    : 1 
@@ -473,8 +473,8 @@ fit_lr(tri, recent = 12)
 #> ci_type              : analytical  
 #> sigma_method         : locf 
 #> recent               : 12 
-#> loss_regime_break    : none 
-#> premium_regime_break : none 
+#> loss_regime_break    : none
+#> premium_regime_break : none
 #> maturity[SUR]        : 25 
 #> groups               : coverage 
 #> periods              : 36

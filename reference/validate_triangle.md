@@ -66,7 +66,7 @@ validate_triangle(
 
 - grain:
 
-  Grain string (`"M"` / `"Q"` / `"S"` / `"A"`) or `"auto"` (default) –
+  Grain string (`"M"` / `"Q"` / `"H"` / `"Y"`) or `"auto"` (default) –
   used only when `dev` is derived from `(cohort, calendar)`. Ignored
   when `dev` is supplied.
 

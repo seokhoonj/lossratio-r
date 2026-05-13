@@ -197,8 +197,28 @@ Also used by S3 <code><a href="https://rdrr.io/r/base/print.html" class="externa
 
 
 <dt id="arg-target">target<a class="anchor" aria-label="anchor" href="#arg-target"></a></dt>
-<dd><p>Column name of the trajectory variable. Default
-is <code>"lr"</code> (cumulative loss ratio).</p></dd>
+<dd><p>Trajectory variable. Default is <code>"lr"</code> (cumulative loss
+ratio). Accepts any column on the <code>Triangle</code> (e.g. <code>"lr"</code>,
+<code>"loss"</code>, <code>"premium"</code>, <code>"loss_incr"</code>, <code>"premium_incr"</code>), plus three
+<em>diagnostic</em> derived targets computed inline per (group, cohort):</p><dl><dt><code>"loss_ata"</code></dt>
+<dd><p>Loss age-to-age factor
+<code>loss[k+1] / loss[k]</code> — multiplicative loss development speed
+(Mack's $f_k$).</p></dd>
+
+<dt><code>"premium_ata"</code></dt>
+<dd><p>Premium age-to-age factor — same form on
+premium.</p></dd>
+
+<dt><code>"loss_ed"</code></dt>
+<dd><p>Loss intensity
+<code>(loss[k] - loss[k-1]) / premium[k-1]</code> — additive,
+exposure-anchored (ED model's $g_k$).</p></dd>
+
+
+</dl><p>Derived targets drop the first dev row per cohort (no predecessor),
+then re-index <code>dev</code> so detection sees a contiguous sequence. See the
+<code><a href="../articles/regime.html">vignette("regime")</a></code> "Choice of target" section for guidance on
+which target matches which suspected event.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>

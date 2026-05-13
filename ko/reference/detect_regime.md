@@ -73,8 +73,30 @@ print(x, ...)
 
 - target:
 
-  Column name of the trajectory variable. Default is `"lr"` (cumulative
-  loss ratio).
+  Trajectory variable. Default is `"lr"` (cumulative loss ratio).
+  Accepts any column on the `Triangle` (e.g. `"lr"`, `"loss"`,
+  `"premium"`, `"loss_incr"`, `"premium_incr"`), plus three *diagnostic*
+  derived targets computed inline per (group, cohort):
+
+  `"loss_ata"`
+
+  :   Loss age-to-age factor `loss[k+1] / loss[k]` — multiplicative loss
+      development speed (Mack's \$f_k\$).
+
+  `"premium_ata"`
+
+  :   Premium age-to-age factor — same form on premium.
+
+  `"loss_ed"`
+
+  :   Loss intensity `(loss[k] - loss[k-1]) / premium[k-1]` — additive,
+      exposure-anchored (ED model's \$g_k\$).
+
+  Derived targets drop the first dev row per cohort (no predecessor),
+  then re-index `dev` so detection sees a contiguous sequence. See the
+  [`vignette("regime")`](https://seokhoonj.github.io/lossratio/ko/articles/regime.md)
+  "Choice of target" section for guidance on which target matches which
+  suspected event.
 
 - by:
 

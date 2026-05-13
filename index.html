@@ -192,14 +192,14 @@
 <td>cohort</td>
 <td>Underwriting / accident period (any granularity)</td>
 <td>
-<code>uy_m</code>, <code>uy_a</code>
+<code>uy_m</code>, <code>uy</code>
 </td>
 </tr>
 <tr>
 <td>dev</td>
 <td>Development period since cohort start</td>
 <td>
-<code>dev_m</code>, <code>dev_a</code>
+<code>dev_m</code>, <code>dev_y</code>
 </td>
 </tr>
 <tr>
@@ -353,7 +353,7 @@
 </tr>
 </tbody>
 </table>
-<p>After <code>build_triangle</code>, downstream columns are standardized to <code>cohort</code> and <code>dev</code> regardless of input granularity (<code>uy_m</code> / <code>uy_q</code> / <code>uy_a</code>, etc.). Original column names are preserved as attributes (<code>cohort</code>, <code>calendar</code>, <code>dev</code>); grain is stored as <code>grain</code> (<code>"M"</code>/<code>"Q"</code>/ <code>"S"</code>/<code>"A"</code>).</p>
+<p>After <code>build_triangle</code>, downstream columns are standardized to <code>cohort</code> and <code>dev</code> regardless of input granularity (<code>uy_m</code> / <code>uy_q</code> / <code>uy</code>, etc.). Original column names are preserved as attributes (<code>cohort</code>, <code>calendar</code>, <code>dev</code>); grain is stored as <code>grain</code> (<code>"M"</code>/<code>"Q"</code>/ <code>"H"</code>/<code>"Y"</code>).</p>
 </div>
 <div class="section level2">
 <h2 id="methods">Methods<a class="anchor" aria-label="anchor" href="#methods"></a>

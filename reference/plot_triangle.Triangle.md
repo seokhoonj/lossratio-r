@@ -120,7 +120,7 @@ A ggplot object.
 The x-axis uses the development variable stored in `attr(x, "dev")`, and
 the y-axis uses the period variable stored in `attr(x, "cohort")`. If
 either axis variable is a period-like variable such as `uy_m`, `cy_m`,
-`uy_q`, `cy_q`, `uy_s`, `cy_s`, `uy_a`, or `cy_a`, it is formatted using
+`uy_q`, `cy_q`, `uy_h`, `cy_h`, `uy`, or `cy`, it is formatted using
 [`.format_period()`](https://seokhoonj.github.io/lossratio/reference/dot-format_period.md).
 
 Facets are created from `attr(x, "groups")`.

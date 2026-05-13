@@ -39,6 +39,7 @@ metric.
 detect_maturity(
   x,
   target = "loss",
+  groups = NULL,
   weight = NULL,
   alpha = 1,
   max_cv = 0.15,
@@ -60,6 +61,21 @@ detect_maturity(
   Cumulative metric for the link factor. Default `"loss"` (chain-ladder
   convention; see Description). Forwarded to
   [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md).
+
+- groups:
+
+  Optional `character` subset of `attr(x, "groups")` selecting which
+  columns define the maturity partition. Maturity is typically a
+  structural property of the development curve driven by coverage rather
+  than by demographic mix (age, channel, ...), so a Triangle aggregated
+  by `c("coverage", "age_band", "channel")` may still want a
+  per-coverage maturity. `NULL` (default) keeps the current Triangle
+  grouping (fully backward compatible). `character(0)` pools across all
+  groups and returns a single global maturity row. Any non-`NULL`,
+  non-empty value must be a subset of `attr(x, "groups")`; column order
+  is irrelevant. When the requested `groups` is coarser than the
+  Triangle grouping, the underlying `loss` / `premium` / `lr` columns
+  are re-aggregated to the coarser partition before computing ata links.
 
 - weight:
 

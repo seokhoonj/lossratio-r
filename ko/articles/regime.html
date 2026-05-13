@@ -249,6 +249,109 @@ the PC axes — useful for reading <em>how</em> the regimes differ
 development).</p>
 </div>
 <div class="section level2">
+<h2 id="choice-of-target">Choice of target<a class="anchor" aria-label="anchor" href="#choice-of-target"></a>
+</h2>
+<p>The <code>target</code> argument controls <em>which signal</em> the
+change-point algorithm operates on. Different targets surface different
+kinds of regime change, and each has its own failure mode. Pick the
+target that matches the event you suspect — and always cross-check with
+domain knowledge.</p>
+<table class="table">
+<colgroup>
+<col width="29%">
+<col width="16%">
+<col width="53%">
+</colgroup>
+<thead><tr class="header">
+<th>Scenario to detect</th>
+<th>Recommended <code>target</code>
+</th>
+<th>Caveat</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>General LR projection accuracy (default)</td>
+<td><code>"lr"</code></td>
+<td>Differential growth (loss vs premium scaling unevenly) can produce
+smooth drift that</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td>is mis-labelled as a sharp break.</td>
+</tr>
+<tr class="odd">
+<td>Loss <em>level</em> shift (claim handling, coverage)</td>
+<td><code>"loss"</code></td>
+<td>Raw cumulative — book-size growth dominates; false positives
+common.</td>
+</tr>
+<tr class="even">
+<td>Premium <em>level</em> shift (rate, channel)</td>
+<td><code>"premium"</code></td>
+<td>Same caveat as <code>"loss"</code>.</td>
+</tr>
+<tr class="odd">
+<td>Loss development <em>speed</em> change (Mack <code>f</code>)</td>
+<td>
+<code>"loss_ata"</code> <em>(diagnostic)</em>
+</td>
+<td>Loses dev = 1 row + complete-row requirement → sample size shrinks;
+over-sensitive on</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td>low-CV factors.</td>
+</tr>
+<tr class="odd">
+<td>Premium recognition <em>speed</em> change</td>
+<td>
+<code>"premium_ata"</code> <em>(diagnostic)</em>
+</td>
+<td>Same caveats as <code>"loss_ata"</code>.</td>
+</tr>
+<tr class="even">
+<td>Loss <em>intensity</em> per unit exposure (ED <code>g</code>)</td>
+<td>
+<code>"loss_ed"</code> <em>(diagnostic)</em>
+</td>
+<td>Cross-normalised by premium; harder to interpret in isolation.</td>
+</tr>
+</tbody>
+</table>
+<p>Notes:</p>
+<ul>
+<li>
+<code>"lr"</code> is the default because the loss ratio is the
+package’s projection target and is naturally scale-invariant (immune to
+book-size growth).</li>
+<li>
+<code>"loss"</code> / <code>"premium"</code> use the raw cumulative
+columns and are most useful when the suspected event is a sudden
+<em>absolute level shift</em> (e.g. a channel termination dropping
+premium volume). Smooth book growth will frequently produce false
+positives — read every result alongside a known timeline of underwriting
+/ claims-handling events.</li>
+<li>
+<code>"loss_ata"</code>, <code>"premium_ata"</code>,
+<code>"loss_ed"</code> are diagnostic targets derived inline (not stored
+on the <code>Triangle</code>). They map directly to the Mack
+<code>f</code>-factor / ED <code>g</code>-factor used during fitting, so
+a break detected here corresponds to a violation of the model’s
+stationarity assumption. Use them when you want to attribute a regime
+change to a specific structural mechanism.</li>
+</ul>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Try several targets and compare the breakpoints they surface</span></span>
+<span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, target <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, target <span class="op">=</span> <span class="st">"loss_ata"</span><span class="op">)</span></span></code></pre></div>
+<p>The breakpoints across targets are usually similar for strong, real
+regime shifts and diverge when the signal is weak or driven by book-size
+growth — both useful diagnostics.</p>
+</div>
+<div class="section level2">
 <h2 id="choice-of-method">Choice of method<a class="anchor" aria-label="anchor" href="#choice-of-method"></a>
 </h2>
 <ul>
@@ -281,7 +384,7 @@ boundary — is strong evidence of a real underwriting/rate shift.</p>
 </h2>
 <p>If you want to compare a fixed number of regimes — for example,
 two-vs-three regime hypotheses — pass <code>n_regimes</code>:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">r2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span>, n_regimes <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">r2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Cohort regime detection summary</span></span>
@@ -307,7 +410,7 @@ it is a hard cut.</p>
 <p>A <code>Triangle</code> built with multiple groups can be passed
 directly — detection runs independently per group and results are
 gathered into a single <code>Regime</code> object.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tri_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">experience</span>,</span>
 <span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>

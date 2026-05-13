@@ -102,7 +102,7 @@ build_triangle(
 
 - grain:
 
-  One of `"auto"` (default), `"M"`, `"Q"`, `"S"`, `"A"`. `"auto"` infers
+  One of `"auto"` (default), `"M"`, `"Q"`, `"H"`, `"Y"`. `"auto"` infers
   the grain from the `cohort` value spacing. Explicit values must be at
   least as coarse as the input grain; the input is binned (floored) to
   that grain before aggregation.

@@ -170,7 +170,13 @@ defaults via <code><a href="https://rdrr.io/r/utils/modifyList.html" class="exte
 <dd><p>Default <code>2L</code>.</p></dd>
 
 
-</dl><p>Pass <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> to use all defaults with maturity filtering enabled.</p></dd>
+</dl><p>Pass <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> to use all defaults with maturity filtering enabled.
+The list may also include <code>groups</code>, which re-aggregates the Triangle
+to a coarser partition before link construction and maturity
+detection. Same semantics as <code><a href="detect_maturity.html">detect_maturity()</a></code>: <code>NULL</code> (default)
+keeps the Triangle's current <code>attr(x, "groups")</code>, <code>character(0)</code>
+pools to a single global maturity, and a subset of
+<code>attr(x, "groups")</code> yields a coarser per-group result.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

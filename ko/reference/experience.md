@@ -42,15 +42,15 @@ up-to-36-dev jagged triangle:
 
   - `SUR` — surgery per-event fixed benefit.
 
-- uy_a, uy_s, uy_q, uy_m:
+- uy, uy_h, uy_q, uy_m:
 
   Underwriting period (year / half / quarter / month) as `Date`.
 
-- cy_a, cy_s, cy_q, cy_m:
+- cy, cy_h, cy_q, cy_m:
 
   Calendar period (year / half / quarter / month) as `Date`.
 
-- dev_a, dev_s, dev_q, dev_m:
+- dev_y, dev_h, dev_q, dev_m:
 
   Development period (year / half / quarter / month) as integer.
 
