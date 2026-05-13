@@ -107,7 +107,7 @@ fit_premium <- function(x,
     alpha        = alpha,
     sigma_method = sigma_method,
     recent       = recent,
-    regime_break = regime,
+    regime       = regime,
     tail         = tail
   )
 

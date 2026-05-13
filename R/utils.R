@@ -546,21 +546,21 @@ get_recent_weights <- function(weights, recent) {
 }
 
 
-#' Resolve a regime-break specifier to a single Date
+#' Resolve a regime specifier to a single Date
 #'
 #' @description
 #' Internal helper used by [.apply_regime_filter()] to coerce a
-#' heterogeneous `regime_break` argument (NULL, Date scalar/vector,
+#' heterogeneous `regime` argument (NULL, Date scalar/vector,
 #' character coercible to Date, or a `Regime` object) into either a
 #' single Date scalar or a per-group `data.table` keyed by the
 #' caller-supplied `by` columns.
 #'
-#' @param regime_break See [.apply_regime_filter()].
+#' @param regime See [.apply_regime_filter()].
 #' @param by Optional character vector of group columns the caller wants
 #'   the break dispatched on. When `NULL` (default) or empty, the
 #'   function always returns a scalar (the maximum break date),
 #'   preserving the historical single-value contract. When non-empty and
-#'   `regime_break` is a multi-group `Regime` whose `$groups` intersect
+#'   `regime` is a multi-group `Regime` whose `$groups` intersect
 #'   `by`, returns a `data.table` with `[intersect(by, regime$groups)...,
 #'   break_date]` (one row per group combo, holding `max(breakpoint)`).
 #'   Otherwise falls back to scalar.
@@ -571,20 +571,20 @@ get_recent_weights <- function(weights, recent) {
 #'   * A `data.table` `[join_cols..., break_date]` — the per-group path.
 #'
 #' @keywords internal
-.resolve_regime_break_date <- function(regime_break, by = NULL) {
-  if (is.null(regime_break)) return(NULL)
+.resolve_regime_date <- function(regime, by = NULL) {
+  if (is.null(regime)) return(NULL)
 
-  if (inherits(regime_break, "Regime")) {
-    bp <- regime_break$breakpoints
+  if (inherits(regime, "Regime")) {
+    bp <- regime$breakpoints
 
     # Per-group path: multi-group Regime + caller-supplied `by` that
     # intersects the Regime's own group columns.
     if (!is.null(by) && length(by) > 0L &&
-        isTRUE(regime_break$multi_group) &&
+        isTRUE(regime$multi_group) &&
         data.table::is.data.table(bp) && nrow(bp) > 0L &&
         "breakpoint" %in% names(bp)) {
 
-      rgrp <- regime_break$groups
+      rgrp <- regime$groups
       if (is.null(rgrp)) rgrp <- character(0)
       join_cols <- intersect(by, rgrp)
 
@@ -604,10 +604,10 @@ get_recent_weights <- function(weights, recent) {
     return(max(bp))
   }
 
-  d <- as.Date(regime_break)
+  d <- as.Date(regime)
   if (length(d) == 0L) return(NULL)
   if (any(is.na(d)))
-    stop("`regime_break` contains NA after coercion to Date.", call. = FALSE)
+    stop("`regime` contains NA after coercion to Date.", call. = FALSE)
   max(d)
 }
 
@@ -622,12 +622,12 @@ get_recent_weights <- function(weights, recent) {
 #' Supports both **scalar** dispatch (single break date applied to every
 #' row) and **per-group** dispatch (different break date per group,
 #' broadcast via left-join). The mode is auto-selected from
-#' `regime_break` and `grp`: a multi-group `Regime` whose `$groups`
+#' `regime` and `grp`: a multi-group `Regime` whose `$groups`
 #' intersect `grp` triggers the per-group path. Groups in `dt` that have
 #' no matching break date (NA after the left-join) are kept unfiltered.
 #'
 #' @param dt A data.table.
-#' @param regime_break The cohort cutoff. Accepts:
+#' @param regime The cohort cutoff. Accepts:
 #'   * `NULL` -- no filter (return copy of `dt` unchanged).
 #'   * A single Date or character (coercible to Date).
 #'   * A Date/character vector -- uses the latest (max) date.
@@ -647,14 +647,14 @@ get_recent_weights <- function(weights, recent) {
 #' @return A filtered copy of `dt` (class preserved).
 #'
 #' @keywords internal
-.apply_regime_filter <- function(dt, regime_break,
+.apply_regime_filter <- function(dt, regime,
                                  grp = character(0),
                                  coh, dev, dev_split = NULL) {
 
   if (!data.table::is.data.table(dt))
     stop("`dt` must be a data.table.", call. = FALSE)
 
-  bd <- .resolve_regime_break_date(regime_break, by = grp)
+  bd <- .resolve_regime_date(regime, by = grp)
 
   if (is.null(bd)) {
     return(data.table::copy(dt))

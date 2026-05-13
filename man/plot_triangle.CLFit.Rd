@@ -32,7 +32,7 @@ from \code{x$data} — the raw Triangle, no projection).}
 selects which cells to display.}
 \item{"usage"}{Cell-status heatmap (\code{fit_data} / \code{excluded} /
 \code{future}) driven by the fit's \code{x$recent}. \code{region} is
-ignored. CL has no \code{regime_break} / maturity hooks, so the
+ignored. CL has no \code{regime} / maturity hooks, so the
 hybrid overlays do not apply.}
 }}
 

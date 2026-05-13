@@ -12,7 +12,7 @@ fit_intensity(
   na_method = c("locf", "zero", "none"),
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  regime_break = NULL,
+  regime = NULL,
   ...
 )
 }
@@ -42,11 +42,13 @@ non-positive \code{sigma} values across links. One of \code{"min_last2"}
 estimation to rows within the last \code{recent} calendar diagonals
 (calendar-diagonal wedge filter; see \code{\link[=.apply_recent_filter]{.apply_recent_filter()}}).}
 
-\item{regime_break}{Optional cohort cutoff. Accepts a \code{Date},
-character date, vector of dates (uses the maximum), or a
-\code{"Regime"} object (uses \verb{max($breakpoints)}). When supplied,
-cohorts strictly before the break are dropped before
-estimation.}
+\item{regime}{Optional regime specification for cohort cutoff. Accepts:
+\code{NULL} (default — no filter), a \code{"Regime"} object (from
+\code{\link[=detect_regime]{detect_regime()}}), the string \code{"auto"} (internal
+\code{detect_regime(tri, target = "lr")} call), or a function
+\verb{function(tri) -> Regime}. Resolved internally via
+\code{\link[=.resolve_regime]{.resolve_regime()}}. When supplied, cohorts strictly before the
+break are dropped before estimation.}
 
 \item{...}{Passed to \code{\link[=summary.Link]{summary.Link()}} (e.g. \code{digits}).}
 }
@@ -69,7 +71,8 @@ per link (\code{g_selected}, \code{sigma}, \code{sigma2},
 \code{na_method = "locf"}; sigma extrapolation is applied per
 \code{sigma_method}.}
 \item{\code{alpha}, \code{na_method}, \code{sigma_method}, \code{recent},
-\code{regime_break}}{Call metadata.}
+\code{regime}}{Call metadata. \code{regime} is the resolved \code{"Regime"}
+object (or \code{NULL}) returned by \code{\link[=.resolve_regime]{.resolve_regime()}}.}
 }
 }
 \description{

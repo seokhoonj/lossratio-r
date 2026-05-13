@@ -180,9 +180,9 @@ plot.Backtest <- function(x,
 #'       A/E Error.}
 #'     \item{`"usage"`}{Cell-status heatmap (training / held-out /
 #'       dropped (regime-filtered) / future) driven by `x$holdout` and
-#'       the fit's `regime_break`. Useful to inspect what data the
+#'       the fit's `regime`. Useful to inspect what data the
 #'       masked refit actually saw, especially when combined with
-#'       multi-group `regime_break`.}
+#'       multi-group `regime`.}
 #'   }
 #' @param cell_type Which projection view to display in `view =
 #'   "value"`. One of `"cumulative"` (default; uses `ae_err`) or
@@ -210,16 +210,15 @@ plot_triangle.Backtest <- function(x,
   theme     <- match.arg(theme)
 
   # view = "usage": dispatch to the shared usage renderer with the fit's
-  # `regime_break` and the backtest's `holdout`. The fit may carry
-  # either `loss_regime_break` (LRFit / LossFit) or `regime_break`
-  # (PremiumFit) -- try both.
+  # `regime` and the backtest's `holdout`. The fit may carry either
+  # `loss_regime` (LRFit) or `regime` (LossFit / PremiumFit) -- try both.
   if (view == "usage") {
-    rb <- x$fit$loss_regime_break
-    if (is.null(rb)) rb <- x$fit$regime_break
+    rb <- x$fit$loss_regime
+    if (is.null(rb)) rb <- x$fit$regime
     return(.plot_triangle_usage(
       x$data,
       recent        = x$fit$recent,
-      regime_break  = rb,
+      regime        = rb,
       holdout       = x$holdout,
       maturity_args = x$fit$maturity_args,
       theme         = theme,

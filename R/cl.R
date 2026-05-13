@@ -26,10 +26,13 @@
 #' @param recent Optional positive integer. When supplied, only the most
 #'   recent `recent` periods are used for factor estimation. Default is
 #'   `NULL` (use all periods).
-#' @param regime_break Optional cohort cutoff for a regime break. `NULL`
-#'   (default), a `Date`/character coercible to Date, a vector of dates
-#'   (uses the latest), or a `Regime` object. Cohorts strictly before the
-#'   break are excluded from factor estimation.
+#' @param regime Optional regime specification for cohort cutoff. Accepts:
+#'   `NULL` (default — no filter), a `Regime` object (from [detect_regime()]
+#'   or `regime_at()`), the string `"auto"` (internal
+#'   `detect_regime(tri, target = "lr")` call), or a function
+#'   `function(tri) -> Regime` for deferred custom-config detection. When
+#'   supplied, cohorts strictly before the resolved break date are excluded
+#'   from factor estimation.
 #' @param maturity_args A named list of arguments forwarded to
 #'   [detect_maturity()] via [fit_ata()], or `NULL` (default) to skip
 #'   maturity filtering. Pass `list()` to use all defaults with maturity
@@ -63,6 +66,7 @@
 #'     \item{`sigma_method`}{Sigma extrapolation method.}
 #'     \item{`weight`}{Weight variable name used, or `NULL`.}
 #'     \item{`recent`}{Number of recent periods used, or `NULL`.}
+#'     \item{`regime`}{Resolved `Regime` object, or `NULL`.}
 #'     \item{`use_maturity`}{Logical; whether maturity filtering was applied.}
 #'     \item{`maturity_args`}{Resolved maturity arguments, or `NULL`.}
 #'     \item{`tail`}{Tail factor argument supplied by the user.}
@@ -100,13 +104,17 @@ fit_cl <- function(x,
                    alpha         = 1,
                    sigma_method  = c("locf", "min_last2", "loglinear"),
                    recent        = NULL,
-                   regime_break  = NULL,
+                   regime        = NULL,
                    maturity_args = NULL,
                    tail          = FALSE) {
 
   .assert_triangle_input(x, "fit_cl()")
   method       <- match.arg(method)
   sigma_method <- match.arg(sigma_method)
+
+  # resolve regime dispatch (NULL / Regime / "auto" / function) to a
+  # `Regime` object (or NULL) before forwarding to `fit_ata()`.
+  regime <- .resolve_regime(regime, x)
 
   # 1) resolve variable names -------------------------------------------
   if (!is.character(target) || length(target) != 1L)
@@ -151,7 +159,7 @@ fit_cl <- function(x,
     alpha         = alpha,
     sigma_method  = sigma_method,
     recent        = recent,
-    regime_break  = regime_break,
+    regime        = regime,
     maturity_args = maturity_args
   )
 
@@ -286,6 +294,7 @@ fit_cl <- function(x,
     sigma_method  = sigma_method,
     weight        = if (use_external_weight) wt else NULL,
     recent        = recent,
+    regime        = regime,
     use_maturity  = ata_fit$use_maturity,
     maturity_args = ata_fit$maturity_args,
     tail          = tail,
@@ -327,6 +336,14 @@ print.CLFit <- function(x, ...) {
   cat("sigma_method:", x$sigma_method, "\n")
   cat("recent      :",
       if (!is.null(x$recent)) x$recent else "all", "\n")
+  cat("regime      :")
+  if (is.null(x$regime)) {
+    cat(" none\n")
+  } else if (inherits(x$regime, "Regime")) {
+    cat("\n"); print(x$regime)
+  } else {
+    cat(" ", format(x$regime), "\n", sep = "")
+  }
   cat("use_maturity:", x$use_maturity, "\n")
   cat("tail_factor :", x$tail_factor, "\n")
 

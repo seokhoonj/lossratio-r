@@ -106,9 +106,11 @@ fit_lr(tri_sur, method = "sa", recent = 18L,
 ```
 
 단순 모드 (`fit_lr(method ∈ {"ed","cl"})`) 에서는 break 이전 코호트를
-일괄 제거한 단일 cohort cut 으로 동작한다. 워커 `fit_ata`, `fit_ed`
-는 옛 `regime_break` 인자를 유지하며 `Regime` 외에 raw `Date` / 문자열
-/ 벡터 입력도 그대로 받는다.
+일괄 제거한 단일 cohort cut 으로 동작한다. 워커 (`fit_ata`, `fit_ed`,
+`fit_cl`, `fit_intensity`) 도 동일한 4-type `regime` 인자
+(`NULL` / `Regime` / `"auto"` / 클로저) 를 노출한다. 도메인 지식으로
+break 날짜를 직접 지정하려면 `regime_at(breakpoint = "2024-07-01")` 로
+`Regime` 객체를 만들어 전달한다 (`detect_regime()` 호출 없이).
 
 ## 4. SA mode 의 hybrid 동작
 
@@ -135,11 +137,11 @@ factor noise 에 따라 흔들리지 않는다.
 `plot_triangle(type = "usage")` 로 시각화할 수 있다.
 
 ```r
-plot_triangle(tri_sur, type = "usage", holdout = 6L)                                 # full
-plot_triangle(tri_sur, type = "usage", recent = 12L, holdout = 6L)                   # recent
-plot_triangle(tri_sur, type = "usage", regime_break = "2024-07-01", holdout = 6L)    # break
+plot_triangle(tri_sur, type = "usage", holdout = 6L)                            # full
+plot_triangle(tri_sur, type = "usage", recent = 12L, holdout = 6L)              # recent
+plot_triangle(tri_sur, type = "usage", regime = "2024-07-01", holdout = 6L)     # break
 plot_triangle(tri_sur, type = "usage", recent = 12L,
-              regime_break = "2024-07-01", holdout = 6L)                             # hybrid
+              regime = "2024-07-01", holdout = 6L)                              # hybrid
 ```
 
 ![SUR triangle 에서 네 가지 필터 설정이 사용하는 셀. 파랑 = 적합에 사용,

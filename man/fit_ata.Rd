@@ -12,7 +12,7 @@ fit_ata(
   na_method = c("locf", "none"),
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  regime_break = NULL,
+  regime = NULL,
   maturity_args = NULL,
   ...
 )
@@ -42,11 +42,13 @@ recent \code{recent} periods in the \code{Link} triangle are used for factor
 estimation. Applied before maturity filtering. Default is \code{NULL}
 (use all periods).}
 
-\item{regime_break}{Optional cohort cutoff for the regime break. Accepts:
-\code{NULL} (default, no filter), a single \code{Date}/character coercible to Date,
-a vector of dates (uses the latest), or a \code{Regime} object (extracts
-the latest from \verb{$breakpoints}). When supplied, cohorts with
-\code{cohort < break_date} are excluded from estimation. Default is \code{NULL}.}
+\item{regime}{Optional regime specification for cohort cutoff. Accepts:
+\code{NULL} (default — no filter), a \code{Regime} object (from \code{\link[=detect_regime]{detect_regime()}}
+or \code{regime_at()}), the string \code{"auto"} (internal
+\code{detect_regime(tri, target = "lr")} call), or a function
+\verb{function(tri) -> Regime} for deferred custom-config detection. When
+supplied, cohorts strictly before the resolved break date are excluded
+from estimation.}
 
 \item{maturity_args}{A named list of arguments forwarded to
 \code{\link[=detect_maturity]{detect_maturity()}}, or \code{NULL} (default) to skip maturity filtering.
@@ -83,7 +85,7 @@ or \code{NULL} when maturity filtering was not applied.}
 \item{\code{na_method}}{NA fill method used.}
 \item{\code{sigma_method}}{Sigma extrapolation method used.}
 \item{\code{recent}}{Number of recent periods used, or \code{NULL}.}
-\item{\code{regime_break}}{Resolved regime-break cutoff (\code{Date}), or \code{NULL}.}
+\item{\code{regime}}{Resolved \code{Regime} object, or \code{NULL}.}
 \item{\code{use_maturity}}{Logical; whether maturity filtering was applied.}
 \item{\code{maturity_args}}{Resolved maturity arguments, or \code{NULL}.}
 }

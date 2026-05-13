@@ -103,9 +103,11 @@ fit_lr(tri_sur, method = "sa", recent = 18L,
 ```
 
 In simple modes (`fit_lr(method ∈ {"ed","cl"})`) the same argument acts
-as a plain cohort cut. The worker `fit_ata`, `fit_ed` keep the older
-`regime_break` argument and accept raw `Date` / character / vector input
-in addition to a `Regime` object.
+as a plain cohort cut. The workers (`fit_ata`, `fit_ed`, `fit_cl`,
+`fit_intensity`) expose the same 4-type `regime` argument
+(`NULL` / `Regime` / `"auto"` / closure). Wrap a domain-knowledge date
+with `regime_at(breakpoint = "2024-07-01")` to construct a `Regime`
+without running detection.
 
 ## SA-mode hybrid behaviour
 
@@ -125,11 +127,11 @@ fixed $k^*$.
 configuration feeds to `fit_lr`:
 
 ```r
-plot_triangle(tri_sur, type = "usage", holdout = 6L)                                 # full
-plot_triangle(tri_sur, type = "usage", recent = 12L, holdout = 6L)                   # recent
-plot_triangle(tri_sur, type = "usage", regime_break = "2024-07-01", holdout = 6L)    # break
+plot_triangle(tri_sur, type = "usage", holdout = 6L)                            # full
+plot_triangle(tri_sur, type = "usage", recent = 12L, holdout = 6L)              # recent
+plot_triangle(tri_sur, type = "usage", regime = "2024-07-01", holdout = 6L)     # break
 plot_triangle(tri_sur, type = "usage", recent = 12L,
-              regime_break = "2024-07-01", holdout = 6L)                             # hybrid
+              regime = "2024-07-01", holdout = 6L)                              # hybrid
 ```
 
 ![Cells used by each filter configuration on the SUR triangle. Blue =

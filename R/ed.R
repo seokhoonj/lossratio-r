@@ -193,10 +193,12 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'   `"locf"` (default), `"min_last2"`, or `"loglinear"`.
 #' @param recent Optional positive integer. When supplied, only the most
 #'   recent `recent` periods are used for estimation. Default is `NULL`.
-#' @param regime_break Optional cohort cutoff for the regime break. Accepts:
-#'   `NULL` (default, no filter), a single `Date`/character coercible to Date,
-#'   a vector of dates (uses the latest), or a `Regime` object (extracts
-#'   the latest from `$breakpoints`). When supplied, cohorts with
+#' @param regime Optional regime specification for cohort cutoff. Accepts:
+#'   `NULL` (default — no filter), a `"Regime"` object (from
+#'   [detect_regime()]), the string `"auto"` (internal
+#'   `detect_regime(tri, target = "lr")` call), or a function
+#'   `function(tri) -> Regime`. Resolved internally via
+#'   [.resolve_regime()]. When supplied, cohorts with
 #'   `cohort < break_date` are excluded from estimation. Default is `NULL`.
 #' @param ... Additional arguments passed to [summary.Link()].
 #'
@@ -226,10 +228,12 @@ fit_ed <- function(x,
                    na_method    = c("locf", "zero", "none"),
                    sigma_method = c("locf", "min_last2", "loglinear"),
                    recent       = NULL,
-                   regime_break = NULL,
+                   regime       = NULL,
                    ...) {
 
   .assert_triangle_input(x, "fit_ed()")
+
+  regime <- .resolve_regime(regime, x)
 
   method       <- match.arg(method)
   na_method    <- match.arg(na_method)
@@ -244,13 +248,13 @@ fit_ed <- function(x,
     na_method    = na_method,
     sigma_method = sigma_method,
     recent       = recent,
-    regime_break = regime_break,
+    regime       = regime,
     ...
   )
 
   # 2) compose EDFit from IntensityFit + method metadata -------------------
-  # Use intensity_fit's resolved regime_break (Date), not the user's original
-  # input (which may be a Regime / character / vector).
+  # Use intensity_fit's resolved regime (a Regime object or NULL), not the
+  # user's original input (which may be "auto" / a function / etc.).
   out <- list(
     call         = match.call(),
     method       = method,
@@ -261,7 +265,7 @@ fit_ed <- function(x,
     na_method    = na_method,
     sigma_method = sigma_method,
     recent       = recent,
-    regime_break = intensity_fit$regime_break
+    regime       = intensity_fit$regime
   )
   class(out) <- "EDFit"
 
@@ -284,7 +288,7 @@ fit_ed <- function(x,
     alpha        = 1,
     sigma_method = sigma_method,
     recent       = recent,
-    regime_break = out$regime_break
+    regime       = out$regime
   )
   premium_ata_fit <- structure(
     list(
@@ -488,13 +492,13 @@ print.EDFit <- function(x, ...) {
   cat("sigma_method:", x$sigma_method,              "\n")
   cat("recent      :",
       if (!is.null(x$recent)) x$recent else "all", "\n")
-  cat("regime_break:")
-  if (is.null(x$regime_break)) {
+  cat("regime      :")
+  if (is.null(x$regime)) {
     cat(" none\n")
-  } else if (inherits(x$regime_break, "Regime")) {
-    cat("\n"); print(x$regime_break)
+  } else if (inherits(x$regime, "Regime")) {
+    cat("\n"); print(x$regime)
   } else {
-    cat(" ", format(x$regime_break), "\n", sep = "")
+    cat(" ", format(x$regime), "\n", sep = "")
   }
 
   if (length(grp)) {

@@ -12,9 +12,9 @@
 
 -   **🟦 used** — 적합에 사용된 셀
 -   **🟥 holdout** — `backtest` 검증용 대각셀
--   **⬜ unused** — `regime_break` / `recent` 필터로 제외된 영역
+-   **⬜ unused** — `regime` / `recent` 필터로 제외된 영역
 -   **수직 dash선** — `maturity` $k^*$ (ED → CL 전환 경계)
--   **수평 dash선** — `regime_break` $k^{**}$ (코호트 축 컷)
+-   **수평 dash선** — `regime` $k^{**}$ (코호트 축 컷)
 
 ## 주요 기능
 

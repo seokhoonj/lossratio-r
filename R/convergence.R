@@ -139,7 +139,7 @@
 #' @param min_n_cohorts Minimum number of cohorts required to compute
 #'   \eqn{\hat{D}_v}. Default `5L`.
 #' @param ... Additional arguments forwarded to `backtest()` (and thence
-#'   to `fit_lr()`), e.g. `loss_method`, `recent`, `regime_break`.
+#'   to `fit_lr()`), e.g. `loss_method`, `recent`, `loss_regime`.
 #'
 #' @return An object of class `Convergence` (named list) containing the
 #'   detected `k_conv`, the candidate sequence `v`, and the diagnostic

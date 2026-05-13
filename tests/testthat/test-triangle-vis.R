@@ -16,12 +16,12 @@ test_that("plot_triangle(type = 'usage', recent) marks excluded cells", {
   expect_s3_class(p, "ggplot")
 })
 
-test_that("plot_triangle(type = 'usage') with regime_break + recent activates hybrid", {
+test_that("plot_triangle(type = 'usage') with regime + recent activates hybrid", {
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   p <- plot_triangle(tri, type = "usage", recent = 18L,
-                     regime_break = "2024-07-01", holdout = 6L)
+                     regime = "2024-07-01", holdout = 6L)
   expect_s3_class(p, "ggplot")
 
   # Hybrid mode must draw the maturity vline. The 2-pass fit_ata call
@@ -39,7 +39,7 @@ test_that(".compute_triangle_usage hybrid mask matches expected pattern", {
   tri <- build_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   d <- lossratio:::.compute_triangle_usage(
-    tri, recent = 18L, regime_break = as.Date("2024-07-01"),
+    tri, recent = 18L, regime = as.Date("2024-07-01"),
     holdout = 6L, m_k = 4L
   )
   # m_k = 4: ED region is dev < 4. Cohort cut applies only to ED region.

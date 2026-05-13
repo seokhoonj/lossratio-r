@@ -83,29 +83,30 @@ test_that("summary.Link (ed mode) returns EDSummary with expected columns", {
   }
 })
 
-# regime_break -----------------------------------------------------------
+# regime -----------------------------------------------------------------
 
-test_that("fit_ed with regime_break drops pre-break cohorts", {
+test_that("fit_ed with regime drops pre-break cohorts", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   ed <- build_link(tri, target = "loss", exposure = "premium")
   fit_full <- fit_ed(tri, target = "loss", exposure = "premium")
-  fit_brk  <- fit_ed(tri, target = "loss", exposure = "premium", regime_break = "2025-07-01")
+  fit_brk  <- fit_ed(tri, target = "loss", exposure = "premium",
+                     regime = regime_at(breakpoint = "2025-07-01"))
   expect_false(identical(fit_full$selected$g_selected,
                          fit_brk$selected$g_selected))
-  expect_equal(fit_brk$regime_break, "2025-07-01")
+  expect_s3_class(fit_brk$regime, "Regime")
 })
 
-test_that("fit_ed with NULL regime_break is unchanged", {
+test_that("fit_ed with NULL regime is unchanged", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   ed <- build_link(tri, target = "loss", exposure = "premium")
   fit_default <- fit_ed(tri, target = "loss", exposure = "premium")
-  fit_null    <- fit_ed(tri, target = "loss", exposure = "premium", regime_break = NULL)
+  fit_null    <- fit_ed(tri, target = "loss", exposure = "premium", regime = NULL)
   expect_identical(fit_default$selected$g_selected,
                    fit_null$selected$g_selected)
 })
@@ -117,9 +118,9 @@ test_that("fit_ed with Regime input preserves the Regime object", {
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   reg <- detect_regime(tri)
   ed <- build_link(tri, target = "loss", exposure = "premium")
-  fit_reg <- fit_ed(tri, target = "loss", exposure = "premium", regime_break = reg)
-  expect_s3_class(fit_reg$regime_break, "Regime")
-  expect_identical(fit_reg$regime_break$breakpoints, reg$breakpoints)
+  fit_reg <- fit_ed(tri, target = "loss", exposure = "premium", regime = reg)
+  expect_s3_class(fit_reg$regime, "Regime")
+  expect_identical(fit_reg$regime$breakpoints, reg$breakpoints)
 })
 
 # fit_ed $full projection -----------------------------------------------

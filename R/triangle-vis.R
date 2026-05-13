@@ -481,7 +481,7 @@ plot_triangle <- function(x, ...) {
 #'     \item{"value"}{(default) Per-cell metric heatmap controlled by
 #'       `metric`, `label_style`, `amount_divisor`, `nrow`, `ncol`.}
 #'     \item{"usage"}{Cell-status heatmap (used / holdout / unused /
-#'       future). Accepts `recent`, `regime_break`, `holdout`, `maturity_args`
+#'       future). Accepts `recent`, `regime`, `holdout`, `maturity_args`
 #'       via `...`. See `vignette("regime-break-filter")` for details.}
 #'   }
 #' @param metric A single metric to plot. Must be one of:
@@ -865,9 +865,9 @@ plot.Total <- function(x,
 #' @param x A `Triangle` object.
 #' @param recent Optional positive integer (calendar-diagonal cut), or
 #'   `NULL`.
-#' @param regime_break Optional cohort cutoff. Accepts the same input
-#'   forms as [fit_lr()] (`NULL`, `Date`, character, vector, or
-#'   `Regime`).
+#' @param regime Optional cohort cutoff. Accepts the same input
+#'   forms handled by [.resolve_regime_date()] (`NULL`, `Date`, character,
+#'   vector, or `Regime`).
 #' @param holdout Optional positive integer. When supplied, the last
 #'   `holdout` calendar diagonals are flagged `"holdout"`. The `recent`
 #'   filter is then evaluated against the post-holdout boundary so the
@@ -876,11 +876,11 @@ plot.Total <- function(x,
 #'   triangle whose own max_cal is `original - holdout`.
 #' @param m_k Optional integer. The maturity switch as a *target*
 #'   development index (= `ata_to` of the first stable link). When
-#'   both `recent` and `regime_break` are provided, the hybrid mask
-#'   uses `m_k` as the boundary: cells with `dev < m_k` apply the
-#'   cohort cut, cells with `dev >= m_k` apply the calendar-diagonal
-#'   cut. When `NULL`, the hybrid logic falls back to applying both
-#'   filters jointly (cohort cut AND recent cut).
+#'   both `recent` and `regime` are provided, the hybrid mask uses
+#'   `m_k` as the boundary: cells with `dev < m_k` apply the cohort
+#'   cut, cells with `dev >= m_k` apply the calendar-diagonal cut.
+#'   When `NULL`, the hybrid logic falls back to applying both filters
+#'   jointly (cohort cut AND recent cut).
 #'
 #' @return A `data.table` with one row per `(group, cohort, dev)` cell
 #'   spanning the full triangle (observed plus future). Columns include
@@ -890,10 +890,10 @@ plot.Total <- function(x,
 #'
 #' @keywords internal
 .compute_triangle_usage <- function(x,
-                                recent       = NULL,
-                                regime_break = NULL,
-                                holdout      = NULL,
-                                m_k        = NULL) {
+                                recent  = NULL,
+                                regime  = NULL,
+                                holdout = NULL,
+                                m_k     = NULL) {
 
   .assert_class(x, "Triangle")
 
@@ -957,8 +957,8 @@ plot.Total <- function(x,
   # resolve regime break date — scalar (single group / scalar input)
   # or a per-group `[join_cols..., break_date]` data.table when a
   # multi-group `Regime` matches `grp`. Auto-dispatched inside the helper.
-  bd <- if (!is.null(regime_break)) {
-    .resolve_regime_break_date(regime_break, by = grp)
+  bd <- if (!is.null(regime)) {
+    .resolve_regime_date(regime, by = grp)
   } else {
     NULL
   }
@@ -1054,7 +1054,7 @@ plot.Total <- function(x,
 # when type = "usage".
 .plot_triangle_usage <- function(x,
                                  recent        = NULL,
-                                 regime_break  = NULL,
+                                 regime        = NULL,
                                  holdout       = NULL,
                                  maturity_args = NULL,
                                  metric        = "loss",
@@ -1070,15 +1070,15 @@ plot.Total <- function(x,
   dev  <- attr(x, "dev")
   if (is.null(grp)) grp <- character(0)
 
-  # 2-pass maturity detection: needed whenever regime_break is set, so the
+  # 2-pass maturity detection: needed whenever `regime` is set, so the
   # SA-mode dev split (cohort cut on dev < k*; CL region unfiltered, or
   # recent wedge on dev >= k* when `recent` is also set) is reflected.
   # `bd` may be scalar Date or `[grp..., break_date]` data.table (when a
   # multi-group Regime is passed and grp is non-empty).
   m_k    <- NULL    # scalar fallback (passed to .compute_triangle_usage)
   m_k_dt <- NULL    # per-group [grp..., m_k] data.table for facet-routed vline
-  bd <- if (!is.null(regime_break)) {
-    .resolve_regime_break_date(regime_break, by = grp)
+  bd <- if (!is.null(regime)) {
+    .resolve_regime_date(regime, by = grp)
   } else {
     NULL
   }
@@ -1110,10 +1110,10 @@ plot.Total <- function(x,
 
   dt <- .compute_triangle_usage(
     x,
-    recent       = recent,
-    regime_break = regime_break,
-    holdout      = holdout,
-    m_k        = m_k
+    recent  = recent,
+    regime  = regime,
+    holdout = holdout,
+    m_k     = m_k
   )
 
   # cohort labels: most recent at top
@@ -1221,7 +1221,7 @@ plot.Total <- function(x,
   # title summarising active filters
   parts <- character(0)
   if (!is.null(recent))       parts <- c(parts, sprintf("recent=%d", as.integer(recent)))
-  if (!is.null(bd))           parts <- c(parts, sprintf("regime_break=%s", format(bd)))
+  if (!is.null(bd))           parts <- c(parts, sprintf("regime=%s", format(bd)))
   if (!is.null(holdout))      parts <- c(parts, sprintf("holdout=%d", as.integer(holdout)))
   title_txt <- if (length(parts)) {
     sprintf("Data usage (%s)", paste(parts, collapse = ", "))

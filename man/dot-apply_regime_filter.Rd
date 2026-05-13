@@ -6,7 +6,7 @@
 \usage{
 .apply_regime_filter(
   dt,
-  regime_break,
+  regime,
   grp = character(0),
   coh,
   dev,
@@ -16,7 +16,7 @@
 \arguments{
 \item{dt}{A data.table.}
 
-\item{regime_break}{The cohort cutoff. Accepts:
+\item{regime}{The cohort cutoff. Accepts:
 \itemize{
 \item \code{NULL} -- no filter (return copy of \code{dt} unchanged).
 \item A single Date or character (coercible to Date).
@@ -50,7 +50,7 @@ with \code{dev >= dev_split} (CL region) are kept regardless of cohort.
 Supports both \strong{scalar} dispatch (single break date applied to every
 row) and \strong{per-group} dispatch (different break date per group,
 broadcast via left-join). The mode is auto-selected from
-\code{regime_break} and \code{grp}: a multi-group \code{Regime} whose \verb{$groups}
+\code{regime} and \code{grp}: a multi-group \code{Regime} whose \verb{$groups}
 intersect \code{grp} triggers the per-group path. Groups in \code{dt} that have
 no matching break date (NA after the left-join) are kept unfiltered.
 }

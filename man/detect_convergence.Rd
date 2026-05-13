@@ -37,7 +37,7 @@ backtest. When \code{NULL}, set to \code{max(min_run, floor((V - k_star) / 2))}.
 \eqn{\hat{D}_v}. Default \code{5L}.}
 
 \item{...}{Additional arguments forwarded to \code{backtest()} (and thence
-to \code{fit_lr()}), e.g. \code{loss_method}, \code{recent}, \code{regime_break}.}
+to \code{fit_lr()}), e.g. \code{loss_method}, \code{recent}, \code{loss_regime}.}
 }
 \value{
 An object of class \code{Convergence} (named list) containing the

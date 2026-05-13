@@ -1023,12 +1023,12 @@ regime_at <- function(...) {
 
 # Regime input dispatcher -------------------------------------------------
 
-#' Resolve a regime-break input to a Regime object (or NULL)
+#' Resolve a regime input to a Regime object (or NULL)
 #'
 #' @description
 #' Internal 4-type dispatcher used by `fit_lr()`, `fit_loss()`,
-#' `fit_premium()`, and [backtest()] to normalize the `regime_break`
-#' input (or split-axis variants such as `loss_regime_break`) into a
+#' `fit_premium()`, and [backtest()] to normalize the `regime`
+#' input (or split-axis variants such as `loss_regime`) into a
 #' single representation: either `NULL` (no filter) or a `"Regime"`
 #' object.
 #'

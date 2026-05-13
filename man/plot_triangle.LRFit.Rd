@@ -43,7 +43,7 @@ projection). Default is \code{"proj"}.}
 relative fill. \code{region} selects which cells to display.}
 \item{"usage"}{Cell-status heatmap (\code{used} / \code{holdout} /
 \code{unused} / \code{future}) driven by the fit's own metadata
-(\code{x$recent}, \code{x$loss_regime_break}, \code{x$maturity}). \code{region} is
+(\code{x$recent}, \code{x$loss_regime}, \code{x$maturity}). \code{region} is
 ignored.}
 }}
 

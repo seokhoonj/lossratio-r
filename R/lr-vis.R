@@ -329,7 +329,7 @@ plot.LRFit <- function(x,
 #'       relative fill. `region` selects which cells to display.}
 #'     \item{"usage"}{Cell-status heatmap (`used` / `holdout` /
 #'       `unused` / `future`) driven by the fit's own metadata
-#'       (`x$recent`, `x$loss_regime_break`, `x$maturity`). `region` is
+#'       (`x$recent`, `x$loss_regime`, `x$maturity`). `region` is
 #'       ignored.}
 #'   }
 #' @param label_style One of `"value"` (lr only) or `"detail"`
@@ -380,13 +380,13 @@ plot_triangle.LRFit <- function(x,
   col_key  <- if (is_incr) paste0(metric, "_incr") else metric
 
   # view = "usage": cell-status heatmap (used / holdout / unused /
-  # future), driven by the fit's own metadata (`recent`, `regime_break`,
+  # future), driven by the fit's own metadata (`recent`, `loss_regime`,
   # `maturity`). Region is irrelevant in usage view.
   if (view == "usage") {
     return(.plot_triangle_usage(
       x$data,
       recent        = x$recent,
-      regime_break  = x$loss_regime_break,
+      regime        = x$loss_regime,
       holdout       = NULL,
       maturity_args = list(),
       theme         = theme,

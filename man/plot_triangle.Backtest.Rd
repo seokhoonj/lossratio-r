@@ -22,9 +22,9 @@
 A/E Error.}
 \item{\code{"usage"}}{Cell-status heatmap (training / held-out /
 dropped (regime-filtered) / future) driven by \code{x$holdout} and
-the fit's \code{regime_break}. Useful to inspect what data the
+the fit's \code{regime}. Useful to inspect what data the
 masked refit actually saw, especially when combined with
-multi-group \code{regime_break}.}
+multi-group \code{regime}.}
 }}
 
 \item{cell_type}{Which projection view to display in \code{view = "value"}. One of \code{"cumulative"} (default; uses \code{ae_err}) or

@@ -148,7 +148,7 @@ fit_loss <- function(x,
 
   # 2) SA hybrid filter (loss-side, 2-pass maturity) ---------------------
   if (!is.null(regime)) {
-    bd <- .resolve_regime_break_date(regime, by = grp)
+    bd <- .resolve_regime_date(regime, by = grp)
 
     if (!is.null(bd) && method == "sa") {
       pre_loss_fit <- fit_ata(
@@ -244,7 +244,7 @@ fit_loss <- function(x,
     alpha         = alpha,
     sigma_method  = sigma_method,
     recent        = recent,
-    regime_break  = regime,
+    regime        = regime,
     maturity_args = maturity_args
   )
   loss_ata_fit$selected <- .mack_f_var(
@@ -260,7 +260,7 @@ fit_loss <- function(x,
     alpha        = alpha,
     sigma_method = sigma_method,
     recent       = recent,
-    regime_break = regime
+    regime       = regime
   )
   ed_fit <- list(
     method       = "mack",
@@ -270,7 +270,7 @@ fit_loss <- function(x,
     alpha        = alpha,
     sigma_method = sigma_method,
     recent       = recent,
-    regime_break = regime
+    regime       = regime
   )
   class(ed_fit) <- "EDFit"
   ed_fit$selected <- .mack_g_var(ed_fit = ed_fit, alpha = alpha)

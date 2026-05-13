@@ -43,11 +43,13 @@
 #' @param recent Optional positive integer. When supplied, restricts
 #'   estimation to rows within the last `recent` calendar diagonals
 #'   (calendar-diagonal wedge filter; see [.apply_recent_filter()]).
-#' @param regime_break Optional cohort cutoff. Accepts a `Date`,
-#'   character date, vector of dates (uses the maximum), or a
-#'   `"Regime"` object (uses `max($breakpoints)`). When supplied,
-#'   cohorts strictly before the break are dropped before
-#'   estimation.
+#' @param regime Optional regime specification for cohort cutoff. Accepts:
+#'   `NULL` (default — no filter), a `"Regime"` object (from
+#'   [detect_regime()]), the string `"auto"` (internal
+#'   `detect_regime(tri, target = "lr")` call), or a function
+#'   `function(tri) -> Regime`. Resolved internally via
+#'   [.resolve_regime()]. When supplied, cohorts strictly before the
+#'   break are dropped before estimation.
 #' @param ... Passed to [summary.Link()] (e.g. `digits`).
 #'
 #' @return A list of class `"IntensityFit"` with components:
@@ -68,7 +70,8 @@
 #'     `na_method = "locf"`; sigma extrapolation is applied per
 #'     `sigma_method`.}
 #'   \item{`alpha`, `na_method`, `sigma_method`, `recent`,
-#'     `regime_break`}{Call metadata.}
+#'     `regime`}{Call metadata. `regime` is the resolved `"Regime"`
+#'     object (or `NULL`) returned by [.resolve_regime()].}
 #' }
 #'
 #' @seealso [fit_ata()], [fit_ed()], [build_link()],
@@ -96,10 +99,12 @@ fit_intensity <- function(x,
                           na_method    = c("locf", "zero", "none"),
                           sigma_method = c("locf", "min_last2", "loglinear"),
                           recent       = NULL,
-                          regime_break = NULL,
+                          regime       = NULL,
                           ...) {
 
   .assert_triangle_input(x, "fit_intensity()")
+
+  regime <- .resolve_regime(regime, x)
 
   link <- build_link(x, target = target, exposure = exposure)
 
@@ -109,9 +114,9 @@ fit_intensity <- function(x,
   # 1) regime-break filter ----------------------------------------------
   # Multi-group `Regime` triggers per-group dispatch inside
   # `.apply_regime_filter()`.
-  if (!is.null(regime_break)) {
+  if (!is.null(regime)) {
     link <- .apply_regime_filter(
-      link, regime_break,
+      link, regime = regime,
       grp = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
       coh = "cohort",
       dev = "ata_from"
@@ -158,7 +163,7 @@ fit_intensity <- function(x,
     na_method    = na_method,
     sigma_method = sigma_method,
     recent       = recent,
-    regime_break = regime_break
+    regime       = regime
   )
 
   class(out) <- "IntensityFit"
@@ -206,13 +211,13 @@ print.IntensityFit <- function(x, ...) {
   cat("sigma_method:", x$sigma_method, "\n")
   cat("recent      :",
       if (!is.null(x$recent)) x$recent else "all", "\n")
-  cat("regime_break:")
-  if (is.null(x$regime_break)) {
+  cat("regime      :")
+  if (is.null(x$regime)) {
     cat(" none\n")
-  } else if (inherits(x$regime_break, "Regime")) {
-    cat("\n"); print(x$regime_break)
+  } else if (inherits(x$regime, "Regime")) {
+    cat("\n"); print(x$regime)
   } else {
-    cat(" ", format(x$regime_break), "\n", sep = "")
+    cat(" ", format(x$regime), "\n", sep = "")
   }
 
   if (length(grp)) {

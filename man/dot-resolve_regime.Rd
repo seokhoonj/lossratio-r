@@ -2,7 +2,7 @@
 % Please edit documentation in R/regime.R
 \name{.resolve_regime}
 \alias{.resolve_regime}
-\title{Resolve a regime-break input to a Regime object (or NULL)}
+\title{Resolve a regime input to a Regime object (or NULL)}
 \usage{
 .resolve_regime(arg, tri, masked_tri = NULL)
 }
@@ -22,8 +22,8 @@ inputs operate on this triangle instead of \code{tri}.}
 }
 \description{
 Internal 4-type dispatcher used by \code{fit_lr()}, \code{fit_loss()},
-\code{fit_premium()}, and \code{\link[=backtest]{backtest()}} to normalize the \code{regime_break}
-input (or split-axis variants such as \code{loss_regime_break}) into a
+\code{fit_premium()}, and \code{\link[=backtest]{backtest()}} to normalize the \code{regime}
+input (or split-axis variants such as \code{loss_regime}) into a
 single representation: either \code{NULL} (no filter) or a \code{"Regime"}
 object.
 

@@ -13,7 +13,7 @@ fit_ed(
   na_method = c("locf", "zero", "none"),
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  regime_break = NULL,
+  regime = NULL,
   ...
 )
 }
@@ -41,10 +41,12 @@ or \code{"locf"} or \code{"none"}.}
 \item{recent}{Optional positive integer. When supplied, only the most
 recent \code{recent} periods are used for estimation. Default is \code{NULL}.}
 
-\item{regime_break}{Optional cohort cutoff for the regime break. Accepts:
-\code{NULL} (default, no filter), a single \code{Date}/character coercible to Date,
-a vector of dates (uses the latest), or a \code{Regime} object (extracts
-the latest from \verb{$breakpoints}). When supplied, cohorts with
+\item{regime}{Optional regime specification for cohort cutoff. Accepts:
+\code{NULL} (default — no filter), a \code{"Regime"} object (from
+\code{\link[=detect_regime]{detect_regime()}}), the string \code{"auto"} (internal
+\code{detect_regime(tri, target = "lr")} call), or a function
+\verb{function(tri) -> Regime}. Resolved internally via
+\code{\link[=.resolve_regime]{.resolve_regime()}}. When supplied, cohorts with
 \code{cohort < break_date} are excluded from estimation. Default is \code{NULL}.}
 
 \item{...}{Additional arguments passed to \code{\link[=summary.Link]{summary.Link()}}.}

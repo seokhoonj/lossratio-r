@@ -23,7 +23,7 @@ test_that(".apply_regime_filter with single Date drops pre-break cohorts", {
     dev    = rep(1:5, times = 10)
   )
   out <- lossratio:::.apply_regime_filter(
-    dt, regime_break = "2023-06-01",
+    dt, regime = "2023-06-01",
     coh = "cohort", dev = "dev"
   )
   expect_true(all(out$cohort >= as.Date("2023-06-01")))
@@ -40,7 +40,7 @@ test_that(".apply_regime_filter with Regime extracts last breakpoint", {
     dev    = rep(1:5, times = 10)
   )
   out <- lossratio:::.apply_regime_filter(
-    dt, regime_break = reg, coh = "cohort", dev = "dev"
+    dt, regime = reg, coh = "cohort", dev = "dev"
   )
   expect_true(all(out$cohort >= as.Date("2023-08-01")))
 })
@@ -54,7 +54,7 @@ test_that(".apply_regime_filter with dev_split keeps CL-region cells", {
   # dev_split = 4: ED region is dev < 4 (dev = 1, 2, 3); CL region is
   # dev >= 4 (dev = 4, 5). Cohort filter applies only to ED region.
   out <- lossratio:::.apply_regime_filter(
-    dt, regime_break = "2023-06-01",
+    dt, regime = "2023-06-01",
     coh = "cohort", dev = "dev", dev_split = 4L
   )
   # CL region (dev >= 4) must include pre-break cohorts (kept regardless).
@@ -80,7 +80,7 @@ test_that(".apply_regime_filter with vector uses latest date", {
     dev    = rep(1:5, times = 10)
   )
   out <- lossratio:::.apply_regime_filter(
-    dt, regime_break = c("2023-03-01", "2023-08-01"),
+    dt, regime = c("2023-03-01", "2023-08-01"),
     coh = "cohort", dev = "dev"
   )
   expect_true(all(out$cohort >= as.Date("2023-08-01")))
@@ -111,7 +111,7 @@ test_that(".apply_regime_filter with multi-group Regime dispatches per group", {
   )
 
   out <- lossratio:::.apply_regime_filter(
-    dt, regime_break = reg,
+    dt, regime = reg,
     grp = "coverage",
     coh = "cohort", dev = "dev"
   )
@@ -122,7 +122,7 @@ test_that(".apply_regime_filter with multi-group Regime dispatches per group", {
   expect_true(all(out[coverage == "B"]$cohort >= as.Date("2023-08-01")))
 })
 
-test_that(".apply_regime_filter per-group keeps groups not in regime_break", {
+test_that(".apply_regime_filter per-group keeps groups not in regime", {
   # Regime only knows about group A; group B should pass through unfiltered.
   bp <- data.table::data.table(
     coverage   = "A",
@@ -147,7 +147,7 @@ test_that(".apply_regime_filter per-group keeps groups not in regime_break", {
   )
 
   out <- lossratio:::.apply_regime_filter(
-    dt, regime_break = reg,
+    dt, regime = reg,
     grp = "coverage",
     coh = "cohort", dev = "dev"
   )

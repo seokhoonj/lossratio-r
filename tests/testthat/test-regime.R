@@ -122,21 +122,21 @@ test_that("multi-group print / summary don't error", {
   expect_no_error(capture.output(print(summary(r))))
 })
 
-test_that(".resolve_regime_break_date handles multi-group Regime (scalar path)", {
+test_that(".resolve_regime_date handles multi-group Regime (scalar path)", {
   r <- detect_regime(tri_all, by = "coverage", window = 12, method = "e_divisive")
   if (nrow(r$breakpoints)) {
-    bd <- lossratio:::.resolve_regime_break_date(r)
+    bd <- lossratio:::.resolve_regime_date(r)
     expect_true(inherits(bd, "Date"))
     expect_equal(bd, max(r$breakpoints$breakpoint))
   } else {
-    expect_null(lossratio:::.resolve_regime_break_date(r))
+    expect_null(lossratio:::.resolve_regime_date(r))
   }
 })
 
-test_that(".resolve_regime_break_date with `by` returns per-group data.table", {
+test_that(".resolve_regime_date with `by` returns per-group data.table", {
   r <- detect_regime(tri_all, by = "coverage", window = 12, method = "e_divisive")
   if (nrow(r$breakpoints)) {
-    bd <- lossratio:::.resolve_regime_break_date(r, by = "coverage")
+    bd <- lossratio:::.resolve_regime_date(r, by = "coverage")
     expect_true(data.table::is.data.table(bd))
     expect_true(all(c("coverage", "break_date") %in% names(bd)))
     expect_lte(nrow(bd), length(unique(r$breakpoints$coverage)))
@@ -203,12 +203,12 @@ test_that("by = character(0) forces pooled detection on multi-group Triangle", {
   expect_equal(length(r_pooled$groups), 0L)
 })
 
-# ---- Per-group regime_break propagation to fit_* / backtest -----------
+# ---- Per-group regime propagation to fit_* / backtest -----------------
 
 test_that("multi-group Regime drives per-group fit_ata filtering", {
   r <- detect_regime(tri_all, by = "coverage", window = 6L,
                      method = "e_divisive")
-  fit <- fit_ata(tri_all, target = "loss", regime_break = r)
+  fit <- fit_ata(tri_all, target = "loss", regime = r)
   expect_s3_class(fit, "ATAFit")
 
   # Groups without a detected break keep all their link rows; groups
@@ -216,7 +216,7 @@ test_that("multi-group Regime drives per-group fit_ata filtering", {
   # a uniform max-date scalar break.
   bd_max <- max(r$breakpoints$breakpoint)
   fit_scalar <- fit_ata(tri_all, target = "loss",
-                       regime_break = bd_max)
+                        regime = regime_at(breakpoint = bd_max))
   expect_gte(nrow(fit$link), nrow(fit_scalar$link))
 })
 
@@ -227,7 +227,7 @@ test_that("multi-group Regime flows through fit_lr -> dispatcher -> worker", {
   expect_s3_class(fit, "LRFit")
   expect_true(nrow(fit$full) > 0L)
   # loss_regime preserves the original Regime object (multi-group
-  # dispatch happens internally via .resolve_regime_break_date(by = grp))
+  # dispatch happens internally via .resolve_regime_date(by = grp))
   expect_s3_class(fit$loss_regime, "Regime")
   expect_identical(fit$loss_regime$breakpoints, r$breakpoints)
 })

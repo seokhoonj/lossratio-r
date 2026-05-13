@@ -15,7 +15,7 @@ test_that("fit_intensity bundles expected components", {
   for (nm in c("call", "data", "groups", "cohort", "dev",
                "target", "exposure", "link", "factor", "selected",
                "alpha", "na_method", "sigma_method", "recent",
-               "regime_break")) {
+               "regime")) {
     expect_true(nm %in% names(intensity_fit), info = paste("missing", nm))
   }
 })

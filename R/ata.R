@@ -254,11 +254,13 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'   recent `recent` periods in the `Link` triangle are used for factor
 #'   estimation. Applied before maturity filtering. Default is `NULL`
 #'   (use all periods).
-#' @param regime_break Optional cohort cutoff for the regime break. Accepts:
-#'   `NULL` (default, no filter), a single `Date`/character coercible to Date,
-#'   a vector of dates (uses the latest), or a `Regime` object (extracts
-#'   the latest from `$breakpoints`). When supplied, cohorts with
-#'   `cohort < break_date` are excluded from estimation. Default is `NULL`.
+#' @param regime Optional regime specification for cohort cutoff. Accepts:
+#'   `NULL` (default — no filter), a `Regime` object (from [detect_regime()]
+#'   or `regime_at()`), the string `"auto"` (internal
+#'   `detect_regime(tri, target = "lr")` call), or a function
+#'   `function(tri) -> Regime` for deferred custom-config detection. When
+#'   supplied, cohorts strictly before the resolved break date are excluded
+#'   from estimation.
 #' @param maturity_args A named list of arguments forwarded to
 #'   [detect_maturity()], or `NULL` (default) to skip maturity filtering.
 #'   When a list is supplied, missing elements are filled with package
@@ -292,7 +294,7 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'     \item{`na_method`}{NA fill method used.}
 #'     \item{`sigma_method`}{Sigma extrapolation method used.}
 #'     \item{`recent`}{Number of recent periods used, or `NULL`.}
-#'     \item{`regime_break`}{Resolved regime-break cutoff (`Date`), or `NULL`.}
+#'     \item{`regime`}{Resolved `Regime` object, or `NULL`.}
 #'     \item{`use_maturity`}{Logical; whether maturity filtering was applied.}
 #'     \item{`maturity_args`}{Resolved maturity arguments, or `NULL`.}
 #'   }
@@ -313,15 +315,19 @@ fit_ata <- function(x,
                     na_method     = c("locf", "none"),
                     sigma_method  = c("locf", "min_last2", "loglinear"),
                     recent        = NULL,
-                    regime_break  = NULL,
+                    regime        = NULL,
                     maturity_args = NULL,
                     ...) {
 
   .assert_triangle_input(x, "fit_ata()")
 
+  # resolve regime dispatch (NULL / Regime / "auto" / function) to a
+  # `Regime` object (or NULL) before any downstream use.
+  regime <- .resolve_regime(regime, x)
+
   # 0) rebucket Triangle for maturity grouping --------------------------
   # `maturity_args$groups` re-aggregates the Triangle to a coarser
-  # partition before link construction. Done *before* regime_break /
+  # partition before link construction. Done *before* regime /
   # recent filters because groups is a structural change to the
   # Triangle's partition, whereas filters are row-level subsets that
   # operate per group. Pop `groups` from `maturity_args` so it is not
@@ -338,13 +344,13 @@ fit_ata <- function(x,
   sigma_method <- match.arg(sigma_method)
 
   # 1) regime-break filter -----------------------------------------------
-  # when `regime_break` is supplied, drop cohorts strictly before the
+  # when `regime` is supplied, drop cohorts strictly before the
   # break date so estimation uses only the post-break regime. A
   # multi-group `Regime` triggers per-group dispatch inside
   # `.apply_regime_filter()`.
-  if (!is.null(regime_break)) {
+  if (!is.null(regime)) {
     link <- .apply_regime_filter(
-      link, regime_break,
+      link, regime = regime,
       grp = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
       coh = "cohort",
       dev = "ata_from"
@@ -427,7 +433,7 @@ fit_ata <- function(x,
     na_method     = na_method,
     sigma_method  = sigma_method,
     recent        = recent,
-    regime_break  = regime_break,
+    regime        = regime,
     use_maturity  = use_maturity,
     maturity_args = maturity_args
   )
@@ -473,13 +479,13 @@ print.ATAFit <- function(x, ...) {
   cat("sigma_method:", x$sigma_method, "\n")
   cat("recent      :",
       if (!is.null(x$recent)) x$recent else "all", "\n")
-  cat("regime_break:")
-  if (is.null(x$regime_break)) {
+  cat("regime      :")
+  if (is.null(x$regime)) {
     cat(" none\n")
-  } else if (inherits(x$regime_break, "Regime")) {
-    cat("\n"); print(x$regime_break)
+  } else if (inherits(x$regime, "Regime")) {
+    cat("\n"); print(x$regime)
   } else {
-    cat(" ", format(x$regime_break), "\n", sep = "")
+    cat(" ", format(x$regime), "\n", sep = "")
   }
   cat("use_maturity:", x$use_maturity, "\n")
 

@@ -326,7 +326,7 @@ plot.CLFit <- function(x,
 #'       selects which cells to display.}
 #'     \item{"usage"}{Cell-status heatmap (`fit_data` / `excluded` /
 #'       `future`) driven by the fit's `x$recent`. `region` is
-#'       ignored. CL has no `regime_break` / maturity hooks, so the
+#'       ignored. CL has no `regime` / maturity hooks, so the
 #'       hybrid overlays do not apply.}
 #'   }
 #' @param label_style One of `"value"` (default), `"cv"`, `"se"`, or
@@ -369,12 +369,12 @@ plot_triangle.CLFit <- function(x,
     label_size <- if (label_style == "ci") 2.5 else 3
 
   # view = "usage": cell-status heatmap driven by the fit's `recent`
-  # metadata (CL has no regime_break / maturity hooks).
+  # metadata (CL has no regime / maturity hooks).
   if (view == "usage") {
     return(.plot_triangle_usage(
       x$data,
       recent        = x$recent,
-      regime_break  = NULL,
+      regime        = NULL,
       holdout       = NULL,
       maturity_args = list(),
       theme         = theme,

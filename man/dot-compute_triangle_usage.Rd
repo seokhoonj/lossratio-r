@@ -7,7 +7,7 @@
 .compute_triangle_usage(
   x,
   recent = NULL,
-  regime_break = NULL,
+  regime = NULL,
   holdout = NULL,
   m_k = NULL
 )
@@ -18,9 +18,9 @@
 \item{recent}{Optional positive integer (calendar-diagonal cut), or
 \code{NULL}.}
 
-\item{regime_break}{Optional cohort cutoff. Accepts the same input
-forms as \code{\link[=fit_lr]{fit_lr()}} (\code{NULL}, \code{Date}, character, vector, or
-\code{Regime}).}
+\item{regime}{Optional cohort cutoff. Accepts the same input
+forms handled by \code{\link[=.resolve_regime_date]{.resolve_regime_date()}} (\code{NULL}, \code{Date}, character,
+vector, or \code{Regime}).}
 
 \item{holdout}{Optional positive integer. When supplied, the last
 \code{holdout} calendar diagonals are flagged \code{"holdout"}. The \code{recent}
@@ -31,11 +31,11 @@ triangle whose own max_cal is \code{original - holdout}.}
 
 \item{m_k}{Optional integer. The maturity switch as a \emph{target}
 development index (= \code{ata_to} of the first stable link). When
-both \code{recent} and \code{regime_break} are provided, the hybrid mask
-uses \code{m_k} as the boundary: cells with \code{dev < m_k} apply the
-cohort cut, cells with \code{dev >= m_k} apply the calendar-diagonal
-cut. When \code{NULL}, the hybrid logic falls back to applying both
-filters jointly (cohort cut AND recent cut).}
+both \code{recent} and \code{regime} are provided, the hybrid mask uses
+\code{m_k} as the boundary: cells with \code{dev < m_k} apply the cohort
+cut, cells with \code{dev >= m_k} apply the calendar-diagonal cut.
+When \code{NULL}, the hybrid logic falls back to applying both filters
+jointly (cohort cut AND recent cut).}
 }
 \value{
 A \code{data.table} with one row per \verb{(group, cohort, dev)} cell

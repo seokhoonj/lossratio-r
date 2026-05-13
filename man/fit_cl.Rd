@@ -12,7 +12,7 @@ fit_cl(
   alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  regime_break = NULL,
+  regime = NULL,
   maturity_args = NULL,
   tail = FALSE
 )
@@ -40,10 +40,13 @@ One of \code{"locf"} (default), \code{"min_last2"}, or \code{"loglinear"}.}
 recent \code{recent} periods are used for factor estimation. Default is
 \code{NULL} (use all periods).}
 
-\item{regime_break}{Optional cohort cutoff for a regime break. \code{NULL}
-(default), a \code{Date}/character coercible to Date, a vector of dates
-(uses the latest), or a \code{Regime} object. Cohorts strictly before the
-break are excluded from factor estimation.}
+\item{regime}{Optional regime specification for cohort cutoff. Accepts:
+\code{NULL} (default — no filter), a \code{Regime} object (from \code{\link[=detect_regime]{detect_regime()}}
+or \code{regime_at()}), the string \code{"auto"} (internal
+\code{detect_regime(tri, target = "lr")} call), or a function
+\verb{function(tri) -> Regime} for deferred custom-config detection. When
+supplied, cohorts strictly before the resolved break date are excluded
+from factor estimation.}
 
 \item{maturity_args}{A named list of arguments forwarded to
 \code{\link[=detect_maturity]{detect_maturity()}} via \code{\link[=fit_ata]{fit_ata()}}, or \code{NULL} (default) to skip
@@ -80,6 +83,7 @@ or \code{NULL} when maturity filtering was not applied.}
 \item{\code{sigma_method}}{Sigma extrapolation method.}
 \item{\code{weight}}{Weight variable name used, or \code{NULL}.}
 \item{\code{recent}}{Number of recent periods used, or \code{NULL}.}
+\item{\code{regime}}{Resolved \code{Regime} object, or \code{NULL}.}
 \item{\code{use_maturity}}{Logical; whether maturity filtering was applied.}
 \item{\code{maturity_args}}{Resolved maturity arguments, or \code{NULL}.}
 \item{\code{tail}}{Tail factor argument supplied by the user.}
