@@ -40,8 +40,24 @@
 #'   Also used by S3 `print()` method on `Regime` objects.
 #' @param object An object of class `"Regime"`. Used by the S3
 #'   `summary()` method.
-#' @param target Column name of the trajectory variable. Default
-#'   is `"lr"` (cumulative loss ratio).
+#' @param target Trajectory variable. Default is `"lr"` (cumulative loss
+#'   ratio). Accepts any column on the `Triangle` (e.g. `"lr"`,
+#'   `"loss"`, `"premium"`, `"loss_incr"`, `"premium_incr"`), plus three
+#'   *diagnostic* derived targets computed inline per (group, cohort):
+#'   \describe{
+#'     \item{`"loss_ata"`}{Loss age-to-age factor
+#'       `loss[k+1] / loss[k]` — multiplicative loss development speed
+#'       (Mack's $f_k$).}
+#'     \item{`"premium_ata"`}{Premium age-to-age factor — same form on
+#'       premium.}
+#'     \item{`"loss_ed"`}{Loss intensity
+#'       `(loss[k] - loss[k-1]) / premium[k-1]` — additive,
+#'       exposure-anchored (ED model's $g_k$).}
+#'   }
+#'   Derived targets drop the first dev row per cohort (no predecessor),
+#'   then re-index `dev` so detection sees a contiguous sequence. See the
+#'   `vignette("regime")` "Choice of target" section for guidance on
+#'   which target matches which suspected event.
 #' @param by Grouping column(s) for per-combination detection. `NULL`
 #'   (default) reuses the Triangle's `attr(x, "groups")` when non-empty —
 #'   so `detect_regime(tri)` dispatches per group automatically — and
@@ -185,9 +201,18 @@ detect_regime <- function(x,
 
   d <- .ensure_dt(x)
 
-  if (!(target %in% names(d)))
+  # Derived targets (not native Triangle columns) — compute inline per
+  # (group, cohort) before detection. These are diagnostic/experimental;
+  # see `?detect_regime` for the recommended use case of each.
+  derived <- c("loss_ata", "premium_ata", "loss_ed")
+  if (target %in% derived) {
+    grp_for_derive <- attr(x, "groups")
+    if (is.null(grp_for_derive)) grp_for_derive <- character(0)
+    d <- .derive_regime_target(d, target, grp = grp_for_derive)
+  } else if (!(target %in% names(d))) {
     stop(sprintf("`target` = '%s' not found in `x`.", target),
          call. = FALSE)
+  }
 
   missing_grp <- setdiff(grp, names(d))
   if (length(missing_grp))
@@ -367,6 +392,53 @@ detect_regime <- function(x,
 
 
 # Internal helpers --------------------------------------------------------
+
+#' Derive a non-native regime detection target
+#'
+#' @description
+#' Computes diagnostic / experimental detection targets that are not stored
+#' directly on the Triangle:
+#' \describe{
+#'   \item{`loss_ata`}{Loss age-to-age factor — `loss[k+1] / loss[k]` per
+#'     (group, cohort). Captures *multiplicative* development speed.}
+#'   \item{`premium_ata`}{Premium age-to-age factor — same form on premium.
+#'     Captures premium *recognition speed*.}
+#'   \item{`loss_ed`}{Loss intensity (ED model's $g_k$) —
+#'     `(loss[k] - loss[k-1]) / premium[k-1]` per (group, cohort).
+#'     *Additive*, exposure-anchored.}
+#' }
+#'
+#' The first dev row per cohort is NA (no predecessor). Downstream
+#' `.detect_regime_single` handles NA-tolerant aggregation.
+#'
+#' @keywords internal
+.derive_regime_target <- function(d, target, grp = character(0)) {
+  by_cols <- c(grp, "cohort")
+  d <- data.table::copy(d)
+
+  if (target == "loss_ata") {
+    d[, loss_ata := loss / data.table::shift(loss, 1L, type = "lag"),
+      by = by_cols]
+  } else if (target == "premium_ata") {
+    d[, premium_ata := premium / data.table::shift(premium, 1L, type = "lag"),
+      by = by_cols]
+  } else if (target == "loss_ed") {
+    d[, loss_ed := (loss - data.table::shift(loss, 1L, type = "lag")) /
+                   data.table::shift(premium, 1L, type = "lag"),
+      by = by_cols]
+  } else {
+    stop(sprintf("Unknown derived target: '%s'.", target), call. = FALSE)
+  }
+
+  # Drop the first dev row per cohort (NA from shift), then re-index dev
+  # so the first valid observation becomes dev=1. This lets downstream
+  # `.detect_regime_single` apply the same `dev <= window` and
+  # `n >= window` filters without manual adjustment for the lost dev=1.
+  d <- d[is.finite(d[[target]])]
+  d[, dev := dev - 1L]
+  d
+}
+
 
 #' Single-group regime detection
 #'

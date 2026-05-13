@@ -7,6 +7,7 @@
 detect_maturity(
   x,
   target = "loss",
+  groups = NULL,
   weight = NULL,
   alpha = 1,
   max_cv = 0.15,
@@ -22,6 +23,20 @@ detect_maturity(
 \item{target}{Cumulative metric for the link factor. Default
 \code{"loss"} (chain-ladder convention; see Description). Forwarded to
 \code{\link[=build_link]{build_link()}}.}
+
+\item{groups}{Optional \code{character} subset of \code{attr(x, "groups")}
+selecting which columns define the maturity partition. Maturity is
+typically a structural property of the development curve driven by
+coverage rather than by demographic mix (age, channel, ...), so a
+Triangle aggregated by \code{c("coverage", "age_band", "channel")} may
+still want a per-coverage maturity. \code{NULL} (default) keeps the
+current Triangle grouping (fully backward compatible).
+\code{character(0)} pools across all groups and returns a single global
+maturity row. Any non-\code{NULL}, non-empty value must be a subset of
+\code{attr(x, "groups")}; column order is irrelevant. When the requested
+\code{groups} is coarser than the Triangle grouping, the underlying
+\code{loss} / \code{premium} / \code{lr} columns are re-aggregated to the coarser
+partition before computing ata links.}
 
 \item{weight}{Optional WLS weight variable. Forwarded to
 \code{\link[=build_link]{build_link()}}.}

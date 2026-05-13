@@ -59,7 +59,13 @@ defaults via \code{\link[utils:modifyList]{utils::modifyList()}}:
 \item{\code{min_n_valid}}{Default \code{3L}.}
 \item{\code{min_run}}{Default \code{2L}.}
 }
-Pass \code{list()} to use all defaults with maturity filtering enabled.}
+Pass \code{list()} to use all defaults with maturity filtering enabled.
+The list may also include \code{groups}, which re-aggregates the Triangle
+to a coarser partition before link construction and maturity
+detection. Same semantics as \code{\link[=detect_maturity]{detect_maturity()}}: \code{NULL} (default)
+keeps the Triangle's current \code{attr(x, "groups")}, \code{character(0)}
+pools to a single global maturity, and a subset of
+\code{attr(x, "groups")} yields a coarser per-group result.}
 
 \item{...}{Additional arguments passed to \code{\link[=summary.Link]{summary.Link()}}.}
 }

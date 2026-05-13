@@ -30,8 +30,24 @@ detect_regime(
 groups (per-group detection runs independently).
 Also used by S3 \code{print()} method on \code{Regime} objects.}
 
-\item{target}{Column name of the trajectory variable. Default
-is \code{"lr"} (cumulative loss ratio).}
+\item{target}{Trajectory variable. Default is \code{"lr"} (cumulative loss
+ratio). Accepts any column on the \code{Triangle} (e.g. \code{"lr"},
+\code{"loss"}, \code{"premium"}, \code{"loss_incr"}, \code{"premium_incr"}), plus three
+\emph{diagnostic} derived targets computed inline per (group, cohort):
+\describe{
+\item{\code{"loss_ata"}}{Loss age-to-age factor
+\code{loss[k+1] / loss[k]} — multiplicative loss development speed
+(Mack's $f_k$).}
+\item{\code{"premium_ata"}}{Premium age-to-age factor — same form on
+premium.}
+\item{\code{"loss_ed"}}{Loss intensity
+\code{(loss[k] - loss[k-1]) / premium[k-1]} — additive,
+exposure-anchored (ED model's $g_k$).}
+}
+Derived targets drop the first dev row per cohort (no predecessor),
+then re-index \code{dev} so detection sees a contiguous sequence. See the
+\code{vignette("regime")} "Choice of target" section for guidance on
+which target matches which suspected event.}
 
 \item{by}{Grouping column(s) for per-combination detection. \code{NULL}
 (default) reuses the Triangle's \code{attr(x, "groups")} when non-empty —

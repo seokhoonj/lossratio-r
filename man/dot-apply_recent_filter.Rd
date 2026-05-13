@@ -26,11 +26,20 @@ is returned unchanged.}
 \item{dev}{Single column name for the development variable (e.g. \code{dev}
 for \code{Triangle} objects, or \code{ata_from} for \code{ATA}/\code{ED} objects).}
 
-\item{dev_split}{Optional numeric scalar — the maturity target dev
-(= \code{ata_to}, equivalently the first CL-region dev). When supplied,
-the recent filter is applied only to rows where \code{dev >= dev_split}
-(CL region); rows with \code{dev < dev_split} (ED region) are kept
-unconditionally.}
+\item{dev_split}{Optional SA-boundary specifier. Accepts:
+\itemize{
+\item \code{NULL} -- no SA boundary; the recent wedge applies to every row.
+\item A single non-NA numeric scalar -- the maturity target dev
+(= \code{ata_to}, the first CL-region dev). The recent filter is
+applied only to rows where \code{dev >= dev_split} (CL region); rows
+with \code{dev < dev_split} (ED region) are kept unconditionally.
+\item A \code{data.table} \verb{[grp..., dev_split]} -- per-group SA boundary
+(different \verb{k*} per group). The group columns must be a subset
+of \code{grp}. Each row of \code{dt} looks up its \code{dev_split} via
+left-join; rows whose group has no matching entry (NA after the
+join) are treated as if \code{dev_split = NULL} for that row (recent
+wedge applies to all dev for them).
+}}
 }
 \value{
 A filtered copy of \code{dt} (class preserved), keeping only rows
