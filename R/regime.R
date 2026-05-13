@@ -1022,6 +1022,49 @@ regime_at <- function(...) {
 }
 
 
+# Lazy regime detection spec ----------------------------------------------
+
+#' Build a lazy regime detection spec
+#'
+#' @description
+#' Captures [detect_regime()] arguments without evaluating. The resulting
+#' closure is invoked by the fit / backtest function with the appropriate
+#' triangle (full or masked) to perform leakage-safe detection.
+#'
+#' Use `regime_spec()` when you want detection to run *inside* a fit or
+#' [backtest()] call so that the masked (training-only) triangle is used
+#' for change-point detection. Passing an already-detected `"Regime"`
+#' object instead would leak the held-out cohorts into detection.
+#'
+#' @param ... kwargs passed verbatim to [detect_regime()] when the spec
+#'   is invoked (e.g. `target`, `by`, `min_run`, `method`).
+#'
+#' @return A function of one argument (a `"Triangle"`) returning a
+#'   `"Regime"` object.
+#'
+#' @seealso [detect_regime()], [regime_at()]
+#'
+#' @examples
+#' \dontrun{
+#' # Capture detection arguments, defer execution until fit time.
+#' spec <- regime_spec(target = "loss_ata")
+#'
+#' # Plugs into the fit / backtest 4-type regime input dispatcher.
+#' fit <- fit_lr(tri, loss_regime = regime_spec(target = "loss_ata"))
+#'
+#' # Leakage-safe: detection runs on the masked (training) triangle
+#' # for each holdout fold, never on the full triangle.
+#' bt <- backtest(tri, holdout = 6L,
+#'                loss_regime = regime_spec(target = "loss_ata"))
+#' }
+#'
+#' @export
+regime_spec <- function(...) {
+  args <- list(...)
+  function(tri) do.call(detect_regime, c(list(x = tri), args))
+}
+
+
 # Regime input dispatcher -------------------------------------------------
 
 #' Resolve a regime input to a Regime object (or NULL)
@@ -1078,4 +1121,63 @@ regime_at <- function(...) {
 
   stop("`regime` must be NULL, a Regime object, \"auto\", or a function ",
        "returning a Regime.", call. = FALSE)
+}
+
+
+# Maturity input dispatcher -----------------------------------------------
+
+#' Resolve a maturity input to a Maturity object (or NULL)
+#'
+#' @description
+#' Internal 4-type dispatcher used by `fit_lr()`, `fit_loss()`, and
+#' [backtest()] to normalize the `maturity` input into a single
+#' representation: either `NULL` (no maturity override) or a
+#' `"Maturity"` object.
+#'
+#' The four accepted input types are:
+#' \describe{
+#'   \item{`NULL`}{Returns `NULL` — caller falls back to its default
+#'     maturity behavior.}
+#'   \item{`"Maturity"` object}{Returned as-is.}
+#'   \item{`"auto"`}{Runs [detect_maturity()] on `masked_tri` if
+#'     supplied, otherwise on `tri`. The `masked_tri` fallback is the
+#'     leakage-safe path used by [backtest()] — fit functions pass
+#'     only `tri`, while [backtest()] passes both so detection sees
+#'     only the masked (training) data.}
+#'   \item{`function(tri) -> Maturity`}{Closure invoked with
+#'     `masked_tri` (if non-NULL) or `tri`. Its return value must
+#'     inherit `"Maturity"`; an error is raised otherwise.}
+#' }
+#'
+#' @param arg The maturity input (NULL / Maturity / `"auto"` /
+#'   function).
+#' @param tri A `"Triangle"` object — used as the detection input when
+#'   `masked_tri` is `NULL`.
+#' @param masked_tri Optional masked `"Triangle"` (e.g. backtest's
+#'   training-only triangle). When supplied, `"auto"` and function
+#'   inputs operate on this triangle instead of `tri`.
+#'
+#' @return `NULL` or a `"Maturity"` object.
+#'
+#' @keywords internal
+.resolve_maturity <- function(arg, tri, masked_tri = NULL) {
+  if (is.null(arg)) return(NULL)
+  if (inherits(arg, "Maturity")) return(arg)
+
+  detect_tri <- if (is.null(masked_tri)) tri else masked_tri
+
+  if (identical(arg, "auto")) {
+    return(detect_maturity(detect_tri))
+  }
+
+  if (is.function(arg)) {
+    out <- arg(detect_tri)
+    if (!inherits(out, "Maturity"))
+      stop("`maturity` function must return a `Maturity` object; got class: ",
+           paste(class(out), collapse = "/"), ".", call. = FALSE)
+    return(out)
+  }
+
+  stop("`maturity` must be NULL, a Maturity object, \"auto\", or a function ",
+       "returning a Maturity.", call. = FALSE)
 }

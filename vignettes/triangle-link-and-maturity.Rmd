@@ -202,19 +202,27 @@ push it earlier.
 ### Use in fitting
 
 `detect_maturity()` is also called internally by `fit_ata()` and
-`fit_cl()` when `maturity_args` is supplied (the `alpha` of the
-internal `summary()` step is taken from those callers):
+`fit_cl()` via the `maturity` argument. Pass `maturity_spec()` to
+forward custom detection thresholds, or `"auto"` for defaults
+(`fit_lr(method = "sa")` and `fit_loss()` use `"auto"` by default):
 
 ```{r, eval = FALSE}
 fit_ata(tri, target = "loss",
-        maturity_args = list(max_cv = 0.08, min_run = 2L))
+        maturity = maturity_spec(max_cv = 0.08, min_run = 2L))
 
 fit_cl(tri, target = "loss",
-       maturity_args = list(max_cv = 0.08))
+       maturity = maturity_spec(max_cv = 0.08))
 
 fit_lr(tri, method = "sa",
-       maturity_args = list(max_cv = 0.08))
+       maturity = maturity_spec(max_cv = 0.08))
 ```
+
+The `maturity` argument accepts four forms: `NULL` (no detection),
+a pre-built `Maturity` object (e.g. from `detect_maturity()` or
+`maturity_at()` for manual override), the string `"auto"`
+(internal `detect_maturity()` with defaults), or a function of one
+triangle argument returning a `Maturity` (typically built with
+`maturity_spec()`).
 
 For `fit_lr(method = "sa")` the detected maturity point determines
 the dev at which the projection switches from ED (early dev) to CL

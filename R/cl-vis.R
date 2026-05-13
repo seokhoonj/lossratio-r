@@ -373,11 +373,11 @@ plot_triangle.CLFit <- function(x,
   if (view == "usage") {
     return(.plot_triangle_usage(
       x$data,
-      recent        = x$recent,
-      regime        = NULL,
-      holdout       = NULL,
-      maturity_args = list(),
-      theme         = theme,
+      recent   = x$recent,
+      regime   = NULL,
+      holdout  = NULL,
+      maturity = "auto",
+      theme    = theme,
       ...
     ))
   }

@@ -96,7 +96,7 @@ Unlike ATA factors, where CV / RSE drive a \code{detect_maturity()}
 threshold, ED intensities behave differently — as \eqn{g_k \to 0}
 in late development the CV / RSE blow up by construction, not by
 instability. \code{fit_intensity()} therefore deliberately omits a
-\code{maturity_args} parameter, and \code{detect_maturity()} rejects
+\code{maturity} parameter, and \code{detect_maturity()} rejects
 \code{IntensityFit} input with an informative error.
 }
 

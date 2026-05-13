@@ -217,11 +217,11 @@ plot_triangle.Backtest <- function(x,
     if (is.null(rb)) rb <- x$fit$regime
     return(.plot_triangle_usage(
       x$data,
-      recent        = x$fit$recent,
-      regime        = rb,
-      holdout       = x$holdout,
-      maturity_args = x$fit$maturity_args,
-      theme         = theme,
+      recent   = x$fit$recent,
+      regime   = rb,
+      holdout  = x$holdout,
+      maturity = x$fit$maturity,
+      theme    = theme,
       ...
     ))
   }

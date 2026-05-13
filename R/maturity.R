@@ -332,3 +332,173 @@ detect_maturity <- function(x,
 
   .prepend_class(agg, "Triangle")
 }
+
+
+# Manual Maturity construction --------------------------------------------
+
+#' Construct a Maturity object from manually specified maturity points
+#'
+#' @description
+#' User-facing helper for hand-specifying a maturity point (or a set of
+#' per-group maturity points) without running [detect_maturity()]. The
+#' returned `"Maturity"` object plugs into any function that consumes a
+#' Maturity result -- `fit_lr()`, `fit_loss()`, [backtest()], and the
+#' maturity input dispatcher -- by carrying the same row schema as
+#' [detect_maturity()] output (group columns plus `ata_from`, `change`,
+#' `ata_link`).
+#'
+#' Use this when company-standard or domain-knowledge maturity points
+#' are known a priori and you want to override the data-driven
+#' detection. Stat columns (`mean`, `cv`, `f`, `rse`, ...) are set to
+#' `NA_real_` because manual entry carries no estimates.
+#'
+#' Argument syntax mirrors `data.frame()` / `data.table()`: named
+#' vectors of equal length, one of which **must** be `change` (the
+#' maturity point, an integer dev index). Any other named arguments are
+#' treated as group columns.
+#'
+#' @param ... Named vectors of equal length. Must include `change`
+#'   (coercible to integer; the maturity point, i.e. the `to`-index of
+#'   the first mature ata link). Any other named arguments are
+#'   interpreted as group column values (e.g. `coverage`, `channel`).
+#'   With no group columns the result is a pooled (single-row)
+#'   Maturity.
+#'
+#' @return A `data.table` with class `"Maturity"` carrying the same
+#'   columns as [detect_maturity()] output: group columns (if any),
+#'   `ata_from = change - 1L`, `change`, `ata_link = "<from>-<to>"`,
+#'   and the diagnostic stat columns (`mean`, `median`, `wt`, `cv`,
+#'   `f`, `f_se`, `rse`, `sigma`, `n_obs`, `n_valid`, `n_inf`, `n_nan`,
+#'   `valid_ratio`) set to `NA_real_`. `attr(., "groups")` holds the
+#'   group column names (possibly `character(0)`).
+#'
+#' @seealso [detect_maturity()], [regime_at()]
+#'
+#' @examples
+#' \dontrun{
+#' # Single-group manual override
+#' maturity_at(coverage = "SUR", change = 4)
+#'
+#' # Multi-group manual override (e.g. company-standard k*)
+#' maturity_at(coverage = c("CAN", "CI", "HOS", "SUR"),
+#'             change   = c(   9,   10,     7,     4))
+#'
+#' # Pooled (no group columns)
+#' maturity_at(change = 5)
+#' }
+#'
+#' @export
+maturity_at <- function(...) {
+  args <- list(...)
+  nms  <- names(args)
+
+  if (is.null(nms) || any(!nzchar(nms)))
+    stop("All arguments to `maturity_at()` must be named.", call. = FALSE)
+  if (!"change" %in% nms)
+    stop("`maturity_at()` requires a `change` argument.", call. = FALSE)
+
+  lens <- vapply(args, length, integer(1L))
+  if (length(unique(lens)) != 1L)
+    stop(sprintf(
+      "All arguments must have equal length; got lengths: %s.",
+      paste(sprintf("%s=%d", nms, lens), collapse = ", ")
+    ), call. = FALSE)
+  if (lens[[1L]] == 0L)
+    stop("`maturity_at()` arguments must have length >= 1.", call. = FALSE)
+
+  change_raw <- args[["change"]]
+  change <- tryCatch(as.integer(change_raw),
+                     error = function(e)
+                       stop(sprintf("Failed to coerce `change` to integer: %s",
+                                    conditionMessage(e)), call. = FALSE))
+  if (any(is.na(change)))
+    stop("`change` contains NA after coercion to integer.", call. = FALSE)
+
+  grp <- setdiff(nms, "change")
+  grp_cols <- args[grp]
+
+  ata_from <- change - 1L
+  ata_link <- sprintf("%s-%s", ata_from, change)
+  n        <- length(change)
+
+  stat_cols <- data.table::data.table(
+    ata_from    = as.numeric(ata_from),
+    change      = as.numeric(change),
+    ata_link    = ata_link,
+    mean        = rep(NA_real_, n),
+    median      = rep(NA_real_, n),
+    wt          = rep(NA_real_, n),
+    cv          = rep(NA_real_, n),
+    f           = rep(NA_real_, n),
+    f_se        = rep(NA_real_, n),
+    rse         = rep(NA_real_, n),
+    sigma       = rep(NA_real_, n),
+    n_obs       = rep(NA_real_, n),
+    n_valid     = rep(NA_real_, n),
+    n_inf       = rep(NA_real_, n),
+    n_nan       = rep(NA_real_, n),
+    valid_ratio = rep(NA_real_, n)
+  )
+
+  out <- if (length(grp)) {
+    data.table::data.table(
+      do.call(data.table::data.table, grp_cols),
+      stat_cols
+    )
+  } else {
+    stat_cols
+  }
+
+  data.table::setattr(out, "groups", grp)
+  data.table::setattr(out, "target", NA_character_)
+  data.table::setattr(out, "weight", NA_character_)
+
+  class(out) <- c("Maturity", "data.table", "data.frame")
+  out
+}
+
+
+# Lazy maturity detection spec --------------------------------------------
+
+#' Build a lazy maturity detection spec
+#'
+#' @description
+#' Captures [detect_maturity()] arguments without evaluating. The
+#' resulting closure is invoked by the fit / backtest function with the
+#' appropriate triangle (full or masked) to perform leakage-safe
+#' detection.
+#'
+#' Use `maturity_spec()` when you want detection to run *inside* a fit
+#' or [backtest()] call so that the masked (training-only) triangle is
+#' used for maturity detection. Passing an already-detected
+#' `"Maturity"` object instead would leak the held-out cohorts into
+#' detection.
+#'
+#' @param ... kwargs passed verbatim to [detect_maturity()] when the
+#'   spec is invoked (e.g. `target`, `groups`, `min_run`, `max_cv`,
+#'   `max_rse`, `min_valid_ratio`, `min_n_valid`).
+#'
+#' @return A function of one argument (a `"Triangle"`) returning a
+#'   `"Maturity"` object.
+#'
+#' @seealso [detect_maturity()], [maturity_at()]
+#'
+#' @examples
+#' \dontrun{
+#' # Capture detection arguments, defer execution until fit time.
+#' spec <- maturity_spec(min_run = 2, max_cv = 0.04)
+#'
+#' # Plugs into fit / backtest as the maturity input.
+#' fit <- fit_lr(tri, maturity = maturity_spec(min_run = 2))
+#'
+#' # Leakage-safe: detection runs on the masked (training) triangle
+#' # for each holdout fold, never on the full triangle.
+#' bt <- backtest(tri, holdout = 6L,
+#'                maturity = maturity_spec(min_run = 2, max_cv = 0.04))
+#' }
+#'
+#' @export
+maturity_spec <- function(...) {
+  args <- list(...)
+  function(tri) do.call(detect_maturity, c(list(x = tri), args))
+}

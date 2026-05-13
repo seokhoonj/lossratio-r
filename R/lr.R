@@ -71,10 +71,20 @@
 #'   (default), `"min_last2"`, or `"loglinear"`.
 #' @param recent Optional positive integer for estimation window.
 #'   Default is `NULL`.
-#' @param maturity_args A named list forwarded to [detect_maturity()],
-#'   or `NULL` (default) to skip maturity filtering. When
-#'   `method = "sa"`, this also determines the switch point between
-#'   ED and CL. Pass `list()` to use all defaults.
+#' @param maturity Optional maturity specification. Accepts four input
+#'   types:
+#'   \describe{
+#'     \item{`NULL`}{No maturity filter. Disables SA-mode switch detection.}
+#'     \item{`Maturity` object}{Use as-is. Typically built via
+#'       [detect_maturity()] or [maturity_at()].}
+#'     \item{`"auto"` (default)}{Detect maturity internally via
+#'       `detect_maturity(x)` on the input triangle.}
+#'     \item{Function / closure}{A user-supplied function taking the
+#'       triangle and returning a `Maturity` object (e.g. from
+#'       [maturity_spec()]) for deferred custom-config detection.}
+#'   }
+#'   When `method = "sa"`, this also determines the switch point between
+#'   ED and CL phases.
 #' @param se_method Method for computing `lr_se = SE(L/P)`. One of:
 #'   \describe{
 #'     \item{`"fixed"` (default)}{Premium treated as fixed (non-random).
@@ -143,7 +153,7 @@ fit_lr <- function(x,
                    premium_regime = NULL,
                    sigma_method   = c("locf", "min_last2", "loglinear"),
                    recent         = NULL,
-                   maturity_args  = NULL,
+                   maturity       = "auto",
                    se_method      = c("fixed", "delta"),
                    rho            = 0.95,
                    conf_level     = 0.95,
@@ -161,6 +171,9 @@ fit_lr <- function(x,
   # Independent NULL defaults -- no lazy chaining between loss and premium.
   loss_regime    <- .resolve_regime(loss_regime,    x)
   premium_regime <- .resolve_regime(premium_regime, x)
+
+  # Resolve 4-type maturity input (NULL / Maturity / "auto" / function).
+  maturity <- .resolve_maturity(maturity, x)
 
   if (!is.logical(bootstrap) || length(bootstrap) != 1L || is.na(bootstrap))
     stop("`bootstrap` must be a single non-missing logical value.",
@@ -208,7 +221,7 @@ fit_lr <- function(x,
     premium_alpha  = premium_alpha,
     sigma_method   = sigma_method,
     recent         = recent,
-    maturity_args  = maturity_args,
+    maturity       = maturity,
     conf_level     = conf_level
   )
 
@@ -350,8 +363,7 @@ fit_lr <- function(x,
     sigma_method    = sigma_method,
     recent          = loss_fit$recent,
     loss_regime     = loss_fit$regime,
-    premium_regime  = premium_regime,
-    maturity_args   = maturity_args
+    premium_regime  = premium_regime
   )
 
   class(out) <- "LRFit"

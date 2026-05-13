@@ -261,24 +261,21 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'   `function(tri) -> Regime` for deferred custom-config detection. When
 #'   supplied, cohorts strictly before the resolved break date are excluded
 #'   from estimation.
-#' @param maturity_args A named list of arguments forwarded to
-#'   [detect_maturity()], or `NULL` (default) to skip maturity filtering.
-#'   When a list is supplied, missing elements are filled with package
-#'   defaults via [utils::modifyList()]:
+#' @param maturity Optional maturity specification for filtering ata
+#'   links. Accepts four input types:
 #'   \describe{
-#'     \item{`max_cv`}{Default `0.15`.}
-#'     \item{`max_rse`}{Default `0.05`.}
-#'     \item{`min_valid_ratio`}{Default `0.5`.}
-#'     \item{`min_n_valid`}{Default `3L`.}
-#'     \item{`min_run`}{Default `2L`.}
+#'     \item{`NULL` (default)}{No maturity filter.}
+#'     \item{`Maturity` object}{Use as-is. Typically built via
+#'       [detect_maturity()] or [maturity_at()].}
+#'     \item{`"auto"`}{Detect maturity internally via `detect_maturity(x)`
+#'       on the input triangle.}
+#'     \item{Function / closure}{A user-supplied function taking the
+#'       triangle and returning a `Maturity` object (e.g. from
+#'       [maturity_spec()]) for deferred custom-config detection.}
 #'   }
-#'   Pass `list()` to use all defaults with maturity filtering enabled.
-#'   The list may also include `groups`, which re-aggregates the Triangle
-#'   to a coarser partition before link construction and maturity
-#'   detection. Same semantics as [detect_maturity()]: `NULL` (default)
-#'   keeps the Triangle's current `attr(x, "groups")`, `character(0)`
-#'   pools to a single global maturity, and a subset of
-#'   `attr(x, "groups")` yields a coarser per-group result.
+#'   When the supplied `Maturity` carries `attr(., "groups")` that differs
+#'   from the Triangle's grouping, the Triangle is rebucketed to the
+#'   maturity partition before link construction.
 #' @param ... Additional arguments passed to [summary.Link()].
 #'
 #' @return An object of class `"ATAFit"` (a named list) containing:
@@ -288,7 +285,7 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'     \item{`summary`}{`"ATASummary"` object from [summary.Link()].}
 #'     \item{`selected`}{`data.table` of factors ready for projection,
 #'       including `f_selected` and `sigma2`.}
-#'     \item{`maturity`}{Maturity diagnostics from [detect_maturity()],
+#'     \item{`maturity`}{Resolved `Maturity` object used for filtering,
 #'       or `NULL` when maturity filtering was not applied.}
 #'     \item{`alpha`}{Value of `alpha` used.}
 #'     \item{`na_method`}{NA fill method used.}
@@ -296,7 +293,6 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'     \item{`recent`}{Number of recent periods used, or `NULL`.}
 #'     \item{`regime`}{Resolved `Regime` object, or `NULL`.}
 #'     \item{`use_maturity`}{Logical; whether maturity filtering was applied.}
-#'     \item{`maturity_args`}{Resolved maturity arguments, or `NULL`.}
 #'   }
 #'
 #' @param target Cumulative metric for the link factor. Default
@@ -309,14 +305,14 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'
 #' @export
 fit_ata <- function(x,
-                    target        = "loss",
-                    weight        = NULL,
-                    alpha         = 1,
-                    na_method     = c("locf", "none"),
-                    sigma_method  = c("locf", "min_last2", "loglinear"),
-                    recent        = NULL,
-                    regime        = NULL,
-                    maturity_args = NULL,
+                    target       = "loss",
+                    weight       = NULL,
+                    alpha        = 1,
+                    na_method    = c("locf", "none"),
+                    sigma_method = c("locf", "min_last2", "loglinear"),
+                    recent       = NULL,
+                    regime       = NULL,
+                    maturity     = NULL,
                     ...) {
 
   .assert_triangle_input(x, "fit_ata()")
@@ -325,17 +321,31 @@ fit_ata <- function(x,
   # `Regime` object (or NULL) before any downstream use.
   regime <- .resolve_regime(regime, x)
 
+  # resolve maturity dispatch (NULL / Maturity / "auto" / function) to a
+  # `Maturity` object (or NULL) before any downstream use.
+  maturity <- .resolve_maturity(maturity, x)
+
   # 0) rebucket Triangle for maturity grouping --------------------------
-  # `maturity_args$groups` re-aggregates the Triangle to a coarser
-  # partition before link construction. Done *before* regime /
-  # recent filters because groups is a structural change to the
-  # Triangle's partition, whereas filters are row-level subsets that
-  # operate per group. Pop `groups` from `maturity_args` so it is not
-  # forwarded as an unused arg to `.detect_maturity()` (criteria-only).
-  mat_groups <- if (is.list(maturity_args)) maturity_args$groups else NULL
-  if (is.list(maturity_args)) maturity_args$groups <- NULL
-  if (!is.null(mat_groups)) {
-    x <- .rebucket_triangle_groups(x, mat_groups)
+  # When the supplied `Maturity` carries an `attr(., "groups")` that
+  # differs from the Triangle's current grouping, re-aggregate the
+  # Triangle to the maturity partition before link construction. Done
+  # *before* regime / recent filters because groups is a structural
+  # change to the Triangle's partition, whereas filters are row-level
+  # subsets that operate per group.
+  if (!is.null(maturity)) {
+    m_groups <- attr(maturity, "groups")
+    if (is.null(m_groups)) {
+      # Infer from column names — non-stats columns are group columns.
+      stat_cols <- c("change", "ata_from", "ata_link", "mean", "median", "wt",
+                     "cv", "f", "f_se", "rse", "sigma", "n_obs", "n_valid",
+                     "n_inf", "n_nan", "valid_ratio")
+      m_groups <- setdiff(names(maturity), stat_cols)
+    }
+    data_groups <- attr(x, "groups")
+    if (is.null(data_groups)) data_groups <- character(0)
+    if (length(m_groups) > 0L && !setequal(m_groups, data_groups)) {
+      x <- .rebucket_triangle_groups(x, m_groups)
+    }
   }
 
   link <- build_link(x, target = target, weight = weight)
@@ -369,26 +379,12 @@ fit_ata <- function(x,
     )
   }
 
-  # 3) resolve maturity arguments ----------------------------------------
-  # maturity_args = NULL   → skip maturity filtering
-  # maturity_args = list() → use all defaults
-  # maturity_args = list(max_cv = 0.15) → partial override
-  maturity_args <- if (!is.null(maturity_args)) {
-    utils::modifyList(
-      list(
-        max_cv          = 0.15,
-        max_rse         = 0.05,
-        min_valid_ratio = 0.5,
-        min_n_valid     = 3L,
-        min_run         = 2L
-      ),
-      maturity_args
-    )
-  } else {
-    NULL
-  }
-
-  use_maturity <- !is.null(maturity_args)
+  # 3) resolve maturity --------------------------------------------------
+  # `maturity` was already resolved at the top of the function to either
+  # `NULL` (no filter) or a `Maturity` object. No internal detection step
+  # is performed here -- callers wanting auto-detection pass `"auto"` or
+  # a `maturity_spec()` closure to the `maturity` arg.
+  use_maturity <- !is.null(maturity)
 
   grp <- attr(link, "groups")
   if (is.null(grp)) grp <- character(0)
@@ -396,15 +392,8 @@ fit_ata <- function(x,
   # 4) compute summary statistics and WLS estimates ---------------------
   ata_summary <- summary(link, alpha = alpha, model = "ata", ...)
 
-  # 5) find maturity point ----------------------------------------------
-  maturity <- if (use_maturity) {
-    do.call(.detect_maturity, c(list(x = ata_summary), maturity_args))
-  } else {
-    NULL
-  }
-
-  # 6) filter links by maturity and fill NA gaps with LOCF --------------
-  # maturity is NULL when maturity_args = NULL; .filter_ata() ignores it
+  # 5) filter links by maturity and fill NA gaps with LOCF --------------
+  # maturity is NULL when caller passed NULL; .filter_ata() ignores it
   selected <- .filter_ata(
     ata_summary  = ata_summary,
     maturity     = maturity,
@@ -418,24 +407,23 @@ fit_ata <- function(x,
   selected[, sigma2 := sigma^2]
 
   out <- list(
-    call          = match.call(),
-    data          = x,
-    groups        = grp,
-    cohort        = attr(link, "cohort"),
-    dev           = attr(link, "dev"),
-    target        = attr(link, "target"),
-    weight        = attr(link, "weight"),
-    link          = link,
-    factor        = ata_summary,
-    selected      = selected,
-    maturity      = maturity,
-    alpha         = alpha,
-    na_method     = na_method,
-    sigma_method  = sigma_method,
-    recent        = recent,
-    regime        = regime,
-    use_maturity  = use_maturity,
-    maturity_args = maturity_args
+    call         = match.call(),
+    data         = x,
+    groups       = grp,
+    cohort       = attr(link, "cohort"),
+    dev          = attr(link, "dev"),
+    target       = attr(link, "target"),
+    weight       = attr(link, "weight"),
+    link         = link,
+    factor       = ata_summary,
+    selected     = selected,
+    maturity     = maturity,
+    alpha        = alpha,
+    na_method    = na_method,
+    sigma_method = sigma_method,
+    recent       = recent,
+    regime       = regime,
+    use_maturity = use_maturity
   )
 
   class(out) <- "ATAFit"

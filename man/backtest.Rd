@@ -19,7 +19,7 @@ backtest(
   recent = NULL,
   loss_regime = NULL,
   premium_regime = NULL,
-  maturity_args = NULL,
+  maturity = "auto",
   se_method = c("fixed", "delta"),
   rho = 0.95,
   conf_level = 0.95,
@@ -78,8 +78,21 @@ masked triangle for the same leakage-safe reason.
 }
 \code{premium_regime} is resolved independently from \code{loss_regime}.}
 
-\item{maturity_args}{Maturity-detection args. Used only for
-\code{target = "lr"} and \code{target = "loss"} (stage-adaptive).}
+\item{maturity}{Maturity input. Used only for \code{target = "lr"} and
+\code{target = "loss"} (stage-adaptive). Accepts one of four input
+types, dispatched by \code{\link[=.resolve_maturity]{.resolve_maturity()}}:
+\itemize{
+\item \code{NULL} -- skip maturity filtering.
+\item A \code{Maturity} object (e.g. from \code{\link[=detect_maturity]{detect_maturity()}} or
+\code{\link[=maturity_at]{maturity_at()}}) -- used as-is. Caller takes responsibility
+for any leakage in their pre-computation.
+\item The string \code{"auto"} (default) -- runs \code{\link[=detect_maturity]{detect_maturity()}}
+on the \strong{masked} triangle (last \code{holdout} calendar diagonals
+removed), avoiding look-ahead leakage.
+\item A function \verb{function(tri) -> Maturity} (e.g. from
+\code{\link[=maturity_spec]{maturity_spec()}}) -- called on the masked triangle for the
+same leakage-safe reason.
+}}
 
 \item{se_method}{Standard-error composition for \code{fit_lr()}. Unused
 for \code{target = "loss"} / \code{target = "premium"}.}

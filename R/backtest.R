@@ -58,8 +58,21 @@
 #'       masked triangle for the same leakage-safe reason.
 #'   }
 #'   `premium_regime` is resolved independently from `loss_regime`.
-#' @param maturity_args Maturity-detection args. Used only for
-#'   `target = "lr"` and `target = "loss"` (stage-adaptive).
+#' @param maturity Maturity input. Used only for `target = "lr"` and
+#'   `target = "loss"` (stage-adaptive). Accepts one of four input
+#'   types, dispatched by [`.resolve_maturity()`]:
+#'   \itemize{
+#'     \item `NULL` -- skip maturity filtering.
+#'     \item A `Maturity` object (e.g. from [detect_maturity()] or
+#'       [maturity_at()]) -- used as-is. Caller takes responsibility
+#'       for any leakage in their pre-computation.
+#'     \item The string `"auto"` (default) -- runs [detect_maturity()]
+#'       on the **masked** triangle (last `holdout` calendar diagonals
+#'       removed), avoiding look-ahead leakage.
+#'     \item A function `function(tri) -> Maturity` (e.g. from
+#'       [maturity_spec()]) -- called on the masked triangle for the
+#'       same leakage-safe reason.
+#'   }
 #' @param se_method Standard-error composition for `fit_lr()`. Unused
 #'   for `target = "loss"` / `target = "premium"`.
 #' @param rho Loss-premium correlation used by `fit_lr()` delta
@@ -130,7 +143,7 @@ backtest <- function(x,
                      recent         = NULL,
                      loss_regime    = NULL,
                      premium_regime = NULL,
-                     maturity_args  = NULL,
+                     maturity       = "auto",
                      se_method      = c("fixed", "delta"),
                      rho            = 0.95,
                      conf_level     = 0.95,
@@ -171,12 +184,15 @@ backtest <- function(x,
       stop(sprintf("column '%s' not found in `x`.", col), call. = FALSE)
   }
 
-  # Apply maturity_args$groups rebucket up-front so backtest's actual/held-out
-  # tagging and the downstream fit operate on the same partition (otherwise
-  # `grp` captured from the original triangle won't match the rebucketed
-  # `fit_obj$full` columns).
-  if (is.list(maturity_args) && !is.null(maturity_args$groups)) {
-    x <- .rebucket_triangle_groups(x, maturity_args$groups)
+  # If a pre-computed Maturity object carries a coarser `groups`
+  # partition, rebucket the triangle up-front so backtest's
+  # actual/held-out tagging and the downstream fit operate on the same
+  # partition (otherwise `grp` captured from the original triangle
+  # won't match the rebucketed `fit_obj$full` columns).
+  if (inherits(maturity, "Maturity")) {
+    mat_groups <- attr(maturity, "groups")
+    if (!is.null(mat_groups))
+      x <- .rebucket_triangle_groups(x, mat_groups)
   }
 
   grp <- attr(x, "groups")
@@ -201,6 +217,14 @@ backtest <- function(x,
     stop("After masking, no observations remain. Reduce `holdout`.",
          call. = FALSE)
 
+  # 2a) Resolve maturity against the MASKED triangle (no look-ahead) ----
+  # `.resolve_maturity()` dispatches on input type:
+  #   NULL          -> NULL
+  #   Maturity      -> pass-through
+  #   "auto"        -> detect_maturity(masked_tri)  (leakage-safe)
+  #   function(tri) -> fn(masked_tri)               (leakage-safe)
+  maturity <- .resolve_maturity(maturity, tri = x, masked_tri = masked)
+
   # 2b) Resolve regime specs against the MASKED triangle (no look-ahead) ---
   # `.resolve_regime()` dispatches on input type:
   #   NULL          -> NULL
@@ -224,7 +248,7 @@ backtest <- function(x,
       premium_regime = premium_regime,
       sigma_method   = sigma_method,
       recent         = recent,
-      maturity_args  = maturity_args,
+      maturity       = maturity,
       se_method      = se_method,
       rho            = rho,
       conf_level     = conf_level,
@@ -242,7 +266,7 @@ backtest <- function(x,
       premium_alpha  = premium_alpha,
       sigma_method   = sigma_method,
       recent         = recent,
-      maturity_args  = maturity_args,
+      maturity       = maturity,
       conf_level     = conf_level,
       ...
     ),

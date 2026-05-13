@@ -14,7 +14,7 @@ fit_lr(
   premium_regime = NULL,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  maturity_args = NULL,
+  maturity = "auto",
   se_method = c("fixed", "delta"),
   rho = 0.95,
   conf_level = 0.95,
@@ -72,10 +72,20 @@ shift affects premium accrual too.}
 \item{recent}{Optional positive integer for estimation window.
 Default is \code{NULL}.}
 
-\item{maturity_args}{A named list forwarded to \code{\link[=detect_maturity]{detect_maturity()}},
-or \code{NULL} (default) to skip maturity filtering. When
-\code{method = "sa"}, this also determines the switch point between
-ED and CL. Pass \code{list()} to use all defaults.}
+\item{maturity}{Optional maturity specification. Accepts four input
+types:
+\describe{
+\item{\code{NULL}}{No maturity filter. Disables SA-mode switch detection.}
+\item{\code{Maturity} object}{Use as-is. Typically built via
+\code{\link[=detect_maturity]{detect_maturity()}} or \code{\link[=maturity_at]{maturity_at()}}.}
+\item{\code{"auto"} (default)}{Detect maturity internally via
+\code{detect_maturity(x)} on the input triangle.}
+\item{Function / closure}{A user-supplied function taking the
+triangle and returning a \code{Maturity} object (e.g. from
+\code{\link[=maturity_spec]{maturity_spec()}}) for deferred custom-config detection.}
+}
+When \code{method = "sa"}, this also determines the switch point between
+ED and CL phases.}
 
 \item{se_method}{Method for computing \code{lr_se = SE(L/P)}. One of:
 \describe{

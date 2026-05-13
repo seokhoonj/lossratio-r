@@ -196,3 +196,20 @@ In practice: **start with `"sa"`** (the default), then run `"cl"`
 and `"ed"` for sensitivity. If all three agree, the projection is
 robust. If they diverge, inspect maturity detection and the
 underlying ATA factors.
+
+## Maturity input
+
+For `method = "sa"` the maturity point $m_g$ determines where the
+projection switches from ED to CL. By default `fit_lr()` /
+`fit_loss()` use `maturity = "auto"`, which calls
+`detect_maturity()` internally with default thresholds. Other forms:
+
+- `maturity = NULL` — disable detection (only meaningful for
+  non-SA methods or for `fit_ata()` standalone).
+- `maturity = maturity_spec(max_cv = 0.05, min_run = 2L)` — lazy
+  spec forwarding custom thresholds to `detect_maturity()` at fit
+  time (leakage-safe for `backtest()`).
+- `maturity = detect_maturity(tri, ...)` — pre-built `Maturity`
+  object, fixed across refits.
+- `maturity = maturity_at(coverage = "SUR", change = 4)` — manual
+  per-group override (e.g. company-standard $k^*$).

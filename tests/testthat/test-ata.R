@@ -78,9 +78,9 @@ test_that("recent reduces selected rows count", {
   expect_true(nrow(af_recent$selected) <= nrow(af_full$selected))
 })
 
-test_that("maturity_args adds $maturity", {
+test_that("maturity = \"auto\" adds $maturity", {
   af_no  <- fit_ata(tri, target = "loss")
-  af_mat <- fit_ata(tri, target = "loss", maturity_args = list())
+  af_mat <- fit_ata(tri, target = "loss", maturity = "auto")
   expect_null(af_no$maturity)
   expect_false(is.null(af_mat$maturity))
 })

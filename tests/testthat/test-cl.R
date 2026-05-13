@@ -63,8 +63,8 @@ test_that("tail = FALSE keeps tail_factor at 1", {
   expect_equal(cl$tail_factor, 1)
 })
 
-test_that("maturity_args triggers maturity detection", {
-  cl <- fit_cl(tri, target = "loss", method = "mack", maturity_args = list())
+test_that("maturity = \"auto\" triggers maturity detection", {
+  cl <- fit_cl(tri, target = "loss", method = "mack", maturity = "auto")
   expect_false(is.null(cl$maturity))
 })
 

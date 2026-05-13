@@ -13,7 +13,7 @@ fit_cl(
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   regime = NULL,
-  maturity_args = NULL,
+  maturity = NULL,
   tail = FALSE
 )
 }
@@ -48,10 +48,18 @@ or \code{regime_at()}), the string \code{"auto"} (internal
 supplied, cohorts strictly before the resolved break date are excluded
 from factor estimation.}
 
-\item{maturity_args}{A named list of arguments forwarded to
-\code{\link[=detect_maturity]{detect_maturity()}} via \code{\link[=fit_ata]{fit_ata()}}, or \code{NULL} (default) to skip
-maturity filtering. Pass \code{list()} to use all defaults with maturity
-filtering enabled.}
+\item{maturity}{Maturity input forwarded to \code{\link[=fit_ata]{fit_ata()}}. Accepts four
+forms:
+\describe{
+\item{\code{NULL} (default)}{No maturity filtering.}
+\item{\code{Maturity} object}{Pre-built (e.g. from \code{\link[=detect_maturity]{detect_maturity()}}
+or \code{\link[=maturity_at]{maturity_at()}}) — used as-is.}
+\item{\code{"auto"}}{Internal \code{\link[=detect_maturity]{detect_maturity()}} call with defaults
+(target inferred from \code{target}).}
+\item{function \verb{function(tri) -> Maturity}}{Lazy spec, typically
+built with \code{\link[=maturity_spec]{maturity_spec()}}, invoked on the triangle at fit
+time (leakage-safe for \code{\link[=backtest]{backtest()}}).}
+}}
 
 \item{tail}{Logical or numeric. If \code{FALSE}, no tail factor is applied.
 If \code{TRUE}, a log-linear tail factor is estimated from selected factors.
@@ -85,7 +93,6 @@ or \code{NULL} when maturity filtering was not applied.}
 \item{\code{recent}}{Number of recent periods used, or \code{NULL}.}
 \item{\code{regime}}{Resolved \code{Regime} object, or \code{NULL}.}
 \item{\code{use_maturity}}{Logical; whether maturity filtering was applied.}
-\item{\code{maturity_args}}{Resolved maturity arguments, or \code{NULL}.}
 \item{\code{tail}}{Tail factor argument supplied by the user.}
 \item{\code{tail_factor}}{Numeric tail factor applied.}
 }

@@ -33,10 +33,18 @@
 #'   `function(tri) -> Regime` for deferred custom-config detection. When
 #'   supplied, cohorts strictly before the resolved break date are excluded
 #'   from factor estimation.
-#' @param maturity_args A named list of arguments forwarded to
-#'   [detect_maturity()] via [fit_ata()], or `NULL` (default) to skip
-#'   maturity filtering. Pass `list()` to use all defaults with maturity
-#'   filtering enabled.
+#' @param maturity Maturity input forwarded to [fit_ata()]. Accepts four
+#'   forms:
+#'   \describe{
+#'     \item{`NULL` (default)}{No maturity filtering.}
+#'     \item{`Maturity` object}{Pre-built (e.g. from [detect_maturity()]
+#'       or [maturity_at()]) — used as-is.}
+#'     \item{`"auto"`}{Internal [detect_maturity()] call with defaults
+#'       (target inferred from `target`).}
+#'     \item{function `function(tri) -> Maturity`}{Lazy spec, typically
+#'       built with [maturity_spec()], invoked on the triangle at fit
+#'       time (leakage-safe for [backtest()]).}
+#'   }
 #' @param tail Logical or numeric. If `FALSE`, no tail factor is applied.
 #'   If `TRUE`, a log-linear tail factor is estimated from selected factors.
 #'   If numeric, the supplied value is used as the tail factor.
@@ -68,7 +76,6 @@
 #'     \item{`recent`}{Number of recent periods used, or `NULL`.}
 #'     \item{`regime`}{Resolved `Regime` object, or `NULL`.}
 #'     \item{`use_maturity`}{Logical; whether maturity filtering was applied.}
-#'     \item{`maturity_args`}{Resolved maturity arguments, or `NULL`.}
 #'     \item{`tail`}{Tail factor argument supplied by the user.}
 #'     \item{`tail_factor`}{Numeric tail factor applied.}
 #'   }
@@ -98,15 +105,15 @@
 #'
 #' @export
 fit_cl <- function(x,
-                   method        = c("mack"),
-                   target        = "loss",
-                   weight        = NULL,
-                   alpha         = 1,
-                   sigma_method  = c("locf", "min_last2", "loglinear"),
-                   recent        = NULL,
-                   regime        = NULL,
-                   maturity_args = NULL,
-                   tail          = FALSE) {
+                   method       = c("mack"),
+                   target       = "loss",
+                   weight       = NULL,
+                   alpha        = 1,
+                   sigma_method = c("locf", "min_last2", "loglinear"),
+                   recent       = NULL,
+                   regime       = NULL,
+                   maturity     = NULL,
+                   tail         = FALSE) {
 
   .assert_triangle_input(x, "fit_cl()")
   method       <- match.arg(method)
@@ -154,13 +161,13 @@ fit_cl <- function(x,
   # 3) estimate ata factors (fit_ata builds the Link internally) -------
   ata_fit <- fit_ata(
     x,
-    target        = tgt,
-    weight        = if (use_external_weight) wt else NULL,
-    alpha         = alpha,
-    sigma_method  = sigma_method,
-    recent        = recent,
-    regime        = regime,
-    maturity_args = maturity_args
+    target       = tgt,
+    weight       = if (use_external_weight) wt else NULL,
+    alpha        = alpha,
+    sigma_method = sigma_method,
+    recent       = recent,
+    regime       = regime,
+    maturity     = maturity
   )
 
   # 4) compute factor variance ------------------------------------------
@@ -276,29 +283,28 @@ fit_cl <- function(x,
 
   # 14) assemble output -------------------------------------------------
   out <- list(
-    call          = match.call(),
-    data          = x,
-    method        = method,
-    groups        = grp,
-    cohort        = coh,
-    dev           = dev,
-    target        = tgt,
-    full          = full,
-    proj          = proj,
-    link          = ata_fit$link,
-    summary       = NULL,
-    factor        = ata_fit$factor,
-    selected      = ata_fit$selected,
-    maturity      = ata_fit$maturity,
-    alpha         = alpha,
-    sigma_method  = sigma_method,
-    weight        = if (use_external_weight) wt else NULL,
-    recent        = recent,
-    regime        = regime,
-    use_maturity  = ata_fit$use_maturity,
-    maturity_args = ata_fit$maturity_args,
-    tail          = tail,
-    tail_factor   = tail_factor
+    call         = match.call(),
+    data         = x,
+    method       = method,
+    groups       = grp,
+    cohort       = coh,
+    dev          = dev,
+    target       = tgt,
+    full         = full,
+    proj         = proj,
+    link         = ata_fit$link,
+    summary      = NULL,
+    factor       = ata_fit$factor,
+    selected     = ata_fit$selected,
+    maturity     = ata_fit$maturity,
+    alpha        = alpha,
+    sigma_method = sigma_method,
+    weight       = if (use_external_weight) wt else NULL,
+    recent       = recent,
+    regime       = regime,
+    use_maturity = ata_fit$use_maturity,
+    tail         = tail,
+    tail_factor  = tail_factor
   )
 
   class(out) <- "CLFit"

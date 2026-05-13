@@ -481,7 +481,7 @@ plot_triangle <- function(x, ...) {
 #'     \item{"value"}{(default) Per-cell metric heatmap controlled by
 #'       `metric`, `label_style`, `amount_divisor`, `nrow`, `ncol`.}
 #'     \item{"usage"}{Cell-status heatmap (used / holdout / unused /
-#'       future). Accepts `recent`, `regime`, `holdout`, `maturity_args`
+#'       future). Accepts `recent`, `regime`, `holdout`, `maturity`
 #'       via `...`. See `vignette("regime-change-filter")` for details.}
 #'   }
 #' @param metric A single metric to plot. Must be one of:
@@ -1053,12 +1053,12 @@ plot.Total <- function(x,
 # Internal: usage-mask renderer dispatched from plot_triangle.Triangle
 # when type = "usage".
 .plot_triangle_usage <- function(x,
-                                 recent        = NULL,
-                                 regime        = NULL,
-                                 holdout       = NULL,
-                                 maturity_args = NULL,
-                                 metric        = "loss",
-                                 theme         = c("view", "save", "shiny"),
+                                 recent   = NULL,
+                                 regime   = NULL,
+                                 holdout  = NULL,
+                                 maturity = NULL,
+                                 metric   = "loss",
+                                 theme    = c("view", "save", "shiny"),
                                  ...) {
 
   .assert_class(x, "Triangle")
@@ -1084,10 +1084,9 @@ plot.Total <- function(x,
   }
 
   if (!is.null(bd)) {
-    margs <- if (is.null(maturity_args)) list() else maturity_args
+    mat_arg <- if (is.null(maturity)) "auto" else maturity
     fit_for_mat <- tryCatch(
-      do.call(fit_ata,
-              c(list(x = x, target = metric, maturity_args = margs))),
+      fit_ata(x = x, target = metric, maturity = mat_arg),
       error = function(e) NULL
     )
     if (!is.null(fit_for_mat) &&

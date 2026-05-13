@@ -22,7 +22,7 @@
 #' threshold, ED intensities behave differently — as \eqn{g_k \to 0}
 #' in late development the CV / RSE blow up by construction, not by
 #' instability. `fit_intensity()` therefore deliberately omits a
-#' `maturity_args` parameter, and `detect_maturity()` rejects
+#' `maturity` parameter, and `detect_maturity()` rejects
 #' `IntensityFit` input with an informative error.
 #'
 #' @param x A `Triangle` object.

@@ -50,9 +50,19 @@
 #' @param sigma_method Sigma extrapolation. One of `"locf"` (default),
 #'   `"min_last2"`, `"loglinear"`.
 #' @param recent Optional positive integer; calendar-diagonal filter.
-#' @param maturity_args A named list forwarded to [detect_maturity()],
-#'   or `NULL` (default) to skip maturity filtering. SA auto-defaults to
-#'   `list()`.
+#' @param maturity Optional maturity specification. Accepts four input
+#'   types:
+#'   \describe{
+#'     \item{`NULL`}{No maturity filter. SA mode requires a maturity, so
+#'       this disables only ED / CL modes.}
+#'     \item{`Maturity` object}{Use as-is. Typically built via
+#'       [detect_maturity()] or [maturity_at()].}
+#'     \item{`"auto"` (default)}{Detect maturity internally via
+#'       `detect_maturity(x)` on the input triangle.}
+#'     \item{Function / closure}{A user-supplied function taking the
+#'       triangle and returning a `Maturity` object (e.g. from
+#'       [maturity_spec()]) for deferred custom-config detection.}
+#'   }
 #' @param conf_level Confidence level for analytical CI on the loss
 #'   projection (`loss_ci_lower`, `loss_ci_upper`). Default `0.95`.
 #'
@@ -95,7 +105,7 @@ fit_loss <- function(x,
                      premium_alpha  = 1,
                      sigma_method   = c("locf", "min_last2", "loglinear"),
                      recent         = NULL,
-                     maturity_args  = NULL,
+                     maturity       = "auto",
                      conf_level     = 0.95) {
 
   .assert_triangle_input(x, "fit_loss()")
@@ -115,18 +125,27 @@ fit_loss <- function(x,
   # Resolve regime input (NULL / Regime / "auto" / function) -> NULL or Regime
   regime <- .resolve_regime(regime, x)
 
-  # sa requires maturity detection; default to list() if not supplied
-  if (method == "sa" && is.null(maturity_args)) {
-    maturity_args <- list()
-  }
+  # Resolve maturity input (NULL / Maturity / "auto" / function) -> NULL or Maturity
+  maturity <- .resolve_maturity(maturity, x)
 
   # 1) Triangle structural attrs ----------------------------------------
-  # Apply maturity_args$groups rebucket up-front so all downstream code
+  # Apply maturity-group rebucket up-front so all downstream code
   # (filter capture of `grp`, fit_ata, .apply_*_filter, projection joins)
   # sees a consistent partition. fit_ata's own rebucket becomes a no-op
   # via setequal short-circuit in .rebucket_triangle_groups.
-  if (is.list(maturity_args) && !is.null(maturity_args$groups)) {
-    x <- .rebucket_triangle_groups(x, maturity_args$groups)
+  if (!is.null(maturity)) {
+    m_groups <- attr(maturity, "groups")
+    if (is.null(m_groups)) {
+      stat_cols <- c("change", "ata_from", "ata_link", "mean", "median", "wt",
+                     "cv", "f", "f_se", "rse", "sigma", "n_obs", "n_valid",
+                     "n_inf", "n_nan", "valid_ratio")
+      m_groups <- setdiff(names(maturity), stat_cols)
+    }
+    data_groups <- attr(x, "groups")
+    if (is.null(data_groups)) data_groups <- character(0)
+    if (length(m_groups) > 0L && !setequal(m_groups, data_groups)) {
+      x <- .rebucket_triangle_groups(x, m_groups)
+    }
   }
 
   # Triangle is guaranteed to carry standardized `loss` / `premium`
@@ -153,10 +172,10 @@ fit_loss <- function(x,
     if (!is.null(bd) && method == "sa") {
       pre_loss_fit <- fit_ata(
         x,
-        target        = "loss",
-        alpha         = alpha,
-        sigma_method  = sigma_method,
-        maturity_args = maturity_args
+        target       = "loss",
+        alpha        = alpha,
+        sigma_method = sigma_method,
+        maturity     = maturity
       )
       m_dt <- pre_loss_fit$maturity
 
@@ -240,12 +259,12 @@ fit_loss <- function(x,
   # 4) loss ATA + Mack f_var ---------------------------------------------
   loss_ata_fit <- fit_ata(
     x,
-    target        = "loss",
-    alpha         = alpha,
-    sigma_method  = sigma_method,
-    recent        = recent,
-    regime        = regime,
-    maturity_args = maturity_args
+    target       = "loss",
+    alpha        = alpha,
+    sigma_method = sigma_method,
+    recent       = recent,
+    regime       = regime,
+    maturity     = maturity
   )
   loss_ata_fit$selected <- .mack_f_var(
     ata_fit = loss_ata_fit,
@@ -425,7 +444,6 @@ fit_loss <- function(x,
     sigma_method    = sigma_method,
     recent          = recent_user,
     regime          = regime_user,
-    maturity_args   = maturity_args,
     conf_level      = conf_level
   )
 

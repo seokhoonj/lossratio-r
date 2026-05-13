@@ -14,7 +14,7 @@ fit_loss(
   premium_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  maturity_args = NULL,
+  maturity = "auto",
   conf_level = 0.95
 )
 }
@@ -60,9 +60,19 @@ Default \code{1}.}
 
 \item{recent}{Optional positive integer; calendar-diagonal filter.}
 
-\item{maturity_args}{A named list forwarded to \code{\link[=detect_maturity]{detect_maturity()}},
-or \code{NULL} (default) to skip maturity filtering. SA auto-defaults to
-\code{list()}.}
+\item{maturity}{Optional maturity specification. Accepts four input
+types:
+\describe{
+\item{\code{NULL}}{No maturity filter. SA mode requires a maturity, so
+this disables only ED / CL modes.}
+\item{\code{Maturity} object}{Use as-is. Typically built via
+\code{\link[=detect_maturity]{detect_maturity()}} or \code{\link[=maturity_at]{maturity_at()}}.}
+\item{\code{"auto"} (default)}{Detect maturity internally via
+\code{detect_maturity(x)} on the input triangle.}
+\item{Function / closure}{A user-supplied function taking the
+triangle and returning a \code{Maturity} object (e.g. from
+\code{\link[=maturity_spec]{maturity_spec()}}) for deferred custom-config detection.}
+}}
 
 \item{conf_level}{Confidence level for analytical CI on the loss
 projection (\code{loss_ci_lower}, \code{loss_ci_upper}). Default \code{0.95}.}

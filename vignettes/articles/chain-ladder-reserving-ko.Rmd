@@ -109,15 +109,18 @@ cl_tail <- fit_cl(tri, target = "loss", method = "mack", tail = 1.025)
 ```{r}
 cl_mat <- fit_cl(
   tri,
-  target        = "loss",
-  method        = "mack",
-  maturity_args = list(max_cv = 0.10, max_rse = 0.05)
+  target   = "loss",
+  method   = "mack",
+  maturity = maturity_spec(max_cv = 0.10, max_rse = 0.05)
 )
 
 cl_mat$maturity
 ```
 
-`maturity_args` 는 `detect_maturity()` 로 그대로 전달된다.
+`maturity_spec(...)` 은 `detect_maturity()` 에 넘길 사용자 임계값을
+캡처하고, 내부에서 (필요시 마스킹된) triangle 위에 호출된다.
+`maturity = "auto"` 는 default 임계값, 이미 산출된 `Maturity` 객체는
+고정 override, `maturity_at(...)` 는 그룹별 $k^*$ 수동 지정 용도다.
 
 ## 5. 분산 성분 (Mack)
 

@@ -13,7 +13,7 @@ fit_ata(
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   regime = NULL,
-  maturity_args = NULL,
+  maturity = NULL,
   ...
 )
 }
@@ -50,24 +50,21 @@ or \code{regime_at()}), the string \code{"auto"} (internal
 supplied, cohorts strictly before the resolved break date are excluded
 from estimation.}
 
-\item{maturity_args}{A named list of arguments forwarded to
-\code{\link[=detect_maturity]{detect_maturity()}}, or \code{NULL} (default) to skip maturity filtering.
-When a list is supplied, missing elements are filled with package
-defaults via \code{\link[utils:modifyList]{utils::modifyList()}}:
+\item{maturity}{Optional maturity specification for filtering ata
+links. Accepts four input types:
 \describe{
-\item{\code{max_cv}}{Default \code{0.15}.}
-\item{\code{max_rse}}{Default \code{0.05}.}
-\item{\code{min_valid_ratio}}{Default \code{0.5}.}
-\item{\code{min_n_valid}}{Default \code{3L}.}
-\item{\code{min_run}}{Default \code{2L}.}
+\item{\code{NULL} (default)}{No maturity filter.}
+\item{\code{Maturity} object}{Use as-is. Typically built via
+\code{\link[=detect_maturity]{detect_maturity()}} or \code{\link[=maturity_at]{maturity_at()}}.}
+\item{\code{"auto"}}{Detect maturity internally via \code{detect_maturity(x)}
+on the input triangle.}
+\item{Function / closure}{A user-supplied function taking the
+triangle and returning a \code{Maturity} object (e.g. from
+\code{\link[=maturity_spec]{maturity_spec()}}) for deferred custom-config detection.}
 }
-Pass \code{list()} to use all defaults with maturity filtering enabled.
-The list may also include \code{groups}, which re-aggregates the Triangle
-to a coarser partition before link construction and maturity
-detection. Same semantics as \code{\link[=detect_maturity]{detect_maturity()}}: \code{NULL} (default)
-keeps the Triangle's current \code{attr(x, "groups")}, \code{character(0)}
-pools to a single global maturity, and a subset of
-\code{attr(x, "groups")} yields a coarser per-group result.}
+When the supplied \code{Maturity} carries \code{attr(., "groups")} that differs
+from the Triangle's grouping, the Triangle is rebucketed to the
+maturity partition before link construction.}
 
 \item{...}{Additional arguments passed to \code{\link[=summary.Link]{summary.Link()}}.}
 }
@@ -79,7 +76,7 @@ An object of class \code{"ATAFit"} (a named list) containing:
 \item{\code{summary}}{\code{"ATASummary"} object from \code{\link[=summary.Link]{summary.Link()}}.}
 \item{\code{selected}}{\code{data.table} of factors ready for projection,
 including \code{f_selected} and \code{sigma2}.}
-\item{\code{maturity}}{Maturity diagnostics from \code{\link[=detect_maturity]{detect_maturity()}},
+\item{\code{maturity}}{Resolved \code{Maturity} object used for filtering,
 or \code{NULL} when maturity filtering was not applied.}
 \item{\code{alpha}}{Value of \code{alpha} used.}
 \item{\code{na_method}}{NA fill method used.}
@@ -87,7 +84,6 @@ or \code{NULL} when maturity filtering was not applied.}
 \item{\code{recent}}{Number of recent periods used, or \code{NULL}.}
 \item{\code{regime}}{Resolved \code{Regime} object, or \code{NULL}.}
 \item{\code{use_maturity}}{Logical; whether maturity filtering was applied.}
-\item{\code{maturity_args}}{Resolved maturity arguments, or \code{NULL}.}
 }
 }
 \description{
