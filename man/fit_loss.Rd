@@ -8,11 +8,10 @@ fit_loss(
   x,
   method = c("sa", "ed", "cl"),
   alpha = 1,
-  loss_regime_break = NULL,
+  regime = NULL,
   premium_fit = NULL,
   premium_method = c("cl", "ed"),
   premium_alpha = 1,
-  premium_regime_break = NULL,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   maturity_args = NULL,
@@ -27,16 +26,27 @@ fit_loss(
 
 \item{alpha}{Variance-structure exponent for the loss fit. Default \code{1}.}
 
-\item{loss_regime_break}{Optional cohort cutoff for the loss-side regime
-break. \code{NULL} (default), a \code{Date}/character coercible to Date, a vector
-of dates (uses the latest), or a \code{Regime} object. Behavior depends on
-\code{method}: SA uses a hybrid 2-pass filter (cohort cut for ED phase,
-calendar-diagonal wedge for CL phase); ED/CL use a simple cohort cut.}
+\item{regime}{Optional regime specification applied to both loss-side
+and premium-side estimation. Accepts four input types:
+\describe{
+\item{\code{NULL} (default)}{No regime filter.}
+\item{\code{Regime} object}{Use as-is. Typically built via
+\code{\link[=detect_regime]{detect_regime()}} or \code{\link[=regime_at]{regime_at()}}.}
+\item{\code{"auto"}}{Detect regime internally via \code{detect_regime(x)} on
+the input triangle.}
+\item{Function / closure}{A user-supplied function taking the
+triangle and returning a \code{Regime} object (or \code{NULL}).}
+}
+Behavior depends on \code{method}: SA uses a hybrid 2-pass filter (cohort
+cut for the ED phase, calendar-diagonal wedge for the CL phase);
+ED/CL use a simple cohort cut. The same resolved \code{Regime} is applied
+to the internal \code{fit_premium()} call -- callers needing an
+asymmetric loss/premium split should use \code{\link[=fit_lr]{fit_lr()}} instead.}
 
 \item{premium_fit}{Optional pre-built \code{PremiumFit} (from
 \code{\link[=fit_premium]{fit_premium()}}) supplying the premium projection. When \code{NULL},
 \code{fit_loss()} calls \code{fit_premium()} internally using
-\code{premium_method}, \code{premium_alpha}, and \code{premium_regime_break}.}
+\code{premium_method}, \code{premium_alpha}, and the resolved \code{regime}.}
 
 \item{premium_method}{One of \code{"cl"} (default) or \code{"ed"}. Used only
 when \code{premium_fit = NULL}. The default matches the historical
@@ -44,13 +54,6 @@ when \code{premium_fit = NULL}. The default matches the historical
 
 \item{premium_alpha}{Variance-structure exponent for the premium fit.
 Default \code{1}.}
-
-\item{premium_regime_break}{Optional cohort cutoff for the
-premium-side regime break. Default \code{NULL} — premium is fit on the
-full triangle. Pass an explicit value (Date / Regime) when the
-regime shift affects premium accrual too. NOTE: filtering premium
-aggressively can produce thin post-break data and break factor
-estimation; only set when the premium really shifted.}
 
 \item{sigma_method}{Sigma extrapolation. One of \code{"locf"} (default),
 \code{"min_last2"}, \code{"loglinear"}.}

@@ -26,12 +26,21 @@
 #'   through to [fit_ata()]. Default `1`.
 #' @param sigma_method Sigma extrapolation method. One of `"locf"`
 #'   (default), `"min_last2"`, or `"loglinear"`.
+#' @param regime Optional regime specification (premium side). Accepts
+#'   four input types:
+#'   \describe{
+#'     \item{`NULL` (default)}{No regime filter.}
+#'     \item{`Regime` object}{Use as-is. Typically built via
+#'       [detect_regime()] or [regime_at()].}
+#'     \item{`"auto"`}{Detect regime internally via
+#'       `detect_regime(x, target = "lr")` on the input triangle.}
+#'     \item{Function / closure}{A user-supplied
+#'       `function(tri) -> Regime` for deferred custom-config detection.}
+#'   }
+#'   Pre-break cohorts (cohorts before the resolved `Regime`'s breakpoint)
+#'   are excluded from premium factor estimation.
 #' @param recent Optional positive integer; recent calendar-diagonal
 #'   filter for the underlying ATA fit. Default `NULL`.
-#' @param regime_break Optional cohort cutoff for a regime break (premium
-#'   side). `NULL` (default), a `Date`/character, a vector (uses the
-#'   latest), or a `Regime` object. Pre-break cohorts are excluded from
-#'   premium factor estimation.
 #' @param tail Logical; whether to apply a tail factor. Default `FALSE`.
 #' @param conf_level Confidence level for analytical CI on the premium
 #'   projection (`premium_ci_lower`, `premium_ci_upper`). Default `0.95`.
@@ -70,9 +79,9 @@
 fit_premium <- function(x,
                         method       = c("ed", "cl"),
                         alpha        = 1,
+                        regime       = NULL,
                         sigma_method = c("locf", "min_last2", "loglinear"),
                         recent       = NULL,
-                        regime_break = NULL,
                         tail         = FALSE,
                         conf_level   = 0.95) {
 
@@ -85,6 +94,9 @@ fit_premium <- function(x,
     stop("`conf_level` must be a single numeric value in (0, 1).",
          call. = FALSE)
 
+  # Resolve regime input (NULL / Regime / "auto" / function) -> NULL or Regime
+  regime <- .resolve_regime(regime, x)
+
   # Run chain ladder underneath (Mack-style SE). Point estimate is
   # identical for both methods; ED only differs in SE accumulation.
   # Uses the standardized `"premium"` column on the Triangle.
@@ -95,7 +107,7 @@ fit_premium <- function(x,
     alpha        = alpha,
     sigma_method = sigma_method,
     recent       = recent,
-    regime_break = regime_break,
+    regime_break = regime,
     tail         = tail
   )
 
@@ -109,6 +121,7 @@ fit_premium <- function(x,
 
   cl_fit$full <- .premium_rename_full(cl_fit$full, grp, conf_level)
 
+  cl_fit$regime                  <- regime
   attr(cl_fit, "premium_method") <- method
   attr(cl_fit, "conf_level")     <- conf_level
   class(cl_fit) <- c("PremiumFit", class(cl_fit))
@@ -290,6 +303,14 @@ print.PremiumFit <- function(x, ...) {
     cl = "CL-multiplicative recursion (Mack)"), "\n")
   cat("  n_cohorts    :", length(unique(x$full$cohort)), "\n")
   cat("  n_links      :", nrow(x$selected), "\n")
+  cat("  regime       :")
+  if (is.null(x$regime)) {
+    cat(" NULL\n")
+  } else if (inherits(x$regime, "Regime")) {
+    cat("\n"); print(x$regime)
+  } else {
+    cat(" ", format(x$regime), "\n", sep = "")
+  }
   invisible(x)
 }
 

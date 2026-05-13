@@ -8,10 +8,10 @@ fit_lr(
   x,
   method = c("sa", "ed", "cl"),
   loss_alpha = 1,
-  loss_regime_break = NULL,
+  loss_regime = NULL,
   premium_method = c("cl", "ed"),
   premium_alpha = 1,
-  premium_regime_break = NULL,
+  premium_regime = NULL,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   maturity_args = NULL,
@@ -32,11 +32,18 @@ and \code{"premium"} columns are used (\code{build_triangle()} produces these).}
 \item{loss_alpha}{Numeric scalar controlling the variance structure for
 loss estimation. Default is \code{1}.}
 
-\item{loss_regime_break}{Optional cohort cutoff for the loss-side regime
-break. Accepts: \code{NULL} (default, no filter), a single \code{Date}/character
-coercible to Date, a vector of dates (uses the latest), or a \code{Regime}
-object (extracts the latest from \verb{$breakpoints}). Behavior depends on
-\code{method}:
+\item{loss_regime}{Optional regime specification for the loss-side
+filter. Accepts four input types:
+\describe{
+\item{\code{NULL} (default)}{No regime filter.}
+\item{\code{Regime} object}{Use as-is. Typically built via
+\code{\link[=detect_regime]{detect_regime()}} or \code{\link[=regime_at]{regime_at()}}.}
+\item{\code{"auto"}}{Detect regime internally via \code{detect_regime(x)} on
+the input triangle.}
+\item{Function / closure}{A user-supplied function taking the
+triangle and returning a \code{Regime} object (or \code{NULL}).}
+}
+Behavior depends on \code{method}:
 \describe{
 \item{\code{"sa"}}{Hybrid filter. Pre-break cohorts are dropped only for
 development periods at or before the maturity point (ED phase);
@@ -53,9 +60,11 @@ the break date are excluded from estimation.}
 \item{premium_alpha}{Numeric scalar for premium chain ladder. Default
 is \code{1}.}
 
-\item{premium_regime_break}{Premium-side regime break. Defaults to
-\code{loss_regime_break} (loss and premium share a cutoff unless explicitly
-separated).}
+\item{premium_regime}{Premium-side regime specification. Same four
+input types as \code{loss_regime} (\code{NULL} / \code{Regime} / \code{"auto"} / function).
+Default \code{NULL} -- premium is fit on the full triangle independently
+of \code{loss_regime} (no lazy default). Set explicitly when the regime
+shift affects premium accrual too.}
 
 \item{sigma_method}{Sigma extrapolation method. One of \code{"locf"}
 (default), \code{"min_last2"}, or \code{"loglinear"}.}

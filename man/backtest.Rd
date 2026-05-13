@@ -17,9 +17,8 @@ backtest(
   premium_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  loss_regime_break = NULL,
-  premium_regime_break = NULL,
-  auto_detect_regime = FALSE,
+  loss_regime = NULL,
+  premium_regime = NULL,
   maturity_args = NULL,
   se_method = c("fixed", "delta"),
   rho = 0.95,
@@ -65,19 +64,19 @@ the underlying fitter.}
 \item{recent}{Calendar-diagonal recency filter forwarded to the
 fitter.}
 
-\item{loss_regime_break, premium_regime_break}{Cohort-axis regime
-break(s) for loss / premium estimation. \code{premium_regime_break}
-defaults to \code{loss_regime_break}. Cannot be combined with
-\code{auto_detect_regime = TRUE}.}
-
-\item{auto_detect_regime}{Logical. When \code{TRUE}, \code{\link[=detect_regime]{detect_regime()}} is
-run \emph{inside} the backtest loop on the \strong{masked} triangle (i.e.,
-the data the analyst would have at the simulated cutoff) and the
-result is used for both \code{loss_regime_break} and
-\code{premium_regime_break}. Avoids the look-ahead bias of detecting
-regimes on the full triangle (including the held-out diagonals)
-before backtesting. Mutually exclusive with an explicit
-\code{loss_regime_break}. Default \code{FALSE}.}
+\item{loss_regime, premium_regime}{Regime spec for the loss / premium
+side. Each accepts one of four input types, dispatched by
+\code{\link[=.resolve_regime]{.resolve_regime()}}:
+\itemize{
+\item \code{NULL} (default) -- no regime filter.
+\item A \code{Regime} object (e.g. from \code{\link[=detect_regime]{detect_regime()}}) -- used as-is.
+\item The string \code{"auto"} -- runs \code{detect_regime()} on the
+\strong{masked} triangle (leakage-safe; uses only data available at
+the simulated backtest cutoff).
+\item A function \verb{function(tri) -> Regime} -- called on the
+masked triangle for the same leakage-safe reason.
+}
+\code{premium_regime} is resolved independently from \code{loss_regime}.}
 
 \item{maturity_args}{Maturity-detection args. Used only for
 \code{target = "lr"} and \code{target = "loss"} (stage-adaptive).}

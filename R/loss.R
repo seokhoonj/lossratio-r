@@ -22,26 +22,31 @@
 #'   `"premium"` columns are used (`build_triangle()` produces these).
 #' @param method One of `"sa"` (default), `"ed"`, or `"cl"`.
 #' @param alpha Variance-structure exponent for the loss fit. Default `1`.
-#' @param loss_regime_break Optional cohort cutoff for the loss-side regime
-#'   break. `NULL` (default), a `Date`/character coercible to Date, a vector
-#'   of dates (uses the latest), or a `Regime` object. Behavior depends on
-#'   `method`: SA uses a hybrid 2-pass filter (cohort cut for ED phase,
-#'   calendar-diagonal wedge for CL phase); ED/CL use a simple cohort cut.
+#' @param regime Optional regime specification applied to both loss-side
+#'   and premium-side estimation. Accepts four input types:
+#'   \describe{
+#'     \item{`NULL` (default)}{No regime filter.}
+#'     \item{`Regime` object}{Use as-is. Typically built via
+#'       [detect_regime()] or [regime_at()].}
+#'     \item{`"auto"`}{Detect regime internally via `detect_regime(x)` on
+#'       the input triangle.}
+#'     \item{Function / closure}{A user-supplied function taking the
+#'       triangle and returning a `Regime` object (or `NULL`).}
+#'   }
+#'   Behavior depends on `method`: SA uses a hybrid 2-pass filter (cohort
+#'   cut for the ED phase, calendar-diagonal wedge for the CL phase);
+#'   ED/CL use a simple cohort cut. The same resolved `Regime` is applied
+#'   to the internal `fit_premium()` call -- callers needing an
+#'   asymmetric loss/premium split should use [fit_lr()] instead.
 #' @param premium_fit Optional pre-built `PremiumFit` (from
 #'   [fit_premium()]) supplying the premium projection. When `NULL`,
 #'   `fit_loss()` calls `fit_premium()` internally using
-#'   `premium_method`, `premium_alpha`, and `premium_regime_break`.
+#'   `premium_method`, `premium_alpha`, and the resolved `regime`.
 #' @param premium_method One of `"cl"` (default) or `"ed"`. Used only
 #'   when `premium_fit = NULL`. The default matches the historical
 #'   `fit_lr()` premium choice.
 #' @param premium_alpha Variance-structure exponent for the premium fit.
 #'   Default `1`.
-#' @param premium_regime_break Optional cohort cutoff for the
-#'   premium-side regime break. Default `NULL` — premium is fit on the
-#'   full triangle. Pass an explicit value (Date / Regime) when the
-#'   regime shift affects premium accrual too. NOTE: filtering premium
-#'   aggressively can produce thin post-break data and break factor
-#'   estimation; only set when the premium really shifted.
 #' @param sigma_method Sigma extrapolation. One of `"locf"` (default),
 #'   `"min_last2"`, `"loglinear"`.
 #' @param recent Optional positive integer; calendar-diagonal filter.
@@ -82,17 +87,16 @@
 #'
 #' @export
 fit_loss <- function(x,
-                     method               = c("sa", "ed", "cl"),
-                     alpha                = 1,
-                     loss_regime_break    = NULL,
-                     premium_fit          = NULL,
-                     premium_method       = c("cl", "ed"),
-                     premium_alpha        = 1,
-                     premium_regime_break = NULL,
-                     sigma_method         = c("locf", "min_last2", "loglinear"),
-                     recent               = NULL,
-                     maturity_args        = NULL,
-                     conf_level           = 0.95) {
+                     method         = c("sa", "ed", "cl"),
+                     alpha          = 1,
+                     regime         = NULL,
+                     premium_fit    = NULL,
+                     premium_method = c("cl", "ed"),
+                     premium_alpha  = 1,
+                     sigma_method   = c("locf", "min_last2", "loglinear"),
+                     recent         = NULL,
+                     maturity_args  = NULL,
+                     conf_level     = 0.95) {
 
   .assert_triangle_input(x, "fit_loss()")
   method         <- match.arg(method)
@@ -107,6 +111,9 @@ fit_loss <- function(x,
       is.na(conf_level) || conf_level <= 0 || conf_level >= 1)
     stop("`conf_level` must be a single numeric value in (0, 1).",
          call. = FALSE)
+
+  # Resolve regime input (NULL / Regime / "auto" / function) -> NULL or Regime
+  regime <- .resolve_regime(regime, x)
 
   # sa requires maturity detection; default to list() if not supplied
   if (method == "sa" && is.null(maturity_args)) {
@@ -136,12 +143,12 @@ fit_loss <- function(x,
     stop("`x` must contain exactly one `dev`.", call. = FALSE)
 
   # preserve original user input — nullified below for SA hybrid path
-  loss_regime_break_user <- loss_regime_break
-  recent_user            <- recent
+  regime_user <- regime
+  recent_user <- recent
 
   # 2) SA hybrid filter (loss-side, 2-pass maturity) ---------------------
-  if (!is.null(loss_regime_break)) {
-    bd <- .resolve_regime_break_date(loss_regime_break, by = grp)
+  if (!is.null(regime)) {
+    bd <- .resolve_regime_break_date(regime, by = grp)
 
     if (!is.null(bd) && method == "sa") {
       pre_loss_fit <- fit_ata(
@@ -155,22 +162,22 @@ fit_loss <- function(x,
 
       if (is.null(m_dt) || nrow(m_dt) == 0L) {
         warning(
-          "loss_regime_break: cannot detect maturity; falling back to ",
+          "regime: cannot detect maturity; falling back to ",
           "simple cohort cut.", call. = FALSE
         )
         x <- .apply_regime_filter(
-          x, loss_regime_break,
+          x, regime,
           grp = grp,
           coh = "cohort",
           dev = "dev"
         )
-        loss_regime_break <- NULL
+        regime <- NULL
       } else {
         # Per-group `m_k` for SA hybrid: each group uses its own
-        # maturity (ED/CL boundary). With multi-group `regime_break`,
-        # this means a group with a fast maturity (small k*) only
-        # cuts its narrow ED region, retaining pre-break CL data for
-        # factor estimation. (Earlier `max(k*)` fallback over-cut
+        # maturity (ED/CL boundary). With multi-group `regime`, this
+        # means a group with a fast maturity (small k*) only cuts its
+        # narrow ED region, retaining pre-break CL data for factor
+        # estimation. (Earlier `max(k*)` fallback over-cut
         # fast-maturing groups.)
         m_k_vec <- m_dt$ata_to
 
@@ -184,7 +191,7 @@ fit_loss <- function(x,
         }
 
         x <- .apply_regime_filter(
-          x, loss_regime_break,
+          x, regime,
           grp       = grp,
           coh       = "cohort", dev = "dev",
           dev_split = dev_split_arg
@@ -198,20 +205,22 @@ fit_loss <- function(x,
           )
           recent <- NULL
         }
-        loss_regime_break <- NULL
+        regime <- NULL
       }
     }
-    # method = "ed"/"cl": leave loss_regime_break for fit_ata/fit_intensity
+    # method = "ed"/"cl": leave regime for fit_ata/fit_intensity
   }
 
   # 3) resolve premium_fit -----------------------------------------------
+  # fit_loss is single-role -- the same regime applies to the internal
+  # premium fit. Asymmetric loss/premium splits live at fit_lr().
   if (is.null(premium_fit)) {
     premium_fit <- fit_premium(
       x,
       method       = premium_method,
       alpha        = premium_alpha,
       sigma_method = sigma_method,
-      regime_break = premium_regime_break
+      regime       = regime_user
     )
   }
   # Wrap as ATAFit-shaped object for downstream .expand_grid / join paths.
@@ -235,7 +244,7 @@ fit_loss <- function(x,
     alpha         = alpha,
     sigma_method  = sigma_method,
     recent        = recent,
-    regime_break  = loss_regime_break,
+    regime_break  = regime,
     maturity_args = maturity_args
   )
   loss_ata_fit$selected <- .mack_f_var(
@@ -251,7 +260,7 @@ fit_loss <- function(x,
     alpha        = alpha,
     sigma_method = sigma_method,
     recent       = recent,
-    regime_break = loss_regime_break
+    regime_break = regime
   )
   ed_fit <- list(
     method       = "mack",
@@ -261,7 +270,7 @@ fit_loss <- function(x,
     alpha        = alpha,
     sigma_method = sigma_method,
     recent       = recent,
-    regime_break = loss_regime_break
+    regime_break = regime
   )
   class(ed_fit) <- "EDFit"
   ed_fit$selected <- .mack_g_var(ed_fit = ed_fit, alpha = alpha)
@@ -397,27 +406,27 @@ fit_loss <- function(x,
   # f_selected, f_sigma2, f_var, last_obs) so that fit_lr can run
   # bootstrap CI without re-fitting. fit_lr drops them after bootstrap.
   out <- list(
-    call              = match.call(),
-    data              = x,
-    groups            = grp,
-    cohort            = coh,
-    dev               = dev,
-    full              = full,
-    proj              = proj,
-    maturity          = maturity,
-    loss_ata_fit      = loss_ata_fit,
-    premium_ata_fit   = premium_ata_fit,
-    premium_fit       = premium_fit,
-    ed                = ed_fit$link,
-    factor            = ed_fit$factor,
-    selected          = ed_fit$selected,
-    method            = method,
-    alpha             = alpha,
-    sigma_method      = sigma_method,
-    recent            = recent_user,
-    loss_regime_break = loss_regime_break_user,
-    maturity_args     = maturity_args,
-    conf_level        = conf_level
+    call            = match.call(),
+    data            = x,
+    groups          = grp,
+    cohort          = coh,
+    dev             = dev,
+    full            = full,
+    proj            = proj,
+    maturity        = maturity,
+    loss_ata_fit    = loss_ata_fit,
+    premium_ata_fit = premium_ata_fit,
+    premium_fit     = premium_fit,
+    ed              = ed_fit$link,
+    factor          = ed_fit$factor,
+    selected        = ed_fit$selected,
+    method          = method,
+    alpha           = alpha,
+    sigma_method    = sigma_method,
+    recent          = recent_user,
+    regime          = regime_user,
+    maturity_args   = maturity_args,
+    conf_level      = conf_level
   )
 
   class(out) <- "LossFit"
@@ -434,18 +443,18 @@ print.LossFit <- function(x, ...) {
   if (is.null(grp)) grp <- character(0)
 
   cat("<LossFit>\n")
-  cat("method            :", x$method,       "\n")
-  cat("alpha             :", x$alpha,        "\n")
-  cat("sigma_method      :", x$sigma_method, "\n")
-  cat("recent            :",
+  cat("method       :", x$method,       "\n")
+  cat("alpha        :", x$alpha,        "\n")
+  cat("sigma_method :", x$sigma_method, "\n")
+  cat("recent       :",
       if (!is.null(x$recent)) x$recent else "all", "\n")
-  cat("loss_regime_break :")
-  if (is.null(x$loss_regime_break)) {
+  cat("regime       :")
+  if (is.null(x$regime)) {
     cat(" none\n")
-  } else if (inherits(x$loss_regime_break, "Regime")) {
-    cat("\n"); print(x$loss_regime_break)
+  } else if (inherits(x$regime, "Regime")) {
+    cat("\n"); print(x$regime)
   } else {
-    cat(" ", format(x$loss_regime_break), "\n", sep = "")
+    cat(" ", format(x$regime), "\n", sep = "")
   }
 
   if (!is.null(x$maturity) && nrow(x$maturity)) {

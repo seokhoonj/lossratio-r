@@ -45,18 +45,19 @@
 #'   the underlying fitter.
 #' @param recent Calendar-diagonal recency filter forwarded to the
 #'   fitter.
-#' @param loss_regime_break,premium_regime_break Cohort-axis regime
-#'   break(s) for loss / premium estimation. `premium_regime_break`
-#'   defaults to `loss_regime_break`. Cannot be combined with
-#'   `auto_detect_regime = TRUE`.
-#' @param auto_detect_regime Logical. When `TRUE`, [detect_regime()] is
-#'   run *inside* the backtest loop on the **masked** triangle (i.e.,
-#'   the data the analyst would have at the simulated cutoff) and the
-#'   result is used for both `loss_regime_break` and
-#'   `premium_regime_break`. Avoids the look-ahead bias of detecting
-#'   regimes on the full triangle (including the held-out diagonals)
-#'   before backtesting. Mutually exclusive with an explicit
-#'   `loss_regime_break`. Default `FALSE`.
+#' @param loss_regime,premium_regime Regime spec for the loss / premium
+#'   side. Each accepts one of four input types, dispatched by
+#'   [`.resolve_regime()`]:
+#'   \itemize{
+#'     \item `NULL` (default) -- no regime filter.
+#'     \item A `Regime` object (e.g. from [detect_regime()]) -- used as-is.
+#'     \item The string `"auto"` -- runs `detect_regime()` on the
+#'       **masked** triangle (leakage-safe; uses only data available at
+#'       the simulated backtest cutoff).
+#'     \item A function `function(tri) -> Regime` -- called on the
+#'       masked triangle for the same leakage-safe reason.
+#'   }
+#'   `premium_regime` is resolved independently from `loss_regime`.
 #' @param maturity_args Maturity-detection args. Used only for
 #'   `target = "lr"` and `target = "loss"` (stage-adaptive).
 #' @param se_method Standard-error composition for `fit_lr()`. Unused
@@ -119,24 +120,23 @@
 #'
 #' @export
 backtest <- function(x,
-                     holdout              = 6L,
-                     target               = c("lr", "loss", "premium"),
-                     loss_method          = c("sa", "ed", "cl"),
-                     premium_method       = c("cl", "ed"),
-                     loss_alpha           = 1,
-                     premium_alpha        = 1,
-                     sigma_method         = c("locf", "min_last2", "loglinear"),
-                     recent               = NULL,
-                     loss_regime_break    = NULL,
-                     premium_regime_break = NULL,
-                     auto_detect_regime   = FALSE,
-                     maturity_args        = NULL,
-                     se_method            = c("fixed", "delta"),
-                     rho                  = 0.95,
-                     conf_level           = 0.95,
-                     bootstrap            = FALSE,
-                     B                    = 1000,
-                     seed                 = NULL,
+                     holdout        = 6L,
+                     target         = c("lr", "loss", "premium"),
+                     loss_method    = c("sa", "ed", "cl"),
+                     premium_method = c("cl", "ed"),
+                     loss_alpha     = 1,
+                     premium_alpha  = 1,
+                     sigma_method   = c("locf", "min_last2", "loglinear"),
+                     recent         = NULL,
+                     loss_regime    = NULL,
+                     premium_regime = NULL,
+                     maturity_args  = NULL,
+                     se_method      = c("fixed", "delta"),
+                     rho            = 0.95,
+                     conf_level     = 0.95,
+                     bootstrap      = FALSE,
+                     B              = 1000,
+                     seed           = NULL,
                      ...) {
 
   .assert_triangle_input(x, "backtest()")
@@ -151,14 +151,6 @@ backtest <- function(x,
       is.na(holdout) || holdout < 1L)
     stop("`holdout` must be a single positive integer.", call. = FALSE)
   holdout <- as.integer(holdout)
-
-  if (!is.logical(auto_detect_regime) || length(auto_detect_regime) != 1L ||
-      is.na(auto_detect_regime))
-    stop("`auto_detect_regime` must be a single non-missing logical.",
-         call. = FALSE)
-  if (auto_detect_regime && !is.null(loss_regime_break))
-    stop("`auto_detect_regime = TRUE` cannot be combined with an explicit ",
-         "`loss_regime_break` -- pick one or the other.", call. = FALSE)
 
   # Map target -> bare column key (`lr` / `loss` / `premium`). The fit
   # output's `$full` has both cumulative (`<key>_proj`) and incremental
@@ -209,60 +201,49 @@ backtest <- function(x,
     stop("After masking, no observations remain. Reduce `holdout`.",
          call. = FALSE)
 
-  # 2b) Auto-detect regime on the MASKED triangle (no look-ahead) -----
-  # When `auto_detect_regime = TRUE`, run `detect_regime()` on the
-  # masked triangle so the break date only uses information available
-  # at the simulated backtest cutoff. Skipping this and passing a
-  # `Regime` detected on the full triangle would leak future data into
-  # the held-out evaluation.
-  if (auto_detect_regime) {
-    detected <- tryCatch(
-      detect_regime(masked, target = "lr"),
-      error = function(e) NULL
-    )
-    if (!is.null(detected)) {
-      # Only set loss-side break -- auto-applying the same break to
-      # premium often filters premium too aggressively (thin post-break
-      # data -> factor estimation fails -> projection NA -> backtest
-      # coverage collapses). User can pass `premium_regime_break`
-      # explicitly when premium really shifts too.
-      loss_regime_break <- detected
-    }
-  }
+  # 2b) Resolve regime specs against the MASKED triangle (no look-ahead) ---
+  # `.resolve_regime()` dispatches on input type:
+  #   NULL          -> NULL
+  #   Regime        -> pass-through
+  #   "auto"        -> detect_regime(masked_tri)   (leakage-safe)
+  #   function(tri) -> fn(masked_tri)              (leakage-safe)
+  # Passing `masked` as `masked_tri` ensures "auto" and closure forms
+  # never see the held-out diagonals.
+  loss_regime    <- .resolve_regime(loss_regime,    tri = x, masked_tri = masked)
+  premium_regime <- .resolve_regime(premium_regime, tri = x, masked_tri = masked)
 
   # 3) Fit on masked ----------------------------------------------------
   fit_obj <- switch(target,
     lr = fit_lr(
       masked,
-      method               = loss_method,
-      loss_alpha           = loss_alpha,
-      loss_regime_break    = loss_regime_break,
-      premium_method       = premium_method,
-      premium_alpha        = premium_alpha,
-      premium_regime_break = premium_regime_break,
-      sigma_method         = sigma_method,
-      recent               = recent,
-      maturity_args        = maturity_args,
-      se_method            = se_method,
-      rho                  = rho,
-      conf_level           = conf_level,
-      bootstrap            = bootstrap,
-      B                    = B,
-      seed                 = seed,
+      method         = loss_method,
+      loss_alpha     = loss_alpha,
+      loss_regime    = loss_regime,
+      premium_method = premium_method,
+      premium_alpha  = premium_alpha,
+      premium_regime = premium_regime,
+      sigma_method   = sigma_method,
+      recent         = recent,
+      maturity_args  = maturity_args,
+      se_method      = se_method,
+      rho            = rho,
+      conf_level     = conf_level,
+      bootstrap      = bootstrap,
+      B              = B,
+      seed           = seed,
       ...
     ),
     loss = fit_loss(
       masked,
-      method               = loss_method,
-      alpha                = loss_alpha,
-      loss_regime_break    = loss_regime_break,
-      premium_method       = premium_method,
-      premium_alpha        = premium_alpha,
-      premium_regime_break = premium_regime_break,
-      sigma_method         = sigma_method,
-      recent               = recent,
-      maturity_args        = maturity_args,
-      conf_level           = conf_level,
+      method         = loss_method,
+      alpha          = loss_alpha,
+      regime         = loss_regime,
+      premium_method = premium_method,
+      premium_alpha  = premium_alpha,
+      sigma_method   = sigma_method,
+      recent         = recent,
+      maturity_args  = maturity_args,
+      conf_level     = conf_level,
       ...
     ),
     premium = fit_premium(
@@ -271,7 +252,7 @@ backtest <- function(x,
       alpha        = premium_alpha,
       sigma_method = sigma_method,
       recent       = recent,
-      regime_break = premium_regime_break,
+      regime       = premium_regime,
       ...
     )
   )

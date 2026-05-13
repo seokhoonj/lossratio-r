@@ -37,11 +37,18 @@
 #' @param method One of `"sa"` (default), `"ed"`, or `"cl"`.
 #' @param loss_alpha Numeric scalar controlling the variance structure for
 #'   loss estimation. Default is `1`.
-#' @param loss_regime_break Optional cohort cutoff for the loss-side regime
-#'   break. Accepts: `NULL` (default, no filter), a single `Date`/character
-#'   coercible to Date, a vector of dates (uses the latest), or a `Regime`
-#'   object (extracts the latest from `$breakpoints`). Behavior depends on
-#'   `method`:
+#' @param loss_regime Optional regime specification for the loss-side
+#'   filter. Accepts four input types:
+#'   \describe{
+#'     \item{`NULL` (default)}{No regime filter.}
+#'     \item{`Regime` object}{Use as-is. Typically built via
+#'       [detect_regime()] or [regime_at()].}
+#'     \item{`"auto"`}{Detect regime internally via `detect_regime(x)` on
+#'       the input triangle.}
+#'     \item{Function / closure}{A user-supplied function taking the
+#'       triangle and returning a `Regime` object (or `NULL`).}
+#'   }
+#'   Behavior depends on `method`:
 #'   \describe{
 #'     \item{`"sa"`}{Hybrid filter. Pre-break cohorts are dropped only for
 #'       development periods at or before the maturity point (ED phase);
@@ -55,9 +62,11 @@
 #'   [fit_premium()] when constructing the premium projection.
 #' @param premium_alpha Numeric scalar for premium chain ladder. Default
 #'   is `1`.
-#' @param premium_regime_break Premium-side regime break. Defaults to
-#'   `loss_regime_break` (loss and premium share a cutoff unless explicitly
-#'   separated).
+#' @param premium_regime Premium-side regime specification. Same four
+#'   input types as `loss_regime` (`NULL` / `Regime` / `"auto"` / function).
+#'   Default `NULL` -- premium is fit on the full triangle independently
+#'   of `loss_regime` (no lazy default). Set explicitly when the regime
+#'   shift affects premium accrual too.
 #' @param sigma_method Sigma extrapolation method. One of `"locf"`
 #'   (default), `"min_last2"`, or `"loglinear"`.
 #' @param recent Optional positive integer for estimation window.
@@ -126,27 +135,32 @@
 #'
 #' @export
 fit_lr <- function(x,
-                   method               = c("sa", "ed", "cl"),
-                   loss_alpha           = 1,
-                   loss_regime_break    = NULL,
-                   premium_method       = c("cl", "ed"),
-                   premium_alpha        = 1,
-                   premium_regime_break = NULL,
-                   sigma_method         = c("locf", "min_last2", "loglinear"),
-                   recent               = NULL,
-                   maturity_args        = NULL,
-                   se_method            = c("fixed", "delta"),
-                   rho                  = 0.95,
-                   conf_level           = 0.95,
-                   bootstrap            = FALSE,
-                   B                    = 1000,
-                   seed                 = NULL) {
+                   method         = c("sa", "ed", "cl"),
+                   loss_alpha     = 1,
+                   loss_regime    = NULL,
+                   premium_method = c("cl", "ed"),
+                   premium_alpha  = 1,
+                   premium_regime = NULL,
+                   sigma_method   = c("locf", "min_last2", "loglinear"),
+                   recent         = NULL,
+                   maturity_args  = NULL,
+                   se_method      = c("fixed", "delta"),
+                   rho            = 0.95,
+                   conf_level     = 0.95,
+                   bootstrap      = FALSE,
+                   B              = 1000,
+                   seed           = NULL) {
 
   .assert_triangle_input(x, "fit_lr()")
   sigma_method   <- match.arg(sigma_method)
   method         <- match.arg(method)
   se_method      <- match.arg(se_method)
   premium_method <- match.arg(premium_method)
+
+  # Resolve 4-type regime inputs (NULL / Regime / "auto" / function).
+  # Independent NULL defaults -- no lazy chaining between loss and premium.
+  loss_regime    <- .resolve_regime(loss_regime,    x)
+  premium_regime <- .resolve_regime(premium_regime, x)
 
   if (!is.logical(bootstrap) || length(bootstrap) != 1L || is.na(bootstrap))
     stop("`bootstrap` must be a single non-missing logical value.",
@@ -167,39 +181,41 @@ fit_lr <- function(x,
     stop("`conf_level` must be a single numeric value in (0, 1).",
          call. = FALSE)
 
-  # 1) delegate loss-side projection to fit_loss() ----------------------
-  # fit_loss() handles SA hybrid regime filter + fit_premium() internally.
-  # We pass `premium_fit = NULL` so fit_loss builds it from
-  # premium_method/premium_alpha/premium_regime_break; we then reuse the
-  # returned premium_fit for the delta-method composition.
-  #
-  # NOTE on premium_regime_break: only forwarded if the user explicitly
-  # supplied it. When defaulted, fit_loss's own
-  # `premium_regime_break = loss_regime_break` default kicks in -- this
-  # preserves R's lazy-evaluation chain so that after SA hybrid filter nulls
-  # `loss_regime_break` inside fit_loss, premium_regime_break also evaluates
-  # to NULL (matching pre-refactor `fit_lr()` behavior).
-  loss_args <- list(
-    x                 = x,
-    method            = method,
-    alpha             = loss_alpha,
-    sigma_method      = sigma_method,
-    recent            = recent,
-    loss_regime_break = loss_regime_break,
-    maturity_args     = maturity_args,
-    conf_level        = conf_level,
-    premium_method    = premium_method,
-    premium_alpha     = premium_alpha
+  # 1) build premium_fit independently with `premium_regime` -------------
+  # fit_lr is the composition layer where loss-side and premium-side may
+  # carry distinct regimes. We construct the premium_fit here using
+  # `premium_regime`, then hand it to fit_loss via `premium_fit = ...`
+  # so fit_loss's own (single-role) `regime` does not override the
+  # premium-side cut.
+  premium_fit <- fit_premium(
+    x,
+    method       = premium_method,
+    alpha        = premium_alpha,
+    sigma_method = sigma_method,
+    regime       = premium_regime
   )
-  if (!missing(premium_regime_break)) {
-    loss_args$premium_regime_break <- premium_regime_break
-  }
-  loss_fit <- do.call(fit_loss, loss_args)
 
-  grp         <- loss_fit$groups
-  coh         <- loss_fit$cohort
-  dev         <- loss_fit$dev
-  premium_fit     <- loss_fit$premium_fit
+  # 2) delegate loss-side projection to fit_loss() -----------------------
+  # Pass the pre-built premium_fit so fit_loss reuses it; `regime` is
+  # the loss-side filter (SA hybrid + factor estimation).
+  loss_fit <- fit_loss(
+    x              = x,
+    method         = method,
+    alpha          = loss_alpha,
+    regime         = loss_regime,
+    premium_fit    = premium_fit,
+    premium_method = premium_method,
+    premium_alpha  = premium_alpha,
+    sigma_method   = sigma_method,
+    recent         = recent,
+    maturity_args  = maturity_args,
+    conf_level     = conf_level
+  )
+
+  grp <- loss_fit$groups
+  coh <- loss_fit$cohort
+  dev <- loss_fit$dev
+  # premium_fit already constructed above; reuse it directly.
   premium_ata_fit <- loss_fit$premium_ata_fit
 
   full <- data.table::copy(loss_fit$full)
@@ -309,34 +325,33 @@ fit_lr <- function(x,
 
   # 12) assemble LRFit -------------------------------------------------
   out <- list(
-    call                 = match.call(),
-    data                 = loss_fit$data,
-    groups               = grp,
-    cohort               = coh,
-    dev                  = dev,
-    full                 = full,
-    proj                 = proj,
-    summary              = NULL,
-    ed                   = loss_fit$ed,
-    factor               = loss_fit$factor,
-    selected             = loss_fit$selected,
-    loss_ata_fit         = loss_fit$loss_ata_fit,
-    premium_ata_fit      = premium_ata_fit,
-    maturity             = loss_fit$maturity,
-    method               = method,
-    ci_type              = ci_type,
-    bootstrap            = if (bootstrap) list(B = B, seed = seed) else NULL,
-    loss_alpha           = loss_alpha,
-    premium_alpha        = premium_alpha,
-    se_method            = se_method,
-    rho                  = rho,
-    conf_level           = conf_level,
-    sigma_method         = sigma_method,
-    recent               = loss_fit$recent,
-    loss_regime_break    = loss_fit$loss_regime_break,
-    premium_regime_break = if (!missing(premium_regime_break)) premium_regime_break
-                           else loss_fit$loss_regime_break,
-    maturity_args        = maturity_args
+    call            = match.call(),
+    data            = loss_fit$data,
+    groups          = grp,
+    cohort          = coh,
+    dev             = dev,
+    full            = full,
+    proj            = proj,
+    summary         = NULL,
+    ed              = loss_fit$ed,
+    factor          = loss_fit$factor,
+    selected        = loss_fit$selected,
+    loss_ata_fit    = loss_fit$loss_ata_fit,
+    premium_ata_fit = premium_ata_fit,
+    maturity        = loss_fit$maturity,
+    method          = method,
+    ci_type         = ci_type,
+    bootstrap       = if (bootstrap) list(B = B, seed = seed) else NULL,
+    loss_alpha      = loss_alpha,
+    premium_alpha   = premium_alpha,
+    se_method       = se_method,
+    rho             = rho,
+    conf_level      = conf_level,
+    sigma_method    = sigma_method,
+    recent          = loss_fit$recent,
+    loss_regime     = loss_fit$regime,
+    premium_regime  = premium_regime,
+    maturity_args   = maturity_args
   )
 
   class(out) <- "LRFit"
@@ -360,45 +375,45 @@ print.LRFit <- function(x, ...) {
   if (is.null(grp)) grp <- character(0)
 
   cat("<LRFit>\n")
-  cat("method               :", x$method,         "\n")
-  cat("loss_alpha           :", x$loss_alpha,     "\n")
-  cat("premium_alpha        :", x$premium_alpha, "\n")
-  cat("se_method            :", x$se_method,      "\n")
+  cat("method         :", x$method,        "\n")
+  cat("loss_alpha     :", x$loss_alpha,    "\n")
+  cat("premium_alpha  :", x$premium_alpha, "\n")
+  cat("se_method      :", x$se_method,     "\n")
   if (identical(x$se_method, "delta")) {
-    cat("rho                  :", x$rho,          "\n")
+    cat("rho            :", x$rho,         "\n")
   }
-  cat("conf_level           :", x$conf_level,     "\n")
+  cat("conf_level     :", x$conf_level,    "\n")
   if (!is.null(x$ci_type)) {
-    cat("ci_type              :", x$ci_type,
+    cat("ci_type        :", x$ci_type,
         if (!is.null(x$bootstrap))
           sprintf(" (B = %d, seed = %s)", x$bootstrap$B,
                   if (is.null(x$bootstrap$seed)) "NULL" else x$bootstrap$seed)
         else "",
         "\n")
   }
-  cat("sigma_method         :", x$sigma_method,   "\n")
-  cat("recent               :",
+  cat("sigma_method   :", x$sigma_method,  "\n")
+  cat("recent         :",
       if (!is.null(x$recent)) x$recent else "all", "\n")
-  cat("loss_regime_break    :")
-  if (is.null(x$loss_regime_break)) {
+  cat("loss_regime    :")
+  if (is.null(x$loss_regime)) {
     cat(" none\n")
-  } else if (inherits(x$loss_regime_break, "Regime")) {
-    cat("\n"); print(x$loss_regime_break)
+  } else if (inherits(x$loss_regime, "Regime")) {
+    cat("\n"); print(x$loss_regime)
   } else {
-    cat(" ", format(x$loss_regime_break), "\n", sep = "")
+    cat(" ", format(x$loss_regime), "\n", sep = "")
   }
-  cat("premium_regime_break :")
-  if (is.null(x$premium_regime_break)) {
+  cat("premium_regime :")
+  if (is.null(x$premium_regime)) {
     cat(" none\n")
-  } else if (inherits(x$premium_regime_break, "Regime")) {
-    cat("\n"); print(x$premium_regime_break)
+  } else if (inherits(x$premium_regime, "Regime")) {
+    cat("\n"); print(x$premium_regime)
   } else {
-    cat(" ", format(x$premium_regime_break), "\n", sep = "")
+    cat(" ", format(x$premium_regime), "\n", sep = "")
   }
 
-  # Use the same label width as the top block (`premium_regime_break`
-  # is the longest at 20 chars) so colons align across the printout.
-  lw <- 20L
+  # Use the same label width as the top block (`premium_regime` is the
+  # longest at 14 chars) so colons align across the printout.
+  lw <- 14L
   pad <- function(label) formatC(label, width = lw, flag = "-")
 
   if (!is.null(x$maturity) && nrow(x$maturity)) {

@@ -875,3 +875,206 @@ print.summary.Regime <- function(x, ...) {
   }
   invisible(x)
 }
+
+
+# Manual Regime construction ----------------------------------------------
+
+#' Construct a Regime object from manually specified breakpoints
+#'
+#' @description
+#' User-facing helper for hand-specifying a regime break (or a set of
+#' per-group breaks) without running [detect_regime()]. The returned
+#' `"Regime"` object plugs into any function that consumes a Regime —
+#' `fit_lr()`, `fit_loss()`, `fit_premium()`, [backtest()], and the
+#' regime-break resolver — by carrying the same `$breakpoints` schema as
+#' [detect_regime()] output.
+#'
+#' Argument syntax mirrors `data.frame()` / `data.table()`: named
+#' vectors of equal length, one of which **must** be `breakpoint`. Any
+#' other named arguments are treated as group columns.
+#'
+#' @param ... Named vectors of equal length. Must include `breakpoint`
+#'   (coercible to `Date`). Any other named arguments are interpreted
+#'   as group column values (e.g. `coverage`, `channel`). With no
+#'   group columns the result is a pooled (single-row) Regime.
+#'
+#' @return An object of class `"Regime"` with the minimal schema needed
+#'   by downstream consumers:
+#'   \describe{
+#'     \item{`method`}{`"manual"`.}
+#'     \item{`target`}{`NA_character_` (no detection target).}
+#'     \item{`breakpoints`}{`data.table` with columns
+#'       `[<group cols>..., breakpoint, regime_id, pre_value, post_value,
+#'       magnitude]`. `regime_id` is `2L` (post-break regime) for each
+#'       row; the stats columns are `NA_real_`.}
+#'     \item{`groups`}{Character vector of group column names (possibly
+#'       empty).}
+#'     \item{`multi_group`}{`TRUE` when there are group columns *and*
+#'       more than one unique group row.}
+#'   }
+#'   Detection-specific slots (`labels`, `trajectory`, `pca`, `dropped`,
+#'   `n_regimes`, `window`, `window_mode`, `pca`) are left empty / `NA`
+#'   so the object can still be printed and consumed but is clearly
+#'   distinguishable from a detected Regime.
+#'
+#' @seealso [detect_regime()]
+#'
+#' @examples
+#' \dontrun{
+#' # Pooled break (no group columns)
+#' regime_at(breakpoint = "2024-07-01")
+#'
+#' # Single-group break
+#' regime_at(coverage = "SUR", breakpoint = "2024-04-01")
+#'
+#' # Multiple groups, one column
+#' regime_at(coverage   = c("SUR", "CAN"),
+#'           breakpoint = c("2024-04-01", "2023-09-01"))
+#'
+#' # Multi-dimensional group keys
+#' regime_at(coverage   = c("SUR", "SUR"),
+#'           channel    = c("online", "agent"),
+#'           breakpoint = c("2024-04-01", "2024-05-01"))
+#' }
+#'
+#' @export
+regime_at <- function(...) {
+  args <- list(...)
+  nms  <- names(args)
+
+  if (is.null(nms) || any(!nzchar(nms)))
+    stop("All arguments to `regime_at()` must be named.", call. = FALSE)
+  if (!"breakpoint" %in% nms)
+    stop("`regime_at()` requires a `breakpoint` argument.", call. = FALSE)
+
+  lens <- vapply(args, length, integer(1L))
+  if (length(unique(lens)) != 1L)
+    stop(sprintf(
+      "All arguments must have equal length; got lengths: %s.",
+      paste(sprintf("%s=%d", nms, lens), collapse = ", ")
+    ), call. = FALSE)
+  if (lens[[1L]] == 0L)
+    stop("`regime_at()` arguments must have length >= 1.", call. = FALSE)
+
+  bp_raw <- args[["breakpoint"]]
+  # Coerce factor → character first so as.Date() picks the date
+  # parser, not the factor-level integer.
+  if (is.factor(bp_raw)) bp_raw <- as.character(bp_raw)
+  bp <- tryCatch(as.Date(bp_raw),
+                 error = function(e)
+                   stop(sprintf("Failed to coerce `breakpoint` to Date: %s",
+                                conditionMessage(e)), call. = FALSE))
+  if (any(is.na(bp)))
+    stop("`breakpoint` contains NA after coercion to Date.", call. = FALSE)
+
+  grp <- setdiff(nms, "breakpoint")
+  grp_cols <- args[grp]
+
+  # Build breakpoints data.table: group cols (if any) + canonical columns.
+  bp_dt <- if (length(grp)) {
+    data.table::data.table(
+      do.call(data.table::data.table, grp_cols),
+      breakpoint = bp,
+      regime_id  = rep(2L, length(bp)),
+      pre_value  = rep(NA_real_, length(bp)),
+      post_value = rep(NA_real_, length(bp)),
+      magnitude  = rep(NA_real_, length(bp))
+    )
+  } else {
+    data.table::data.table(
+      breakpoint = bp,
+      regime_id  = rep(2L, length(bp)),
+      pre_value  = rep(NA_real_, length(bp)),
+      post_value = rep(NA_real_, length(bp)),
+      magnitude  = rep(NA_real_, length(bp))
+    )
+  }
+
+  multi_group <- length(grp) > 0L &&
+                 nrow(unique(bp_dt[, grp, with = FALSE])) > 1L
+
+  empty_labels <- data.table::data.table(
+    cohort    = as.Date(character(0)),
+    regime    = factor(character(0)),
+    regime_id = integer(0)
+  )
+
+  out <- list(
+    call        = match.call(),
+    method      = "manual",
+    target      = NA_character_,
+    window      = NA_integer_,
+    window_mode = "manual",
+    cohort      = NA_character_,
+    dev         = NA_character_,
+    groups      = grp,
+    multi_group = multi_group,
+    labels      = empty_labels,
+    breakpoints = bp_dt,
+    n_regimes   = NA_integer_,
+    trajectory  = NULL,
+    pca         = NULL,
+    dropped     = character(0)
+  )
+  class(out) <- "Regime"
+  out
+}
+
+
+# Regime input dispatcher -------------------------------------------------
+
+#' Resolve a regime-break input to a Regime object (or NULL)
+#'
+#' @description
+#' Internal 4-type dispatcher used by `fit_lr()`, `fit_loss()`,
+#' `fit_premium()`, and [backtest()] to normalize the `regime_break`
+#' input (or split-axis variants such as `loss_regime_break`) into a
+#' single representation: either `NULL` (no filter) or a `"Regime"`
+#' object.
+#'
+#' The four accepted input types are:
+#' \describe{
+#'   \item{`NULL`}{Returns `NULL` — no filter is applied.}
+#'   \item{`"Regime"` object}{Returned as-is.}
+#'   \item{`"auto"`}{Runs [detect_regime()] on `masked_tri` if supplied,
+#'     otherwise on `tri`, with `target = "lr"`. The `masked_tri`
+#'     fallback is the leakage-safe path used by [backtest()] — fit
+#'     functions pass only `tri`, while [backtest()] passes both so
+#'     detection sees only the masked (training) data.}
+#'   \item{`function(tri) -> Regime`}{Closure invoked with
+#'     `masked_tri` (if non-NULL) or `tri`. Its return value must
+#'     inherit `"Regime"`; an error is raised otherwise.}
+#' }
+#'
+#' @param arg The regime-break input (NULL / Regime / `"auto"` /
+#'   function).
+#' @param tri A `"Triangle"` object — used as the detection input when
+#'   `masked_tri` is `NULL`.
+#' @param masked_tri Optional masked `"Triangle"` (e.g. backtest's
+#'   training-only triangle). When supplied, `"auto"` and function
+#'   inputs operate on this triangle instead of `tri`.
+#'
+#' @return `NULL` or a `"Regime"` object.
+#'
+#' @keywords internal
+.resolve_regime <- function(arg, tri, masked_tri = NULL) {
+  if (is.null(arg)) return(NULL)
+  if (inherits(arg, "Regime")) return(arg)
+
+  detect_tri <- if (is.null(masked_tri)) tri else masked_tri
+
+  if (identical(arg, "auto")) {
+    return(detect_regime(detect_tri, target = "lr"))
+  }
+
+  if (is.function(arg)) {
+    out <- arg(detect_tri)
+    if (!inherits(out, "Regime"))
+      stop("`regime` function must return a `Regime` object; got class: ",
+           paste(class(out), collapse = "/"), ".", call. = FALSE)
+    return(out)
+  }
+
+  stop("`regime` must be NULL, a Regime object, \"auto\", or a function ",
+       "returning a Regime.", call. = FALSE)
+}

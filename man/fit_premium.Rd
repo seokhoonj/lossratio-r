@@ -8,9 +8,9 @@ fit_premium(
   x,
   method = c("ed", "cl"),
   alpha = 1,
+  regime = NULL,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  regime_break = NULL,
   tail = FALSE,
   conf_level = 0.95
 )
@@ -24,16 +24,25 @@ is used as the projection target.}
 \item{alpha}{Numeric scalar controlling the variance structure passed
 through to \code{\link[=fit_ata]{fit_ata()}}. Default \code{1}.}
 
+\item{regime}{Optional regime specification (premium side). Accepts
+four input types:
+\describe{
+\item{\code{NULL} (default)}{No regime filter.}
+\item{\code{Regime} object}{Use as-is. Typically built via
+\code{\link[=detect_regime]{detect_regime()}} or \code{\link[=regime_at]{regime_at()}}.}
+\item{\code{"auto"}}{Detect regime internally via
+\code{detect_regime(x, target = "lr")} on the input triangle.}
+\item{Function / closure}{A user-supplied
+\verb{function(tri) -> Regime} for deferred custom-config detection.}
+}
+Pre-break cohorts (cohorts before the resolved \code{Regime}'s breakpoint)
+are excluded from premium factor estimation.}
+
 \item{sigma_method}{Sigma extrapolation method. One of \code{"locf"}
 (default), \code{"min_last2"}, or \code{"loglinear"}.}
 
 \item{recent}{Optional positive integer; recent calendar-diagonal
 filter for the underlying ATA fit. Default \code{NULL}.}
-
-\item{regime_break}{Optional cohort cutoff for a regime break (premium
-side). \code{NULL} (default), a \code{Date}/character, a vector (uses the
-latest), or a \code{Regime} object. Pre-break cohorts are excluded from
-premium factor estimation.}
 
 \item{tail}{Logical; whether to apply a tail factor. Default \code{FALSE}.}
 

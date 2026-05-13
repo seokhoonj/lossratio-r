@@ -23,7 +23,7 @@
 | 도전 과제                         | `lossratio` 의 응답                                                                          |
 |-----------------------------------|----------------------------------------------------------------------------------------------|
 | 초기 dev 의 ATA 인자가 너무 Noisy | **`fit_lr(method = "sa")`** — maturity 이전엔 exposure-driven (ED), 이후엔 chain ladder (CL) |
-| 인수 기준 변경 등 구조적 변화     | **`detect_regime()`** + `regime_break` 인자 — 변화 이전 코호트를 자동으로 분리               |
+| 인수 기준 변경 등 구조적 변화     | **`detect_regime()`** + `loss_regime` / `premium_regime` 인자 — 변화 이전 코호트를 자동으로 분리 |
 | "이 fit 이 얼마나 맞나?" 검증     | **`backtest()`** — 최근 N 대각선을 빼고 적합한 뒤 actual 과 비교                             |
 
 세 component 가 **한 figure 에서 동시에** 작동하는 것을 위 그림이 보여준다.

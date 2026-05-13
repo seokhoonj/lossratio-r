@@ -15,7 +15,7 @@ test_that("LRFit has expected list elements", {
                "full", "proj", "summary",
                "ed", "loss_ata_fit", "premium_ata_fit", "maturity",
                "se_method", "rho", "conf_level",
-               "loss_regime_break", "premium_regime_break")) {
+               "loss_regime", "premium_regime")) {
     expect_true(nm %in% names(lr), info = paste("missing", nm))
   }
 })
@@ -91,37 +91,39 @@ test_that("print.LRFit doesn't error", {
   expect_no_error(capture.output(print(lr)))
 })
 
-test_that("fit_lr with loss_regime_break + method=sa applies hybrid filter", {
+test_that("fit_lr with loss_regime + method=sa applies hybrid filter", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+  reg <- regime_at(breakpoint = "2025-07-01")
   fit_full <- fit_lr(tri, method = "sa")
-  fit_brk  <- fit_lr(tri, method = "sa", loss_regime_break = "2025-07-01",
+  fit_brk  <- fit_lr(tri, method = "sa", loss_regime = reg,
                      recent = 18L)
   # ED parameters (g_selected) should differ for early dev (k < k*)
   expect_false(identical(fit_full$selected$g_selected,
                          fit_brk$selected$g_selected))
-  expect_equal(fit_brk$loss_regime_break, "2025-07-01")
+  expect_s3_class(fit_brk$loss_regime, "Regime")
 })
 
-test_that("fit_lr with loss_regime_break + method=ed drops pre-break cohorts", {
+test_that("fit_lr with loss_regime + method=ed drops pre-break cohorts", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+  reg <- regime_at(breakpoint = "2025-07-01")
   fit_full <- fit_lr(tri, method = "ed")
-  fit_brk  <- fit_lr(tri, method = "ed", loss_regime_break = "2025-07-01")
+  fit_brk  <- fit_lr(tri, method = "ed", loss_regime = reg)
   expect_false(identical(fit_full$full$lr_proj, fit_brk$full$lr_proj))
 })
 
-test_that("fit_lr with NULL loss_regime_break is unchanged", {
+test_that("fit_lr with NULL loss_regime is unchanged", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   a <- fit_lr(tri, method = "sa")
-  b <- fit_lr(tri, method = "sa", loss_regime_break = NULL)
+  b <- fit_lr(tri, method = "sa", loss_regime = NULL)
   expect_identical(a$full$lr_proj, b$full$lr_proj)
 })
 
@@ -131,7 +133,7 @@ test_that("fit_lr with Regime preserves the Regime object", {
   tri <- build_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   reg <- detect_regime(tri)
-  fit_reg <- fit_lr(tri, method = "sa", loss_regime_break = reg, recent = 18L)
-  expect_s3_class(fit_reg$loss_regime_break, "Regime")
-  expect_identical(fit_reg$loss_regime_break$breakpoints, reg$breakpoints)
+  fit_reg <- fit_lr(tri, method = "sa", loss_regime = reg, recent = 18L)
+  expect_s3_class(fit_reg$loss_regime, "Regime")
+  expect_identical(fit_reg$loss_regime$breakpoints, reg$breakpoints)
 })
