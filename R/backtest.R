@@ -179,6 +179,14 @@ backtest <- function(x,
       stop(sprintf("column '%s' not found in `x`.", col), call. = FALSE)
   }
 
+  # Apply maturity_args$groups rebucket up-front so backtest's actual/held-out
+  # tagging and the downstream fit operate on the same partition (otherwise
+  # `grp` captured from the original triangle won't match the rebucketed
+  # `fit_obj$full` columns).
+  if (is.list(maturity_args) && !is.null(maturity_args$groups)) {
+    x <- .rebucket_triangle_groups(x, maturity_args$groups)
+  }
+
   grp <- attr(x, "groups")
   coh <- attr(x, "cohort")
   dev <- attr(x, "dev")

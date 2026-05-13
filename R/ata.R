@@ -271,6 +271,12 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'     \item{`min_run`}{Default `2L`.}
 #'   }
 #'   Pass `list()` to use all defaults with maturity filtering enabled.
+#'   The list may also include `groups`, which re-aggregates the Triangle
+#'   to a coarser partition before link construction and maturity
+#'   detection. Same semantics as [detect_maturity()]: `NULL` (default)
+#'   keeps the Triangle's current `attr(x, "groups")`, `character(0)`
+#'   pools to a single global maturity, and a subset of
+#'   `attr(x, "groups")` yields a coarser per-group result.
 #' @param ... Additional arguments passed to [summary.Link()].
 #'
 #' @return An object of class `"ATAFit"` (a named list) containing:
@@ -312,6 +318,19 @@ fit_ata <- function(x,
                     ...) {
 
   .assert_triangle_input(x, "fit_ata()")
+
+  # 0) rebucket Triangle for maturity grouping --------------------------
+  # `maturity_args$groups` re-aggregates the Triangle to a coarser
+  # partition before link construction. Done *before* regime_break /
+  # recent filters because groups is a structural change to the
+  # Triangle's partition, whereas filters are row-level subsets that
+  # operate per group. Pop `groups` from `maturity_args` so it is not
+  # forwarded as an unused arg to `.detect_maturity()` (criteria-only).
+  mat_groups <- if (is.list(maturity_args)) maturity_args$groups else NULL
+  if (is.list(maturity_args)) maturity_args$groups <- NULL
+  if (!is.null(mat_groups)) {
+    x <- .rebucket_triangle_groups(x, mat_groups)
+  }
 
   link <- build_link(x, target = target, weight = weight)
 

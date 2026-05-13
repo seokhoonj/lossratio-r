@@ -114,6 +114,14 @@ fit_loss <- function(x,
   }
 
   # 1) Triangle structural attrs ----------------------------------------
+  # Apply maturity_args$groups rebucket up-front so all downstream code
+  # (filter capture of `grp`, fit_ata, .apply_*_filter, projection joins)
+  # sees a consistent partition. fit_ata's own rebucket becomes a no-op
+  # via setequal short-circuit in .rebucket_triangle_groups.
+  if (is.list(maturity_args) && !is.null(maturity_args$groups)) {
+    x <- .rebucket_triangle_groups(x, maturity_args$groups)
+  }
+
   # Triangle is guaranteed to carry standardized `loss` / `premium`
   # columns (build_triangle convention).
   grp <- attr(x, "groups")
