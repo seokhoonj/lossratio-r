@@ -117,14 +117,14 @@ experience <- rbindlist(records)
   ((data.table::month(d) - 1L) %/% 3L) * 3L + 1L))
 
 experience[, `:=`(
-  uy_a   = .year_of(uy_m),
-  uy_s   = .half_of(uy_m),
+  uy   = .year_of(uy_m),
+  uy_h   = .half_of(uy_m),
   uy_q   = .quart_of(uy_m),
-  cy_a   = .year_of(cy_m),
-  cy_s   = .half_of(cy_m),
+  cy   = .year_of(cy_m),
+  cy_h   = .half_of(cy_m),
   cy_q   = .quart_of(cy_m),
-  dev_a = data.table::year(cy_m) - data.table::year(uy_m) + 1L,
-  dev_s = 2L * (data.table::year(cy_m) - data.table::year(uy_m)) +
+  dev_y = data.table::year(cy_m) - data.table::year(uy_m) + 1L,
+  dev_h = 2L * (data.table::year(cy_m) - data.table::year(uy_m)) +
           ((data.table::month(cy_m) - 1L) %/% 6L -
            (data.table::month(uy_m) - 1L) %/% 6L) + 1L,
   dev_q = 4L * (data.table::year(cy_m) - data.table::year(uy_m)) +
@@ -136,9 +136,9 @@ experience[, `:=`(
 
 setcolorder(experience, c(
   "coverage",
-  "uy_a", "uy_s", "uy_q", "uy_m",
-  "cy_a", "cy_s", "cy_q", "cy_m",
-  "dev_a", "dev_s", "dev_q", "dev_m",
+  "uy", "uy_h", "uy_q", "uy_m",
+  "cy", "cy_h", "cy_q", "cy_m",
+  "dev_y", "dev_h", "dev_q", "dev_m",
   "loss_incr", "premium_incr"
 ))
 

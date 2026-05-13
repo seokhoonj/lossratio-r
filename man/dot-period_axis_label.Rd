@@ -7,10 +7,10 @@
 .period_axis_label(var, prefix = "cohort")
 }
 \description{
-Maps a raw period variable name (uy_m / uy_q / uy_s / uy_a or the
+Maps a raw period variable name (uy_m / uy_q / uy_h / uy or the
 calendar siblings) to a heatmap-friendly label like
 \code{"cohort (month)"}, \code{"calendar (quarter)"},
-\code{"cohort (semi-annual)"}, \code{"calendar (annual)"}. Falls
+\code{"cohort (half-yearly)"}, \code{"calendar (yearly)"}. Falls
 back to the bare \code{prefix} for unrecognised inputs.
 }
 \keyword{internal}

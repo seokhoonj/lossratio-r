@@ -22,8 +22,8 @@ build_total(
 \item{groups}{Grouping variable(s).}
 
 \item{cohort}{A single period variable (raw name). This may be an
-underwriting period (\code{"uy_m"}, \code{"uy_q"}, \code{"uy_s"}, \code{"uy_a"}) or a
-calendar period (\code{"cy_m"}, \code{"cy_q"}, \code{"cy_s"}, \code{"cy_a"}).}
+underwriting period (\code{"uy_m"}, \code{"uy_q"}, \code{"uy_h"}, \code{"uy"}) or a
+calendar period (\code{"cy_m"}, \code{"cy_q"}, \code{"cy_h"}, \code{"cy"}).}
 
 \item{dev}{A single development variable (raw name) used to count
 observed periods.}

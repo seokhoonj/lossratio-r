@@ -29,9 +29,9 @@
 #'       \item `HOS` — hospitalisation per-day fixed benefit.
 #'       \item `SUR` — surgery per-event fixed benefit.
 #'     }}
-#'   \item{uy_a, uy_s, uy_q, uy_m}{Underwriting period (year / half / quarter / month) as `Date`.}
-#'   \item{cy_a, cy_s, cy_q, cy_m}{Calendar period (year / half / quarter / month) as `Date`.}
-#'   \item{dev_a, dev_s, dev_q, dev_m}{Development period (year / half / quarter / month) as integer.}
+#'   \item{uy, uy_h, uy_q, uy_m}{Underwriting period (year / half / quarter / month) as `Date`.}
+#'   \item{cy, cy_h, cy_q, cy_m}{Calendar period (year / half / quarter / month) as `Date`.}
+#'   \item{dev_y, dev_h, dev_q, dev_m}{Development period (year / half / quarter / month) as integer.}
 #'   \item{loss_incr}{Per-period loss amount (numeric).}
 #'   \item{premium_incr}{Per-period premium amount (numeric); for
 #'     long-term health insurance applications, risk premium is

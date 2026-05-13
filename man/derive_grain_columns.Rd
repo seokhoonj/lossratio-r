@@ -16,8 +16,8 @@ A \code{data.table} with the additional grain columns.
 \description{
 Given a long-format frame with monthly source columns
 (\code{uy_m}, \code{cy_m}, optionally \code{dev_m}), derive the coarser-grain
-siblings (\code{uy_q} / \code{uy_s} / \code{uy_a}, \code{cy_q} / \code{cy_s} / \code{cy_a},
-\code{dev_q} / \code{dev_s} / \code{dev_a}) so the same frame can be aggregated
+siblings (\code{uy_q} / \code{uy_h} / \code{uy}, \code{cy_q} / \code{cy_h} / \code{cy},
+\code{dev_q} / \code{dev_h} / \code{dev_y}) so the same frame can be aggregated
 at any of the four grains.
 
 This is an \emph{optional} utility — \code{\link[=build_triangle]{build_triangle()}} and
@@ -26,33 +26,33 @@ internally. Use this when you want a single enriched frame that
 can be re-aggregated at multiple grains, or for exploratory plots.
 }
 \details{
-Letter-suffix family: \verb{_m} / \verb{_q} / \verb{_s} / \verb{_a} = monthly /
-quarterly / semi-annual / annual.
+Letter-suffix family: \verb{_m} / \verb{_q} / \verb{_h} / \verb{_y} = monthly /
+quarterly / half-yearly / yearly.
 
 Derived columns when source columns exist:
 
 \strong{Underwriting (from \code{uy_m}):}
 \itemize{
-\item \code{uy_a} : annual start (Jan 1 of \code{uy_m}'s year)
-\item \code{uy_s} : semi-annual start (Jan 1 / Jul 1)
+\item \code{uy} : yearly start (Jan 1 of \code{uy_m}'s year)
+\item \code{uy_h} : half-yearly start (Jan 1 / Jul 1)
 \item \code{uy_q} : quarterly start (Jan / Apr / Jul / Oct 1)
 }
 
 \strong{Calendar (from \code{cy_m}):}
 \itemize{
-\item \code{cy_a} : annual start
-\item \code{cy_s} : semi-annual start
+\item \code{cy} : yearly start
+\item \code{cy_h} : half-yearly start
 \item \code{cy_q} : quarterly start
 }
 
 \strong{Development (from \code{uy_m} and \code{cy_m}, with \code{dev_m} derived
 if absent):}
 \itemize{
-\item \code{dev_a} is the annual development index, where dev_m 1-12
+\item \code{dev_y} is the yearly development index, where dev_m 1-12
 map to 1, 13-24 map to 2, and so on.
-\item \code{dev_s} and \code{dev_q} are aligned to calendar semi-annual
+\item \code{dev_h} and \code{dev_q} are aligned to calendar half-yearly
 and quarterly boundaries (not simple groupings of \code{dev_m}),
-so cohorts such as Q1 / Q2 / S1 / S2 are compared consistently
+so cohorts such as Q1 / Q2 / H1 / H2 are compared consistently
 on the same cumulative development basis.
 }
 

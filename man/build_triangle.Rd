@@ -48,7 +48,7 @@ cross-checked against \code{count_periods(cohort, calendar, grain)}.}
 denominator for loss ratio calculations. For long-term health
 insurance applications, risk premium is commonly used.}
 
-\item{grain}{One of \code{"auto"} (default), \code{"M"}, \code{"Q"}, \code{"S"}, \code{"A"}.
+\item{grain}{One of \code{"auto"} (default), \code{"M"}, \code{"Q"}, \code{"H"}, \code{"Y"}.
 \code{"auto"} infers the grain from the \code{cohort} value spacing.
 Explicit values must be at least as coarse as the input grain;
 the input is binned (floored) to that grain before aggregation.}

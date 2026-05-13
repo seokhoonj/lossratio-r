@@ -25,10 +25,10 @@
 
 #' Period axis label with grain qualifier
 #'
-#' Maps a raw period variable name (uy_m / uy_q / uy_s / uy_a or the
+#' Maps a raw period variable name (uy_m / uy_q / uy_h / uy or the
 #' calendar siblings) to a heatmap-friendly label like
 #' \code{"cohort (month)"}, \code{"calendar (quarter)"},
-#' \code{"cohort (semi-annual)"}, \code{"calendar (annual)"}. Falls
+#' \code{"cohort (half-yearly)"}, \code{"calendar (yearly)"}. Falls
 #' back to the bare \code{prefix} for unrecognised inputs.
 #'
 #' @keywords internal
@@ -37,8 +37,8 @@
   qualifier <- switch(type,
     month   = "month",
     quarter = "quarter",
-    half    = "semi-annual",
-    year    = "annual",
+    half    = "half-yearly",
+    year    = "yearly",
     NA_character_
   )
   if (is.na(qualifier)) prefix else sprintf("%s (%s)", prefix, qualifier)
@@ -100,8 +100,8 @@
     var,
     uy_m = , cy_m = "month",
     uy_q = , cy_q = "quarter",
-    uy_s = , cy_s = "half",
-    uy_a = , cy_a = "year",
+    uy_h = , cy_h = "half",
+    uy = , cy = "year",
     NA_character_
   )
 }
@@ -110,7 +110,7 @@
 #' Granularity of a cohort or development variable
 #'
 #' Like [.get_period_type()] but also recognises the integer development-period
-#' columns (`dev_m` / `dev_q` / `dev_s` / `dev_a`). Used by
+#' columns (`dev_m` / `dev_q` / `dev_h` / `dev_y`). Used by
 #' [build_triangle()] to verify that `cohort` and `dev` share the
 #' same granularity. Not used for date formatting (these dev columns
 #' are integers, not Date).
@@ -123,8 +123,8 @@
     var,
     dev_m = "month",
     dev_q = "quarter",
-    dev_s = "half",
-    dev_a = "year",
+    dev_h = "half",
+    dev_y = "year",
     NA_character_
   )
 }
@@ -279,16 +279,16 @@
     var,
     uy_m  = "underwriting months",
     uy_q  = "underwriting quarters",
-    uy_s  = "underwriting halves",
-    uy_a  = "underwriting years",
+    uy_h  = "underwriting halves",
+    uy  = "underwriting years",
     cy_m  = "calendar months",
     cy_q  = "calendar quarters",
-    cy_s  = "calendar halves",
-    cy_a  = "calendar years",
+    cy_h  = "calendar halves",
+    cy  = "calendar years",
     dev_m = "development months",
     dev_q = "development quarters",
-    dev_s = "development halves",
-    dev_a = "development years",
+    dev_h = "development halves",
+    dev_y = "development years",
     var
   )
 }

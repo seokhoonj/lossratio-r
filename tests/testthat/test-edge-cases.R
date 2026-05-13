@@ -81,36 +81,36 @@ test_that("build_triangle with cohort = 'uy_q' (Q grain) succeeds", {
   expect_gt(nrow(tri_q), 0L)
 })
 
-test_that("build_triangle with cohort = 'uy_s' (S grain) succeeds", {
+test_that("build_triangle with cohort = 'uy_h' (H grain) succeeds", {
   exp <- make_exp()
-  skip_if_not("uy_s" %in% names(exp), "uy_s not present in experience")
-  tri_s <- build_triangle(exp, groups = "coverage",
-                          cohort = "uy_s", calendar = "cy_s", loss = "loss_incr", premium = "premium_incr")
-  expect_s3_class(tri_s, "Triangle")
-  expect_identical(attr(tri_s, "cohort"), "uy_s")
-  expect_identical(attr(tri_s, "dev"),    "dev_s")
-  expect_identical(attr(tri_s, "grain"),      "S")
-  expect_gt(nrow(tri_s), 0L)
+  skip_if_not("uy_h" %in% names(exp), "uy_h not present in experience")
+  tri_h <- build_triangle(exp, groups = "coverage",
+                          cohort = "uy_h", calendar = "cy_h", loss = "loss_incr", premium = "premium_incr")
+  expect_s3_class(tri_h, "Triangle")
+  expect_identical(attr(tri_h, "cohort"), "uy_h")
+  expect_identical(attr(tri_h, "dev"),    "dev_h")
+  expect_identical(attr(tri_h, "grain"),      "H")
+  expect_gt(nrow(tri_h), 0L)
 })
 
-test_that("build_triangle with cohort = 'uy_a' (A grain) succeeds", {
+test_that("build_triangle with cohort = 'uy' (Y grain) succeeds", {
   exp <- make_exp()
-  skip_if_not("uy_a" %in% names(exp), "uy_a not present in experience")
-  tri_a <- build_triangle(exp, groups = "coverage",
-                          cohort = "uy_a", calendar = "cy_a", loss = "loss_incr", premium = "premium_incr")
-  expect_s3_class(tri_a, "Triangle")
-  expect_identical(attr(tri_a, "cohort"), "uy_a")
-  expect_identical(attr(tri_a, "dev"),    "dev_a")
-  expect_identical(attr(tri_a, "grain"),      "A")
-  expect_gt(nrow(tri_a), 0L)
+  skip_if_not("uy" %in% names(exp), "uy not present in experience")
+  tri_y <- build_triangle(exp, groups = "coverage",
+                          cohort = "uy", calendar = "cy", loss = "loss_incr", premium = "premium_incr")
+  expect_s3_class(tri_y, "Triangle")
+  expect_identical(attr(tri_y, "cohort"), "uy")
+  expect_identical(attr(tri_y, "dev"),    "dev_y")
+  expect_identical(attr(tri_y, "grain"),      "Y")
+  expect_gt(nrow(tri_y), 0L)
 })
 
-test_that("build_triangle errors on grain finer than input (uy_a + grain='M')", {
+test_that("build_triangle errors on grain finer than input (uy + grain='M')", {
   exp <- make_exp()
-  skip_if_not("uy_a" %in% names(exp), "uy_a not present in experience")
+  skip_if_not("uy" %in% names(exp), "uy not present in experience")
   expect_error(
     build_triangle(exp, groups = "coverage",
-                   cohort = "uy_a", calendar = "cy_a",
+                   cohort = "uy", calendar = "cy",
                    loss = "loss_incr", premium = "premium_incr",
                    grain = "M"),
     regexp = "grain"

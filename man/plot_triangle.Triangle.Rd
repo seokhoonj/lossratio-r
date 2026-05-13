@@ -84,7 +84,7 @@ where \code{premium} denotes risk premium rather than written premium.
 The x-axis uses the development variable stored in \code{attr(x, "dev")}, and
 the y-axis uses the period variable stored in \code{attr(x, "cohort")}.
 If either axis variable is a period-like variable such as \code{uy_m}, \code{cy_m},
-\code{uy_q}, \code{cy_q}, \code{uy_s}, \code{cy_s}, \code{uy_a}, or \code{cy_a}, it is formatted using
+\code{uy_q}, \code{cy_q}, \code{uy_h}, \code{cy_h}, \code{uy}, or \code{cy}, it is formatted using
 \code{\link[=.format_period]{.format_period()}}.
 
 Facets are created from \code{attr(x, "groups")}.

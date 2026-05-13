@@ -36,7 +36,7 @@
 #' @param calendar Optional calendar period variable for row-level
 #'   consistency check. When supplied, rows where `calendar <
 #'   cohort` are flagged as invalid. Default `NULL` (skip this check).
-#' @param grain Grain string (`"M"` / `"Q"` / `"S"` / `"A"`) or
+#' @param grain Grain string (`"M"` / `"Q"` / `"H"` / `"Y"`) or
 #'   `"auto"` (default) -- used only when `dev` is derived from
 #'   `(cohort, calendar)`. Ignored when `dev` is supplied.
 #'
@@ -584,7 +584,7 @@ plot_triangle.TriangleValidation <- function(x,
 #'   (raw name, e.g., `"premium_incr"`). Premium measure used as
 #'   denominator for loss ratio calculations. For long-term health
 #'   insurance applications, risk premium is commonly used.
-#' @param grain One of `"auto"` (default), `"M"`, `"Q"`, `"S"`, `"A"`.
+#' @param grain One of `"auto"` (default), `"M"`, `"Q"`, `"H"`, `"Y"`.
 #'   `"auto"` infers the grain from the `cohort` value spacing.
 #'   Explicit values must be at least as coarse as the input grain;
 #'   the input is binned (floored) to that grain before aggregation.
@@ -1040,7 +1040,7 @@ longer.TriangleSummary <- function(x, ...) {
 #'   (raw name, e.g., `"premium_incr"`). Premium measure used as
 #'   denominator for loss ratio calculations. For long-term health
 #'   insurance applications, risk premium is commonly used.
-#' @param grain One of `"auto"` (default), `"M"`, `"Q"`, `"S"`, `"A"`.
+#' @param grain One of `"auto"` (default), `"M"`, `"Q"`, `"H"`, `"Y"`.
 #'   `"auto"` infers the grain from the `calendar` value spacing.
 #'   Explicit values must be at least as coarse as the input grain;
 #'   the input is binned (floored) to that grain before aggregation.
@@ -1433,8 +1433,8 @@ summary.Calendar <- function(object, ...) {
 #' @param df A data.frame containing experience data.
 #' @param groups Grouping variable(s).
 #' @param cohort A single period variable (raw name). This may be an
-#'   underwriting period (`"uy_m"`, `"uy_q"`, `"uy_s"`, `"uy_a"`) or a
-#'   calendar period (`"cy_m"`, `"cy_q"`, `"cy_s"`, `"cy_a"`).
+#'   underwriting period (`"uy_m"`, `"uy_q"`, `"uy_h"`, `"uy"`) or a
+#'   calendar period (`"cy_m"`, `"cy_q"`, `"cy_h"`, `"cy"`).
 #' @param dev A single development variable (raw name) used to count
 #'   observed periods.
 #' @param loss Single character; per-period loss column in `df`

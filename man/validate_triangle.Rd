@@ -28,7 +28,7 @@ Optional when \code{calendar} is supplied -- \code{dev} is then derived from
 \verb{(cohort, calendar)} at the resolved \code{grain} (same dispatch as
 \code{\link[=build_triangle]{build_triangle()}}).}
 
-\item{grain}{Grain string (\code{"M"} / \code{"Q"} / \code{"S"} / \code{"A"}) or
+\item{grain}{Grain string (\code{"M"} / \code{"Q"} / \code{"H"} / \code{"Y"}) or
 \code{"auto"} (default) -- used only when \code{dev} is derived from
 \verb{(cohort, calendar)}. Ignored when \code{dev} is supplied.}
 }

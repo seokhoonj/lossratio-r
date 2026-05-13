@@ -11,7 +11,7 @@
 #'    produce a Date column. Wraps `instead::as_date_safe` for the
 #'    string path; integer (yyyy / yyyymm / yyyymmdd) handled inline.
 #' 2. **Grain** -- detect / validate granularity codes:
-#'    `"M"` (month) / `"Q"` (quarter) / `"S"` (semi-annual) / `"A"` (annual).
+#'    `"M"` (month) / `"Q"` (quarter) / `"H"` (half-yearly) / `"Y"` (yearly).
 #'    `grain = "auto"` resolves to the inferred input grain.
 #' 3. **Period operations** -- floor a Date to its period start; count
 #'    elapsed periods between two Dates at a given grain.
@@ -24,7 +24,7 @@ NULL
 
 
 # Grain codes ordered finest -> coarsest.
-.GRAIN_ORDER <- c(M = 0L, Q = 1L, S = 2L, A = 3L)
+.GRAIN_ORDER <- c(M = 0L, Q = 1L, H = 2L, Y = 3L)
 
 
 # ---------------------------------------------------------------------------
@@ -101,8 +101,8 @@ NULL
   ym <- sort(unique(data.table::year(vals) * 12L + data.table::month(vals)))
   if (length(ym) < 2L) return("M")
   diffs <- diff(ym)
-  if (all(diffs %% 12L == 0L)) return("A")
-  if (all(diffs %%  6L == 0L)) return("S")
+  if (all(diffs %% 12L == 0L)) return("Y")
+  if (all(diffs %%  6L == 0L)) return("H")
   if (all(diffs %%  3L == 0L)) return("Q")
   "M"
 }
@@ -143,14 +143,14 @@ NULL
   if (grain == "M")
     return(x - data.table::mday(x) + 1L)
 
-  # Q/S/A: build the floor month from (year, month) integer keys; the
+  # Q/H/Y: build the floor month from (year, month) integer keys; the
   # `.first_of_month` cache deduplicates before hitting ISOdate.
   yr <- data.table::year(x)
   mo <- data.table::month(x)
   floor_mo <- switch(grain,
     "Q" = ((mo - 1L) %/% 3L) * 3L + 1L,
-    "S" = data.table::fifelse(mo <= 6L, 1L, 7L),
-    "A" = 1L,
+    "H" = data.table::fifelse(mo <= 6L, 1L, 7L),
+    "Y" = 1L,
     stop(sprintf("Unknown grain: '%s'.", grain), call. = FALSE)
   )
   .first_of_month(yr, floor_mo)
@@ -181,13 +181,13 @@ NULL
     new_q  <- total %% 4L
     return(.first_of_month(new_yr, new_q * 3L + 1L))
   }
-  if (grain == "S") {
+  if (grain == "H") {
     total  <- yr * 2L + (mo - 1L) %/% 6L + k
     new_yr <- total %/% 2L
-    new_s  <- total %% 2L
-    return(.first_of_month(new_yr, new_s * 6L + 1L))
+    new_h  <- total %% 2L
+    return(.first_of_month(new_yr, new_h * 6L + 1L))
   }
-  if (grain == "A") {
+  if (grain == "Y") {
     return(.first_of_month(yr + k, 1L))
   }
   stop(sprintf("Unknown grain: '%s'.", grain), call. = FALSE)
@@ -206,12 +206,12 @@ NULL
     eq <- (data.table::month(end_x)   - 1L) %/% 3L
     return(as.integer(yr_diff * 4L + (eq - sq) + 1L))
   }
-  if (grain == "S") {
+  if (grain == "H") {
     sh <- (data.table::month(start_x) - 1L) %/% 6L
     eh <- (data.table::month(end_x)   - 1L) %/% 6L
     return(as.integer(yr_diff * 2L + (eh - sh) + 1L))
   }
-  if (grain == "A") {
+  if (grain == "Y") {
     return(as.integer(yr_diff + 1L))
   }
   stop(sprintf("Unknown grain: '%s'.", grain), call. = FALSE)
@@ -228,8 +228,8 @@ NULL
 #' @description
 #' Given a long-format frame with monthly source columns
 #' (`uy_m`, `cy_m`, optionally `dev_m`), derive the coarser-grain
-#' siblings (`uy_q` / `uy_s` / `uy_a`, `cy_q` / `cy_s` / `cy_a`,
-#' `dev_q` / `dev_s` / `dev_a`) so the same frame can be aggregated
+#' siblings (`uy_q` / `uy_h` / `uy`, `cy_q` / `cy_h` / `cy`,
+#' `dev_q` / `dev_h` / `dev_y`) so the same frame can be aggregated
 #' at any of the four grains.
 #'
 #' This is an *optional* utility — [build_triangle()] and
@@ -238,33 +238,33 @@ NULL
 #' can be re-aggregated at multiple grains, or for exploratory plots.
 #'
 #' @details
-#' Letter-suffix family: `_m` / `_q` / `_s` / `_a` = monthly /
-#' quarterly / semi-annual / annual.
+#' Letter-suffix family: `_m` / `_q` / `_h` / `_y` = monthly /
+#' quarterly / half-yearly / yearly.
 #'
 #' Derived columns when source columns exist:
 #'
 #' \strong{Underwriting (from `uy_m`):}
 #' \itemize{
-#'   \item `uy_a` : annual start (Jan 1 of `uy_m`'s year)
-#'   \item `uy_s` : semi-annual start (Jan 1 / Jul 1)
+#'   \item `uy` : yearly start (Jan 1 of `uy_m`'s year)
+#'   \item `uy_h` : half-yearly start (Jan 1 / Jul 1)
 #'   \item `uy_q` : quarterly start (Jan / Apr / Jul / Oct 1)
 #' }
 #'
 #' \strong{Calendar (from `cy_m`):}
 #' \itemize{
-#'   \item `cy_a` : annual start
-#'   \item `cy_s` : semi-annual start
+#'   \item `cy` : yearly start
+#'   \item `cy_h` : half-yearly start
 #'   \item `cy_q` : quarterly start
 #' }
 #'
 #' \strong{Development (from `uy_m` and `cy_m`, with `dev_m` derived
 #' if absent):}
 #' \itemize{
-#'   \item `dev_a` is the annual development index, where dev_m 1-12
+#'   \item `dev_y` is the yearly development index, where dev_m 1-12
 #'     map to 1, 13-24 map to 2, and so on.
-#'   \item `dev_s` and `dev_q` are aligned to calendar semi-annual
+#'   \item `dev_h` and `dev_q` are aligned to calendar half-yearly
 #'     and quarterly boundaries (not simple groupings of `dev_m`),
-#'     so cohorts such as Q1 / Q2 / S1 / S2 are compared consistently
+#'     so cohorts such as Q1 / Q2 / H1 / H2 are compared consistently
 #'     on the same cumulative development basis.
 #' }
 #'
@@ -308,29 +308,29 @@ derive_grain_columns <- function(df) {
     cy_mo <- data.table::month(dt[["cy_m"]])
   }
 
-  # uy_a / uy_s / uy_q — first-day-of-grain Date for each row.
-  # Grain start months: A = 1; S = 1 (S1) / 7 (S2);
+  # uy / uy_h / uy_q — first-day-of-grain Date for each row.
+  # Grain start months: Y = 1; H = 1 (H1) / 7 (H2);
   # Q = 1 (Q1) / 4 (Q2) / 7 (Q3) / 10 (Q4).
   if (has_uy_m) {
-    uy_s_mo <- data.table::fifelse(uy_mo <= 6L, 1L, 7L)
+    uy_h_mo <- data.table::fifelse(uy_mo <= 6L, 1L, 7L)
     uy_q_mo <- ((uy_mo - 1L) %/% 3L) * 3L + 1L
     dt[, `:=`(
-      uy_a = .first_of_month(uy_yr, 1L),
-      uy_s = .first_of_month(uy_yr, uy_s_mo),
+      uy = .first_of_month(uy_yr, 1L),
+      uy_h = .first_of_month(uy_yr, uy_h_mo),
       uy_q = .first_of_month(uy_yr, uy_q_mo)
     )]
-    data.table::setcolorder(dt, c("uy_a", "uy_s", "uy_q"), before = "uy_m")
+    data.table::setcolorder(dt, c("uy", "uy_h", "uy_q"), before = "uy_m")
   }
 
   if (has_cy_m) {
-    cy_s_mo <- data.table::fifelse(cy_mo <= 6L, 1L, 7L)
+    cy_h_mo <- data.table::fifelse(cy_mo <= 6L, 1L, 7L)
     cy_q_mo <- ((cy_mo - 1L) %/% 3L) * 3L + 1L
     dt[, `:=`(
-      cy_a = .first_of_month(cy_yr, 1L),
-      cy_s = .first_of_month(cy_yr, cy_s_mo),
+      cy = .first_of_month(cy_yr, 1L),
+      cy_h = .first_of_month(cy_yr, cy_h_mo),
       cy_q = .first_of_month(cy_yr, cy_q_mo)
     )]
-    data.table::setcolorder(dt, c("cy_a", "cy_s", "cy_q"), before = "cy_m")
+    data.table::setcolorder(dt, c("cy", "cy_h", "cy_q"), before = "cy_m")
   }
 
   # dev_m derived if absent (months between uy_m and cy_m, inclusive).
@@ -340,24 +340,24 @@ derive_grain_columns <- function(df) {
     has_dev_m <- TRUE
   }
 
-  # dev_a / dev_s / dev_q — calendar-anchored development indices.
-  # dev_s / dev_q align to S / Q boundaries (so Q1, Q2, S1, S2 cohorts
+  # dev_y / dev_h / dev_q — calendar-anchored development indices.
+  # dev_h / dev_q align to H / Q boundaries (so Q1, Q2, H1, H2 cohorts
   # are compared on the same cumulative basis), not simple groupings
   # of dev_m.
   if (has_uy_m && has_cy_m && has_dev_m) {
     dev_mo <- dt[["dev_m"]]
-    dev_a  <- (dev_mo - 1L) %/% 12L + 1L
+    dev_y  <- (dev_mo - 1L) %/% 12L + 1L
 
-    uy_s_idx <- (uy_mo - 1L) %/% 6L   # 0 = S1, 1 = S2
-    cy_s_idx <- (cy_mo - 1L) %/% 6L
-    dev_s    <- (cy_yr - uy_yr) * 2L + (cy_s_idx - uy_s_idx) + 1L
+    uy_h_idx <- (uy_mo - 1L) %/% 6L   # 0 = H1, 1 = H2
+    cy_h_idx <- (cy_mo - 1L) %/% 6L
+    dev_h    <- (cy_yr - uy_yr) * 2L + (cy_h_idx - uy_h_idx) + 1L
 
     uy_q_idx <- (uy_mo - 1L) %/% 3L   # 0 = Q1, ..., 3 = Q4
     cy_q_idx <- (cy_mo - 1L) %/% 3L
     dev_q    <- (cy_yr - uy_yr) * 4L + (cy_q_idx - uy_q_idx) + 1L
 
-    dt[, `:=`(dev_a = dev_a, dev_s = dev_s, dev_q = dev_q)]
-    data.table::setcolorder(dt, c("dev_a", "dev_s", "dev_q"), before = "dev_m")
+    dt[, `:=`(dev_y = dev_y, dev_h = dev_h, dev_q = dev_q)]
+    data.table::setcolorder(dt, c("dev_y", "dev_h", "dev_q"), before = "dev_m")
   }
 
   dt[]
