@@ -102,7 +102,7 @@ test_that("fit_lr with loss_regime_break + method=sa applies hybrid filter", {
   # ED parameters (g_selected) should differ for early dev (k < k*)
   expect_false(identical(fit_full$selected$g_selected,
                          fit_brk$selected$g_selected))
-  expect_equal(fit_brk$loss_regime_break, as.Date("2025-07-01"))
+  expect_equal(fit_brk$loss_regime_break, "2025-07-01")
 })
 
 test_that("fit_lr with loss_regime_break + method=ed drops pre-break cohorts", {
@@ -125,15 +125,13 @@ test_that("fit_lr with NULL loss_regime_break is unchanged", {
   expect_identical(a$full$lr_proj, b$full$lr_proj)
 })
 
-test_that("fit_lr with Regime extracts last breakpoint", {
+test_that("fit_lr with Regime preserves the Regime object", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   reg <- detect_regime(tri)
   fit_reg <- fit_lr(tri, method = "sa", loss_regime_break = reg, recent = 18L)
-  if (nrow(reg$breakpoints) > 0L) {
-    expect_equal(fit_reg$loss_regime_break,
-                 max(reg$breakpoints[["breakpoint"]]))
-  }
+  expect_s3_class(fit_reg$loss_regime_break, "Regime")
+  expect_identical(fit_reg$loss_regime_break$breakpoints, reg$breakpoints)
 })

@@ -425,12 +425,12 @@
 
   if (type == "quarter") {
     q <- (m - 1L) %/% 3L + 1L
-    return(paste0(yr, sep, "Q", q))
+    return(paste0(yr, sep, q, "Q"))
   }
 
   if (type == "half") {
     h <- (m > 6L) + 1L
-    return(paste0(yr, sep, "S", h))
+    return(paste0(yr, sep, h, "H"))
   }
 
   if (type == "day") {

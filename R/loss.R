@@ -165,7 +165,6 @@ fit_loss <- function(x,
         # factor estimation. (Earlier `max(k*)` fallback over-cut
         # fast-maturing groups.)
         m_k_vec <- m_dt$ata_to
-        m_k_max <- max(m_k_vec, na.rm = TRUE)
 
         dev_split_arg <- if (length(grp) > 0L &&
                              length(unique(m_k_vec)) > 1L) {
@@ -173,7 +172,7 @@ fit_loss <- function(x,
           data.table::setnames(m_k_dt, "ata_to", "dev_split")
           m_k_dt
         } else {
-          m_k_max
+          max(m_k_vec, na.rm = TRUE)
         }
 
         x <- .apply_regime_filter(
@@ -183,14 +182,11 @@ fit_loss <- function(x,
           dev_split = dev_split_arg
         )
         if (!is.null(recent)) {
-          # `.apply_recent_filter` still uses scalar dev_split (recent
-          # filter is calendar-diagonal-based; per-group boundary
-          # extension is a separate change).
           x <- .apply_recent_filter(
             x, recent,
             grp       = grp,
             coh       = "cohort", dev = "dev",
-            dev_split = m_k_max
+            dev_split = dev_split_arg
           )
           recent <- NULL
         }
@@ -411,7 +407,7 @@ fit_loss <- function(x,
     alpha             = alpha,
     sigma_method      = sigma_method,
     recent            = recent_user,
-    loss_regime_break = .resolve_regime_break_date(loss_regime_break_user),
+    loss_regime_break = loss_regime_break_user,
     maturity_args     = maturity_args,
     conf_level        = conf_level
   )
@@ -435,8 +431,14 @@ print.LossFit <- function(x, ...) {
   cat("sigma_method      :", x$sigma_method, "\n")
   cat("recent            :",
       if (!is.null(x$recent)) x$recent else "all", "\n")
-  cat("loss_regime_break :",
-      if (!is.null(x$loss_regime_break)) format(x$loss_regime_break) else "none", "\n")
+  cat("loss_regime_break :")
+  if (is.null(x$loss_regime_break)) {
+    cat(" none\n")
+  } else if (inherits(x$loss_regime_break, "Regime")) {
+    cat("\n"); print(x$loss_regime_break)
+  } else {
+    cat(" ", format(x$loss_regime_break), "\n", sep = "")
+  }
 
   if (!is.null(x$maturity) && nrow(x$maturity)) {
     mat <- .ensure_dt(x$maturity)

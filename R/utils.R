@@ -458,11 +458,18 @@ get_recent_weights <- function(weights, recent) {
 #' @param coh Single column name for the cohort variable (e.g. `cohort`).
 #' @param dev Single column name for the development variable (e.g. `dev`
 #'   for `Triangle` objects, or `ata_from` for `ATA`/`ED` objects).
-#' @param dev_split Optional numeric scalar — the maturity target dev
-#'   (= `ata_to`, equivalently the first CL-region dev). When supplied,
-#'   the recent filter is applied only to rows where `dev >= dev_split`
-#'   (CL region); rows with `dev < dev_split` (ED region) are kept
-#'   unconditionally.
+#' @param dev_split Optional SA-boundary specifier. Accepts:
+#'   * `NULL` -- no SA boundary; the recent wedge applies to every row.
+#'   * A single non-NA numeric scalar -- the maturity target dev
+#'     (= `ata_to`, the first CL-region dev). The recent filter is
+#'     applied only to rows where `dev >= dev_split` (CL region); rows
+#'     with `dev < dev_split` (ED region) are kept unconditionally.
+#'   * A `data.table` `[grp..., dev_split]` -- per-group SA boundary
+#'     (different `k*` per group). The group columns must be a subset
+#'     of `grp`. Each row of `dt` looks up its `dev_split` via
+#'     left-join; rows whose group has no matching entry (NA after the
+#'     join) are treated as if `dev_split = NULL` for that row (recent
+#'     wedge applies to all dev for them).
 #'
 #' @return A filtered copy of `dt` (class preserved), keeping only rows
 #'   within the recent-diagonal window.
@@ -485,9 +492,24 @@ get_recent_weights <- function(weights, recent) {
 
   recent <- as.integer(recent)
 
-  if (!is.null(dev_split)) {
+  # `dev_split` may be either a scalar (single ED/CL boundary applied
+  # to every group) or a `[grp..., dev_split]` data.table for
+  # per-group SA hybrid (m_k differs across groups).
+  dev_split_is_dt <- data.table::is.data.table(dev_split)
+  if (!is.null(dev_split) && !dev_split_is_dt) {
     if (!is.numeric(dev_split) || length(dev_split) != 1L || is.na(dev_split))
-      stop("`dev_split` must be a single non-NA numeric scalar.", call. = FALSE)
+      stop("`dev_split` must be a single non-NA numeric scalar, ",
+           "or a `[grp..., dev_split]` data.table for per-group SA hybrid.",
+           call. = FALSE)
+  }
+  if (dev_split_is_dt) {
+    if (!"dev_split" %in% names(dev_split))
+      stop("per-group `dev_split` data.table must have a column named ",
+           "`dev_split`.", call. = FALSE)
+    ds_join_cols <- intersect(setdiff(names(dev_split), "dev_split"), grp)
+    if (length(ds_join_cols) == 0L)
+      stop("per-group `dev_split` data.table must share at least one ",
+           "group column with `grp`.", call. = FALSE)
   }
 
   out <- data.table::copy(dt)
@@ -499,13 +521,23 @@ get_recent_weights <- function(weights, recent) {
       .SDcols = dev]
   out[, .max_cal := max(.cal_idx, na.rm = TRUE), by = grp]
 
+  cal_idx <- out[[".cal_idx"]]
+  max_cal <- out[[".max_cal"]]
+  dev_vals <- out[[dev]]
+  finite_mask <- is.finite(cal_idx) & is.finite(max_cal)
+
   if (is.null(dev_split)) {
-    keep <- out[, is.finite(.cal_idx) & is.finite(.max_cal) &
-                .cal_idx > .max_cal - recent]
+    keep <- finite_mask & (cal_idx > max_cal - recent)
+  } else if (dev_split_is_dt) {
+    ds_vals <- dev_split[out, on = ds_join_cols, x.dev_split]
+    # Group with NA dev_split: no SA boundary declared → recent wedge
+    # applies to all dev (no ED carve-out for that row).
+    keep <- finite_mask &
+            (cal_idx > max_cal - recent |
+             (!is.na(ds_vals) & dev_vals < ds_vals))
   } else {
-    keep <- out[, is.finite(.cal_idx) & is.finite(.max_cal) &
-                (.cal_idx > .max_cal - recent | .SD[[1L]] < dev_split),
-                .SDcols = dev]
+    keep <- finite_mask &
+            (cal_idx > max_cal - recent | dev_vals < dev_split)
   }
 
   out <- out[keep]

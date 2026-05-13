@@ -95,7 +95,7 @@ test_that("fit_ed with regime_break drops pre-break cohorts", {
   fit_brk  <- fit_ed(tri, target = "loss", exposure = "premium", regime_break = "2025-07-01")
   expect_false(identical(fit_full$selected$g_selected,
                          fit_brk$selected$g_selected))
-  expect_equal(fit_brk$regime_break, as.Date("2025-07-01"))
+  expect_equal(fit_brk$regime_break, "2025-07-01")
 })
 
 test_that("fit_ed with NULL regime_break is unchanged", {
@@ -110,7 +110,7 @@ test_that("fit_ed with NULL regime_break is unchanged", {
                    fit_null$selected$g_selected)
 })
 
-test_that("fit_ed with Regime input extracts last breakpoint", {
+test_that("fit_ed with Regime input preserves the Regime object", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
@@ -118,10 +118,8 @@ test_that("fit_ed with Regime input extracts last breakpoint", {
   reg <- detect_regime(tri)
   ed <- build_link(tri, target = "loss", exposure = "premium")
   fit_reg <- fit_ed(tri, target = "loss", exposure = "premium", regime_break = reg)
-  if (nrow(reg$breakpoints) > 0L) {
-    expect_equal(fit_reg$regime_break,
-                 max(reg$breakpoints[["breakpoint"]]))
-  }
+  expect_s3_class(fit_reg$regime_break, "Regime")
+  expect_identical(fit_reg$regime_break$breakpoints, reg$breakpoints)
 })
 
 # fit_ed $full projection -----------------------------------------------

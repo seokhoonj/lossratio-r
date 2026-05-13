@@ -226,8 +226,10 @@ test_that("multi-group Regime flows through fit_lr -> dispatcher -> worker", {
   fit <- fit_lr(tri_all, loss_regime_break = r)
   expect_s3_class(fit, "LRFit")
   expect_true(nrow(fit$full) > 0L)
-  # loss_regime_break attr stores the max (scalar) for back-compat
-  expect_true(inherits(fit$loss_regime_break, "Date"))
+  # loss_regime_break preserves the original Regime object (multi-group
+  # dispatch happens internally via .resolve_regime_break_date(by = grp))
+  expect_s3_class(fit$loss_regime_break, "Regime")
+  expect_identical(fit$loss_regime_break$breakpoints, r$breakpoints)
 })
 
 test_that("backtest passes multi-group Regime through to dispatcher", {

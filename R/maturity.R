@@ -36,6 +36,19 @@
 #' @param target Cumulative metric for the link factor. Default
 #'   `"loss"` (chain-ladder convention; see Description). Forwarded to
 #'   [build_link()].
+#' @param groups Optional `character` subset of `attr(x, "groups")`
+#'   selecting which columns define the maturity partition. Maturity is
+#'   typically a structural property of the development curve driven by
+#'   coverage rather than by demographic mix (age, channel, ...), so a
+#'   Triangle aggregated by `c("coverage", "age_band", "channel")` may
+#'   still want a per-coverage maturity. `NULL` (default) keeps the
+#'   current Triangle grouping (fully backward compatible).
+#'   `character(0)` pools across all groups and returns a single global
+#'   maturity row. Any non-`NULL`, non-empty value must be a subset of
+#'   `attr(x, "groups")`; column order is irrelevant. When the requested
+#'   `groups` is coarser than the Triangle grouping, the underlying
+#'   `loss` / `premium` / `lr` columns are re-aggregated to the coarser
+#'   partition before computing ata links.
 #' @param weight Optional WLS weight variable. Forwarded to
 #'   [build_link()].
 #' @param alpha Numeric scalar controlling the variance structure in
@@ -58,6 +71,7 @@
 #' @export
 detect_maturity <- function(x,
                             target          = "loss",
+                            groups          = NULL,
                             weight          = NULL,
                             alpha           = 1,
                             max_cv          = 0.15,
@@ -67,6 +81,8 @@ detect_maturity <- function(x,
                             min_run         = 2L) {
 
   .assert_triangle_input(x, "detect_maturity()")
+
+  x <- .rebucket_triangle_groups(x, groups)
 
   link <- build_link(x, target = target, weight = weight)
   ata_summary <- summary(link, model = "ata", alpha = alpha)
@@ -225,4 +241,90 @@ detect_maturity <- function(x,
   data.table::setattr(z, "weight",          attr(x, "weight"))
 
   .prepend_class(z, "Maturity")
+}
+
+
+#' Internal: rebucket a `Triangle` to a coarser `groups` partition
+#'
+#' Re-aggregates `loss` / `premium` / `loss_incr` / `premium_incr` over
+#' the dropped grouping columns and recomputes `lr` / `lr_incr` as
+#' ratios of the aggregated totals. Other cell-level columns
+#' (`margin`, `profit`, `loss_share`, ...) are not regenerated -- the
+#' rebucketed object is intended for `build_link()` consumption only.
+#'
+#' @param x A `Triangle` object.
+#' @param groups `NULL`, `character(0)`, or a `character` subset of
+#'   `attr(x, "groups")`. `NULL` returns `x` unchanged.
+#'
+#' @return A `Triangle` with `attr(., "groups")` set to the requested
+#'   value and `loss` / `premium` / `lr` aggregated to the requested
+#'   partition.
+#'
+#' @keywords internal
+.rebucket_triangle_groups <- function(x, groups) {
+
+  if (is.null(groups)) return(x)
+
+  if (!is.character(groups))
+    stop("`groups` must be `NULL` or a character vector.", call. = FALSE)
+
+  grp_orig <- attr(x, "groups")
+  if (is.null(grp_orig)) grp_orig <- character(0)
+
+  if (length(groups)) {
+    bad <- setdiff(groups, grp_orig)
+    if (length(bad))
+      stop(
+        sprintf(
+          "`groups` must be a subset of `attr(x, \"groups\")`. Unknown column(s): %s.",
+          paste(sprintf("`%s`", bad), collapse = ", ")
+        ),
+        call. = FALSE
+      )
+  }
+
+  # No-op when requested grouping matches the Triangle's (order-insensitive).
+  if (setequal(groups, grp_orig)) {
+    z <- .ensure_dt(x)
+    # Preserve original group column order to keep build_link's setorderv stable.
+    data.table::setattr(z, "groups"  , grp_orig)
+    data.table::setattr(z, "cohort"  , attr(x, "cohort"))
+    data.table::setattr(z, "calendar", attr(x, "calendar"))
+    data.table::setattr(z, "grain"   , attr(x, "grain"))
+    data.table::setattr(z, "dev"     , attr(x, "dev"))
+    data.table::setattr(z, "loss"    , attr(x, "loss"))
+    data.table::setattr(z, "premium" , attr(x, "premium"))
+    return(.prepend_class(z, "Triangle"))
+  }
+
+  dt <- .ensure_dt(x)
+
+  # Columns we re-aggregate. Only sum-additive primitives; ratios (lr) are
+  # recomputed from the aggregated totals.
+  sum_cols <- intersect(
+    c("loss", "loss_incr", "premium", "premium_incr", "n_obs"),
+    names(dt)
+  )
+  by_cols <- c(groups, "cohort", "dev")
+
+  agg <- dt[, lapply(.SD, sum, na.rm = TRUE),
+            by      = by_cols,
+            .SDcols = sum_cols]
+
+  if (all(c("loss", "premium") %in% names(agg)))
+    agg[, lr := loss / premium]
+  if (all(c("loss_incr", "premium_incr") %in% names(agg)))
+    agg[, lr_incr := loss_incr / premium_incr]
+
+  data.table::setorderv(agg, by_cols)
+
+  data.table::setattr(agg, "groups"  , groups)
+  data.table::setattr(agg, "cohort"  , attr(x, "cohort"))
+  data.table::setattr(agg, "calendar", attr(x, "calendar"))
+  data.table::setattr(agg, "grain"   , attr(x, "grain"))
+  data.table::setattr(agg, "dev"     , attr(x, "dev"))
+  data.table::setattr(agg, "loss"    , attr(x, "loss"))
+  data.table::setattr(agg, "premium" , attr(x, "premium"))
+
+  .prepend_class(agg, "Triangle")
 }

@@ -158,7 +158,7 @@ fit_intensity <- function(x,
     na_method    = na_method,
     sigma_method = sigma_method,
     recent       = recent,
-    regime_break = .resolve_regime_break_date(regime_break)
+    regime_break = regime_break
   )
 
   class(out) <- "IntensityFit"
@@ -206,9 +206,14 @@ print.IntensityFit <- function(x, ...) {
   cat("sigma_method:", x$sigma_method, "\n")
   cat("recent      :",
       if (!is.null(x$recent)) x$recent else "all", "\n")
-  cat("regime_break:",
-      if (!is.null(x$regime_break)) format(x$regime_break) else "none",
-      "\n")
+  cat("regime_break:")
+  if (is.null(x$regime_break)) {
+    cat(" none\n")
+  } else if (inherits(x$regime_break, "Regime")) {
+    cat("\n"); print(x$regime_break)
+  } else {
+    cat(" ", format(x$regime_break), "\n", sep = "")
+  }
 
   if (length(grp)) {
     cat("groups      :", paste(grp, collapse = ", "), "\n")

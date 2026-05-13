@@ -152,7 +152,7 @@ test_that("fit_ata with regime_break drops pre-break cohorts", {
   # and possibly different f_selected for at least one ata_from
   expect_false(identical(fit_full$selected$f_selected,
                          fit_brk$selected$f_selected))
-  expect_equal(fit_brk$regime_break, as.Date("2024-07-01"))
+  expect_equal(fit_brk$regime_break, "2024-07-01")
 })
 
 test_that("fit_ata with NULL regime_break is unchanged from default", {
@@ -167,7 +167,7 @@ test_that("fit_ata with NULL regime_break is unchanged from default", {
                    fit_null$selected$f_selected)
 })
 
-test_that("fit_ata with Regime input extracts last breakpoint", {
+test_that("fit_ata with Regime input preserves the Regime object", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
@@ -175,8 +175,6 @@ test_that("fit_ata with Regime input extracts last breakpoint", {
   reg <- detect_regime(tri)
   ata <- build_link(tri, target = "loss")
   fit_reg <- fit_ata(tri, target = "loss", regime_break = reg)
-  if (nrow(reg$breakpoints) > 0L) {
-    expect_equal(fit_reg$regime_break,
-                 max(reg$breakpoints[["breakpoint"]]))
-  }
+  expect_s3_class(fit_reg$regime_break, "Regime")
+  expect_identical(fit_reg$regime_break$breakpoints, reg$breakpoints)
 })

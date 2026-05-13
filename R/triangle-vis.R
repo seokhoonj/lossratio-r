@@ -1075,7 +1075,8 @@ plot.Total <- function(x,
   # recent wedge on dev >= k* when `recent` is also set) is reflected.
   # `bd` may be scalar Date or `[grp..., break_date]` data.table (when a
   # multi-group Regime is passed and grp is non-empty).
-  m_k <- NULL
+  m_k    <- NULL    # scalar fallback (passed to .compute_triangle_usage)
+  m_k_dt <- NULL    # per-group [grp..., m_k] data.table for facet-routed vline
   bd <- if (!is.null(regime_break)) {
     .resolve_regime_break_date(regime_break, by = grp)
   } else {
@@ -1093,7 +1094,17 @@ plot.Total <- function(x,
         !is.null(fit_for_mat$maturity) &&
         nrow(fit_for_mat$maturity) > 0L &&
         !all(is.na(fit_for_mat$maturity$ata_to))) {
-      m_k <- max(fit_for_mat$maturity$ata_to, na.rm = TRUE)
+      mat <- fit_for_mat$maturity
+      if (length(grp) > 0L && nrow(mat) > 1L &&
+          all(grp %in% names(mat))) {
+        m_k_dt <- mat[, c(grp, "ata_to"), with = FALSE]
+        data.table::setnames(m_k_dt, "ata_to", "m_k")
+        m_k_dt <- m_k_dt[is.finite(m_k)]
+        if (!nrow(m_k_dt)) m_k_dt <- NULL
+        m_k <- max(mat$ata_to, na.rm = TRUE)
+      } else {
+        m_k <- max(mat$ata_to, na.rm = TRUE)
+      }
     }
   }
 
@@ -1134,7 +1145,19 @@ plot.Total <- function(x,
   # vertical maturity line in hybrid mode: drawn just before dev = m_k
   # so the boundary visually separates ED region (dev < m_k) on the
   # left from CL region (dev >= m_k) on the right.
-  if (!is.null(m_k)) {
+  #
+  # `m_k_dt` (when present) is a `[grp..., m_k]` data.table — each facet
+  # draws its own k* boundary. Falls back to scalar `m_k` for single
+  # group / pooled. Mirrors the regime-break hline dispatch below.
+  if (!is.null(m_k_dt)) {
+    vline_df <- data.table::copy(m_k_dt)
+    vline_df[, .xint := m_k - 0.5]
+    p <- p + ggplot2::geom_vline(
+      data       = vline_df,
+      mapping    = ggplot2::aes(xintercept = .xint),
+      linetype   = "dashed", color = "black", linewidth = 0.4
+    )
+  } else if (!is.null(m_k)) {
     p <- p + ggplot2::geom_vline(
       xintercept = m_k - 0.5,
       linetype   = "dashed", color = "black", linewidth = 0.4
@@ -1206,7 +1229,10 @@ plot.Total <- function(x,
     "Data usage (full)"
   }
 
-  subtitle_txt <- if (!is.null(m_k)) {
+  subtitle_txt <- if (!is.null(m_k_dt)) {
+    sprintf("hybrid mode: maturity k* per group (range %g-%g)",
+            min(m_k_dt$m_k), max(m_k_dt$m_k))
+  } else if (!is.null(m_k)) {
     sprintf("hybrid mode: maturity k* = %g", m_k)
   } else {
     NULL

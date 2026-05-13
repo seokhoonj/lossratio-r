@@ -334,10 +334,8 @@ fit_lr <- function(x,
     sigma_method         = sigma_method,
     recent               = loss_fit$recent,
     loss_regime_break    = loss_fit$loss_regime_break,
-    premium_regime_break = .resolve_regime_break_date(
-      if (!missing(premium_regime_break)) premium_regime_break
-      else loss_fit$loss_regime_break
-    ),
+    premium_regime_break = if (!missing(premium_regime_break)) premium_regime_break
+                           else loss_fit$loss_regime_break,
     maturity_args        = maturity_args
   )
 
@@ -381,10 +379,22 @@ print.LRFit <- function(x, ...) {
   cat("sigma_method         :", x$sigma_method,   "\n")
   cat("recent               :",
       if (!is.null(x$recent)) x$recent else "all", "\n")
-  cat("loss_regime_break    :",
-      if (!is.null(x$loss_regime_break)) format(x$loss_regime_break) else "none", "\n")
-  cat("premium_regime_break :",
-      if (!is.null(x$premium_regime_break)) format(x$premium_regime_break) else "none", "\n")
+  cat("loss_regime_break    :")
+  if (is.null(x$loss_regime_break)) {
+    cat(" none\n")
+  } else if (inherits(x$loss_regime_break, "Regime")) {
+    cat("\n"); print(x$loss_regime_break)
+  } else {
+    cat(" ", format(x$loss_regime_break), "\n", sep = "")
+  }
+  cat("premium_regime_break :")
+  if (is.null(x$premium_regime_break)) {
+    cat(" none\n")
+  } else if (inherits(x$premium_regime_break, "Regime")) {
+    cat("\n"); print(x$premium_regime_break)
+  } else {
+    cat(" ", format(x$premium_regime_break), "\n", sep = "")
+  }
 
   # Use the same label width as the top block (`premium_regime_break`
   # is the longest at 20 chars) so colons align across the printout.
