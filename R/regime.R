@@ -82,6 +82,19 @@
 #'   the requested value) for `"hclust"`, where the default is `2`.
 #' @param sig_level Significance level for `"e_divisive"`. Default `0.05`.
 #' @param min_size Minimum segment size for `"e_divisive"`. Default `3`.
+#' @param treatment How downstream fits should apply this Regime when
+#'   `$changes` contains multiple change points. One of:
+#'   \describe{
+#'     \item{`"latest_only"`}{(default) Collapse to the most recent change
+#'       date and drop all pre-latest-change cohorts. Single pooled factor
+#'       estimate over the surviving (post-latest-change) cohorts.}
+#'     \item{`"segment_wise"`}{Preserve all change points. Each segment
+#'       (consecutive cohorts between adjacent changes) gets its own factor
+#'       estimate, and each cohort is projected using its own segment's
+#'       factor. Recommended for multi-regime + long-tail data where opt
+#'       `"latest_only"` would lose self-regime responsiveness on older
+#'       cohorts.}
+#'   }
 #' @param ... Reserved for future use.
 #'
 #' @return An object of class `"Regime"`. For single-group input:
@@ -119,6 +132,11 @@
 #'       constraint. Vector (single) / named list (multi).}
 #'     \item{`multi_group`}{Logical flag; `TRUE` when detection ran over
 #'       multiple group combos.}
+#'     \item{`treatment`}{Either `"latest_only"` or `"segment_wise"` — the
+#'       value supplied via the `treatment` argument. Read by downstream
+#'       fits (`fit_ata()`, `fit_intensity()`, `fit_cl()`, `fit_ed()`) to
+#'       decide whether to collapse to the latest change (drop pre-change
+#'       cohorts, single pooled factor) or estimate per-segment factors.}
 #'   }
 #'
 #' @seealso [plot.Regime()], [build_triangle()]
@@ -167,10 +185,12 @@ detect_regime <- function(x,
                           n_regimes = NULL,
                           sig_level = 0.05,
                           min_size  = 3L,
+                          treatment = c("latest_only", "segment_wise"),
                           ...) {
 
   .assert_triangle_input(x, "detect_regime()")
-  method <- match.arg(method)
+  method    <- match.arg(method)
+  treatment <- match.arg(treatment)
 
   coh <- attr(x, "cohort")
   dev <- attr(x, "dev")
@@ -410,7 +430,8 @@ detect_regime <- function(x,
     n_regimes   = n_regimes_out,
     trajectory  = trajectory_out,
     pca         = pca_out,
-    dropped     = dropped_out
+    dropped     = dropped_out,
+    treatment   = treatment
   )
   class(out) <- "Regime"
   out
@@ -518,7 +539,7 @@ detect_regime <- function(x,
     min_size  = min_size
   )
 
-  regime_id <- .regime_ids_from_breaks(n_cohorts, changes_idx)
+  regime_id <- .regime_ids_from_changes(n_cohorts, changes_idx)
   regime_label <- .regime_label_from_range(w[["cohort"]], regime_id)
 
   labels <- data.table::data.table(
@@ -631,14 +652,14 @@ detect_regime <- function(x,
 }
 
 #' @keywords internal
-.regime_ids_from_breaks <- function(n, breaks) {
+.regime_ids_from_changes <- function(n, changes) {
   ids <- integer(n)
   cur <- 1L
-  bk  <- sort(unique(as.integer(breaks)))
+  ch  <- sort(unique(as.integer(changes)))
   for (i in seq_len(n)) {
-    if (length(bk) && i >= bk[1L]) {
+    if (length(ch) && i >= ch[1L]) {
       cur <- cur + 1L
-      bk  <- bk[-1L]
+      ch  <- ch[-1L]
     }
     ids[i] <- cur
   }
@@ -661,8 +682,10 @@ detect_regime <- function(x,
 #' @export
 print.Regime <- function(x, ...) {
   cat("<Regime>\n")
-  cat(sprintf("  method : %s\n", x$method))
-  cat(sprintf("  target : %s\n", x$target))
+  cat(sprintf("  method    : %s\n", x$method))
+  cat(sprintf("  target    : %s\n", x$target))
+  if (!is.null(x$treatment))
+    cat(sprintf("  treatment : %s\n", x$treatment))
 
   if (isTRUE(x$multi_group)) {
     grp      <- x$groups
@@ -784,7 +807,8 @@ summary.Regime <- function(object, ...) {
       n_dropped   = sum(vapply(object$dropped, length, integer(1L))),
       n_regimes   = object$n_regimes,
       changes     = object$changes,
-      regimes     = tbl
+      regimes     = tbl,
+      treatment   = object$treatment
     )
   } else {
     labels <- object$labels
@@ -807,7 +831,8 @@ summary.Regime <- function(object, ...) {
       n_dropped   = length(object$dropped),
       n_regimes   = object$n_regimes,
       changes     = object$changes,
-      regimes     = tbl
+      regimes     = tbl,
+      treatment   = object$treatment
     )
   }
   class(out) <- "summary.Regime"
@@ -822,6 +847,8 @@ print.summary.Regime <- function(x, ...) {
   cat("Cohort regime detection summary\n")
   cat(sprintf("  method    : %s\n", x$method))
   cat(sprintf("  target    : %s\n", x$target))
+  if (!is.null(x$treatment))
+    cat(sprintf("  treatment : %s\n", x$treatment))
   cat(sprintf("  window    : %s 1-%d\n", x$dev, x$window))
 
   if (isTRUE(x$multi_group)) {
@@ -898,6 +925,12 @@ print.summary.Regime <- function(x, ...) {
 #'   regime). Any other named arguments are interpreted as group column
 #'   values (e.g. `coverage`, `channel`). With no group columns the
 #'   result is a pooled (single-row) Regime.
+#' @param treatment How downstream fits should apply this Regime when
+#'   `$changes` contains multiple change points. `"latest_only"` (default)
+#'   collapses to the most recent change and drops all pre-latest cohorts
+#'   (single pooled factor). `"segment_wise"` preserves all changes and
+#'   estimates one factor per segment (each cohort projected with its own
+#'   segment's factor). See [detect_regime()] for full semantics.
 #'
 #' @return An object of class `"Regime"` with the minimal schema needed
 #'   by downstream consumers:
@@ -939,9 +972,10 @@ print.summary.Regime <- function(x, ...) {
 #' }
 #'
 #' @export
-regime_at <- function(...) {
-  args <- list(...)
-  nms  <- names(args)
+regime_at <- function(..., treatment = c("latest_only", "segment_wise")) {
+  treatment <- match.arg(treatment)
+  args      <- list(...)
+  nms       <- names(args)
 
   if (is.null(nms) || any(!nzchar(nms)))
     stop("All arguments to `regime_at()` must be named.", call. = FALSE)
@@ -1015,7 +1049,8 @@ regime_at <- function(...) {
     n_regimes   = NA_integer_,
     trajectory  = NULL,
     pca         = NULL,
-    dropped     = character(0)
+    dropped     = character(0),
+    treatment   = treatment
   )
   class(out) <- "Regime"
   out

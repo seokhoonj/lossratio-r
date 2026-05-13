@@ -50,13 +50,13 @@
 #'   }
 #'   Behavior depends on `method`:
 #'   \describe{
-#'     \item{`"sa"`}{Hybrid filter. Pre-break cohorts are dropped only for
+#'     \item{`"sa"`}{Hybrid filter. Pre-change cohorts are dropped only for
 #'       development periods at or before the maturity point (ED phase);
 #'       post-maturity (CL) cells use the `recent`-diagonal window across
 #'       all cohorts. This preserves CL stability while protecting the ED
-#'       intensities from a regime shift.}
+#'       intensities from a regime change.}
 #'     \item{`"ed"`, `"cl"`}{Simple cohort cut: all cohorts strictly before
-#'       the break date are excluded from estimation.}
+#'       the change date are excluded from estimation.}
 #'   }
 #' @param premium_method One of `"cl"` (default) or `"ed"`. Forwarded to
 #'   [fit_premium()] when constructing the premium projection.

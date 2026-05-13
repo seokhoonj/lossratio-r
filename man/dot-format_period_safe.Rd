@@ -4,13 +4,16 @@
 \alias{.format_period_safe}
 \title{Safely format a period vector for plot axis labels}
 \usage{
-.format_period_safe(x, var)
+.format_period_safe(x, var, grain = NULL)
 }
 \arguments{
 \item{x}{A vector to format.}
 
 \item{var}{A single character string naming the variable (e.g. \code{"uy_m"},
 \code{"dev_m"}).}
+
+\item{grain}{Optional grain code (\code{"M"}/\code{"Q"}/\code{"H"}/\code{"Y"}). Used when
+\code{var} is not a package-standard period name (see \code{\link[=.get_period_type]{.get_period_type()}}).}
 }
 \value{
 A character vector of formatted labels.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/regime-optimal-window.R
 \name{plot.RegimeOptimalWindow}
 \alias{plot.RegimeOptimalWindow}
-\title{Plot break-count vs window with the elbow marker}
+\title{Plot change-count vs window with the elbow marker}
 \usage{
 \method{plot}{RegimeOptimalWindow}(x, show_magnitude = TRUE, theme = c("view", "save", "shiny"), ...)
 }
@@ -11,7 +11,7 @@
 
 \item{show_magnitude}{Logical; if \code{TRUE} (default), overlay
 \code{mean_magnitude} on a secondary y axis (right). Set \code{FALSE} for
-a cleaner break-count-only plot.}
+a cleaner change-count-only plot.}
 
 \item{theme}{A string passed to \code{\link[=.switch_theme]{.switch_theme()}}.}
 
@@ -22,6 +22,6 @@ A \code{ggplot} object.
 }
 \description{
 Diagnostic plot for a \code{detect_regime_optimal_window()} result: shows
-\code{break_count} (and optionally \code{mean_magnitude}) against the
+\code{change_count} (and optionally \code{mean_magnitude}) against the
 trajectory window \code{window}, with a vertical line at \code{optimal_window}.
 }

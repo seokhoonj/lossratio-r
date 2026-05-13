@@ -167,9 +167,9 @@ fit_loss <- function(x,
 
   # 2) SA hybrid filter (loss-side, 2-pass maturity) ---------------------
   if (!is.null(regime)) {
-    bd <- .resolve_regime_date(regime, by = grp)
+    cd <- .resolve_regime_change_date(regime, by = grp)
 
-    if (!is.null(bd) && method == "sa") {
+    if (!is.null(cd) && method == "sa") {
       pre_loss_fit <- fit_ata(
         x,
         target       = "loss",
@@ -772,13 +772,27 @@ summary.LossFit <- function(object, ...) {
 
   full[, is_observed := is.finite(loss_obs)]
 
-  prem_sel <- premium_ata_fit$selected[
-    , .SD,
-    .SDcols = c(grp, "ata_from", "f_selected")
-  ]
+  # Attach segment_id when either side of the projection was fitted
+  # segment_wise. ED loss-side regime is on ed_fit; premium-side regime
+  # is on premium_ata_fit. If both are segment_wise they share the same
+  # Regime in practice (fit_ed passes its regime down to fit_cl), so
+  # one assignment is sufficient.
+  has_seg_ed   <- "segment_id" %in% names(ed_fit$selected)
+  has_seg_prem <- "segment_id" %in% names(premium_ata_fit$selected)
+  if (has_seg_ed || has_seg_prem) {
+    reg <- if (has_seg_ed) ed_fit$regime else premium_ata_fit$regime
+    grp_dt <- if (length(grp)) full[, grp, with = FALSE] else NULL
+    full[, segment_id := .assign_segment(cohort, reg, grp_dt)]
+  }
+
+  prem_cols <- c(grp, "ata_from",
+                 if (has_seg_prem) "segment_id",
+                 "f_selected")
+  prem_sel <- premium_ata_fit$selected[, .SD, .SDcols = prem_cols]
   data.table::setnames(prem_sel, c("ata_from", "f_selected"),
                        c("dev", "f_exposure"))
-  full <- prem_sel[full, on = c(grp, "dev")]
+  full <- prem_sel[full,
+                   on = c(grp, "dev", if (has_seg_prem) "segment_id")]
 
   full[, premium_proj := .cl_proj(
     target_obs = premium_obs,

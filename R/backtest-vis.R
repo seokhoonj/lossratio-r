@@ -240,7 +240,16 @@ plot_triangle.Backtest <- function(x,
 
   # Encode cohort as a factor with levels in reverse-chronological order
   # so the oldest cohort sits at the top (matches plot_triangle.<other>).
-  dt[, .y_lab := format(cohort, "%y.%m")]
+  # Grain-aware tick labels: M -> "23.04", Q -> "23.2Q", H -> "23.1H",
+  # Y -> "23". Falls back to bare ISO date when neither column name nor
+  # grain resolve a period type.
+  bt_grain <- attr(x$data, "grain")
+  coh_type <- .get_period_type(x$cohort, grain = bt_grain)
+  if (!is.na(coh_type)) {
+    dt[, .y_lab := .format_period(cohort, type = coh_type, abb = TRUE)]
+  } else {
+    dt[, .y_lab := as.character(cohort)]
+  }
   cohort_levels <- sort(unique(dt$.y_lab), decreasing = TRUE)
   dt[, .y_lab := factor(.y_lab, levels = cohort_levels)]
 
@@ -264,7 +273,7 @@ plot_triangle.Backtest <- function(x,
     ggplot2::labs(title = sprintf("Backtest A/E Error -- held-out cells (%s)",
                                   cum_word),
                   x       = .pretty_var_label(x$dev),
-                  y       = .cohort_label(x$cohort),
+                  y       = .cohort_label(x$cohort, grain = bt_grain),
                   caption = "Unit: %")
 
   if (length(grp))

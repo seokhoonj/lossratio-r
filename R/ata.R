@@ -127,7 +127,9 @@
 
   dt <- .ensure_dt(object)
 
-  grp_link <- c(grp, "ata_from", "ata_to", "ata_link")
+  has_seg  <- "segment_id" %in% names(dt)
+  grp_link <- c(grp, "ata_from", "ata_to", "ata_link",
+                if (has_seg) "segment_id")
 
   # 1) descriptive statistics -------------------------------------------
   ds <- dt[, {
@@ -157,7 +159,8 @@
   link_factors <- .lm_link(object, weights = wt_col, alpha = alpha, ...)
 
   # 3) join WLS results onto descriptive statistics ---------------------
-  join_cols <- c(grp, "ata_from", "ata_to", "ata_link")
+  join_cols <- c(grp, "ata_from", "ata_to", "ata_link",
+                 if (has_seg) "segment_id")
   ds <- link_factors[
     , .SD,
     .SDcols = c(join_cols, "f", "f_se", "rse", "sigma")
@@ -165,7 +168,8 @@
 
   # 4) reorder columns --------------------------------------------------
   col_order <- c(
-    join_cols,
+    c(grp, "ata_from", "ata_to", "ata_link"),
+    if (has_seg) "segment_id",
     "mean", "median", "wt", "cv",
     "f", "f_se", "rse", "sigma",
     "n_obs", "n_valid", "n_inf", "n_nan", "valid_ratio"
@@ -259,7 +263,7 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'   or `regime_at()`), the string `"auto"` (internal
 #'   `detect_regime(tri, target = "lr")` call), or a function
 #'   `function(tri) -> Regime` for deferred custom-config detection. When
-#'   supplied, cohorts strictly before the resolved break date are excluded
+#'   supplied, cohorts strictly before the resolved change date are excluded
 #'   from estimation.
 #' @param maturity Optional maturity specification for filtering ata
 #'   links. Accepts four input types:
@@ -559,16 +563,21 @@ print.ATAFit <- function(x, ...) {
   }
 
   # --- LOCF fill --------------------------------------------------------
+  # When segment_id is present (segment_wise treatment), fill per segment
+  # so factors from one regime never leak into another.
+  has_seg <- "segment_id" %in% names(z)
+  fill_by <- c(grp, if (has_seg) "segment_id")
   if (na_method == "locf") {
-    if (length(grp)) {
+    if (length(fill_by)) {
+      data.table::setorderv(z, c(fill_by, "ata_from", "ata_to"))
       z[, f_selected := data.table::nafill(f_selected, type = "locf"),
-        by = grp]
+        by = fill_by]
     } else {
       z[, f_selected := data.table::nafill(f_selected, type = "locf")]
     }
   }
 
-  data.table::setorderv(z, c(grp, "ata_from", "ata_to"))
+  data.table::setorderv(z, c(fill_by, "ata_from", "ata_to"))
   z
 }
 
@@ -605,6 +614,38 @@ print.ATAFit <- function(x, ...) {
   idx_pred  <- which( z$sigma_extrapolated)
 
   if (length(idx_pred) == 0L) return(z[])
+
+  # When segment_id is present (segment_wise treatment), extrapolate per
+  # segment so a sparse segment's sigma is never filled from another
+  # regime's pool.
+  if ("segment_id" %in% names(z)) {
+    seg_ids <- unique(z$segment_id)
+    for (sid in seg_ids) {
+      sub_idx <- which(z$segment_id == sid)
+      sub <- z[sub_idx]
+      sub_valid <- which(!sub$sigma_extrapolated)
+      sub_pred  <- which( sub$sigma_extrapolated)
+      if (length(sub_pred) == 0L) next
+      if (length(sub_valid) < 2L) {
+        warning(sprintf(
+          "Segment %d: fewer than two valid `sigma` values; extrapolation skipped.",
+          sid), call. = FALSE)
+        next
+      }
+      if (method == "min_last2") {
+        fill_val <- min(tail(sub$sigma[sub_valid], 2L))
+        z[sub_idx[sub_pred], sigma := fill_val]
+      } else if (method == "locf") {
+        z[sub_idx[sub_pred],
+          sigma := sub$sigma[sub_valid[length(sub_valid)]]]
+      } else if (method == "loglinear") {
+        fit <- stats::lm(log(sigma) ~ ata_from, data = sub[sub_valid])
+        z[sub_idx[sub_pred],
+          sigma := exp(stats::predict(fit, newdata = sub[sub_pred]))]
+      }
+    }
+    return(z[])
+  }
 
   if (length(idx_valid) < 2L) {
     warning("Fewer than two valid `sigma` values; extrapolation skipped.",

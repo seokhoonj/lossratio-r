@@ -4,10 +4,13 @@
 \alias{.get_period_type}
 \title{Get the period type string for a period variable name}
 \usage{
-.get_period_type(var)
+.get_period_type(var, grain = NULL)
 }
 \arguments{
 \item{var}{A single character string naming a period variable.}
+
+\item{grain}{Optional grain code from \code{attr(tri, "grain")} -- one of
+\code{"M"}, \code{"Q"}, \code{"H"}, \code{"Y"}. Used when \code{var} is not recognised.}
 }
 \value{
 One of \code{"month"}, \code{"quarter"}, \code{"half"}, \code{"year"}, or
@@ -17,7 +20,12 @@ One of \code{"month"}, \code{"quarter"}, \code{"half"}, \code{"year"}, or
 Internal helper that maps a period variable name (e.g. \code{"uy_m"}, \code{"cy_q"})
 to the corresponding type string accepted by \code{\link[=.format_period]{.format_period()}}.
 
-Returns \code{NA_character_} for unrecognised variable names, which callers
-can use to fall back to \code{as.character()} formatting.
+Falls back to a \code{grain} hint (M/Q/H/Y) when the variable name is not
+one of the package-standard forms. This keeps plot formatting robust
+to user-supplied raw column names like \code{"uym"}, \code{"elap_m"}, or
+\code{"underwriting_month"}.
+
+Returns \code{NA_character_} when neither path resolves a type. Callers
+can use that to fall back to \code{as.character()} formatting.
 }
 \keyword{internal}

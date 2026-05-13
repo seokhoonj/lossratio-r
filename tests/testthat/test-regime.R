@@ -14,9 +14,28 @@ test_that("Regime has expected list elements", {
   r <- detect_regime(sub, window = 12, method = "e_divisive")
   for (nm in c("method", "target", "window", "cohort", "dev",
                "groups", "labels", "changes", "n_regimes",
-               "trajectory", "pca")) {
+               "trajectory", "pca", "treatment")) {
     expect_true(nm %in% names(r), info = paste("missing", nm))
   }
+  expect_equal(r$treatment, "latest_only")
+})
+
+test_that("detect_regime accepts treatment = 'segment_wise'", {
+  r <- detect_regime(sub, window = 12, method = "e_divisive",
+                     treatment = "segment_wise")
+  expect_equal(r$treatment, "segment_wise")
+})
+
+test_that("regime_at carries treatment slot", {
+  r1 <- regime_at(change = "2024-04-01")
+  expect_equal(r1$treatment, "latest_only")
+  r2 <- regime_at(change = c("2023-01-01", "2024-04-01"),
+                  treatment = "segment_wise")
+  expect_equal(r2$treatment, "segment_wise")
+})
+
+test_that("regime_at rejects unknown treatment", {
+  expect_error(regime_at(change = "2024-04-01", treatment = "invalid"))
 })
 
 test_that("$labels has cohort and regime columns", {
@@ -122,24 +141,24 @@ test_that("multi-group print / summary don't error", {
   expect_no_error(capture.output(print(summary(r))))
 })
 
-test_that(".resolve_regime_date handles multi-group Regime (scalar path)", {
+test_that(".resolve_regime_change_date handles multi-group Regime (scalar path)", {
   r <- detect_regime(tri_all, by = "coverage", window = 12, method = "e_divisive")
   if (nrow(r$changes)) {
-    bd <- lossratio:::.resolve_regime_date(r)
-    expect_true(inherits(bd, "Date"))
-    expect_equal(bd, max(r$changes$change))
+    cd <- lossratio:::.resolve_regime_change_date(r)
+    expect_true(inherits(cd, "Date"))
+    expect_equal(cd, max(r$changes$change))
   } else {
-    expect_null(lossratio:::.resolve_regime_date(r))
+    expect_null(lossratio:::.resolve_regime_change_date(r))
   }
 })
 
-test_that(".resolve_regime_date with `by` returns per-group data.table", {
+test_that(".resolve_regime_change_date with `by` returns per-group data.table", {
   r <- detect_regime(tri_all, by = "coverage", window = 12, method = "e_divisive")
   if (nrow(r$changes)) {
-    bd <- lossratio:::.resolve_regime_date(r, by = "coverage")
-    expect_true(data.table::is.data.table(bd))
-    expect_true(all(c("coverage", "break_date") %in% names(bd)))
-    expect_lte(nrow(bd), length(unique(r$changes$coverage)))
+    cd <- lossratio:::.resolve_regime_change_date(r, by = "coverage")
+    expect_true(data.table::is.data.table(cd))
+    expect_true(all(c("coverage", "change_date") %in% names(cd)))
+    expect_lte(nrow(cd), length(unique(r$changes$coverage)))
   }
 })
 
@@ -227,7 +246,7 @@ test_that("multi-group Regime flows through fit_lr -> dispatcher -> worker", {
   expect_s3_class(fit, "LRFit")
   expect_true(nrow(fit$full) > 0L)
   # loss_regime preserves the original Regime object (multi-group
-  # dispatch happens internally via .resolve_regime_date(by = grp))
+  # dispatch happens internally via .resolve_regime_change_date(by = grp))
   expect_s3_class(fit$loss_regime, "Regime")
   expect_identical(fit$loss_regime$changes, r$changes)
 })

@@ -631,9 +631,13 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
                           levels = link_levels)]
 
   # 2) format period labels for y axis ----------------------------------
-  coh_type <- .get_period_type(coh)
-  dt[, .y := .format_period(.SD[["cohort"]], type = coh_type, abb = TRUE),
-     .SDcols = "cohort"]
+  coh_type <- .get_period_type(coh, grain = attr(x, "grain"))
+  if (!is.na(coh_type)) {
+    dt[, .y := .format_period(.SD[["cohort"]], type = coh_type, abb = TRUE),
+       .SDcols = "cohort"]
+  } else {
+    dt[, .y := as.character(.SD[["cohort"]]), .SDcols = "cohort"]
+  }
 
   # 3) build cell labels and caption ------------------------------------
   unit_txt <- .get_amount_unit(amount_divisor)
@@ -759,7 +763,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   p <- p + ggplot2::labs(
     title   = title_txt,
     x       = "Age-to-Age",
-    y       = .cohort_label(coh),
+    y       = .cohort_label(coh, grain = attr(x, "grain")),
     caption = caption_txt
   )
 
@@ -799,9 +803,13 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
                           levels = link_levels)]
 
   # 2) format period labels
-  coh_type <- .get_period_type(coh)
-  dt[, .y := .format_period(.SD[["cohort"]], type = coh_type, abb = TRUE),
-     .SDcols = "cohort"]
+  coh_type <- .get_period_type(coh, grain = attr(x, "grain"))
+  if (!is.na(coh_type)) {
+    dt[, .y := .format_period(.SD[["cohort"]], type = coh_type, abb = TRUE),
+       .SDcols = "cohort"]
+  } else {
+    dt[, .y := as.character(.SD[["cohort"]]), .SDcols = "cohort"]
+  }
 
   # 3) build cell labels
   if (label_style == "value") {
@@ -856,7 +864,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   p <- p + ggplot2::labs(
     title   = "Incremental Loss Intensity (g)",
     x       = "Development Link",
-    y       = .cohort_label(coh),
+    y       = .cohort_label(coh, grain = attr(x, "grain")),
     caption = caption_txt
   )
 

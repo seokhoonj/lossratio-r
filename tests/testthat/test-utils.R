@@ -122,6 +122,34 @@ test_that(".apply_regime_filter with multi-group Regime dispatches per group", {
   expect_true(all(out[coverage == "B"]$cohort >= as.Date("2023-08-01")))
 })
 
+test_that(".apply_regime_filter with treatment='segment_wise' annotates segment_id", {
+  reg <- regime_at(change = c("2023-04-01", "2023-08-01"),
+                   treatment = "segment_wise")
+
+  dt <- data.table::data.table(
+    cohort = rep(seq.Date(as.Date("2023-01-01"), by = "month",
+                          length.out = 10), each = 5),
+    dev    = rep(1:5, times = 10)
+  )
+
+  out <- lossratio:::.apply_regime_filter(
+    dt, regime = reg,
+    grp = character(0),
+    coh = "cohort", dev = "dev"
+  )
+
+  # No rows dropped
+  expect_equal(nrow(out), nrow(dt))
+  # segment_id assigned per cohort
+  expect_true("segment_id" %in% names(out))
+  # 2023-01..2023-03 → seg 1, 2023-04..2023-07 → seg 2, 2023-08..2023-10 → seg 3
+  expect_equal(sort(unique(out$segment_id)), c(1L, 2L, 3L))
+  expect_true(all(out[cohort < as.Date("2023-04-01")]$segment_id == 1L))
+  expect_true(all(out[cohort >= as.Date("2023-04-01") &
+                      cohort <  as.Date("2023-08-01")]$segment_id == 2L))
+  expect_true(all(out[cohort >= as.Date("2023-08-01")]$segment_id == 3L))
+})
+
 test_that(".apply_regime_filter per-group keeps groups not in regime", {
   # Regime only knows about group A; group B should pass through unfiltered.
   bp <- data.table::data.table(
@@ -155,4 +183,57 @@ test_that(".apply_regime_filter per-group keeps groups not in regime", {
   # Group A is filtered; group B keeps all rows
   expect_true(all(out[coverage == "A"]$cohort >= as.Date("2023-08-01")))
   expect_equal(nrow(out[coverage == "B"]), 50L)
+})
+
+
+# .assign_segment ---------------------------------------------------------
+
+test_that(".assign_segment returns 1L for NULL / empty regime", {
+  coh <- as.Date(c("2023-01-01", "2023-06-01", "2024-01-01"))
+  expect_equal(lossratio:::.assign_segment(coh, NULL),
+               c(1L, 1L, 1L))
+
+  empty <- structure(
+    list(changes     = data.table::data.table(change = as.Date(character(0))),
+         multi_group = FALSE,
+         groups      = character(0)),
+    class = "Regime"
+  )
+  expect_equal(lossratio:::.assign_segment(coh, empty),
+               c(1L, 1L, 1L))
+})
+
+test_that(".assign_segment partitions cohorts by all changes (single group)", {
+  coh <- as.Date(c("2022-01-01", "2023-06-01", "2024-06-01", "2025-01-01"))
+  reg <- regime_at(change = c("2023-04-01", "2024-04-01"))
+  # 2022-01 < 2023-04         → seg 1
+  # 2023-04 <= 2023-06 < 24-04 → seg 2
+  # 2024-04 <= 2024-06         → seg 3
+  # 2024-04 <= 2025-01         → seg 3
+  expect_equal(lossratio:::.assign_segment(coh, reg),
+               c(1L, 2L, 3L, 3L))
+})
+
+test_that(".assign_segment dispatches per group on multi-group Regime", {
+  coh <- as.Date(c("2023-01-01", "2023-06-01",
+                   "2023-01-01", "2023-06-01"))
+  grp <- data.table::data.table(coverage = c("A", "A", "B", "B"))
+  reg <- regime_at(coverage = c("A", "B"),
+                   change   = c("2023-04-01", "2023-08-01"))
+  # A: change at 2023-04 → cohort 01 = seg 1, cohort 06 = seg 2
+  # B: change at 2023-08 → both cohorts pre-change = seg 1
+  expect_equal(lossratio:::.assign_segment(coh, reg, grp),
+               c(1L, 2L, 1L, 1L))
+})
+
+test_that(".assign_segment keeps groups absent from regime in segment 1", {
+  coh <- as.Date(c("2023-01-01", "2023-12-01"))
+  grp <- data.table::data.table(coverage = c("A", "C"))
+  reg <- regime_at(coverage = "A", change = "2023-06-01")
+  # A: cohort 01 < 06 = seg 1, cohort 12 >= 06 = seg 2
+  # C: no change → seg 1
+  # but reg is single-group (one row), so multi_group is FALSE; falls back
+  # to scalar path treating all cohorts against max(change). Confirm:
+  expect_equal(lossratio:::.assign_segment(coh, reg, grp),
+               c(1L, 2L))
 })

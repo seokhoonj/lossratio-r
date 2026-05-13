@@ -386,17 +386,20 @@ plot_triangle.TriangleValidation <- function(x,
   grid <- bg
   grid[, .status := factor(.status, levels = c("observed", "invalid"))]
 
-  # Cohort axis (y): newest at top, abbreviated `%y.%m` style.
-  coh_type <- .get_period_type(coh)
+  # Common: grain inferred from cohort dates for robust formatting
+  # (no `grain` attribute on TriangleValidation -- the input had no
+  # standardised attributes yet).
+  coh_levels <- sort(unique(grid$.coh), decreasing = TRUE)
+  grain      <- .infer_grain(coh_levels)
+
+  # Cohort axis (y): newest at top, abbreviated format derived from grain
+  # so non-standard column names (e.g. `"uym"`) still format correctly.
+  coh_type <- .get_period_type(coh, grain = grain)
   fmt_coh  <- function(d) {
     if (!is.na(coh_type)) .format_period(d, type = coh_type, abb = TRUE)
     else as.character(d)
   }
-  coh_levels <- sort(unique(grid$.coh), decreasing = TRUE)
   grid[, .y := factor(fmt_coh(.coh), levels = fmt_coh(coh_levels))]
-
-  # Common: dev view also needs grain to convert (coh, cal) -> dev int
-  grain <- .infer_grain(coh_levels)
 
   if (view == "dev") {
     if (axis_col == cal_var) {
@@ -430,7 +433,7 @@ plot_triangle.TriangleValidation <- function(x,
       ggplot2::labs(
         title   = title,
         x       = "dev (1 = first observed period; <=0 = invalid)",
-        y       = .cohort_label(coh),
+        y       = .cohort_label(coh, grain = grain),
         caption = "Blue = observed (dev >= 1), red = invalid (dev <= 0); blanks = gap"
       )
   } else {
@@ -505,7 +508,8 @@ plot_triangle.TriangleValidation <- function(x,
       ggplot2::scale_y_discrete(expand = c(0, 0)) +
       ggplot2::labs(
         title   = title,
-        x       = .calendar_label(cal_var), y = .cohort_label(coh),
+        x       = .calendar_label(cal_var, grain = grain),
+        y       = .cohort_label(coh, grain = grain),
         caption = "Blue = observed (cal >= coh), red = invalid (cal < coh); blanks = gap"
       )
   }

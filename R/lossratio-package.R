@@ -22,6 +22,7 @@
 #'   get_quarter_start get_year_start has_cols longer prepend_class
 #'   set_instead_font summarise_group_stats update_class read_rds
 #' @importFrom rlang enquo
-#' @importFrom stats reformulate
+#' @importFrom stats median reformulate setNames sigma window
+#' @importFrom utils head tail
 ## usethis namespace: end
 NULL

@@ -67,7 +67,9 @@
 
   dt <- .ensure_dt(object)
 
-  grp_link <- c(grp, "ata_from", "ata_to", "ata_link")
+  has_seg  <- "segment_id" %in% names(dt)
+  grp_link <- c(grp, "ata_from", "ata_to", "ata_link",
+                if (has_seg) "segment_id")
 
   # 1) descriptive statistics
   ds <- dt[, {
@@ -94,7 +96,8 @@
   link_factors <- .lm_ed(object, alpha = alpha, ...)
 
   # 3) join WLS results onto descriptive statistics
-  join_cols <- c(grp, "ata_from", "ata_to", "ata_link")
+  join_cols <- c(grp, "ata_from", "ata_to", "ata_link",
+                 if (has_seg) "segment_id")
   ds <- link_factors[
     , .SD,
     .SDcols = c(join_cols, "g", "g_se", "rse", "sigma")
@@ -102,7 +105,8 @@
 
   # 4) reorder columns
   col_order <- c(
-    join_cols,
+    c(grp, "ata_from", "ata_to", "ata_link"),
+    if (has_seg) "segment_id",
     "mean", "median", "wt", "cv",
     "g", "g_se", "rse", "sigma",
     "n_obs", "n_valid", "n_inf", "n_nan", "valid_ratio"
@@ -199,7 +203,7 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'   `detect_regime(tri, target = "lr")` call), or a function
 #'   `function(tri) -> Regime`. Resolved internally via
 #'   [.resolve_regime()]. When supplied, cohorts with
-#'   `cohort < break_date` are excluded from estimation. Default is `NULL`.
+#'   `cohort < change_date` are excluded from estimation. Default is `NULL`.
 #' @param ... Additional arguments passed to [summary.Link()].
 #'
 #' @return An object of class `"EDFit"` (a named list) with components:
@@ -320,11 +324,15 @@ fit_ed <- function(x,
   )
 
   # 4c) join ED factors (g_selected, g_sigma2, g_var)
-  ed_cols <- c(grp, "ata_from", "g_selected", "sigma2", "g_var")
+  has_seg <- "segment_id" %in% names(out$selected) &&
+             "segment_id" %in% names(full)
+  ed_cols <- c(grp, "ata_from",
+               if (has_seg) "segment_id",
+               "g_selected", "sigma2", "g_var")
   ed_sel  <- out$selected[, .SD, .SDcols = ed_cols]
   data.table::setnames(ed_sel, "ata_from", "dev")
   data.table::setnames(ed_sel, "sigma2", "g_sigma2")
-  full <- ed_sel[full, on = c(grp, "dev")]
+  full <- ed_sel[full, on = c(grp, "dev", if (has_seg) "segment_id")]
 
   # 4d) last_obs per cohort
   full[, last_obs := {
@@ -570,6 +578,10 @@ print.EDFit <- function(x, ...) {
   dt[, reg_w := 1 / exposure_from^delta]
   dt[, ata_link := sprintf("%s-%s", ata_from, ata_to)]
 
+  has_seg <- "segment_id" %in% names(dt)
+  by_cols <- c(grp, "ata_from", "ata_to", "ata_link",
+               if (has_seg) "segment_id")
+
   # 3) fit one model per link
   res <- dt[, {
     if (.N == 1L) {
@@ -607,7 +619,7 @@ print.EDFit <- function(x, ...) {
         )
       }
     }
-  }, keyby = c(grp, "ata_from", "ata_to", "ata_link")]
+  }, keyby = by_cols]
 
   # 4) compute rse = g_se / |g|
   data.table::set(
@@ -660,12 +672,16 @@ print.EDFit <- function(x, ...) {
                         is.finite(target_delta) &
                         exposure_from > 0]
 
+  has_seg <- "segment_id" %in% names(ed_valid) &&
+             "segment_id" %in% names(sel)
+  by_cols <- c(grp, "ata_from", if (has_seg) "segment_id")
+
   link_weights <- ed_valid[,
                        .(denom = sum(exposure_from^(2 - alpha), na.rm = TRUE)),
-                       by = c(grp, "ata_from")
+                       by = by_cols
   ]
 
-  sel <- link_weights[sel, on = c(grp, "ata_from")]
+  sel <- link_weights[sel, on = by_cols]
 
   sel[, g_var := data.table::fifelse(
     is.finite(sigma2) & is.finite(denom) & denom > 0,

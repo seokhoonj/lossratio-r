@@ -47,7 +47,7 @@ recent \code{recent} periods are used for estimation. Default is \code{NULL}.}
 \code{detect_regime(tri, target = "lr")} call), or a function
 \verb{function(tri) -> Regime}. Resolved internally via
 \code{\link[=.resolve_regime]{.resolve_regime()}}. When supplied, cohorts with
-\code{cohort < break_date} are excluded from estimation. Default is \code{NULL}.}
+\code{cohort < change_date} are excluded from estimation. Default is \code{NULL}.}
 
 \item{...}{Additional arguments passed to \code{\link[=summary.Link]{summary.Link()}}.}
 }

@@ -9,7 +9,8 @@
   recent = NULL,
   regime = NULL,
   holdout = NULL,
-  m_k = NULL
+  m_k = NULL,
+  m_k_dt = NULL
 )
 }
 \arguments{
@@ -19,7 +20,7 @@
 \code{NULL}.}
 
 \item{regime}{Optional cohort cutoff. Accepts the same input
-forms handled by \code{\link[=.resolve_regime_date]{.resolve_regime_date()}} (\code{NULL}, \code{Date}, character,
+forms handled by \code{\link[=.resolve_regime_change_date]{.resolve_regime_change_date()}} (\code{NULL}, \code{Date}, character,
 vector, or \code{Regime}).}
 
 \item{holdout}{Optional positive integer. When supplied, the last

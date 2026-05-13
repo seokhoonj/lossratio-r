@@ -366,6 +366,13 @@ summary.Link <- function(object,
   dt[, reg_w := w / target_from^delta]
   dt[, ata_link := sprintf("%s-%s", ata_from, ata_to)]
 
+  # segment_wise treatment annotates rows with segment_id upstream; when
+  # present, fit one model per (link, segment) so each regime gets its
+  # own factor estimate.
+  has_seg <- "segment_id" %in% names(dt)
+  by_cols <- c(grp, "ata_from", "ata_to", "ata_link",
+               if (has_seg) "segment_id")
+
   # 3) fit one model per link -------------------------------------------
   res <- dt[, {
     if (.N == 1L) {
@@ -403,7 +410,7 @@ summary.Link <- function(object,
         )
       }
     }
-  }, keyby = c(grp, "ata_from", "ata_to", "ata_link")]
+  }, keyby = by_cols]
 
   # 4) compute rse = f_se / f -------------------------------------------
   data.table::set(

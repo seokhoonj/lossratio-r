@@ -4,7 +4,7 @@
 \alias{regime_at}
 \title{Construct a Regime object from manually specified regime changes}
 \usage{
-regime_at(...)
+regime_at(..., treatment = c("latest_only", "segment_wise"))
 }
 \arguments{
 \item{...}{Named vectors of equal length. Must include \code{change}
@@ -12,6 +12,13 @@ regime_at(...)
 regime). Any other named arguments are interpreted as group column
 values (e.g. \code{coverage}, \code{channel}). With no group columns the
 result is a pooled (single-row) Regime.}
+
+\item{treatment}{How downstream fits should apply this Regime when
+\verb{$changes} contains multiple change points. \code{"latest_only"} (default)
+collapses to the most recent change and drops all pre-latest cohorts
+(single pooled factor). \code{"segment_wise"} preserves all changes and
+estimates one factor per segment (each cohort projected with its own
+segment's factor). See \code{\link[=detect_regime]{detect_regime()}} for full semantics.}
 }
 \value{
 An object of class \code{"Regime"} with the minimal schema needed

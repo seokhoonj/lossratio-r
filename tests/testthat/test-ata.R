@@ -179,3 +179,35 @@ test_that("fit_ata with Regime input preserves the Regime object", {
   expect_s3_class(fit_reg$regime, "Regime")
   expect_identical(fit_reg$regime$changes, reg$changes)
 })
+
+test_that("fit_ata with treatment='segment_wise' yields per-segment factors", {
+  data(experience)
+  exp <- experience[coverage == "SUR"]
+  tri <- build_triangle(exp, groups = "coverage",
+                        cohort = "uy_m", calendar = "cy_m",
+                        loss = "loss_incr", premium = "premium_incr")
+  reg_seg <- regime_at(change = "2024-04-01", treatment = "segment_wise")
+  reg_lat <- regime_at(change = "2024-04-01", treatment = "latest_only")
+
+  fit_seg <- fit_ata(tri, target = "loss", regime = reg_seg)
+  fit_lat <- fit_ata(tri, target = "loss", regime = reg_lat)
+
+  # segment_id is present in segment_wise, absent in latest_only
+  expect_true("segment_id" %in% names(fit_seg$selected))
+  expect_false("segment_id" %in% names(fit_lat$selected))
+
+  # Two segments expected
+  expect_equal(sort(unique(fit_seg$selected$segment_id)), c(1L, 2L))
+
+  # Post-change segment factors equal the latest_only factors
+  # (same data subset, same WLS fit)
+  seg2 <- fit_seg$selected[segment_id == 2L,
+                           .(ata_from, ata_to, f_selected)]
+  data.table::setkey(seg2, ata_from, ata_to)
+  lat <- fit_lat$selected[, .(ata_from, ata_to, f_selected)]
+  data.table::setkey(lat, ata_from, ata_to)
+  shared <- lat[seg2, nomatch = NULL,
+                .(ata_from, ata_to, f_lat = f_selected, f_seg = i.f_selected)]
+  expect_true(nrow(shared) > 0L)
+  expect_equal(shared$f_lat, shared$f_seg)
+})

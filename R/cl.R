@@ -31,7 +31,7 @@
 #'   or `regime_at()`), the string `"auto"` (internal
 #'   `detect_regime(tri, target = "lr")` call), or a function
 #'   `function(tri) -> Regime` for deferred custom-config detection. When
-#'   supplied, cohorts strictly before the resolved break date are excluded
+#'   supplied, cohorts strictly before the resolved change date are excluded
 #'   from factor estimation.
 #' @param maturity Maturity input forwarded to [fit_ata()]. Accepts four
 #'   forms:
@@ -187,10 +187,14 @@ fit_cl <- function(x,
   )
 
   # 7) join factor columns onto full grid -------------------------------
-  factor_cols <- c(grp, "ata_from", "f_selected", "sigma2", "f_var")
+  has_seg <- "segment_id" %in% names(ata_fit$selected) &&
+             "segment_id" %in% names(full)
+  factor_cols <- c(grp, "ata_from",
+                   if (has_seg) "segment_id",
+                   "f_selected", "sigma2", "f_var")
   sel <- ata_fit$selected[, .SD, .SDcols = factor_cols]
   data.table::setnames(sel, "ata_from", "dev")
-  full <- sel[full, on = c(grp, "dev")]
+  full <- sel[full, on = c(grp, "dev", if (has_seg) "segment_id")]
 
   # 8) join RP scale for process variance when weight is used ---------
   if (use_external_weight) {
@@ -443,6 +447,13 @@ print.CLFit <- function(x, ...) {
 
   full[, is_observed := is.finite(target_obs)]
 
+  # When ata_fit was fitted with segment_wise treatment, attach
+  # segment_id to each grid row so factor join keys by segment.
+  if ("segment_id" %in% names(ata_fit$selected)) {
+    grp_dt <- if (length(grp)) full[, grp, with = FALSE] else NULL
+    full[, segment_id := .assign_segment(cohort, ata_fit$regime, grp_dt)]
+  }
+
   full
 }
 
@@ -521,12 +532,16 @@ print.CLFit <- function(x, ...) {
 
   link_long <- link_long[is.finite(.wt) & is.finite(target_to) & target_from > 0]
 
+  has_seg <- "segment_id" %in% names(link_long) &&
+             "segment_id" %in% names(sel)
+  by_cols <- c(grp, "ata_from", if (has_seg) "segment_id")
+
   link_weights <- link_long[,
                        .(denom = sum(.wt * target_from^alpha, na.rm = TRUE)),
-                       by = c(grp, "ata_from")
+                       by = by_cols
   ]
 
-  sel <- link_weights[sel, on = c(grp, "ata_from")]
+  sel <- link_weights[sel, on = by_cols]
 
   sel[, f_var := data.table::fifelse(
     is.finite(sigma2) & is.finite(denom) & denom > 0,

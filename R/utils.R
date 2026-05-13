@@ -32,8 +32,8 @@
 #' back to the bare \code{prefix} for unrecognised inputs.
 #'
 #' @keywords internal
-.period_axis_label <- function(var, prefix = "cohort") {
-  type <- .get_period_type(var)
+.period_axis_label <- function(var, prefix = "cohort", grain = NULL) {
+  type <- .get_period_type(var, grain = grain)
   qualifier <- switch(type,
     month   = "month",
     quarter = "quarter",
@@ -45,9 +45,9 @@
 }
 
 #' @keywords internal
-.cohort_label   <- function(var) .period_axis_label(var, "cohort")
+.cohort_label   <- function(var, grain = NULL) .period_axis_label(var, "cohort", grain)
 #' @keywords internal
-.calendar_label <- function(var) .period_axis_label(var, "calendar")
+.calendar_label <- function(var, grain = NULL) .period_axis_label(var, "calendar", grain)
 
 
 # Amount unit -------------------------------------------------------------
@@ -86,22 +86,39 @@
 #' Internal helper that maps a period variable name (e.g. `"uy_m"`, `"cy_q"`)
 #' to the corresponding type string accepted by [.format_period()].
 #'
-#' Returns `NA_character_` for unrecognised variable names, which callers
-#' can use to fall back to `as.character()` formatting.
+#' Falls back to a `grain` hint (M/Q/H/Y) when the variable name is not
+#' one of the package-standard forms. This keeps plot formatting robust
+#' to user-supplied raw column names like `"uym"`, `"elap_m"`, or
+#' `"underwriting_month"`.
+#'
+#' Returns `NA_character_` when neither path resolves a type. Callers
+#' can use that to fall back to `as.character()` formatting.
 #'
 #' @param var A single character string naming a period variable.
+#' @param grain Optional grain code from `attr(tri, "grain")` -- one of
+#'   `"M"`, `"Q"`, `"H"`, `"Y"`. Used when `var` is not recognised.
 #'
 #' @return One of `"month"`, `"quarter"`, `"half"`, `"year"`, or
 #'   `NA_character_`.
 #'
 #' @keywords internal
-.get_period_type <- function(var) {
-  switch(
+.get_period_type <- function(var, grain = NULL) {
+  type <- switch(
     var,
     uy_m = , cy_m = "month",
     uy_q = , cy_q = "quarter",
     uy_h = , cy_h = "half",
     uy = , cy = "year",
+    NA_character_
+  )
+  if (!is.na(type)) return(type)
+  if (is.null(grain) || is.na(grain)) return(NA_character_)
+  switch(
+    grain,
+    M = "month",
+    Q = "quarter",
+    H = "half",
+    Y = "year",
     NA_character_
   )
 }
@@ -307,12 +324,14 @@
 #' @param x A vector to format.
 #' @param var A single character string naming the variable (e.g. `"uy_m"`,
 #'   `"dev_m"`).
+#' @param grain Optional grain code (`"M"`/`"Q"`/`"H"`/`"Y"`). Used when
+#'   `var` is not a package-standard period name (see [.get_period_type()]).
 #'
 #' @return A character vector of formatted labels.
 #'
 #' @keywords internal
-.format_period_safe <- function(x, var) {
-  type <- .get_period_type(var)
+.format_period_safe <- function(x, var, grain = NULL) {
+  type <- .get_period_type(var, grain = grain)
   if (!is.na(type)) {
     .format_period(as.Date(x), type = type, abb = TRUE)
   } else {
@@ -557,30 +576,33 @@ get_recent_weights <- function(weights, recent) {
 #'
 #' @param regime See [.apply_regime_filter()].
 #' @param by Optional character vector of group columns the caller wants
-#'   the break dispatched on. When `NULL` (default) or empty, the
-#'   function always returns a scalar (the maximum break date),
+#'   the change date dispatched on. When `NULL` (default) or empty, the
+#'   function always returns a scalar (the maximum change date),
 #'   preserving the historical single-value contract. When non-empty and
 #'   `regime` is a multi-group `Regime` whose `$groups` intersect
 #'   `by`, returns a `data.table` with `[intersect(by, regime$groups)...,
-#'   break_date]` (one row per group combo, holding `max(change)`).
+#'   change_date]` (one row per group combo, holding `max(change)`).
 #'   Otherwise falls back to scalar.
 #'
 #' @return One of:
-#'   * `NULL` when no break is specified.
-#'   * A single Date (the latest break) — the scalar path.
-#'   * A `data.table` `[join_cols..., break_date]` — the per-group path.
+#'   * `NULL` when no change date is specified.
+#'   * A single Date (the latest change) — the scalar path.
+#'   * A `data.table` `[join_cols..., change_date]` — the per-group path.
 #'
 #' @keywords internal
-.resolve_regime_date <- function(regime, by = NULL) {
+.resolve_regime_change_date <- function(regime, by = NULL) {
   if (is.null(regime)) return(NULL)
 
   if (inherits(regime, "Regime")) {
     bp <- regime$changes
 
-    # Per-group path: multi-group Regime + caller-supplied `by` that
-    # intersects the Regime's own group columns.
+    # Per-group path: dispatched whenever the Regime carries group
+    # columns (`regime$groups`) that intersect the caller's `by`. We
+    # honour this even when `regime$multi_group = FALSE` (e.g. the
+    # user wrote `regime_at(coverage = "SUR", ...)` with a single
+    # unique value) -- the explicit group column reflects intent to
+    # scope the regime to just that group, not apply it globally.
     if (!is.null(by) && length(by) > 0L &&
-        isTRUE(regime$multi_group) &&
         data.table::is.data.table(bp) && nrow(bp) > 0L &&
         "change" %in% names(bp)) {
 
@@ -589,9 +611,9 @@ get_recent_weights <- function(weights, recent) {
       join_cols <- intersect(by, rgrp)
 
       if (length(join_cols) > 0L && all(join_cols %in% names(bp))) {
-        bd <- bp[, .(break_date = max(.SD[["change"]])),
+        cd <- bp[, .(change_date = max(.SD[["change"]])),
                  by = join_cols, .SDcols = "change"]
-        return(bd)
+        return(cd)
       }
     }
 
@@ -612,19 +634,100 @@ get_recent_weights <- function(weights, recent) {
 }
 
 
+#' Assign each cohort to a regime segment
+#'
+#' @description
+#' Maps a cohort vector to integer segment ids (`1, 2, ..., K+1`) given
+#' a `"Regime"` object whose `$changes` carries `K` change points. A
+#' cohort earlier than the first change is segment 1; between the k-th
+#' and (k+1)-th change is segment k+1; on or after the K-th change is
+#' segment K+1.
+#'
+#' Returns `rep(1L, length(coh_vals))` when `regime` is `NULL` or carries
+#' no changes — every cohort is in the single (sole) segment.
+#'
+#' Treatment-agnostic: this helper preserves all change points regardless
+#' of `regime$treatment`. Callers decide whether to use the full
+#' partition (`"segment_wise"`) or collapse to the latest change
+#' (`"latest_only"`).
+#'
+#' @param coh_vals Date vector of cohort values.
+#' @param regime A `"Regime"` object or `NULL`.
+#' @param grp_dt Optional `data.table` (`nrow == length(coh_vals)`)
+#'   carrying the group columns named in `regime$groups`. Required when
+#'   `regime` is multi-group; ignored otherwise. Each row's segment is
+#'   computed against the change points for that row's group.
+#'
+#' @return Integer vector of segment ids, same length as `coh_vals`.
+#'
+#' @keywords internal
+.assign_segment <- function(coh_vals, regime, grp_dt = NULL) {
+  n <- length(coh_vals)
+  if (n == 0L) return(integer(0))
+
+  if (is.null(regime) || !inherits(regime, "Regime"))
+    return(rep(1L, n))
+
+  changes <- regime$changes
+  if (!data.table::is.data.table(changes) || !nrow(changes) ||
+      !"change" %in% names(changes))
+    return(rep(1L, n))
+
+  coh_vals <- as.Date(coh_vals)
+  is_multi <- isTRUE(regime$multi_group) && length(regime$groups) > 0L
+
+  if (!is_multi) {
+    cd <- sort(as.Date(changes[["change"]]))
+    return(findInterval(coh_vals, cd) + 1L)
+  }
+
+  rgrp <- regime$groups
+  if (is.null(grp_dt))
+    stop(".assign_segment(): multi-group Regime requires `grp_dt`.",
+         call. = FALSE)
+  if (!data.table::is.data.table(grp_dt))
+    grp_dt <- data.table::as.data.table(grp_dt)
+
+  missing_grp <- setdiff(rgrp, names(grp_dt))
+  if (length(missing_grp))
+    stop(sprintf(".assign_segment(): `grp_dt` missing group cols: %s",
+                 paste(missing_grp, collapse = ", ")), call. = FALSE)
+  if (nrow(grp_dt) != n)
+    stop(sprintf(".assign_segment(): nrow(grp_dt) = %d, expected %d.",
+                 nrow(grp_dt), n), call. = FALSE)
+
+  work <- data.table::data.table(.idx = seq_len(n), .coh = coh_vals)
+  for (g in rgrp) work[[g]] <- grp_dt[[g]]
+
+  out <- integer(n)
+  grp_keys <- unique(work[, rgrp, with = FALSE])
+  for (i in seq_len(nrow(grp_keys))) {
+    key  <- grp_keys[i]
+    ch_g <- changes[key, on = rgrp, nomatch = NULL][["change"]]
+    sub  <- work[key, on = rgrp]
+    seg  <- if (length(ch_g))
+              findInterval(sub$.coh, sort(as.Date(ch_g))) + 1L
+            else
+              rep(1L, nrow(sub))
+    out[sub$.idx] <- seg
+  }
+  out
+}
+
+
 #' Apply regime-change (cohort) filter to a triangle-shaped data.table
 #'
 #' @description
-#' Drops rows where `coh < break_date`. Optionally restrict the filter
+#' Drops rows where `coh < change_date`. Optionally restrict the filter
 #' to rows with `dev < dev_split` (the ED region of an SA fit); rows
 #' with `dev >= dev_split` (CL region) are kept regardless of cohort.
 #'
-#' Supports both **scalar** dispatch (single break date applied to every
-#' row) and **per-group** dispatch (different break date per group,
+#' Supports both **scalar** dispatch (single change date applied to every
+#' row) and **per-group** dispatch (different change date per group,
 #' broadcast via left-join). The mode is auto-selected from
 #' `regime` and `grp`: a multi-group `Regime` whose `$groups`
 #' intersect `grp` triggers the per-group path. Groups in `dt` that have
-#' no matching break date (NA after the left-join) are kept unfiltered.
+#' no matching change date (NA after the left-join) are kept unfiltered.
 #'
 #' @param dt A data.table.
 #' @param regime The cohort cutoff. Accepts:
@@ -654,9 +757,20 @@ get_recent_weights <- function(weights, recent) {
   if (!data.table::is.data.table(dt))
     stop("`dt` must be a data.table.", call. = FALSE)
 
-  bd <- .resolve_regime_date(regime, by = grp)
+  # treatment = "segment_wise": preserve all rows; annotate `segment_id`
+  # so downstream factor estimation can key by it. No cohort drop, no
+  # `dev_split` interaction (segment_wise + SA hybrid is deferred).
+  if (inherits(regime, "Regime") &&
+      identical(regime$treatment, "segment_wise")) {
+    out    <- data.table::copy(dt)
+    grp_dt <- if (length(grp)) out[, grp, with = FALSE] else NULL
+    out[["segment_id"]] <- .assign_segment(out[[coh]], regime, grp_dt)
+    return(out[])
+  }
 
-  if (is.null(bd)) {
+  cd <- .resolve_regime_change_date(regime, by = grp)
+
+  if (is.null(cd)) {
     return(data.table::copy(dt))
   }
 
@@ -682,41 +796,41 @@ get_recent_weights <- function(weights, recent) {
 
   out <- data.table::copy(dt)
 
-  if (data.table::is.data.table(bd)) {
-    # Per-group path: bd is `[join_cols..., break_date]`. Look up
-    # break_date row-aligned via a right outer join driven by `out`.
-    join_cols <- setdiff(names(bd), "break_date")
-    bd_vals <- bd[out, on = join_cols, x.break_date]
+  if (data.table::is.data.table(cd)) {
+    # Per-group path: cd is `[join_cols..., change_date]`. Look up
+    # change_date row-aligned via a right outer join driven by `out`.
+    join_cols <- setdiff(names(cd), "change_date")
+    cd_vals <- cd[out, on = join_cols, x.change_date]
 
     coh_vals <- out[[coh]]
     dev_vals <- out[[dev]]
-    matched  <- !is.na(bd_vals)
+    matched  <- !is.na(cd_vals)
 
     if (is.null(dev_split)) {
-      keep <- !matched | (coh_vals >= bd_vals)
+      keep <- !matched | (coh_vals >= cd_vals)
     } else if (dev_split_is_dt) {
       ds_join_cols <- setdiff(names(dev_split), "dev_split")
       ds_vals <- dev_split[out, on = ds_join_cols, x.dev_split]
       # Group with NA dev_split: no ED region declared → cohort cut
       # applies to all dev (full filter).
-      keep <- !matched | (coh_vals >= bd_vals) |
+      keep <- !matched | (coh_vals >= cd_vals) |
               (!is.na(ds_vals) & dev_vals >= ds_vals)
     } else {
-      keep <- !matched | (coh_vals >= bd_vals) | (dev_vals >= dev_split)
+      keep <- !matched | (coh_vals >= cd_vals) | (dev_vals >= dev_split)
     }
   } else {
-    # Scalar break path (backward-compat)
+    # Scalar change-date path (backward-compat)
     coh_vals <- out[[coh]]
     dev_vals <- out[[dev]]
     if (is.null(dev_split)) {
-      keep <- coh_vals >= bd
+      keep <- coh_vals >= cd
     } else if (dev_split_is_dt) {
       ds_join_cols <- setdiff(names(dev_split), "dev_split")
       ds_vals <- dev_split[out, on = ds_join_cols, x.dev_split]
-      keep <- (coh_vals >= bd) |
+      keep <- (coh_vals >= cd) |
               (!is.na(ds_vals) & dev_vals >= ds_vals)
     } else {
-      keep <- (coh_vals >= bd) | (dev_vals >= dev_split)
+      keep <- (coh_vals >= cd) | (dev_vals >= dev_split)
     }
   }
 

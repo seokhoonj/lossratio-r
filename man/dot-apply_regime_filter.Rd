@@ -43,15 +43,15 @@ regardless of cohort.}
 A filtered copy of \code{dt} (class preserved).
 }
 \description{
-Drops rows where \code{coh < break_date}. Optionally restrict the filter
+Drops rows where \code{coh < change_date}. Optionally restrict the filter
 to rows with \code{dev < dev_split} (the ED region of an SA fit); rows
 with \code{dev >= dev_split} (CL region) are kept regardless of cohort.
 
-Supports both \strong{scalar} dispatch (single break date applied to every
-row) and \strong{per-group} dispatch (different break date per group,
+Supports both \strong{scalar} dispatch (single change date applied to every
+row) and \strong{per-group} dispatch (different change date per group,
 broadcast via left-join). The mode is auto-selected from
 \code{regime} and \code{grp}: a multi-group \code{Regime} whose \verb{$groups}
 intersect \code{grp} triggers the per-group path. Groups in \code{dt} that have
-no matching break date (NA after the left-join) are kept unfiltered.
+no matching change date (NA after the left-join) are kept unfiltered.
 }
 \keyword{internal}

@@ -436,9 +436,14 @@ plot_triangle.LRFit <- function(x,
      .SDcols = "dev"]
 
   # 4) format period labels
-  coh_type <- .get_period_type(coh)
-  dt[, .y := .format_period(.SD[["cohort"]], type = coh_type, abb = TRUE),
-     .SDcols = "cohort"]
+  grain    <- attr(x$data, "grain")
+  coh_type <- .get_period_type(coh, grain = grain)
+  if (!is.na(coh_type)) {
+    dt[, .y := .format_period(.SD[["cohort"]], type = coh_type, abb = TRUE),
+       .SDcols = "cohort"]
+  } else {
+    dt[, .y := as.character(.SD[["cohort"]]), .SDcols = "cohort"]
+  }
 
   # 5) build cell labels
   fmt <- paste0("%.", digits, "f")
@@ -618,7 +623,7 @@ plot_triangle.LRFit <- function(x,
     title   = paste0(cum_word, " ", base_word, " Triangle",
                      " (method: ", x$method, ")"),
     x       = .pretty_var_label(dev),
-    y       = .cohort_label(coh),
+    y       = .cohort_label(coh, grain = grain),
     caption = caption_txt
   )
 

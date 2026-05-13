@@ -4,11 +4,11 @@
 \alias{.kneedle_elbow}
 \title{Kneedle elbow heuristic for a decreasing curve.}
 \usage{
-.kneedle_elbow(window, break_count)
+.kneedle_elbow(window, change_count)
 }
 \description{
 Implements the Kneedle algorithm (Satopaa et al., 2011) restricted
-to the \emph{decreasing convex} shape we expect for break_count vs window:
+to the \emph{decreasing convex} shape we expect for change_count vs window:
 normalise both axes to \verb{[0, 1]}, find the index with maximum
 distance from the diagonal \code{y = 1 - x}, return the corresponding \code{window}.
 }

@@ -417,10 +417,12 @@ plot.Calendar <- function(x,
     )
   }
 
-  # scales
+  # scales -- only use grain hint when the x axis is the calendar date,
+  # not when it is the integer `dev` column.
+  axis_grain <- if (x_by == "dev") NULL else attr(x, "grain")
   p <- p +
     ggplot2::scale_x_continuous(
-      labels = function(z) .format_period_safe(z, axis_label)
+      labels = function(z) .format_period_safe(z, axis_label, grain = axis_grain)
     ) +
     .resolve_y_scale(
       meta           = meta,
@@ -601,7 +603,10 @@ plot_triangle.Triangle <- function(x,
 
   dt <- .ensure_dt(x)
 
-  coh_type <- .get_period_type(coh)
+  grain    <- attr(x, "grain")
+  coh_type <- .get_period_type(coh, grain = grain)
+  # `dev` here is the raw integer dev column name (e.g. `"dev_m"`).
+  # No grain fallback -- dev values are integers, not Date.
   dev_type <- .get_period_type(dev)
 
   if (!is.na(coh_type)) {
@@ -717,7 +722,7 @@ plot_triangle.Triangle <- function(x,
   p <- p + ggplot2::labs(
     title   = title_txt,
     x       = .pretty_var_label(dev),
-    y       = .cohort_label(coh),
+    y       = .cohort_label(coh, grain = grain),
     caption = caption_txt
   )
 
@@ -866,7 +871,7 @@ plot.Total <- function(x,
 #' @param recent Optional positive integer (calendar-diagonal cut), or
 #'   `NULL`.
 #' @param regime Optional cohort cutoff. Accepts the same input
-#'   forms handled by [.resolve_regime_date()] (`NULL`, `Date`, character,
+#'   forms handled by [.resolve_regime_change_date()] (`NULL`, `Date`, character,
 #'   vector, or `Regime`).
 #' @param holdout Optional positive integer. When supplied, the last
 #'   `holdout` calendar diagonals are flagged `"holdout"`. The `recent`
@@ -893,7 +898,8 @@ plot.Total <- function(x,
                                 recent  = NULL,
                                 regime  = NULL,
                                 holdout = NULL,
-                                m_k     = NULL) {
+                                m_k     = NULL,
+                                m_k_dt  = NULL) {
 
   .assert_class(x, "Triangle")
 
@@ -922,21 +928,28 @@ plot.Total <- function(x,
     expanded <- data.table::CJ(cohort = cohorts, dev = devs)
   }
 
-  expanded[full, on = grp_coh_dev, is_observed := i.is_observed]
-  expanded[is.na(is_observed), is_observed := FALSE]
+  expanded[full, on = grp_coh_dev, .data_present := i.is_observed]
+  expanded[is.na(.data_present), .data_present := FALSE]
 
   # cohort rank (1 = earliest) and calendar index per group
   if (length(grp)) {
     expanded[, .coh_rank := data.table::frank(cohort, ties.method = "dense"),
              by = grp]
     expanded[, .cal_idx := .coh_rank + dev - 1L]
-    expanded[, .max_cal := max(.cal_idx[is_observed], na.rm = TRUE),
+    expanded[, .max_cal := max(.cal_idx[.data_present], na.rm = TRUE),
              by = grp]
   } else {
     expanded[, .coh_rank := data.table::frank(cohort, ties.method = "dense")]
     expanded[, .cal_idx := .coh_rank + dev - 1L]
-    expanded[, .max_cal := max(.cal_idx[is_observed], na.rm = TRUE)]
+    expanded[, .max_cal := max(.cal_idx[.data_present], na.rm = TRUE)]
   }
+
+  # `is_observed` reflects what a cell *would* be in the underlying
+  # triangle, not whether the input data.table actually carries that
+  # row. The latter (`.data_present`) may already be filtered (e.g. by
+  # regime cut when the input is `fit$data`); we want to surface those
+  # filtered-out cells as `unused` (gray), not `future` (white).
+  expanded[, is_observed := .cal_idx <= .max_cal]
 
   # held-out flag, plus an effective max-cal for fit-data filters that
   # excludes the held_out region — this matches `backtest()` semantics,
@@ -954,18 +967,29 @@ plot.Total <- function(x,
     expanded[, .max_cal_fit := .max_cal]
   }
 
+  # Detect segment_wise treatment up-front: when set, the regime carries
+  # multiple change points and the *intent* is to keep every cohort
+  # (segments are estimated separately, not filtered). The usage plot
+  # therefore skips the cohort cut and instead shows one hline per
+  # change as a visual partition marker.
+  is_segment_wise <- inherits(regime, "Regime") &&
+                     identical(regime$treatment, "segment_wise")
+
   # resolve regime change date — scalar (single group / scalar input)
-  # or a per-group `[join_cols..., break_date]` data.table when a
+  # or a per-group `[join_cols..., change_date]` data.table when a
   # multi-group `Regime` matches `grp`. Auto-dispatched inside the helper.
-  bd <- if (!is.null(regime)) {
-    .resolve_regime_date(regime, by = grp)
+  # Skipped under segment_wise so the cohort filter doesn't kick in
+  # (every observed cell stays "used"; hlines come from the full change
+  # list, drawn by `.plot_triangle_usage`).
+  cd <- if (!is.null(regime) && !is_segment_wise) {
+    .resolve_regime_change_date(regime, by = grp)
   } else {
     NULL
   }
 
   # fit-data mask
   has_recent <- !is.null(recent)
-  has_break  <- !is.null(bd)
+  has_change <- !is.null(cd)
 
   if (has_recent) {
     if (!is.numeric(recent) || length(recent) != 1L ||
@@ -980,68 +1004,103 @@ plot.Total <- function(x,
            call. = FALSE)
   }
 
-  # If bd is per-group, broadcast it as a row-aligned `.bd_join` column
+  # If cd is per-group, broadcast it as a row-aligned `.cd_join` column
   # so the filter expressions can reference a single column regardless
-  # of dispatch mode. NA `.bd_join` (group not in bd) => no filter for
+  # of dispatch mode. NA `.cd_join` (group not in cd) => no filter for
   # that group.
-  per_group_bd <- has_break && data.table::is.data.table(bd)
-  if (per_group_bd) {
-    join_cols <- setdiff(names(bd), "break_date")
-    expanded[, .bd_join := bd[expanded, on = join_cols, x.break_date]]
+  per_group_cd <- has_change && data.table::is.data.table(cd)
+  if (per_group_cd) {
+    join_cols <- setdiff(names(cd), "change_date")
+    expanded[, .cd_join := cd[expanded, on = join_cols, x.change_date]]
   }
 
-  break_pass <- if (!has_break) {
+  # Per-group maturity: when `m_k_dt` is supplied (a `[grp..., m_k]`
+  # data.table from the caller), broadcast it to a row-aligned column
+  # so the SA hybrid threshold is per-group. NA rows (group not in
+  # m_k_dt) fall back to scalar `m_k` if provided, else NULL.
+  per_group_m_k <- !is.null(m_k_dt) && data.table::is.data.table(m_k_dt) &&
+                   nrow(m_k_dt) > 0L && "m_k" %in% names(m_k_dt)
+  if (per_group_m_k) {
+    m_k_join_cols <- setdiff(names(m_k_dt), "m_k")
+    expanded[, .m_k_join := m_k_dt[expanded, on = m_k_join_cols, x.m_k]]
+    if (!is.null(m_k)) expanded[is.na(.m_k_join), .m_k_join := m_k]
+  }
+
+  change_pass <- if (!has_change) {
     quote(TRUE)
-  } else if (per_group_bd) {
-    quote(is.na(.bd_join) | cohort >= .bd_join)
+  } else if (per_group_cd) {
+    quote(is.na(.cd_join) | cohort >= .cd_join)
   } else {
-    bquote(cohort >= .(bd))
+    bquote(cohort >= .(cd))
   }
 
-  if (has_recent && has_break) {
+  # Build a dev-side maturity predicate that resolves to per-group
+  # `.m_k_join` when available, falling back to scalar `m_k`. Returns a
+  # quoted expression evaluating to a logical vector of nrow(expanded).
+  m_k_geq <- function() {
+    if (per_group_m_k) {
+      quote(!is.na(.m_k_join) & dev >= .m_k_join)
+    } else if (!is.null(m_k)) {
+      bquote(dev >= .(m_k))
+    } else {
+      quote(rep(FALSE, .N))
+    }
+  }
+  m_k_lt <- function() {
+    if (per_group_m_k) {
+      quote(!is.na(.m_k_join) & dev < .m_k_join)
+    } else if (!is.null(m_k)) {
+      bquote(dev < .(m_k))
+    } else {
+      quote(rep(TRUE, .N))
+    }
+  }
+  has_m_k <- per_group_m_k || !is.null(m_k)
+
+  if (has_recent && has_change) {
     # hybrid: cohort cut on dev < m_k (ED region), calendar cut on
     # dev >= m_k (CL region). when m_k is NULL, fall back to both
     # filters jointly.
-    if (!is.null(m_k)) {
+    if (has_m_k) {
       expanded[, .pass_filter := eval(bquote(
-        (dev <  .(m_k) & .(break_pass)) |
-        (dev >= .(m_k) & .cal_idx > .max_cal_fit - .(recent))
+        (.(m_k_lt())  & .(change_pass)) |
+        (.(m_k_geq()) & .cal_idx > .max_cal_fit - .(recent))
       ))]
     } else {
       expanded[, .pass_filter := eval(bquote(
-        .(break_pass) & (.cal_idx > .max_cal_fit - .(recent))
+        .(change_pass) & (.cal_idx > .max_cal_fit - .(recent))
       ))]
     }
   } else if (has_recent) {
     expanded[, .pass_filter := .cal_idx > .max_cal_fit - recent]
-  } else if (has_break) {
+  } else if (has_change) {
     # SA semantics: cohort cut applies only on dev < m_k (ED region);
     # CL region (dev >= m_k) keeps all cohorts. When m_k is NULL,
     # fall back to a simple cohort cut across all dev.
-    if (!is.null(m_k)) {
+    if (has_m_k) {
       expanded[, .pass_filter := eval(bquote(
-        (dev >= .(m_k)) | .(break_pass)
+        .(m_k_geq()) | .(change_pass)
       ))]
     } else {
-      expanded[, .pass_filter := eval(break_pass)]
+      expanded[, .pass_filter := eval(change_pass)]
     }
   } else {
     expanded[, .pass_filter := TRUE]
   }
 
-  if (per_group_bd) expanded[, .bd_join := NULL]
+  if (per_group_cd)  expanded[, .cd_join  := NULL]
+  if (per_group_m_k) expanded[, .m_k_join := NULL]
 
   expanded[, is_fit_data := is_observed & !is_held_out & .pass_filter]
   expanded[, is_excluded := is_observed & !is_held_out & !is_fit_data]
 
-  expanded[, status := data.table::fcase(
-    is_held_out, "holdout",
-    is_fit_data, "used",
-    is_excluded, "unused",
-    default     = "future"
-  )]
   expanded[, status := factor(
-    status,
+    data.table::fcase(
+      is_held_out, "holdout",
+      is_fit_data, "used",
+      is_excluded, "unused",
+      default     = "future"
+    ),
     levels = c("unused", "used", "holdout", "future")
   )]
 
@@ -1066,24 +1125,34 @@ plot.Total <- function(x,
 
   grp      <- attr(x, "groups")
   coh      <- attr(x, "cohort")
-  coh_type <- .get_period_type(coh)
+  coh_type <- .get_period_type(coh, grain = attr(x, "grain"))
   dev  <- attr(x, "dev")
   if (is.null(grp)) grp <- character(0)
 
-  # 2-pass maturity detection: needed whenever `regime` is set, so the
-  # SA-mode dev split (cohort cut on dev < k*; CL region unfiltered, or
-  # recent wedge on dev >= k* when `recent` is also set) is reflected.
-  # `bd` may be scalar Date or `[grp..., break_date]` data.table (when a
-  # multi-group Regime is passed and grp is non-empty).
-  m_k    <- NULL    # scalar fallback (passed to .compute_triangle_usage)
-  m_k_dt <- NULL    # per-group [grp..., m_k] data.table for facet-routed vline
-  bd <- if (!is.null(regime)) {
-    .resolve_regime_date(regime, by = grp)
+  # segment_wise: preserve every change for hline drawing (no cohort
+  # cut applied -- USED shading is per-segment mini-triangle, see
+  # `.compute_triangle_usage`). For other treatments we collapse to the
+  # latest change via `.resolve_regime_change_date` for the standard
+  # cohort cut + hybrid SA mask.
+  is_segment_wise <- inherits(regime, "Regime") &&
+                     identical(regime$treatment, "segment_wise")
+
+  # `cd` drives the latest_only cohort cut + hybrid mask in
+  # `.compute_triangle_usage` and the latest_only hline drawing below.
+  # Skipped for segment_wise (which has its own filter / hline path).
+  cd <- if (!is.null(regime) && !is_segment_wise) {
+    .resolve_regime_change_date(regime, by = grp)
   } else {
     NULL
   }
 
-  if (!is.null(bd)) {
+  # 2-pass maturity detection: run whenever any regime is set so the
+  # k* vline still renders for segment_wise. The detected `m_k` is also
+  # used by `.compute_triangle_usage` for the SA hybrid mask in the
+  # latest_only branch.
+  m_k    <- NULL    # scalar fallback (passed to .compute_triangle_usage)
+  m_k_dt <- NULL    # per-group [grp..., m_k] data.table for facet-routed vline
+  if (!is.null(regime)) {
     mat_arg <- if (is.null(maturity)) "auto" else maturity
     fit_for_mat <- tryCatch(
       fit_ata(x = x, target = metric, maturity = mat_arg),
@@ -1112,7 +1181,8 @@ plot.Total <- function(x,
     recent  = recent,
     regime  = regime,
     holdout = holdout,
-    m_k     = m_k
+    m_k     = m_k,
+    m_k_dt  = m_k_dt
   )
 
   # cohort labels: most recent at top
@@ -1163,46 +1233,89 @@ plot.Total <- function(x,
     )
   }
 
-  # horizontal regime-change line. The y axis is a discrete factor with
-  # levels sorted descending; the change row is the row whose label
-  # corresponds to the smallest cohort >= bd. Draw the line just above
-  # that row (toward older cohorts).
+  # horizontal regime-change line(s). The y axis is a discrete factor
+  # with levels sorted descending; each change row is the row whose
+  # label corresponds to the smallest cohort >= the change date. The
+  # line is drawn just above that row (toward older cohorts).
   #
-  # `bd` may be a scalar Date (single break applied to every facet) or a
-  # per-group `[grp..., break_date]` data.table (each facet draws its
-  # own break). In the per-group case the grp-keyed data.frame is
-  # passed via `data = ...` so ggplot2's faceting machinery maps each
-  # hline to the correct facet.
-  if (!is.null(bd)) {
-    .first_post_idx <- function(bd_scalar) {
-      cohorts_sorted <- sort(unique(dt$cohort))
-      post_break <- cohorts_sorted[cohorts_sorted >= bd_scalar]
-      if (!length(post_break)) return(NA_integer_)
-      first_post <- min(post_break)
-      lab <- if (!is.na(coh_type)) {
-        .format_period(first_post, type = coh_type)
-      } else {
-        as.character(first_post)
-      }
-      match(lab, y_levels)
+  # Three dispatch paths:
+  #   - segment_wise: one hline per change in `regime$changes` (so the
+  #     plot shows the full segment partition). Per-group when the
+  #     Regime is multi-group and `grp` matches; scalar otherwise.
+  #   - latest_only (default) + per-group `cd`: one hline per group via
+  #     `data = hline_df`, faceted automatically.
+  #   - latest_only + scalar `cd`: one global hline.
+  .first_post_idx <- function(cd_scalar) {
+    cohorts_sorted <- sort(unique(dt$cohort))
+    post_change <- cohorts_sorted[cohorts_sorted >= cd_scalar]
+    if (!length(post_change)) return(NA_integer_)
+    first_post <- min(post_change)
+    lab <- if (!is.na(coh_type)) {
+      .format_period(first_post, type = coh_type)
+    } else {
+      as.character(first_post)
     }
+    match(lab, y_levels)
+  }
 
-    if (data.table::is.data.table(bd) && length(grp)) {
-      hline_df <- data.table::copy(bd)
-      data.table::setnames(hline_df, "break_date", ".bd")
-      hline_df[, .yint := vapply(.bd, .first_post_idx, integer(1L)) + 0.5]
+  if (is_segment_wise) {
+    bp <- regime$changes
+    if (data.table::is.data.table(bp) && nrow(bp) &&
+        "change" %in% names(bp)) {
+
+      # Per-group segment_wise: route hlines to specific facets whenever
+      # `regime$changes` carries group columns (`regime$groups`) that
+      # match the plot's facet groups (`grp`). We honour this even when
+      # `regime$multi_group = FALSE` (e.g. user wrote
+      # `regime_at(coverage = c("SUR", "SUR"), change = ...)` with only
+      # one unique value) -- the explicit group column reflects intent
+      # to scope the regime to just that group.
+      rgrp <- intersect(grp,
+                        if (is.null(regime$groups)) character(0) else regime$groups)
+      per_group <- length(rgrp) > 0L && all(rgrp %in% names(bp))
+
+      if (per_group) {
+        hline_df <- bp[, c(rgrp, "change"), with = FALSE]
+        data.table::setnames(hline_df, "change", ".cd")
+        hline_df[, .yint := vapply(.cd, .first_post_idx, integer(1L)) + 0.5]
+        hline_df <- hline_df[is.finite(.yint)]
+        if (nrow(hline_df)) {
+          p <- p + ggplot2::geom_hline(
+            data        = hline_df,
+            mapping     = ggplot2::aes(yintercept = .yint),
+            linetype    = "dashed", color = "black", linewidth = 0.4
+          )
+        }
+      } else {
+        # Scalar segment_wise: one hline per (deduplicated) change. The
+        # change list is shared across every facet (no per-group split).
+        for (cd_one in sort(unique(bp[["change"]]))) {
+          idx <- .first_post_idx(cd_one)
+          if (!is.na(idx)) {
+            p <- p + ggplot2::geom_hline(
+              yintercept = idx + 0.5,
+              linetype   = "dashed", color = "black", linewidth = 0.4
+            )
+          }
+        }
+      }
+    }
+  } else if (!is.null(cd)) {
+    if (data.table::is.data.table(cd) && length(grp)) {
+      hline_df <- data.table::copy(cd)
+      data.table::setnames(hline_df, "change_date", ".cd")
+      hline_df[, .yint := vapply(.cd, .first_post_idx, integer(1L)) + 0.5]
       hline_df <- hline_df[is.finite(.yint)]
       if (nrow(hline_df)) {
         p <- p + ggplot2::geom_hline(
           data        = hline_df,
           mapping     = ggplot2::aes(yintercept = .yint),
-          linetype    = "dashed", color = "black", linewidth = 0.4,
-          inherit.aes = FALSE
+          linetype    = "dashed", color = "black", linewidth = 0.4
         )
       }
     } else {
-      bd_scalar <- if (data.table::is.data.table(bd)) max(bd$break_date) else bd
-      idx <- .first_post_idx(bd_scalar)
+      cd_scalar <- if (data.table::is.data.table(cd)) max(cd$change_date) else cd
+      idx <- .first_post_idx(cd_scalar)
       if (!is.na(idx)) {
         p <- p + ggplot2::geom_hline(
           yintercept = idx + 0.5,
@@ -1220,7 +1333,21 @@ plot.Total <- function(x,
   # title summarising active filters
   parts <- character(0)
   if (!is.null(recent))       parts <- c(parts, sprintf("recent=%d", as.integer(recent)))
-  if (!is.null(bd))           parts <- c(parts, sprintf("regime=%s", format(bd)))
+  if (is_segment_wise) {
+    bp <- regime$changes
+    if (data.table::is.data.table(bp) && nrow(bp) && "change" %in% names(bp)) {
+      parts <- c(parts, sprintf("regime=%s",
+                                paste(format(sort(unique(bp[["change"]]))),
+                                      collapse = ",")))
+    }
+  } else if (!is.null(cd)) {
+    cd_txt <- if (data.table::is.data.table(cd)) {
+      paste(format(sort(unique(cd$change_date))), collapse = ",")
+    } else {
+      format(cd)
+    }
+    parts <- c(parts, sprintf("regime=%s", cd_txt))
+  }
   if (!is.null(holdout))      parts <- c(parts, sprintf("holdout=%d", as.integer(holdout)))
   title_txt <- if (length(parts)) {
     sprintf("Data usage (%s)", paste(parts, collapse = ", "))
@@ -1241,7 +1368,7 @@ plot.Total <- function(x,
     title    = title_txt,
     subtitle = subtitle_txt,
     x        = .pretty_var_label(dev),
-    y        = .cohort_label(coh)
+    y        = .cohort_label(coh, grain = attr(x, "grain"))
   )
 
   p + .switch_theme(theme = theme, ...)

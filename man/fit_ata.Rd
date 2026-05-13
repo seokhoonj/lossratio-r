@@ -47,7 +47,7 @@ estimation. Applied before maturity filtering. Default is \code{NULL}
 or \code{regime_at()}), the string \code{"auto"} (internal
 \code{detect_regime(tri, target = "lr")} call), or a function
 \verb{function(tri) -> Regime} for deferred custom-config detection. When
-supplied, cohorts strictly before the resolved break date are excluded
+supplied, cohorts strictly before the resolved change date are excluded
 from estimation.}
 
 \item{maturity}{Optional maturity specification for filtering ata

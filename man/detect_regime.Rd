@@ -16,6 +16,7 @@ detect_regime(
   n_regimes = NULL,
   sig_level = 0.05,
   min_size = 3L,
+  treatment = c("latest_only", "segment_wise"),
   ...
 )
 
@@ -79,6 +80,20 @@ the requested value) for \code{"hclust"}, where the default is \code{2}.}
 
 \item{min_size}{Minimum segment size for \code{"e_divisive"}. Default \code{3}.}
 
+\item{treatment}{How downstream fits should apply this Regime when
+\verb{$changes} contains multiple change points. One of:
+\describe{
+\item{\code{"latest_only"}}{(default) Collapse to the most recent change
+date and drop all pre-latest-change cohorts. Single pooled factor
+estimate over the surviving (post-latest-change) cohorts.}
+\item{\code{"segment_wise"}}{Preserve all change points. Each segment
+(consecutive cohorts between adjacent changes) gets its own factor
+estimate, and each cohort is projected using its own segment's
+factor. Recommended for multi-regime + long-tail data where opt
+\code{"latest_only"} would lose self-regime responsiveness on older
+cohorts.}
+}}
+
 \item{...}{Reserved for future use.}
 
 \item{object}{An object of class \code{"Regime"}. Used by the S3
@@ -119,6 +134,11 @@ multi-combo.}
 constraint. Vector (single) / named list (multi).}
 \item{\code{multi_group}}{Logical flag; \code{TRUE} when detection ran over
 multiple group combos.}
+\item{\code{treatment}}{Either \code{"latest_only"} or \code{"segment_wise"} — the
+value supplied via the \code{treatment} argument. Read by downstream
+fits (\code{fit_ata()}, \code{fit_intensity()}, \code{fit_cl()}, \code{fit_ed()}) to
+decide whether to collapse to the latest change (drop pre-change
+cohorts, single pooled factor) or estimate per-segment factors.}
 }
 }
 \description{

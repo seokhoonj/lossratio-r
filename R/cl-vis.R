@@ -226,12 +226,13 @@ plot.CLFit <- function(x,
   # --- reserve (mack only) ----------------------------------------------
   smr <- .ensure_dt(x$summary)
 
-  coh_raw <- smr[["cohort"]]
-  coh_lab <- .format_period(
-    coh_raw,
-    type = .get_period_type(coh),
-    abb  = TRUE
-  )
+  coh_raw  <- smr[["cohort"]]
+  coh_type <- .get_period_type(coh, grain = attr(x$data, "grain"))
+  coh_lab  <- if (!is.na(coh_type)) {
+    .format_period(coh_raw, type = coh_type, abb = TRUE)
+  } else {
+    as.character(coh_raw)
+  }
 
   smr[, .coh := factor(coh_lab, levels = unique(coh_lab[order(coh_raw)]))]
 
@@ -447,10 +448,15 @@ plot_triangle.CLFit <- function(x,
   }
 
   # 2) period label -----------------------------------------------------
-  coh_type <- .get_period_type(coh)
-  dt[, .y := .format_period(
-    .SD[["cohort"]], type = coh_type, abb = TRUE
-  ), .SDcols = "cohort"]
+  grain    <- attr(x$data, "grain")
+  coh_type <- .get_period_type(coh, grain = grain)
+  if (!is.na(coh_type)) {
+    dt[, .y := .format_period(
+      .SD[["cohort"]], type = coh_type, abb = TRUE
+    ), .SDcols = "cohort"]
+  } else {
+    dt[, .y := as.character(.SD[["cohort"]]), .SDcols = "cohort"]
+  }
 
   # 3) build cell label -------------------------------------------------
   z_alpha  <- stats::qnorm((1 + conf_level) / 2)
@@ -569,7 +575,7 @@ plot_triangle.CLFit <- function(x,
   # 8) labs
   p <- p + ggplot2::labs(
     title   = title_txt,
-    y       = .cohort_label(coh),
+    y       = .cohort_label(coh, grain = grain),
     caption = caption_txt
   )
 

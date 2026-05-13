@@ -3,11 +3,11 @@
 #' @description
 #' Run [detect_regime()] with `method = "e_divisive"` across a sequence
 #' of trajectory windows `window_seq`, then recommend an "optimal" `window` based
-#' on the *elbow* (knee point) of the *break count vs window* curve.
+#' on the *elbow* (knee point) of the *change count vs window* curve.
 #'
 #' Intuition: small `window` is over-sensitive (early-dev noise produces
-#' spurious breaks), large `window` is under-sensitive (high-dim noise
-#' obscures real shifts). The break count typically drops sharply at
+#' spurious changes), large `window` is under-sensitive (high-dim noise
+#' obscures real shifts). The change count typically drops sharply at
 #' small `window` and plateaus once `window` reaches the genuine information
 #' window — that elbow is a reasonable choice.
 #'
@@ -19,7 +19,7 @@
 #'   `detect_regime()` call.
 #' @param target Trajectory variable. Passed to [detect_regime()].
 #' @param method Elbow-detection method. Currently only `"elbow"` is
-#'   supported (Kneedle algorithm on `break_count` vs `window`). Reserved
+#'   supported (Kneedle algorithm on `change_count` vs `window`). Reserved
 #'   for future extensions (Jaccard stability, BIC, etc.).
 #' @param sig_level Significance level for `e_divisive`. Default `0.05`.
 #' @param min_size Minimum segment size. Default `3L`.
@@ -27,9 +27,9 @@
 #' @return An object of class `"RegimeOptimalWindow"` (named list):
 #'   \describe{
 #'     \item{`optimal_window`}{Recommended `window` (scalar integer) via the
-#'       Kneedle elbow heuristic on `break_count` vs `window`.}
+#'       Kneedle elbow heuristic on `change_count` vs `window`.}
 #'     \item{`diagnostics`}{`data.table` with one row per `window` and (when
-#'       grouped) per combo: `[by..., window, n_cohorts, break_count,
+#'       grouped) per combo: `[by..., window, n_cohorts, change_count,
 #'       mean_magnitude]`. Missing window (too few cohorts, etc.) are
 #'       omitted.}
 #'     \item{`details`}{Named list of `Regime` objects keyed by `window`
@@ -82,7 +82,7 @@ detect_regime_optimal_window <- function(x,
     details[i] <- list(res)
   }
 
-  # 2) Diagnostics — break_count + mean_magnitude per (combo, window).
+  # 2) Diagnostics — change_count + mean_magnitude per (combo, window).
   diag_rows <- lapply(seq_along(window_seq), function(i) {
     res <- details[[i]]
     if (is.null(res)) return(NULL)
@@ -95,7 +95,7 @@ detect_regime_optimal_window <- function(x,
         data.table::data.table(
           head_row,
           window              = window_seq[i],
-          break_count    = nrow(bpg),
+          change_count    = nrow(bpg),
           mean_magnitude = if (nrow(bpg)) mean(bpg$magnitude, na.rm = TRUE) else NA_real_
         )
       })
@@ -103,7 +103,7 @@ detect_regime_optimal_window <- function(x,
     } else {
       data.table::data.table(
         window              = window_seq[i],
-        break_count    = nrow(bp),
+        change_count    = nrow(bp),
         mean_magnitude = if (nrow(bp)) mean(bp$magnitude, na.rm = TRUE) else NA_real_
       )
     }
@@ -115,14 +115,14 @@ detect_regime_optimal_window <- function(x,
   if (!nrow(diagnostics))
     stop("No window in `window_seq` produced a usable detection.", call. = FALSE)
 
-  # 3) Elbow heuristic — Kneedle on (window, break_count). For grouped input,
-  # aggregate break_count across combos (sum) so the elbow reflects the
+  # 3) Elbow heuristic — Kneedle on (window, change_count). For grouped input,
+  # aggregate change_count across combos (sum) so the elbow reflects the
   # whole portfolio response. Users who want per-group elbows can call
   # this function once per group.
-  agg <- diagnostics[, .(break_count = sum(break_count, na.rm = TRUE)),
+  agg <- diagnostics[, .(change_count = sum(change_count, na.rm = TRUE)),
                      by = "window"]
   data.table::setorderv(agg, "window")
-  optimal_window <- .kneedle_elbow(agg$window, agg$break_count)
+  optimal_window <- .kneedle_elbow(agg$window, agg$change_count)
 
   out <- list(
     call        = call_obj,
@@ -139,7 +139,7 @@ detect_regime_optimal_window <- function(x,
 #' Kneedle elbow heuristic for a decreasing curve.
 #'
 #' Implements the Kneedle algorithm (Satopaa et al., 2011) restricted
-#' to the *decreasing convex* shape we expect for break_count vs window:
+#' to the *decreasing convex* shape we expect for change_count vs window:
 #' normalise both axes to `[0, 1]`, find the index with maximum
 #' distance from the diagonal `y = 1 - x`, return the corresponding `window`.
 #'
@@ -147,14 +147,14 @@ detect_regime_optimal_window <- function(x,
 #' fewer than 3 points.
 #'
 #' @keywords internal
-.kneedle_elbow <- function(window, break_count) {
+.kneedle_elbow <- function(window, change_count) {
   n <- length(window)
   if (n < 3L) return(NA_integer_)
-  rng_y <- range(break_count, na.rm = TRUE)
+  rng_y <- range(change_count, na.rm = TRUE)
   if (!is.finite(diff(rng_y)) || diff(rng_y) == 0) return(NA_integer_)
 
   k_norm  <- (window - min(window)) / (max(window) - min(window))
-  bc_norm <- (break_count - rng_y[1L]) / (rng_y[2L] - rng_y[1L])
+  bc_norm <- (change_count - rng_y[1L]) / (rng_y[2L] - rng_y[1L])
 
   # For a decreasing curve, the expected line from (0, 1) to (1, 0) is
   # y_line = 1 - x. The elbow is the point with maximum positive vertical
@@ -185,7 +185,7 @@ summary.RegimeOptimalWindow <- function(object, ...) {
   print(object, ...)
   cat("\n# Break count by window (aggregated):\n")
   agg <- object$diagnostics[
-    , .(break_count = sum(break_count, na.rm = TRUE),
+    , .(change_count = sum(change_count, na.rm = TRUE),
         mean_magnitude = mean(mean_magnitude, na.rm = TRUE)),
     by = "window"
   ]
@@ -195,17 +195,17 @@ summary.RegimeOptimalWindow <- function(object, ...) {
 }
 
 
-#' Plot break-count vs window with the elbow marker
+#' Plot change-count vs window with the elbow marker
 #'
 #' @description
 #' Diagnostic plot for a `detect_regime_optimal_window()` result: shows
-#' `break_count` (and optionally `mean_magnitude`) against the
+#' `change_count` (and optionally `mean_magnitude`) against the
 #' trajectory window `window`, with a vertical line at `optimal_window`.
 #'
 #' @param x A `"RegimeOptimalWindow"` object.
 #' @param show_magnitude Logical; if `TRUE` (default), overlay
 #'   `mean_magnitude` on a secondary y axis (right). Set `FALSE` for
-#'   a cleaner break-count-only plot.
+#'   a cleaner change-count-only plot.
 #' @param theme A string passed to [.switch_theme()].
 #' @param ... Additional arguments passed to [.switch_theme()].
 #'
@@ -220,16 +220,16 @@ plot.RegimeOptimalWindow <- function(x,
   .assert_class(x, "RegimeOptimalWindow")
   theme <- match.arg(theme)
 
-  # Aggregate diagnostics across groups (sum break_count, mean magnitude)
+  # Aggregate diagnostics across groups (sum change_count, mean magnitude)
   # so the plot mirrors the elbow-detection input.
   agg <- x$diagnostics[
-    , .(break_count    = sum(break_count, na.rm = TRUE),
+    , .(change_count    = sum(change_count, na.rm = TRUE),
         mean_magnitude = mean(mean_magnitude, na.rm = TRUE)),
     by = "window"
   ]
   data.table::setorderv(agg, "window")
 
-  bc_max <- max(agg$break_count, na.rm = TRUE)
+  bc_max <- max(agg$change_count, na.rm = TRUE)
   mag_max <- if (show_magnitude) {
     max(agg$mean_magnitude, na.rm = TRUE)
   } else {
@@ -237,9 +237,9 @@ plot.RegimeOptimalWindow <- function(x,
   }
 
   p <- ggplot2::ggplot(agg, ggplot2::aes(x = window)) +
-    ggplot2::geom_line(ggplot2::aes(y = break_count),
+    ggplot2::geom_line(ggplot2::aes(y = change_count),
                        linewidth = 0.7, color = "#1f77b4") +
-    ggplot2::geom_point(ggplot2::aes(y = break_count),
+    ggplot2::geom_point(ggplot2::aes(y = change_count),
                         size = 2, color = "#1f77b4")
 
   if (show_magnitude && is.finite(mag_max) && mag_max > 0) {
@@ -254,13 +254,13 @@ plot.RegimeOptimalWindow <- function(x,
         size = 1.5, color = "#d62728"
       ) +
       ggplot2::scale_y_continuous(
-        name     = "break count",
+        name     = "change count",
         sec.axis = ggplot2::sec_axis(
           ~ . / scale_factor, name = "mean magnitude"
         )
       )
   } else {
-    p <- p + ggplot2::ylab("break count")
+    p <- p + ggplot2::ylab("change count")
   }
 
   if (!is.na(x$optimal_window)) {
@@ -278,7 +278,7 @@ plot.RegimeOptimalWindow <- function(x,
     ggplot2::scale_x_continuous(breaks = unique(agg$window)) +
     ggplot2::labs(
       title    = "Optimal window for e-divisive regime detection",
-      subtitle = "Elbow on break-count vs trajectory window window",
+      subtitle = "Elbow on change-count vs trajectory window window",
       x        = "window (trajectory window)"
     ) +
     .switch_theme(theme, ...)

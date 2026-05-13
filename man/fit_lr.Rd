@@ -45,13 +45,13 @@ triangle and returning a \code{Regime} object (or \code{NULL}).}
 }
 Behavior depends on \code{method}:
 \describe{
-\item{\code{"sa"}}{Hybrid filter. Pre-break cohorts are dropped only for
+\item{\code{"sa"}}{Hybrid filter. Pre-change cohorts are dropped only for
 development periods at or before the maturity point (ED phase);
 post-maturity (CL) cells use the \code{recent}-diagonal window across
 all cohorts. This preserves CL stability while protecting the ED
-intensities from a regime shift.}
+intensities from a regime change.}
 \item{\code{"ed"}, \code{"cl"}}{Simple cohort cut: all cohorts strictly before
-the break date are excluded from estimation.}
+the change date are excluded from estimation.}
 }}
 
 \item{premium_method}{One of \code{"cl"} (default) or \code{"ed"}. Forwarded to

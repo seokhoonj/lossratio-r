@@ -4,7 +4,7 @@
 \alias{.period_axis_label}
 \title{Period axis label with grain qualifier}
 \usage{
-.period_axis_label(var, prefix = "cohort")
+.period_axis_label(var, prefix = "cohort", grain = NULL)
 }
 \description{
 Maps a raw period variable name (uy_m / uy_q / uy_h / uy or the

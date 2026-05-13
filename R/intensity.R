@@ -49,7 +49,7 @@
 #'   `detect_regime(tri, target = "lr")` call), or a function
 #'   `function(tri) -> Regime`. Resolved internally via
 #'   [.resolve_regime()]. When supplied, cohorts strictly before the
-#'   break are dropped before estimation.
+#'   change are dropped before estimation.
 #' @param ... Passed to [summary.Link()] (e.g. `digits`).
 #'
 #' @return A list of class `"IntensityFit"` with components:
@@ -260,17 +260,23 @@ print.IntensityFit <- function(x, ...) {
   z <- .ensure_dt(ed_summary)
   z[, g_selected := g]
 
+  # When segment_id is present (segment_wise treatment), LOCF fills must
+  # happen per segment so factors from one regime never leak into another.
+  has_seg <- "segment_id" %in% names(z)
+  fill_by <- c(grp, if (has_seg) "segment_id")
+
   if (na_method == "zero") {
     z[is.na(g_selected), g_selected := 0]
   } else if (na_method == "locf") {
-    if (length(grp)) {
+    if (length(fill_by)) {
+      data.table::setorderv(z, c(fill_by, "ata_from", "ata_to"))
       z[, g_selected := data.table::nafill(g_selected, type = "locf"),
-        by = grp]
+        by = fill_by]
     } else {
       z[, g_selected := data.table::nafill(g_selected, type = "locf")]
     }
   }
 
-  data.table::setorderv(z, c(grp, "ata_from", "ata_to"))
+  data.table::setorderv(z, c(fill_by, "ata_from", "ata_to"))
   z
 }

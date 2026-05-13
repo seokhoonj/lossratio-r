@@ -48,7 +48,7 @@ estimation to rows within the last \code{recent} calendar diagonals
 \code{detect_regime(tri, target = "lr")} call), or a function
 \verb{function(tri) -> Regime}. Resolved internally via
 \code{\link[=.resolve_regime]{.resolve_regime()}}. When supplied, cohorts strictly before the
-break are dropped before estimation.}
+change are dropped before estimation.}
 
 \item{...}{Passed to \code{\link[=summary.Link]{summary.Link()}} (e.g. \code{digits}).}
 }
