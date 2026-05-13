@@ -178,6 +178,7 @@ reference:
   contents:
   - detect_maturity
   - detect_regime
+  - regime_at
 
 - title: Projection diagnostic
   desc: >
