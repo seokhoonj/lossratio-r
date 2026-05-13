@@ -47,12 +47,17 @@
 #'   \describe{
 #'     \item{`"loss_ata"`}{Loss age-to-age factor
 #'       `loss[k+1] / loss[k]` — multiplicative loss development speed
-#'       (Mack's $f_k$).}
+#'       (CL $f_k$).}
 #'     \item{`"premium_ata"`}{Premium age-to-age factor — same form on
 #'       premium.}
 #'     \item{`"loss_ed"`}{Loss intensity
 #'       `(loss[k] - loss[k-1]) / premium[k-1]` — additive,
 #'       exposure-anchored (ED model's $g_k$).}
+#'     \item{`"premium_ed"`}{Alias of `"premium_ata"` — the two differ
+#'       only by a constant `(premium_ata - 1)`, and the PCA
+#'       standardization in detection removes that shift, so they yield
+#'       identical breakpoints. Provided for API symmetry with the
+#'       `loss_ata` / `loss_ed` pair.}
 #'   }
 #'   Derived targets drop the first dev row per cohort (no predecessor),
 #'   then re-index `dev` so detection sees a contiguous sequence. See the
@@ -201,6 +206,13 @@ detect_regime <- function(x,
 
   d <- .ensure_dt(x)
 
+  # `premium_ed` is mathematically equivalent to `premium_ata - 1`
+  # (Δpremium / cum_premium_prev vs cum_premium / cum_premium_prev), and
+  # the PCA standardization (`center=TRUE, scale=TRUE`) removes the
+  # constant shift — so detection produces identical breakpoints. Treat
+  # as alias.
+  if (target == "premium_ed") target <- "premium_ata"
+
   # Derived targets (not native Triangle columns) — compute inline per
   # (group, cohort) before detection. These are diagnostic/experimental;
   # see `?detect_regime` for the recommended use case of each.
@@ -271,6 +283,7 @@ detect_regime <- function(x,
 
   per_group <- vector("list", n_combos)
   combo_keys <- character(n_combos)
+  failures   <- character(0)   # name = combo_key, value = error message
 
   for (i in seq_len(n_combos)) {
     if (nrow(grp_combos) > 0L) {
@@ -294,12 +307,25 @@ detect_regime <- function(x,
         dev       = dev
       ),
       error = function(e) {
-        warning(sprintf("Group '%s': %s -- skipped.", combo_keys[i],
-                        conditionMessage(e)), call. = FALSE)
+        failures[[combo_keys[i]]] <<- conditionMessage(e)
         NULL
       }
     )
     per_group[i] <- list(res_i)  # preserve NULL slot
+  }
+
+  # Consolidate failures: one warning per unique error message, listing
+  # all groups that hit it (rather than N separate warnings for the same
+  # underlying cause).
+  if (length(failures)) {
+    by_msg <- split(names(failures), unname(failures))
+    for (msg in names(by_msg)) {
+      keys <- by_msg[[msg]]
+      warning(sprintf("Group%s %s: %s -- skipped.",
+                      if (length(keys) > 1L) "s" else "",
+                      paste(sprintf("'%s'", keys), collapse = ", "),
+                      msg), call. = FALSE)
+    }
   }
   names(per_group) <- combo_keys
 

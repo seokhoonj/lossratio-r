@@ -37,12 +37,17 @@ ratio). Accepts any column on the \code{Triangle} (e.g. \code{"lr"},
 \describe{
 \item{\code{"loss_ata"}}{Loss age-to-age factor
 \code{loss[k+1] / loss[k]} — multiplicative loss development speed
-(Mack's $f_k$).}
+(CL $f_k$).}
 \item{\code{"premium_ata"}}{Premium age-to-age factor — same form on
 premium.}
 \item{\code{"loss_ed"}}{Loss intensity
 \code{(loss[k] - loss[k-1]) / premium[k-1]} — additive,
 exposure-anchored (ED model's $g_k$).}
+\item{\code{"premium_ed"}}{Alias of \code{"premium_ata"} — the two differ
+only by a constant \code{(premium_ata - 1)}, and the PCA
+standardization in detection removes that shift, so they yield
+identical breakpoints. Provided for API symmetry with the
+\code{loss_ata} / \code{loss_ed} pair.}
 }
 Derived targets drop the first dev row per cohort (no predecessor),
 then re-index \code{dev} so detection sees a contiguous sequence. See the
