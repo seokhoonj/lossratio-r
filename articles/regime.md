@@ -164,16 +164,21 @@ operates on. Different targets surface different kinds of regime change,
 and each has its own failure mode. Pick the target that matches the
 event you suspect — and always cross-check with domain knowledge.
 
+Order:
+`c("lr", "loss_ata", "premium_ata", "loss_ed", "premium_ed", "loss", "premium")`
+— cleanest to riskiest.
+
 | Scenario to detect | Recommended `target` | Caveat |
 |----|----|----|
 | General LR projection accuracy (default) | `"lr"` | Differential growth (loss vs premium scaling unevenly) can produce smooth drift that |
 |  |  | is mis-labelled as a sharp break. |
-| Loss *level* shift (claim handling, coverage) | `"loss"` | Raw cumulative — book-size growth dominates; false positives common. |
-| Premium *level* shift (rate, channel) | `"premium"` | Same caveat as `"loss"`. |
-| Loss development *speed* change (Mack `f`) | `"loss_ata"` *(diagnostic)* | Loses dev = 1 row + complete-row requirement → sample size shrinks; over-sensitive on |
+| Loss development *speed* change (CL `f`) | `"loss_ata"` *(diagnostic)* | Loses dev = 1 row + complete-row requirement → sample size shrinks; over-sensitive on |
 |  |  | low-CV factors. |
 | Premium recognition *speed* change | `"premium_ata"` *(diagnostic)* | Same caveats as `"loss_ata"`. |
 | Loss *intensity* per unit exposure (ED `g`) | `"loss_ed"` *(diagnostic)* | Cross-normalised by premium; harder to interpret in isolation. |
+| Same as `premium_ata` (API symmetry) | `"premium_ed"` *(alias)* | Equivalent to `premium_ata` after PCA standardization — same breakpoints. |
+| Loss *level* shift (claim handling, coverage) | `"loss"` | Raw cumulative — book-size growth dominates; false positives common. |
+| Premium *level* shift (rate, channel) | `"premium"` | Same caveat as `"loss"`. |
 
 Notes:
 
@@ -187,7 +192,7 @@ Notes:
   alongside a known timeline of underwriting / claims-handling events.
 - `"loss_ata"`, `"premium_ata"`, `"loss_ed"` are diagnostic targets
   derived inline (not stored on the `Triangle`). They map directly to
-  the Mack `f`-factor / ED `g`-factor used during fitting, so a break
+  the CL `f`-factor / ED `g`-factor used during fitting, so a break
   detected here corresponds to a violation of the model’s stationarity
   assumption. Use them when you want to attribute a regime change to a
   specific structural mechanism.

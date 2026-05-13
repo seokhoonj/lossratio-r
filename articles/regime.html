@@ -301,6 +301,9 @@ change-point algorithm operates on. Different targets surface different
 kinds of regime change, and each has its own failure mode. Pick the
 target that matches the event you suspect — and always cross-check with
 domain knowledge.</p>
+<p>Order:
+<code>c("lr", "loss_ata", "premium_ata", "loss_ed", "premium_ed", "loss", "premium")</code>
+— cleanest to riskiest.</p>
 <table class="table">
 <colgroup>
 <col width="29%">
@@ -326,18 +329,7 @@ smooth drift that</td>
 <td>is mis-labelled as a sharp break.</td>
 </tr>
 <tr class="odd">
-<td>Loss <em>level</em> shift (claim handling, coverage)</td>
-<td><code>"loss"</code></td>
-<td>Raw cumulative — book-size growth dominates; false positives
-common.</td>
-</tr>
-<tr class="even">
-<td>Premium <em>level</em> shift (rate, channel)</td>
-<td><code>"premium"</code></td>
-<td>Same caveat as <code>"loss"</code>.</td>
-</tr>
-<tr class="odd">
-<td>Loss development <em>speed</em> change (Mack <code>f</code>)</td>
+<td>Loss development <em>speed</em> change (CL <code>f</code>)</td>
 <td>
 <code>"loss_ata"</code> <em>(diagnostic)</em>
 </td>
@@ -363,6 +355,25 @@ over-sensitive on</td>
 </td>
 <td>Cross-normalised by premium; harder to interpret in isolation.</td>
 </tr>
+<tr class="odd">
+<td>Same as <code>premium_ata</code> (API symmetry)</td>
+<td>
+<code>"premium_ed"</code> <em>(alias)</em>
+</td>
+<td>Equivalent to <code>premium_ata</code> after PCA standardization —
+same breakpoints.</td>
+</tr>
+<tr class="even">
+<td>Loss <em>level</em> shift (claim handling, coverage)</td>
+<td><code>"loss"</code></td>
+<td>Raw cumulative — book-size growth dominates; false positives
+common.</td>
+</tr>
+<tr class="odd">
+<td>Premium <em>level</em> shift (rate, channel)</td>
+<td><code>"premium"</code></td>
+<td>Same caveat as <code>"loss"</code>.</td>
+</tr>
 </tbody>
 </table>
 <p>Notes:</p>
@@ -381,7 +392,7 @@ positives — read every result alongside a known timeline of underwriting
 <li>
 <code>"loss_ata"</code>, <code>"premium_ata"</code>,
 <code>"loss_ed"</code> are diagnostic targets derived inline (not stored
-on the <code>Triangle</code>). They map directly to the Mack
+on the <code>Triangle</code>). They map directly to the CL
 <code>f</code>-factor / ED <code>g</code>-factor used during fitting, so
 a break detected here corresponds to a violation of the model’s
 stationarity assumption. Use them when you want to attribute a regime

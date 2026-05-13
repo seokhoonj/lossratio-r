@@ -81,7 +81,7 @@ print(x, ...)
   `"loss_ata"`
 
   :   Loss age-to-age factor `loss[k+1] / loss[k]` — multiplicative loss
-      development speed (Mack's \$f_k\$).
+      development speed (CL \$f_k\$).
 
   `"premium_ata"`
 
@@ -91,6 +91,13 @@ print(x, ...)
 
   :   Loss intensity `(loss[k] - loss[k-1]) / premium[k-1]` — additive,
       exposure-anchored (ED model's \$g_k\$).
+
+  `"premium_ed"`
+
+  :   Alias of `"premium_ata"` — the two differ only by a constant
+      `(premium_ata - 1)`, and the PCA standardization in detection
+      removes that shift, so they yield identical breakpoints. Provided
+      for API symmetry with the `loss_ata` / `loss_ed` pair.
 
   Derived targets drop the first dev row per cohort (no predecessor),
   then re-index `dev` so detection sees a contiguous sequence. See the

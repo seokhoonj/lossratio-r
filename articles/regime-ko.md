@@ -160,15 +160,20 @@ target 마다 검출하는 regime 종류가 다르고, 각자 고유한 *false p
 모드* 가 있다. 의심되는 사건의 성격에 맞춰 target 을 고르고, 결과는 항상
 도메인 지식과 대조해야 한다.
 
+순서:
+`c("lr", "loss_ata", "premium_ata", "loss_ed", "premium_ed", "loss", "premium")`
+— cleanest 에서 riskiest 까지.
+
 | 감지하려는 시나리오 | 권장 `target` | 주의사항 |
 |----|----|----|
 | 일반적 LR 예측 정확도 (default) | `"lr"` | 차등 성장 (loss/premium 성장률 비대칭) 으로 인한 *smooth drift* 를 sharp break |
 |  |  | 로 오인할 수 있음. |
-| Loss *level* 변화 (claims handling, 보장 변경) | `"loss"` | raw cumulative — book size 성장이 도미넌트, false positive 빈번. |
-| Premium *level* 변화 (요율, 채널 변경) | `"premium"` | `"loss"` 와 같은 주의사항. |
-| Loss 발전 *속도* 변화 (Mack `f`) | `"loss_ata"` *(진단용)* | dev=1 손실 + complete-row 요구 → sample 줄어듦; CV 가 낮아 작은 변동도 잡힘. |
+| Loss 발전 *속도* 변화 (CL `f`) | `"loss_ata"` *(진단용)* | dev=1 손실 + complete-row 요구 → sample 줄어듦; CV 가 낮아 작은 변동도 잡힘. |
 | Premium 인식 *속도* 변화 | `"premium_ata"` *(진단용)* | `"loss_ata"` 와 같은 주의사항. |
 | 노출 단위당 loss *세기* 변화 (ED `g`) | `"loss_ed"` *(진단용)* | premium 으로 cross-normalize — 단독 해석이 까다로움. |
+| `premium_ata` 와 동일 (API 대칭) | `"premium_ed"` *(alias)* | PCA 표준화 후 `premium_ata` 와 동일한 breakpoint — alias. |
+| Loss *level* 변화 (claims handling, 보장 변경) | `"loss"` | raw cumulative — book size 성장이 도미넌트, false positive 빈번. |
+| Premium *level* 변화 (요율, 채널 변경) | `"premium"` | `"loss"` 와 같은 주의사항. |
 
 참고:
 
@@ -179,8 +184,8 @@ target 마다 검출하는 regime 종류가 다르고, 각자 고유한 *false p
   book growth 는 false positive 빈번 — 결과를 *알려진 언더라이팅·claims
   사건 타임라인* 과 대조 필수.
 - `"loss_ata"`, `"premium_ata"`, `"loss_ed"` 는 *진단용* target.
-  Triangle 에 저장된 컬럼이 아니라 inline 으로 derive 된다. Mack 의 `f`
-  / ED 의 `g` 인자와 직접 대응하므로 여기서 검출된 break 는 모델의
+  Triangle 에 저장된 컬럼이 아니라 inline 으로 derive 된다. CL 의 `f` /
+  ED 의 `g` 인자와 직접 대응하므로 여기서 검출된 break 는 모델의
   stationarity 가정 위반에 해당. *구조적 메커니즘* 으로 regime 을
   귀속시키고 싶을 때 사용.
 

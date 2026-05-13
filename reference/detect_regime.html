@@ -250,7 +250,7 @@ ratio). Accepts any column on the <code>Triangle</code> (e.g. <code>"lr"</code>,
 <em>diagnostic</em> derived targets computed inline per (group, cohort):</p><dl><dt><code>"loss_ata"</code></dt>
 <dd><p>Loss age-to-age factor
 <code>loss[k+1] / loss[k]</code> — multiplicative loss development speed
-(Mack's $f_k$).</p></dd>
+(CL $f_k$).</p></dd>
 
 <dt><code>"premium_ata"</code></dt>
 <dd><p>Premium age-to-age factor — same form on
@@ -260,6 +260,13 @@ premium.</p></dd>
 <dd><p>Loss intensity
 <code>(loss[k] - loss[k-1]) / premium[k-1]</code> — additive,
 exposure-anchored (ED model's $g_k$).</p></dd>
+
+<dt><code>"premium_ed"</code></dt>
+<dd><p>Alias of <code>"premium_ata"</code> — the two differ
+only by a constant <code>(premium_ata - 1)</code>, and the PCA
+standardization in detection removes that shift, so they yield
+identical breakpoints. Provided for API symmetry with the
+<code>loss_ata</code> / <code>loss_ed</code> pair.</p></dd>
 
 
 </dl><p>Derived targets drop the first dev row per cohort (no predecessor),
