@@ -1165,8 +1165,11 @@ plot.Total <- function(x,
         nrow(fit_for_mat$maturity) > 0L &&
         !all(is.na(fit_for_mat$maturity$change))) {
       mat <- fit_for_mat$maturity
-      if (length(grp) > 0L && nrow(mat) > 1L &&
-          all(grp %in% names(mat))) {
+      # Per-group dispatch whenever the maturity dt carries group
+      # columns -- honour scope even for single-group input (e.g.
+      # `maturity_at(cv_nm = "SUR", change = 4)` returns a 1-row dt
+      # that should still mark *only* SUR, not every facet).
+      if (length(grp) > 0L && all(grp %in% names(mat))) {
         m_k_dt <- mat[, c(grp, "change"), with = FALSE]
         data.table::setnames(m_k_dt, "change", "m_k")
         m_k_dt <- m_k_dt[is.finite(m_k)]
