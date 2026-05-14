@@ -228,7 +228,7 @@ aggregation frameworks</a></p>
 <span>                   loss <span class="op">=</span> <span class="st">"loss_incr"</span>, premium <span class="op">=</span> <span class="st">"premium_incr"</span><span class="op">)</span></span>
 <span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_calendar.html">as_calendar</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cal</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    coverage   calendar   dev      loss loss_incr   premium premium_incr</span></span>
+<span><span class="co">#&gt;    coverage   calendar     t      loss loss_incr   premium premium_incr</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;        &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:      CAN 2023-01-01     1   1327186   1327186  36175141     36175141</span></span>
 <span><span class="co">#&gt; 2:      CAN 2023-02-01     2  53881242  52554056  89468123     53292982</span></span>
@@ -252,9 +252,11 @@ aggregation frameworks</a></p>
 <span><span class="co">#&gt; 4:       0.5085391     0.3892024          0.3486040</span></span>
 <span><span class="co">#&gt; 5:       0.4050687     0.3778725          0.3529756</span></span>
 <span><span class="co">#&gt; 6:       0.2529446     0.3557249          0.3048260</span></span></code></pre></div>
-<p>각 행은 그룹별 달력 기간 하나이다. 여기서 <code>dev</code> 컬럼은
-그룹 내부의 순차 인덱스 (1, 2, 3, …) 이며, “코호트 시작 이후의 경과
-기간(development period)” 이 아니다.</p>
+<p>각 행은 그룹별 달력 기간 하나이다. <code>t</code> 컬럼은 그룹 내부의
+순차 인덱스 (1, 2, 3, …) 이며 시계열 관용 표기이다. <strong>경과 기간
+(development period, <code>cym - uym</code>)</strong> 이 <em>아니다</em>
+— 진짜 경과 기간은 <code>Triangle</code> 의 <code>dev</code> 축에 살아
+있다.</p>
 <p>Calendar 집계는 수학적으로 Triangle 의 <strong>대각선 합</strong>
 이다. 같은 <code>cy_m</code> 값을 갖는 셀
 (<code>uy_m</code>/<code>dev_m</code> 와 무관하게) 이 합쳐진다.</p>
@@ -266,16 +268,13 @@ on-leveling 이벤트)</li>
 <li>포트폴리오 모니터링 대시보드</li>
 </ul>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cal</span><span class="op">)</span>                       <span class="co"># x axis: calendar</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cal</span><span class="op">)</span>                       <span class="co"># x axis: calendar (Date)</span></span></code></pre></div>
 <p><img src="aggregation-frameworks-ko_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" alt="" width="100%"></p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cal</span>, x_by <span class="op">=</span> <span class="st">"dev"</span><span class="op">)</span>         <span class="co"># x axis: 순차 인덱스</span></span></code></pre></div>
-<p><img src="aggregation-frameworks-ko_files/figure-html/unnamed-chunk-4-2.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level2">
 <h2 id="total-포트폴리오-요약">4. Total (포트폴리오 요약)<a class="anchor" aria-label="anchor" href="#total-%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4-%EC%9A%94%EC%95%BD"></a>
 </h2>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tri_bounded</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">experience</span><span class="op">[</span><span class="va">uy_m</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2023-04-01"</span><span class="op">)</span> <span class="op">&amp;</span></span>
 <span>             <span class="va">uy_m</span> <span class="op">&lt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2024-03-01"</span><span class="op">)</span><span class="op">]</span>,</span>
@@ -328,7 +327,7 @@ on-leveling 이벤트)</li>
 </h2>
 <p>집계 후 각 객체는 원본 컬럼 메타데이터를 속성으로 저장한다 — 플롯
 라벨과 집계 주기에 맞는 날짜 표기에 사용된다.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tri</span>, <span class="st">"cohort"</span><span class="op">)</span>      <span class="co"># "uy_m"</span></span>
 <span><span class="co">#&gt; [1] "uy_m"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tri</span>, <span class="st">"dev"</span><span class="op">)</span>         <span class="co"># "dev_m"</span></span>

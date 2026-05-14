@@ -107,7 +107,7 @@ tri <- as_triangle(experience, groups = "coverage",
                    loss = "loss_incr", premium = "premium_incr")
 cal <- as_calendar(tri)
 head(cal)
-#>    coverage   calendar   dev      loss loss_incr   premium premium_incr
+#>    coverage   calendar     t      loss loss_incr   premium premium_incr
 #>      <char>     <Date> <int>     <num>     <num>     <num>        <num>
 #> 1:      CAN 2023-01-01     1   1327186   1327186  36175141     36175141
 #> 2:      CAN 2023-02-01     2  53881242  52554056  89468123     53292982
@@ -133,9 +133,10 @@ head(cal)
 #> 6:       0.2529446     0.3557249          0.3048260
 ```
 
-Each row is one calendar period (per group). The `dev` column here is a
-sequential index (1, 2, 3, …) within group, not “development period
-since cohort start”.
+Each row is one calendar period (per group). The `t` column is a
+sequential index (1, 2, 3, …) within group — time-series convention. It
+is **not** a development period (`cym - uym`); for that you want the
+`Triangle` `dev` axis.
 
 Calendar aggregation is mathematically the **diagonal sum** of the
 triangle: cells with the same `cy_m` (regardless of `uy_m`/`dev_m`) are
@@ -147,17 +148,10 @@ on-leveling event) - Portfolio monitoring dashboards
 
 ``` r
 
-plot(cal)                       # x axis: calendar
+plot(cal)                       # x axis: calendar (Date)
 ```
 
 ![](aggregation-frameworks_files/figure-html/unnamed-chunk-4-1.png)
-
-``` r
-
-plot(cal, x_by = "dev")         # x axis: sequential index
-```
-
-![](aggregation-frameworks_files/figure-html/unnamed-chunk-4-2.png)
 
 ## Total (portfolio summary)
 

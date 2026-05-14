@@ -110,7 +110,7 @@ tri <- as_triangle(experience, groups = "coverage",
                    loss = "loss_incr", premium = "premium_incr")
 cal <- as_calendar(tri)
 head(cal)
-#>    coverage   calendar   dev      loss loss_incr   premium premium_incr
+#>    coverage   calendar     t      loss loss_incr   premium premium_incr
 #>      <char>     <Date> <int>     <num>     <num>     <num>        <num>
 #> 1:      CAN 2023-01-01     1   1327186   1327186  36175141     36175141
 #> 2:      CAN 2023-02-01     2  53881242  52554056  89468123     53292982
@@ -136,9 +136,10 @@ head(cal)
 #> 6:       0.2529446     0.3557249          0.3048260
 ```
 
-각 행은 그룹별 달력 기간 하나이다. 여기서 `dev` 컬럼은 그룹 내부의 순차
-인덱스 (1, 2, 3, …) 이며, “코호트 시작 이후의 경과 기간(development
-period)” 이 아니다.
+각 행은 그룹별 달력 기간 하나이다. `t` 컬럼은 그룹 내부의 순차 인덱스
+(1, 2, 3, …) 이며 시계열 관용 표기이다. **경과 기간 (development period,
+`cym - uym`)** 이 *아니다* — 진짜 경과 기간은 `Triangle` 의 `dev` 축에
+살아 있다.
 
 Calendar 집계는 수학적으로 Triangle 의 **대각선 합** 이다. 같은 `cy_m`
 값을 갖는 셀 (`uy_m`/`dev_m` 와 무관하게) 이 합쳐진다.
@@ -152,17 +153,10 @@ Calendar 집계는 수학적으로 Triangle 의 **대각선 합** 이다. 같은
 
 ``` r
 
-plot(cal)                       # x axis: calendar
+plot(cal)                       # x axis: calendar (Date)
 ```
 
 ![](aggregation-frameworks-ko_files/figure-html/unnamed-chunk-4-1.png)
-
-``` r
-
-plot(cal, x_by = "dev")         # x axis: 순차 인덱스
-```
-
-![](aggregation-frameworks-ko_files/figure-html/unnamed-chunk-4-2.png)
 
 ## 4. Total (포트폴리오 요약)
 

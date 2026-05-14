@@ -220,7 +220,7 @@ detection</p>
 <span>                   loss <span class="op">=</span> <span class="st">"loss_incr"</span>, premium <span class="op">=</span> <span class="st">"premium_incr"</span><span class="op">)</span></span>
 <span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_calendar.html">as_calendar</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cal</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    coverage   calendar   dev      loss loss_incr   premium premium_incr</span></span>
+<span><span class="co">#&gt;    coverage   calendar     t      loss loss_incr   premium premium_incr</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;        &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:      CAN 2023-01-01     1   1327186   1327186  36175141     36175141</span></span>
 <span><span class="co">#&gt; 2:      CAN 2023-02-01     2  53881242  52554056  89468123     53292982</span></span>
@@ -244,9 +244,11 @@ detection</p>
 <span><span class="co">#&gt; 4:       0.5085391     0.3892024          0.3486040</span></span>
 <span><span class="co">#&gt; 5:       0.4050687     0.3778725          0.3529756</span></span>
 <span><span class="co">#&gt; 6:       0.2529446     0.3557249          0.3048260</span></span></code></pre></div>
-<p>Each row is one calendar period (per group). The <code>dev</code>
-column here is a sequential index (1, 2, 3, …) within group, not
-“development period since cohort start”.</p>
+<p>Each row is one calendar period (per group). The <code>t</code>
+column is a sequential index (1, 2, 3, …) within group — time-series
+convention. It is <strong>not</strong> a development period
+(<code>cym - uym</code>); for that you want the <code>Triangle</code>
+<code>dev</code> axis.</p>
 <p>Calendar aggregation is mathematically the <strong>diagonal
 sum</strong> of the triangle: cells with the same <code>cy_m</code>
 (regardless of <code>uy_m</code>/<code>dev_m</code>) are combined.</p>
@@ -254,16 +256,13 @@ sum</strong> of the triangle: cells with the same <code>cy_m</code>
 time”) - Calendar-year effect detection (e.g., regulatory shock, premium
 on-leveling event) - Portfolio monitoring dashboards</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cal</span><span class="op">)</span>                       <span class="co"># x axis: calendar</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cal</span><span class="op">)</span>                       <span class="co"># x axis: calendar (Date)</span></span></code></pre></div>
 <p><img src="aggregation-frameworks_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" alt="" width="100%"></p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cal</span>, x_by <span class="op">=</span> <span class="st">"dev"</span><span class="op">)</span>         <span class="co"># x axis: sequential index</span></span></code></pre></div>
-<p><img src="aggregation-frameworks_files/figure-html/unnamed-chunk-4-2.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level2">
 <h2 id="total-portfolio-summary">Total (portfolio summary)<a class="anchor" aria-label="anchor" href="#total-portfolio-summary"></a>
 </h2>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Filter the triangle first (or the raw experience) for a date-bounded</span></span>
 <span><span class="co"># summary, then collapse to portfolio totals.</span></span>
 <span><span class="va">tri_bounded</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
@@ -317,7 +316,7 @@ analytical question.</p>
 <p>After aggregation, each object stores its source-column metadata as
 attributes (used for plot labels and granularity-aware date
 formatting):</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tri</span>, <span class="st">"cohort"</span><span class="op">)</span>     <span class="co"># "uy_m"</span></span>
 <span><span class="co">#&gt; [1] "uy_m"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tri</span>, <span class="st">"dev"</span><span class="op">)</span>        <span class="co"># "dev_m"</span></span>
