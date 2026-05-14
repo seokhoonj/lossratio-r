@@ -389,7 +389,7 @@ for documentation.</li>
 <span><span class="co">#&gt; [13] 2901492851 1160045952  686574148 5687484014 2645801838 1209024555</span></span>
 <span><span class="co">#&gt; [19] 2542927190  918120582  635470028  856446521  260916096  295637296</span></span>
 <span><span class="co">#&gt; [25]  710560093 3276849152  434950057  356301148  697290587  789468799</span></span>
-<span><span class="co">#&gt; [31] 1040451732 1008356733  783000257 2001214863  449653406  850839118</span></span></code></pre></div>
+<span><span class="co">#&gt; [31] 1040451732 1008356733  783000257 2001214863         NA         NA</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="variance-and-confidence-intervals">Variance and confidence intervals<a class="anchor" aria-label="anchor" href="#variance-and-confidence-intervals"></a>
@@ -556,6 +556,33 @@ Pick "cl" or "ed" only as special cases:
 default), then run <code>"cl"</code> and <code>"ed"</code> for
 sensitivity. If all three agree, the projection is robust. If they
 diverge, inspect maturity detection and the underlying ATA factors.</p>
+</div>
+<div class="section level2">
+<h2 id="maturity-input">Maturity input<a class="anchor" aria-label="anchor" href="#maturity-input"></a>
+</h2>
+<p>For <code>method = "sa"</code> the maturity point
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>m</mi><mi>g</mi></msub><annotation encoding="application/x-tex">m_g</annotation></semantics></math>
+determines where the projection switches from ED to CL. By default
+<code><a href="../reference/fit_lr.html">fit_lr()</a></code> / <code><a href="../reference/fit_loss.html">fit_loss()</a></code> use
+<code>maturity = "auto"</code>, which calls
+<code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> internally with default thresholds. Other
+forms:</p>
+<ul>
+<li>
+<code>maturity = NULL</code> — disable detection (only meaningful
+for non-SA methods or for <code><a href="../reference/fit_ata.html">fit_ata()</a></code> standalone).</li>
+<li>
+<code>maturity = maturity_spec(max_cv = 0.05, min_run = 2L)</code> —
+lazy spec forwarding custom thresholds to <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code>
+at fit time (leakage-safe for <code><a href="../reference/backtest.html">backtest()</a></code>).</li>
+<li>
+<code>maturity = detect_maturity(tri, ...)</code> — pre-built
+<code>Maturity</code> object, fixed across refits.</li>
+<li>
+<code>maturity = maturity_at(coverage = "SUR", change = 4)</code> —
+manual per-group override (e.g. company-standard
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>).</li>
+</ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

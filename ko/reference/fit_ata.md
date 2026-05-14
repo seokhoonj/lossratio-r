@@ -25,7 +25,7 @@ fit_ata(
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   regime = NULL,
-  maturity_args = NULL,
+  maturity = NULL,
   ...
 )
 ```
@@ -81,44 +81,39 @@ fit_ata(
   the string `"auto"` (internal `detect_regime(tri, target = "lr")`
   call), or a function `function(tri) -> Regime` for deferred
   custom-config detection. When supplied, cohorts strictly before the
-  resolved break date are excluded from estimation.
+  resolved change date are excluded from estimation.
 
-- maturity_args:
+- maturity:
 
-  A named list of arguments forwarded to
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md),
-  or `NULL` (default) to skip maturity filtering. When a list is
-  supplied, missing elements are filled with package defaults via
-  [`utils::modifyList()`](https://rdrr.io/r/utils/modifyList.html):
+  Optional maturity specification for filtering ata links. Accepts four
+  input types:
 
-  `max_cv`
+  `NULL` (default)
 
-  :   Default `0.15`.
+  :   No maturity filter.
 
-  `max_rse`
+  `Maturity` object
 
-  :   Default `0.05`.
+  :   Use as-is. Typically built via
+      [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
+      or
+      [`maturity_at()`](https://seokhoonj.github.io/lossratio/ko/reference/maturity_at.md).
 
-  `min_valid_ratio`
+  `"auto"`
 
-  :   Default `0.5`.
+  :   Detect maturity internally via `detect_maturity(x)` on the input
+      triangle.
 
-  `min_n_valid`
+  Function / closure
 
-  :   Default `3L`.
+  :   A user-supplied function taking the triangle and returning a
+      `Maturity` object (e.g. from
+      [`maturity_spec()`](https://seokhoonj.github.io/lossratio/ko/reference/maturity_spec.md))
+      for deferred custom-config detection.
 
-  `min_run`
-
-  :   Default `2L`.
-
-  Pass [`list()`](https://rdrr.io/r/base/list.html) to use all defaults
-  with maturity filtering enabled. The list may also include `groups`,
-  which re-aggregates the Triangle to a coarser partition before link
-  construction and maturity detection. Same semantics as
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md):
-  `NULL` (default) keeps the Triangle's current `attr(x, "groups")`,
-  `character(0)` pools to a single global maturity, and a subset of
-  `attr(x, "groups")` yields a coarser per-group result.
+  When the supplied `Maturity` carries `attr(., "groups")` that differs
+  from the Triangle's grouping, the Triangle is rebucketed to the
+  maturity partition before link construction.
 
 - ...:
 
@@ -149,9 +144,8 @@ An object of class `"ATAFit"` (a named list) containing:
 
 - `maturity`:
 
-  Maturity diagnostics from
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md),
-  or `NULL` when maturity filtering was not applied.
+  Resolved `Maturity` object used for filtering, or `NULL` when maturity
+  filtering was not applied.
 
 - `alpha`:
 
@@ -176,10 +170,6 @@ An object of class `"ATAFit"` (a named list) containing:
 - `use_maturity`:
 
   Logical; whether maturity filtering was applied.
-
-- `maturity_args`:
-
-  Resolved maturity arguments, or `NULL`.
 
 ## See also
 

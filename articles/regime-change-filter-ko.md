@@ -38,8 +38,31 @@ x 축은 모형 단계의 단일 switch 이며
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
 가 한 점 ($`k^*`$) 을 반환한다. y 축은 외생적 사건이라 그룹 안에서 0
 회일 수도, 여러 번일 수도 있다. `Regime` 객체가 다중 change 를 담고 있을
-때는 가장 최신 change 만 쓴다 — change 이후 누적된 코호트 수가 많을수록
-post-change 통계량이 안정적이기 때문이다.
+때 처리 방식은 `treatment` slot 으로 결정된다.
+
+- `treatment = "latest_only"` (default): 가장 최신 change 하나만
+  사용하고 그 이전 코호트는 전부 drop. 살아남은 (post-latest) 코호트로
+  단일 factor 를 추정. post-change 윈도우에 충분한 코호트가 쌓였고 옛
+  regime 이 현재 regime 에 정보가 안 될 때 안정적.
+- `treatment = "segment_wise"`: 모든 change 를 보존. 각 segment (인접한
+  두 change 사이의 코호트 묶음) 가 자기 factor 를 추정하고, 각 코호트는
+  자기 segment 의 factor 로 예측됨. multi-regime + long-tail (옛 regime
+  도 자기 late-dev 발전이 필요한 경우) 에서 사용 — 최신 regime 이 아직
+  late-dev 까지 가지 못한 데이터.
+
+Regime 만들 때 treatment 지정:
+
+``` r
+
+# Latest-only (default — pre-latest 코호트 drop)
+regime_at(change = c("2022-01-01", "2024-04-01"))
+
+# Segment-wise (각 segment 가 자기 factor)
+regime_at(change = c("2022-01-01", "2024-04-01"),
+          treatment = "segment_wise")
+
+detect_regime(tri, treatment = "segment_wise")
+```
 
 ## 3. API
 
@@ -126,14 +149,14 @@ fit_lr(tri_sur, method = "sa", recent = 18L,
 factor noise 에 따라 흔들리지 않는다.
 
 각 필터 설정이 어떤 셀을 `fit_lr` 에 공급하는지는
-`plot_triangle(type = "usage")` 로 시각화할 수 있다.
+`plot_triangle(view = "usage")` 로 시각화할 수 있다.
 
 ``` r
 
-plot_triangle(tri_sur, type = "usage", holdout = 6L)                            # full
-plot_triangle(tri_sur, type = "usage", recent = 12L, holdout = 6L)              # recent
-plot_triangle(tri_sur, type = "usage", regime = "2024-07-01", holdout = 6L)     # change
-plot_triangle(tri_sur, type = "usage", recent = 12L,
+plot_triangle(tri_sur, view = "usage", holdout = 6L)                            # full
+plot_triangle(tri_sur, view = "usage", recent = 12L, holdout = 6L)              # recent
+plot_triangle(tri_sur, view = "usage", regime = "2024-07-01", holdout = 6L)     # change
+plot_triangle(tri_sur, view = "usage", recent = 12L,
               regime = "2024-07-01", holdout = 6L)                              # hybrid
 ```
 

@@ -22,7 +22,7 @@ Argument syntax mirrors
 ## Usage
 
 ``` r
-regime_at(...)
+regime_at(..., treatment = c("latest_only", "segment_wise"))
 ```
 
 ## Arguments
@@ -34,6 +34,17 @@ regime_at(...)
   other named arguments are interpreted as group column values (e.g.
   `coverage`, `channel`). With no group columns the result is a pooled
   (single-row) Regime.
+
+- treatment:
+
+  How downstream fits should apply this Regime when `$changes` contains
+  multiple change points. `"latest_only"` (default) collapses to the
+  most recent change and drops all pre-latest cohorts (single pooled
+  factor). `"segment_wise"` preserves all changes and estimates one
+  factor per segment (each cohort projected with its own segment's
+  factor). See
+  [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+  for full semantics.
 
 ## Value
 

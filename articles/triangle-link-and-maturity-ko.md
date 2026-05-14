@@ -335,25 +335,38 @@ attribute 로도 저장된다.
 ### 적합 함수에서의 사용
 
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
-는 `maturity_args` 가 주어진 경우
+는
 [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)
 와
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
-내부에서도 호출된다 (내부
-[`summary()`](https://rdrr.io/r/base/summary.html) 단계의 `alpha` 는
-호출자의 값을 그대로 받는다).
+내부에서도 `maturity` 인자를 통해 호출된다. 사용자 임계값을 넘기려면
+[`maturity_spec()`](https://seokhoonj.github.io/lossratio/reference/maturity_spec.md)
+으로 감싸 전달하고, default 값으로 자동 탐지하려면 `"auto"` 를 쓴다
+(`fit_lr(method = "sa")` /
+[`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+는 default 가 `"auto"`).
 
 ``` r
 
 fit_ata(tri, target = "loss",
-        maturity_args = list(max_cv = 0.08, min_run = 2L))
+        maturity = maturity_spec(max_cv = 0.08, min_run = 2L))
 
 fit_cl(tri, target = "loss",
-       maturity_args = list(max_cv = 0.08))
+       maturity = maturity_spec(max_cv = 0.08))
 
 fit_lr(tri, method = "sa",
-       maturity_args = list(max_cv = 0.08))
+       maturity = maturity_spec(max_cv = 0.08))
 ```
+
+`maturity` 인자는 네 가지 형태를 받는다: `NULL` (탐지 안 함), 이미
+산출된 `Maturity` 객체
+([`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+결과 또는 수동 override 용
+[`maturity_at()`](https://seokhoonj.github.io/lossratio/reference/maturity_at.md)),
+문자열 `"auto"` (default 임계값으로 내부 탐지), 또는 triangle 한 개를
+인자로 받아 `Maturity` 를 반환하는 함수 (보통
+[`maturity_spec()`](https://seokhoonj.github.io/lossratio/reference/maturity_spec.md)
+로 작성).
 
 `fit_lr(method = "sa")` 에서는 탐지된 성숙점이 ED (초기 dev) 에서 CL
 (이후 dev) 로 전환되는 dev 를 결정한다.
@@ -415,7 +428,7 @@ plot(build_link(tri_all, target = "loss"), type = "cv")
 
 ``` r
 
-gaps <- validate_triangle(exp, groups = "coverage", cohort = "uy_m", dev = "dev_m")
+gaps <- validate_triangle(exp, groups = "coverage", cohort = "uy_m", development = "dev_m")
 head(gaps)
 #> <TriangleValidation>
 #> Cohort dev-sequence gaps : none
@@ -474,7 +487,7 @@ fit_lr(tri, recent = 12)
 #> recent         : 12 
 #> loss_regime    : none
 #> premium_regime : none
-#> maturity[SUR]  : 25 
+#> maturity[SUR]  : 4 
 #> groups         : coverage 
 #> periods        : 36
 ```

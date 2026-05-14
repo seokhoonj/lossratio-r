@@ -125,7 +125,7 @@ flag over-projection. Aggregated by development period
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  loss_regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  premium_regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  maturity_args <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  maturity <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  se_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fixed"</span>, <span class="st">"delta"</span><span class="op">)</span>,</span>
 <span>  rho <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  conf_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
@@ -206,9 +206,20 @@ masked triangle for the same leakage-safe reason.</p></li>
 </ul><p><code>premium_regime</code> is resolved independently from <code>loss_regime</code>.</p></dd>
 
 
-<dt id="arg-maturity-args">maturity_args<a class="anchor" aria-label="anchor" href="#arg-maturity-args"></a></dt>
-<dd><p>Maturity-detection args. Used only for
-<code>target = "lr"</code> and <code>target = "loss"</code> (stage-adaptive).</p></dd>
+<dt id="arg-maturity">maturity<a class="anchor" aria-label="anchor" href="#arg-maturity"></a></dt>
+<dd><p>Maturity input. Used only for <code>target = "lr"</code> and
+<code>target = "loss"</code> (stage-adaptive). Accepts one of four input
+types, dispatched by <code><a href="dot-resolve_maturity.html">.resolve_maturity()</a></code>:</p><ul><li><p><code>NULL</code> – skip maturity filtering.</p></li>
+<li><p>A <code>Maturity</code> object (e.g. from <code><a href="detect_maturity.html">detect_maturity()</a></code> or
+<code><a href="maturity_at.html">maturity_at()</a></code>) – used as-is. Caller takes responsibility
+for any leakage in their pre-computation.</p></li>
+<li><p>The string <code>"auto"</code> (default) – runs <code><a href="detect_maturity.html">detect_maturity()</a></code>
+on the <strong>masked</strong> triangle (last <code>holdout</code> calendar diagonals
+removed), avoiding look-ahead leakage.</p></li>
+<li><p>A function <code>function(tri) -&gt; Maturity</code> (e.g. from
+<code><a href="maturity_spec.html">maturity_spec()</a></code>) – called on the masked triangle for the
+same leakage-safe reason.</p></li>
+</ul></dd>
 
 
 <dt id="arg-se-method">se_method<a class="anchor" aria-label="anchor" href="#arg-se-method"></a></dt>
@@ -257,8 +268,9 @@ fitter.</p></dd>
 
 <dt><code>ae_err</code></dt>
 <dd><p><code>data.table</code> of held-out cells with columns
-<code>(group, cohort, dev, value_actual, value_proj, aeg, ae_err, value_actual_incr, value_proj_incr, aeg_incr, ae_err_incr, calendar_idx)</code>. <code>aeg = value_actual - value_proj</code> (signed
-error in target units); <code>ae_err = value_actual / value_proj - 1</code> (relative error). <code>_incr</code> siblings are the same metrics
+<code>(group, cohort, dev, actual, expected, aeg, ae_err, actual_incr, expected_incr, aeg_incr, ae_err_incr, calendar_idx)</code>. <code>aeg = actual - expected</code> (signed
+error in target units); <code>ae_err = actual / expected - 1</code>
+(relative error). <code>_incr</code> siblings are the same metrics
 on the incremental view.</p></dd>
 
 <dt><code>col_summary</code></dt>
@@ -270,7 +282,7 @@ on the incremental view.</p></dd>
 Error and AEG (same columns as <code>col_summary</code>, keyed by
 <code>calendar_idx</code>).</p></dd>
 
-<dt><code>target</code>, <code>holdout</code>, <code>fit_fn_name</code></dt>
+<dt><code>target</code>, <code>holdout</code>, <code>dispatcher</code></dt>
 <dd><p>Call metadata.</p></dd>
 
 <dt><code>groups</code>, <code>cohort</code>, <code>dev</code></dt>

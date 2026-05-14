@@ -13,7 +13,7 @@ period.
 ## Usage
 
 ``` r
-.format_period_safe(x, var)
+.format_period_safe(x, var, grain = NULL)
 ```
 
 ## Arguments
@@ -26,6 +26,12 @@ period.
 
   A single character string naming the variable (e.g. `"uy_m"`,
   `"dev_m"`).
+
+- grain:
+
+  Optional grain code (`"M"`/`"Q"`/`"H"`/`"Y"`). Used when `var` is not
+  a package-standard period name (see
+  [`.get_period_type()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-get_period_type.md)).
 
 ## Value
 

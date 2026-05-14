@@ -45,7 +45,7 @@ build_triangle(
   groups = character(0),
   cohort,
   calendar = NULL,
-  dev = NULL,
+  development = NULL,
   loss,
   premium,
   grain = "auto",
@@ -76,16 +76,17 @@ build_triangle(
 
   Single column (raw name) defining the calendar period of the
   observation (e.g., `"cy_m"`). Optional – supply either `calendar` or
-  `dev` (or both). When `calendar` is given, `dev` is derived internally
-  via `count_periods(cohort, calendar, grain)`.
+  `development` (or both). When `calendar` is given, `dev` is derived
+  internally via `count_periods(cohort, calendar, grain)`.
 
-- dev:
+- development:
 
   Single column (raw name) holding pre-computed development periods
-  (e.g., `"dev_m"`). Optional – supply either `calendar` or `dev` (or
-  both). When only `dev` is given, the calendar axis is omitted from the
-  attribute (downstream calendar-diagonal logic uses cohort + dev). When
-  both are given, `dev` is cross-checked against
+  (e.g., `"dev_m"`). Optional – supply either `calendar` or
+  `development` (or both). When only `development` is given, the
+  calendar axis is omitted from the attribute (downstream
+  calendar-diagonal logic uses cohort + dev). When both are given,
+  `development` is cross-checked against
   `count_periods(cohort, calendar, grain)`.
 
 - loss:

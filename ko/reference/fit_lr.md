@@ -52,7 +52,7 @@ fit_lr(
   premium_regime = NULL,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  maturity_args = NULL,
+  maturity = "auto",
   se_method = c("fixed", "delta"),
   rho = 0.95,
   conf_level = 0.95,
@@ -110,15 +110,15 @@ fit_lr(
 
   `"sa"`
 
-  :   Hybrid filter. Pre-break cohorts are dropped only for development
+  :   Hybrid filter. Pre-change cohorts are dropped only for development
       periods at or before the maturity point (ED phase);
       post-maturity (CL) cells use the `recent`-diagonal window across
       all cohorts. This preserves CL stability while protecting the ED
-      intensities from a regime shift.
+      intensities from a regime change.
 
   `"ed"`, `"cl"`
 
-  :   Simple cohort cut: all cohorts strictly before the break date are
+  :   Simple cohort cut: all cohorts strictly before the change date are
       excluded from estimation.
 
 - premium_method:
@@ -148,13 +148,35 @@ fit_lr(
 
   Optional positive integer for estimation window. Default is `NULL`.
 
-- maturity_args:
+- maturity:
 
-  A named list forwarded to
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md),
-  or `NULL` (default) to skip maturity filtering. When `method = "sa"`,
-  this also determines the switch point between ED and CL. Pass
-  [`list()`](https://rdrr.io/r/base/list.html) to use all defaults.
+  Optional maturity specification. Accepts four input types:
+
+  `NULL`
+
+  :   No maturity filter. Disables SA-mode switch detection.
+
+  `Maturity` object
+
+  :   Use as-is. Typically built via
+      [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
+      or
+      [`maturity_at()`](https://seokhoonj.github.io/lossratio/ko/reference/maturity_at.md).
+
+  `"auto"` (default)
+
+  :   Detect maturity internally via `detect_maturity(x)` on the input
+      triangle.
+
+  Function / closure
+
+  :   A user-supplied function taking the triangle and returning a
+      `Maturity` object (e.g. from
+      [`maturity_spec()`](https://seokhoonj.github.io/lossratio/ko/reference/maturity_spec.md))
+      for deferred custom-config detection.
+
+  When `method = "sa"`, this also determines the switch point between ED
+  and CL phases.
 
 - se_method:
 

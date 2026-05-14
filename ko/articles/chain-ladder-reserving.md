@@ -126,9 +126,9 @@ region only:
 
 cl_mat <- fit_cl(
   tri,
-  target        = "loss",
-  method        = "mack",
-  maturity_args = list(max_cv = 0.10, max_rse = 0.05)
+  target   = "loss",
+  method   = "mack",
+  maturity = maturity_spec(max_cv = 0.10, max_rse = 0.05)
 )
 
 cl_mat$maturity
@@ -144,8 +144,12 @@ cl_mat$maturity
 #> 1:           1
 ```
 
-`maturity_args` is forwarded to
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md).
+`maturity_spec(...)` captures custom
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
+thresholds and is invoked internally on the (possibly masked) triangle.
+Pass `maturity = "auto"` for default thresholds, a pre-built `Maturity`
+object for a fixed override, or `maturity_at(...)` for a manual
+per-group $`k^*`$.
 
 ## Variance components (Mack)
 

@@ -26,7 +26,7 @@ fit_cl(
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   regime = NULL,
-  maturity_args = NULL,
+  maturity = NULL,
   tail = FALSE
 )
 ```
@@ -82,17 +82,38 @@ fit_cl(
   the string `"auto"` (internal `detect_regime(tri, target = "lr")`
   call), or a function `function(tri) -> Regime` for deferred
   custom-config detection. When supplied, cohorts strictly before the
-  resolved break date are excluded from factor estimation.
+  resolved change date are excluded from factor estimation.
 
-- maturity_args:
+- maturity:
 
-  A named list of arguments forwarded to
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
-  via
-  [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md),
-  or `NULL` (default) to skip maturity filtering. Pass
-  [`list()`](https://rdrr.io/r/base/list.html) to use all defaults with
-  maturity filtering enabled.
+  Maturity input forwarded to
+  [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md).
+  Accepts four forms:
+
+  `NULL` (default)
+
+  :   No maturity filtering.
+
+  `Maturity` object
+
+  :   Pre-built (e.g. from
+      [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+      or
+      [`maturity_at()`](https://seokhoonj.github.io/lossratio/reference/maturity_at.md))
+      — used as-is.
+
+  `"auto"`
+
+  :   Internal
+      [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+      call with defaults (target inferred from `target`).
+
+  function `function(tri) -> Maturity`
+
+  :   Lazy spec, typically built with
+      [`maturity_spec()`](https://seokhoonj.github.io/lossratio/reference/maturity_spec.md),
+      invoked on the triangle at fit time (leakage-safe for
+      [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)).
 
 - tail:
 
@@ -189,10 +210,6 @@ An object of class `"CLFit"` containing:
 - `use_maturity`:
 
   Logical; whether maturity filtering was applied.
-
-- `maturity_args`:
-
-  Resolved maturity arguments, or `NULL`.
 
 - `tail`:
 

@@ -39,7 +39,7 @@ backtest(
   recent = NULL,
   loss_regime = NULL,
   premium_regime = NULL,
-  maturity_args = NULL,
+  maturity = "auto",
   se_method = c("fixed", "delta"),
   rho = 0.95,
   conf_level = 0.95,
@@ -131,10 +131,29 @@ print(x, ...)
 
   `premium_regime` is resolved independently from `loss_regime`.
 
-- maturity_args:
+- maturity:
 
-  Maturity-detection args. Used only for `target = "lr"` and
-  `target = "loss"` (stage-adaptive).
+  Maturity input. Used only for `target = "lr"` and `target = "loss"`
+  (stage-adaptive). Accepts one of four input types, dispatched by
+  [`.resolve_maturity()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_maturity.md):
+
+  - `NULL` – skip maturity filtering.
+
+  - A `Maturity` object (e.g. from
+    [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+    or
+    [`maturity_at()`](https://seokhoonj.github.io/lossratio/reference/maturity_at.md))
+    – used as-is. Caller takes responsibility for any leakage in their
+    pre-computation.
+
+  - The string `"auto"` (default) – runs
+    [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+    on the **masked** triangle (last `holdout` calendar diagonals
+    removed), avoiding look-ahead leakage.
+
+  - A function `function(tri) -> Maturity` (e.g. from
+    [`maturity_spec()`](https://seokhoonj.github.io/lossratio/reference/maturity_spec.md))
+    – called on the masked triangle for the same leakage-safe reason.
 
 - se_method:
 
@@ -194,10 +213,10 @@ An object of class `"Backtest"` with components:
 - `ae_err`:
 
   `data.table` of held-out cells with columns
-  `(group, cohort, dev, value_actual, value_proj, aeg, ae_err, value_actual_incr, value_proj_incr, aeg_incr, ae_err_incr, calendar_idx)`.
-  `aeg = value_actual - value_proj` (signed error in target units);
-  `ae_err = value_actual / value_proj - 1` (relative error). `_incr`
-  siblings are the same metrics on the incremental view.
+  `(group, cohort, dev, actual, expected, aeg, ae_err, actual_incr, expected_incr, aeg_incr, ae_err_incr, calendar_idx)`.
+  `aeg = actual - expected` (signed error in target units);
+  `ae_err = actual / expected - 1` (relative error). `_incr` siblings
+  are the same metrics on the incremental view.
 
 - `col_summary`:
 
@@ -209,7 +228,7 @@ An object of class `"Backtest"` with components:
   Per-calendar-diagonal aggregate A/E Error and AEG (same columns as
   `col_summary`, keyed by `calendar_idx`).
 
-- `target`, `holdout`, `fit_fn_name`:
+- `target`, `holdout`, `dispatcher`:
 
   Call metadata.
 

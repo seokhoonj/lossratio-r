@@ -8,5 +8,5 @@ Falls back to the bare `prefix` for unrecognised inputs.
 ## Usage
 
 ``` r
-.period_axis_label(var, prefix = "cohort")
+.period_axis_label(var, prefix = "cohort", grain = NULL)
 ```

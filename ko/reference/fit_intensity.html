@@ -158,7 +158,7 @@ estimation to rows within the last <code>recent</code> calendar diagonals
 <code>detect_regime(tri, target = "lr")</code> call), or a function
 <code>function(tri) -&gt; Regime</code>. Resolved internally via
 <code><a href="dot-resolve_regime.html">.resolve_regime()</a></code>. When supplied, cohorts strictly before the
-break are dropped before estimation.</p></dd>
+change are dropped before estimation.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -209,7 +209,7 @@ object (or <code>NULL</code>) returned by <code><a href="dot-resolve_regime.html
 threshold, ED intensities behave differently — as \(g_k \to 0\)
 in late development the CV / RSE blow up by construction, not by
 instability. <code>fit_intensity()</code> therefore deliberately omits a
-<code>maturity_args</code> parameter, and <code><a href="detect_maturity.html">detect_maturity()</a></code> rejects
+<code>maturity</code> parameter, and <code><a href="detect_maturity.html">detect_maturity()</a></code> rejects
 <code>IntensityFit</code> input with an informative error.</p>
     </div>
     <div class="section level2">

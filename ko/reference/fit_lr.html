@@ -167,7 +167,7 @@ point + variance via the delta method (<code>se_method = "fixed"</code> or
 <span>  premium_regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  maturity_args <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  maturity <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  se_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fixed"</span>, <span class="st">"delta"</span><span class="op">)</span>,</span>
 <span>  rho <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  conf_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
@@ -214,15 +214,15 @@ triangle and returning a <code>Regime</code> object (or <code>NULL</code>).</p><
 
 
 </dl><p>Behavior depends on <code>method</code>:</p><dl><dt><code>"sa"</code></dt>
-<dd><p>Hybrid filter. Pre-break cohorts are dropped only for
+<dd><p>Hybrid filter. Pre-change cohorts are dropped only for
 development periods at or before the maturity point (ED phase);
 post-maturity (CL) cells use the <code>recent</code>-diagonal window across
 all cohorts. This preserves CL stability while protecting the ED
-intensities from a regime shift.</p></dd>
+intensities from a regime change.</p></dd>
 
 <dt><code>"ed"</code>, <code>"cl"</code></dt>
 <dd><p>Simple cohort cut: all cohorts strictly before
-the break date are excluded from estimation.</p></dd>
+the change date are excluded from estimation.</p></dd>
 
 
 </dl></dd>
@@ -256,11 +256,27 @@ shift affects premium accrual too.</p></dd>
 Default is <code>NULL</code>.</p></dd>
 
 
-<dt id="arg-maturity-args">maturity_args<a class="anchor" aria-label="anchor" href="#arg-maturity-args"></a></dt>
-<dd><p>A named list forwarded to <code><a href="detect_maturity.html">detect_maturity()</a></code>,
-or <code>NULL</code> (default) to skip maturity filtering. When
-<code>method = "sa"</code>, this also determines the switch point between
-ED and CL. Pass <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> to use all defaults.</p></dd>
+<dt id="arg-maturity">maturity<a class="anchor" aria-label="anchor" href="#arg-maturity"></a></dt>
+<dd><p>Optional maturity specification. Accepts four input
+types:</p><dl><dt><code>NULL</code></dt>
+<dd><p>No maturity filter. Disables SA-mode switch detection.</p></dd>
+
+<dt><code>Maturity</code> object</dt>
+<dd><p>Use as-is. Typically built via
+<code><a href="detect_maturity.html">detect_maturity()</a></code> or <code><a href="maturity_at.html">maturity_at()</a></code>.</p></dd>
+
+<dt><code>"auto"</code> (default)</dt>
+<dd><p>Detect maturity internally via
+<code>detect_maturity(x)</code> on the input triangle.</p></dd>
+
+<dt>Function / closure</dt>
+<dd><p>A user-supplied function taking the
+triangle and returning a <code>Maturity</code> object (e.g. from
+<code><a href="maturity_spec.html">maturity_spec()</a></code>) for deferred custom-config detection.</p></dd>
+
+
+</dl><p>When <code>method = "sa"</code>, this also determines the switch point between
+ED and CL phases.</p></dd>
 
 
 <dt id="arg-se-method">se_method<a class="anchor" aria-label="anchor" href="#arg-se-method"></a></dt>

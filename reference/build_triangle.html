@@ -189,7 +189,7 @@ each development cell across products or other grouping variables.</p>
 <span>  groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  <span class="va">cohort</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  dev <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  development <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">loss</span>,</span>
 <span>  <span class="va">premium</span>,</span>
 <span>  grain <span class="op">=</span> <span class="st">"auto"</span>,</span>
@@ -221,17 +221,18 @@ exposure period start (e.g., <code>"uy_m"</code>).</p></dd>
 <dt id="arg-calendar">calendar<a class="anchor" aria-label="anchor" href="#arg-calendar"></a></dt>
 <dd><p>Single column (raw name) defining the calendar period of
 the observation (e.g., <code>"cy_m"</code>). Optional – supply either <code>calendar</code>
-or <code>dev</code> (or both). When <code>calendar</code> is given, <code>dev</code> is derived
-internally via <code>count_periods(cohort, calendar, grain)</code>.</p></dd>
+or <code>development</code> (or both). When <code>calendar</code> is given, <code>dev</code> is
+derived internally via <code>count_periods(cohort, calendar, grain)</code>.</p></dd>
 
 
-<dt id="arg-dev">dev<a class="anchor" aria-label="anchor" href="#arg-dev"></a></dt>
-<dd><p>Single column (raw name) holding pre-computed development
-periods (e.g., <code>"dev_m"</code>). Optional – supply either <code>calendar</code>
-or <code>dev</code> (or both). When only <code>dev</code> is given, the calendar
-axis is omitted from the attribute (downstream calendar-diagonal
-logic uses cohort + dev). When both are given, <code>dev</code> is
-cross-checked against <code>count_periods(cohort, calendar, grain)</code>.</p></dd>
+<dt id="arg-development">development<a class="anchor" aria-label="anchor" href="#arg-development"></a></dt>
+<dd><p>Single column (raw name) holding pre-computed
+development periods (e.g., <code>"dev_m"</code>). Optional – supply either
+<code>calendar</code> or <code>development</code> (or both). When only <code>development</code> is
+given, the calendar axis is omitted from the attribute (downstream
+calendar-diagonal logic uses cohort + dev). When both are given,
+<code>development</code> is cross-checked against
+<code>count_periods(cohort, calendar, grain)</code>.</p></dd>
 
 
 <dt id="arg-loss">loss<a class="anchor" aria-label="anchor" href="#arg-loss"></a></dt>

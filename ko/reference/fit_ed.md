@@ -83,7 +83,7 @@ fit_ed(
   call), or a function `function(tri) -> Regime`. Resolved internally
   via
   [`.resolve_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_regime.md).
-  When supplied, cohorts with `cohort < break_date` are excluded from
+  When supplied, cohorts with `cohort < change_date` are excluded from
   estimation. Default is `NULL`.
 
 - ...:

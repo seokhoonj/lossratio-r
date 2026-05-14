@@ -12,7 +12,7 @@ etc.) rather than a trajectory.
 plot(
   x,
   metric = "lr",
-  amount_divisor = 1e+08,
+  amount_divisor = "auto",
   theme = c("view", "save", "shiny"),
   ...
 )

@@ -49,6 +49,7 @@ detect_regime(
   n_regimes = NULL,
   sig_level = 0.05,
   min_size = 3L,
+  treatment = c("latest_only", "segment_wise"),
   ...
 )
 
@@ -142,6 +143,25 @@ print(x, ...)
 
   Minimum segment size for `"e_divisive"`. Default `3`.
 
+- treatment:
+
+  How downstream fits should apply this Regime when `$changes` contains
+  multiple change points. One of:
+
+  `"latest_only"`
+
+  :   (default) Collapse to the most recent change date and drop all
+      pre-latest-change cohorts. Single pooled factor estimate over the
+      surviving (post-latest-change) cohorts.
+
+  `"segment_wise"`
+
+  :   Preserve all change points. Each segment (consecutive cohorts
+      between adjacent changes) gets its own factor estimate, and each
+      cohort is projected using its own segment's factor. Recommended
+      for multi-regime + long-tail data where opt `"latest_only"` would
+      lose self-regime responsiveness on older cohorts.
+
 - ...:
 
   Reserved for future use.
@@ -223,6 +243,17 @@ An object of class `"Regime"`. For single-group input:
 - `multi_group`:
 
   Logical flag; `TRUE` when detection ran over multiple group combos.
+
+- `treatment`:
+
+  Either `"latest_only"` or `"segment_wise"` — the value supplied via
+  the `treatment` argument. Read by downstream fits
+  ([`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
+  [`fit_intensity()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_intensity.md),
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md),
+  [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md))
+  to decide whether to collapse to the latest change (drop pre-change
+  cohorts, single pooled factor) or estimate per-segment factors.
 
 ## See also
 

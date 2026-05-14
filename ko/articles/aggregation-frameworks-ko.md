@@ -169,7 +169,7 @@ tot <- build_total(
   experience,
   groups      = "coverage",
   cohort      = "uy_m",
-  dev         = "dev_m",
+  development = "dev_m",
   loss        = "loss_incr",
   premium     = "premium_incr",
   period_from = "2023-04-01",

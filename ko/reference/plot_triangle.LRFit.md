@@ -18,7 +18,7 @@ plot_triangle(
   label_size = NULL,
   show_maturity = TRUE,
   digits = 0,
-  amount_divisor = 1e+08,
+  amount_divisor = "auto",
   theme = c("view", "save", "shiny"),
   nrow = NULL,
   ncol = NULL,

@@ -38,7 +38,7 @@ fit_loss(
   premium_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
-  maturity_args = NULL,
+  maturity = "auto",
   conf_level = 0.95
 )
 ```
@@ -124,12 +124,33 @@ fit_loss(
 
   Optional positive integer; calendar-diagonal filter.
 
-- maturity_args:
+- maturity:
 
-  A named list forwarded to
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md),
-  or `NULL` (default) to skip maturity filtering. SA auto-defaults to
-  [`list()`](https://rdrr.io/r/base/list.html).
+  Optional maturity specification. Accepts four input types:
+
+  `NULL`
+
+  :   No maturity filter. SA mode requires a maturity, so this disables
+      only ED / CL modes.
+
+  `Maturity` object
+
+  :   Use as-is. Typically built via
+      [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+      or
+      [`maturity_at()`](https://seokhoonj.github.io/lossratio/reference/maturity_at.md).
+
+  `"auto"` (default)
+
+  :   Detect maturity internally via `detect_maturity(x)` on the input
+      triangle.
+
+  Function / closure
+
+  :   A user-supplied function taking the triangle and returning a
+      `Maturity` object (e.g. from
+      [`maturity_spec()`](https://seokhoonj.github.io/lossratio/reference/maturity_spec.md))
+      for deferred custom-config detection.
 
 - conf_level:
 

@@ -339,21 +339,35 @@ is also called internally by
 [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)
 and
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
-when `maturity_args` is supplied (the `alpha` of the internal
-[`summary()`](https://rdrr.io/r/base/summary.html) step is taken from
-those callers):
+via the `maturity` argument. Pass
+[`maturity_spec()`](https://seokhoonj.github.io/lossratio/reference/maturity_spec.md)
+to forward custom detection thresholds, or `"auto"` for defaults
+(`fit_lr(method = "sa")` and
+[`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+use `"auto"` by default):
 
 ``` r
 
 fit_ata(tri, target = "loss",
-        maturity_args = list(max_cv = 0.08, min_run = 2L))
+        maturity = maturity_spec(max_cv = 0.08, min_run = 2L))
 
 fit_cl(tri, target = "loss",
-       maturity_args = list(max_cv = 0.08))
+       maturity = maturity_spec(max_cv = 0.08))
 
 fit_lr(tri, method = "sa",
-       maturity_args = list(max_cv = 0.08))
+       maturity = maturity_spec(max_cv = 0.08))
 ```
+
+The `maturity` argument accepts four forms: `NULL` (no detection), a
+pre-built `Maturity` object (e.g. from
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+or
+[`maturity_at()`](https://seokhoonj.github.io/lossratio/reference/maturity_at.md)
+for manual override), the string `"auto"` (internal
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+with defaults), or a function of one triangle argument returning a
+`Maturity` (typically built with
+[`maturity_spec()`](https://seokhoonj.github.io/lossratio/reference/maturity_spec.md)).
 
 For `fit_lr(method = "sa")` the detected maturity point determines the
 dev at which the projection switches from ED (early dev) to CL (later
@@ -416,7 +430,7 @@ If gaps in the development sequence are suspected, inspect them before
 
 ``` r
 
-gaps <- validate_triangle(exp, groups = "coverage", cohort = "uy_m", dev = "dev_m")
+gaps <- validate_triangle(exp, groups = "coverage", cohort = "uy_m", development = "dev_m")
 head(gaps)
 #> <TriangleValidation>
 #> Cohort dev-sequence gaps : none
@@ -476,7 +490,7 @@ fit_lr(tri, recent = 12)
 #> recent         : 12 
 #> loss_regime    : none
 #> premium_regime : none
-#> maturity[SUR]  : 25 
+#> maturity[SUR]  : 4 
 #> groups         : coverage 
 #> periods        : 36
 ```

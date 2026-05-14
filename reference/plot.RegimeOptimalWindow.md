@@ -1,7 +1,7 @@
-# Plot break-count vs window with the elbow marker
+# Plot change-count vs window with the elbow marker
 
 Diagnostic plot for a `detect_regime_optimal_window()` result: shows
-`break_count` (and optionally `mean_magnitude`) against the trajectory
+`change_count` (and optionally `magnitude_mean`) against the trajectory
 window `window`, with a vertical line at `optimal_window`.
 
 ## Usage
@@ -19,8 +19,8 @@ plot(x, show_magnitude = TRUE, theme = c("view", "save", "shiny"), ...)
 
 - show_magnitude:
 
-  Logical; if `TRUE` (default), overlay `mean_magnitude` on a secondary
-  y axis (right). Set `FALSE` for a cleaner break-count-only plot.
+  Logical; if `TRUE` (default), overlay `magnitude_mean` on a secondary
+  y axis (right). Set `FALSE` for a cleaner change-count-only plot.
 
 - theme:
 

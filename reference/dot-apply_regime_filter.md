@@ -1,14 +1,14 @@
 # Apply regime-change (cohort) filter to a triangle-shaped data.table
 
-Drops rows where `coh < break_date`. Optionally restrict the filter to
+Drops rows where `coh < change_date`. Optionally restrict the filter to
 rows with `dev < dev_split` (the ED region of an SA fit); rows with
 `dev >= dev_split` (CL region) are kept regardless of cohort.
 
-Supports both **scalar** dispatch (single break date applied to every
-row) and **per-group** dispatch (different break date per group,
+Supports both **scalar** dispatch (single change date applied to every
+row) and **per-group** dispatch (different change date per group,
 broadcast via left-join). The mode is auto-selected from `regime` and
 `grp`: a multi-group `Regime` whose `$groups` intersect `grp` triggers
-the per-group path. Groups in `dt` that have no matching break date (NA
+the per-group path. Groups in `dt` that have no matching change date (NA
 after the left-join) are kept unfiltered.
 
 ## Usage

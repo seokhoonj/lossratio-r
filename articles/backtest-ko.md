@@ -37,10 +37,10 @@ tri_sur <- build_triangle(
 bt <- backtest(tri_sur, holdout = 6L)
 print(bt)
 #> <Backtest>
-#>   fit_fn   : fit_lr
-#>   target   : lr
-#>   holdout  : 6 diagonals (159 cells)
-#>   A/E Error: mean 0.21% / median -0.00%
+#>   dispatcher: fit_lr
+#>   target    : lr
+#>   holdout   : 6 diagonals (159 cells)
+#>   A/E Error : mean 0.21% / median -0.00%
 ```
 
 기본 추정 대상은 누적 손해율 (`target = "lr"`) 이며, 손해 측 method 는
@@ -165,20 +165,20 @@ bt$diag_summary
 
 head(bt$ae_err, 5)
 #> Key: <coverage>
-#>    coverage     cohort   dev value_actual value_proj          aeg       ae_err
-#>      <char>     <Date> <int>        <num>      <num>        <num>        <num>
-#> 1:      SUR 2023-02-01    30     1.474656   1.485094 -0.010438112 -0.007028587
-#> 2:      SUR 2023-03-01    29     1.441826   1.414305  0.027520309  0.019458534
-#> 3:      SUR 2023-03-01    30     1.441234   1.418776  0.022457560  0.015828823
-#> 4:      SUR 2023-04-01    28     1.513021   1.510169  0.002851902  0.001888465
-#> 5:      SUR 2023-04-01    29     1.531922   1.504873  0.027048593  0.017974003
-#>    value_actual_incr value_proj_incr    aeg_incr ae_err_incr calendar_idx
-#>                <num>           <num>       <num>       <num>        <int>
-#> 1:          1.311699        1.616053 -0.30435387 -0.18833160           31
-#> 2:          2.057141        1.271304  0.78583659  0.61813407           31
-#> 3:          1.425549        1.543888 -0.11833820 -0.07664950           32
-#> 4:          1.573801        1.498421  0.07537995  0.05030625           31
-#> 5:          2.055572        1.352715  0.70285727  0.51959013           32
+#>    coverage     cohort   dev   actual expected          aeg       ae_err
+#>      <char>     <Date> <int>    <num>    <num>        <num>        <num>
+#> 1:      SUR 2023-02-01    30 1.474656 1.485094 -0.010438112 -0.007028587
+#> 2:      SUR 2023-03-01    29 1.441826 1.414305  0.027520309  0.019458534
+#> 3:      SUR 2023-03-01    30 1.441234 1.418776  0.022457560  0.015828823
+#> 4:      SUR 2023-04-01    28 1.513021 1.510169  0.002851902  0.001888465
+#> 5:      SUR 2023-04-01    29 1.531922 1.504873  0.027048593  0.017974003
+#>    actual_incr expected_incr    aeg_incr ae_err_incr calendar_idx
+#>          <num>         <num>       <num>       <num>        <int>
+#> 1:    1.311699      1.616053 -0.30435387 -0.18833160           31
+#> 2:    2.057141      1.271304  0.78583659  0.61813407           31
+#> 3:    1.425549      1.543888 -0.11833820 -0.07664950           32
+#> 4:    1.573801      1.498421  0.07537995  0.05030625           31
+#> 5:    2.055572      1.352715  0.70285727  0.51959013           32
 ```
 
 ## 5. 플롯 데모
@@ -265,10 +265,10 @@ bt_cl_lr    <- backtest(tri_sur, holdout = 6L, loss_method = "cl")
 
 print(bt_sa_lr)
 #> <Backtest>
-#>   fit_fn   : fit_lr
-#>   target   : lr
-#>   holdout  : 6 diagonals (159 cells)
-#>   A/E Error: mean 0.21% / median -0.00%
+#>   dispatcher: fit_lr
+#>   target    : lr
+#>   holdout   : 6 diagonals (159 cells)
+#>   A/E Error : mean 0.21% / median -0.00%
 ```
 
 `lr` 을 백테스팅하는 것이 보통 더 유익한 진단이 된다. 손해율은 단위가

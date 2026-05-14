@@ -30,5 +30,5 @@ inertia-free.
 
 ## Value
 
-data.table with columns `dev`, `n_cohorts`, `median_lr`, `mad_lr`,
+data.table with columns `dev`, `n_cohorts`, `lr_median`, `lr_mad`,
 `D_v`, `flag` (and grouping columns when present).

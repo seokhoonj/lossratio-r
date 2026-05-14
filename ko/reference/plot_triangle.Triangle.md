@@ -24,11 +24,11 @@ where `premium` denotes risk premium rather than written premium.
 # S3 method for class 'Triangle'
 plot_triangle(
   x,
-  type = c("value", "usage"),
+  view = c("value", "usage"),
   metric = "lr",
   label_style = c("value", "detail"),
   label_size = NULL,
-  amount_divisor = 1e+08,
+  amount_divisor = "auto",
   nrow = NULL,
   ncol = NULL,
   theme = c("view", "save", "shiny"),
@@ -42,9 +42,9 @@ plot_triangle(
 
   An object of class `Triangle`.
 
-- type:
+- view:
 
-  Plot type. One of:
+  Plot view. One of:
 
   "value"
 
@@ -54,7 +54,7 @@ plot_triangle(
   "usage"
 
   :   Cell-status heatmap (used / holdout / unused / future). Accepts
-      `recent`, `regime`, `holdout`, `maturity_args` via `...`. See
+      `recent`, `regime`, `holdout`, `maturity` via `...`. See
       [`vignette("regime-change-filter")`](https://seokhoonj.github.io/lossratio/ko/articles/regime-change-filter.md)
       for details.
 
@@ -92,7 +92,9 @@ plot_triangle(
 
   Numeric scaling factor applied to amount variables (e.g., `loss`,
   `loss_incr`, `premium`, `premium_incr`, `margin`, `margin_incr`)
-  before plotting. Default is `1e8`
+  before plotting. Default `"auto"` picks the largest divisor in
+  `{1, 1e3, 1e6, 1e7, 1e8, 1e9}` such that the median displayed value is
+  still at least `1`, minimising label digit count.
 
 - nrow, ncol:
 

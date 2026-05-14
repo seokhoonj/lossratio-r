@@ -321,7 +321,10 @@ and the SA stage transition in `fit_lr`; `fit_intensity` feeds into
 Decide which cells of the triangle to use for estimation.
 `detect_maturity` works along the dev axis (link beyond which ATA
 factors are stable); `detect_regime` works along the cohort axis
-(structural break across underwriting cohorts).
+(structural break across underwriting cohorts). The `*_at()` /
+`*_spec()` helpers build manual / lazy-detect input objects for the
+`maturity` / `loss_regime` / `premium_regime` arguments of the fit
+functions.
 
 - [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
   : Find ata maturity by group
@@ -330,8 +333,14 @@ factors are stable); `detect_regime` works along the cohort axis
   [`summary(`*`<Regime>`*`)`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
   [`print(`*`<summary.Regime>`*`)`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
   : Detect structural regime shifts across underwriting cohorts
+- [`maturity_at()`](https://seokhoonj.github.io/lossratio/reference/maturity_at.md)
+  : Construct a Maturity object from manually specified maturity points
+- [`maturity_spec()`](https://seokhoonj.github.io/lossratio/reference/maturity_spec.md)
+  : Build a lazy maturity detection spec
 - [`regime_at()`](https://seokhoonj.github.io/lossratio/reference/regime_at.md)
   : Construct a Regime object from manually specified regime changes
+- [`regime_spec()`](https://seokhoonj.github.io/lossratio/reference/regime_spec.md)
+  : Build a lazy regime detection spec
 
 ## Projection diagnostic
 
@@ -394,7 +403,7 @@ and
   : Plot a cohort regime detection result
 
 - [`plot(`*`<RegimeOptimalWindow>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.RegimeOptimalWindow.md)
-  : Plot break-count vs window with the elbow marker
+  : Plot change-count vs window with the elbow marker
 
 - [`plot(`*`<Total>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.Total.md)
   :

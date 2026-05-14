@@ -21,7 +21,7 @@ plot(
   x,
   metric = "lr",
   x_by = c("period", "dev"),
-  amount_divisor = 1e+08,
+  amount_divisor = "auto",
   theme = c("view", "save", "shiny"),
   ...
 )

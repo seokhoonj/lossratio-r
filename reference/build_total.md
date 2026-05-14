@@ -27,7 +27,7 @@ build_total(
   df,
   groups = character(0),
   cohort,
-  dev,
+  development,
   loss,
   premium,
   period_from = NULL,
@@ -52,9 +52,9 @@ build_total(
   period (`"uy_m"`, `"uy_q"`, `"uy_h"`, `"uy"`) or a calendar period
   (`"cy_m"`, `"cy_q"`, `"cy_h"`, `"cy"`).
 
-- dev:
+- development:
 
-  A single development variable (raw name) used to count observed
+  A single development-period variable (raw name) used to count observed
   periods.
 
 - loss:

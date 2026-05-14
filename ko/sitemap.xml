@@ -38,6 +38,8 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-assert_column_arg.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-assert_length.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-assert_triangle_input.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-assign_segment.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-auto_divisor.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-bootstrap_cohort.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-capture_chr.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-capture_names.html</loc></url>
@@ -77,6 +79,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-get_period_type.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-get_plot_meta.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-has_cols.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-is_ratio_metric.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-kneedle_elbow.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-lm_ed.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-lm_link.html</loc></url>
@@ -93,8 +96,9 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-pretty_var_label.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-rebucket_triangle_groups.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-remove_class.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_maturity.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_regime.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_regime_date.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_regime_change_date.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_y_scale.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-sa_param_var.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-sa_proc_var.html</loc></url>
@@ -119,6 +123,8 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/longer.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/lossratio-package.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/mask_triangle.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/maturity_at.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/maturity_spec.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot.ATAFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot.Backtest.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot.CLFit.html</loc></url>
@@ -151,6 +157,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.LossFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.PremiumFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/regime_at.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/regime_spec.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.ATAFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.CLFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.Calendar.html</loc></url>

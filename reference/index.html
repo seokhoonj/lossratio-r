@@ -247,7 +247,7 @@
       </dl></div><div class="section level2">
       <h2 id="cell-selection-diagnostics">Cell-selection diagnostics<a class="anchor" aria-label="anchor" href="#cell-selection-diagnostics"></a></h2>
 
-      <div class="section-desc"><p>Decide which cells of the triangle to use for estimation. <code>detect_maturity</code> works along the dev axis (link beyond which ATA factors are stable); <code>detect_regime</code> works along the cohort axis (structural break across underwriting cohorts).</p></div>
+      <div class="section-desc"><p>Decide which cells of the triangle to use for estimation. <code>detect_maturity</code> works along the dev axis (link beyond which ATA factors are stable); <code>detect_regime</code> works along the cohort axis (structural break across underwriting cohorts). The <code>*_at()</code> / <code>*_spec()</code> helpers build manual / lazy-detect input objects for the <code>maturity</code> / <code>loss_regime</code> / <code>premium_regime</code> arguments of the fit functions.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -270,10 +270,31 @@
 
         <dt>
 
+          <code><a href="maturity_at.html">maturity_at()</a></code>
+
+        </dt>
+        <dd>Construct a Maturity object from manually specified maturity points</dd>
+
+        <dt>
+
+          <code><a href="maturity_spec.html">maturity_spec()</a></code>
+
+        </dt>
+        <dd>Build a lazy maturity detection spec</dd>
+
+        <dt>
+
           <code><a href="regime_at.html">regime_at()</a></code>
 
         </dt>
         <dd>Construct a Regime object from manually specified regime changes</dd>
+
+        <dt>
+
+          <code><a href="regime_spec.html">regime_spec()</a></code>
+
+        </dt>
+        <dd>Build a lazy regime detection spec</dd>
       </dl></div><div class="section level2">
       <h2 id="projection-diagnostic">Projection diagnostic<a class="anchor" aria-label="anchor" href="#projection-diagnostic"></a></h2>
 
@@ -391,7 +412,7 @@
           <code><a href="plot.RegimeOptimalWindow.html">plot(<i>&lt;RegimeOptimalWindow&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot break-count vs window with the elbow marker</dd>
+        <dd>Plot change-count vs window with the elbow marker</dd>
 
         <dt>
 

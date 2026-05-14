@@ -81,7 +81,7 @@ fit_intensity(
   call), or a function `function(tri) -> Regime`. Resolved internally
   via
   [`.resolve_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_regime.md).
-  When supplied, cohorts strictly before the break are dropped before
+  When supplied, cohorts strictly before the change are dropped before
   estimation.
 
 - ...:
@@ -137,8 +137,8 @@ Unlike ATA factors, where CV / RSE drive a
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
 threshold, ED intensities behave differently — as \\g_k \to 0\\ in late
 development the CV / RSE blow up by construction, not by instability.
-`fit_intensity()` therefore deliberately omits a `maturity_args`
-parameter, and
+`fit_intensity()` therefore deliberately omits a `maturity` parameter,
+and
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
 rejects `IntensityFit` input with an informative error.
 

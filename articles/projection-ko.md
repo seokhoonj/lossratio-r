@@ -281,7 +281,7 @@ summary(lrs$cl)$loss_ult
 #> [13] 2901492851 1160045952  686574148 5687484014 2645801838 1209024555
 #> [19] 2542927190  918120582  635470028  856446521  260916096  295637296
 #> [25]  710560093 3276849152  434950057  356301148  697290587  789468799
-#> [31] 1040451732 1008356733  783000257 2001214863  449653406  850839118
+#> [31] 1040451732 1008356733  783000257 2001214863         NA         NA
 ```
 
 ## 분산과 신뢰구간
@@ -446,3 +446,27 @@ SA 는 성숙점 이전엔 ED, 이후엔 CL 로 자연 전환하는 결합이다
 실무: **`"sa"` 로 시작한다** (default). 이후 민감도 점검을 위해 `"cl"`
 과 `"ed"` 를 함께 실행한다. 셋이 모두 일치하면 추정은 견고하다. 결과가
 갈라지면 성숙점 탐지와 기저 ATA 계수를 점검한다.
+
+## 성숙점 입력 방식
+
+`method = "sa"` 에서는 성숙점 $`m_g`$ 가 ED → CL 전환 지점이 된다.
+[`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
+/
+[`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+의 default 는 `maturity = "auto"` 로,
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+를 default 임계값으로 내부 호출한다. 그 외 형태:
+
+- `maturity = NULL` — 탐지 비활성 (SA 가 아닌 method 나
+  [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)
+  단독 호출에서만 의미).
+- `maturity = maturity_spec(max_cv = 0.05, min_run = 2L)` — 사용자
+  임계값을 캡처한 지연 spec. fit 시점에
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+  가 실행됨
+  ([`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+  에서 leakage-safe).
+- `maturity = detect_maturity(tri, ...)` — 미리 산출된 `Maturity` 객체.
+  다중 refit 에서 고정.
+- `maturity = maturity_at(coverage = "SUR", change = 4)` — 그룹별
+  $`k^*`$ 수동 지정 (예: 회사 표준값).

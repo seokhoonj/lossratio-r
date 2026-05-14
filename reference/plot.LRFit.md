@@ -29,7 +29,7 @@ plot(
   ask = grDevices::dev.interactive(),
   conf_level = 0.95,
   show_interval = TRUE,
-  amount_divisor = 1e+08,
+  amount_divisor = "auto",
   scales = c("fixed", "free_y", "free_x", "free"),
   theme = c("view", "save", "shiny"),
   nrow = NULL,

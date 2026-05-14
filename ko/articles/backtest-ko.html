@@ -133,10 +133,10 @@ valuation 시점에서 모형은 무엇이라 말했을까?” 를 모사하기 
 <span><span class="va">bt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Backtest&gt;</span></span>
-<span><span class="co">#&gt;   fit_fn   : fit_lr</span></span>
-<span><span class="co">#&gt;   target   : lr</span></span>
-<span><span class="co">#&gt;   holdout  : 6 diagonals (159 cells)</span></span>
-<span><span class="co">#&gt;   A/E Error: mean 0.21% / median -0.00%</span></span></code></pre></div>
+<span><span class="co">#&gt;   dispatcher: fit_lr</span></span>
+<span><span class="co">#&gt;   target    : lr</span></span>
+<span><span class="co">#&gt;   holdout   : 6 diagonals (159 cells)</span></span>
+<span><span class="co">#&gt;   A/E Error : mean 0.21% / median -0.00%</span></span></code></pre></div>
 <p>기본 추정 대상은 누적 손해율 (<code>target = "lr"</code>) 이며, 손해
 측 method 는 단계 적응형(stage-adaptive, SA,
 <code>loss_method = "sa"</code>) 이다. 반환되는 객체는
@@ -261,20 +261,20 @@ dev 셀을 진단하려면 <code>bt$ae_err</code> 를 직접 살펴본다.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">bt</span><span class="op">$</span><span class="va">ae_err</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
-<span><span class="co">#&gt;    coverage     cohort   dev value_actual value_proj          aeg       ae_err</span></span>
-<span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt; &lt;int&gt;        &lt;num&gt;      &lt;num&gt;        &lt;num&gt;        &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      SUR 2023-02-01    30     1.474656   1.485094 -0.010438112 -0.007028587</span></span>
-<span><span class="co">#&gt; 2:      SUR 2023-03-01    29     1.441826   1.414305  0.027520309  0.019458534</span></span>
-<span><span class="co">#&gt; 3:      SUR 2023-03-01    30     1.441234   1.418776  0.022457560  0.015828823</span></span>
-<span><span class="co">#&gt; 4:      SUR 2023-04-01    28     1.513021   1.510169  0.002851902  0.001888465</span></span>
-<span><span class="co">#&gt; 5:      SUR 2023-04-01    29     1.531922   1.504873  0.027048593  0.017974003</span></span>
-<span><span class="co">#&gt;    value_actual_incr value_proj_incr    aeg_incr ae_err_incr calendar_idx</span></span>
-<span><span class="co">#&gt;                &lt;num&gt;           &lt;num&gt;       &lt;num&gt;       &lt;num&gt;        &lt;int&gt;</span></span>
-<span><span class="co">#&gt; 1:          1.311699        1.616053 -0.30435387 -0.18833160           31</span></span>
-<span><span class="co">#&gt; 2:          2.057141        1.271304  0.78583659  0.61813407           31</span></span>
-<span><span class="co">#&gt; 3:          1.425549        1.543888 -0.11833820 -0.07664950           32</span></span>
-<span><span class="co">#&gt; 4:          1.573801        1.498421  0.07537995  0.05030625           31</span></span>
-<span><span class="co">#&gt; 5:          2.055572        1.352715  0.70285727  0.51959013           32</span></span></code></pre></div>
+<span><span class="co">#&gt;    coverage     cohort   dev   actual expected          aeg       ae_err</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt; &lt;int&gt;    &lt;num&gt;    &lt;num&gt;        &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:      SUR 2023-02-01    30 1.474656 1.485094 -0.010438112 -0.007028587</span></span>
+<span><span class="co">#&gt; 2:      SUR 2023-03-01    29 1.441826 1.414305  0.027520309  0.019458534</span></span>
+<span><span class="co">#&gt; 3:      SUR 2023-03-01    30 1.441234 1.418776  0.022457560  0.015828823</span></span>
+<span><span class="co">#&gt; 4:      SUR 2023-04-01    28 1.513021 1.510169  0.002851902  0.001888465</span></span>
+<span><span class="co">#&gt; 5:      SUR 2023-04-01    29 1.531922 1.504873  0.027048593  0.017974003</span></span>
+<span><span class="co">#&gt;    actual_incr expected_incr    aeg_incr ae_err_incr calendar_idx</span></span>
+<span><span class="co">#&gt;          &lt;num&gt;         &lt;num&gt;       &lt;num&gt;       &lt;num&gt;        &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1:    1.311699      1.616053 -0.30435387 -0.18833160           31</span></span>
+<span><span class="co">#&gt; 2:    2.057141      1.271304  0.78583659  0.61813407           31</span></span>
+<span><span class="co">#&gt; 3:    1.425549      1.543888 -0.11833820 -0.07664950           32</span></span>
+<span><span class="co">#&gt; 4:    1.573801      1.498421  0.07537995  0.05030625           31</span></span>
+<span><span class="co">#&gt; 5:    2.055572      1.352715  0.70285727  0.51959013           32</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="플롯-데모">5. 플롯 데모<a class="anchor" aria-label="anchor" href="#%ED%94%8C%EB%A1%AF-%EB%8D%B0%EB%AA%A8"></a>
@@ -373,10 +373,10 @@ dev 셀을 진단하려면 <code>bt$ae_err</code> 를 직접 살펴본다.</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt_sa_lr</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Backtest&gt;</span></span>
-<span><span class="co">#&gt;   fit_fn   : fit_lr</span></span>
-<span><span class="co">#&gt;   target   : lr</span></span>
-<span><span class="co">#&gt;   holdout  : 6 diagonals (159 cells)</span></span>
-<span><span class="co">#&gt;   A/E Error: mean 0.21% / median -0.00%</span></span></code></pre></div>
+<span><span class="co">#&gt;   dispatcher: fit_lr</span></span>
+<span><span class="co">#&gt;   target    : lr</span></span>
+<span><span class="co">#&gt;   holdout   : 6 diagonals (159 cells)</span></span>
+<span><span class="co">#&gt;   A/E Error : mean 0.21% / median -0.00%</span></span></code></pre></div>
 <p><code>lr</code> 을 백테스팅하는 것이 보통 더 유익한 진단이 된다.
 손해율은 단위가 없고 차원이 없어 규모가 크게 다른 코호트 간에도 일관되게
 비교 가능하므로, <code>ae_err_mean</code> 과 <code>ae_err_med</code> 가

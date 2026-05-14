@@ -563,8 +563,9 @@ sub <- build_triangle(
 )
 detect_regime(sub, method = "e_divisive")
 #> <Regime>
-#>   method : e_divisive
-#>   target : lr
+#>   method    : e_divisive
+#>   target    : lr
+#>   treatment : latest_only
 #>   window (window) : dev_m 1-6
 #>   cohorts    : 31 analysed (5 dropped)
 #>   regimes    : 2

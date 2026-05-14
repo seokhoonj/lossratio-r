@@ -14,7 +14,8 @@ Mask precedence: `holdout` \> `used` \> `unused` \> `future`.
   recent = NULL,
   regime = NULL,
   holdout = NULL,
-  m_k = NULL
+  m_k = NULL,
+  m_k_dt = NULL
 )
 ```
 
@@ -31,7 +32,7 @@ Mask precedence: `holdout` \> `used` \> `unused` \> `future`.
 - regime:
 
   Optional cohort cutoff. Accepts the same input forms handled by
-  [`.resolve_regime_date()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_regime_date.md)
+  [`.resolve_regime_change_date()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_regime_change_date.md)
   (`NULL`, `Date`, character, vector, or `Regime`).
 
 - holdout:

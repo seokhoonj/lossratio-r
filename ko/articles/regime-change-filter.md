@@ -32,9 +32,34 @@ that split.
 The maturity point $`k^*`$ is a single internal switch produced by
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md).
 Regime changes are exogenous events — there can be none, one, or
-several. When a `Regime` object carries multiple changes, the **most
-recent** is used, since post-change statistics are most stable when the
-post-change window has accumulated the largest number of cohorts.
+several. When a `Regime` object carries multiple changes, the
+`treatment` slot decides how downstream fits use them:
+
+- `treatment = "latest_only"` (default): collapse to the most recent
+  change and drop all pre-latest cohorts. A single pooled factor is
+  estimated over the surviving (post-latest) cohorts. Stable when the
+  post-change window has accumulated enough cohorts and earlier regimes
+  are not informative for the current one.
+- `treatment = "segment_wise"`: preserve every change. Each segment
+  (consecutive cohorts between adjacent changes) gets its own factor
+  estimate, and each cohort is projected with its own segment’s factor.
+  Use this when older regimes still need their own development tail —
+  e.g., multi-regime + long-tail data where the latest regime hasn’t yet
+  observed late-dev development.
+
+Pick the treatment when constructing the Regime:
+
+``` r
+
+# Latest-only (default — drop pre-latest cohorts)
+regime_at(change = c("2022-01-01", "2024-04-01"))
+
+# Segment-wise (each segment gets its own factor)
+regime_at(change = c("2022-01-01", "2024-04-01"),
+          treatment = "segment_wise")
+
+detect_regime(tri, treatment = "segment_wise")
+```
 
 ## API
 
@@ -111,15 +136,15 @@ first on the raw triangle (so noisy post-change windows do not
 destabilise $`k^*`$), then the hybrid filter is applied to the actual
 fit using the fixed $`k^*`$.
 
-`plot_triangle(type = "usage")` visualises which cells each filter
+`plot_triangle(view = "usage")` visualises which cells each filter
 configuration feeds to `fit_lr`:
 
 ``` r
 
-plot_triangle(tri_sur, type = "usage", holdout = 6L)                            # full
-plot_triangle(tri_sur, type = "usage", recent = 12L, holdout = 6L)              # recent
-plot_triangle(tri_sur, type = "usage", regime = "2024-07-01", holdout = 6L)     # change
-plot_triangle(tri_sur, type = "usage", recent = 12L,
+plot_triangle(tri_sur, view = "usage", holdout = 6L)                            # full
+plot_triangle(tri_sur, view = "usage", recent = 12L, holdout = 6L)              # recent
+plot_triangle(tri_sur, view = "usage", regime = "2024-07-01", holdout = 6L)     # change
+plot_triangle(tri_sur, view = "usage", recent = 12L,
               regime = "2024-07-01", holdout = 6L)                              # hybrid
 ```
 

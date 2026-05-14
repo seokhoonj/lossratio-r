@@ -281,7 +281,7 @@ summary(lrs$cl)$loss_ult
 #> [13] 2901492851 1160045952  686574148 5687484014 2645801838 1209024555
 #> [19] 2542927190  918120582  635470028  856446521  260916096  295637296
 #> [25]  710560093 3276849152  434950057  356301148  697290587  789468799
-#> [31] 1040451732 1008356733  783000257 2001214863  449653406  850839118
+#> [31] 1040451732 1008356733  783000257 2001214863         NA         NA
 ```
 
 ## Variance and confidence intervals
@@ -447,3 +447,28 @@ when one of SA’s two regions becomes redundant.
 In practice: **start with `"sa"`** (the default), then run `"cl"` and
 `"ed"` for sensitivity. If all three agree, the projection is robust. If
 they diverge, inspect maturity detection and the underlying ATA factors.
+
+## Maturity input
+
+For `method = "sa"` the maturity point $`m_g`$ determines where the
+projection switches from ED to CL. By default
+[`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
+/
+[`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+use `maturity = "auto"`, which calls
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+internally with default thresholds. Other forms:
+
+- `maturity = NULL` — disable detection (only meaningful for non-SA
+  methods or for
+  [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)
+  standalone).
+- `maturity = maturity_spec(max_cv = 0.05, min_run = 2L)` — lazy spec
+  forwarding custom thresholds to
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+  at fit time (leakage-safe for
+  [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)).
+- `maturity = detect_maturity(tri, ...)` — pre-built `Maturity` object,
+  fixed across refits.
+- `maturity = maturity_at(coverage = "SUR", change = 4)` — manual
+  per-group override (e.g. company-standard $`k^*`$).

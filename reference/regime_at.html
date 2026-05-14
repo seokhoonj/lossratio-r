@@ -133,7 +133,7 @@ other named arguments are treated as group columns.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">regime_at</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">regime_at</span><span class="op">(</span><span class="va">...</span>, treatment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"latest_only"</span>, <span class="st">"segment_wise"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -146,6 +146,15 @@ other named arguments are treated as group columns.</p>
 regime). Any other named arguments are interpreted as group column
 values (e.g. <code>coverage</code>, <code>channel</code>). With no group columns the
 result is a pooled (single-row) Regime.</p></dd>
+
+
+<dt id="arg-treatment">treatment<a class="anchor" aria-label="anchor" href="#arg-treatment"></a></dt>
+<dd><p>How downstream fits should apply this Regime when
+<code>$changes</code> contains multiple change points. <code>"latest_only"</code> (default)
+collapses to the most recent change and drops all pre-latest cohorts
+(single pooled factor). <code>"segment_wise"</code> preserves all changes and
+estimates one factor per segment (each cohort projected with its own
+segment's factor). See <code><a href="detect_regime.html">detect_regime()</a></code> for full semantics.</p></dd>
 
 </dl></div>
     <div class="section level2">

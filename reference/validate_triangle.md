@@ -32,7 +32,7 @@ validate_triangle(
   groups = character(0),
   cohort,
   calendar = NULL,
-  dev = NULL,
+  development = NULL,
   grain = "auto"
 )
 ```
@@ -57,9 +57,9 @@ validate_triangle(
   When supplied, rows where `calendar < cohort` are flagged as invalid.
   Default `NULL` (skip this check).
 
-- dev:
+- development:
 
-  A single development variable (raw column name). Optional when
+  A single development-period variable (raw column name). Optional when
   `calendar` is supplied – `dev` is then derived from
   `(cohort, calendar)` at the resolved `grain` (same dispatch as
   [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)).
@@ -67,8 +67,8 @@ validate_triangle(
 - grain:
 
   Grain string (`"M"` / `"Q"` / `"H"` / `"Y"`) or `"auto"` (default) –
-  used only when `dev` is derived from `(cohort, calendar)`. Ignored
-  when `dev` is supplied.
+  used only when `development` is derived from `(cohort, calendar)`.
+  Ignored when `development` is supplied.
 
 ## Value
 

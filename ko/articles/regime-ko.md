@@ -64,8 +64,9 @@ tri_sur <- build_triangle(
 r <- detect_regime(tri_sur, method = "e_divisive")
 r
 #> <Regime>
-#>   method : e_divisive
-#>   target : lr
+#>   method    : e_divisive
+#>   target    : lr
+#>   treatment : latest_only
 #>   window (window) : dev_m 1-6
 #>   cohorts    : 31 analysed (5 dropped)
 #>   regimes    : 2
@@ -87,6 +88,7 @@ summary(r)
 #> Cohort regime detection summary
 #>   method    : e_divisive
 #>   target    : lr
+#>   treatment : latest_only
 #>   window    : dev_m 1-6
 #>   cohorts   : 31 analysed (5 dropped)
 #> 
@@ -234,6 +236,7 @@ summary(r2)
 #> Cohort regime detection summary
 #>   method    : e_divisive
 #>   target    : lr
+#>   treatment : latest_only
 #>   window    : dev_m 1-6
 #>   cohorts   : 31 analysed (5 dropped)
 #> 

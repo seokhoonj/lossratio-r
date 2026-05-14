@@ -200,7 +200,7 @@
       </dl></div><div class="section level2">
       <h2 id="--5">추정 셀 선택 진단<a class="anchor" aria-label="anchor" href="#--5"></a></h2>
 
-      <div class="section-desc"><p>Triangle 의 어떤 셀을 추정에 쓸지 결정. <code>detect_maturity</code> 는 dev 축 (ATA 인자가 안정화되는 링크 이후), <code>detect_regime</code> 은 cohort 축 (인수 코호트 간 구조적 변화).</p></div>
+      <div class="section-desc"><p>Triangle 의 어떤 셀을 추정에 쓸지 결정. <code>detect_maturity</code> 는 dev 축 (ATA 인자가 안정화되는 링크 이후), <code>detect_regime</code> 은 cohort 축 (인수 코호트 간 구조적 변화). <code>*_at()</code> / <code>*_spec()</code> 헬퍼는 fit 함수의 <code>maturity</code> / <code>loss_regime</code> / <code>premium_regime</code> 인자에 들어갈 수동 (<code>_at()</code>) 혹은 lazy-detect (<code>_spec()</code>) 입력 객체를 만든다.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -223,10 +223,31 @@
 
         <dt>
 
+          <code><a href="maturity_at.html">maturity_at()</a></code>
+
+        </dt>
+        <dd>Construct a Maturity object from manually specified maturity points</dd>
+
+        <dt>
+
+          <code><a href="maturity_spec.html">maturity_spec()</a></code>
+
+        </dt>
+        <dd>Build a lazy maturity detection spec</dd>
+
+        <dt>
+
           <code><a href="regime_at.html">regime_at()</a></code>
 
         </dt>
         <dd>Construct a Regime object from manually specified regime changes</dd>
+
+        <dt>
+
+          <code><a href="regime_spec.html">regime_spec()</a></code>
+
+        </dt>
+        <dd>Build a lazy regime detection spec</dd>
       </dl></div><div class="section level2">
       <h2 id="--6">예측 진단<a class="anchor" aria-label="anchor" href="#--6"></a></h2>
 
@@ -344,7 +365,7 @@
           <code><a href="plot.RegimeOptimalWindow.html">plot(<i>&lt;RegimeOptimalWindow&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot break-count vs window with the elbow marker</dd>
+        <dd>Plot change-count vs window with the elbow marker</dd>
 
         <dt>
 
