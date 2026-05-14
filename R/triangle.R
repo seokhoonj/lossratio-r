@@ -1081,11 +1081,12 @@ longer.TriangleSummary <- function(x, ...) {
 #' @return A data.frame with class `"Calendar"`, containing the following
 #'   derived columns:
 #'   \describe{
-#'     \item{dev}{Calendar index within each group, defined as the sequential
-#'       order of `calendar` after sorting in ascending order. This represents
-#'       the progression of calendar periods for each group (e.g., 1 = first
-#'       observed period, 2 = second, ...), and can be used to align groups with
-#'       different starting periods on a common index scale.}
+#'     \item{t}{Sequential calendar-period index within each group
+#'       (`1, 2, ..., N`). Time-series convention; intentionally NOT
+#'       `dev` -- in a Calendar the integer is just the rank of the date
+#'       within its group, not a true development period (`cym - uym`).
+#'       Useful for aligning groups with different starting periods on a
+#'       common index scale.}
 #'     \item{loss, loss_incr}{Cumulative and per-period loss}
 #'     \item{premium, premium_incr}{Cumulative and per-period premium}
 #'     \item{lr, lr_incr}{Cumulative and per-period loss ratio}
@@ -1144,14 +1145,17 @@ as_calendar <- function(x) {
 
   data.table::setorderv(ds, c(grp, "calendar"))
 
-  # sequential dev index per group
+  # Sequential calendar-period index per group. Named `t` (time-series
+  # convention) rather than `dev`: in a Calendar object the integer is
+  # just the rank of the date within its group, NOT a true development
+  # period (`cym - uym`). The `dev` name lives only on Triangle.
   if (length(grp)) {
-    ds[, ("dev") := seq_len(.N), by = grp]
+    ds[, ("t") := seq_len(.N), by = grp]
   } else {
-    ds[, ("dev") := seq_len(.N)]
+    ds[, ("t") := seq_len(.N)]
   }
 
-  data.table::setcolorder(ds, "dev", after = "calendar")
+  data.table::setcolorder(ds, "t", after = "calendar")
 
   # cumulative values
   if (length(grp)) {
@@ -1200,7 +1204,7 @@ as_calendar <- function(x) {
 
   # final column order: cum-first paired
   out_cols <- c(
-    grp, "calendar", "dev",
+    grp, "calendar", "t",
     "loss", "loss_incr", "premium", "premium_incr",
     "lr", "lr_incr",
     "margin", "margin_incr", "profit", "profit_incr",
@@ -1211,7 +1215,7 @@ as_calendar <- function(x) {
   # long format
   dm <- data.table::melt(
     data         = ds,
-    id.vars      = c(grp_cal, "dev"),
+    id.vars      = c(grp_cal, "t"),
     measure.vars = c("loss", "premium")
   )
   dm <- .prepend_class(dm, "CalendarLonger")

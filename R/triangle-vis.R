@@ -288,11 +288,6 @@ plot.Triangle <- function(x,
 #'   `"lr"`, `"lr_incr"`,
 #'   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`, `"margin_incr"`,
 #'   `"loss_share"`, `"loss_incr_share"`, `"premium_share"`, or `"premium_incr_share"`.
-#' @param x_by X-axis basis. One of:
-#'   \describe{
-#'     \item{"period"}{Use the calendar variable stored in `attr(x, "calendar")`.}
-#'     \item{"dev"}{Use the sequential `dev` column.}
-#'   }
 #' @param amount_divisor Numeric scaling factor used only for y-axis labels of
 #'   amount variables. Default `"auto"` (picks the divisor that produces
 #'   the shortest formatted label; pass an explicit numeric to fix it).
@@ -308,8 +303,8 @@ plot.Triangle <- function(x,
 #' @param ... Additional arguments passed to [.switch_theme()].
 #'
 #' @details
-#' The x-axis uses either the calendar variable stored in `attr(x, "calendar")`
-#' or the sequential `dev` column, depending on `x_by`.
+#' The x-axis is the calendar variable stored in `attr(x, "calendar")`
+#' (a Date, formatted per the triangle's `grain`).
 #'
 #' The loss ratio is defined as:
 #' \deqn{lr = loss / premium}
@@ -330,14 +325,12 @@ plot.Triangle <- function(x,
 #'
 #' plot(x)
 #' plot(x, metric = "lr")
-#' plot(x, x_by = "dev")
 #' }
 #'
 #' @method plot Calendar
 #' @export
 plot.Calendar <- function(x,
                           metric         = "lr",
-                          x_by           = c("period", "dev"),
                           amount_divisor = "auto",
                           show_label     = FALSE,
                           label_size     = 2.8,
@@ -350,7 +343,6 @@ plot.Calendar <- function(x,
   .assert_class(x, "Calendar")
 
   theme <- match.arg(theme)
-  x_by <- match.arg(x_by)
 
   if (!is.logical(show_label) || length(show_label) != 1L ||
       is.na(show_label))
@@ -387,15 +379,10 @@ plot.Calendar <- function(x,
 
   meta <- .get_plot_meta(metric, amount_divisor = amount_divisor)
 
-  x_axis <- if (x_by == "dev") "dev" else "calendar"
-  axis_label <- if (x_by == "dev") "dev" else cal
+  x_axis     <- "calendar"
+  axis_label <- cal
 
-  title_txt <- paste0(
-    meta$title,
-    " (Calendar, by ",
-    axis_label,
-    ")"
-  )
+  title_txt <- paste0(meta$title, " (Calendar, by ", axis_label, ")")
 
   if (!length(grp)) {
 
@@ -464,9 +451,8 @@ plot.Calendar <- function(x,
     )
   }
 
-  # scales -- only use grain hint when the x axis is the calendar date,
-  # not when it is the integer `dev` column.
-  axis_grain <- if (x_by == "dev") NULL else attr(x, "grain")
+  # scales -- x is always the calendar date, so format with the grain.
+  axis_grain <- attr(x, "grain")
   p <- p +
     ggplot2::scale_x_continuous(
       labels = function(z) .format_period_safe(z, axis_label, grain = axis_grain)

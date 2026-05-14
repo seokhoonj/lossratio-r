@@ -58,7 +58,7 @@ test_that("as_calendar(Triangle) returns class 'Calendar' with expected columns"
                      premium = "premium_incr")
   cal <- as_calendar(tri)
   expect_s3_class(cal, "Calendar")
-  expect_true(all(c("calendar", "dev") %in% names(cal)))
+  expect_true(all(c("calendar", "t") %in% names(cal)))
   expect_equal(attr(cal, "calendar"), "cy_m")
 })
 

@@ -90,9 +90,10 @@ cal <- as_calendar(tri)
 head(cal)
 ```
 
-Each row is one calendar period (per group). The `dev` column
-here is a sequential index (1, 2, 3, ...) within group, not
-"development period since cohort start".
+Each row is one calendar period (per group). The `t` column is a
+sequential index (1, 2, 3, ...) within group — time-series
+convention. It is **not** a development period (`cym - uym`); for
+that you want the `Triangle` `dev` axis.
 
 Calendar aggregation is mathematically the **diagonal sum** of the
 triangle: cells with the same `cy_m` (regardless of `uy_m`/`dev_m`) are
@@ -105,8 +106,7 @@ Use cases:
 - Portfolio monitoring dashboards
 
 ```{r}
-plot(cal)                       # x axis: calendar
-plot(cal, x_by = "dev")         # x axis: sequential index
+plot(cal)                       # x axis: calendar (Date)
 ```
 
 ## Total (portfolio summary)

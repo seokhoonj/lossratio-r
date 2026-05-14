@@ -24,7 +24,7 @@ test_that("plot.Triangle dispatches", {
 
 test_that("plot.Calendar dispatches", {
   expect_true(is_plot(suppressWarnings(plot(cal))))
-  expect_true(is_plot(suppressWarnings(plot(cal, x_by = "dev"))))
+  expect_true(is_plot(suppressWarnings(plot(cal, metric = "loss"))))
 })
 
 test_that("plot.Link (ata mode) dispatches across types", {

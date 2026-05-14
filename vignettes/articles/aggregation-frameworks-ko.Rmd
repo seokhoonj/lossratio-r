@@ -93,9 +93,10 @@ cal <- as_calendar(tri)
 head(cal)
 ```
 
-각 행은 그룹별 달력 기간 하나이다. 여기서 `dev` 컬럼은 그룹
-내부의 순차 인덱스 (1, 2, 3, ...) 이며, "코호트 시작 이후의
-경과 기간(development period)" 이 아니다.
+각 행은 그룹별 달력 기간 하나이다. `t` 컬럼은 그룹 내부의 순차
+인덱스 (1, 2, 3, ...) 이며 시계열 관용 표기이다. **경과 기간 (development
+period, `cym - uym`)** 이 *아니다* — 진짜 경과 기간은 `Triangle` 의 `dev`
+축에 살아 있다.
 
 Calendar 집계는 수학적으로 Triangle 의 **대각선 합** 이다.
 같은 `cy_m` 값을 갖는 셀 (`uy_m`/`dev_m` 와 무관하게) 이 합쳐진다.
@@ -108,8 +109,7 @@ Calendar 집계는 수학적으로 Triangle 의 **대각선 합** 이다.
 - 포트폴리오 모니터링 대시보드
 
 ```{r}
-plot(cal)                       # x axis: calendar
-plot(cal, x_by = "dev")         # x axis: 순차 인덱스
+plot(cal)                       # x axis: calendar (Date)
 ```
 
 ## 4. Total (포트폴리오 요약)
