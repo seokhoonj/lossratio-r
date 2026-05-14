@@ -3,43 +3,41 @@
 per group (collapsing both the cohort and development axes), and
 assign the Total S3 class so the associated plot.Total() bar
 chart and other Total methods dispatch on the result.
-Compared with as_triangle() (two-dimensional cohort × dev) and
+Compared with as_triangle() (two-dimensional cohort x dev) and
 as_calendar() (one-dimensional time series), as_total() is
-zero-dimensional per group — one row of portfolio aggregates. The
+zero-dimensional per group – one row of portfolio aggregates. The
 typical use is high-level portfolio comparison across products,
 coverages, or channels.
-This function is intended for high-level portfolio comparison across
-groups such as products, coverages, or channels. It summarises:
+Total summarises:
 the number of observed cohorts (n_cohorts)
-the first and last observed periods (sales_start, sales_end)
-total loss and total premium (cumulative)
+the first and last observed cohort periods
+(sales_start, sales_end)
+total loss and total premium (sum over all cells)
 total loss ratio (lr = loss / premium)
 each group's share of total loss and total premium
 
 
-If period_from and/or period_to are supplied, the input data are first
-restricted to that period window before aggregation. This is useful when
-comparing groups on a common period basis."><meta property="og:description" content="Validate raw experience data, aggregate it to a single scalar row
+Pre-filter the Triangle (e.g. by cohort range or coverage) before
+calling as_total() if a subset summary is needed."><meta property="og:description" content="Validate raw experience data, aggregate it to a single scalar row
 per group (collapsing both the cohort and development axes), and
 assign the Total S3 class so the associated plot.Total() bar
 chart and other Total methods dispatch on the result.
-Compared with as_triangle() (two-dimensional cohort × dev) and
+Compared with as_triangle() (two-dimensional cohort x dev) and
 as_calendar() (one-dimensional time series), as_total() is
-zero-dimensional per group — one row of portfolio aggregates. The
+zero-dimensional per group – one row of portfolio aggregates. The
 typical use is high-level portfolio comparison across products,
 coverages, or channels.
-This function is intended for high-level portfolio comparison across
-groups such as products, coverages, or channels. It summarises:
+Total summarises:
 the number of observed cohorts (n_cohorts)
-the first and last observed periods (sales_start, sales_end)
-total loss and total premium (cumulative)
+the first and last observed cohort periods
+(sales_start, sales_end)
+total loss and total premium (sum over all cells)
 total loss ratio (lr = loss / premium)
 each group's share of total loss and total premium
 
 
-If period_from and/or period_to are supplied, the input data are first
-restricted to that period window before aggregation. This is useful when
-comparing groups on a common period basis."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
+Pre-filter the Triangle (e.g. by cohort range or coverage) before
+calling as_total() if a subset summary is needed."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
@@ -101,90 +99,32 @@ comparing groups on a common period basis."><meta property="og:image" content="h
 per group (collapsing both the cohort and development axes), and
 assign the <code>Total</code> S3 class so the associated <code><a href="plot.Total.html">plot.Total()</a></code> bar
 chart and other Total methods dispatch on the result.</p>
-<p>Compared with <code><a href="as_triangle.html">as_triangle()</a></code> (two-dimensional <code>cohort × dev</code>) and
+<p>Compared with <code><a href="as_triangle.html">as_triangle()</a></code> (two-dimensional <code>cohort x dev</code>) and
 <code><a href="as_calendar.html">as_calendar()</a></code> (one-dimensional time series), <code>as_total()</code> is
-<em>zero-dimensional</em> per group — one row of portfolio aggregates. The
+<em>zero-dimensional</em> per group – one row of portfolio aggregates. The
 typical use is high-level portfolio comparison across products,
 coverages, or channels.</p>
-<p>This function is intended for high-level portfolio comparison across
-groups such as products, coverages, or channels. It summarises:</p><ul><li><p>the number of observed cohorts (<code>n_cohorts</code>)</p></li>
-<li><p>the first and last observed periods (<code>sales_start</code>, <code>sales_end</code>)</p></li>
-<li><p>total <code>loss</code> and total <code>premium</code> (cumulative)</p></li>
+<p>Total summarises:</p><ul><li><p>the number of observed cohorts (<code>n_cohorts</code>)</p></li>
+<li><p>the first and last observed cohort periods
+(<code>sales_start</code>, <code>sales_end</code>)</p></li>
+<li><p>total <code>loss</code> and total <code>premium</code> (sum over all cells)</p></li>
 <li><p>total loss ratio (<code>lr = loss / premium</code>)</p></li>
 <li><p>each group's share of total loss and total premium</p></li>
-</ul><p>If <code>period_from</code> and/or <code>period_to</code> are supplied, the input data are first
-restricted to that period window before aggregation. This is useful when
-comparing groups on a common period basis.</p>
+</ul><p>Pre-filter the Triangle (e.g. by cohort range or coverage) before
+calling <code>as_total()</code> if a subset summary is needed.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">as_total</span><span class="op">(</span></span>
-<span>  <span class="va">df</span>,</span>
-<span>  groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">cohort</span>,</span>
-<span>  <span class="va">development</span>,</span>
-<span>  <span class="va">loss</span>,</span>
-<span>  <span class="va">premium</span>,</span>
-<span>  period_from <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  period_to <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  fill_gaps <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">as_total</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-df">df<a class="anchor" aria-label="anchor" href="#arg-df"></a></dt>
-<dd><p>A data.frame containing experience data.</p></dd>
-
-
-<dt id="arg-groups">groups<a class="anchor" aria-label="anchor" href="#arg-groups"></a></dt>
-<dd><p>Grouping variable(s).</p></dd>
-
-
-<dt id="arg-cohort">cohort<a class="anchor" aria-label="anchor" href="#arg-cohort"></a></dt>
-<dd><p>A single period variable (raw name). This may be an
-underwriting period (<code>"uy_m"</code>, <code>"uy_q"</code>, <code>"uy_h"</code>, <code>"uy"</code>) or a
-calendar period (<code>"cy_m"</code>, <code>"cy_q"</code>, <code>"cy_h"</code>, <code>"cy"</code>).</p></dd>
-
-
-<dt id="arg-development">development<a class="anchor" aria-label="anchor" href="#arg-development"></a></dt>
-<dd><p>A single development-period variable (raw name)
-used to count observed periods.</p></dd>
-
-
-<dt id="arg-loss">loss<a class="anchor" aria-label="anchor" href="#arg-loss"></a></dt>
-<dd><p>Single character; per-period loss column in <code>df</code>
-(raw name, e.g., <code>"loss_incr"</code>).</p></dd>
-
-
-<dt id="arg-premium">premium<a class="anchor" aria-label="anchor" href="#arg-premium"></a></dt>
-<dd><p>Single character; per-period premium column in <code>df</code>
-(raw name, e.g., <code>"premium_incr"</code>). Premium measure used as
-denominator for loss ratio calculations. For long-term health
-insurance applications, risk premium is commonly used.</p></dd>
-
-
-<dt id="arg-period-from">period_from<a class="anchor" aria-label="anchor" href="#arg-period-from"></a></dt>
-<dd><p>Optional lower bound for <code>cohort</code>. Only rows with
-<code>cohort &gt;= period_from</code> are kept. May be supplied as <code>Date</code>,
-character, or any value coercible to <code>Date</code>. Default <code>NULL</code>.</p></dd>
-
-
-<dt id="arg-period-to">period_to<a class="anchor" aria-label="anchor" href="#arg-period-to"></a></dt>
-<dd><p>Optional upper bound for <code>cohort</code>. Only rows with
-<code>cohort &lt;= period_to</code> are kept. May be supplied as <code>Date</code>,
-character, or any value coercible to <code>Date</code>. Default <code>NULL</code>.</p></dd>
-
-
-<dt id="arg-fill-gaps">fill_gaps<a class="anchor" aria-label="anchor" href="#arg-fill-gaps"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, zero-fill missing
-<code>(groups, cohort, dev)</code> cells before aggregation so
-that every cohort has a consecutive <code>dev</code> sequence. Default
-<code>FALSE</code>. Note that filling inflates <code>n_cohorts</code> (counts filled rows as
-observed periods); use <code><a href="validate_triangle.html">validate_triangle()</a></code> to inspect first.</p></dd>
+<dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
+<dd><p>A <code>Triangle</code> object (typically from <code><a href="as_triangle.html">as_triangle()</a></code>).</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -219,25 +159,15 @@ observed periods); use <code><a href="validate_triangle.html">validate_triangle(
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="fu">as_total</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="va">df</span>,</span></span>
-<span class="r-in"><span>  groups  <span class="op">=</span> <span class="st">"coverage"</span>,</span></span>
-<span class="r-in"><span>  cohort  <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
-<span class="r-in"><span>  dev     <span class="op">=</span> <span class="st">"dev_m"</span>,</span></span>
-<span class="r-in"><span>  loss    <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
-<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"premium_incr"</span></span></span>
+<span class="r-in"><span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="as_triangle.html">as_triangle</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">experience</span>,</span></span>
+<span class="r-in"><span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span></span>
+<span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
+<span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
+<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="fu">as_total</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="va">df</span>,</span></span>
-<span class="r-in"><span>  groups      <span class="op">=</span> <span class="st">"coverage"</span>,</span></span>
-<span class="r-in"><span>  cohort      <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
-<span class="r-in"><span>  dev         <span class="op">=</span> <span class="st">"dev_m"</span>,</span></span>
-<span class="r-in"><span>  loss        <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
-<span class="r-in"><span>  premium     <span class="op">=</span> <span class="st">"premium_incr"</span>,</span></span>
-<span class="r-in"><span>  period_from <span class="op">=</span> <span class="st">"2023-01-01"</span>,</span></span>
-<span class="r-in"><span>  period_to   <span class="op">=</span> <span class="st">"2023-12-01"</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">as_total</span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

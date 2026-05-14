@@ -10,7 +10,7 @@ associated
 
 Compared with
 [`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md),
-which builds a *two-dimensional* `cohort × dev` structure,
+which builds a *two-dimensional* `cohort x dev` structure,
 `as_calendar()` is *one-dimensional*: a single calendar-period time
 series (per group) showing how the portfolio evolves through time,
 regardless of cohort membership.
@@ -39,76 +39,25 @@ Therefore, for a fixed `calendar` cell, the proportions sum to 1 across
 groups. These are useful for examining the composition of each calendar
 period across products or other grouping variables.
 
+Calendar derives `calendar = cohort + (dev - 1)` using the Triangle's
+`grain` attribute and aggregates the incremental `loss` / `premium`
+columns by `(groups, calendar)`. This works for Triangles built in
+either mode (with or without an original `calendar` column in the raw
+experience), since `cohort + dev` is always sufficient to reconstruct
+the calendar axis at the Triangle's grain.
+
 ## Usage
 
 ``` r
-as_calendar(
-  df,
-  groups = NULL,
-  calendar,
-  loss,
-  premium,
-  grain = "auto",
-  period_from = NULL,
-  period_to = NULL,
-  fill_gaps = FALSE
-)
+as_calendar(x)
 ```
 
 ## Arguments
 
-- df:
+- x:
 
-  A data.frame containing experience data with per-period loss and
-  premium columns plus a `calendar` Date column (or any input that the
-  internal Date coercion accepts: Date, POSIXt, integer `yyyy` /
-  `yyyymm` / `yyyymmdd`, ISO string).
-
-- groups:
-
-  Column(s) used for grouping (e.g., product, gender).
-
-- calendar:
-
-  A single column defining the calendar-like period axis (raw name,
-  e.g., `"cy_m"`). May also be an underwriting axis (`"uy_m"` etc.) when
-  a single underwriting-period axis is to be summarised as a time series
-  rather than as a development structure.
-
-- loss:
-
-  Single character; per-period loss column in `df` (raw name, e.g.,
-  `"loss_incr"`).
-
-- premium:
-
-  Single character; per-period premium column in `df` (raw name, e.g.,
-  `"premium_incr"`). Premium measure used as denominator for loss ratio
-  calculations. For long-term health insurance applications, risk
-  premium is commonly used.
-
-- grain:
-
-  One of `"auto"` (default), `"M"`, `"Q"`, `"H"`, `"Y"`. `"auto"` infers
-  the grain from the `calendar` value spacing. Explicit values must be
-  at least as coarse as the input grain; the input is binned (floored)
-  to that grain before aggregation.
-
-- period_from:
-
-  Optional lower bound for `calendar`. Only rows with
-  `calendar >= period_from` are kept.
-
-- period_to:
-
-  Optional upper bound for `calendar`. Only rows with
-  `calendar <= period_to` are kept.
-
-- fill_gaps:
-
-  Logical; if `TRUE`, zero-fill missing `(groups, calendar)` cells so
-  every group has a consecutive calendar sequence at the resolved grain.
-  Default `FALSE`, which raises an error when gaps are detected.
+  A `Triangle` object (typically from
+  [`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)).
 
 ## Value
 
@@ -154,24 +103,17 @@ long-format version (`class = "CalendarLonger"`).
 
 ``` r
 if (FALSE) { # \dontrun{
-res1 <- as_calendar(
-  df,
-  groups   = "pd_cd",
+tri <- as_triangle(
+  experience,
+  groups   = "coverage",
+  cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "loss_incr",
   premium  = "premium_incr"
 )
 
-res2 <- as_calendar(
-  df,
-  groups      = "pd_cd",
-  calendar    = "cy_q",
-  loss        = "loss_incr",
-  premium     = "premium_incr",
-  period_from = "2023-01-01"
-)
-
-head(res1)
-attr(res1, "longer")
+cal <- as_calendar(tri)
+head(cal)
+attr(cal, "longer")
 } # }
 ```

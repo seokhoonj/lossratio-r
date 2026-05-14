@@ -22,6 +22,8 @@ plot(
   metric = "lr",
   x_by = c("period", "dev"),
   amount_divisor = "auto",
+  show_label = FALSE,
+  label_size = 2.8,
   theme = c("view", "save", "shiny"),
   ...
 )
@@ -55,7 +57,21 @@ plot(
 - amount_divisor:
 
   Numeric scaling factor used only for y-axis labels of amount
-  variables. Default is `1e8`.
+  variables. Default `"auto"` (picks the divisor that produces the
+  shortest formatted label; pass an explicit numeric to fix it).
+
+- show_label:
+
+  Logical; if `TRUE`, overlay the metric value as a text label at each
+  (calendar, group) point. Ratio metrics (`"lr"`, `"lr_incr"`, share
+  variants) are formatted as percent (one decimal). Amount metrics are
+  scaled by `amount_divisor` and formatted with one decimal. Default
+  `FALSE`.
+
+- label_size:
+
+  Numeric text size passed to `geom_text` when `show_label = TRUE`.
+  Default `2.8`.
 
 - theme:
 

@@ -105,7 +105,10 @@ plot_triangle(tri_q)   # 코호트 × dev lr 히트맵
 
 ``` r
 
-cal <- as_calendar(experience, groups = "coverage", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+tri <- as_triangle(experience, groups = "coverage",
+                   cohort = "uy_m", calendar = "cy_m",
+                   loss = "loss_incr", premium = "premium_incr")
+cal <- as_calendar(tri)
 head(cal)
 #>    coverage   calendar   dev      loss loss_incr   premium premium_incr
 #>      <char>     <Date> <int>     <num>     <num>     <num>        <num>
@@ -165,23 +168,21 @@ plot(cal, x_by = "dev")         # x axis: 순차 인덱스
 
 ``` r
 
-tot <- as_total(
-  experience,
-  groups      = "coverage",
-  cohort      = "uy_m",
+tri_bounded <- as_triangle(
+  experience[uy_m >= as.Date("2023-04-01") &
+             uy_m <= as.Date("2024-03-01")],
+  groups = "coverage", cohort = "uy_m",
   development = "dev_m",
-  loss        = "loss_incr",
-  premium     = "premium_incr",
-  period_from = "2023-04-01",
-  period_to   = "2024-03-01"
+  loss = "loss_incr", premium = "premium_incr"
 )
+tot <- as_total(tri_bounded)
 head(tot)
 #>    coverage n_cohorts sales_start  sales_end        loss    premium        lr
 #>      <char>     <int>      <Date>     <Date>       <num>      <num>     <num>
-#> 1:       CI        33  2023-04-01 2024-03-01  8240143118 9760853703 0.8442031
-#> 2:      CAN        33  2023-04-01 2024-03-01  2801401212 3710915725 0.7549083
-#> 3:      HOS        33  2023-04-01 2024-03-01   158760703  377104088 0.4209997
-#> 4:      SUR        33  2023-04-01 2024-03-01 13425719536 9003134239 1.4912273
+#> 1:       CI        12  2023-04-01 2024-03-01  8240143118 9760853703 0.8442031
+#> 2:      CAN        12  2023-04-01 2024-03-01  2801401212 3710915725 0.7549083
+#> 3:      HOS        12  2023-04-01 2024-03-01   158760703  377104088 0.4209997
+#> 4:      SUR        12  2023-04-01 2024-03-01 13425719536 9003134239 1.4912273
 #>     loss_share premium_share
 #>          <num>         <num>
 #> 1: 0.334611179    0.42713331

@@ -260,7 +260,10 @@ detection</p>
 <h2 id="calendar-calendar-period-only">Calendar (calendar period only)<a class="anchor" aria-label="anchor" href="#calendar-calendar-period-only"></a>
 </h2>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_calendar.html">as_calendar</a></span><span class="op">(</span><span class="va">experience</span>, groups <span class="op">=</span> <span class="st">"coverage"</span>, calendar <span class="op">=</span> <span class="st">"cy_m"</span>, loss <span class="op">=</span> <span class="st">"loss_incr"</span>, premium <span class="op">=</span> <span class="st">"premium_incr"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span><span class="va">experience</span>, groups <span class="op">=</span> <span class="st">"coverage"</span>,</span>
+<span>                   cohort <span class="op">=</span> <span class="st">"uy_m"</span>, calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
+<span>                   loss <span class="op">=</span> <span class="st">"loss_incr"</span>, premium <span class="op">=</span> <span class="st">"premium_incr"</span><span class="op">)</span></span>
+<span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_calendar.html">as_calendar</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cal</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    coverage   calendar   dev      loss loss_incr   premium premium_incr</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;        &lt;num&gt;</span></span>
@@ -306,23 +309,23 @@ on-leveling event) - Portfolio monitoring dashboards</p>
 <h2 id="total-portfolio-summary">Total (portfolio summary)<a class="anchor" aria-label="anchor" href="#total-portfolio-summary"></a>
 </h2>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_total.html">as_total</a></span><span class="op">(</span></span>
-<span>  <span class="va">experience</span>,</span>
-<span>  groups      <span class="op">=</span> <span class="st">"coverage"</span>,</span>
-<span>  cohort      <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
+<code class="sourceCode R"><span><span class="co"># Filter the triangle first (or the raw experience) for a date-bounded</span></span>
+<span><span class="co"># summary, then collapse to portfolio totals.</span></span>
+<span><span class="va">tri_bounded</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
+<span>  <span class="va">experience</span><span class="op">[</span><span class="va">uy_m</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2023-04-01"</span><span class="op">)</span> <span class="op">&amp;</span></span>
+<span>             <span class="va">uy_m</span> <span class="op">&lt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2024-03-01"</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>  groups <span class="op">=</span> <span class="st">"coverage"</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  development <span class="op">=</span> <span class="st">"dev_m"</span>,</span>
-<span>  loss        <span class="op">=</span> <span class="st">"loss_incr"</span>,</span>
-<span>  premium     <span class="op">=</span> <span class="st">"premium_incr"</span>,</span>
-<span>  period_from <span class="op">=</span> <span class="st">"2023-04-01"</span>,</span>
-<span>  period_to   <span class="op">=</span> <span class="st">"2024-03-01"</span></span>
+<span>  loss <span class="op">=</span> <span class="st">"loss_incr"</span>, premium <span class="op">=</span> <span class="st">"premium_incr"</span></span>
 <span><span class="op">)</span></span>
+<span><span class="va">tot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_total.html">as_total</a></span><span class="op">(</span><span class="va">tri_bounded</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tot</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    coverage n_cohorts sales_start  sales_end        loss    premium        lr</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;     &lt;int&gt;      &lt;Date&gt;     &lt;Date&gt;       &lt;num&gt;      &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:       CI        33  2023-04-01 2024-03-01  8240143118 9760853703 0.8442031</span></span>
-<span><span class="co">#&gt; 2:      CAN        33  2023-04-01 2024-03-01  2801401212 3710915725 0.7549083</span></span>
-<span><span class="co">#&gt; 3:      HOS        33  2023-04-01 2024-03-01   158760703  377104088 0.4209997</span></span>
-<span><span class="co">#&gt; 4:      SUR        33  2023-04-01 2024-03-01 13425719536 9003134239 1.4912273</span></span>
+<span><span class="co">#&gt; 1:       CI        12  2023-04-01 2024-03-01  8240143118 9760853703 0.8442031</span></span>
+<span><span class="co">#&gt; 2:      CAN        12  2023-04-01 2024-03-01  2801401212 3710915725 0.7549083</span></span>
+<span><span class="co">#&gt; 3:      HOS        12  2023-04-01 2024-03-01   158760703  377104088 0.4209997</span></span>
+<span><span class="co">#&gt; 4:      SUR        12  2023-04-01 2024-03-01 13425719536 9003134239 1.4912273</span></span>
 <span><span class="co">#&gt;     loss_share premium_share</span></span>
 <span><span class="co">#&gt;          &lt;num&gt;         &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1: 0.334611179    0.42713331</span></span>

@@ -142,6 +142,8 @@ plotted on the original scale and displayed using y-axis labels scaled by
 <span>  metric <span class="op">=</span> <span class="st">"lr"</span>,</span>
 <span>  x_by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"period"</span>, <span class="st">"dev"</span><span class="op">)</span>,</span>
 <span>  amount_divisor <span class="op">=</span> <span class="st">"auto"</span>,</span>
+<span>  show_label <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  label_size <span class="op">=</span> <span class="fl">2.8</span>,</span>
 <span>  theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"view"</span>, <span class="st">"save"</span>, <span class="st">"shiny"</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -175,7 +177,21 @@ plotted on the original scale and displayed using y-axis labels scaled by
 
 <dt id="arg-amount-divisor">amount_divisor<a class="anchor" aria-label="anchor" href="#arg-amount-divisor"></a></dt>
 <dd><p>Numeric scaling factor used only for y-axis labels of
-amount variables. Default is <code>1e8</code>.</p></dd>
+amount variables. Default <code>"auto"</code> (picks the divisor that produces
+the shortest formatted label; pass an explicit numeric to fix it).</p></dd>
+
+
+<dt id="arg-show-label">show_label<a class="anchor" aria-label="anchor" href="#arg-show-label"></a></dt>
+<dd><p>Logical; if <code>TRUE</code>, overlay the metric value as a
+text label at each (calendar, group) point. Ratio metrics
+(<code>"lr"</code>, <code>"lr_incr"</code>, share variants) are formatted as percent
+(one decimal). Amount metrics are scaled by <code>amount_divisor</code> and
+formatted with one decimal. Default <code>FALSE</code>.</p></dd>
+
+
+<dt id="arg-label-size">label_size<a class="anchor" aria-label="anchor" href="#arg-label-size"></a></dt>
+<dd><p>Numeric text size passed to <code>geom_text</code> when
+<code>show_label = TRUE</code>. Default <code>2.8</code>.</p></dd>
 
 
 <dt id="arg-theme">theme<a class="anchor" aria-label="anchor" href="#arg-theme"></a></dt>

@@ -5,16 +5,16 @@ plot_triangle(), detect_maturity(), detect_regime(),
 detect_convergence(), ...) can dispatch on the result.
 Three steps happen inside this single call:
 
-Validate — required columns are present, dates coerce
+Validate – required columns are present, dates coerce
 cleanly, the grain is consistent. Hard errors on schema issues
 so downstream code never receives malformed input.
-Standardise + aggregate — rename to package-canonical
+Standardise + aggregate – rename to package-canonical
 column names (cohort, calendar, dev, loss, premium,
 ...), auto-detect grain (M / Q / H / Y) from cohort
 spacing, derive dev from (cohort, calendar), aggregate to
 (group, cohort, dev), and enrich with cumulative / share /
 LR columns.
-Tag — set S3 class
+Tag – set S3 class
 c(&quot;Triangle&quot;, &quot;data.table&quot;, &quot;data.frame&quot;) so every
 *.Triangle method becomes available.
 
@@ -22,8 +22,8 @@ c(&quot;Triangle&quot;, &quot;data.table&quot;, &quot;data.frame&quot;) so every
 lossratio's Triangle is a data.table in long format (one
 row per (group, cohort, dev) cell) with the enriched columns
 described above. The name Triangle refers to the conceptual
-cohort × dev triangular region — older cohorts have more observed
-dev cells than newer ones — not to a matrix layout.
+cohort x dev triangular region – older cohorts have more observed
+dev cells than newer ones – not to a matrix layout.
 The auto-grain detection (grain = &quot;auto&quot;, default) reads cohort
 value spacing; explicit values must be at least as coarse as the
 input grain. The user does not pre-bin data or supply a dev_*
@@ -56,16 +56,16 @@ plot_triangle(), detect_maturity(), detect_regime(),
 detect_convergence(), ...) can dispatch on the result.
 Three steps happen inside this single call:
 
-Validate — required columns are present, dates coerce
+Validate – required columns are present, dates coerce
 cleanly, the grain is consistent. Hard errors on schema issues
 so downstream code never receives malformed input.
-Standardise + aggregate — rename to package-canonical
+Standardise + aggregate – rename to package-canonical
 column names (cohort, calendar, dev, loss, premium,
 ...), auto-detect grain (M / Q / H / Y) from cohort
 spacing, derive dev from (cohort, calendar), aggregate to
 (group, cohort, dev), and enrich with cumulative / share /
 LR columns.
-Tag — set S3 class
+Tag – set S3 class
 c(&quot;Triangle&quot;, &quot;data.table&quot;, &quot;data.frame&quot;) so every
 *.Triangle method becomes available.
 
@@ -73,8 +73,8 @@ c(&quot;Triangle&quot;, &quot;data.table&quot;, &quot;data.frame&quot;) so every
 lossratio's Triangle is a data.table in long format (one
 row per (group, cohort, dev) cell) with the enriched columns
 described above. The name Triangle refers to the conceptual
-cohort × dev triangular region — older cohorts have more observed
-dev cells than newer ones — not to a matrix layout.
+cohort x dev triangular region – older cohorts have more observed
+dev cells than newer ones – not to a matrix layout.
 The auto-grain detection (grain = &quot;auto&quot;, default) reads cohort
 value spacing; explicit values must be at least as coarse as the
 input grain. The user does not pre-bin data or supply a dev_*
@@ -211,23 +211,23 @@ methods (<code><a href="fit_lr.html">fit_lr()</a></code>, <code><a href="fit_los
 <code><a href="plot_triangle.html">plot_triangle()</a></code>, <code><a href="detect_maturity.html">detect_maturity()</a></code>, <code><a href="detect_regime.html">detect_regime()</a></code>,
 <code><a href="detect_convergence.html">detect_convergence()</a></code>, ...) can dispatch on the result.</p>
 <p>Three steps happen inside this single call:</p>
-<ol><li><p><strong>Validate</strong> — required columns are present, dates coerce
+<ol><li><p><strong>Validate</strong> – required columns are present, dates coerce
 cleanly, the grain is consistent. Hard errors on schema issues
 so downstream code never receives malformed input.</p></li>
-<li><p><strong>Standardise + aggregate</strong> — rename to package-canonical
+<li><p><strong>Standardise + aggregate</strong> – rename to package-canonical
 column names (<code>cohort</code>, <code>calendar</code>, <code>dev</code>, <code>loss</code>, <code>premium</code>,
 ...), auto-detect grain (<code>M</code> / <code>Q</code> / <code>H</code> / <code>Y</code>) from <code>cohort</code>
 spacing, derive <code>dev</code> from <code>(cohort, calendar)</code>, aggregate to
 <code>(group, cohort, dev)</code>, and enrich with cumulative / share /
 LR columns.</p></li>
-<li><p><strong>Tag</strong> — set S3 class
+<li><p><strong>Tag</strong> – set S3 class
 <code>c("Triangle", "data.table", "data.frame")</code> so every
 <code>*.Triangle</code> method becomes available.</p></li>
 </ol><p>lossratio's <code>Triangle</code> is a <code>data.table</code> in <strong>long format</strong> (one
 row per <code>(group, cohort, dev)</code> cell) with the enriched columns
 described above. The name <code>Triangle</code> refers to the conceptual
-cohort × dev triangular region — older cohorts have more observed
-dev cells than newer ones — not to a matrix layout.</p>
+cohort x dev triangular region – older cohorts have more observed
+dev cells than newer ones – not to a matrix layout.</p>
 <p>The auto-grain detection (<code>grain = "auto"</code>, default) reads <code>cohort</code>
 value spacing; explicit values must be at least as coarse as the
 input grain. The user does not pre-bin data or supply a <code>dev_*</code>

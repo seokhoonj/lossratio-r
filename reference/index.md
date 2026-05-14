@@ -160,6 +160,9 @@ and
 - [`plot(`*`<EDFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.EDFit.md)
   : Plot an ED fit
 
+- [`plot(`*`<IntensityFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.IntensityFit.md)
+  : Plot an Intensity fit
+
 - [`plot(`*`<LRFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.LRFit.md)
   : Plot a loss ratio fit
 
@@ -194,6 +197,9 @@ and
 
 - [`plot_triangle(`*`<EDFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.EDFit.md)
   : Triangle heatmap for an ED fit
+
+- [`plot_triangle(`*`<IntensityFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.IntensityFit.md)
+  : Triangle heatmap for an Intensity fit
 
 - [`plot_triangle(`*`<LRFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.LRFit.md)
   : Plot loss ratio projection as a triangle heatmap

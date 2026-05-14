@@ -14,24 +14,24 @@ grid, and assign the `Triangle` S3 class so the downstream methods
 
 Three steps happen inside this single call:
 
-1.  **Validate** — required columns are present, dates coerce cleanly,
+1.  **Validate** – required columns are present, dates coerce cleanly,
     the grain is consistent. Hard errors on schema issues so downstream
     code never receives malformed input.
 
-2.  **Standardise + aggregate** — rename to package-canonical column
+2.  **Standardise + aggregate** – rename to package-canonical column
     names (`cohort`, `calendar`, `dev`, `loss`, `premium`, ...),
     auto-detect grain (`M` / `Q` / `H` / `Y`) from `cohort` spacing,
     derive `dev` from `(cohort, calendar)`, aggregate to
     `(group, cohort, dev)`, and enrich with cumulative / share / LR
     columns.
 
-3.  **Tag** — set S3 class `c("Triangle", "data.table", "data.frame")`
+3.  **Tag** – set S3 class `c("Triangle", "data.table", "data.frame")`
     so every `*.Triangle` method becomes available.
 
 lossratio's `Triangle` is a `data.table` in **long format** (one row per
 `(group, cohort, dev)` cell) with the enriched columns described above.
-The name `Triangle` refers to the conceptual cohort × dev triangular
-region — older cohorts have more observed dev cells than newer ones —
+The name `Triangle` refers to the conceptual cohort x dev triangular
+region – older cohorts have more observed dev cells than newer ones –
 not to a matrix layout.
 
 The auto-grain detection (`grain = "auto"`, default) reads `cohort`
