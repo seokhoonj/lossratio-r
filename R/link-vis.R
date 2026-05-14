@@ -608,7 +608,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
                                     min_valid_ratio = 0.5,
                                     min_n_valid     = 3L,
                                     min_run         = 1L,
-                                    amount_divisor  = 1e8,
+                                    amount_divisor  = "auto",
                                     theme           = c("view", "save", "shiny"),
                                     nrow            = NULL,
                                     ncol            = NULL,
@@ -652,6 +652,10 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   }
 
   # 3) build cell labels and caption ------------------------------------
+  if (identical(amount_divisor, "auto"))
+    amount_divisor <- .auto_divisor(
+      if (label_style == "value") numeric(0) else dt[["target_to"]]
+    )
   unit_txt <- .get_amount_unit(amount_divisor)
 
   if (label_style == "value") {
@@ -789,7 +793,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 .plot_triangle_link_ed <- function(x,
                                    label_style    = c("value", "detail"),
                                    label_size     = NULL,
-                                   amount_divisor = 1e8,
+                                   amount_divisor = "auto",
                                    theme          = c("view", "save", "shiny"),
                                    nrow           = NULL,
                                    ncol           = NULL,
@@ -828,6 +832,11 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   }
 
   # 3) build cell labels
+  if (identical(amount_divisor, "auto"))
+    amount_divisor <- .auto_divisor(
+      if (label_style == "value") numeric(0) else dt[["exposure_from"]]
+    )
+
   if (label_style == "value") {
     dt[, ("label") := data.table::fifelse(is.finite(intensity),
                                       sprintf("%.3f", intensity), "")]

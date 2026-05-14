@@ -146,14 +146,14 @@ first on the raw triangle (so noisy post-change windows do not destabilise
 $k^*$), then the hybrid filter is applied to the actual fit using the
 fixed $k^*$.
 
-`plot_triangle(type = "usage")` visualises which cells each filter
+`plot_triangle(view = "usage")` visualises which cells each filter
 configuration feeds to `fit_lr`:
 
 ```r
-plot_triangle(tri_sur, type = "usage", holdout = 6L)                            # full
-plot_triangle(tri_sur, type = "usage", recent = 12L, holdout = 6L)              # recent
-plot_triangle(tri_sur, type = "usage", regime = "2024-07-01", holdout = 6L)     # change
-plot_triangle(tri_sur, type = "usage", recent = 12L,
+plot_triangle(tri_sur, view = "usage", holdout = 6L)                            # full
+plot_triangle(tri_sur, view = "usage", recent = 12L, holdout = 6L)              # recent
+plot_triangle(tri_sur, view = "usage", regime = "2024-07-01", holdout = 6L)     # change
+plot_triangle(tri_sur, view = "usage", recent = 12L,
               regime = "2024-07-01", holdout = 6L)                              # hybrid
 ```
 

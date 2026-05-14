@@ -7,7 +7,7 @@
 \method{plot}{Total}(
   x,
   metric = "lr",
-  amount_divisor = 1e+08,
+  amount_divisor = "auto",
   theme = c("view", "save", "shiny"),
   ...
 )

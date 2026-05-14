@@ -1062,33 +1062,51 @@ regime_at <- function(..., treatment = c("latest_only", "segment_wise")) {
 #' Build a lazy regime detection spec
 #'
 #' @description
-#' Captures [detect_regime()] arguments without evaluating. The resulting
-#' closure is invoked by the fit / backtest function with the appropriate
-#' triangle (full or masked) to perform leakage-safe detection.
+#' Captures [detect_regime()] arguments without running detection.
+#' Returns a closure that the consumer (fit_* or [backtest()]) invokes
+#' on its own *internal* triangle. The point is **conditional /
+#' deferred** detection -- the change points depend on which cells the
+#' caller decides to expose:
 #'
-#' Use `regime_spec()` when you want detection to run *inside* a fit or
-#' [backtest()] call so that the masked (training-only) triangle is used
-#' for change-point detection. Passing an already-detected `"Regime"`
-#' object instead would leak the held-out cohorts into detection.
+#' * In `fit_lr()` / `fit_loss()` / `fit_premium()`, the spec is invoked
+#'   on the *full* triangle the user passed in.
+#'
+#' * In [backtest()], **the spec is invoked on the masked triangle of
+#'   each holdout fold**, *never* on the full triangle. Held-out
+#'   diagonals are removed before [detect_regime()] sees the data, so
+#'   the detected change points depend only on cells the masked fit can
+#'   also see. This is the leakage-safe contract of `regime_spec()`.
+#'
+#' Contrast with [regime_at()], which produces an eager `"Regime"`
+#' object whose change points are fixed at construction time
+#' (independent of the fold's masked data).
+#'
+#' Use `regime_spec()` when you want change points to be **re-detected
+#' per fold** so backtest honestly answers "given the data available at
+#' this fold, what regime structure would I have picked?" Use
+#' [regime_at()] when you want a fixed regime tested across folds.
 #'
 #' @param ... kwargs passed verbatim to [detect_regime()] when the spec
 #'   is invoked (e.g. `target`, `by`, `min_run`, `method`).
 #'
 #' @return A function of one argument (a `"Triangle"`) returning a
-#'   `"Regime"` object.
+#'   `"Regime"` object. The caller decides which triangle to pass (full
+#'   vs. masked); inside [backtest()] this is always the masked training
+#'   triangle.
 #'
-#' @seealso [detect_regime()], [regime_at()]
+#' @seealso [detect_regime()], [regime_at()], [backtest()]
 #'
 #' @examples
 #' \dontrun{
 #' # Capture detection arguments, defer execution until fit time.
 #' spec <- regime_spec(target = "loss_ata")
 #'
-#' # Plugs into the fit / backtest 4-type regime input dispatcher.
+#' # In fit_lr(): closure is invoked on the user's `tri`.
 #' fit <- fit_lr(tri, loss_regime = regime_spec(target = "loss_ata"))
 #'
-#' # Leakage-safe: detection runs on the masked (training) triangle
-#' # for each holdout fold, never on the full triangle.
+#' # In backtest(): closure is invoked on the *masked* triangle of
+#' # each holdout fold, so detected change points never peek at
+#' # held-out cells.
 #' bt <- backtest(tri, holdout = 6L,
 #'                loss_regime = regime_spec(target = "loss_ata"))
 #' }

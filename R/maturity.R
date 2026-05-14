@@ -463,36 +463,51 @@ maturity_at <- function(...) {
 #' Build a lazy maturity detection spec
 #'
 #' @description
-#' Captures [detect_maturity()] arguments without evaluating. The
-#' resulting closure is invoked by the fit / backtest function with the
-#' appropriate triangle (full or masked) to perform leakage-safe
-#' detection.
+#' Captures [detect_maturity()] arguments without running detection.
+#' Returns a closure that the consumer (fit_* or [backtest()]) invokes
+#' on its own *internal* triangle. The point is **conditional /
+#' deferred** detection -- the value of $k^*$ depends on which cells the
+#' caller decides to expose:
 #'
-#' Use `maturity_spec()` when you want detection to run *inside* a fit
-#' or [backtest()] call so that the masked (training-only) triangle is
-#' used for maturity detection. Passing an already-detected
-#' `"Maturity"` object instead would leak the held-out cohorts into
-#' detection.
+#' * In `fit_lr()` / `fit_loss()`, the spec is invoked on the *full*
+#'   triangle the user passed in.
+#'
+#' * In [backtest()], **the spec is invoked on the masked triangle of
+#'   each holdout fold**, *never* on the full triangle. Held-out
+#'   diagonals are removed before [detect_maturity()] sees the data, so
+#'   the detected $k^*$ depends only on cells the masked fit can also
+#'   see. This is the leakage-safe contract of `maturity_spec()`.
+#'
+#' Contrast with [maturity_at()], which produces an eager `"Maturity"`
+#' object whose value is fixed at construction time (independent of the
+#' fold's masked data).
+#'
+#' Use `maturity_spec()` when you want $k^*$ to be **re-detected per
+#' fold** so backtest honestly answers "given the data available at this
+#' fold, what would I have picked?" Use `maturity_at()` when you want a
+#' fixed value tested across folds.
 #'
 #' @param ... kwargs passed verbatim to [detect_maturity()] when the
 #'   spec is invoked (e.g. `target`, `groups`, `min_run`, `max_cv`,
 #'   `max_rse`, `min_valid_ratio`, `min_n_valid`).
 #'
 #' @return A function of one argument (a `"Triangle"`) returning a
-#'   `"Maturity"` object.
+#'   `"Maturity"` object. The caller decides which triangle to pass
+#'   (full vs. masked); inside [backtest()] this is always the masked
+#'   training triangle.
 #'
-#' @seealso [detect_maturity()], [maturity_at()]
+#' @seealso [detect_maturity()], [maturity_at()], [backtest()]
 #'
 #' @examples
 #' \dontrun{
 #' # Capture detection arguments, defer execution until fit time.
 #' spec <- maturity_spec(min_run = 2, max_cv = 0.04)
 #'
-#' # Plugs into fit / backtest as the maturity input.
+#' # In fit_lr(): closure is invoked on the user's `tri`.
 #' fit <- fit_lr(tri, maturity = maturity_spec(min_run = 2))
 #'
-#' # Leakage-safe: detection runs on the masked (training) triangle
-#' # for each holdout fold, never on the full triangle.
+#' # In backtest(): closure is invoked on the *masked* triangle of
+#' # each holdout fold, so detected k* never peeks at held-out cells.
 #' bt <- backtest(tri, holdout = 6L,
 #'                maturity = maturity_spec(min_run = 2, max_cv = 0.04))
 #' }

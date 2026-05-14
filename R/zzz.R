@@ -48,8 +48,9 @@ utils::globalVariables(c(
   "premium", "premium_incr", "premium_incr_proj", "premium_obs",
   "premium_proj", "premium_share",
   "regime", "regime_id", "reserve", "selected",
-  "target_actual", "target_actual_incr", "target_delta", "target_from",
-  "target_obs", "target_proj", "target_proj_incr", "target_to",
+  "actual", "actual_incr", "expected", "expected_incr",
+  "target_delta", "target_from",
+  "target_obs", "target_proj", "target_to",
   "value",  # default melt() value column when value.name not set
 
   # 3. Fit SE / variance / CV / tail-factor schema ---------------------

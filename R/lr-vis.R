@@ -52,7 +52,7 @@ plot.LRFit <- function(x,
                         ask            = grDevices::dev.interactive(),
                         conf_level     = 0.95,
                         show_interval  = TRUE,
-                        amount_divisor = 1e8,
+                        amount_divisor = "auto",
                         scales         = c("fixed", "free_y",
                                            "free_x", "free"),
                         theme = c("view", "save", "shiny"),
@@ -80,6 +80,11 @@ plot.LRFit <- function(x,
   z_alpha <- stats::qnorm((1 + conf_level) / 2)
 
   full <- .ensure_dt(x$full)
+
+  if (identical(amount_divisor, "auto"))
+    amount_divisor <- .auto_divisor(
+      if (metric == "lr") numeric(0) else full[[paste0(metric, "_proj")]]
+    )
 
   ci_type <- if (!is.null(x$ci_type)) x$ci_type else "analytical"
 
@@ -364,7 +369,7 @@ plot_triangle.LRFit <- function(x,
                                  label_size     = NULL,
                                  show_maturity  = TRUE,
                                  digits         = 0,
-                                 amount_divisor = 1e8,
+                                 amount_divisor = "auto",
                                  theme          = c("view", "save", "shiny"),
                                  nrow           = NULL,
                                  ncol           = NULL,
@@ -435,6 +440,11 @@ plot_triangle.LRFit <- function(x,
                    val_col, region), call. = FALSE)
     dt[, (".value") := .SD[[val_col]], .SDcols = val_col]
   }
+
+  if (identical(amount_divisor, "auto"))
+    amount_divisor <- .auto_divisor(
+      if (is_ratio) numeric(0) else dt[[".value"]]
+    )
 
   # 3) build dev link labels
   link_levels <- sort(unique(dt[["dev"]]))

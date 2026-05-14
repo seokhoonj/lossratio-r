@@ -6,11 +6,11 @@
 \usage{
 \method{plot_triangle}{Triangle}(
   x,
-  type = c("value", "usage"),
+  view = c("value", "usage"),
   metric = "lr",
   label_style = c("value", "detail"),
   label_size = NULL,
-  amount_divisor = 1e+08,
+  amount_divisor = "auto",
   nrow = NULL,
   ncol = NULL,
   theme = c("view", "save", "shiny"),
@@ -20,7 +20,7 @@
 \arguments{
 \item{x}{An object of class \code{Triangle}.}
 
-\item{type}{Plot type. One of:
+\item{view}{Plot view. One of:
 \describe{
 \item{"value"}{(default) Per-cell metric heatmap controlled by
 \code{metric}, \code{label_style}, \code{amount_divisor}, \code{nrow}, \code{ncol}.}
@@ -50,7 +50,9 @@ color, hjust, ...) fall back to ggshort defaults.}
 
 \item{amount_divisor}{Numeric scaling factor applied to amount variables
 (e.g., \code{loss}, \code{loss_incr}, \code{premium}, \code{premium_incr}, \code{margin}, \code{margin_incr}) before plotting.
-Default is \code{1e8}}
+Default \code{"auto"} picks the largest divisor in
+\verb{\{1, 1e3, 1e6, 1e7, 1e8, 1e9\}} such that the median displayed
+value is still at least \code{1}, minimising label digit count.}
 
 \item{nrow, ncol}{Number of rows and columns passed to \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}.}
 

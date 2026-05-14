@@ -13,35 +13,50 @@ spec is invoked (e.g. \code{target}, \code{groups}, \code{min_run}, \code{max_cv
 }
 \value{
 A function of one argument (a \code{"Triangle"}) returning a
-\code{"Maturity"} object.
+\code{"Maturity"} object. The caller decides which triangle to pass
+(full vs. masked); inside \code{\link[=backtest]{backtest()}} this is always the masked
+training triangle.
 }
 \description{
-Captures \code{\link[=detect_maturity]{detect_maturity()}} arguments without evaluating. The
-resulting closure is invoked by the fit / backtest function with the
-appropriate triangle (full or masked) to perform leakage-safe
-detection.
+Captures \code{\link[=detect_maturity]{detect_maturity()}} arguments without running detection.
+Returns a closure that the consumer (fit_* or \code{\link[=backtest]{backtest()}}) invokes
+on its own \emph{internal} triangle. The point is \strong{conditional /
+deferred} detection -- the value of $k^*$ depends on which cells the
+caller decides to expose:
+\itemize{
+\item In \code{fit_lr()} / \code{fit_loss()}, the spec is invoked on the \emph{full}
+triangle the user passed in.
+\item In \code{\link[=backtest]{backtest()}}, \strong{the spec is invoked on the masked triangle of
+each holdout fold}, \emph{never} on the full triangle. Held-out
+diagonals are removed before \code{\link[=detect_maturity]{detect_maturity()}} sees the data, so
+the detected $k^*$ depends only on cells the masked fit can also
+see. This is the leakage-safe contract of \code{maturity_spec()}.
+}
 
-Use \code{maturity_spec()} when you want detection to run \emph{inside} a fit
-or \code{\link[=backtest]{backtest()}} call so that the masked (training-only) triangle is
-used for maturity detection. Passing an already-detected
-\code{"Maturity"} object instead would leak the held-out cohorts into
-detection.
+Contrast with \code{\link[=maturity_at]{maturity_at()}}, which produces an eager \code{"Maturity"}
+object whose value is fixed at construction time (independent of the
+fold's masked data).
+
+Use \code{maturity_spec()} when you want $k^*$ to be \strong{re-detected per
+fold} so backtest honestly answers "given the data available at this
+fold, what would I have picked?" Use \code{maturity_at()} when you want a
+fixed value tested across folds.
 }
 \examples{
 \dontrun{
 # Capture detection arguments, defer execution until fit time.
 spec <- maturity_spec(min_run = 2, max_cv = 0.04)
 
-# Plugs into fit / backtest as the maturity input.
+# In fit_lr(): closure is invoked on the user's `tri`.
 fit <- fit_lr(tri, maturity = maturity_spec(min_run = 2))
 
-# Leakage-safe: detection runs on the masked (training) triangle
-# for each holdout fold, never on the full triangle.
+# In backtest(): closure is invoked on the *masked* triangle of
+# each holdout fold, so detected k* never peeks at held-out cells.
 bt <- backtest(tri, holdout = 6L,
                maturity = maturity_spec(min_run = 2, max_cv = 0.04))
 }
 
 }
 \seealso{
-\code{\link[=detect_maturity]{detect_maturity()}}, \code{\link[=maturity_at]{maturity_at()}}
+\code{\link[=detect_maturity]{detect_maturity()}}, \code{\link[=maturity_at]{maturity_at()}}, \code{\link[=backtest]{backtest()}}
 }

@@ -9,7 +9,7 @@
   metric = "lr",
   summary = FALSE,
   summary_min_n = 5L,
-  amount_divisor = 1e+08,
+  amount_divisor = "auto",
   scales = c("fixed", "free_y", "free_x", "free"),
   theme = c("view", "save", "shiny"),
   ...

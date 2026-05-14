@@ -92,18 +92,18 @@
 #'     \item{`fit`}{The fit object returned by the target-specific
 #'       fitter.}
 #'     \item{`ae_err`}{`data.table` of held-out cells with columns
-#'       `(group, cohort, dev, target_actual, target_proj, aeg, ae_err,
-#'       target_actual_incr, target_proj_incr, aeg_incr, ae_err_incr,
-#'       calendar_idx)`. `aeg = target_actual - target_proj` (signed
-#'       error in target units); `ae_err = target_actual / target_proj
-#'       - 1` (relative error). `_incr` siblings are the same metrics
+#'       `(group, cohort, dev, actual, expected, aeg, ae_err,
+#'       actual_incr, expected_incr, aeg_incr, ae_err_incr,
+#'       calendar_idx)`. `aeg = actual - expected` (signed
+#'       error in target units); `ae_err = actual / expected - 1`
+#'       (relative error). `_incr` siblings are the same metrics
 #'       on the incremental view.}
 #'     \item{`col_summary`}{Per-`dev` aggregate A/E Error and AEG
 #'       (mean / median / weighted) with `_incr` variants and `n`.}
 #'     \item{`diag_summary`}{Per-calendar-diagonal aggregate A/E
 #'       Error and AEG (same columns as `col_summary`, keyed by
 #'       `calendar_idx`).}
-#'     \item{`target`, `holdout`, `fit_fn_name`}{Call metadata.}
+#'     \item{`target`, `holdout`, `dispatcher`}{Call metadata.}
 #'     \item{`groups`, `cohort`, `dev`}{Variable name relays
 #'       from `x`.}
 #'   }
@@ -178,7 +178,7 @@ backtest <- function(x,
   actual_incr <- paste0(target, "_incr")
   proj_cum    <- paste0(target, "_proj")
   proj_incr   <- paste0(target, "_incr_proj")
-  fit_fn_name <- switch(target,
+  dispatcher <- switch(target,
                         lr      = "fit_lr",
                         loss    = "fit_loss",
                         premium = "fit_premium")
@@ -302,7 +302,7 @@ backtest <- function(x,
     .SDcols = c(grp, "cohort", "dev", actual_cum, actual_incr, ".cal_idx")]
   data.table::setnames(obs,
     c(actual_cum, actual_incr, ".cal_idx"),
-    c("target_actual", "target_actual_incr", "calendar_idx")
+    c("actual", "actual_incr", "calendar_idx")
   )
 
   ae_err <- proj[obs,
@@ -310,73 +310,42 @@ backtest <- function(x,
                  nomatch = NULL]
   data.table::setnames(ae_err,
     c(proj_cum, proj_incr),
-    c("target_proj", "target_proj_incr")
+    c("expected", "expected_incr")
   )
 
   # Drop cells the masked fit cannot reach (cumulative side); the
   # incremental columns may still be NA on those edges, which is fine.
-  ae_err <- ae_err[is.finite(target_proj)]
+  ae_err <- ae_err[is.finite(expected)]
 
-  # Cumulative ae_err / aeg
-  ae_err[, ("aeg") := target_actual - target_proj]
+  # Cumulative: raw signed gap (target units) + relative error
+  ae_err[, ("aeg")    := actual - expected]
   ae_err[, ("ae_err") := data.table::fifelse(
-    is.finite(target_proj) & target_proj != 0,
-    target_actual / target_proj - 1,
+    is.finite(expected) & expected != 0,
+    actual / expected - 1,
     NA_real_
   )]
 
-  # Incremental ae_err / aeg
-  ae_err[, ("aeg_incr") := target_actual_incr - target_proj_incr]
+  # Incremental: raw signed gap + relative error
+  ae_err[, ("aeg_incr")    := actual_incr - expected_incr]
   ae_err[, ("ae_err_incr") := data.table::fifelse(
-    is.finite(target_proj_incr) & target_proj_incr != 0,
-    target_actual_incr / target_proj_incr - 1,
+    is.finite(expected_incr) & expected_incr != 0,
+    actual_incr / expected_incr - 1,
     NA_real_
   )]
 
   data.table::setcolorder(ae_err, c(
     grp, "cohort", "dev",
-    "target_actual",      "target_proj",      "aeg",      "ae_err",
-    "target_actual_incr", "target_proj_incr", "aeg_incr", "ae_err_incr",
+    "actual",      "expected",      "aeg",      "ae_err",
+    "actual_incr", "expected_incr", "aeg_incr", "ae_err_incr",
     "calendar_idx"
   ))
   data.table::setorderv(ae_err, c(grp, "cohort", "dev"))
 
   # 5) Summaries (per dev and per calendar diagonal) -- both views ----
-  col_by   <- c(grp, "dev")
-  col_summary <- ae_err[, .(
-    n                = sum(is.finite(ae_err)),
-    aeg_mean         = mean(aeg, na.rm = TRUE),
-    aeg_med          = stats::median(aeg, na.rm = TRUE),
-    ae_err_mean      = mean(ae_err, na.rm = TRUE),
-    ae_err_med       = stats::median(ae_err, na.rm = TRUE),
-    ae_err_wt        = sum(target_actual - target_proj, na.rm = TRUE) /
-                       sum(target_proj, na.rm = TRUE),
-    aeg_incr_mean    = mean(aeg_incr, na.rm = TRUE),
-    aeg_incr_med     = stats::median(aeg_incr, na.rm = TRUE),
-    ae_err_incr_mean = mean(ae_err_incr, na.rm = TRUE),
-    ae_err_incr_med  = stats::median(ae_err_incr, na.rm = TRUE),
-    ae_err_incr_wt   = sum(target_actual_incr - target_proj_incr, na.rm = TRUE) /
-                       sum(target_proj_incr, na.rm = TRUE)
-  ), by = col_by]
-  data.table::setorderv(col_summary, col_by)
-
-  diag_by <- c(grp, "calendar_idx")
-  diag_summary <- ae_err[, .(
-    n                = sum(is.finite(ae_err)),
-    aeg_mean         = mean(aeg, na.rm = TRUE),
-    aeg_med          = stats::median(aeg, na.rm = TRUE),
-    ae_err_mean      = mean(ae_err, na.rm = TRUE),
-    ae_err_med       = stats::median(ae_err, na.rm = TRUE),
-    ae_err_wt        = sum(target_actual - target_proj, na.rm = TRUE) /
-                       sum(target_proj, na.rm = TRUE),
-    aeg_incr_mean    = mean(aeg_incr, na.rm = TRUE),
-    aeg_incr_med     = stats::median(aeg_incr, na.rm = TRUE),
-    ae_err_incr_mean = mean(ae_err_incr, na.rm = TRUE),
-    ae_err_incr_med  = stats::median(ae_err_incr, na.rm = TRUE),
-    ae_err_incr_wt   = sum(target_actual_incr - target_proj_incr, na.rm = TRUE) /
-                       sum(target_proj_incr, na.rm = TRUE)
-  ), by = diag_by]
-  data.table::setorderv(diag_summary, diag_by)
+  col_by       <- c(grp, "dev")
+  diag_by      <- c(grp, "calendar_idx")
+  col_summary  <- .backtest_aggregate(ae_err, col_by)
+  diag_summary <- .backtest_aggregate(ae_err, diag_by)
 
   # 6) Usage map. Mirrors `fit_loss()$usage` but additionally tags the
   # held-out diagonal cells. Computed from the *pre-mask* triangle so
@@ -405,13 +374,39 @@ backtest <- function(x,
     diag_summary = diag_summary,
     target       = target,
     holdout      = holdout,
-    fit_fn_name  = fit_fn_name,
+    dispatcher  = dispatcher,
     groups       = grp,
     cohort       = coh,
     dev          = dev,
     usage        = usage
   )
   class(out) <- "Backtest"
+  out
+}
+
+
+# Internal: aggregation helper for backtest summaries ---------------------
+
+# `col_summary` and `diag_summary` use the same statistics list -- only
+# the `by =` columns differ. Centralising the expression keeps the two
+# views provably aligned and shaves out 20+ duplicate lines.
+.backtest_aggregate <- function(ae_err, by_cols) {
+  out <- ae_err[, .(
+    n                = sum(is.finite(ae_err)),
+    aeg_mean         = mean(aeg, na.rm = TRUE),
+    aeg_med          = stats::median(aeg, na.rm = TRUE),
+    ae_err_mean      = mean(ae_err, na.rm = TRUE),
+    ae_err_med       = stats::median(ae_err, na.rm = TRUE),
+    ae_err_wt        = sum(actual - expected, na.rm = TRUE) /
+                       sum(expected, na.rm = TRUE),
+    aeg_incr_mean    = mean(aeg_incr, na.rm = TRUE),
+    aeg_incr_med     = stats::median(aeg_incr, na.rm = TRUE),
+    ae_err_incr_mean = mean(ae_err_incr, na.rm = TRUE),
+    ae_err_incr_med  = stats::median(ae_err_incr, na.rm = TRUE),
+    ae_err_incr_wt   = sum(actual_incr - expected_incr, na.rm = TRUE) /
+                       sum(expected_incr, na.rm = TRUE)
+  ), by = by_cols]
+  data.table::setorderv(out, by_cols)
   out
 }
 
@@ -423,17 +418,17 @@ backtest <- function(x,
 #' @export
 print.Backtest <- function(x, ...) {
   cat("<Backtest>\n")
-  cat(sprintf("  fit_fn   : %s\n", x$fit_fn_name))
-  cat(sprintf("  target   : %s\n", x$target))
-  cat(sprintf("  holdout  : %d diagonals (%d cells)\n",
+  cat(sprintf("  dispatcher: %s\n", x$dispatcher))
+  cat(sprintf("  target    : %s\n", x$target))
+  cat(sprintf("  holdout   : %d diagonals (%d cells)\n",
               x$holdout, nrow(x$ae_err)))
   err <- x$ae_err$ae_err
   err <- err[is.finite(err)]
   if (length(err)) {
-    cat(sprintf("  A/E Error: mean %.2f%% / median %.2f%%\n",
+    cat(sprintf("  A/E Error : mean %.2f%% / median %.2f%%\n",
                 mean(err) * 100, stats::median(err) * 100))
   } else {
-    cat("  A/E Error: (no finite values)\n")
+    cat("  A/E Error : (no finite values)\n")
   }
   invisible(x)
 }
@@ -444,7 +439,7 @@ print.Backtest <- function(x, ...) {
 #' @export
 summary.Backtest <- function(object, ...) {
   out <- list(
-    fit_fn_name  = object$fit_fn_name,
+    dispatcher   = object$dispatcher,
     target       = object$target,
     holdout      = object$holdout,
     n_held_out   = nrow(object$ae_err),
@@ -461,9 +456,9 @@ summary.Backtest <- function(object, ...) {
 #' @export
 print.summary.Backtest <- function(x, ...) {
   cat("Backtest summary\n")
-  cat(sprintf("  fit_fn  : %s\n", x$fit_fn_name))
-  cat(sprintf("  target  : %s\n", x$target))
-  cat(sprintf("  holdout : %d diagonals (%d cells)\n\n",
+  cat(sprintf("  dispatcher: %s\n", x$dispatcher))
+  cat(sprintf("  target    : %s\n", x$target))
+  cat(sprintf("  holdout   : %d diagonals (%d cells)\n\n",
               x$holdout, x$n_held_out))
 
   cat("By dev:\n")

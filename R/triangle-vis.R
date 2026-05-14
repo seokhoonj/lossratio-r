@@ -75,7 +75,7 @@ plot.Triangle <- function(x,
                           metric         = "lr",
                           summary        = FALSE,
                           summary_min_n  = 5L,
-                          amount_divisor = 1e8,
+                          amount_divisor = "auto",
                           scales         = c("fixed", "free_y", "free_x", "free"),
                           theme          = c("view", "save", "shiny"),
                           ...) {
@@ -89,6 +89,11 @@ plot.Triangle <- function(x,
   coh     <- attr(x, "cohort")
   dev <- attr(x, "dev")
   metric <- .capture_names(x, !!rlang::enquo(metric))
+
+  if (identical(amount_divisor, "auto"))
+    amount_divisor <- .auto_divisor(
+      if (.is_ratio_metric(metric)) numeric(0) else x[[metric]]
+    )
 
   valid_vars <- c(
     "lr", "lr_incr",
@@ -325,7 +330,7 @@ plot.Triangle <- function(x,
 plot.Calendar <- function(x,
                           metric         = "lr",
                           x_by           = c("period", "dev"),
-                          amount_divisor = 1e8,
+                          amount_divisor = "auto",
                           theme          = c("view", "save", "shiny"),
                           ...) {
 
@@ -356,6 +361,11 @@ plot.Calendar <- function(x,
   }
 
   dt <- .ensure_dt(x)
+
+  if (identical(amount_divisor, "auto"))
+    amount_divisor <- .auto_divisor(
+      if (.is_ratio_metric(metric)) numeric(0) else dt[[metric]]
+    )
 
   meta <- .get_plot_meta(metric, amount_divisor = amount_divisor)
 
@@ -478,7 +488,7 @@ plot_triangle <- function(x, ...) {
 #' where `premium` denotes risk premium rather than written premium.
 #'
 #' @param x An object of class `Triangle`.
-#' @param type Plot type. One of:
+#' @param view Plot view. One of:
 #'   \describe{
 #'     \item{"value"}{(default) Per-cell metric heatmap controlled by
 #'       `metric`, `label_style`, `amount_divisor`, `nrow`, `ncol`.}
@@ -504,7 +514,9 @@ plot_triangle <- function(x, ...) {
 #'   color, hjust, ...) fall back to ggshort defaults.
 #' @param amount_divisor Numeric scaling factor applied to amount variables
 #'   (e.g., `loss`, `loss_incr`, `premium`, `premium_incr`, `margin`, `margin_incr`) before plotting.
-#'   Default is `1e8`
+#'   Default `"auto"` picks the largest divisor in
+#'   `{1, 1e3, 1e6, 1e7, 1e8, 1e9}` such that the median displayed
+#'   value is still at least `1`, minimising label digit count.
 #' @param theme A string passed to [.switch_theme()]
 #'   (`"view"`, `"save"`, `"shiny"`).
 #' @param nrow,ncol Number of rows and columns passed to [ggplot2::facet_wrap()].
@@ -548,19 +560,19 @@ plot_triangle <- function(x, ...) {
 #' @method plot_triangle Triangle
 #' @export
 plot_triangle.Triangle <- function(x,
-                                   type           = c("value", "usage"),
+                                   view           = c("value", "usage"),
                                    metric         = "lr",
                                    label_style    = c("value", "detail"),
                                    label_size     = NULL,
-                                   amount_divisor = 1e8,
+                                   amount_divisor = "auto",
                                    nrow           = NULL, ncol = NULL,
                                    theme          = c("view", "save", "shiny"),
                                    ...) {
 
   .assert_class(x, "Triangle")
-  type <- match.arg(type)
+  view <- match.arg(view)
 
-  if (type == "usage") {
+  if (view == "usage") {
     return(.plot_triangle_usage(x, theme = theme, ...))
   }
 
@@ -627,6 +639,22 @@ plot_triangle.Triangle <- function(x,
                    "margin", "margin_incr")
   prop_vars   <- c("loss_share", "loss_incr_share",
                    "premium_share", "premium_incr_share")
+
+  # Resolve `amount_divisor = "auto"` based on the values the labels
+  # will actually display. Amount metrics consult the metric column;
+  # ratio metrics in `detail` mode show (loss / premium) below the LR,
+  # so we resolve against the larger denominator (premium). Proportion
+  # metrics never use `amount_divisor`, but resolve anyway to avoid a
+  # validation surprise.
+  divisor_values <- if (metric %in% amount_vars) {
+    dt[[metric]]
+  } else if (metric %in% ratio_vars && label_style == "detail") {
+    dt[[if (metric == "lr") "premium" else "premium_incr"]]
+  } else {
+    numeric(0)
+  }
+  if (identical(amount_divisor, "auto"))
+    amount_divisor <- .auto_divisor(divisor_values)
 
   if (metric %in% ratio_vars) {
 
@@ -780,7 +808,7 @@ plot_triangle.Triangle <- function(x,
 #' @import ggplot2
 plot.Total <- function(x,
                        metric         = "lr",
-                       amount_divisor = 1e8,
+                       amount_divisor = "auto",
                        theme          = c("view", "save", "shiny"),
                        ...) {
 
@@ -823,6 +851,11 @@ plot.Total <- function(x,
   # order bars by value (ascending so largest is at the top after coord_flip)
   data.table::setorderv(dt, metric)
   dt[, (".group") := factor(.group, levels = .group)]
+
+  if (identical(amount_divisor, "auto"))
+    amount_divisor <- .auto_divisor(
+      if (.is_ratio_metric(metric)) numeric(0) else dt[[metric]]
+    )
 
   meta <- .get_plot_meta(metric, amount_divisor = amount_divisor)
 

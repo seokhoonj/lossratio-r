@@ -1,5 +1,41 @@
 # lossratio (development version)
 
+* **BREAKING** — `plot_triangle.Triangle()` argument `type` renamed to
+  `view` for parity with `plot_triangle.CLFit()`, `plot_triangle.LRFit()`,
+  and `plot_triangle.Backtest()`, which already used `view = c("value",
+  "usage")`. The `type =` slot is left free for plot-method-specific
+  semantics (`plot.Backtest(type = "col"/"diag"/"cell")`,
+  `plot.CLFit(type = "projection"/"reserve")`, etc.). Migration:
+  `plot_triangle(tri, type = "usage")` -> `plot_triangle(tri, view = "usage")`.
+
+* **Known limitation (future work) — segment_wise mini-triangle
+  gap-fill**. Under `treatment = "segment_wise"`, `fit_*` produces a
+  mini-triangle per regime segment using only that segment's
+  cohorts; cells that fall outside every mini-triangle (typically old
+  cohorts at late development periods that cannot be reached from
+  any single segment) are currently left unprojected. A follow-up
+  phase should add a fallback (e.g. `latest-segment factor`,
+  `previous-segment factor`, smoothing across segments) controlled by
+  a `Regime$fallback` knob, plus a warning when $k^*$ exceeds the
+  *change-to-now* horizon of the latest segment (which would also
+  cause the mini-triangle to be truncated). Today the cells render
+  as `unused` in `plot_triangle(view = "usage")` rather than being
+  filled in by an inferred projection.
+
+* **BREAKING** — `backtest()` cell-level columns renamed from
+  `target_actual` / `target_proj` (and `_incr` siblings) to
+  `actual` / `expected` (and `actual_incr` / `expected_incr`). The new
+  names match the actuarial A/E convention (`aeg = actual - expected`,
+  `ae_err = actual / expected - 1`) and self-document the role of each
+  column. Worker-layer column names (`target_proj` etc. on
+  `CLFit$full` / `EDFit$full`) are unchanged -- the rename is scoped to
+  `backtest$ae_err`. Migration: replace `bt$ae_err$target_actual` with
+  `bt$ae_err$actual`, `bt$ae_err$target_proj` with `bt$ae_err$expected`.
+* `backtest()` result slot `fit_fn_name` renamed to `dispatcher`
+  for clarity (the value is still the dispatcher name —
+  `fit_lr` / `fit_loss` / `fit_premium` — selected by `target=`).
+  `print()` / `summary()` labels updated accordingly.
+
 * `fit_loss()`, `fit_premium()`, `fit_lr()`, and `backtest()` now
   attach a `$usage` `data.table` to the result: one row per
   `(group, cohort, dev)` cell of the *pre-filter* triangle with a

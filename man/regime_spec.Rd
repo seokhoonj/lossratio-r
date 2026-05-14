@@ -12,33 +12,51 @@ is invoked (e.g. \code{target}, \code{by}, \code{min_run}, \code{method}).}
 }
 \value{
 A function of one argument (a \code{"Triangle"}) returning a
-\code{"Regime"} object.
+\code{"Regime"} object. The caller decides which triangle to pass (full
+vs. masked); inside \code{\link[=backtest]{backtest()}} this is always the masked training
+triangle.
 }
 \description{
-Captures \code{\link[=detect_regime]{detect_regime()}} arguments without evaluating. The resulting
-closure is invoked by the fit / backtest function with the appropriate
-triangle (full or masked) to perform leakage-safe detection.
+Captures \code{\link[=detect_regime]{detect_regime()}} arguments without running detection.
+Returns a closure that the consumer (fit_* or \code{\link[=backtest]{backtest()}}) invokes
+on its own \emph{internal} triangle. The point is \strong{conditional /
+deferred} detection -- the change points depend on which cells the
+caller decides to expose:
+\itemize{
+\item In \code{fit_lr()} / \code{fit_loss()} / \code{fit_premium()}, the spec is invoked
+on the \emph{full} triangle the user passed in.
+\item In \code{\link[=backtest]{backtest()}}, \strong{the spec is invoked on the masked triangle of
+each holdout fold}, \emph{never} on the full triangle. Held-out
+diagonals are removed before \code{\link[=detect_regime]{detect_regime()}} sees the data, so
+the detected change points depend only on cells the masked fit can
+also see. This is the leakage-safe contract of \code{regime_spec()}.
+}
 
-Use \code{regime_spec()} when you want detection to run \emph{inside} a fit or
-\code{\link[=backtest]{backtest()}} call so that the masked (training-only) triangle is used
-for change-point detection. Passing an already-detected \code{"Regime"}
-object instead would leak the held-out cohorts into detection.
+Contrast with \code{\link[=regime_at]{regime_at()}}, which produces an eager \code{"Regime"}
+object whose change points are fixed at construction time
+(independent of the fold's masked data).
+
+Use \code{regime_spec()} when you want change points to be \strong{re-detected
+per fold} so backtest honestly answers "given the data available at
+this fold, what regime structure would I have picked?" Use
+\code{\link[=regime_at]{regime_at()}} when you want a fixed regime tested across folds.
 }
 \examples{
 \dontrun{
 # Capture detection arguments, defer execution until fit time.
 spec <- regime_spec(target = "loss_ata")
 
-# Plugs into the fit / backtest 4-type regime input dispatcher.
+# In fit_lr(): closure is invoked on the user's `tri`.
 fit <- fit_lr(tri, loss_regime = regime_spec(target = "loss_ata"))
 
-# Leakage-safe: detection runs on the masked (training) triangle
-# for each holdout fold, never on the full triangle.
+# In backtest(): closure is invoked on the *masked* triangle of
+# each holdout fold, so detected change points never peek at
+# held-out cells.
 bt <- backtest(tri, holdout = 6L,
                loss_regime = regime_spec(target = "loss_ata"))
 }
 
 }
 \seealso{
-\code{\link[=detect_regime]{detect_regime()}}, \code{\link[=regime_at]{regime_at()}}
+\code{\link[=detect_regime]{detect_regime()}}, \code{\link[=regime_at]{regime_at()}}, \code{\link[=backtest]{backtest()}}
 }

@@ -33,7 +33,7 @@ plot.CLFit <- function(x,
                         type           = c("projection", "reserve"),
                         conf_level     = 0.95,
                         show_interval  = TRUE,
-                        amount_divisor = 1e8,
+                        amount_divisor = "auto",
                         scales         = c("fixed", "free_y", "free_x", "free"),
                         theme          = c("view", "save", "shiny"),
                         nrow           = NULL,
@@ -70,6 +70,8 @@ plot.CLFit <- function(x,
 
   if (is.null(grp)) grp <- character(0)
 
+  if (identical(amount_divisor, "auto"))
+    amount_divisor <- .auto_divisor(x$full[["target_proj"]])
   meta         <- .get_plot_meta(metric, amount_divisor)
   z_alpha      <- stats::qnorm((1 + conf_level) / 2)
   caption_base <- meta$caption
@@ -354,7 +356,7 @@ plot_triangle.CLFit <- function(x,
                                  label_style    = c("value", "cv", "se", "ci"),
                                  label_size     = NULL,
                                  conf_level     = 0.95,
-                                 amount_divisor = 1e8,
+                                 amount_divisor = "auto",
                                  theme          = c("view", "save", "shiny"),
                                  nrow           = NULL,
                                  ncol           = NULL,
@@ -450,6 +452,11 @@ plot_triangle.CLFit <- function(x,
   } else {
     dt[, (".value") := target_proj]
   }
+
+  if (identical(amount_divisor, "auto"))
+    amount_divisor <- .auto_divisor(
+      if (is_ratio) numeric(0) else dt[[".value"]]
+    )
 
   # 2) period label -----------------------------------------------------
   grain    <- attr(x$data, "grain")

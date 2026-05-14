@@ -55,8 +55,8 @@ print(bt)
 
 The returned object is a `"Backtest"` list with these key slots:
 
-- `ae_err` — per-cell `data.table` (cohort, dev, target_actual,
-  target_proj, aeg, ae_err + `_incr` siblings, calendar_idx).
+- `ae_err` — per-cell `data.table` (cohort, dev, actual,
+  expected, aeg, ae_err + `_incr` siblings, calendar_idx).
 - `col_summary` — A/E Error aggregated by `dev`.
 - `diag_summary` — A/E Error aggregated by calendar diagonal.
 - `masked` — the triangle the fit was trained on (latest diagonals removed).

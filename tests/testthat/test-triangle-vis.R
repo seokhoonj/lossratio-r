@@ -1,26 +1,26 @@
 data(experience, package = "lossratio")
 
-test_that("plot_triangle(type = 'usage') returns ggplot", {
+test_that("plot_triangle(view = 'usage') returns ggplot", {
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
-  p <- plot_triangle(tri, type = "usage", holdout = 6L)
+  p <- plot_triangle(tri, view = "usage", holdout = 6L)
   expect_s3_class(p, "ggplot")
 })
 
-test_that("plot_triangle(type = 'usage', recent) marks excluded cells", {
+test_that("plot_triangle(view = 'usage', recent) marks excluded cells", {
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
-  p <- plot_triangle(tri, type = "usage", recent = 18L, holdout = 6L)
+  p <- plot_triangle(tri, view = "usage", recent = 18L, holdout = 6L)
   expect_s3_class(p, "ggplot")
 })
 
-test_that("plot_triangle(type = 'usage') with regime + recent activates hybrid", {
+test_that("plot_triangle(view = 'usage') with regime + recent activates hybrid", {
   exp <- experience[coverage == "SUR"]
   tri <- build_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
-  p <- plot_triangle(tri, type = "usage", recent = 18L,
+  p <- plot_triangle(tri, view = "usage", recent = 18L,
                      regime = "2024-07-01", holdout = 6L)
   expect_s3_class(p, "ggplot")
 

@@ -67,14 +67,85 @@
 #' @keywords internal
 .get_amount_unit <- function(divisor) {
 
-  if (isTRUE(all.equal(divisor, 1)))   return("")
-  if (isTRUE(all.equal(divisor, 1e3))) return("thousand")
-  if (isTRUE(all.equal(divisor, 1e6))) return("million")
-  if (isTRUE(all.equal(divisor, 1e7))) return("10 million")
-  if (isTRUE(all.equal(divisor, 1e8))) return("100 million")
-  if (isTRUE(all.equal(divisor, 1e9))) return("billion")
+  if (isTRUE(all.equal(divisor, 1)))    return("")
+  if (isTRUE(all.equal(divisor, 1e3)))  return("thousand")
+  if (isTRUE(all.equal(divisor, 1e6)))  return("million")
+  if (isTRUE(all.equal(divisor, 1e9)))  return("billion")
+  if (isTRUE(all.equal(divisor, 1e12))) return("trillion")
 
   paste0("scaled (/", format(divisor, scientific = TRUE), ")")
+}
+
+
+# Auto-pick amount divisor ------------------------------------------------
+
+#' Pick the divisor that produces the shortest formatted median label
+#'
+#' @description
+#' Internal helper used when `amount_divisor = "auto"`. Considers the
+#' SI/financial prefix set `{1, 1e3, 1e6, 1e9, 1e12}` (no unit /
+#' thousand / million / billion / trillion) and picks the divisor that
+#' minimises `nchar(sprintf("%.1f", median / divisor))`. Candidates
+#' whose median label rounds exactly to `"0.0"` are disqualified
+#' (precision loss). On ties, the *smallest* divisor wins so the most
+#' significant digit survives (e.g. `"6.7"` over `"0.7"`). Falls back to
+#' `1` when the data have no finite positive values.
+#'
+#' The candidate set deliberately uses powers of 1000 (no `1e7` /
+#' `1e8`): the rule's "tie-break on smallest divisor" already keeps the
+#' label between `1.0` and `999.X`, so a finer grid would not change
+#' compactness. The trade-off accepts that the tails of a wide
+#' distribution may round to the same label -- the heatmap colour fill
+#' carries the precise value; the in-cell label is only a numeric hint.
+#'
+#' Examples:
+#'   median 6.6e7  -> divisor `1e6`, label `"66.6"` (4 chars; `/1e9`
+#'                    would give `"0.1"`, but rounds away signal so
+#'                    `1e6` wins by the smallest-divisor tie-break).
+#'   median 5e5    -> divisor `1e3`, label `"500.0"` (5 chars).
+#'   median 5e9    -> divisor `1e9`, label `"5.0"` (3 chars).
+#'
+#' @param values Numeric vector of cell values to be labelled.
+#'
+#' @return A single numeric divisor.
+#'
+#' @keywords internal
+.auto_divisor <- function(values) {
+  v <- values[is.finite(values) & values > 0]
+  if (!length(v)) return(1)
+  candidates <- c(1, 1e3, 1e6, 1e9, 1e12)
+  m          <- stats::median(v)
+  labels     <- vapply(candidates, function(d) sprintf("%.1f", m / d),
+                       character(1))
+  widths     <- nchar(labels)
+  # Disqualify labels that round to "0.0" -- precision wiped out.
+  widths[as.numeric(labels) == 0] <- .Machine$integer.max
+  # Among shortest labels, prefer the smallest divisor so the most
+  # significant digit survives (e.g. "66.6" over "0.1" both at 3-4
+  # chars; "6.7" over "0.7" both at 3 chars).
+  best <- which(widths == min(widths))
+  candidates[best[1L]]
+}
+
+
+#' Is the metric ratio-valued (LR or share)?
+#'
+#' @description
+#' Internal helper: classifies a Triangle / Calendar / Total / fit
+#' output metric as ratio (LR, share) vs amount (loss, premium, margin).
+#' Ratio metrics never need an `amount_divisor` scaling (they live on
+#' \[0, 1\] or thereabouts); amount metrics do.
+#'
+#' @param metric A single metric name.
+#'
+#' @return `TRUE` for `lr` / `lr_incr` and any `_share` variant,
+#'   `FALSE` otherwise.
+#'
+#' @keywords internal
+.is_ratio_metric <- function(metric) {
+  metric %in% c("lr", "lr_incr",
+                "loss_share", "loss_incr_share",
+                "premium_share", "premium_incr_share")
 }
 
 

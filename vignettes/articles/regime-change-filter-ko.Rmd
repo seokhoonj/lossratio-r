@@ -156,13 +156,13 @@ change 날짜를 직접 지정하려면 `regime_at(change = "2024-07-01")` 로
 factor noise 에 따라 흔들리지 않는다.
 
 각 필터 설정이 어떤 셀을 `fit_lr` 에 공급하는지는
-`plot_triangle(type = "usage")` 로 시각화할 수 있다.
+`plot_triangle(view = "usage")` 로 시각화할 수 있다.
 
 ```r
-plot_triangle(tri_sur, type = "usage", holdout = 6L)                            # full
-plot_triangle(tri_sur, type = "usage", recent = 12L, holdout = 6L)              # recent
-plot_triangle(tri_sur, type = "usage", regime = "2024-07-01", holdout = 6L)     # change
-plot_triangle(tri_sur, type = "usage", recent = 12L,
+plot_triangle(tri_sur, view = "usage", holdout = 6L)                            # full
+plot_triangle(tri_sur, view = "usage", recent = 12L, holdout = 6L)              # recent
+plot_triangle(tri_sur, view = "usage", regime = "2024-07-01", holdout = 6L)     # change
+plot_triangle(tri_sur, view = "usage", recent = 12L,
               regime = "2024-07-01", holdout = 6L)                              # hybrid
 ```
 

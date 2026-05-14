@@ -11,7 +11,7 @@
   label_style = c("value", "cv", "se", "ci"),
   label_size = NULL,
   conf_level = 0.95,
-  amount_divisor = 1e+08,
+  amount_divisor = "auto",
   theme = c("view", "save", "shiny"),
   nrow = NULL,
   ncol = NULL,
