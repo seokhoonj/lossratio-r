@@ -45,9 +45,10 @@ A `data.table` with class `"Maturity"` carrying the same columns as
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
 output: group columns (if any), `ata_from = change - 1L`, `change`,
 `ata_link = "<from>-<to>"`, and the diagnostic stat columns (`mean`,
-`median`, `wt`, `cv`, `f`, `f_se`, `rse`, `sigma`, `n_obs`, `n_valid`,
-`n_inf`, `n_nan`, `valid_ratio`) set to `NA_real_`. `attr(., "groups")`
-holds the group column names (possibly `character(0)`).
+`median`, `wt`, `cv`, `f`, `f_se`, `rse`, `sigma`, `n_cohorts`,
+`n_valid`, `n_inf`, `n_nan`, `valid_ratio`) set to `NA_real_`.
+`attr(., "groups")` holds the group column names (possibly
+`character(0)`).
 
 ## See also
 

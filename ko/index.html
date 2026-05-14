@@ -161,7 +161,7 @@
 <span></span>
 <span><span class="co"># 1) Triangle 구축 — long-format 데이터 → 코호트 × dev 구조</span></span>
 <span><span class="va">exp_sur</span> <span class="op">&lt;-</span> <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span></span>
-<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_triangle.html">build_triangle</a></span><span class="op">(</span></span>
+<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">exp_sur</span>,</span>
 <span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
@@ -198,7 +198,7 @@
 </tr></thead>
 <tbody>
 <tr>
-<td><code><a href="reference/build_triangle.html">build_triangle()</a></code></td>
+<td><code><a href="reference/as_triangle.html">as_triangle()</a></code></td>
 <td>long-format 데이터 → <code>Triangle</code> (코호트 × dev)</td>
 </tr>
 <tr>
@@ -281,7 +281,7 @@
 </tr>
 </tbody>
 </table>
-<p><code><a href="reference/build_triangle.html">build_triangle()</a></code> 가 스키마 검증 + 날짜 코어션 + 코호트 × dev 집계 + 누적 컬럼 (<code>loss</code>, <code>premium</code>, <code>lr</code>) 까지 한 번에. 사용자는 raw 데이터만 넘기면 됨.</p>
+<p><code><a href="reference/as_triangle.html">as_triangle()</a></code> 가 스키마 검증 + 날짜 코어션 + 코호트 × dev 집계 + 누적 컬럼 (<code>loss</code>, <code>premium</code>, <code>lr</code>) 까지 한 번에. 사용자는 raw 데이터만 넘기면 됨.</p>
 </div>
 <div class="section level2">
 <h2 id="시각화">시각화<a class="anchor" aria-label="anchor" href="#%EC%8B%9C%EA%B0%81%ED%99%94"></a>

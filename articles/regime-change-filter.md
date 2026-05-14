@@ -90,7 +90,7 @@ first to make the change explicit:
 
 library(lossratio)
 data(experience)
-tri_sur <- build_triangle(
+tri_sur <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",
@@ -214,7 +214,7 @@ assumes a single-group triangle. For a portfolio with multiple
 ``` r
 
 fits <- lapply(unique(exp$coverage), function(g) {
-  tri_g <- build_triangle(
+  tri_g <- as_triangle(
     experience[coverage == g],
     groups   = "coverage",
     cohort   = "uy_m",

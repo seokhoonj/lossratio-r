@@ -5,7 +5,7 @@ dropped grouping columns and recomputes `lr` / `lr_incr` as ratios of
 the aggregated totals. Other cell-level columns (`margin`, `profit`,
 `loss_share`, ...) are not regenerated – the rebucketed object is
 intended for
-[`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md)
+[`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md)
 consumption only.
 
 ## Usage

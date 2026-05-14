@@ -258,14 +258,14 @@ An object of class `"Regime"`. For single-group input:
 ## See also
 
 [`plot.Regime()`](https://seokhoonj.github.io/lossratio/reference/plot.Regime.md),
-[`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
 data(experience)
-tri_sur <- build_triangle(
+tri_sur <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",
@@ -285,7 +285,7 @@ plot(r)
 r_ecp <- detect_regime(tri_sur, method = "e_divisive")
 
 # Multi-group: detection per coverage
-tri_all <- build_triangle(
+tri_all <- as_triangle(
   experience,
   groups   = "coverage",
   cohort   = "uy_m",

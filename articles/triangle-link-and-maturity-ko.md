@@ -22,7 +22,7 @@ chain ladder 또는 손해율 모형을 적합하기 전에 기반이 되는 tri
 library(lossratio)
 data(experience)
 exp <- experience[coverage == "SUR"]
-tri <- build_triangle(
+tri <- as_triangle(
   exp,
   groups   = "coverage",
   cohort   = "uy_m",
@@ -79,7 +79,7 @@ plot_triangle(tri, metric = "lr_incr")     # 증분 lr
 
 
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly 로 다시 빌드
-tri_q <- build_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr", grain = "Q")
+tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr", grain = "Q")
 plot_triangle(tri_q, label_style = "detail")  # 비율 + (loss / premium)
 ```
 
@@ -92,14 +92,14 @@ plot_triangle(tri_q, label_style = "detail")  # 비율 + (loss / premium)
 sm <- summary(tri)
 head(sm)
 #> Key: <coverage, dev>
-#>    coverage   dev n_obs   lr_mean lr_median     lr_wt lr_incr_mean
-#>      <char> <int> <int>     <num>     <num>     <num>        <num>
-#> 1:      SUR     1    36 0.2522898 0.2393582 0.2525932    0.2522898
-#> 2:      SUR     2    35 0.8030639 0.7859128 0.7890646    1.3572087
-#> 3:      SUR     3    34 0.9258662 0.8997912 0.9204360    1.1519240
-#> 4:      SUR     4    33 0.9856772 0.9716558 0.9778502    1.1797269
-#> 5:      SUR     5    32 1.0336648 1.0502252 1.0447602    1.2268717
-#> 6:      SUR     6    31 1.0945723 1.1832332 1.0892484    1.3676102
+#>    coverage   dev n_cohorts   lr_mean lr_median     lr_wt lr_incr_mean
+#>      <char> <int>     <int>     <num>     <num>     <num>        <num>
+#> 1:      SUR     1        36 0.2522898 0.2393582 0.2525932    0.2522898
+#> 2:      SUR     2        35 0.8030639 0.7859128 0.7890646    1.3572087
+#> 3:      SUR     3        34 0.9258662 0.8997912 0.9204360    1.1519240
+#> 4:      SUR     4        33 0.9856772 0.9716558 0.9778502    1.1797269
+#> 5:      SUR     5        32 1.0336648 1.0502252 1.0447602    1.2268717
+#> 6:      SUR     6        31 1.0945723 1.1832332 1.0892484    1.3676102
 #>    lr_incr_median lr_incr_wt
 #>             <num>      <num>
 #> 1:      0.2393582  0.2525932
@@ -122,7 +122,7 @@ head(sm)
 
 ``` r
 
-ata <- build_link(tri, target = "loss")
+ata <- as_link(tri, target = "loss")
 sm  <- summary(ata, model = "ata", alpha = 1)
 head(sm)
 #> Key: <coverage>
@@ -134,14 +134,14 @@ head(sm)
 #> 4:      SUR        4      5      4-5 1.324  1.331 1.339 0.068 1.339 0.018 0.014
 #> 5:      SUR        5      6      5-6 1.267  1.246 1.243 0.070 1.243 0.016 0.013
 #> 6:      SUR        6      7      6-7 1.204  1.194 1.205 0.048 1.205 0.011 0.009
-#>       sigma n_obs n_valid n_inf n_nan valid_ratio
-#>       <num> <num>   <num> <num> <num>       <num>
-#> 1: 6207.618    35      35     0     0           1
-#> 2: 1689.250    34      34     0     0           1
-#> 3: 1372.883    33      33     0     0           1
-#> 4: 1105.053    32      32     0     0           1
-#> 5: 1086.826    31      31     0     0           1
-#> 6:  812.770    30      30     0     0           1
+#>       sigma n_cohorts n_valid n_inf n_nan valid_ratio
+#>       <num>     <num>   <num> <num> <num>       <num>
+#> 1: 6207.618        35      35     0     0           1
+#> 2: 1689.250        34      34     0     0           1
+#> 3: 1372.883        33      33     0     0           1
+#> 4: 1105.053        32      32     0     0           1
+#> 5: 1086.826        31      31     0     0           1
+#> 6:  812.770        30      30     0     0           1
 ```
 
 `Link` 객체 (단일 변수 모드) 의
@@ -154,8 +154,8 @@ head(sm)
 - `f` — WLS 로 추정된 인자 (`loss_from^alpha` 로 볼륨 가중).
 - `f_se`, `rse` — WLS 표준오차 및 상대 표준오차.
 - `sigma` — 링크별 Mack 잔차 sigma.
-- `n_obs`, `n_valid`, `n_inf`, `n_nan`, `valid_ratio` — 관측 수와 링크별
-  유한 ATA 인자의 비율.
+- `n_cohorts`, `n_valid`, `n_inf`, `n_nan`, `valid_ratio` — 관측 수와
+  링크별 유한 ATA 인자의 비율.
 
 ### Link 진단 플롯
 
@@ -214,7 +214,7 @@ plot_triangle(ata, label_size = 2.5, show_maturity = TRUE)  # 성숙점 라인 o
 
 
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly Link 로 다시 빌드
-ata_q <- build_link(tri_q, target = "loss")
+ata_q <- as_link(tri_q, target = "loss")
 plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / premium)
 ```
 
@@ -228,7 +228,7 @@ plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / premium)
 
 ``` r
 
-ed <- build_link(tri, target = "loss", exposure = "premium")
+ed <- as_link(tri, target = "loss", exposure = "premium")
 sm <- summary(ed, model = "ed", alpha = 1)
 head(sm)
 #> Key: <coverage>
@@ -240,14 +240,14 @@ head(sm)
 #> 4:      SUR        4      5      4-5 0.31110 0.32321 0.33127 0.35969 0.33127
 #> 5:      SUR        5      6      5-6 0.27543 0.25088 0.25518 0.43531 0.25518
 #> 6:      SUR        6      7      6-7 0.21364 0.20479 0.22393 0.31371 0.22393
-#>       g_se     rse     sigma n_obs n_valid n_inf n_nan valid_ratio
-#>      <num>   <num>     <num> <num>   <num> <num> <num>       <num>
-#> 1: 0.09107 0.06919 2930.7438    35      35     0     0           1
-#> 2: 0.03508 0.05979 1580.2621    34      34     0     0           1
-#> 3: 0.02931 0.07677 1587.1869    33      33     0     0           1
-#> 4: 0.02135 0.06444 1319.1106    32      32     0     0           1
-#> 5: 0.02087 0.08178 1421.4780    31      31     0     0           1
-#> 6: 0.01273 0.05686  937.7864    30      30     0     0           1
+#>       g_se     rse     sigma n_cohorts n_valid n_inf n_nan valid_ratio
+#>      <num>   <num>     <num>     <num>   <num> <num> <num>       <num>
+#> 1: 0.09107 0.06919 2930.7438        35      35     0     0           1
+#> 2: 0.03508 0.05979 1580.2621        34      34     0     0           1
+#> 3: 0.02931 0.07677 1587.1869        33      33     0     0           1
+#> 4: 0.02135 0.06444 1319.1106        32      32     0     0           1
+#> 5: 0.02087 0.08178 1421.4780        31      31     0     0           1
+#> 6: 0.01273 0.05686  937.7864        30      30     0     0           1
 
 plot(ed, type = "summary")
 ```
@@ -302,9 +302,9 @@ print(mat)
 #>    coverage ata_from change ata_link     mean   median       wt        cv
 #>      <char>    <num>  <num>   <char>    <num>    <num>    <num>     <num>
 #> 1:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.1053282
-#>           f       f_se        rse    sigma n_obs n_valid n_inf n_nan
-#>       <num>      <num>      <num>    <num> <num>   <num> <num> <num>
-#> 1: 1.417706 0.02651852 0.01870522 1372.883    33      33     0     0
+#>           f       f_se        rse    sigma n_cohorts n_valid n_inf n_nan
+#>       <num>      <num>      <num>    <num>     <num>   <num> <num> <num>
+#> 1: 1.417706 0.02651852 0.01870522 1372.883        33      33     0     0
 #>    valid_ratio
 #>          <num>
 #> 1:           1
@@ -380,7 +380,7 @@ fit_lr(tri, method = "sa",
 
 ``` r
 
-tri_all <- build_triangle(
+tri_all <- as_triangle(
   experience,
   groups   = "coverage",
   cohort   = "uy_m",
@@ -396,12 +396,12 @@ detect_maturity(tri_all, target = "loss")
 #> 2:       CI       11     12    11-12 1.094403 1.070561 1.114066 0.07563394
 #> 3:      HOS        6      7      6-7 1.244842 1.184287 1.205542 0.13563431
 #> 4:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.10532824
-#>           f       f_se        rse     sigma n_obs n_valid n_inf n_nan
-#>       <num>      <num>      <num>     <num> <num>   <num> <num> <num>
-#> 1: 1.065354 0.01384183 0.01299271  637.2413    28      28     0     0
-#> 2: 1.114066 0.01954799 0.01754653 1459.6221    25      25     0     0
-#> 3: 1.205542 0.02746026 0.02277835  220.8771    30      30     0     0
-#> 4: 1.417706 0.02651852 0.01870522 1372.8834    33      33     0     0
+#>           f       f_se        rse     sigma n_cohorts n_valid n_inf n_nan
+#>       <num>      <num>      <num>     <num>     <num>   <num> <num> <num>
+#> 1: 1.065354 0.01384183 0.01299271  637.2413        28      28     0     0
+#> 2: 1.114066 0.01954799 0.01754653 1459.6221        25      25     0     0
+#> 3: 1.205542 0.02746026 0.02277835  220.8771        30      30     0     0
+#> 4: 1.417706 0.02651852 0.01870522 1372.8834        33      33     0     0
 #>    valid_ratio
 #>          <num>
 #> 1:           1
@@ -415,7 +415,7 @@ detect_maturity(tri_all, target = "loss")
 
 ``` r
 
-plot(build_link(tri_all, target = "loss"), type = "cv")
+plot(as_link(tri_all, target = "loss"), type = "cv")
 ```
 
 ![](triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-12-1.png)
@@ -423,7 +423,7 @@ plot(build_link(tri_all, target = "loss"), type = "cv")
 ## 4. 빌드 전 검증
 
 경과 기간 시퀀스에 결손이 의심되면
-[`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
 호출 전에 점검한다.
 
 ``` r
@@ -441,9 +441,9 @@ head(gaps)
 
 - 데이터 원본을 수정한다 (권장).
 - 문제가 있는 코호트를 제외한다.
-- [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
-  에 `fill_gaps = TRUE` 를 넘겨 누락 셀을 0 으로 채운다 (단, `n_obs` 가
-  실제 관측 개수보다 많아지므로 신중히 사용).
+- [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
+  에 `fill_gaps = TRUE` 를 넘겨 누락 셀을 0 으로 채운다 (단, `n_cohorts`
+  가 실제 관측 개수보다 많아지므로 신중히 사용).
 
 ## 5. 최근 대각선 부분집합
 
@@ -501,11 +501,11 @@ fit_lr(tri, recent = 12)
 
 1.  [`validate_triangle()`](https://seokhoonj.github.io/lossratio/reference/validate_triangle.md)
     — 스키마와 결손 점검.
-2.  [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
+2.  [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
     — 파생 컬럼이 포함된 표준 형태 구축.
 3.  `plot(tri)` / `plot_triangle(tri)` — 시각적 점검.
 4.  `summary(tri)` — 그룹 수준 중심 경향 확인.
-5.  [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md) +
+5.  [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md) +
     `plot(link, type = "cv")` — 링크 안정성 확인.
 6.  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
     — 그룹별로 합리적 성숙점이 잡히는지 확인.

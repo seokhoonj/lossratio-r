@@ -41,13 +41,13 @@ fit_ed(
 - target:
 
   Cumulative loss variable. Default `"loss"`. Forwarded to
-  [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md)
+  [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md)
   and to downstream workers.
 
 - exposure:
 
   Cumulative exposure variable. Default `"premium"`. Forwarded to
-  [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md)
+  [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md)
   and to downstream workers.
 
 - method:
@@ -119,7 +119,7 @@ An object of class `"EDFit"` (a named list) with components:
 
 ## See also
 
-[`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md),
+[`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md),
 [`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md),
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
 [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)

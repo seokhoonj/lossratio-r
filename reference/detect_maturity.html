@@ -203,7 +203,7 @@ want maturity of premium development or another cumulative metric.</p>
 <dt id="arg-target">target<a class="anchor" aria-label="anchor" href="#arg-target"></a></dt>
 <dd><p>Cumulative metric for the link factor. Default
 <code>"loss"</code> (chain-ladder convention; see Description). Forwarded to
-<code><a href="build_link.html">build_link()</a></code>.</p></dd>
+<code><a href="as_link.html">as_link()</a></code>.</p></dd>
 
 
 <dt id="arg-groups">groups<a class="anchor" aria-label="anchor" href="#arg-groups"></a></dt>
@@ -224,7 +224,7 @@ partition before computing ata links.</p></dd>
 
 <dt id="arg-weight">weight<a class="anchor" aria-label="anchor" href="#arg-weight"></a></dt>
 <dd><p>Optional WLS weight variable. Forwarded to
-<code><a href="build_link.html">build_link()</a></code>.</p></dd>
+<code><a href="as_link.html">as_link()</a></code>.</p></dd>
 
 
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
@@ -263,7 +263,7 @@ maturity criteria. Default is <code>2L</code>.</p></dd>
 per group. Columns include <code>ata_from</code>, <code>change</code> (the maturity
 point, i.e. the <code>to</code>-index of the first mature ata link),
 <code>ata_link</code>, and the diagnostic statistics (<code>mean</code>, <code>median</code>,
-<code>wt</code>, <code>cv</code>, <code>f</code>, <code>f_se</code>, <code>rse</code>, <code>sigma</code>, <code>n_obs</code>, <code>n_valid</code>,
+<code>wt</code>, <code>cv</code>, <code>f</code>, <code>f_se</code>, <code>rse</code>, <code>sigma</code>, <code>n_cohorts</code>, <code>n_valid</code>,
 <code>n_inf</code>, <code>n_nan</code>, <code>valid_ratio</code>). If no mature link is found,
 all values for that group are <code>NA</code>.</p>
     </div>

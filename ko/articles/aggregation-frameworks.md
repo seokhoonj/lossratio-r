@@ -8,9 +8,9 @@ per framework. This vignette compares them.
 
 | Builder | Output object | Dimension | When to use |
 |----|----|----|----|
-| [`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md) | `Triangle` | cohort × dev (2D) | SA, ED, CL projection |
-| [`build_calendar()`](https://seokhoonj.github.io/lossratio/ko/reference/build_calendar.md) | `Calendar` | calendar period (1D) | Calendar-year trend, diagonal effect |
-| [`build_total()`](https://seokhoonj.github.io/lossratio/ko/reference/build_total.md) | `Total` | portfolio total (per group) | High-level loss-ratio comparison |
+| [`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md) | `Triangle` | cohort × dev (2D) | SA, ED, CL projection |
+| [`as_calendar()`](https://seokhoonj.github.io/lossratio/ko/reference/as_calendar.md) | `Calendar` | calendar period (1D) | Calendar-year trend, diagonal effect |
+| [`as_total()`](https://seokhoonj.github.io/lossratio/ko/reference/as_total.md) | `Total` | portfolio total (per group) | High-level loss-ratio comparison |
 
 Conceptually:
 
@@ -31,7 +31,7 @@ Conceptually:
 library(lossratio)
 data(experience)
 
-tri <- build_triangle(
+tri <- as_triangle(
   experience,
   groups   = "coverage",
   cohort   = "uy_m",
@@ -40,30 +40,30 @@ tri <- build_triangle(
   premium  = "premium_incr"
 )
 head(tri)
-#>    coverage n_obs     cohort   dev     loss loss_incr   premium premium_incr
-#>      <char> <int>     <Date> <int>    <num>     <num>     <num>        <num>
-#> 1:       CI    36 2023-01-01     1  1262380   1262380  27993106     27993106
-#> 2:       CI    35 2023-01-01     2 12518143  11255763  57177037     29183931
-#> 3:       CI    34 2023-01-01     3 23799452  11281309  86579003     29401966
-#> 4:       CI    33 2023-01-01     4 57401839  33602387 113149543     26570540
-#> 5:       CI    32 2023-01-01     5 64554461   7152622 140621429     27471886
-#> 6:       CI    31 2023-01-01     6 74664986  10110525 167390789     26769360
-#>           lr   lr_incr   margin margin_incr profit profit_incr loss_share
-#>        <num>     <num>    <num>       <num> <fctr>      <fctr>      <num>
-#> 1: 0.0450961 0.0450961 26730726    26730726    pos         pos  0.2745858
-#> 2: 0.2189365 0.3856836 44658894    17928168    pos         pos  0.1681986
-#> 3: 0.2748871 0.3836923 62779551    18120657    pos         pos  0.2132981
-#> 4: 0.5073095 1.2646483 55747704    -7031847    pos         neg  0.3016874
-#> 5: 0.4590656 0.2603615 76066968    20319264    pos         pos  0.2007284
-#> 6: 0.4460519 0.3776902 92725803    16658835    pos         pos  0.2065480
-#>    loss_incr_share premium_share premium_incr_share
-#>              <num>         <num>              <num>
-#> 1:      0.27458581     0.3811712          0.3811712
-#> 2:      0.16119409     0.3803460          0.3795578
-#> 3:      0.30364017     0.3873522          0.4017435
-#> 4:      0.42701715     0.3795353          0.3561180
-#> 5:      0.05446224     0.3776462          0.3700598
-#> 6:      0.25346879     0.3774003          0.3761137
+#>    coverage n_cohorts     cohort   dev     loss loss_incr   premium
+#>      <char>     <int>     <Date> <int>    <num>     <num>     <num>
+#> 1:       CI        36 2023-01-01     1  1262380   1262380  27993106
+#> 2:       CI        35 2023-01-01     2 12518143  11255763  57177037
+#> 3:       CI        34 2023-01-01     3 23799452  11281309  86579003
+#> 4:       CI        33 2023-01-01     4 57401839  33602387 113149543
+#> 5:       CI        32 2023-01-01     5 64554461   7152622 140621429
+#> 6:       CI        31 2023-01-01     6 74664986  10110525 167390789
+#>    premium_incr        lr   lr_incr   margin margin_incr profit profit_incr
+#>           <num>     <num>     <num>    <num>       <num> <fctr>      <fctr>
+#> 1:     27993106 0.0450961 0.0450961 26730726    26730726    pos         pos
+#> 2:     29183931 0.2189365 0.3856836 44658894    17928168    pos         pos
+#> 3:     29401966 0.2748871 0.3836923 62779551    18120657    pos         pos
+#> 4:     26570540 0.5073095 1.2646483 55747704    -7031847    pos         neg
+#> 5:     27471886 0.4590656 0.2603615 76066968    20319264    pos         pos
+#> 6:     26769360 0.4460519 0.3776902 92725803    16658835    pos         pos
+#>    loss_share loss_incr_share premium_share premium_incr_share
+#>         <num>           <num>         <num>              <num>
+#> 1:  0.2745858      0.27458581     0.3811712          0.3811712
+#> 2:  0.1681986      0.16119409     0.3803460          0.3795578
+#> 3:  0.2132981      0.30364017     0.3873522          0.4017435
+#> 4:  0.3016874      0.42701715     0.3795353          0.3561180
+#> 5:  0.2007284      0.05446224     0.3776462          0.3700598
+#> 6:  0.2065480      0.25346879     0.3774003          0.3761137
 ```
 
 Each row is one (cohort, dev) cell with cumulative loss / risk premium.
@@ -83,14 +83,14 @@ plot(tri)              # one trajectory per cohort, faceted by group
 # so use quarterly cohort and dev to bring each panel down to ~10 x 10
 # cells. This fits the documentation's display size; in practice you
 # can keep monthly resolution by enlarging the plot.
-tri_q <- build_triangle(experience, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr", grain = "Q")
+tri_q <- as_triangle(experience, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr", grain = "Q")
 plot_triangle(tri_q)   # cohort × dev heatmap of lr
 ```
 
 ![](aggregation-frameworks_files/figure-html/unnamed-chunk-2-2.png)
 
 Use `Triangle` as input to: -
-[`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md)
+[`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md)
 — development factors (ATA / ED via `target` + optional `exposure`) -
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md),
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
@@ -102,7 +102,7 @@ Use `Triangle` as input to: -
 
 ``` r
 
-cal <- build_calendar(experience, groups = "coverage", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+cal <- as_calendar(experience, groups = "coverage", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
 head(cal)
 #>    coverage   calendar   dev      loss loss_incr   premium premium_incr
 #>      <char>     <Date> <int>     <num>     <num>     <num>        <num>
@@ -160,7 +160,7 @@ plot(cal, x_by = "dev")         # x axis: sequential index
 
 ``` r
 
-tot <- build_total(
+tot <- as_total(
   experience,
   groups      = "coverage",
   cohort      = "uy_m",
@@ -171,12 +171,12 @@ tot <- build_total(
   period_to   = "2024-03-01"
 )
 head(tot)
-#>    coverage n_obs sales_start  sales_end        loss    premium        lr
-#>      <char> <int>      <Date>     <Date>       <num>      <num>     <num>
-#> 1:       CI    33  2023-04-01 2024-03-01  8240143118 9760853703 0.8442031
-#> 2:      CAN    33  2023-04-01 2024-03-01  2801401212 3710915725 0.7549083
-#> 3:      HOS    33  2023-04-01 2024-03-01   158760703  377104088 0.4209997
-#> 4:      SUR    33  2023-04-01 2024-03-01 13425719536 9003134239 1.4912273
+#>    coverage n_cohorts sales_start  sales_end        loss    premium        lr
+#>      <char>     <int>      <Date>     <Date>       <num>      <num>     <num>
+#> 1:       CI        33  2023-04-01 2024-03-01  8240143118 9760853703 0.8442031
+#> 2:      CAN        33  2023-04-01 2024-03-01  2801401212 3710915725 0.7549083
+#> 3:      HOS        33  2023-04-01 2024-03-01   158760703  377104088 0.4209997
+#> 4:      SUR        33  2023-04-01 2024-03-01 13425719536 9003134239 1.4912273
 #>     loss_share premium_share
 #>          <num>         <num>
 #> 1: 0.334611179    0.42713331
@@ -198,7 +198,7 @@ by reserve / share of portfolio - Build executive summary tables
                                   │
              ┌────────────────────┼─────────────────────┐
              │                    │                     │
-       build_triangle      build_calendar         build_total
+       as_triangle      as_calendar         as_total
        (cohort × dev)      (calendar series)     (portfolio total)
              │                    │                     │
              ▼                    ▼                     ▼

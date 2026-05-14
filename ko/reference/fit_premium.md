@@ -116,14 +116,14 @@ An object of class `"PremiumFit"` (a list with the same structure as
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md),
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md),
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
-[`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md).
+[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md).
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
 data(experience)
-tri <- build_triangle(
+tri <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",

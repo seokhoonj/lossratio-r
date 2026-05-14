@@ -51,7 +51,7 @@ f_k \cdot \hat{C}^L_{i,k}              & k \ge m_g \quad \text{(성숙점 이후
 
 library(lossratio)
 data(experience)
-tri <- build_triangle(
+tri <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",

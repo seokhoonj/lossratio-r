@@ -63,7 +63,7 @@ plot(
   Optional minimum number of observations required for the summary
   overlay to be considered reliable. When provided and `summary = TRUE`,
   a vertical reference line is drawn at the midpoint just before the
-  first development period where `n_obs < summary_min_n` within each
+  first development period where `n_cohorts < summary_min_n` within each
   facet. Default is `5`.
 
 - amount_divisor:

@@ -1,38 +1,86 @@
 # Find the development period at which the loss ratio estimate stabilises
 
-Identify the first valuation \\k^{\*\*}\\ from which the projected loss
-ratio is *predictively* stable, in the sense of the paper's Section 11
-\\k^{\*\*}\\ criterion:
+Identify the first dev \\k^{\*\*}\\ from which the projected portfolio
+loss ratio is observed to be stable up to the maximum available
+development period \\V\\. Three complementary stability criteria are
+computed on the LR backtest path; the user selects which one defines
+\\k^{\*\*}\\ via `method =`.
 
-\$\$k^{\*\*} = \min\\v \in \[k^\*, V - M\] : R_v \< c \cdot
-\hat{SE}^{param}\_v \text{ and } \hat{D}\_v \< \tau, \text{ for } M
-\text{ consecutive valuations}\\\$\$
+*Notation mapping (code \<-\> math)*:
 
-where \\R_v\\ is the predictive revision in the projected loss ratio
-when calendar diagonal \\D_v\\ is added, \\\hat{SE}^{param}\_v\\ is the
-parameter component of the Mack standard error of the projection,
-\\\hat{D}\_v\\ is the robust cross-cohort dispersion of incremental loss
-ratios at \\v\\, and \\k^\*\\ is the age-to-age maturity point from
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md).
+Standard chain-ladder convention: \\i\\ indexes cohort (origin period),
+\\k\\ indexes development period. The maturity point \\k^\*\\ and
+convergence point \\k^{\*\*}\\ live on the \\k\\ axis. Earlier paper
+drafts used \\v\\ (valuation) for the same index in Section 11; we unify
+on \\k\\ for consistency.
 
-Both clauses guard against complementary failure modes: \\R_v \< c \cdot
-\hat{SE}^{param}\_v\\ requires the projection to stop responding to new
-diagonals at a scale-relevant magnitude; \\\hat{D}\_v \< \tau\\ requires
-cross-cohort agreement on the incremental-LR level (inertia-free
-per-period quantity).
+|  |  |  |
+|----|----|----|
+| `dev_max` | \\K\_{\max}\\ | Maximum observable dev (a scalar) |
+| `dev_cand` | \\k \in \[k^\*, K\_{\max}-2\]\\ | Integer vector of candidate dev points |
+| `lr[i]` | \\LR_k\\ | Portfolio LR projection at dev = `dev_cand[i]` |
+| `revision[i]` | \\R_k = \|LR_k - LR\_{k-1}\|\\ | Adjacent-step revision (diagnostic) |
+| `drift_window[i]` | \\\max - \min\\ of \\LR\\ over \\\[k, k+W-1\]\\ | Local window range |
+| `drift_tail[i]` | \\\max - \min\\ of \\LR\\ over \\\[k, K\_{\max}\]\\ | Tail range |
+| `slope[i]` | \\\hat\beta_k\\, OLS slope of \\LR \sim k\\ on \\\[k, K\_{\max}\]\\ | Trend test |
+| `dispersion[i]` | \\\hat{D}\_k\\ | Robust cross-cohort spread of incremental LR |
 
-This function corresponds to the paper's *convergence point*
-\\k^{\*\*}\\, paired with \\k^\*\\ (maturity point).
+Stability methods (which sequence drives `pass`):
+
+- `"window"`:
+
+  Local stability: `drift_window[i] < max_drift`. Fast, but misses a
+  slow monotone drift that fits under `max_drift` per step.
+
+- `"tail"`:
+
+  (default, *reserving-safe*) Global stability:
+  `drift_tail[i] < max_drift`. Catches monotone drift. The first passing
+  dev is later (more conservative) than `"window"`.
+
+- `"slope"`:
+
+  Trend test: `|slope[i]| < max_slope`. Explicit no-trend check;
+  sensitive to non-linear trajectories.
+
+- `"all"`:
+
+  Strictest: all three pass simultaneously.
+
+All four pass vectors (`pass_window`, `pass_tail`, `pass_slope`, `pass`)
+and the underlying diagnostic series are returned regardless of the
+chosen `method`, so the analyst can inspect every criterion and
+re-decide.
+
+Across all methods, a cross-cohort agreement clause
+`dispersion[i] < max_dispersion` is required in addition.
+
+This replaces an earlier formulation \\R_k \< c \cdot
+\hat{SE}^{param}\_k\\ (paper Section 11). The paper's SE-normalised form
+is asymptotically broken on large portfolios: \\\hat{SE}^{param}\\
+shrinks as \\1/\sqrt{n}\\ while \\R_k\\ has a structural noise floor, so
+the ratio diverges and the criterion never fires.
+
+**Caveat (reserving)**: detected `conv_k` reflects stability *up to*
+`dev_max` (\\K\_{\max}\\) only – it is *not* an asymptotic guarantee
+that the projection will not drift past \\K\_{\max}\\. Treat `conv_k` as
+a diagnostic for "from here on, what we observe is stable", not as a
+guarantee of future stability. For reserving applications, prefer
+`method = "tail"` or `"all"` over `"window"`, attach an IBNR margin via
+`fit_lr$summary` SE/CI columns, and weigh the *evidence span*
+(`dev_max - conv_k`): a `conv_k` near `dev_max` has thin evidence.
 
 ## Usage
 
 ``` r
 detect_convergence(
   triangle,
-  se_mult = 0.5,
-  max_dv = 0.15,
-  min_run = 3L,
-  k_star = NULL,
+  method = c("tail", "window", "slope", "all"),
+  max_drift = 0.01,
+  max_slope = 0.001,
+  max_dispersion = 0.15,
+  window = 5L,
+  mat_k = NULL,
   holdout_max = NULL,
   min_n_cohorts = 5L,
   ...
@@ -44,33 +92,50 @@ detect_convergence(
 - triangle:
 
   A `Triangle` object (typically from
-  [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)).
+  [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)).
 
-- se_mult:
+- method:
 
-  Multiplier on \\\hat{SE}^{param}\_v\\ (the symbol `c` in the math
-  criterion above). Default `0.5`.
+  Which stability criterion defines `conv_k`. One of `"tail"` (default),
+  `"window"`, `"slope"`, or `"all"`. See the description for semantics
+  and the reserving caveat.
 
-- max_dv:
+- max_drift:
 
-  Upper bound on \\\hat{D}\_v\\ (the symbol `\tau` in the math criterion
-  above). Default `0.15`.
+  Upper bound on the drift metric (window or tail), in LR units. Default
+  `0.01` (1pp). Raise for noisier or longer-tail books.
 
-- min_run:
+- max_slope:
 
-  Required run length of consecutive passing periods (the symbol `M` in
-  the math criterion above). Default `3L`.
+  Upper bound on `|slope[i]|`, the OLS slope of \\LR \sim k\\ on \\\[k,
+  K\_{\max}\]\\, in LR-per-dev units. Default `1e-3` (0.1pp per dev).
+  Used by `method = "slope"` / `"all"`.
 
-- k_star:
+- max_dispersion:
+
+  Upper bound on the cross-cohort dispersion \\\hat{D}\_k\\. Default
+  `0.15`.
+
+- window:
+
+  Drift window length \\W\\ (in dev steps): the number of consecutive
+  valuations used by the `"window"` method to compute `drift_window`.
+  Default `5L`. Note: other functions in the package also expose a
+  `window` argument (e.g.
+  [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+  for e-divisive segment width); here it controls *only* the drift
+  metric, not the e-divisive algorithm.
+
+- mat_k:
 
   Pre-computed maturity point. When `NULL`, computed via
   [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
-  applied to a lr-based ATA.
+  applied to an lr-based ATA.
 
 - holdout_max:
 
   Maximum holdout depth used for the rolling backtest. When `NULL`, set
-  to `max(min_run, floor((V - k_star) / 2))`.
+  to `max(window, floor((dev_max - mat_k) / 2))`.
 
 - min_n_cohorts:
 
@@ -87,10 +152,12 @@ detect_convergence(
 
 ## Value
 
-An object of class `Convergence` (named list) containing the detected
-`k_conv`, the candidate sequence `v`, and the diagnostic sequences
-`R_v`, `SE_param_v`, `D_v`, `pass_v`. Metadata is carried on attributes
-(`groups`, `target`, `fit_fn_name`).
+An object of class `Convergence` (named list). Includes the slots
+tabulated in the notation mapping above (`dev_max`, `dev_cand`, `lr`,
+`revision`, `drift_window`, `drift_tail`, `slope`, `dispersion`),
+per-method pass vectors (`pass_window`, `pass_tail`, `pass_slope`,
+`pass`), the threshold parameters, and metadata attributes (`groups`,
+`target`, `dispatcher`).
 
 ## See also
 

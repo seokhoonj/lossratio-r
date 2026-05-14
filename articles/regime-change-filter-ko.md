@@ -92,7 +92,7 @@ raw `Date` / 문자열 / 벡터 입력은 더 이상 받지 않는다 —
 
 library(lossratio)
 data(experience)
-tri_sur <- build_triangle(
+tri_sur <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",
@@ -182,7 +182,7 @@ hybrid 패널은 SA 모드가 적용하는 dev-축 split — ED 쪽은 cohort cu
 
 ``` r
 
-tri_sur <- build_triangle(
+tri_sur <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",
@@ -238,7 +238,7 @@ recent 는 최근 평행사변형 밴드, hybrid 는 좌하단의 post-change
 
 groups <- unique(exp$coverage)
 fits <- lapply(groups, function(g) {
-  tri_g <- build_triangle(
+  tri_g <- as_triangle(
     experience[coverage == g],
     groups   = "coverage",
     cohort   = "uy_m",

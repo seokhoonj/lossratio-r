@@ -4,7 +4,7 @@ Fit a Mack (1993) chain ladder projection from an object of class
 `"Triangle"`. The function works on long-form cumulative data and does
 not require a complete triangle. Age-to-age factors are estimated
 through
-[`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md)
+[`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md)
 and
 [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md),
 then applied recursively. The point forecast follows the standard
@@ -50,7 +50,7 @@ fit_cl(
 - weight:
 
   An optional column name passed to
-  [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md)
+  [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md)
   as the WLS weight variable. Typically `"premium"` when
   `target = "lr"`. Default is `NULL`.
 
@@ -165,7 +165,7 @@ An object of class `"CLFit"` containing:
 - `link`:
 
   The `"Link"` object produced by
-  [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md).
+  [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md).
 
 - `summary`:
 
@@ -229,7 +229,7 @@ An object of class `"CLFit"` containing:
 ``` r
 if (FALSE) { # \dontrun{
 data(experience)
-tri <- build_triangle(
+tri <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",

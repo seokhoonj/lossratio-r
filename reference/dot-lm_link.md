@@ -53,7 +53,7 @@ avoid numerical noise from essentially perfect fits.
 ## Value
 
 A `data.table` with one row per ata link containing `f`, `f_se`,
-`sigma`, `rse`, and `n_obs`. `rse` is defined as \\f\\se / f\\ and
+`sigma`, `rse`, and `n_cohorts`. `rse` is defined as \\f\\se / f\\ and
 represents the relative standard error of the WLS-estimated factor.
 `rse` is `NA` when `f_se` is `NA` (single observation links) or when `f`
 is zero.

@@ -46,7 +46,7 @@ sequence.
 library(lossratio)
 
 data(experience)
-tri_sur <- build_triangle(
+tri_sur <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",
@@ -271,7 +271,7 @@ single `Regime` object.
 
 ``` r
 
-tri_all <- build_triangle(
+tri_all <- as_triangle(
   experience,
   groups   = "coverage",
   cohort   = "uy_m",

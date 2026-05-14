@@ -66,7 +66,7 @@ A long-format `data.frame` / `data.table` with at minimum:
 | `premium_incr` | Per-period premium in the cell (risk premium for long-term health) | numeric |
 | group | Optional — product, coverage, age, gender, sum insured, etc. | character / factor |
 
-[`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
 validates the schema, coerces date columns, and aggregates to the
 canonical cohort × dev structure with cumulative columns and derived
 ratios.
@@ -85,7 +85,7 @@ per-period values carry an `_incr` (incremental) suffix:
 | Profit     | `profit`             | `profit_incr`        |
 
 Raw `experience` input is per-period only (`loss_incr`, `premium_incr`);
-[`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
 produces both forms in the output. Worker fit functions (`fit_cl`,
 `fit_ed`, `fit_ata`, `fit_intensity`) take generic `target` / `exposure`
 / `weight` arguments; dispatcher functions (`fit_loss`, `fit_premium`)
@@ -120,7 +120,7 @@ library(lossratio)
 data(experience)
 
 # Build the canonical cohort × dev structure
-tri <- build_triangle(
+tri <- as_triangle(
   experience,
   groups   = "coverage",
   cohort   = "uy_m",
@@ -158,15 +158,14 @@ The same long-format experience data can be viewed three ways:
 
 | Builder | Output object | Dimension | Use case |
 |----|----|----|----|
-| [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md) | `Triangle` | cohort × dev (2D) | Chain ladder, ED, SA projection |
-| [`build_calendar()`](https://seokhoonj.github.io/lossratio/reference/build_calendar.md) | `Calendar` | calendar period (1D) | Calendar-year trend / diagonal effect |
-| [`build_total()`](https://seokhoonj.github.io/lossratio/reference/build_total.md) | `Total` | portfolio total (0D, per group) | High-level comparison across groups |
+| [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md) | `Triangle` | cohort × dev (2D) | Chain ladder, ED, SA projection |
+| [`as_calendar()`](https://seokhoonj.github.io/lossratio/reference/as_calendar.md) | `Calendar` | calendar period (1D) | Calendar-year trend / diagonal effect |
+| [`as_total()`](https://seokhoonj.github.io/lossratio/reference/as_total.md) | `Total` | portfolio total (0D, per group) | High-level comparison across groups |
 
-After `build_triangle`, downstream columns are standardized to `cohort`
-and `dev` regardless of input granularity (`uy_m` / `uy_q` / `uy`,
-etc.). Original column names are preserved as attributes (`cohort`,
-`calendar`, `dev`); grain is stored as `grain` (`"M"`/`"Q"`/
-`"H"`/`"Y"`).
+After `as_triangle`, downstream columns are standardized to `cohort` and
+`dev` regardless of input granularity (`uy_m` / `uy_q` / `uy`, etc.).
+Original column names are preserved as attributes (`cohort`, `calendar`,
+`dev`); grain is stored as `grain` (`"M"`/`"Q"`/ `"H"`/`"Y"`).
 
 ## Methods
 
@@ -214,7 +213,7 @@ work uniformly across `Triangle`, `Calendar`, `Link`, `ATAFit`, `EDFit`,
 
 ``` r
 
-?build_triangle
+?as_triangle
 ?fit_lr
 ?detect_regime
 vignette("regime-detection", package = "lossratio")
@@ -234,7 +233,7 @@ Seokhoon Joo (<seokhoonj@gmail.com>)
 ## Input layer
 
 Validation and grain helpers for raw experience data.
-[`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
 already runs the required checks and coercions inline — these helpers
 are exposed for users who want to validate or enrich without building a
 triangle.
@@ -250,12 +249,12 @@ Three frameworks for viewing the same long-format experience data —
 cohort × dev (`Triangle`), calendar period (`Calendar`), or portfolio
 total (`Total`).
 
-- [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
-  : Build a development structure from experience data
-- [`build_calendar()`](https://seokhoonj.github.io/lossratio/reference/build_calendar.md)
-  : Build a calendar-based development structure from experience data
-- [`build_total()`](https://seokhoonj.github.io/lossratio/reference/build_total.md)
-  : Build a total development summary from experience data
+- [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
+  : Coerce experience data to a Triangle object
+- [`as_calendar()`](https://seokhoonj.github.io/lossratio/reference/as_calendar.md)
+  : Coerce experience data to a Calendar object
+- [`as_total()`](https://seokhoonj.github.io/lossratio/reference/as_total.md)
+  : Coerce experience data to a Total object
 
 ## Link table
 
@@ -264,10 +263,8 @@ exposure-driven (ED) workflows. Built once, summarised differently via
 [`summary.Link()`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md)’s
 `model` argument.
 
-- [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md)
-  :
-
-  Build a link table from `Triangle` data
+- [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md)
+  : Coerce a Triangle to a Link object
 
 - [`summary(`*`<Link>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md)
   :

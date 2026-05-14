@@ -133,7 +133,7 @@ displayed in units of 100 million KRW.
 
 ``` r
 if (FALSE) { # \dontrun{
-d <- build_triangle(
+d <- as_triangle(
   df,
   groups   = "pd_cat_nm",
   cohort   = "uy_m",

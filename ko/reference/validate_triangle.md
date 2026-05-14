@@ -9,10 +9,10 @@ key uniqueness and causes cartesian joins in
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md).
 
 This function inspects the raw data without modifying it. Use it before
-[`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
 to decide whether to fix the data source, drop offending cohorts, or
 pass `fill_gaps = TRUE` to
-[`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md).
+[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md).
 
 Two checks are performed:
 
@@ -29,7 +29,7 @@ Two checks are performed:
 ``` r
 validate_triangle(
   df,
-  groups = character(0),
+  groups = NULL,
   cohort,
   calendar = NULL,
   development = NULL,
@@ -62,7 +62,7 @@ validate_triangle(
   A single development-period variable (raw column name). Optional when
   `calendar` is supplied – `dev` is then derived from
   `(cohort, calendar)` at the resolved `grain` (same dispatch as
-  [`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md)).
+  [`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)).
 
 - grain:
 
@@ -79,7 +79,7 @@ containing gaps. Columns:
 
   Cohort identifier.
 
-- `n_observed`:
+- `n_dev`:
 
   Number of distinct observed `dev` values.
 
@@ -101,4 +101,4 @@ displays both sections.
 
 ## See also
 
-[`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)

@@ -219,7 +219,7 @@
 </tr>
 </tbody>
 </table>
-<p><code><a href="reference/build_triangle.html">build_triangle()</a></code> validates the schema, coerces date columns, and aggregates to the canonical cohort × dev structure with cumulative columns and derived ratios.</p>
+<p><code><a href="reference/as_triangle.html">as_triangle()</a></code> validates the schema, coerces date columns, and aggregates to the canonical cohort × dev structure with cumulative columns and derived ratios.</p>
 <div class="section level3">
 <h3 id="column-convention">Column convention<a class="anchor" aria-label="anchor" href="#column-convention"></a>
 </h3>
@@ -258,7 +258,7 @@
 </tr>
 </tbody>
 </table>
-<p>Raw <code>experience</code> input is per-period only (<code>loss_incr</code>, <code>premium_incr</code>); <code><a href="reference/build_triangle.html">build_triangle()</a></code> produces both forms in the output. Worker fit functions (<code>fit_cl</code>, <code>fit_ed</code>, <code>fit_ata</code>, <code>fit_intensity</code>) take generic <code>target</code> / <code>exposure</code> / <code>weight</code> arguments; dispatcher functions (<code>fit_loss</code>, <code>fit_premium</code>) and the composition <code>fit_lr</code> use role-specific <code>loss_*</code> / <code>premium_*</code> argument names. Cumulative slots (<code>"loss"</code>, <code>"premium"</code>) are the defaults.</p>
+<p>Raw <code>experience</code> input is per-period only (<code>loss_incr</code>, <code>premium_incr</code>); <code><a href="reference/as_triangle.html">as_triangle()</a></code> produces both forms in the output. Worker fit functions (<code>fit_cl</code>, <code>fit_ed</code>, <code>fit_ata</code>, <code>fit_intensity</code>) take generic <code>target</code> / <code>exposure</code> / <code>weight</code> arguments; dispatcher functions (<code>fit_loss</code>, <code>fit_premium</code>) and the composition <code>fit_lr</code> use role-specific <code>loss_*</code> / <code>premium_*</code> argument names. Cumulative slots (<code>"loss"</code>, <code>"premium"</code>) are the defaults.</p>
 </div>
 </div>
 <div class="section level2">
@@ -284,7 +284,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Build the canonical cohort × dev structure</span></span>
-<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_triangle.html">build_triangle</a></span><span class="op">(</span></span>
+<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">experience</span>,</span>
 <span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
@@ -334,26 +334,26 @@
 </tr></thead>
 <tbody>
 <tr>
-<td><code><a href="reference/build_triangle.html">build_triangle()</a></code></td>
+<td><code><a href="reference/as_triangle.html">as_triangle()</a></code></td>
 <td><code>Triangle</code></td>
 <td>cohort × dev (2D)</td>
 <td>Chain ladder, ED, SA projection</td>
 </tr>
 <tr>
-<td><code><a href="reference/build_calendar.html">build_calendar()</a></code></td>
+<td><code><a href="reference/as_calendar.html">as_calendar()</a></code></td>
 <td><code>Calendar</code></td>
 <td>calendar period (1D)</td>
 <td>Calendar-year trend / diagonal effect</td>
 </tr>
 <tr>
-<td><code><a href="reference/build_total.html">build_total()</a></code></td>
+<td><code><a href="reference/as_total.html">as_total()</a></code></td>
 <td><code>Total</code></td>
 <td>portfolio total (0D, per group)</td>
 <td>High-level comparison across groups</td>
 </tr>
 </tbody>
 </table>
-<p>After <code>build_triangle</code>, downstream columns are standardized to <code>cohort</code> and <code>dev</code> regardless of input granularity (<code>uy_m</code> / <code>uy_q</code> / <code>uy</code>, etc.). Original column names are preserved as attributes (<code>cohort</code>, <code>calendar</code>, <code>dev</code>); grain is stored as <code>grain</code> (<code>"M"</code>/<code>"Q"</code>/ <code>"H"</code>/<code>"Y"</code>).</p>
+<p>After <code>as_triangle</code>, downstream columns are standardized to <code>cohort</code> and <code>dev</code> regardless of input granularity (<code>uy_m</code> / <code>uy_q</code> / <code>uy</code>, etc.). Original column names are preserved as attributes (<code>cohort</code>, <code>calendar</code>, <code>dev</code>); grain is stored as <code>grain</code> (<code>"M"</code>/<code>"Q"</code>/ <code>"H"</code>/<code>"Y"</code>).</p>
 </div>
 <div class="section level2">
 <h2 id="methods">Methods<a class="anchor" aria-label="anchor" href="#methods"></a>
@@ -391,7 +391,7 @@
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="op">?</span><span class="va">build_triangle</span></span>
+<code class="sourceCode R"><span><span class="op">?</span><span class="va">as_triangle</span></span>
 <span><span class="op">?</span><span class="va">fit_lr</span></span>
 <span><span class="op">?</span><span class="va">detect_regime</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"regime-detection"</span>, package <span class="op">=</span> <span class="st">"lossratio"</span><span class="op">)</span></span></code></pre></div>

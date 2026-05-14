@@ -107,7 +107,7 @@ sigma (<code>sigma</code>). These are used downstream by
 
 <dl><dt id="arg-object">object<a class="anchor" aria-label="anchor" href="#arg-object"></a></dt>
 <dd><p>An object of class <code>"Link"</code>, typically produced by
-<code><a href="build_link.html">build_link()</a></code>.</p></dd>
+<code><a href="as_link.html">as_link()</a></code>.</p></dd>
 
 
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
@@ -160,7 +160,7 @@ and no zero <code>target_from</code> rows are present.</p></dd>
 <dd><p>Mack sigma (residual standard deviation from the
 WLS fit). Used in Mack variance estimation.</p></dd>
 
-<dt><code>n_obs</code></dt>
+<dt><code>n_cohorts</code></dt>
 <dd><p>Total number of observations for the link.</p></dd>
 
 <dt><code>n_valid</code></dt>
@@ -174,7 +174,7 @@ WLS fit). Used in Mack variance estimation.</p></dd>
 
 <dt><code>valid_ratio</code></dt>
 <dd><p>Proportion of finite ata values
-(\(n\_valid / n\_obs\)).</p></dd>
+(\(n\_valid / n\_cohorts\)).</p></dd>
 
 
 </dl></div>
@@ -214,7 +214,7 @@ choice of <code>alpha</code> materially affects the estimated factor.</p></li>
 
 
 <p>When the input <code>"Link"</code> object contains a <code>weight</code> column (added by
-<code><a href="build_link.html">build_link()</a></code> when <code>weight</code> is supplied), that column is
+<code><a href="as_link.html">as_link()</a></code> when <code>weight</code> is supplied), that column is
 automatically used as the WLS weight in place of <code>target_from</code>. This
 is useful when <code>target = "lr"</code>, where <code>target_from</code> carries no
 exposure information and an external exposure variable such as <code>premium</code>
@@ -249,7 +249,7 @@ consistent across cohorts.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="build_link.html">build_link()</a></code>, <code><a href="summary.Link.html">summary.Link()</a></code>, <code><a href="detect_maturity.html">detect_maturity()</a></code>,
+    <div class="dont-index"><p><code><a href="as_link.html">as_link()</a></code>, <code><a href="summary.Link.html">summary.Link()</a></code>, <code><a href="detect_maturity.html">detect_maturity()</a></code>,
 <code><a href="fit_ata.html">fit_ata()</a></code></p></div>
     </div>
 

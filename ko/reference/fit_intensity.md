@@ -146,14 +146,14 @@ rejects `IntensityFit` input with an informative error.
 
 [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md),
-[`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md),
+[`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md),
 [`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md)
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-tri <- build_triangle(
+tri <- as_triangle(
   df,
   groups   = "coverage",
   cohort   = "uy_m",

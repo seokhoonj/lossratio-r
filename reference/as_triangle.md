@@ -1,0 +1,240 @@
+# Coerce experience data to a Triangle object
+
+Validate raw experience data, aggregate it onto a `(group, cohort, dev)`
+grid, and assign the `Triangle` S3 class so the downstream methods
+([`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md),
+[`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md),
+[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md),
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html),
+[`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md),
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md),
+[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md),
+[`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md),
+...) can dispatch on the result.
+
+Three steps happen inside this single call:
+
+1.  **Validate** — required columns are present, dates coerce cleanly,
+    the grain is consistent. Hard errors on schema issues so downstream
+    code never receives malformed input.
+
+2.  **Standardise + aggregate** — rename to package-canonical column
+    names (`cohort`, `calendar`, `dev`, `loss`, `premium`, ...),
+    auto-detect grain (`M` / `Q` / `H` / `Y`) from `cohort` spacing,
+    derive `dev` from `(cohort, calendar)`, aggregate to
+    `(group, cohort, dev)`, and enrich with cumulative / share / LR
+    columns.
+
+3.  **Tag** — set S3 class `c("Triangle", "data.table", "data.frame")`
+    so every `*.Triangle` method becomes available.
+
+lossratio's `Triangle` is a `data.table` in **long format** (one row per
+`(group, cohort, dev)` cell) with the enriched columns described above.
+The name `Triangle` refers to the conceptual cohort × dev triangular
+region — older cohorts have more observed dev cells than newer ones —
+not to a matrix layout.
+
+The auto-grain detection (`grain = "auto"`, default) reads `cohort`
+value spacing; explicit values must be at least as coarse as the input
+grain. The user does not pre-bin data or supply a `dev_*` column.
+
+The result contains:
+
+- cumulative loss and cumulative premium,
+
+- per-period and cumulative proportions,
+
+- per-period and cumulative margin,
+
+- profit indicators,
+
+- per-period loss ratio (`lr_incr = loss_incr / premium_incr`) and
+  cumulative loss ratio (`lr = loss / premium`).
+
+The cumulative loss ratio is defined as: \$\$lr = loss / premium\$\$
+
+For long-term health insurance applications, risk premium is commonly
+used as the `premium` measure.
+
+Proportion variables are computed within each `(cohort, dev)` cell:
+
+- `loss_incr_share = loss_incr / sum(loss_incr)`
+
+- `premium_incr_share = premium_incr / sum(premium_incr)`
+
+- `loss_share = loss / sum(loss)`
+
+- `premium_share = premium / sum(premium)`
+
+Therefore, for a fixed `(cohort, dev)` cell, the proportions sum to 1
+across groups. These are useful for examining the composition of each
+development cell across products or other grouping variables.
+
+## Usage
+
+``` r
+as_triangle(
+  df,
+  groups = NULL,
+  cohort,
+  calendar = NULL,
+  development = NULL,
+  loss,
+  premium,
+  grain = "auto",
+  cell_type = c("incremental", "cumulative"),
+  fill_gaps = FALSE
+)
+```
+
+## Arguments
+
+- df:
+
+  A data.frame containing experience data with per-period loss and
+  premium columns plus `cohort` and `calendar` Date columns (or any
+  input that the internal Date coercion accepts: Date, POSIXt, integer
+  `yyyy` / `yyyymm` / `yyyymmdd`, ISO string).
+
+- groups:
+
+  Column(s) used for grouping (e.g., product, gender).
+
+- cohort:
+
+  Single column (raw name) defining the underwriting / exposure period
+  start (e.g., `"uy_m"`).
+
+- calendar:
+
+  Single column (raw name) defining the calendar period of the
+  observation (e.g., `"cy_m"`). Optional – supply either `calendar` or
+  `development` (or both). When `calendar` is given, `dev` is derived
+  internally via `count_periods(cohort, calendar, grain)`.
+
+- development:
+
+  Single column (raw name) holding pre-computed development periods
+  (e.g., `"dev_m"`). Optional – supply either `calendar` or
+  `development` (or both). When only `development` is given, the
+  calendar axis is omitted from the attribute (downstream
+  calendar-diagonal logic uses cohort + dev). When both are given,
+  `development` is cross-checked against
+  `count_periods(cohort, calendar, grain)`.
+
+- loss:
+
+  Single character; per-period loss column in `df` (raw name, e.g.,
+  `"loss_incr"`).
+
+- premium:
+
+  Single character; per-period premium column in `df` (raw name, e.g.,
+  `"premium_incr"`). Premium measure used as denominator for loss ratio
+  calculations. For long-term health insurance applications, risk
+  premium is commonly used.
+
+- grain:
+
+  One of `"auto"` (default), `"M"`, `"Q"`, `"H"`, `"Y"`. `"auto"` infers
+  the grain from the `cohort` value spacing. Explicit values must be at
+  least as coarse as the input grain; the input is binned (floored) to
+  that grain before aggregation.
+
+- cell_type:
+
+  One of `"incremental"` (default) or `"cumulative"`. Whether `loss` and
+  `premium` in `df` already hold per-period (incremental) values or
+  cumulative-within-cohort values. The internal triangle is always built
+  on the incremental representation; `"cumulative"` inputs are
+  differenced first.
+
+- fill_gaps:
+
+  Logical; if `TRUE`, zero-fill missing `(groups, cohort, dev)` cells so
+  that every cohort has a consecutive `dev` sequence. Default `FALSE`,
+  which raises an error when gaps are detected. Use
+  [`validate_triangle()`](https://seokhoonj.github.io/lossratio/reference/validate_triangle.md)
+  to inspect gaps before deciding.
+
+## Value
+
+A data.frame with class `"Triangle"`, containing the following derived
+columns:
+
+- n_cohorts:
+
+  Number of distinct cohorts observed
+
+- loss, loss_incr:
+
+  Cumulative and per-period loss
+
+- premium, premium_incr:
+
+  Cumulative and per-period premium
+
+- lr, lr_incr:
+
+  Cumulative and per-period loss ratio
+
+- margin, margin_incr:
+
+  Cumulative and per-period margin (`premium - loss`)
+
+- profit, profit_incr:
+
+  Profit indicator (factor `"pos"` / `"neg"`)
+
+- loss_share, loss_incr_share:
+
+  Cumulative and per-period proportions of loss within each
+  `(cohort, dev)` cell
+
+- premium_share, premium_incr_share:
+
+  Cumulative and per-period proportions of premium within each
+  `(cohort, dev)` cell
+
+Attributes set on the returned object: `groups`, `cohort`, `calendar`,
+`grain`, `dev` (= `"dev_<lower(grain)>"`, e.g. `"dev_m"`), `loss`,
+`premium`, `longer`.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+df <- data.frame(
+  pd_cd        = rep(c("P001", "P002"), each = 6),
+  pd_nm        = rep(c("cancer", "health"), each = 6),
+  uy_m         = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
+  cy_m         = rep(as.Date(c("2023-01-01", "2023-02-01")), 6),
+  loss_incr    = runif(12, 80, 120),
+  premium_incr = runif(12, 90, 110)
+)
+
+# auto-detected monthly grain
+res_m <- as_triangle(
+  df,
+  groups   = "pd_cd",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
+)
+
+# explicit quarterly view (re-bins monthly input to quarterly)
+res_q <- as_triangle(
+  df,
+  groups   = "pd_cd",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr",
+  grain    = "Q"
+)
+
+head(res_m)
+attr(res_m, "longer")
+} # }
+```

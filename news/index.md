@@ -2,6 +2,26 @@
 
 ## lossratio (development version)
 
+- **BREAKING** — the four constructor functions are renamed from
+  `build_*` to `as_*` to align with the tidyverse coercion idiom and the
+  Python sibling’s `lr.Triangle(df)` mental model:
+
+  - `build_triangle()` -\>
+    [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
+  - `build_calendar()` -\>
+    [`as_calendar()`](https://seokhoonj.github.io/lossratio/reference/as_calendar.md)
+  - `build_total()` -\>
+    [`as_total()`](https://seokhoonj.github.io/lossratio/reference/as_total.md)
+  - `build_link()` -\>
+    [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md)
+    No signature change, only the verb. Migration is a global
+    find-and-replace. The functions still validate, coerce, and
+    aggregate substantively – the `as_*` name reflects that the returned
+    object is *the* canonical lossratio shape derived from the raw
+    experience data, not just a thin type cast. The PascalCase classes
+    (`Triangle`, `Calendar`, `Total`, `Link`) remain unchanged and do
+    not collide with ChainLadder’s lowercase `triangle` class.
+
 - **BREAKING** —
   [`plot_triangle.Triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.Triangle.md)
   argument `type` renamed to `view` for parity with
@@ -66,10 +86,7 @@
   and attaches filter metadata (`regime` / `recent` / `holdout` / `m_k`
   / `m_k_dt`) as `data.table` attributes for the renderer.
 
-- **BREAKING** —
-  [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md),
-  [`build_total()`](https://seokhoonj.github.io/lossratio/reference/build_total.md),
-  and
+- **BREAKING** — `build_triangle()`, `build_total()`, and
   [`validate_triangle()`](https://seokhoonj.github.io/lossratio/reference/validate_triangle.md)
   rename their `dev =` argument to `development =`. The new name is more
   explicit about the development-period axis (matching the
@@ -88,8 +105,8 @@
 
   - `summary.LossFit` / `summary.PremiumFit`: `se_ultimate` /
     `cv_ultimate` -\> `ultimate_se` / `ultimate_cv`.
-  - [`.compute_dv()`](https://seokhoonj.github.io/lossratio/reference/dot-compute_dv.md)
-    output: `median_lr` / `mad_lr` -\> `lr_median` / `lr_mad`.
+  - `.compute_dv()` output: `median_lr` / `mad_lr` -\> `lr_median` /
+    `lr_mad`.
   - Internal `var_lr` (LR variance scratch column) -\> `lr_var`.
   - `detect_regime_optimal_window()` diagnostics column:
     `mean_magnitude` -\> `magnitude_mean`.
@@ -114,11 +131,10 @@
 
 - **BREAKING** — `as_experience()`, `check_experience()`, and
   `is_experience()` removed along with the `Experience` S3 class.
-  [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
-  already validates required columns, coerces dates and numerics, and
-  aggregates inline, so the explicit coercion step is no longer needed
-  (and the class itself was never required by any downstream function).
-  Migration: replace
+  `build_triangle()` already validates required columns, coerces dates
+  and numerics, and aggregates inline, so the explicit coercion step is
+  no longer needed (and the class itself was never required by any
+  downstream function). Migration: replace
   `exp <- as_experience(df); build_triangle(exp, ...)` with
   `build_triangle(df, ...)`. Matches Python sibling 0.0.1.dev7.
 
@@ -148,20 +164,14 @@
 
 ### Core API
 
-- Aggregation:
-  [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
-  (cohort × dev),
-  [`build_calendar()`](https://seokhoonj.github.io/lossratio/reference/build_calendar.md)
-  (calendar period),
-  [`build_total()`](https://seokhoonj.github.io/lossratio/reference/build_total.md)
-  (portfolio total).
-  [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
-  validates schema and coerces required columns inline.
-- Link table:
-  [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md)
-  returns a `Link` object covering both single-variable (ATA-style) and
-  dual-variable (ED-style) workflows. `summary.Link(model = "ata"|"ed")`
-  dispatches to the matching diagnostic.
+- Aggregation: `build_triangle()` (cohort × dev), `build_calendar()`
+  (calendar period), `build_total()` (portfolio total).
+  `build_triangle()` validates schema and coerces required columns
+  inline.
+- Link table: `build_link()` returns a `Link` object covering both
+  single-variable (ATA-style) and dual-variable (ED-style) workflows.
+  `summary.Link(model = "ata"|"ed")` dispatches to the matching
+  diagnostic.
 - Estimation:
   [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)
   (per-link factors only);

@@ -142,92 +142,57 @@
 <div class="section level2">
 <h2 id="motivation">Motivation<a class="anchor" aria-label="anchor" href="#motivation"></a>
 </h2>
-<p><code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> answers the question <em>“from which
-development period are link factors
+<p><code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> answers <em>“from which development
+period are link factors
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
 reproducible across cohorts?”</em>. That is necessary for chain-ladder
 projection but not sufficient for declaring a portfolio’s projected loss
-ratio converged: in long-duration health insurance both
+ratio converged. In long-duration health insurance both
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mi>k</mi></msub><mo>→</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">f_k \to 1</annotation></semantics></math>
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>g</mi><mi>k</mi></msub><mo>→</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">g_k \to 0</annotation></semantics></math>
-arise mechanically from cumulative denominators growing, regardless of
+arise mechanically as cumulative denominators grow — independent of
 whether the underlying experience has actually settled. A criterion
 built on those quantities passes automatically with
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>,
-not because of true convergence — what we have called the
-<em>inertia</em> failure mode.</p>
+not because of true convergence (the <em>inertia</em> failure mode).</p>
 <p><code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> detects the <strong>convergence
 point</strong>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
-— the first valuation
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo>≥</mo><msup><mi>k</mi><mo>*</mo></msup></mrow><annotation encoding="application/x-tex">v \ge k^*</annotation></semantics></math>
-at which the projected loss ratio has predictively converged. It is the
-natural counterpart to
+— the first dev
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>≥</mo><msup><mi>k</mi><mo>*</mo></msup></mrow><annotation encoding="application/x-tex">k \ge k^*</annotation></semantics></math>
+at which the projected portfolio loss ratio is observed to be stable, in
+a sense the user picks via <code>method =</code>. It is the natural
+counterpart to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>:</p>
+<ul>
+<li>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
-(maturity point, from <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code>):
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
-marks where link factors
+(<code><a href="../reference/detect_maturity.html">detect_maturity()</a></code>) marks where link factors
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
-become reproducible, while
+become reproducible.</li>
+<li>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
-marks where the projection itself stops moving with new data.
-Long-duration health portfolios may cross
+marks where the projection itself stops moving with new data.</li>
+</ul>
+<p>Long-duration health portfolios may cross
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
 early yet remain far from
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>.</p>
-<p>The detector combines two orthogonal conditions, both required to
-hold for
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
-consecutive valuations:</p>
-<ol style="list-style-type: decimal">
-<li>
-<strong>Predictive revision</strong> is small relative to its
-parameter SE:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mi>v</mi></msub><mo>&lt;</mo><mi>c</mi><mo>⋅</mo><msubsup><mover><mrow><mi>S</mi><mi>E</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">R_v &lt; c \cdot \hat{SE}^{\mathrm{param}}_v</annotation></semantics></math>,
-where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mi>v</mi></msub><mo>=</mo><mo stretchy="false" form="prefix">|</mo><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">j</mi></mrow></msubsup><mo stretchy="false" form="prefix">(</mo><msub><mi>D</mi><mi>v</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>−</mo><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">j</mi></mrow></msubsup><mo stretchy="false" form="prefix">(</mo><msub><mi>D</mi><mrow><mi>v</mi><mo>−</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="prefix">|</mo></mrow><annotation encoding="application/x-tex">R_v = |\hat{LR}^{\mathrm{proj}}_v(D_v) -
-\hat{LR}^{\mathrm{proj}}_v(D_{v-1})|</annotation></semantics></math> is
-the change in the projected portfolio LR caused by adding one new
-calendar diagonal.</li>
-<li>
-<strong>Cross-cohort dispersion</strong> of incremental LR is small:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><mo>&lt;</mo><mi>τ</mi></mrow><annotation encoding="application/x-tex">\hat{D}_v &lt; \tau</annotation></semantics></math>,
-where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><mo>=</mo><mn>1.4826</mn><mo>⋅</mo><msub><mrow><mi mathvariant="normal">M</mi><mi mathvariant="normal">A</mi><mi mathvariant="normal">D</mi></mrow><mi>i</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mover><mrow><mi>l</mi><mi>r</mi></mrow><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>v</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mo stretchy="false" form="prefix">|</mo><msub><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">d</mi><mi mathvariant="normal">i</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow><mi>i</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mover><mrow><mi>l</mi><mi>r</mi></mrow><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>v</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="prefix">|</mo></mrow><annotation encoding="application/x-tex">\hat{D}_v = 1.4826 \cdot \mathrm{MAD}_i(\hat{lr}_{i,v}) /
-|\mathrm{median}_i(\hat{lr}_{i,v})|</annotation></semantics></math>.</li>
-</ol>
-<p>Operating
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-on <strong>incremental</strong> rather than cumulative loss ratio keeps
-it inertia-free — per-period quantities have no cumulative denominator
-to dampen them. The two clauses guard against complementary failure
-modes:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>
-checks that the <em>model output</em> has stopped revising, while
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-checks that the <em>raw period-by-period experience</em> is genuinely
-consistent across cohorts at that dev. Either alone can be fooled — in
-chain-ladder projection the mechanical drift
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>f</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><mo>→</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\hat{f}_k \to 1</annotation></semantics></math>
-collapses
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>
-regardless of true convergence, and cross-cohort agreement on a single
-period’s level need not imply that the projection has settled. The dual
-criterion closes both inertia-leakage paths.</p>
 </div>
 <div class="section level2">
-<h2 id="why-two-conditions">Why two conditions<a class="anchor" aria-label="anchor" href="#why-two-conditions"></a>
+<h2 id="the-four-stability-methods">The four stability methods<a class="anchor" aria-label="anchor" href="#the-four-stability-methods"></a>
 </h2>
-<p>A <strong>denominator effect</strong> disables any single-criterion
-diagnostic.</p>
-<p>In long-duration health insurance, cumulative LR = cumulative loss /
-cumulative risk premium. As dev grows, the denominator grows alongside
-the numerator, so a new calendar diagonal’s contribution to the overall
-ratio shrinks automatically — <em>regardless of whether the underlying
-experience has actually changed</em>. This is the <em>inertia</em>
-effect.</p>
-<p>What each criterion guards against:</p>
+<p>Convergence cannot be measured asymptotically from finite data, only
+<em>observed up to</em> the maximum available dev <code>dev_max</code>
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>K</mi><mi mathvariant="normal">max</mi></msub><annotation encoding="application/x-tex">K_{\max}</annotation></semantics></math>).
+The detector runs a rolling <code><a href="../reference/backtest.html">backtest()</a></code> over a sequence of
+candidate dev points <code>dev_cand</code>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>∈</mo><mo stretchy="false" form="prefix">[</mo><msup><mi>k</mi><mo>*</mo></msup><mo>,</mo><msub><mi>K</mi><mi mathvariant="normal">max</mi></msub><mo>−</mo><mn>2</mn><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">\in [k^*, K_{\max}-2]</annotation></semantics></math>,
+builds the projected ultimate LR path <code>lr</code> at each one, then
+evaluates four stability metrics on that path. The <code>method =</code>
+argument selects which metric defines <code>conv_k</code>; all four are
+returned for inspection regardless of the choice.</p>
 <table class="table">
 <colgroup>
 <col width="25%">
@@ -236,153 +201,170 @@ effect.</p>
 <col width="25%">
 </colgroup>
 <thead><tr class="header">
-<th>Scenario</th>
-<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math></th>
-<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math></th>
-<th>Result</th>
+<th>Method</th>
+<th>Metric</th>
+<th>Captures</th>
+<th>Misses</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td>True convergence (model + experience both stable)</td>
-<td>small</td>
-<td>small</td>
-<td>
-<strong>PASS</strong> ✓</td>
+<td><code>"window"</code></td>
+<td>range of <code>lr</code> over the next <code>window</code>
+valuations</td>
+<td>local stability (no zig-zag)</td>
+<td>slow monotone drift below <code>max_drift</code> per window</td>
 </tr>
 <tr class="even">
-<td>Chain-ladder
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>f</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><mo>→</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\hat{f}_k \to 1</annotation></semantics></math>
-drift (inertia)</td>
-<td>small (spurious)</td>
-<td>large</td>
-<td>FAIL — dispersion catches it</td>
+<td>
+<code>"tail"</code> (default)</td>
+<td>range of <code>lr</code> over <code>[k, K_{\max}]</code>
+</td>
+<td>global stability up to <code>dev_max</code>; catches monotone
+drift</td>
+<td>needs
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≥</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">\ge 2</annotation></semantics></math>
+tail points; first-pass is conservative (later than
+<code>"window"</code>)</td>
 </tr>
 <tr class="odd">
-<td>Coincidental cohort agreement at one period</td>
-<td>large</td>
-<td>small (snapshot)</td>
-<td>FAIL — projection revision catches it</td>
+<td><code>"slope"</code></td>
+<td>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="postfix">∥</mo><msub><mover><mi>β</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><mo stretchy="false" form="postfix">∥</mo></mrow><annotation encoding="application/x-tex">\|\hat\beta_k\|</annotation></semantics></math>,
+OLS slope of <code>lr ~ k</code> on <code>[k, K_{\max}]</code>
+</td>
+<td>systematic trend (signed direction)</td>
+<td>oscillation that averages out to zero slope</td>
+</tr>
+<tr class="even">
+<td><code>"all"</code></td>
+<td>intersection of <code>"window"</code> + <code>"tail"</code> +
+<code>"slope"</code>
+</td>
+<td>every shape above</td>
+<td>(strictest)</td>
 </tr>
 </tbody>
 </table>
-<ul>
-<li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>
-alone is fooled by chain ladder’s mechanical drift
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>f</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><mo>→</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\hat{f}_k \to 1</annotation></semantics></math>):
-the cumulative product barely moves, the projection barely moves, and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>
-collapses to zero — a false convergence.</li>
-<li>
+<p>Across all methods a cross-cohort dispersion clause
+<code>dispersion[i] &lt; max_dispersion</code> is required in addition —
+incremental loss ratios at that dev must agree across cohorts (computed
+via the same robust
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-uses <strong>incremental</strong> LR, so it inherits no cumulative
-denominator → immune to the inertia effect.</li>
-<li>Requiring both criteria simultaneously closes the principal
-inertia-leakage paths. That is the design intent of the dual
-criterion.</li>
-</ul>
+metric used in earlier package versions).</p>
+<p><strong>Why not the paper’s SE-normalised criterion?</strong> Earlier
+versions of this detector implemented
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mi>k</mi></msub><mo>&lt;</mo><mi>c</mi><mo>⋅</mo><msubsup><mover><mrow><mi>S</mi><mi>E</mi></mrow><mo accent="true">̂</mo></mover><mi>k</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">R_k &lt; c \cdot \hat{SE}^{\mathrm{param}}_k</annotation></semantics></math>
+from the original methodology paper (Section 11; paper uses
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
+instead of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>,
+same axis). On large portfolios that form is structurally broken:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mover><mrow><mi>S</mi><mi>E</mi></mrow><mo accent="true">̂</mo></mover><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi></mrow></msup><annotation encoding="application/x-tex">\hat{SE}^{\mathrm{param}}</annotation></semantics></math>
+shrinks as
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi>/</mi><msqrt><mi>n</mi></msqrt></mrow><annotation encoding="application/x-tex">1/\sqrt{n}</annotation></semantics></math>
+while
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>k</mi></msub><annotation encoding="application/x-tex">R_k</annotation></semantics></math>
+has a numerical noise floor
+(~<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mi>−</mi><mn>3</mn></mrow></msup><annotation encoding="application/x-tex">10^{-3}</annotation></semantics></math>
+LR units), so the ratio diverges and the criterion never fires — even on
+synthetic data that is <em>visibly stable</em>. The drift-based methods
+replace SE-normalisation with a data-size-independent threshold.</p>
 </div>
 <div class="section level2">
 <h2 id="notation">Notation<a class="anchor" aria-label="anchor" href="#notation"></a>
 </h2>
+<p>Standard chain-ladder convention:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
+indexes cohort (origin period),
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+indexes development period. <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> returns
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>,
+<code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> returns
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
+— both live on the same
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+axis.</p>
 <table class="table">
 <colgroup>
-<col width="47%">
-<col width="52%">
+<col width="33%">
+<col width="33%">
+<col width="33%">
 </colgroup>
 <thead><tr class="header">
-<th>Symbol</th>
+<th>Code</th>
+<th>Math</th>
 <th>Meaning</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math></td>
-<td>cohort index (UY)</td>
+<td><code>dev_max</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>K</mi><mi mathvariant="normal">max</mi></msub><annotation encoding="application/x-tex">K_{\max}</annotation></semantics></math></td>
+<td>Maximum observable dev (a scalar)</td>
 </tr>
 <tr class="even">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math></td>
-<td>valuation index — the calendar diagonal;
-“<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
-diagonals observed”</td>
+<td><code>dev_cand</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>∈</mo><mo stretchy="false" form="prefix">[</mo><msup><mi>k</mi><mo>*</mo></msup><mo>,</mo><msub><mi>K</mi><mi mathvariant="normal">max</mi></msub><mo>−</mo><mn>2</mn><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">k \in [k^*, K_{\max}-2]</annotation></semantics></math></td>
+<td>Integer vector of candidate dev points</td>
 </tr>
 <tr class="odd">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math></td>
-<td>maximum observed valuation (max dev in the triangle)</td>
+<td><code>lr[i]</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><msub><mi>R</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">LR_k</annotation></semantics></math></td>
+<td>Portfolio LR projection at dev = <code>dev_cand[i]</code>
+</td>
 </tr>
 <tr class="even">
+<td><code>revision[i]</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mi>k</mi></msub><mo>=</mo><mo stretchy="false" form="postfix">∥</mo><mi>L</mi><msub><mi>R</mi><mi>k</mi></msub><mo>−</mo><mi>L</mi><msub><mi>R</mi><mrow><mi>k</mi><mo>−</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">∥</mo></mrow><annotation encoding="application/x-tex">R_k = \|LR_k - LR_{k-1}\|</annotation></semantics></math></td>
+<td>Adjacent-step revision (diagnostic only)</td>
+</tr>
+<tr class="odd">
+<td><code>drift_window[i]</code></td>
+<td>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">max</mi><mo>⁡</mo></mrow><mo>−</mo><mi mathvariant="normal">min</mi></mrow><annotation encoding="application/x-tex">\max - \min</annotation></semantics></math>
+over
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">[</mo><mi>k</mi><mo>,</mo><mi>k</mi><mo>+</mo><mi>W</mi><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">[k, k+W-1]</annotation></semantics></math>
+</td>
+<td>Local window range</td>
+</tr>
+<tr class="even">
+<td><code>drift_tail[i]</code></td>
+<td>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">max</mi><mo>⁡</mo></mrow><mo>−</mo><mi mathvariant="normal">min</mi></mrow><annotation encoding="application/x-tex">\max - \min</annotation></semantics></math>
+over
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">[</mo><mi>k</mi><mo>,</mo><msub><mi>K</mi><mi mathvariant="normal">max</mi></msub><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">[k, K_{\max}]</annotation></semantics></math>
+</td>
+<td>Tail range (global stability)</td>
+</tr>
+<tr class="odd">
+<td><code>slope[i]</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>β</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><annotation encoding="application/x-tex">\hat\beta_k</annotation></semantics></math></td>
+<td>OLS slope on
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">[</mo><mi>k</mi><mo>,</mo><msub><mi>K</mi><mi mathvariant="normal">max</mi></msub><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">[k, K_{\max}]</annotation></semantics></math>
+</td>
+</tr>
+<tr class="even">
+<td><code>dispersion[i]</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><annotation encoding="application/x-tex">\hat{D}_k</annotation></semantics></math></td>
+<td>Robust cross-cohort spread of incremental LR</td>
+</tr>
+<tr class="odd">
+<td><code>mat_k</code></td>
 <td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math></td>
-<td>maturity point (from <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code>); lower bound on
-candidate
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
-</td>
+<td>Maturity point (lower bound on candidates)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
+<td><code>conv_k</code></td>
 <td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math></td>
-<td>convergence point — the value <code><a href="../reference/detect_convergence.html">detect_convergence()</a></code>
-returns</td>
-</tr>
-<tr class="even">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">j</mi></mrow></msubsup><annotation encoding="application/x-tex">\hat{LR}^{\mathrm{proj}}_v</annotation></semantics></math></td>
-<td>projected ultimate LR using data through valuation
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
-</td>
-</tr>
-<tr class="odd">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math></td>
-<td>revision:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">|</mo><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">j</mi></mrow></msubsup><mo>−</mo><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mrow><mi>v</mi><mo>−</mo><mn>1</mn></mrow><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">j</mi></mrow></msubsup><mo stretchy="false" form="postfix">|</mo></mrow><annotation encoding="application/x-tex">\lvert\hat{LR}^{\mathrm{proj}}_v - \hat{LR}^{\mathrm{proj}}_{v-1}\rvert</annotation></semantics></math>
-</td>
-</tr>
-<tr class="even">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mrow><mi>S</mi><mi>E</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi></mrow></msubsup><annotation encoding="application/x-tex">\hat{SE}^{\mathrm{param}}_v</annotation></semantics></math></td>
-<td>parameter-uncertainty SE of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">j</mi></mrow></msubsup><annotation encoding="application/x-tex">\hat{LR}^{\mathrm{proj}}_v</annotation></semantics></math>
-(Mack-style)</td>
-</tr>
-<tr class="odd">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mrow><mi>l</mi><mi>r</mi></mrow><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>v</mi></mrow></msub><annotation encoding="application/x-tex">\hat{lr}_{i,v}</annotation></semantics></math></td>
-<td>incremental loss ratio of cohort
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
-at dev
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
-</td>
-</tr>
-<tr class="even">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math></td>
-<td>robust scale-invariant dispersion of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mrow><mi>l</mi><mi>r</mi></mrow><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>v</mi></mrow></msub><annotation encoding="application/x-tex">\hat{lr}_{i,v}</annotation></semantics></math>
-across cohorts</td>
-</tr>
-<tr class="odd">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math></td>
-<td>multiplier on
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mrow><mi>S</mi><mi>E</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi></mrow></msubsup><annotation encoding="application/x-tex">\hat{SE}^{\mathrm{param}}_v</annotation></semantics></math>
-for the revision gate (default <code>0.5</code>)</td>
-</tr>
-<tr class="even">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>τ</mi><annotation encoding="application/x-tex">\tau</annotation></semantics></math></td>
-<td>upper bound on
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-for the dispersion gate (default <code>0.15</code>)</td>
-</tr>
-<tr class="odd">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math></td>
-<td>required run length of consecutive passing valuations (default
-<code>3L</code>)</td>
+<td>The detected convergence point</td>
 </tr>
 </tbody>
 </table>
 <p>The constant
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1.4826</mn><mo>≈</mo><mn>1</mn><mi>/</mi><msup><mi mathvariant="normal">Φ</mi><mrow><mi>−</mi><mn>1</mn></mrow></msup><mo stretchy="false" form="prefix">(</mo><mn>0.75</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">1.4826 \approx 1 / \Phi^{-1}(0.75)</annotation></semantics></math>
-inside
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-is the standard
+inside <code>dispersion</code> is the standard
 MAD<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>→</mo><mi>σ</mi></mrow><annotation encoding="application/x-tex">\to\sigma</annotation></semantics></math>
-correction: with this scaling
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mrow><mi mathvariant="normal">M</mi><mi mathvariant="normal">A</mi><mi mathvariant="normal">D</mi></mrow><mi>i</mi></msub><annotation encoding="application/x-tex">\mathrm{MAD}_i</annotation></semantics></math>
-becomes a consistent estimator of the cross-cohort standard deviation
-under normality, so
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
+correction. With this scaling,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><annotation encoding="application/x-tex">\hat{D}_k</annotation></semantics></math>
 reads as a robust, outlier-resistant coefficient of variation of
 incremental LR.</p>
 </div>
@@ -392,7 +374,7 @@ incremental LR.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio">lossratio</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
-<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span></span>
+<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>,</span>
 <span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
@@ -403,147 +385,117 @@ incremental LR.</p>
 <span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
-<p>Mock output:</p>
+<p>Mock output (no convergence detected on this run-off):</p>
 <pre><code><span><span class="co">#&gt; &lt;Convergence&gt;</span></span>
-<span><span class="co">#&gt; k_conv       : NA</span></span>
-<span><span class="co">#&gt; k_star       : 9</span></span>
-<span><span class="co">#&gt; V (max dev)  : 30</span></span>
-<span><span class="co">#&gt; criterion    : R_v &lt; 0.5 * SE_param_v  AND  D_v &lt; 0.15  (run M = 3)</span></span>
-<span><span class="co">#&gt; v candidates : 19 ( 0  pass both clauses)</span></span></code></pre>
-<p>The returned <code>Convergence</code> object reports:</p>
-<ul>
-<li>
-<code>k_conv</code> — the detected
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>,
-or <code>NA</code> if no run of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
-consecutive passing valuations is found.</li>
-<li>
-<code>k_star</code> — the maturity point used as the lower bound
-(computed internally via <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> on a lr-based
-ATA, or supplied by the caller).</li>
-<li>
-<code>V</code> — the maximum observable dev in the triangle.</li>
-<li>
-<code>v</code>, <code>R_v</code>, <code>SE_param_v</code>,
-<code>D_v</code>, <code>pass_v</code> — per-valuation diagnostic
-sequences indexed by
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>.</li>
-<li>
-<code>se_mult</code>, <code>max_dv</code>, <code>min_run</code>,
-<code>holdout_max</code>, <code>min_n_cohorts</code> — settings
-used.</li>
-<li>attributes <code>groups</code>, <code>target</code>,
-<code>dev</code>.</li>
-</ul>
-<p><code>summary(res)</code> returns a <code>data.table</code> with one
-row per candidate valuation and an extra
-<code>R_over_SE = R_v / SE_param_v</code> column for inspection:</p>
+<span><span class="co">#&gt;   method     : tail</span></span>
+<span><span class="co">#&gt;   conv_k     : NA</span></span>
+<span><span class="co">#&gt;   mat_k      : 4</span></span>
+<span><span class="co">#&gt;   dev_max    : 30</span></span>
+<span><span class="co">#&gt;   candidates : 25</span></span>
+<span><span class="co">#&gt;   passes :</span></span>
+<span><span class="co">#&gt;     window :  0/25 (drift_window &lt; 0.01  &amp; dispersion &lt; 0.15)</span></span>
+<span><span class="co">#&gt;     tail   :  0/25 (drift_tail   &lt; 0.01  &amp; dispersion &lt; 0.15)  &lt;- method</span></span>
+<span><span class="co">#&gt;     slope  :  0/25 (|slope|      &lt; 0.001 &amp; dispersion &lt; 0.15)</span></span>
+<span><span class="co">#&gt;     all    :  0/25 (window AND tail AND slope)</span></span></code></pre>
+<p>The summary <code>data.table</code> has one row per candidate dev
+with every metric and per-method pass flag:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span>, <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;        v    R_v   SE_param_v  R_over_SE   D_v     pass</span></span>
-<span><span class="co">#&gt; 1:     9     NA           NA         NA  0.90   FALSE</span></span>
-<span><span class="co">#&gt; 2:    10     NA           NA         NA  0.76   FALSE</span></span>
-<span><span class="co">#&gt; 3:    11     NA           NA         NA  0.56   FALSE</span></span>
-<span><span class="co">#&gt; 4:    12     NA           NA         NA  0.58   FALSE</span></span>
-<span><span class="co">#&gt; 5:    13     NA           NA         NA  0.81   FALSE</span></span>
-<span><span class="co">#&gt; 6:    14     NA           NA         NA  0.43   FALSE</span></span></code></pre>
+<pre><code><span><span class="co">#&gt;      dev    lr   revision  drift_window  drift_tail   slope  dispersion</span></span>
+<span><span class="co">#&gt;    &lt;int&gt; &lt;num&gt;      &lt;num&gt;         &lt;num&gt;       &lt;num&gt;   &lt;num&gt;       &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:     4 0.62          NA          0.07        0.07   0.001        0.47</span></span>
+<span><span class="co">#&gt; 2:     5 0.63        0.01          0.06        0.06   0.001        0.47</span></span>
+<span><span class="co">#&gt; ...</span></span>
+<span><span class="co">#&gt;    pass_window  pass_tail  pass_slope  pass</span></span>
+<span><span class="co">#&gt;          &lt;lgl&gt;      &lt;lgl&gt;       &lt;lgl&gt; &lt;lgl&gt;</span></span>
+<span><span class="co">#&gt; 1:       FALSE      FALSE       FALSE FALSE</span></span>
+<span><span class="co">#&gt; 2:       FALSE      FALSE       FALSE FALSE</span></span></code></pre>
+<p>The <code>Convergence</code> object also reports the threshold
+parameters (<code>max_drift</code>, <code>max_slope</code>,
+<code>max_dispersion</code>, <code>window</code>,
+<code>holdout_max</code>, <code>min_n_cohorts</code>) and metadata
+attributes (<code>groups</code>, <code>target</code>,
+<code>dispatcher</code>).</p>
 </div>
 <div class="section level2">
-<h2 id="how-it-works-multiple-holdout-refits">How it works: multiple holdout refits<a class="anchor" aria-label="anchor" href="#how-it-works-multiple-holdout-refits"></a>
+<h2 id="reserving-caveat">Reserving caveat<a class="anchor" aria-label="anchor" href="#reserving-caveat"></a>
 </h2>
-<p><code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> refits the model at each candidate
-valuation and tracks how the projection changes.</p>
-<p>Example: with
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mo>=</mo><mn>30</mn></mrow><annotation encoding="application/x-tex">V = 30</annotation></semantics></math>,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>k</mi><mo>*</mo></msup><mo>=</mo><mn>18</mn></mrow><annotation encoding="application/x-tex">k^* = 18</annotation></semantics></math>,
-and <code>holdout_max = 6</code> — candidates are
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo>∈</mo><mo stretchy="false" form="prefix">{</mo><mn>24</mn><mo>,</mo><mn>25</mn><mo>,</mo><mi>…</mi><mo>,</mo><mn>30</mn><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">v \in \{24, 25, \dots, 30\}</annotation></semantics></math>
-(7 in total).</p>
-<table class="table">
-<thead><tr class="header">
-<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math></th>
-<th>holdout depth
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mo>−</mo><mi>v</mi></mrow><annotation encoding="application/x-tex">V - v</annotation></semantics></math>)</th>
-<th>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>
-available?</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>30</td>
-<td>0</td>
-<td>✓</td>
-</tr>
-<tr class="even">
-<td>28</td>
-<td>2</td>
-<td>✓</td>
-</tr>
-<tr class="odd">
-<td>24 (cutoff)</td>
-<td>6</td>
-<td>✓</td>
-</tr>
-<tr class="even">
-<td>22</td>
-<td>8</td>
-<td><code>NA</code></td>
-</tr>
-<tr class="odd">
-<td>18</td>
-<td>12</td>
-<td><code>NA</code></td>
-</tr>
-</tbody>
-</table>
-<p>One refit per candidate
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
-(7 total) plus
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>
-computed between adjacent
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>.
-The cutoff <code>holdout_max</code> defaults to
-<code>floor((V - k_star) / 2)</code>; once holdout depth exceeds it the
-refit data becomes too thin and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><msub><mi>E</mi><mi>p</mi></msub><mi>a</mi><mi>r</mi><mi>a</mi><msub><mi>m</mi><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">SE_param_v</annotation></semantics></math>
-are masked to <code>NA</code>.</p>
-<p>Increase <code>holdout_max</code> to diagnose deeper into the past —
-at the cost of less data behind each refit, hence lower confidence.</p>
+<p><strong>The detected <code>conv_k</code> is stability <em>observed up
+to</em> <code>dev_max</code>, not an asymptotic guarantee.</strong>
+Future development past <code>dev_max</code> is unknown. Treat
+<code>conv_k</code> as a diagnostic for “from here on, what we observe
+is stable”, not as proof that the projection will not drift later.</p>
+<p>For reserving applications:</p>
+<ul>
+<li>Prefer <code>method = "tail"</code> (default) or <code>"all"</code>
+over <code>"window"</code>. <code>"window"</code> will declare
+convergence prematurely on slow monotone drifts that fit under
+<code>max_drift</code> per window — exactly the silent-revision pattern
+that hurts reserves.</li>
+<li>Always weigh the <strong>evidence span</strong>
+<code>dev_max - conv_k</code>. A <code>conv_k</code> near
+<code>dev_max</code> (say, span
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>&lt;</mo><mn>5</mn></mrow><annotation encoding="application/x-tex">&lt; 5</annotation></semantics></math>)
+was confirmed by very few tail points; the same data might unconverge
+with one more diagonal.</li>
+<li>Read the projected ultimate LR and its standard error from
+<code>fit_lr()$summary</code> directly.
+<code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> is a diagnostic, not an estimator; the
+reserve point estimate and uncertainty come from the fit object.</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="how-it-works-rolling-holdout-refits">How it works: rolling holdout refits<a class="anchor" aria-label="anchor" href="#how-it-works-rolling-holdout-refits"></a>
+</h2>
+<p>For each <code>dev_cand[i]</code>, the function backtests the LR
+projection with <code>holdout = dev_max - dev_cand[i]</code> and
+extracts the portfolio LR. Calls are cached per holdout depth so we
+don’t redo work between adjacent candidates.</p>
+<p>Example: with <code>dev_max = 30</code>, <code>mat_k = 4</code>,
+<code>holdout_max = 13</code> — candidates are
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>∈</mo><mo stretchy="false" form="prefix">{</mo><mn>4</mn><mo>,</mo><mn>5</mn><mo>,</mo><mi>…</mi><mo>,</mo><mn>28</mn><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">k \in \{4, 5, \dots, 28\}</annotation></semantics></math>
+(25 in total), but only
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+with <code>holdout = dev_max - k &lt;= holdout_max</code> get a finite
+<code>lr[i]</code>. The rest are masked to <code>NA</code>.</p>
+<p><code>holdout_max</code> defaults to
+<code>max(window, floor((dev_max - mat_k) / 2))</code>. Raising it
+widens the diagnostic window — at the cost of less data behind each
+refit and hence noisier <code>lr</code> near the lower edge.</p>
 </div>
 <div class="section level2">
 <h2 id="plot">Plot<a class="anchor" aria-label="anchor" href="#plot"></a>
 </h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
-<p>The diagnostic is two stacked panels: the upper panel shows
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mi>v</mi></msub><mi>/</mi><msubsup><mover><mrow><mi>S</mi><mi>E</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">R_v / \hat{SE}^{\mathrm{param}}_v</annotation></semantics></math>
-against
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
-with a horizontal guide at
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math>;
-the lower panel shows
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-against
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
-with a horizontal guide at
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>τ</mi><annotation encoding="application/x-tex">\tau</annotation></semantics></math>.
-A vertical dotted line marks
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>,
-and a vertical solid line marks
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
-when one is detected. A point falling <strong>below both threshold
-lines</strong> passes the joint criterion.</p>
-<p>This view is also a quick way to see <em>which clause is
-binding</em>. If the top panel hugs the threshold but the bottom is far
-above, the issue is cross-cohort heterogeneity; if the bottom is fine
-but the top is high, the model is still revising.</p>
+<p>Five stacked panels share the dev axis:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong><code>lr</code></strong> — the LR trajectory the metrics are
+computed from.</li>
+<li>
+<strong><code>drift_window</code></strong> — the local-window
+metric, with horizontal guide at <code>max_drift</code>.</li>
+<li>
+<strong><code>drift_tail</code></strong> — the tail metric, same
+guide.</li>
+<li>
+<strong><code>|slope|</code></strong> — guide at
+<code>max_slope</code>.</li>
+<li>
+<strong><code>dispersion</code></strong> — guide at
+<code>max_dispersion</code>.</li>
+</ol>
+<p>Vertical guides mark <code>mat_k</code> (dashed) and
+<code>conv_k</code> (solid, only when non-<code>NA</code>). For each
+metric panel, points below the red dashed line pass that clause. The
+subtitle records the active <code>method</code>. This is also a quick
+way to see <em>which clause is binding</em>: any panel that hovers above
+its threshold blocks convergence under that method.</p>
 </div>
 <div class="section level2">
 <h2 id="threshold-tuning">Threshold tuning<a class="anchor" aria-label="anchor" href="#threshold-tuning"></a>
 </h2>
-<p>The defaults are deliberately conservative:</p>
 <table class="table">
 <colgroup>
 <col width="35%">
@@ -557,52 +509,67 @@ but the top is high, the model is still revising.</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>se_mult</code></td>
-<td><code>0.5</code></td>
-<td>Revision must be smaller than half the parameter SE.</td>
+<td><code>method</code></td>
+<td><code>"tail"</code></td>
+<td>Which stability metric defines <code>conv_k</code>.</td>
 </tr>
 <tr class="even">
-<td><code>max_dv</code></td>
-<td><code>0.15</code></td>
-<td>Cross-cohort dispersion must be below 15% of the median lr.</td>
+<td><code>max_drift</code></td>
+<td><code>0.01</code></td>
+<td>Drift cap on <code>drift_window</code> / <code>drift_tail</code>, in
+LR units. Raise (e.g. <code>0.02</code>–<code>0.05</code>) for noisier
+or longer-tail books.</td>
 </tr>
 <tr class="odd">
-<td><code>min_run</code></td>
-<td><code>3L</code></td>
-<td>Both clauses must hold for at least 3 consecutive valuations.</td>
+<td><code>max_slope</code></td>
+<td><code>1e-3</code></td>
+<td>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="postfix">∥</mo><msub><mover><mi>β</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><mo stretchy="false" form="postfix">∥</mo></mrow><annotation encoding="application/x-tex">\|\hat\beta_k\|</annotation></semantics></math>
+cap (LR per dev).</td>
+</tr>
+<tr class="even">
+<td><code>max_dispersion</code></td>
+<td><code>0.15</code></td>
+<td>Cross-cohort dispersion cap.</td>
+</tr>
+<tr class="odd">
+<td><code>window</code></td>
+<td><code>5L</code></td>
+<td>Drift window length
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>W</mi><annotation encoding="application/x-tex">W</annotation></semantics></math>
+— number of consecutive valuations the <code>"window"</code> method
+scans when computing <code>drift_window</code>. Does <em>not</em> affect
+<code>"tail"</code> or <code>"slope"</code>.</td>
 </tr>
 <tr class="even">
 <td><code>min_n_cohorts</code></td>
 <td><code>5L</code></td>
-<td>Below this cohort count,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-is <code>NA</code> (insufficient sample).</td>
+<td>Below this cohort count, <code>dispersion</code> is
+<code>NA</code>.</td>
 </tr>
 </tbody>
 </table>
-<p>Tighter thresholds yield later (or no)
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>;
-sweep a range to inspect sensitivity:</p>
+<p>Sweep <code>max_drift</code> to inspect sensitivity:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">1.0</span><span class="op">)</span>,</span>
-<span>  <span class="kw">function</span><span class="op">(</span><span class="va">cc</span><span class="op">)</span> <span class="fu"><a href="../reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">tri</span>, se_mult <span class="op">=</span> <span class="va">cc</span><span class="op">)</span><span class="op">$</span><span class="va">k_conv</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.005</span>, <span class="fl">0.01</span>, <span class="fl">0.02</span>, <span class="fl">0.05</span><span class="op">)</span>,</span>
+<span>  <span class="kw">function</span><span class="op">(</span><span class="va">d</span><span class="op">)</span> <span class="fu"><a href="../reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"tail"</span>, max_drift <span class="op">=</span> <span class="va">d</span><span class="op">)</span><span class="op">$</span><span class="va">conv_k</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Values of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-below
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>τ</mi><mo>≈</mo><mn>0.05</mn></mrow><annotation encoding="application/x-tex">\tau \approx 0.05</annotation></semantics></math>
-are difficult to attain in real portfolios because of single-period
-claim noise; values above
+<p><code>max_dispersion</code> below
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≈</mo><mn>0.05</mn></mrow><annotation encoding="application/x-tex">\approx 0.05</annotation></semantics></math>
+is difficult to attain in real portfolios because of single-period claim
+noise; values above
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.20</mn><annotation encoding="application/x-tex">0.20</annotation></semantics></math>
 usually indicate genuine cohort heterogeneity that warrants
 <code><a href="../reference/detect_regime.html">detect_regime()</a></code> before further modelling.</p>
 </div>
 <div class="section level2">
-<h2 id="relation-to-k-and-detect_regime">Relation to <code>k^*</code> and <code>detect_regime()</code><a class="anchor" aria-label="anchor" href="#relation-to-k-and-detect_regime"></a>
+<h2 id="relation-to-k-and-detect_regime">Relation to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
+and <code>detect_regime()</code><a class="anchor" aria-label="anchor" href="#relation-to-k-and-detect_regime"></a>
 </h2>
-<p>The three diagnostics answer different questions and operate on
-different axes:</p>
+<p>The three diagnostics answer different questions on different
+axes:</p>
 <table class="table">
 <colgroup>
 <col width="20%">
@@ -641,21 +608,18 @@ different axes:</p>
 </tr>
 </tbody>
 </table>
-<p>A defensible workflow is:</p>
+<p>A defensible workflow:</p>
 <ol style="list-style-type: decimal">
 <li>Run <code><a href="../reference/detect_regime.html">detect_regime()</a></code>. If multiple regimes exist, fit
-each group separately.</li>
+each group separately (or use <code><a href="../reference/regime_at.html">regime_at()</a></code> /
+<code><a href="../reference/regime_spec.html">regime_spec()</a></code> in the fit / backtest call).</li>
 <li>For each homogeneous group, compute
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
 via <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code>.</li>
 <li>Run <code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> to obtain
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><mo>≥</mo><msup><mi>k</mi><mo>*</mo></msup></mrow><annotation encoding="application/x-tex">k^{**} \ge k^*</annotation></semantics></math>.
-The reported
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mrow><mi>l</mi><mi>r</mi></mrow><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{lr}</annotation></semantics></math>
-at the convergence point is the projected ultimate loss ratio averaged
-over
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>≥</mo><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup></mrow><annotation encoding="application/x-tex">k \ge k^{**}</annotation></semantics></math>
-(or read directly from <code>fit_lr()$summary</code>).</li>
+Read the projected ultimate loss ratio from
+<code>fit_lr()$summary</code> and apply the reserving caveat above.</li>
 </ol>
 <p>The sequence separates <em>cohort homogeneity</em>, <em>link
 reproducibility</em>, and <em>level convergence</em> — three properties
@@ -669,35 +633,35 @@ long-duration health insurance.</p>
 <code><a href="../reference/backtest.html">backtest()</a></code> calls and inherits their constraints:</p>
 <ul>
 <li>
-<strong>Identifiability</strong>:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
-can be declared only when
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mo>≥</mo><msup><mi>k</mi><mo>*</mo></msup><mo>+</mo><mi>M</mi></mrow><annotation encoding="application/x-tex">V \ge k^* + M</annotation></semantics></math>;
-short observation windows return <code>NA</code>.</li>
+<strong>Identifiability</strong>: <code>conv_k</code> can be
+declared only when <code>dev_max - mat_k &gt;= window</code> (or 2 for
+tail / slope). Short observation windows return <code>NA</code> for
+every method.</li>
 <li>
-<strong>Model conditioning</strong>:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">j</mi></mrow></msubsup><annotation encoding="application/x-tex">\hat{LR}^{\mathrm{proj}}_v</annotation></semantics></math>
-is computed by <code><a href="../reference/fit_lr.html">fit_lr()</a></code>, which internally composes
-<code><a href="../reference/fit_loss.html">fit_loss()</a></code> (default <code>method = "sa"</code> –
-stage-adaptive) and <code><a href="../reference/fit_premium.html">fit_premium()</a></code>. Choices made inside that
-composition (loss method, regime filter) feed through to
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>;
-review the underlying <code>fit_lr</code> settings when interpreting the
-result.</li>
+<strong>Model conditioning</strong>: the projected LR is computed by
+<code><a href="../reference/fit_lr.html">fit_lr()</a></code>, which internally composes <code><a href="../reference/fit_loss.html">fit_loss()</a></code>
+(default <code>method = "sa"</code> — stage-adaptive) and
+<code><a href="../reference/fit_premium.html">fit_premium()</a></code>. Choices made inside that composition (loss
+method, regime filter, maturity argument) feed through to
+<code>conv_k</code>; review the underlying <code>fit_lr</code> settings
+when interpreting the result. Pass <code>loss_method =</code>,
+<code>loss_regime =</code>, etc. through <code>...</code> to
+override.</li>
 <li>
-<strong>Portfolio aggregation</strong>:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mrow><mi>S</mi><mi>E</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi></mrow></msubsup><annotation encoding="application/x-tex">\hat{SE}^{\mathrm{param}}_v</annotation></semantics></math>
-are exposure-weighted across cohorts assuming inter-cohort independence.
-Calendar-year shocks (regulatory, healthcare cost trend) violate this
-assumption; both clauses can move together for non-cohort reasons.</li>
+<strong>Portfolio aggregation</strong>: the portfolio LR aggregates
+per-group ultimates via exposure weighting
+(<code>sum(loss_ult) / sum(premium_ult)</code>). Calendar-year shocks
+(regulatory changes, cost trend) can move every group together; the
+drift metrics will not separate that from genuine convergence.</li>
 <li>
-<strong>Multi-group triangles</strong>: the helper currently
-collapses
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-across groups by median; running each group separately is recommended
-when groups behave differently.</li>
+<strong>Multi-group triangles</strong>: <code>dispersion</code> is
+currently collapsed across groups by median. When groups behave
+differently, running each group separately is recommended.</li>
+<li>
+<strong>Asymptotic vs observed</strong>: as flagged in the reserving
+caveat, every method only measures stability over the available history.
+Confirmed silent drift past <code>dev_max</code> is impossible to detect
+from these tools alone.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -706,9 +670,14 @@ when groups behave differently.</li>
 <ul>
 <li>
 <code><a href="../reference/detect_convergence.html">?detect_convergence</a></code>, <code><a href="../reference/detect_maturity.html">?detect_maturity</a></code>,
-<code><a href="../reference/backtest.html">?backtest</a></code>, <code><a href="../reference/detect_regime.html">?detect_regime</a></code>.</li>
-<li>Vignette <code>regime-detection</code> — cohort homogeneity
+<code><a href="../reference/backtest.html">?backtest</a></code>, <code><a href="../reference/detect_regime.html">?detect_regime</a></code>,
+<code><a href="../reference/fit_lr.html">?fit_lr</a></code>.</li>
+<li>
+<code>vignette("regime-detection")</code> — cohort homogeneity
 diagnostics that feed step 1 of the workflow above.</li>
+<li>
+<code><a href="../articles/backtest.html">vignette("backtest")</a></code> — the underlying rolling holdout
+machinery that <code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> is built on.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

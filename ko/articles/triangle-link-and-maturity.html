@@ -110,7 +110,7 @@ every step generalises to multi-group input.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio" class="external-link">lossratio</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span></span>
-<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span></span>
+<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">exp</span>,</span>
 <span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
@@ -146,7 +146,7 @@ for spotting cohorts that deviate from the central tendency.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># detail labels (ratio + loss/premium amounts) are 2-line — use quarterly cells</span></span>
-<span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span><span class="va">exp</span>, groups <span class="op">=</span> <span class="st">"coverage"</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>, calendar <span class="op">=</span> <span class="st">"cy_m"</span>, loss <span class="op">=</span> <span class="st">"loss_incr"</span>, premium <span class="op">=</span> <span class="st">"premium_incr"</span>, grain <span class="op">=</span> <span class="st">"Q"</span><span class="op">)</span></span>
+<span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span><span class="va">exp</span>, groups <span class="op">=</span> <span class="st">"coverage"</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>, calendar <span class="op">=</span> <span class="st">"cy_m"</span>, loss <span class="op">=</span> <span class="st">"loss_incr"</span>, premium <span class="op">=</span> <span class="st">"premium_incr"</span>, grain <span class="op">=</span> <span class="st">"Q"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span> <span class="co"># ratio + (loss / premium)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-3.png" class="r-plt" alt="" width="100%"></p>
 </div>
@@ -157,14 +157,14 @@ for spotting cohorts that deviate from the central tendency.</p>
 <code class="sourceCode R"><span><span class="va">sm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sm</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage, dev&gt;</span></span>
-<span><span class="co">#&gt;    coverage   dev n_obs   lr_mean lr_median     lr_wt lr_incr_mean</span></span>
-<span><span class="co">#&gt;      &lt;char&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;        &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      SUR     1    36 0.2522898 0.2393582 0.2525932    0.2522898</span></span>
-<span><span class="co">#&gt; 2:      SUR     2    35 0.8030639 0.7859128 0.7890646    1.3572087</span></span>
-<span><span class="co">#&gt; 3:      SUR     3    34 0.9258662 0.8997912 0.9204360    1.1519240</span></span>
-<span><span class="co">#&gt; 4:      SUR     4    33 0.9856772 0.9716558 0.9778502    1.1797269</span></span>
-<span><span class="co">#&gt; 5:      SUR     5    32 1.0336648 1.0502252 1.0447602    1.2268717</span></span>
-<span><span class="co">#&gt; 6:      SUR     6    31 1.0945723 1.1832332 1.0892484    1.3676102</span></span>
+<span><span class="co">#&gt;    coverage   dev n_cohorts   lr_mean lr_median     lr_wt lr_incr_mean</span></span>
+<span><span class="co">#&gt;      &lt;char&gt; &lt;int&gt;     &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:      SUR     1        36 0.2522898 0.2393582 0.2525932    0.2522898</span></span>
+<span><span class="co">#&gt; 2:      SUR     2        35 0.8030639 0.7859128 0.7890646    1.3572087</span></span>
+<span><span class="co">#&gt; 3:      SUR     3        34 0.9258662 0.8997912 0.9204360    1.1519240</span></span>
+<span><span class="co">#&gt; 4:      SUR     4        33 0.9856772 0.9716558 0.9778502    1.1797269</span></span>
+<span><span class="co">#&gt; 5:      SUR     5        32 1.0336648 1.0502252 1.0447602    1.2268717</span></span>
+<span><span class="co">#&gt; 6:      SUR     6        31 1.0945723 1.1832332 1.0892484    1.3676102</span></span>
 <span><span class="co">#&gt;    lr_incr_median lr_incr_wt</span></span>
 <span><span class="co">#&gt;             &lt;num&gt;      &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:      0.2393582  0.2525932</span></span>
@@ -186,7 +186,7 @@ observed ATA factors; with <code>exposure</code> it carries the ED-style
 intensities
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>g</mi><mi>k</mi></msub><mo>=</mo><mi mathvariant="normal">Δ</mi><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup><mi>/</mi><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">g_k = \Delta C^L_k / C^P_k</annotation></semantics></math>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ata</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_link.html">build_link</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">ata</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_link.html">as_link</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="va">sm</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ata</span>, model <span class="op">=</span> <span class="st">"ata"</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sm</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
@@ -198,14 +198,14 @@ intensities
 <span><span class="co">#&gt; 4:      SUR        4      5      4-5 1.324  1.331 1.339 0.068 1.339 0.018 0.014</span></span>
 <span><span class="co">#&gt; 5:      SUR        5      6      5-6 1.267  1.246 1.243 0.070 1.243 0.016 0.013</span></span>
 <span><span class="co">#&gt; 6:      SUR        6      7      6-7 1.204  1.194 1.205 0.048 1.205 0.011 0.009</span></span>
-<span><span class="co">#&gt;       sigma n_obs n_valid n_inf n_nan valid_ratio</span></span>
-<span><span class="co">#&gt;       &lt;num&gt; &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;       &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1: 6207.618    35      35     0     0           1</span></span>
-<span><span class="co">#&gt; 2: 1689.250    34      34     0     0           1</span></span>
-<span><span class="co">#&gt; 3: 1372.883    33      33     0     0           1</span></span>
-<span><span class="co">#&gt; 4: 1105.053    32      32     0     0           1</span></span>
-<span><span class="co">#&gt; 5: 1086.826    31      31     0     0           1</span></span>
-<span><span class="co">#&gt; 6:  812.770    30      30     0     0           1</span></span></code></pre></div>
+<span><span class="co">#&gt;       sigma n_cohorts n_valid n_inf n_nan valid_ratio</span></span>
+<span><span class="co">#&gt;       &lt;num&gt;     &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;       &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1: 6207.618        35      35     0     0           1</span></span>
+<span><span class="co">#&gt; 2: 1689.250        34      34     0     0           1</span></span>
+<span><span class="co">#&gt; 3: 1372.883        33      33     0     0           1</span></span>
+<span><span class="co">#&gt; 4: 1105.053        32      32     0     0           1</span></span>
+<span><span class="co">#&gt; 5: 1086.826        31      31     0     0           1</span></span>
+<span><span class="co">#&gt; 6:  812.770        30      30     0     0           1</span></span></code></pre></div>
 <p>The <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> method on a <code>Link</code> object
 (single-variable mode) computes per-link statistics that drive maturity
 detection:</p>
@@ -226,7 +226,7 @@ relative standard error.</li>
 <li>
 <code>sigma</code> — Mack residual sigma per link.</li>
 <li>
-<code>n_obs</code>, <code>n_valid</code>, <code>n_inf</code>,
+<code>n_cohorts</code>, <code>n_valid</code>, <code>n_inf</code>,
 <code>n_nan</code>, <code>valid_ratio</code> — observation counts and
 the share of finite ATA factors per link.</li>
 </ul>
@@ -263,7 +263,7 @@ the share of finite ATA factors per link.</li>
 <span><span class="co"># detail labels are two lines and overlap on monthly cells — rebuild on</span></span>
 <span><span class="co"># the quarterly triangle so the two-line "factor (loss / premium)" text</span></span>
 <span><span class="co"># has room (label_size auto-shrinks to 2.2 in detail mode).</span></span>
-<span><span class="va">ata_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_link.html">build_link</a></span><span class="op">(</span><span class="va">tri_q</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
+<span><span class="va">ata_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_link.html">as_link</a></span><span class="op">(</span><span class="va">tri_q</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span>      <span class="co"># factor + (loss / premium)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-7-3.png" class="r-plt" alt="" width="100%"></p>
 <p>The heatmap colours each cell by <code>log(ata / median(ata))</code>
@@ -274,7 +274,7 @@ deviate from the link’s median.</p>
 <h3 id="ed-diagnostics">ED diagnostics<a class="anchor" aria-label="anchor" href="#ed-diagnostics"></a>
 </h3>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_link.html">build_link</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, exposure <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_link.html">as_link</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, exposure <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
 <span><span class="va">sm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ed</span>, model <span class="op">=</span> <span class="st">"ed"</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sm</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
@@ -286,14 +286,14 @@ deviate from the link’s median.</p>
 <span><span class="co">#&gt; 4:      SUR        4      5      4-5 0.31110 0.32321 0.33127 0.35969 0.33127</span></span>
 <span><span class="co">#&gt; 5:      SUR        5      6      5-6 0.27543 0.25088 0.25518 0.43531 0.25518</span></span>
 <span><span class="co">#&gt; 6:      SUR        6      7      6-7 0.21364 0.20479 0.22393 0.31371 0.22393</span></span>
-<span><span class="co">#&gt;       g_se     rse     sigma n_obs n_valid n_inf n_nan valid_ratio</span></span>
-<span><span class="co">#&gt;      &lt;num&gt;   &lt;num&gt;     &lt;num&gt; &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;       &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1: 0.09107 0.06919 2930.7438    35      35     0     0           1</span></span>
-<span><span class="co">#&gt; 2: 0.03508 0.05979 1580.2621    34      34     0     0           1</span></span>
-<span><span class="co">#&gt; 3: 0.02931 0.07677 1587.1869    33      33     0     0           1</span></span>
-<span><span class="co">#&gt; 4: 0.02135 0.06444 1319.1106    32      32     0     0           1</span></span>
-<span><span class="co">#&gt; 5: 0.02087 0.08178 1421.4780    31      31     0     0           1</span></span>
-<span><span class="co">#&gt; 6: 0.01273 0.05686  937.7864    30      30     0     0           1</span></span>
+<span><span class="co">#&gt;       g_se     rse     sigma n_cohorts n_valid n_inf n_nan valid_ratio</span></span>
+<span><span class="co">#&gt;      &lt;num&gt;   &lt;num&gt;     &lt;num&gt;     &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;       &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1: 0.09107 0.06919 2930.7438        35      35     0     0           1</span></span>
+<span><span class="co">#&gt; 2: 0.03508 0.05979 1580.2621        34      34     0     0           1</span></span>
+<span><span class="co">#&gt; 3: 0.02931 0.07677 1587.1869        33      33     0     0           1</span></span>
+<span><span class="co">#&gt; 4: 0.02135 0.06444 1319.1106        32      32     0     0           1</span></span>
+<span><span class="co">#&gt; 5: 0.02087 0.08178 1421.4780        31      31     0     0           1</span></span>
+<span><span class="co">#&gt; 6: 0.01273 0.05686  937.7864        30      30     0     0           1</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ed</span>, type <span class="op">=</span> <span class="st">"summary"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="100%"></p>
@@ -338,9 +338,9 @@ are built internally:</p>
 <span><span class="co">#&gt;    coverage ata_from change ata_link     mean   median       wt        cv</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;     &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.1053282</span></span>
-<span><span class="co">#&gt;           f       f_se        rse    sigma n_obs n_valid n_inf n_nan</span></span>
-<span><span class="co">#&gt;       &lt;num&gt;      &lt;num&gt;      &lt;num&gt;    &lt;num&gt; &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1: 1.417706 0.02651852 0.01870522 1372.883    33      33     0     0</span></span>
+<span><span class="co">#&gt;           f       f_se        rse    sigma n_cohorts n_valid n_inf n_nan</span></span>
+<span><span class="co">#&gt;       &lt;num&gt;      &lt;num&gt;      &lt;num&gt;    &lt;num&gt;     &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1: 1.417706 0.02651852 0.01870522 1372.883        33      33     0     0</span></span>
 <span><span class="co">#&gt;    valid_ratio</span></span>
 <span><span class="co">#&gt;          &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:           1</span></span></code></pre></div>
@@ -414,7 +414,7 @@ to CL (later dev).</p>
 <p>For multi-group triangles <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> returns one
 row per group, each detected independently with the same thresholds:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tri_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">tri_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">experience</span>,</span>
 <span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
@@ -430,12 +430,12 @@ row per group, each detected independently with the same thresholds:</p>
 <span><span class="co">#&gt; 2:       CI       11     12    11-12 1.094403 1.070561 1.114066 0.07563394</span></span>
 <span><span class="co">#&gt; 3:      HOS        6      7      6-7 1.244842 1.184287 1.205542 0.13563431</span></span>
 <span><span class="co">#&gt; 4:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.10532824</span></span>
-<span><span class="co">#&gt;           f       f_se        rse     sigma n_obs n_valid n_inf n_nan</span></span>
-<span><span class="co">#&gt;       &lt;num&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt; &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1: 1.065354 0.01384183 0.01299271  637.2413    28      28     0     0</span></span>
-<span><span class="co">#&gt; 2: 1.114066 0.01954799 0.01754653 1459.6221    25      25     0     0</span></span>
-<span><span class="co">#&gt; 3: 1.205542 0.02746026 0.02277835  220.8771    30      30     0     0</span></span>
-<span><span class="co">#&gt; 4: 1.417706 0.02651852 0.01870522 1372.8834    33      33     0     0</span></span>
+<span><span class="co">#&gt;           f       f_se        rse     sigma n_cohorts n_valid n_inf n_nan</span></span>
+<span><span class="co">#&gt;       &lt;num&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;     &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1: 1.065354 0.01384183 0.01299271  637.2413        28      28     0     0</span></span>
+<span><span class="co">#&gt; 2: 1.114066 0.01954799 0.01754653 1459.6221        25      25     0     0</span></span>
+<span><span class="co">#&gt; 3: 1.205542 0.02746026 0.02277835  220.8771        30      30     0     0</span></span>
+<span><span class="co">#&gt; 4: 1.417706 0.02651852 0.01870522 1372.8834        33      33     0     0</span></span>
 <span><span class="co">#&gt;    valid_ratio</span></span>
 <span><span class="co">#&gt;          &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:           1</span></span>
@@ -446,7 +446,7 @@ row per group, each detected independently with the same thresholds:</p>
 gets its own panel and the vertical line marks the maturity point where
 CV first drops below <code>max_cv</code>:</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/build_link.html">build_link</a></span><span class="op">(</span><span class="va">tri_all</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"cv"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/as_link.html">as_link</a></span><span class="op">(</span><span class="va">tri_all</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"cv"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="100%"></p>
 </div>
 </div>
@@ -454,7 +454,7 @@ CV first drops below <code>max_cv</code>:</p>
 <h2 id="validation-before-building">Validation before building<a class="anchor" aria-label="anchor" href="#validation-before-building"></a>
 </h2>
 <p>If gaps in the development sequence are suspected, inspect them
-before <code><a href="../reference/build_triangle.html">build_triangle()</a></code>:</p>
+before <code><a href="../reference/as_triangle.html">as_triangle()</a></code>:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gaps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate_triangle.html">validate_triangle</a></span><span class="op">(</span><span class="va">exp</span>, groups <span class="op">=</span> <span class="st">"coverage"</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>, development <span class="op">=</span> <span class="st">"dev_m"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">gaps</span><span class="op">)</span></span>
@@ -467,9 +467,9 @@ means the triangle is clean.</p>
 <ul>
 <li>Fix the data source (preferred).</li>
 <li>Drop offending cohorts.</li>
-<li>Pass <code>fill_gaps = TRUE</code> to <code><a href="../reference/build_triangle.html">build_triangle()</a></code>
-to zero-fill missing cells (use with care — inflates
-<code>n_obs</code>).</li>
+<li>Pass <code>fill_gaps = TRUE</code> to <code><a href="../reference/as_triangle.html">as_triangle()</a></code> to
+zero-fill missing cells (use with care — inflates
+<code>n_cohorts</code>).</li>
 </ul>
 </div>
 <div class="section level2">
@@ -529,7 +529,7 @@ per group.</p>
 <li>
 <code><a href="../reference/validate_triangle.html">validate_triangle()</a></code> — schema and gap check.</li>
 <li>
-<code><a href="../reference/build_triangle.html">build_triangle()</a></code> — canonical shape with derived
+<code><a href="../reference/as_triangle.html">as_triangle()</a></code> — canonical shape with derived
 columns.</li>
 <li>
 <code>plot(tri)</code> / <code>plot_triangle(tri)</code> — visual
@@ -537,8 +537,8 @@ inspection.</li>
 <li>
 <code>summary(tri)</code> — group-level central tendency.</li>
 <li>
-<code><a href="../reference/build_link.html">build_link()</a></code> + <code>plot(link, type = "cv")</code> —
-link stability.</li>
+<code><a href="../reference/as_link.html">as_link()</a></code> + <code>plot(link, type = "cv")</code> — link
+stability.</li>
 <li>
 <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> — verify maturity detection produces
 a sensible point per group.</li>

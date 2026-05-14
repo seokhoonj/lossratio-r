@@ -3,7 +3,7 @@
 ## 입력 계층
 
 원시 experience 데이터의 검증·grain 헬퍼.
-[`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
 이 필수 검증·코어션을 내부에서 수행하므로 일반 흐름엔 불필요하며,
 Triangle 을 만들지 않고 검증·enrichment 만 하고 싶을 때 사용한다.
 
@@ -17,12 +17,12 @@ Triangle 을 만들지 않고 검증·enrichment 만 하고 싶을 때 사용한
 같은 long-format experience 데이터를 보는 세 가지 프레임워크 — cohort ×
 dev (`Triangle`), 달력 기간 (`Calendar`), 포트폴리오 전체 (`Total`).
 
-- [`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md)
-  : Build a development structure from experience data
-- [`build_calendar()`](https://seokhoonj.github.io/lossratio/ko/reference/build_calendar.md)
-  : Build a calendar-based development structure from experience data
-- [`build_total()`](https://seokhoonj.github.io/lossratio/ko/reference/build_total.md)
-  : Build a total development summary from experience data
+- [`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
+  : Coerce experience data to a Triangle object
+- [`as_calendar()`](https://seokhoonj.github.io/lossratio/ko/reference/as_calendar.md)
+  : Coerce experience data to a Calendar object
+- [`as_total()`](https://seokhoonj.github.io/lossratio/ko/reference/as_total.md)
+  : Coerce experience data to a Total object
 
 ## 단계 연결 테이블
 
@@ -30,10 +30,8 @@ Chain ladder (ATA) 와 노출 기반 (ED) 의 공통 long-format intermediate.
 [`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md)
 의 `model` 인자로 두 모형의 진단을 분기.
 
-- [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md)
-  :
-
-  Build a link table from `Triangle` data
+- [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md)
+  : Coerce a Triangle to a Link object
 
 - [`summary(`*`<Link>`*`)`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md)
   :

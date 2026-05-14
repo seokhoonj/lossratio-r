@@ -60,7 +60,7 @@ detect_maturity(
 
   Cumulative metric for the link factor. Default `"loss"` (chain-ladder
   convention; see Description). Forwarded to
-  [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md).
+  [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md).
 
 - groups:
 
@@ -80,7 +80,7 @@ detect_maturity(
 - weight:
 
   Optional WLS weight variable. Forwarded to
-  [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md).
+  [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md).
 
 - alpha:
 
@@ -115,5 +115,5 @@ A `data.table` with class `"Maturity"` containing one row per group.
 Columns include `ata_from`, `change` (the maturity point, i.e. the
 `to`-index of the first mature ata link), `ata_link`, and the diagnostic
 statistics (`mean`, `median`, `wt`, `cv`, `f`, `f_se`, `rse`, `sigma`,
-`n_obs`, `n_valid`, `n_inf`, `n_nan`, `valid_ratio`). If no mature link
-is found, all values for that group are `NA`.
+`n_cohorts`, `n_valid`, `n_inf`, `n_nan`, `valid_ratio`). If no mature
+link is found, all values for that group are `NA`.

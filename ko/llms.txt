@@ -51,7 +51,7 @@ data(experience)           # 번들 합성 데이터 (4 coverages)
 
 # 1) Triangle 구축 — long-format 데이터 → 코호트 × dev 구조
 exp_sur <- experience[coverage == "SUR"]
-tri <- build_triangle(
+tri <- as_triangle(
   exp_sur,
   groups   = "coverage",
   cohort   = "uy_m",
@@ -79,7 +79,7 @@ plot_triangle(bt)
 
 | 함수 | 역할 |
 |----|----|
-| [`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md) | long-format 데이터 → `Triangle` (코호트 × dev) |
+| [`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md) | long-format 데이터 → `Triangle` (코호트 × dev) |
 | `fit_lr(method = "sa" / "ed" / "cl")` | 손해율 적합 — *통합 인터페이스* (loss + premium 합성) |
 | [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md) / [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md) | 역할별 디스패처 — 단일 측 (SE / CI 포함) |
 | [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md) / [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md) | 단일 stage (chain ladder / exposure-driven) |
@@ -100,7 +100,7 @@ plot_triangle(bt)
 | `premium_incr`    | 셀 기간별 보험료 (장기 health 는 위험보험료) |
 | `groups` *(선택)* | 상품 / 담보 / 연령 / 성별 / 가입금액         |
 
-[`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
 가 스키마 검증 + 날짜 코어션 + 코호트 × dev 집계 + 누적 컬럼 (`loss`,
 `premium`, `lr`) 까지 한 번에. 사용자는 raw 데이터만 넘기면 됨.
 
@@ -149,7 +149,7 @@ GPL (≥ 2). Seokhoon Joo (<seokhoonj@gmail.com>)
 ## 입력 계층
 
 원시 experience 데이터의 검증·grain 헬퍼.
-[`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
 이 필수 검증·코어션을 내부에서 수행하므로 일반 흐름엔 불필요하며,
 Triangle 을 만들지 않고 검증·enrichment 만 하고 싶을 때 사용한다.
 
@@ -163,12 +163,12 @@ Triangle 을 만들지 않고 검증·enrichment 만 하고 싶을 때 사용한
 같은 long-format experience 데이터를 보는 세 가지 프레임워크 — cohort ×
 dev (`Triangle`), 달력 기간 (`Calendar`), 포트폴리오 전체 (`Total`).
 
-- [`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md)
-  : Build a development structure from experience data
-- [`build_calendar()`](https://seokhoonj.github.io/lossratio/ko/reference/build_calendar.md)
-  : Build a calendar-based development structure from experience data
-- [`build_total()`](https://seokhoonj.github.io/lossratio/ko/reference/build_total.md)
-  : Build a total development summary from experience data
+- [`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
+  : Coerce experience data to a Triangle object
+- [`as_calendar()`](https://seokhoonj.github.io/lossratio/ko/reference/as_calendar.md)
+  : Coerce experience data to a Calendar object
+- [`as_total()`](https://seokhoonj.github.io/lossratio/ko/reference/as_total.md)
+  : Coerce experience data to a Total object
 
 ## 단계 연결 테이블
 
@@ -176,10 +176,8 @@ Chain ladder (ATA) 와 노출 기반 (ED) 의 공통 long-format intermediate.
 [`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md)
 의 `model` 인자로 두 모형의 진단을 분기.
 
-- [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md)
-  :
-
-  Build a link table from `Triangle` data
+- [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md)
+  : Coerce a Triangle to a Link object
 
 - [`summary(`*`<Link>`*`)`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md)
   :

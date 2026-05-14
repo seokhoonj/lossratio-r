@@ -32,7 +32,7 @@ summary(object, ...)
 A `data.table` of class `"CalendarSummary"` with one row per
 `(groups, calendar)` combination, containing:
 
-- n_obs:
+- n_cohorts:
 
   Number of observations in the cell.
 
@@ -67,7 +67,7 @@ The returned object preserves the attributes `groups`, `calendar`, and
 
 ``` r
 if (FALSE) { # \dontrun{
-cal <- build_calendar(
+cal <- as_calendar(
   df,
   groups   = "coverage",
   calendar = "cy_m",

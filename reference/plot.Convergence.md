@@ -1,17 +1,16 @@
 # Plot the Convergence diagnostic
 
-Two-panel diagnostic showing the dual criterion driving \\k^{\*\*}\\:
+Four-panel diagnostic showing the LR backtest path and each stability
+metric vs. its threshold:
 
-- Top panel: \\R_v / \hat{SE}^{param}\_v\\ (predictive revision
-  normalised by parameter SE), with horizontal guide at the threshold
-  `se_mult`.
+- Top: `lr` (the portfolio LR projection at each valuation).
 
-- Bottom panel: \\\hat{D}\_v\\ (robust cross-cohort dispersion of
-  incremental loss ratio), with horizontal guide at the threshold
-  `max_dv`.
+- Then for each of `drift_window`, `drift_tail`, `|slope|`,
+  `dispersion`: the metric over `v` with a dashed horizontal line at the
+  threshold (`max_drift`, `max_slope`, or `max_dispersion`).
 
-Vertical guides mark `k_star` (dashed) and `k_conv` (solid). A point
-falling below both threshold lines passes the joint criterion.
+Vertical guides mark `mat_k` (dashed) and the detected `conv_k` for the
+chosen `method` (solid). The chosen-method panel title is annotated.
 
 ## Usage
 

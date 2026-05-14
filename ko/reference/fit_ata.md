@@ -35,17 +35,17 @@ fit_ata(
 - x:
 
   An object of class `"Link"`, typically produced by
-  [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md).
+  [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md).
 
 - target:
 
   Cumulative metric for the link factor. Default `"loss"`. Forwarded to
-  [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md).
+  [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md).
 
 - weight:
 
   Optional WLS weight variable. Forwarded to
-  [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md).
+  [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md).
 
 - alpha:
 
@@ -173,7 +173,7 @@ An object of class `"ATAFit"` (a named list) containing:
 
 ## See also
 
-[`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md),
+[`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md),
 [`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md),
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md),
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)

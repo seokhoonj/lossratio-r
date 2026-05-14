@@ -6,8 +6,8 @@ cohorts produce non-consecutive age-to-age links downstream (e.g.,
 summary.Link() key uniqueness and causes cartesian joins in
 fit_lr().
 This function inspects the raw data without modifying it. Use it
-before build_triangle() to decide whether to fix the data source, drop
-offending cohorts, or pass fill_gaps = TRUE to build_triangle().
+before as_triangle() to decide whether to fix the data source, drop
+offending cohorts, or pass fill_gaps = TRUE to as_triangle().
 Two checks are performed:
 
 Cohort dev-sequence gaps – for each (group, cohort),
@@ -25,8 +25,8 @@ cohorts produce non-consecutive age-to-age links downstream (e.g.,
 summary.Link() key uniqueness and causes cartesian joins in
 fit_lr().
 This function inspects the raw data without modifying it. Use it
-before build_triangle() to decide whether to fix the data source, drop
-offending cohorts, or pass fill_gaps = TRUE to build_triangle().
+before as_triangle() to decide whether to fix the data source, drop
+offending cohorts, or pass fill_gaps = TRUE to as_triangle().
 Two checks are performed:
 
 Cohort dev-sequence gaps – for each (group, cohort),
@@ -149,8 +149,8 @@ cohorts produce non-consecutive age-to-age links downstream (e.g.,
 <code><a href="summary.Link.html">summary.Link()</a></code> key uniqueness and causes cartesian joins in
 <code><a href="fit_lr.html">fit_lr()</a></code>.</p>
 <p>This function inspects the raw data without modifying it. Use it
-before <code><a href="build_triangle.html">build_triangle()</a></code> to decide whether to fix the data source, drop
-offending cohorts, or pass <code>fill_gaps = TRUE</code> to <code><a href="build_triangle.html">build_triangle()</a></code>.</p>
+before <code><a href="as_triangle.html">as_triangle()</a></code> to decide whether to fix the data source, drop
+offending cohorts, or pass <code>fill_gaps = TRUE</code> to <code><a href="as_triangle.html">as_triangle()</a></code>.</p>
 <p>Two checks are performed:</p>
 <ol><li><p><strong>Cohort dev-sequence gaps</strong> – for each <code>(group, cohort)</code>,
 report missing <code>dev</code> values within the observed range.</p></li>
@@ -165,7 +165,7 @@ dev sequences.</p></li>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">validate_triangle</span><span class="op">(</span></span>
 <span>  <span class="va">df</span>,</span>
-<span>  groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
+<span>  groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">cohort</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  development <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -198,7 +198,7 @@ consistency check. When supplied, rows where <code>calendar &lt; cohort</code> a
 <dd><p>A single development-period variable (raw column
 name). Optional when <code>calendar</code> is supplied – <code>dev</code> is then
 derived from <code>(cohort, calendar)</code> at the resolved <code>grain</code> (same
-dispatch as <code><a href="build_triangle.html">build_triangle()</a></code>).</p></dd>
+dispatch as <code><a href="as_triangle.html">as_triangle()</a></code>).</p></dd>
 
 
 <dt id="arg-grain">grain<a class="anchor" aria-label="anchor" href="#arg-grain"></a></dt>
@@ -213,7 +213,7 @@ dispatch as <code><a href="build_triangle.html">build_triangle()</a></code>).</p
 per cohort containing gaps. Columns:</p><dl><dt>groups, cohort</dt>
 <dd><p>Cohort identifier.</p></dd>
 
-<dt><code>n_observed</code></dt>
+<dt><code>n_dev</code></dt>
 <dd><p>Number of distinct observed <code>dev</code>
 values.</p></dd>
 
@@ -232,7 +232,7 @@ or rely on <code>print.TriangleValidation</code> which displays both sections.</
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="build_triangle.html">build_triangle()</a></code></p></div>
+    <div class="dont-index"><p><code><a href="as_triangle.html">as_triangle()</a></code></p></div>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

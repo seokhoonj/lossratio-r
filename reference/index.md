@@ -3,7 +3,7 @@
 ## Input layer
 
 Validation and grain helpers for raw experience data.
-[`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
 already runs the required checks and coercions inline — these helpers
 are exposed for users who want to validate or enrich without building a
 triangle.
@@ -19,12 +19,12 @@ Three frameworks for viewing the same long-format experience data —
 cohort × dev (`Triangle`), calendar period (`Calendar`), or portfolio
 total (`Total`).
 
-- [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
-  : Build a development structure from experience data
-- [`build_calendar()`](https://seokhoonj.github.io/lossratio/reference/build_calendar.md)
-  : Build a calendar-based development structure from experience data
-- [`build_total()`](https://seokhoonj.github.io/lossratio/reference/build_total.md)
-  : Build a total development summary from experience data
+- [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
+  : Coerce experience data to a Triangle object
+- [`as_calendar()`](https://seokhoonj.github.io/lossratio/reference/as_calendar.md)
+  : Coerce experience data to a Calendar object
+- [`as_total()`](https://seokhoonj.github.io/lossratio/reference/as_total.md)
+  : Coerce experience data to a Total object
 
 ## Link table
 
@@ -33,10 +33,8 @@ exposure-driven (ED) workflows. Built once, summarised differently via
 [`summary.Link()`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md)’s
 `model` argument.
 
-- [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md)
-  :
-
-  Build a link table from `Triangle` data
+- [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md)
+  : Coerce a Triangle to a Link object
 
 - [`summary(`*`<Link>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md)
   :

@@ -49,7 +49,7 @@ fit_loss(
 
   A `"Triangle"` object. The standardized `"loss"` and `"premium"`
   columns are used
-  ([`build_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/build_triangle.md)
+  ([`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
   produces these).
 
 - method:
@@ -183,7 +183,7 @@ them as implementation columns.
 ``` r
 if (FALSE) { # \dontrun{
 data(experience)
-tri <- build_triangle(
+tri <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",

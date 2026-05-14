@@ -28,7 +28,7 @@ dispatcher when `model = "ata"`. It serves two purposes:
 - object:
 
   An object of class `"Link"`, typically produced by
-  [`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md).
+  [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md).
 
 - alpha:
 
@@ -91,7 +91,7 @@ link:
   Mack sigma (residual standard deviation from the WLS fit). Used in
   Mack variance estimation.
 
-- `n_obs`:
+- `n_cohorts`:
 
   Total number of observations for the link.
 
@@ -109,7 +109,7 @@ link:
 
 - `valid_ratio`:
 
-  Proportion of finite ata values (\\n\\valid / n\\obs\\).
+  Proportion of finite ata values (\\n\\valid / n\\cohorts\\).
 
 ## Relationship between `wt` and `f`
 
@@ -145,7 +145,7 @@ Therefore `wt` and `f` can differ for two reasons:
 ## Weights
 
 When the input `"Link"` object contains a `weight` column (added by
-[`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md)
+[`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md)
 when `weight` is supplied), that column is automatically used as the WLS
 weight in place of `target_from`. This is useful when `target = "lr"`,
 where `target_from` carries no exposure information and an external
@@ -174,7 +174,7 @@ consistent across cohorts.
 
 ## See also
 
-[`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md),
+[`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md),
 [`summary.Link()`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md),
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md),
 [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)

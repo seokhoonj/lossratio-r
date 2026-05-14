@@ -3,8 +3,8 @@
 Internal helper used by `fit_*()` entry points. Wraps
 [`.assert_class()`](https://seokhoonj.github.io/lossratio/reference/dot-assert_class.md)
 but intercepts `Link` inputs first to print a message that explains why
-a `Link` is not a valid input (build_link is called internally) and how
-to pass the data correctly.
+a `Link` is not a valid input (as_link is called internally) and how to
+pass the data correctly.
 
 ## Usage
 

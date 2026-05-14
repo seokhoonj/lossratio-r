@@ -25,7 +25,7 @@ $`\mathrm{ae\_err} = v_{\mathrm{actual}} / v_{\mathrm{pred}} - 1`$ 로
 
 library(lossratio)
 data(experience)
-tri_sur <- build_triangle(
+tri_sur <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",

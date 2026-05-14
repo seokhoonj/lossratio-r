@@ -64,7 +64,7 @@ scale and labelled using `amount_divisor`.
 
 ``` r
 if (FALSE) { # \dontrun{
-tot <- build_total(
+tot <- as_total(
   df,
   groups  = "coverage",
   cohort  = "uy_m",

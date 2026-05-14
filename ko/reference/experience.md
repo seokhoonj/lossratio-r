@@ -77,7 +77,7 @@ if (FALSE) { # \dontrun{
 data(experience)
 head(experience)
 
-tri <- build_triangle(
+tri <- as_triangle(
   experience,
   groups   = "coverage",
   cohort   = "uy_m",

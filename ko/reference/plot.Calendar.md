@@ -86,7 +86,7 @@ where `premium` denotes risk premium rather than written premium.
 
 ``` r
 if (FALSE) { # \dontrun{
-x <- build_calendar(
+x <- as_calendar(
   df,
   groups   = "coverage",
   calendar = "cy_m",

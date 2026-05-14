@@ -68,7 +68,7 @@ fit_lr(
 
   An object of class `"Triangle"`. The standardized `"loss"` and
   `"premium"` columns are used
-  ([`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
+  ([`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
   produces these).
 
 - method:
@@ -233,8 +233,8 @@ An object of class `"LRFit"`.
 
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md),
 [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md),
-[`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md),
-[`build_link()`](https://seokhoonj.github.io/lossratio/reference/build_link.md),
+[`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md),
+[`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md),
 [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md),
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md),
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
@@ -244,7 +244,7 @@ An object of class `"LRFit"`.
 ``` r
 if (FALSE) { # \dontrun{
 data(experience)
-tri <- build_triangle(
+tri <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",

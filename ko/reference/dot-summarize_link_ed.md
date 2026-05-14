@@ -29,7 +29,7 @@ Two purposes:
 - object:
 
   A `Link` object built with `exposure` set, typically produced by
-  [`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md).
+  [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md).
 
 - alpha:
 
@@ -69,6 +69,6 @@ they differ in how weights are assigned:
 
 ## See also
 
-[`build_link()`](https://seokhoonj.github.io/lossratio/ko/reference/build_link.md),
+[`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md),
 [`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md),
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md)

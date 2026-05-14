@@ -3,103 +3,90 @@
 ## Motivation
 
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
-answers the question *“from which development period are link factors
-$`f_k`$ reproducible across cohorts?”*. That is necessary for
-chain-ladder projection but not sufficient for declaring a portfolio’s
-projected loss ratio converged: in long-duration health insurance both
-$`f_k \to 1`$ and $`g_k \to 0`$ arise mechanically from cumulative
-denominators growing, regardless of whether the underlying experience
-has actually settled. A criterion built on those quantities passes
-automatically with $`k`$, not because of true convergence — what we have
-called the *inertia* failure mode.
+answers *“from which development period are link factors $`f_k`$
+reproducible across cohorts?”*. That is necessary for chain-ladder
+projection but not sufficient for declaring a portfolio’s projected loss
+ratio converged. In long-duration health insurance both $`f_k \to 1`$
+and $`g_k \to 0`$ arise mechanically as cumulative denominators grow —
+independent of whether the underlying experience has actually settled. A
+criterion built on those quantities passes automatically with $`k`$, not
+because of true convergence (the *inertia* failure mode).
 
 [`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md)
-detects the **convergence point** $`k^{**}`$ — the first valuation
-$`v \ge k^*`$ at which the projected loss ratio has predictively
-converged. It is the natural counterpart to $`k^*`$ (maturity point,
-from
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)):
-$`k^*`$ marks where link factors $`f_k`$ become reproducible, while
-$`k^{**}`$ marks where the projection itself stops moving with new data.
+detects the **convergence point** $`k^{**}`$ — the first dev
+$`k \ge k^*`$ at which the projected portfolio loss ratio is observed to
+be stable, in a sense the user picks via `method =`. It is the natural
+counterpart to $`k^*`$:
+
+- $`k^*`$
+  ([`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md))
+  marks where link factors $`f_k`$ become reproducible.
+- $`k^{**}`$ marks where the projection itself stops moving with new
+  data.
+
 Long-duration health portfolios may cross $`k^*`$ early yet remain far
 from $`k^{**}`$.
 
-The detector combines two orthogonal conditions, both required to hold
-for $`M`$ consecutive valuations:
+## The four stability methods
 
-1.  **Predictive revision** is small relative to its parameter SE:
-    $`R_v < c \cdot \hat{SE}^{\mathrm{param}}_v`$, where
-    $`R_v = |\hat{LR}^{\mathrm{proj}}_v(D_v) -
-    \hat{LR}^{\mathrm{proj}}_v(D_{v-1})|`$ is the change in the
-    projected portfolio LR caused by adding one new calendar diagonal.
-2.  **Cross-cohort dispersion** of incremental LR is small:
-    $`\hat{D}_v < \tau`$, where
-    $`\hat{D}_v = 1.4826 \cdot \mathrm{MAD}_i(\hat{lr}_{i,v}) /
-    |\mathrm{median}_i(\hat{lr}_{i,v})|`$.
+Convergence cannot be measured asymptotically from finite data, only
+*observed up to* the maximum available dev `dev_max` ($`K_{\max}`$). The
+detector runs a rolling
+[`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+over a sequence of candidate dev points `dev_cand`
+$`\in [k^*, K_{\max}-2]`$, builds the projected ultimate LR path `lr` at
+each one, then evaluates four stability metrics on that path. The
+`method =` argument selects which metric defines `conv_k`; all four are
+returned for inspection regardless of the choice.
 
-Operating $`\hat{D}_v`$ on **incremental** rather than cumulative loss
-ratio keeps it inertia-free — per-period quantities have no cumulative
-denominator to dampen them. The two clauses guard against complementary
-failure modes: $`R_v`$ checks that the *model output* has stopped
-revising, while $`\hat{D}_v`$ checks that the *raw period-by-period
-experience* is genuinely consistent across cohorts at that dev. Either
-alone can be fooled — in chain-ladder projection the mechanical drift
-$`\hat{f}_k \to 1`$ collapses $`R_v`$ regardless of true convergence,
-and cross-cohort agreement on a single period’s level need not imply
-that the projection has settled. The dual criterion closes both
-inertia-leakage paths.
-
-## Why two conditions
-
-A **denominator effect** disables any single-criterion diagnostic.
-
-In long-duration health insurance, cumulative LR = cumulative loss /
-cumulative risk premium. As dev grows, the denominator grows alongside
-the numerator, so a new calendar diagonal’s contribution to the overall
-ratio shrinks automatically — *regardless of whether the underlying
-experience has actually changed*. This is the *inertia* effect.
-
-What each criterion guards against:
-
-| Scenario | $`R_v`$ | $`\hat{D}_v`$ | Result |
+| Method | Metric | Captures | Misses |
 |----|----|----|----|
-| True convergence (model + experience both stable) | small | small | **PASS** ✓ |
-| Chain-ladder $`\hat{f}_k \to 1`$ drift (inertia) | small (spurious) | large | FAIL — dispersion catches it |
-| Coincidental cohort agreement at one period | large | small (snapshot) | FAIL — projection revision catches it |
+| `"window"` | range of `lr` over the next `window` valuations | local stability (no zig-zag) | slow monotone drift below `max_drift` per window |
+| `"tail"` (default) | range of `lr` over `[k, K_{\max}]` | global stability up to `dev_max`; catches monotone drift | needs $`\ge 2`$ tail points; first-pass is conservative (later than `"window"`) |
+| `"slope"` | $`\|\hat\beta_k\|`$, OLS slope of `lr ~ k` on `[k, K_{\max}]` | systematic trend (signed direction) | oscillation that averages out to zero slope |
+| `"all"` | intersection of `"window"` + `"tail"` + `"slope"` | every shape above | (strictest) |
 
-- $`R_v`$ alone is fooled by chain ladder’s mechanical drift
-  ($`\hat{f}_k \to 1`$): the cumulative product barely moves, the
-  projection barely moves, and $`R_v`$ collapses to zero — a false
-  convergence.
-- $`\hat{D}_v`$ uses **incremental** LR, so it inherits no cumulative
-  denominator → immune to the inertia effect.
-- Requiring both criteria simultaneously closes the principal
-  inertia-leakage paths. That is the design intent of the dual
-  criterion.
+Across all methods a cross-cohort dispersion clause
+`dispersion[i] < max_dispersion` is required in addition — incremental
+loss ratios at that dev must agree across cohorts (computed via the same
+robust $`\hat{D}_v`$ metric used in earlier package versions).
+
+**Why not the paper’s SE-normalised criterion?** Earlier versions of
+this detector implemented $`R_k < c \cdot \hat{SE}^{\mathrm{param}}_k`$
+from the original methodology paper (Section 11; paper uses $`v`$
+instead of $`k`$, same axis). On large portfolios that form is
+structurally broken: $`\hat{SE}^{\mathrm{param}}`$ shrinks as
+$`1/\sqrt{n}`$ while $`R_k`$ has a numerical noise floor (~$`10^{-3}`$
+LR units), so the ratio diverges and the criterion never fires — even on
+synthetic data that is *visibly stable*. The drift-based methods replace
+SE-normalisation with a data-size-independent threshold.
 
 ## Notation
 
-| Symbol | Meaning |
-|----|----|
-| $`i`$ | cohort index (UY) |
-| $`v`$ | valuation index — the calendar diagonal; “$`v`$ diagonals observed” |
-| $`V`$ | maximum observed valuation (max dev in the triangle) |
-| $`k^*`$ | maturity point (from [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)); lower bound on candidate $`v`$ |
-| $`k^{**}`$ | convergence point — the value [`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md) returns |
-| $`\hat{LR}^{\mathrm{proj}}_v`$ | projected ultimate LR using data through valuation $`v`$ |
-| $`R_v`$ | revision: $`\lvert\hat{LR}^{\mathrm{proj}}_v - \hat{LR}^{\mathrm{proj}}_{v-1}\rvert`$ |
-| $`\hat{SE}^{\mathrm{param}}_v`$ | parameter-uncertainty SE of $`\hat{LR}^{\mathrm{proj}}_v`$ (Mack-style) |
-| $`\hat{lr}_{i,v}`$ | incremental loss ratio of cohort $`i`$ at dev $`v`$ |
-| $`\hat{D}_v`$ | robust scale-invariant dispersion of $`\hat{lr}_{i,v}`$ across cohorts |
-| $`c`$ | multiplier on $`\hat{SE}^{\mathrm{param}}_v`$ for the revision gate (default `0.5`) |
-| $`\tau`$ | upper bound on $`\hat{D}_v`$ for the dispersion gate (default `0.15`) |
-| $`M`$ | required run length of consecutive passing valuations (default `3L`) |
+Standard chain-ladder convention: $`i`$ indexes cohort (origin period),
+$`k`$ indexes development period.
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
+returns $`k^*`$,
+[`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md)
+returns $`k^{**}`$ — both live on the same $`k`$ axis.
 
-The constant $`1.4826 \approx 1 / \Phi^{-1}(0.75)`$ inside $`\hat{D}_v`$
-is the standard MAD$`\to\sigma`$ correction: with this scaling
-$`\mathrm{MAD}_i`$ becomes a consistent estimator of the cross-cohort
-standard deviation under normality, so $`\hat{D}_v`$ reads as a robust,
-outlier-resistant coefficient of variation of incremental LR.
+| Code | Math | Meaning |
+|----|----|----|
+| `dev_max` | $`K_{\max}`$ | Maximum observable dev (a scalar) |
+| `dev_cand` | $`k \in [k^*, K_{\max}-2]`$ | Integer vector of candidate dev points |
+| `lr[i]` | $`LR_k`$ | Portfolio LR projection at dev = `dev_cand[i]` |
+| `revision[i]` | $`R_k = \|LR_k - LR_{k-1}\|`$ | Adjacent-step revision (diagnostic only) |
+| `drift_window[i]` | $`\max - \min`$ over $`[k, k+W-1]`$ | Local window range |
+| `drift_tail[i]` | $`\max - \min`$ over $`[k, K_{\max}]`$ | Tail range (global stability) |
+| `slope[i]` | $`\hat\beta_k`$ | OLS slope on $`[k, K_{\max}]`$ |
+| `dispersion[i]` | $`\hat{D}_k`$ | Robust cross-cohort spread of incremental LR |
+| `mat_k` | $`k^*`$ | Maturity point (lower bound on candidates) |
+| `conv_k` | $`k^{**}`$ | The detected convergence point |
+
+The constant $`1.4826 \approx 1 / \Phi^{-1}(0.75)`$ inside `dispersion`
+is the standard MAD$`\to\sigma`$ correction. With this scaling,
+$`\hat{D}_k`$ reads as a robust, outlier-resistant coefficient of
+variation of incremental LR.
 
 ## Basic usage
 
@@ -107,7 +94,7 @@ outlier-resistant coefficient of variation of incremental LR.
 
 library(lossratio)
 data(experience)
-tri <- build_triangle(
+tri <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",
@@ -120,71 +107,80 @@ res <- detect_convergence(tri)
 print(res)
 ```
 
-Mock output:
+Mock output (no convergence detected on this run-off):
 
     #> <Convergence>
-    #> k_conv       : NA
-    #> k_star       : 9
-    #> V (max dev)  : 30
-    #> criterion    : R_v < 0.5 * SE_param_v  AND  D_v < 0.15  (run M = 3)
-    #> v candidates : 19 ( 0  pass both clauses)
+    #>   method     : tail
+    #>   conv_k     : NA
+    #>   mat_k      : 4
+    #>   dev_max    : 30
+    #>   candidates : 25
+    #>   passes :
+    #>     window :  0/25 (drift_window < 0.01  & dispersion < 0.15)
+    #>     tail   :  0/25 (drift_tail   < 0.01  & dispersion < 0.15)  <- method
+    #>     slope  :  0/25 (|slope|      < 0.001 & dispersion < 0.15)
+    #>     all    :  0/25 (window AND tail AND slope)
 
-The returned `Convergence` object reports:
-
-- `k_conv` — the detected $`k^{**}`$, or `NA` if no run of $`M`$
-  consecutive passing valuations is found.
-- `k_star` — the maturity point used as the lower bound (computed
-  internally via
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
-  on a lr-based ATA, or supplied by the caller).
-- `V` — the maximum observable dev in the triangle.
-- `v`, `R_v`, `SE_param_v`, `D_v`, `pass_v` — per-valuation diagnostic
-  sequences indexed by $`v`$.
-- `se_mult`, `max_dv`, `min_run`, `holdout_max`, `min_n_cohorts` —
-  settings used.
-- attributes `groups`, `target`, `dev`.
-
-`summary(res)` returns a `data.table` with one row per candidate
-valuation and an extra `R_over_SE = R_v / SE_param_v` column for
-inspection:
+The summary `data.table` has one row per candidate dev with every metric
+and per-method pass flag:
 
 ``` r
 
 head(summary(res), 6)
 ```
 
-    #>        v    R_v   SE_param_v  R_over_SE   D_v     pass
-    #> 1:     9     NA           NA         NA  0.90   FALSE
-    #> 2:    10     NA           NA         NA  0.76   FALSE
-    #> 3:    11     NA           NA         NA  0.56   FALSE
-    #> 4:    12     NA           NA         NA  0.58   FALSE
-    #> 5:    13     NA           NA         NA  0.81   FALSE
-    #> 6:    14     NA           NA         NA  0.43   FALSE
+    #>      dev    lr   revision  drift_window  drift_tail   slope  dispersion
+    #>    <int> <num>      <num>         <num>       <num>   <num>       <num>
+    #> 1:     4 0.62          NA          0.07        0.07   0.001        0.47
+    #> 2:     5 0.63        0.01          0.06        0.06   0.001        0.47
+    #> ...
+    #>    pass_window  pass_tail  pass_slope  pass
+    #>          <lgl>      <lgl>       <lgl> <lgl>
+    #> 1:       FALSE      FALSE       FALSE FALSE
+    #> 2:       FALSE      FALSE       FALSE FALSE
 
-## How it works: multiple holdout refits
+The `Convergence` object also reports the threshold parameters
+(`max_drift`, `max_slope`, `max_dispersion`, `window`, `holdout_max`,
+`min_n_cohorts`) and metadata attributes (`groups`, `target`,
+`dispatcher`).
 
-[`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md)
-refits the model at each candidate valuation and tracks how the
-projection changes.
+## Reserving caveat
 
-Example: with $`V = 30`$, $`k^* = 18`$, and `holdout_max = 6` —
-candidates are $`v \in \{24, 25, \dots, 30\}`$ (7 in total).
+**The detected `conv_k` is stability *observed up to* `dev_max`, not an
+asymptotic guarantee.** Future development past `dev_max` is unknown.
+Treat `conv_k` as a diagnostic for “from here on, what we observe is
+stable”, not as proof that the projection will not drift later.
 
-| $`v`$       | holdout depth ($`V - v`$) | $`R_v`$ available? |
-|-------------|---------------------------|--------------------|
-| 30          | 0                         | ✓                  |
-| 28          | 2                         | ✓                  |
-| 24 (cutoff) | 6                         | ✓                  |
-| 22          | 8                         | `NA`               |
-| 18          | 12                        | `NA`               |
+For reserving applications:
 
-One refit per candidate $`v`$ (7 total) plus $`R_v`$ computed between
-adjacent $`v`$. The cutoff `holdout_max` defaults to
-`floor((V - k_star) / 2)`; once holdout depth exceeds it the refit data
-becomes too thin and $`R_v`$, $`SE_param_v`$ are masked to `NA`.
+- Prefer `method = "tail"` (default) or `"all"` over `"window"`.
+  `"window"` will declare convergence prematurely on slow monotone
+  drifts that fit under `max_drift` per window — exactly the
+  silent-revision pattern that hurts reserves.
+- Always weigh the **evidence span** `dev_max - conv_k`. A `conv_k` near
+  `dev_max` (say, span $`< 5`$) was confirmed by very few tail points;
+  the same data might unconverge with one more diagonal.
+- Read the projected ultimate LR and its standard error from
+  `fit_lr()$summary` directly.
+  [`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md)
+  is a diagnostic, not an estimator; the reserve point estimate and
+  uncertainty come from the fit object.
 
-Increase `holdout_max` to diagnose deeper into the past — at the cost of
-less data behind each refit, hence lower confidence.
+## How it works: rolling holdout refits
+
+For each `dev_cand[i]`, the function backtests the LR projection with
+`holdout = dev_max - dev_cand[i]` and extracts the portfolio LR. Calls
+are cached per holdout depth so we don’t redo work between adjacent
+candidates.
+
+Example: with `dev_max = 30`, `mat_k = 4`, `holdout_max = 13` —
+candidates are $`k \in \{4, 5, \dots, 28\}`$ (25 in total), but only
+$`k`$ with `holdout = dev_max - k <= holdout_max` get a finite `lr[i]`.
+The rest are masked to `NA`.
+
+`holdout_max` defaults to `max(window, floor((dev_max - mat_k) / 2))`.
+Raising it widens the diagnostic window — at the cost of less data
+behind each refit and hence noisier `lr` near the lower edge.
 
 ## Plot
 
@@ -193,51 +189,51 @@ less data behind each refit, hence lower confidence.
 plot(res)
 ```
 
-The diagnostic is two stacked panels: the upper panel shows
-$`R_v / \hat{SE}^{\mathrm{param}}_v`$ against $`v`$ with a horizontal
-guide at $`c`$; the lower panel shows $`\hat{D}_v`$ against $`v`$ with a
-horizontal guide at $`\tau`$. A vertical dotted line marks $`k^*`$, and
-a vertical solid line marks $`k^{**}`$ when one is detected. A point
-falling **below both threshold lines** passes the joint criterion.
+Five stacked panels share the dev axis:
 
-This view is also a quick way to see *which clause is binding*. If the
-top panel hugs the threshold but the bottom is far above, the issue is
-cross-cohort heterogeneity; if the bottom is fine but the top is high,
-the model is still revising.
+1.  **`lr`** — the LR trajectory the metrics are computed from.
+2.  **`drift_window`** — the local-window metric, with horizontal guide
+    at `max_drift`.
+3.  **`drift_tail`** — the tail metric, same guide.
+4.  **`|slope|`** — guide at `max_slope`.
+5.  **`dispersion`** — guide at `max_dispersion`.
+
+Vertical guides mark `mat_k` (dashed) and `conv_k` (solid, only when
+non-`NA`). For each metric panel, points below the red dashed line pass
+that clause. The subtitle records the active `method`. This is also a
+quick way to see *which clause is binding*: any panel that hovers above
+its threshold blocks convergence under that method.
 
 ## Threshold tuning
 
-The defaults are deliberately conservative:
-
 | Argument | Default | Meaning |
 |----|----|----|
-| `se_mult` | `0.5` | Revision must be smaller than half the parameter SE. |
-| `max_dv` | `0.15` | Cross-cohort dispersion must be below 15% of the median lr. |
-| `min_run` | `3L` | Both clauses must hold for at least 3 consecutive valuations. |
-| `min_n_cohorts` | `5L` | Below this cohort count, $`\hat{D}_v`$ is `NA` (insufficient sample). |
+| `method` | `"tail"` | Which stability metric defines `conv_k`. |
+| `max_drift` | `0.01` | Drift cap on `drift_window` / `drift_tail`, in LR units. Raise (e.g. `0.02`–`0.05`) for noisier or longer-tail books. |
+| `max_slope` | `1e-3` | $`\|\hat\beta_k\|`$ cap (LR per dev). |
+| `max_dispersion` | `0.15` | Cross-cohort dispersion cap. |
+| `window` | `5L` | Drift window length $`W`$ — number of consecutive valuations the `"window"` method scans when computing `drift_window`. Does *not* affect `"tail"` or `"slope"`. |
+| `min_n_cohorts` | `5L` | Below this cohort count, `dispersion` is `NA`. |
 
-Tighter thresholds yield later (or no) $`k^{**}`$; sweep a range to
-inspect sensitivity:
+Sweep `max_drift` to inspect sensitivity:
 
 ``` r
 
 sapply(
-  c(0.25, 0.5, 0.75, 1.0),
-  function(cc) detect_convergence(tri, se_mult = cc)$k_conv
+  c(0.005, 0.01, 0.02, 0.05),
+  function(d) detect_convergence(tri, method = "tail", max_drift = d)$conv_k
 )
 ```
 
-Values of $`\hat{D}_v`$ below $`\tau \approx 0.05`$ are difficult to
-attain in real portfolios because of single-period claim noise; values
-above $`0.20`$ usually indicate genuine cohort heterogeneity that
-warrants
+`max_dispersion` below $`\approx 0.05`$ is difficult to attain in real
+portfolios because of single-period claim noise; values above $`0.20`$
+usually indicate genuine cohort heterogeneity that warrants
 [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
 before further modelling.
 
-## Relation to `k^*` and `detect_regime()`
+## Relation to $`k^*`$ and `detect_regime()`
 
-The three diagnostics answer different questions and operate on
-different axes:
+The three diagnostics answer different questions on different axes:
 
 | Tool | Question | Result | Axis |
 |----|----|----|----|
@@ -245,18 +241,21 @@ different axes:
 | [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md) ($`k^*`$) | When are link factors reproducible? | a dev value | development period |
 | [`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md) ($`k^{**}`$) | When does the LR estimate stop revising? | a dev value | development period |
 
-A defensible workflow is:
+A defensible workflow:
 
 1.  Run
     [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md).
-    If multiple regimes exist, fit each group separately.
+    If multiple regimes exist, fit each group separately (or use
+    [`regime_at()`](https://seokhoonj.github.io/lossratio/ko/reference/regime_at.md)
+    /
+    [`regime_spec()`](https://seokhoonj.github.io/lossratio/ko/reference/regime_spec.md)
+    in the fit / backtest call).
 2.  For each homogeneous group, compute $`k^*`$ via
     [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md).
 3.  Run
     [`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md)
-    to obtain $`k^{**} \ge k^*`$. The reported $`\hat{lr}`$ at the
-    convergence point is the projected ultimate loss ratio averaged over
-    $`k \ge k^{**}`$ (or read directly from `fit_lr()$summary`).
+    to obtain $`k^{**} \ge k^*`$. Read the projected ultimate loss ratio
+    from `fit_lr()$summary` and apply the reserving caveat above.
 
 The sequence separates *cohort homogeneity*, *link reproducibility*, and
 *level convergence* — three properties that coincide in P&C run-off but
@@ -269,31 +268,42 @@ is a thin layer over repeated
 [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
 calls and inherits their constraints:
 
-- **Identifiability**: $`k^{**}`$ can be declared only when
-  $`V \ge k^* + M`$; short observation windows return `NA`.
-- **Model conditioning**: $`\hat{LR}^{\mathrm{proj}}_v`$ is computed by
+- **Identifiability**: `conv_k` can be declared only when
+  `dev_max - mat_k >= window` (or 2 for tail / slope). Short observation
+  windows return `NA` for every method.
+- **Model conditioning**: the projected LR is computed by
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
   which internally composes
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
-  (default `method = "sa"` – stage-adaptive) and
+  (default `method = "sa"` — stage-adaptive) and
   [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md).
-  Choices made inside that composition (loss method, regime filter) feed
-  through to $`k^{**}`$; review the underlying `fit_lr` settings when
-  interpreting the result.
-- **Portfolio aggregation**: $`R_v`$ and $`\hat{SE}^{\mathrm{param}}_v`$
-  are exposure-weighted across cohorts assuming inter-cohort
-  independence. Calendar-year shocks (regulatory, healthcare cost trend)
-  violate this assumption; both clauses can move together for non-cohort
-  reasons.
-- **Multi-group triangles**: the helper currently collapses
-  $`\hat{D}_v`$ across groups by median; running each group separately
-  is recommended when groups behave differently.
+  Choices made inside that composition (loss method, regime filter,
+  maturity argument) feed through to `conv_k`; review the underlying
+  `fit_lr` settings when interpreting the result. Pass `loss_method =`,
+  `loss_regime =`, etc. through `...` to override.
+- **Portfolio aggregation**: the portfolio LR aggregates per-group
+  ultimates via exposure weighting (`sum(loss_ult) / sum(premium_ult)`).
+  Calendar-year shocks (regulatory changes, cost trend) can move every
+  group together; the drift metrics will not separate that from genuine
+  convergence.
+- **Multi-group triangles**: `dispersion` is currently collapsed across
+  groups by median. When groups behave differently, running each group
+  separately is recommended.
+- **Asymptotic vs observed**: as flagged in the reserving caveat, every
+  method only measures stability over the available history. Confirmed
+  silent drift past `dev_max` is impossible to detect from these tools
+  alone.
 
 ## See also
 
 - [`?detect_convergence`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md),
   [`?detect_maturity`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md),
   [`?backtest`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md),
-  [`?detect_regime`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md).
-- Vignette `regime-detection` — cohort homogeneity diagnostics that feed
-  step 1 of the workflow above.
+  [`?detect_regime`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md),
+  [`?fit_lr`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md).
+- `vignette("regime-detection")` — cohort homogeneity diagnostics that
+  feed step 1 of the workflow above.
+- [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/ko/articles/backtest.md)
+  — the underlying rolling holdout machinery that
+  [`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md)
+  is built on.

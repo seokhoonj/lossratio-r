@@ -38,7 +38,7 @@ A `data.table` of class `"TotalSummary"` with the same rows as the input
 
 ``` r
 if (FALSE) { # \dontrun{
-tot <- build_total(
+tot <- as_total(
   df,
   groups  = "coverage",
   cohort  = "uy_m",

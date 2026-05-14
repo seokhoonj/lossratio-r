@@ -151,85 +151,49 @@
 과
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>g</mi><mi>k</mi></msub><mo>→</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">g_k \to 0</annotation></semantics></math>
 은 누적 분모가 자라면서 자동으로 발생하는 관성(inertia) 효과이지, 기저
-경험이 실제로 수렴했다는 신호가 아니다. 그 위에 세운 기준은
+경험이 실제로 수렴했다는 신호가 아니다. 그 위에 세운 단일 기준은
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
 가 커지기만 하면 자동으로 통과한다.</p>
 <p><code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> 는
 <strong>수렴점</strong>(convergence point)
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
-를 검출한다.
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
-는 projected loss ratio 가 예측적으로 수렴하는 첫 평가 시점
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo>≥</mo><msup><mi>k</mi><mo>*</mo></msup></mrow><annotation encoding="application/x-tex">v \ge k^*</annotation></semantics></math>)
-이다.</p>
-<p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
-는 성숙점(maturity point)
+— 예측 포트폴리오 손해율이 안정하다고 <em>관찰되는</em> 첫 dev
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>≥</mo><msup><mi>k</mi><mo>*</mo></msup></mrow><annotation encoding="application/x-tex">k \ge k^*</annotation></semantics></math>
+를 검출한다. 어떤 의미의 “안정” 인지는 사용자가 <code>method =</code>
+인자로 고른다.</p>
+<p>성숙점(maturity point)
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
-(<code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> 가 산출) 의 자연스러운 짝이다.</p>
+(<code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> 산출) 와 자연스러운 짝이다:</p>
 <ul>
 <li>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>:
 link factor
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
-가 재현 가능해지는 시점.</li>
+가 코호트 간에 재현 가능해지는 시점.</li>
 <li>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>:
-모형 출력 자체가 새 데이터에도 거의 움직이지 않는 시점.</li>
+모형 출력 (예측 손해율) 이 새 데이터에도 거의 움직이지 않는 시점.</li>
 </ul>
 <p>장기 건강보험 portfolio 는
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
 를 일찍 지나도
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
 에 한참 못 미칠 수 있다.</p>
-<p>검출은
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
-개 연속 평가 시점에서 다음 두 조건이 동시에 만족되는 최초의
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>:</p>
-<ol style="list-style-type: decimal">
-<li>
-<strong>예측 갱신</strong> 이 자체 파라미터 SE 대비 작음:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mi>v</mi></msub><mo>&lt;</mo><mi>c</mi><mo>⋅</mo><msubsup><mover><mrow><mi>S</mi><mi>E</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">R_v &lt; c \cdot \hat{SE}^{\mathrm{param}}_v</annotation></semantics></math>,
-여기서
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mi>v</mi></msub><mo>=</mo><mo stretchy="false" form="prefix">|</mo><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">j</mi></mrow></msubsup><mo stretchy="false" form="prefix">(</mo><msub><mi>D</mi><mi>v</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>−</mo><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">j</mi></mrow></msubsup><mo stretchy="false" form="prefix">(</mo><msub><mi>D</mi><mrow><mi>v</mi><mo>−</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="prefix">|</mo></mrow><annotation encoding="application/x-tex">R_v = |\hat{LR}^{\mathrm{proj}}_v(D_v) -
-\hat{LR}^{\mathrm{proj}}_v(D_{v-1})|</annotation></semantics></math> 는
-새 calendar diagonal 한 개가 추가될 때 portfolio 의 projected LR 이
-변하는 크기.</li>
-<li>
-<strong>코호트 간 분산</strong> 이 작음:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><mo>&lt;</mo><mi>τ</mi></mrow><annotation encoding="application/x-tex">\hat{D}_v &lt; \tau</annotation></semantics></math>,
-여기서
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><mo>=</mo><mn>1.4826</mn><mo>⋅</mo><msub><mrow><mi mathvariant="normal">M</mi><mi mathvariant="normal">A</mi><mi mathvariant="normal">D</mi></mrow><mi>i</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mover><mrow><mi>l</mi><mi>r</mi></mrow><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>v</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mo stretchy="false" form="prefix">|</mo><msub><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">d</mi><mi mathvariant="normal">i</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow><mi>i</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mover><mrow><mi>l</mi><mi>r</mi></mrow><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>v</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="prefix">|</mo></mrow><annotation encoding="application/x-tex">\hat{D}_v = 1.4826 \cdot \mathrm{MAD}_i(\hat{lr}_{i,v}) /
-|\mathrm{median}_i(\hat{lr}_{i,v})|</annotation></semantics></math> 는
-경과 기간
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
-에서 코호트 간 <em>증분</em> 손해율의 강건 분산.</li>
-</ol>
-<p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-를 누적이 아닌 <strong>증분</strong> 손해율로 정의해 관성에서 자유롭다 —
-기간별 값이라 누적 분모가 커져도 자동으로 감쇠되지 않는다. 두 절은 서로
-다른 실패 양상을 막는다:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>
-는 <em>모형 출력</em> 이 갱신을 멈췄는지,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-는 <em>기간별 경험</em> 이 코호트 간에 일관되는지를 검사한다. 한 쪽만
-봐서는 속을 수 있다 — chain ladder 의 기계적
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>f</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><mo>→</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\hat{f}_k \to 1</annotation></semantics></math>
-표류는 실제 수렴과 무관하게
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>
-를 무너뜨릴 수 있고, 단일 기간의 코호트 간 일치만으로는 예측 수렴을
-보장하지 않는다. 두 조건을 함께 적용해야 두 가지 관성 누출 경로를 동시에
-막을 수 있다.</p>
 </div>
 <div class="section level2">
-<h2 id="왜-두-조건이-필요한가">2. 왜 두 조건이 필요한가<a class="anchor" aria-label="anchor" href="#%EC%99%9C-%EB%91%90-%EC%A1%B0%EA%B1%B4%EC%9D%B4-%ED%95%84%EC%9A%94%ED%95%9C%EA%B0%80"></a>
+<h2 id="네-가지-안정성-기준">2. 네 가지 안정성 기준<a class="anchor" aria-label="anchor" href="#%EB%84%A4-%EA%B0%80%EC%A7%80-%EC%95%88%EC%A0%95%EC%84%B1-%EA%B8%B0%EC%A4%80"></a>
 </h2>
-<p><strong>분모효과 (denominator effect)</strong> 가 단일 진단을
-무력화하기 때문이다.</p>
-<p>장기 건강보험에서 누적 LR = 누적 손해 / 누적 위험보험료. dev 가
-커지면 분모도 같이 커지므로, 새 calendar diagonal 한 개의 영향이 전체
-비율에서 자동으로 작아진다 — <strong>실제 경험 변화와 무관하게</strong>.
-이를 <em>관성</em> 효과라 부른다.</p>
-<p>각 조건이 막는 함정:</p>
+<p>수렴은 finite data 로 <em>asymptotic 으로</em> 측정 불가능하다 — 관측
+가능한 최대 dev <code>dev_max</code>
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>K</mi><mi mathvariant="normal">max</mi></msub><annotation encoding="application/x-tex">K_{\max}</annotation></semantics></math>)
+까지에 한해 <em>관찰</em> 만 가능. 검출기는 후보 시점 시퀀스
+<code>dev_cand</code>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>∈</mo><mo stretchy="false" form="prefix">[</mo><msup><mi>k</mi><mo>*</mo></msup><mo>,</mo><msub><mi>K</mi><mi mathvariant="normal">max</mi></msub><mo>−</mo><mn>2</mn><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">\in [k^*, K_{\max}-2]</annotation></semantics></math>
+위에서 rolling <code><a href="../reference/backtest.html">backtest()</a></code> 를 돌려 각 시점의 예측 손해율
+경로 <code>lr</code> 을 만들고, 그 경로 위에서 네 가지 안정성 지표를
+평가한다. <code>method =</code> 가 어떤 지표가 <code>conv_k</code> 를
+결정할지 선택한다. 네 지표 모두 항상 결과 객체에 반환되므로 사용자는
+다른 기준도 동시에 확인 가능.</p>
 <table class="table">
 <colgroup>
 <col width="25%">
@@ -238,147 +202,172 @@ link factor
 <col width="25%">
 </colgroup>
 <thead><tr class="header">
-<th>시나리오</th>
-<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math></th>
-<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math></th>
-<th>결과</th>
+<th>Method</th>
+<th>지표</th>
+<th>잡는 것</th>
+<th>놓치는 것</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td>진짜 수렴 (모형·경험 모두 안정)</td>
-<td>작음</td>
-<td>작음</td>
-<td>
-<strong>PASS</strong> ✓</td>
+<td><code>"window"</code></td>
+<td>다음 <code>window</code> 시점 동안 <code>lr</code> 의 범위 (max -
+min)</td>
+<td>국소 안정 (zig-zag 없음)</td>
+<td>window 당 <code>max_drift</code> 이하로 떨어지는 <em>느린 단조
+drift</em>
+</td>
 </tr>
 <tr class="even">
-<td>chain ladder
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>f</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><mo>→</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\hat{f}_k \to 1</annotation></semantics></math>
-표류 (관성)</td>
-<td>작음 (위장)</td>
-<td>큼</td>
-<td>FAIL — 분산이 잡아냄</td>
+<td>
+<code>"tail"</code> (default)</td>
+<td>
+<code>[k, K_{\max}]</code> 동안 <code>lr</code> 의 범위</td>
+<td>전역 안정. 단조 drift 잡음</td>
+<td>tail 길이
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≥</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">\ge 2</annotation></semantics></math>
+필요. 가장 빠른 통과 시점이 <code>"window"</code> 보다 늦음</td>
 </tr>
 <tr class="odd">
-<td>단일 시점 코호트 우연 일치</td>
-<td>큼</td>
-<td>작음 (snapshot)</td>
-<td>FAIL — projection 변화가 잡아냄</td>
+<td><code>"slope"</code></td>
+<td>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="postfix">∥</mo><msub><mover><mi>β</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><mo stretchy="false" form="postfix">∥</mo></mrow><annotation encoding="application/x-tex">\|\hat\beta_k\|</annotation></semantics></math>,
+<code>lr ~ k</code> 의 <code>[k, K_{\max}]</code> 위 OLS 회귀
+기울기</td>
+<td>체계적 trend (방향성 있음)</td>
+<td>평균이 0 인 oscillation 통과시킴</td>
+</tr>
+<tr class="even">
+<td><code>"all"</code></td>
+<td>
+<code>"window"</code> + <code>"tail"</code> + <code>"slope"</code>
+모두 통과</td>
+<td>위 셋 다 잡음</td>
+<td>(가장 strict)</td>
 </tr>
 </tbody>
 </table>
-<ul>
-<li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>
-단독은 chain ladder 의 mechanical drift
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>f</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><mo>→</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\hat{f}_k \to 1</annotation></semantics></math>)
-가 누적 곱을 거의 정지시켜 false convergence 를 부를 수 있다.</li>
-<li>
+<p>모든 method 에서 추가로 코호트 간 분산 조건
+<code>dispersion[i] &lt; max_dispersion</code> 도 함께 요구한다 — dev
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+에서의 <em>증분</em> 손해율이 코호트 간에 일치해야 함 (이전 패키지
+버전과 동일한 강건
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-는 <strong>증분</strong> LR 을 사용하므로 누적 분모의 영향이 없다 →
-분모효과 자체에서 면역.</li>
-<li>두 조건을 동시에 강제하면 분모효과로 인한 false PASS 의 주요 경로가
-모두 닫힌다. 이것이 dual criterion 의 핵심 설계 의도.</li>
-</ul>
+metric).</p>
+<p><strong>왜 paper 의 SE 정규화 기준을 안 쓰는가?</strong>: 이전 버전은
+원 논문 (Section 11) 의
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mi>k</mi></msub><mo>&lt;</mo><mi>c</mi><mo>⋅</mo><msubsup><mover><mrow><mi>S</mi><mi>E</mi></mrow><mo accent="true">̂</mo></mover><mi>k</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">R_k &lt; c \cdot \hat{SE}^{\mathrm{param}}_k</annotation></semantics></math>
+를 구현했다 (paper 는
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
+표기, 같은 축). <em>대규모 portfolio 에서 이 형태는 구조적으로 작동하지
+않는다</em>.
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mover><mrow><mi>S</mi><mi>E</mi></mrow><mo accent="true">̂</mo></mover><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi></mrow></msup><annotation encoding="application/x-tex">\hat{SE}^{\mathrm{param}}</annotation></semantics></math>
+은
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi>/</mi><msqrt><mi>n</mi></msqrt></mrow><annotation encoding="application/x-tex">1/\sqrt{n}</annotation></semantics></math>
+으로 줄어드는 반면
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>k</mi></msub><annotation encoding="application/x-tex">R_k</annotation></semantics></math>
+는 numerical noise floor
+(~<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mi>−</mi><mn>3</mn></mrow></msup><annotation encoding="application/x-tex">10^{-3}</annotation></semantics></math>
+LR 단위) 가 있어, 비율
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mi>k</mi></msub><mi>/</mi><msup><mover><mrow><mi>S</mi><mi>E</mi></mrow><mo accent="true">̂</mo></mover><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi></mrow></msup></mrow><annotation encoding="application/x-tex">R_k / \hat{SE}^{\mathrm{param}}</annotation></semantics></math>
+가 발산하고 기준이 <em>절대 발동하지 않는다</em> — <em>육안으로
+안정</em> 한 합성 데이터에서도. drift 기반 method 들은 SE 정규화를
+데이터 사이즈 독립적인 절대 threshold 로 대체한다.</p>
 </div>
 <div class="section level2">
 <h2 id="기호">3. 기호<a class="anchor" aria-label="anchor" href="#%EA%B8%B0%ED%98%B8"></a>
 </h2>
+<p>표준 chain ladder 컨벤션:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
+= 코호트 (origin period),
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+= 경과 기간. <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> 가
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>,
+<code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> 가
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
+를 반환한다 — 둘 다 같은
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+축 위에 있다.</p>
 <table class="table">
 <colgroup>
-<col width="50%">
-<col width="50%">
+<col width="33%">
+<col width="33%">
+<col width="33%">
 </colgroup>
 <thead><tr class="header">
-<th>기호</th>
+<th>Code</th>
+<th>Math</th>
 <th>의미</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math></td>
-<td>코호트 인덱스 (UY)</td>
+<td><code>dev_max</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>K</mi><mi mathvariant="normal">max</mi></msub><annotation encoding="application/x-tex">K_{\max}</annotation></semantics></math></td>
+<td>관측 가능한 최대 dev (스칼라)</td>
 </tr>
 <tr class="even">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math></td>
-<td>평가 시점 인덱스 — calendar diagonal.
-“<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
-번째 대각선까지 관측됨”</td>
+<td><code>dev_cand</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>∈</mo><mo stretchy="false" form="prefix">[</mo><msup><mi>k</mi><mo>*</mo></msup><mo>,</mo><msub><mi>K</mi><mi mathvariant="normal">max</mi></msub><mo>−</mo><mn>2</mn><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">k \in [k^*, K_{\max}-2]</annotation></semantics></math></td>
+<td>후보 dev 정수 벡터</td>
 </tr>
 <tr class="odd">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math></td>
-<td>관측 가능한 최대 평가 시점 (triangle 의 max dev)</td>
+<td><code>lr[i]</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><msub><mi>R</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">LR_k</annotation></semantics></math></td>
+<td>dev = <code>dev_cand[i]</code> 에서의 portfolio LR 예측</td>
 </tr>
 <tr class="even">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math></td>
-<td>성숙점 (<code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> 산출). 후보
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
-의 하한</td>
+<td><code>revision[i]</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mi>k</mi></msub><mo>=</mo><mo stretchy="false" form="postfix">∥</mo><mi>L</mi><msub><mi>R</mi><mi>k</mi></msub><mo>−</mo><mi>L</mi><msub><mi>R</mi><mrow><mi>k</mi><mo>−</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">∥</mo></mrow><annotation encoding="application/x-tex">R_k = \|LR_k - LR_{k-1}\|</annotation></semantics></math></td>
+<td>인접 step 갱신 (진단용)</td>
 </tr>
 <tr class="odd">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math></td>
-<td>수렴점. <code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> 가 반환하는 값</td>
-</tr>
-<tr class="even">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">j</mi></mrow></msubsup><annotation encoding="application/x-tex">\hat{LR}^{\mathrm{proj}}_v</annotation></semantics></math></td>
-<td>평가 시점
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
-까지의 자료로 산출한 ultimate LR 예측</td>
-</tr>
-<tr class="odd">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math></td>
-<td>갱신 (revision):
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">|</mo><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">j</mi></mrow></msubsup><mo>−</mo><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mrow><mi>v</mi><mo>−</mo><mn>1</mn></mrow><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">j</mi></mrow></msubsup><mo stretchy="false" form="postfix">|</mo></mrow><annotation encoding="application/x-tex">\lvert\hat{LR}^{\mathrm{proj}}_v - \hat{LR}^{\mathrm{proj}}_{v-1}\rvert</annotation></semantics></math>
+<td><code>drift_window[i]</code></td>
+<td>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">[</mo><mi>k</mi><mo>,</mo><mi>k</mi><mo>+</mo><mi>W</mi><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">[k, k+W-1]</annotation></semantics></math>
+위
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">max</mi><mo>⁡</mo></mrow><mo>−</mo><mi mathvariant="normal">min</mi></mrow><annotation encoding="application/x-tex">\max - \min</annotation></semantics></math>
 </td>
+<td>국소 윈도우 범위</td>
 </tr>
 <tr class="even">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mrow><mi>S</mi><mi>E</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi></mrow></msubsup><annotation encoding="application/x-tex">\hat{SE}^{\mathrm{param}}_v</annotation></semantics></math></td>
+<td><code>drift_tail[i]</code></td>
 <td>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">j</mi></mrow></msubsup><annotation encoding="application/x-tex">\hat{LR}^{\mathrm{proj}}_v</annotation></semantics></math>
-의 파라미터 불확실성 SE (Mack-style)</td>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">[</mo><mi>k</mi><mo>,</mo><msub><mi>K</mi><mi mathvariant="normal">max</mi></msub><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">[k, K_{\max}]</annotation></semantics></math>
+위
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">max</mi><mo>⁡</mo></mrow><mo>−</mo><mi mathvariant="normal">min</mi></mrow><annotation encoding="application/x-tex">\max - \min</annotation></semantics></math>
+</td>
+<td>tail 범위 (전역 안정)</td>
 </tr>
 <tr class="odd">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mrow><mi>l</mi><mi>r</mi></mrow><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>v</mi></mrow></msub><annotation encoding="application/x-tex">\hat{lr}_{i,v}</annotation></semantics></math></td>
-<td>코호트
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
-의 경과 기간
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
-에서의 증분 손해율</td>
+<td><code>slope[i]</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>β</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><annotation encoding="application/x-tex">\hat\beta_k</annotation></semantics></math></td>
+<td>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">[</mo><mi>k</mi><mo>,</mo><msub><mi>K</mi><mi mathvariant="normal">max</mi></msub><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">[k, K_{\max}]</annotation></semantics></math>
+위 OLS 기울기</td>
 </tr>
 <tr class="even">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math></td>
-<td>코호트 간
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mrow><mi>l</mi><mi>r</mi></mrow><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>v</mi></mrow></msub><annotation encoding="application/x-tex">\hat{lr}_{i,v}</annotation></semantics></math>
-의 강건 척도불변 분산</td>
+<td><code>dispersion[i]</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><annotation encoding="application/x-tex">\hat{D}_k</annotation></semantics></math></td>
+<td>코호트 간 증분 LR 의 강건 분산</td>
 </tr>
 <tr class="odd">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math></td>
-<td>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mrow><mi>S</mi><mi>E</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi></mrow></msubsup><annotation encoding="application/x-tex">\hat{SE}^{\mathrm{param}}_v</annotation></semantics></math>
-에 거는 배율, 갱신 절 임계 (default: <code>0.5</code>)</td>
+<td><code>mat_k</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math></td>
+<td>성숙점 (후보 하한)</td>
 </tr>
 <tr class="even">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>τ</mi><annotation encoding="application/x-tex">\tau</annotation></semantics></math></td>
-<td>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-상한, 분산 절 임계 (default: <code>0.15</code>)</td>
-</tr>
-<tr class="odd">
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math></td>
-<td>두 절이 동시 만족해야 하는 연속 평가 시점 개수 (default:
-<code>3L</code>)</td>
+<td><code>conv_k</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math></td>
+<td>검출된 수렴점</td>
 </tr>
 </tbody>
 </table>
-<p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-안의 상수
+<p><code>dispersion</code> 안의 상수
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1.4826</mn><mo>≈</mo><mn>1</mn><mi>/</mi><msup><mi mathvariant="normal">Φ</mi><mrow><mi>−</mi><mn>1</mn></mrow></msup><mo stretchy="false" form="prefix">(</mo><mn>0.75</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">1.4826 \approx 1 / \Phi^{-1}(0.75)</annotation></semantics></math>
 은 표준
 MAD<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>→</mo><mi>σ</mi></mrow><annotation encoding="application/x-tex">\to\sigma</annotation></semantics></math>
-보정 계수다. 이 스케일링으로
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mrow><mi mathvariant="normal">M</mi><mi mathvariant="normal">A</mi><mi mathvariant="normal">D</mi></mrow><mi>i</mi></msub><annotation encoding="application/x-tex">\mathrm{MAD}_i</annotation></semantics></math>
-는 정규 가정 하에서 코호트 간 표준편차의 일치 추정량이 되며, 따라서
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-는 증분 손해율의 강건한 (이상치에 둔감한) 변동계수(CV) 로 읽힌다.</p>
+보정. 이 스케일링으로
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><annotation encoding="application/x-tex">\hat{D}_k</annotation></semantics></math>
+는 증분 LR 의 강건 (이상치에 둔감한) 변동계수(CV) 로 읽힌다.</p>
 </div>
 <div class="section level2">
 <h2 id="기본-사용">4. 기본 사용<a class="anchor" aria-label="anchor" href="#%EA%B8%B0%EB%B3%B8-%EC%82%AC%EC%9A%A9"></a>
@@ -386,7 +375,7 @@ MAD<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio">lossratio</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
-<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_triangle.html">build_triangle</a></span><span class="op">(</span></span>
+<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>,</span>
 <span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
@@ -397,142 +386,117 @@ MAD<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics>
 <span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
-<p>모의 출력:</p>
+<p>모의 출력 (이 데이터에서는 수렴 미검출):</p>
 <pre><code><span><span class="co">#&gt; &lt;Convergence&gt;</span></span>
-<span><span class="co">#&gt; k_conv       : NA</span></span>
-<span><span class="co">#&gt; k_star       : 9</span></span>
-<span><span class="co">#&gt; V (max dev)  : 30</span></span>
-<span><span class="co">#&gt; criterion    : R_v &lt; 0.5 * SE_param_v  AND  D_v &lt; 0.15  (run M = 3)</span></span>
-<span><span class="co">#&gt; v candidates : 19 ( 0  pass both clauses)</span></span></code></pre>
-<p><code>Convergence</code> 객체의 주요 필드:</p>
-<ul>
-<li>
-<code>k_conv</code> — 검출된
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>.
-조건이
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
-개 연속 만족되는 시점이 없으면 <code>NA</code>.</li>
-<li>
-<code>k_star</code> — 하한으로 사용된 성숙점. 함수 내부에서 lr 기반
-ATA 에 <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> 를 적용해 산출하거나, 호출 시 직접
-전달할 수 있다.</li>
-<li>
-<code>V</code> — triangle 에서 관측 가능한 최대 경과 기간.</li>
-<li>
-<code>v</code>, <code>R_v</code>, <code>SE_param_v</code>,
-<code>D_v</code>, <code>pass_v</code> — 후보 평가 시점별 진단
-시퀀스.</li>
-<li>
-<code>se_mult</code>, <code>max_dv</code>, <code>min_run</code>,
-<code>holdout_max</code>, <code>min_n_cohorts</code> — 사용된
-설정값.</li>
-<li>attribute: <code>groups</code>, <code>target</code>,
-<code>dev</code>.</li>
-</ul>
-<p><code>summary(res)</code> 는 후보 시점별 한 행 +
-<code>R_over_SE = R_v / SE_param_v</code> 컬럼이 있는
-<code>data.table</code> 을 반환한다:</p>
+<span><span class="co">#&gt;   method     : tail</span></span>
+<span><span class="co">#&gt;   conv_k     : NA</span></span>
+<span><span class="co">#&gt;   mat_k      : 4</span></span>
+<span><span class="co">#&gt;   dev_max    : 30</span></span>
+<span><span class="co">#&gt;   candidates : 25</span></span>
+<span><span class="co">#&gt;   passes :</span></span>
+<span><span class="co">#&gt;     window :  0/25 (drift_window &lt; 0.01  &amp; dispersion &lt; 0.15)</span></span>
+<span><span class="co">#&gt;     tail   :  0/25 (drift_tail   &lt; 0.01  &amp; dispersion &lt; 0.15)  &lt;- method</span></span>
+<span><span class="co">#&gt;     slope  :  0/25 (|slope|      &lt; 0.001 &amp; dispersion &lt; 0.15)</span></span>
+<span><span class="co">#&gt;     all    :  0/25 (window AND tail AND slope)</span></span></code></pre>
+<p><code>summary(res)</code> 는 후보 시점별 한 행 + 모든 metric /
+per-method pass flag 컬럼이 있는 <code>data.table</code> 을
+반환한다:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span>, <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;        v    R_v   SE_param_v  R_over_SE   D_v     pass</span></span>
-<span><span class="co">#&gt; 1:     9     NA           NA         NA  0.90   FALSE</span></span>
-<span><span class="co">#&gt; 2:    10     NA           NA         NA  0.76   FALSE</span></span>
-<span><span class="co">#&gt; 3:    11     NA           NA         NA  0.56   FALSE</span></span>
-<span><span class="co">#&gt; 4:    12     NA           NA         NA  0.58   FALSE</span></span>
-<span><span class="co">#&gt; 5:    13     NA           NA         NA  0.81   FALSE</span></span>
-<span><span class="co">#&gt; 6:    14     NA           NA         NA  0.43   FALSE</span></span></code></pre>
+<pre><code><span><span class="co">#&gt;      dev    lr   revision  drift_window  drift_tail   slope  dispersion</span></span>
+<span><span class="co">#&gt;    &lt;int&gt; &lt;num&gt;      &lt;num&gt;         &lt;num&gt;       &lt;num&gt;   &lt;num&gt;       &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:     4 0.62          NA          0.07        0.07   0.001        0.47</span></span>
+<span><span class="co">#&gt; 2:     5 0.63        0.01          0.06        0.06   0.001        0.47</span></span>
+<span><span class="co">#&gt; ...</span></span>
+<span><span class="co">#&gt;    pass_window  pass_tail  pass_slope  pass</span></span>
+<span><span class="co">#&gt;          &lt;lgl&gt;      &lt;lgl&gt;       &lt;lgl&gt; &lt;lgl&gt;</span></span>
+<span><span class="co">#&gt; 1:       FALSE      FALSE       FALSE FALSE</span></span>
+<span><span class="co">#&gt; 2:       FALSE      FALSE       FALSE FALSE</span></span></code></pre>
+<p><code>Convergence</code> 객체에는 추가로 threshold 파라미터
+(<code>max_drift</code>, <code>max_slope</code>,
+<code>max_dispersion</code>, <code>window</code>,
+<code>holdout_max</code>, <code>min_n_cohorts</code>) 와 메타데이터 속성
+(<code>groups</code>, <code>target</code>, <code>dispatcher</code>) 이
+포함된다.</p>
 </div>
 <div class="section level2">
-<h2 id="작동-메커니즘-다중-holdout-refit">5. 작동 메커니즘: 다중 holdout refit<a class="anchor" aria-label="anchor" href="#%EC%9E%91%EB%8F%99-%EB%A9%94%EC%BB%A4%EB%8B%88%EC%A6%98-%EB%8B%A4%EC%A4%91-holdout-refit"></a>
+<h2 id="reserving-주의사항">5. Reserving 주의사항<a class="anchor" aria-label="anchor" href="#reserving-%EC%A3%BC%EC%9D%98%EC%82%AC%ED%95%AD"></a>
 </h2>
-<p><code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> 는 candidate 평가 시점마다 모형을
-다시 적합하면서 projection 의 변화를 추적한다.</p>
-<p>예시:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mo>=</mo><mn>30</mn></mrow><annotation encoding="application/x-tex">V = 30</annotation></semantics></math>,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>k</mi><mo>*</mo></msup><mo>=</mo><mn>18</mn></mrow><annotation encoding="application/x-tex">k^* = 18</annotation></semantics></math>,
-<code>holdout_max = 6</code> 일 때 — candidate 는
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo>∈</mo><mo stretchy="false" form="prefix">{</mo><mn>24</mn><mo>,</mo><mn>25</mn><mo>,</mo><mi>…</mi><mo>,</mo><mn>30</mn><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">v \in \{24, 25, \dots, 30\}</annotation></semantics></math>
-(총 7개).</p>
-<table class="table">
-<thead><tr class="header">
-<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math></th>
-<th>holdout 깊이
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mo>−</mo><mi>v</mi></mrow><annotation encoding="application/x-tex">V - v</annotation></semantics></math>)</th>
-<th>
-<code>R_v</code> 가능?</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>30</td>
-<td>0</td>
-<td>✓</td>
-</tr>
-<tr class="even">
-<td>28</td>
-<td>2</td>
-<td>✓</td>
-</tr>
-<tr class="odd">
-<td>24 (cutoff)</td>
-<td>6</td>
-<td>✓</td>
-</tr>
-<tr class="even">
-<td>22</td>
-<td>8</td>
-<td><code>NA</code></td>
-</tr>
-<tr class="odd">
-<td>18</td>
-<td>12</td>
-<td><code>NA</code></td>
-</tr>
-</tbody>
-</table>
-<p>각
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
-마다 한 번 refit (총 7번) + 인접
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
-간
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>
-계산. <code>holdout_max</code> 가 결정하는 cutoff 는 기본값으로
-<code>floor((V - k_star) / 2)</code> 이며, holdout 깊이가 그 값을 넘으면
-refit 자료가 너무 적어 <code>R_v</code> 와 <code>SE_param_v</code> 를
-<code>NA</code> 로 마스킹한다.</p>
-<p><code>holdout_max</code> 를 키우면 더 이른 시점까지 진단 가능 — 다만
-refit 자료가 줄어들어 신뢰도가 떨어진다.</p>
+<p><strong>검출된 <code>conv_k</code> 는 <code>dev_max</code> 까지에서
+<em>관찰된</em> 안정성이지, asymptotic 보장이 아니다.</strong>
+<code>dev_max</code> 이후의 development 는 알 수 없다.
+<code>conv_k</code> 는 <em>“여기서부터는 우리가 관찰한 한 안정이다”</em>
+라는 진단으로 사용하고, <em>“이후에도 예측이 흔들리지 않을 것이다”</em>
+라고 해석하지 말 것.</p>
+<p>Reserving 응용 시:</p>
+<ul>
+<li>
+<code>method = "tail"</code> (default) 또는 <code>"all"</code> 권장.
+<code>"window"</code> 는 <em>느린 단조 drift</em> 가 window 당
+<code>max_drift</code> 이하로 내려가면 너무 일찍 수렴 선언 — 정확히
+reserve 에 해로운 silent-revision 패턴.</li>
+<li>
+<strong>evidence span</strong> <code>dev_max - conv_k</code> 도 같이
+확인. <code>conv_k</code> 가 <code>dev_max</code> 근처 (span
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>&lt;</mo><mn>5</mn></mrow><annotation encoding="application/x-tex">&lt; 5</annotation></semantics></math>)
+면 tail point 가 매우 적어 결정된 거라 실제로는 약한 증거; 한 diagonal
+만 추가돼도 unconverge 가능.</li>
+<li>예측 손해율의 점추정과 표준오차는 <code>fit_lr()$summary</code> 에서
+직접 읽기. <code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> 는 <em>진단 도구</em> 이지
+추정기 자체가 아니다. reserve 의 점추정과 불확실성은 fit 객체에서
+나온다.</li>
+</ul>
 </div>
 <div class="section level2">
-<h2 id="시각화">6. 시각화<a class="anchor" aria-label="anchor" href="#%EC%8B%9C%EA%B0%81%ED%99%94"></a>
+<h2 id="작동-메커니즘-다중-holdout-refit">6. 작동 메커니즘: 다중 holdout refit<a class="anchor" aria-label="anchor" href="#%EC%9E%91%EB%8F%99-%EB%A9%94%EC%BB%A4%EB%8B%88%EC%A6%98-%EB%8B%A4%EC%A4%91-holdout-refit"></a>
+</h2>
+<p><code>dev_cand[i]</code> 마다
+<code>holdout = dev_max - dev_cand[i]</code> 로 <code><a href="../reference/backtest.html">backtest()</a></code>
+를 돌려 portfolio LR 을 추출한다. 같은 holdout 깊이는 캐싱되므로 인접
+후보 간 재계산이 없다.</p>
+<p>예시: <code>dev_max = 30</code>, <code>mat_k = 4</code>,
+<code>holdout_max = 13</code> 일 때 — 후보는
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>∈</mo><mo stretchy="false" form="prefix">{</mo><mn>4</mn><mo>,</mo><mn>5</mn><mo>,</mo><mi>…</mi><mo>,</mo><mn>28</mn><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">k \in \{4, 5, \dots, 28\}</annotation></semantics></math>
+(총 25개) 지만 <code>holdout = dev_max - k &lt;= holdout_max</code> 인
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+만 finite <code>lr[i]</code> 값을 받고, 나머지는 <code>NA</code> 로
+마스킹.</p>
+<p><code>holdout_max</code> 기본값은
+<code>max(window, floor((dev_max - mat_k) / 2))</code>. 키우면 더 이른
+시점까지 진단 가능 — 다만 refit 자료가 줄어들어 신뢰도가 떨어진다.</p>
+</div>
+<div class="section level2">
+<h2 id="시각화">7. 시각화<a class="anchor" aria-label="anchor" href="#%EC%8B%9C%EA%B0%81%ED%99%94"></a>
 </h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
-<p>진단은 위아래 두 패널: 위 패널은
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mi>v</mi></msub><mi>/</mi><msubsup><mover><mrow><mi>S</mi><mi>E</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">R_v / \hat{SE}^{\mathrm{param}}_v</annotation></semantics></math>
-대
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
-와 임계값
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math>
-의 가로 점선; 아래 패널은
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-대
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>
-와 임계값
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>τ</mi><annotation encoding="application/x-tex">\tau</annotation></semantics></math>
-의 가로 점선.
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
-는 세로 점선,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
-이 검출되면 세로 실선. <strong>두 점선 모두 아래에 있는 점</strong> 이
-양 절을 통과한 valuation.</p>
-<p>이 view 는 <em>어느 절이 binding 인지</em> 한눈에 보여준다. 위 패널이
-임계값에 근접하지만 아래가 멀면 코호트 간 이질성이 문제, 아래가 멀쩡한데
-위가 높으면 모형이 여전히 갱신 중이라는 뜻.</p>
+<p>dev 축을 공유하는 5개 패널:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong><code>lr</code></strong> — metric 들이 계산되는 LR
+궤적.</li>
+<li>
+<strong><code>drift_window</code></strong> — 국소 윈도우 metric,
+가로 점선 <code>max_drift</code>.</li>
+<li>
+<strong><code>drift_tail</code></strong> — tail metric, 동일
+점선.</li>
+<li>
+<strong><code>|slope|</code></strong> — 가로 점선
+<code>max_slope</code>.</li>
+<li>
+<strong><code>dispersion</code></strong> — 가로 점선
+<code>max_dispersion</code>.</li>
+</ol>
+<p>세로 점선 <code>mat_k</code>, 세로 실선 <code>conv_k</code> (검출됐을
+때만). 각 metric 패널에서 <em>빨간 점선 아래</em> 의 점이 그 절을 통과한
+valuation. 부제목에 활성 <code>method</code> 표기. <em>어느 절이 binding
+인지</em> 한눈에 보임 — threshold 위에 머무는 패널이 그 method 의 수렴을
+막는 절.</p>
 </div>
 <div class="section level2">
-<h2 id="임계값-튜닝">7. 임계값 튜닝<a class="anchor" aria-label="anchor" href="#%EC%9E%84%EA%B3%84%EA%B0%92-%ED%8A%9C%EB%8B%9D"></a>
+<h2 id="임계값-튜닝">8. 임계값 튜닝<a class="anchor" aria-label="anchor" href="#%EC%9E%84%EA%B3%84%EA%B0%92-%ED%8A%9C%EB%8B%9D"></a>
 </h2>
-<p>기본값은 의도적으로 보수적:</p>
 <table class="table">
 <colgroup>
 <col width="30%">
@@ -546,48 +510,64 @@ refit 자료가 줄어들어 신뢰도가 떨어진다.</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>se_mult</code></td>
-<td><code>0.5</code></td>
-<td>갱신 크기가 파라미터 SE 의 절반 이하.</td>
+<td><code>method</code></td>
+<td><code>"tail"</code></td>
+<td>
+<code>conv_k</code> 를 정의할 안정성 metric.</td>
 </tr>
 <tr class="even">
-<td><code>max_dv</code></td>
-<td><code>0.15</code></td>
-<td>코호트 간 분산이 median lr 의 15% 이하.</td>
+<td><code>max_drift</code></td>
+<td><code>0.01</code></td>
+<td>
+<code>drift_window</code> / <code>drift_tail</code> 상한, LR 단위.
+노이지하거나 long-tail 인 책은 <code>0.02</code>–<code>0.05</code>
+정도로 키우는 것이 자연.</td>
 </tr>
 <tr class="odd">
-<td><code>min_run</code></td>
-<td><code>3L</code></td>
-<td>두 절이 최소 3 개 연속 시점에서 동시 만족.</td>
+<td><code>max_slope</code></td>
+<td><code>1e-3</code></td>
+<td>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="postfix">∥</mo><msub><mover><mi>β</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><mo stretchy="false" form="postfix">∥</mo></mrow><annotation encoding="application/x-tex">\|\hat\beta_k\|</annotation></semantics></math>
+상한 (dev 당 LR 변화).</td>
+</tr>
+<tr class="even">
+<td><code>max_dispersion</code></td>
+<td><code>0.15</code></td>
+<td>코호트 간 분산 상한.</td>
+</tr>
+<tr class="odd">
+<td><code>window</code></td>
+<td><code>5L</code></td>
+<td>drift window 길이
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>W</mi><annotation encoding="application/x-tex">W</annotation></semantics></math>
+— <code>"window"</code> method 가 <code>drift_window</code> 계산 시
+스캔하는 연속 valuation 개수. <code>"tail"</code> / <code>"slope"</code>
+에는 영향 없음.</td>
 </tr>
 <tr class="even">
 <td><code>min_n_cohorts</code></td>
 <td><code>5L</code></td>
-<td>코호트 수가 이 값 미만이면
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-는 <code>NA</code>.</td>
+<td>코호트 수가 이 값 미만이면 <code>dispersion</code> 은
+<code>NA</code>.</td>
 </tr>
 </tbody>
 </table>
-<p>임계값을 조이면
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
-이 늦어지거나 NA 가 된다. 민감도는 sweep 으로 확인:</p>
+<p><code>max_drift</code> 를 sweep 해서 민감도 확인:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">1.0</span><span class="op">)</span>,</span>
-<span>  <span class="kw">function</span><span class="op">(</span><span class="va">cc</span><span class="op">)</span> <span class="fu"><a href="../reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">tri</span>, se_mult <span class="op">=</span> <span class="va">cc</span><span class="op">)</span><span class="op">$</span><span class="va">k_conv</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.005</span>, <span class="fl">0.01</span>, <span class="fl">0.02</span>, <span class="fl">0.05</span><span class="op">)</span>,</span>
+<span>  <span class="kw">function</span><span class="op">(</span><span class="va">d</span><span class="op">)</span> <span class="fu"><a href="../reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"tail"</span>, max_drift <span class="op">=</span> <span class="va">d</span><span class="op">)</span><span class="op">$</span><span class="va">conv_k</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-가
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>τ</mi><mo>≈</mo><mn>0.05</mn></mrow><annotation encoding="application/x-tex">\tau \approx 0.05</annotation></semantics></math>
-이하로 떨어지는 경우는 단일 기간 청구 노이즈 때문에 실 portfolio 에서
+<p><code>max_dispersion</code> 이
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≈</mo><mn>0.05</mn></mrow><annotation encoding="application/x-tex">\approx 0.05</annotation></semantics></math>
+이하로 떨어지는 경우는 단일 기간 claim 노이즈 때문에 실 portfolio 에서
 보기 어렵고,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.20</mn><annotation encoding="application/x-tex">0.20</annotation></semantics></math>
 이상이면 코호트 간 진성 이질성을 의심해야 한다 — 이 경우 모형 적합 전에
 <code><a href="../reference/detect_regime.html">detect_regime()</a></code> 으로 그룹을 분리하는 것이 권장된다.</p>
 </div>
 <div class="section level2">
-<h2 id="성숙점-및-regime-탐지와의-관계">8. 성숙점 및 regime 탐지와의 관계<a class="anchor" aria-label="anchor" href="#%EC%84%B1%EC%88%99%EC%A0%90-%EB%B0%8F-regime-%ED%83%90%EC%A7%80%EC%99%80%EC%9D%98-%EA%B4%80%EA%B3%84"></a>
+<h2 id="성숙점-및-regime-탐지와의-관계">9. 성숙점 및 regime 탐지와의 관계<a class="anchor" aria-label="anchor" href="#%EC%84%B1%EC%88%99%EC%A0%90-%EB%B0%8F-regime-%ED%83%90%EC%A7%80%EC%99%80%EC%9D%98-%EA%B4%80%EA%B3%84"></a>
 </h2>
 <p>세 진단 도구는 서로 다른 질문을 다른 축에서 답한다:</p>
 <table style="width:100%;" class="table">
@@ -631,70 +611,73 @@ refit 자료가 줄어들어 신뢰도가 떨어진다.</p>
 <p>권장 워크플로:</p>
 <ol style="list-style-type: decimal">
 <li>
-<code><a href="../reference/detect_regime.html">detect_regime()</a></code> 실행. 다중 레짐이 존재하면 그룹별로
-분리해서 적합.</li>
+<code><a href="../reference/detect_regime.html">detect_regime()</a></code> 실행. 다중 regime 이 존재하면 그룹별로
+분리해서 적합하거나, fit / backtest 호출에서 <code><a href="../reference/regime_at.html">regime_at()</a></code> /
+<code><a href="../reference/regime_spec.html">regime_spec()</a></code> 사용.</li>
 <li>각 동질 그룹에서 <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> 로
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
 산출.</li>
 <li>
 <code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> 로
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><mo>≥</mo><msup><mi>k</mi><mo>*</mo></msup></mrow><annotation encoding="application/x-tex">k^{**} \ge k^*</annotation></semantics></math>
-검출. 수렴 영역의 예측 손해율
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mrow><mi>l</mi><mi>r</mi></mrow><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{lr}</annotation></semantics></math>
-은
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>≥</mo><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup></mrow><annotation encoding="application/x-tex">k \ge k^{**}</annotation></semantics></math>
-에서의 평균 또는 <code>fit_lr()$summary</code> 의 ultimate 값.</li>
+검출. 예측 손해율은 <code>fit_lr()$summary</code> 에서 읽고 위의
+reserving 주의사항을 적용.</li>
 </ol>
 <p>이 순서는 <em>코호트 동질성</em>, <em>link 재현성</em>, <em>level
 수렴</em> 세 속성의 분리를 반영한다 — P&amp;C run-off 에서는 한 점에
 모이지만 장기 건강보험에서는 각각 독립적으로 검증해야 한다.</p>
 </div>
 <div class="section level2">
-<h2 id="한계">9. 한계<a class="anchor" aria-label="anchor" href="#%ED%95%9C%EA%B3%84"></a>
+<h2 id="한계">10. 한계<a class="anchor" aria-label="anchor" href="#%ED%95%9C%EA%B3%84"></a>
 </h2>
 <p><code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> 는 반복적인 <code><a href="../reference/backtest.html">backtest()</a></code>
 호출 위의 얇은 layer 이며 그 제약을 그대로 상속한다:</p>
 <ul>
 <li>
-<strong>식별 가능성</strong>:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
-는
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mo>≥</mo><msup><mi>k</mi><mo>*</mo></msup><mo>+</mo><mi>M</mi></mrow><annotation encoding="application/x-tex">V \ge k^* + M</annotation></semantics></math>
-일 때만 선언 가능. 관측 기간이 짧으면 <code>NA</code> 반환.</li>
+<strong>식별 가능성</strong>: <code>conv_k</code> 는
+<code>dev_max - mat_k &gt;= window</code> (또는 tail / slope 의 경우 2)
+일 때만 선언 가능. 관측 기간이 짧으면 모든 method 가 <code>NA</code>
+반환.</li>
 <li>
-<strong>모형 조건부</strong>:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mrow><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">j</mi></mrow></msubsup><annotation encoding="application/x-tex">\hat{LR}^{\mathrm{proj}}_v</annotation></semantics></math>
-는 <code><a href="../reference/fit_lr.html">fit_lr()</a></code> 로 산출. <code><a href="../reference/fit_lr.html">fit_lr()</a></code> 이 내부적으로
-<code><a href="../reference/fit_loss.html">fit_loss()</a></code> (default <code>method = "sa"</code> — 단계
-적응형) 와 <code><a href="../reference/fit_premium.html">fit_premium()</a></code> 을 합성하므로, 그 안의 선택 (loss
-method, regime 필터) 이
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><annotation encoding="application/x-tex">k^{**}</annotation></semantics></math>
-로 흘러간다. 결과 해석 시 <code>fit_lr</code> 설정을 같이 확인할
-것.</li>
+<strong>모형 조건부</strong>: 예측 LR 은 <code><a href="../reference/fit_lr.html">fit_lr()</a></code> 로
+산출. <code><a href="../reference/fit_lr.html">fit_lr()</a></code> 이 내부적으로 <code><a href="../reference/fit_loss.html">fit_loss()</a></code>
+(default <code>method = "sa"</code> — 단계 적응형) 와
+<code><a href="../reference/fit_premium.html">fit_premium()</a></code> 을 합성하므로, 그 안의 선택 (loss method,
+regime 필터, maturity 인자) 이 <code>conv_k</code> 로 흘러간다. 결과
+해석 시 <code>fit_lr</code> 설정을 같이 확인할 것. <code>...</code> 으로
+<code>loss_method =</code>, <code>loss_regime =</code> 등 override
+가능.</li>
 <li>
-<strong>포트폴리오 집계</strong>:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>v</mi></msub><annotation encoding="application/x-tex">R_v</annotation></semantics></math>
-와
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mrow><mi>S</mi><mi>E</mi></mrow><mo accent="true">̂</mo></mover><mi>v</mi><mrow><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi></mrow></msubsup><annotation encoding="application/x-tex">\hat{SE}^{\mathrm{param}}_v</annotation></semantics></math>
-는 코호트 간 독립 가정 하에 익스포저 가중 집계. 달력 연도 충격 (요율
-개정, 의료비 인플레) 은 이 가정을 위배하며, 이 경우 두 절이 비코호트
-사유로 동시에 움직일 수 있음.</li>
+<strong>포트폴리오 집계</strong>: portfolio LR 은 그룹별 ultimate 의
+익스포저 가중 (<code>sum(loss_ult) / sum(premium_ult)</code>). 달력 연도
+충격 (요율 개정, 의료비 인플레) 은 모든 그룹을 동시에 움직일 수 있고,
+drift metric 들은 이를 진짜 수렴과 구별하지 못한다.</li>
 <li>
-<strong>다중 그룹 triangle</strong>: 현재 구현은 그룹 간
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>D</mi><mo accent="true">̂</mo></mover><mi>v</mi></msub><annotation encoding="application/x-tex">\hat{D}_v</annotation></semantics></math>
-를 median 으로 collapse. 그룹이 다르게 움직이면 분리 실행 권장.</li>
+<strong>다중 그룹 triangle</strong>: 현재 구현은
+<code>dispersion</code> 을 그룹 간 median 으로 collapse. 그룹이 다르게
+움직이면 분리 실행 권장.</li>
+<li>
+<strong>Asymptotic vs 관측</strong>: reserving 주의사항에서 언급한
+대로, 모든 method 는 <em>관측 가능한 history</em> 위에서의 안정만 측정.
+<code>dev_max</code> 이후의 silent drift 는 이 도구만으로는 검출
+불가능.</li>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="함께-보기">10. 함께 보기<a class="anchor" aria-label="anchor" href="#%ED%95%A8%EA%BB%98-%EB%B3%B4%EA%B8%B0"></a>
+<h2 id="함께-보기">11. 함께 보기<a class="anchor" aria-label="anchor" href="#%ED%95%A8%EA%BB%98-%EB%B3%B4%EA%B8%B0"></a>
 </h2>
 <ul>
 <li>
 <code><a href="../reference/detect_convergence.html">?detect_convergence</a></code>, <code><a href="../reference/detect_maturity.html">?detect_maturity</a></code>,
-<code><a href="../reference/backtest.html">?backtest</a></code>, <code><a href="../reference/detect_regime.html">?detect_regime</a></code>.</li>
+<code><a href="../reference/backtest.html">?backtest</a></code>, <code><a href="../reference/detect_regime.html">?detect_regime</a></code>,
+<code><a href="../reference/fit_lr.html">?fit_lr</a></code>.</li>
 <li>
-<code>regime-detection-ko</code> 문서 — 위 워크플로 1단계의 코호트
-동질성 진단.</li>
+<code>vignette("regime-detection")</code> — 위 워크플로 1단계의
+코호트 동질성 진단.</li>
+<li>
+<code><a href="../articles/backtest.html">vignette("backtest")</a></code> —
+<code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> 가 그 위에 구축된 rolling holdout
+메커니즘.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

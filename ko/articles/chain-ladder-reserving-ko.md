@@ -29,7 +29,7 @@
 
 library(lossratio)
 data(experience)
-tri <- build_triangle(
+tri <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",
@@ -138,9 +138,9 @@ cl_mat$maturity
 #>    coverage ata_from change ata_link     mean  median       wt         cv
 #>      <char>    <num>  <num>   <char>    <num>   <num>    <num>      <num>
 #> 1:      SUR        4      5      4-5 1.324091 1.33133 1.338896 0.06783671
-#>           f       f_se        rse    sigma n_obs n_valid n_inf n_nan
-#>       <num>      <num>      <num>    <num> <num>   <num> <num> <num>
-#> 1: 1.338896 0.01808821 0.01350979 1105.053    32      32     0     0
+#>           f       f_se        rse    sigma n_cohorts n_valid n_inf n_nan
+#>       <num>      <num>      <num>    <num>     <num>   <num> <num> <num>
+#> 1: 1.338896 0.01808821 0.01350979 1105.053        32      32     0     0
 #>    valid_ratio
 #>          <num>
 #> 1:           1

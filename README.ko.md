@@ -51,7 +51,7 @@ data(experience)           # 번들 합성 데이터 (4 coverages)
 
 # 1) Triangle 구축 — long-format 데이터 → 코호트 × dev 구조
 exp_sur <- experience[coverage == "SUR"]
-tri <- build_triangle(
+tri <- as_triangle(
   exp_sur,
   groups   = "coverage",
   cohort   = "uy_m",
@@ -79,7 +79,7 @@ plot_triangle(bt)
 
 | 함수 | 역할 |
 |----|----|
-| [`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md) | long-format 데이터 → `Triangle` (코호트 × dev) |
+| [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md) | long-format 데이터 → `Triangle` (코호트 × dev) |
 | `fit_lr(method = "sa" / "ed" / "cl")` | 손해율 적합 — *통합 인터페이스* (loss + premium 합성) |
 | [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md) / [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md) | 역할별 디스패처 — 단일 측 (SE / CI 포함) |
 | [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md) / [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md) | 단일 stage (chain ladder / exposure-driven) |
@@ -100,7 +100,7 @@ plot_triangle(bt)
 | `premium_incr`    | 셀 기간별 보험료 (장기 health 는 위험보험료) |
 | `groups` *(선택)* | 상품 / 담보 / 연령 / 성별 / 가입금액         |
 
-[`build_triangle()`](https://seokhoonj.github.io/lossratio/reference/build_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
 가 스키마 검증 + 날짜 코어션 + 코호트 × dev 집계 + 누적 컬럼 (`loss`,
 `premium`, `lr`) 까지 한 번에. 사용자는 raw 데이터만 넘기면 됨.
 

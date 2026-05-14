@@ -37,7 +37,7 @@ summary(object, ...)
 
 A `data.table` grouped by `groups` and `dev`, containing:
 
-- n_obs:
+- n_cohorts:
 
   Number of observations in the cell
 
@@ -87,7 +87,7 @@ values.
 
 ``` r
 if (FALSE) { # \dontrun{
-d <- build_triangle(
+d <- as_triangle(
   df,
   groups   = "coverage",
   cohort   = "uy_m",

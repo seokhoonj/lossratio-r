@@ -49,7 +49,7 @@ When to use:
 
 library(lossratio)
 data(experience)
-tri <- build_triangle(
+tri <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",
