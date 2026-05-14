@@ -10,7 +10,7 @@
 backtest(
   x,
   holdout = 6L,
-  target = c("lr", "loss", "prem"),
+  target = c("lr", "loss", "premium"),
   loss_method = c("sa", "ed", "cl"),
   premium_method = c("cl", "ed"),
   loss_alpha = 1,
@@ -43,13 +43,13 @@ backtest(
 before refitting. Default \code{6L}.}
 
 \item{target}{Character scalar. Which projection to backtest. One
-of \code{"lr"} (default), \code{"loss"}, \code{"prem"}. Determines which
+of \code{"lr"} (default), \code{"loss"}, \code{"premium"}. Determines which
 fitter is called on the masked triangle and which column on \code{x}
 is treated as the held-out actual.}
 
 \item{loss_method}{Method for the loss-side projection. Passed to
 \code{fit_lr()} / \code{fit_loss()} as their \code{method} argument. One of
-\code{"sa"}, \code{"ed"}, \code{"cl"}. Unused for \code{target = "prem"}.}
+\code{"sa"}, \code{"ed"}, \code{"cl"}. Unused for \code{target = "premium"}.}
 
 \item{premium_method}{Method for the prem-side projection.
 Passed to \code{fit_lr()} / \code{fit_loss()} / \code{fit_premium()}. One of
@@ -95,16 +95,16 @@ same leakage-safe reason.
 }}
 
 \item{se_method}{Standard-error composition for \code{fit_lr()}. Unused
-for \code{target = "loss"} / \code{target = "prem"}.}
+for \code{target = "loss"} / \code{target = "premium"}.}
 
 \item{rho}{Loss-prem correlation used by \code{fit_lr()} delta
-method. Unused for \code{target = "loss"} / \code{target = "prem"}.}
+method. Unused for \code{target = "loss"} / \code{target = "premium"}.}
 
 \item{conf_level}{Confidence level for \code{fit_lr()} / \code{fit_loss()}
-intervals. Unused for \code{target = "prem"}.}
+intervals. Unused for \code{target = "premium"}.}
 
 \item{bootstrap, B, seed}{Bootstrap controls for \code{fit_lr()}. Unused
-for \code{target = "loss"} / \code{target = "prem"}.}
+for \code{target = "loss"} / \code{target = "premium"}.}
 
 \item{...}{Additional arguments passed to the underlying fitter.}
 
@@ -120,7 +120,7 @@ removed).}
 \item{\code{fit}}{The fit object returned by the target-specific
 fitter.}
 \item{\code{ae_err}}{\code{data.table} of held-out cells with columns
-\verb{(group, cohort, dev, actual, expected, aeg, ae_err, incr_actual, incr_expected, incr_aeg, incr_ae_err, calendar_idx)}. \code{aeg = actual - expected} (signed
+\verb{(group, cohort, dev, actual, expected, aeg, ae_err, incr_actual, incr_expected, incr_aeg, incr_ae_err, cal_idx)}. \code{aeg = actual - expected} (signed
 error in target units); \code{ae_err = actual / expected - 1}
 (relative error). \code{incr_} siblings are the same metrics
 on the incremental view.}
@@ -128,7 +128,7 @@ on the incremental view.}
 (mean / median / weighted) with \code{incr_} variants and \code{n}.}
 \item{\code{diag_summary}}{Per-calendar-diagonal aggregate A/E
 Error and AEG (same columns as \code{col_summary}, keyed by
-\code{calendar_idx}).}
+\code{cal_idx}).}
 \item{\code{target}, \code{holdout}, \code{dispatcher}}{Call metadata.}
 \item{\code{groups}, \code{cohort}, \code{dev}}{Variable name relays
 from \code{x}.}
@@ -145,7 +145,7 @@ The target is selected with \code{target}:
 \item \code{target = "lr"} -- score the loss-ratio projection from
 \code{fit_lr()}.
 \item \code{target = "loss"} -- score the loss projection from \code{fit_loss()}.
-\item \code{target = "prem"} -- score the prem projection from
+\item \code{target = "premium"} -- score the prem projection from
 \code{fit_premium()}.
 }
 
@@ -171,7 +171,7 @@ tri <- as_triangle(
 
 bt_lr      <- backtest(tri, holdout = 6L, target = "lr")
 bt_loss    <- backtest(tri, holdout = 6L, target = "loss")
-bt_prem <- backtest(tri, holdout = 6L, target = "prem")
+bt_prem <- backtest(tri, holdout = 6L, target = "premium")
 
 print(bt_lr)
 summary(bt_lr)

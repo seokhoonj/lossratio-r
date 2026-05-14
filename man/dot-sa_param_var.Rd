@@ -9,7 +9,7 @@
   prem_proj,
   g_var,
   f_var,
-  f_selected,
+  f_sel,
   last_obs,
   maturity_from,
   method = "sa"

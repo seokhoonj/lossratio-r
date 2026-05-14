@@ -289,8 +289,8 @@ fit_lr <- function(x,
         loss_obs      = loss_obs,
         loss_proj     = loss_proj,
         prem_proj  = prem_proj,
-        g_selected    = g_selected,
-        f_selected    = f_selected,
+        g_sel    = g_sel,
+        f_sel    = f_sel,
         g_sigma2      = g_sigma2,
         f_sigma2      = f_sigma2,
         g_var         = g_var,
@@ -308,8 +308,8 @@ fit_lr <- function(x,
 
   # 8) drop intermediate columns ---------------------------------------
   drop_cols <- c(
-    "g_selected", "g_sigma2", "g_var",
-    "f_selected", "f_sigma2", "f_var",
+    "g_sel", "g_sigma2", "g_var",
+    "f_sel", "f_sigma2", "f_var",
     "last_obs"
   )
   full[, (drop_cols) := NULL]
@@ -559,8 +559,8 @@ summary.LRFit <- function(object, ...) {
 .bootstrap_cohort <- function(loss_obs,
                               loss_proj,
                               prem_proj,
-                              g_selected,
-                              f_selected,
+                              g_sel,
+                              f_sel,
                               g_sigma2,
                               f_sigma2,
                               g_var,
@@ -612,7 +612,7 @@ summary.LRFit <- function(object, ...) {
 
     if (k < mat) {
       # ED phase -----------------------------------------------------------
-      g_hat <- g_selected[k]
+      g_hat <- g_sel[k]
       g_sd  <- if (is.finite(g_var[k])) sqrt(max(g_var[k], 0)) else 0
       s2    <- g_sigma2[k]
 
@@ -634,7 +634,7 @@ summary.LRFit <- function(object, ...) {
 
     } else {
       # CL phase (multiplicative, Mack) ------------------------------------
-      f_hat <- f_selected[k]
+      f_hat <- f_sel[k]
       f_sd  <- if (is.finite(f_var[k])) sqrt(max(f_var[k], 0)) else 0
       s2    <- f_sigma2[k]
 

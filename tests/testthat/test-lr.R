@@ -100,9 +100,9 @@ test_that("fit_lr with loss_regime + method=sa applies hybrid filter", {
   fit_full <- fit_lr(tri, method = "sa")
   fit_brk  <- fit_lr(tri, method = "sa", loss_regime = reg,
                      recent = 18L)
-  # ED parameters (g_selected) should differ for early dev (k < k*)
-  expect_false(identical(fit_full$selected$g_selected,
-                         fit_brk$selected$g_selected))
+  # ED parameters (g_sel) should differ for early dev (k < k*)
+  expect_false(identical(fit_full$selected$g_sel,
+                         fit_brk$selected$g_sel))
   expect_s3_class(fit_brk$loss_regime, "Regime")
 })
 

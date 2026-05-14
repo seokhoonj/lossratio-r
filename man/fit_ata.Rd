@@ -30,7 +30,7 @@ fit_ata(
 \item{alpha}{Numeric scalar controlling the variance structure. Default
 is \code{1}.}
 
-\item{na_method}{Method used to fill \code{NA} values in \code{f_selected}. One of
+\item{na_method}{Method used to fill \code{NA} values in \code{f_sel}. One of
 \code{"locf"} (default) or \code{"none"}. Passed to \code{\link[=.filter_ata]{.filter_ata()}}.}
 
 \item{sigma_method}{Method used to extrapolate \code{sigma} for links where it
@@ -75,7 +75,7 @@ An object of class \code{"ATAFit"} (a named list) containing:
 \item{\code{link}}{The input \code{"Link"} object.}
 \item{\code{summary}}{\code{"ATASummary"} object from \code{\link[=summary.Link]{summary.Link()}}.}
 \item{\code{selected}}{\code{data.table} of factors ready for projection,
-including \code{f_selected} and \code{sigma2}.}
+including \code{f_sel} and \code{sigma2}.}
 \item{\code{maturity}}{Resolved \code{Maturity} object used for filtering,
 or \code{NULL} when maturity filtering was not applied.}
 \item{\code{alpha}}{Value of \code{alpha} used.}

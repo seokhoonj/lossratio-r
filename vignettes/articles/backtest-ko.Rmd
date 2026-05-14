@@ -57,7 +57,7 @@ print(bt)
 단계 적응형(stage-adaptive, SA, `loss_method = "sa"`) 이다. 반환되는 객체는
 `"Backtest"` 리스트이며, 주요 슬롯은 다음과 같다.
 
-- `ae_err` — 셀 단위 `data.table` (cohort, dev, actual, pred, ae_err, calendar_idx).
+- `ae_err` — 셀 단위 `data.table` (cohort, dev, actual, pred, ae_err, cal_idx).
 - `col_summary` — `dev` 별로 집계된 A/E Error.
 - `diag_summary` — 대각선별로 집계된 A/E Error.
 - `masked` — 적합에 사용된 triangle (최근 대각선이 제거됨).

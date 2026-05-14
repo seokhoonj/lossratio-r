@@ -102,8 +102,8 @@ the loss-ratio composition with delta method is handled by \code{\link[=fit_lr]{
 }
 \section{Internal columns}{
 
-\verb{$full} retains internal parameter columns (\code{g_selected}, \code{g_sigma2},
-\code{g_var}, \code{f_selected}, \code{f_sigma2}, \code{f_var}, \code{last_obs}) so that
+\verb{$full} retains internal parameter columns (\code{g_sel}, \code{g_sigma2},
+\code{g_var}, \code{f_sel}, \code{f_sigma2}, \code{f_var}, \code{last_obs}) so that
 \code{\link[=fit_lr]{fit_lr()}} can run bootstrap CI on top without re-fitting. Standalone
 callers see them as implementation columns.
 }

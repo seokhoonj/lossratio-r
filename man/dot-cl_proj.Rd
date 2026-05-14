@@ -4,13 +4,13 @@
 \alias{.cl_proj}
 \title{Compute chain ladder point projection for a single cohort}
 \usage{
-.cl_proj(target_obs, f_selected)
+.cl_proj(target_obs, f_sel)
 }
 \arguments{
 \item{target_obs}{Numeric vector of cumulative observed values for a
 single cohort, ordered by development period.}
 
-\item{f_selected}{Numeric vector of selected development factors.}
+\item{f_sel}{Numeric vector of selected development factors.}
 }
 \value{
 A numeric vector of the same length as \code{target_obs} with

@@ -86,7 +86,7 @@ summary(tri)           # 경과 기간별 그룹 통계량
 fit_ata(tri, target = "loss")
 
 # 노출 기반(exposure-driven) 강도 인자 — 덧셈형, ED 의 입력
-fit_intensity(tri, target = "loss", exposure = "premium")
+fit_intensity(tri, target = "loss", exposure = "prem")
 ```
 
 `fit_ata()` 는 링크별 ATA 인자 $f_k$ 를, `fit_intensity()` 는 강도 인자
@@ -105,7 +105,7 @@ plot(cl, type = "projection")
 summary(cl)
 
 # Exposure-driven (덧셈형 예측)
-ed <- fit_ed(tri, target = "loss", exposure = "premium")
+ed <- fit_ed(tri, target = "loss", exposure = "prem")
 summary(ed)
 ```
 

@@ -195,7 +195,7 @@ fit_cl <- function(x,
              "segment_id" %in% names(full)
   factor_cols <- c(grp, "ata_from",
                    if (has_seg) "segment_id",
-                   "f_selected", "sigma2", "f_var")
+                   "f_sel", "sigma2", "f_var")
   sel <- ata_fit$selected[, .SD, .SDcols = factor_cols]
   data.table::setnames(sel, "ata_from", "dev")
   full <- sel[full, on = c(grp, "dev", if (has_seg) "segment_id")]
@@ -221,7 +221,7 @@ fit_cl <- function(x,
   # 9) point projection -------------------------------------------------
   full[, ("target_proj") := .cl_proj(
     target_obs = target_obs,
-    f_selected = f_selected
+    f_sel = f_sel
   ), by = c(grp, "cohort")]
 
   # 10) incremental target projection -----------------------------------
@@ -233,7 +233,7 @@ fit_cl <- function(x,
   full[, `:=`(
     target_proc_se2  = .mack_proc_var(
       target_proj = target_proj,
-      f_selected  = f_selected,
+      f_sel  = f_sel,
       sigma2      = sigma2,
       last_obs    = last_obs[1L],
       alpha       = alpha,
@@ -241,7 +241,7 @@ fit_cl <- function(x,
     ),
     target_param_se2 = .mack_param_var(
       target_proj = target_proj,
-      f_selected  = f_selected,
+      f_sel  = f_sel,
       f_var       = f_var,
       last_obs    = last_obs[1L]
     )
@@ -272,7 +272,7 @@ fit_cl <- function(x,
 
   # 12) drop intermediate columns ---------------------------------------
   full[, `:=`(
-    f_selected = NULL,
+    f_sel = NULL,
     sigma2     = NULL,
     f_var      = NULL,
     wt_obs     = NULL,
@@ -395,13 +395,13 @@ print.CLFit <- function(x, ...) {
 #'
 #' @param target_obs Numeric vector of cumulative observed values for a
 #'   single cohort, ordered by development period.
-#' @param f_selected Numeric vector of selected development factors.
+#' @param f_sel Numeric vector of selected development factors.
 #'
 #' @return A numeric vector of the same length as `target_obs` with
 #'   unobserved cells filled by recursive chain ladder projection.
 #'
 #' @keywords internal
-.cl_proj <- function(target_obs, f_selected) {
+.cl_proj <- function(target_obs, f_sel) {
 
   n        <- length(target_obs)
   last_obs <- max(which(is.finite(target_obs)), 0L)
@@ -411,7 +411,7 @@ print.CLFit <- function(x, ...) {
   v <- target_obs
 
   for (i in seq(last_obs + 1L, n)) {
-    f_now <- f_selected[i - 1L]
+    f_now <- f_sel[i - 1L]
     if (is.finite(f_now) && is.finite(v[i - 1L])) {
       v[i] <- v[i - 1L] * f_now
     }
@@ -470,7 +470,7 @@ print.CLFit <- function(x, ...) {
   tail_factor <- 1
 
   if (isTRUE(tail)) {
-    f_vals <- selected[is.finite(f_selected), f_selected]
+    f_vals <- selected[is.finite(f_sel), f_sel]
 
     if (length(f_vals) >= 3L && all(f_vals > 0, na.rm = TRUE)) {
       idx <- which(f_vals > 1)
@@ -578,7 +578,7 @@ print.CLFit <- function(x, ...) {
 #'
 #' @keywords internal
 .mack_proc_var <- function(target_proj,
-                           f_selected,
+                           f_sel,
                            sigma2,
                            last_obs,
                            alpha = 1,
@@ -592,7 +592,7 @@ print.CLFit <- function(x, ...) {
   use_scale <- !is.null(scale) && is.finite(scale) && scale > 0
 
   for (i in seq(last_obs + 1L, n)) {
-    f_now      <- f_selected[i - 1L]
+    f_now      <- f_sel[i - 1L]
     sigma2_now <- sigma2[i - 1L]
     v_prev     <- target_proj[i - 1L]
 
@@ -629,7 +629,7 @@ print.CLFit <- function(x, ...) {
 #'
 #' @keywords internal
 .mack_param_var <- function(target_proj,
-                            f_selected,
+                            f_sel,
                             f_var,
                             last_obs) {
 
@@ -639,7 +639,7 @@ print.CLFit <- function(x, ...) {
   if (last_obs == n) return(param)
 
   for (i in seq(last_obs + 1L, n)) {
-    f_now     <- f_selected[i - 1L]
+    f_now     <- f_sel[i - 1L]
     f_var_now <- f_var[i - 1L]
     v_prev    <- target_proj[i - 1L]
 

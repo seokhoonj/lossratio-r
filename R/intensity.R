@@ -65,7 +65,7 @@
 #'     [summary.Link()] — one row per link with WLS-estimated `g`,
 #'     `g_se`, `rse`, `sigma`, plus descriptive statistics.}
 #'   \item{`selected`}{`data.table` of selected intensities
-#'     per link (`g_selected`, `sigma`, `sigma2`,
+#'     per link (`g_sel`, `sigma`, `sigma2`,
 #'     `sigma_extrapolated`). LOCF NA-fill is applied when
 #'     `na_method = "locf"`; sigma extrapolation is applied per
 #'     `sigma_method`.}
@@ -239,7 +239,7 @@ print.IntensityFit <- function(x, ...) {
 #' Apply LOCF NA-fill to per-link selected intensities
 #'
 #' @description
-#' Initialises `g_selected` from the WLS-fitted `g` and optionally
+#' Initialises `g_sel` from the WLS-fitted `g` and optionally
 #' fills `NA` runs via `data.table::nafill(type = "locf")`. Mirrors
 #' the fill phase of [.filter_ata()] without the maturity gate (ED
 #' has no maturity concept).
@@ -248,7 +248,7 @@ print.IntensityFit <- function(x, ...) {
 #' @param grp Character vector of group columns.
 #' @param na_method One of `"locf"` (default) or `"none"`.
 #'
-#' @return A `data.table` with `g_selected` added.
+#' @return A `data.table` with `g_sel` added.
 #'
 #' @keywords internal
 .select_intensity <- function(ed_summary,
@@ -258,7 +258,7 @@ print.IntensityFit <- function(x, ...) {
   na_method <- match.arg(na_method)
 
   z <- .copy_dt(ed_summary)
-  z[, ("g_selected") := g]
+  z[, ("g_sel") := g]
 
   # When segment_id is present (segment_wise treatment), LOCF fills must
   # happen per segment so factors from one regime never leak into another.
@@ -266,14 +266,14 @@ print.IntensityFit <- function(x, ...) {
   fill_by <- c(grp, if (has_seg) "segment_id")
 
   if (na_method == "zero") {
-    z[is.na(g_selected), ("g_selected") := 0]
+    z[is.na(g_sel), ("g_sel") := 0]
   } else if (na_method == "locf") {
     if (length(fill_by)) {
       data.table::setorderv(z, c(fill_by, "ata_from", "ata_to"))
-      z[, ("g_selected") := data.table::nafill(g_selected, type = "locf"),
+      z[, ("g_sel") := data.table::nafill(g_sel, type = "locf"),
         by = fill_by]
     } else {
-      z[, ("g_selected") := data.table::nafill(g_selected, type = "locf")]
+      z[, ("g_sel") := data.table::nafill(g_sel, type = "locf")]
     }
   }
 

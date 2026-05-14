@@ -71,8 +71,8 @@
 #'   `premium_fit`, `ed`, `factor`, `selected`, plus metadata.
 #'
 #' @section Internal columns:
-#' `$full` retains internal parameter columns (`g_selected`, `g_sigma2`,
-#' `g_var`, `f_selected`, `f_sigma2`, `f_var`, `last_obs`) so that
+#' `$full` retains internal parameter columns (`g_sel`, `g_sigma2`,
+#' `g_var`, `f_sel`, `f_sigma2`, `f_var`, `last_obs`) so that
 #' [fit_lr()] can run bootstrap CI on top without re-fitting. Standalone
 #' callers see them as implementation columns.
 #'
@@ -321,20 +321,20 @@ fit_loss <- function(x,
   has_seg_ed   <- "segment_id" %in% names(ed_fit$selected)
   has_seg_cl   <- "segment_id" %in% names(loss_ata_fit$selected)
 
-  # 8) join ED factors (g_selected, g_sigma2, g_var) --------------------
+  # 8) join ED factors (g_sel, g_sigma2, g_var) --------------------
   ed_cols <- c(grp, "ata_from",
                if (has_seg_ed) "segment_id",
-               "g_selected", "sigma2", "g_var")
+               "g_sel", "sigma2", "g_var")
   ed_sel  <- ed_fit$selected[, .SD, .SDcols = ed_cols]
   data.table::setnames(ed_sel, "ata_from", "dev")
   data.table::setnames(ed_sel, "sigma2", "g_sigma2")
   full <- ed_sel[full,
                  on = c(grp, "dev", if (has_seg_ed) "segment_id")]
 
-  # 9) join CL factors (f_selected, f_sigma2, f_var) --------------------
+  # 9) join CL factors (f_sel, f_sigma2, f_var) --------------------
   cl_cols <- c(grp, "ata_from",
                if (has_seg_cl) "segment_id",
-               "f_selected", "sigma2", "f_var")
+               "f_sel", "sigma2", "f_var")
   cl_sel  <- loss_ata_fit$selected[, .SD, .SDcols = cl_cols]
   data.table::setnames(cl_sel, "ata_from", "dev")
   data.table::setnames(cl_sel, "sigma2", "f_sigma2")
@@ -371,8 +371,8 @@ fit_loss <- function(x,
   full[, ("loss_proj") := .sa_proj(
     loss_obs      = loss_obs,
     prem_proj  = prem_proj,
-    g_selected    = g_selected,
-    f_selected    = f_selected,
+    g_sel    = g_sel,
+    f_sel    = f_sel,
     maturity_from = maturity_from[1L],
     method        = method
   ), by = c(grp, "cohort")]
@@ -384,7 +384,7 @@ fit_loss <- function(x,
       prem_proj  = prem_proj,
       g_sigma2      = g_sigma2,
       f_sigma2      = f_sigma2,
-      f_selected    = f_selected,
+      f_sel    = f_sel,
       last_obs      = last_obs[1L],
       maturity_from = maturity_from[1L],
       alpha         = alpha,
@@ -395,7 +395,7 @@ fit_loss <- function(x,
       prem_proj  = prem_proj,
       g_var         = g_var,
       f_var         = f_var,
-      f_selected    = f_selected,
+      f_sel    = f_sel,
       last_obs      = last_obs[1L],
       maturity_from = maturity_from[1L],
       method        = method
@@ -455,8 +455,8 @@ fit_loss <- function(x,
   )
 
   # 19) assemble LossFit ----------------------------------------------
-  # NOTE: $full retains internal columns (g_selected, g_sigma2, g_var,
-  # f_selected, f_sigma2, f_var, last_obs) so that fit_lr can run
+  # NOTE: $full retains internal columns (g_sel, g_sigma2, g_var,
+  # f_sel, f_sigma2, f_var, last_obs) so that fit_lr can run
   # bootstrap CI without re-fitting. fit_lr drops them after bootstrap.
   out <- list(
     call            = match.call(),
@@ -579,8 +579,8 @@ summary.LossFit <- function(object, ...) {
 #'
 #' @param loss_obs Numeric vector of observed cumulative loss.
 #' @param prem_proj Numeric vector of projected cumulative exposure.
-#' @param g_selected Numeric vector of ED intensities.
-#' @param f_selected Numeric vector of CL factors.
+#' @param g_sel Numeric vector of ED intensities.
+#' @param f_sel Numeric vector of CL factors.
 #' @param maturity_from Numeric scalar; switch point. `NA` = no switch.
 #' @param method One of `"sa"`, `"ed"`, or `"cl"`.
 #'
@@ -589,8 +589,8 @@ summary.LossFit <- function(object, ...) {
 #' @keywords internal
 .sa_proj <- function(loss_obs,
                      prem_proj,
-                     g_selected,
-                     f_selected,
+                     g_sel,
+                     f_sel,
                      maturity_from,
                      method = "sa") {
 
@@ -618,7 +618,7 @@ summary.LossFit <- function(object, ...) {
 
     if (k < mat) {
       # ED phase: additive, exposure-driven
-      g_now <- g_selected[k]
+      g_now <- g_sel[k]
       e_now <- prem_proj[k]
 
       if (is.finite(g_now) && is.finite(e_now)) {
@@ -626,7 +626,7 @@ summary.LossFit <- function(object, ...) {
       }
     } else {
       # CL phase: multiplicative, loss-driven
-      f_now <- f_selected[k]
+      f_now <- f_sel[k]
 
       if (is.finite(f_now)) {
         v[i] <- f_now * v_prev
@@ -657,7 +657,7 @@ summary.LossFit <- function(object, ...) {
                          prem_proj,
                          g_sigma2,
                          f_sigma2,
-                         f_selected,
+                         f_sel,
                          last_obs,
                          maturity_from,
                          alpha  = 1,
@@ -690,7 +690,7 @@ summary.LossFit <- function(object, ...) {
       }
     } else {
       # CL phase: multiplicative variance (Mack)
-      f_k <- f_selected[k]
+      f_k <- f_sel[k]
       s2  <- f_sigma2[k]
       v_k <- loss_proj[k]
 
@@ -726,7 +726,7 @@ summary.LossFit <- function(object, ...) {
                           prem_proj,
                           g_var,
                           f_var,
-                          f_selected,
+                          f_sel,
                           last_obs,
                           maturity_from,
                           method = "sa") {
@@ -758,7 +758,7 @@ summary.LossFit <- function(object, ...) {
       }
     } else {
       # CL phase: multiplicative (Mack)
-      f_k  <- f_selected[k]
+      f_k  <- f_sel[k]
       fv   <- f_var[k]
       v_k  <- loss_proj[k]
 
@@ -822,16 +822,16 @@ summary.LossFit <- function(object, ...) {
 
   prem_cols <- c(grp, "ata_from",
                  if (has_seg_prem) "segment_id",
-                 "f_selected")
+                 "f_sel")
   prem_sel <- prem_ata_fit$selected[, .SD, .SDcols = prem_cols]
-  data.table::setnames(prem_sel, c("ata_from", "f_selected"),
+  data.table::setnames(prem_sel, c("ata_from", "f_sel"),
                        c("dev", "f_exposure"))
   full <- prem_sel[full,
                    on = c(grp, "dev", if (has_seg_prem) "segment_id")]
 
   full[, ("prem_proj") := .cl_proj(
     target_obs = prem_obs,
-    f_selected = f_exposure
+    f_sel = f_exposure
   ), by = c(grp, "cohort")]
 
   full[, ("f_exposure") := NULL]

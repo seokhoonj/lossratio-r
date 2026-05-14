@@ -18,10 +18,10 @@
 \item{na_method}{One of \code{"locf"} (default) or \code{"none"}.}
 }
 \value{
-A \code{data.table} with \code{g_selected} added.
+A \code{data.table} with \code{g_sel} added.
 }
 \description{
-Initialises \code{g_selected} from the WLS-fitted \code{g} and optionally
+Initialises \code{g_sel} from the WLS-fitted \code{g} and optionally
 fills \code{NA} runs via \code{data.table::nafill(type = "locf")}. Mirrors
 the fill phase of \code{\link[=.filter_ata]{.filter_ata()}} without the maturity gate (ED
 has no maturity concept).

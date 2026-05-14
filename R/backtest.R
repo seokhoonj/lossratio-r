@@ -94,7 +94,7 @@
 #'     \item{`ae_err`}{`data.table` of held-out cells with columns
 #'       `(group, cohort, dev, actual, expected, aeg, ae_err,
 #'       incr_actual, incr_expected, incr_aeg, incr_ae_err,
-#'       calendar_idx)`. `aeg = actual - expected` (signed
+#'       cal_idx)`. `aeg = actual - expected` (signed
 #'       error in target units); `ae_err = actual / expected - 1`
 #'       (relative error). `incr_` siblings are the same metrics
 #'       on the incremental view.}
@@ -102,7 +102,7 @@
 #'       (mean / median / weighted) with `incr_` variants and `n`.}
 #'     \item{`diag_summary`}{Per-calendar-diagonal aggregate A/E
 #'       Error and AEG (same columns as `col_summary`, keyed by
-#'       `calendar_idx`).}
+#'       `cal_idx`).}
 #'     \item{`target`, `holdout`, `dispatcher`}{Call metadata.}
 #'     \item{`groups`, `cohort`, `dev`}{Variable name relays
 #'       from `x`.}
@@ -306,7 +306,7 @@ backtest <- function(x,
     .SDcols = c(grp, "cohort", "dev", actual_cum, actual_incr, ".cal_idx")]
   data.table::setnames(obs,
     c(actual_cum, actual_incr, ".cal_idx"),
-    c("actual", "incr_actual", "calendar_idx")
+    c("actual", "incr_actual", "cal_idx")
   )
 
   ae_err <- proj[obs,
@@ -341,13 +341,13 @@ backtest <- function(x,
     grp, "cohort", "dev",
     "actual",      "expected",      "aeg",      "ae_err",
     "incr_actual", "incr_expected", "incr_aeg", "incr_ae_err",
-    "calendar_idx"
+    "cal_idx"
   ))
   data.table::setorderv(ae_err, c(grp, "cohort", "dev"))
 
   # 5) Summaries (per dev and per calendar diagonal) -- both views ----
   col_by       <- c(grp, "dev")
-  diag_by      <- c(grp, "calendar_idx")
+  diag_by      <- c(grp, "cal_idx")
   col_summary  <- .backtest_aggregate(ae_err, col_by)
   diag_summary <- .backtest_aggregate(ae_err, diag_by)
 

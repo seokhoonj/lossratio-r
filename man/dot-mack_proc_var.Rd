@@ -4,14 +4,7 @@
 \alias{.mack_proc_var}
 \title{Compute Mack process variance for a single cohort}
 \usage{
-.mack_proc_var(
-  target_proj,
-  f_selected,
-  sigma2,
-  last_obs,
-  alpha = 1,
-  scale = NULL
-)
+.mack_proc_var(target_proj, f_sel, sigma2, last_obs, alpha = 1, scale = NULL)
 }
 \description{
 Internal helper computing:

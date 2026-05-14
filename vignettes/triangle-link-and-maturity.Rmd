@@ -136,7 +136,7 @@ the link's median.
 ### ED diagnostics
 
 ```{r}
-ed <- as_link(tri, target = "loss", exposure = "premium")
+ed <- as_link(tri, target = "loss", exposure = "prem")
 sm <- summary(ed, model = "ed", alpha = 1)
 head(sm)
 

@@ -249,7 +249,7 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'   [as_link()].
 #' @param alpha Numeric scalar controlling the variance structure. Default
 #'   is `1`.
-#' @param na_method Method used to fill `NA` values in `f_selected`. One of
+#' @param na_method Method used to fill `NA` values in `f_sel`. One of
 #'   `"locf"` (default) or `"none"`. Passed to [.filter_ata()].
 #' @param sigma_method Method used to extrapolate `sigma` for links where it
 #'   cannot be estimated. One of `"locf"` (default), `"min_last2"`, or
@@ -288,7 +288,7 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'     \item{`link`}{The input `"Link"` object.}
 #'     \item{`summary`}{`"ATASummary"` object from [summary.Link()].}
 #'     \item{`selected`}{`data.table` of factors ready for projection,
-#'       including `f_selected` and `sigma2`.}
+#'       including `f_sel` and `sigma2`.}
 #'     \item{`maturity`}{Resolved `Maturity` object used for filtering,
 #'       or `NULL` when maturity filtering was not applied.}
 #'     \item{`alpha`}{Value of `alpha` used.}
@@ -504,12 +504,12 @@ print.ATAFit <- function(x, ...) {
 #' Filter and fill age-to-age factors for projection
 #'
 #' @description
-#' Internal helper that produces a `f_selected` column by applying two steps:
+#' Internal helper that produces a `f_sel` column by applying two steps:
 #'
 #' 1. **Filter** — when `use_maturity = TRUE`, development links that precede
-#'    the maturity point are excluded (`f_selected` set to `NA`).
+#'    the maturity point are excluded (`f_sel` set to `NA`).
 #'
-#' 2. **Fill** — `NA` values in `f_selected` are forward-filled using LOCF,
+#' 2. **Fill** — `NA` values in `f_sel` are forward-filled using LOCF,
 #'    so that every link used in projection has a finite factor.
 #'
 #' @param ata_summary A `data.table` of class `"ATASummary"` from
@@ -521,7 +521,7 @@ print.ATAFit <- function(x, ...) {
 #'   When `FALSE`, `maturity` is ignored entirely.
 #' @param na_method One of `"locf"` or `"none"`.
 #'
-#' @return A `data.table` with `selected` and `f_selected` columns added.
+#' @return A `data.table` with `selected` and `f_sel` columns added.
 #'
 #' @keywords internal
 .filter_ata <- function(ata_summary,
@@ -534,8 +534,8 @@ print.ATAFit <- function(x, ...) {
 
   z <- .copy_dt(ata_summary)
 
-  # initialise: all links selected, f_selected equals fitted f
-  z[, c("selected", "f_selected") := list(TRUE, f)]
+  # initialise: all links selected, f_sel equals fitted f
+  z[, c("selected", "f_sel") := list(TRUE, f)]
 
   # --- maturity filter --------------------------------------------------
   # only applied when use_maturity = TRUE and maturity is provided
@@ -562,7 +562,7 @@ print.ATAFit <- function(x, ...) {
     z[, ("selected") := data.table::fifelse(
       is.na(maturity_from), TRUE, ata_from >= maturity_from
     )]
-    z[selected == FALSE, ("f_selected") := NA_real_]
+    z[selected == FALSE, ("f_sel") := NA_real_]
     z[, ("maturity_from") := NULL]
   }
 
@@ -574,10 +574,10 @@ print.ATAFit <- function(x, ...) {
   if (na_method == "locf") {
     if (length(fill_by)) {
       data.table::setorderv(z, c(fill_by, "ata_from", "ata_to"))
-      z[, ("f_selected") := data.table::nafill(f_selected, type = "locf"),
+      z[, ("f_sel") := data.table::nafill(f_sel, type = "locf"),
         by = fill_by]
     } else {
-      z[, ("f_selected") := data.table::nafill(f_selected, type = "locf")]
+      z[, ("f_sel") := data.table::nafill(f_sel, type = "locf")]
     }
   }
 

@@ -9,7 +9,7 @@
   prem_proj,
   g_sigma2,
   f_sigma2,
-  f_selected,
+  f_sel,
   last_obs,
   maturity_from,
   alpha = 1,

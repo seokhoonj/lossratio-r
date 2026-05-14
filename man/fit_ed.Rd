@@ -31,7 +31,7 @@ Forwarded to \code{\link[=as_link]{as_link()}} and to downstream workers.}
 \item{alpha}{Numeric scalar controlling the variance structure. Default
 is \code{1}.}
 
-\item{na_method}{Method used to fill \code{NA} values in \code{g_selected}. One
+\item{na_method}{Method used to fill \code{NA} values in \code{g_sel}. One
 of \code{"zero"} (default, set \code{NA} to 0 meaning no further development)
 or \code{"locf"} or \code{"none"}.}
 
@@ -55,7 +55,7 @@ recent \code{recent} periods are used for estimation. Default is \code{NULL}.}
 An object of class \code{"EDFit"} (a named list) with components:
 \describe{
 \item{\code{factor}}{\code{EDSummary} of fitted intensities per development link.}
-\item{\code{selected}}{\code{data.table} of selected \code{g_selected}, \code{sigma2},
+\item{\code{selected}}{\code{data.table} of selected \code{g_sel}, \code{sigma2},
 and \code{g_var}.}
 \item{\code{full}}{\code{data.table} of per-cell cumulative target / exposure
 projection plus role-prefixed SE / CV columns
@@ -73,7 +73,7 @@ object and return an \code{"EDFit"} object that bundles factor summaries,
 selected intensities, and a cell-level projection of cumulative loss
 and exposure (\verb{$full}).
 
-Returns \code{g_selected}, \code{sigma2}, and factor variance
+Returns \code{g_sel}, \code{sigma2}, and factor variance
 \eqn{\mathrm{Var}(\hat{g}_k)} (column \code{g_var}) in \verb{$selected}.
 
 The \verb{$full} projection table holds cumulative loss / exposure

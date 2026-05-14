@@ -173,7 +173,7 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #' selected intensities, and a cell-level projection of cumulative loss
 #' and exposure (`$full`).
 #'
-#' Returns `g_selected`, `sigma2`, and factor variance
+#' Returns `g_sel`, `sigma2`, and factor variance
 #' \eqn{\mathrm{Var}(\hat{g}_k)} (column `g_var`) in `$selected`.
 #'
 #' The `$full` projection table holds cumulative loss / exposure
@@ -190,7 +190,7 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #' @param method Estimation method. Currently only `"mack"` is supported.
 #' @param alpha Numeric scalar controlling the variance structure. Default
 #'   is `1`.
-#' @param na_method Method used to fill `NA` values in `g_selected`. One
+#' @param na_method Method used to fill `NA` values in `g_sel`. One
 #'   of `"zero"` (default, set `NA` to 0 meaning no further development)
 #'   or `"locf"` or `"none"`.
 #' @param sigma_method Method used to extrapolate `sigma`. One of
@@ -209,7 +209,7 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #' @return An object of class `"EDFit"` (a named list) with components:
 #'   \describe{
 #'     \item{`factor`}{`EDSummary` of fitted intensities per development link.}
-#'     \item{`selected`}{`data.table` of selected `g_selected`, `sigma2`,
+#'     \item{`selected`}{`data.table` of selected `g_sel`, `sigma2`,
 #'       and `g_var`.}
 #'     \item{`full`}{`data.table` of per-cell cumulative target / exposure
 #'       projection plus role-prefixed SE / CV columns
@@ -323,12 +323,12 @@ fit_ed <- function(x,
     c("target_obs", "exposure_obs", "exposure_proj")
   )
 
-  # 4c) join ED factors (g_selected, g_sigma2, g_var)
+  # 4c) join ED factors (g_sel, g_sigma2, g_var)
   has_seg <- "segment_id" %in% names(out$selected) &&
              "segment_id" %in% names(full)
   ed_cols <- c(grp, "ata_from",
                if (has_seg) "segment_id",
-               "g_selected", "sigma2", "g_var")
+               "g_sel", "sigma2", "g_var")
   ed_sel  <- out$selected[, .SD, .SDcols = ed_cols]
   data.table::setnames(ed_sel, "ata_from", "dev")
   data.table::setnames(ed_sel, "sigma2", "g_sigma2")
@@ -344,7 +344,7 @@ fit_ed <- function(x,
   full[, ("target_proj") := .ed_proj(
     target_obs    = target_obs,
     exposure_proj = exposure_proj,
-    g_selected    = g_selected
+    g_sel    = g_sel
   ), by = c(grp, "cohort")]
 
   # 4f) target variance (ED additive recursion)
@@ -374,7 +374,7 @@ fit_ed <- function(x,
   )]
 
   # 4g) drop intermediate factor columns
-  full[, c("g_selected", "g_sigma2", "g_var", "last_obs") := NULL]
+  full[, c("g_sel", "g_sigma2", "g_var", "last_obs") := NULL]
 
   # 4h) incremental projections (target + exposure)
   full[, ("incr_target_proj") := target_proj -
@@ -396,7 +396,7 @@ fit_ed <- function(x,
 #' Cumulative target recursion: `target_{k+1} = target_k + g_k * exposure_k`.
 #'
 #' @keywords internal
-.ed_proj <- function(target_obs, exposure_proj, g_selected) {
+.ed_proj <- function(target_obs, exposure_proj, g_sel) {
   n        <- length(target_obs)
   last_obs <- max(which(is.finite(target_obs)), 0L)
   if (last_obs == 0L || last_obs == n) return(target_obs)
@@ -406,7 +406,7 @@ fit_ed <- function(x,
     k      <- i - 1L
     v_prev <- v[i - 1L]
     if (!is.finite(v_prev)) next
-    g_now <- g_selected[k]
+    g_now <- g_sel[k]
     e_now <- exposure_proj[k]
     if (is.finite(g_now) && is.finite(e_now)) {
       v[i] <- v_prev + g_now * e_now

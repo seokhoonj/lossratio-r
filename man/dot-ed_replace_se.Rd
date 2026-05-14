@@ -10,7 +10,7 @@
 \item{full}{The \verb{$full} data.table from a \code{CLFit} (must contain
 \code{cohort}, \code{dev}, \code{target_obs}, \code{target_proj}).}
 
-\item{selected}{The \verb{$selected} data.table (must contain \code{f_selected},
+\item{selected}{The \verb{$selected} data.table (must contain \code{f_sel},
 \code{sigma2}, \code{f_var}).}
 
 \item{triangle}{The original \code{Triangle} (for \code{groups} attribute).}

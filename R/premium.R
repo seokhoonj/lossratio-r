@@ -215,7 +215,7 @@ fit_premium <- function(x,
 #'
 #' @param full The `$full` data.table from a `CLFit` (must contain
 #'   `cohort`, `dev`, `target_obs`, `target_proj`).
-#' @param selected The `$selected` data.table (must contain `f_selected`,
+#' @param selected The `$selected` data.table (must contain `f_sel`,
 #'   `sigma2`, `f_var`).
 #' @param triangle The original `Triangle` (for `groups` attribute).
 #'
@@ -238,7 +238,7 @@ fit_premium <- function(x,
   grp <- attr(triangle, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  f  <- selected$f_selected
+  f  <- selected$f_sel
   s2 <- selected$sigma2
   fv <- selected$f_var
 

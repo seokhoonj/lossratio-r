@@ -4,23 +4,16 @@
 \alias{.sa_proj}
 \title{Hybrid point projection for a single cohort}
 \usage{
-.sa_proj(
-  loss_obs,
-  prem_proj,
-  g_selected,
-  f_selected,
-  maturity_from,
-  method = "sa"
-)
+.sa_proj(loss_obs, prem_proj, g_sel, f_sel, maturity_from, method = "sa")
 }
 \arguments{
 \item{loss_obs}{Numeric vector of observed cumulative loss.}
 
 \item{prem_proj}{Numeric vector of projected cumulative exposure.}
 
-\item{g_selected}{Numeric vector of ED intensities.}
+\item{g_sel}{Numeric vector of ED intensities.}
 
-\item{f_selected}{Numeric vector of CL factors.}
+\item{f_sel}{Numeric vector of CL factors.}
 
 \item{maturity_from}{Numeric scalar; switch point. \code{NA} = no switch.}
 

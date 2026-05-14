@@ -97,7 +97,7 @@ plot.Backtest <- function(x,
     smr  <- .copy_dt(x$diag_summary)
     long <- data.table::melt(
       smr,
-      id.vars       = c(grp, "calendar_idx", "n"),
+      id.vars       = c(grp, "cal_idx", "n"),
       measure.vars  = stat_cols,
       variable.name = "stat",
       value.name    = "ae_err"
@@ -107,7 +107,7 @@ plot.Backtest <- function(x,
                           labels = c("Mean", "Median", "Weighted"))]
     p <- ggplot2::ggplot(
       long,
-      ggplot2::aes(x = .data[["calendar_idx"]], y = .data[["ae_err"]],
+      ggplot2::aes(x = .data[["cal_idx"]], y = .data[["ae_err"]],
                    color = .data[["stat"]], group = .data[["stat"]])
     ) +
       ggplot2::annotate("rect",

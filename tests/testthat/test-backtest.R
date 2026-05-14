@@ -22,7 +22,7 @@ test_that("Backtest has expected list elements", {
 test_that("ae_err has expected columns", {
   bt <- backtest(sub, holdout = 6L, target = "loss", loss_method = "cl")
   for (nm in c("coverage", "cohort", "dev", "actual", "expected",
-               "ae_err", "calendar_idx")) {
+               "ae_err", "cal_idx")) {
     expect_true(nm %in% names(bt$ae_err), info = paste("missing", nm))
   }
 })
@@ -67,7 +67,7 @@ test_that("col_summary and diag_summary keyed correctly", {
   bt <- backtest(sub, holdout = 6L, target = "loss", loss_method = "cl")
   expect_true(all(c("coverage", "dev", "n", "ae_err_mean",
                     "ae_err_med", "ae_err_wt") %in% names(bt$col_summary)))
-  expect_true(all(c("coverage", "calendar_idx", "n", "ae_err_mean",
+  expect_true(all(c("coverage", "cal_idx", "n", "ae_err_mean",
                     "ae_err_med", "ae_err_wt") %in% names(bt$diag_summary)))
 })
 

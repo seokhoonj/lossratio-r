@@ -1083,7 +1083,7 @@ longer.TriangleSummary <- function(x, ...) {
 #' @return A data.frame with class `"Calendar"`, containing the following
 #'   derived columns:
 #'   \describe{
-#'     \item{t}{Sequential calendar-period index within each group
+#'     \\item{cal_idx}{Sequential calendar-period index within each group
 #'       (`1, 2, ..., N`). Time-series convention; intentionally NOT
 #'       `dev` -- in a Calendar the integer is just the rank of the date
 #'       within its group, not a true development period (`cym - uym`).
@@ -1159,12 +1159,12 @@ as_calendar <- function(x) {
   # just the rank of the date within its group, NOT a true development
   # period (`cym - uym`). The `dev` name lives only on Triangle.
   if (length(grp)) {
-    ds[, ("t") := seq_len(.N), by = grp]
+    ds[, ("cal_idx") := seq_len(.N), by = grp]
   } else {
-    ds[, ("t") := seq_len(.N)]
+    ds[, ("cal_idx") := seq_len(.N)]
   }
 
-  data.table::setcolorder(ds, "t", after = "calendar")
+  data.table::setcolorder(ds, "cal_idx", after = "calendar")
 
   # cumulative values
   if (length(grp)) {
@@ -1213,7 +1213,7 @@ as_calendar <- function(x) {
 
   # final column order: cum-first paired
   out_cols <- c(
-    grp, "calendar", "t", "n_cohorts",
+    grp, "calendar", "cal_idx", "n_cohorts",
     "loss", "incr_loss", "prem", "incr_prem",
     "lr", "incr_lr",
     "margin", "incr_margin", "profit", "incr_profit",
@@ -1224,7 +1224,7 @@ as_calendar <- function(x) {
   # long format
   dm <- data.table::melt(
     data         = ds,
-    id.vars      = c(grp_cal, "t"),
+    id.vars      = c(grp_cal, "cal_idx"),
     measure.vars = c("loss", "prem")
   )
   dm <- .prepend_class(dm, "CalendarLonger")

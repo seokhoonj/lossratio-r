@@ -66,7 +66,7 @@ estimation.}
 \code{\link[=summary.Link]{summary.Link()}} — one row per link with WLS-estimated \code{g},
 \code{g_se}, \code{rse}, \code{sigma}, plus descriptive statistics.}
 \item{\code{selected}}{\code{data.table} of selected intensities
-per link (\code{g_selected}, \code{sigma}, \code{sigma2},
+per link (\code{g_sel}, \code{sigma}, \code{sigma2},
 \code{sigma_extrapolated}). LOCF NA-fill is applied when
 \code{na_method = "locf"}; sigma extrapolation is applied per
 \code{sigma_method}.}

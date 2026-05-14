@@ -25,9 +25,9 @@ test_that("fit_intensity$factor inherits 'EDSummary'", {
   expect_s3_class(intensity_fit$factor, "EDSummary")
 })
 
-test_that("fit_intensity$selected has g_selected and sigma2 columns", {
+test_that("fit_intensity$selected has g_sel and sigma2 columns", {
   intensity_fit <- fit_intensity(sub)
-  expect_true("g_selected" %in% names(intensity_fit$selected))
+  expect_true("g_sel" %in% names(intensity_fit$selected))
   expect_true("sigma2"     %in% names(intensity_fit$selected))
   expect_true("sigma_extrapolated" %in% names(intensity_fit$selected))
 })
