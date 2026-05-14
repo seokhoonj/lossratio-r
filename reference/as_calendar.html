@@ -216,13 +216,14 @@ Triangle's grain.</p>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A data.frame with class <code>"Calendar"</code>, containing the following
-derived columns:</p><dl>
-\itemcal_idxSequential calendar-period index within each group
+derived columns:</p><dl><dt>cal_idx</dt>
+<dd><p>Sequential calendar-period index within each group
 (<code>1, 2, ..., N</code>). Time-series convention; intentionally NOT
 <code>dev</code> – in a Calendar the integer is just the rank of the date
 within its group, not a true development period (<code>cym - uym</code>).
 Useful for aligning groups with different starting periods on a
-common index scale.
+common index scale.</p></dd>
+
 <dt>loss, incr_loss</dt>
 <dd><p>Cumulative and per-period loss</p></dd>
 

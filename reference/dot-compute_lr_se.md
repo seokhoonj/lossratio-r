@@ -42,6 +42,10 @@ utility.
 
   Ultimate loss vector (`L`).
 
+- premium:
+
+  Ultimate prem vector (`E`).
+
 - se_loss:
 
   `SE(L)`.
@@ -58,10 +62,6 @@ utility.
 
   Loss-prem correlation in `(-1, 1)`. Used only for `"delta"`. Default
   `0.95`.
-
-- prem:
-
-  Ultimate prem vector (`E`).
 
 ## Value
 

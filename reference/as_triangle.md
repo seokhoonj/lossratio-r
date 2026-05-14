@@ -127,6 +127,13 @@ as_triangle(
   Single character; per-period loss column in `df` (raw name, e.g.,
   `"incr_loss"`).
 
+- premium:
+
+  Single character; per-period prem column in `df` (raw name, e.g.,
+  `"incr_prem"`). Premium measure used as denominator for loss ratio
+  calculations. For long-term health insurance applications, risk prem
+  is commonly used.
+
 - grain:
 
   One of `"auto"` (default), `"M"`, `"Q"`, `"H"`, `"Y"`. `"auto"` infers
@@ -149,13 +156,6 @@ as_triangle(
   which raises an error when gaps are detected. Use
   [`validate_triangle()`](https://seokhoonj.github.io/lossratio/reference/validate_triangle.md)
   to inspect gaps before deciding.
-
-- prem:
-
-  Single character; per-period prem column in `df` (raw name, e.g.,
-  `"incr_prem"`). Premium measure used as denominator for loss ratio
-  calculations. For long-term health insurance applications, risk prem
-  is commonly used.
 
 ## Value
 

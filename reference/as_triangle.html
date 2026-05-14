@@ -309,6 +309,13 @@ calendar-diagonal logic uses cohort + dev). When both are given,
 (raw name, e.g., <code>"incr_loss"</code>).</p></dd>
 
 
+<dt id="arg-premium">premium<a class="anchor" aria-label="anchor" href="#arg-premium"></a></dt>
+<dd><p>Single character; per-period prem column in <code>df</code>
+(raw name, e.g., <code>"incr_prem"</code>). Premium measure used as
+denominator for loss ratio calculations. For long-term health
+insurance applications, risk prem is commonly used.</p></dd>
+
+
 <dt id="arg-grain">grain<a class="anchor" aria-label="anchor" href="#arg-grain"></a></dt>
 <dd><p>One of <code>"auto"</code> (default), <code>"M"</code>, <code>"Q"</code>, <code>"H"</code>, <code>"Y"</code>.
 <code>"auto"</code> infers the grain from the <code>cohort</code> value spacing.
@@ -330,13 +337,6 @@ internal triangle is always built on the incremental representation;
 has a consecutive <code>dev</code> sequence. Default <code>FALSE</code>, which
 raises an error when gaps are detected. Use
 <code><a href="validate_triangle.html">validate_triangle()</a></code> to inspect gaps before deciding.</p></dd>
-
-
-<dt id="arg-prem">prem<a class="anchor" aria-label="anchor" href="#arg-prem"></a></dt>
-<dd><p>Single character; per-period prem column in <code>df</code>
-(raw name, e.g., <code>"incr_prem"</code>). Premium measure used as
-denominator for loss ratio calculations. For long-term health
-insurance applications, risk prem is commonly used.</p></dd>
 
 </dl></div>
     <div class="section level2">

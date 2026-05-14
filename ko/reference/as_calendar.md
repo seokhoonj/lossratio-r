@@ -64,29 +64,37 @@ as_calendar(x)
 A data.frame with class `"Calendar"`, containing the following derived
 columns:
 
-loss, incr_loss
+- cal_idx:
 
-:   Cumulative and per-period loss
+  Sequential calendar-period index within each group (`1, 2, ..., N`).
+  Time-series convention; intentionally NOT `dev` – in a Calendar the
+  integer is just the rank of the date within its group, not a true
+  development period (`cym - uym`). Useful for aligning groups with
+  different starting periods on a common index scale.
 
-premium, incr_prem
+- loss, incr_loss:
 
-:   Cumulative and per-period prem
+  Cumulative and per-period loss
 
-lr, incr_lr
+- premium, incr_prem:
 
-:   Cumulative and per-period loss ratio
+  Cumulative and per-period prem
 
-margin, incr_margin
+- lr, incr_lr:
 
-:   Cumulative and per-period margin
+  Cumulative and per-period loss ratio
 
-profit, incr_profit
+- margin, incr_margin:
 
-:   Profit indicator
+  Cumulative and per-period margin
 
-loss_share, incr_loss_share, prem_share, incr_prem_share
+- profit, incr_profit:
 
-:   Proportions within each `calendar` cell
+  Profit indicator
+
+- loss_share, incr_loss_share, prem_share, incr_prem_share:
+
+  Proportions within each `calendar` cell
 
 The returned object also has an attribute `"longer"` containing a melted
 long-format version (`class = "CalendarLonger"`).
