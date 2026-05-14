@@ -316,19 +316,30 @@ fit_loss <- function(x,
     exposure        = "premium"
   )
 
+  # Detect whether either side carries segment_id (segment_wise treatment);
+  # the join must include it or a cartesian product blows up at runtime.
+  has_seg_ed   <- "segment_id" %in% names(ed_fit$selected)
+  has_seg_cl   <- "segment_id" %in% names(loss_ata_fit$selected)
+
   # 8) join ED factors (g_selected, g_sigma2, g_var) --------------------
-  ed_cols <- c(grp, "ata_from", "g_selected", "sigma2", "g_var")
+  ed_cols <- c(grp, "ata_from",
+               if (has_seg_ed) "segment_id",
+               "g_selected", "sigma2", "g_var")
   ed_sel  <- ed_fit$selected[, .SD, .SDcols = ed_cols]
   data.table::setnames(ed_sel, "ata_from", "dev")
   data.table::setnames(ed_sel, "sigma2", "g_sigma2")
-  full <- ed_sel[full, on = c(grp, "dev")]
+  full <- ed_sel[full,
+                 on = c(grp, "dev", if (has_seg_ed) "segment_id")]
 
   # 9) join CL factors (f_selected, f_sigma2, f_var) --------------------
-  cl_cols <- c(grp, "ata_from", "f_selected", "sigma2", "f_var")
+  cl_cols <- c(grp, "ata_from",
+               if (has_seg_cl) "segment_id",
+               "f_selected", "sigma2", "f_var")
   cl_sel  <- loss_ata_fit$selected[, .SD, .SDcols = cl_cols]
   data.table::setnames(cl_sel, "ata_from", "dev")
   data.table::setnames(cl_sel, "sigma2", "f_sigma2")
-  full <- cl_sel[full, on = c(grp, "dev")]
+  full <- cl_sel[full,
+                 on = c(grp, "dev", if (has_seg_cl) "segment_id")]
 
   # 10) maturity join per group -----------------------------------------
   if (!is.null(maturity)) {
