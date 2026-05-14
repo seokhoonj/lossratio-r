@@ -86,7 +86,10 @@ plot_triangle(tri_q)   # 코호트 × dev lr 히트맵
 ## 3. Calendar (달력 기간만)
 
 ```{r}
-cal <- as_calendar(experience, groups = "coverage", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+tri <- as_triangle(experience, groups = "coverage",
+                   cohort = "uy_m", calendar = "cy_m",
+                   loss = "loss_incr", premium = "premium_incr")
+cal <- as_calendar(tri)
 head(cal)
 ```
 
@@ -112,16 +115,14 @@ plot(cal, x_by = "dev")         # x axis: 순차 인덱스
 ## 4. Total (포트폴리오 요약)
 
 ```{r}
-tot <- as_total(
-  experience,
-  groups      = "coverage",
-  cohort      = "uy_m",
+tri_bounded <- as_triangle(
+  experience[uy_m >= as.Date("2023-04-01") &
+             uy_m <= as.Date("2024-03-01")],
+  groups = "coverage", cohort = "uy_m",
   development = "dev_m",
-  loss        = "loss_incr",
-  premium     = "premium_incr",
-  period_from = "2023-04-01",
-  period_to   = "2024-03-01"
+  loss = "loss_incr", premium = "premium_incr"
 )
+tot <- as_total(tri_bounded)
 head(tot)
 ```
 
