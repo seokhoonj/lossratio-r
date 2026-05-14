@@ -1101,6 +1101,87 @@ plot.Total <- function(x,
   if (per_group_m_k) expanded[, (".m_k_join") := NULL]
 
   expanded[, ("is_fit_data") := is_observed & !is_held_out & .pass_filter]
+
+  # segment_wise visualisation: each regime segment shows up as its own
+  # mini-triangle anchored on the latest cal diagonal. Cells inside an
+  # affected group (those listed in `regime$groups` / `regime$changes`)
+  # but outside the segment's mini-triangle drop to `unused`. Algorithm
+  # still uses all observed cells via `segment_id` tagging -- the
+  # mini-triangle is a *display* convention requested by the user to
+  # make per-segment dev coverage visible.
+  #
+  # dev_min(k) = max_cal_idx - last_cohort_rank_of_seg_k + 1
+  #
+  # When `m_k` / `m_k_dt` is supplied (SA hybrid + maturity), the
+  # mini-triangle cut applies only in the ED region (dev < m_k); the
+  # CL region (dev >= m_k) is pooled across cohorts and stays `used`
+  # regardless of segment. Without `m_k` the cut applies to all dev
+  # (pure mini-triangle).
+  if (is_segment_wise) {
+    bp <- regime$changes
+    if (data.table::is.data.table(bp) && nrow(bp) &&
+        "change" %in% names(bp)) {
+
+      rgrp <- intersect(grp,
+                        if (is.null(regime$groups)) character(0) else regime$groups)
+
+      # Apply mini-triangle override per affected (group, segment).
+      apply_seg_filter <- function(mask_rows, cd_vec) {
+        if (!any(mask_rows)) return(invisible())
+        coh_vals <- as.Date(expanded$cohort[mask_rows])
+        seg_id   <- findInterval(coh_vals, cd_vec) + 1L
+        coh_rank <- expanded$.coh_rank[mask_rows]
+        max_cal  <- expanded$.max_cal[mask_rows]
+        dev_vals <- expanded$dev[mask_rows]
+        is_obs   <- expanded$is_observed[mask_rows]
+        is_held  <- expanded$is_held_out[mask_rows]
+        seg_last <- tapply(coh_rank, seg_id, max)
+        dev_min  <- max_cal - seg_last[as.character(seg_id)] + 1L
+
+        # Per-row maturity threshold (CL pooling boundary). +Inf when
+        # no maturity is set -> the `dev >= mk_row` branch is always
+        # FALSE so the filter reduces to pure mini-triangle.
+        mk_row <- if (per_group_m_k) {
+          # `.m_k_join` already exists (set before pass_filter); but
+          # it was dropped above. Re-join lightly here for the
+          # masked subset.
+          mk_lookup <- m_k_dt[
+            expanded[mask_rows, .SD, .SDcols = m_k_join_cols],
+            on = m_k_join_cols, x.m_k
+          ]
+          if (!is.null(m_k)) mk_lookup[is.na(mk_lookup)] <- m_k
+          mk_lookup
+        } else if (!is.null(m_k)) {
+          rep(m_k, sum(mask_rows))
+        } else {
+          rep(Inf, sum(mask_rows))
+        }
+
+        in_cl <- !is.na(mk_row) & dev_vals >= mk_row
+        in_mt <- dev_vals >= dev_min
+
+        expanded[mask_rows,
+                 ("is_fit_data") := is_obs & !is_held & (in_cl | in_mt)]
+      }
+
+      if (length(rgrp) == 0L) {
+        cd_vec <- sort(as.Date(bp[["change"]]))
+        apply_seg_filter(rep(TRUE, nrow(expanded)), cd_vec)
+      } else {
+        affected <- unique(bp[, rgrp, with = FALSE])
+        for (i in seq_len(nrow(affected))) {
+          key    <- affected[i]
+          bp_sub <- bp[key, on = rgrp, nomatch = NULL]
+          cd_vec <- sort(as.Date(bp_sub[["change"]]))
+          if (!length(cd_vec)) next
+          grp_mask <- Reduce(`&`,
+                             lapply(rgrp, function(c) expanded[[c]] == key[[c]]))
+          apply_seg_filter(grp_mask, cd_vec)
+        }
+      }
+    }
+  }
+
   expanded[, ("is_excluded") := is_observed & !is_held_out & !is_fit_data]
 
   expanded[, ("status") := factor(
@@ -1150,14 +1231,16 @@ plot.Total <- function(x,
   grp <- attr(triangle, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  # 2-pass maturity detection: needed whenever `regime` is set so the
-  # SA hybrid mask (and the per-group k* vline downstream) is honoured.
+  # 2-pass maturity detection: run when `regime` is set AND the caller
+  # actually wants maturity ("auto", a `Maturity` object, or a
+  # lazy-detect spec / function). When `maturity` is `NULL` the user
+  # explicitly opted out, so we skip detection and the segment_wise
+  # mini-triangle stays pure (no CL pooling, no k* vline).
   m_k    <- NULL
   m_k_dt <- NULL
-  if (!is.null(regime)) {
+  if (!is.null(regime) && !is.null(maturity)) {
     fit_for_mat <- tryCatch(
-      fit_ata(x = triangle, target = metric,
-              maturity = if (is.null(maturity)) "auto" else maturity),
+      fit_ata(x = triangle, target = metric, maturity = maturity),
       error = function(e) NULL
     )
     if (!is.null(fit_for_mat) &&
@@ -1190,6 +1273,77 @@ plot.Total <- function(x,
     m_k_dt  = m_k_dt
   )
 
+  # Warn when maturity k* disrupts a segment's mini-triangle. Under
+  # SA hybrid (`segment_wise` + maturity), cells with dev >= k* are
+  # pooled across cohorts (no segment cut), so any mini-triangle that
+  # extends past k* is partially or fully absorbed into the pool. The
+  # visual mini-triangle shrinks accordingly -- users typically want
+  # to know.
+  is_seg <- inherits(regime, "Regime") &&
+            identical(regime$treatment, "segment_wise")
+  if (is_seg && (!is.null(m_k) || !is.null(m_k_dt))) {
+    bp <- regime$changes
+    if (data.table::is.data.table(bp) && nrow(bp) &&
+        "change" %in% names(bp)) {
+      rgrp_w <- intersect(grp,
+                          if (is.null(regime$groups)) character(0)
+                          else regime$groups)
+      affected <- if (length(rgrp_w) == 0L) {
+        data.table::data.table(.all = TRUE)
+      } else {
+        unique(bp[, rgrp_w, with = FALSE])
+      }
+      disrupt_msgs <- character(0)
+      for (i in seq_len(nrow(affected))) {
+        key <- if (length(rgrp_w) == 0L) NULL else affected[i]
+        # Pick this group's m_k (per-group dt has priority).
+        mk_grp <- if (!is.null(m_k_dt) && length(rgrp_w) > 0L) {
+          v <- m_k_dt[key, on = rgrp_w, x.m_k]
+          if (length(v) == 0L || all(is.na(v))) m_k else v[1]
+        } else {
+          m_k
+        }
+        if (is.null(mk_grp) || !is.finite(mk_grp)) next
+        # Compute dev range of each segment's mini-triangle in this
+        # group via the usage dt itself.
+        sub <- if (length(rgrp_w) == 0L) {
+          out[is_fit_data == TRUE]
+        } else {
+          out[key, on = rgrp_w][is_fit_data == TRUE]
+        }
+        if (!nrow(sub)) next
+        coh_vals <- as.Date(sub$cohort)
+        cd_vec   <- sort(as.Date(
+          bp[if (length(rgrp_w) > 0L) key else TRUE,
+             on = rgrp_w, nomatch = NULL][["change"]]
+        ))
+        if (!length(cd_vec)) next
+        seg_id   <- findInterval(coh_vals, cd_vec) + 1L
+        dev_rng  <- tapply(sub$dev, seg_id, range)
+        for (sid in names(dev_rng)) {
+          rng <- dev_rng[[sid]]
+          if (rng[1] < mk_grp && rng[2] >= mk_grp) {
+            grp_label <- if (length(rgrp_w) == 0L) "<global>" else
+                         paste(sprintf("%s=%s", rgrp_w, unlist(key)),
+                               collapse = ", ")
+            disrupt_msgs <- c(disrupt_msgs, sprintf(
+              "%s segment %s: mini-triangle dev %d..%d crosses k* = %g",
+              grp_label, sid, rng[1], rng[2], mk_grp))
+          }
+        }
+      }
+      if (length(disrupt_msgs)) {
+        warning(
+          "Maturity k* falls inside one or more segment mini-triangles ",
+          "(SA hybrid pools the dev >= k* tail of each affected segment). ",
+          "Visual mini-triangle is partially absorbed into the CL region:\n  ",
+          paste(disrupt_msgs, collapse = "\n  "),
+          call. = FALSE
+        )
+      }
+    }
+  }
+
   # Carry plot-rendering metadata on attributes so
   # `.plot_triangle_usage()` (and other consumers of `fit$usage`) can
   # draw hlines / vlines / titles without re-passing the filter args.
@@ -1208,7 +1362,7 @@ plot.Total <- function(x,
                                  recent   = NULL,
                                  regime   = NULL,
                                  holdout  = NULL,
-                                 maturity = NULL,
+                                 maturity = "auto",
                                  metric   = "loss",
                                  theme    = c("view", "save", "shiny"),
                                  usage    = NULL,
