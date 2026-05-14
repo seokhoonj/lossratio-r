@@ -44,7 +44,7 @@ str(experience)
 ## 1단계 — 코호트 × 경과 기간 구조 구축
 
 ```{r}
-tri <- build_triangle(
+tri <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",
@@ -56,7 +56,7 @@ class(tri)
 names(tri)
 ```
 
-`build_triangle()` 의 동작:
+`as_triangle()` 의 동작:
 
 - 필수 컬럼 (`cy_m`, `uy_m`, `loss_incr`, `premium_incr`) 의 존재를
   확인하고 expected type 으로 코어션한다,
@@ -128,7 +128,7 @@ summary(lr)
 단계로 활용된다.
 
 ```{r}
-sub <- build_triangle(
+sub <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",
@@ -143,8 +143,8 @@ detect_regime(sub, method = "e_divisive")
 
 ## 다음 단계
 
-- `vignette("aggregation-frameworks")` — `build_triangle`, `build_calendar`,
-  `build_total` 의 사용 시점 비교.
+- `vignette("aggregation-frameworks")` — `as_triangle`, `as_calendar`,
+  `as_total` 의 사용 시점 비교.
 - `vignette("projection")` — `fit_lr()` 에서 `"sa"` / `"ed"` /
   `"cl"` 중 선택 기준.
 - `vignette("chain-ladder-reserving")` — `fit_cl()` 심층 해설 (Mack 분산, tail factor).

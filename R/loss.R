@@ -19,7 +19,7 @@
 #' the loss-ratio composition with delta method is handled by [fit_lr()].
 #'
 #' @param x A `"Triangle"` object. The standardized `"loss"` and
-#'   `"premium"` columns are used (`build_triangle()` produces these).
+#'   `"premium"` columns are used (`as_triangle()` produces these).
 #' @param method One of `"sa"` (default), `"ed"`, or `"cl"`.
 #' @param alpha Variance-structure exponent for the loss fit. Default `1`.
 #' @param regime Optional regime specification applied to both loss-side
@@ -81,7 +81,7 @@
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' tri <- build_triangle(
+#' tri <- as_triangle(
 #'   experience[coverage == "SUR"],
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
@@ -117,6 +117,14 @@ fit_loss <- function(x,
     stop("`premium_fit` must be a PremiumFit object or NULL.",
          call. = FALSE)
 
+  if (!is.numeric(alpha) || length(alpha) != 1L ||
+      is.na(alpha) || !is.finite(alpha))
+    stop("`alpha` must be a single finite numeric value.", call. = FALSE)
+  if (!is.numeric(premium_alpha) || length(premium_alpha) != 1L ||
+      is.na(premium_alpha) || !is.finite(premium_alpha))
+    stop("`premium_alpha` must be a single finite numeric value.",
+         call. = FALSE)
+
   if (!is.numeric(conf_level) || length(conf_level) != 1L ||
       is.na(conf_level) || conf_level <= 0 || conf_level >= 1)
     stop("`conf_level` must be a single numeric value in (0, 1).",
@@ -137,7 +145,7 @@ fit_loss <- function(x,
     m_groups <- attr(maturity, "groups")
     if (is.null(m_groups)) {
       stat_cols <- c("change", "ata_from", "ata_link", "mean", "median", "wt",
-                     "cv", "f", "f_se", "rse", "sigma", "n_obs", "n_valid",
+                     "cv", "f", "f_se", "rse", "sigma", "n_cohorts", "n_valid",
                      "n_inf", "n_nan", "valid_ratio")
       m_groups <- setdiff(names(maturity), stat_cols)
     }
@@ -149,7 +157,7 @@ fit_loss <- function(x,
   }
 
   # Triangle is guaranteed to carry standardized `loss` / `premium`
-  # columns (build_triangle convention).
+  # columns (as_triangle convention).
   grp <- attr(x, "groups")
   coh <- attr(x, "cohort")
   dev <- attr(x, "dev")
@@ -324,7 +332,7 @@ fit_loss <- function(x,
 
   # 10) maturity join per group -----------------------------------------
   if (!is.null(maturity)) {
-    m_join <- .ensure_dt(maturity)
+    m_join <- .copy_dt(maturity)
     m_keep <- c(grp, "ata_from")
     m_join <- m_join[, .SD, .SDcols = intersect(m_keep, names(m_join))]
     data.table::setnames(m_join, "ata_from", "maturity_from")
@@ -492,7 +500,7 @@ print.LossFit <- function(x, ...) {
   }
 
   if (!is.null(x$maturity) && nrow(x$maturity)) {
-    mat <- .ensure_dt(x$maturity)
+    mat <- .copy_dt(x$maturity)
     if (length(grp)) {
       grp_txt <- vapply(seq_len(nrow(mat)), function(i)
         paste(mat[i, grp, with = FALSE], collapse = "/"), character(1L))
@@ -533,7 +541,7 @@ summary.LossFit <- function(object, ...) {
   grp <- object$groups
   if (is.null(grp)) grp <- character(0)
 
-  full <- .ensure_dt(object$full)
+  full <- .copy_dt(object$full)
   by_cols <- c(grp, "cohort")
   out <- full[, .SD[which.max(dev)], by = by_cols]
   keep <- c(by_cols, "loss_proj", "loss_total_se", "loss_total_cv")
@@ -769,7 +777,7 @@ summary.LossFit <- function(object, ...) {
 
   if (is.null(grp)) grp <- character(0)
 
-  raw <- .ensure_dt(triangle)
+  raw <- .copy_dt(triangle)
 
   obs <- raw[, .(
     loss_obs    = .SD[[target]],

@@ -12,7 +12,7 @@
 #' @return A `data.table`.
 #'
 #' @keywords internal
-.ensure_dt <- function(x) {
+.copy_dt <- function(x) {
   if (data.table::is.data.table(x)) {
     data.table::copy(x)
   } else {
@@ -199,7 +199,7 @@
 #'
 #' Like [.get_period_type()] but also recognises the integer development-period
 #' columns (`dev_m` / `dev_q` / `dev_h` / `dev_y`). Used by
-#' [build_triangle()] to verify that `cohort` and `dev` share the
+#' [as_triangle()] to verify that `cohort` and `dev` share the
 #' same granularity. Not used for date formatting (these dev columns
 #' are integers, not Date).
 #'
@@ -772,7 +772,7 @@ get_recent_weights <- function(weights, recent) {
                  nrow(grp_dt), n), call. = FALSE)
 
   work <- data.table::data.table(.idx = seq_len(n), .coh = coh_vals)
-  for (g in rgrp) work[[g]] <- grp_dt[[g]]
+  for (g in rgrp) data.table::set(work, j = g, value = grp_dt[[g]])
 
   out <- integer(n)
   grp_keys <- unique(work[, rgrp, with = FALSE])
@@ -829,6 +829,10 @@ get_recent_weights <- function(weights, recent) {
                                  grp = character(0),
                                  coh, dev, dev_split = NULL) {
 
+  # data.table NSE bindings -- temp columns referenced bare inside `j`
+  # expressions later (per official data.table importing guide).
+  .coh_rank_seg <- .cal_idx_seg <- NULL
+
   if (!data.table::is.data.table(dt))
     stop("`dt` must be a data.table.", call. = FALSE)
 
@@ -845,7 +849,7 @@ get_recent_weights <- function(weights, recent) {
   # `segment_id` tag either way.
   if (inherits(regime, "Regime") &&
       identical(regime$treatment, "segment_wise")) {
-    out    <- .ensure_dt(dt)
+    out    <- .copy_dt(dt)
     grp_dt <- if (length(grp)) out[, grp, with = FALSE] else NULL
     # `[[<-` is base-R's assignment form: it invalidates data.table's
     # `.internal.selfref` and triggers a one-shot self-fix warning on
@@ -989,8 +993,8 @@ get_recent_weights <- function(weights, recent) {
 #' Validate a column-name argument
 #'
 #' @description
-#' Internal helper used by entry-point functions (`build_triangle`,
-#' `build_link`, `fit_cl`, ...) that take column names as plain
+#' Internal helper used by entry-point functions (`as_triangle`,
+#' `as_link`, `fit_cl`, ...) that take column names as plain
 #' character arguments (no NSE). Performs:
 #'   * type check — must be a non-empty character vector
 #'   * optional length-one check — for arguments expected to resolve to
@@ -1077,7 +1081,7 @@ get_recent_weights <- function(weights, recent) {
 #'
 #' Internal helper used by `fit_*()` entry points. Wraps
 #' [.assert_class()] but intercepts `Link` inputs first to print a
-#' message that explains why a `Link` is not a valid input (build_link
+#' message that explains why a `Link` is not a valid input (as_link
 #' is called internally) and how to pass the data correctly.
 #'
 #' @param x The object to check.

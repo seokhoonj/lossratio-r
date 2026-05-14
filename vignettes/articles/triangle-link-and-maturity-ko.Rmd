@@ -37,7 +37,7 @@ chain ladder 또는 손해율 모형을 적합하기 전에 기반이 되는 tri
 library(lossratio)
 data(experience)
 exp <- experience[coverage == "SUR"]
-tri <- build_triangle(
+tri <- as_triangle(
   exp,
   groups   = "coverage",
   cohort   = "uy_m",
@@ -65,7 +65,7 @@ plot_triangle(tri, metric = "lr")          # 누적 lr
 plot_triangle(tri, metric = "lr_incr")     # 증분 lr
 
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly 로 다시 빌드
-tri_q <- build_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr", grain = "Q")
+tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr", grain = "Q")
 plot_triangle(tri_q, label_style = "detail")  # 비율 + (loss / premium)
 ```
 
@@ -86,7 +86,7 @@ head(sm)
 `exposure` 를 지정하면 ED 강도 $g_k = \Delta C^L_k / C^P_k$ 를 담는다.
 
 ```{r}
-ata <- build_link(tri, target = "loss")
+ata <- as_link(tri, target = "loss")
 sm  <- summary(ata, model = "ata", alpha = 1)
 head(sm)
 ```
@@ -100,7 +100,7 @@ head(sm)
 - `f` — WLS 로 추정된 인자 (`loss_from^alpha` 로 볼륨 가중).
 - `f_se`, `rse` — WLS 표준오차 및 상대 표준오차.
 - `sigma` — 링크별 Mack 잔차 sigma.
-- `n_obs`, `n_valid`, `n_inf`, `n_nan`, `valid_ratio` — 관측 수와 링크별
+- `n_cohorts`, `n_valid`, `n_inf`, `n_nan`, `valid_ratio` — 관측 수와 링크별
   유한 ATA 인자의 비율.
 
 ### Link 진단 플롯
@@ -120,7 +120,7 @@ plot_triangle(ata, label_size = 2.5)              # 관측 인자 히트맵
 plot_triangle(ata, label_size = 2.5, show_maturity = TRUE)  # 성숙점 라인 overlay
 
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly Link 로 다시 빌드
-ata_q <- build_link(tri_q, target = "loss")
+ata_q <- as_link(tri_q, target = "loss")
 plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / premium)
 ```
 
@@ -130,7 +130,7 @@ plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / premium)
 ### ED 진단
 
 ```{r}
-ed <- build_link(tri, target = "loss", exposure = "premium")
+ed <- as_link(tri, target = "loss", exposure = "premium")
 sm <- summary(ed, model = "ed", alpha = 1)
 head(sm)
 
@@ -223,7 +223,7 @@ dev) 로 전환되는 dev 를 결정한다.
 반환하며, 각 그룹은 동일한 임계값 하에서 독립적으로 탐지된다.
 
 ```{r}
-tri_all <- build_triangle(
+tri_all <- as_triangle(
   experience,
   groups   = "coverage",
   cohort   = "uy_m",
@@ -239,12 +239,12 @@ detect_maturity(tri_all, target = "loss")
 표시한다.
 
 ```{r}
-plot(build_link(tri_all, target = "loss"), type = "cv")
+plot(as_link(tri_all, target = "loss"), type = "cv")
 ```
 
 ## 4. 빌드 전 검증
 
-경과 기간 시퀀스에 결손이 의심되면 `build_triangle()` 호출 전에 점검한다.
+경과 기간 시퀀스에 결손이 의심되면 `as_triangle()` 호출 전에 점검한다.
 
 ```{r}
 gaps <- validate_triangle(exp, groups = "coverage", cohort = "uy_m", development = "dev_m")
@@ -258,8 +258,8 @@ head(gaps)
 
 - 데이터 원본을 수정한다 (권장).
 - 문제가 있는 코호트를 제외한다.
-- `build_triangle()` 에 `fill_gaps = TRUE` 를 넘겨 누락 셀을 0 으로 채운다
-  (단, `n_obs` 가 실제 관측 개수보다 많아지므로 신중히 사용).
+- `as_triangle()` 에 `fill_gaps = TRUE` 를 넘겨 누락 셀을 0 으로 채운다
+  (단, `n_cohorts` 가 실제 관측 개수보다 많아지므로 신중히 사용).
 
 ## 5. 최근 대각선 부분집합
 
@@ -280,10 +280,10 @@ fit_lr(tri, recent = 12)
 적합 전에 확인할 사항은 다음과 같다.
 
 1. `validate_triangle()` — 스키마와 결손 점검.
-2. `build_triangle()` — 파생 컬럼이 포함된 표준 형태 구축.
+2. `as_triangle()` — 파생 컬럼이 포함된 표준 형태 구축.
 3. `plot(tri)` / `plot_triangle(tri)` — 시각적 점검.
 4. `summary(tri)` — 그룹 수준 중심 경향 확인.
-5. `build_link()` + `plot(link, type = "cv")` — 링크 안정성 확인.
+5. `as_link()` + `plot(link, type = "cv")` — 링크 안정성 확인.
 6. `detect_maturity()` — 그룹별로 합리적 성숙점이 잡히는지 확인.
 7. `detect_regime()` (선택) — 구조적 변화 진단.
 

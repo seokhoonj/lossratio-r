@@ -20,7 +20,7 @@ fit_loss(
 }
 \arguments{
 \item{x}{A \code{"Triangle"} object. The standardized \code{"loss"} and
-\code{"premium"} columns are used (\code{build_triangle()} produces these).}
+\code{"premium"} columns are used (\code{as_triangle()} produces these).}
 
 \item{method}{One of \code{"sa"} (default), \code{"ed"}, or \code{"cl"}.}
 
@@ -111,7 +111,7 @@ callers see them as implementation columns.
 \examples{
 \dontrun{
 data(experience)
-tri <- build_triangle(
+tri <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",

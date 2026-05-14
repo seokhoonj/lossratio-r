@@ -74,12 +74,12 @@
 #'     object (or `NULL`) returned by [.resolve_regime()].}
 #' }
 #'
-#' @seealso [fit_ata()], [fit_ed()], [build_link()],
+#' @seealso [fit_ata()], [fit_ed()], [as_link()],
 #'   [summary.Link()]
 #'
 #' @examples
 #' \dontrun{
-#' tri <- build_triangle(
+#' tri <- as_triangle(
 #'   df,
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
@@ -106,7 +106,7 @@ fit_intensity <- function(x,
 
   regime <- .resolve_regime(regime, x)
 
-  link <- build_link(x, target = target, exposure = exposure)
+  link <- as_link(x, target = target, exposure = exposure)
 
   na_method    <- match.arg(na_method)
   sigma_method <- match.arg(sigma_method)
@@ -257,7 +257,7 @@ print.IntensityFit <- function(x, ...) {
 
   na_method <- match.arg(na_method)
 
-  z <- .ensure_dt(ed_summary)
+  z <- .copy_dt(ed_summary)
   z[, ("g_selected") := g]
 
   # When segment_id is present (segment_wise treatment), LOCF fills must

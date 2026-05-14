@@ -1,10 +1,10 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- build_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
-ata <- build_link(tri, target = "loss")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+ata <- as_link(tri, target = "loss")
 
-test_that("build_link returns class 'Link' with expected columns", {
+test_that("as_link returns class 'Link' with expected columns", {
   expect_s3_class(ata, "Link")
   for (nm in c("coverage", "cohort", "ata_from", "ata_to", "ata_link",
                "target_from", "target_to", "ata")) {
@@ -12,7 +12,7 @@ test_that("build_link returns class 'Link' with expected columns", {
   }
 })
 
-test_that("build_link sets attributes", {
+test_that("as_link sets attributes", {
   for (a in c("groups", "cohort", "dev", "target")) {
     expect_false(is.null(attr(ata, a)), info = paste("missing attr", a))
   }
@@ -29,22 +29,22 @@ test_that("ata == target_to / target_from when target_from > 0", {
 })
 
 test_that("weight adds 'weight' column", {
-  ata_w <- build_link(tri, target = "lr", weight = "premium")
+  ata_w <- as_link(tri, target = "lr", weight = "premium")
   expect_true("weight" %in% names(ata_w))
   expect_equal(attr(ata_w, "weight"), "premium")
 })
 
-test_that("build_link errors on invalid target", {
-  expect_error(build_link(tri, target = "nonexistent"))
+test_that("as_link errors on invalid target", {
+  expect_error(as_link(tri, target = "nonexistent"))
 })
 
-test_that("build_link errors when weight equals target", {
-  expect_error(build_link(tri, target = "loss", weight = "loss"))
+test_that("as_link errors when weight equals target", {
+  expect_error(as_link(tri, target = "loss", weight = "loss"))
 })
 
 test_that("drop_invalid removes non-finite ata", {
-  a1 <- build_link(tri, target = "loss", drop_invalid = FALSE)
-  a2 <- build_link(tri, target = "loss", drop_invalid = TRUE)
+  a1 <- as_link(tri, target = "loss", drop_invalid = FALSE)
+  a2 <- as_link(tri, target = "loss", drop_invalid = TRUE)
   expect_true(nrow(a2) <= nrow(a1))
   expect_true(all(is.finite(a2$ata)))
 })
@@ -141,9 +141,9 @@ test_that("summary.ATAFit returns the link-level ATASummary", {
 test_that("fit_ata with regime drops pre-break cohorts", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, groups = "coverage",
+  tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
-  ata <- build_link(tri, target = "loss")
+  ata <- as_link(tri, target = "loss")
 
   fit_full <- fit_ata(tri, target = "loss")
   fit_brk  <- fit_ata(tri, target = "loss",
@@ -159,9 +159,9 @@ test_that("fit_ata with regime drops pre-break cohorts", {
 test_that("fit_ata with NULL regime is unchanged from default", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, groups = "coverage",
+  tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
-  ata <- build_link(tri, target = "loss")
+  ata <- as_link(tri, target = "loss")
   fit_default <- fit_ata(tri, target = "loss")
   fit_null    <- fit_ata(tri, target = "loss", regime = NULL)
   expect_identical(fit_default$selected$f_selected,
@@ -171,10 +171,10 @@ test_that("fit_ata with NULL regime is unchanged from default", {
 test_that("fit_ata with Regime input preserves the Regime object", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, groups = "coverage",
+  tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   reg <- detect_regime(tri)
-  ata <- build_link(tri, target = "loss")
+  ata <- as_link(tri, target = "loss")
   fit_reg <- fit_ata(tri, target = "loss", regime = reg)
   expect_s3_class(fit_reg$regime, "Regime")
   expect_identical(fit_reg$regime$changes, reg$changes)
@@ -183,7 +183,7 @@ test_that("fit_ata with Regime input preserves the Regime object", {
 test_that("fit_ata with treatment='segment_wise' yields per-segment factors", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, groups = "coverage",
+  tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m",
                         loss = "loss_incr", premium = "premium_incr")
   reg_seg <- regime_at(change = "2024-04-01", treatment = "segment_wise")

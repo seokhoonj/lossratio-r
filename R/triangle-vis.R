@@ -35,7 +35,7 @@
 #' @param summary_min_n Optional minimum number of observations required for
 #'   the summary overlay to be considered reliable. When provided and
 #'   `summary = TRUE`, a vertical reference line is drawn at the midpoint just
-#'   before the first development period where `n_obs < summary_min_n` within each
+#'   before the first development period where `n_cohorts < summary_min_n` within each
 #'   facet. Default is `5`.
 #' @param amount_divisor Numeric scaling factor used only for y-axis labels of
 #'   amount variables. Default is `1e8`.
@@ -136,7 +136,7 @@ plot.Triangle <- function(x,
     summary <- FALSE
   }
 
-  dt <- .ensure_dt(x)
+  dt <- .copy_dt(x)
 
   if (!summary) {
     p <- ggplot2::ggplot(
@@ -173,11 +173,11 @@ plot.Triangle <- function(x,
     target_types <- paste0(metric, c("_mean", "_median", "_wt"))
     sm_long <- sm_long[type %in% target_types]
 
-    sm_long[smr, on = c(grp, "dev"), ("n_obs") := i.n_obs]
+    sm_long[smr, on = c(grp, "dev"), ("n_cohorts") := i.n_cohorts]
 
     if (!is.null(summary_min_n) && is.finite(summary_min_n)) {
       summary_min_n <- as.integer(summary_min_n)
-      sm_long[n_obs < summary_min_n, ("value") := NA_real_]
+      sm_long[n_cohorts < summary_min_n, ("value") := NA_real_]
     }
 
     sm_long[, ("type") := factor(
@@ -210,7 +210,7 @@ plot.Triangle <- function(x,
 
     if (!is.null(summary_min_n) && is.finite(summary_min_n)) {
       vline <- smr[, {
-        idx <- which(n_obs <= summary_min_n)[1L]
+        idx <- which(n_cohorts <= summary_min_n)[1L]
         sd1 <- .SD[[1L]]
 
         if (is.na(idx)) {
@@ -312,7 +312,7 @@ plot.Triangle <- function(x,
 #'
 #' @examples
 #' \dontrun{
-#' x <- build_calendar(
+#' x <- as_calendar(
 #'   df,
 #'   groups   = "coverage",
 #'   calendar = "cy_m",
@@ -360,7 +360,7 @@ plot.Calendar <- function(x,
     stop("Invalid `metric`.", call. = FALSE)
   }
 
-  dt <- .ensure_dt(x)
+  dt <- .copy_dt(x)
 
   if (identical(amount_divisor, "auto"))
     amount_divisor <- .auto_divisor(
@@ -538,7 +538,7 @@ plot_triangle <- function(x, ...) {
 #'
 #' @examples
 #' \dontrun{
-#' d <- build_triangle(
+#' d <- as_triangle(
 #'   df,
 #'   groups   = "pd_cat_nm",
 #'   cohort   = "uy_m",
@@ -613,7 +613,7 @@ plot_triangle.Triangle <- function(x,
       call. = FALSE
     )
 
-  dt <- .ensure_dt(x)
+  dt <- .copy_dt(x)
 
   grain    <- attr(x, "grain")
   coh_type <- .get_period_type(coh, grain = grain)
@@ -791,7 +791,7 @@ plot_triangle.Triangle <- function(x,
 #'
 #' @examples
 #' \dontrun{
-#' tot <- build_total(
+#' tot <- as_total(
 #'   df,
 #'   groups  = "coverage",
 #'   cohort  = "uy_m",
@@ -839,7 +839,7 @@ plot.Total <- function(x,
     stop("`Total` has no `groups`; nothing to plot.", call. = FALSE)
   }
 
-  dt <- .ensure_dt(x)
+  dt <- .copy_dt(x)
 
   if (length(grp) == 1L) {
     dt[, (".group") := as.character(.SD[[1L]]), .SDcols = grp]
@@ -948,7 +948,7 @@ plot.Total <- function(x,
   grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  obs <- .ensure_dt(x)
+  obs <- .copy_dt(x)
 
   # full grid (observed plus future) per group
   grp_coh_dev <- c(grp, "cohort", "dev")

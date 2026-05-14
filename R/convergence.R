@@ -7,28 +7,30 @@
 #' robust scale-invariant dispersion of incremental loss ratio across
 #' cohorts:
 #'
-#' \deqn{\hat{D}_v = \frac{1.4826 \cdot \mathrm{MAD}_i(lr_{i,v})}{|\mathrm{median}_i(lr_{i,v})|}}
+#' \deqn{\mathrm{dispersion} = \frac{1.4826 \cdot \mathrm{MAD}_i(lr_{i,v})}{|\mathrm{median}_i(lr_{i,v})|}}
 #'
-#' Operating on `lr` (incremental) rather than `lr` keeps the metric
-#' inertia-free.
+#' Operating on incremental LR keeps the metric inertia-free.
 #'
 #' @param triangle A `Triangle` object.
-#' @param min_n_cohorts Minimum number of cohorts required to compute
-#'   `D_v`; below this threshold the row is flagged `"sparse"` and `D_v`
-#'   is `NA`. Default `5L`.
+#' @param min_n_cohorts Minimum number of cohorts required to compute the
+#'   dispersion; below this threshold the row is flagged `"sparse"` and
+#'   `dispersion` is `NA`. Default `5L`.
 #'
 #' @return data.table with columns `dev`, `n_cohorts`, `lr_median`,
-#'   `lr_mad`, `D_v`, `flag` (and grouping columns when present).
+#'   `lr_mad`, `dispersion`, `flag` (and grouping columns when present).
 #'
 #' @keywords internal
-.compute_dv <- function(triangle, min_n_cohorts = 5L) {
+.compute_dispersion <- function(triangle, min_n_cohorts = 5L) {
+
+  # data.table NSE NULL bindings for bare column refs in `j` below.
+  lr <- lr_median <- lr_mad <- n_cohorts <- flag <- NULL
 
   .assert_class(triangle, "Triangle")
   grp <- attr(triangle, "groups")
   near_zero_floor <- 1e-8
 
-  dt <- .ensure_dt(triangle)
-  dt <- dt[!is.na(dt$lr)]
+  dt <- .copy_dt(triangle)
+  dt <- dt[!is.na(dt[["lr"]])]
 
   by_cols <- c(grp, "dev")
 
@@ -45,10 +47,11 @@
   )]
 
   .denom <- pmax(abs(out$lr_median), near_zero_floor)
-  out[, ("D_v") := data.table::fifelse(flag == "sparse", NA_real_, lr_mad / .denom)]
+  out[, ("dispersion") := data.table::fifelse(
+    flag == "sparse", NA_real_, lr_mad / .denom)]
 
   data.table::setcolorder(out, c(by_cols, "n_cohorts", "lr_median",
-                                 "lr_mad", "D_v", "flag"))
+                                 "lr_mad", "dispersion", "flag"))
   out[]
 }
 
@@ -75,231 +78,301 @@
 }
 
 
-#' Extract portfolio-level parameter SE on the LR scale
-#'
-#' Aggregates per-cohort parameter SE (on loss scale) to portfolio-level
-#' SE on the LR scale assuming inter-cohort independence:
-#'
-#' \deqn{SE^{param}(LR_{portfolio}) = \sqrt{\sum_i (param\_se_i)^2} / \sum_i premium_{ult,i}}
-#'
-#' @param bt A `Backtest` object.
-#' @return Numeric scalar. `NA_real_` when fields missing.
-#' @keywords internal
-.extract_portfolio_se_param <- function(bt) {
-  if (is.null(bt) || is.null(bt$fit) || is.null(bt$fit$summary))
-    return(NA_real_)
-  s <- data.table::as.data.table(bt$fit$summary)
-  needed <- c("loss_param_se", "premium_ult")
-  if (!all(needed %in% names(s))) return(NA_real_)
-  total_exp <- sum(s$premium_ult, na.rm = TRUE)
-  if (!is.finite(total_exp) || total_exp <= 0) return(NA_real_)
-  ss <- s$loss_param_se
-  ss <- ss[is.finite(ss)]
-  if (length(ss) == 0L) return(NA_real_)
-  sqrt(sum(ss^2)) / total_exp
-}
-
-
 #' Find the development period at which the loss ratio estimate stabilises
 #'
 #' @description
-#' Identify the first valuation \eqn{k^{**}} from which the projected
-#' loss ratio is *predictively* stable, in the sense of the paper's
-#' Section 11 \eqn{k^{**}} criterion:
+#' Identify the first dev \eqn{k^{**}} from which the projected
+#' portfolio loss ratio is observed to be stable up to the maximum
+#' available development period \eqn{V}. Three complementary stability
+#' criteria are computed on the LR backtest path; the user selects
+#' which one defines \eqn{k^{**}} via `method =`.
 #'
-#' \deqn{k^{**} = \min\{v \in [k^*, V - M] : R_v < c \cdot \hat{SE}^{param}_v \text{ and } \hat{D}_v < \tau, \text{ for } M \text{ consecutive valuations}\}}
+#' *Notation mapping (code <-> math)*:
 #'
-#' where \eqn{R_v} is the predictive revision in the projected loss ratio
-#' when calendar diagonal \eqn{D_v} is added, \eqn{\hat{SE}^{param}_v}
-#' is the parameter component of the Mack standard error of the
-#' projection, \eqn{\hat{D}_v} is the robust cross-cohort dispersion
-#' of incremental loss ratios at \eqn{v}, and \eqn{k^*} is the
-#' age-to-age maturity point from [detect_maturity()].
+#' Standard chain-ladder convention: \eqn{i} indexes cohort (origin
+#' period), \eqn{k} indexes development period. The maturity point
+#' \eqn{k^*} and convergence point \eqn{k^{**}} live on the \eqn{k}
+#' axis. Earlier paper drafts used \eqn{v} (valuation) for the same
+#' index in Section 11; we unify on \eqn{k} for consistency.
 #'
-#' Both clauses guard against complementary failure modes:
-#' \eqn{R_v < c \cdot \hat{SE}^{param}_v} requires the projection to
-#' stop responding to new diagonals at a scale-relevant magnitude;
-#' \eqn{\hat{D}_v < \tau} requires cross-cohort agreement on the
-#' incremental-LR level (inertia-free per-period quantity).
+#' \tabular{lll}{
+#'   `dev_max`  \tab \eqn{K_{\max}}                \tab Maximum observable dev (a scalar) \cr
+#'   `dev_cand` \tab \eqn{k \in [k^*, K_{\max}-2]} \tab Integer vector of candidate dev points \cr
+#'   `lr[i]`    \tab \eqn{LR_k}                    \tab Portfolio LR projection at dev = `dev_cand[i]` \cr
+#'   `revision[i]` \tab \eqn{R_k = |LR_k - LR_{k-1}|} \tab Adjacent-step revision (diagnostic) \cr
+#'   `drift_window[i]` \tab \eqn{\max - \min} of \eqn{LR} over \eqn{[k, k+W-1]}     \tab Local window range \cr
+#'   `drift_tail[i]`   \tab \eqn{\max - \min} of \eqn{LR} over \eqn{[k, K_{\max}]}  \tab Tail range \cr
+#'   `slope[i]`        \tab \eqn{\hat\beta_k}, OLS slope of \eqn{LR \sim k} on \eqn{[k, K_{\max}]} \tab Trend test \cr
+#'   `dispersion[i]`   \tab \eqn{\hat{D}_k}                                         \tab Robust cross-cohort spread of incremental LR
+#' }
 #'
-#' This function corresponds to the paper's *convergence point*
-#' \eqn{k^{**}}, paired with \eqn{k^*} (maturity point).
+#' Stability methods (which sequence drives `pass`):
 #'
-#' @param triangle A `Triangle` object (typically from [build_triangle()]).
-#' @param se_mult Multiplier on \eqn{\hat{SE}^{param}_v} (the symbol
-#'   `c` in the math criterion above). Default `0.5`.
-#' @param max_dv Upper bound on \eqn{\hat{D}_v} (the symbol `\tau` in
-#'   the math criterion above). Default `0.15`.
-#' @param min_run Required run length of consecutive passing periods
-#'   (the symbol `M` in the math criterion above). Default `3L`.
-#' @param k_star Pre-computed maturity point. When `NULL`, computed via
-#'   [detect_maturity()] applied to a lr-based ATA.
+#' \describe{
+#'   \item{`"window"`}{Local stability:
+#'     \code{drift_window[i] < max_drift}. Fast, but misses a slow
+#'     monotone drift that fits under `max_drift` per step.}
+#'   \item{`"tail"`}{(default, *reserving-safe*) Global stability:
+#'     \code{drift_tail[i] < max_drift}. Catches monotone drift. The
+#'     first passing dev is later (more conservative) than `"window"`.}
+#'   \item{`"slope"`}{Trend test: \code{|slope[i]| < max_slope}.
+#'     Explicit no-trend check; sensitive to non-linear trajectories.}
+#'   \item{`"all"`}{Strictest: all three pass simultaneously.}
+#' }
+#'
+#' All four pass vectors (`pass_window`, `pass_tail`, `pass_slope`,
+#' `pass`) and the underlying diagnostic series are returned
+#' regardless of the chosen `method`, so the analyst can inspect every
+#' criterion and re-decide.
+#'
+#' Across all methods, a cross-cohort agreement clause
+#' \code{dispersion[i] < max_dispersion} is required in addition.
+#'
+#' This replaces an earlier formulation \eqn{R_k < c \cdot
+#' \hat{SE}^{param}_k} (paper Section 11). The paper's SE-normalised
+#' form is asymptotically broken on large portfolios:
+#' \eqn{\hat{SE}^{param}} shrinks as \eqn{1/\sqrt{n}} while \eqn{R_k}
+#' has a structural noise floor, so the ratio diverges and the
+#' criterion never fires.
+#'
+#' **Caveat (reserving)**: detected `conv_k` reflects stability *up
+#' to* `dev_max` (\eqn{K_{\max}}) only -- it is *not* an asymptotic
+#' guarantee that the projection will not drift past
+#' \eqn{K_{\max}}. Treat `conv_k` as a diagnostic for "from here on,
+#' what we observe is stable", not as a guarantee of future
+#' stability. For reserving applications, prefer `method = "tail"` or
+#' `"all"` over `"window"`, attach an IBNR margin via
+#' `fit_lr$summary` SE/CI columns, and weigh the *evidence span*
+#' (`dev_max - conv_k`): a `conv_k` near `dev_max` has thin evidence.
+#'
+#' @param triangle A `Triangle` object (typically from [as_triangle()]).
+#' @param method Which stability criterion defines `conv_k`. One of
+#'   `"tail"` (default), `"window"`, `"slope"`, or `"all"`. See the
+#'   description for semantics and the reserving caveat.
+#' @param max_drift Upper bound on the drift metric (window or tail),
+#'   in LR units. Default `0.01` (1pp). Raise for noisier or
+#'   longer-tail books.
+#' @param max_slope Upper bound on \code{|slope[i]|}, the OLS slope of
+#'   \eqn{LR \sim k} on \eqn{[k, K_{\max}]}, in LR-per-dev units.
+#'   Default `1e-3` (0.1pp per dev). Used by `method = "slope"` /
+#'   `"all"`.
+#' @param max_dispersion Upper bound on the cross-cohort dispersion
+#'   \eqn{\hat{D}_k}. Default `0.15`.
+#' @param window Drift window length \eqn{W} (in dev steps): the
+#'   number of consecutive valuations used by the `"window"` method to
+#'   compute `drift_window`. Default `5L`. Note: other functions in the
+#'   package also expose a `window` argument (e.g. `detect_regime()`
+#'   for e-divisive segment width); here it controls *only* the drift
+#'   metric, not the e-divisive algorithm.
+#' @param mat_k Pre-computed maturity point. When `NULL`, computed via
+#'   [detect_maturity()] applied to an lr-based ATA.
 #' @param holdout_max Maximum holdout depth used for the rolling
-#'   backtest. When `NULL`, set to `max(min_run, floor((V - k_star) / 2))`.
+#'   backtest. When `NULL`, set to
+#'   `max(window, floor((dev_max - mat_k) / 2))`.
 #' @param min_n_cohorts Minimum number of cohorts required to compute
 #'   \eqn{\hat{D}_v}. Default `5L`.
 #' @param ... Additional arguments forwarded to `backtest()` (and thence
 #'   to `fit_lr()`), e.g. `loss_method`, `recent`, `loss_regime`.
 #'
-#' @return An object of class `Convergence` (named list) containing the
-#'   detected `k_conv`, the candidate sequence `v`, and the diagnostic
-#'   sequences `R_v`, `SE_param_v`, `D_v`, `pass_v`. Metadata is carried
-#'   on attributes (`groups`, `target`, `fit_fn_name`).
+#' @return An object of class `Convergence` (named list). Includes the
+#'   slots tabulated in the notation mapping above
+#'   (`dev_max`, `dev_cand`, `lr`, `revision`, `drift_window`,
+#'   `drift_tail`, `slope`, `dispersion`), per-method pass vectors
+#'   (`pass_window`, `pass_tail`, `pass_slope`, `pass`), the threshold
+#'   parameters, and metadata attributes (`groups`, `target`,
+#'   `dispatcher`).
 #'
 #' @seealso [detect_maturity()], [backtest()], [fit_lr()]
 #'
 #' @export
 detect_convergence <- function(triangle,
-                              se_mult       = 0.5,
-                              max_dv        = 0.15,
-                              min_run       = 3L,
-                              k_star        = NULL,
+                              method        = c("tail", "window",
+                                                "slope", "all"),
+                              max_drift     = 0.01,
+                              max_slope     = 1e-3,
+                              max_dispersion        = 0.15,
+                              window        = 5L,
+                              mat_k        = NULL,
                               holdout_max   = NULL,
                               min_n_cohorts = 5L,
                               ...) {
 
   # LR convergence detection always backtests the LR projection from
-  # fit_lr; the fitter is fixed (no fit_fn dispatch). Recorded for
-  # backwards compatibility with consumers that read attr(.,
-  # "fit_fn_name").
-  fit_fn_name <- "fit_lr"
+  # fit_lr; the dispatcher is fixed (no `target=` dispatch).
+  dispatcher <- "fit_lr"
 
   # 1) validate inputs -------------------------------------------------
   .assert_class(triangle, "Triangle")
+  method <- match.arg(method)
 
-  if (!is.numeric(se_mult) || length(se_mult) != 1L ||
-      is.na(se_mult) || se_mult <= 0)
-    stop("`se_mult` must be a single positive numeric value.",
+  if (!is.numeric(max_drift) || length(max_drift) != 1L ||
+      is.na(max_drift) || max_drift <= 0)
+    stop("`max_drift` must be a single positive numeric value.",
          call. = FALSE)
-  if (!is.numeric(max_dv)  || length(max_dv)  != 1L ||
-      is.na(max_dv)  || max_dv  <= 0)
-    stop("`max_dv` must be a single positive numeric value.",
+  if (!is.numeric(max_slope) || length(max_slope) != 1L ||
+      is.na(max_slope) || max_slope <= 0)
+    stop("`max_slope` must be a single positive numeric value.",
          call. = FALSE)
-  if (!is.numeric(min_run) || length(min_run) != 1L ||
-      is.na(min_run) || min_run < 1)
-    stop("`min_run` must be a single integer >= 1.", call. = FALSE)
-  min_run <- as.integer(min_run)
+  if (!is.numeric(max_dispersion)  || length(max_dispersion)  != 1L ||
+      is.na(max_dispersion)  || max_dispersion  <= 0)
+    stop("`max_dispersion` must be a single positive numeric value.",
+         call. = FALSE)
+  if (!is.numeric(window) || length(window) != 1L ||
+      is.na(window) || window < 2)
+    stop("`window` must be a single integer >= 2.", call. = FALSE)
+  window <- as.integer(window)
 
   grp <- attr(triangle, "groups")
   if (is.null(grp)) grp <- character(0)
   dev <- attr(triangle, "dev")
 
-  # 2) resolve k_star --------------------------------------------------
-  if (is.null(k_star)) {
+  # 2) resolve mat_k --------------------------------------------------
+  if (is.null(mat_k)) {
     mat     <- detect_maturity(triangle, target = "lr", weight = "premium")
-    k_star  <- suppressWarnings(min(mat$change, na.rm = TRUE))
-    if (!is.finite(k_star))
-      stop("Could not derive `k_star` from `detect_maturity()`; ",
+    mat_k  <- suppressWarnings(min(mat$change, na.rm = TRUE))
+    if (!is.finite(mat_k))
+      stop("Could not derive `mat_k` from `detect_maturity()`; ",
            "supply it explicitly.", call. = FALSE)
   }
-  k_star <- as.integer(k_star)
+  mat_k <- as.integer(mat_k)
 
-  # 3) determine V (max observable dev) and holdout window -------------
-  V <- max(triangle$dev, na.rm = TRUE)
+  # 3) determine dev_max (max observable dev) + holdout window --------
+  dev_max <- max(triangle$dev, na.rm = TRUE)
   if (is.null(holdout_max)) {
-    holdout_max <- max(min_run, as.integer(floor((V - k_star) / 2)))
+    holdout_max <- max(window, as.integer(floor((dev_max - mat_k) / 2)))
   }
   holdout_max <- as.integer(holdout_max)
 
-  # candidate v sequence: [k_star, V - min_run] so a run still fits
-  v_seq <- if (V - min_run >= k_star)
-    seq.int(k_star, V - min_run) else integer(0)
+  # candidate dev sequence: [mat_k, dev_max - 2] so at least 2 points
+  # fit in a tail / slope window (window method narrows further below).
+  dev_cand <- if (dev_max - 2L >= mat_k)
+    seq.int(mat_k, dev_max - 2L) else integer(0)
 
-  # 4) build R_v sequence via repeated backtest ------------------------
-  # For each v: bt_prev uses data through v-1 (holdout = V-v+1),
-  # bt_curr uses data through v (holdout = V-v). R_v is the change
-  # in portfolio-level projected ultimate LR.
-  R_v        <- rep(NA_real_, length(v_seq))
-  SE_param_v <- rep(NA_real_, length(v_seq))
+  # 4) compute `lr` at each candidate dev via cached backtest ----------
+  # `lr[i]` is the portfolio-level projected ultimate LR when fitting
+  # with data through dev = dev_cand[i] (i.e. holdout = dev_max -
+  # dev_cand[i]). The backtest call is cached per holdout depth so we
+  # don't redo work.
+  lr <- rep(NA_real_, length(dev_cand))
 
-  # Pre-compute LR/SE at each holdout depth we'll need, so adjacent
-  # v's share cached calls (each holdout depth used by two v's at most).
   lr_cache <- numeric(0)
-  se_cache <- numeric(0)
   cache_holdout <- integer(0)
 
-  .get_lr_se <- function(h) {
+  .get_lr <- function(h) {
     idx <- match(h, cache_holdout)
-    if (!is.na(idx)) {
-      return(list(lr = lr_cache[idx], se = se_cache[idx]))
-    }
+    if (!is.na(idx)) return(lr_cache[idx])
     bt <- tryCatch(
       backtest(triangle, holdout = h, target = "lr", ...),
       error = function(e) NULL
     )
-    lr <- .extract_portfolio_lr(bt)
-    se <- .extract_portfolio_se_param(bt)
+    val <- .extract_portfolio_lr(bt)
     cache_holdout <<- c(cache_holdout, h)
-    lr_cache      <<- c(lr_cache,      lr)
-    se_cache      <<- c(se_cache,      se)
-    list(lr = lr, se = se)
+    lr_cache      <<- c(lr_cache,      val)
+    val
   }
 
-  for (i in seq_along(v_seq)) {
-    v <- v_seq[i]
-    h_curr <- V - v          # data through v
-    h_prev <- V - v + 1L     # data through v-1
-
-    if (h_curr < 1L || h_prev > holdout_max) next
-
-    curr <- .get_lr_se(h_curr)
-    prev <- .get_lr_se(h_prev)
-
-    if (is.finite(curr$lr) && is.finite(prev$lr))
-      R_v[i] <- abs(curr$lr - prev$lr)
-    if (is.finite(curr$se))
-      SE_param_v[i] <- curr$se
+  for (i in seq_along(dev_cand)) {
+    h <- dev_max - dev_cand[i]
+    if (h < 1L || h > holdout_max) next
+    lr[i] <- .get_lr(h)
   }
 
-  # 5) build D_v sequence ----------------------------------------------
-  D_v <- rep(NA_real_, length(v_seq))
-  if (length(v_seq)) {
-    dv_tbl <- .compute_dv(triangle, min_n_cohorts = min_n_cohorts)
+  # 5) adjacent-step revision (diagnostic only) ------------------------
+  revision <- c(NA_real_, abs(diff(lr)))
+
+  # 6) window drift -- range of `lr` over [i, i + window - 1] ----------
+  drift_window <- rep(NA_real_, length(dev_cand))
+  for (i in seq_along(dev_cand)) {
+    j <- i + window - 1L
+    if (j > length(dev_cand)) break
+    w <- lr[i:j]
+    if (all(is.finite(w)))
+      drift_window[i] <- max(w) - min(w)
+  }
+
+  # 7) tail drift -- range of `lr` over [i, end] -----------------------
+  drift_tail <- rep(NA_real_, length(dev_cand))
+  for (i in seq_along(dev_cand)) {
+    w <- lr[i:length(dev_cand)]
+    w <- w[is.finite(w)]
+    if (length(w) >= 2L)
+      drift_tail[i] <- max(w) - min(w)
+  }
+
+  # 8) slope -- OLS slope of `lr ~ dev` on [i, end] --------------------
+  slope <- rep(NA_real_, length(dev_cand))
+  for (i in seq_along(dev_cand)) {
+    y <- lr[i:length(dev_cand)]
+    x <- dev_cand[i:length(dev_cand)]
+    ok <- is.finite(y)
+    if (sum(ok) >= 2L) {
+      yo <- y[ok]; xo <- x[ok]
+      vx <- stats::var(xo)
+      if (is.finite(vx) && vx > 0)
+        slope[i] <- stats::cov(xo, yo) / vx
+    }
+  }
+
+  # 9) cross-cohort dispersion at each candidate dev -------------------
+  dispersion <- rep(NA_real_, length(dev_cand))
+  if (length(dev_cand)) {
+    disp_tbl <- .compute_dispersion(triangle, min_n_cohorts = min_n_cohorts)
     if (length(grp)) {
-      # collapse across groups: take median D_v across groups at each dev
-      dv_tbl <- dv_tbl[, list(D_v = stats::median(D_v, na.rm = TRUE)),
-                       by = "dev"]
+      # collapse across groups: take median across groups at each dev
+      disp_tbl <- disp_tbl[, list(
+        dispersion = stats::median(dispersion, na.rm = TRUE)
+      ), by = "dev"]
     }
-    D_v <- dv_tbl$D_v[match(v_seq, dv_tbl$dev)]
+    dispersion <- disp_tbl$dispersion[match(dev_cand, disp_tbl$dev)]
   }
 
-  # 6) two-clause pass test --------------------------------------------
-  pass_v <- is.finite(R_v) & is.finite(SE_param_v) & is.finite(D_v) &
-            (R_v < se_mult * SE_param_v) & (D_v < max_dv)
+  # 10) per-method pass tests ------------------------------------------
+  pass_d      <- is.finite(dispersion) & (dispersion < max_dispersion)
+  pass_window <- is.finite(drift_window) & (drift_window < max_drift) & pass_d
+  pass_tail   <- is.finite(drift_tail)   & (drift_tail   < max_drift) & pass_d
+  pass_slope  <- is.finite(slope)        & (abs(slope)   < max_slope) & pass_d
+  pass_all    <- pass_window & pass_tail & pass_slope
 
-  # 7) first run of length min_run -------------------------------------
-  k_conv <- NA_integer_
-  if (length(pass_v) >= min_run) {
-    for (i in seq_len(length(pass_v) - min_run + 1L)) {
-      if (all(pass_v[i:(i + min_run - 1L)])) {
-        k_conv <- v_seq[i]
-        break
-      }
-    }
-  }
+  pass <- switch(method,
+                 window = pass_window,
+                 tail   = pass_tail,
+                 slope  = pass_slope,
+                 all    = pass_all)
 
-  # 8) assemble return object ------------------------------------------
+  # 11) first passing dev ----------------------------------------------
+  conv_k <- if (any(pass, na.rm = TRUE))
+    dev_cand[which(pass)[1L]] else NA_integer_
+
+  # 12) assemble return object -----------------------------------------
   out <- list(
     call          = match.call(),
-    k_conv        = k_conv,
-    k_star        = k_star,
-    V             = V,
-    v             = v_seq,
-    R_v           = R_v,
-    SE_param_v    = SE_param_v,
-    D_v           = D_v,
-    pass_v        = pass_v,
-    se_mult       = se_mult,
-    max_dv        = max_dv,
-    min_run       = min_run,
+    conv_k        = conv_k,
+    method        = method,
+    mat_k        = mat_k,
+    dev_max       = dev_max,
+    dev_cand      = dev_cand,
+    lr            = lr,
+    revision      = revision,
+    drift_window  = drift_window,
+    drift_tail    = drift_tail,
+    slope         = slope,
+    dispersion    = dispersion,
+    pass_window   = pass_window,
+    pass_tail     = pass_tail,
+    pass_slope    = pass_slope,
+    pass          = pass,
+    max_drift     = max_drift,
+    max_slope     = max_slope,
+    max_dispersion        = max_dispersion,
+    window        = window,
     holdout_max   = holdout_max,
     min_n_cohorts = min_n_cohorts
   )
 
-  data.table::setattr(out, "groups",   grp)
+  data.table::setattr(out, "groups",     grp)
   data.table::setattr(out, "target",     "lr")
-  data.table::setattr(out, "fit_fn_name", fit_fn_name)
-  data.table::setattr(out, "dev",     dev)
+  data.table::setattr(out, "dispatcher", dispatcher)
+  data.table::setattr(out, "dev",        dev)
   class(out) <- "Convergence"
   out
 }
@@ -310,16 +383,43 @@ detect_convergence <- function(triangle,
 #' @method print Convergence
 #' @export
 print.Convergence <- function(x, ...) {
+  n        <- length(x$dev_cand)
+  n_win    <- sum(x$pass_window, na.rm = TRUE)
+  n_tail   <- sum(x$pass_tail,   na.rm = TRUE)
+  n_slope  <- sum(x$pass_slope,  na.rm = TRUE)
+  n_all    <- sum(x$pass_window & x$pass_tail & x$pass_slope, na.rm = TRUE)
+  span     <- if (is.finite(x$conv_k)) x$dev_max - x$conv_k else NA_integer_
+  mark     <- function(m) if (identical(x$method, m)) "  <- method" else ""
+
+  # Build aligned criterion strings: `_d` = display, `_p` = padded.
+  drift_d  <- format(x$max_drift,      nsmall = 0, scientific = FALSE)
+  slope_d  <- format(x$max_slope,      nsmall = 0, scientific = FALSE)
+  disp_d   <- format(x$max_dispersion, nsmall = 0, scientific = FALSE)
+  thr_w    <- max(nchar(drift_d), nchar(slope_d))
+  drift_p  <- formatC(drift_d, width = thr_w, flag = "-")
+  slope_p  <- formatC(slope_d, width = thr_w, flag = "-")
+
+  fmt_line <- function(label, n_pass, metric, thr) {
+    sprintf("    %-7s: %2d/%-2d (%-12s < %s & dispersion < %s)%s",
+            label, n_pass, n, metric, thr, disp_d, mark(label))
+  }
+
   cat("<Convergence>\n")
-  cat("k_conv       :", x$k_conv, "\n")
-  cat("k_star       :", x$k_star,   "\n")
-  cat("V (max dev)  :", x$V,        "\n")
-  cat("criterion    : R_v < ", x$se_mult, " * SE_param_v  AND  D_v < ",
-      x$max_dv, "  (min_run = ", x$min_run, ")\n", sep = "")
-  cat("fit_fn       :", attr(x, "fit_fn_name"), "\n")
-  n_pass <- sum(x$pass_v, na.rm = TRUE)
-  cat("v candidates :", length(x$v), " (",
-      n_pass, " pass both clauses)\n", sep = "")
+  cat(sprintf("  method     : %s\n", x$method))
+  cat(sprintf("  conv_k     : %s%s\n",
+              if (is.finite(x$conv_k)) x$conv_k else "NA",
+              if (is.finite(span))
+                sprintf("   (evidence span dev_max - conv_k = %d)", span)
+              else ""))
+  cat(sprintf("  mat_k      : %d\n", x$mat_k))
+  cat(sprintf("  dev_max    : %d\n", x$dev_max))
+  cat(sprintf("  candidates : %d\n", n))
+  cat("  passes :\n")
+  cat(fmt_line("window", n_win,   "drift_window", drift_p), "\n", sep = "")
+  cat(fmt_line("tail",   n_tail,  "drift_tail",   drift_p), "\n", sep = "")
+  cat(fmt_line("slope",  n_slope, "|slope|",      slope_p), "\n", sep = "")
+  cat(sprintf("    all    : %2d/%-2d (window AND tail AND slope)%s\n",
+              n_all, n, mark("all")))
   invisible(x)
 }
 
@@ -327,29 +427,34 @@ print.Convergence <- function(x, ...) {
 #' @export
 summary.Convergence <- function(object, ...) {
   data.table::data.table(
-    v          = object$v,
-    R_v        = object$R_v,
-    SE_param_v = object$SE_param_v,
-    R_over_SE  = object$R_v / object$SE_param_v,
-    D_v        = object$D_v,
-    pass       = object$pass_v
+    dev          = object$dev_cand,
+    lr           = object$lr,
+    revision     = object$revision,
+    drift_window = object$drift_window,
+    drift_tail   = object$drift_tail,
+    slope        = object$slope,
+    dispersion   = object$dispersion,
+    pass_window  = object$pass_window,
+    pass_tail    = object$pass_tail,
+    pass_slope   = object$pass_slope,
+    pass         = object$pass
   )
 }
 
 #' Plot the Convergence diagnostic
 #'
 #' @description
-#' Two-panel diagnostic showing the dual criterion driving \eqn{k^{**}}:
+#' Four-panel diagnostic showing the LR backtest path and each
+#' stability metric vs. its threshold:
 #' \itemize{
-#'   \item Top panel: \eqn{R_v / \hat{SE}^{param}_v} (predictive
-#'     revision normalised by parameter SE), with horizontal guide at
-#'     the threshold `se_mult`.
-#'   \item Bottom panel: \eqn{\hat{D}_v} (robust cross-cohort
-#'     dispersion of incremental loss ratio), with horizontal guide at
-#'     the threshold `max_dv`.
+#'   \item Top: `lr` (the portfolio LR projection at each valuation).
+#'   \item Then for each of `drift_window`, `drift_tail`, `|slope|`,
+#'     `dispersion`: the metric over `v` with a dashed horizontal
+#'     line at the threshold (`max_drift`, `max_slope`, or `max_dispersion`).
 #' }
-#' Vertical guides mark `k_star` (dashed) and `k_conv` (solid). A
-#' point falling below both threshold lines passes the joint criterion.
+#' Vertical guides mark `mat_k` (dashed) and the detected `conv_k`
+#' for the chosen `method` (solid). The chosen-method panel title is
+#' annotated.
 #'
 #' @param x An object of class `Convergence`.
 #' @param theme String passed to [.switch_theme()].
@@ -365,43 +470,39 @@ plot.Convergence <- function(x,
   .assert_class(x, "Convergence")
   theme <- match.arg(theme)
 
-  # build long-form data: one row per (v, metric)
-  R_over_SE <- x$R_v / x$SE_param_v
+  panels <- c("lr", "drift_window", "drift_tail", "|slope|", "dispersion")
   long <- data.table::rbindlist(list(
-    data.table::data.table(
-      v         = x$v,
-      metric    = "R[v] / SE[param]",
-      value     = R_over_SE,
-      threshold = x$se_mult
-    ),
-    data.table::data.table(
-      v         = x$v,
-      metric    = "D[v]",
-      value     = x$D_v,
-      threshold = x$max_dv
-    )
+    data.table::data.table(dev = x$dev_cand, metric = "lr",
+                           value = x$lr,           threshold = NA_real_),
+    data.table::data.table(dev = x$dev_cand, metric = "drift_window",
+                           value = x$drift_window, threshold = x$max_drift),
+    data.table::data.table(dev = x$dev_cand, metric = "drift_tail",
+                           value = x$drift_tail,   threshold = x$max_drift),
+    data.table::data.table(dev = x$dev_cand, metric = "|slope|",
+                           value = abs(x$slope),   threshold = x$max_slope),
+    data.table::data.table(dev = x$dev_cand, metric = "dispersion",
+                           value = x$dispersion,   threshold = x$max_dispersion)
   ))
-  long[, ("metric") := factor(metric, levels = c("R[v] / SE[param]", "D[v]"))]
+  long[, ("metric") := factor(metric, levels = panels)]
 
-  # threshold table (one row per facet) for geom_hline
-  threshold_tbl <- data.table::data.table(
-    metric    = factor(c("R[v] / SE[param]", "D[v]"),
-                       levels = c("R[v] / SE[param]", "D[v]")),
-    threshold = c(x$se_mult, x$max_dv)
+  thr_tbl <- data.table::data.table(
+    metric    = factor(c("drift_window", "drift_tail", "|slope|", "dispersion"),
+                       levels = panels),
+    threshold = c(x$max_drift, x$max_drift, x$max_slope, x$max_dispersion)
   )
 
   p <- ggplot2::ggplot(
     long,
-    ggplot2::aes(x = .data[["v"]], y = .data[["value"]])
+    ggplot2::aes(x = .data[["dev"]], y = .data[["value"]])
   ) +
     ggplot2::geom_hline(
-      data     = threshold_tbl,
+      data     = thr_tbl,
       mapping  = ggplot2::aes(yintercept = .data[["threshold"]]),
       linetype = "dashed",
       color    = "#d62728"
     ) +
     ggplot2::geom_vline(
-      xintercept = x$k_star,
+      xintercept = x$mat_k,
       linetype   = "dotted",
       color      = "grey40"
     ) +
@@ -409,24 +510,24 @@ plot.Convergence <- function(x,
     ggplot2::geom_point(size = 1.6, color = "#1f77b4") +
     ggplot2::facet_wrap(
       ggplot2::vars(.data[["metric"]]),
-      ncol     = 1, scales = "free_y",
-      labeller = ggplot2::label_parsed
+      ncol = 1, scales = "free_y"
     ) +
     ggplot2::labs(
       title    = "LR stability diagnostic",
       subtitle = sprintf(
-        "k_star = %s   k_conv = %s   (se_mult = %s, max_dv = %s, min_run = %d)",
-        x$k_star,
-        ifelse(is.na(x$k_conv), "NA", x$k_conv),
-        x$se_mult, x$max_dv, x$min_run
+        "method = %s   mat_k = %s   conv_k = %s   (max_drift = %s, max_slope = %s, max_dispersion = %s, window = %d)",
+        x$method,
+        x$mat_k,
+        ifelse(is.na(x$conv_k), "NA", x$conv_k),
+        x$max_drift, x$max_slope, x$max_dispersion, x$window
       ),
       x = .pretty_var_label(attr(x, "dev")),
       y = NULL
     )
 
-  if (!is.na(x$k_conv)) {
+  if (!is.na(x$conv_k)) {
     p <- p + ggplot2::geom_vline(
-      xintercept = x$k_conv,
+      xintercept = x$conv_k,
       linetype   = "solid",
       color      = "#2ca02c",
       linewidth  = 0.8

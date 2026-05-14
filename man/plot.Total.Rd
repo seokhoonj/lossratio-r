@@ -47,7 +47,7 @@ scale and labelled using \code{amount_divisor}.
 }
 \examples{
 \dontrun{
-tot <- build_total(
+tot <- as_total(
   df,
   groups  = "coverage",
   cohort  = "uy_m",

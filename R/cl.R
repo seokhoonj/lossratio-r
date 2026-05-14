@@ -4,7 +4,7 @@
 #' Fit a Mack (1993) chain ladder projection from an object of class
 #' `"Triangle"`. The function works on long-form cumulative data and does
 #' not require a complete triangle. Age-to-age factors are estimated
-#' through [build_link()] and [fit_ata()], then applied recursively. The
+#' through [as_link()] and [fit_ata()], then applied recursively. The
 #' point forecast follows the standard recursion, and prediction
 #' uncertainty is decomposed into process variance and parameter variance.
 #'
@@ -16,7 +16,7 @@
 #'   retained for future extensibility.
 #' @param target A single cumulative target variable (column to project).
 #'   Typical choices are `"loss"`, `"premium"`, or `"lr"`.
-#' @param weight An optional column name passed to [build_link()] as
+#' @param weight An optional column name passed to [as_link()] as
 #'   the WLS weight variable. Typically `"premium"` when `target = "lr"`.
 #'   Default is `NULL`.
 #' @param alpha Numeric scalar controlling the variance structure in
@@ -62,7 +62,7 @@
 #'       including process/parameter SE and CV columns.}
 #'     \item{`proj`}{`data.table` identical to `full` with observed cells
 #'       set to `NA`.}
-#'     \item{`link`}{The `"Link"` object produced by [build_link()].}
+#'     \item{`link`}{The `"Link"` object produced by [as_link()].}
 #'     \item{`summary`}{Cohort-level summary with latest, ultimate,
 #'       reserve, and Mack standard errors.}
 #'     \item{`selected`}{`data.table` of selected factors used for
@@ -85,7 +85,7 @@
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' tri <- build_triangle(
+#' tri <- as_triangle(
 #'   experience[coverage == "SUR"],
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
@@ -118,6 +118,10 @@ fit_cl <- function(x,
   .assert_triangle_input(x, "fit_cl()")
   method       <- match.arg(method)
   sigma_method <- match.arg(sigma_method)
+
+  if (!is.numeric(alpha) || length(alpha) != 1L ||
+      is.na(alpha) || !is.finite(alpha))
+    stop("`alpha` must be a single finite numeric value.", call. = FALSE)
 
   # resolve regime dispatch (NULL / Regime / "auto" / function) to a
   # `Regime` object (or NULL) before forwarding to `fit_ata()`.
@@ -198,7 +202,7 @@ fit_cl <- function(x,
 
   # 8) join RP scale for process variance when weight is used ---------
   if (use_external_weight) {
-    raw <- .ensure_dt(x)
+    raw <- .copy_dt(x)
     wt_obs <- raw[
       , .(wt_obs = .SD[[wt]]),
       by = c(grp, "cohort", "dev")
@@ -430,7 +434,7 @@ print.CLFit <- function(x, ...) {
 
   if (is.null(grp)) grp <- character(0)
 
-  raw <- .ensure_dt(triangle)
+  raw <- .copy_dt(triangle)
 
   obs <- raw[
     , .(target_obs = .SD[[target]]),
@@ -518,7 +522,7 @@ print.CLFit <- function(x, ...) {
   grp <- attr(ata_fit$link, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  link_long <- .ensure_dt(ata_fit$link)
+  link_long <- .copy_dt(ata_fit$link)
   sel       <- data.table::copy(ata_fit$selected)
 
   if (!"sigma2" %in% names(sel))

@@ -7,7 +7,7 @@
 \method{summary}{Link}(object, model = NULL, alpha = 1, digits = NULL, ...)
 }
 \arguments{
-\item{object}{A \code{Link} object from \code{\link[=build_link]{build_link()}}.}
+\item{object}{A \code{Link} object from \code{\link[=as_link]{as_link()}}.}
 
 \item{model}{Either \code{"ata"} (multiplicative chain-ladder factors) or
 \code{"ed"} (additive exposure-driven intensities). When \code{model = "ed"},
@@ -25,5 +25,5 @@ Either an \code{ATASummary} (model = \code{"ata"}) or \code{EDSummary}
 Dispatch to the appropriate diagnostic table based on \code{model}.
 }
 \seealso{
-\code{\link[=build_link]{build_link()}}, \code{\link[=detect_maturity]{detect_maturity()}}
+\code{\link[=as_link]{as_link()}}, \code{\link[=detect_maturity]{detect_maturity()}}
 }

@@ -42,7 +42,7 @@ str(experience)
 ## Step 1 — Build the cohort × dev structure
 
 ```{r}
-tri <- build_triangle(
+tri <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",
@@ -54,7 +54,7 @@ class(tri)
 names(tri)
 ```
 
-`build_triangle()`:
+`as_triangle()`:
 
 - validates required columns (`cy_m`, `uy_m`, `loss_incr`,
   `premium_incr`) and coerces them to the expected types,
@@ -133,7 +133,7 @@ differently from earlier ones. Useful as a preprocessing step before
 loss-ratio fitting on a homogeneous subset:
 
 ```{r}
-sub <- build_triangle(
+sub <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",
@@ -148,8 +148,8 @@ See `vignette("regime")` for the dedicated walkthrough.
 
 ## Where to next
 
-- `vignette("aggregation-frameworks")` — when to use `build_triangle`
-  vs `build_calendar` vs `build_total`.
+- `vignette("aggregation-frameworks")` — when to use `as_triangle`
+  vs `as_calendar` vs `as_total`.
 - `vignette("projection")` — choosing among `"sa"` / `"ed"` /
   `"cl"` in `fit_lr()`.
 - `vignette("chain-ladder-reserving")` — `fit_cl()` deep dive (Mack variance,

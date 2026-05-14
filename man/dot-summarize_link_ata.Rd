@@ -8,7 +8,7 @@
 }
 \arguments{
 \item{object}{An object of class \code{"Link"}, typically produced by
-\code{\link[=build_link]{build_link()}}.}
+\code{\link[=as_link]{as_link()}}.}
 
 \item{alpha}{Numeric scalar controlling the variance structure in the
 WLS fit. Default is \code{1}.}
@@ -37,12 +37,12 @@ and no zero \code{target_from} rows are present.}
 (\eqn{f\_se / f}).}
 \item{\code{sigma}}{Mack sigma (residual standard deviation from the
 WLS fit). Used in Mack variance estimation.}
-\item{\code{n_obs}}{Total number of observations for the link.}
+\item{\code{n_cohorts}}{Total number of observations for the link.}
 \item{\code{n_valid}}{Number of finite ata values.}
 \item{\code{n_inf}}{Number of infinite ata values.}
 \item{\code{n_nan}}{Number of NaN ata values.}
 \item{\code{valid_ratio}}{Proportion of finite ata values
-(\eqn{n\_valid / n\_obs}).}
+(\eqn{n\_valid / n\_cohorts}).}
 }
 }
 \description{
@@ -96,7 +96,7 @@ choice of \code{alpha} materially affects the estimated factor.
 \section{Weights}{
 
 When the input \code{"Link"} object contains a \code{weight} column (added by
-\code{\link[=build_link]{build_link()}} when \code{weight} is supplied), that column is
+\code{\link[=as_link]{as_link()}} when \code{weight} is supplied), that column is
 automatically used as the WLS weight in place of \code{target_from}. This
 is useful when \code{target = "lr"}, where \code{target_from} carries no
 exposure information and an external exposure variable such as \code{premium}
@@ -129,7 +129,7 @@ consistent across cohorts.
 }
 
 \seealso{
-\code{\link[=build_link]{build_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=detect_maturity]{detect_maturity()}},
+\code{\link[=as_link]{as_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=detect_maturity]{detect_maturity()}},
 \code{\link[=fit_ata]{fit_ata()}}
 }
 \keyword{internal}

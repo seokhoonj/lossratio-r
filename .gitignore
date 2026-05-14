@@ -32,7 +32,6 @@ docs/
 # dev / local workspace
 dev/
 CLAUDE.md
-ARCHITECTURE.md
 README.ko.bak.md
 .claude/
 *_files/

@@ -1,85 +1,109 @@
 # Setup
 data(experience)
 exp <- experience
-sub <- build_triangle(exp[coverage == "SUR"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
-tri <- build_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+sub <- as_triangle(exp[coverage == "SUR"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
 
 test_that("detect_convergence returns class 'Convergence' with required fields", {
   res <- detect_convergence(sub)
   expect_s3_class(res, "Convergence")
-  for (nm in c("k_conv", "R_v", "SE_param_v", "D_v", "pass_v",
-               "k_star", "se_mult", "max_dv", "min_run")) {
+  for (nm in c("conv_k", "method", "dev_max", "dev_cand",
+               "lr", "revision",
+               "drift_window", "drift_tail", "slope", "dispersion",
+               "pass_window", "pass_tail", "pass_slope", "pass",
+               "mat_k", "max_drift", "max_slope", "max_dispersion", "window")) {
     expect_true(nm %in% names(res), info = paste("missing", nm))
   }
-  for (a in c("groups", "target", "fit_fn_name")) {
+  for (a in c("groups", "target", "dispatcher")) {
     expect_false(is.null(attr(res, a)), info = paste("missing attr", a))
   }
 })
 
-test_that("k_conv is >= k_star when non-NA", {
+test_that("conv_k is >= mat_k when non-NA", {
   res <- detect_convergence(sub)
-  if (!is.na(res$k_conv)) {
-    expect_gte(res$k_conv, res$k_star)
+  if (!is.na(res$conv_k)) {
+    expect_gte(res$conv_k, res$mat_k)
   } else {
     succeed()
   }
 })
 
-test_that("insufficient history yields k_conv == NA", {
-  k_star_guess <- 6L
-  short_exp <- exp[coverage == "SUR" & dev_m <= k_star_guess + 2L]
-  short_tri <- build_triangle(short_exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
-  res <- detect_convergence(short_tri, k_star = k_star_guess, min_run = 3L)
-  expect_true(is.na(res$k_conv))
+test_that("insufficient history yields conv_k == NA", {
+  mat_k_guess <- 6L
+  short_exp <- exp[coverage == "SUR" & dev_m <= mat_k_guess + 2L]
+  short_tri <- as_triangle(short_exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+  res <- detect_convergence(short_tri, mat_k = mat_k_guess)
+  expect_true(is.na(res$conv_k))
 })
 
-test_that("tighter se_mult yields a later k_conv (or NA)", {
-  loose <- detect_convergence(sub, se_mult = 1.0)
-  tight <- detect_convergence(sub, se_mult = 0.1)
-  if (!is.na(loose$k_conv) && !is.na(tight$k_conv)) {
-    expect_gte(tight$k_conv, loose$k_conv)
-  } else if (!is.na(loose$k_conv) && is.na(tight$k_conv)) {
-    succeed()
+test_that("tighter max_drift yields a later conv_k (or NA)", {
+  loose <- detect_convergence(sub, max_drift = 0.10)
+  tight <- detect_convergence(sub, max_drift = 0.001)
+  if (!is.na(loose$conv_k) && !is.na(tight$conv_k)) {
+    expect_gte(tight$conv_k, loose$conv_k)
   } else {
     succeed()
   }
 })
 
-test_that("tighter max_dv yields a later k_conv (or NA)", {
-  loose <- detect_convergence(sub, max_dv = 0.5)
-  tight <- detect_convergence(sub, max_dv = 0.05)
-  if (!is.na(loose$k_conv) && !is.na(tight$k_conv)) {
-    expect_gte(tight$k_conv, loose$k_conv)
-  } else if (!is.na(loose$k_conv) && is.na(tight$k_conv)) {
-    succeed()
+test_that("tighter max_dispersion yields a later conv_k (or NA)", {
+  loose <- detect_convergence(sub, max_dispersion = 0.5)
+  tight <- detect_convergence(sub, max_dispersion = 0.05)
+  if (!is.na(loose$conv_k) && !is.na(tight$conv_k)) {
+    expect_gte(tight$conv_k, loose$conv_k)
   } else {
     succeed()
   }
 })
 
-test_that("min_n_cohorts guard yields NA D_v and pass_v == FALSE", {
+test_that("min_n_cohorts guard yields NA dispersion and no pass", {
   res <- detect_convergence(sub, min_n_cohorts = 1000L)
-  expect_true(any(is.na(res$D_v)) || all(is.na(res$D_v)))
-  expect_false(any(isTRUE(unname(res$pass_v))))
+  expect_true(any(is.na(res$dispersion)) || all(is.na(res$dispersion)))
+  expect_false(any(isTRUE(unname(res$pass))))
 })
 
-test_that("explicit k_star overrides detect_maturity()", {
-  res <- detect_convergence(sub, k_star = 6L)
-  expect_equal(res$k_star, 6L)
-  if (!is.na(res$k_conv)) {
-    expect_gte(res$k_conv, 6L)
+test_that("explicit mat_k overrides detect_maturity()", {
+  res <- detect_convergence(sub, mat_k = 6L)
+  expect_equal(res$mat_k, 6L)
+  if (!is.na(res$conv_k)) {
+    expect_gte(res$conv_k, 6L)
   } else {
     succeed()
   }
 })
 
-test_that("fit_fn_name attribute is fixed to 'fit_lr'", {
+test_that("dispatcher attribute is fixed to 'fit_lr'", {
   # detect_convergence() always backtests the LR projection from
-  # fit_lr; the fit_fn dispatch was removed and the attribute is now
-  # hard-coded for backwards compatibility with consumers that read it.
+  # fit_lr; the dispatcher is recorded on the result for metadata.
   res <- detect_convergence(sub)
   expect_s3_class(res, "Convergence")
-  expect_equal(attr(res, "fit_fn_name"), "fit_lr")
+  expect_equal(attr(res, "dispatcher"), "fit_lr")
+})
+
+test_that("method = 'tail' gives later (or equal) conv_k than 'window'", {
+  win  <- detect_convergence(sub, method = "window", max_drift = 0.05)
+  tail <- detect_convergence(sub, method = "tail",   max_drift = 0.05)
+  if (!is.na(win$conv_k) && !is.na(tail$conv_k)) {
+    expect_gte(tail$conv_k, win$conv_k)
+  } else {
+    succeed()
+  }
+})
+
+test_that("method = 'all' conv_k is no earlier than any single-criterion conv_k", {
+  res <- detect_convergence(sub, method = "all",
+                            max_drift = 0.05, max_slope = 0.005, max_dispersion = 0.3)
+  if (!is.na(res$conv_k)) {
+    for (m in c("window", "tail", "slope")) {
+      single <- detect_convergence(sub, method = m,
+                                   max_drift = 0.05, max_slope = 0.005,
+                                   max_dispersion = 0.3)
+      if (!is.na(single$conv_k))
+        expect_gte(res$conv_k, single$conv_k)
+    }
+  } else {
+    succeed()
+  }
 })
 
 test_that("print and summary methods execute and return non-NULL", {
@@ -88,4 +112,7 @@ test_that("print and summary methods execute and return non-NULL", {
   expect_true(length(out) > 0L)
   s <- summary(res)
   expect_false(is.null(s))
+  for (nm in c("dev", "lr", "revision", "drift_window", "drift_tail",
+               "slope", "dispersion", "pass"))
+    expect_true(nm %in% names(s), info = paste("summary missing", nm))
 })

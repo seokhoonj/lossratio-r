@@ -14,7 +14,7 @@
 \value{
 A \code{data.table} grouped by \code{groups} and \code{dev}, containing:
 \describe{
-\item{n_obs}{Number of observations in the cell}
+\item{n_cohorts}{Number of observations in the cell}
 \item{lr_mean}{Mean of cumulative loss ratios}
 \item{lr_median}{Median of cumulative loss ratios}
 \item{lr_wt}{Weighted cumulative loss ratio (\code{sum(loss) / sum(premium)})}
@@ -58,7 +58,7 @@ It is assumed that the input \code{Triangle} object does not contain missing val
 }
 \examples{
 \dontrun{
-d <- build_triangle(
+d <- as_triangle(
   df,
   groups   = "coverage",
   cohort   = "uy_m",

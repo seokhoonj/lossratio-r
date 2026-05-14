@@ -35,7 +35,7 @@
 #' @param x A `Triangle` object.
 #' @param target Cumulative metric for the link factor. Default
 #'   `"loss"` (chain-ladder convention; see Description). Forwarded to
-#'   [build_link()].
+#'   [as_link()].
 #' @param groups Optional `character` subset of `attr(x, "groups")`
 #'   selecting which columns define the maturity partition. Maturity is
 #'   typically a structural property of the development curve driven by
@@ -50,7 +50,7 @@
 #'   `loss` / `premium` / `lr` columns are re-aggregated to the coarser
 #'   partition before computing ata links.
 #' @param weight Optional WLS weight variable. Forwarded to
-#'   [build_link()].
+#'   [as_link()].
 #' @param alpha Numeric scalar controlling the variance structure in
 #'   the underlying WLS fit. Default `1`. Forwarded to [summary.Link()].
 #' @param max_cv Maximum allowed coefficient of variation.
@@ -68,7 +68,7 @@
 #'   per group. Columns include `ata_from`, `change` (the maturity
 #'   point, i.e. the `to`-index of the first mature ata link),
 #'   `ata_link`, and the diagnostic statistics (`mean`, `median`,
-#'   `wt`, `cv`, `f`, `f_se`, `rse`, `sigma`, `n_obs`, `n_valid`,
+#'   `wt`, `cv`, `f`, `f_se`, `rse`, `sigma`, `n_cohorts`, `n_valid`,
 #'   `n_inf`, `n_nan`, `valid_ratio`). If no mature link is found,
 #'   all values for that group are `NA`.
 #'
@@ -88,7 +88,7 @@ detect_maturity <- function(x,
 
   x <- .rebucket_triangle_groups(x, groups)
 
-  link <- build_link(x, target = target, weight = weight)
+  link <- as_link(x, target = target, weight = weight)
   ata_summary <- summary(link, model = "ata", alpha = alpha)
 
   .detect_maturity(
@@ -141,7 +141,7 @@ detect_maturity <- function(x,
   min_n_valid <- as.integer(min_n_valid)
   min_run     <- as.integer(min_run)
 
-  smr <- .ensure_dt(x)
+  smr <- .copy_dt(x)
   grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
@@ -153,7 +153,7 @@ detect_maturity <- function(x,
                                 min_n_valid,
                                 min_run) {
 
-    d  <- .ensure_dt(d)
+    d  <- .copy_dt(d)
     ok <- with(d,
                is.finite(cv)          & cv          <  max_cv    &
                  is.finite(rse)         & rse         <  max_rse   &
@@ -184,7 +184,7 @@ detect_maturity <- function(x,
         f_se        = NA_real_,
         rse         = NA_real_,
         sigma       = NA_real_,
-        n_obs       = NA_real_,
+        n_cohorts       = NA_real_,
         n_valid     = NA_real_,
         n_inf       = NA_real_,
         n_nan       = NA_real_,
@@ -207,7 +207,7 @@ detect_maturity <- function(x,
       f_se        = as.numeric(d$f_se[idx]),
       rse         = as.numeric(d$rse[idx]),
       sigma       = as.numeric(d$sigma[idx]),
-      n_obs       = as.numeric(d$n_obs[idx]),
+      n_cohorts       = as.numeric(d$n_cohorts[idx]),
       n_valid     = as.numeric(d$n_valid[idx]),
       n_inf       = as.numeric(d$n_inf[idx]),
       n_nan       = as.numeric(d$n_nan[idx]),
@@ -254,7 +254,7 @@ detect_maturity <- function(x,
 #' the dropped grouping columns and recomputes `lr` / `lr_incr` as
 #' ratios of the aggregated totals. Other cell-level columns
 #' (`margin`, `profit`, `loss_share`, ...) are not regenerated -- the
-#' rebucketed object is intended for `build_link()` consumption only.
+#' rebucketed object is intended for `as_link()` consumption only.
 #'
 #' @param x A `Triangle` object.
 #' @param groups `NULL`, `character(0)`, or a `character` subset of
@@ -289,8 +289,8 @@ detect_maturity <- function(x,
 
   # No-op when requested grouping matches the Triangle's (order-insensitive).
   if (setequal(groups, grp_orig)) {
-    z <- .ensure_dt(x)
-    # Preserve original group column order to keep build_link's setorderv stable.
+    z <- .copy_dt(x)
+    # Preserve original group column order to keep as_link's setorderv stable.
     data.table::setattr(z, "groups"  , grp_orig)
     data.table::setattr(z, "cohort"  , attr(x, "cohort"))
     data.table::setattr(z, "calendar", attr(x, "calendar"))
@@ -301,12 +301,12 @@ detect_maturity <- function(x,
     return(.prepend_class(z, "Triangle"))
   }
 
-  dt <- .ensure_dt(x)
+  dt <- .copy_dt(x)
 
   # Columns we re-aggregate. Only sum-additive primitives; ratios (lr) are
   # recomputed from the aggregated totals.
   sum_cols <- intersect(
-    c("loss", "loss_incr", "premium", "premium_incr", "n_obs"),
+    c("loss", "loss_incr", "premium", "premium_incr", "n_cohorts"),
     names(dt)
   )
   by_cols <- c(groups, "cohort", "dev")
@@ -368,7 +368,7 @@ detect_maturity <- function(x,
 #'   columns as [detect_maturity()] output: group columns (if any),
 #'   `ata_from = change - 1L`, `change`, `ata_link = "<from>-<to>"`,
 #'   and the diagnostic stat columns (`mean`, `median`, `wt`, `cv`,
-#'   `f`, `f_se`, `rse`, `sigma`, `n_obs`, `n_valid`, `n_inf`, `n_nan`,
+#'   `f`, `f_se`, `rse`, `sigma`, `n_cohorts`, `n_valid`, `n_inf`, `n_nan`,
 #'   `valid_ratio`) set to `NA_real_`. `attr(., "groups")` holds the
 #'   group column names (possibly `character(0)`).
 #'
@@ -433,7 +433,7 @@ maturity_at <- function(...) {
     f_se        = rep(NA_real_, n),
     rse         = rep(NA_real_, n),
     sigma       = rep(NA_real_, n),
-    n_obs       = rep(NA_real_, n),
+    n_cohorts       = rep(NA_real_, n),
     n_valid     = rep(NA_real_, n),
     n_inf       = rep(NA_real_, n),
     n_nan       = rep(NA_real_, n),

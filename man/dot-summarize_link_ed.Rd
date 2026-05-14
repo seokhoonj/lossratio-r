@@ -8,7 +8,7 @@
 }
 \arguments{
 \item{object}{A \code{Link} object built with \code{exposure} set,
-typically produced by \code{\link[=build_link]{build_link()}}.}
+typically produced by \code{\link[=as_link]{as_link()}}.}
 
 \item{alpha}{Numeric scalar controlling the variance structure in the
 WLS fit. Default is \code{1}.}
@@ -60,6 +60,6 @@ are numerically equivalent.}
 }
 
 \seealso{
-\code{\link[=build_link]{build_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=fit_ed]{fit_ed()}}
+\code{\link[=as_link]{as_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=fit_ed]{fit_ed()}}
 }
 \keyword{internal}

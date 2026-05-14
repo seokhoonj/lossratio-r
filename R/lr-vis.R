@@ -79,7 +79,7 @@ plot.LRFit <- function(x,
 
   z_alpha <- stats::qnorm((1 + conf_level) / 2)
 
-  full <- .ensure_dt(x$full)
+  full <- .copy_dt(x$full)
 
   if (identical(amount_divisor, "auto"))
     amount_divisor <- .auto_divisor(
@@ -415,7 +415,7 @@ plot_triangle.LRFit <- function(x,
   if (is.null(grp)) grp <- character(0)
 
   # 1) select data source (value view)
-  dt <- .ensure_dt(
+  dt <- .copy_dt(
     switch(region, proj = x$proj, full = x$full, data = x$data)
   )
 
@@ -597,7 +597,7 @@ plot_triangle.LRFit <- function(x,
   # mat_x - 0.5 = midpoint between (change - 1) and change, i.e.
   # the ED/CL boundary.
   if (show_maturity && !is.null(x$maturity)) {
-    mat <- .ensure_dt(x$maturity)
+    mat <- .copy_dt(x$maturity)
     mat <- mat[is.finite(change)]
 
     if (nrow(mat)) {

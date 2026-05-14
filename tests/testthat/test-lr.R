@@ -1,7 +1,7 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- build_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
 
 test_that("fit_lr default (method = 'sa') returns class 'LRFit'", {
   lr <- fit_lr(tri)
@@ -94,7 +94,7 @@ test_that("print.LRFit doesn't error", {
 test_that("fit_lr with loss_regime + method=sa applies hybrid filter", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, groups = "coverage",
+  tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   reg <- regime_at(change = "2025-07-01")
   fit_full <- fit_lr(tri, method = "sa")
@@ -109,7 +109,7 @@ test_that("fit_lr with loss_regime + method=sa applies hybrid filter", {
 test_that("fit_lr with loss_regime + method=ed drops pre-break cohorts", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, groups = "coverage",
+  tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   reg <- regime_at(change = "2025-07-01")
   fit_full <- fit_lr(tri, method = "ed")
@@ -120,7 +120,7 @@ test_that("fit_lr with loss_regime + method=ed drops pre-break cohorts", {
 test_that("fit_lr with NULL loss_regime is unchanged", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, groups = "coverage",
+  tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   a <- fit_lr(tri, method = "sa")
   b <- fit_lr(tri, method = "sa", loss_regime = NULL)
@@ -130,7 +130,7 @@ test_that("fit_lr with NULL loss_regime is unchanged", {
 test_that("fit_lr with Regime preserves the Regime object", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, groups = "coverage",
+  tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   reg <- detect_regime(tri)
   fit_reg <- fit_lr(tri, method = "sa", loss_regime = reg, recent = 18L)

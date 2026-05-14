@@ -20,8 +20,8 @@ messages (e.g., \code{"loss"}, \code{"cohort"}).}
 Invisibly returns \code{arg} on success; aborts otherwise.
 }
 \description{
-Internal helper used by entry-point functions (\code{build_triangle},
-\code{build_link}, \code{fit_cl}, ...) that take column names as plain
+Internal helper used by entry-point functions (\code{as_triangle},
+\code{as_link}, \code{fit_cl}, ...) that take column names as plain
 character arguments (no NSE). Performs:
 \itemize{
 \item type check — must be a non-empty character vector

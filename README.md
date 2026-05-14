@@ -67,7 +67,7 @@ A long-format `data.frame` / `data.table` with at minimum:
 | `premium_incr`   | Per-period premium in the cell (risk premium for long-term health) | numeric        |
 | group            | Optional — product, coverage, age, gender, sum insured, etc.  | character / factor |
 
-`build_triangle()` validates the schema, coerces date columns, and
+`as_triangle()` validates the schema, coerces date columns, and
 aggregates to the canonical cohort × dev structure with cumulative
 columns and derived ratios.
 
@@ -85,7 +85,7 @@ per-period values carry an `_incr` (incremental) suffix:
 | Profit         | `profit`             | `profit_incr`        |
 
 Raw `experience` input is per-period only (`loss_incr`,
-`premium_incr`); `build_triangle()` produces both forms in the
+`premium_incr`); `as_triangle()` produces both forms in the
 output. Worker fit functions (`fit_cl`, `fit_ed`, `fit_ata`,
 `fit_intensity`) take generic `target` / `exposure` / `weight`
 arguments; dispatcher functions (`fit_loss`, `fit_premium`) and
@@ -118,7 +118,7 @@ library(lossratio)
 data(experience)
 
 # Build the canonical cohort × dev structure
-tri <- build_triangle(
+tri <- as_triangle(
   experience,
   groups   = "coverage",
   cohort   = "uy_m",
@@ -156,11 +156,11 @@ The same long-format experience data can be viewed three ways:
 
 | Builder            | Output object | Dimension                       | Use case                              |
 |--------------------|---------------|---------------------------------|---------------------------------------|
-| `build_triangle()` | `Triangle`    | cohort × dev (2D)          | Chain ladder, ED, SA projection   |
-| `build_calendar()` | `Calendar`    | calendar period (1D)            | Calendar-year trend / diagonal effect |
-| `build_total()`    | `Total`       | portfolio total (0D, per group) | High-level comparison across groups   |
+| `as_triangle()` | `Triangle`    | cohort × dev (2D)          | Chain ladder, ED, SA projection   |
+| `as_calendar()` | `Calendar`    | calendar period (1D)            | Calendar-year trend / diagonal effect |
+| `as_total()`    | `Total`       | portfolio total (0D, per group) | High-level comparison across groups   |
 
-After `build_triangle`, downstream columns are standardized to `cohort`
+After `as_triangle`, downstream columns are standardized to `cohort`
 and `dev` regardless of input granularity (`uy_m` / `uy_q` / `uy`,
 etc.). Original column names are preserved as attributes (`cohort`,
 `calendar`, `dev`); grain is stored as `grain` (`"M"`/`"Q"`/
@@ -208,7 +208,7 @@ plot_triangle(x)     # lossratio generic — cell heatmap layout
 ## Documentation
 
 ``` r
-?build_triangle
+?as_triangle
 ?fit_lr
 ?detect_regime
 vignette("regime-detection", package = "lossratio")

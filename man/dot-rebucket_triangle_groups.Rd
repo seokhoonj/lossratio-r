@@ -22,6 +22,6 @@ Re-aggregates \code{loss} / \code{premium} / \code{loss_incr} / \code{premium_in
 the dropped grouping columns and recomputes \code{lr} / \code{lr_incr} as
 ratios of the aggregated totals. Other cell-level columns
 (\code{margin}, \code{profit}, \code{loss_share}, ...) are not regenerated -- the
-rebucketed object is intended for \code{build_link()} consumption only.
+rebucketed object is intended for \code{as_link()} consumption only.
 }
 \keyword{internal}

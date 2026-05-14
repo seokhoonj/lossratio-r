@@ -22,7 +22,7 @@ detect_maturity(
 
 \item{target}{Cumulative metric for the link factor. Default
 \code{"loss"} (chain-ladder convention; see Description). Forwarded to
-\code{\link[=build_link]{build_link()}}.}
+\code{\link[=as_link]{as_link()}}.}
 
 \item{groups}{Optional \code{character} subset of \code{attr(x, "groups")}
 selecting which columns define the maturity partition. Maturity is
@@ -39,7 +39,7 @@ maturity row. Any non-\code{NULL}, non-empty value must be a subset of
 partition before computing ata links.}
 
 \item{weight}{Optional WLS weight variable. Forwarded to
-\code{\link[=build_link]{build_link()}}.}
+\code{\link[=as_link]{as_link()}}.}
 
 \item{alpha}{Numeric scalar controlling the variance structure in
 the underlying WLS fit. Default \code{1}. Forwarded to \code{\link[=summary.Link]{summary.Link()}}.}
@@ -64,7 +64,7 @@ A \code{data.table} with class \code{"Maturity"} containing one row
 per group. Columns include \code{ata_from}, \code{change} (the maturity
 point, i.e. the \code{to}-index of the first mature ata link),
 \code{ata_link}, and the diagnostic statistics (\code{mean}, \code{median},
-\code{wt}, \code{cv}, \code{f}, \code{f_se}, \code{rse}, \code{sigma}, \code{n_obs}, \code{n_valid},
+\code{wt}, \code{cv}, \code{f}, \code{f_se}, \code{rse}, \code{sigma}, \code{n_cohorts}, \code{n_valid},
 \code{n_inf}, \code{n_nan}, \code{valid_ratio}). If no mature link is found,
 all values for that group are \code{NA}.
 }

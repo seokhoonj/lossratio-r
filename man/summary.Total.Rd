@@ -27,7 +27,7 @@ numeric columns for display.
 }
 \examples{
 \dontrun{
-tot <- build_total(
+tot <- as_total(
   df,
   groups  = "coverage",
   cohort  = "uy_m",

@@ -18,7 +18,7 @@ Invisibly \code{NULL}. Throws an error if \code{x} is not a Triangle.
 \description{
 Internal helper used by \verb{fit_*()} entry points. Wraps
 \code{\link[=.assert_class]{.assert_class()}} but intercepts \code{Link} inputs first to print a
-message that explains why a \code{Link} is not a valid input (build_link
+message that explains why a \code{Link} is not a valid input (as_link
 is called internally) and how to pass the data correctly.
 }
 \keyword{internal}

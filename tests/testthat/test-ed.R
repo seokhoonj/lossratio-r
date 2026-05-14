@@ -1,10 +1,10 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- build_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
-ed  <- build_link(tri, target = "loss", exposure = "premium")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+ed  <- as_link(tri, target = "loss", exposure = "premium")
 
-test_that("build_link (ED mode) returns class 'Link' with expected columns", {
+test_that("as_link (ED mode) returns class 'Link' with expected columns", {
   expect_s3_class(ed, "Link")
   for (nm in c("coverage", "cohort", "ata_from", "ata_to", "ata_link",
                "target_from", "target_to", "target_delta",
@@ -13,7 +13,7 @@ test_that("build_link (ED mode) returns class 'Link' with expected columns", {
   }
 })
 
-test_that("build_link (ED mode) attributes set correctly", {
+test_that("as_link (ED mode) attributes set correctly", {
   for (a in c("groups", "cohort", "dev", "target", "exposure")) {
     expect_false(is.null(attr(ed, a)), info = paste("missing attr", a))
   }
@@ -32,11 +32,11 @@ test_that("target_delta == target_to - target_from", {
                tolerance = 1e-6)
 })
 
-test_that("build_link warns (self-anchored) when target == exposure", {
+test_that("as_link warns (self-anchored) when target == exposure", {
   # Self-anchored ED is mathematically equivalent to chain ladder on
   # the same column (f_k = 1 + g_k). Allowed, but warned.
   expect_warning(
-    build_link(tri, target = "loss", exposure = "loss"),
+    as_link(tri, target = "loss", exposure = "loss"),
     "self-anchored"
   )
 })
@@ -88,9 +88,9 @@ test_that("summary.Link (ed mode) returns EDSummary with expected columns", {
 test_that("fit_ed with regime drops pre-break cohorts", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, groups = "coverage",
+  tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
-  ed <- build_link(tri, target = "loss", exposure = "premium")
+  ed <- as_link(tri, target = "loss", exposure = "premium")
   fit_full <- fit_ed(tri, target = "loss", exposure = "premium")
   fit_brk  <- fit_ed(tri, target = "loss", exposure = "premium",
                      regime = regime_at(change = "2025-07-01"))
@@ -102,9 +102,9 @@ test_that("fit_ed with regime drops pre-break cohorts", {
 test_that("fit_ed with NULL regime is unchanged", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, groups = "coverage",
+  tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
-  ed <- build_link(tri, target = "loss", exposure = "premium")
+  ed <- as_link(tri, target = "loss", exposure = "premium")
   fit_default <- fit_ed(tri, target = "loss", exposure = "premium")
   fit_null    <- fit_ed(tri, target = "loss", exposure = "premium", regime = NULL)
   expect_identical(fit_default$selected$g_selected,
@@ -114,10 +114,10 @@ test_that("fit_ed with NULL regime is unchanged", {
 test_that("fit_ed with Regime input preserves the Regime object", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, groups = "coverage",
+  tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   reg <- detect_regime(tri)
-  ed <- build_link(tri, target = "loss", exposure = "premium")
+  ed <- as_link(tri, target = "loss", exposure = "premium")
   fit_reg <- fit_ed(tri, target = "loss", exposure = "premium", regime = reg)
   expect_s3_class(fit_reg$regime, "Regime")
   expect_identical(fit_reg$regime$changes, reg$changes)
@@ -128,7 +128,7 @@ test_that("fit_ed with Regime input preserves the Regime object", {
 test_that("fit_ed returns $full with projection columns", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, groups = "coverage",
+  tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   ef <- fit_ed(tri, target = "loss", exposure = "premium")
   expect_true("full" %in% names(ef))
@@ -148,7 +148,7 @@ test_that("fit_ed returns $full with projection columns", {
 test_that("fit_ed target projection matches fit_lr method = 'ed'", {
   data(experience)
   exp <- experience[coverage == "SUR"]
-  tri <- build_triangle(exp, groups = "coverage",
+  tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   ef <- fit_ed(tri, target = "loss", exposure = "premium")
   lr <- fit_lr(tri, method = "ed")

@@ -6,7 +6,7 @@
 \usage{
 validate_triangle(
   df,
-  groups = character(0),
+  groups = NULL,
   cohort,
   calendar = NULL,
   development = NULL,
@@ -26,7 +26,7 @@ consistency check. When supplied, rows where \code{calendar < cohort} are flagge
 \item{development}{A single development-period variable (raw column
 name). Optional when \code{calendar} is supplied -- \code{dev} is then
 derived from \verb{(cohort, calendar)} at the resolved \code{grain} (same
-dispatch as \code{\link[=build_triangle]{build_triangle()}}).}
+dispatch as \code{\link[=as_triangle]{as_triangle()}}).}
 
 \item{grain}{Grain string (\code{"M"} / \code{"Q"} / \code{"H"} / \code{"Y"}) or
 \code{"auto"} (default) -- used only when \code{development} is derived from
@@ -37,7 +37,7 @@ A \code{data.table} of class \code{"TriangleValidation"} with one row
 per cohort containing gaps. Columns:
 \describe{
 \item{groups, cohort}{Cohort identifier.}
-\item{\code{n_observed}}{Number of distinct observed \code{dev}
+\item{\code{n_dev}}{Number of distinct observed \code{dev}
 values.}
 \item{\code{n_expected}}{\code{max(dev) - min(dev) + 1} for that cohort.}
 \item{\code{missing}}{List column of missing \code{dev} values.}
@@ -58,8 +58,8 @@ cohorts produce non-consecutive age-to-age links downstream (e.g.,
 \code{\link[=fit_lr]{fit_lr()}}.
 
 This function inspects the raw data without modifying it. Use it
-before \code{\link[=build_triangle]{build_triangle()}} to decide whether to fix the data source, drop
-offending cohorts, or pass \code{fill_gaps = TRUE} to \code{\link[=build_triangle]{build_triangle()}}.
+before \code{\link[=as_triangle]{as_triangle()}} to decide whether to fix the data source, drop
+offending cohorts, or pass \code{fill_gaps = TRUE} to \code{\link[=as_triangle]{as_triangle()}}.
 
 Two checks are performed:
 
@@ -74,5 +74,5 @@ dev sequences.
 }
 }
 \seealso{
-\code{\link[=build_triangle]{build_triangle()}}
+\code{\link[=as_triangle]{as_triangle()}}
 }

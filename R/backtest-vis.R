@@ -53,7 +53,7 @@ plot.Backtest <- function(x,
   grp <- x$groups
 
   if (type == "col") {
-    smr  <- .ensure_dt(x$col_summary)
+    smr  <- .copy_dt(x$col_summary)
     long <- data.table::melt(
       smr,
       id.vars       = c(grp, "dev", "n"),
@@ -94,7 +94,7 @@ plot.Backtest <- function(x,
       p <- p + ggplot2::facet_wrap(grp, scales = scales)
 
   } else if (type == "diag") {
-    smr  <- .ensure_dt(x$diag_summary)
+    smr  <- .copy_dt(x$diag_summary)
     long <- data.table::melt(
       smr,
       id.vars       = c(grp, "calendar_idx", "n"),
@@ -135,7 +135,7 @@ plot.Backtest <- function(x,
       p <- p + ggplot2::facet_wrap(grp, scales = scales)
 
   } else { # cell
-    dt <- .ensure_dt(x$ae_err)
+    dt <- .copy_dt(x$ae_err)
     p <- ggplot2::ggplot(
       dt,
       ggplot2::aes(x = .data[["dev"]], y = .data[[ae_err_col]],
@@ -231,7 +231,7 @@ plot_triangle.Backtest <- function(x,
   cum_word   <- if (is_incr) "incremental" else "cumulative"
 
   grp <- x$groups
-  dt <- .ensure_dt(x$ae_err)
+  dt <- .copy_dt(x$ae_err)
 
   dt[, (".ae") := .SD[[1L]], .SDcols = ae_err_col]
   dt[, (".label") := sprintf("%.1f", .ae * 100)]

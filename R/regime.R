@@ -139,12 +139,12 @@
 #'       cohorts, single pooled factor) or estimate per-segment factors.}
 #'   }
 #'
-#' @seealso [plot.Regime()], [build_triangle()]
+#' @seealso [plot.Regime()], [as_triangle()]
 #'
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' tri_sur <- build_triangle(
+#' tri_sur <- as_triangle(
 #'   experience[coverage == "SUR"],
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
@@ -164,7 +164,7 @@
 #' r_ecp <- detect_regime(tri_sur, method = "e_divisive")
 #'
 #' # Multi-group: detection per coverage
-#' tri_all <- build_triangle(
+#' tri_all <- as_triangle(
 #'   experience,
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
@@ -224,7 +224,7 @@ detect_regime <- function(x,
   if (length(dev) != 1L)
     stop("`x` must have exactly one `dev`.", call. = FALSE)
 
-  d <- .ensure_dt(x)
+  d <- .copy_dt(x)
 
   # `premium_ed` is mathematically equivalent to `premium_ata - 1`
   # (Δpremium / cum_premium_prev vs cum_premium / cum_premium_prev), and
@@ -460,8 +460,11 @@ detect_regime <- function(x,
 #'
 #' @keywords internal
 .derive_regime_target <- function(d, target, grp = character(0)) {
+  # data.table NSE NULL bindings for bare column refs in `j` below.
+  loss <- premium <- dev <- NULL
+
   by_cols <- c(grp, "cohort")
-  d <- data.table::copy(d)
+  d <- .copy_dt(d)
 
   if (target == "loss_ata") {
     d[, ("loss_ata") := loss / data.table::shift(loss, 1L, type = "lag"),
@@ -500,8 +503,8 @@ detect_regime <- function(x,
                                   coh, dev) {
 
   d <- d[d[["dev"]] <= window]
-  n_obs <- d[, .(n = .N), by = c("cohort")]
-  ok <- n_obs[n >= window][["cohort"]]
+  n_cohorts <- d[, .(n = .N), by = c("cohort")]
+  ok <- n_cohorts[n >= window][["cohort"]]
   dropped <- setdiff(unique(d[["cohort"]]), ok)
 
   d <- d[d[["cohort"]] %in% ok]

@@ -80,7 +80,7 @@ cumulative variance is propagated forward.
 \examples{
 \dontrun{
 data(experience)
-tri <- build_triangle(
+tri <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",
@@ -99,5 +99,5 @@ pf_cl <- fit_premium(tri, method = "cl")
 
 }
 \seealso{
-\code{\link[=fit_cl]{fit_cl()}}, \code{\link[=fit_ed]{fit_ed()}}, \code{\link[=fit_lr]{fit_lr()}}, \code{\link[=build_triangle]{build_triangle()}}.
+\code{\link[=fit_cl]{fit_cl()}}, \code{\link[=fit_ed]{fit_ed()}}, \code{\link[=fit_lr]{fit_lr()}}, \code{\link[=as_triangle]{as_triangle()}}.
 }

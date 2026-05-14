@@ -26,7 +26,7 @@ retained for future extensibility.}
 \item{target}{A single cumulative target variable (column to project).
 Typical choices are \code{"loss"}, \code{"premium"}, or \code{"lr"}.}
 
-\item{weight}{An optional column name passed to \code{\link[=build_link]{build_link()}} as
+\item{weight}{An optional column name passed to \code{\link[=as_link]{as_link()}} as
 the WLS weight variable. Typically \code{"premium"} when \code{target = "lr"}.
 Default is \code{NULL}.}
 
@@ -79,7 +79,7 @@ An object of class \code{"CLFit"} containing:
 including process/parameter SE and CV columns.}
 \item{\code{proj}}{\code{data.table} identical to \code{full} with observed cells
 set to \code{NA}.}
-\item{\code{link}}{The \code{"Link"} object produced by \code{\link[=build_link]{build_link()}}.}
+\item{\code{link}}{The \code{"Link"} object produced by \code{\link[=as_link]{as_link()}}.}
 \item{\code{summary}}{Cohort-level summary with latest, ultimate,
 reserve, and Mack standard errors.}
 \item{\code{selected}}{\code{data.table} of selected factors used for
@@ -101,7 +101,7 @@ or \code{NULL} when maturity filtering was not applied.}
 Fit a Mack (1993) chain ladder projection from an object of class
 \code{"Triangle"}. The function works on long-form cumulative data and does
 not require a complete triangle. Age-to-age factors are estimated
-through \code{\link[=build_link]{build_link()}} and \code{\link[=fit_ata]{fit_ata()}}, then applied recursively. The
+through \code{\link[=as_link]{as_link()}} and \code{\link[=fit_ata]{fit_ata()}}, then applied recursively. The
 point forecast follows the standard recursion, and prediction
 uncertainty is decomposed into process variance and parameter variance.
 
@@ -111,7 +111,7 @@ their variance are estimated using the supplied WLS weights.
 \examples{
 \dontrun{
 data(experience)
-tri <- build_triangle(
+tri <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",

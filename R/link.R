@@ -1,13 +1,19 @@
 # Link table -------------------------------------------------------------
 
-#' Build a link table from `Triangle` data
+#' Coerce a Triangle to a Link object
 #'
 #' @description
-#' Construct a development-link table from an object of class `Triangle`,
-#' typically produced by [build_triangle()]. The link table is the
-#' long-format intermediate underlying both the chain ladder (CL) and
-#' exposure-driven (ED) workflows. Each row corresponds to one
-#' development link `(cohort, ata_from -> ata_to)`.
+#' Derive the development-link table from a `Triangle` and assign the
+#' `Link` S3 class so the associated `summary.Link()`, `plot.Link()`,
+#' `fit_ata()`, `fit_intensity()`, etc. methods dispatch on the result.
+#'
+#' Unlike [as_triangle()] / [as_calendar()] / [as_total()] (which take
+#' raw experience data and validate/aggregate it), `as_link()` operates
+#' *on a Triangle* (already validated upstream) and reshapes it into
+#' link-pair rows. Each row corresponds to one development link
+#' `(cohort, ata_from -> ata_to)`, the long-format intermediate
+#' underlying both the chain ladder (CL) and exposure-driven (ED)
+#' workflows.
 #'
 #' Two modes are produced depending on `exposure`:
 #'
@@ -58,12 +64,12 @@
 #'   `dev`, `target`, `exposure` (or `NULL`), `weight`
 #'   (or `NULL`).
 #'
-#' @seealso [build_triangle()], [summary.Link()], [plot.Link()],
+#' @seealso [as_triangle()], [summary.Link()], [plot.Link()],
 #'   [fit_ata()], [fit_ed()]
 #'
 #' @examples
 #' \dontrun{
-#' tri <- build_triangle(
+#' tri <- as_triangle(
 #'   df,
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
@@ -73,15 +79,15 @@
 #' )
 #'
 #' # Single-variable: cumulative-loss link factors (ATA workflow)
-#' link_loss <- build_link(tri, target = "loss")
+#' link_loss <- as_link(tri, target = "loss")
 #'
 #' # Dual-variable: ED-ready link table (loss + premium)
-#' link_ed <- build_link(tri, target = "loss", exposure = "premium")
+#' link_ed <- as_link(tri, target = "loss", exposure = "premium")
 #' head(link_ed)
 #' }
 #'
 #' @export
-build_link <- function(x,
+as_link <- function(x,
                        target       = "loss",
                        exposure     = NULL,
                        weight       = NULL,
@@ -99,7 +105,7 @@ build_link <- function(x,
     stop("`drop_invalid` must be a single non-missing logical value.",
          call. = FALSE)
 
-  dt <- .ensure_dt(x)
+  dt <- .copy_dt(x)
 
   grp <- attr(dt, "groups")
   coh <- attr(dt, "cohort")
@@ -157,7 +163,7 @@ build_link <- function(x,
 
   grp_coh <- c(grp, "cohort")
 
-  z <- .ensure_dt(x)
+  z <- .copy_dt(x)
   data.table::setorderv(z, c(grp_coh, "dev"))
 
   # 1) link metadata ----------------------------------------------------
@@ -235,7 +241,7 @@ build_link <- function(x,
 #'
 #' Dispatch to the appropriate diagnostic table based on `model`.
 #'
-#' @param object A `Link` object from [build_link()].
+#' @param object A `Link` object from [as_link()].
 #' @param model Either `"ata"` (multiplicative chain-ladder factors) or
 #'   `"ed"` (additive exposure-driven intensities). When `model = "ed"`,
 #'   the link table must have been built with `exposure` set. The
@@ -246,7 +252,7 @@ build_link <- function(x,
 #' @return Either an `ATASummary` (model = `"ata"`) or `EDSummary`
 #'   (model = `"ed"`) `data.table`.
 #'
-#' @seealso [build_link()], [detect_maturity()]
+#' @seealso [as_link()], [detect_maturity()]
 #'
 #' @method summary Link
 #' @export
@@ -312,7 +318,7 @@ summary.Link <- function(object,
 #'   zero. Default is `1e-12`.
 #'
 #' @return A `data.table` with one row per ata link containing `f`,
-#'   `f_se`, `sigma`, `rse`, and `n_obs`. `rse` is defined as
+#'   `f_se`, `sigma`, `rse`, and `n_cohorts`. `rse` is defined as
 #'   \eqn{f\_se / f} and represents the relative standard error of the
 #'   WLS-estimated factor. `rse` is `NA` when `f_se` is `NA` (single
 #'   observation links) or when `f` is zero.
@@ -342,7 +348,7 @@ summary.Link <- function(object,
   grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  dt <- .ensure_dt(x)
+  dt <- .copy_dt(x)
 
   # 1) drop invalid rows ------------------------------------------------
   if (na_rm) {
@@ -384,7 +390,7 @@ summary.Link <- function(object,
         f     = target_to[1L] / target_from[1L],
         f_se  = NA_real_,
         sigma = NA_real_,
-        n_obs = 1L
+        n_cohorts = 1L
       )
     } else {
       fit <- tryCatch(
@@ -394,7 +400,7 @@ summary.Link <- function(object,
 
       if (is.null(fit)) {
         data.table::data.table(
-          f = NA_real_, f_se = NA_real_, sigma = NA_real_, n_obs = .N
+          f = NA_real_, f_se = NA_real_, sigma = NA_real_, n_cohorts = .N
         )
       } else {
         smr <- suppressWarnings(summary(fit))
@@ -410,7 +416,7 @@ summary.Link <- function(object,
           f     = f_val,
           f_se  = f_se_val,
           sigma = sigma_val,
-          n_obs = .N
+          n_cohorts = .N
         )
       }
     }

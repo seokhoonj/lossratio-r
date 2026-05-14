@@ -21,10 +21,10 @@ fit_ed(
 \item{x}{A \code{"Triangle"} object.}
 
 \item{target}{Cumulative loss variable. Default \code{"loss"}.
-Forwarded to \code{\link[=build_link]{build_link()}} and to downstream workers.}
+Forwarded to \code{\link[=as_link]{as_link()}} and to downstream workers.}
 
 \item{exposure}{Cumulative exposure variable. Default \code{"premium"}.
-Forwarded to \code{\link[=build_link]{build_link()}} and to downstream workers.}
+Forwarded to \code{\link[=as_link]{as_link()}} and to downstream workers.}
 
 \item{method}{Estimation method. Currently only \code{"mack"} is supported.}
 
@@ -83,5 +83,5 @@ Mack-style ED recursion (see \code{.ed_proj}, \code{.ed_proc_var},
 call \code{backtest(tri, target = "lr", loss_method = "ed")}.
 }
 \seealso{
-\code{\link[=build_link]{build_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=fit_lr]{fit_lr()}}, \code{\link[=backtest]{backtest()}}
+\code{\link[=as_link]{as_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=fit_lr]{fit_lr()}}, \code{\link[=backtest]{backtest()}}
 }

@@ -33,7 +33,7 @@ variable (for example, \code{dev_m}, \code{dev_q}, \code{dev_h}, \code{dev_y}).}
 \item{summary_min_n}{Optional minimum number of observations required for
 the summary overlay to be considered reliable. When provided and
 \code{summary = TRUE}, a vertical reference line is drawn at the midpoint just
-before the first development period where \code{n_obs < summary_min_n} within each
+before the first development period where \code{n_cohorts < summary_min_n} within each
 facet. Default is \code{5}.}
 
 \item{amount_divisor}{Numeric scaling factor used only for y-axis labels of

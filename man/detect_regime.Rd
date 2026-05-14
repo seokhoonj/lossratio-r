@@ -177,7 +177,7 @@ strictly chronological.}
 \examples{
 \dontrun{
 data(experience)
-tri_sur <- build_triangle(
+tri_sur <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",
@@ -197,7 +197,7 @@ plot(r)
 r_ecp <- detect_regime(tri_sur, method = "e_divisive")
 
 # Multi-group: detection per coverage
-tri_all <- build_triangle(
+tri_all <- as_triangle(
   experience,
   groups   = "coverage",
   cohort   = "uy_m",
@@ -211,5 +211,5 @@ print(r_all$changes)
 
 }
 \seealso{
-\code{\link[=plot.Regime]{plot.Regime()}}, \code{\link[=build_triangle]{build_triangle()}}
+\code{\link[=plot.Regime]{plot.Regime()}}, \code{\link[=as_triangle]{as_triangle()}}
 }

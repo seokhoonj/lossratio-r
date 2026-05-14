@@ -1,7 +1,7 @@
 # Setup — use a single-group subset to keep test fast
 data(experience)
 exp <- experience
-sub <- build_triangle(exp[coverage == "SUR"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+sub <- as_triangle(exp[coverage == "SUR"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
 
 test_that("detect_regime returns class 'Regime' (e_divisive default)", {
   r <- detect_regime(sub, window = 12, method = "e_divisive")
@@ -90,7 +90,7 @@ test_that("print methods don't error", {
 
 # Multi-group regime detection --------------------------------------------
 
-tri_all <- build_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+tri_all <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
 
 test_that("multi-group detect_regime returns class 'Regime'", {
   r <- detect_regime(tri_all, by = "coverage", window = 12, method = "e_divisive")
@@ -185,7 +185,7 @@ test_that("detect_regime warns and skips groups that fail individually", {
   # others remain valid. Drop most of one coverage's cohorts.
   big_K <- 12L
   exp_part <- experience[!(coverage == "CI" & uy_m > as.Date("2023-03-01"))]
-  tri_part <- build_triangle(exp_part, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+  tri_part <- as_triangle(exp_part, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   expect_warning(
     r_part <- detect_regime(tri_part, by = "coverage", window = big_K,
                             method = "e_divisive"),
@@ -211,7 +211,7 @@ test_that("detect_regime(tri) auto-uses attr(tri, 'groups')", {
 test_that("by = character(0) forces pooled detection on multi-group Triangle", {
   # Subset to one coverage so pooled detection succeeds; by = character(0)
   # then differs from the default by skipping the attr("groups") fallback.
-  tri_one <- build_triangle(experience[coverage == "SUR"],
+  tri_one <- as_triangle(experience[coverage == "SUR"],
                             groups = "coverage",
                             cohort = "uy_m", calendar = "cy_m",
                             loss = "loss_incr", premium = "premium_incr")

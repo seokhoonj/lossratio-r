@@ -113,7 +113,7 @@
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' tri <- build_triangle(
+#' tri <- as_triangle(
 #'   experience,
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
@@ -204,7 +204,7 @@ backtest <- function(x,
   dev <- attr(x, "dev")
 
   # 1) Tag held-out cells on the original (long-format) triangle ----------
-  full <- .ensure_dt(x)
+  full <- .copy_dt(x)
   full[, (".coh_rank") := data.table::frank(cohort, ties.method = "dense"),
        by = grp]
   full[, (".cal_idx") := .coh_rank + dev - 1L]

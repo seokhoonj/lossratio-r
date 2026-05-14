@@ -102,7 +102,7 @@ instability. \code{fit_intensity()} therefore deliberately omits a
 
 \examples{
 \dontrun{
-tri <- build_triangle(
+tri <- as_triangle(
   df,
   groups   = "coverage",
   cohort   = "uy_m",
@@ -116,6 +116,6 @@ summary(intensity_fit)
 
 }
 \seealso{
-\code{\link[=fit_ata]{fit_ata()}}, \code{\link[=fit_ed]{fit_ed()}}, \code{\link[=build_link]{build_link()}},
+\code{\link[=fit_ata]{fit_ata()}}, \code{\link[=fit_ed]{fit_ed()}}, \code{\link[=as_link]{as_link()}},
 \code{\link[=summary.Link]{summary.Link()}}
 }

@@ -117,21 +117,21 @@ experience <- rbindlist(records)
   ((data.table::month(d) - 1L) %/% 3L) * 3L + 1L))
 
 experience[, `:=`(
-  uy   = .year_of(uy_m),
+  uy     = .year_of(uy_m),
   uy_h   = .half_of(uy_m),
   uy_q   = .quart_of(uy_m),
-  cy   = .year_of(cy_m),
+  cy     = .year_of(cy_m),
   cy_h   = .half_of(cy_m),
   cy_q   = .quart_of(cy_m),
-  dev_y = data.table::year(cy_m) - data.table::year(uy_m) + 1L,
-  dev_h = 2L * (data.table::year(cy_m) - data.table::year(uy_m)) +
-          ((data.table::month(cy_m) - 1L) %/% 6L -
+  dev_y  = data.table::year(cy_m) - data.table::year(uy_m) + 1L,
+  dev_h  = 2L * (data.table::year(cy_m) - data.table::year(uy_m)) +
+           ((data.table::month(cy_m) - 1L) %/% 6L -
            (data.table::month(uy_m) - 1L) %/% 6L) + 1L,
-  dev_q = 4L * (data.table::year(cy_m) - data.table::year(uy_m)) +
-          ((data.table::month(cy_m) - 1L) %/% 3L -
+  dev_q  = 4L * (data.table::year(cy_m) - data.table::year(uy_m)) +
+           ((data.table::month(cy_m) - 1L) %/% 3L -
            (data.table::month(uy_m) - 1L) %/% 3L) + 1L,
-  dev_m = 12L * (data.table::year(cy_m) - data.table::year(uy_m)) +
-          (data.table::month(cy_m) - data.table::month(uy_m)) + 1L
+  dev_m  = 12L * (data.table::year(cy_m) - data.table::year(uy_m)) +
+           (data.table::month(cy_m) - data.table::month(uy_m)) + 1L
 )]
 
 setcolorder(experience, c(

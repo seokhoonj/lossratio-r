@@ -100,7 +100,7 @@ in `regime_at()` first to make the change explicit:
 ```r
 library(lossratio)
 data(experience)
-tri_sur <- build_triangle(
+tri_sur <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",
@@ -215,7 +215,7 @@ portfolio with multiple `coverage` groups, call it per group:
 
 ```r
 fits <- lapply(unique(exp$coverage), function(g) {
-  tri_g <- build_triangle(
+  tri_g <- as_triangle(
     experience[coverage == g],
     groups   = "coverage",
     cohort   = "uy_m",

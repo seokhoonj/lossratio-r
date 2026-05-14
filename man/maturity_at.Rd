@@ -19,7 +19,7 @@ A \code{data.table} with class \code{"Maturity"} carrying the same
 columns as \code{\link[=detect_maturity]{detect_maturity()}} output: group columns (if any),
 \code{ata_from = change - 1L}, \code{change}, \code{ata_link = "<from>-<to>"},
 and the diagnostic stat columns (\code{mean}, \code{median}, \code{wt}, \code{cv},
-\code{f}, \code{f_se}, \code{rse}, \code{sigma}, \code{n_obs}, \code{n_valid}, \code{n_inf}, \code{n_nan},
+\code{f}, \code{f_se}, \code{rse}, \code{sigma}, \code{n_cohorts}, \code{n_valid}, \code{n_inf}, \code{n_nan},
 \code{valid_ratio}) set to \code{NA_real_}. \code{attr(., "groups")} holds the
 group column names (possibly \code{character(0)}).
 }

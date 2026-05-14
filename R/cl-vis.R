@@ -79,7 +79,7 @@ plot.CLFit <- function(x,
   # --- projection -------------------------------------------------------
   if (type == "projection") {
 
-    full <- .ensure_dt(x$full)
+    full <- .copy_dt(x$full)
 
     obs  <- full[is_observed == TRUE  & is.finite(target_obs)]
     proj <- full[is_observed == FALSE & is.finite(target_proj)]
@@ -226,7 +226,7 @@ plot.CLFit <- function(x,
   }
 
   # --- reserve (mack only) ----------------------------------------------
-  smr <- .ensure_dt(x$summary)
+  smr <- .copy_dt(x$summary)
 
   coh_raw  <- smr[["cohort"]]
   coh_type <- .get_period_type(coh, grain = attr(x$data, "grain"))
@@ -443,7 +443,7 @@ plot_triangle.CLFit <- function(x,
   title_txt    <- paste(region_title, base_title)
 
   # 1) select data source -----------------------------------------------
-  dt <- .ensure_dt(
+  dt <- .copy_dt(
     switch(region, data = x$data, full = x$full, proj = x$proj)
   )
 
@@ -489,28 +489,28 @@ plot_triangle.CLFit <- function(x,
 
     if (label_style == "cv") {
       dt[is_observed == FALSE & is.finite(target_total_cv),
-         label := sprintf("%.0f", target_total_cv * 100)]
+         ("label") := sprintf("%.0f", target_total_cv * 100)]
 
     } else if (label_style == "se") {
       if (is_ratio) {
         dt[is_observed == FALSE & is.finite(target_total_se),
-           label := sprintf("%.3f", target_total_se)]
+           ("label") := sprintf("%.3f", target_total_se)]
       } else {
         dt[is_observed == FALSE & is.finite(target_total_se),
-           label := sprintf("%.1f", target_total_se / amount_divisor)]
+           ("label") := sprintf("%.1f", target_total_se / amount_divisor)]
       }
 
     } else if (label_style == "ci") {
       if (is_ratio) {
         dt[is_observed == FALSE & is.finite(target_total_se),
-           label := sprintf(
+           ("label") := sprintf(
              "[%.0f, %.0f]",
              pmax(0, .value - z_alpha * target_total_se) * 100,
              (.value + z_alpha * target_total_se) * 100
            )]
       } else {
         dt[is_observed == FALSE & is.finite(target_total_se),
-           label := sprintf(
+           ("label") := sprintf(
              "[%.1f, %.1f]",
              pmax(0, .value - z_alpha * target_total_se) / amount_divisor,
              (.value + z_alpha * target_total_se) / amount_divisor

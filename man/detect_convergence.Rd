@@ -6,32 +6,49 @@
 \usage{
 detect_convergence(
   triangle,
-  se_mult = 0.5,
-  max_dv = 0.15,
-  min_run = 3L,
-  k_star = NULL,
+  method = c("tail", "window", "slope", "all"),
+  max_drift = 0.01,
+  max_slope = 0.001,
+  max_dispersion = 0.15,
+  window = 5L,
+  mat_k = NULL,
   holdout_max = NULL,
   min_n_cohorts = 5L,
   ...
 )
 }
 \arguments{
-\item{triangle}{A \code{Triangle} object (typically from \code{\link[=build_triangle]{build_triangle()}}).}
+\item{triangle}{A \code{Triangle} object (typically from \code{\link[=as_triangle]{as_triangle()}}).}
 
-\item{se_mult}{Multiplier on \eqn{\hat{SE}^{param}_v} (the symbol
-\code{c} in the math criterion above). Default \code{0.5}.}
+\item{method}{Which stability criterion defines \code{conv_k}. One of
+\code{"tail"} (default), \code{"window"}, \code{"slope"}, or \code{"all"}. See the
+description for semantics and the reserving caveat.}
 
-\item{max_dv}{Upper bound on \eqn{\hat{D}_v} (the symbol \verb{\\tau} in
-the math criterion above). Default \code{0.15}.}
+\item{max_drift}{Upper bound on the drift metric (window or tail),
+in LR units. Default \code{0.01} (1pp). Raise for noisier or
+longer-tail books.}
 
-\item{min_run}{Required run length of consecutive passing periods
-(the symbol \code{M} in the math criterion above). Default \code{3L}.}
+\item{max_slope}{Upper bound on \code{|slope[i]|}, the OLS slope of
+\eqn{LR \sim k} on \eqn{[k, K_{\max}]}, in LR-per-dev units.
+Default \code{1e-3} (0.1pp per dev). Used by \code{method = "slope"} /
+\code{"all"}.}
 
-\item{k_star}{Pre-computed maturity point. When \code{NULL}, computed via
-\code{\link[=detect_maturity]{detect_maturity()}} applied to a lr-based ATA.}
+\item{max_dispersion}{Upper bound on the cross-cohort dispersion
+\eqn{\hat{D}_k}. Default \code{0.15}.}
+
+\item{window}{Drift window length \eqn{W} (in dev steps): the
+number of consecutive valuations used by the \code{"window"} method to
+compute \code{drift_window}. Default \code{5L}. Note: other functions in the
+package also expose a \code{window} argument (e.g. \code{detect_regime()}
+for e-divisive segment width); here it controls \emph{only} the drift
+metric, not the e-divisive algorithm.}
+
+\item{mat_k}{Pre-computed maturity point. When \code{NULL}, computed via
+\code{\link[=detect_maturity]{detect_maturity()}} applied to an lr-based ATA.}
 
 \item{holdout_max}{Maximum holdout depth used for the rolling
-backtest. When \code{NULL}, set to \code{max(min_run, floor((V - k_star) / 2))}.}
+backtest. When \code{NULL}, set to
+\code{max(window, floor((dev_max - mat_k) / 2))}.}
 
 \item{min_n_cohorts}{Minimum number of cohorts required to compute
 \eqn{\hat{D}_v}. Default \code{5L}.}
@@ -40,33 +57,78 @@ backtest. When \code{NULL}, set to \code{max(min_run, floor((V - k_star) / 2))}.
 to \code{fit_lr()}), e.g. \code{loss_method}, \code{recent}, \code{loss_regime}.}
 }
 \value{
-An object of class \code{Convergence} (named list) containing the
-detected \code{k_conv}, the candidate sequence \code{v}, and the diagnostic
-sequences \code{R_v}, \code{SE_param_v}, \code{D_v}, \code{pass_v}. Metadata is carried
-on attributes (\code{groups}, \code{target}, \code{fit_fn_name}).
+An object of class \code{Convergence} (named list). Includes the
+slots tabulated in the notation mapping above
+(\code{dev_max}, \code{dev_cand}, \code{lr}, \code{revision}, \code{drift_window},
+\code{drift_tail}, \code{slope}, \code{dispersion}), per-method pass vectors
+(\code{pass_window}, \code{pass_tail}, \code{pass_slope}, \code{pass}), the threshold
+parameters, and metadata attributes (\code{groups}, \code{target},
+\code{dispatcher}).
 }
 \description{
-Identify the first valuation \eqn{k^{**}} from which the projected
-loss ratio is \emph{predictively} stable, in the sense of the paper's
-Section 11 \eqn{k^{**}} criterion:
+Identify the first dev \eqn{k^{**}} from which the projected
+portfolio loss ratio is observed to be stable up to the maximum
+available development period \eqn{V}. Three complementary stability
+criteria are computed on the LR backtest path; the user selects
+which one defines \eqn{k^{**}} via \verb{method =}.
 
-\deqn{k^{**} = \min\{v \in [k^*, V - M] : R_v < c \cdot \hat{SE}^{param}_v \text{ and } \hat{D}_v < \tau, \text{ for } M \text{ consecutive valuations}\}}
+\emph{Notation mapping (code <-> math)}:
 
-where \eqn{R_v} is the predictive revision in the projected loss ratio
-when calendar diagonal \eqn{D_v} is added, \eqn{\hat{SE}^{param}_v}
-is the parameter component of the Mack standard error of the
-projection, \eqn{\hat{D}_v} is the robust cross-cohort dispersion
-of incremental loss ratios at \eqn{v}, and \eqn{k^*} is the
-age-to-age maturity point from \code{\link[=detect_maturity]{detect_maturity()}}.
+Standard chain-ladder convention: \eqn{i} indexes cohort (origin
+period), \eqn{k} indexes development period. The maturity point
+\eqn{k^*} and convergence point \eqn{k^{**}} live on the \eqn{k}
+axis. Earlier paper drafts used \eqn{v} (valuation) for the same
+index in Section 11; we unify on \eqn{k} for consistency.
 
-Both clauses guard against complementary failure modes:
-\eqn{R_v < c \cdot \hat{SE}^{param}_v} requires the projection to
-stop responding to new diagonals at a scale-relevant magnitude;
-\eqn{\hat{D}_v < \tau} requires cross-cohort agreement on the
-incremental-LR level (inertia-free per-period quantity).
+\tabular{lll}{
+\code{dev_max}  \tab \eqn{K_{\max}}                \tab Maximum observable dev (a scalar) \cr
+\code{dev_cand} \tab \eqn{k \in [k^*, K_{\max}-2]} \tab Integer vector of candidate dev points \cr
+\code{lr[i]}    \tab \eqn{LR_k}                    \tab Portfolio LR projection at dev = \code{dev_cand[i]} \cr
+\code{revision[i]} \tab \eqn{R_k = |LR_k - LR_{k-1}|} \tab Adjacent-step revision (diagnostic) \cr
+\code{drift_window[i]} \tab \eqn{\max - \min} of \eqn{LR} over \eqn{[k, k+W-1]}     \tab Local window range \cr
+\code{drift_tail[i]}   \tab \eqn{\max - \min} of \eqn{LR} over \eqn{[k, K_{\max}]}  \tab Tail range \cr
+\code{slope[i]}        \tab \eqn{\hat\beta_k}, OLS slope of \eqn{LR \sim k} on \eqn{[k, K_{\max}]} \tab Trend test \cr
+\code{dispersion[i]}   \tab \eqn{\hat{D}_k}                                         \tab Robust cross-cohort spread of incremental LR
+}
 
-This function corresponds to the paper's \emph{convergence point}
-\eqn{k^{**}}, paired with \eqn{k^*} (maturity point).
+Stability methods (which sequence drives \code{pass}):
+
+\describe{
+\item{\code{"window"}}{Local stability:
+\code{drift_window[i] < max_drift}. Fast, but misses a slow
+monotone drift that fits under \code{max_drift} per step.}
+\item{\code{"tail"}}{(default, \emph{reserving-safe}) Global stability:
+\code{drift_tail[i] < max_drift}. Catches monotone drift. The
+first passing dev is later (more conservative) than \code{"window"}.}
+\item{\code{"slope"}}{Trend test: \code{|slope[i]| < max_slope}.
+Explicit no-trend check; sensitive to non-linear trajectories.}
+\item{\code{"all"}}{Strictest: all three pass simultaneously.}
+}
+
+All four pass vectors (\code{pass_window}, \code{pass_tail}, \code{pass_slope},
+\code{pass}) and the underlying diagnostic series are returned
+regardless of the chosen \code{method}, so the analyst can inspect every
+criterion and re-decide.
+
+Across all methods, a cross-cohort agreement clause
+\code{dispersion[i] < max_dispersion} is required in addition.
+
+This replaces an earlier formulation \eqn{R_k < c \cdot
+\hat{SE}^{param}_k} (paper Section 11). The paper's SE-normalised
+form is asymptotically broken on large portfolios:
+\eqn{\hat{SE}^{param}} shrinks as \eqn{1/\sqrt{n}} while \eqn{R_k}
+has a structural noise floor, so the ratio diverges and the
+criterion never fires.
+
+\strong{Caveat (reserving)}: detected \code{conv_k} reflects stability \emph{up
+to} \code{dev_max} (\eqn{K_{\max}}) only -- it is \emph{not} an asymptotic
+guarantee that the projection will not drift past
+\eqn{K_{\max}}. Treat \code{conv_k} as a diagnostic for "from here on,
+what we observe is stable", not as a guarantee of future
+stability. For reserving applications, prefer \code{method = "tail"} or
+\code{"all"} over \code{"window"}, attach an IBNR margin via
+\code{fit_lr$summary} SE/CI columns, and weigh the \emph{evidence span}
+(\code{dev_max - conv_k}): a \code{conv_k} near \code{dev_max} has thin evidence.
 }
 \seealso{
 \code{\link[=detect_maturity]{detect_maturity()}}, \code{\link[=backtest]{backtest()}}, \code{\link[=fit_lr]{fit_lr()}}

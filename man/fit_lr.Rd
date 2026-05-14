@@ -25,7 +25,7 @@ fit_lr(
 }
 \arguments{
 \item{x}{An object of class \code{"Triangle"}. The standardized \code{"loss"}
-and \code{"premium"} columns are used (\code{build_triangle()} produces these).}
+and \code{"premium"} columns are used (\code{as_triangle()} produces these).}
 
 \item{method}{One of \code{"sa"} (default), \code{"ed"}, or \code{"cl"}.}
 
@@ -159,7 +159,7 @@ point + variance via the delta method (\code{se_method = "fixed"} or
 \examples{
 \dontrun{
 data(experience)
-tri <- build_triangle(
+tri <- as_triangle(
   experience[coverage == "SUR"],
   groups   = "coverage",
   cohort   = "uy_m",
@@ -182,6 +182,6 @@ lr_cl <- fit_lr(tri, method = "cl")
 
 }
 \seealso{
-\code{\link[=fit_loss]{fit_loss()}}, \code{\link[=fit_premium]{fit_premium()}}, \code{\link[=build_triangle]{build_triangle()}},
-\code{\link[=build_link]{build_link()}}, \code{\link[=fit_ata]{fit_ata()}}, \code{\link[=fit_ed]{fit_ed()}}, \code{\link[=detect_maturity]{detect_maturity()}}
+\code{\link[=fit_loss]{fit_loss()}}, \code{\link[=fit_premium]{fit_premium()}}, \code{\link[=as_triangle]{as_triangle()}},
+\code{\link[=as_link]{as_link()}}, \code{\link[=fit_ata]{fit_ata()}}, \code{\link[=fit_ed]{fit_ed()}}, \code{\link[=detect_maturity]{detect_maturity()}}
 }

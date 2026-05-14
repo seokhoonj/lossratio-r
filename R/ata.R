@@ -50,7 +50,7 @@
 #'
 #' @section Weights:
 #' When the input `"Link"` object contains a `weight` column (added by
-#' [build_link()] when `weight` is supplied), that column is
+#' [as_link()] when `weight` is supplied), that column is
 #' automatically used as the WLS weight in place of `target_from`. This
 #' is useful when `target = "lr"`, where `target_from` carries no
 #' exposure information and an external exposure variable such as `premium`
@@ -78,7 +78,7 @@
 #' consistent across cohorts.
 #'
 #' @param object An object of class `"Link"`, typically produced by
-#'   [build_link()].
+#'   [as_link()].
 #' @param alpha Numeric scalar controlling the variance structure in the
 #'   WLS fit. Default is `1`.
 #' @param digits Number of decimal places to round numeric columns.
@@ -103,15 +103,15 @@
 #'       (\eqn{f\_se / f}).}
 #'     \item{`sigma`}{Mack sigma (residual standard deviation from the
 #'       WLS fit). Used in Mack variance estimation.}
-#'     \item{`n_obs`}{Total number of observations for the link.}
+#'     \item{`n_cohorts`}{Total number of observations for the link.}
 #'     \item{`n_valid`}{Number of finite ata values.}
 #'     \item{`n_inf`}{Number of infinite ata values.}
 #'     \item{`n_nan`}{Number of NaN ata values.}
 #'     \item{`valid_ratio`}{Proportion of finite ata values
-#'       (\eqn{n\_valid / n\_obs}).}
+#'       (\eqn{n\_valid / n\_cohorts}).}
 #'   }
 #'
-#' @seealso [build_link()], [summary.Link()], [detect_maturity()],
+#' @seealso [as_link()], [summary.Link()], [detect_maturity()],
 #'   [fit_ata()]
 #'
 #' @keywords internal
@@ -125,7 +125,7 @@
   grp <- attr(object, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  dt <- .ensure_dt(object)
+  dt <- .copy_dt(object)
 
   has_seg  <- "segment_id" %in% names(dt)
   grp_link <- c(grp, "ata_from", "ata_to", "ata_link",
@@ -143,17 +143,17 @@
       median  = stats::median(vals),
       wt      = sum(vt, na.rm = TRUE) / sum(vf, na.rm = TRUE),
       cv      = stats::sd(vals, na.rm = TRUE) / m,
-      n_obs   = .N,
+      n_cohorts   = .N,
       n_valid = sum(is.finite(ata)),
       n_inf   = sum(is.infinite(ata)),
       n_nan   = sum(is.nan(ata))
     )
   }, by = grp_link]
 
-  ds[, ("valid_ratio") := n_valid / n_obs]
+  ds[, ("valid_ratio") := n_valid / n_cohorts]
 
   # 2) WLS estimation ---------------------------------------------------
-  # use weight column if present (added by build_link(weight = ...))
+  # use weight column if present (added by as_link(weight = ...))
   # otherwise fall back to target_from (standard volume-weighted chain ladder)
   wt_col    <- if ("weight" %in% names(dt)) "weight" else 1
   link_factors <- .lm_link(object, weights = wt_col, alpha = alpha, ...)
@@ -172,7 +172,7 @@
     if (has_seg) "segment_id",
     "mean", "median", "wt", "cv",
     "f", "f_se", "rse", "sigma",
-    "n_obs", "n_valid", "n_inf", "n_nan", "valid_ratio"
+    "n_cohorts", "n_valid", "n_inf", "n_nan", "valid_ratio"
   )
   data.table::setcolorder(ds, col_order)
 
@@ -246,7 +246,7 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #' }
 #'
 #' @param x An object of class `"Link"`, typically produced by
-#'   [build_link()].
+#'   [as_link()].
 #' @param alpha Numeric scalar controlling the variance structure. Default
 #'   is `1`.
 #' @param na_method Method used to fill `NA` values in `f_selected`. One of
@@ -300,11 +300,11 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #'   }
 #'
 #' @param target Cumulative metric for the link factor. Default
-#'   `"loss"`. Forwarded to [build_link()].
+#'   `"loss"`. Forwarded to [as_link()].
 #' @param weight Optional WLS weight variable. Forwarded to
-#'   [build_link()].
+#'   [as_link()].
 #'
-#' @seealso [build_link()], [summary.Link()], [detect_maturity()],
+#' @seealso [as_link()], [summary.Link()], [detect_maturity()],
 #'   [fit_cl()]
 #'
 #' @export
@@ -320,6 +320,10 @@ fit_ata <- function(x,
                     ...) {
 
   .assert_triangle_input(x, "fit_ata()")
+
+  if (!is.numeric(alpha) || length(alpha) != 1L ||
+      is.na(alpha) || !is.finite(alpha))
+    stop("`alpha` must be a single finite numeric value.", call. = FALSE)
 
   # resolve regime dispatch (NULL / Regime / "auto" / function) to a
   # `Regime` object (or NULL) before any downstream use.
@@ -341,7 +345,7 @@ fit_ata <- function(x,
     if (is.null(m_groups)) {
       # Infer from column names — non-stats columns are group columns.
       stat_cols <- c("change", "ata_from", "ata_link", "mean", "median", "wt",
-                     "cv", "f", "f_se", "rse", "sigma", "n_obs", "n_valid",
+                     "cv", "f", "f_se", "rse", "sigma", "n_cohorts", "n_valid",
                      "n_inf", "n_nan", "valid_ratio")
       m_groups <- setdiff(names(maturity), stat_cols)
     }
@@ -352,7 +356,7 @@ fit_ata <- function(x,
     }
   }
 
-  link <- build_link(x, target = target, weight = weight)
+  link <- as_link(x, target = target, weight = weight)
 
   na_method    <- match.arg(na_method)
   sigma_method <- match.arg(sigma_method)
@@ -528,16 +532,16 @@ print.ATAFit <- function(x, ...) {
 
   na_method <- match.arg(na_method)
 
-  z <- .ensure_dt(ata_summary)
+  z <- .copy_dt(ata_summary)
 
   # initialise: all links selected, f_selected equals fitted f
-  z[, `:=`(selected = TRUE, f_selected = f)]
+  z[, c("selected", "f_selected") := list(TRUE, f)]
 
   # --- maturity filter --------------------------------------------------
   # only applied when use_maturity = TRUE and maturity is provided
   if (use_maturity && !is.null(maturity)) {
 
-    mat <- .ensure_dt(maturity)
+    mat <- .copy_dt(maturity)
 
     # keep only group vars and maturity_from
     keep_cols <- c(grp, "ata_from")
@@ -606,7 +610,7 @@ print.ATAFit <- function(x, ...) {
   if (!all(c("ata_from", "sigma") %in% names(x)))
     stop("`x` must contain `ata_from` and `sigma`.", call. = FALSE)
 
-  z <- .ensure_dt(x)
+  z <- .copy_dt(x)
 
   z[, ("sigma_extrapolated") := !is.finite(sigma) | sigma <= 0]
 

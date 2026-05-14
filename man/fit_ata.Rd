@@ -19,13 +19,13 @@ fit_ata(
 }
 \arguments{
 \item{x}{An object of class \code{"Link"}, typically produced by
-\code{\link[=build_link]{build_link()}}.}
+\code{\link[=as_link]{as_link()}}.}
 
 \item{target}{Cumulative metric for the link factor. Default
-\code{"loss"}. Forwarded to \code{\link[=build_link]{build_link()}}.}
+\code{"loss"}. Forwarded to \code{\link[=as_link]{as_link()}}.}
 
 \item{weight}{Optional WLS weight variable. Forwarded to
-\code{\link[=build_link]{build_link()}}.}
+\code{\link[=as_link]{as_link()}}.}
 
 \item{alpha}{Numeric scalar controlling the variance structure. Default
 is \code{1}.}
@@ -99,6 +99,6 @@ after optional maturity filtering and LOCF fill.
 }
 }
 \seealso{
-\code{\link[=build_link]{build_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=detect_maturity]{detect_maturity()}},
+\code{\link[=as_link]{as_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=detect_maturity]{detect_maturity()}},
 \code{\link[=fit_cl]{fit_cl()}}
 }

@@ -232,8 +232,8 @@ NULL
 #' `dev_q` / `dev_h` / `dev_y`) so the same frame can be aggregated
 #' at any of the four grains.
 #'
-#' This is an *optional* utility — [build_triangle()] and
-#' [build_calendar()] already derive the single grain they need
+#' This is an *optional* utility — [as_triangle()] and
+#' [as_calendar()] already derive the single grain they need
 #' internally. Use this when you want a single enriched frame that
 #' can be re-aggregated at multiple grains, or for exploratory plots.
 #'
@@ -292,7 +292,7 @@ NULL
 derive_grain_columns <- function(df) {
   .assert_class(df, "data.frame")
 
-  dt <- .ensure_dt(df)
+  dt <- .copy_dt(df)
 
   has_uy_m  <- .has_cols(dt, "uy_m")
   has_cy_m  <- .has_cols(dt, "cy_m")
@@ -314,10 +314,10 @@ derive_grain_columns <- function(df) {
   if (has_uy_m) {
     uy_h_mo <- data.table::fifelse(uy_mo <= 6L, 1L, 7L)
     uy_q_mo <- ((uy_mo - 1L) %/% 3L) * 3L + 1L
-    dt[, `:=`(
-      uy = .first_of_month(uy_yr, 1L),
-      uy_h = .first_of_month(uy_yr, uy_h_mo),
-      uy_q = .first_of_month(uy_yr, uy_q_mo)
+    dt[, c("uy", "uy_h", "uy_q") := list(
+      .first_of_month(uy_yr, 1L),
+      .first_of_month(uy_yr, uy_h_mo),
+      .first_of_month(uy_yr, uy_q_mo)
     )]
     data.table::setcolorder(dt, c("uy", "uy_h", "uy_q"), before = "uy_m")
   }
@@ -325,10 +325,10 @@ derive_grain_columns <- function(df) {
   if (has_cy_m) {
     cy_h_mo <- data.table::fifelse(cy_mo <= 6L, 1L, 7L)
     cy_q_mo <- ((cy_mo - 1L) %/% 3L) * 3L + 1L
-    dt[, `:=`(
-      cy = .first_of_month(cy_yr, 1L),
-      cy_h = .first_of_month(cy_yr, cy_h_mo),
-      cy_q = .first_of_month(cy_yr, cy_q_mo)
+    dt[, c("cy", "cy_h", "cy_q") := list(
+      .first_of_month(cy_yr, 1L),
+      .first_of_month(cy_yr, cy_h_mo),
+      .first_of_month(cy_yr, cy_q_mo)
     )]
     data.table::setcolorder(dt, c("cy", "cy_h", "cy_q"), before = "cy_m")
   }
@@ -356,7 +356,7 @@ derive_grain_columns <- function(df) {
     cy_q_idx <- (cy_mo - 1L) %/% 3L
     dev_q    <- (cy_yr - uy_yr) * 4L + (cy_q_idx - uy_q_idx) + 1L
 
-    dt[, `:=`(dev_y = dev_y, dev_h = dev_h, dev_q = dev_q)]
+    dt[, c("dev_y", "dev_h", "dev_q") := list(dev_y, dev_h, dev_q)]
     data.table::setcolorder(dt, c("dev_y", "dev_h", "dev_q"), before = "dev_m")
   }
 

@@ -25,7 +25,7 @@ utils::globalVariables(c(
   ".",
   "i.is_observed", "i.loss_param_se", "i.loss_proc_se", "i.loss_proj",
   "i.loss_total_se", "i.lr_ci_lower", "i.lr_ci_upper", "i.lr_cv",
-  "i.lr_proj", "i.lr_se", "i.n_obs", "i.premium_proj",
+  "i.lr_proj", "i.lr_se", "i.n_cohorts", "i.premium_proj",
   "i.premium_total_cv", "i.premium_total_se", "i.target_param_se",
   "i.target_proc_se", "i.target_proj", "i.target_total_se",
   "x.change_date", "x.dev_split", "x.m_k",
@@ -43,7 +43,7 @@ utils::globalVariables(c(
   "label", "last_obs", "lower", "upper",
   "loss", "loss_incr", "loss_incr_proj", "loss_incr_share", "loss_obs",
   "loss_proj", "loss_share",
-  "lr", "lr_incr", "lr_mad", "lr_median", "lr_proj", "lr_se", "lr_var",
+  "lr", "lr_incr", "lr_proj", "lr_se", "lr_var",
   "magnitude_mean", "mat_x", "maturity_from",
   "premium", "premium_incr", "premium_incr_proj", "premium_obs",
   "premium_proj", "premium_share",
@@ -54,7 +54,7 @@ utils::globalVariables(c(
   "value",  # default melt() value column when value.name not set
 
   # 3. Fit SE / variance / CV / tail-factor schema ---------------------
-  "cv", "flag", "metric", "rse", "sigma2", "type",
+  "cv", "metric", "rse", "sigma2", "type",
   "loss_param_se2", "loss_proc_se2", "loss_total_se", "loss_total_se2",
   "premium_total_cv", "premium_total_se",
   "target_param_se", "target_param_se2", "target_param_se_tail",
@@ -66,7 +66,7 @@ utils::globalVariables(c(
   "target_total_se_tail", "target_total_se2_tail",
 
   # 4. Aggregation counts & plot coordinate vars -----------------------
-  "N", "n", "n_cohorts", "n_expected", "n_obs", "n_observed", "n_valid",
+  "N", "n", "n_expected", "n_cohorts", "n_dev", "n_valid",
   "w", "weight",
   "x_end", "x_start", "xint", "y_end", "y_start"
 ))

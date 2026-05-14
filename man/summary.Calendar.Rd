@@ -15,7 +15,7 @@
 A \code{data.table} of class \code{"CalendarSummary"} with one row per
 \verb{(groups, calendar)} combination, containing:
 \describe{
-\item{n_obs}{Number of observations in the cell.}
+\item{n_cohorts}{Number of observations in the cell.}
 \item{lr_mean}{Mean of cumulative loss ratios.}
 \item{lr_median}{Median of cumulative loss ratios.}
 \item{lr_wt}{Weighted cumulative loss ratio
@@ -41,7 +41,7 @@ diagonals rather than development periods.
 }
 \examples{
 \dontrun{
-cal <- build_calendar(
+cal <- as_calendar(
   df,
   groups   = "coverage",
   calendar = "cy_m",

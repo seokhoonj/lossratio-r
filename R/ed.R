@@ -38,7 +38,7 @@
 #' }
 #'
 #' @param object A `Link` object built with `exposure` set,
-#'   typically produced by [build_link()].
+#'   typically produced by [as_link()].
 #' @param alpha Numeric scalar controlling the variance structure in the
 #'   WLS fit. Default is `1`.
 #' @param digits Number of decimal places to round numeric columns.
@@ -48,7 +48,7 @@
 #' @return A `data.table` with class `"EDSummary"` containing one row
 #'   per development link with descriptive statistics and WLS estimates.
 #'
-#' @seealso [build_link()], [summary.Link()], [fit_ed()]
+#' @seealso [as_link()], [summary.Link()], [fit_ed()]
 #'
 #' @keywords internal
 .summarize_link_ed <- function(object,
@@ -65,7 +65,7 @@
   grp <- attr(object, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  dt <- .ensure_dt(object)
+  dt <- .copy_dt(object)
 
   has_seg  <- "segment_id" %in% names(dt)
   grp_link <- c(grp, "ata_from", "ata_to", "ata_link",
@@ -83,14 +83,14 @@
       median  = stats::median(vals),
       wt      = sum(dl, na.rm = TRUE) / sum(ef, na.rm = TRUE),
       cv      = stats::sd(vals, na.rm = TRUE) / abs(m),
-      n_obs   = .N,
+      n_cohorts   = .N,
       n_valid = sum(is.finite(intensity)),
       n_inf   = sum(is.infinite(intensity)),
       n_nan   = sum(is.nan(intensity))
     )
   }, by = grp_link]
 
-  ds[, ("valid_ratio") := n_valid / n_obs]
+  ds[, ("valid_ratio") := n_valid / n_cohorts]
 
   # 2) WLS estimation
   link_factors <- .lm_ed(object, alpha = alpha, ...)
@@ -109,7 +109,7 @@
     if (has_seg) "segment_id",
     "mean", "median", "wt", "cv",
     "g", "g_se", "rse", "sigma",
-    "n_obs", "n_valid", "n_inf", "n_nan", "valid_ratio"
+    "n_cohorts", "n_valid", "n_inf", "n_nan", "valid_ratio"
   )
   data.table::setcolorder(ds, col_order)
 
@@ -184,9 +184,9 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'
 #' @param x A `"Triangle"` object.
 #' @param target Cumulative loss variable. Default `"loss"`.
-#'   Forwarded to [build_link()] and to downstream workers.
+#'   Forwarded to [as_link()] and to downstream workers.
 #' @param exposure Cumulative exposure variable. Default `"premium"`.
-#'   Forwarded to [build_link()] and to downstream workers.
+#'   Forwarded to [as_link()] and to downstream workers.
 #' @param method Estimation method. Currently only `"mack"` is supported.
 #' @param alpha Numeric scalar controlling the variance structure. Default
 #'   is `1`.
@@ -221,7 +221,7 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'     \item{`link`}{`Link` object used for factor estimation.}
 #'   }
 #'
-#' @seealso [build_link()], [summary.Link()], [fit_lr()], [backtest()]
+#' @seealso [as_link()], [summary.Link()], [fit_lr()], [backtest()]
 #'
 #' @export
 fit_ed <- function(x,
@@ -567,7 +567,7 @@ print.EDFit <- function(x, ...) {
   grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  dt <- .ensure_dt(x)
+  dt <- .copy_dt(x)
 
   # 1) drop invalid rows
   if (na_rm) {
@@ -593,7 +593,7 @@ print.EDFit <- function(x, ...) {
         g     = target_delta[1L] / exposure_from[1L],
         g_se  = NA_real_,
         sigma = NA_real_,
-        n_obs = 1L
+        n_cohorts = 1L
       )
     } else {
       fit <- tryCatch(
@@ -603,7 +603,7 @@ print.EDFit <- function(x, ...) {
 
       if (is.null(fit)) {
         data.table::data.table(
-          g = NA_real_, g_se = NA_real_, sigma = NA_real_, n_obs = .N
+          g = NA_real_, g_se = NA_real_, sigma = NA_real_, n_cohorts = .N
         )
       } else {
         smr <- suppressWarnings(summary(fit))
@@ -619,7 +619,7 @@ print.EDFit <- function(x, ...) {
           g     = g_val,
           g_se  = g_se_val,
           sigma = sigma_val,
-          n_obs = .N
+          n_cohorts = .N
         )
       }
     }
@@ -669,7 +669,7 @@ print.EDFit <- function(x, ...) {
   grp <- attr(ed_fit$link, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  ed_long <- .ensure_dt(ed_fit$link)
+  ed_long <- .copy_dt(ed_fit$link)
   sel     <- data.table::copy(ed_fit$selected)
 
   if (!"sigma2" %in% names(sel))

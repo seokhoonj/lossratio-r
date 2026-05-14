@@ -58,7 +58,7 @@ clear shift to find.
 data(experience)
 head(experience)
 
-tri <- build_triangle(
+tri <- as_triangle(
   experience,
   groups   = "coverage",
   cohort   = "uy_m",

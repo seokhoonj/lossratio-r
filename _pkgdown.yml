@@ -71,9 +71,6 @@ home:
   description: Loss ratio analytics for long-term health insurance —
     cohort development analysis, stage-adaptive projection, regime
     detection, and backtest validation.
-  exclude:
-    - ARCHITECTURE.md
-
 navbar:
   structure:
     left:  [intro, articles, reference, news]
@@ -115,7 +112,7 @@ navbar:
 reference:
 - title: Input layer
   desc: >
-    Validation and grain helpers for raw experience data. `build_triangle()`
+    Validation and grain helpers for raw experience data. `as_triangle()`
     already runs the required checks and coercions inline — these helpers
     are exposed for users who want to validate or enrich without building
     a triangle.
@@ -129,9 +126,9 @@ reference:
     cohort × dev (`Triangle`), calendar period (`Calendar`), or
     portfolio total (`Total`).
   contents:
-  - build_triangle
-  - build_calendar
-  - build_total
+  - as_triangle
+  - as_calendar
+  - as_total
 
 - title: Link table
   desc: >
@@ -139,7 +136,7 @@ reference:
     exposure-driven (ED) workflows. Built once, summarised differently
     via `summary.Link()`'s `model` argument.
   contents:
-  - build_link
+  - as_link
   - summary.Link
 
 - title: Estimation

@@ -17,15 +17,15 @@
 A \code{ggplot} object.
 }
 \description{
-Two-panel diagnostic showing the dual criterion driving \eqn{k^{**}}:
+Four-panel diagnostic showing the LR backtest path and each
+stability metric vs. its threshold:
 \itemize{
-\item Top panel: \eqn{R_v / \hat{SE}^{param}_v} (predictive
-revision normalised by parameter SE), with horizontal guide at
-the threshold \code{se_mult}.
-\item Bottom panel: \eqn{\hat{D}_v} (robust cross-cohort
-dispersion of incremental loss ratio), with horizontal guide at
-the threshold \code{max_dv}.
+\item Top: \code{lr} (the portfolio LR projection at each valuation).
+\item Then for each of \code{drift_window}, \code{drift_tail}, \verb{|slope|},
+\code{dispersion}: the metric over \code{v} with a dashed horizontal
+line at the threshold (\code{max_drift}, \code{max_slope}, or \code{max_dispersion}).
 }
-Vertical guides mark \code{k_star} (dashed) and \code{k_conv} (solid). A
-point falling below both threshold lines passes the joint criterion.
+Vertical guides mark \code{mat_k} (dashed) and the detected \code{conv_k}
+for the chosen \code{method} (solid). The chosen-method panel title is
+annotated.
 }

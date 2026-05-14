@@ -166,7 +166,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
       min_n_valid     = min_n_valid,
       min_run         = min_run
     )
-    mat <- .ensure_dt(mat)
+    mat <- .copy_dt(mat)
     mat <- mat[is.finite(ata_from)]
   }
 
@@ -361,7 +361,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   }
 
   if (type == "box") {
-    dt <- .ensure_dt(x)
+    dt <- .copy_dt(x)
     dt[, (".ata_link_chr") := sprintf("%s-%s", ata_from, ata_to)]
 
     p <- ggplot2::ggplot(
@@ -396,7 +396,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   }
 
   if (type == "point") {
-    dt <- .ensure_dt(x)
+    dt <- .copy_dt(x)
 
     p <- ggplot2::ggplot(
       dt,
@@ -535,7 +535,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   }
 
   if (type == "box") {
-    dt <- .ensure_dt(x)
+    dt <- .copy_dt(x)
 
     p <- ggplot2::ggplot(
       dt,
@@ -562,7 +562,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   }
 
   if (type == "point") {
-    dt <- .ensure_dt(x)
+    dt <- .copy_dt(x)
 
     p <- ggplot2::ggplot(
       dt,
@@ -626,7 +626,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   if (is.null(label_size))
     label_size <- if (label_style == "detail") 2.5 else 3
 
-  dt  <- .ensure_dt(x)
+  dt  <- .copy_dt(x)
   grp <- attr(x, "groups")
   coh <- attr(x, "cohort")
   tgt <- attr(x, "target")
@@ -701,7 +701,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
       min_n_valid     = min_n_valid,
       min_run         = min_run
     )
-    mat <- .ensure_dt(mat)
+    mat <- .copy_dt(mat)
     mat <- mat[is.finite(ata_from)]
 
     if (nrow(mat)) {
@@ -811,7 +811,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   if (is.null(label_size))
     label_size <- if (label_style == "detail") 2.5 else 3
 
-  dt  <- .ensure_dt(x)
+  dt  <- .copy_dt(x)
   grp <- attr(x, "groups")
   coh <- attr(x, "cohort")
 

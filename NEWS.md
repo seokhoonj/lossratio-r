@@ -1,5 +1,20 @@
 # lossratio (development version)
 
+* **BREAKING** — the four constructor functions are renamed from
+  `build_*` to `as_*` to align with the tidyverse coercion idiom and
+  the Python sibling's `lr.Triangle(df)` mental model:
+    * `build_triangle()` -> `as_triangle()`
+    * `build_calendar()` -> `as_calendar()`
+    * `build_total()`    -> `as_total()`
+    * `build_link()`     -> `as_link()`
+  No signature change, only the verb. Migration is a global
+  find-and-replace. The functions still validate, coerce, and
+  aggregate substantively -- the `as_*` name reflects that the
+  returned object is *the* canonical lossratio shape derived from
+  the raw experience data, not just a thin type cast. The PascalCase
+  classes (`Triangle`, `Calendar`, `Total`, `Link`) remain unchanged
+  and do not collide with ChainLadder's lowercase `triangle` class.
+
 * **BREAKING** — `plot_triangle.Triangle()` argument `type` renamed to
   `view` for parity with `plot_triangle.CLFit()`, `plot_triangle.LRFit()`,
   and `plot_triangle.Backtest()`, which already used `view = c("value",

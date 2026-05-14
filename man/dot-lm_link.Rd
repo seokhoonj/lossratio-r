@@ -26,7 +26,7 @@ zero. Default is \code{1e-12}.}
 }
 \value{
 A \code{data.table} with one row per ata link containing \code{f},
-\code{f_se}, \code{sigma}, \code{rse}, and \code{n_obs}. \code{rse} is defined as
+\code{f_se}, \code{sigma}, \code{rse}, and \code{n_cohorts}. \code{rse} is defined as
 \eqn{f\_se / f} and represents the relative standard error of the
 WLS-estimated factor. \code{rse} is \code{NA} when \code{f_se} is \code{NA} (single
 observation links) or when \code{f} is zero.

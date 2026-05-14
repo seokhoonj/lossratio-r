@@ -18,9 +18,6 @@ template:
 home:
   title: lossratio
   description: 경험 데이터 기반 손해율 분석 및 추정 도구.
-  exclude:
-    - ARCHITECTURE.md
-
 navbar:
   structure:
     left:  [intro, articles, reference, news]
@@ -70,7 +67,7 @@ navbar:
 reference:
 - title: 입력 계층
   desc: >
-    원시 experience 데이터의 검증·grain 헬퍼. `build_triangle()` 이 필수
+    원시 experience 데이터의 검증·grain 헬퍼. `as_triangle()` 이 필수
     검증·코어션을 내부에서 수행하므로 일반 흐름엔 불필요하며, Triangle 을
     만들지 않고 검증·enrichment 만 하고 싶을 때 사용한다.
   contents:
@@ -83,16 +80,16 @@ reference:
     cohort × dev (`Triangle`), 달력 기간 (`Calendar`),
     포트폴리오 전체 (`Total`).
   contents:
-  - build_triangle
-  - build_calendar
-  - build_total
+  - as_triangle
+  - as_calendar
+  - as_total
 
 - title: 단계 연결 테이블
   desc: >
     Chain ladder (ATA) 와 노출 기반 (ED) 의 공통 long-format intermediate.
     `summary.Link()` 의 `model` 인자로 두 모형의 진단을 분기.
   contents:
-  - build_link
+  - as_link
   - summary.Link
 
 - title: 추정

@@ -33,7 +33,7 @@
 #' `"delta"`). See `ARCHITECTURE.md` for the layered design.
 #'
 #' @param x An object of class `"Triangle"`. The standardized `"loss"`
-#'   and `"premium"` columns are used (`build_triangle()` produces these).
+#'   and `"premium"` columns are used (`as_triangle()` produces these).
 #' @param method One of `"sa"` (default), `"ed"`, or `"cl"`.
 #' @param loss_alpha Numeric scalar controlling the variance structure for
 #'   loss estimation. Default is `1`.
@@ -116,13 +116,13 @@
 #'
 #' @return An object of class `"LRFit"`.
 #'
-#' @seealso [fit_loss()], [fit_premium()], [build_triangle()],
-#'   [build_link()], [fit_ata()], [fit_ed()], [detect_maturity()]
+#' @seealso [fit_loss()], [fit_premium()], [as_triangle()],
+#'   [as_link()], [fit_ata()], [fit_ed()], [detect_maturity()]
 #'
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' tri <- build_triangle(
+#' tri <- as_triangle(
 #'   experience[coverage == "SUR"],
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
@@ -237,7 +237,7 @@ fit_lr <- function(x,
   # Take the role-specific premium_* columns directly from the dispatcher
   # output -- no `exp_*` intermediary aliasing.
   if (se_method == "delta") {
-    pf_full <- data.table::as.data.table(premium_fit$full)
+    pf_full <- .copy_dt(premium_fit$full)
     pf_keep_keys <- intersect(c(grp, "cohort", "dev"), names(pf_full))
     pf_cols <- c(pf_keep_keys, "premium_total_se", "premium_total_cv")
     pf_cols <- intersect(pf_cols, names(pf_full))
@@ -430,7 +430,7 @@ print.LRFit <- function(x, ...) {
   pad <- function(label) formatC(label, width = lw, flag = "-")
 
   if (!is.null(x$maturity) && nrow(x$maturity)) {
-    mat <- .ensure_dt(x$maturity)
+    mat <- .copy_dt(x$maturity)
     if (length(grp)) {
       grp_txt <- vapply(seq_len(nrow(mat)), function(i)
         paste(mat[i, grp, with = FALSE], collapse = "/"), character(1L))

@@ -53,12 +53,12 @@
 #'   `premium_total_se`, `premium_proc_cv`, `premium_param_cv`,
 #'   `premium_total_cv`, `premium_ci_lower`, `premium_ci_upper`).
 #'
-#' @seealso [fit_cl()], [fit_ed()], [fit_lr()], [build_triangle()].
+#' @seealso [fit_cl()], [fit_ed()], [fit_lr()], [as_triangle()].
 #'
 #' @examples
 #' \dontrun{
 #' data(experience)
-#' tri <- build_triangle(
+#' tri <- as_triangle(
 #'   experience[coverage == "SUR"],
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
@@ -156,7 +156,7 @@ fit_premium <- function(x,
 #'
 #' @keywords internal
 .premium_rename_full <- function(full, grp, conf_level) {
-  full <- data.table::copy(.ensure_dt(full))
+  full <- data.table::copy(.copy_dt(full))
 
   rename_map <- c(
     target_obs       = "premium_obs",
@@ -228,8 +228,8 @@ fit_premium <- function(x,
 #'
 #' @keywords internal
 .ed_replace_se <- function(full, selected, triangle) {
-  full <- data.table::copy(.ensure_dt(full))
-  selected <- .ensure_dt(selected)
+  full <- data.table::copy(.copy_dt(full))
+  selected <- .copy_dt(selected)
 
   # Suppress R CMD check NOTEs for `data.table` temp columns referenced
   # bare inside `j` expressions later in this function.
@@ -283,10 +283,10 @@ fit_premium <- function(x,
   }, by = by_cols]
 
   full[, ("target_total_se2") := target_proc_se2 + target_param_se2]
-  full[, target_proc_se  := sqrt(pmax(target_proc_se2, 0))]
-  full[, ("target_param_se") := sqrt(pmax(target_param_se2, 0))]
-  full[, ("target_total_se") := sqrt(pmax(target_total_se2, 0))]
-  full[, target_proc_cv  := data.table::fifelse(
+  full[, ("target_proc_se")   := sqrt(pmax(target_proc_se2, 0))]
+  full[, ("target_param_se")  := sqrt(pmax(target_param_se2, 0))]
+  full[, ("target_total_se")  := sqrt(pmax(target_total_se2, 0))]
+  full[, ("target_proc_cv")   := data.table::fifelse(
     is.finite(target_proj) & target_proj != 0,
     target_proc_se / target_proj, NA_real_)]
   full[, ("target_param_cv") := data.table::fifelse(
@@ -297,14 +297,11 @@ fit_premium <- function(x,
     target_total_se / target_proj, NA_real_)]
 
   # Mask observed cells
-  full[.is_obs == TRUE, `:=`(
-    target_proc_se2  = NA_real_, target_param_se2 = NA_real_,
-    target_total_se2 = NA_real_,
-    target_proc_se   = NA_real_, target_param_se  = NA_real_,
-    target_total_se  = NA_real_,
-    target_proc_cv   = NA_real_, target_param_cv  = NA_real_,
-    target_total_cv  = NA_real_
-  )]
+  full[.is_obs == TRUE,
+       c("target_proc_se2", "target_param_se2", "target_total_se2",
+         "target_proc_se",  "target_param_se",  "target_total_se",
+         "target_proc_cv",  "target_param_cv",  "target_total_cv") :=
+       rep(list(NA_real_), 9L)]
 
   full[, (".is_obs") := NULL]
   full[]
@@ -340,7 +337,7 @@ print.PremiumFit <- function(x, ...) {
 #' @param ... Unused.
 #' @export
 summary.PremiumFit <- function(object, ...) {
-  full <- as.data.table(object$full)
+  full <- .copy_dt(object$full)
   out <- full[, .SD[which.max(dev)], by = cohort]
   out[, .(cohort,
           ultimate    = premium_proj,
