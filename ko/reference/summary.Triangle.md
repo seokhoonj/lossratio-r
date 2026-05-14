@@ -2,7 +2,7 @@
 
 S3 method for [`summary()`](https://rdrr.io/r/base/summary.html) on
 `Triangle` objects. Computes group-wise summary statistics for
-cumulative loss ratios (`lr`) and per-period loss ratios (`lr_incr`).
+cumulative loss ratios (`lr`) and per-period loss ratios (`incr_lr`).
 
 The function aggregates data by the grouping variables stored in
 `attr(x, "groups")` and the development variable stored in
@@ -51,19 +51,19 @@ A `data.table` grouped by `groups` and `dev`, containing:
 
 - lr_wt:
 
-  Weighted cumulative loss ratio (`sum(loss) / sum(premium)`)
+  Weighted cumulative loss ratio (`sum(loss) / sum(prem)`)
 
-- lr_incr_mean:
+- incr_lr_mean:
 
   Mean of per-period loss ratios
 
-- lr_incr_median:
+- incr_lr_median:
 
   Median of per-period loss ratios
 
-- lr_incr_wt:
+- incr_lr_wt:
 
-  Weighted per-period loss ratio (`sum(loss_incr) / sum(premium_incr)`)
+  Weighted per-period loss ratio (`sum(incr_loss) / sum(incr_prem)`)
 
 The returned object keeps the attributes `groups` and `dev`, and its
 class is updated to `"TriangleSummary"`.
@@ -72,11 +72,11 @@ class is updated to `"TriangleSummary"`.
 
 The weighted mean is computed as:
 
-- `lr_wt = sum(loss) / sum(premium)`
+- `lr_wt = sum(loss) / sum(prem)`
 
-- `lr_incr_wt = sum(loss_incr) / sum(premium_incr)`
+- `incr_lr_wt = sum(incr_loss) / sum(incr_prem)`
 
-These correspond to portfolio-level loss ratios based on premium and are
+These correspond to portfolio-level loss ratios based on prem and are
 typically more stable than simple averages when exposure sizes differ
 across cohorts.
 
@@ -92,8 +92,8 @@ d <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 smr <- summary(d)
 head(smr)

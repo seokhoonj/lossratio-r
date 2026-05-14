@@ -5,18 +5,17 @@ arranged by period and dev dimensions, and each cell displays the
 selected metric.
 
 For ratio metrics (`lr`, `lr`), labels can show either the ratio alone
-or the ratio together with the associated loss / risk premium amounts.
+or the ratio together with the associated loss / risk prem amounts.
 
-For amount metrics (`loss`, `loss_incr`, `premium`, `premium_incr`,
-`margin`, `margin_incr`), labels show the selected amount only.
+For amount metrics (`loss`, `incr_loss`, `prem`, `incr_prem`, `margin`,
+`incr_margin`), labels show the selected amount only.
 
-For proportion metrics (`loss_share`, `loss_incr_share`,
-`premium_share`, `premium_incr_share`), labels are displayed as
-percentages.
+For proportion metrics (`loss_share`, `incr_loss_share`, `prem_share`,
+`incr_prem_share`), labels are displayed as percentages.
 
-The loss ratio is defined as: \$\$lr = loss / premium\$\$
+The loss ratio is defined as: \$\$lr = loss / prem\$\$
 
-where `premium` denotes risk premium rather than written premium.
+where `prem` denotes risk prem rather than written prem.
 
 ## Usage
 
@@ -60,10 +59,10 @@ plot_triangle(
 
 - metric:
 
-  A single metric to plot. Must be one of: `"lr"`, `"lr_incr"`,
-  `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`,
-  `"margin_incr"`, `"loss_share"`, `"loss_incr_share"`,
-  `"premium_share"`, or `"premium_incr_share"`.
+  A single metric to plot. Must be one of: `"lr"`, `"incr_lr"`,
+  `"loss"`, `"incr_loss"`, `"prem"`, `"incr_prem"`, `"margin"`,
+  `"incr_margin"`, `"loss_share"`, `"incr_loss_share"`, `"prem_share"`,
+  or `"incr_prem_share"`.
 
 - label_style:
 
@@ -76,7 +75,7 @@ plot_triangle(
   "detail"
 
   :   For `lr` / `lr`, show the ratio in percent and, on the next line,
-      the associated loss / premium amounts. For amount and proportion
+      the associated loss / prem amounts. For amount and proportion
       metrics, this falls back to `"value"`.
 
 - label_size:
@@ -91,8 +90,8 @@ plot_triangle(
 - amount_divisor:
 
   Numeric scaling factor applied to amount variables (e.g., `loss`,
-  `loss_incr`, `premium`, `premium_incr`, `margin`, `margin_incr`)
-  before plotting. Default `"auto"` picks the largest divisor in
+  `incr_loss`, `prem`, `incr_prem`, `margin`, `incr_margin`) before
+  plotting. Default `"auto"` picks the largest divisor in
   `{1, 1e3, 1e6, 1e7, 1e8, 1e9}` such that the median displayed value is
   still at least `1`, minimising label digit count.
 
@@ -138,16 +137,16 @@ d <- as_triangle(
   groups   = "pd_cat_nm",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 
 plot_triangle(d)
 plot_triangle(d, metric = "lr")
 plot_triangle(d, metric = "loss")
-plot_triangle(d, metric = "premium")
+plot_triangle(d, metric = "prem")
 plot_triangle(d, metric = "loss_share")
-plot_triangle(d, metric = "premium_share")
+plot_triangle(d, metric = "prem_share")
 plot_triangle(d, label_style = "value")
 plot_triangle(d, label_style = "detail")
 } # }

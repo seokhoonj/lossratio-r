@@ -19,10 +19,10 @@ factor is \(ata = value_{to} / value_{from}\), where
 Dual-variable mode (exposure supplied)
 In addition to
 the loss-side ATA, the exposure-driven intensity
-\(g = \Delta loss / premium_{from}\) is computed and stored in
+\(g = \Delta loss / prem_{from}\) is computed and stored in
 the intensity column. Premium measure used as denominator for
 loss ratio calculations; for long-term health insurance
-applications, risk premium is commonly used.
+applications, risk prem is commonly used.
 
 
 
@@ -46,10 +46,10 @@ factor is \(ata = value_{to} / value_{from}\), where
 Dual-variable mode (exposure supplied)
 In addition to
 the loss-side ATA, the exposure-driven intensity
-\(g = \Delta loss / premium_{from}\) is computed and stored in
+\(g = \Delta loss / prem_{from}\) is computed and stored in
 the intensity column. Premium measure used as denominator for
 loss ratio calculations; for long-term health insurance
-applications, risk premium is commonly used.
+applications, risk prem is commonly used.
 
 
 
@@ -130,10 +130,10 @@ factor is \(ata = value_{to} / value_{from}\), where
 <dt>Dual-variable mode (<code>exposure</code> supplied)</dt>
 <dd><p>In addition to
 the loss-side ATA, the exposure-driven intensity
-\(g = \Delta loss / premium_{from}\) is computed and stored in
+\(g = \Delta loss / prem_{from}\) is computed and stored in
 the <code>intensity</code> column. Premium measure used as denominator for
 loss ratio calculations; for long-term health insurance
-applications, risk premium is commonly used.</p></dd>
+applications, risk prem is commonly used.</p></dd>
 
 
 </dl></div>
@@ -160,7 +160,7 @@ applications, risk premium is commonly used.</p></dd>
 
 <dt id="arg-target">target<a class="anchor" aria-label="anchor" href="#arg-target"></a></dt>
 <dd><p>A single cumulative metric used as the link
-numerator. Must be one of <code>"loss"</code>, <code>"premium"</code>, or <code>"lr"</code>. Default
+numerator. Must be one of <code>"loss"</code>, <code>"prem"</code>, or <code>"lr"</code>. Default
 <code>"loss"</code>. Generic worker name; for loss-side ATA this is the
 cumulative loss column, but any cumulative metric on the Triangle
 may be supplied.</p></dd>
@@ -169,7 +169,7 @@ may be supplied.</p></dd>
 <dt id="arg-exposure">exposure<a class="anchor" aria-label="anchor" href="#arg-exposure"></a></dt>
 <dd><p>Optional second cumulative metric, treated as the
 exposure anchor for the ED workflow. Must be one of <code>"loss"</code>,
-<code>"premium"</code>, <code>"lr"</code>, and must differ from <code>target</code>. When <code>NULL</code>
+<code>"prem"</code>, <code>"lr"</code>, and must differ from <code>target</code>. When <code>NULL</code>
 (default), only the single-variable columns are produced.</p></dd>
 
 
@@ -219,15 +219,15 @@ diagnostics.</p></dd>
 <span class="r-in"><span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span></span>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
-<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
-<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span></span>
+<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Single-variable: cumulative-loss link factors (ATA workflow)</span></span></span>
 <span class="r-in"><span><span class="va">link_loss</span> <span class="op">&lt;-</span> <span class="fu">as_link</span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Dual-variable: ED-ready link table (loss + premium)</span></span></span>
-<span class="r-in"><span><span class="va">link_ed</span> <span class="op">&lt;-</span> <span class="fu">as_link</span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, exposure <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Dual-variable: ED-ready link table (loss + prem)</span></span></span>
+<span class="r-in"><span><span class="va">link_ed</span> <span class="op">&lt;-</span> <span class="fu">as_link</span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, exposure <span class="op">=</span> <span class="st">"prem"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">link_ed</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>

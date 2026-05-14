@@ -18,7 +18,7 @@ Pure Mack chain ladder (multiplicative).
 
 This function is the loss-side counterpart to fit_premium() in
 the role-specific dispatcher layer (see ARCHITECTURE.md). It owns
-loss projection only – premium projection is delegated to
+loss projection only – prem projection is delegated to
 fit_premium() (called internally when premium_fit = NULL), and
 the loss-ratio composition with delta method is handled by fit_lr().'><meta property="og:description" content='Project cumulative loss across the cohort x development grid. Three
 methods are supported via method:
@@ -39,7 +39,7 @@ Pure Mack chain ladder (multiplicative).
 
 This function is the loss-side counterpart to fit_premium() in
 the role-specific dispatcher layer (see ARCHITECTURE.md). It owns
-loss projection only – premium projection is delegated to
+loss projection only – prem projection is delegated to
 fit_premium() (called internally when premium_fit = NULL), and
 the loss-ratio composition with delta method is handled by fit_lr().'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
@@ -115,7 +115,7 @@ periods.</p></dd>
 
 </dl><p>This function is the <em>loss-side</em> counterpart to <code><a href="fit_premium.html">fit_premium()</a></code> in
 the role-specific dispatcher layer (see <code>ARCHITECTURE.md</code>). It owns
-loss projection only – premium projection is delegated to
+loss projection only – prem projection is delegated to
 <code><a href="fit_premium.html">fit_premium()</a></code> (called internally when <code>premium_fit = NULL</code>), and
 the loss-ratio composition with delta method is handled by <code><a href="fit_lr.html">fit_lr()</a></code>.</p>
     </div>
@@ -143,7 +143,7 @@ the loss-ratio composition with delta method is handled by <code><a href="fit_lr
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>A <code>"Triangle"</code> object. The standardized <code>"loss"</code> and
-<code>"premium"</code> columns are used (<code><a href="as_triangle.html">as_triangle()</a></code> produces these).</p></dd>
+<code>"prem"</code> columns are used (<code><a href="as_triangle.html">as_triangle()</a></code> produces these).</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
@@ -156,7 +156,7 @@ the loss-ratio composition with delta method is handled by <code><a href="fit_lr
 
 <dt id="arg-regime">regime<a class="anchor" aria-label="anchor" href="#arg-regime"></a></dt>
 <dd><p>Optional regime specification applied to both loss-side
-and premium-side estimation. Accepts four input types:</p><dl><dt><code>NULL</code> (default)</dt>
+and prem-side estimation. Accepts four input types:</p><dl><dt><code>NULL</code> (default)</dt>
 <dd><p>No regime filter.</p></dd>
 
 <dt><code>Regime</code> object</dt>
@@ -176,12 +176,12 @@ triangle and returning a <code>Regime</code> object (or <code>NULL</code>).</p><
 cut for the ED phase, calendar-diagonal wedge for the CL phase);
 ED/CL use a simple cohort cut. The same resolved <code>Regime</code> is applied
 to the internal <code><a href="fit_premium.html">fit_premium()</a></code> call – callers needing an
-asymmetric loss/premium split should use <code><a href="fit_lr.html">fit_lr()</a></code> instead.</p></dd>
+asymmetric loss/prem split should use <code><a href="fit_lr.html">fit_lr()</a></code> instead.</p></dd>
 
 
 <dt id="arg-premium-fit">premium_fit<a class="anchor" aria-label="anchor" href="#arg-premium-fit"></a></dt>
 <dd><p>Optional pre-built <code>PremiumFit</code> (from
-<code><a href="fit_premium.html">fit_premium()</a></code>) supplying the premium projection. When <code>NULL</code>,
+<code><a href="fit_premium.html">fit_premium()</a></code>) supplying the prem projection. When <code>NULL</code>,
 <code>fit_loss()</code> calls <code><a href="fit_premium.html">fit_premium()</a></code> internally using
 <code>premium_method</code>, <code>premium_alpha</code>, and the resolved <code>regime</code>.</p></dd>
 
@@ -189,11 +189,11 @@ asymmetric loss/premium split should use <code><a href="fit_lr.html">fit_lr()</a
 <dt id="arg-premium-method">premium_method<a class="anchor" aria-label="anchor" href="#arg-premium-method"></a></dt>
 <dd><p>One of <code>"cl"</code> (default) or <code>"ed"</code>. Used only
 when <code>premium_fit = NULL</code>. The default matches the historical
-<code><a href="fit_lr.html">fit_lr()</a></code> premium choice.</p></dd>
+<code><a href="fit_lr.html">fit_lr()</a></code> prem choice.</p></dd>
 
 
 <dt id="arg-premium-alpha">premium_alpha<a class="anchor" aria-label="anchor" href="#arg-premium-alpha"></a></dt>
-<dd><p>Variance-structure exponent for the premium fit.
+<dd><p>Variance-structure exponent for the prem fit.
 Default <code>1</code>.</p></dd>
 
 
@@ -231,21 +231,21 @@ triangle and returning a <code>Maturity</code> object (e.g. from
 
 <dt id="arg-conf-level">conf_level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
 <dd><p>Confidence level for analytical CI on the loss
-projection (<code>loss_ci_lower</code>, <code>loss_ci_upper</code>). Default <code>0.95</code>.</p></dd>
+projection (<code>loss_ci_lo</code>, <code>loss_ci_hi</code>). Default <code>0.95</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An object of class <code>"LossFit"</code>. List with components:
-<code>full</code>, <code>proj</code>, <code>maturity</code>, <code>loss_ata_fit</code>, <code>premium_ata_fit</code>,
+<code>full</code>, <code>proj</code>, <code>maturity</code>, <code>loss_ata_fit</code>, <code>prem_ata_fit</code>,
 <code>premium_fit</code>, <code>ed</code>, <code>factor</code>, <code>selected</code>, plus metadata.</p>
     </div>
     <div class="section level2">
     <h2 id="internal-columns">Internal columns<a class="anchor" aria-label="anchor" href="#internal-columns"></a></h2>
 
 
-<p><code>$full</code> retains internal parameter columns (<code>g_selected</code>, <code>g_sigma2</code>,
-<code>g_var</code>, <code>f_selected</code>, <code>f_sigma2</code>, <code>f_var</code>, <code>last_obs</code>) so that
+<p><code>$full</code> retains internal parameter columns (<code>g_sel</code>, <code>g_sigma2</code>,
+<code>g_var</code>, <code>f_sel</code>, <code>f_sigma2</code>, <code>f_var</code>, <code>last_obs</code>) so that
 <code><a href="fit_lr.html">fit_lr()</a></code> can run bootstrap CI on top without re-fitting. Standalone
 callers see them as implementation columns.</p>
     </div>
@@ -263,8 +263,8 @@ callers see them as implementation columns.</p>
 <span class="r-in"><span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span></span>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
-<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
-<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span></span>
+<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">lf</span>    <span class="op">&lt;-</span> <span class="fu">fit_loss</span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>                    <span class="co"># SA (default)</span></span></span>

@@ -9,7 +9,7 @@ Validate – required columns are present, dates coerce
 cleanly, the grain is consistent. Hard errors on schema issues
 so downstream code never receives malformed input.
 Standardise + aggregate – rename to package-canonical
-column names (cohort, calendar, dev, loss, premium,
+column names (cohort, calendar, dev, loss, prem,
 ...), auto-detect grain (M / Q / H / Y) from cohort
 spacing, derive dev from (cohort, calendar), aggregate to
 (group, cohort, dev), and enrich with cumulative / share /
@@ -33,19 +33,19 @@ cumulative loss and cumulative premium,
 per-period and cumulative proportions,
 per-period and cumulative margin,
 profit indicators,
-per-period loss ratio (lr_incr = loss_incr / premium_incr) and
-cumulative loss ratio (lr = loss / premium).
+per-period loss ratio (incr_lr = incr_loss / incr_prem) and
+cumulative loss ratio (lr = loss / prem).
 
 
 The cumulative loss ratio is defined as:
-$$lr = loss / premium$$
-For long-term health insurance applications, risk premium is commonly
-used as the premium measure.
+$$lr = loss / prem$$
+For long-term health insurance applications, risk prem is commonly
+used as the prem measure.
 Proportion variables are computed within each (cohort, dev) cell:
-loss_incr_share    = loss_incr    / sum(loss_incr)
-premium_incr_share = premium_incr / sum(premium_incr)
+incr_loss_share    = incr_loss    / sum(incr_loss)
+incr_prem_share = incr_prem / sum(incr_prem)
 loss_share         = loss         / sum(loss)
-premium_share      = premium      / sum(premium)
+prem_share      = prem      / sum(prem)
 
 
 Therefore, for a fixed (cohort, dev) cell, the proportions
@@ -60,7 +60,7 @@ Validate – required columns are present, dates coerce
 cleanly, the grain is consistent. Hard errors on schema issues
 so downstream code never receives malformed input.
 Standardise + aggregate – rename to package-canonical
-column names (cohort, calendar, dev, loss, premium,
+column names (cohort, calendar, dev, loss, prem,
 ...), auto-detect grain (M / Q / H / Y) from cohort
 spacing, derive dev from (cohort, calendar), aggregate to
 (group, cohort, dev), and enrich with cumulative / share /
@@ -84,19 +84,19 @@ cumulative loss and cumulative premium,
 per-period and cumulative proportions,
 per-period and cumulative margin,
 profit indicators,
-per-period loss ratio (lr_incr = loss_incr / premium_incr) and
-cumulative loss ratio (lr = loss / premium).
+per-period loss ratio (incr_lr = incr_loss / incr_prem) and
+cumulative loss ratio (lr = loss / prem).
 
 
 The cumulative loss ratio is defined as:
-$$lr = loss / premium$$
-For long-term health insurance applications, risk premium is commonly
-used as the premium measure.
+$$lr = loss / prem$$
+For long-term health insurance applications, risk prem is commonly
+used as the prem measure.
 Proportion variables are computed within each (cohort, dev) cell:
-loss_incr_share    = loss_incr    / sum(loss_incr)
-premium_incr_share = premium_incr / sum(premium_incr)
+incr_loss_share    = incr_loss    / sum(incr_loss)
+incr_prem_share = incr_prem / sum(incr_prem)
 loss_share         = loss         / sum(loss)
-premium_share      = premium      / sum(premium)
+prem_share      = prem      / sum(prem)
 
 
 Therefore, for a fixed (cohort, dev) cell, the proportions
@@ -215,7 +215,7 @@ methods (<code><a href="fit_lr.html">fit_lr()</a></code>, <code><a href="fit_los
 cleanly, the grain is consistent. Hard errors on schema issues
 so downstream code never receives malformed input.</p></li>
 <li><p><strong>Standardise + aggregate</strong> – rename to package-canonical
-column names (<code>cohort</code>, <code>calendar</code>, <code>dev</code>, <code>loss</code>, <code>premium</code>,
+column names (<code>cohort</code>, <code>calendar</code>, <code>dev</code>, <code>loss</code>, <code>prem</code>,
 ...), auto-detect grain (<code>M</code> / <code>Q</code> / <code>H</code> / <code>Y</code>) from <code>cohort</code>
 spacing, derive <code>dev</code> from <code>(cohort, calendar)</code>, aggregate to
 <code>(group, cohort, dev)</code>, and enrich with cumulative / share /
@@ -236,16 +236,16 @@ column.</p>
 <li><p>per-period and cumulative proportions,</p></li>
 <li><p>per-period and cumulative margin,</p></li>
 <li><p>profit indicators,</p></li>
-<li><p>per-period loss ratio (<code>lr_incr = loss_incr / premium_incr</code>) and
-cumulative loss ratio (<code>lr = loss / premium</code>).</p></li>
+<li><p>per-period loss ratio (<code>incr_lr = incr_loss / incr_prem</code>) and
+cumulative loss ratio (<code>lr = loss / prem</code>).</p></li>
 </ul><p>The cumulative loss ratio is defined as:
-$$lr = loss / premium$$</p>
-<p>For long-term health insurance applications, risk premium is commonly
-used as the <code>premium</code> measure.</p>
-<p>Proportion variables are computed within each <code>(cohort, dev)</code> cell:</p><ul><li><p><code>loss_incr_share    = loss_incr    / sum(loss_incr)</code></p></li>
-<li><p><code>premium_incr_share = premium_incr / sum(premium_incr)</code></p></li>
+$$lr = loss / prem$$</p>
+<p>For long-term health insurance applications, risk prem is commonly
+used as the <code>prem</code> measure.</p>
+<p>Proportion variables are computed within each <code>(cohort, dev)</code> cell:</p><ul><li><p><code>incr_loss_share    = incr_loss    / sum(incr_loss)</code></p></li>
+<li><p><code>incr_prem_share = incr_prem / sum(incr_prem)</code></p></li>
 <li><p><code>loss_share         = loss         / sum(loss)</code></p></li>
-<li><p><code>premium_share      = premium      / sum(premium)</code></p></li>
+<li><p><code>prem_share      = prem      / sum(prem)</code></p></li>
 </ul><p>Therefore, for a fixed <code>(cohort, dev)</code> cell, the proportions
 sum to 1 across groups. These are useful for examining the composition of
 each development cell across products or other grouping variables.</p>
@@ -273,7 +273,7 @@ each development cell across products or other grouping variables.</p>
 
 <dl><dt id="arg-df">df<a class="anchor" aria-label="anchor" href="#arg-df"></a></dt>
 <dd><p>A data.frame containing experience data with per-period loss and
-premium columns plus <code>cohort</code> and <code>calendar</code> Date columns
+prem columns plus <code>cohort</code> and <code>calendar</code> Date columns
 (or any input that the internal Date coercion accepts: Date, POSIXt,
 integer <code>yyyy</code> / <code>yyyymm</code> / <code>yyyymmdd</code>, ISO string).</p></dd>
 
@@ -306,14 +306,7 @@ calendar-diagonal logic uses cohort + dev). When both are given,
 
 <dt id="arg-loss">loss<a class="anchor" aria-label="anchor" href="#arg-loss"></a></dt>
 <dd><p>Single character; per-period loss column in <code>df</code>
-(raw name, e.g., <code>"loss_incr"</code>).</p></dd>
-
-
-<dt id="arg-premium">premium<a class="anchor" aria-label="anchor" href="#arg-premium"></a></dt>
-<dd><p>Single character; per-period premium column in <code>df</code>
-(raw name, e.g., <code>"premium_incr"</code>). Premium measure used as
-denominator for loss ratio calculations. For long-term health
-insurance applications, risk premium is commonly used.</p></dd>
+(raw name, e.g., <code>"incr_loss"</code>).</p></dd>
 
 
 <dt id="arg-grain">grain<a class="anchor" aria-label="anchor" href="#arg-grain"></a></dt>
@@ -325,7 +318,7 @@ the input is binned (floored) to that grain before aggregation.</p></dd>
 
 <dt id="arg-cell-type">cell_type<a class="anchor" aria-label="anchor" href="#arg-cell-type"></a></dt>
 <dd><p>One of <code>"incremental"</code> (default) or <code>"cumulative"</code>.
-Whether <code>loss</code> and <code>premium</code> in <code>df</code> already hold per-period
+Whether <code>loss</code> and <code>prem</code> in <code>df</code> already hold per-period
 (incremental) values or cumulative-within-cohort values. The
 internal triangle is always built on the incremental representation;
 <code>"cumulative"</code> inputs are differenced first.</p></dd>
@@ -338,6 +331,13 @@ has a consecutive <code>dev</code> sequence. Default <code>FALSE</code>, which
 raises an error when gaps are detected. Use
 <code><a href="validate_triangle.html">validate_triangle()</a></code> to inspect gaps before deciding.</p></dd>
 
+
+<dt id="arg-prem">prem<a class="anchor" aria-label="anchor" href="#arg-prem"></a></dt>
+<dd><p>Single character; per-period prem column in <code>df</code>
+(raw name, e.g., <code>"incr_prem"</code>). Premium measure used as
+denominator for loss ratio calculations. For long-term health
+insurance applications, risk prem is commonly used.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -345,34 +345,34 @@ raises an error when gaps are detected. Use
 derived columns:</p><dl><dt>n_cohorts</dt>
 <dd><p>Number of distinct cohorts observed</p></dd>
 
-<dt>loss, loss_incr</dt>
+<dt>loss, incr_loss</dt>
 <dd><p>Cumulative and per-period loss</p></dd>
 
-<dt>premium, premium_incr</dt>
-<dd><p>Cumulative and per-period premium</p></dd>
+<dt>premium, incr_prem</dt>
+<dd><p>Cumulative and per-period prem</p></dd>
 
-<dt>lr, lr_incr</dt>
+<dt>lr, incr_lr</dt>
 <dd><p>Cumulative and per-period loss ratio</p></dd>
 
-<dt>margin, margin_incr</dt>
+<dt>margin, incr_margin</dt>
 <dd><p>Cumulative and per-period margin
-(<code>premium - loss</code>)</p></dd>
+(<code>prem - loss</code>)</p></dd>
 
-<dt>profit, profit_incr</dt>
+<dt>profit, incr_profit</dt>
 <dd><p>Profit indicator (factor <code>"pos"</code> / <code>"neg"</code>)</p></dd>
 
-<dt>loss_share, loss_incr_share</dt>
+<dt>loss_share, incr_loss_share</dt>
 <dd><p>Cumulative and per-period proportions
 of loss within each <code>(cohort, dev)</code> cell</p></dd>
 
-<dt>premium_share, premium_incr_share</dt>
+<dt>prem_share, incr_prem_share</dt>
 <dd><p>Cumulative and per-period
-proportions of premium within each <code>(cohort, dev)</code> cell</p></dd>
+proportions of prem within each <code>(cohort, dev)</code> cell</p></dd>
 
 
 </dl><p>Attributes set on the returned object: <code>groups</code>, <code>cohort</code>,
 <code>calendar</code>, <code>grain</code>, <code>dev</code> (= <code>"dev_&lt;lower(grain)&gt;"</code>, e.g.
-<code>"dev_m"</code>), <code>loss</code>, <code>premium</code>, <code>longer</code>.</p>
+<code>"dev_m"</code>), <code>loss</code>, <code>prem</code>, <code>longer</code>.</p>
     </div>
 
     <div class="section level2">
@@ -383,8 +383,8 @@ proportions of premium within each <code>(cohort, dev)</code> cell</p></dd>
 <span class="r-in"><span>  pd_nm        <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cancer"</span>, <span class="st">"health"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">6</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  uy_m         <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2023-01-01"</span>, <span class="st">"2023-02-01"</span>, <span class="st">"2023-03-01"</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  cy_m         <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2023-01-01"</span>, <span class="st">"2023-02-01"</span><span class="op">)</span><span class="op">)</span>, <span class="fl">6</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  loss_incr    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">80</span>, <span class="fl">120</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  premium_incr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">90</span>, <span class="fl">110</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  incr_loss    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">80</span>, <span class="fl">120</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  incr_prem <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">90</span>, <span class="fl">110</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># auto-detected monthly grain</span></span></span>
@@ -393,8 +393,8 @@ proportions of premium within each <code>(cohort, dev)</code> cell</p></dd>
 <span class="r-in"><span>  groups   <span class="op">=</span> <span class="st">"pd_cd"</span>,</span></span>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
-<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
-<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span></span>
+<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># explicit quarterly view (re-bins monthly input to quarterly)</span></span></span>
@@ -403,8 +403,8 @@ proportions of premium within each <code>(cohort, dev)</code> cell</p></dd>
 <span class="r-in"><span>  groups   <span class="op">=</span> <span class="st">"pd_cd"</span>,</span></span>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
-<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
-<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span>,</span></span>
+<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span>,</span></span>
 <span class="r-in"><span>  grain    <span class="op">=</span> <span class="st">"Q"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>

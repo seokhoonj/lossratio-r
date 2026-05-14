@@ -2,7 +2,7 @@
 
 S3 method for [`summary()`](https://rdrr.io/r/base/summary.html) on
 `Calendar` objects. Computes calendar-period summary statistics for
-cumulative loss ratios (`lr`) and per-period loss ratios (`lr_incr`).
+cumulative loss ratios (`lr`) and per-period loss ratios (`incr_lr`).
 
 Where
 [`summary.Triangle()`](https://seokhoonj.github.io/lossratio/reference/summary.Triangle.md)
@@ -46,19 +46,19 @@ A `data.table` of class `"CalendarSummary"` with one row per
 
 - lr_wt:
 
-  Weighted cumulative loss ratio (`sum(loss) / sum(premium)`).
+  Weighted cumulative loss ratio (`sum(loss) / sum(prem)`).
 
-- lr_incr_mean:
+- incr_lr_mean:
 
   Mean of per-period loss ratios.
 
-- lr_incr_median:
+- incr_lr_median:
 
   Median of per-period loss ratios.
 
-- lr_incr_wt:
+- incr_lr_wt:
 
-  Weighted per-period loss ratio (`sum(loss_incr) / sum(premium_incr)`).
+  Weighted per-period loss ratio (`sum(incr_loss) / sum(incr_prem)`).
 
 The returned object preserves the attributes `groups`, `calendar`, and
 `calendar_type`.
@@ -71,8 +71,8 @@ cal <- as_calendar(
   df,
   groups   = "coverage",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 smr  <- summary(cal)
 head(smr)

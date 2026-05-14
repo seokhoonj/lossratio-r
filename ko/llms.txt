@@ -204,7 +204,7 @@ Role dispatcher: `fit_loss` (loss 측 sa/ed/cl), `fit_premium` (premium
   : Fit a loss projection on a Triangle
 
 - [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
-  : Fit a chain ladder projection on the premium (exposure) triangle
+  : Fit a chain ladder projection on the prem (exposure) triangle
 
 - [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
   : Fit loss ratio projection model
@@ -266,7 +266,7 @@ Triangle 의 최근 대각선을 보류한 뒤 재적합·예측을 보류된 �
   [`print(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
   [`summary(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
   [`print(`*`<summary.Backtest>`*`)`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
-  : Backtest a loss / premium / loss-ratio projection on existing data
+  : Backtest a loss / prem / loss-ratio projection on existing data
 
 ## 시각화
 
@@ -357,7 +357,7 @@ Triangle 의 최근 대각선을 보류한 뒤 재적합·예측을 보류된 �
   [`print(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
   [`summary(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
   [`print(`*`<summary.Backtest>`*`)`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
-  : Backtest a loss / premium / loss-ratio projection on existing data
+  : Backtest a loss / prem / loss-ratio projection on existing data
 
 - [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
   [`print(`*`<Regime>`*`)`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)

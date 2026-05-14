@@ -53,8 +53,8 @@ fit_ata(
 
 - na_method:
 
-  Method used to fill `NA` values in `f_selected`. One of `"locf"`
-  (default) or `"none"`. Passed to
+  Method used to fill `NA` values in `f_sel`. One of `"locf"` (default)
+  or `"none"`. Passed to
   [`.filter_ata()`](https://seokhoonj.github.io/lossratio/reference/dot-filter_ata.md).
 
 - sigma_method:
@@ -139,8 +139,8 @@ An object of class `"ATAFit"` (a named list) containing:
 
 - `selected`:
 
-  `data.table` of factors ready for projection, including `f_selected`
-  and `sigma2`.
+  `data.table` of factors ready for projection, including `f_sel` and
+  `sigma2`.
 
 - `maturity`:
 

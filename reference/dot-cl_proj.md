@@ -11,7 +11,7 @@ are returned unchanged.
 ## Usage
 
 ``` r
-.cl_proj(target_obs, f_selected)
+.cl_proj(target_obs, f_sel)
 ```
 
 ## Arguments
@@ -21,7 +21,7 @@ are returned unchanged.
   Numeric vector of cumulative observed values for a single cohort,
   ordered by development period.
 
-- f_selected:
+- f_sel:
 
   Numeric vector of selected development factors.
 

@@ -1,8 +1,7 @@
 # Apply LOCF NA-fill to per-link selected intensities
 
-Initialises `g_selected` from the WLS-fitted `g` and optionally fills
-`NA` runs via `data.table::nafill(type = "locf")`. Mirrors the fill
-phase of
+Initialises `g_sel` from the WLS-fitted `g` and optionally fills `NA`
+runs via `data.table::nafill(type = "locf")`. Mirrors the fill phase of
 [`.filter_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-filter_ata.md)
 without the maturity gate (ED has no maturity concept).
 
@@ -32,4 +31,4 @@ without the maturity gate (ED has no maturity concept).
 
 ## Value
 
-A `data.table` with `g_selected` added.
+A `data.table` with `g_sel` added.

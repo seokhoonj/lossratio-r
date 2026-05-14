@@ -19,7 +19,7 @@ methods are supported via `method`:
 This function is the *loss-side* counterpart to
 [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
 in the role-specific dispatcher layer (see `ARCHITECTURE.md`). It owns
-loss projection only – premium projection is delegated to
+loss projection only – prem projection is delegated to
 [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
 (called internally when `premium_fit = NULL`), and the loss-ratio
 composition with delta method is handled by
@@ -47,8 +47,8 @@ fit_loss(
 
 - x:
 
-  A `"Triangle"` object. The standardized `"loss"` and `"premium"`
-  columns are used
+  A `"Triangle"` object. The standardized `"loss"` and `"prem"` columns
+  are used
   ([`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
   produces these).
 
@@ -62,8 +62,8 @@ fit_loss(
 
 - regime:
 
-  Optional regime specification applied to both loss-side and
-  premium-side estimation. Accepts four input types:
+  Optional regime specification applied to both loss-side and prem-side
+  estimation. Accepts four input types:
 
   `NULL` (default)
 
@@ -91,7 +91,7 @@ fit_loss(
   use a simple cohort cut. The same resolved `Regime` is applied to the
   internal
   [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
-  call – callers needing an asymmetric loss/premium split should use
+  call – callers needing an asymmetric loss/prem split should use
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
   instead.
 
@@ -99,7 +99,7 @@ fit_loss(
 
   Optional pre-built `PremiumFit` (from
   [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md))
-  supplying the premium projection. When `NULL`, `fit_loss()` calls
+  supplying the prem projection. When `NULL`, `fit_loss()` calls
   [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
   internally using `premium_method`, `premium_alpha`, and the resolved
   `regime`.
@@ -109,11 +109,11 @@ fit_loss(
   One of `"cl"` (default) or `"ed"`. Used only when
   `premium_fit = NULL`. The default matches the historical
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
-  premium choice.
+  prem choice.
 
 - premium_alpha:
 
-  Variance-structure exponent for the premium fit. Default `1`.
+  Variance-structure exponent for the prem fit. Default `1`.
 
 - sigma_method:
 
@@ -155,18 +155,18 @@ fit_loss(
 - conf_level:
 
   Confidence level for analytical CI on the loss projection
-  (`loss_ci_lower`, `loss_ci_upper`). Default `0.95`.
+  (`loss_ci_lo`, `loss_ci_hi`). Default `0.95`.
 
 ## Value
 
 An object of class `"LossFit"`. List with components: `full`, `proj`,
-`maturity`, `loss_ata_fit`, `premium_ata_fit`, `premium_fit`, `ed`,
+`maturity`, `loss_ata_fit`, `prem_ata_fit`, `premium_fit`, `ed`,
 `factor`, `selected`, plus metadata.
 
 ## Internal columns
 
-`$full` retains internal parameter columns (`g_selected`, `g_sigma2`,
-`g_var`, `f_selected`, `f_sigma2`, `f_var`, `last_obs`) so that
+`$full` retains internal parameter columns (`g_sel`, `g_sigma2`,
+`g_var`, `f_sel`, `f_sigma2`, `f_var`, `last_obs`) so that
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
 can run bootstrap CI on top without re-fitting. Standalone callers see
 them as implementation columns.
@@ -188,8 +188,8 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 
 lf    <- fit_loss(tri)                    # SA (default)

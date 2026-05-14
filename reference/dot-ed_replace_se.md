@@ -27,8 +27,7 @@ estimates. The recursion is per (group, cohort).
 
 - selected:
 
-  The `$selected` data.table (must contain `f_selected`, `sigma2`,
-  `f_var`).
+  The `$selected` data.table (must contain `f_sel`, `sigma2`, `f_var`).
 
 - triangle:
 
@@ -41,4 +40,4 @@ Updated `full` data.table with `target_proc_se2`, `target_param_se2`,
 `target_total_se`, `target_proc_cv`, `target_param_cv`,
 `target_total_cv` columns rebuilt under the ED recursion (column names
 match the upstream `fit_cl` worker convention; the dispatcher renames
-them to `premium_*` afterwards).
+them to `prem_*` afterwards).

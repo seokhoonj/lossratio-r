@@ -3,18 +3,18 @@
 The selected metric is plotted over the calendar-style calendar,
 or over the calendar development variable stored in attr(x, "dev").
 Ratio metrics (lr, lr) and proportion metrics
-(loss_share, loss_incr_share, premium_share, premium_incr_share) are plotted on the
+(loss_share, incr_loss_share, prem_share, incr_prem_share) are plotted on the
 original scale and displayed as percentages via y-axis labels.
-Amount metrics (loss, loss_incr, premium, premium_incr, margin, margin_incr) are
+Amount metrics (loss, incr_loss, prem, incr_prem, margin, incr_margin) are
 plotted on the original scale and displayed using y-axis labels scaled by
 amount_divisor.
 If grouping variables are present, lines are drawn separately by group.'><meta property="og:description" content='Visualise an object of class Calendar as a time-series plot.
 The selected metric is plotted over the calendar-style calendar,
 or over the calendar development variable stored in attr(x, "dev").
 Ratio metrics (lr, lr) and proportion metrics
-(loss_share, loss_incr_share, premium_share, premium_incr_share) are plotted on the
+(loss_share, incr_loss_share, prem_share, incr_prem_share) are plotted on the
 original scale and displayed as percentages via y-axis labels.
-Amount metrics (loss, loss_incr, premium, premium_incr, margin, margin_incr) are
+Amount metrics (loss, incr_loss, prem, incr_prem, margin, incr_margin) are
 plotted on the original scale and displayed using y-axis labels scaled by
 amount_divisor.
 If grouping variables are present, lines are drawn separately by group.'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
@@ -79,9 +79,9 @@ If grouping variables are present, lines are drawn separately by group.'><meta p
 The selected metric is plotted over the calendar-style <code>calendar</code>,
 or over the calendar development variable stored in <code>attr(x, "dev")</code>.</p>
 <p>Ratio metrics (<code>lr</code>, <code>lr</code>) and proportion metrics
-(<code>loss_share</code>, <code>loss_incr_share</code>, <code>premium_share</code>, <code>premium_incr_share</code>) are plotted on the
+(<code>loss_share</code>, <code>incr_loss_share</code>, <code>prem_share</code>, <code>incr_prem_share</code>) are plotted on the
 original scale and displayed as percentages via y-axis labels.
-Amount metrics (<code>loss</code>, <code>loss_incr</code>, <code>premium</code>, <code>premium_incr</code>, <code>margin</code>, <code>margin_incr</code>) are
+Amount metrics (<code>loss</code>, <code>incr_loss</code>, <code>prem</code>, <code>incr_prem</code>, <code>margin</code>, <code>incr_margin</code>) are
 plotted on the original scale and displayed using y-axis labels scaled by
 <code>amount_divisor</code>.</p>
 <p>If grouping variables are present, lines are drawn separately by group.</p>
@@ -93,7 +93,6 @@ plotted on the original scale and displayed using y-axis labels scaled by
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  metric <span class="op">=</span> <span class="st">"lr"</span>,</span>
-<span>  x_by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"period"</span>, <span class="st">"dev"</span><span class="op">)</span>,</span>
 <span>  amount_divisor <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  show_label <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  label_size <span class="op">=</span> <span class="fl">2.8</span>,</span>
@@ -112,20 +111,9 @@ plotted on the original scale and displayed using y-axis labels scaled by
 
 <dt id="arg-metric">metric<a class="anchor" aria-label="anchor" href="#arg-metric"></a></dt>
 <dd><p>A single metric to plot. Must be one of:
-<code>"lr"</code>, <code>"lr_incr"</code>,
-<code>"loss"</code>, <code>"loss_incr"</code>, <code>"premium"</code>, <code>"premium_incr"</code>, <code>"margin"</code>, <code>"margin_incr"</code>,
-<code>"loss_share"</code>, <code>"loss_incr_share"</code>, <code>"premium_share"</code>, or <code>"premium_incr_share"</code>.</p></dd>
-
-
-<dt id="arg-x-by">x_by<a class="anchor" aria-label="anchor" href="#arg-x-by"></a></dt>
-<dd><p>X-axis basis. One of:</p><dl><dt>"period"</dt>
-<dd><p>Use the calendar variable stored in <code>attr(x, "calendar")</code>.</p></dd>
-
-<dt>"dev"</dt>
-<dd><p>Use the sequential <code>dev</code> column.</p></dd>
-
-
-</dl></dd>
+<code>"lr"</code>, <code>"incr_lr"</code>,
+<code>"loss"</code>, <code>"incr_loss"</code>, <code>"prem"</code>, <code>"incr_prem"</code>, <code>"margin"</code>, <code>"incr_margin"</code>,
+<code>"loss_share"</code>, <code>"incr_loss_share"</code>, <code>"prem_share"</code>, or <code>"incr_prem_share"</code>.</p></dd>
 
 
 <dt id="arg-amount-divisor">amount_divisor<a class="anchor" aria-label="anchor" href="#arg-amount-divisor"></a></dt>
@@ -137,7 +125,7 @@ the shortest formatted label; pass an explicit numeric to fix it).</p></dd>
 <dt id="arg-show-label">show_label<a class="anchor" aria-label="anchor" href="#arg-show-label"></a></dt>
 <dd><p>Logical; if <code>TRUE</code>, overlay the metric value as a
 text label at each (calendar, group) point. Ratio metrics
-(<code>"lr"</code>, <code>"lr_incr"</code>, share variants) are formatted as percent
+(<code>"lr"</code>, <code>"incr_lr"</code>, share variants) are formatted as percent
 (one decimal). Amount metrics are scaled by <code>amount_divisor</code> and
 formatted with one decimal. Default <code>FALSE</code>.</p></dd>
 
@@ -162,11 +150,11 @@ formatted with one decimal. Default <code>FALSE</code>.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The x-axis uses either the calendar variable stored in <code>attr(x, "calendar")</code>
-or the sequential <code>dev</code> column, depending on <code>x_by</code>.</p>
+    <p>The x-axis is the calendar variable stored in <code>attr(x, "calendar")</code>
+(a Date, formatted per the triangle's <code>grain</code>).</p>
 <p>The loss ratio is defined as:
-$$lr = loss / premium$$</p>
-<p>where <code>premium</code> denotes risk premium rather than written premium.</p>
+$$lr = loss / prem$$</p>
+<p>where <code>prem</code> denotes risk prem rather than written prem.</p>
     </div>
 
     <div class="section level2">
@@ -176,13 +164,12 @@ $$lr = loss / premium$$</p>
 <span class="r-in"><span>  <span class="va">df</span>,</span></span>
 <span class="r-in"><span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
-<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
-<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span></span>
+<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, metric <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, x_by <span class="op">=</span> <span class="st">"dev"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

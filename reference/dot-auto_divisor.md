@@ -2,25 +2,25 @@
 
 Internal helper used when `amount_divisor = "auto"`. Considers the
 SI/financial prefix set `{1, 1e3, 1e6, 1e9, 1e12}` (no unit / thousand /
-million / billion / trillion) and picks the divisor that minimises
-`nchar(sprintf("%.1f", median / divisor))`. Candidates whose median
-label rounds exactly to `"0.0"` are disqualified (precision loss). On
-ties, the *smallest* divisor wins so the most significant digit survives
-(e.g. `"6.7"` over `"0.7"`). Falls back to `1` when the data have no
-finite positive values.
+million / billion / trillion) and picks the largest divisor such that
+`median / divisor` still rounds (at `%.1f`) to a non-zero label. Below
+the `0.05` threshold the label would format as `"0.0"` and precision is
+wiped out, so those divisors are disqualified. Falls back to `1` when
+the data have no finite positive values.
 
-The candidate set deliberately uses powers of 1000 (no `1e7` / `1e8`):
-the rule's "tie-break on smallest divisor" already keeps the label
-between `1.0` and `999.X`, so a finer grid would not change compactness.
-The trade-off accepts that the tails of a wide distribution may round to
-the same label – the heatmap colour fill carries the precise value; the
-in-cell label is only a numeric hint.
+The "largest divisor that still rounds non-zero" rule favours labels in
+the `0.X` range (3 chars) over `X.X` / `XX.X` / `XXX.X` (3-5 chars).
+This keeps in-cell heatmap text compact; the colour fill carries the
+precise value.
 
-Examples: median 6.6e7 -\> divisor `1e6`, label `"66.6"` (4 chars;
-`/1e9` would give `"0.1"`, but rounds away signal so `1e6` wins by the
-smallest-divisor tie-break). median 5e5 -\> divisor `1e3`, label
-`"500.0"` (5 chars). median 5e9 -\> divisor `1e9`, label `"5.0"` (3
-chars).
+Examples (median -\> divisor, label): `5e2` -\> `1e3`, `"0.5"` `5e7` -\>
+`1e9`, `"0.1"` (since `5e7 / 1e9 = 0.05 >= 0.05`) `5e10` -\> `1e12`,
+`"0.1"` `5e12` -\> `1e12`, `"5.0"` (capped at the largest candidate)
+
+The numeric `>= 0.05` test is deliberate: Windows R's
+`sprintf("%.1f", 0.05)` rounds to `"0.0"` while Linux / macOS round to
+`"0.1"`. Comparing numerically (with a tiny `1e-10` slack) produces a
+deterministic, platform-independent choice.
 
 ## Usage
 

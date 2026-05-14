@@ -1,13 +1,12 @@
 # Filter and fill age-to-age factors for projection
 
-Internal helper that produces a `f_selected` column by applying two
-steps:
+Internal helper that produces a `f_sel` column by applying two steps:
 
 1.  **Filter** — when `use_maturity = TRUE`, development links that
-    precede the maturity point are excluded (`f_selected` set to `NA`).
+    precede the maturity point are excluded (`f_sel` set to `NA`).
 
-2.  **Fill** — `NA` values in `f_selected` are forward-filled using
-    LOCF, so that every link used in projection has a finite factor.
+2.  **Fill** — `NA` values in `f_sel` are forward-filled using LOCF, so
+    that every link used in projection has a finite factor.
 
 ## Usage
 
@@ -50,4 +49,4 @@ steps:
 
 ## Value
 
-A `data.table` with `selected` and `f_selected` columns added.
+A `data.table` with `selected` and `f_sel` columns added.

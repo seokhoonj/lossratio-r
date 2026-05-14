@@ -21,11 +21,11 @@ Total summarises:
 - the first and last observed cohort periods (`sales_start`,
   `sales_end`)
 
-- total `loss` and total `premium` (sum over all cells)
+- total `loss` and total `prem` (sum over all cells)
 
-- total loss ratio (`lr = loss / premium`)
+- total loss ratio (`lr = loss / prem`)
 
-- each group's share of total loss and total premium
+- each group's share of total loss and total prem
 
 Pre-filter the Triangle (e.g. by cohort range or coverage) before
 calling `as_total()` if a subset summary is needed.
@@ -63,21 +63,21 @@ A data.frame with class `"Total"` containing:
 
   Total loss
 
-- premium:
+- prem:
 
-  Total premium
+  Total prem
 
 - lr:
 
-  Total loss ratio (`loss / premium`)
+  Total loss ratio (`loss / prem`)
 
 - loss_share:
 
   Share of total loss
 
-- premium_share:
+- prem_share:
 
-  Share of total premium
+  Share of total prem
 
 ## Examples
 
@@ -88,8 +88,8 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 as_total(tri)
 } # }

@@ -7,10 +7,10 @@ The plotted metric is the cross-product of `metric` and `cell_type`:
 - `metric = "lr"`, `cell_type = "cumulative"`: cumulative loss ratio
   (default).
 
-- `metric = "lr_incr"` (i.e., `cell_type = "incremental"`): per-period
+- `metric = "incr_lr"` (i.e., `cell_type = "incremental"`): per-period
   loss ratio.
 
-- `metric = "loss"` / `"premium"`: same split — cumulative or per-period
+- `metric = "loss"` / `"prem"`: same split — cumulative or per-period
   amounts.
 
 Confidence bands are drawn only for cumulative metrics
@@ -23,7 +23,7 @@ columns for incremental projections.
 # S3 method for class 'LRFit'
 plot(
   x,
-  metric = c("lr", "loss", "premium"),
+  metric = c("lr", "loss", "prem"),
   cell_type = c("cumulative", "incremental"),
   per_group = NULL,
   ask = grDevices::dev.interactive(),
@@ -46,7 +46,7 @@ plot(
 
 - metric:
 
-  Metric to plot. One of `"lr"` (default), `"loss"`, `"premium"`.
+  Metric to plot. One of `"lr"` (default), `"loss"`, `"prem"`.
 
 - cell_type:
 

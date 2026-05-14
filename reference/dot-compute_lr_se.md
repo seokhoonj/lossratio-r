@@ -10,8 +10,8 @@ LR-specific internal helper. Two variants:
 
 - `"delta"`:
 
-  First-order Taylor (delta method) including premium uncertainty and
-  loss-premium correlation `rho`: \\\mathrm{Var}(L/P) \approx
+  First-order Taylor (delta method) including prem uncertainty and
+  loss-prem correlation `rho`: \\\mathrm{Var}(L/P) \approx
   (\mathrm{SE}(L)/P)^2 + (L \cdot \mathrm{SE}(P) / P^2)^2 - 2 \rho L
   \mathrm{SE}(L) \mathrm{SE}(P) / P^3\\. The variance is clipped at zero
   before the square root (high `rho` can drive the linearised estimate
@@ -19,9 +19,9 @@ LR-specific internal helper. Two variants:
 
 Not exported; called only by
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md).
-The `"fixed"` branch encodes the actuarial assumption that earned
-premium is known (not estimated), so this helper is *not* a generic
-ratio-SE utility.
+The `"fixed"` branch encodes the actuarial assumption that earned prem
+is known (not estimated), so this helper is *not* a generic ratio-SE
+utility.
 
 ## Usage
 
@@ -30,7 +30,7 @@ ratio-SE utility.
   loss,
   premium,
   se_loss,
-  se_premium = NULL,
+  se_prem = NULL,
   method = c("fixed", "delta"),
   rho = 0.95
 )
@@ -42,15 +42,11 @@ ratio-SE utility.
 
   Ultimate loss vector (`L`).
 
-- premium:
-
-  Ultimate premium vector (`E`).
-
 - se_loss:
 
   `SE(L)`.
 
-- se_premium:
+- se_prem:
 
   `SE(P)`. Unused for `"fixed"`; may be `NULL`.
 
@@ -60,8 +56,12 @@ ratio-SE utility.
 
 - rho:
 
-  Loss-premium correlation in `(-1, 1)`. Used only for `"delta"`.
-  Default `0.95`.
+  Loss-prem correlation in `(-1, 1)`. Used only for `"delta"`. Default
+  `0.95`.
+
+- prem:
+
+  Ultimate prem vector (`E`).
 
 ## Value
 

@@ -27,8 +27,8 @@ plot(
 - metric:
 
   A single metric to plot. Must be one of the columns carried by a
-  `Total`: `"lr"`, `"loss"`, `"premium"`, `"loss_share"`, or
-  `"premium_share"`. Default `"lr"`.
+  `Total`: `"lr"`, `"loss"`, `"prem"`, `"loss_share"`, or
+  `"prem_share"`. Default `"lr"`.
 
 - amount_divisor:
 
@@ -69,8 +69,8 @@ tot <- as_total(
   groups  = "coverage",
   cohort  = "uy_m",
   dev     = "dev_m",
-  loss    = "loss_incr",
-  premium = "premium_incr"
+  loss    = "incr_loss",
+  premium = "incr_prem"
 )
 plot(tot)
 plot(tot, metric = "loss")

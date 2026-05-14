@@ -44,17 +44,17 @@ plot(
 
 - metric:
 
-  A single metric to plot. Must be one of: `"lr"`, `"lr_incr"`,
-  `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`,
-  `"margin_incr"`, `"loss_share"`, `"loss_incr_share"`,
-  `"premium_share"`, or `"premium_incr_share"`.
+  A single metric to plot. Must be one of: `"lr"`, `"incr_lr"`,
+  `"loss"`, `"incr_loss"`, `"prem"`, `"incr_prem"`, `"margin"`,
+  `"incr_margin"`, `"loss_share"`, `"incr_loss_share"`, `"prem_share"`,
+  or `"incr_prem_share"`.
 
 - summary:
 
   Logical. If `FALSE` (default), shows raw cohort trajectories. If
   `TRUE`, shows grey cohort trajectories with overlaid summary lines
   (mean, median, weighted mean). Summary overlay is supported only for
-  `"lr"` and `"lr_incr"`, and only when the x-axis variable is a
+  `"lr"` and `"incr_lr"`, and only when the x-axis variable is a
   development-period variable (for example, `dev_m`, `dev_q`, `dev_h`,
   `dev_y`).
 
@@ -97,17 +97,16 @@ The x-axis uses the development variable stored in `attr(x, "dev")`.
 Cohort lines are grouped by the period variable stored in
 `attr(x, "cohort")`, and facets are created from `attr(x, "groups")`.
 
-The cumulative loss ratio is defined here as: \$\$lr = loss /
-premium\$\$
+The cumulative loss ratio is defined here as: \$\$lr = loss / prem\$\$
 
-For long-term health insurance applications, risk premium is commonly
-used as the `premium` measure.
+For long-term health insurance applications, risk prem is commonly used
+as the `prem` measure.
 
 The weighted mean is defined as:
 
-- `lr_wt = sum(loss) / sum(premium)`
+- `lr_wt = sum(loss) / sum(prem)`
 
-- `lr_incr_wt = sum(loss_incr) / sum(premium_incr)`
+- `incr_lr_wt = sum(incr_loss) / sum(incr_prem)`
 
 Ratio and proportion metrics are plotted on the original scale and
 displayed as percentages via y-axis labels. Amount metrics are plotted

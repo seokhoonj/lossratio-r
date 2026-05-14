@@ -138,8 +138,8 @@ loss, etc.) rather than a trajectory.</p>
 
 <dt id="arg-metric">metric<a class="anchor" aria-label="anchor" href="#arg-metric"></a></dt>
 <dd><p>A single metric to plot. Must be one of the columns
-carried by a <code>Total</code>: <code>"lr"</code>, <code>"loss"</code>, <code>"premium"</code>, <code>"loss_share"</code>, or
-<code>"premium_share"</code>. Default <code>"lr"</code>.</p></dd>
+carried by a <code>Total</code>: <code>"lr"</code>, <code>"loss"</code>, <code>"prem"</code>, <code>"loss_share"</code>, or
+<code>"prem_share"</code>. Default <code>"lr"</code>.</p></dd>
 
 
 <dt id="arg-amount-divisor">amount_divisor<a class="anchor" aria-label="anchor" href="#arg-amount-divisor"></a></dt>
@@ -178,8 +178,8 @@ scale and labelled using <code>amount_divisor</code>.</p>
 <span class="r-in"><span>  groups  <span class="op">=</span> <span class="st">"coverage"</span>,</span></span>
 <span class="r-in"><span>  cohort  <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  dev     <span class="op">=</span> <span class="st">"dev_m"</span>,</span></span>
-<span class="r-in"><span>  loss    <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
-<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"premium_incr"</span></span></span>
+<span class="r-in"><span>  loss    <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
+<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tot</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tot</span>, metric <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span></span>

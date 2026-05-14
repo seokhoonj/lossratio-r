@@ -1,7 +1,7 @@
 # Internal: rebucket a `Triangle` to a coarser `groups` partition
 
-Re-aggregates `loss` / `premium` / `loss_incr` / `premium_incr` over the
-dropped grouping columns and recomputes `lr` / `lr_incr` as ratios of
+Re-aggregates `loss` / `prem` / `incr_loss` / `incr_prem` over the
+dropped grouping columns and recomputes `lr` / `incr_lr` as ratios of
 the aggregated totals. Other cell-level columns (`margin`, `profit`,
 `loss_share`, ...) are not regenerated – the rebucketed object is
 intended for
@@ -28,4 +28,4 @@ consumption only.
 ## Value
 
 A `Triangle` with `attr(., "groups")` set to the requested value and
-`loss` / `premium` / `lr` aggregated to the requested partition.
+`loss` / `prem` / `lr` aggregated to the requested partition.

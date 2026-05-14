@@ -10,7 +10,7 @@ style.
 # S3 method for class 'LRFit'
 plot_triangle(
   x,
-  metric = c("lr", "loss", "premium"),
+  metric = c("lr", "loss", "prem"),
   cell_type = c("cumulative", "incremental"),
   region = c("proj", "full", "data"),
   view = c("value", "usage"),
@@ -35,19 +35,19 @@ plot_triangle(
 - metric:
 
   Metric shown in the heatmap cells. One of `"lr"` (default), `"loss"`,
-  `"premium"`.
+  `"prem"`.
 
 - cell_type:
 
   Aggregation. One of `"cumulative"` (default) or `"incremental"`.
   Combined with `metric` to select the column (e.g., `metric = "lr"`,
-  `cell_type = "incremental"` → `lr_incr`).
+  `cell_type = "incremental"` → `incr_lr`).
 
 - region:
 
   Cell region to plot (only used when `view = "value"`). One of `"proj"`
   (projected cells only, observed cells masked), `"full"` (observed +
-  projected), or `"data"` (observed cumulative loss / premium / lr from
+  projected), or `"data"` (observed cumulative loss / prem / lr from
   `x$data` — the raw Triangle, no projection). Default is `"proj"`.
 
 - view:

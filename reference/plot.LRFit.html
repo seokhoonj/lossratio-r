@@ -3,9 +3,9 @@
 The plotted metric is the cross-product of metric and cell_type:
 metric = "lr", cell_type = "cumulative": cumulative loss
 ratio (default).
-metric = "lr_incr" (i.e., cell_type = "incremental"):
+metric = "incr_lr" (i.e., cell_type = "incremental"):
 per-period loss ratio.
-metric = "loss" / "premium": same split — cumulative or
+metric = "loss" / "prem": same split — cumulative or
 per-period amounts.
 Confidence bands are drawn only for cumulative metrics
 (cell_type = "cumulative"), since the fit output does not carry SE
@@ -13,9 +13,9 @@ columns for incremental projections.'><meta property="og:description" content='V
 The plotted metric is the cross-product of metric and cell_type:
 metric = "lr", cell_type = "cumulative": cumulative loss
 ratio (default).
-metric = "lr_incr" (i.e., cell_type = "incremental"):
+metric = "incr_lr" (i.e., cell_type = "incremental"):
 per-period loss ratio.
-metric = "loss" / "premium": same split — cumulative or
+metric = "loss" / "prem": same split — cumulative or
 per-period amounts.
 Confidence bands are drawn only for cumulative metrics
 (cell_type = "cumulative"), since the fit output does not carry SE
@@ -127,9 +127,9 @@ columns for incremental projections.'><meta property="og:image" content="https:/
     <p>Visualise an object of class <code>"LRFit"</code>.</p>
 <p>The plotted metric is the cross-product of <code>metric</code> and <code>cell_type</code>:</p><ul><li><p><code>metric = "lr"</code>, <code>cell_type = "cumulative"</code>: cumulative loss
 ratio (default).</p></li>
-<li><p><code>metric = "lr_incr"</code> (i.e., <code>cell_type = "incremental"</code>):
+<li><p><code>metric = "incr_lr"</code> (i.e., <code>cell_type = "incremental"</code>):
 per-period loss ratio.</p></li>
-<li><p><code>metric = "loss"</code> / <code>"premium"</code>: same split — cumulative or
+<li><p><code>metric = "loss"</code> / <code>"prem"</code>: same split — cumulative or
 per-period amounts.</p></li>
 </ul><p>Confidence bands are drawn only for cumulative metrics
 (<code>cell_type = "cumulative"</code>), since the fit output does not carry SE
@@ -141,7 +141,7 @@ columns for incremental projections.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'LRFit'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lr"</span>, <span class="st">"loss"</span>, <span class="st">"premium"</span><span class="op">)</span>,</span>
+<span>  metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lr"</span>, <span class="st">"loss"</span>, <span class="st">"prem"</span><span class="op">)</span>,</span>
 <span>  cell_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cumulative"</span>, <span class="st">"incremental"</span><span class="op">)</span>,</span>
 <span>  per_group <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ask <span class="op">=</span> <span class="fu">grDevices</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grDevices/dev.interactive.html" class="external-link">dev.interactive</a></span><span class="op">(</span><span class="op">)</span>,</span>
@@ -166,7 +166,7 @@ columns for incremental projections.</p>
 
 <dt id="arg-metric">metric<a class="anchor" aria-label="anchor" href="#arg-metric"></a></dt>
 <dd><p>Metric to plot. One of <code>"lr"</code> (default), <code>"loss"</code>,
-<code>"premium"</code>.</p></dd>
+<code>"prem"</code>.</p></dd>
 
 
 <dt id="arg-cell-type">cell_type<a class="anchor" aria-label="anchor" href="#arg-cell-type"></a></dt>

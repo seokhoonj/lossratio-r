@@ -23,8 +23,8 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 ```
 
@@ -39,7 +39,7 @@ plot(tri)                              # cumulative loss-ratio trajectories per 
 
 ``` r
 
-plot(tri, metric = "lr_incr")       # incremental loss ratio instead of cumulative
+plot(tri, metric = "incr_lr")       # incremental loss ratio instead of cumulative
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-2-2.png)
@@ -66,7 +66,7 @@ plot_triangle(tri, metric = "lr")          # cumulative lr
 
 ``` r
 
-plot_triangle(tri, metric = "lr_incr")     # incremental lr
+plot_triangle(tri, metric = "incr_lr")     # incremental lr
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-2.png)
@@ -75,7 +75,7 @@ plot_triangle(tri, metric = "lr_incr")     # incremental lr
 
 
 # detail labels (ratio + loss/premium amounts) are 2-line — use quarterly cells
-tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr", grain = "Q")
+tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem", grain = "Q")
 plot_triangle(tri_q, label_style = "detail") # ratio + (loss / premium)
 ```
 
@@ -88,7 +88,7 @@ plot_triangle(tri_q, label_style = "detail") # ratio + (loss / premium)
 sm <- summary(tri)
 head(sm)
 #> Key: <coverage, dev>
-#>    coverage   dev n_cohorts   lr_mean lr_median     lr_wt lr_incr_mean
+#>    coverage   dev n_cohorts   lr_mean lr_median     lr_wt incr_lr_mean
 #>      <char> <int>     <int>     <num>     <num>     <num>        <num>
 #> 1:      SUR     1        36 0.2522898 0.2393582 0.2525932    0.2522898
 #> 2:      SUR     2        35 0.8030639 0.7859128 0.7890646    1.3572087
@@ -96,7 +96,7 @@ head(sm)
 #> 4:      SUR     4        33 0.9856772 0.9716558 0.9778502    1.1797269
 #> 5:      SUR     5        32 1.0336648 1.0502252 1.0447602    1.2268717
 #> 6:      SUR     6        31 1.0945723 1.1832332 1.0892484    1.3676102
-#>    lr_incr_median lr_incr_wt
+#>    incr_lr_median incr_lr_wt
 #>             <num>      <num>
 #> 1:      0.2393582  0.2525932
 #> 2:      1.2618216  1.3280769
@@ -227,7 +227,7 @@ link’s median.
 
 ``` r
 
-ed <- as_link(tri, target = "loss", exposure = "premium")
+ed <- as_link(tri, target = "loss", exposure = "prem")
 sm <- summary(ed, model = "ed", alpha = 1)
 head(sm)
 #> Key: <coverage>
@@ -387,8 +387,8 @@ tri_all <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 detect_maturity(tri_all, target = "loss")
 #> Key: <coverage>

@@ -247,24 +247,24 @@ Also used by S3 <code><a href="https://rdrr.io/r/base/print.html" class="externa
 <dt id="arg-target">target<a class="anchor" aria-label="anchor" href="#arg-target"></a></dt>
 <dd><p>Trajectory variable. Default is <code>"lr"</code> (cumulative loss
 ratio). Accepts any column on the <code>Triangle</code> (e.g. <code>"lr"</code>,
-<code>"loss"</code>, <code>"premium"</code>, <code>"loss_incr"</code>, <code>"premium_incr"</code>), plus three
+<code>"loss"</code>, <code>"prem"</code>, <code>"incr_loss"</code>, <code>"incr_prem"</code>), plus three
 <em>diagnostic</em> derived targets computed inline per (group, cohort):</p><dl><dt><code>"loss_ata"</code></dt>
 <dd><p>Loss age-to-age factor
 <code>loss[k+1] / loss[k]</code> — multiplicative loss development speed
 (CL $f_k$).</p></dd>
 
-<dt><code>"premium_ata"</code></dt>
+<dt><code>"prem_ata"</code></dt>
 <dd><p>Premium age-to-age factor — same form on
-premium.</p></dd>
+prem.</p></dd>
 
 <dt><code>"loss_ed"</code></dt>
 <dd><p>Loss intensity
-<code>(loss[k] - loss[k-1]) / premium[k-1]</code> — additive,
+<code>(loss[k] - loss[k-1]) / prem[k-1]</code> — additive,
 exposure-anchored (ED model's $g_k$).</p></dd>
 
-<dt><code>"premium_ed"</code></dt>
-<dd><p>Alias of <code>"premium_ata"</code> — the two differ
-only by a constant <code>(premium_ata - 1)</code>, and the PCA
+<dt><code>"prem_ed"</code></dt>
+<dd><p>Alias of <code>"prem_ata"</code> — the two differ
+only by a constant <code>(prem_ata - 1)</code>, and the PCA
 standardization in detection removes that shift, so they yield
 identical regime changes. Provided for API symmetry with the
 <code>loss_ata</code> / <code>loss_ed</code> pair.</p></dd>
@@ -424,8 +424,8 @@ cohorts, single pooled factor) or estimate per-segment factors.</p></dd>
 <span class="r-in"><span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span></span>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
-<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
-<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span></span>
+<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Hierarchical clustering (no extra package dependency)</span></span></span>
@@ -444,8 +444,8 @@ cohorts, single pooled factor) or estimate per-segment factors.</p></dd>
 <span class="r-in"><span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span></span>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
-<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
-<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span></span>
+<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">r_all</span> <span class="op">&lt;-</span> <span class="fu">detect_regime</span><span class="op">(</span><span class="va">tri_all</span>, by <span class="op">=</span> <span class="st">"coverage"</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">r_all</span><span class="op">$</span><span class="va">changes</span><span class="op">)</span></span></span>

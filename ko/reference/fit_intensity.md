@@ -10,7 +10,7 @@ workflow, parallel to
 [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md)
 for the multiplicative (chain ladder) side. Both operate at the *factor
 level* without producing a full projection. For full ED projection
-(cumulative loss / premium / lr), use
+(cumulative loss / prem / lr), use
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md)
 which accepts either a `Triangle` or an `IntensityFit` (skipping a
 rebuild of the link table when factors are already computed).
@@ -21,7 +21,7 @@ rebuild of the link table when factors are already computed).
 fit_intensity(
   x,
   target = "loss",
-  exposure = "premium",
+  exposure = "prem",
   alpha = 1,
   na_method = c("locf", "zero", "none"),
   sigma_method = c("locf", "min_last2", "loglinear"),
@@ -45,7 +45,7 @@ fit_intensity(
 - exposure:
 
   A single cumulative metric used as the exposure anchor. Default
-  `"premium"`.
+  `"prem"`.
 
 - alpha:
 
@@ -120,7 +120,7 @@ A list of class `"IntensityFit"` with components:
 
 - `selected`:
 
-  `data.table` of selected intensities per link (`g_selected`, `sigma`,
+  `data.table` of selected intensities per link (`g_sel`, `sigma`,
   `sigma2`, `sigma_extrapolated`). LOCF NA-fill is applied when
   `na_method = "locf"`; sigma extrapolation is applied per
   `sigma_method`.
@@ -158,10 +158,10 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
-intensity_fit <- fit_intensity(tri, target = "loss", exposure = "premium")
+intensity_fit <- fit_intensity(tri, target = "loss", exposure = "prem")
 summary(intensity_fit)
 } # }
 ```

@@ -27,8 +27,8 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 ```
 
@@ -43,7 +43,7 @@ plot(tri)                              # 코호트별 누적 손해율 궤적
 
 ``` r
 
-plot(tri, metric = "lr_incr")       # 누적 대신 증분 손해율
+plot(tri, metric = "incr_lr")       # 누적 대신 증분 손해율
 ```
 
 ![](triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-2-2.png)
@@ -70,7 +70,7 @@ plot_triangle(tri, metric = "lr")          # 누적 lr
 
 ``` r
 
-plot_triangle(tri, metric = "lr_incr")     # 증분 lr
+plot_triangle(tri, metric = "incr_lr")     # 증분 lr
 ```
 
 ![](triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-3-2.png)
@@ -79,7 +79,7 @@ plot_triangle(tri, metric = "lr_incr")     # 증분 lr
 
 
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly 로 다시 빌드
-tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr", grain = "Q")
+tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem", grain = "Q")
 plot_triangle(tri_q, label_style = "detail")  # 비율 + (loss / premium)
 ```
 
@@ -92,7 +92,7 @@ plot_triangle(tri_q, label_style = "detail")  # 비율 + (loss / premium)
 sm <- summary(tri)
 head(sm)
 #> Key: <coverage, dev>
-#>    coverage   dev n_cohorts   lr_mean lr_median     lr_wt lr_incr_mean
+#>    coverage   dev n_cohorts   lr_mean lr_median     lr_wt incr_lr_mean
 #>      <char> <int>     <int>     <num>     <num>     <num>        <num>
 #> 1:      SUR     1        36 0.2522898 0.2393582 0.2525932    0.2522898
 #> 2:      SUR     2        35 0.8030639 0.7859128 0.7890646    1.3572087
@@ -100,7 +100,7 @@ head(sm)
 #> 4:      SUR     4        33 0.9856772 0.9716558 0.9778502    1.1797269
 #> 5:      SUR     5        32 1.0336648 1.0502252 1.0447602    1.2268717
 #> 6:      SUR     6        31 1.0945723 1.1832332 1.0892484    1.3676102
-#>    lr_incr_median lr_incr_wt
+#>    incr_lr_median incr_lr_wt
 #>             <num>      <num>
 #> 1:      0.2393582  0.2525932
 #> 2:      1.2618216  1.3280769
@@ -228,7 +228,7 @@ plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / premium)
 
 ``` r
 
-ed <- as_link(tri, target = "loss", exposure = "premium")
+ed <- as_link(tri, target = "loss", exposure = "prem")
 sm <- summary(ed, model = "ed", alpha = 1)
 head(sm)
 #> Key: <coverage>
@@ -385,8 +385,8 @@ tri_all <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 detect_maturity(tri_all, target = "loss")
 #> Key: <coverage>

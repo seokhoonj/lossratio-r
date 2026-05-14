@@ -5,14 +5,14 @@ not require a complete triangle. Age-to-age factors are estimated
 through as_link() and fit_ata(), then applied recursively. The
 point forecast follows the standard recursion, and prediction
 uncertainty is decomposed into process variance and parameter variance.
-When weight is supplied (e.g. "premium"), age-to-age factors and
+When weight is supplied (e.g. "prem"), age-to-age factors and
 their variance are estimated using the supplied WLS weights.'><meta property="og:description" content='Fit a Mack (1993) chain ladder projection from an object of class
 "Triangle". The function works on long-form cumulative data and does
 not require a complete triangle. Age-to-age factors are estimated
 through as_link() and fit_ata(), then applied recursively. The
 point forecast follows the standard recursion, and prediction
 uncertainty is decomposed into process variance and parameter variance.
-When weight is supplied (e.g. "premium"), age-to-age factors and
+When weight is supplied (e.g. "prem"), age-to-age factors and
 their variance are estimated using the supplied WLS weights.'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Browser-language redirect: send Korean visitors to /ko/ on the
      landing page only. Deep links remain untouched. We use string
      slicing rather than a regex with end-anchor, because pandoc
@@ -124,7 +124,7 @@ not require a complete triangle. Age-to-age factors are estimated
 through <code><a href="as_link.html">as_link()</a></code> and <code><a href="fit_ata.html">fit_ata()</a></code>, then applied recursively. The
 point forecast follows the standard recursion, and prediction
 uncertainty is decomposed into process variance and parameter variance.</p>
-<p>When <code>weight</code> is supplied (e.g. <code>"premium"</code>), age-to-age factors and
+<p>When <code>weight</code> is supplied (e.g. <code>"prem"</code>), age-to-age factors and
 their variance are estimated using the supplied WLS weights.</p>
     </div>
 
@@ -159,12 +159,12 @@ retained for future extensibility.</p></dd>
 
 <dt id="arg-target">target<a class="anchor" aria-label="anchor" href="#arg-target"></a></dt>
 <dd><p>A single cumulative target variable (column to project).
-Typical choices are <code>"loss"</code>, <code>"premium"</code>, or <code>"lr"</code>.</p></dd>
+Typical choices are <code>"loss"</code>, <code>"prem"</code>, or <code>"lr"</code>.</p></dd>
 
 
 <dt id="arg-weight">weight<a class="anchor" aria-label="anchor" href="#arg-weight"></a></dt>
 <dd><p>An optional column name passed to <code><a href="as_link.html">as_link()</a></code> as
-the WLS weight variable. Typically <code>"premium"</code> when <code>target = "lr"</code>.
+the WLS weight variable. Typically <code>"prem"</code> when <code>target = "lr"</code>.
 Default is <code>NULL</code>.</p></dd>
 
 
@@ -311,8 +311,8 @@ or <code>NULL</code> when maturity filtering was not applied.</p></dd>
 <span class="r-in"><span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span></span>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
-<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
-<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span></span>
+<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Mack chain ladder with process / parameter standard errors</span></span></span>
@@ -320,8 +320,8 @@ or <code>NULL</code> when maturity filtering was not applied.</p></dd>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cl_mack</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cl_mack</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># WLS factors for lr (loss ratio) using premium as the weight</span></span></span>
-<span class="r-in"><span><span class="va">cl_clr</span> <span class="op">&lt;-</span> <span class="fu">fit_cl</span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"lr"</span>, weight <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># WLS factors for lr (loss ratio) using prem as the weight</span></span></span>
+<span class="r-in"><span><span class="va">cl_clr</span> <span class="op">&lt;-</span> <span class="fu">fit_cl</span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"lr"</span>, weight <span class="op">=</span> <span class="st">"prem"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

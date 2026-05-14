@@ -13,10 +13,10 @@ Internal helper for parameter variance:
 ``` r
 .sa_param_var(
   loss_proj,
-  premium_proj,
+  prem_proj,
   g_var,
   f_var,
-  f_selected,
+  f_sel,
   last_obs,
   maturity_from,
   method = "sa"

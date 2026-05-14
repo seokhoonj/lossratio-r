@@ -95,8 +95,8 @@ tri_sur <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 
 # Manual change date via regime_at() — wrap a literal date in a Regime
@@ -219,8 +219,8 @@ fits <- lapply(unique(exp$coverage), function(g) {
     groups   = "coverage",
     cohort   = "uy_m",
     calendar = "cy_m",
-    loss     = "loss_incr",
-    premium  = "premium_incr"
+    loss     = "incr_loss",
+    premium  = "incr_prem"
   )
   reg_g <- detect_regime(tri_g)
   fit_lr(tri_g, method = "sa", recent = 18L,

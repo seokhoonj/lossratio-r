@@ -120,17 +120,17 @@ in grey and overlays three summary statistics:</p><ul><li><p>Mean</p></li>
 
 <dt id="arg-metric">metric<a class="anchor" aria-label="anchor" href="#arg-metric"></a></dt>
 <dd><p>A single metric to plot. Must be one of:
-<code>"lr"</code>, <code>"lr_incr"</code>,
-<code>"loss"</code>, <code>"loss_incr"</code>, <code>"premium"</code>, <code>"premium_incr"</code>,
-<code>"margin"</code>, <code>"margin_incr"</code>,
-<code>"loss_share"</code>, <code>"loss_incr_share"</code>, <code>"premium_share"</code>, or <code>"premium_incr_share"</code>.</p></dd>
+<code>"lr"</code>, <code>"incr_lr"</code>,
+<code>"loss"</code>, <code>"incr_loss"</code>, <code>"prem"</code>, <code>"incr_prem"</code>,
+<code>"margin"</code>, <code>"incr_margin"</code>,
+<code>"loss_share"</code>, <code>"incr_loss_share"</code>, <code>"prem_share"</code>, or <code>"incr_prem_share"</code>.</p></dd>
 
 
 <dt id="arg-summary">summary<a class="anchor" aria-label="anchor" href="#arg-summary"></a></dt>
 <dd><p>Logical. If <code>FALSE</code> (default), shows raw cohort trajectories.
 If <code>TRUE</code>, shows grey cohort trajectories with overlaid summary lines
 (mean, median, weighted mean). Summary overlay is supported only for
-<code>"lr"</code> and <code>"lr_incr"</code>, and only when the x-axis variable is a development-period
+<code>"lr"</code> and <code>"incr_lr"</code>, and only when the x-axis variable is a development-period
 variable (for example, <code>dev_m</code>, <code>dev_q</code>, <code>dev_h</code>, <code>dev_y</code>).</p></dd>
 
 
@@ -172,11 +172,11 @@ Cohort lines are grouped by the period variable stored in
 <code>attr(x, "cohort")</code>, and facets are created from
 <code>attr(x, "groups")</code>.</p>
 <p>The cumulative loss ratio is defined here as:
-$$lr = loss / premium$$</p>
-<p>For long-term health insurance applications, risk premium is commonly
-used as the <code>premium</code> measure.</p>
-<p>The weighted mean is defined as:</p><ul><li><p><code>lr_wt      = sum(loss)      / sum(premium)</code></p></li>
-<li><p><code>lr_incr_wt = sum(loss_incr) / sum(premium_incr)</code></p></li>
+$$lr = loss / prem$$</p>
+<p>For long-term health insurance applications, risk prem is commonly
+used as the <code>prem</code> measure.</p>
+<p>The weighted mean is defined as:</p><ul><li><p><code>lr_wt      = sum(loss)      / sum(prem)</code></p></li>
+<li><p><code>incr_lr_wt = sum(incr_loss) / sum(incr_prem)</code></p></li>
 </ul><p>Ratio and proportion metrics are plotted on the original scale and displayed
 as percentages via y-axis labels. Amount metrics are plotted on the original
 scale and displayed using y-axis labels scaled by <code>amount_divisor</code>.</p>

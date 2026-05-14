@@ -1,23 +1,22 @@
-# Fit a chain ladder projection on the premium (exposure) triangle
+# Fit a chain ladder projection on the prem (exposure) triangle
 
-Project cumulative premium across the cohort x development grid with a
+Project cumulative prem across the cohort x development grid with a
 chain ladder estimator. Two variance recursions are supported:
 
 - `"ed"` (default):
 
-  Additive recursion. Empirically more robust on long-projection premium
+  Additive recursion. Empirically more robust on long-projection prem
   triangles – the multiplicative scaling of the classical CL recursion
   can blow up under cohort-wise heterogeneity (regime changes in
-  premium, channel changes, amendments). See
-  `dev/premium_projection.qmd`.
+  premium, channel changes, amendments). See `dev/prem_projection.qmd`.
 
 - `"cl"`:
 
   Mack (1993) multiplicative recursion. Point projection identical to
   ED; only the SE accumulation differs.
 
-Both methods share the same point estimate – self-weighted ED on premium
-is mathematically equivalent to chain ladder on the same column
+Both methods share the same point estimate – self-weighted ED on prem is
+mathematically equivalent to chain ladder on the same column
 (`f_k = 1 + g_k`). The only operational difference is how cumulative
 variance is propagated forward.
 
@@ -40,8 +39,8 @@ fit_premium(
 
 - x:
 
-  A `"Triangle"` object. The standardized `"premium"` column is used as
-  the projection target.
+  A `"Triangle"` object. The standardized `"prem"` column is used as the
+  projection target.
 
 - method:
 
@@ -55,8 +54,7 @@ fit_premium(
 
 - regime:
 
-  Optional regime specification (premium side). Accepts four input
-  types:
+  Optional regime specification (prem side). Accepts four input types:
 
   `NULL` (default)
 
@@ -80,7 +78,7 @@ fit_premium(
       custom-config detection.
 
   Pre-change cohorts (cohorts before the resolved `Regime`'s change
-  date) are excluded from premium factor estimation.
+  date) are excluded from prem factor estimation.
 
 - sigma_method:
 
@@ -98,18 +96,17 @@ fit_premium(
 
 - conf_level:
 
-  Confidence level for analytical CI on the premium projection
-  (`premium_ci_lower`, `premium_ci_upper`). Default `0.95`.
+  Confidence level for analytical CI on the prem projection
+  (`prem_ci_lo`, `prem_ci_hi`). Default `0.95`.
 
 ## Value
 
 An object of class `"PremiumFit"` (a list with the same structure as
 `CLFit`). Components: `selected`, `full`, `data`, plus attribute
 `premium_method`. The `$full` data.table uses role-specific column names
-(`premium_obs`, `premium_proj`, `premium_incr_proj`, `premium_proc_se`,
-`premium_param_se`, `premium_total_se`, `premium_proc_cv`,
-`premium_param_cv`, `premium_total_cv`, `premium_ci_lower`,
-`premium_ci_upper`).
+(`prem_obs`, `prem_proj`, `incr_prem_proj`, `prem_proc_se`,
+`prem_param_se`, `prem_total_se`, `prem_proc_cv`, `prem_param_cv`,
+`prem_total_cv`, `prem_ci_lo`, `prem_ci_hi`).
 
 ## See also
 
@@ -128,8 +125,8 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 
 # ED-additive recursion (default; robust on long projections)

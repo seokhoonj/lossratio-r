@@ -8,7 +8,7 @@ before maturity and chain ladder (CL) after maturity.
 Before maturity: age-to-age factors are volatile, so
 exposure-driven projection
 \(\Delta C^L = g_k \cdot C^P_k\) anchors the estimate
-to premium volume.
+to prem volume.
 After maturity: age-to-age factors are stable, so
 chain ladder projection
 \(C^L_{k+1} = f_k \cdot C^L_k\) preserves the cohort's
@@ -41,7 +41,7 @@ before maturity and chain ladder (CL) after maturity.
 Before maturity: age-to-age factors are volatile, so
 exposure-driven projection
 \(\Delta C^L = g_k \cdot C^P_k\) anchors the estimate
-to premium volume.
+to prem volume.
 After maturity: age-to-age factors are stable, so
 chain ladder projection
 \(C^L_{k+1} = f_k \cdot C^L_k\) preserves the cohort's
@@ -177,7 +177,7 @@ Three projection methods are available:</p>
 before maturity and chain ladder (CL) after maturity.</p><ul><li><p>Before maturity: age-to-age factors are volatile, so
 exposure-driven projection
 \(\Delta C^L = g_k \cdot C^P_k\) anchors the estimate
-to premium volume.</p></li>
+to prem volume.</p></li>
 <li><p>After maturity: age-to-age factors are stable, so
 chain ladder projection
 \(C^L_{k+1} = f_k \cdot C^L_k\) preserves the cohort's
@@ -230,7 +230,7 @@ point + variance via the delta method (<code>se_method = "fixed"</code> or
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>An object of class <code>"Triangle"</code>. The standardized <code>"loss"</code>
-and <code>"premium"</code> columns are used (<code><a href="as_triangle.html">as_triangle()</a></code> produces these).</p></dd>
+and <code>"prem"</code> columns are used (<code><a href="as_triangle.html">as_triangle()</a></code> produces these).</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
@@ -277,20 +277,20 @@ the change date are excluded from estimation.</p></dd>
 
 <dt id="arg-premium-method">premium_method<a class="anchor" aria-label="anchor" href="#arg-premium-method"></a></dt>
 <dd><p>One of <code>"cl"</code> (default) or <code>"ed"</code>. Forwarded to
-<code><a href="fit_premium.html">fit_premium()</a></code> when constructing the premium projection.</p></dd>
+<code><a href="fit_premium.html">fit_premium()</a></code> when constructing the prem projection.</p></dd>
 
 
 <dt id="arg-premium-alpha">premium_alpha<a class="anchor" aria-label="anchor" href="#arg-premium-alpha"></a></dt>
-<dd><p>Numeric scalar for premium chain ladder. Default
+<dd><p>Numeric scalar for prem chain ladder. Default
 is <code>1</code>.</p></dd>
 
 
 <dt id="arg-premium-regime">premium_regime<a class="anchor" aria-label="anchor" href="#arg-premium-regime"></a></dt>
 <dd><p>Premium-side regime specification. Same four
 input types as <code>loss_regime</code> (<code>NULL</code> / <code>Regime</code> / <code>"auto"</code> / function).
-Default <code>NULL</code> – premium is fit on the full triangle independently
+Default <code>NULL</code> – prem is fit on the full triangle independently
 of <code>loss_regime</code> (no lazy default). Set explicitly when the regime
-shift affects premium accrual too.</p></dd>
+shift affects prem accrual too.</p></dd>
 
 
 <dt id="arg-sigma-method">sigma_method<a class="anchor" aria-label="anchor" href="#arg-sigma-method"></a></dt>
@@ -331,11 +331,11 @@ ED and CL phases.</p></dd>
 <dd><p>Premium treated as fixed (non-random).
 \(\mathrm{SE}(L/P) = \mathrm{SE}(L) / P\). Strictly, this is
 the delta method with <code>Var(P) = 0</code> and <code>Cov(L,P) = 0</code>, i.e., a
-degenerate case under the assumption that premium is known.</p></dd>
+degenerate case under the assumption that prem is known.</p></dd>
 
 <dt><code>"delta"</code></dt>
-<dd><p>Full delta method including premium uncertainty
-and the loss-premium correlation <code>rho</code>:
+<dd><p>Full delta method including prem uncertainty
+and the loss-prem correlation <code>rho</code>:
 $$\mathrm{Var}(L/P) \approx \frac{\mathrm{Var}(L)}{P^2}
         + \frac{L^2 \mathrm{Var}(P)}{P^4}
         - \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(P)}{P^3}$$</p></dd>
@@ -346,15 +346,15 @@ $$\mathrm{Var}(L/P) \approx \frac{\mathrm{Var}(L)}{P^2}
 
 <dt id="arg-rho">rho<a class="anchor" aria-label="anchor" href="#arg-rho"></a></dt>
 <dd><p>Numeric scalar in <code>(-1, 1)</code>; assumed correlation between
-ultimate loss and ultimate premium. Only used when
+ultimate loss and ultimate prem. Only used when
 <code>se_method = "delta"</code>. Default is <code>0.95</code>, matching the strong
 positive correlation typically observed between cumulative loss
-and cumulative premium in long-tail health portfolios (analogous
+and cumulative prem in long-tail health portfolios (analogous
 to the paid/incurred correlation used in Munich chain ladder).</p></dd>
 
 
 <dt id="arg-conf-level">conf_level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
-<dd><p>Confidence level used for <code>lr_ci_lower</code>/<code>lr_ci_upper</code>
+<dd><p>Confidence level used for <code>lr_ci_lo</code>/<code>lr_ci_hi</code>
 in the cohort summary. Default is <code>0.95</code>.</p></dd>
 
 
@@ -393,8 +393,8 @@ Default is <code>NULL</code>.</p></dd>
 <span class="r-in"><span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span></span>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
-<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
-<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span></span>
+<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Stage-adaptive (default): ED before maturity, CL after</span></span></span>

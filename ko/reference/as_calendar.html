@@ -12,14 +12,14 @@ c(&quot;Calendar&quot;, &quot;data.table&quot;, &quot;data.frame&quot;) containi
 loss / premium, incremental and cumulative LR, margin, profit, and
 share columns within each calendar cell.
 The cumulative loss ratio is defined as:
-$$lr = loss / premium$$
-For long-term health insurance applications, risk premium is commonly
-used as the premium measure.
+$$lr = loss / prem$$
+For long-term health insurance applications, risk prem is commonly
+used as the prem measure.
 Proportion variables are computed within each calendar cell:
-loss_incr_share    = loss_incr    / sum(loss_incr)
-premium_incr_share = premium_incr / sum(premium_incr)
+incr_loss_share    = incr_loss    / sum(incr_loss)
+incr_prem_share = incr_prem / sum(incr_prem)
 loss_share         = loss         / sum(loss)
-premium_share      = premium      / sum(premium)
+prem_share      = prem      / sum(prem)
 
 
 Therefore, for a fixed calendar cell, the proportions
@@ -27,7 +27,7 @@ sum to 1 across groups. These are useful for examining the composition of
 each calendar period across products or other grouping variables.
 Calendar derives calendar = cohort + (dev - 1) using the
 Triangle's grain attribute and aggregates the incremental
-loss / premium columns by (groups, calendar). This works for
+loss / prem columns by (groups, calendar). This works for
 Triangles built in either mode (with or without an original
 calendar column in the raw experience), since cohort + dev is
 always sufficient to reconstruct the calendar axis at the
@@ -44,14 +44,14 @@ c(&quot;Calendar&quot;, &quot;data.table&quot;, &quot;data.frame&quot;) containi
 loss / premium, incremental and cumulative LR, margin, profit, and
 share columns within each calendar cell.
 The cumulative loss ratio is defined as:
-$$lr = loss / premium$$
-For long-term health insurance applications, risk premium is commonly
-used as the premium measure.
+$$lr = loss / prem$$
+For long-term health insurance applications, risk prem is commonly
+used as the prem measure.
 Proportion variables are computed within each calendar cell:
-loss_incr_share    = loss_incr    / sum(loss_incr)
-premium_incr_share = premium_incr / sum(premium_incr)
+incr_loss_share    = incr_loss    / sum(incr_loss)
+incr_prem_share = incr_prem / sum(incr_prem)
 loss_share         = loss         / sum(loss)
-premium_share      = premium      / sum(premium)
+prem_share      = prem      / sum(prem)
 
 
 Therefore, for a fixed calendar cell, the proportions
@@ -59,7 +59,7 @@ sum to 1 across groups. These are useful for examining the composition of
 each calendar period across products or other grouping variables.
 Calendar derives calendar = cohort + (dev - 1) using the
 Triangle's grain attribute and aggregates the incremental
-loss / premium columns by (groups, calendar). This works for
+loss / prem columns by (groups, calendar). This works for
 Triangles built in either mode (with or without an original
 calendar column in the raw experience), since cohort + dev is
 always sufficient to reconstruct the calendar axis at the
@@ -134,19 +134,19 @@ portfolio evolves through time, regardless of cohort membership.</p>
 loss / premium, incremental and cumulative LR, margin, profit, and
 share columns within each <code>calendar</code> cell.</p>
 <p>The cumulative loss ratio is defined as:
-$$lr = loss / premium$$</p>
-<p>For long-term health insurance applications, risk premium is commonly
-used as the <code>premium</code> measure.</p>
-<p>Proportion variables are computed within each <code>calendar</code> cell:</p><ul><li><p><code>loss_incr_share    = loss_incr    / sum(loss_incr)</code></p></li>
-<li><p><code>premium_incr_share = premium_incr / sum(premium_incr)</code></p></li>
+$$lr = loss / prem$$</p>
+<p>For long-term health insurance applications, risk prem is commonly
+used as the <code>prem</code> measure.</p>
+<p>Proportion variables are computed within each <code>calendar</code> cell:</p><ul><li><p><code>incr_loss_share    = incr_loss    / sum(incr_loss)</code></p></li>
+<li><p><code>incr_prem_share = incr_prem / sum(incr_prem)</code></p></li>
 <li><p><code>loss_share         = loss         / sum(loss)</code></p></li>
-<li><p><code>premium_share      = premium      / sum(premium)</code></p></li>
+<li><p><code>prem_share      = prem      / sum(prem)</code></p></li>
 </ul><p>Therefore, for a fixed <code>calendar</code> cell, the proportions
 sum to 1 across groups. These are useful for examining the composition of
 each calendar period across products or other grouping variables.</p>
 <p>Calendar derives <code>calendar = cohort + (dev - 1)</code> using the
 Triangle's <code>grain</code> attribute and aggregates the incremental
-<code>loss</code> / <code>premium</code> columns by <code>(groups, calendar)</code>. This works for
+<code>loss</code> / <code>prem</code> columns by <code>(groups, calendar)</code>. This works for
 Triangles built in either mode (with or without an original
 <code>calendar</code> column in the raw experience), since <code>cohort + dev</code> is
 always sufficient to reconstruct the calendar axis at the
@@ -169,29 +169,29 @@ Triangle's grain.</p>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A data.frame with class <code>"Calendar"</code>, containing the following
-derived columns:</p><dl><dt>dev</dt>
-<dd><p>Calendar index within each group, defined as the sequential
-order of <code>calendar</code> after sorting in ascending order. This represents
-the progression of calendar periods for each group (e.g., 1 = first
-observed period, 2 = second, ...), and can be used to align groups with
-different starting periods on a common index scale.</p></dd>
-
-<dt>loss, loss_incr</dt>
+derived columns:</p><dl>
+\itemcal_idxSequential calendar-period index within each group
+(<code>1, 2, ..., N</code>). Time-series convention; intentionally NOT
+<code>dev</code> – in a Calendar the integer is just the rank of the date
+within its group, not a true development period (<code>cym - uym</code>).
+Useful for aligning groups with different starting periods on a
+common index scale.
+<dt>loss, incr_loss</dt>
 <dd><p>Cumulative and per-period loss</p></dd>
 
-<dt>premium, premium_incr</dt>
-<dd><p>Cumulative and per-period premium</p></dd>
+<dt>premium, incr_prem</dt>
+<dd><p>Cumulative and per-period prem</p></dd>
 
-<dt>lr, lr_incr</dt>
+<dt>lr, incr_lr</dt>
 <dd><p>Cumulative and per-period loss ratio</p></dd>
 
-<dt>margin, margin_incr</dt>
+<dt>margin, incr_margin</dt>
 <dd><p>Cumulative and per-period margin</p></dd>
 
-<dt>profit, profit_incr</dt>
+<dt>profit, incr_profit</dt>
 <dd><p>Profit indicator</p></dd>
 
-<dt>loss_share, loss_incr_share, premium_share, premium_incr_share</dt>
+<dt>loss_share, incr_loss_share, prem_share, incr_prem_share</dt>
 <dd><p>Proportions within each <code>calendar</code> cell</p></dd>
 
 
@@ -207,8 +207,8 @@ a melted long-format version (<code>class = "CalendarLonger"</code>).</p>
 <span class="r-in"><span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span></span>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
-<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
-<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span></span>
+<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu">as_calendar</span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span></span>

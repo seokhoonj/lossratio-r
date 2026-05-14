@@ -10,7 +10,7 @@ Three projection methods are available:
 
   - Before maturity: age-to-age factors are volatile, so exposure-driven
     projection \\\Delta C^L = g_k \cdot C^P_k\\ anchors the estimate to
-    premium volume.
+    prem volume.
 
   - After maturity: age-to-age factors are stable, so chain ladder
     projection \\C^L\_{k+1} = f_k \cdot C^L_k\\ preserves the cohort's
@@ -67,7 +67,7 @@ fit_lr(
 - x:
 
   An object of class `"Triangle"`. The standardized `"loss"` and
-  `"premium"` columns are used
+  `"prem"` columns are used
   ([`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
   produces these).
 
@@ -125,19 +125,19 @@ fit_lr(
 
   One of `"cl"` (default) or `"ed"`. Forwarded to
   [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
-  when constructing the premium projection.
+  when constructing the prem projection.
 
 - premium_alpha:
 
-  Numeric scalar for premium chain ladder. Default is `1`.
+  Numeric scalar for prem chain ladder. Default is `1`.
 
 - premium_regime:
 
   Premium-side regime specification. Same four input types as
   `loss_regime` (`NULL` / `Regime` / `"auto"` / function). Default
-  `NULL` – premium is fit on the full triangle independently of
+  `NULL` – prem is fit on the full triangle independently of
   `loss_regime` (no lazy default). Set explicitly when the regime shift
-  affects premium accrual too.
+  affects prem accrual too.
 
 - sigma_method:
 
@@ -187,28 +187,28 @@ fit_lr(
   :   Premium treated as fixed (non-random). \\\mathrm{SE}(L/P) =
       \mathrm{SE}(L) / P\\. Strictly, this is the delta method with
       `Var(P) = 0` and `Cov(L,P) = 0`, i.e., a degenerate case under the
-      assumption that premium is known.
+      assumption that prem is known.
 
   `"delta"`
 
-  :   Full delta method including premium uncertainty and the
-      loss-premium correlation `rho`: \$\$\mathrm{Var}(L/P) \approx
+  :   Full delta method including prem uncertainty and the loss-prem
+      correlation `rho`: \$\$\mathrm{Var}(L/P) \approx
       \frac{\mathrm{Var}(L)}{P^2} + \frac{L^2 \mathrm{Var}(P)}{P^4} -
       \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(P)}{P^3}\$\$
 
 - rho:
 
   Numeric scalar in `(-1, 1)`; assumed correlation between ultimate loss
-  and ultimate premium. Only used when `se_method = "delta"`. Default is
+  and ultimate prem. Only used when `se_method = "delta"`. Default is
   `0.95`, matching the strong positive correlation typically observed
-  between cumulative loss and cumulative premium in long-tail health
+  between cumulative loss and cumulative prem in long-tail health
   portfolios (analogous to the paid/incurred correlation used in Munich
   chain ladder).
 
 - conf_level:
 
-  Confidence level used for `lr_ci_lower`/`lr_ci_upper` in the cohort
-  summary. Default is `0.95`.
+  Confidence level used for `lr_ci_lo`/`lr_ci_hi` in the cohort summary.
+  Default is `0.95`.
 
 - bootstrap:
 
@@ -249,8 +249,8 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 
 # Stage-adaptive (default): ED before maturity, CL after

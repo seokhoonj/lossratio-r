@@ -149,7 +149,7 @@ When the input `"Link"` object contains a `weight` column (added by
 when `weight` is supplied), that column is automatically used as the WLS
 weight in place of `target_from`. This is useful when `target = "lr"`,
 where `target_from` carries no exposure information and an external
-exposure variable such as `premium` should be used instead.
+exposure variable such as `prem` should be used instead.
 
 ## Coefficient of variation (`cv`)
 

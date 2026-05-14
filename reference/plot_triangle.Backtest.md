@@ -43,7 +43,7 @@ plot_triangle(
 
   Which projection view to display in `view = "value"`. One of
   `"cumulative"` (default; uses `ae_err`) or `"incremental"` (uses
-  `ae_err_incr`).
+  `incr_ae_err`).
 
 - label_size:
 

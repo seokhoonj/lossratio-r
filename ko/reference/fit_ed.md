@@ -5,7 +5,7 @@ and return an `"EDFit"` object that bundles factor summaries, selected
 intensities, and a cell-level projection of cumulative loss and exposure
 (`$full`).
 
-Returns `g_selected`, `sigma2`, and factor variance
+Returns `g_sel`, `sigma2`, and factor variance
 \\\mathrm{Var}(\hat{g}\_k)\\ (column `g_var`) in `$selected`.
 
 The `$full` projection table holds cumulative loss / exposure
@@ -21,7 +21,7 @@ call `backtest(tri, target = "lr", loss_method = "ed")`.
 fit_ed(
   x,
   target = "loss",
-  exposure = "premium",
+  exposure = "prem",
   method = c("mack"),
   alpha = 1,
   na_method = c("locf", "zero", "none"),
@@ -46,7 +46,7 @@ fit_ed(
 
 - exposure:
 
-  Cumulative exposure variable. Default `"premium"`. Forwarded to
+  Cumulative exposure variable. Default `"prem"`. Forwarded to
   [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md)
   and to downstream workers.
 
@@ -60,9 +60,8 @@ fit_ed(
 
 - na_method:
 
-  Method used to fill `NA` values in `g_selected`. One of `"zero"`
-  (default, set `NA` to 0 meaning no further development) or `"locf"` or
-  `"none"`.
+  Method used to fill `NA` values in `g_sel`. One of `"zero"` (default,
+  set `NA` to 0 meaning no further development) or `"locf"` or `"none"`.
 
 - sigma_method:
 
@@ -101,12 +100,12 @@ An object of class `"EDFit"` (a named list) with components:
 
 - `selected`:
 
-  `data.table` of selected `g_selected`, `sigma2`, and `g_var`.
+  `data.table` of selected `g_sel`, `sigma2`, and `g_var`.
 
 - `full`:
 
   `data.table` of per-cell cumulative target / exposure projection plus
-  role-prefixed SE / CV columns (`target_proj`, `target_incr_proj`,
+  role-prefixed SE / CV columns (`target_proj`, `incr_target_proj`,
   `exposure_proj`, `exposure_incr_proj`, `target_proc_se2`,
   `target_param_se2`, `target_total_se2`, `target_proc_se`,
   `target_param_se`, `target_total_se`, `target_total_cv`). Available

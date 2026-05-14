@@ -7,8 +7,8 @@ Premium treated as fixed (non-random).
 case of the delta method with Var(P) = 0 and Cov(L,P) = 0.
 
 "delta"
-First-order Taylor (delta method) including premium
-uncertainty and loss-premium correlation rho:
+First-order Taylor (delta method) including prem
+uncertainty and loss-prem correlation rho:
 \(\mathrm{Var}(L/P) \approx (\mathrm{SE}(L)/P)^2 +
       (L \cdot \mathrm{SE}(P) / P^2)^2 -
       2 \rho L \mathrm{SE}(L) \mathrm{SE}(P) / P^3\).
@@ -19,7 +19,7 @@ can drive the linearised estimate negative).
 
 
 Not exported; called only by fit_lr(). The "fixed" branch encodes
-the actuarial assumption that earned premium is known (not estimated),
+the actuarial assumption that earned prem is known (not estimated),
 so this helper is not a generic ratio-SE utility.'><meta property="og:description" content='LR-specific internal helper. Two variants:
 
 "fixed" (default)
@@ -28,8 +28,8 @@ Premium treated as fixed (non-random).
 case of the delta method with Var(P) = 0 and Cov(L,P) = 0.
 
 "delta"
-First-order Taylor (delta method) including premium
-uncertainty and loss-premium correlation rho:
+First-order Taylor (delta method) including prem
+uncertainty and loss-prem correlation rho:
 \(\mathrm{Var}(L/P) \approx (\mathrm{SE}(L)/P)^2 +
       (L \cdot \mathrm{SE}(P) / P^2)^2 -
       2 \rho L \mathrm{SE}(L) \mathrm{SE}(P) / P^3\).
@@ -40,7 +40,7 @@ can drive the linearised estimate negative).
 
 
 Not exported; called only by fit_lr(). The "fixed" branch encodes
-the actuarial assumption that earned premium is known (not estimated),
+the actuarial assumption that earned prem is known (not estimated),
 so this helper is not a generic ratio-SE utility.'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -106,8 +106,8 @@ so this helper is not a generic ratio-SE utility.'><meta property="og:image" con
 case of the delta method with <code>Var(P) = 0</code> and <code>Cov(L,P) = 0</code>.</p></dd>
 
 <dt><code>"delta"</code></dt>
-<dd><p>First-order Taylor (delta method) including premium
-uncertainty and loss-premium correlation <code>rho</code>:
+<dd><p>First-order Taylor (delta method) including prem
+uncertainty and loss-prem correlation <code>rho</code>:
 \(\mathrm{Var}(L/P) \approx (\mathrm{SE}(L)/P)^2 +
       (L \cdot \mathrm{SE}(P) / P^2)^2 -
       2 \rho L \mathrm{SE}(L) \mathrm{SE}(P) / P^3\).
@@ -116,7 +116,7 @@ can drive the linearised estimate negative).</p></dd>
 
 
 </dl><p>Not exported; called only by <code><a href="fit_lr.html">fit_lr()</a></code>. The <code>"fixed"</code> branch encodes
-the actuarial assumption that earned premium is known (not estimated),
+the actuarial assumption that earned prem is known (not estimated),
 so this helper is <em>not</em> a generic ratio-SE utility.</p>
     </div>
 
@@ -126,7 +126,7 @@ so this helper is <em>not</em> a generic ratio-SE utility.</p>
 <span>  <span class="va">loss</span>,</span>
 <span>  <span class="va">premium</span>,</span>
 <span>  <span class="va">se_loss</span>,</span>
-<span>  se_premium <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  se_prem <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fixed"</span>, <span class="st">"delta"</span><span class="op">)</span>,</span>
 <span>  rho <span class="op">=</span> <span class="fl">0.95</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -140,15 +140,11 @@ so this helper is <em>not</em> a generic ratio-SE utility.</p>
 <dd><p>Ultimate loss vector (<code>L</code>).</p></dd>
 
 
-<dt id="arg-premium">premium<a class="anchor" aria-label="anchor" href="#arg-premium"></a></dt>
-<dd><p>Ultimate premium vector (<code>E</code>).</p></dd>
-
-
 <dt id="arg-se-loss">se_loss<a class="anchor" aria-label="anchor" href="#arg-se-loss"></a></dt>
 <dd><p><code>SE(L)</code>.</p></dd>
 
 
-<dt id="arg-se-premium">se_premium<a class="anchor" aria-label="anchor" href="#arg-se-premium"></a></dt>
+<dt id="arg-se-prem">se_prem<a class="anchor" aria-label="anchor" href="#arg-se-prem"></a></dt>
 <dd><p><code>SE(P)</code>. Unused for <code>"fixed"</code>; may be <code>NULL</code>.</p></dd>
 
 
@@ -157,8 +153,12 @@ so this helper is <em>not</em> a generic ratio-SE utility.</p>
 
 
 <dt id="arg-rho">rho<a class="anchor" aria-label="anchor" href="#arg-rho"></a></dt>
-<dd><p>Loss-premium correlation in <code>(-1, 1)</code>. Used only for
+<dd><p>Loss-prem correlation in <code>(-1, 1)</code>. Used only for
 <code>"delta"</code>. Default <code>0.95</code>.</p></dd>
+
+
+<dt id="arg-prem">prem<a class="anchor" aria-label="anchor" href="#arg-prem"></a></dt>
+<dd><p>Ultimate prem vector (<code>E</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">

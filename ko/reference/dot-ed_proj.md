@@ -6,5 +6,5 @@ Cumulative target recursion:
 ## Usage
 
 ``` r
-.ed_proj(target_obs, exposure_proj, g_selected)
+.ed_proj(target_obs, exposure_proj, g_sel)
 ```

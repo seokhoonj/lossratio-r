@@ -8,7 +8,7 @@ This is the factor-level diagnostic for the exposure-driven (ED)
 workflow, parallel to fit_ata() for the multiplicative (chain
 ladder) side. Both operate at the factor level without
 producing a full projection. For full ED projection (cumulative
-loss / premium / lr), use fit_ed() which accepts either a
+loss / prem / lr), use fit_ed() which accepts either a
 Triangle or an IntensityFit (skipping a rebuild of the link
 table when factors are already computed).'><meta property="og:description" content='Estimate per-development-link incremental loss intensities
 \(g_k = \mathbb{E}[\Delta L_k / C^P_k]\) from a "Triangle" and
@@ -19,7 +19,7 @@ This is the factor-level diagnostic for the exposure-driven (ED)
 workflow, parallel to fit_ata() for the multiplicative (chain
 ladder) side. Both operate at the factor level without
 producing a full projection. For full ED projection (cumulative
-loss / premium / lr), use fit_ed() which accepts either a
+loss / prem / lr), use fit_ed() which accepts either a
 Triangle or an IntensityFit (skipping a rebuild of the link
 table when factors are already computed).'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
@@ -88,7 +88,7 @@ diagnostic statistics.</p>
 workflow, parallel to <code><a href="fit_ata.html">fit_ata()</a></code> for the multiplicative (chain
 ladder) side. Both operate at the <em>factor level</em> without
 producing a full projection. For full ED projection (cumulative
-loss / premium / lr), use <code><a href="fit_ed.html">fit_ed()</a></code> which accepts either a
+loss / prem / lr), use <code><a href="fit_ed.html">fit_ed()</a></code> which accepts either a
 <code>Triangle</code> or an <code>IntensityFit</code> (skipping a rebuild of the link
 table when factors are already computed).</p>
     </div>
@@ -98,7 +98,7 @@ table when factors are already computed).</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fit_intensity</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  target <span class="op">=</span> <span class="st">"loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"premium"</span>,</span>
+<span>  exposure <span class="op">=</span> <span class="st">"prem"</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  na_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"zero"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
@@ -123,7 +123,7 @@ numerator. Default <code>"loss"</code>.</p></dd>
 
 <dt id="arg-exposure">exposure<a class="anchor" aria-label="anchor" href="#arg-exposure"></a></dt>
 <dd><p>A single cumulative metric used as the
-exposure anchor. Default <code>"premium"</code>.</p></dd>
+exposure anchor. Default <code>"prem"</code>.</p></dd>
 
 
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
@@ -189,7 +189,7 @@ estimation.</p></dd>
 
 <dt><code>selected</code></dt>
 <dd><p><code>data.table</code> of selected intensities
-per link (<code>g_selected</code>, <code>sigma</code>, <code>sigma2</code>,
+per link (<code>g_sel</code>, <code>sigma</code>, <code>sigma2</code>,
 <code>sigma_extrapolated</code>). LOCF NA-fill is applied when
 <code>na_method = "locf"</code>; sigma extrapolation is applied per
 <code>sigma_method</code>.</p></dd>
@@ -226,10 +226,10 @@ instability. <code>fit_intensity()</code> therefore deliberately omits a
 <span class="r-in"><span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span></span>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
-<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"loss_incr"</span>,</span></span>
-<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"premium_incr"</span></span></span>
+<span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">intensity_fit</span> <span class="op">&lt;-</span> <span class="fu">fit_intensity</span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, exposure <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">intensity_fit</span> <span class="op">&lt;-</span> <span class="fu">fit_intensity</span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, exposure <span class="op">=</span> <span class="st">"prem"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">intensity_fit</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>

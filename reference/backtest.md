@@ -1,4 +1,4 @@
-# Backtest a loss / premium / loss-ratio projection on existing data
+# Backtest a loss / prem / loss-ratio projection on existing data
 
 Hold out the latest `holdout` calendar diagonals from the input
 `Triangle`, refit a target-specific projection on the earlier portion,
@@ -13,7 +13,7 @@ The target is selected with `target`:
 - `target = "loss"` – score the loss projection from
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md).
 
-- `target = "premium"` – score the premium projection from
+- `target = "premium"` – score the prem projection from
   [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md).
 
 The A/E Error (`ae_err`) follows the standard actuarial A/E convention
@@ -89,7 +89,7 @@ print(x, ...)
 
 - premium_method:
 
-  Method for the premium-side projection. Passed to
+  Method for the prem-side projection. Passed to
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
@@ -99,7 +99,7 @@ print(x, ...)
 
 - loss_alpha, premium_alpha:
 
-  Mack alpha for loss-side / premium-side chain-ladder estimation.
+  Mack alpha for loss-side / prem-side chain-ladder estimation.
 
 - sigma_method:
 
@@ -111,8 +111,8 @@ print(x, ...)
 
 - loss_regime, premium_regime:
 
-  Regime spec for the loss / premium side. Each accepts one of four
-  input types, dispatched by
+  Regime spec for the loss / prem side. Each accepts one of four input
+  types, dispatched by
   [`.resolve_regime()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_regime.md):
 
   - `NULL` (default) – no regime filter.
@@ -163,7 +163,7 @@ print(x, ...)
 
 - rho:
 
-  Loss-premium correlation used by
+  Loss-prem correlation used by
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
   delta method. Unused for `target = "loss"` / `target = "premium"`.
 
@@ -213,20 +213,20 @@ An object of class `"Backtest"` with components:
 - `ae_err`:
 
   `data.table` of held-out cells with columns
-  `(group, cohort, dev, actual, expected, aeg, ae_err, actual_incr, expected_incr, aeg_incr, ae_err_incr, calendar_idx)`.
+  `(group, cohort, dev, actual, expected, aeg, ae_err, incr_actual, incr_expected, incr_aeg, incr_ae_err, cal_idx)`.
   `aeg = actual - expected` (signed error in target units);
-  `ae_err = actual / expected - 1` (relative error). `_incr` siblings
+  `ae_err = actual / expected - 1` (relative error). `incr_` siblings
   are the same metrics on the incremental view.
 
 - `col_summary`:
 
   Per-`dev` aggregate A/E Error and AEG (mean / median / weighted) with
-  `_incr` variants and `n`.
+  `incr_` variants and `n`.
 
 - `diag_summary`:
 
   Per-calendar-diagonal aggregate A/E Error and AEG (same columns as
-  `col_summary`, keyed by `calendar_idx`).
+  `col_summary`, keyed by `cal_idx`).
 
 - `target`, `holdout`, `dispatcher`:
 
@@ -253,13 +253,13 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 
 bt_lr      <- backtest(tri, holdout = 6L, target = "lr")
 bt_loss    <- backtest(tri, holdout = 6L, target = "loss")
-bt_premium <- backtest(tri, holdout = 6L, target = "premium")
+bt_prem <- backtest(tri, holdout = 6L, target = "premium")
 
 print(bt_lr)
 summary(bt_lr)

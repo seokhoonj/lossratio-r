@@ -118,7 +118,7 @@ distinguished by border style.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'LRFit'</span></span>
 <span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lr"</span>, <span class="st">"loss"</span>, <span class="st">"premium"</span><span class="op">)</span>,</span>
+<span>  metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lr"</span>, <span class="st">"loss"</span>, <span class="st">"prem"</span><span class="op">)</span>,</span>
 <span>  cell_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cumulative"</span>, <span class="st">"incremental"</span><span class="op">)</span>,</span>
 <span>  region <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"proj"</span>, <span class="st">"full"</span>, <span class="st">"data"</span><span class="op">)</span>,</span>
 <span>  view <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"value"</span>, <span class="st">"usage"</span><span class="op">)</span>,</span>
@@ -144,20 +144,20 @@ distinguished by border style.</p>
 
 <dt id="arg-metric">metric<a class="anchor" aria-label="anchor" href="#arg-metric"></a></dt>
 <dd><p>Metric shown in the heatmap cells. One of <code>"lr"</code>
-(default), <code>"loss"</code>, <code>"premium"</code>.</p></dd>
+(default), <code>"loss"</code>, <code>"prem"</code>.</p></dd>
 
 
 <dt id="arg-cell-type">cell_type<a class="anchor" aria-label="anchor" href="#arg-cell-type"></a></dt>
 <dd><p>Aggregation. One of <code>"cumulative"</code> (default) or
 <code>"incremental"</code>. Combined with <code>metric</code> to select the column
-(e.g., <code>metric = "lr"</code>, <code>cell_type = "incremental"</code> → <code>lr_incr</code>).</p></dd>
+(e.g., <code>metric = "lr"</code>, <code>cell_type = "incremental"</code> → <code>incr_lr</code>).</p></dd>
 
 
 <dt id="arg-region">region<a class="anchor" aria-label="anchor" href="#arg-region"></a></dt>
 <dd><p>Cell region to plot (only used when <code>view = "value"</code>).
 One of <code>"proj"</code> (projected cells only, observed cells masked),
 <code>"full"</code> (observed + projected), or <code>"data"</code> (observed cumulative
-loss / premium / lr from <code>x$data</code> — the raw Triangle, no
+loss / prem / lr from <code>x$data</code> — the raw Triangle, no
 projection). Default is <code>"proj"</code>.</p></dd>
 
 

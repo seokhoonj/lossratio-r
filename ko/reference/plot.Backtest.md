@@ -38,7 +38,7 @@ plot(
 - cell_type:
 
   Which projection view to display. One of `"cumulative"` (default; uses
-  `ae_err`) or `"incremental"` (uses `ae_err_incr`). Both are stored on
+  `ae_err`) or `"incremental"` (uses `incr_ae_err`). Both are stored on
   every `Backtest` object – pick the view at plot time.
 
 - scales:

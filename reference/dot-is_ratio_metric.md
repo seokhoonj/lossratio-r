@@ -19,4 +19,4 @@ thereabouts); amount metrics do.
 
 ## Value
 
-`TRUE` for `lr` / `lr_incr` and any `_share` variant, `FALSE` otherwise.
+`TRUE` for `lr` / `incr_lr` and any `_share` variant, `FALSE` otherwise.

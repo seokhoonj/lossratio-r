@@ -75,30 +75,30 @@ print(x, ...)
 - target:
 
   Trajectory variable. Default is `"lr"` (cumulative loss ratio).
-  Accepts any column on the `Triangle` (e.g. `"lr"`, `"loss"`,
-  `"premium"`, `"loss_incr"`, `"premium_incr"`), plus three *diagnostic*
-  derived targets computed inline per (group, cohort):
+  Accepts any column on the `Triangle` (e.g. `"lr"`, `"loss"`, `"prem"`,
+  `"incr_loss"`, `"incr_prem"`), plus three *diagnostic* derived targets
+  computed inline per (group, cohort):
 
   `"loss_ata"`
 
   :   Loss age-to-age factor `loss[k+1] / loss[k]` — multiplicative loss
       development speed (CL \$f_k\$).
 
-  `"premium_ata"`
+  `"prem_ata"`
 
-  :   Premium age-to-age factor — same form on premium.
+  :   Premium age-to-age factor — same form on prem.
 
   `"loss_ed"`
 
-  :   Loss intensity `(loss[k] - loss[k-1]) / premium[k-1]` — additive,
+  :   Loss intensity `(loss[k] - loss[k-1]) / prem[k-1]` — additive,
       exposure-anchored (ED model's \$g_k\$).
 
-  `"premium_ed"`
+  `"prem_ed"`
 
-  :   Alias of `"premium_ata"` — the two differ only by a constant
-      `(premium_ata - 1)`, and the PCA standardization in detection
-      removes that shift, so they yield identical regime changes.
-      Provided for API symmetry with the `loss_ata` / `loss_ed` pair.
+  :   Alias of `"prem_ata"` — the two differ only by a constant
+      `(prem_ata - 1)`, and the PCA standardization in detection removes
+      that shift, so they yield identical regime changes. Provided for
+      API symmetry with the `loss_ata` / `loss_ed` pair.
 
   Derived targets drop the first dev row per cohort (no predecessor),
   then re-index `dev` so detection sees a contiguous sequence. See the
@@ -270,8 +270,8 @@ tri_sur <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 
 # Hierarchical clustering (no extra package dependency)
@@ -290,8 +290,8 @@ tri_all <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 r_all <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 print(r_all$changes)

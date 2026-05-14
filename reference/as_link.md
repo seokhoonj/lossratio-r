@@ -30,10 +30,10 @@ Two modes are produced depending on `exposure`:
 - Dual-variable mode (`exposure` supplied):
 
   In addition to the loss-side ATA, the exposure-driven intensity \\g =
-  \Delta loss / premium\_{from}\\ is computed and stored in the
-  `intensity` column. Premium measure used as denominator for loss ratio
-  calculations; for long-term health insurance applications, risk
-  premium is commonly used.
+  \Delta loss / prem\_{from}\\ is computed and stored in the `intensity`
+  column. Premium measure used as denominator for loss ratio
+  calculations; for long-term health insurance applications, risk prem
+  is commonly used.
 
 ## Usage
 
@@ -57,16 +57,16 @@ as_link(
 - target:
 
   A single cumulative metric used as the link numerator. Must be one of
-  `"loss"`, `"premium"`, or `"lr"`. Default `"loss"`. Generic worker
-  name; for loss-side ATA this is the cumulative loss column, but any
+  `"loss"`, `"prem"`, or `"lr"`. Default `"loss"`. Generic worker name;
+  for loss-side ATA this is the cumulative loss column, but any
   cumulative metric on the Triangle may be supplied.
 
 - exposure:
 
   Optional second cumulative metric, treated as the exposure anchor for
-  the ED workflow. Must be one of `"loss"`, `"premium"`, `"lr"`, and
-  must differ from `target`. When `NULL` (default), only the
-  single-variable columns are produced.
+  the ED workflow. Must be one of `"loss"`, `"prem"`, `"lr"`, and must
+  differ from `target`. When `NULL` (default), only the single-variable
+  columns are produced.
 
 - weight:
 
@@ -118,15 +118,15 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 
 # Single-variable: cumulative-loss link factors (ATA workflow)
 link_loss <- as_link(tri, target = "loss")
 
-# Dual-variable: ED-ready link table (loss + premium)
-link_ed <- as_link(tri, target = "loss", exposure = "premium")
+# Dual-variable: ED-ready link table (loss + prem)
+link_ed <- as_link(tri, target = "loss", exposure = "prem")
 head(link_ed)
 } # }
 ```
