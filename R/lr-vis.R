@@ -595,11 +595,10 @@ plot_triangle.LRFit <- function(x,
 
       if (length(grp)) {
         p <- p + ggplot2::geom_vline(
-          data        = mat,
-          mapping     = ggplot2::aes(xintercept = mat_x - 0.5),
-          color       = "grey40",
-          linetype    = "longdash",
-          inherit.aes = FALSE
+          data     = mat,
+          mapping  = ggplot2::aes(xintercept = mat_x - 0.5),
+          color    = "grey40",
+          linetype = "longdash"
         )
       } else if (nrow(mat) == 1L) {
         p <- p + ggplot2::geom_vline(

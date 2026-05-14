@@ -774,9 +774,14 @@ get_recent_weights <- function(weights, recent) {
   # `segment_id` tag either way.
   if (inherits(regime, "Regime") &&
       identical(regime$treatment, "segment_wise")) {
-    out    <- data.table::copy(dt)
+    out    <- .ensure_dt(dt)
     grp_dt <- if (length(grp)) out[, grp, with = FALSE] else NULL
-    out[["segment_id"]] <- .assign_segment(out[[coh]], regime, grp_dt)
+    # `[[<-` is base-R's assignment form: it invalidates data.table's
+    # `.internal.selfref` and triggers a one-shot self-fix warning on
+    # the next `:=`. Use `data.table::set()` which assigns by
+    # reference and keeps selfref intact.
+    data.table::set(out, j = "segment_id",
+                    value = .assign_segment(out[[coh]], regime, grp_dt))
 
     bp <- regime$changes
     apply_mini_tri <- inherits(dt, "Triangle") &&
