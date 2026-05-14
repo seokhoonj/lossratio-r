@@ -388,16 +388,15 @@ plot_triangle.LRFit <- function(x,
   col_key  <- if (is_incr) paste0(metric, "_incr") else metric
 
   # view = "usage": cell-status heatmap (used / holdout / unused /
-  # future), driven by the fit's own metadata (`recent`, `loss_regime`,
-  # `maturity`). Region is irrelevant in usage view.
+  # future). `x$usage` is pre-computed at fit time and carries all the
+  # plot-rendering metadata (regime / recent / m_k) on attributes;
+  # the renderer reads it directly without re-deriving from filter
+  # args. Region is irrelevant in usage view.
   if (view == "usage") {
     return(.plot_triangle_usage(
       x$data,
-      recent   = x$recent,
-      regime   = x$loss_regime,
-      holdout  = NULL,
-      maturity = "auto",
-      theme    = theme,
+      usage = x$usage,
+      theme = theme,
       ...
     ))
   }

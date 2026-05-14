@@ -378,7 +378,23 @@ backtest <- function(x,
   ), by = diag_by]
   data.table::setorderv(diag_summary, diag_by)
 
-  # 6) Assemble output --------------------------------------------------
+  # 6) Usage map. Mirrors `fit_loss()$usage` but additionally tags the
+  # held-out diagonal cells. Computed from the *pre-mask* triangle so
+  # the heatmap shows the full footprint (training / held-out /
+  # regime-excluded / future).
+  usage_metric <- switch(target,
+                         lr = "loss", loss = "loss",
+                         premium = "premium")
+  usage <- .build_usage(
+    x,
+    regime   = loss_regime,
+    recent   = recent,
+    holdout  = holdout,
+    maturity = maturity,
+    metric   = usage_metric
+  )
+
+  # 7) Assemble output --------------------------------------------------
   out <- list(
     call         = match.call(),
     data         = x,
@@ -392,7 +408,8 @@ backtest <- function(x,
     fit_fn_name  = fit_fn_name,
     groups       = grp,
     cohort       = coh,
-    dev          = dev
+    dev          = dev,
+    usage        = usage
   )
   class(out) <- "Backtest"
   out

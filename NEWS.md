@@ -1,5 +1,17 @@
 # lossratio (development version)
 
+* `fit_loss()`, `fit_premium()`, `fit_lr()`, and `backtest()` now
+  attach a `$usage` `data.table` to the result: one row per
+  `(group, cohort, dev)` cell of the *pre-filter* triangle with a
+  `status` factor (`used` / `unused` / `holdout` / `future`).
+  `plot_triangle(fit, view = "usage")` reads this directly instead
+  of re-deriving the filter logic at plot time, so the heatmap
+  always matches the cells the fit actually saw. New internal
+  helper `.build_usage()` packages the 2-pass maturity detection
+  plus `.compute_triangle_usage()` and attaches filter metadata
+  (`regime` / `recent` / `holdout` / `m_k` / `m_k_dt`) as
+  `data.table` attributes for the renderer.
+
 * **BREAKING** — `build_triangle()`, `build_total()`, and
   `validate_triangle()` rename their `dev =` argument to
   `development =`. The new name is more explicit about the

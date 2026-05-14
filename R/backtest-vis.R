@@ -213,19 +213,15 @@ plot_triangle.Backtest <- function(x,
   # bare inside `j` expressions later in this function.
   .ae <- .y_lab <- NULL
 
-  # view = "usage": dispatch to the shared usage renderer with the fit's
-  # `regime` and the backtest's `holdout`. The fit may carry either
-  # `loss_regime` (LRFit) or `regime` (LossFit / PremiumFit) -- try both.
+  # view = "usage": cell-status heatmap (training / held-out /
+  # regime-excluded / future). `x$usage` is pre-computed at
+  # `backtest()` time with the full filter + holdout metadata baked
+  # in; the renderer reads it directly.
   if (view == "usage") {
-    rb <- x$fit$loss_regime
-    if (is.null(rb)) rb <- x$fit$regime
     return(.plot_triangle_usage(
       x$data,
-      recent   = x$fit$recent,
-      regime   = rb,
-      holdout  = x$holdout,
-      maturity = x$fit$maturity,
-      theme    = theme,
+      usage = x$usage,
+      theme = theme,
       ...
     ))
   }

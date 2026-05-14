@@ -121,6 +121,22 @@ fit_premium <- function(x,
 
   cl_fit$full <- .premium_rename_full(cl_fit$full, grp, conf_level)
 
+  # Usage map. Premium has no maturity concept (g_k -> 0), so we
+  # bypass `.build_usage()`'s 2-pass detection and call
+  # `.compute_triangle_usage()` directly with the pre-filter triangle.
+  premium_usage <- .compute_triangle_usage(
+    x,
+    recent  = recent,
+    regime  = regime,
+    holdout = NULL
+  )
+  data.table::setattr(premium_usage, "regime",  regime)
+  data.table::setattr(premium_usage, "recent",  recent)
+  data.table::setattr(premium_usage, "holdout", NULL)
+  data.table::setattr(premium_usage, "m_k",     NULL)
+  data.table::setattr(premium_usage, "m_k_dt",  NULL)
+  cl_fit$usage <- premium_usage
+
   cl_fit$regime                  <- regime
   attr(cl_fit, "premium_method") <- method
   attr(cl_fit, "conf_level")     <- conf_level

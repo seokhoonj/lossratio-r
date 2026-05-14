@@ -422,7 +422,20 @@ fit_loss <- function(x,
   )
   proj[is_observed == TRUE, (na_cols) := NA_real_]
 
-  # 18) assemble LossFit ----------------------------------------------
+  # 18) usage map (one row per (group, cohort, dev) cell of the
+  # *pre-filter* triangle, status = used / unused / holdout / future).
+  # Computed once here so `plot_triangle(fit, view = "usage")` can
+  # render directly without re-deriving the filter logic.
+  usage <- .build_usage(
+    x_full,
+    regime   = regime_user,
+    recent   = recent_user,
+    holdout  = NULL,
+    maturity = maturity,
+    metric   = "loss"
+  )
+
+  # 19) assemble LossFit ----------------------------------------------
   # NOTE: $full retains internal columns (g_selected, g_sigma2, g_var,
   # f_selected, f_sigma2, f_var, last_obs) so that fit_lr can run
   # bootstrap CI without re-fitting. fit_lr drops them after bootstrap.
@@ -446,7 +459,8 @@ fit_loss <- function(x,
     sigma_method    = sigma_method,
     recent          = recent_user,
     regime          = regime_user,
-    conf_level      = conf_level
+    conf_level      = conf_level,
+    usage           = usage
   )
 
   class(out) <- "LossFit"

@@ -363,7 +363,8 @@ fit_lr <- function(x,
     sigma_method    = sigma_method,
     recent          = loss_fit$recent,
     loss_regime     = loss_fit$regime,
-    premium_regime  = premium_regime
+    premium_regime  = premium_regime,
+    usage           = loss_fit$usage
   )
 
   class(out) <- "LRFit"
