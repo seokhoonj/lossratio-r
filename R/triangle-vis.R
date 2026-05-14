@@ -1118,57 +1118,46 @@ plot.Total <- function(x,
 }
 
 
-# Internal: usage-mask renderer dispatched from plot_triangle.Triangle
-# when type = "usage".
-.plot_triangle_usage <- function(x,
-                                 recent   = NULL,
-                                 regime   = NULL,
-                                 holdout  = NULL,
-                                 maturity = NULL,
-                                 metric   = "loss",
-                                 theme    = c("view", "save", "shiny"),
-                                 ...) {
+# Internal: build the cell-usage data.table that drives the
+# `view = "usage"` heatmap. Combines (1) 2-pass maturity detection
+# when `regime` is set, (2) `.compute_triangle_usage()` to assign each
+# cell one of `used` / `unused` / `holdout` / `future`.
+#
+# Called once at *fit time* (by `fit_loss`, `fit_premium`, `fit_lr`,
+# `backtest`) so the resulting `data.table` can be attached as
+# `fit$usage`; downstream `plot_triangle(fit, view = "usage")` then
+# renders without re-deriving anything. Also reused directly by
+# `plot_triangle.Triangle(view = "usage")` for ad-hoc triangle plots.
+#
+# @param triangle A `Triangle`.
+# @param regime,recent,holdout,maturity Filter / mask inputs (same
+#   semantics as on `fit_loss()` / `fit_lr()` / `backtest()`).
+# @param metric Target metric for the 2-pass maturity detection (only
+#   used when `regime` is set). Default `"loss"`.
+#
+# @return A `data.table` keyed on `(group..., cohort, dev)` with the
+#   `status` factor column (`unused`/`used`/`holdout`/`future`).
+#
+# @keywords internal
+.build_usage <- function(triangle,
+                         regime   = NULL,
+                         recent   = NULL,
+                         holdout  = NULL,
+                         maturity = "auto",
+                         metric   = "loss") {
 
-  .assert_class(x, "Triangle")
-  theme <- match.arg(theme)
-
-  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
-  # bare inside `j` expressions later in this function.
-  .y <- .xint <- .cd <- .yint <- NULL
-
-  grp      <- attr(x, "groups")
-  coh      <- attr(x, "cohort")
-  coh_type <- .get_period_type(coh, grain = attr(x, "grain"))
-  dev  <- attr(x, "dev")
+  .assert_class(triangle, "Triangle")
+  grp <- attr(triangle, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  # segment_wise: preserve every change for hline drawing (no cohort
-  # cut applied -- USED shading is per-segment mini-triangle, see
-  # `.compute_triangle_usage`). For other treatments we collapse to the
-  # latest change via `.resolve_regime_change_date` for the standard
-  # cohort cut + hybrid SA mask.
-  is_segment_wise <- inherits(regime, "Regime") &&
-                     identical(regime$treatment, "segment_wise")
-
-  # `cd` drives the latest_only cohort cut + hybrid mask in
-  # `.compute_triangle_usage` and the latest_only hline drawing below.
-  # Skipped for segment_wise (which has its own filter / hline path).
-  cd <- if (!is.null(regime) && !is_segment_wise) {
-    .resolve_regime_change_date(regime, by = grp)
-  } else {
-    NULL
-  }
-
-  # 2-pass maturity detection: run whenever any regime is set so the
-  # k* vline still renders for segment_wise. The detected `m_k` is also
-  # used by `.compute_triangle_usage` for the SA hybrid mask in the
-  # latest_only branch.
-  m_k    <- NULL    # scalar fallback (passed to .compute_triangle_usage)
-  m_k_dt <- NULL    # per-group [grp..., m_k] data.table for facet-routed vline
+  # 2-pass maturity detection: needed whenever `regime` is set so the
+  # SA hybrid mask (and the per-group k* vline downstream) is honoured.
+  m_k    <- NULL
+  m_k_dt <- NULL
   if (!is.null(regime)) {
-    mat_arg <- if (is.null(maturity)) "auto" else maturity
     fit_for_mat <- tryCatch(
-      fit_ata(x = x, target = metric, maturity = mat_arg),
+      fit_ata(x = triangle, target = metric,
+              maturity = if (is.null(maturity)) "auto" else maturity),
       error = function(e) NULL
     )
     if (!is.null(fit_for_mat) &&
@@ -1189,14 +1178,82 @@ plot.Total <- function(x,
     }
   }
 
-  dt <- .compute_triangle_usage(
-    x,
+  out <- .compute_triangle_usage(
+    triangle,
     recent  = recent,
     regime  = regime,
     holdout = holdout,
     m_k     = m_k,
     m_k_dt  = m_k_dt
   )
+
+  # Carry plot-rendering metadata on attributes so
+  # `.plot_triangle_usage()` (and other consumers of `fit$usage`) can
+  # draw hlines / vlines / titles without re-passing the filter args.
+  data.table::setattr(out, "regime",  regime)
+  data.table::setattr(out, "recent",  recent)
+  data.table::setattr(out, "holdout", holdout)
+  data.table::setattr(out, "m_k",     m_k)
+  data.table::setattr(out, "m_k_dt",  m_k_dt)
+  out
+}
+
+
+# Internal: usage-mask renderer dispatched from plot_triangle.Triangle
+# when type = "usage".
+.plot_triangle_usage <- function(x,
+                                 recent   = NULL,
+                                 regime   = NULL,
+                                 holdout  = NULL,
+                                 maturity = NULL,
+                                 metric   = "loss",
+                                 theme    = c("view", "save", "shiny"),
+                                 usage    = NULL,
+                                 ...) {
+
+  .assert_class(x, "Triangle")
+  theme <- match.arg(theme)
+
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .y <- .xint <- .cd <- .yint <- NULL
+
+  grp      <- attr(x, "groups")
+  coh      <- attr(x, "cohort")
+  coh_type <- .get_period_type(coh, grain = attr(x, "grain"))
+  dev  <- attr(x, "dev")
+  if (is.null(grp)) grp <- character(0)
+
+  # If a pre-computed usage data.table was attached to a fit object
+  # (`fit$usage`), use it directly. Otherwise build it inline from the
+  # filter inputs (`regime` / `recent` / `holdout` / `maturity`), which
+  # is the path taken by `plot_triangle.Triangle(view = "usage")`.
+  if (is.null(usage)) {
+    usage <- .build_usage(
+      x,
+      regime   = regime,
+      recent   = recent,
+      holdout  = holdout,
+      maturity = maturity,
+      metric   = metric
+    )
+  }
+
+  # Pull plot-rendering metadata off the usage object's attributes.
+  regime <- attr(usage, "regime",  exact = TRUE)
+  m_k    <- attr(usage, "m_k",     exact = TRUE)
+  m_k_dt <- attr(usage, "m_k_dt",  exact = TRUE)
+
+  is_segment_wise <- inherits(regime, "Regime") &&
+                     identical(regime$treatment, "segment_wise")
+
+  cd <- if (!is.null(regime) && !is_segment_wise) {
+    .resolve_regime_change_date(regime, by = grp)
+  } else {
+    NULL
+  }
+
+  dt <- usage
 
   # cohort labels: most recent at top
   if (!is.na(coh_type)) {

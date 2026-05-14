@@ -161,6 +161,8 @@ fit_loss <- function(x,
   if (length(dev) != 1L)
     stop("`x` must contain exactly one `dev`.", call. = FALSE)
 
+  # preserve pre-filter triangle for downstream `$usage` annotation
+  x_full      <- data.table::copy(x)
   # preserve original user input — nullified below for SA hybrid path
   regime_user <- regime
   recent_user <- recent
