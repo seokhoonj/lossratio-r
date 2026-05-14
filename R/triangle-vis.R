@@ -294,7 +294,15 @@ plot.Triangle <- function(x,
 #'     \item{"dev"}{Use the sequential `dev` column.}
 #'   }
 #' @param amount_divisor Numeric scaling factor used only for y-axis labels of
-#'   amount variables. Default is `1e8`.
+#'   amount variables. Default `"auto"` (picks the divisor that produces
+#'   the shortest formatted label; pass an explicit numeric to fix it).
+#' @param show_label Logical; if `TRUE`, overlay the metric value as a
+#'   text label at each (calendar, group) point. Ratio metrics
+#'   (`"lr"`, `"lr_incr"`, share variants) are formatted as percent
+#'   (one decimal). Amount metrics are scaled by `amount_divisor` and
+#'   formatted with one decimal. Default `FALSE`.
+#' @param label_size Numeric text size passed to `geom_text` when
+#'   `show_label = TRUE`. Default `2.8`.
 #' @param theme A string passed to [.switch_theme()]
 #'   (`"view"`, `"save"`, `"shiny"`).
 #' @param ... Additional arguments passed to [.switch_theme()].
@@ -331,13 +339,23 @@ plot.Calendar <- function(x,
                           metric         = "lr",
                           x_by           = c("period", "dev"),
                           amount_divisor = "auto",
+                          show_label     = FALSE,
+                          label_size     = 2.8,
                           theme          = c("view", "save", "shiny"),
                           ...) {
+
+  # data.table NSE NULL bindings for temp label column.
+  .value_label <- NULL
 
   .assert_class(x, "Calendar")
 
   theme <- match.arg(theme)
   x_by <- match.arg(x_by)
+
+  if (!is.logical(show_label) || length(show_label) != 1L ||
+      is.na(show_label))
+    stop("`show_label` must be a single non-missing logical value.",
+         call. = FALSE)
 
   grp     <- attr(x, "groups")
   cal     <- attr(x, "calendar")
@@ -417,6 +435,25 @@ plot.Calendar <- function(x,
       )
     ) +
       ggplot2::geom_line()
+  }
+
+  # optional per-point value labels
+  if (show_label) {
+    is_ratio <- .is_ratio_metric(metric)
+    if (is_ratio) {
+      dt[, (".value_label") := sprintf("%.1f", .SD[[1L]] * 100),
+         .SDcols = metric]
+    } else {
+      dt[, (".value_label") := sprintf("%.1f", .SD[[1L]] / amount_divisor),
+         .SDcols = metric]
+    }
+    p <- p + ggplot2::geom_text(
+      data    = dt,
+      mapping = ggplot2::aes(label = .data[[".value_label"]]),
+      size    = label_size,
+      vjust   = -0.6,
+      show.legend = FALSE
+    )
   }
 
   if (!is.null(meta$hline)) {

@@ -984,3 +984,50 @@ plot_triangle.EDFit <- function(x, ...) {
   .assert_class(x, "EDFit")
   plot_triangle.Link(x$link, model = "ed", ...)
 }
+
+
+#' Plot an Intensity fit
+#'
+#' @description
+#' Visualise an object of class `"IntensityFit"` by delegating to
+#' [plot.Link()] on the underlying `Link` data stored in `x$link` with
+#' `model = "ed"`. `IntensityFit` is the factor-level diagnostic for
+#' the exposure-driven (ED) workflow and mirrors how [plot.ATAFit()]
+#' delegates for the multiplicative (CL) side.
+#'
+#' @param x An object of class `"IntensityFit"`.
+#' @param ... Arguments passed to [plot.Link()].
+#'
+#' @return A `ggplot` object.
+#'
+#' @seealso [plot.Link()], [fit_intensity()], [plot.ATAFit()]
+#'
+#' @method plot IntensityFit
+#' @export
+plot.IntensityFit <- function(x, ...) {
+  .assert_class(x, "IntensityFit")
+  plot.Link(x$link, model = "ed", ...)
+}
+
+
+#' Triangle heatmap for an Intensity fit
+#'
+#' @description
+#' Visualise an object of class `"IntensityFit"` as a triangle-style
+#' heatmap by delegating to [plot_triangle.Link()] on the underlying
+#' `Link` data stored in `x$link` with `model = "ed"`.
+#'
+#' @param x An object of class `"IntensityFit"`.
+#' @param ... Arguments passed to [plot_triangle.Link()].
+#'
+#' @return A `ggplot` object.
+#'
+#' @seealso [plot_triangle.Link()], [fit_intensity()],
+#'   [plot_triangle.ATAFit()]
+#'
+#' @method plot_triangle IntensityFit
+#' @export
+plot_triangle.IntensityFit <- function(x, ...) {
+  .assert_class(x, "IntensityFit")
+  plot_triangle.Link(x$link, model = "ed", ...)
+}

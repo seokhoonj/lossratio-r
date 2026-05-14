@@ -4,51 +4,10 @@
 \alias{as_total}
 \title{Coerce experience data to a Total object}
 \usage{
-as_total(
-  df,
-  groups = NULL,
-  cohort,
-  development,
-  loss,
-  premium,
-  period_from = NULL,
-  period_to = NULL,
-  fill_gaps = FALSE
-)
+as_total(x)
 }
 \arguments{
-\item{df}{A data.frame containing experience data.}
-
-\item{groups}{Grouping variable(s).}
-
-\item{cohort}{A single period variable (raw name). This may be an
-underwriting period (\code{"uy_m"}, \code{"uy_q"}, \code{"uy_h"}, \code{"uy"}) or a
-calendar period (\code{"cy_m"}, \code{"cy_q"}, \code{"cy_h"}, \code{"cy"}).}
-
-\item{development}{A single development-period variable (raw name)
-used to count observed periods.}
-
-\item{loss}{Single character; per-period loss column in \code{df}
-(raw name, e.g., \code{"loss_incr"}).}
-
-\item{premium}{Single character; per-period premium column in \code{df}
-(raw name, e.g., \code{"premium_incr"}). Premium measure used as
-denominator for loss ratio calculations. For long-term health
-insurance applications, risk premium is commonly used.}
-
-\item{period_from}{Optional lower bound for \code{cohort}. Only rows with
-\code{cohort >= period_from} are kept. May be supplied as \code{Date},
-character, or any value coercible to \code{Date}. Default \code{NULL}.}
-
-\item{period_to}{Optional upper bound for \code{cohort}. Only rows with
-\code{cohort <= period_to} are kept. May be supplied as \code{Date},
-character, or any value coercible to \code{Date}. Default \code{NULL}.}
-
-\item{fill_gaps}{Logical; if \code{TRUE}, zero-fill missing
-\verb{(groups, cohort, dev)} cells before aggregation so
-that every cohort has a consecutive \code{dev} sequence. Default
-\code{FALSE}. Note that filling inflates \code{n_cohorts} (counts filled rows as
-observed periods); use \code{\link[=validate_triangle]{validate_triangle()}} to inspect first.}
+\item{x}{A \code{Triangle} object (typically from \code{\link[=as_triangle]{as_triangle()}}).}
 }
 \value{
 A data.frame with class \code{"Total"} containing:
@@ -69,47 +28,36 @@ per group (collapsing both the cohort and development axes), and
 assign the \code{Total} S3 class so the associated \code{plot.Total()} bar
 chart and other Total methods dispatch on the result.
 
-Compared with \code{\link[=as_triangle]{as_triangle()}} (two-dimensional \verb{cohort × dev}) and
+Compared with \code{\link[=as_triangle]{as_triangle()}} (two-dimensional \verb{cohort x dev}) and
 \code{\link[=as_calendar]{as_calendar()}} (one-dimensional time series), \code{as_total()} is
-\emph{zero-dimensional} per group — one row of portfolio aggregates. The
+\emph{zero-dimensional} per group -- one row of portfolio aggregates. The
 typical use is high-level portfolio comparison across products,
 coverages, or channels.
 
-This function is intended for high-level portfolio comparison across
-groups such as products, coverages, or channels. It summarises:
+Total summarises:
 \itemize{
 \item the number of observed cohorts (\code{n_cohorts})
-\item the first and last observed periods (\code{sales_start}, \code{sales_end})
-\item total \code{loss} and total \code{premium} (cumulative)
+\item the first and last observed cohort periods
+(\code{sales_start}, \code{sales_end})
+\item total \code{loss} and total \code{premium} (sum over all cells)
 \item total loss ratio (\code{lr = loss / premium})
 \item each group's share of total loss and total premium
 }
 
-If \code{period_from} and/or \code{period_to} are supplied, the input data are first
-restricted to that period window before aggregation. This is useful when
-comparing groups on a common period basis.
+Pre-filter the Triangle (e.g. by cohort range or coverage) before
+calling \code{as_total()} if a subset summary is needed.
 }
 \examples{
 \dontrun{
-as_total(
-  df,
-  groups  = "coverage",
-  cohort  = "uy_m",
-  dev     = "dev_m",
-  loss    = "loss_incr",
-  premium = "premium_incr"
+tri <- as_triangle(
+  experience,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "loss_incr",
+  premium  = "premium_incr"
 )
-
-as_total(
-  df,
-  groups      = "coverage",
-  cohort      = "uy_m",
-  dev         = "dev_m",
-  loss        = "loss_incr",
-  premium     = "premium_incr",
-  period_from = "2023-01-01",
-  period_to   = "2023-12-01"
-)
+as_total(tri)
 }
 
 }

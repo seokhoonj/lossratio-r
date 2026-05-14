@@ -39,12 +39,8 @@ make_link_set <- function() {
     ed_sm   = summary(ed),
     cl      = fit_cl(tri, target = "loss", method = "mack"),
     lr      = fit_lr(tri, method = "sa"),
-    cal     = as_calendar(make_exp(), groups = "coverage",
-                             calendar = "cy_m",
-                             loss = "loss_incr", premium = "premium_incr"),
-    tot     = as_total(make_exp(), groups = "coverage",
-                          cohort = "uy_m", development = "dev_m",
-                          loss = "loss_incr", premium = "premium_incr")
+    cal     = as_calendar(tri),
+    tot     = as_total(tri)
   )
 }
 

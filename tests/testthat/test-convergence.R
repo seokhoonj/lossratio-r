@@ -106,6 +106,53 @@ test_that("method = 'all' conv_k is no earlier than any single-criterion conv_k"
   }
 })
 
+test_that("method = 'slope' uses the slope metric in pass_v", {
+  # Loose tail / dispersion so the gate is only the slope.
+  res <- detect_convergence(sub, method = "slope",
+                            max_slope = 0.005,
+                            max_drift = 1.0,        # effectively disable drift gate
+                            max_dispersion = 1.0)
+  expect_s3_class(res, "Convergence")
+  expect_equal(res$method, "slope")
+  # pass should match the slope-side pass vector
+  expect_identical(res$pass, res$pass_slope)
+  # When `slope` is finite at some candidate, the pass vector should be
+  # logical with TRUE entries (loose dispersion floor); otherwise NA but
+  # never errors.
+  expect_type(res$pass, "logical")
+})
+
+test_that("tighter max_slope yields later (or equal) conv_k", {
+  loose <- detect_convergence(sub, method = "slope",
+                              max_slope = 0.05,
+                              max_drift = 1.0,
+                              max_dispersion = 1.0)
+  tight <- detect_convergence(sub, method = "slope",
+                              max_slope = 1e-4,
+                              max_drift = 1.0,
+                              max_dispersion = 1.0)
+  if (!is.na(loose$conv_k) && !is.na(tight$conv_k)) {
+    expect_gte(tight$conv_k, loose$conv_k)
+  } else {
+    succeed()
+  }
+})
+
+test_that("parameter validation rejects non-numeric / non-positive thresholds", {
+  expect_error(detect_convergence(sub, max_drift = -1),
+               regexp = "max_drift")
+  expect_error(detect_convergence(sub, max_drift = "foo"),
+               regexp = "max_drift")
+  expect_error(detect_convergence(sub, max_slope = 0),
+               regexp = "max_slope")
+  expect_error(detect_convergence(sub, max_dispersion = NA_real_),
+               regexp = "max_dispersion")
+  expect_error(detect_convergence(sub, window = 1L),
+               regexp = "window")     # rejects < 2
+  expect_error(detect_convergence(sub, window = c(5, 10)),
+               regexp = "window")
+})
+
 test_that("print and summary methods execute and return non-NULL", {
   res <- detect_convergence(sub)
   expect_no_error(out <- capture.output(print(res)))
@@ -115,4 +162,38 @@ test_that("print and summary methods execute and return non-NULL", {
   for (nm in c("dev", "lr", "revision", "drift_window", "drift_tail",
                "slope", "dispersion", "pass"))
     expect_true(nm %in% names(s), info = paste("summary missing", nm))
+})
+
+test_that("no-candidate dev sequence emits warning and returns conv_k = NA", {
+  # When mat_k + 2 > dev_max, dev_cand is empty and conv_k must be NA.
+  # Use a tiny triangle (max dev = 4) with explicit mat_k = 4.
+  tiny_exp <- exp[coverage == "SUR" & dev_m <= 4L]
+  tiny_tri <- as_triangle(tiny_exp, groups = "coverage", cohort = "uy_m",
+                          calendar = "cy_m", loss = "loss_incr",
+                          premium = "premium_incr")
+  expect_warning(
+    res <- detect_convergence(tiny_tri, mat_k = 4L),
+    regexp = "No candidate dev"
+  )
+  expect_true(is.na(res$conv_k))
+  expect_equal(length(res$dev_cand), 0L)
+})
+
+test_that("auto mat_k failure error explains the cause + how to override", {
+  # Use a single-cohort triangle so detect_maturity returns no mature link.
+  one_coh <- exp[coverage == "SUR" & uy_m == as.Date("2023-04-01") & dev_m <= 12L]
+  tri <- tryCatch(
+    as_triangle(one_coh, groups = "coverage", cohort = "uy_m",
+                calendar = "cy_m", loss = "loss_incr",
+                premium = "premium_incr"),
+    error = function(e) NULL
+  )
+  if (!is.null(tri)) {
+    expect_error(
+      detect_convergence(tri),
+      regexp = "mat_k.*explicitly"
+    )
+  } else {
+    succeed()  # build_triangle rejected — that's also fine
+  }
 })

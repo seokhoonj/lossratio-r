@@ -52,15 +52,21 @@ test_that("longer.Triangle returns TriangleLonger with variable/value", {
   expect_true(all(c("variable", "value") %in% names(lng)))
 })
 
-test_that("as_calendar returns class 'Calendar' with expected columns", {
-  cal <- as_calendar(exp, groups = "coverage", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+test_that("as_calendar(Triangle) returns class 'Calendar' with expected columns", {
+  tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m",
+                     calendar = "cy_m", loss = "loss_incr",
+                     premium = "premium_incr")
+  cal <- as_calendar(tri)
   expect_s3_class(cal, "Calendar")
   expect_true(all(c("calendar", "dev") %in% names(cal)))
   expect_equal(attr(cal, "calendar"), "cy_m")
 })
 
-test_that("as_total returns class 'Total' with one row per group", {
-  tot <- as_total(exp, groups = "coverage", cohort = "uy_m", development = "dev_m", loss = "loss_incr", premium = "premium_incr")
+test_that("as_total(Triangle) returns class 'Total' with one row per group", {
+  tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m",
+                     development = "dev_m", loss = "loss_incr",
+                     premium = "premium_incr")
+  tot <- as_total(tri)
   expect_s3_class(tot, "Total")
   expected <- c("n_cohorts", "sales_start", "sales_end",
                 "loss", "premium", "lr", "loss_share", "premium_share")
@@ -117,8 +123,32 @@ test_that("as_triangle errors when group is invalid", {
                regexp = "not found")
 })
 
+test_that("as_triangle Mode 2: cohort + development only (no calendar)", {
+  sur <- experience[coverage == "SUR"]
+  tri <- as_triangle(sur, groups = "coverage",
+                     cohort = "uy_m", development = "dev_m",
+                     loss = "loss_incr", premium = "premium_incr")
+  expect_s3_class(tri, "Triangle")
+  for (col in c("cohort", "dev", "loss", "premium", "lr"))
+    expect_true(col %in% names(tri), info = paste("missing", col))
+  # calendar attribute null when not supplied
+  expect_null(attr(tri, "calendar"))
+  # dev attribute retains the user-supplied raw column name
+  expect_equal(attr(tri, "dev"), "dev_m")
+})
+
+test_that("as_triangle Mode 3: cohort + calendar + development (cross-check ok)", {
+  sur <- experience[coverage == "SUR"]
+  tri <- as_triangle(sur, groups = "coverage",
+                     cohort = "uy_m", calendar = "cy_m", development = "dev_m",
+                     loss = "loss_incr", premium = "premium_incr")
+  expect_s3_class(tri, "Triangle")
+  expect_equal(attr(tri, "calendar"), "cy_m")
+  expect_equal(attr(tri, "dev"), "dev_m")
+})
+
 test_that("summary.Calendar returns CalendarSummary with expected columns", {
-  cal <- as_calendar(exp, groups = "coverage", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+  cal <- as_calendar(as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr"))
   s   <- summary(cal)
   expect_s3_class(s, "CalendarSummary")
   expected <- c("calendar", "n_cohorts",
@@ -131,13 +161,13 @@ test_that("summary.Calendar returns CalendarSummary with expected columns", {
 })
 
 test_that("summary.Calendar row count matches (group, calendar) cells", {
-  cal <- as_calendar(exp, groups = "coverage", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+  cal <- as_calendar(as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr"))
   s   <- summary(cal)
   expect_equal(nrow(s), nrow(unique(cal[, .(coverage, calendar)])))
 })
 
 test_that("summary.Total returns TotalSummary ordered by descending lr", {
-  tot <- as_total(exp, groups = "coverage", cohort = "uy_m", development = "dev_m", loss = "loss_incr", premium = "premium_incr")
+  tot <- as_total(as_triangle(exp, groups = "coverage", cohort = "uy_m", development = "dev_m", loss = "loss_incr", premium = "premium_incr"))
   s   <- summary(tot)
   expect_s3_class(s, "TotalSummary")
   expect_false(inherits(s, "Total"))
@@ -147,7 +177,7 @@ test_that("summary.Total returns TotalSummary ordered by descending lr", {
 })
 
 test_that("summary.Total honors digits = NULL (no rounding)", {
-  tot <- as_total(exp, groups = "coverage", cohort = "uy_m", development = "dev_m", loss = "loss_incr", premium = "premium_incr")
+  tot <- as_total(as_triangle(exp, groups = "coverage", cohort = "uy_m", development = "dev_m", loss = "loss_incr", premium = "premium_incr"))
   s_round <- summary(tot, digits = 2L)
   s_raw   <- summary(tot, digits = NULL)
   expect_true(all(s_round$lr == round(s_round$lr, 2L)))
@@ -156,12 +186,12 @@ test_that("summary.Total honors digits = NULL (no rounding)", {
 })
 
 test_that("plot.Total returns a ggplot for default metric = 'lr'", {
-  tot <- as_total(exp, groups = "coverage", cohort = "uy_m", development = "dev_m", loss = "loss_incr", premium = "premium_incr")
+  tot <- as_total(as_triangle(exp, groups = "coverage", cohort = "uy_m", development = "dev_m", loss = "loss_incr", premium = "premium_incr"))
   expect_no_error(p <- plot(tot))
   expect_s3_class(p, "ggplot")
 })
 
 test_that("plot.Total errors on unknown metric", {
-  tot <- as_total(exp, groups = "coverage", cohort = "uy_m", development = "dev_m", loss = "loss_incr", premium = "premium_incr")
+  tot <- as_total(as_triangle(exp, groups = "coverage", cohort = "uy_m", development = "dev_m", loss = "loss_incr", premium = "premium_incr"))
   expect_error(plot(tot, metric = "nope"))
 })

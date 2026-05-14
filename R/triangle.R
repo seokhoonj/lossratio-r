@@ -547,16 +547,16 @@ plot_triangle.TriangleValidation <- function(x,
 #' Three steps happen inside this single call:
 #'
 #' \enumerate{
-#'   \item **Validate** — required columns are present, dates coerce
+#'   \item **Validate** -- required columns are present, dates coerce
 #'     cleanly, the grain is consistent. Hard errors on schema issues
 #'     so downstream code never receives malformed input.
-#'   \item **Standardise + aggregate** — rename to package-canonical
+#'   \item **Standardise + aggregate** -- rename to package-canonical
 #'     column names (`cohort`, `calendar`, `dev`, `loss`, `premium`,
 #'     ...), auto-detect grain (`M` / `Q` / `H` / `Y`) from `cohort`
 #'     spacing, derive `dev` from `(cohort, calendar)`, aggregate to
 #'     `(group, cohort, dev)`, and enrich with cumulative / share /
 #'     LR columns.
-#'   \item **Tag** — set S3 class
+#'   \item **Tag** -- set S3 class
 #'     `c("Triangle", "data.table", "data.frame")` so every
 #'     `*.Triangle` method becomes available.
 #' }
@@ -564,8 +564,8 @@ plot_triangle.TriangleValidation <- function(x,
 #' lossratio's `Triangle` is a `data.table` in **long format** (one
 #' row per `(group, cohort, dev)` cell) with the enriched columns
 #' described above. The name `Triangle` refers to the conceptual
-#' cohort × dev triangular region — older cohorts have more observed
-#' dev cells than newer ones — not to a matrix layout.
+#' cohort x dev triangular region -- older cohorts have more observed
+#' dev cells than newer ones -- not to a matrix layout.
 #'
 #' The auto-grain detection (`grain = "auto"`, default) reads `cohort`
 #' value spacing; explicit values must be at least as coarse as the
@@ -1041,7 +1041,7 @@ longer.TriangleSummary <- function(x, ...) {
 #' methods dispatch on the result.
 #'
 #' Compared with [as_triangle()], which builds a *two-dimensional*
-#' `cohort × dev` structure, `as_calendar()` is *one-dimensional*: a
+#' `cohort x dev` structure, `as_calendar()` is *one-dimensional*: a
 #' single calendar-period time series (per group) showing how the
 #' portfolio evolves through time, regardless of cohort membership.
 #'
@@ -1068,33 +1068,15 @@ longer.TriangleSummary <- function(x, ...) {
 #' sum to 1 across groups. These are useful for examining the composition of
 #' each calendar period across products or other grouping variables.
 #'
-#' @param df A data.frame containing experience data with per-period loss
-#'   and premium columns plus a `calendar` Date column (or any input
-#'   that the internal Date coercion accepts: Date, POSIXt, integer
-#'   `yyyy` / `yyyymm` / `yyyymmdd`, ISO string).
-#' @param groups Column(s) used for grouping (e.g., product, gender).
-#' @param calendar A single column defining the calendar-like period
-#'   axis (raw name, e.g., `"cy_m"`). May also be an underwriting axis
-#'   (`"uy_m"` etc.) when a single underwriting-period axis is to be
-#'   summarised as a time series rather than as a development structure.
-#' @param loss Single character; per-period loss column in `df`
-#'   (raw name, e.g., `"loss_incr"`).
-#' @param premium Single character; per-period premium column in `df`
-#'   (raw name, e.g., `"premium_incr"`). Premium measure used as
-#'   denominator for loss ratio calculations. For long-term health
-#'   insurance applications, risk premium is commonly used.
-#' @param grain One of `"auto"` (default), `"M"`, `"Q"`, `"H"`, `"Y"`.
-#'   `"auto"` infers the grain from the `calendar` value spacing.
-#'   Explicit values must be at least as coarse as the input grain;
-#'   the input is binned (floored) to that grain before aggregation.
-#' @param period_from Optional lower bound for `calendar`. Only rows with
-#'   `calendar >= period_from` are kept.
-#' @param period_to Optional upper bound for `calendar`. Only rows with
-#'   `calendar <= period_to` are kept.
-#' @param fill_gaps Logical; if `TRUE`, zero-fill missing
-#'   `(groups, calendar)` cells so every group has a consecutive
-#'   calendar sequence at the resolved grain.
-#'   Default `FALSE`, which raises an error when gaps are detected.
+#' Calendar derives `calendar = cohort + (dev - 1)` using the
+#' Triangle's `grain` attribute and aggregates the incremental
+#' `loss` / `premium` columns by `(groups, calendar)`. This works for
+#' Triangles built in either mode (with or without an original
+#' `calendar` column in the raw experience), since `cohort + dev` is
+#' always sufficient to reconstruct the calendar axis at the
+#' Triangle's grain.
+#'
+#' @param x A `Triangle` object (typically from [as_triangle()]).
 #'
 #' @return A data.frame with class `"Calendar"`, containing the following
 #'   derived columns:
@@ -1118,133 +1100,47 @@ longer.TriangleSummary <- function(x, ...) {
 #'
 #' @examples
 #' \dontrun{
-#' res1 <- as_calendar(
-#'   df,
-#'   groups   = "pd_cd",
+#' tri <- as_triangle(
+#'   experience,
+#'   groups   = "coverage",
+#'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "loss_incr",
 #'   premium  = "premium_incr"
 #' )
 #'
-#' res2 <- as_calendar(
-#'   df,
-#'   groups      = "pd_cd",
-#'   calendar    = "cy_q",
-#'   loss        = "loss_incr",
-#'   premium     = "premium_incr",
-#'   period_from = "2023-01-01"
-#' )
-#'
-#' head(res1)
-#' attr(res1, "longer")
+#' cal <- as_calendar(tri)
+#' head(cal)
+#' attr(cal, "longer")
 #' }
 #'
 #' @export
-as_calendar <- function(df,
-                           groups      = NULL,
-                           calendar,
-                           loss,
-                           premium,
-                           grain       = "auto",
-                           period_from = NULL,
-                           period_to   = NULL,
-                           fill_gaps   = FALSE) {
-  .assert_class(df, "data.frame")
+as_calendar <- function(x) {
+  # data.table NSE NULL bindings for bare column refs in `j` below.
+  cohort <- dev <- loss <- loss_incr <- premium <- premium_incr <- NULL
+  calendar <- NULL
 
-  if (missing(calendar)) stop("`calendar` is required.", call. = FALSE)
-  if (missing(loss))     stop("`loss` is required.",     call. = FALSE)
-  if (missing(premium))  stop("`premium` is required.",  call. = FALSE)
+  .assert_class(x, "Triangle")
 
-  if (!is.logical(fill_gaps) || length(fill_gaps) != 1L || is.na(fill_gaps))
-    stop("`fill_gaps` must be a single non-missing logical value.",
+  grp <- attr(x, "groups");   if (is.null(grp))  grp <- character(0)
+  grain <- attr(x, "grain")
+  if (is.null(grain) || !nzchar(grain))
+    stop("Triangle missing `grain` attribute -- cannot derive calendar.",
          call. = FALSE)
 
-  dt <- .copy_dt(df)
+  dt <- .copy_dt(x)
 
-  if (length(groups)) .assert_column_arg(groups, "groups", dt)
-  .assert_column_arg(calendar, "calendar", dt, length_one = TRUE)
-  .assert_column_arg(loss,     "loss",     dt, length_one = TRUE)
-  .assert_column_arg(premium,  "premium",  dt, length_one = TRUE)
-
-  grp  <- groups
-  cal  <- calendar
-  prem <- premium
-
-  # coerce calendar column to Date and numeric loss/premium
-  .coerce_cols_to_date(dt, cal)
-  data.table::set(dt, j = loss, value = as.numeric(dt[[loss]]))
-  data.table::set(dt, j = prem, value = as.numeric(dt[[prem]]))
-
-  # period filtering happens before grain binning so user's bounds are
-  # interpreted at the input scale.
-  if (!is.null(period_from)) {
-    period_from <- as.Date(period_from)
-    dt <- dt[dt[[cal]] >= period_from]
-  }
-
-  if (!is.null(period_to)) {
-    period_to <- as.Date(period_to)
-    dt <- dt[dt[[cal]] <= period_to]
-  }
-
-  # auto-detect grain from calendar column; resolve user-supplied grain.
-  input_grain <- .infer_grain(dt[[cal]])
-  grain       <- .resolve_grain(input_grain, grain)
-
-  # bin to requested grain (idempotent floor when input already at grain).
-  .floor_cols_to_period(dt, cal, grain)
-
-  # standardize column names: cal -> calendar; loss/premium to standard slots
-  data.table::setnames(
-    dt,
-    c(cal, loss, prem),
-    c("calendar", "loss_incr", "premium_incr")
-  )
+  # Synthesize `calendar = cohort + (dev - 1) * grain_step` (Date column).
+  data.table::set(dt, j = "calendar",
+                  value = .add_periods(dt[["cohort"]], dt[["dev"]], grain))
 
   grp_cal   <- c(grp, "calendar")
   incr_vars <- c("loss_incr", "premium_incr")
   cum_vars  <- c("loss", "premium")
 
-  # aggregate per-period values
+  # Aggregate Triangle's incrementals to (groups, calendar).
   ds <- dt[, lapply(.SD, sum),
            by = grp_cal, .SDcols = incr_vars]
-
-  # validate / fill calendar period consecutiveness per group
-  gaps <- .validate_calendar_continuity_impl_grain(ds, grp, "calendar", grain)
-  if (nrow(gaps)) {
-    if (fill_gaps) {
-      step <- switch(grain,
-                     M = "month",
-                     Q = "3 months",
-                     S = "6 months",
-                     A = "year")
-      if (length(grp)) {
-        grid <- ds[, .(calendar = seq(min(calendar, na.rm = TRUE),
-                                      max(calendar, na.rm = TRUE),
-                                      by = step)),
-                   by = grp]
-      } else {
-        grid <- data.table::data.table(
-          calendar = seq(min(ds$calendar, na.rm = TRUE),
-                         max(ds$calendar, na.rm = TRUE),
-                         by = step)
-        )
-      }
-      ds <- ds[grid, on = grp_cal]
-      data.table::setnafill(ds, type = "const", fill = 0, cols = incr_vars)
-    } else {
-      stop(
-        sprintf(
-          "Non-consecutive `calendar` (grain `%s`) detected in %d group(s). %s\n%s",
-          grain,
-          nrow(gaps),
-          "Inspect gaps manually or pass `fill_gaps = TRUE` to zero-fill.",
-          paste(utils::capture.output(print(head(gaps, 5L))), collapse = "\n")
-        ),
-        call. = FALSE
-      )
-    }
-  }
 
   data.table::setorderv(ds, c(grp, "calendar"))
 
@@ -1320,12 +1216,12 @@ as_calendar <- function(df,
   )
   dm <- .prepend_class(dm, "CalendarLonger")
 
-  data.table::setattr(ds, "groups"   , grp)
-  data.table::setattr(ds, "calendar", cal)
-  data.table::setattr(ds, "grain"       , grain)
-  data.table::setattr(ds, "loss"    , loss)
-  data.table::setattr(ds, "premium" , prem)
-  data.table::setattr(ds, "longer"      , dm)
+  data.table::setattr(ds, "groups",   grp)
+  data.table::setattr(ds, "calendar", attr(x, "calendar"))
+  data.table::setattr(ds, "grain",    grain)
+  data.table::setattr(ds, "loss",     attr(x, "loss"))
+  data.table::setattr(ds, "premium",  attr(x, "premium"))
+  data.table::setattr(ds, "longer",   dm)
 
   .prepend_class(ds, "Calendar")
 }
@@ -1461,50 +1357,26 @@ summary.Calendar <- function(object, ...) {
 #' assign the `Total` S3 class so the associated `plot.Total()` bar
 #' chart and other Total methods dispatch on the result.
 #'
-#' Compared with [as_triangle()] (two-dimensional `cohort × dev`) and
+#' Compared with [as_triangle()] (two-dimensional `cohort x dev`) and
 #' [as_calendar()] (one-dimensional time series), `as_total()` is
-#' *zero-dimensional* per group — one row of portfolio aggregates. The
+#' *zero-dimensional* per group -- one row of portfolio aggregates. The
 #' typical use is high-level portfolio comparison across products,
 #' coverages, or channels.
 #'
-#' This function is intended for high-level portfolio comparison across
-#' groups such as products, coverages, or channels. It summarises:
+#' Total summarises:
 #' \itemize{
 #'   \item the number of observed cohorts (`n_cohorts`)
-#'   \item the first and last observed periods (`sales_start`, `sales_end`)
-#'   \item total `loss` and total `premium` (cumulative)
+#'   \item the first and last observed cohort periods
+#'     (`sales_start`, `sales_end`)
+#'   \item total `loss` and total `premium` (sum over all cells)
 #'   \item total loss ratio (`lr = loss / premium`)
 #'   \item each group's share of total loss and total premium
 #' }
 #'
-#' If `period_from` and/or `period_to` are supplied, the input data are first
-#' restricted to that period window before aggregation. This is useful when
-#' comparing groups on a common period basis.
+#' Pre-filter the Triangle (e.g. by cohort range or coverage) before
+#' calling `as_total()` if a subset summary is needed.
 #'
-#' @param df A data.frame containing experience data.
-#' @param groups Grouping variable(s).
-#' @param cohort A single period variable (raw name). This may be an
-#'   underwriting period (`"uy_m"`, `"uy_q"`, `"uy_h"`, `"uy"`) or a
-#'   calendar period (`"cy_m"`, `"cy_q"`, `"cy_h"`, `"cy"`).
-#' @param development A single development-period variable (raw name)
-#'   used to count observed periods.
-#' @param loss Single character; per-period loss column in `df`
-#'   (raw name, e.g., `"loss_incr"`).
-#' @param premium Single character; per-period premium column in `df`
-#'   (raw name, e.g., `"premium_incr"`). Premium measure used as
-#'   denominator for loss ratio calculations. For long-term health
-#'   insurance applications, risk premium is commonly used.
-#' @param period_from Optional lower bound for `cohort`. Only rows with
-#'   `cohort >= period_from` are kept. May be supplied as `Date`,
-#'   character, or any value coercible to `Date`. Default `NULL`.
-#' @param period_to Optional upper bound for `cohort`. Only rows with
-#'   `cohort <= period_to` are kept. May be supplied as `Date`,
-#'   character, or any value coercible to `Date`. Default `NULL`.
-#' @param fill_gaps Logical; if `TRUE`, zero-fill missing
-#'   `(groups, cohort, dev)` cells before aggregation so
-#'   that every cohort has a consecutive `dev` sequence. Default
-#'   `FALSE`. Note that filling inflates `n_cohorts` (counts filled rows as
-#'   observed periods); use [validate_triangle()] to inspect first.
+#' @param x A `Triangle` object (typically from [as_triangle()]).
 #'
 #' @return A data.frame with class `"Total"` containing:
 #'   \describe{
@@ -1520,122 +1392,50 @@ summary.Calendar <- function(object, ...) {
 #'
 #' @examples
 #' \dontrun{
-#' as_total(
-#'   df,
-#'   groups  = "coverage",
-#'   cohort  = "uy_m",
-#'   dev     = "dev_m",
-#'   loss    = "loss_incr",
-#'   premium = "premium_incr"
+#' tri <- as_triangle(
+#'   experience,
+#'   groups   = "coverage",
+#'   cohort   = "uy_m",
+#'   calendar = "cy_m",
+#'   loss     = "loss_incr",
+#'   premium  = "premium_incr"
 #' )
-#'
-#' as_total(
-#'   df,
-#'   groups      = "coverage",
-#'   cohort      = "uy_m",
-#'   dev         = "dev_m",
-#'   loss        = "loss_incr",
-#'   premium     = "premium_incr",
-#'   period_from = "2023-01-01",
-#'   period_to   = "2023-12-01"
-#' )
+#' as_total(tri)
 #' }
 #'
 #' @export
-as_total <- function(df,
-                        groups      = NULL,
-                        cohort,
-                        development,
-                        loss,
-                        premium,
-                        period_from = NULL,
-                        period_to   = NULL,
-                        fill_gaps   = FALSE) {
-  .assert_class(df, "data.frame")
+as_total <- function(x) {
+  # data.table NSE NULL bindings for bare column refs in `j` below.
+  cohort <- loss_incr <- premium_incr <- NULL
 
-  if (missing(cohort))      stop("`cohort` is required.",      call. = FALSE)
-  if (missing(development)) stop("`development` is required.", call. = FALSE)
-  if (missing(loss))        stop("`loss` is required.",        call. = FALSE)
-  if (missing(premium))     stop("`premium` is required.",     call. = FALSE)
+  .assert_class(x, "Triangle")
 
-  if (!is.logical(fill_gaps) || length(fill_gaps) != 1L || is.na(fill_gaps))
-    stop("`fill_gaps` must be a single non-missing logical value.",
-         call. = FALSE)
+  grp <- attr(x, "groups");  if (is.null(grp)) grp <- character(0)
 
-  dt <- .copy_dt(df)
+  dt <- .copy_dt(x)
 
-  if (length(groups)) .assert_column_arg(groups, "groups", dt)
-  .assert_column_arg(cohort,      "cohort",      dt, length_one = TRUE)
-  .assert_column_arg(development, "development", dt, length_one = TRUE)
-  .assert_column_arg(loss,        "loss",        dt, length_one = TRUE)
-  .assert_column_arg(premium,     "premium",     dt, length_one = TRUE)
-
-  grp  <- groups
-  coh  <- cohort
-  dev  <- development
-  prem <- premium
-
-  incr_vars <- c(loss, prem)
-
-  # filter by cohort range
-  if (!is.null(period_from)) {
-    period_from <- as.Date(period_from)
-    if (is.na(period_from))
-      stop("`period_from` must be coercible to `Date`.", call. = FALSE)
-    dt <- dt[dt[[coh]] >= period_from]
-  }
-
-  if (!is.null(period_to)) {
-    period_to <- as.Date(period_to)
-    if (is.na(period_to))
-      stop("`period_to` must be coercible to `Date`.", call. = FALSE)
-    dt <- dt[dt[[coh]] <= period_to]
-  }
-
-  # validate / fill dev gaps per (grp, cohort)
-  gaps <- .validate_dev_continuity_impl(dt, grp, coh, dev)
-  if (nrow(gaps)) {
-    if (fill_gaps) {
-      grp_coh_dev <- c(grp, coh, dev)
-      agg <- dt[, lapply(.SD, sum),
-                by = grp_coh_dev, .SDcols = incr_vars]
-      grid <- agg[, .(.e = seq.int(min(.SD[[1L]], na.rm = TRUE),
-                                   max(.SD[[1L]], na.rm = TRUE))),
-                  by = c(grp, coh), .SDcols = dev]
-      data.table::setnames(grid, ".e", dev)
-      dt <- agg[grid, on = grp_coh_dev]
-      data.table::setnafill(dt, type = "const", fill = 0, cols = incr_vars)
-    } else {
-      stop(
-        sprintf(
-          "Non-consecutive `%s` detected in %d cohort(s). %s\n%s",
-          dev,
-          nrow(gaps),
-          "Call `validate_triangle()` to inspect; `plot_triangle(validate_triangle(...))` to visualise; or pass `fill_gaps = TRUE` to zero-fill.",
-          paste(utils::capture.output(print(head(gaps, 5L))), collapse = "\n")
-        ),
-        call. = FALSE
-      )
-    }
-  }
-
-  # aggregate values
-  ds <- dt[, .(
-    n_cohorts       = data.table::uniqueN(.SD[[1L]]),
-    sales_start = min(.SD[[2L]]),
-    sales_end   = max(.SD[[2L]]),
-    loss        = sum(.SD[[3L]]),
-    premium     = sum(.SD[[4L]])
-  ), by = grp, .SDcols = c(dev, coh, loss, prem)]
+  # Aggregate per group: n_cohorts, sales_start, sales_end, totals.
+  agg_expr <- quote(.(
+    n_cohorts   = data.table::uniqueN(cohort),
+    sales_start = min(cohort, na.rm = TRUE),
+    sales_end   = max(cohort, na.rm = TRUE),
+    loss        = sum(loss_incr,    na.rm = TRUE),
+    premium     = sum(premium_incr, na.rm = TRUE)
+  ))
+  ds <- if (length(grp)) dt[, eval(agg_expr), by = grp]
+        else             dt[, eval(agg_expr)]
 
   # compute total loss ratio and shares
-  data.table::set(ds, j = "lr"           , value = ds[["loss"]]    / ds[["premium"]])
-  data.table::set(ds, j = "loss_share"   , value = ds[["loss"]]    / sum(ds[["loss"]]))
-  data.table::set(ds, j = "premium_share", value = ds[["premium"]] / sum(ds[["premium"]]))
+  data.table::set(ds, j = "lr",
+                  value = ds[["loss"]] / ds[["premium"]])
+  data.table::set(ds, j = "loss_share",
+                  value = ds[["loss"]]    / sum(ds[["loss"]]))
+  data.table::set(ds, j = "premium_share",
+                  value = ds[["premium"]] / sum(ds[["premium"]]))
 
-  data.table::setattr(ds, "groups"  , grp)
-  data.table::setattr(ds, "loss"   , loss)
-  data.table::setattr(ds, "premium", prem)
+  data.table::setattr(ds, "groups",  grp)
+  data.table::setattr(ds, "loss",    attr(x, "loss"))
+  data.table::setattr(ds, "premium", attr(x, "premium"))
 
   .prepend_class(ds, "Total")
 }

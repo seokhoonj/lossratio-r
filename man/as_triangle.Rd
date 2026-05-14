@@ -96,16 +96,16 @@ methods (\code{fit_lr()}, \code{fit_loss()}, \code{backtest()}, \code{plot()},
 Three steps happen inside this single call:
 
 \enumerate{
-\item \strong{Validate} — required columns are present, dates coerce
+\item \strong{Validate} -- required columns are present, dates coerce
 cleanly, the grain is consistent. Hard errors on schema issues
 so downstream code never receives malformed input.
-\item \strong{Standardise + aggregate} — rename to package-canonical
+\item \strong{Standardise + aggregate} -- rename to package-canonical
 column names (\code{cohort}, \code{calendar}, \code{dev}, \code{loss}, \code{premium},
 ...), auto-detect grain (\code{M} / \code{Q} / \code{H} / \code{Y}) from \code{cohort}
 spacing, derive \code{dev} from \verb{(cohort, calendar)}, aggregate to
 \verb{(group, cohort, dev)}, and enrich with cumulative / share /
 LR columns.
-\item \strong{Tag} — set S3 class
+\item \strong{Tag} -- set S3 class
 \code{c("Triangle", "data.table", "data.frame")} so every
 \verb{*.Triangle} method becomes available.
 }
@@ -113,8 +113,8 @@ LR columns.
 lossratio's \code{Triangle} is a \code{data.table} in \strong{long format} (one
 row per \verb{(group, cohort, dev)} cell) with the enriched columns
 described above. The name \code{Triangle} refers to the conceptual
-cohort × dev triangular region — older cohorts have more observed
-dev cells than newer ones — not to a matrix layout.
+cohort x dev triangular region -- older cohorts have more observed
+dev cells than newer ones -- not to a matrix layout.
 
 The auto-grain detection (\code{grain = "auto"}, default) reads \code{cohort}
 value spacing; explicit values must be at least as coarse as the

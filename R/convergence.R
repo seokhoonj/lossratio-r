@@ -228,11 +228,16 @@ detect_convergence <- function(triangle,
 
   # 2) resolve mat_k --------------------------------------------------
   if (is.null(mat_k)) {
-    mat     <- detect_maturity(triangle, target = "lr", weight = "premium")
+    mat    <- detect_maturity(triangle, target = "lr", weight = "premium")
     mat_k  <- suppressWarnings(min(mat$change, na.rm = TRUE))
     if (!is.finite(mat_k))
-      stop("Could not derive `mat_k` from `detect_maturity()`; ",
-           "supply it explicitly.", call. = FALSE)
+      stop("`detect_maturity(target = \"lr\")` returned no mature link ",
+           "for this triangle, so `mat_k` cannot be auto-resolved. ",
+           "Possible causes: too few cohorts, ATA factors that fail the ",
+           "`max_cv` / `max_rse` thresholds, or a triangle with too few ",
+           "dev periods. Supply `mat_k` explicitly (e.g. ",
+           "`detect_convergence(triangle, mat_k = 4L)`) to bypass auto-detection.",
+           call. = FALSE)
   }
   mat_k <- as.integer(mat_k)
 
@@ -247,6 +252,14 @@ detect_convergence <- function(triangle,
   # fit in a tail / slope window (window method narrows further below).
   dev_cand <- if (dev_max - 2L >= mat_k)
     seq.int(mat_k, dev_max - 2L) else integer(0)
+
+  if (!length(dev_cand))
+    warning(sprintf(
+      "No candidate dev points: `mat_k` (%d) + 2 > `dev_max` (%d). ",
+      mat_k, dev_max),
+      "Need at least `mat_k + 2 <= dev_max` for convergence detection. ",
+      "Returning `conv_k = NA`.",
+      call. = FALSE)
 
   # 4) compute `lr` at each candidate dev via cached backtest ----------
   # `lr[i]` is the portfolio-level projected ultimate LR when fitting

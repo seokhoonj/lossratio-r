@@ -183,3 +183,32 @@ test_that("backtest works with target = 'premium', premium_method = 'ed'", {
   expect_true("expected" %in% names(bt$ae_err))
   expect_true(any(is.finite(bt$ae_err$ae_err)))
 })
+
+# segment_wise integration ---------------------------------------------
+
+test_that("backtest accepts segment_wise Regime via loss_regime", {
+  bt <- backtest(
+    sub, holdout = 6L, target = "lr",
+    loss_regime = regime_at(change    = c("2024-01-01", "2024-07-01"),
+                            treatment = "segment_wise")
+  )
+  expect_s3_class(bt, "Backtest")
+  expect_s3_class(bt$fit, "LRFit")
+  # segment_wise treatment carries through to the resolved regime
+  expect_equal(bt$fit$loss_regime$treatment, "segment_wise")
+  # Backtest still produces ae_err rows
+  expect_gt(nrow(bt$ae_err), 0L)
+})
+
+test_that("fit_lr accepts segment_wise Regime via loss_regime", {
+  fit <- fit_lr(
+    sub,
+    loss_regime = regime_at(change    = c("2024-01-01", "2024-07-01"),
+                            treatment = "segment_wise")
+  )
+  expect_s3_class(fit, "LRFit")
+  expect_equal(fit$loss_regime$treatment, "segment_wise")
+  # $full / $proj still populated
+  expect_true(!is.null(fit$full))
+  expect_gt(nrow(fit$full), 0L)
+})

@@ -2,7 +2,7 @@
 data(experience)
 exp  <- experience
 tri  <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
-cal  <- as_calendar(exp, groups = "coverage", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+cal  <- as_calendar(tri)
 ata  <- as_link(tri, target = "loss")
 af   <- fit_ata(tri, target = "loss")
 ed   <- as_link(tri, target = "loss", exposure = "premium")

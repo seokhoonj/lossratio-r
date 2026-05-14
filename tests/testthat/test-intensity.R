@@ -75,3 +75,17 @@ test_that("intensity == target_delta / exposure_from when exposure_from > 0", {
                link_ed$target_delta[ok] / link_ed$exposure_from[ok],
                tolerance = 1e-6)
 })
+
+# S3 plot methods (mirror plot.ATAFit + plot_triangle.ATAFit) --------------
+
+test_that("plot.IntensityFit returns ggplot (delegates to plot.Link)", {
+  fit <- fit_intensity(sub)
+  p <- plot(fit)
+  expect_s3_class(p, "ggplot")
+})
+
+test_that("plot_triangle.IntensityFit returns ggplot", {
+  fit <- fit_intensity(sub)
+  p <- plot_triangle(fit)
+  expect_s3_class(p, "ggplot")
+})

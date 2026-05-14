@@ -4,54 +4,10 @@
 \alias{as_calendar}
 \title{Coerce experience data to a Calendar object}
 \usage{
-as_calendar(
-  df,
-  groups = NULL,
-  calendar,
-  loss,
-  premium,
-  grain = "auto",
-  period_from = NULL,
-  period_to = NULL,
-  fill_gaps = FALSE
-)
+as_calendar(x)
 }
 \arguments{
-\item{df}{A data.frame containing experience data with per-period loss
-and premium columns plus a \code{calendar} Date column (or any input
-that the internal Date coercion accepts: Date, POSIXt, integer
-\code{yyyy} / \code{yyyymm} / \code{yyyymmdd}, ISO string).}
-
-\item{groups}{Column(s) used for grouping (e.g., product, gender).}
-
-\item{calendar}{A single column defining the calendar-like period
-axis (raw name, e.g., \code{"cy_m"}). May also be an underwriting axis
-(\code{"uy_m"} etc.) when a single underwriting-period axis is to be
-summarised as a time series rather than as a development structure.}
-
-\item{loss}{Single character; per-period loss column in \code{df}
-(raw name, e.g., \code{"loss_incr"}).}
-
-\item{premium}{Single character; per-period premium column in \code{df}
-(raw name, e.g., \code{"premium_incr"}). Premium measure used as
-denominator for loss ratio calculations. For long-term health
-insurance applications, risk premium is commonly used.}
-
-\item{grain}{One of \code{"auto"} (default), \code{"M"}, \code{"Q"}, \code{"H"}, \code{"Y"}.
-\code{"auto"} infers the grain from the \code{calendar} value spacing.
-Explicit values must be at least as coarse as the input grain;
-the input is binned (floored) to that grain before aggregation.}
-
-\item{period_from}{Optional lower bound for \code{calendar}. Only rows with
-\code{calendar >= period_from} are kept.}
-
-\item{period_to}{Optional upper bound for \code{calendar}. Only rows with
-\code{calendar <= period_to} are kept.}
-
-\item{fill_gaps}{Logical; if \code{TRUE}, zero-fill missing
-\verb{(groups, calendar)} cells so every group has a consecutive
-calendar sequence at the resolved grain.
-Default \code{FALSE}, which raises an error when gaps are detected.}
+\item{x}{A \code{Triangle} object (typically from \code{\link[=as_triangle]{as_triangle()}}).}
 }
 \value{
 A data.frame with class \code{"Calendar"}, containing the following
@@ -81,7 +37,7 @@ associated \code{plot.Calendar()} / \code{summary.Calendar()} / longer-form
 methods dispatch on the result.
 
 Compared with \code{\link[=as_triangle]{as_triangle()}}, which builds a \emph{two-dimensional}
-\verb{cohort × dev} structure, \code{as_calendar()} is \emph{one-dimensional}: a
+\verb{cohort x dev} structure, \code{as_calendar()} is \emph{one-dimensional}: a
 single calendar-period time series (per group) showing how the
 portfolio evolves through time, regardless of cohort membership.
 
@@ -107,28 +63,29 @@ Proportion variables are computed within each \code{calendar} cell:
 Therefore, for a fixed \code{calendar} cell, the proportions
 sum to 1 across groups. These are useful for examining the composition of
 each calendar period across products or other grouping variables.
+
+Calendar derives \code{calendar = cohort + (dev - 1)} using the
+Triangle's \code{grain} attribute and aggregates the incremental
+\code{loss} / \code{premium} columns by \verb{(groups, calendar)}. This works for
+Triangles built in either mode (with or without an original
+\code{calendar} column in the raw experience), since \code{cohort + dev} is
+always sufficient to reconstruct the calendar axis at the
+Triangle's grain.
 }
 \examples{
 \dontrun{
-res1 <- as_calendar(
-  df,
-  groups   = "pd_cd",
+tri <- as_triangle(
+  experience,
+  groups   = "coverage",
+  cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "loss_incr",
   premium  = "premium_incr"
 )
 
-res2 <- as_calendar(
-  df,
-  groups      = "pd_cd",
-  calendar    = "cy_q",
-  loss        = "loss_incr",
-  premium     = "premium_incr",
-  period_from = "2023-01-01"
-)
-
-head(res1)
-attr(res1, "longer")
+cal <- as_calendar(tri)
+head(cal)
+attr(cal, "longer")
 }
 
 }

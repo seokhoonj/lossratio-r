@@ -9,6 +9,8 @@
   metric = "lr",
   x_by = c("period", "dev"),
   amount_divisor = "auto",
+  show_label = FALSE,
+  label_size = 2.8,
   theme = c("view", "save", "shiny"),
   ...
 )
@@ -28,7 +30,17 @@
 }}
 
 \item{amount_divisor}{Numeric scaling factor used only for y-axis labels of
-amount variables. Default is \code{1e8}.}
+amount variables. Default \code{"auto"} (picks the divisor that produces
+the shortest formatted label; pass an explicit numeric to fix it).}
+
+\item{show_label}{Logical; if \code{TRUE}, overlay the metric value as a
+text label at each (calendar, group) point. Ratio metrics
+(\code{"lr"}, \code{"lr_incr"}, share variants) are formatted as percent
+(one decimal). Amount metrics are scaled by \code{amount_divisor} and
+formatted with one decimal. Default \code{FALSE}.}
+
+\item{label_size}{Numeric text size passed to \code{geom_text} when
+\code{show_label = TRUE}. Default \code{2.8}.}
 
 \item{theme}{A string passed to \code{\link[=.switch_theme]{.switch_theme()}}
 (\code{"view"}, \code{"save"}, \code{"shiny"}).}

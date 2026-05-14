@@ -131,7 +131,7 @@ test_that("as_triangle aggregates M input to Q grain via grain='Q'", {
 test_that("as_calendar with calendar = 'cy_q' returns Calendar quarter", {
   exp <- make_exp()
   skip_if_not("cy_q" %in% names(exp), "cy_q not present in experience")
-  cal_q <- as_calendar(exp, groups = "coverage", calendar = "cy_q", loss = "loss_incr", premium = "premium_incr")
+  cal_q <- as_calendar(as_triangle(exp, groups = "coverage", cohort = "uy_q", calendar = "cy_q", loss = "loss_incr", premium = "premium_incr"))
   expect_s3_class(cal_q, "Calendar")
   expect_identical(attr(cal_q, "calendar"), "cy_q")
   expect_gt(nrow(cal_q), 0L)
