@@ -761,14 +761,81 @@ get_recent_weights <- function(weights, recent) {
   if (!data.table::is.data.table(dt))
     stop("`dt` must be a data.table.", call. = FALSE)
 
-  # treatment = "segment_wise": preserve all rows; annotate `segment_id`
-  # so downstream factor estimation can key by it. No cohort drop, no
-  # `dev_split` interaction (segment_wise + SA hybrid is deferred).
+  # treatment = "segment_wise": each segment uses its own mini-triangle
+  # anchored at the latest cal diagonal -- for segment k with cohorts in
+  # [first_k, last_k] (per group), USED cells satisfy
+  # `dev >= dev_min(k) = max_cal_idx - last_cohort_rank_of_seg_k + 1`.
+  # Cells outside any mini-triangle are dropped so downstream factor
+  # estimation never sees them. Mini-triangle filter applies only when
+  # `dt` is a `Triangle` (cohort x dev grid). For `Link` input (fit_ata
+  # standalone path; cohort x ata_from edges, max_cal definition
+  # differs by one), we keep the older tag-only behaviour. Cells in
+  # groups not covered by the regime are preserved without a
+  # `segment_id` tag either way.
   if (inherits(regime, "Regime") &&
       identical(regime$treatment, "segment_wise")) {
     out    <- data.table::copy(dt)
     grp_dt <- if (length(grp)) out[, grp, with = FALSE] else NULL
     out[["segment_id"]] <- .assign_segment(out[[coh]], regime, grp_dt)
+
+    bp <- regime$changes
+    apply_mini_tri <- inherits(dt, "Triangle") &&
+                      data.table::is.data.table(bp) && nrow(bp) &&
+                      "change" %in% names(bp)
+
+    if (apply_mini_tri) {
+
+      rgrp <- intersect(grp,
+                        if (is.null(regime$groups)) character(0)
+                        else regime$groups)
+
+      # Per-group cohort rank + cal index. Match the convention used by
+      # `.compute_triangle_usage()` so the algorithm boundary matches
+      # the heatmap.
+      if (length(grp)) {
+        out[, ".coh_rank_seg" := data.table::frank(.SD[[1L]],
+                                                   ties.method = "dense"),
+            by = grp, .SDcols = coh]
+      } else {
+        out[, ".coh_rank_seg" := data.table::frank(.SD[[1L]],
+                                                   ties.method = "dense"),
+            .SDcols = coh]
+      }
+      out[, ".cal_idx_seg" := .coh_rank_seg + .SD[[1L]] - 1L,
+          .SDcols = dev]
+      if (length(grp)) {
+        out[, ".max_cal_seg" := max(.cal_idx_seg, na.rm = TRUE), by = grp]
+      } else {
+        out[, ".max_cal_seg" := max(.cal_idx_seg, na.rm = TRUE)]
+      }
+
+      keep <- rep(TRUE, nrow(out))
+      affected <- if (length(rgrp) == 0L) {
+        data.table::data.table(.all = TRUE)
+      } else {
+        unique(bp[, rgrp, with = FALSE])
+      }
+      for (i in seq_len(nrow(affected))) {
+        key <- if (length(rgrp) == 0L) NULL else affected[i]
+        grp_mask <- if (length(rgrp) == 0L) {
+          rep(TRUE, nrow(out))
+        } else {
+          Reduce(`&`, lapply(rgrp, function(c) out[[c]] == key[[c]]))
+        }
+        if (!any(grp_mask)) next
+
+        seg_ids   <- out$segment_id[grp_mask]
+        coh_ranks <- out$.coh_rank_seg[grp_mask]
+        max_cal   <- out$.max_cal_seg[grp_mask]
+        dev_vals  <- out[grp_mask][[dev]]
+        seg_last  <- tapply(coh_ranks, seg_ids, max)
+        dev_min   <- max_cal - seg_last[as.character(seg_ids)] + 1L
+        keep[grp_mask] <- dev_vals >= dev_min
+      }
+      out <- out[keep]
+      out[, c(".coh_rank_seg", ".cal_idx_seg", ".max_cal_seg") := NULL]
+    }
+
     return(out[])
   }
 

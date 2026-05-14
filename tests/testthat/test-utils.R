@@ -122,15 +122,28 @@ test_that(".apply_regime_filter with multi-group Regime dispatches per group", {
   expect_true(all(out[coverage == "B"]$cohort >= as.Date("2023-08-01")))
 })
 
-test_that(".apply_regime_filter with treatment='segment_wise' annotates segment_id", {
+test_that(".apply_regime_filter with treatment='segment_wise' applies mini-triangle filter on Triangle", {
   reg <- regime_at(change = c("2023-04-01", "2023-08-01"),
                    treatment = "segment_wise")
 
-  dt <- data.table::data.table(
-    cohort = rep(seq.Date(as.Date("2023-01-01"), by = "month",
-                          length.out = 10), each = 5),
-    dev    = rep(1:5, times = 10)
-  )
+  # Square 10x10 *triangular* grid (cohort + dev - 1 <= 10) so each
+  # segment's mini-triangle is non-trivial. Class `"Triangle"` is
+  # required to trigger the mini-triangle filter (Link input keeps
+  # the older tag-only behaviour).
+  # cohorts 2023-01..2023-10 (ranks 1..10), dev 1..(11 - cohort_rank),
+  # max cal_idx = 10. Segments:
+  #   seg 1 cohorts 2023-01..2023-03 (ranks 1..3)
+  #   seg 2 cohorts 2023-04..2023-07 (ranks 4..7)
+  #   seg 3 cohorts 2023-08..2023-10 (ranks 8..10)
+  # dev_min per segment:
+  #   seg 1: 10 - 3 + 1 = 8  -> USED at dev 8..10
+  #   seg 2: 10 - 7 + 1 = 4  -> USED at dev 4..7
+  #   seg 3: 10 - 10 + 1 = 1 -> USED at dev 1..3
+  cohorts <- seq.Date(as.Date("2023-01-01"), by = "month", length.out = 10)
+  dt <- do.call(rbind, lapply(seq_along(cohorts), function(i) {
+    data.table::data.table(cohort = cohorts[i], dev = seq_len(11L - i))
+  }))
+  data.table::setattr(dt, "class", c("Triangle", class(dt)))
 
   out <- lossratio:::.apply_regime_filter(
     dt, regime = reg,
@@ -138,16 +151,34 @@ test_that(".apply_regime_filter with treatment='segment_wise' annotates segment_
     coh = "cohort", dev = "dev"
   )
 
-  # No rows dropped
-  expect_equal(nrow(out), nrow(dt))
-  # segment_id assigned per cohort
   expect_true("segment_id" %in% names(out))
-  # 2023-01..2023-03 → seg 1, 2023-04..2023-07 → seg 2, 2023-08..2023-10 → seg 3
   expect_equal(sort(unique(out$segment_id)), c(1L, 2L, 3L))
-  expect_true(all(out[cohort < as.Date("2023-04-01")]$segment_id == 1L))
-  expect_true(all(out[cohort >= as.Date("2023-04-01") &
-                      cohort <  as.Date("2023-08-01")]$segment_id == 2L))
-  expect_true(all(out[cohort >= as.Date("2023-08-01")]$segment_id == 3L))
+
+  seg1_devs <- sort(unique(out[segment_id == 1L]$dev))
+  seg2_devs <- sort(unique(out[segment_id == 2L]$dev))
+  seg3_devs <- sort(unique(out[segment_id == 3L]$dev))
+  expect_equal(seg1_devs, 8:10)
+  expect_equal(seg2_devs, 4:7)
+  expect_equal(seg3_devs, 1:3)
+})
+
+test_that(".apply_regime_filter with treatment='segment_wise' tag-only on Link", {
+  # Link input (no `Triangle` class) keeps the older tag-only
+  # behaviour: every row preserved, just annotated with `segment_id`.
+  reg <- regime_at(change = c("2023-04-01", "2023-08-01"),
+                   treatment = "segment_wise")
+  dt <- data.table::data.table(
+    cohort = rep(seq.Date(as.Date("2023-01-01"), by = "month",
+                          length.out = 10), each = 5),
+    dev    = rep(1:5, times = 10)
+  )
+  out <- lossratio:::.apply_regime_filter(
+    dt, regime = reg,
+    grp = character(0),
+    coh = "cohort", dev = "dev"
+  )
+  expect_equal(nrow(out), nrow(dt))
+  expect_equal(sort(unique(out$segment_id)), c(1L, 2L, 3L))
 })
 
 test_that(".apply_regime_filter per-group keeps groups not in regime", {
