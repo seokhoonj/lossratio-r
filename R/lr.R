@@ -493,7 +493,7 @@ summary.LRFit <- function(object, ...) {
 #' so this helper is *not* a generic ratio-SE utility.
 #'
 #' @param loss Ultimate loss vector (`L`).
-#' @param prem Ultimate prem vector (`E`).
+#' @param premium Ultimate prem vector (`E`).
 #' @param se_loss `SE(L)`.
 #' @param se_prem `SE(P)`. Unused for `"fixed"`; may be `NULL`.
 #' @param method One of `"fixed"` (default) or `"delta"`.

@@ -44,6 +44,11 @@ calendar-diagonal logic uses cohort + dev). When both are given,
 \item{loss}{Single character; per-period loss column in \code{df}
 (raw name, e.g., \code{"incr_loss"}).}
 
+\item{premium}{Single character; per-period prem column in \code{df}
+(raw name, e.g., \code{"incr_prem"}). Premium measure used as
+denominator for loss ratio calculations. For long-term health
+insurance applications, risk prem is commonly used.}
+
 \item{grain}{One of \code{"auto"} (default), \code{"M"}, \code{"Q"}, \code{"H"}, \code{"Y"}.
 \code{"auto"} infers the grain from the \code{cohort} value spacing.
 Explicit values must be at least as coarse as the input grain;
@@ -60,11 +65,6 @@ internal triangle is always built on the incremental representation;
 has a consecutive \code{dev} sequence. Default \code{FALSE}, which
 raises an error when gaps are detected. Use
 \code{\link[=validate_triangle]{validate_triangle()}} to inspect gaps before deciding.}
-
-\item{prem}{Single character; per-period prem column in \code{df}
-(raw name, e.g., \code{"incr_prem"}). Premium measure used as
-denominator for loss ratio calculations. For long-term health
-insurance applications, risk prem is commonly used.}
 }
 \value{
 A data.frame with class \code{"Triangle"}, containing the following

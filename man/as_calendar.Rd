@@ -13,7 +13,7 @@ as_calendar(x)
 A data.frame with class \code{"Calendar"}, containing the following
 derived columns:
 \describe{
-\\item{cal_idx}{Sequential calendar-period index within each group
+\item{cal_idx}{Sequential calendar-period index within each group
 (\verb{1, 2, ..., N}). Time-series convention; intentionally NOT
 \code{dev} -- in a Calendar the integer is just the rank of the date
 within its group, not a true development period (\code{cym - uym}).

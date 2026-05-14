@@ -618,7 +618,7 @@ plot_triangle.TriangleValidation <- function(x,
 #'   `count_periods(cohort, calendar, grain)`.
 #' @param loss Single character; per-period loss column in `df`
 #'   (raw name, e.g., `"incr_loss"`).
-#' @param prem Single character; per-period prem column in `df`
+#' @param premium Single character; per-period prem column in `df`
 #'   (raw name, e.g., `"incr_prem"`). Premium measure used as
 #'   denominator for loss ratio calculations. For long-term health
 #'   insurance applications, risk prem is commonly used.
@@ -1083,7 +1083,7 @@ longer.TriangleSummary <- function(x, ...) {
 #' @return A data.frame with class `"Calendar"`, containing the following
 #'   derived columns:
 #'   \describe{
-#'     \\item{cal_idx}{Sequential calendar-period index within each group
+#'     \item{cal_idx}{Sequential calendar-period index within each group
 #'       (`1, 2, ..., N`). Time-series convention; intentionally NOT
 #'       `dev` -- in a Calendar the integer is just the rank of the date
 #'       within its group, not a true development period (`cym - uym`).
