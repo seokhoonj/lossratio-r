@@ -4,7 +4,7 @@
 \alias{.expand_grid}
 \title{Expand a \code{Triangle} object to a full projection grid}
 \usage{
-.expand_grid(triangle, ed_fit, premium_ata_fit, target, exposure)
+.expand_grid(triangle, ed_fit, prem_ata_fit, target, exposure)
 }
 \description{
 Expand a \code{Triangle} object to a full projection grid

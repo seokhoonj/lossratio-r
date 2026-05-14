@@ -7,7 +7,7 @@
 fit_intensity(
   x,
   target = "loss",
-  exposure = "premium",
+  exposure = "prem",
   alpha = 1,
   na_method = c("locf", "zero", "none"),
   sigma_method = c("locf", "min_last2", "loglinear"),
@@ -23,7 +23,7 @@ fit_intensity(
 numerator. Default \code{"loss"}.}
 
 \item{exposure}{A single cumulative metric used as the
-exposure anchor. Default \code{"premium"}.}
+exposure anchor. Default \code{"prem"}.}
 
 \item{alpha}{WLS weight exponent. Default \code{1}.}
 
@@ -86,7 +86,7 @@ This is the factor-level diagnostic for the exposure-driven (ED)
 workflow, parallel to \code{\link[=fit_ata]{fit_ata()}} for the multiplicative (chain
 ladder) side. Both operate at the \emph{factor level} without
 producing a full projection. For full ED projection (cumulative
-loss / premium / lr), use \code{\link[=fit_ed]{fit_ed()}} which accepts either a
+loss / prem / lr), use \code{\link[=fit_ed]{fit_ed()}} which accepts either a
 \code{Triangle} or an \code{IntensityFit} (skipping a rebuild of the link
 table when factors are already computed).
 }
@@ -107,10 +107,10 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  prem  = "incr_prem"
 )
-intensity_fit <- fit_intensity(tri, target = "loss", exposure = "premium")
+intensity_fit <- fit_intensity(tri, target = "loss", exposure = "prem")
 summary(intensity_fit)
 }
 

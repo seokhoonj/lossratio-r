@@ -13,7 +13,7 @@
 #' workflow, parallel to [fit_ata()] for the multiplicative (chain
 #' ladder) side. Both operate at the *factor level* without
 #' producing a full projection. For full ED projection (cumulative
-#' loss / premium / lr), use [fit_ed()] which accepts either a
+#' loss / prem / lr), use [fit_ed()] which accepts either a
 #' `Triangle` or an `IntensityFit` (skipping a rebuild of the link
 #' table when factors are already computed).
 #'
@@ -29,7 +29,7 @@
 #' @param target A single cumulative metric used as the link
 #'   numerator. Default `"loss"`.
 #' @param exposure A single cumulative metric used as the
-#'   exposure anchor. Default `"premium"`.
+#'   exposure anchor. Default `"prem"`.
 #' @param alpha WLS weight exponent. Default `1`.
 #' @param na_method NA fill method for the selected intensity series
 #'   used downstream by [fit_ed()]. One of `"locf"` (default —
@@ -84,17 +84,17 @@
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
-#'   loss     = "loss_incr",
-#'   premium  = "premium_incr"
+#'   loss     = "incr_loss",
+#'   prem  = "incr_prem"
 #' )
-#' intensity_fit <- fit_intensity(tri, target = "loss", exposure = "premium")
+#' intensity_fit <- fit_intensity(tri, target = "loss", exposure = "prem")
 #' summary(intensity_fit)
 #' }
 #'
 #' @export
 fit_intensity <- function(x,
                           target       = "loss",
-                          exposure     = "premium",
+                          exposure     = "prem",
                           alpha        = 1,
                           na_method    = c("locf", "zero", "none"),
                           sigma_method = c("locf", "min_last2", "loglinear"),

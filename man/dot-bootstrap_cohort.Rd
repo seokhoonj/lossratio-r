@@ -7,7 +7,7 @@
 .bootstrap_cohort(
   loss_obs,
   loss_proj,
-  premium_proj,
+  prem_proj,
   g_selected,
   f_selected,
   g_sigma2,
@@ -23,9 +23,9 @@
 )
 }
 \value{
-A list with four vectors of length \code{length(premium_proj)}:
-\code{lr_ci_lower}, \code{lr_ci_upper} (for LR), and \code{loss_ci_lower},
-\code{loss_ci_upper} (for cumulative loss).
+A list with four vectors of length \code{length(prem_proj)}:
+\code{lr_ci_lo}, \code{lr_ci_hi} (for LR), and \code{loss_ci_lo},
+\code{loss_ci_hi} (for cumulative loss).
 }
 \description{
 Internal helper for bootstrap CI calculation used by \code{\link[=fit_lr]{fit_lr()}} when

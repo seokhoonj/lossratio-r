@@ -23,21 +23,21 @@
 #'     \eqn{value} is the column named by `target`.}
 #'   \item{Dual-variable mode (`exposure` supplied)}{In addition to
 #'     the loss-side ATA, the exposure-driven intensity
-#'     \eqn{g = \Delta loss / premium_{from}} is computed and stored in
+#'     \eqn{g = \Delta loss / prem_{from}} is computed and stored in
 #'     the `intensity` column. Premium measure used as denominator for
 #'     loss ratio calculations; for long-term health insurance
-#'     applications, risk premium is commonly used.}
+#'     applications, risk prem is commonly used.}
 #' }
 #'
 #' @param x A `Triangle` object.
 #' @param target A single cumulative metric used as the link
-#'   numerator. Must be one of `"loss"`, `"premium"`, or `"lr"`. Default
+#'   numerator. Must be one of `"loss"`, `"prem"`, or `"lr"`. Default
 #'   `"loss"`. Generic worker name; for loss-side ATA this is the
 #'   cumulative loss column, but any cumulative metric on the Triangle
 #'   may be supplied.
 #' @param exposure Optional second cumulative metric, treated as the
 #'   exposure anchor for the ED workflow. Must be one of `"loss"`,
-#'   `"premium"`, `"lr"`, and must differ from `target`. When `NULL`
+#'   `"prem"`, `"lr"`, and must differ from `target`. When `NULL`
 #'   (default), only the single-variable columns are produced.
 #' @param weight Optional cumulative metric used as WLS weight in
 #'   downstream `summary` / `fit_ata` calls. Must differ from
@@ -74,15 +74,15 @@
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
-#'   loss     = "loss_incr",
-#'   premium  = "premium_incr"
+#'   loss     = "incr_loss",
+#'   prem  = "incr_prem"
 #' )
 #'
 #' # Single-variable: cumulative-loss link factors (ATA workflow)
 #' link_loss <- as_link(tri, target = "loss")
 #'
-#' # Dual-variable: ED-ready link table (loss + premium)
-#' link_ed <- as_link(tri, target = "loss", exposure = "premium")
+#' # Dual-variable: ED-ready link table (loss + prem)
+#' link_ed <- as_link(tri, target = "loss", exposure = "prem")
 #' head(link_ed)
 #' }
 #'
@@ -117,11 +117,11 @@ as_link <- function(x,
   if (length(dev) != 1L)
     stop("`x` must contain exactly one `dev`.", call. = FALSE)
 
-  valid_vars <- c("loss", "premium", "lr")
+  valid_vars <- c("loss", "prem", "lr")
 
   if (!is.character(target) || length(target) != 1L ||
       !(target %in% valid_vars))
-    stop("`target` must be one of 'loss', 'premium', or 'lr'.",
+    stop("`target` must be one of 'loss', 'prem', or 'lr'.",
          call. = FALSE)
   tgt <- target
 
@@ -131,7 +131,7 @@ as_link <- function(x,
   if (use_exposure) {
     if (!is.character(exposure) || length(exposure) != 1L ||
         !(exposure %in% valid_vars))
-      stop("`exposure` must be one of 'loss', 'premium', or 'lr'.",
+      stop("`exposure` must be one of 'loss', 'prem', or 'lr'.",
            call. = FALSE)
     exp <- exposure
     if (exp == tgt)
@@ -152,7 +152,7 @@ as_link <- function(x,
            call. = FALSE)
     if (!is.character(weight) || length(weight) != 1L ||
         !(weight %in% valid_vars))
-      stop("`weight` must be one of 'loss', 'premium', or 'lr'.",
+      stop("`weight` must be one of 'loss', 'prem', or 'lr'.",
            call. = FALSE)
     wt <- weight
     if (wt == tgt)

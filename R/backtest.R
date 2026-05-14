@@ -1,6 +1,6 @@
 # Backtest --------------------------------------------------------------
 
-#' Backtest a loss / premium / loss-ratio projection on existing data
+#' Backtest a loss / prem / loss-ratio projection on existing data
 #'
 #' @description
 #' Hold out the latest `holdout` calendar diagonals from the input
@@ -13,8 +13,8 @@
 #' * `target = "lr"` -- score the loss-ratio projection from
 #'   `fit_lr()`.
 #' * `target = "loss"` -- score the loss projection from `fit_loss()`.
-#' * `target = "premium"` -- score the premium projection from
-#'   `fit_premium()`.
+#' * `target = "prem"` -- score the prem projection from
+#'   `fit_prem()`.
 #'
 #' The A/E Error (`ae_err`) follows the standard actuarial A/E
 #' convention and is computed cell-wise as
@@ -30,22 +30,22 @@
 #' @param holdout Integer. Number of latest calendar diagonals to mask
 #'   before refitting. Default `6L`.
 #' @param target Character scalar. Which projection to backtest. One
-#'   of `"lr"` (default), `"loss"`, `"premium"`. Determines which
+#'   of `"lr"` (default), `"loss"`, `"prem"`. Determines which
 #'   fitter is called on the masked triangle and which column on `x`
 #'   is treated as the held-out actual.
 #' @param loss_method Method for the loss-side projection. Passed to
 #'   `fit_lr()` / `fit_loss()` as their `method` argument. One of
-#'   `"sa"`, `"ed"`, `"cl"`. Unused for `target = "premium"`.
-#' @param premium_method Method for the premium-side projection.
-#'   Passed to `fit_lr()` / `fit_loss()` / `fit_premium()`. One of
+#'   `"sa"`, `"ed"`, `"cl"`. Unused for `target = "prem"`.
+#' @param prem_method Method for the prem-side projection.
+#'   Passed to `fit_lr()` / `fit_loss()` / `fit_prem()`. One of
 #'   `"cl"`, `"ed"`.
-#' @param loss_alpha,premium_alpha Mack alpha for loss-side / premium-side
+#' @param loss_alpha,prem_alpha Mack alpha for loss-side / prem-side
 #'   chain-ladder estimation.
 #' @param sigma_method Tail sigma extrapolation method. Forwarded to
 #'   the underlying fitter.
 #' @param recent Calendar-diagonal recency filter forwarded to the
 #'   fitter.
-#' @param loss_regime,premium_regime Regime spec for the loss / premium
+#' @param loss_regime,prem_regime Regime spec for the loss / prem
 #'   side. Each accepts one of four input types, dispatched by
 #'   [`.resolve_regime()`]:
 #'   \itemize{
@@ -57,7 +57,7 @@
 #'     \item A function `function(tri) -> Regime` -- called on the
 #'       masked triangle for the same leakage-safe reason.
 #'   }
-#'   `premium_regime` is resolved independently from `loss_regime`.
+#'   `prem_regime` is resolved independently from `loss_regime`.
 #' @param maturity Maturity input. Used only for `target = "lr"` and
 #'   `target = "loss"` (stage-adaptive). Accepts one of four input
 #'   types, dispatched by [`.resolve_maturity()`]:
@@ -74,13 +74,13 @@
 #'       same leakage-safe reason.
 #'   }
 #' @param se_method Standard-error composition for `fit_lr()`. Unused
-#'   for `target = "loss"` / `target = "premium"`.
-#' @param rho Loss-premium correlation used by `fit_lr()` delta
-#'   method. Unused for `target = "loss"` / `target = "premium"`.
+#'   for `target = "loss"` / `target = "prem"`.
+#' @param rho Loss-prem correlation used by `fit_lr()` delta
+#'   method. Unused for `target = "loss"` / `target = "prem"`.
 #' @param conf_level Confidence level for `fit_lr()` / `fit_loss()`
-#'   intervals. Unused for `target = "premium"`.
+#'   intervals. Unused for `target = "prem"`.
 #' @param bootstrap,B,seed Bootstrap controls for `fit_lr()`. Unused
-#'   for `target = "loss"` / `target = "premium"`.
+#'   for `target = "loss"` / `target = "prem"`.
 #' @param ... Additional arguments passed to the underlying fitter.
 #'
 #' @return An object of class `"Backtest"` with components:
@@ -93,13 +93,13 @@
 #'       fitter.}
 #'     \item{`ae_err`}{`data.table` of held-out cells with columns
 #'       `(group, cohort, dev, actual, expected, aeg, ae_err,
-#'       actual_incr, expected_incr, aeg_incr, ae_err_incr,
+#'       incr_actual, incr_expected, incr_aeg, incr_ae_err,
 #'       calendar_idx)`. `aeg = actual - expected` (signed
 #'       error in target units); `ae_err = actual / expected - 1`
-#'       (relative error). `_incr` siblings are the same metrics
+#'       (relative error). `incr_` siblings are the same metrics
 #'       on the incremental view.}
 #'     \item{`col_summary`}{Per-`dev` aggregate A/E Error and AEG
-#'       (mean / median / weighted) with `_incr` variants and `n`.}
+#'       (mean / median / weighted) with `incr_` variants and `n`.}
 #'     \item{`diag_summary`}{Per-calendar-diagonal aggregate A/E
 #'       Error and AEG (same columns as `col_summary`, keyed by
 #'       `calendar_idx`).}
@@ -108,7 +108,7 @@
 #'       from `x`.}
 #'   }
 #'
-#' @seealso [fit_lr()], [fit_loss()], [fit_premium()], [plot.Backtest()]
+#' @seealso [fit_lr()], [fit_loss()], [fit_prem()], [plot.Backtest()]
 #'
 #' @examples
 #' \dontrun{
@@ -118,13 +118,13 @@
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
-#'   loss     = "loss_incr",
-#'   premium  = "premium_incr"
+#'   loss     = "incr_loss",
+#'   prem  = "incr_prem"
 #' )
 #'
 #' bt_lr      <- backtest(tri, holdout = 6L, target = "lr")
 #' bt_loss    <- backtest(tri, holdout = 6L, target = "loss")
-#' bt_premium <- backtest(tri, holdout = 6L, target = "premium")
+#' bt_prem <- backtest(tri, holdout = 6L, target = "prem")
 #'
 #' print(bt_lr)
 #' summary(bt_lr)
@@ -134,15 +134,15 @@
 #' @export
 backtest <- function(x,
                      holdout        = 6L,
-                     target         = c("lr", "loss", "premium"),
+                     target         = c("lr", "loss", "prem"),
                      loss_method    = c("sa", "ed", "cl"),
-                     premium_method = c("cl", "ed"),
+                     prem_method = c("cl", "ed"),
                      loss_alpha     = 1,
-                     premium_alpha  = 1,
+                     prem_alpha  = 1,
                      sigma_method   = c("locf", "min_last2", "loglinear"),
                      recent         = NULL,
                      loss_regime    = NULL,
-                     premium_regime = NULL,
+                     prem_regime = NULL,
                      maturity       = "auto",
                      se_method      = c("fixed", "delta"),
                      rho            = 0.95,
@@ -160,7 +160,7 @@ backtest <- function(x,
 
   target         <- match.arg(target)
   loss_method    <- match.arg(loss_method)
-  premium_method <- match.arg(premium_method)
+  prem_method <- match.arg(prem_method)
   sigma_method   <- match.arg(sigma_method)
   se_method      <- match.arg(se_method)
 
@@ -169,21 +169,21 @@ backtest <- function(x,
     stop("`holdout` must be a single positive integer.", call. = FALSE)
   holdout <- as.integer(holdout)
 
-  # Map target -> bare column key (`lr` / `loss` / `premium`). The fit
+  # Map target -> bare column key (`lr` / `loss` / `prem`). The fit
   # output's `$full` has both cumulative (`<key>_proj`) and incremental
-  # (`<key>_incr_proj`) projections, and the raw Triangle has both
-  # `<key>` and `<key>_incr` columns -- so a single backtest call yields
+  # (`incr_<key>_proj`) projections, and the raw Triangle has both
+  # `<key>` and `incr_<key>` columns -- so a single backtest call yields
   # both views (`plot.Backtest(cell_type = ...)` selects which to show).
   actual_cum  <- target
-  actual_incr <- paste0(target, "_incr")
+  incr_actual <- paste0("incr_", target)
   proj_cum    <- paste0(target, "_proj")
-  proj_incr   <- paste0(target, "_incr_proj")
+  proj_incr   <- paste0("incr_", target, "_proj")
   dispatcher <- switch(target,
                         lr      = "fit_lr",
                         loss    = "fit_loss",
-                        premium = "fit_premium")
+                        prem = "fit_prem")
 
-  for (col in c(actual_cum, actual_incr)) {
+  for (col in c(actual_cum, incr_actual)) {
     if (!(col %in% names(x)))
       stop(sprintf("column '%s' not found in `x`.", col), call. = FALSE)
   }
@@ -238,7 +238,7 @@ backtest <- function(x,
   # Passing `masked` as `masked_tri` ensures "auto" and closure forms
   # never see the held-out diagonals.
   loss_regime    <- .resolve_regime(loss_regime,    tri = x, masked_tri = masked)
-  premium_regime <- .resolve_regime(premium_regime, tri = x, masked_tri = masked)
+  prem_regime <- .resolve_regime(prem_regime, tri = x, masked_tri = masked)
 
   # 3) Fit on masked ----------------------------------------------------
   fit_obj <- switch(target,
@@ -247,9 +247,9 @@ backtest <- function(x,
       method         = loss_method,
       loss_alpha     = loss_alpha,
       loss_regime    = loss_regime,
-      premium_method = premium_method,
-      premium_alpha  = premium_alpha,
-      premium_regime = premium_regime,
+      prem_method = prem_method,
+      prem_alpha  = prem_alpha,
+      prem_regime = prem_regime,
       sigma_method   = sigma_method,
       recent         = recent,
       maturity       = maturity,
@@ -266,21 +266,21 @@ backtest <- function(x,
       method         = loss_method,
       alpha          = loss_alpha,
       regime         = loss_regime,
-      premium_method = premium_method,
-      premium_alpha  = premium_alpha,
+      prem_method = prem_method,
+      prem_alpha  = prem_alpha,
       sigma_method   = sigma_method,
       recent         = recent,
       maturity       = maturity,
       conf_level     = conf_level,
       ...
     ),
-    premium = fit_premium(
+    prem = fit_prem(
       masked,
-      method       = premium_method,
-      alpha        = premium_alpha,
+      method       = prem_method,
+      alpha        = prem_alpha,
       sigma_method = sigma_method,
       recent       = recent,
-      regime       = premium_regime,
+      regime       = prem_regime,
       ...
     )
   )
@@ -299,10 +299,10 @@ backtest <- function(x,
 
   obs <- full[.is_held_out == TRUE,
     .SD,
-    .SDcols = c(grp, "cohort", "dev", actual_cum, actual_incr, ".cal_idx")]
+    .SDcols = c(grp, "cohort", "dev", actual_cum, incr_actual, ".cal_idx")]
   data.table::setnames(obs,
-    c(actual_cum, actual_incr, ".cal_idx"),
-    c("actual", "actual_incr", "calendar_idx")
+    c(actual_cum, incr_actual, ".cal_idx"),
+    c("actual", "incr_actual", "calendar_idx")
   )
 
   ae_err <- proj[obs,
@@ -310,7 +310,7 @@ backtest <- function(x,
                  nomatch = NULL]
   data.table::setnames(ae_err,
     c(proj_cum, proj_incr),
-    c("expected", "expected_incr")
+    c("expected", "incr_expected")
   )
 
   # Drop cells the masked fit cannot reach (cumulative side); the
@@ -326,17 +326,17 @@ backtest <- function(x,
   )]
 
   # Incremental: raw signed gap + relative error
-  ae_err[, ("aeg_incr")    := actual_incr - expected_incr]
-  ae_err[, ("ae_err_incr") := data.table::fifelse(
-    is.finite(expected_incr) & expected_incr != 0,
-    actual_incr / expected_incr - 1,
+  ae_err[, ("incr_aeg")    := incr_actual - incr_expected]
+  ae_err[, ("incr_ae_err") := data.table::fifelse(
+    is.finite(incr_expected) & incr_expected != 0,
+    incr_actual / incr_expected - 1,
     NA_real_
   )]
 
   data.table::setcolorder(ae_err, c(
     grp, "cohort", "dev",
     "actual",      "expected",      "aeg",      "ae_err",
-    "actual_incr", "expected_incr", "aeg_incr", "ae_err_incr",
+    "incr_actual", "incr_expected", "incr_aeg", "incr_ae_err",
     "calendar_idx"
   ))
   data.table::setorderv(ae_err, c(grp, "cohort", "dev"))
@@ -353,7 +353,7 @@ backtest <- function(x,
   # regime-excluded / future).
   usage_metric <- switch(target,
                          lr = "loss", loss = "loss",
-                         premium = "premium")
+                         prem = "prem")
   usage <- .build_usage(
     x,
     regime   = loss_regime,
@@ -399,12 +399,12 @@ backtest <- function(x,
     ae_err_med       = stats::median(ae_err, na.rm = TRUE),
     ae_err_wt        = sum(actual - expected, na.rm = TRUE) /
                        sum(expected, na.rm = TRUE),
-    aeg_incr_mean    = mean(aeg_incr, na.rm = TRUE),
-    aeg_incr_med     = stats::median(aeg_incr, na.rm = TRUE),
-    ae_err_incr_mean = mean(ae_err_incr, na.rm = TRUE),
-    ae_err_incr_med  = stats::median(ae_err_incr, na.rm = TRUE),
-    ae_err_incr_wt   = sum(actual_incr - expected_incr, na.rm = TRUE) /
-                       sum(expected_incr, na.rm = TRUE)
+    incr_aeg_mean    = mean(incr_aeg, na.rm = TRUE),
+    incr_aeg_med     = stats::median(incr_aeg, na.rm = TRUE),
+    incr_ae_err_mean = mean(incr_ae_err, na.rm = TRUE),
+    incr_ae_err_med  = stats::median(incr_ae_err, na.rm = TRUE),
+    incr_ae_err_wt   = sum(incr_actual - incr_expected, na.rm = TRUE) /
+                       sum(incr_expected, na.rm = TRUE)
   ), by = by_cols]
   data.table::setorderv(out, by_cols)
   out

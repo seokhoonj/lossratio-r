@@ -32,8 +32,8 @@ tot <- as_total(
   groups  = "coverage",
   cohort  = "uy_m",
   dev     = "dev_m",
-  loss    = "loss_incr",
-  premium = "premium_incr"
+  loss    = "incr_loss",
+  prem = "incr_prem"
 )
 summary(tot)
 }

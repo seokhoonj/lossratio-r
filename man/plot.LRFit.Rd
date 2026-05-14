@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{LRFit}(
   x,
-  metric = c("lr", "loss", "premium"),
+  metric = c("lr", "loss", "prem"),
   cell_type = c("cumulative", "incremental"),
   per_group = NULL,
   ask = grDevices::dev.interactive(),
@@ -24,7 +24,7 @@
 \item{x}{An object of class \code{"LRFit"}.}
 
 \item{metric}{Metric to plot. One of \code{"lr"} (default), \code{"loss"},
-\code{"premium"}.}
+\code{"prem"}.}
 
 \item{cell_type}{Aggregation. One of \code{"cumulative"} (default) or
 \code{"incremental"}.}
@@ -63,9 +63,9 @@ The plotted metric is the cross-product of \code{metric} and \code{cell_type}:
 \itemize{
 \item \code{metric = "lr"}, \code{cell_type = "cumulative"}: cumulative loss
 ratio (default).
-\item \code{metric = "lr_incr"} (i.e., \code{cell_type = "incremental"}):
+\item \code{metric = "incr_lr"} (i.e., \code{cell_type = "incremental"}):
 per-period loss ratio.
-\item \code{metric = "loss"} / \code{"premium"}: same split — cumulative or
+\item \code{metric = "loss"} / \code{"prem"}: same split — cumulative or
 per-period amounts.
 }
 Confidence bands are drawn only for cumulative metrics

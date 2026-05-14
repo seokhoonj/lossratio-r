@@ -9,9 +9,9 @@ fit_lr(
   method = c("sa", "ed", "cl"),
   loss_alpha = 1,
   loss_regime = NULL,
-  premium_method = c("cl", "ed"),
-  premium_alpha = 1,
-  premium_regime = NULL,
+  prem_method = c("cl", "ed"),
+  prem_alpha = 1,
+  prem_regime = NULL,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   maturity = "auto",
@@ -25,7 +25,7 @@ fit_lr(
 }
 \arguments{
 \item{x}{An object of class \code{"Triangle"}. The standardized \code{"loss"}
-and \code{"premium"} columns are used (\code{as_triangle()} produces these).}
+and \code{"prem"} columns are used (\code{as_triangle()} produces these).}
 
 \item{method}{One of \code{"sa"} (default), \code{"ed"}, or \code{"cl"}.}
 
@@ -54,17 +54,17 @@ intensities from a regime change.}
 the change date are excluded from estimation.}
 }}
 
-\item{premium_method}{One of \code{"cl"} (default) or \code{"ed"}. Forwarded to
-\code{\link[=fit_premium]{fit_premium()}} when constructing the premium projection.}
+\item{prem_method}{One of \code{"cl"} (default) or \code{"ed"}. Forwarded to
+\code{\link[=fit_prem]{fit_prem()}} when constructing the prem projection.}
 
-\item{premium_alpha}{Numeric scalar for premium chain ladder. Default
+\item{prem_alpha}{Numeric scalar for prem chain ladder. Default
 is \code{1}.}
 
-\item{premium_regime}{Premium-side regime specification. Same four
+\item{prem_regime}{Premium-side regime specification. Same four
 input types as \code{loss_regime} (\code{NULL} / \code{Regime} / \code{"auto"} / function).
-Default \code{NULL} -- premium is fit on the full triangle independently
+Default \code{NULL} -- prem is fit on the full triangle independently
 of \code{loss_regime} (no lazy default). Set explicitly when the regime
-shift affects premium accrual too.}
+shift affects prem accrual too.}
 
 \item{sigma_method}{Sigma extrapolation method. One of \code{"locf"}
 (default), \code{"min_last2"}, or \code{"loglinear"}.}
@@ -92,9 +92,9 @@ ED and CL phases.}
 \item{\code{"fixed"} (default)}{Premium treated as fixed (non-random).
 \eqn{\mathrm{SE}(L/P) = \mathrm{SE}(L) / P}. Strictly, this is
 the delta method with \code{Var(P) = 0} and \code{Cov(L,P) = 0}, i.e., a
-degenerate case under the assumption that premium is known.}
-\item{\code{"delta"}}{Full delta method including premium uncertainty
-and the loss-premium correlation \code{rho}:
+degenerate case under the assumption that prem is known.}
+\item{\code{"delta"}}{Full delta method including prem uncertainty
+and the loss-prem correlation \code{rho}:
 \deqn{\mathrm{Var}(L/P) \approx \frac{\mathrm{Var}(L)}{P^2}
         + \frac{L^2 \mathrm{Var}(P)}{P^4}
         - \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(P)}{P^3}}
@@ -102,13 +102,13 @@ and the loss-premium correlation \code{rho}:
 }}
 
 \item{rho}{Numeric scalar in \verb{(-1, 1)}; assumed correlation between
-ultimate loss and ultimate premium. Only used when
+ultimate loss and ultimate prem. Only used when
 \code{se_method = "delta"}. Default is \code{0.95}, matching the strong
 positive correlation typically observed between cumulative loss
-and cumulative premium in long-tail health portfolios (analogous
+and cumulative prem in long-tail health portfolios (analogous
 to the paid/incurred correlation used in Munich chain ladder).}
 
-\item{conf_level}{Confidence level used for \code{lr_ci_lower}/\code{lr_ci_upper}
+\item{conf_level}{Confidence level used for \code{lr_ci_lo}/\code{lr_ci_hi}
 in the cohort summary. Default is \code{0.95}.}
 
 \item{bootstrap}{Logical; if \code{TRUE}, parameter and process variance
@@ -135,7 +135,7 @@ before maturity and chain ladder (CL) after maturity.
 \item Before maturity: age-to-age factors are volatile, so
 exposure-driven projection
 \eqn{\Delta C^L = g_k \cdot C^P_k} anchors the estimate
-to premium volume.
+to prem volume.
 \item After maturity: age-to-age factors are stable, so
 chain ladder projection
 \eqn{C^L_{k+1} = f_k \cdot C^L_k} preserves the cohort's
@@ -151,7 +151,7 @@ In all cases, exposure is projected forward using chain ladder:
 \deqn{\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}}
 
 This function is the \emph{composition} layer over \code{\link[=fit_loss]{fit_loss()}} and
-\code{\link[=fit_premium]{fit_premium()}}: it delegates loss projection to \code{fit_loss()},
+\code{\link[=fit_prem]{fit_prem()}}: it delegates loss projection to \code{fit_loss()},
 retrieves the embedded \code{PremiumFit}, and composes the loss-ratio
 point + variance via the delta method (\code{se_method = "fixed"} or
 \code{"delta"}). See \code{ARCHITECTURE.md} for the layered design.
@@ -164,8 +164,8 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  prem  = "incr_prem"
 )
 
 # Stage-adaptive (default): ED before maturity, CL after
@@ -182,6 +182,6 @@ lr_cl <- fit_lr(tri, method = "cl")
 
 }
 \seealso{
-\code{\link[=fit_loss]{fit_loss()}}, \code{\link[=fit_premium]{fit_premium()}}, \code{\link[=as_triangle]{as_triangle()}},
+\code{\link[=fit_loss]{fit_loss()}}, \code{\link[=fit_prem]{fit_prem()}}, \code{\link[=as_triangle]{as_triangle()}},
 \code{\link[=as_link]{as_link()}}, \code{\link[=fit_ata]{fit_ata()}}, \code{\link[=fit_ed]{fit_ed()}}, \code{\link[=detect_maturity]{detect_maturity()}}
 }

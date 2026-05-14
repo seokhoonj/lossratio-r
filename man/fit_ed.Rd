@@ -7,7 +7,7 @@
 fit_ed(
   x,
   target = "loss",
-  exposure = "premium",
+  exposure = "prem",
   method = c("mack"),
   alpha = 1,
   na_method = c("locf", "zero", "none"),
@@ -23,7 +23,7 @@ fit_ed(
 \item{target}{Cumulative loss variable. Default \code{"loss"}.
 Forwarded to \code{\link[=as_link]{as_link()}} and to downstream workers.}
 
-\item{exposure}{Cumulative exposure variable. Default \code{"premium"}.
+\item{exposure}{Cumulative exposure variable. Default \code{"prem"}.
 Forwarded to \code{\link[=as_link]{as_link()}} and to downstream workers.}
 
 \item{method}{Estimation method. Currently only \code{"mack"} is supported.}
@@ -59,7 +59,7 @@ An object of class \code{"EDFit"} (a named list) with components:
 and \code{g_var}.}
 \item{\code{full}}{\code{data.table} of per-cell cumulative target / exposure
 projection plus role-prefixed SE / CV columns
-(\code{target_proj}, \code{target_incr_proj}, \code{exposure_proj},
+(\code{target_proj}, \code{incr_target_proj}, \code{exposure_proj},
 \code{exposure_incr_proj}, \code{target_proc_se2}, \code{target_param_se2},
 \code{target_total_se2}, \code{target_proc_se}, \code{target_param_se},
 \code{target_total_se}, \code{target_total_cv}). Available cells include

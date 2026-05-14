@@ -16,10 +16,10 @@ A data.frame with class \code{"Total"} containing:
 \item{sales_start}{First observed period}
 \item{sales_end}{Last observed period}
 \item{loss}{Total loss}
-\item{premium}{Total premium}
-\item{lr}{Total loss ratio (\code{loss / premium})}
+\item{prem}{Total prem}
+\item{lr}{Total loss ratio (\code{loss / prem})}
 \item{loss_share}{Share of total loss}
-\item{premium_share}{Share of total premium}
+\item{prem_share}{Share of total prem}
 }
 }
 \description{
@@ -39,9 +39,9 @@ Total summarises:
 \item the number of observed cohorts (\code{n_cohorts})
 \item the first and last observed cohort periods
 (\code{sales_start}, \code{sales_end})
-\item total \code{loss} and total \code{premium} (sum over all cells)
-\item total loss ratio (\code{lr = loss / premium})
-\item each group's share of total loss and total premium
+\item total \code{loss} and total \code{prem} (sum over all cells)
+\item total loss ratio (\code{lr = loss / prem})
+\item each group's share of total loss and total prem
 }
 
 Pre-filter the Triangle (e.g. by cohort range or coverage) before
@@ -54,8 +54,8 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  prem  = "incr_prem"
 )
 as_total(tri)
 }

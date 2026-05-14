@@ -28,7 +28,7 @@ multi-group \code{regime}.}
 }}
 
 \item{cell_type}{Which projection view to display in \code{view = "value"}. One of \code{"cumulative"} (default; uses \code{ae_err}) or
-\code{"incremental"} (uses \code{ae_err_incr}).}
+\code{"incremental"} (uses \code{incr_ae_err}).}
 
 \item{label_size}{Numeric label text size for cell labels. Default
 \code{2.5} (single-line A/E Error percent labels on the held-out

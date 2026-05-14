@@ -1,7 +1,7 @@
 # Synthetic experience-study generator for the lossratio package.
 #
 # Produces a 36 x 36 jagged triangle x 4 coverages, deterministic via
-# set.seed(20260501). Calibration scalars (target LR, premium volume,
+# set.seed(20260501). Calibration scalars (target LR, prem volume,
 # cell noise CV) per coverage were measured once on a real long-term
 # Korean health-insurance portfolio and are baked in here as constants
 # so this script ships without any real-data dependency. SUR carries a
@@ -82,23 +82,23 @@ for (i in seq_len(nrow(calib))) {
       cm_c <- (ci + k) %% 12L + 1L
       cy_m <- as.Date(sprintf("%d-%02d-01", 2023L + cy_c, cm_c))
 
-      incr_premium <- prem_base_ci * (1 + rnorm(1L, 0, 0.05))
-      incr_premium <- max(incr_premium, 0)
+      incr_prem <- prem_base_ci * (1 + rnorm(1L, 0, 0.05))
+      incr_prem <- max(incr_prem, 0)
 
       noise <- exp(rnorm(1L, 0, log(1 + cell_cv)))
-      incr_loss <- incr_premium * eff_target * weights[k + 1L] * K * noise
+      incr_loss <- incr_prem * eff_target * weights[k + 1L] * K * noise
 
-      # Real-world premium / loss are recorded in won (integer);
+      # Real-world prem / loss are recorded in won (integer);
       # round to match that convention but keep `numeric` (double)
       # storage — actuarial values may exceed R's int32 ceiling once
       # portfolios scale, and downstream computations (cumulative
       # sums, projections, ratios) produce non-integer values anyway.
       records[[length(records) + 1L]] <- data.table(
-        coverage     = cv,
-        cy_m         = cy_m,
-        uy_m         = uy_m,
-        loss_incr    = round(incr_loss),
-        premium_incr = round(incr_premium)
+        coverage    = cv,
+        cy_m        = cy_m,
+        uy_m        = uy_m,
+        incr_loss   = round(incr_loss),
+        incr_prem   = round(incr_prem)
       )
     }
   }
@@ -139,7 +139,7 @@ setcolorder(experience, c(
   "uy", "uy_h", "uy_q", "uy_m",
   "cy", "cy_h", "cy_q", "cy_m",
   "dev_y", "dev_h", "dev_q", "dev_m",
-  "loss_incr", "premium_incr"
+  "incr_loss", "incr_prem"
 ))
 
 cat(sprintf("experience: %d rows x %d cols, coverage = %s\n",

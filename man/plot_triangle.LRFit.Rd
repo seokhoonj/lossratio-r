@@ -6,7 +6,7 @@
 \usage{
 \method{plot_triangle}{LRFit}(
   x,
-  metric = c("lr", "loss", "premium"),
+  metric = c("lr", "loss", "prem"),
   cell_type = c("cumulative", "incremental"),
   region = c("proj", "full", "data"),
   view = c("value", "usage"),
@@ -25,16 +25,16 @@
 \item{x}{An object of class \code{"LRFit"}.}
 
 \item{metric}{Metric shown in the heatmap cells. One of \code{"lr"}
-(default), \code{"loss"}, \code{"premium"}.}
+(default), \code{"loss"}, \code{"prem"}.}
 
 \item{cell_type}{Aggregation. One of \code{"cumulative"} (default) or
 \code{"incremental"}. Combined with \code{metric} to select the column
-(e.g., \code{metric = "lr"}, \code{cell_type = "incremental"} → \code{lr_incr}).}
+(e.g., \code{metric = "lr"}, \code{cell_type = "incremental"} → \code{incr_lr}).}
 
 \item{region}{Cell region to plot (only used when \code{view = "value"}).
 One of \code{"proj"} (projected cells only, observed cells masked),
 \code{"full"} (observed + projected), or \code{"data"} (observed cumulative
-loss / premium / lr from \code{x$data} — the raw Triangle, no
+loss / prem / lr from \code{x$data} — the raw Triangle, no
 projection). Default is \code{"proj"}.}
 
 \item{view}{Plot mode. One of:

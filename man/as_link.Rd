@@ -17,14 +17,14 @@ as_link(
 \item{x}{A \code{Triangle} object.}
 
 \item{target}{A single cumulative metric used as the link
-numerator. Must be one of \code{"loss"}, \code{"premium"}, or \code{"lr"}. Default
+numerator. Must be one of \code{"loss"}, \code{"prem"}, or \code{"lr"}. Default
 \code{"loss"}. Generic worker name; for loss-side ATA this is the
 cumulative loss column, but any cumulative metric on the Triangle
 may be supplied.}
 
 \item{exposure}{Optional second cumulative metric, treated as the
 exposure anchor for the ED workflow. Must be one of \code{"loss"},
-\code{"premium"}, \code{"lr"}, and must differ from \code{target}. When \code{NULL}
+\code{"prem"}, \code{"lr"}, and must differ from \code{target}. When \code{NULL}
 (default), only the single-variable columns are produced.}
 
 \item{weight}{Optional cumulative metric used as WLS weight in
@@ -77,10 +77,10 @@ factor is \eqn{ata = value_{to} / value_{from}}, where
 \eqn{value} is the column named by \code{target}.}
 \item{Dual-variable mode (\code{exposure} supplied)}{In addition to
 the loss-side ATA, the exposure-driven intensity
-\eqn{g = \Delta loss / premium_{from}} is computed and stored in
+\eqn{g = \Delta loss / prem_{from}} is computed and stored in
 the \code{intensity} column. Premium measure used as denominator for
 loss ratio calculations; for long-term health insurance
-applications, risk premium is commonly used.}
+applications, risk prem is commonly used.}
 }
 }
 \examples{
@@ -90,15 +90,15 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  prem  = "incr_prem"
 )
 
 # Single-variable: cumulative-loss link factors (ATA workflow)
 link_loss <- as_link(tri, target = "loss")
 
-# Dual-variable: ED-ready link table (loss + premium)
-link_ed <- as_link(tri, target = "loss", exposure = "premium")
+# Dual-variable: ED-ready link table (loss + prem)
+link_ed <- as_link(tri, target = "loss", exposure = "prem")
 head(link_ed)
 }
 

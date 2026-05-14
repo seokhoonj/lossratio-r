@@ -18,7 +18,7 @@
 #' @param type Plot type. One of `"col"`, `"diag"`, `"cell"`.
 #' @param cell_type Which projection view to display. One of
 #'   `"cumulative"` (default; uses `ae_err`) or `"incremental"` (uses
-#'   `ae_err_incr`). Both are stored on every `Backtest` object -- pick
+#'   `incr_ae_err`). Both are stored on every `Backtest` object -- pick
 #'   the view at plot time.
 #' @param scales Facet scale argument. One of `"fixed"`, `"free"`,
 #'   `"free_x"`, `"free_y"`.
@@ -43,10 +43,10 @@ plot.Backtest <- function(x,
   theme     <- match.arg(theme)
 
   is_incr <- cell_type == "incremental"
-  # column suffix for selecting the requested view from wide summaries
-  sfx <- if (is_incr) "_incr" else ""
-  ae_err_col <- paste0("ae_err", sfx)
-  stat_cols  <- paste0(c("ae_err", "ae_err", "ae_err"), sfx,
+  # column prefix for selecting the requested view from wide summaries
+  pfx <- if (is_incr) "incr_" else ""
+  ae_err_col <- paste0(pfx, "ae_err")
+  stat_cols  <- paste0(pfx, "ae_err",
                        c("_mean", "_med", "_wt"))
   cum_word <- if (is_incr) "incremental" else "cumulative"
 
@@ -186,7 +186,7 @@ plot.Backtest <- function(x,
 #'   }
 #' @param cell_type Which projection view to display in `view =
 #'   "value"`. One of `"cumulative"` (default; uses `ae_err`) or
-#'   `"incremental"` (uses `ae_err_incr`).
+#'   `"incremental"` (uses `incr_ae_err`).
 #' @param label_size Numeric label text size for cell labels. Default
 #'   `2.5` (single-line A/E Error percent labels on the held-out
 #'   wedge).
@@ -227,7 +227,7 @@ plot_triangle.Backtest <- function(x,
   }
 
   is_incr    <- cell_type == "incremental"
-  ae_err_col <- if (is_incr) "ae_err_incr" else "ae_err"
+  ae_err_col <- if (is_incr) "incr_ae_err" else "ae_err"
   cum_word   <- if (is_incr) "incremental" else "cumulative"
 
   grp <- x$groups

@@ -185,7 +185,7 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #' @param x A `"Triangle"` object.
 #' @param target Cumulative loss variable. Default `"loss"`.
 #'   Forwarded to [as_link()] and to downstream workers.
-#' @param exposure Cumulative exposure variable. Default `"premium"`.
+#' @param exposure Cumulative exposure variable. Default `"prem"`.
 #'   Forwarded to [as_link()] and to downstream workers.
 #' @param method Estimation method. Currently only `"mack"` is supported.
 #' @param alpha Numeric scalar controlling the variance structure. Default
@@ -213,7 +213,7 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'       and `g_var`.}
 #'     \item{`full`}{`data.table` of per-cell cumulative target / exposure
 #'       projection plus role-prefixed SE / CV columns
-#'       (`target_proj`, `target_incr_proj`, `exposure_proj`,
+#'       (`target_proj`, `incr_target_proj`, `exposure_proj`,
 #'       `exposure_incr_proj`, `target_proc_se2`, `target_param_se2`,
 #'       `target_total_se2`, `target_proc_se`, `target_param_se`,
 #'       `target_total_se`, `target_total_cv`). Available cells include
@@ -226,7 +226,7 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #' @export
 fit_ed <- function(x,
                    target       = "loss",
-                   exposure     = "premium",
+                   exposure     = "prem",
                    method       = c("mack"),
                    alpha        = 1,
                    na_method    = c("locf", "zero", "none"),
@@ -278,14 +278,14 @@ fit_ed <- function(x,
   out$selected <- .mack_g_var(ed_fit = out, alpha = alpha)
 
   # 4) cell-level projection (standalone worker) --------------------------
-  # ED rule: Delta loss_k = g_k * cumulative_premium_k. Factor pair is
-  # fit_intensity (loss-side g_k) + fit_cl on premium (premium projection).
+  # ED rule: Delta loss_k = g_k * cumulative_prem_k. Factor pair is
+  # fit_intensity (loss-side g_k) + fit_cl on prem (prem projection).
   # No fit_ata / CL factor needed — those are fit_cl's pair.
   grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  # 4a) premium projection: Mack CL on the premium column
-  premium_cl <- fit_cl(
+  # 4a) prem projection: Mack CL on the prem column
+  prem_cl <- fit_cl(
     x,
     method       = "mack",
     target       = exposure,
@@ -294,11 +294,11 @@ fit_ed <- function(x,
     recent       = recent,
     regime       = out$regime
   )
-  premium_ata_fit <- structure(
+  prem_ata_fit <- structure(
     list(
-      selected     = premium_cl$selected,
-      link         = premium_cl$link,
-      data         = premium_cl$data,
+      selected     = prem_cl$selected,
+      link         = prem_cl$link,
+      data         = prem_cl$data,
       method       = "mack",
       alpha        = 1,
       sigma_method = sigma_method,
@@ -307,11 +307,11 @@ fit_ed <- function(x,
     class = "ATAFit"
   )
 
-  # 4b) expand grid (joins premium_proj from premium_ata_fit)
+  # 4b) expand grid (joins prem_proj from prem_ata_fit)
   full <- .expand_grid(
     triangle        = x,
     ed_fit          = out,
-    premium_ata_fit = premium_ata_fit,
+    prem_ata_fit = prem_ata_fit,
     target          = target,
     exposure        = exposure
   )
@@ -319,7 +319,7 @@ fit_ed <- function(x,
   # rename .expand_grid output to generic worker names
   data.table::setnames(
     full,
-    c("loss_obs",   "premium_obs",  "premium_proj"),
+    c("loss_obs",   "prem_obs",  "prem_proj"),
     c("target_obs", "exposure_obs", "exposure_proj")
   )
 
@@ -377,7 +377,7 @@ fit_ed <- function(x,
   full[, c("g_selected", "g_sigma2", "g_var", "last_obs") := NULL]
 
   # 4h) incremental projections (target + exposure)
-  full[, ("target_incr_proj") := target_proj -
+  full[, ("incr_target_proj") := target_proj -
          data.table::shift(target_proj, 1L, fill = 0),
        by = c(grp, "cohort")]
   full[, ("exposure_incr_proj") := exposure_proj -

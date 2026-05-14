@@ -42,19 +42,19 @@
 #'   `summary()` method.
 #' @param target Trajectory variable. Default is `"lr"` (cumulative loss
 #'   ratio). Accepts any column on the `Triangle` (e.g. `"lr"`,
-#'   `"loss"`, `"premium"`, `"loss_incr"`, `"premium_incr"`), plus three
+#'   `"loss"`, `"prem"`, `"incr_loss"`, `"incr_prem"`), plus three
 #'   *diagnostic* derived targets computed inline per (group, cohort):
 #'   \describe{
 #'     \item{`"loss_ata"`}{Loss age-to-age factor
 #'       `loss[k+1] / loss[k]` — multiplicative loss development speed
 #'       (CL $f_k$).}
-#'     \item{`"premium_ata"`}{Premium age-to-age factor — same form on
-#'       premium.}
+#'     \item{`"prem_ata"`}{Premium age-to-age factor — same form on
+#'       prem.}
 #'     \item{`"loss_ed"`}{Loss intensity
-#'       `(loss[k] - loss[k-1]) / premium[k-1]` — additive,
+#'       `(loss[k] - loss[k-1]) / prem[k-1]` — additive,
 #'       exposure-anchored (ED model's $g_k$).}
-#'     \item{`"premium_ed"`}{Alias of `"premium_ata"` — the two differ
-#'       only by a constant `(premium_ata - 1)`, and the PCA
+#'     \item{`"prem_ed"`}{Alias of `"prem_ata"` — the two differ
+#'       only by a constant `(prem_ata - 1)`, and the PCA
 #'       standardization in detection removes that shift, so they yield
 #'       identical regime changes. Provided for API symmetry with the
 #'       `loss_ata` / `loss_ed` pair.}
@@ -149,8 +149,8 @@
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
-#'   loss     = "loss_incr",
-#'   premium  = "premium_incr"
+#'   loss     = "incr_loss",
+#'   prem  = "incr_prem"
 #' )
 #'
 #' # Hierarchical clustering (no extra package dependency)
@@ -169,8 +169,8 @@
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
-#'   loss     = "loss_incr",
-#'   premium  = "premium_incr"
+#'   loss     = "incr_loss",
+#'   prem  = "incr_prem"
 #' )
 #' r_all <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 #' print(r_all$changes)
@@ -226,17 +226,17 @@ detect_regime <- function(x,
 
   d <- .copy_dt(x)
 
-  # `premium_ed` is mathematically equivalent to `premium_ata - 1`
-  # (Δpremium / cum_premium_prev vs cum_premium / cum_premium_prev), and
+  # `prem_ed` is mathematically equivalent to `prem_ata - 1`
+  # (Δprem / cum_prem_prev vs cum_prem / cum_prem_prev), and
   # the PCA standardization (`center=TRUE, scale=TRUE`) removes the
   # constant shift — so detection produces identical changes. Treat
   # as alias.
-  if (target == "premium_ed") target <- "premium_ata"
+  if (target == "prem_ed") target <- "prem_ata"
 
   # Derived targets (not native Triangle columns) — compute inline per
   # (group, cohort) before detection. These are diagnostic/experimental;
   # see `?detect_regime` for the recommended use case of each.
-  derived <- c("loss_ata", "premium_ata", "loss_ed")
+  derived <- c("loss_ata", "prem_ata", "loss_ed")
   if (target %in% derived) {
     grp_for_derive <- attr(x, "groups")
     if (is.null(grp_for_derive)) grp_for_derive <- character(0)
@@ -275,10 +275,10 @@ detect_regime <- function(x,
     # detect_maturity supports cumulative targets only — map _incr to its
     # cumulative counterpart, fall back to "lr" otherwise.
     mat_target <- switch(target,
-      "lr" = , "loss" = , "premium" = target,
-      "lr_incr"      = "lr",
-      "loss_incr"    = "loss",
-      "premium_incr" = "premium",
+      "lr" = , "loss" = , "prem" = target,
+      "incr_lr"      = "lr",
+      "incr_loss"    = "loss",
+      "incr_prem" = "prem",
       "lr"
     )
     m_dt <- tryCatch(
@@ -448,10 +448,10 @@ detect_regime <- function(x,
 #' \describe{
 #'   \item{`loss_ata`}{Loss age-to-age factor — `loss[k+1] / loss[k]` per
 #'     (group, cohort). Captures *multiplicative* development speed.}
-#'   \item{`premium_ata`}{Premium age-to-age factor — same form on premium.
-#'     Captures premium *recognition speed*.}
+#'   \item{`prem_ata`}{Premium age-to-age factor — same form on prem.
+#'     Captures prem *recognition speed*.}
 #'   \item{`loss_ed`}{Loss intensity (ED model's $g_k$) —
-#'     `(loss[k] - loss[k-1]) / premium[k-1]` per (group, cohort).
+#'     `(loss[k] - loss[k-1]) / prem[k-1]` per (group, cohort).
 #'     *Additive*, exposure-anchored.}
 #' }
 #'
@@ -461,7 +461,7 @@ detect_regime <- function(x,
 #' @keywords internal
 .derive_regime_target <- function(d, target, grp = character(0)) {
   # data.table NSE NULL bindings for bare column refs in `j` below.
-  loss <- premium <- dev <- NULL
+  loss <- prem <- dev <- NULL
 
   by_cols <- c(grp, "cohort")
   d <- .copy_dt(d)
@@ -469,12 +469,12 @@ detect_regime <- function(x,
   if (target == "loss_ata") {
     d[, ("loss_ata") := loss / data.table::shift(loss, 1L, type = "lag"),
       by = by_cols]
-  } else if (target == "premium_ata") {
-    d[, ("premium_ata") := premium / data.table::shift(premium, 1L, type = "lag"),
+  } else if (target == "prem_ata") {
+    d[, ("prem_ata") := prem / data.table::shift(prem, 1L, type = "lag"),
       by = by_cols]
   } else if (target == "loss_ed") {
     d[, ("loss_ed") := (loss - data.table::shift(loss, 1L, type = "lag")) /
-                   data.table::shift(premium, 1L, type = "lag"),
+                   data.table::shift(prem, 1L, type = "lag"),
       by = by_cols]
   } else {
     stop(sprintf("Unknown derived target: '%s'.", target), call. = FALSE)
@@ -915,7 +915,7 @@ print.summary.Regime <- function(x, ...) {
 #' User-facing helper for hand-specifying a regime change (or a set of
 #' per-group changes) without running [detect_regime()]. The returned
 #' `"Regime"` object plugs into any function that consumes a Regime —
-#' `fit_lr()`, `fit_loss()`, `fit_premium()`, [backtest()], and the
+#' `fit_lr()`, `fit_loss()`, `fit_prem()`, [backtest()], and the
 #' regime-change resolver — by carrying the same `$changes` schema as
 #' [detect_regime()] output.
 #'
@@ -1071,7 +1071,7 @@ regime_at <- function(..., treatment = c("latest_only", "segment_wise")) {
 #' deferred** detection -- the change points depend on which cells the
 #' caller decides to expose:
 #'
-#' * In `fit_lr()` / `fit_loss()` / `fit_premium()`, the spec is invoked
+#' * In `fit_lr()` / `fit_loss()` / `fit_prem()`, the spec is invoked
 #'   on the *full* triangle the user passed in.
 #'
 #' * In [backtest()], **the spec is invoked on the masked triangle of
@@ -1127,7 +1127,7 @@ regime_spec <- function(...) {
 #'
 #' @description
 #' Internal 4-type dispatcher used by `fit_lr()`, `fit_loss()`,
-#' `fit_premium()`, and [backtest()] to normalize the `regime`
+#' `fit_prem()`, and [backtest()] to normalize the `regime`
 #' input (or split-axis variants such as `loss_regime`) into a
 #' single representation: either `NULL` (no filter) or a `"Regime"`
 #' object.

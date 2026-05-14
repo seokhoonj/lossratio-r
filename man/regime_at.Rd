@@ -43,7 +43,7 @@ distinguishable from a detected Regime.
 User-facing helper for hand-specifying a regime change (or a set of
 per-group changes) without running \code{\link[=detect_regime]{detect_regime()}}. The returned
 \code{"Regime"} object plugs into any function that consumes a Regime —
-\code{fit_lr()}, \code{fit_loss()}, \code{fit_premium()}, \code{\link[=backtest]{backtest()}}, and the
+\code{fit_lr()}, \code{fit_loss()}, \code{fit_prem()}, \code{\link[=backtest]{backtest()}}, and the
 regime-change resolver — by carrying the same \verb{$changes} schema as
 \code{\link[=detect_regime]{detect_regime()}} output.
 

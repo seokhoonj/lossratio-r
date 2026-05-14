@@ -13,17 +13,18 @@ as_calendar(x)
 A data.frame with class \code{"Calendar"}, containing the following
 derived columns:
 \describe{
-\item{dev}{Calendar index within each group, defined as the sequential
-order of \code{calendar} after sorting in ascending order. This represents
-the progression of calendar periods for each group (e.g., 1 = first
-observed period, 2 = second, ...), and can be used to align groups with
-different starting periods on a common index scale.}
-\item{loss, loss_incr}{Cumulative and per-period loss}
-\item{premium, premium_incr}{Cumulative and per-period premium}
-\item{lr, lr_incr}{Cumulative and per-period loss ratio}
-\item{margin, margin_incr}{Cumulative and per-period margin}
-\item{profit, profit_incr}{Profit indicator}
-\item{loss_share, loss_incr_share, premium_share, premium_incr_share}{
+\item{t}{Sequential calendar-period index within each group
+(\verb{1, 2, ..., N}). Time-series convention; intentionally NOT
+\code{dev} -- in a Calendar the integer is just the rank of the date
+within its group, not a true development period (\code{cym - uym}).
+Useful for aligning groups with different starting periods on a
+common index scale.}
+\item{loss, incr_loss}{Cumulative and per-period loss}
+\item{prem, incr_prem}{Cumulative and per-period prem}
+\item{lr, incr_lr}{Cumulative and per-period loss ratio}
+\item{margin, incr_margin}{Cumulative and per-period margin}
+\item{profit, incr_profit}{Profit indicator}
+\item{loss_share, incr_loss_share, prem_share, incr_prem_share}{
 Proportions within each \code{calendar} cell}
 }
 
@@ -43,21 +44,21 @@ portfolio evolves through time, regardless of cohort membership.
 
 The result is a long-format \code{data.table} with class
 \code{c("Calendar", "data.table", "data.frame")} containing cumulative
-loss / premium, incremental and cumulative LR, margin, profit, and
+loss / prem, incremental and cumulative LR, margin, profit, and
 share columns within each \code{calendar} cell.
 
 The cumulative loss ratio is defined as:
-\deqn{lr = loss / premium}
+\deqn{lr = loss / prem}
 
-For long-term health insurance applications, risk premium is commonly
-used as the \code{premium} measure.
+For long-term health insurance applications, risk prem is commonly
+used as the \code{prem} measure.
 
 Proportion variables are computed within each \code{calendar} cell:
 \itemize{
-\item \code{loss_incr_share    = loss_incr    / sum(loss_incr)}
-\item \code{premium_incr_share = premium_incr / sum(premium_incr)}
+\item \code{incr_loss_share    = incr_loss    / sum(incr_loss)}
+\item \code{incr_prem_share = incr_prem / sum(incr_prem)}
 \item \code{loss_share         = loss         / sum(loss)}
-\item \code{premium_share      = premium      / sum(premium)}
+\item \code{prem_share      = prem      / sum(prem)}
 }
 
 Therefore, for a fixed \code{calendar} cell, the proportions
@@ -66,7 +67,7 @@ each calendar period across products or other grouping variables.
 
 Calendar derives \code{calendar = cohort + (dev - 1)} using the
 Triangle's \code{grain} attribute and aggregates the incremental
-\code{loss} / \code{premium} columns by \verb{(groups, calendar)}. This works for
+\code{loss} / \code{prem} columns by \verb{(groups, calendar)}. This works for
 Triangles built in either mode (with or without an original
 \code{calendar} column in the raw experience), since \code{cohort + dev} is
 always sufficient to reconstruct the calendar axis at the
@@ -79,8 +80,8 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  prem  = "incr_prem"
 )
 
 cal <- as_calendar(tri)

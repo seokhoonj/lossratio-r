@@ -414,25 +414,25 @@ plot_triangle.CLFit <- function(x,
   if (length(dev) != 1L)
     stop("`x` must contain exactly one `dev`.", call. = FALSE)
 
-  ratio_vars <- c("lr", "lr_incr")
-  prop_vars  <- c("loss_share", "loss_incr_share",
-                  "premium_share", "premium_incr_share")
+  ratio_vars <- c("lr", "incr_lr")
+  prop_vars  <- c("loss_share", "incr_loss_share",
+                  "prem_share", "incr_prem_share")
   is_ratio   <- metric %in% c(ratio_vars, prop_vars)
 
   base_title <- switch(
     metric,
     lr                 = "Cumulative Loss Ratio",
-    lr_incr            = "Per-Period Loss Ratio",
+    incr_lr            = "Per-Period Loss Ratio",
     loss               = "Cumulative Loss",
-    loss_incr          = "Per-Period Loss",
-    premium            = "Cumulative Premium",
-    premium_incr       = "Per-Period Premium",
+    incr_loss          = "Per-Period Loss",
+    prem            = "Cumulative Premium",
+    incr_prem       = "Per-Period Premium",
     margin             = "Cumulative Margin",
-    margin_incr        = "Per-Period Margin",
+    incr_margin        = "Per-Period Margin",
     loss_share         = "Cumulative Loss Proportion",
-    loss_incr_share    = "Per-Period Loss Proportion",
-    premium_share      = "Cumulative Premium Proportion",
-    premium_incr_share = "Per-Period Premium Proportion",
+    incr_loss_share    = "Per-Period Loss Proportion",
+    prem_share      = "Cumulative Premium Proportion",
+    incr_prem_share = "Per-Period Premium Proportion",
     metric
   )
 

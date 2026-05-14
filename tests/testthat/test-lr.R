@@ -1,7 +1,7 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
 
 test_that("fit_lr default (method = 'sa') returns class 'LRFit'", {
   lr <- fit_lr(tri)
@@ -13,19 +13,19 @@ test_that("LRFit has expected list elements", {
   lr <- fit_lr(tri, method = "sa")
   for (nm in c("data", "method", "groups", "cohort", "dev",
                "full", "proj", "summary",
-               "ed", "loss_ata_fit", "premium_ata_fit", "maturity",
+               "ed", "loss_ata_fit", "prem_ata_fit", "maturity",
                "se_method", "rho", "conf_level",
-               "loss_regime", "premium_regime")) {
+               "loss_regime", "prem_regime")) {
     expect_true(nm %in% names(lr), info = paste("missing", nm))
   }
 })
 
 test_that("$full has expected columns", {
   lr <- fit_lr(tri, method = "sa")
-  for (nm in c("coverage", "cohort", "dev", "loss_obs", "premium_obs",
+  for (nm in c("coverage", "cohort", "dev", "loss_obs", "prem_obs",
                "is_observed",
-               "loss_proj", "premium_proj", "lr_proj",
-               "loss_incr_proj", "premium_incr_proj", "lr_incr_proj")) {
+               "loss_proj", "prem_proj", "lr_proj",
+               "incr_loss_proj", "incr_prem_proj", "incr_lr_proj")) {
     expect_true(nm %in% names(lr$full), info = paste("missing", nm))
   }
 })
@@ -34,19 +34,19 @@ test_that("incremental projections recover cumulative via per-cohort cumsum", {
   lr <- fit_lr(tri, method = "sa")
   full <- data.table::copy(lr$full)
   data.table::setorder(full, coverage, cohort, dev)
-  full[, .loss_recovered     := cumsum(loss_incr_proj),     by = .(coverage, cohort)]
-  full[, .premium_recovered := cumsum(premium_incr_proj), by = .(coverage, cohort)]
-  rows <- full[is.finite(loss_proj) & is.finite(loss_incr_proj)]
+  full[, .loss_recovered     := cumsum(incr_loss_proj),     by = .(coverage, cohort)]
+  full[, .prem_recovered := cumsum(incr_prem_proj), by = .(coverage, cohort)]
+  rows <- full[is.finite(loss_proj) & is.finite(incr_loss_proj)]
   expect_equal(rows$.loss_recovered,     rows$loss_proj,     tolerance = 1e-8)
-  expect_equal(rows$.premium_recovered, rows$premium_proj, tolerance = 1e-8)
+  expect_equal(rows$.prem_recovered, rows$prem_proj, tolerance = 1e-8)
 })
 
 test_that("$pred masks incremental projections on observed cells", {
   lr <- fit_lr(tri, method = "sa")
   obs <- lr$pred[lr$pred$is_observed == TRUE, ]
-  expect_true(all(is.na(obs$loss_incr_proj)))
-  expect_true(all(is.na(obs$premium_incr_proj)))
-  expect_true(all(is.na(obs$lr_incr_proj)))
+  expect_true(all(is.na(obs$incr_loss_proj)))
+  expect_true(all(is.na(obs$incr_prem_proj)))
+  expect_true(all(is.na(obs$incr_lr_proj)))
 })
 
 test_that("$summary has cohort-level entries with expected columns", {
@@ -78,7 +78,7 @@ test_that("bootstrap = TRUE runs and returns class 'LRFit'", {
 test_that("bootstrap reproducibility via seed", {
   lr_a <- fit_lr(tri, method = "sa", bootstrap = TRUE, B = 25, seed = 42)
   lr_b <- fit_lr(tri, method = "sa", bootstrap = TRUE, B = 25, seed = 42)
-  expect_equal(lr_a$summary$lr_ci_lower, lr_b$summary$lr_ci_lower)
+  expect_equal(lr_a$summary$lr_ci_lo, lr_b$summary$lr_ci_lo)
 })
 
 test_that("summary(LRFit) returns the $summary table", {
@@ -95,7 +95,7 @@ test_that("fit_lr with loss_regime + method=sa applies hybrid filter", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
   reg <- regime_at(change = "2025-07-01")
   fit_full <- fit_lr(tri, method = "sa")
   fit_brk  <- fit_lr(tri, method = "sa", loss_regime = reg,
@@ -110,7 +110,7 @@ test_that("fit_lr with loss_regime + method=ed drops pre-break cohorts", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
   reg <- regime_at(change = "2025-07-01")
   fit_full <- fit_lr(tri, method = "ed")
   fit_brk  <- fit_lr(tri, method = "ed", loss_regime = reg)
@@ -121,7 +121,7 @@ test_that("fit_lr with NULL loss_regime is unchanged", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
   a <- fit_lr(tri, method = "sa")
   b <- fit_lr(tri, method = "sa", loss_regime = NULL)
   expect_identical(a$full$lr_proj, b$full$lr_proj)
@@ -131,7 +131,7 @@ test_that("fit_lr with Regime preserves the Regime object", {
   data(experience)
   exp <- experience[coverage == "SUR"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
   reg <- detect_regime(tri)
   fit_reg <- fit_lr(tri, method = "sa", loss_regime = reg, recent = 18L)
   expect_s3_class(fit_reg$loss_regime, "Regime")

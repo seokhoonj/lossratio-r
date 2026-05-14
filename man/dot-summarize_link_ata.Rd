@@ -99,7 +99,7 @@ When the input \code{"Link"} object contains a \code{weight} column (added by
 \code{\link[=as_link]{as_link()}} when \code{weight} is supplied), that column is
 automatically used as the WLS weight in place of \code{target_from}. This
 is useful when \code{target = "lr"}, where \code{target_from} carries no
-exposure information and an external exposure variable such as \code{premium}
+exposure information and an external exposure variable such as \code{prem}
 should be used instead.
 }
 

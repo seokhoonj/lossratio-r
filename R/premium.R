@@ -1,32 +1,32 @@
-#' Fit a chain ladder projection on the premium (exposure) triangle
+#' Fit a chain ladder projection on the prem (exposure) triangle
 #'
 #' @description
-#' Project cumulative premium across the cohort x development grid with
+#' Project cumulative prem across the cohort x development grid with
 #' a chain ladder estimator. Two variance recursions are supported:
 #'
 #' \describe{
 #'   \item{`"ed"` (default)}{Additive recursion. Empirically more robust
-#'     on long-projection premium triangles -- the multiplicative
+#'     on long-projection prem triangles -- the multiplicative
 #'     scaling of the classical CL recursion can blow up under cohort-wise
-#'     heterogeneity (regime changes in premium, channel changes,
-#'     amendments). See `dev/premium_projection.qmd`.}
+#'     heterogeneity (regime changes in prem, channel changes,
+#'     amendments). See `dev/prem_projection.qmd`.}
 #'   \item{`"cl"`}{Mack (1993) multiplicative recursion. Point projection
 #'     identical to ED; only the SE accumulation differs.}
 #' }
 #'
 #' Both methods share the same point estimate -- self-weighted ED on
-#' premium is mathematically equivalent to chain ladder on the same
+#' prem is mathematically equivalent to chain ladder on the same
 #' column (`f_k = 1 + g_k`). The only operational difference is how
 #' cumulative variance is propagated forward.
 #'
-#' @param x A `"Triangle"` object. The standardized `"premium"` column
+#' @param x A `"Triangle"` object. The standardized `"prem"` column
 #'   is used as the projection target.
 #' @param method One of `"ed"` (default) or `"cl"`.
 #' @param alpha Numeric scalar controlling the variance structure passed
 #'   through to [fit_ata()]. Default `1`.
 #' @param sigma_method Sigma extrapolation method. One of `"locf"`
 #'   (default), `"min_last2"`, or `"loglinear"`.
-#' @param regime Optional regime specification (premium side). Accepts
+#' @param regime Optional regime specification (prem side). Accepts
 #'   four input types:
 #'   \describe{
 #'     \item{`NULL` (default)}{No regime filter.}
@@ -38,20 +38,20 @@
 #'       `function(tri) -> Regime` for deferred custom-config detection.}
 #'   }
 #'   Pre-change cohorts (cohorts before the resolved `Regime`'s change
-#'   date) are excluded from premium factor estimation.
+#'   date) are excluded from prem factor estimation.
 #' @param recent Optional positive integer; recent calendar-diagonal
 #'   filter for the underlying ATA fit. Default `NULL`.
 #' @param tail Logical; whether to apply a tail factor. Default `FALSE`.
-#' @param conf_level Confidence level for analytical CI on the premium
-#'   projection (`premium_ci_lower`, `premium_ci_upper`). Default `0.95`.
+#' @param conf_level Confidence level for analytical CI on the prem
+#'   projection (`prem_ci_lo`, `prem_ci_hi`). Default `0.95`.
 #'
 #' @return An object of class `"PremiumFit"` (a list with the same
 #'   structure as `CLFit`). Components: `selected`, `full`, `data`,
-#'   plus attribute `premium_method`. The `$full` data.table uses
-#'   role-specific column names (`premium_obs`, `premium_proj`,
-#'   `premium_incr_proj`, `premium_proc_se`, `premium_param_se`,
-#'   `premium_total_se`, `premium_proc_cv`, `premium_param_cv`,
-#'   `premium_total_cv`, `premium_ci_lower`, `premium_ci_upper`).
+#'   plus attribute `prem_method`. The `$full` data.table uses
+#'   role-specific column names (`prem_obs`, `prem_proj`,
+#'   `incr_prem_proj`, `prem_proc_se`, `prem_param_se`,
+#'   `prem_total_se`, `prem_proc_cv`, `prem_param_cv`,
+#'   `prem_total_cv`, `prem_ci_lo`, `prem_ci_hi`).
 #'
 #' @seealso [fit_cl()], [fit_ed()], [fit_lr()], [as_triangle()].
 #'
@@ -63,20 +63,20 @@
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
-#'   loss     = "loss_incr",
-#'   premium  = "premium_incr"
+#'   loss     = "incr_loss",
+#'   prem  = "incr_prem"
 #' )
 #'
 #' # ED-additive recursion (default; robust on long projections)
-#' pf <- fit_premium(tri)
+#' pf <- fit_prem(tri)
 #' summary(pf)
 #'
 #' # CL-multiplicative recursion (Mack)
-#' pf_cl <- fit_premium(tri, method = "cl")
+#' pf_cl <- fit_prem(tri, method = "cl")
 #' }
 #'
 #' @export
-fit_premium <- function(x,
+fit_prem <- function(x,
                         method       = c("ed", "cl"),
                         alpha        = 1,
                         regime       = NULL,
@@ -85,7 +85,7 @@ fit_premium <- function(x,
                         tail         = FALSE,
                         conf_level   = 0.95) {
 
-  .assert_triangle_input(x, "fit_premium()")
+  .assert_triangle_input(x, "fit_prem()")
   method       <- match.arg(method)
   sigma_method <- match.arg(sigma_method)
 
@@ -99,11 +99,11 @@ fit_premium <- function(x,
 
   # Run chain ladder underneath (Mack-style SE). Point estimate is
   # identical for both methods; ED only differs in SE accumulation.
-  # Uses the standardized `"premium"` column on the Triangle.
+  # Uses the standardized `"prem"` column on the Triangle.
   cl_fit <- fit_cl(
     x,
     method       = "mack",
-    target       = "premium",
+    target       = "prem",
     alpha        = alpha,
     sigma_method = sigma_method,
     recent       = recent,
@@ -115,62 +115,62 @@ fit_premium <- function(x,
     cl_fit$full <- .ed_replace_se(cl_fit$full, cl_fit$selected, x)
   }
 
-  # Rename target_* columns to role-specific premium_* names on $full.
+  # Rename target_* columns to role-specific prem_* names on $full.
   grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  cl_fit$full <- .premium_rename_full(cl_fit$full, grp, conf_level)
+  cl_fit$full <- .prem_rename_full(cl_fit$full, grp, conf_level)
 
   # Usage map. Premium has no maturity concept (g_k -> 0), so we
   # bypass `.build_usage()`'s 2-pass detection and call
   # `.compute_triangle_usage()` directly with the pre-filter triangle.
-  premium_usage <- .compute_triangle_usage(
+  prem_usage <- .compute_triangle_usage(
     x,
     recent  = recent,
     regime  = regime,
     holdout = NULL
   )
-  data.table::setattr(premium_usage, "regime",  regime)
-  data.table::setattr(premium_usage, "recent",  recent)
-  data.table::setattr(premium_usage, "holdout", NULL)
-  data.table::setattr(premium_usage, "m_k",     NULL)
-  data.table::setattr(premium_usage, "m_k_dt",  NULL)
-  cl_fit$usage <- premium_usage
+  data.table::setattr(prem_usage, "regime",  regime)
+  data.table::setattr(prem_usage, "recent",  recent)
+  data.table::setattr(prem_usage, "holdout", NULL)
+  data.table::setattr(prem_usage, "m_k",     NULL)
+  data.table::setattr(prem_usage, "m_k_dt",  NULL)
+  cl_fit$usage <- prem_usage
 
   cl_fit$regime                  <- regime
-  attr(cl_fit, "premium_method") <- method
+  attr(cl_fit, "prem_method") <- method
   attr(cl_fit, "conf_level")     <- conf_level
   class(cl_fit) <- c("PremiumFit", class(cl_fit))
   cl_fit
 }
 
 
-#' Rename target_* columns to premium_* and add incr/CI columns
+#' Rename target_* columns to prem_* and add incr/CI columns
 #'
 #' @description
 #' Translates the worker (`fit_cl`) output's `target_*` columns to the
-#' dispatcher's role-specific `premium_*` names. Also derives
-#' `premium_incr_proj` (per-cohort first difference of `premium_proj`) and
-#' analytical CI bounds (`premium_ci_lower`, `premium_ci_upper`) from
-#' `premium_proj` +/- z * `premium_total_se`.
+#' dispatcher's role-specific `prem_*` names. Also derives
+#' `incr_prem_proj` (per-cohort first difference of `prem_proj`) and
+#' analytical CI bounds (`prem_ci_lo`, `prem_ci_hi`) from
+#' `prem_proj` +/- z * `prem_total_se`.
 #'
 #' @keywords internal
-.premium_rename_full <- function(full, grp, conf_level) {
+.prem_rename_full <- function(full, grp, conf_level) {
   full <- data.table::copy(.copy_dt(full))
 
   rename_map <- c(
-    target_obs       = "premium_obs",
-    target_proj      = "premium_proj",
-    target_incr_proj = "premium_incr_proj",
-    target_proc_se2  = "premium_proc_se2",
-    target_param_se2 = "premium_param_se2",
-    target_total_se2 = "premium_total_se2",
-    target_proc_se   = "premium_proc_se",
-    target_param_se  = "premium_param_se",
-    target_total_se  = "premium_total_se",
-    target_proc_cv   = "premium_proc_cv",
-    target_param_cv  = "premium_param_cv",
-    target_total_cv  = "premium_total_cv"
+    target_obs       = "prem_obs",
+    target_proj      = "prem_proj",
+    incr_target_proj = "incr_prem_proj",
+    target_proc_se2  = "prem_proc_se2",
+    target_param_se2 = "prem_param_se2",
+    target_total_se2 = "prem_total_se2",
+    target_proc_se   = "prem_proc_se",
+    target_param_se  = "prem_param_se",
+    target_total_se  = "prem_total_se",
+    target_proc_cv   = "prem_proc_cv",
+    target_param_cv  = "prem_param_cv",
+    target_total_cv  = "prem_total_cv"
   )
   present <- intersect(names(rename_map), names(full))
   if (length(present)) {
@@ -178,18 +178,18 @@ fit_premium <- function(x,
   }
 
   # Derive incremental projection if not already present.
-  if (!"premium_incr_proj" %in% names(full)) {
+  if (!"incr_prem_proj" %in% names(full)) {
     by_cols <- c(grp, "cohort")
-    full[, ("premium_incr_proj") := premium_proj -
-           data.table::shift(premium_proj, 1L, fill = 0),
+    full[, ("incr_prem_proj") := prem_proj -
+           data.table::shift(prem_proj, 1L, fill = 0),
          by = by_cols]
   }
 
-  # Analytical CI: premium_proj +/- z * premium_total_se (lower clipped at 0).
+  # Analytical CI: prem_proj +/- z * prem_total_se (lower clipped at 0).
   z_alpha <- stats::qnorm((1 + conf_level) / 2)
   full[, `:=`(
-    premium_ci_lower = pmax(0, premium_proj - z_alpha * premium_total_se),
-    premium_ci_upper = premium_proj + z_alpha * premium_total_se
+    prem_ci_lo = pmax(0, prem_proj - z_alpha * prem_total_se),
+    prem_ci_hi = prem_proj + z_alpha * prem_total_se
   )]
 
   full[]
@@ -224,7 +224,7 @@ fit_premium <- function(x,
 #'   `target_param_se`, `target_total_se`, `target_proc_cv`,
 #'   `target_param_cv`, `target_total_cv` columns rebuilt under the ED
 #'   recursion (column names match the upstream `fit_cl` worker
-#'   convention; the dispatcher renames them to `premium_*` afterwards).
+#'   convention; the dispatcher renames them to `prem_*` afterwards).
 #'
 #' @keywords internal
 .ed_replace_se <- function(full, selected, triangle) {
@@ -313,7 +313,7 @@ fit_premium <- function(x,
 #' @param ... Unused.
 #' @export
 print.PremiumFit <- function(x, ...) {
-  method <- attr(x, "premium_method")
+  method <- attr(x, "prem_method")
   cat("PremiumFit\n")
   cat("  variance     :", switch(method,
     ed = "ED-additive recursion",
@@ -340,7 +340,7 @@ summary.PremiumFit <- function(object, ...) {
   full <- .copy_dt(object$full)
   out <- full[, .SD[which.max(dev)], by = cohort]
   out[, .(cohort,
-          ultimate    = premium_proj,
-          ultimate_se = premium_total_se,
-          ultimate_cv = premium_total_cv)]
+          ultimate    = prem_proj,
+          ultimate_se = prem_total_se,
+          ultimate_cv = prem_total_cv)]
 }

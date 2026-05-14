@@ -21,7 +21,7 @@ Updated \code{full} data.table with \code{target_proc_se2},
 \code{target_param_se}, \code{target_total_se}, \code{target_proc_cv},
 \code{target_param_cv}, \code{target_total_cv} columns rebuilt under the ED
 recursion (column names match the upstream \code{fit_cl} worker
-convention; the dispatcher renames them to \verb{premium_*} afterwards).
+convention; the dispatcher renames them to \verb{prem_*} afterwards).
 }
 \description{
 Point projection (\code{target_proj}) is preserved -- it is identical under

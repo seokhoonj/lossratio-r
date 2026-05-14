@@ -19,15 +19,15 @@
 \item{x}{An object of class \code{Triangle}.}
 
 \item{metric}{A single metric to plot. Must be one of:
-\code{"lr"}, \code{"lr_incr"},
-\code{"loss"}, \code{"loss_incr"}, \code{"premium"}, \code{"premium_incr"},
-\code{"margin"}, \code{"margin_incr"},
-\code{"loss_share"}, \code{"loss_incr_share"}, \code{"premium_share"}, or \code{"premium_incr_share"}.}
+\code{"lr"}, \code{"incr_lr"},
+\code{"loss"}, \code{"incr_loss"}, \code{"prem"}, \code{"incr_prem"},
+\code{"margin"}, \code{"incr_margin"},
+\code{"loss_share"}, \code{"incr_loss_share"}, \code{"prem_share"}, or \code{"incr_prem_share"}.}
 
 \item{summary}{Logical. If \code{FALSE} (default), shows raw cohort trajectories.
 If \code{TRUE}, shows grey cohort trajectories with overlaid summary lines
 (mean, median, weighted mean). Summary overlay is supported only for
-\code{"lr"} and \code{"lr_incr"}, and only when the x-axis variable is a development-period
+\code{"lr"} and \code{"incr_lr"}, and only when the x-axis variable is a development-period
 variable (for example, \code{dev_m}, \code{dev_q}, \code{dev_h}, \code{dev_y}).}
 
 \item{summary_min_n}{Optional minimum number of observations required for
@@ -76,15 +76,15 @@ Cohort lines are grouped by the period variable stored in
 \code{attr(x, "groups")}.
 
 The cumulative loss ratio is defined here as:
-\deqn{lr = loss / premium}
+\deqn{lr = loss / prem}
 
-For long-term health insurance applications, risk premium is commonly
-used as the \code{premium} measure.
+For long-term health insurance applications, risk prem is commonly
+used as the \code{prem} measure.
 
 The weighted mean is defined as:
 \itemize{
-\item \code{lr_wt      = sum(loss)      / sum(premium)}
-\item \code{lr_incr_wt = sum(loss_incr) / sum(premium_incr)}
+\item \code{lr_wt      = sum(loss)      / sum(prem)}
+\item \code{incr_lr_wt = sum(incr_loss) / sum(incr_prem)}
 }
 
 Ratio and proportion metrics are plotted on the original scale and displayed

@@ -19,11 +19,11 @@ A \code{data.table} of class \code{"CalendarSummary"} with one row per
 \item{lr_mean}{Mean of cumulative loss ratios.}
 \item{lr_median}{Median of cumulative loss ratios.}
 \item{lr_wt}{Weighted cumulative loss ratio
-(\code{sum(loss) / sum(premium)}).}
-\item{lr_incr_mean}{Mean of per-period loss ratios.}
-\item{lr_incr_median}{Median of per-period loss ratios.}
-\item{lr_incr_wt}{Weighted per-period loss ratio
-(\code{sum(loss_incr) / sum(premium_incr)}).}
+(\code{sum(loss) / sum(prem)}).}
+\item{incr_lr_mean}{Mean of per-period loss ratios.}
+\item{incr_lr_median}{Median of per-period loss ratios.}
+\item{incr_lr_wt}{Weighted per-period loss ratio
+(\code{sum(incr_loss) / sum(incr_prem)}).}
 }
 
 The returned object preserves the attributes \code{groups},
@@ -32,7 +32,7 @@ The returned object preserves the attributes \code{groups},
 \description{
 S3 method for \code{summary()} on \code{Calendar} objects. Computes
 calendar-period summary statistics for cumulative loss ratios (\code{lr})
-and per-period loss ratios (\code{lr_incr}).
+and per-period loss ratios (\code{incr_lr}).
 
 Where \code{\link[=summary.Triangle]{summary.Triangle()}} aggregates by \verb{(groups, dev)} (cohort
 x development), this method aggregates by \verb{(groups, calendar)}
@@ -45,8 +45,8 @@ cal <- as_calendar(
   df,
   groups   = "coverage",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  prem  = "incr_prem"
 )
 smr  <- summary(cal)
 head(smr)

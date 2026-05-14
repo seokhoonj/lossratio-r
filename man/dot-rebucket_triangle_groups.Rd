@@ -14,12 +14,12 @@
 }
 \value{
 A \code{Triangle} with \code{attr(., "groups")} set to the requested
-value and \code{loss} / \code{premium} / \code{lr} aggregated to the requested
+value and \code{loss} / \code{prem} / \code{lr} aggregated to the requested
 partition.
 }
 \description{
-Re-aggregates \code{loss} / \code{premium} / \code{loss_incr} / \code{premium_incr} over
-the dropped grouping columns and recomputes \code{lr} / \code{lr_incr} as
+Re-aggregates \code{loss} / \code{prem} / \code{incr_loss} / \code{incr_prem} over
+the dropped grouping columns and recomputes \code{lr} / \code{incr_lr} as
 ratios of the aggregated totals. Other cell-level columns
 (\code{margin}, \code{profit}, \code{loss_share}, ...) are not regenerated -- the
 rebucketed object is intended for \code{as_link()} consumption only.

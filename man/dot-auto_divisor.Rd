@@ -15,25 +15,27 @@ A single numeric divisor.
 \description{
 Internal helper used when \code{amount_divisor = "auto"}. Considers the
 SI/financial prefix set \verb{\{1, 1e3, 1e6, 1e9, 1e12\}} (no unit /
-thousand / million / billion / trillion) and picks the divisor that
-minimises \code{nchar(sprintf("\%.1f", median / divisor))}. Candidates
-whose median label rounds exactly to \code{"0.0"} are disqualified
-(precision loss). On ties, the \emph{smallest} divisor wins so the most
-significant digit survives (e.g. \code{"6.7"} over \code{"0.7"}). Falls back to
-\code{1} when the data have no finite positive values.
+thousand / million / billion / trillion) and picks the largest
+divisor such that \code{median / divisor} still rounds (at \verb{\%.1f}) to a
+non-zero label. Below the \code{0.05} threshold the label would format as
+\code{"0.0"} and precision is wiped out, so those divisors are
+disqualified. Falls back to \code{1} when the data have no finite
+positive values.
 
-The candidate set deliberately uses powers of 1000 (no \code{1e7} /
-\code{1e8}): the rule's "tie-break on smallest divisor" already keeps the
-label between \code{1.0} and \verb{999.X}, so a finer grid would not change
-compactness. The trade-off accepts that the tails of a wide
-distribution may round to the same label -- the heatmap colour fill
-carries the precise value; the in-cell label is only a numeric hint.
+The "largest divisor that still rounds non-zero" rule favours
+labels in the \verb{0.X} range (3 chars) over \code{X.X} / \code{XX.X} / \code{XXX.X}
+(3-5 chars). This keeps in-cell heatmap text compact; the colour
+fill carries the precise value.
 
-Examples:
-median 6.6e7  -> divisor \code{1e6}, label \code{"66.6"} (4 chars; \verb{/1e9}
-would give \code{"0.1"}, but rounds away signal so
-\code{1e6} wins by the smallest-divisor tie-break).
-median 5e5    -> divisor \code{1e3}, label \code{"500.0"} (5 chars).
-median 5e9    -> divisor \code{1e9}, label \code{"5.0"} (3 chars).
+Examples (median -> divisor, label):
+\code{5e2}  -> \code{1e3},  \code{"0.5"}
+\code{5e7}  -> \code{1e9},  \code{"0.1"} (since \code{5e7 / 1e9 = 0.05 >= 0.05})
+\code{5e10} -> \code{1e12}, \code{"0.1"}
+\code{5e12} -> \code{1e12}, \code{"5.0"} (capped at the largest candidate)
+
+The numeric \verb{>= 0.05} test is deliberate: Windows R's
+\code{sprintf("\%.1f", 0.05)} rounds to \code{"0.0"} while Linux / macOS round
+to \code{"0.1"}. Comparing numerically (with a tiny \code{1e-10} slack)
+produces a deterministic, platform-independent choice.
 }
 \keyword{internal}

@@ -1,8 +1,8 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
-sub <- as_triangle(exp[coverage == "SUR"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
+sub <- as_triangle(exp[coverage == "SUR"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
 
 test_that("backtest returns class 'Backtest'", {
   bt <- backtest(sub, holdout = 6L, target = "loss", loss_method = "cl")
@@ -28,7 +28,7 @@ test_that("ae_err has expected columns", {
 })
 
 test_that("backtest stores both cumulative and incremental views", {
-  for (t in c("lr", "loss", "premium")) {
+  for (t in c("lr", "loss", "prem")) {
     bt <- backtest(sub, holdout = 6L, target = t, loss_method = "cl")
     expect_s3_class(bt, "Backtest")
     # Cumulative columns
@@ -36,8 +36,8 @@ test_that("backtest stores both cumulative and incremental views", {
       expect_true(nm %in% names(bt$ae_err),
                   info = paste(t, "missing", nm))
     # Incremental columns
-    for (nm in c("actual_incr", "expected_incr",
-                 "aeg_incr", "ae_err_incr"))
+    for (nm in c("incr_actual", "incr_expected",
+                 "incr_aeg", "incr_ae_err"))
       expect_true(nm %in% names(bt$ae_err),
                   info = paste(t, "missing", nm))
   }
@@ -57,9 +57,9 @@ test_that("aeg = actual - expected (raw gap, cumulative + incremental)", {
   expect_equal(bt$ae_err$aeg,
                bt$ae_err$actual - bt$ae_err$expected,
                tolerance = 1e-8)
-  ok <- with(bt$ae_err, is.finite(actual_incr) & is.finite(expected_incr))
-  expect_equal(bt$ae_err$aeg_incr[ok],
-               (bt$ae_err$actual_incr - bt$ae_err$expected_incr)[ok],
+  ok <- with(bt$ae_err, is.finite(incr_actual) & is.finite(incr_expected))
+  expect_equal(bt$ae_err$incr_aeg[ok],
+               (bt$ae_err$incr_actual - bt$ae_err$incr_expected)[ok],
                tolerance = 1e-8)
 })
 
@@ -93,7 +93,7 @@ test_that("backtest errors on invalid holdout", {
 })
 
 test_that("backtest errors on invalid target", {
-  # `target` is one of "lr" / "loss" / "premium" (match.arg).
+  # `target` is one of "lr" / "loss" / "prem" (match.arg).
   expect_error(
     backtest(sub, holdout = 6L, target = "nonexistent")
   )
@@ -174,11 +174,11 @@ test_that("plot.Backtest dispatches for lr backtests", {
   }
 })
 
-# target = "premium" support --------------------------------------------
+# target = "prem" support --------------------------------------------
 
-test_that("backtest works with target = 'premium', premium_method = 'ed'", {
-  bt <- backtest(sub, holdout = 6L, target = "premium",
-                 premium_method = "ed")
+test_that("backtest works with target = 'prem', prem_method = 'ed'", {
+  bt <- backtest(sub, holdout = 6L, target = "prem",
+                 prem_method = "ed")
   expect_s3_class(bt, "Backtest")
   expect_true("expected" %in% names(bt$ae_err))
   expect_true(any(is.finite(bt$ae_err$ae_err)))

@@ -136,20 +136,20 @@
 #'
 #' @description
 #' Internal helper: classifies a Triangle / Calendar / Total / fit
-#' output metric as ratio (LR, share) vs amount (loss, premium, margin).
+#' output metric as ratio (LR, share) vs amount (loss, prem, margin).
 #' Ratio metrics never need an `amount_divisor` scaling (they live on
 #' \[0, 1\] or thereabouts); amount metrics do.
 #'
 #' @param metric A single metric name.
 #'
-#' @return `TRUE` for `lr` / `lr_incr` and any `_share` variant,
+#' @return `TRUE` for `lr` / `incr_lr` and any `_share` variant,
 #'   `FALSE` otherwise.
 #'
 #' @keywords internal
 .is_ratio_metric <- function(metric) {
-  metric %in% c("lr", "lr_incr",
-                "loss_share", "loss_incr_share",
-                "premium_share", "premium_incr_share")
+  metric %in% c("lr", "incr_lr",
+                "loss_share", "incr_loss_share",
+                "prem_share", "incr_prem_share")
 }
 
 
@@ -248,19 +248,19 @@
 #' @keywords internal
 .get_plot_meta <- function(metric, amount_divisor = 1e8) {
 
-  ratio_vars  <- c("lr", "lr_incr")
-  amount_vars <- c("loss", "loss_incr",
-                   "premium", "premium_incr",
-                   "margin", "margin_incr")
-  prop_vars   <- c("loss_share", "loss_incr_share",
-                   "premium_share", "premium_incr_share")
+  ratio_vars  <- c("lr", "incr_lr")
+  amount_vars <- c("loss", "incr_loss",
+                   "prem", "incr_prem",
+                   "margin", "incr_margin")
+  prop_vars   <- c("loss_share", "incr_loss_share",
+                   "prem_share", "incr_prem_share")
 
   if (metric %in% ratio_vars) {
     list(
       type  = "ratio",
       title = switch(metric,
                        lr      = "Cumulative Loss Ratio",
-                       lr_incr = "Per-Period Loss Ratio"
+                       incr_lr = "Per-Period Loss Ratio"
       ),
       caption = "Unit: %",
       hline   = 1
@@ -272,11 +272,11 @@
       type  = "amount",
       title = switch(metric,
                        loss         = "Cumulative Loss",
-                       loss_incr    = "Per-Period Loss",
-                       premium      = "Cumulative Premium",
-                       premium_incr = "Per-Period Premium",
+                       incr_loss    = "Per-Period Loss",
+                       prem      = "Cumulative Premium",
+                       incr_prem = "Per-Period Premium",
                        margin       = "Cumulative Margin",
-                       margin_incr  = "Per-Period Margin"
+                       incr_margin  = "Per-Period Margin"
       ),
       caption = if (nzchar(unit_txt)) paste("Unit:", unit_txt) else NULL,
       hline   = 0
@@ -287,9 +287,9 @@
       type  = "prop",
       title = switch(metric,
                        loss_share         = "Cumulative Loss Proportion",
-                       loss_incr_share    = "Per-Period Loss Proportion",
-                       premium_share      = "Cumulative Premium Proportion",
-                       premium_incr_share = "Per-Period Premium Proportion"
+                       incr_loss_share    = "Per-Period Loss Proportion",
+                       prem_share      = "Cumulative Premium Proportion",
+                       incr_prem_share = "Per-Period Premium Proportion"
       ),
       caption = "Unit: %",
       hline   = NULL

@@ -11,9 +11,9 @@
 #' \itemize{
 #'   \item `metric = "lr"`, `cell_type = "cumulative"`: cumulative loss
 #'     ratio (default).
-#'   \item `metric = "lr_incr"` (i.e., `cell_type = "incremental"`):
+#'   \item `metric = "incr_lr"` (i.e., `cell_type = "incremental"`):
 #'     per-period loss ratio.
-#'   \item `metric = "loss"` / `"premium"`: same split — cumulative or
+#'   \item `metric = "loss"` / `"prem"`: same split — cumulative or
 #'     per-period amounts.
 #' }
 #' Confidence bands are drawn only for cumulative metrics
@@ -22,7 +22,7 @@
 #'
 #' @param x An object of class `"LRFit"`.
 #' @param metric Metric to plot. One of `"lr"` (default), `"loss"`,
-#'   `"premium"`.
+#'   `"prem"`.
 #' @param cell_type Aggregation. One of `"cumulative"` (default) or
 #'   `"incremental"`.
 #' @param per_group Logical or `NULL`. When `TRUE` (auto for multi-group
@@ -46,7 +46,7 @@
 #' @method plot LRFit
 #' @export
 plot.LRFit <- function(x,
-                        metric         = c("lr", "loss", "premium"),
+                        metric         = c("lr", "loss", "prem"),
                         cell_type      = c("cumulative", "incremental"),
                         per_group      = NULL,
                         ask            = grDevices::dev.interactive(),
@@ -91,18 +91,18 @@ plot.LRFit <- function(x,
   is_incr  <- cell_type == "incremental"
   is_ratio <- metric == "lr"
 
-  # column key combines metric + cell_type — e.g., "lr" + "incremental" = "lr_incr_proj"
-  col_key <- if (is_incr) paste0(metric, "_incr") else metric
+  # column key combines metric + cell_type — e.g., "lr" + "incremental" = "incr_lr_proj"
+  col_key <- if (is_incr) paste0("incr_", metric) else metric
   val_col <- paste0(col_key, "_proj")
 
   # Only cumulative metrics have CI columns; incremental projections
   # don't carry SE / CI columns in the fit output.
   if (!is_incr && is_ratio) {
-    ci_lo_col <- "lr_ci_lower";   ci_hi_col <- "lr_ci_upper"
+    ci_lo_col <- "lr_ci_lo";   ci_hi_col <- "lr_ci_hi"
   } else if (!is_incr && metric == "loss") {
-    ci_lo_col <- "loss_ci_lower"; ci_hi_col <- "loss_ci_upper"
-  } else if (!is_incr && metric == "premium") {
-    ci_lo_col <- "premium_ci_lower"; ci_hi_col <- "premium_ci_upper"
+    ci_lo_col <- "loss_ci_lo"; ci_hi_col <- "loss_ci_hi"
+  } else if (!is_incr && metric == "prem") {
+    ci_lo_col <- "prem_ci_lo"; ci_hi_col <- "prem_ci_hi"
   } else {
     ci_lo_col <- NA_character_;   ci_hi_col <- NA_character_
   }
@@ -112,7 +112,7 @@ plot.LRFit <- function(x,
     metric,
     lr      = "Loss Ratio",
     loss    = "Loss",
-    premium = "Premium"
+    prem = "Premium"
   )
   y_lab <- if (is_ratio) col_key else attr(x$data, metric)
   title <- paste0("Projected ", cum_word, " ", base_lab,
@@ -126,20 +126,20 @@ plot.LRFit <- function(x,
   proj <- full[is_observed == FALSE & is.finite(full[[val_col]])]
 
   # Observed-cell value:
-  #   * Cumulative loss / premium read the raw `_obs` column.
-  #   * Cumulative lr is derived as loss_obs / premium_obs.
+  #   * Cumulative loss / prem read the raw `_obs` column.
+  #   * Cumulative lr is derived as loss_obs / prem_obs.
   #   * Incremental metrics reuse `<metric>_incr_proj` since
-  #     loss/premium_proj equals their `_obs` counterparts on observed rows.
+  #     loss/prem_proj equals their `_obs` counterparts on observed rows.
   if (is_incr) {
     obs[, (".y") := .SD[[1L]], .SDcols = val_col]
   } else if (metric == "loss") {
     obs[, (".y") := loss_obs]
-  } else if (metric == "premium") {
-    obs[, (".y") := premium_obs]
+  } else if (metric == "prem") {
+    obs[, (".y") := prem_obs]
   } else {  # cumulative lr
     obs[, (".y") := data.table::fifelse(
-      is.finite(premium_obs) & premium_obs != 0,
-      loss_obs / premium_obs, NA_real_
+      is.finite(prem_obs) & prem_obs != 0,
+      loss_obs / prem_obs, NA_real_
     )]
   }
 
@@ -323,14 +323,14 @@ plot.LRFit <- function(x,
 #'
 #' @param x An object of class `"LRFit"`.
 #' @param metric Metric shown in the heatmap cells. One of `"lr"`
-#'   (default), `"loss"`, `"premium"`.
+#'   (default), `"loss"`, `"prem"`.
 #' @param cell_type Aggregation. One of `"cumulative"` (default) or
 #'   `"incremental"`. Combined with `metric` to select the column
-#'   (e.g., `metric = "lr"`, `cell_type = "incremental"` → `lr_incr`).
+#'   (e.g., `metric = "lr"`, `cell_type = "incremental"` → `incr_lr`).
 #' @param region Cell region to plot (only used when `view = "value"`).
 #'   One of `"proj"` (projected cells only, observed cells masked),
 #'   `"full"` (observed + projected), or `"data"` (observed cumulative
-#'   loss / premium / lr from `x$data` — the raw Triangle, no
+#'   loss / prem / lr from `x$data` — the raw Triangle, no
 #'   projection). Default is `"proj"`.
 #' @param view Plot mode. One of:
 #'   \describe{
@@ -361,7 +361,7 @@ plot.LRFit <- function(x,
 #' @method plot_triangle LRFit
 #' @export
 plot_triangle.LRFit <- function(x,
-                                 metric         = c("lr", "loss", "premium"),
+                                 metric         = c("lr", "loss", "prem"),
                                  cell_type      = c("cumulative", "incremental"),
                                  region         = c("proj", "full", "data"),
                                  view           = c("value", "usage"),
@@ -390,7 +390,7 @@ plot_triangle.LRFit <- function(x,
 
   is_incr  <- cell_type == "incremental"
   is_ratio <- metric == "lr"
-  col_key  <- if (is_incr) paste0(metric, "_incr") else metric
+  col_key  <- if (is_incr) paste0("incr_", metric) else metric
 
   # view = "usage": cell-status heatmap (used / holdout / unused /
   # future). `x$usage` is pre-computed at fit time and carries all the
@@ -426,7 +426,7 @@ plot_triangle.LRFit <- function(x,
     dt[, ("is_observed") := TRUE]
 
   # 2) compute .value for (metric, cell_type). The `data` region (raw
-  # Triangle) has bare column names (lr, loss_incr, premium, ...). The
+  # Triangle) has bare column names (lr, incr_loss, prem, ...). The
   # `proj` / `full` regions have the `_proj` suffix on the same base.
   if (region == "data") {
     if (!(col_key %in% names(dt)))
@@ -465,9 +465,9 @@ plot_triangle.LRFit <- function(x,
   # 5) build cell labels
   fmt <- paste0("%.", digits, "f")
 
-  # Ratio metrics (lr / lr_incr) render as %. Amount metrics
-  # (loss / loss_incr / premium / premium_incr) render scaled by
-  # `amount_divisor`. `detail` label_style adds the loss/premium
+  # Ratio metrics (lr / incr_lr) render as %. Amount metrics
+  # (loss / incr_loss / prem / incr_prem) render scaled by
+  # `amount_divisor`. `detail` label_style adds the loss/prem
   # breakdown only for ratio metrics — meaningless for amounts.
   if (label_style == "value" || !is_ratio) {
     if (is_ratio) {
@@ -487,9 +487,9 @@ plot_triangle.LRFit <- function(x,
               col_key, .get_amount_unit(amount_divisor))
     }
   } else {
-    # ratio + detail: show loss/premium breakdown beneath the lr value
-    loss_base <- if (is_incr) "loss_incr"    else "loss"
-    prem_base <- if (is_incr) "premium_incr" else "premium"
+    # ratio + detail: show loss/prem breakdown beneath the lr value
+    loss_base <- if (is_incr) "incr_loss"    else "loss"
+    prem_base <- if (is_incr) "incr_prem" else "prem"
     loss_col  <- if (region == "data") loss_base else paste0(loss_base, "_proj")
     prem_col  <- if (region == "data") prem_base else paste0(prem_base, "_proj")
     dt[, ("label") := data.table::fifelse(
@@ -634,7 +634,7 @@ plot_triangle.LRFit <- function(x,
   base_word  <- switch(metric,
                        lr      = "Loss Ratio",
                        loss    = "Loss",
-                       premium = "Premium")
+                       prem = "Premium")
   p <- p + ggplot2::labs(
     title   = paste0(cum_word, " ", base_word, " Triangle",
                      " (method: ", x$method, ")"),

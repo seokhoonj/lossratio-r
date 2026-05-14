@@ -12,9 +12,9 @@ A loss ratio analytics toolkit for long-term health insurance, covering cohort d
 }
 \details{
 The core loss ratio is defined as:
-\deqn{lr = loss / premium}
+\deqn{lr = loss / prem}
 
-where \code{premium} represents risk premium, not written premium.
+where \code{prem} represents risk prem, not written prem.
 }
 \seealso{
 Useful links:

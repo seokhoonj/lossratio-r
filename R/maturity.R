@@ -30,7 +30,7 @@
 #' reliable. ATA factors of `lr` itself (a ratio of two cumulative
 #' quantities) carry additional noise and tend to give less precise
 #' maturity decisions. Override `target` only when you specifically
-#' want maturity of premium development or another cumulative metric.
+#' want maturity of prem development or another cumulative metric.
 #'
 #' @param x A `Triangle` object.
 #' @param target Cumulative metric for the link factor. Default
@@ -47,7 +47,7 @@
 #'   maturity row. Any non-`NULL`, non-empty value must be a subset of
 #'   `attr(x, "groups")`; column order is irrelevant. When the requested
 #'   `groups` is coarser than the Triangle grouping, the underlying
-#'   `loss` / `premium` / `lr` columns are re-aggregated to the coarser
+#'   `loss` / `prem` / `lr` columns are re-aggregated to the coarser
 #'   partition before computing ata links.
 #' @param weight Optional WLS weight variable. Forwarded to
 #'   [as_link()].
@@ -250,8 +250,8 @@ detect_maturity <- function(x,
 
 #' Internal: rebucket a `Triangle` to a coarser `groups` partition
 #'
-#' Re-aggregates `loss` / `premium` / `loss_incr` / `premium_incr` over
-#' the dropped grouping columns and recomputes `lr` / `lr_incr` as
+#' Re-aggregates `loss` / `prem` / `incr_loss` / `incr_prem` over
+#' the dropped grouping columns and recomputes `lr` / `incr_lr` as
 #' ratios of the aggregated totals. Other cell-level columns
 #' (`margin`, `profit`, `loss_share`, ...) are not regenerated -- the
 #' rebucketed object is intended for `as_link()` consumption only.
@@ -261,7 +261,7 @@ detect_maturity <- function(x,
 #'   `attr(x, "groups")`. `NULL` returns `x` unchanged.
 #'
 #' @return A `Triangle` with `attr(., "groups")` set to the requested
-#'   value and `loss` / `premium` / `lr` aggregated to the requested
+#'   value and `loss` / `prem` / `lr` aggregated to the requested
 #'   partition.
 #'
 #' @keywords internal
@@ -297,7 +297,7 @@ detect_maturity <- function(x,
     data.table::setattr(z, "grain"   , attr(x, "grain"))
     data.table::setattr(z, "dev"     , attr(x, "dev"))
     data.table::setattr(z, "loss"    , attr(x, "loss"))
-    data.table::setattr(z, "premium" , attr(x, "premium"))
+    data.table::setattr(z, "prem" , attr(x, "prem"))
     return(.prepend_class(z, "Triangle"))
   }
 
@@ -306,7 +306,7 @@ detect_maturity <- function(x,
   # Columns we re-aggregate. Only sum-additive primitives; ratios (lr) are
   # recomputed from the aggregated totals.
   sum_cols <- intersect(
-    c("loss", "loss_incr", "premium", "premium_incr", "n_cohorts"),
+    c("loss", "incr_loss", "prem", "incr_prem", "n_cohorts"),
     names(dt)
   )
   by_cols <- c(groups, "cohort", "dev")
@@ -315,10 +315,10 @@ detect_maturity <- function(x,
             by      = by_cols,
             .SDcols = sum_cols]
 
-  if (all(c("loss", "premium") %in% names(agg)))
-    agg[, ("lr") := loss / premium]
-  if (all(c("loss_incr", "premium_incr") %in% names(agg)))
-    agg[, ("lr_incr") := loss_incr / premium_incr]
+  if (all(c("loss", "prem") %in% names(agg)))
+    agg[, ("lr") := loss / prem]
+  if (all(c("incr_loss", "incr_prem") %in% names(agg)))
+    agg[, ("incr_lr") := incr_loss / incr_prem]
 
   data.table::setorderv(agg, by_cols)
 
@@ -328,7 +328,7 @@ detect_maturity <- function(x,
   data.table::setattr(agg, "grain"   , attr(x, "grain"))
   data.table::setattr(agg, "dev"     , attr(x, "dev"))
   data.table::setattr(agg, "loss"    , attr(x, "loss"))
-  data.table::setattr(agg, "premium" , attr(x, "premium"))
+  data.table::setattr(agg, "prem" , attr(x, "prem"))
 
   .prepend_class(agg, "Triangle")
 }

@@ -10,12 +10,12 @@
 \item{metric}{A single metric name.}
 }
 \value{
-\code{TRUE} for \code{lr} / \code{lr_incr} and any \verb{_share} variant,
+\code{TRUE} for \code{lr} / \code{incr_lr} and any \verb{_share} variant,
 \code{FALSE} otherwise.
 }
 \description{
 Internal helper: classifies a Triangle / Calendar / Total / fit
-output metric as ratio (LR, share) vs amount (loss, premium, margin).
+output metric as ratio (LR, share) vs amount (loss, prem, margin).
 Ratio metrics never need an \code{amount_divisor} scaling (they live on
 [0, 1] or thereabouts); amount metrics do.
 }

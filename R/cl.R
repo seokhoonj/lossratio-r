@@ -8,16 +8,16 @@
 #' point forecast follows the standard recursion, and prediction
 #' uncertainty is decomposed into process variance and parameter variance.
 #'
-#' When `weight` is supplied (e.g. `"premium"`), age-to-age factors and
+#' When `weight` is supplied (e.g. `"prem"`), age-to-age factors and
 #' their variance are estimated using the supplied WLS weights.
 #'
 #' @param x An object of class `"Triangle"`.
 #' @param method One of `"mack"`. Default is `"mack"`. The argument is
 #'   retained for future extensibility.
 #' @param target A single cumulative target variable (column to project).
-#'   Typical choices are `"loss"`, `"premium"`, or `"lr"`.
+#'   Typical choices are `"loss"`, `"prem"`, or `"lr"`.
 #' @param weight An optional column name passed to [as_link()] as
-#'   the WLS weight variable. Typically `"premium"` when `target = "lr"`.
+#'   the WLS weight variable. Typically `"prem"` when `target = "lr"`.
 #'   Default is `NULL`.
 #' @param alpha Numeric scalar controlling the variance structure in
 #'   [fit_ata()]. Default is `1`.
@@ -90,8 +90,8 @@
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
-#'   loss     = "loss_incr",
-#'   premium  = "premium_incr"
+#'   loss     = "incr_loss",
+#'   prem  = "incr_prem"
 #' )
 #'
 #' # Mack chain ladder with process / parameter standard errors
@@ -99,8 +99,8 @@
 #' summary(cl_mack)
 #' plot(cl_mack)
 #'
-#' # WLS factors for lr (loss ratio) using premium as the weight
-#' cl_clr <- fit_cl(tri, target = "lr", weight = "premium")
+#' # WLS factors for lr (loss ratio) using prem as the weight
+#' cl_clr <- fit_cl(tri, target = "lr", weight = "prem")
 #' }
 #'
 #' @export
@@ -225,7 +225,7 @@ fit_cl <- function(x,
   ), by = c(grp, "cohort")]
 
   # 10) incremental target projection -----------------------------------
-  full[, ("target_incr_proj") := target_proj -
+  full[, ("incr_target_proj") := target_proj -
          data.table::shift(target_proj, 1L, fill = 0),
        by = c(grp, "cohort")]
 
@@ -282,7 +282,7 @@ fit_cl <- function(x,
   # 13) proj: NA out observed cells -------------------------------------
   proj <- data.table::copy(full)
   na_cols <- c(
-    "target_proj", "target_incr_proj",
+    "target_proj", "incr_target_proj",
     "target_proc_se2", "target_param_se2", "target_total_se2",
     "target_proc_se",  "target_param_se",  "target_total_se",
     "target_proc_cv",  "target_param_cv",  "target_total_cv"

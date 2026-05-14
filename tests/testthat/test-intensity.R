@@ -1,8 +1,8 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
-sub <- as_triangle(exp[coverage == "SUR"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
+sub <- as_triangle(exp[coverage == "SUR"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
 
 
 test_that("fit_intensity returns class 'IntensityFit'", {
@@ -63,13 +63,13 @@ test_that("print.IntensityFit does not error", {
 })
 
 test_that("Link (ED mode) carries `intensity` column (not `g`)", {
-  link_ed <- as_link(sub, target = "loss", exposure = "premium")
+  link_ed <- as_link(sub, target = "loss", exposure = "prem")
   expect_true("intensity" %in% names(link_ed))
   expect_false("g" %in% names(link_ed))
 })
 
 test_that("intensity == target_delta / exposure_from when exposure_from > 0", {
-  link_ed <- as_link(sub, target = "loss", exposure = "premium")
+  link_ed <- as_link(sub, target = "loss", exposure = "prem")
   ok <- is.finite(link_ed$intensity) & link_ed$exposure_from > 0
   expect_equal(link_ed$intensity[ok],
                link_ed$target_delta[ok] / link_ed$exposure_from[ok],

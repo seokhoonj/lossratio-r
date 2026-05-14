@@ -551,7 +551,7 @@ plot_triangle.TriangleValidation <- function(x,
 #'     cleanly, the grain is consistent. Hard errors on schema issues
 #'     so downstream code never receives malformed input.
 #'   \item **Standardise + aggregate** -- rename to package-canonical
-#'     column names (`cohort`, `calendar`, `dev`, `loss`, `premium`,
+#'     column names (`cohort`, `calendar`, `dev`, `loss`, `prem`,
 #'     ...), auto-detect grain (`M` / `Q` / `H` / `Y`) from `cohort`
 #'     spacing, derive `dev` from `(cohort, calendar)`, aggregate to
 #'     `(group, cohort, dev)`, and enrich with cumulative / share /
@@ -573,25 +573,25 @@ plot_triangle.TriangleValidation <- function(x,
 #' column.
 #'
 #' The result contains:
-#' - cumulative loss and cumulative premium,
+#' - cumulative loss and cumulative prem,
 #' - per-period and cumulative proportions,
 #' - per-period and cumulative margin,
 #' - profit indicators,
-#' - per-period loss ratio (`lr_incr = loss_incr / premium_incr`) and
-#'   cumulative loss ratio (`lr = loss / premium`).
+#' - per-period loss ratio (`incr_lr = incr_loss / incr_prem`) and
+#'   cumulative loss ratio (`lr = loss / prem`).
 #'
 #' The cumulative loss ratio is defined as:
-#' \deqn{lr = loss / premium}
+#' \deqn{lr = loss / prem}
 #'
-#' For long-term health insurance applications, risk premium is commonly
-#' used as the `premium` measure.
+#' For long-term health insurance applications, risk prem is commonly
+#' used as the `prem` measure.
 #'
 #' Proportion variables are computed within each `(cohort, dev)` cell:
 #' \itemize{
-#'   \item `loss_incr_share    = loss_incr    / sum(loss_incr)`
-#'   \item `premium_incr_share = premium_incr / sum(premium_incr)`
+#'   \item `incr_loss_share    = incr_loss    / sum(incr_loss)`
+#'   \item `incr_prem_share = incr_prem / sum(incr_prem)`
 #'   \item `loss_share         = loss         / sum(loss)`
-#'   \item `premium_share      = premium      / sum(premium)`
+#'   \item `prem_share      = prem      / sum(prem)`
 #' }
 #'
 #' Therefore, for a fixed `(cohort, dev)` cell, the proportions
@@ -599,7 +599,7 @@ plot_triangle.TriangleValidation <- function(x,
 #' each development cell across products or other grouping variables.
 #'
 #' @param df A data.frame containing experience data with per-period loss and
-#'   premium columns plus `cohort` and `calendar` Date columns
+#'   prem columns plus `cohort` and `calendar` Date columns
 #'   (or any input that the internal Date coercion accepts: Date, POSIXt,
 #'   integer `yyyy` / `yyyymm` / `yyyymmdd`, ISO string).
 #' @param groups Column(s) used for grouping (e.g., product, gender).
@@ -617,17 +617,17 @@ plot_triangle.TriangleValidation <- function(x,
 #'   `development` is cross-checked against
 #'   `count_periods(cohort, calendar, grain)`.
 #' @param loss Single character; per-period loss column in `df`
-#'   (raw name, e.g., `"loss_incr"`).
-#' @param premium Single character; per-period premium column in `df`
-#'   (raw name, e.g., `"premium_incr"`). Premium measure used as
+#'   (raw name, e.g., `"incr_loss"`).
+#' @param prem Single character; per-period prem column in `df`
+#'   (raw name, e.g., `"incr_prem"`). Premium measure used as
 #'   denominator for loss ratio calculations. For long-term health
-#'   insurance applications, risk premium is commonly used.
+#'   insurance applications, risk prem is commonly used.
 #' @param grain One of `"auto"` (default), `"M"`, `"Q"`, `"H"`, `"Y"`.
 #'   `"auto"` infers the grain from the `cohort` value spacing.
 #'   Explicit values must be at least as coarse as the input grain;
 #'   the input is binned (floored) to that grain before aggregation.
 #' @param cell_type One of `"incremental"` (default) or `"cumulative"`.
-#'   Whether `loss` and `premium` in `df` already hold per-period
+#'   Whether `loss` and `prem` in `df` already hold per-period
 #'   (incremental) values or cumulative-within-cohort values. The
 #'   internal triangle is always built on the incremental representation;
 #'   `"cumulative"` inputs are differenced first.
@@ -641,21 +641,21 @@ plot_triangle.TriangleValidation <- function(x,
 #'   derived columns:
 #'   \describe{
 #'     \item{n_cohorts}{Number of distinct cohorts observed}
-#'     \item{loss, loss_incr}{Cumulative and per-period loss}
-#'     \item{premium, premium_incr}{Cumulative and per-period premium}
-#'     \item{lr, lr_incr}{Cumulative and per-period loss ratio}
-#'     \item{margin, margin_incr}{Cumulative and per-period margin
-#'       (`premium - loss`)}
-#'     \item{profit, profit_incr}{Profit indicator (factor `"pos"` / `"neg"`)}
-#'     \item{loss_share, loss_incr_share}{Cumulative and per-period proportions
+#'     \item{loss, incr_loss}{Cumulative and per-period loss}
+#'     \item{prem, incr_prem}{Cumulative and per-period prem}
+#'     \item{lr, incr_lr}{Cumulative and per-period loss ratio}
+#'     \item{margin, incr_margin}{Cumulative and per-period margin
+#'       (`prem - loss`)}
+#'     \item{profit, incr_profit}{Profit indicator (factor `"pos"` / `"neg"`)}
+#'     \item{loss_share, incr_loss_share}{Cumulative and per-period proportions
 #'       of loss within each `(cohort, dev)` cell}
-#'     \item{premium_share, premium_incr_share}{Cumulative and per-period
-#'       proportions of premium within each `(cohort, dev)` cell}
+#'     \item{prem_share, incr_prem_share}{Cumulative and per-period
+#'       proportions of prem within each `(cohort, dev)` cell}
 #'   }
 #'
 #' Attributes set on the returned object: `groups`, `cohort`,
 #' `calendar`, `grain`, `dev` (= `"dev_<lower(grain)>"`, e.g.
-#' `"dev_m"`), `loss`, `premium`, `longer`.
+#' `"dev_m"`), `loss`, `prem`, `longer`.
 #'
 #' @examples
 #' \dontrun{
@@ -664,8 +664,8 @@ plot_triangle.TriangleValidation <- function(x,
 #'   pd_nm        = rep(c("cancer", "health"), each = 6),
 #'   uy_m         = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
 #'   cy_m         = rep(as.Date(c("2023-01-01", "2023-02-01")), 6),
-#'   loss_incr    = runif(12, 80, 120),
-#'   premium_incr = runif(12, 90, 110)
+#'   incr_loss    = runif(12, 80, 120),
+#'   incr_prem = runif(12, 90, 110)
 #' )
 #'
 #' # auto-detected monthly grain
@@ -674,8 +674,8 @@ plot_triangle.TriangleValidation <- function(x,
 #'   groups   = "pd_cd",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
-#'   loss     = "loss_incr",
-#'   premium  = "premium_incr"
+#'   loss     = "incr_loss",
+#'   prem  = "incr_prem"
 #' )
 #'
 #' # explicit quarterly view (re-bins monthly input to quarterly)
@@ -684,8 +684,8 @@ plot_triangle.TriangleValidation <- function(x,
 #'   groups   = "pd_cd",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
-#'   loss     = "loss_incr",
-#'   premium  = "premium_incr",
+#'   loss     = "incr_loss",
+#'   prem  = "incr_prem",
 #'   grain    = "Q"
 #' )
 #'
@@ -700,7 +700,7 @@ as_triangle <- function(df,
                            calendar    = NULL,
                            development = NULL,
                            loss,
-                           premium,
+                           prem,
                            grain       = "auto",
                            cell_type   = c("incremental", "cumulative"),
                            fill_gaps   = FALSE) {
@@ -709,7 +709,7 @@ as_triangle <- function(df,
 
   if (missing(cohort))  stop("`cohort` is required.",  call. = FALSE)
   if (missing(loss))    stop("`loss` is required.",    call. = FALSE)
-  if (missing(premium)) stop("`premium` is required.", call. = FALSE)
+  if (missing(prem)) stop("`prem` is required.", call. = FALSE)
 
   if (!is.logical(fill_gaps) || length(fill_gaps) != 1L || is.na(fill_gaps))
     stop("`fill_gaps` must be a single non-missing logical value.",
@@ -724,7 +724,7 @@ as_triangle <- function(df,
   if (length(groups)) .assert_column_arg(groups, "groups", dt)
   .assert_column_arg(cohort,  "cohort",  dt, length_one = TRUE)
   .assert_column_arg(loss,    "loss",    dt, length_one = TRUE)
-  .assert_column_arg(premium, "premium", dt, length_one = TRUE)
+  .assert_column_arg(prem, "prem", dt, length_one = TRUE)
   if (!is.null(calendar))
     .assert_column_arg(calendar,    "calendar",    dt, length_one = TRUE)
   if (!is.null(development))
@@ -732,7 +732,7 @@ as_triangle <- function(df,
 
   grp  <- groups
   coh  <- cohort
-  prem <- premium
+  prem <- prem
   cal  <- calendar
   dev  <- development
 
@@ -785,12 +785,12 @@ as_triangle <- function(df,
     if (dev != "dev") dt[, (dev) := NULL]
   }
 
-  # standardize column names: user's loss / premium -> standard
-  # slot names loss_incr / premium_incr; cohort -> cohort.
+  # standardize column names: user's loss / prem -> standard
+  # slot names incr_loss / incr_prem; cohort -> cohort.
   data.table::setnames(
     dt,
     c(coh, loss, prem),
-    c("cohort", "loss_incr", "premium_incr")
+    c("cohort", "incr_loss", "incr_prem")
   )
 
   grp_coh     <- c(grp, "cohort")
@@ -798,8 +798,8 @@ as_triangle <- function(df,
   grp_coh_dev <- c(grp, "cohort", "dev")
   coh_dev     <- c("cohort", "dev")
 
-  incr_vars <- c("loss_incr", "premium_incr")
-  cum_vars  <- c("loss", "premium")
+  incr_vars <- c("incr_loss", "incr_prem")
+  cum_vars  <- c("loss", "prem")
 
   # count observed cohorts per (grp, dev)
   dn <- dt[, .(n_cohorts = data.table::uniqueN(cohort)),
@@ -847,9 +847,9 @@ as_triangle <- function(df,
 
   # margin (cumulative + per-period)
   data.table::set(ds, j = "margin",
-                  value = ds[["premium"]] - ds[["loss"]])
-  data.table::set(ds, j = "margin_incr",
-                  value = ds[["premium_incr"]] - ds[["loss_incr"]])
+                  value = ds[["prem"]] - ds[["loss"]])
+  data.table::set(ds, j = "incr_margin",
+                  value = ds[["incr_prem"]] - ds[["incr_loss"]])
 
   # profit indicators (cumulative + per-period)
   data.table::set(
@@ -863,32 +863,32 @@ as_triangle <- function(df,
 
   data.table::set(
     ds,
-    j     = "profit_incr",
+    j     = "incr_profit",
     value = factor(
-      ifelse(ds[["margin_incr"]] >= 0, "pos", "neg"),
+      ifelse(ds[["incr_margin"]] >= 0, "pos", "neg"),
       levels = c("pos", "neg")
     )
   )
 
   # loss ratios (cumulative + per-period)
   data.table::set(ds, j = "lr",
-                  value = ds[["loss"]] / ds[["premium"]])
-  data.table::set(ds, j = "lr_incr",
-                  value = ds[["loss_incr"]] / ds[["premium_incr"]])
+                  value = ds[["loss"]] / ds[["prem"]])
+  data.table::set(ds, j = "incr_lr",
+                  value = ds[["incr_loss"]] / ds[["incr_prem"]])
 
   # proportions within each (cohort, dev) cell
   ds[, ("loss_share")         := loss         / sum(loss),         by = coh_dev]
-  ds[, ("loss_incr_share")    := loss_incr    / sum(loss_incr),    by = coh_dev]
-  ds[, ("premium_share")      := premium      / sum(premium),      by = coh_dev]
-  ds[, ("premium_incr_share") := premium_incr / sum(premium_incr), by = coh_dev]
+  ds[, ("incr_loss_share")    := incr_loss    / sum(incr_loss),    by = coh_dev]
+  ds[, ("prem_share")      := prem      / sum(prem),      by = coh_dev]
+  ds[, ("incr_prem_share") := incr_prem / sum(incr_prem), by = coh_dev]
 
   # final column order: cum-first paired
   out_cols <- c(
     grp, "n_cohorts", "cohort", "dev",
-    "loss", "loss_incr", "premium", "premium_incr",
-    "lr", "lr_incr",
-    "margin", "margin_incr", "profit", "profit_incr",
-    "loss_share", "loss_incr_share", "premium_share", "premium_incr_share"
+    "loss", "incr_loss", "prem", "incr_prem",
+    "lr", "incr_lr",
+    "margin", "incr_margin", "profit", "incr_profit",
+    "loss_share", "incr_loss_share", "prem_share", "incr_prem_share"
   )
   data.table::setcolorder(ds, intersect(out_cols, names(ds)))
 
@@ -896,7 +896,7 @@ as_triangle <- function(df,
   dm <- data.table::melt(
     data         = ds,
     id.vars      = grp_coh_dev,
-    measure.vars = c("loss", "premium")
+    measure.vars = c("loss", "prem")
   )
   dm <- .prepend_class(dm, "TriangleLonger")
 
@@ -906,7 +906,7 @@ as_triangle <- function(df,
   data.table::setattr(ds, "grain"   , grain)
   data.table::setattr(ds, "dev"     , paste0("dev_", tolower(grain)))
   data.table::setattr(ds, "loss"    , loss)
-  data.table::setattr(ds, "premium" , prem)
+  data.table::setattr(ds, "prem" , prem)
   data.table::setattr(ds, "longer"  , dm)
 
   .update_class(ds, prepend = "Triangle")
@@ -917,7 +917,7 @@ as_triangle <- function(df,
 #' @description
 #' S3 method for `summary()` on `Triangle` objects. Computes group-wise summary
 #' statistics for cumulative loss ratios (`lr`) and per-period loss ratios
-#' (`lr_incr`).
+#' (`incr_lr`).
 #'
 #' The function aggregates data by the grouping variables stored in
 #' `attr(x, "groups")` and the development variable stored in
@@ -934,11 +934,11 @@ as_triangle <- function(df,
 #' @details
 #' The weighted mean is computed as:
 #' \itemize{
-#'   \item `lr_wt      = sum(loss)      / sum(premium)`
-#'   \item `lr_incr_wt = sum(loss_incr) / sum(premium_incr)`
+#'   \item `lr_wt      = sum(loss)      / sum(prem)`
+#'   \item `incr_lr_wt = sum(incr_loss) / sum(incr_prem)`
 #' }
 #'
-#' These correspond to portfolio-level loss ratios based on premium and
+#' These correspond to portfolio-level loss ratios based on prem and
 #' are typically more stable than simple averages when exposure sizes differ
 #' across cohorts.
 #'
@@ -950,11 +950,11 @@ as_triangle <- function(df,
 #'   \item{n_cohorts}{Number of observations in the cell}
 #'   \item{lr_mean}{Mean of cumulative loss ratios}
 #'   \item{lr_median}{Median of cumulative loss ratios}
-#'   \item{lr_wt}{Weighted cumulative loss ratio (`sum(loss) / sum(premium)`)}
-#'   \item{lr_incr_mean}{Mean of per-period loss ratios}
-#'   \item{lr_incr_median}{Median of per-period loss ratios}
-#'   \item{lr_incr_wt}{Weighted per-period loss ratio
-#'     (`sum(loss_incr) / sum(premium_incr)`)}
+#'   \item{lr_wt}{Weighted cumulative loss ratio (`sum(loss) / sum(prem)`)}
+#'   \item{incr_lr_mean}{Mean of per-period loss ratios}
+#'   \item{incr_lr_median}{Median of per-period loss ratios}
+#'   \item{incr_lr_wt}{Weighted per-period loss ratio
+#'     (`sum(incr_loss) / sum(incr_prem)`)}
 #' }
 #'
 #' The returned object keeps the attributes `groups` and `dev`,
@@ -967,8 +967,8 @@ as_triangle <- function(df,
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
-#'   loss     = "loss_incr",
-#'   premium  = "premium_incr"
+#'   loss     = "incr_loss",
+#'   prem  = "incr_prem"
 #' )
 #' smr <- summary(d)
 #' head(smr)
@@ -990,10 +990,10 @@ summary.Triangle <- function(object, ...) {
     n_cohorts          = .N,
     lr_mean        = mean(lr),
     lr_median      = median(lr),
-    lr_wt          = sum(loss)      / sum(premium),
-    lr_incr_mean   = mean(lr_incr),
-    lr_incr_median = median(lr_incr),
-    lr_incr_wt     = sum(loss_incr) / sum(premium_incr)
+    lr_wt          = sum(loss)      / sum(prem),
+    incr_lr_mean   = mean(incr_lr),
+    incr_lr_median = median(incr_lr),
+    incr_lr_wt     = sum(incr_loss) / sum(incr_prem)
   ), keyby = grp_dev]
 
   dm <- data.table::melt(
@@ -1001,7 +1001,7 @@ summary.Triangle <- function(object, ...) {
     id.vars      = grp_dev,
     measure.vars = c(
       "lr_mean"     , "lr_median"     , "lr_wt",
-      "lr_incr_mean", "lr_incr_median", "lr_incr_wt"
+      "incr_lr_mean", "incr_lr_median", "incr_lr_wt"
     ),
     variable.name = "type",
     value.name    = "value"
@@ -1047,21 +1047,21 @@ longer.TriangleSummary <- function(x, ...) {
 #'
 #' The result is a long-format `data.table` with class
 #' `c("Calendar", "data.table", "data.frame")` containing cumulative
-#' loss / premium, incremental and cumulative LR, margin, profit, and
+#' loss / prem, incremental and cumulative LR, margin, profit, and
 #' share columns within each `calendar` cell.
 #'
 #' The cumulative loss ratio is defined as:
-#' \deqn{lr = loss / premium}
+#' \deqn{lr = loss / prem}
 #'
-#' For long-term health insurance applications, risk premium is commonly
-#' used as the `premium` measure.
+#' For long-term health insurance applications, risk prem is commonly
+#' used as the `prem` measure.
 #'
 #' Proportion variables are computed within each `calendar` cell:
 #' \itemize{
-#'   \item `loss_incr_share    = loss_incr    / sum(loss_incr)`
-#'   \item `premium_incr_share = premium_incr / sum(premium_incr)`
+#'   \item `incr_loss_share    = incr_loss    / sum(incr_loss)`
+#'   \item `incr_prem_share = incr_prem / sum(incr_prem)`
 #'   \item `loss_share         = loss         / sum(loss)`
-#'   \item `premium_share      = premium      / sum(premium)`
+#'   \item `prem_share      = prem      / sum(prem)`
 #' }
 #'
 #' Therefore, for a fixed `calendar` cell, the proportions
@@ -1070,7 +1070,7 @@ longer.TriangleSummary <- function(x, ...) {
 #'
 #' Calendar derives `calendar = cohort + (dev - 1)` using the
 #' Triangle's `grain` attribute and aggregates the incremental
-#' `loss` / `premium` columns by `(groups, calendar)`. This works for
+#' `loss` / `prem` columns by `(groups, calendar)`. This works for
 #' Triangles built in either mode (with or without an original
 #' `calendar` column in the raw experience), since `cohort + dev` is
 #' always sufficient to reconstruct the calendar axis at the
@@ -1087,12 +1087,12 @@ longer.TriangleSummary <- function(x, ...) {
 #'       within its group, not a true development period (`cym - uym`).
 #'       Useful for aligning groups with different starting periods on a
 #'       common index scale.}
-#'     \item{loss, loss_incr}{Cumulative and per-period loss}
-#'     \item{premium, premium_incr}{Cumulative and per-period premium}
-#'     \item{lr, lr_incr}{Cumulative and per-period loss ratio}
-#'     \item{margin, margin_incr}{Cumulative and per-period margin}
-#'     \item{profit, profit_incr}{Profit indicator}
-#'     \item{loss_share, loss_incr_share, premium_share, premium_incr_share}{
+#'     \item{loss, incr_loss}{Cumulative and per-period loss}
+#'     \item{prem, incr_prem}{Cumulative and per-period prem}
+#'     \item{lr, incr_lr}{Cumulative and per-period loss ratio}
+#'     \item{margin, incr_margin}{Cumulative and per-period margin}
+#'     \item{profit, incr_profit}{Profit indicator}
+#'     \item{loss_share, incr_loss_share, prem_share, incr_prem_share}{
 #'       Proportions within each `calendar` cell}
 #'   }
 #'
@@ -1106,8 +1106,8 @@ longer.TriangleSummary <- function(x, ...) {
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
-#'   loss     = "loss_incr",
-#'   premium  = "premium_incr"
+#'   loss     = "incr_loss",
+#'   prem  = "incr_prem"
 #' )
 #'
 #' cal <- as_calendar(tri)
@@ -1118,7 +1118,7 @@ longer.TriangleSummary <- function(x, ...) {
 #' @export
 as_calendar <- function(x) {
   # data.table NSE NULL bindings for bare column refs in `j` below.
-  cohort <- dev <- loss <- loss_incr <- premium <- premium_incr <- NULL
+  cohort <- dev <- loss <- incr_loss <- prem <- incr_prem <- NULL
   calendar <- NULL
 
   .assert_class(x, "Triangle")
@@ -1136,8 +1136,8 @@ as_calendar <- function(x) {
                   value = .add_periods(dt[["cohort"]], dt[["dev"]], grain))
 
   grp_cal   <- c(grp, "calendar")
-  incr_vars <- c("loss_incr", "premium_incr")
-  cum_vars  <- c("loss", "premium")
+  incr_vars <- c("incr_loss", "incr_prem")
+  cum_vars  <- c("loss", "prem")
 
   # Aggregate Triangle's incrementals to (groups, calendar).
   ds <- dt[, lapply(.SD, sum),
@@ -1167,9 +1167,9 @@ as_calendar <- function(x) {
 
   # margin
   data.table::set(ds, j = "margin",
-                  value = ds[["premium"]] - ds[["loss"]])
-  data.table::set(ds, j = "margin_incr",
-                  value = ds[["premium_incr"]] - ds[["loss_incr"]])
+                  value = ds[["prem"]] - ds[["loss"]])
+  data.table::set(ds, j = "incr_margin",
+                  value = ds[["incr_prem"]] - ds[["incr_loss"]])
 
   # profit indicators
   data.table::set(
@@ -1183,32 +1183,32 @@ as_calendar <- function(x) {
 
   data.table::set(
     ds,
-    j     = "profit_incr",
+    j     = "incr_profit",
     value = factor(
-      ifelse(ds[["margin_incr"]] >= 0, "pos", "neg"),
+      ifelse(ds[["incr_margin"]] >= 0, "pos", "neg"),
       levels = c("pos", "neg")
     )
   )
 
   # loss ratios
   data.table::set(ds, j = "lr",
-                  value = ds[["loss"]] / ds[["premium"]])
-  data.table::set(ds, j = "lr_incr",
-                  value = ds[["loss_incr"]] / ds[["premium_incr"]])
+                  value = ds[["loss"]] / ds[["prem"]])
+  data.table::set(ds, j = "incr_lr",
+                  value = ds[["incr_loss"]] / ds[["incr_prem"]])
 
   # proportions within each calendar cell
   ds[, ("loss_share")         := loss         / sum(loss),         by = "calendar"]
-  ds[, ("loss_incr_share")    := loss_incr    / sum(loss_incr),    by = "calendar"]
-  ds[, ("premium_share")      := premium      / sum(premium),      by = "calendar"]
-  ds[, ("premium_incr_share") := premium_incr / sum(premium_incr), by = "calendar"]
+  ds[, ("incr_loss_share")    := incr_loss    / sum(incr_loss),    by = "calendar"]
+  ds[, ("prem_share")      := prem      / sum(prem),      by = "calendar"]
+  ds[, ("incr_prem_share") := incr_prem / sum(incr_prem), by = "calendar"]
 
   # final column order: cum-first paired
   out_cols <- c(
     grp, "calendar", "t",
-    "loss", "loss_incr", "premium", "premium_incr",
-    "lr", "lr_incr",
-    "margin", "margin_incr", "profit", "profit_incr",
-    "loss_share", "loss_incr_share", "premium_share", "premium_incr_share"
+    "loss", "incr_loss", "prem", "incr_prem",
+    "lr", "incr_lr",
+    "margin", "incr_margin", "profit", "incr_profit",
+    "loss_share", "incr_loss_share", "prem_share", "incr_prem_share"
   )
   data.table::setcolorder(ds, intersect(out_cols, names(ds)))
 
@@ -1216,7 +1216,7 @@ as_calendar <- function(x) {
   dm <- data.table::melt(
     data         = ds,
     id.vars      = c(grp_cal, "t"),
-    measure.vars = c("loss", "premium")
+    measure.vars = c("loss", "prem")
   )
   dm <- .prepend_class(dm, "CalendarLonger")
 
@@ -1224,7 +1224,7 @@ as_calendar <- function(x) {
   data.table::setattr(ds, "calendar", attr(x, "calendar"))
   data.table::setattr(ds, "grain",    grain)
   data.table::setattr(ds, "loss",     attr(x, "loss"))
-  data.table::setattr(ds, "premium",  attr(x, "premium"))
+  data.table::setattr(ds, "prem",  attr(x, "prem"))
   data.table::setattr(ds, "longer",   dm)
 
   .prepend_class(ds, "Calendar")
@@ -1282,7 +1282,7 @@ as_calendar <- function(x) {
 #' @description
 #' S3 method for `summary()` on `Calendar` objects. Computes
 #' calendar-period summary statistics for cumulative loss ratios (`lr`)
-#' and per-period loss ratios (`lr_incr`).
+#' and per-period loss ratios (`incr_lr`).
 #'
 #' Where [summary.Triangle()] aggregates by `(groups, dev)` (cohort
 #' x development), this method aggregates by `(groups, calendar)`
@@ -1300,11 +1300,11 @@ as_calendar <- function(x) {
 #'   \item{lr_mean}{Mean of cumulative loss ratios.}
 #'   \item{lr_median}{Median of cumulative loss ratios.}
 #'   \item{lr_wt}{Weighted cumulative loss ratio
-#'     (`sum(loss) / sum(premium)`).}
-#'   \item{lr_incr_mean}{Mean of per-period loss ratios.}
-#'   \item{lr_incr_median}{Median of per-period loss ratios.}
-#'   \item{lr_incr_wt}{Weighted per-period loss ratio
-#'     (`sum(loss_incr) / sum(premium_incr)`).}
+#'     (`sum(loss) / sum(prem)`).}
+#'   \item{incr_lr_mean}{Mean of per-period loss ratios.}
+#'   \item{incr_lr_median}{Median of per-period loss ratios.}
+#'   \item{incr_lr_wt}{Weighted per-period loss ratio
+#'     (`sum(incr_loss) / sum(incr_prem)`).}
 #' }
 #'
 #' The returned object preserves the attributes `groups`,
@@ -1316,8 +1316,8 @@ as_calendar <- function(x) {
 #'   df,
 #'   groups   = "coverage",
 #'   calendar = "cy_m",
-#'   loss     = "loss_incr",
-#'   premium  = "premium_incr"
+#'   loss     = "incr_loss",
+#'   prem  = "incr_prem"
 #' )
 #' smr  <- summary(cal)
 #' head(smr)
@@ -1338,10 +1338,10 @@ summary.Calendar <- function(object, ...) {
     n_cohorts          = .N,
     lr_mean        = mean(lr),
     lr_median      = stats::median(lr),
-    lr_wt          = sum(loss)      / sum(premium),
-    lr_incr_mean   = mean(lr_incr),
-    lr_incr_median = stats::median(lr_incr),
-    lr_incr_wt     = sum(loss_incr) / sum(premium_incr)
+    lr_wt          = sum(loss)      / sum(prem),
+    incr_lr_mean   = mean(incr_lr),
+    incr_lr_median = stats::median(incr_lr),
+    incr_lr_wt     = sum(incr_loss) / sum(incr_prem)
   ), keyby = grp_cal]
 
   data.table::setattr(ds, "groups"   , grp)
@@ -1372,9 +1372,9 @@ summary.Calendar <- function(object, ...) {
 #'   \item the number of observed cohorts (`n_cohorts`)
 #'   \item the first and last observed cohort periods
 #'     (`sales_start`, `sales_end`)
-#'   \item total `loss` and total `premium` (sum over all cells)
-#'   \item total loss ratio (`lr = loss / premium`)
-#'   \item each group's share of total loss and total premium
+#'   \item total `loss` and total `prem` (sum over all cells)
+#'   \item total loss ratio (`lr = loss / prem`)
+#'   \item each group's share of total loss and total prem
 #' }
 #'
 #' Pre-filter the Triangle (e.g. by cohort range or coverage) before
@@ -1388,10 +1388,10 @@ summary.Calendar <- function(object, ...) {
 #'     \item{sales_start}{First observed period}
 #'     \item{sales_end}{Last observed period}
 #'     \item{loss}{Total loss}
-#'     \item{premium}{Total premium}
-#'     \item{lr}{Total loss ratio (`loss / premium`)}
+#'     \item{prem}{Total prem}
+#'     \item{lr}{Total loss ratio (`loss / prem`)}
 #'     \item{loss_share}{Share of total loss}
-#'     \item{premium_share}{Share of total premium}
+#'     \item{prem_share}{Share of total prem}
 #'   }
 #'
 #' @examples
@@ -1401,8 +1401,8 @@ summary.Calendar <- function(object, ...) {
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
-#'   loss     = "loss_incr",
-#'   premium  = "premium_incr"
+#'   loss     = "incr_loss",
+#'   prem  = "incr_prem"
 #' )
 #' as_total(tri)
 #' }
@@ -1410,7 +1410,7 @@ summary.Calendar <- function(object, ...) {
 #' @export
 as_total <- function(x) {
   # data.table NSE NULL bindings for bare column refs in `j` below.
-  cohort <- loss_incr <- premium_incr <- NULL
+  cohort <- incr_loss <- incr_prem <- NULL
 
   .assert_class(x, "Triangle")
 
@@ -1423,23 +1423,23 @@ as_total <- function(x) {
     n_cohorts   = data.table::uniqueN(cohort),
     sales_start = min(cohort, na.rm = TRUE),
     sales_end   = max(cohort, na.rm = TRUE),
-    loss        = sum(loss_incr,    na.rm = TRUE),
-    premium     = sum(premium_incr, na.rm = TRUE)
+    loss        = sum(incr_loss,    na.rm = TRUE),
+    prem     = sum(incr_prem, na.rm = TRUE)
   ))
   ds <- if (length(grp)) dt[, eval(agg_expr), by = grp]
         else             dt[, eval(agg_expr)]
 
   # compute total loss ratio and shares
   data.table::set(ds, j = "lr",
-                  value = ds[["loss"]] / ds[["premium"]])
+                  value = ds[["loss"]] / ds[["prem"]])
   data.table::set(ds, j = "loss_share",
                   value = ds[["loss"]]    / sum(ds[["loss"]]))
-  data.table::set(ds, j = "premium_share",
-                  value = ds[["premium"]] / sum(ds[["premium"]]))
+  data.table::set(ds, j = "prem_share",
+                  value = ds[["prem"]] / sum(ds[["prem"]]))
 
   data.table::setattr(ds, "groups",  grp)
   data.table::setattr(ds, "loss",    attr(x, "loss"))
-  data.table::setattr(ds, "premium", attr(x, "premium"))
+  data.table::setattr(ds, "prem", attr(x, "prem"))
 
   .prepend_class(ds, "Total")
 }
@@ -1468,8 +1468,8 @@ as_total <- function(x) {
 #'   groups  = "coverage",
 #'   cohort  = "uy_m",
 #'   dev     = "dev_m",
-#'   loss    = "loss_incr",
-#'   premium = "premium_incr"
+#'   loss    = "incr_loss",
+#'   prem = "incr_prem"
 #' )
 #' summary(tot)
 #' }
@@ -1534,7 +1534,7 @@ summary.Total <- function(object, digits = 4L, ...) {
 #' data(experience)
 #' tri <- as_triangle(experience, groups = "coverage",
 #'                       cohort = "uy_m", calendar = "cy_m",
-#'                       loss = "loss_incr", premium = "premium_incr")
+#'                       loss = "incr_loss", prem = "incr_prem")
 #'
 #' # Inspect what the analyst at a 6-month historical cutoff would see
 #' tri_masked <- mask_triangle(tri, holdout = 6L)

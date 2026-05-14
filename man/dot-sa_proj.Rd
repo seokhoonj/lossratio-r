@@ -6,7 +6,7 @@
 \usage{
 .sa_proj(
   loss_obs,
-  premium_proj,
+  prem_proj,
   g_selected,
   f_selected,
   maturity_from,
@@ -16,7 +16,7 @@
 \arguments{
 \item{loss_obs}{Numeric vector of observed cumulative loss.}
 
-\item{premium_proj}{Numeric vector of projected cumulative exposure.}
+\item{prem_proj}{Numeric vector of projected cumulative exposure.}
 
 \item{g_selected}{Numeric vector of ED intensities.}
 

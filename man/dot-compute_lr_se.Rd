@@ -6,9 +6,9 @@
 \usage{
 .compute_lr_se(
   loss,
-  premium,
+  prem,
   se_loss,
-  se_premium = NULL,
+  se_prem = NULL,
   method = c("fixed", "delta"),
   rho = 0.95
 )
@@ -16,15 +16,15 @@
 \arguments{
 \item{loss}{Ultimate loss vector (\code{L}).}
 
-\item{premium}{Ultimate premium vector (\code{E}).}
+\item{prem}{Ultimate prem vector (\code{E}).}
 
 \item{se_loss}{\code{SE(L)}.}
 
-\item{se_premium}{\code{SE(P)}. Unused for \code{"fixed"}; may be \code{NULL}.}
+\item{se_prem}{\code{SE(P)}. Unused for \code{"fixed"}; may be \code{NULL}.}
 
 \item{method}{One of \code{"fixed"} (default) or \code{"delta"}.}
 
-\item{rho}{Loss-premium correlation in \verb{(-1, 1)}. Used only for
+\item{rho}{Loss-prem correlation in \verb{(-1, 1)}. Used only for
 \code{"delta"}. Default \code{0.95}.}
 }
 \value{
@@ -37,8 +37,8 @@ LR-specific internal helper. Two variants:
 \item{\code{"fixed"} (default)}{Premium treated as fixed (non-random).
 \eqn{\mathrm{SE}(L/P) = \mathrm{SE}(L) / P}. Strictly a degenerate
 case of the delta method with \code{Var(P) = 0} and \code{Cov(L,P) = 0}.}
-\item{\code{"delta"}}{First-order Taylor (delta method) including premium
-uncertainty and loss-premium correlation \code{rho}:
+\item{\code{"delta"}}{First-order Taylor (delta method) including prem
+uncertainty and loss-prem correlation \code{rho}:
 \eqn{\mathrm{Var}(L/P) \approx (\mathrm{SE}(L)/P)^2 +
       (L \cdot \mathrm{SE}(P) / P^2)^2 -
       2 \rho L \mathrm{SE}(L) \mathrm{SE}(P) / P^3}.
@@ -47,7 +47,7 @@ can drive the linearised estimate negative).}
 }
 
 Not exported; called only by \code{\link[=fit_lr]{fit_lr()}}. The \code{"fixed"} branch encodes
-the actuarial assumption that earned premium is known (not estimated),
+the actuarial assumption that earned prem is known (not estimated),
 so this helper is \emph{not} a generic ratio-SE utility.
 }
 \keyword{internal}

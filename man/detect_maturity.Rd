@@ -35,7 +35,7 @@ current Triangle grouping (fully backward compatible).
 maturity row. Any non-\code{NULL}, non-empty value must be a subset of
 \code{attr(x, "groups")}; column order is irrelevant. When the requested
 \code{groups} is coarser than the Triangle grouping, the underlying
-\code{loss} / \code{premium} / \code{lr} columns are re-aggregated to the coarser
+\code{loss} / \code{prem} / \code{lr} columns are re-aggregated to the coarser
 partition before computing ata links.}
 
 \item{weight}{Optional WLS weight variable. Forwarded to
@@ -96,5 +96,5 @@ becomes reliable, which in turn makes downstream LR projection
 reliable. ATA factors of \code{lr} itself (a ratio of two cumulative
 quantities) carry additional noise and tend to give less precise
 maturity decisions. Override \code{target} only when you specifically
-want maturity of premium development or another cumulative metric.
+want maturity of prem development or another cumulative metric.
 }

@@ -11,7 +11,7 @@
 #'       \item Before maturity: age-to-age factors are volatile, so
 #'         exposure-driven projection
 #'         \eqn{\Delta C^L = g_k \cdot C^P_k} anchors the estimate
-#'         to premium volume.
+#'         to prem volume.
 #'       \item After maturity: age-to-age factors are stable, so
 #'         chain ladder projection
 #'         \eqn{C^L_{k+1} = f_k \cdot C^L_k} preserves the cohort's
@@ -27,13 +27,13 @@
 #' \deqn{\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}}
 #'
 #' This function is the *composition* layer over [fit_loss()] and
-#' [fit_premium()]: it delegates loss projection to `fit_loss()`,
+#' [fit_prem()]: it delegates loss projection to `fit_loss()`,
 #' retrieves the embedded `PremiumFit`, and composes the loss-ratio
 #' point + variance via the delta method (`se_method = "fixed"` or
 #' `"delta"`). See `ARCHITECTURE.md` for the layered design.
 #'
 #' @param x An object of class `"Triangle"`. The standardized `"loss"`
-#'   and `"premium"` columns are used (`as_triangle()` produces these).
+#'   and `"prem"` columns are used (`as_triangle()` produces these).
 #' @param method One of `"sa"` (default), `"ed"`, or `"cl"`.
 #' @param loss_alpha Numeric scalar controlling the variance structure for
 #'   loss estimation. Default is `1`.
@@ -58,15 +58,15 @@
 #'     \item{`"ed"`, `"cl"`}{Simple cohort cut: all cohorts strictly before
 #'       the change date are excluded from estimation.}
 #'   }
-#' @param premium_method One of `"cl"` (default) or `"ed"`. Forwarded to
-#'   [fit_premium()] when constructing the premium projection.
-#' @param premium_alpha Numeric scalar for premium chain ladder. Default
+#' @param prem_method One of `"cl"` (default) or `"ed"`. Forwarded to
+#'   [fit_prem()] when constructing the prem projection.
+#' @param prem_alpha Numeric scalar for prem chain ladder. Default
 #'   is `1`.
-#' @param premium_regime Premium-side regime specification. Same four
+#' @param prem_regime Premium-side regime specification. Same four
 #'   input types as `loss_regime` (`NULL` / `Regime` / `"auto"` / function).
-#'   Default `NULL` -- premium is fit on the full triangle independently
+#'   Default `NULL` -- prem is fit on the full triangle independently
 #'   of `loss_regime` (no lazy default). Set explicitly when the regime
-#'   shift affects premium accrual too.
+#'   shift affects prem accrual too.
 #' @param sigma_method Sigma extrapolation method. One of `"locf"`
 #'   (default), `"min_last2"`, or `"loglinear"`.
 #' @param recent Optional positive integer for estimation window.
@@ -90,21 +90,21 @@
 #'     \item{`"fixed"` (default)}{Premium treated as fixed (non-random).
 #'       \eqn{\mathrm{SE}(L/P) = \mathrm{SE}(L) / P}. Strictly, this is
 #'       the delta method with `Var(P) = 0` and `Cov(L,P) = 0`, i.e., a
-#'       degenerate case under the assumption that premium is known.}
-#'     \item{`"delta"`}{Full delta method including premium uncertainty
-#'       and the loss-premium correlation `rho`:
+#'       degenerate case under the assumption that prem is known.}
+#'     \item{`"delta"`}{Full delta method including prem uncertainty
+#'       and the loss-prem correlation `rho`:
 #'       \deqn{\mathrm{Var}(L/P) \approx \frac{\mathrm{Var}(L)}{P^2}
 #'         + \frac{L^2 \mathrm{Var}(P)}{P^4}
 #'         - \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(P)}{P^3}}
 #'     }
 #'   }
 #' @param rho Numeric scalar in `(-1, 1)`; assumed correlation between
-#'   ultimate loss and ultimate premium. Only used when
+#'   ultimate loss and ultimate prem. Only used when
 #'   `se_method = "delta"`. Default is `0.95`, matching the strong
 #'   positive correlation typically observed between cumulative loss
-#'   and cumulative premium in long-tail health portfolios (analogous
+#'   and cumulative prem in long-tail health portfolios (analogous
 #'   to the paid/incurred correlation used in Munich chain ladder).
-#' @param conf_level Confidence level used for `lr_ci_lower`/`lr_ci_upper`
+#' @param conf_level Confidence level used for `lr_ci_lo`/`lr_ci_hi`
 #'   in the cohort summary. Default is `0.95`.
 #' @param bootstrap Logical; if `TRUE`, parameter and process variance
 #'   are derived via residual bootstrap rather than the analytical
@@ -116,7 +116,7 @@
 #'
 #' @return An object of class `"LRFit"`.
 #'
-#' @seealso [fit_loss()], [fit_premium()], [as_triangle()],
+#' @seealso [fit_loss()], [fit_prem()], [as_triangle()],
 #'   [as_link()], [fit_ata()], [fit_ed()], [detect_maturity()]
 #'
 #' @examples
@@ -127,8 +127,8 @@
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
-#'   loss     = "loss_incr",
-#'   premium  = "premium_incr"
+#'   loss     = "incr_loss",
+#'   prem  = "incr_prem"
 #' )
 #'
 #' # Stage-adaptive (default): ED before maturity, CL after
@@ -148,9 +148,9 @@ fit_lr <- function(x,
                    method         = c("sa", "ed", "cl"),
                    loss_alpha     = 1,
                    loss_regime    = NULL,
-                   premium_method = c("cl", "ed"),
-                   premium_alpha  = 1,
-                   premium_regime = NULL,
+                   prem_method = c("cl", "ed"),
+                   prem_alpha  = 1,
+                   prem_regime = NULL,
                    sigma_method   = c("locf", "min_last2", "loglinear"),
                    recent         = NULL,
                    maturity       = "auto",
@@ -165,12 +165,12 @@ fit_lr <- function(x,
   sigma_method   <- match.arg(sigma_method)
   method         <- match.arg(method)
   se_method      <- match.arg(se_method)
-  premium_method <- match.arg(premium_method)
+  prem_method <- match.arg(prem_method)
 
   # Resolve 4-type regime inputs (NULL / Regime / "auto" / function).
-  # Independent NULL defaults -- no lazy chaining between loss and premium.
+  # Independent NULL defaults -- no lazy chaining between loss and prem.
   loss_regime    <- .resolve_regime(loss_regime,    x)
-  premium_regime <- .resolve_regime(premium_regime, x)
+  prem_regime <- .resolve_regime(prem_regime, x)
 
   # Resolve 4-type maturity input (NULL / Maturity / "auto" / function).
   maturity <- .resolve_maturity(maturity, x)
@@ -194,31 +194,31 @@ fit_lr <- function(x,
     stop("`conf_level` must be a single numeric value in (0, 1).",
          call. = FALSE)
 
-  # 1) build premium_fit independently with `premium_regime` -------------
-  # fit_lr is the composition layer where loss-side and premium-side may
-  # carry distinct regimes. We construct the premium_fit here using
-  # `premium_regime`, then hand it to fit_loss via `premium_fit = ...`
+  # 1) build prem_fit independently with `prem_regime` -------------
+  # fit_lr is the composition layer where loss-side and prem-side may
+  # carry distinct regimes. We construct the prem_fit here using
+  # `prem_regime`, then hand it to fit_loss via `prem_fit = ...`
   # so fit_loss's own (single-role) `regime` does not override the
-  # premium-side cut.
-  premium_fit <- fit_premium(
+  # prem-side cut.
+  prem_fit <- fit_prem(
     x,
-    method       = premium_method,
-    alpha        = premium_alpha,
+    method       = prem_method,
+    alpha        = prem_alpha,
     sigma_method = sigma_method,
-    regime       = premium_regime
+    regime       = prem_regime
   )
 
   # 2) delegate loss-side projection to fit_loss() -----------------------
-  # Pass the pre-built premium_fit so fit_loss reuses it; `regime` is
+  # Pass the pre-built prem_fit so fit_loss reuses it; `regime` is
   # the loss-side filter (SA hybrid + factor estimation).
   loss_fit <- fit_loss(
     x              = x,
     method         = method,
     alpha          = loss_alpha,
     regime         = loss_regime,
-    premium_fit    = premium_fit,
-    premium_method = premium_method,
-    premium_alpha  = premium_alpha,
+    prem_fit    = prem_fit,
+    prem_method = prem_method,
+    prem_alpha  = prem_alpha,
     sigma_method   = sigma_method,
     recent         = recent,
     maturity       = maturity,
@@ -228,38 +228,38 @@ fit_lr <- function(x,
   grp <- loss_fit$groups
   coh <- loss_fit$cohort
   dev <- loss_fit$dev
-  # premium_fit already constructed above; reuse it directly.
-  premium_ata_fit <- loss_fit$premium_ata_fit
+  # prem_fit already constructed above; reuse it directly.
+  prem_ata_fit <- loss_fit$prem_ata_fit
 
   full <- data.table::copy(loss_fit$full)
 
-  # 3) exposure variance join from premium_fit$full (se_method = "delta") -
-  # Take the role-specific premium_* columns directly from the dispatcher
+  # 3) exposure variance join from prem_fit$full (se_method = "delta") -
+  # Take the role-specific prem_* columns directly from the dispatcher
   # output -- no `exp_*` intermediary aliasing.
   if (se_method == "delta") {
-    pf_full <- .copy_dt(premium_fit$full)
+    pf_full <- .copy_dt(prem_fit$full)
     pf_keep_keys <- intersect(c(grp, "cohort", "dev"), names(pf_full))
-    pf_cols <- c(pf_keep_keys, "premium_total_se", "premium_total_cv")
+    pf_cols <- c(pf_keep_keys, "prem_total_se", "prem_total_cv")
     pf_cols <- intersect(pf_cols, names(pf_full))
     pf_join <- pf_full[, .SD, .SDcols = pf_cols]
-    # only join the SE-side columns; `premium_obs`, `premium_proj`,
-    # `premium_incr_proj` already live on `full` (computed inside fit_loss).
+    # only join the SE-side columns; `prem_obs`, `prem_proj`,
+    # `incr_prem_proj` already live on `full` (computed inside fit_loss).
     full <- pf_join[full, on = pf_keep_keys]
   }
 
   # 4) loss ratio point projection -------------------------------------
   full[, ("lr_proj") := data.table::fifelse(
-    is.finite(loss_proj) & is.finite(premium_proj) & premium_proj != 0,
-    loss_proj / premium_proj,
+    is.finite(loss_proj) & is.finite(prem_proj) & prem_proj != 0,
+    loss_proj / prem_proj,
     NA_real_
   )]
 
   # 5) lr_se via delta method ------------------------------------------
   full[, ("lr_se") := .compute_lr_se(
     loss       = loss_proj,
-    premium    = premium_proj,
+    prem    = prem_proj,
     se_loss    = loss_total_se,
-    se_premium = if (se_method == "delta") premium_total_se else NULL,
+    se_prem = if (se_method == "delta") prem_total_se else NULL,
     method     = se_method,
     rho        = rho
   )]
@@ -273,8 +273,8 @@ fit_lr <- function(x,
   z_alpha <- stats::qnorm((1 + conf_level) / 2)
 
   full[, `:=`(
-    lr_ci_lower = pmax(0, lr_proj - z_alpha * lr_se),
-    lr_ci_upper = lr_proj + z_alpha * lr_se
+    lr_ci_lo = pmax(0, lr_proj - z_alpha * lr_se),
+    lr_ci_hi = lr_proj + z_alpha * lr_se
   )]
 
   ci_type <- "analytical"
@@ -284,11 +284,11 @@ fit_lr <- function(x,
     if (!is.null(seed)) set.seed(seed)
     .probs <- c((1 - conf_level) / 2, 1 - (1 - conf_level) / 2)
 
-    full[, c("lr_ci_lower", "lr_ci_upper", "loss_ci_lower", "loss_ci_upper") :=
+    full[, c("lr_ci_lo", "lr_ci_hi", "loss_ci_lo", "loss_ci_hi") :=
       .bootstrap_cohort(
         loss_obs      = loss_obs,
         loss_proj     = loss_proj,
-        premium_proj  = premium_proj,
+        prem_proj  = prem_proj,
         g_selected    = g_selected,
         f_selected    = f_selected,
         g_sigma2      = g_sigma2,
@@ -315,23 +315,23 @@ fit_lr <- function(x,
   full[, (drop_cols) := NULL]
 
   # 9) LR incremental projection ---------------------------------------
-  full[, ("lr_incr_proj") := data.table::fifelse(
-    is.finite(loss_incr_proj) & is.finite(premium_incr_proj) & premium_incr_proj > 0,
-    loss_incr_proj / premium_incr_proj, NA_real_
+  full[, ("incr_lr_proj") := data.table::fifelse(
+    is.finite(incr_loss_proj) & is.finite(incr_prem_proj) & incr_prem_proj > 0,
+    incr_loss_proj / incr_prem_proj, NA_real_
   )]
 
   # 10) proj: NA-mask observed cells -----------------------------------
   proj    <- data.table::copy(full)
   na_cols <- c(
-    "loss_proj", "premium_proj", "lr_proj",
-    "loss_incr_proj", "premium_incr_proj", "lr_incr_proj",
+    "loss_proj", "prem_proj", "lr_proj",
+    "incr_loss_proj", "incr_prem_proj", "incr_lr_proj",
     "loss_proc_se2", "loss_param_se2", "loss_total_se2",
     "loss_proc_se",  "loss_param_se",  "loss_total_se",
     "loss_total_cv", "lr_se",          "lr_cv",
-    "lr_ci_lower", "lr_ci_upper", "loss_ci_lower", "loss_ci_upper"
+    "lr_ci_lo", "lr_ci_hi", "loss_ci_lo", "loss_ci_hi"
   )
   if (se_method == "delta") {
-    na_cols <- c(na_cols, "premium_total_se", "premium_total_cv")
+    na_cols <- c(na_cols, "prem_total_se", "prem_total_cv")
   }
   na_cols <- intersect(na_cols, names(proj))
   proj[is_observed == TRUE, (na_cols) := NA_real_]
@@ -350,20 +350,20 @@ fit_lr <- function(x,
     factor          = loss_fit$factor,
     selected        = loss_fit$selected,
     loss_ata_fit    = loss_fit$loss_ata_fit,
-    premium_ata_fit = premium_ata_fit,
+    prem_ata_fit = prem_ata_fit,
     maturity        = loss_fit$maturity,
     method          = method,
     ci_type         = ci_type,
     bootstrap       = if (bootstrap) list(B = B, seed = seed) else NULL,
     loss_alpha      = loss_alpha,
-    premium_alpha   = premium_alpha,
+    prem_alpha   = prem_alpha,
     se_method       = se_method,
     rho             = rho,
     conf_level      = conf_level,
     sigma_method    = sigma_method,
     recent          = loss_fit$recent,
     loss_regime     = loss_fit$regime,
-    premium_regime  = premium_regime,
+    prem_regime  = prem_regime,
     usage           = loss_fit$usage
   )
 
@@ -390,7 +390,7 @@ print.LRFit <- function(x, ...) {
   cat("<LRFit>\n")
   cat("method         :", x$method,        "\n")
   cat("loss_alpha     :", x$loss_alpha,    "\n")
-  cat("premium_alpha  :", x$premium_alpha, "\n")
+  cat("prem_alpha  :", x$prem_alpha, "\n")
   cat("se_method      :", x$se_method,     "\n")
   if (identical(x$se_method, "delta")) {
     cat("rho            :", x$rho,         "\n")
@@ -415,16 +415,16 @@ print.LRFit <- function(x, ...) {
   } else {
     cat(" ", format(x$loss_regime), "\n", sep = "")
   }
-  cat("premium_regime :")
-  if (is.null(x$premium_regime)) {
+  cat("prem_regime :")
+  if (is.null(x$prem_regime)) {
     cat(" none\n")
-  } else if (inherits(x$premium_regime, "Regime")) {
-    cat("\n"); print(x$premium_regime)
+  } else if (inherits(x$prem_regime, "Regime")) {
+    cat("\n"); print(x$prem_regime)
   } else {
-    cat(" ", format(x$premium_regime), "\n", sep = "")
+    cat(" ", format(x$prem_regime), "\n", sep = "")
   }
 
-  # Use the same label width as the top block (`premium_regime` is the
+  # Use the same label width as the top block (`prem_regime` is the
   # longest at 14 chars) so colons align across the printout.
   lw <- 14L
   pad <- function(label) formatC(label, width = lw, flag = "-")
@@ -479,8 +479,8 @@ summary.LRFit <- function(object, ...) {
 #'   \item{`"fixed"` (default)}{Premium treated as fixed (non-random).
 #'     \eqn{\mathrm{SE}(L/P) = \mathrm{SE}(L) / P}. Strictly a degenerate
 #'     case of the delta method with `Var(P) = 0` and `Cov(L,P) = 0`.}
-#'   \item{`"delta"`}{First-order Taylor (delta method) including premium
-#'     uncertainty and loss-premium correlation `rho`:
+#'   \item{`"delta"`}{First-order Taylor (delta method) including prem
+#'     uncertainty and loss-prem correlation `rho`:
 #'     \eqn{\mathrm{Var}(L/P) \approx (\mathrm{SE}(L)/P)^2 +
 #'       (L \cdot \mathrm{SE}(P) / P^2)^2 -
 #'       2 \rho L \mathrm{SE}(L) \mathrm{SE}(P) / P^3}.
@@ -489,24 +489,24 @@ summary.LRFit <- function(object, ...) {
 #' }
 #'
 #' Not exported; called only by [fit_lr()]. The `"fixed"` branch encodes
-#' the actuarial assumption that earned premium is known (not estimated),
+#' the actuarial assumption that earned prem is known (not estimated),
 #' so this helper is *not* a generic ratio-SE utility.
 #'
 #' @param loss Ultimate loss vector (`L`).
-#' @param premium Ultimate premium vector (`E`).
+#' @param prem Ultimate prem vector (`E`).
 #' @param se_loss `SE(L)`.
-#' @param se_premium `SE(P)`. Unused for `"fixed"`; may be `NULL`.
+#' @param se_prem `SE(P)`. Unused for `"fixed"`; may be `NULL`.
 #' @param method One of `"fixed"` (default) or `"delta"`.
-#' @param rho Loss-premium correlation in `(-1, 1)`. Used only for
+#' @param rho Loss-prem correlation in `(-1, 1)`. Used only for
 #'   `"delta"`. Default `0.95`.
 #'
 #' @return A numeric vector the same length as `loss`.
 #'
 #' @keywords internal
 .compute_lr_se <- function(loss,
-                           premium,
+                           prem,
                            se_loss,
-                           se_premium = NULL,
+                           se_prem = NULL,
                            method     = c("fixed", "delta"),
                            rho        = 0.95) {
 
@@ -514,19 +514,19 @@ summary.LRFit <- function(object, ...) {
 
   if (method == "fixed") {
     return(data.table::fifelse(
-      is.finite(se_loss) & is.finite(premium) & premium != 0,
-      se_loss / premium, NA_real_
+      is.finite(se_loss) & is.finite(prem) & prem != 0,
+      se_loss / prem, NA_real_
     ))
   }
 
-  # delta: first-order Taylor with premium variance + correlation
-  lr_var <- (se_loss / premium)^2 +
-            (loss * se_premium / premium^2)^2 -
-            2 * rho * loss * se_loss * se_premium / premium^3
+  # delta: first-order Taylor with prem variance + correlation
+  lr_var <- (se_loss / prem)^2 +
+            (loss * se_prem / prem^2)^2 -
+            2 * rho * loss * se_loss * se_prem / prem^3
   se <- sqrt(pmax(lr_var, 0))
-  bad <- !is.finite(loss)    | !is.finite(premium) |
-         !is.finite(se_loss) | !is.finite(se_premium) |
-         premium <= 0
+  bad <- !is.finite(loss)    | !is.finite(prem) |
+         !is.finite(se_loss) | !is.finite(se_prem) |
+         prem <= 0
   se[bad] <- NA_real_
   se
 }
@@ -547,14 +547,14 @@ summary.LRFit <- function(object, ...) {
 #' observed value (no uncertainty). Projected rows get bootstrap
 #' percentiles.
 #'
-#' @return A list with four vectors of length `length(premium_proj)`:
-#'   `lr_ci_lower`, `lr_ci_upper` (for LR), and `loss_ci_lower`,
-#'   `loss_ci_upper` (for cumulative loss).
+#' @return A list with four vectors of length `length(prem_proj)`:
+#'   `lr_ci_lo`, `lr_ci_hi` (for LR), and `loss_ci_lo`,
+#'   `loss_ci_hi` (for cumulative loss).
 #'
 #' @keywords internal
 .bootstrap_cohort <- function(loss_obs,
                               loss_proj,
-                              premium_proj,
+                              prem_proj,
                               g_selected,
                               f_selected,
                               g_sigma2,
@@ -568,23 +568,23 @@ summary.LRFit <- function(object, ...) {
                               method,
                               probs) {
 
-  n <- length(premium_proj)
+  n <- length(prem_proj)
 
   # default (for observed cells, degenerate CI = point value)
-  loss_ci_lower <- loss_proj
-  loss_ci_upper <- loss_proj
-  lr_ci_lower <- data.table::fifelse(
-    is.finite(loss_proj) & is.finite(premium_proj) & premium_proj > 0,
-    loss_proj / premium_proj, NA_real_
+  loss_ci_lo <- loss_proj
+  loss_ci_hi <- loss_proj
+  lr_ci_lo <- data.table::fifelse(
+    is.finite(loss_proj) & is.finite(prem_proj) & prem_proj > 0,
+    loss_proj / prem_proj, NA_real_
   )
-  lr_ci_upper <- lr_ci_lower
+  lr_ci_hi <- lr_ci_lo
 
   if (last_obs >= n || last_obs < 1L || B < 1L) {
     return(list(
-      lr_ci_lower   = lr_ci_lower,
-      lr_ci_upper   = lr_ci_upper,
-      loss_ci_lower = loss_ci_lower,
-      loss_ci_upper = loss_ci_upper
+      lr_ci_lo   = lr_ci_lo,
+      lr_ci_hi   = lr_ci_hi,
+      loss_ci_lo = loss_ci_lo,
+      loss_ci_hi = loss_ci_hi
     ))
   }
 
@@ -603,7 +603,7 @@ summary.LRFit <- function(object, ...) {
 
   for (i in seq(last_obs + 1L, n)) {
     k    <- i - 1L
-    e_k  <- premium_proj[k]
+    e_k  <- prem_proj[k]
     prev <- loss_mat[i - 1L, ]
 
     if (k < mat) {
@@ -659,14 +659,14 @@ summary.LRFit <- function(object, ...) {
 
   # percentiles for projected rows
   for (i in seq(last_obs + 1L, n)) {
-    e_i    <- premium_proj[i]
+    e_i    <- prem_proj[i]
     loss_i <- loss_mat[i, ]
 
     if (!is.finite(e_i) || e_i <= 0 || all(!is.finite(loss_i))) {
-      lr_ci_lower[i]   <- NA_real_
-      lr_ci_upper[i]   <- NA_real_
-      loss_ci_lower[i] <- NA_real_
-      loss_ci_upper[i] <- NA_real_
+      lr_ci_lo[i]   <- NA_real_
+      lr_ci_hi[i]   <- NA_real_
+      loss_ci_lo[i] <- NA_real_
+      loss_ci_hi[i] <- NA_real_
       next
     }
 
@@ -675,17 +675,17 @@ summary.LRFit <- function(object, ...) {
     ql <- stats::quantile(loss_i, probs = probs, na.rm = TRUE, names = FALSE)
     qc <- stats::quantile(lr_i,  probs = probs, na.rm = TRUE, names = FALSE)
 
-    loss_ci_lower[i] <- ql[1]
-    loss_ci_upper[i] <- ql[2]
-    lr_ci_lower[i]   <- qc[1]
-    lr_ci_upper[i]   <- qc[2]
+    loss_ci_lo[i] <- ql[1]
+    loss_ci_hi[i] <- ql[2]
+    lr_ci_lo[i]   <- qc[1]
+    lr_ci_hi[i]   <- qc[2]
   }
 
   list(
-    lr_ci_lower   = lr_ci_lower,
-    lr_ci_upper   = lr_ci_upper,
-    loss_ci_lower = loss_ci_lower,
-    loss_ci_upper = loss_ci_upper
+    lr_ci_lo   = lr_ci_lo,
+    lr_ci_hi   = lr_ci_hi,
+    loss_ci_lo = loss_ci_lo,
+    loss_ci_hi = loss_ci_hi
   )
 }
 
@@ -719,10 +719,10 @@ summary.LRFit <- function(object, ...) {
     latest      = loss_obs,
     loss_ult    = i.loss_proj,
     reserve     = i.loss_proj - loss_obs,
-    premium_ult = i.premium_proj,
+    prem_ult = i.prem_proj,
     lr_latest   = data.table::fifelse(
-      is.finite(premium_obs) & premium_obs != 0,
-      loss_obs / premium_obs, NA_real_
+      is.finite(prem_obs) & prem_obs != 0,
+      loss_obs / prem_obs, NA_real_
     ),
     lr_ult        = i.lr_proj,
     maturity_from = maturity_from,
@@ -735,23 +735,23 @@ summary.LRFit <- function(object, ...) {
     ),
     lr_se       = i.lr_se,
     lr_cv       = i.lr_cv,
-    lr_ci_lower = i.lr_ci_lower,
-    lr_ci_upper = i.lr_ci_upper
+    lr_ci_lo = i.lr_ci_lo,
+    lr_ci_hi = i.lr_ci_hi
   )]
 
   keep_cols <- c(
     grp, "cohort",
-    "latest", "loss_ult", "reserve", "premium_ult",
+    "latest", "loss_ult", "reserve", "prem_ult",
     "lr_latest", "lr_ult", "maturity_from",
     "loss_proc_se", "loss_param_se", "loss_total_se", "loss_total_cv",
     "lr_se", "lr_cv",
-    "lr_ci_lower", "lr_ci_upper"
+    "lr_ci_lo", "lr_ci_hi"
   )
 
   if (se_method == "delta") {
     agg[, `:=`(
-      premium_total_se = i.premium_total_se,
-      premium_total_cv = i.premium_total_cv
+      prem_total_se = i.prem_total_se,
+      prem_total_cv = i.prem_total_cv
     )]
 
     agg[, ("lr_var") := lr_se^2]
@@ -759,24 +759,24 @@ summary.LRFit <- function(object, ...) {
     agg[, `:=`(
       pct_loss = data.table::fifelse(
         is.finite(lr_var) & lr_var > 0,
-        (i.loss_total_se / i.premium_proj)^2 / lr_var * 100, NA_real_
+        (i.loss_total_se / i.prem_proj)^2 / lr_var * 100, NA_real_
       ),
       pct_exposure = data.table::fifelse(
         is.finite(lr_var) & lr_var > 0,
-        (i.loss_proj * i.premium_total_se / i.premium_proj^2)^2 /
+        (i.loss_proj * i.prem_total_se / i.prem_proj^2)^2 /
           lr_var * 100, NA_real_
       ),
       pct_cov = data.table::fifelse(
         is.finite(lr_var) & lr_var > 0,
-        -2 * rho * i.loss_proj * i.loss_total_se * i.premium_total_se /
-          i.premium_proj^3 / lr_var * 100, NA_real_
+        -2 * rho * i.loss_proj * i.loss_total_se * i.prem_total_se /
+          i.prem_proj^3 / lr_var * 100, NA_real_
       )
     )]
 
     agg[, ("lr_var") := NULL]
 
     keep_cols <- c(keep_cols,
-                   "premium_total_se", "premium_total_cv",
+                   "prem_total_se", "prem_total_cv",
                    "pct_loss", "pct_exposure", "pct_cov")
   }
 

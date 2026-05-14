@@ -23,14 +23,14 @@
 #'
 #' @param x An object of class `Triangle`.
 #' @param metric A single metric to plot. Must be one of:
-#'   `"lr"`, `"lr_incr"`,
-#'   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`,
-#'   `"margin"`, `"margin_incr"`,
-#'   `"loss_share"`, `"loss_incr_share"`, `"premium_share"`, or `"premium_incr_share"`.
+#'   `"lr"`, `"incr_lr"`,
+#'   `"loss"`, `"incr_loss"`, `"prem"`, `"incr_prem"`,
+#'   `"margin"`, `"incr_margin"`,
+#'   `"loss_share"`, `"incr_loss_share"`, `"prem_share"`, or `"incr_prem_share"`.
 #' @param summary Logical. If `FALSE` (default), shows raw cohort trajectories.
 #'   If `TRUE`, shows grey cohort trajectories with overlaid summary lines
 #'   (mean, median, weighted mean). Summary overlay is supported only for
-#'   `"lr"` and `"lr_incr"`, and only when the x-axis variable is a development-period
+#'   `"lr"` and `"incr_lr"`, and only when the x-axis variable is a development-period
 #'   variable (for example, `dev_m`, `dev_q`, `dev_h`, `dev_y`).
 #' @param summary_min_n Optional minimum number of observations required for
 #'   the summary overlay to be considered reliable. When provided and
@@ -52,15 +52,15 @@
 #' `attr(x, "groups")`.
 #'
 #' The cumulative loss ratio is defined here as:
-#' \deqn{lr = loss / premium}
+#' \deqn{lr = loss / prem}
 #'
-#' For long-term health insurance applications, risk premium is commonly
-#' used as the `premium` measure.
+#' For long-term health insurance applications, risk prem is commonly
+#' used as the `prem` measure.
 #'
 #' The weighted mean is defined as:
 #' \itemize{
-#'   \item `lr_wt      = sum(loss)      / sum(premium)`
-#'   \item `lr_incr_wt = sum(loss_incr) / sum(premium_incr)`
+#'   \item `lr_wt      = sum(loss)      / sum(prem)`
+#'   \item `incr_lr_wt = sum(incr_loss) / sum(incr_prem)`
 #' }
 #'
 #' Ratio and proportion metrics are plotted on the original scale and displayed
@@ -96,21 +96,21 @@ plot.Triangle <- function(x,
     )
 
   valid_vars <- c(
-    "lr", "lr_incr",
-    "loss", "loss_incr",
-    "premium", "premium_incr",
-    "margin", "margin_incr",
-    "loss_share", "loss_incr_share",
-    "premium_share", "premium_incr_share"
+    "lr", "incr_lr",
+    "loss", "incr_loss",
+    "prem", "incr_prem",
+    "margin", "incr_margin",
+    "loss_share", "incr_loss_share",
+    "prem_share", "incr_prem_share"
   )
 
   if (length(metric) != 1L || !(metric %in% valid_vars)) {
     stop(
       paste0(
         "`metric` must be one of ",
-        "'lr', 'lr_incr', 'loss', 'loss_incr', 'premium', 'premium_incr', ",
-        "'margin', 'margin_incr', ",
-        "'loss_share', 'loss_incr_share', 'premium_share', or 'premium_incr_share'."
+        "'lr', 'incr_lr', 'loss', 'incr_loss', 'prem', 'incr_prem', ",
+        "'margin', 'incr_margin', ",
+        "'loss_share', 'incr_loss_share', 'prem_share', or 'incr_prem_share'."
       ),
       call. = FALSE
     )
@@ -120,7 +120,7 @@ plot.Triangle <- function(x,
 
   if (summary && meta$type != "ratio") {
     warning(
-      "Summary overlay is only supported for `lr` and `lr_incr`.",
+      "Summary overlay is only supported for `lr` and `incr_lr`.",
       call. = FALSE
     )
     summary <- FALSE
@@ -275,9 +275,9 @@ plot.Triangle <- function(x,
 #' or over the calendar development variable stored in `attr(x, "dev")`.
 #'
 #' Ratio metrics (`lr`, `lr`) and proportion metrics
-#' (`loss_share`, `loss_incr_share`, `premium_share`, `premium_incr_share`) are plotted on the
+#' (`loss_share`, `incr_loss_share`, `prem_share`, `incr_prem_share`) are plotted on the
 #' original scale and displayed as percentages via y-axis labels.
-#' Amount metrics (`loss`, `loss_incr`, `premium`, `premium_incr`, `margin`, `margin_incr`) are
+#' Amount metrics (`loss`, `incr_loss`, `prem`, `incr_prem`, `margin`, `incr_margin`) are
 #' plotted on the original scale and displayed using y-axis labels scaled by
 #' `amount_divisor`.
 #'
@@ -285,15 +285,15 @@ plot.Triangle <- function(x,
 #'
 #' @param x An object of class `Calendar`.
 #' @param metric A single metric to plot. Must be one of:
-#'   `"lr"`, `"lr_incr"`,
-#'   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`, `"margin_incr"`,
-#'   `"loss_share"`, `"loss_incr_share"`, `"premium_share"`, or `"premium_incr_share"`.
+#'   `"lr"`, `"incr_lr"`,
+#'   `"loss"`, `"incr_loss"`, `"prem"`, `"incr_prem"`, `"margin"`, `"incr_margin"`,
+#'   `"loss_share"`, `"incr_loss_share"`, `"prem_share"`, or `"incr_prem_share"`.
 #' @param amount_divisor Numeric scaling factor used only for y-axis labels of
 #'   amount variables. Default `"auto"` (picks the divisor that produces
 #'   the shortest formatted label; pass an explicit numeric to fix it).
 #' @param show_label Logical; if `TRUE`, overlay the metric value as a
 #'   text label at each (calendar, group) point. Ratio metrics
-#'   (`"lr"`, `"lr_incr"`, share variants) are formatted as percent
+#'   (`"lr"`, `"incr_lr"`, share variants) are formatted as percent
 #'   (one decimal). Amount metrics are scaled by `amount_divisor` and
 #'   formatted with one decimal. Default `FALSE`.
 #' @param label_size Numeric text size passed to `geom_text` when
@@ -307,9 +307,9 @@ plot.Triangle <- function(x,
 #' (a Date, formatted per the triangle's `grain`).
 #'
 #' The loss ratio is defined as:
-#' \deqn{lr = loss / premium}
+#' \deqn{lr = loss / prem}
 #'
-#' where `premium` denotes risk premium rather than written premium.
+#' where `prem` denotes risk prem rather than written prem.
 #'
 #' @return A `ggplot` object.
 #'
@@ -319,8 +319,8 @@ plot.Triangle <- function(x,
 #'   df,
 #'   groups   = "coverage",
 #'   calendar = "cy_m",
-#'   loss     = "loss_incr",
-#'   premium  = "premium_incr"
+#'   loss     = "incr_loss",
+#'   prem  = "incr_prem"
 #' )
 #'
 #' plot(x)
@@ -354,12 +354,12 @@ plot.Calendar <- function(x,
   metric <- .capture_names(x, !!rlang::enquo(metric))
 
   valid_vars <- c(
-    "lr", "lr_incr",
-    "loss", "loss_incr",
-    "premium", "premium_incr",
-    "margin", "margin_incr",
-    "loss_share", "loss_incr_share",
-    "premium_share", "premium_incr_share"
+    "lr", "incr_lr",
+    "loss", "incr_loss",
+    "prem", "incr_prem",
+    "margin", "incr_margin",
+    "loss_share", "incr_loss_share",
+    "prem_share", "incr_prem_share"
   )
 
   if (length(cal) != 1L) {
@@ -497,18 +497,18 @@ plot_triangle <- function(x, ...) {
 #' period and dev dimensions, and each cell displays the selected metric.
 #'
 #' For ratio metrics (`lr`, `lr`), labels can show either the ratio alone or
-#' the ratio together with the associated loss / risk premium amounts.
+#' the ratio together with the associated loss / risk prem amounts.
 #'
-#' For amount metrics (`loss`, `loss_incr`, `premium`, `premium_incr`, `margin`, `margin_incr`),
+#' For amount metrics (`loss`, `incr_loss`, `prem`, `incr_prem`, `margin`, `incr_margin`),
 #' labels show the selected amount only.
 #'
-#' For proportion metrics (`loss_share`, `loss_incr_share`, `premium_share`, `premium_incr_share`),
+#' For proportion metrics (`loss_share`, `incr_loss_share`, `prem_share`, `incr_prem_share`),
 #' labels are displayed as percentages.
 #'
 #' The loss ratio is defined as:
-#' \deqn{lr = loss / premium}
+#' \deqn{lr = loss / prem}
 #'
-#' where `premium` denotes risk premium rather than written premium.
+#' where `prem` denotes risk prem rather than written prem.
 #'
 #' @param x An object of class `Triangle`.
 #' @param view Plot view. One of:
@@ -520,14 +520,14 @@ plot_triangle <- function(x, ...) {
 #'       via `...`. See `vignette("regime-change-filter")` for details.}
 #'   }
 #' @param metric A single metric to plot. Must be one of:
-#'   `"lr"`, `"lr_incr"`,
-#'   `"loss"`, `"loss_incr"`, `"premium"`, `"premium_incr"`, `"margin"`, `"margin_incr"`,
-#'   `"loss_share"`, `"loss_incr_share"`, `"premium_share"`, or `"premium_incr_share"`.
+#'   `"lr"`, `"incr_lr"`,
+#'   `"loss"`, `"incr_loss"`, `"prem"`, `"incr_prem"`, `"margin"`, `"incr_margin"`,
+#'   `"loss_share"`, `"incr_loss_share"`, `"prem_share"`, or `"incr_prem_share"`.
 #' @param label_style Label display style. One of:
 #'   \describe{
 #'     \item{"value"}{Show only the selected metric.}
 #'     \item{"detail"}{For `lr` / `lr`, show the ratio in percent and, on the
-#'       next line, the associated loss / premium amounts. For amount and
+#'       next line, the associated loss / prem amounts. For amount and
 #'       proportion metrics, this falls back to `"value"`.}
 #'   }
 #' @param label_size Numeric label text size forwarded to
@@ -536,7 +536,7 @@ plot_triangle <- function(x, ...) {
 #'   smaller size to fit). Other label appearance fields (family,
 #'   color, hjust, ...) fall back to ggshort defaults.
 #' @param amount_divisor Numeric scaling factor applied to amount variables
-#'   (e.g., `loss`, `loss_incr`, `premium`, `premium_incr`, `margin`, `margin_incr`) before plotting.
+#'   (e.g., `loss`, `incr_loss`, `prem`, `incr_prem`, `margin`, `incr_margin`) before plotting.
 #'   Default `"auto"` picks the largest divisor in
 #'   `{1, 1e3, 1e6, 1e7, 1e8, 1e9}` such that the median displayed
 #'   value is still at least `1`, minimising label digit count.
@@ -566,16 +566,16 @@ plot_triangle <- function(x, ...) {
 #'   groups   = "pd_cat_nm",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
-#'   loss     = "loss_incr",
-#'   premium  = "premium_incr"
+#'   loss     = "incr_loss",
+#'   prem  = "incr_prem"
 #' )
 #'
 #' plot_triangle(d)
 #' plot_triangle(d, metric = "lr")
 #' plot_triangle(d, metric = "loss")
-#' plot_triangle(d, metric = "premium")
+#' plot_triangle(d, metric = "prem")
 #' plot_triangle(d, metric = "loss_share")
-#' plot_triangle(d, metric = "premium_share")
+#' plot_triangle(d, metric = "prem_share")
 #' plot_triangle(d, label_style = "value")
 #' plot_triangle(d, label_style = "detail")
 #' }
@@ -611,12 +611,12 @@ plot_triangle.Triangle <- function(x,
   metric <- .capture_names(x, !!rlang::enquo(metric))
 
   valid_vars <- c(
-    "lr", "lr_incr",
-    "loss", "loss_incr",
-    "premium", "premium_incr",
-    "margin", "margin_incr",
-    "loss_share", "loss_incr_share",
-    "premium_share", "premium_incr_share"
+    "lr", "incr_lr",
+    "loss", "incr_loss",
+    "prem", "incr_prem",
+    "margin", "incr_margin",
+    "loss_share", "incr_loss_share",
+    "prem_share", "incr_prem_share"
   )
 
   if (length(coh) != 1L)
@@ -629,9 +629,9 @@ plot_triangle.Triangle <- function(x,
     stop(
       paste0(
         "`metric` must be one of ",
-        "'lr', 'lr_incr', 'loss', 'loss_incr', 'premium', 'premium_incr', ",
-        "'margin', 'margin_incr', ",
-        "'loss_share', 'loss_incr_share', 'premium_share', or 'premium_incr_share'."
+        "'lr', 'incr_lr', 'loss', 'incr_loss', 'prem', 'incr_prem', ",
+        "'margin', 'incr_margin', ",
+        "'loss_share', 'incr_loss_share', 'prem_share', or 'incr_prem_share'."
       ),
       call. = FALSE
     )
@@ -656,23 +656,23 @@ plot_triangle.Triangle <- function(x,
     dt[, (".x") := dt[["dev"]]]
   }
 
-  ratio_vars  <- c("lr", "lr_incr")
-  amount_vars <- c("loss", "loss_incr",
-                   "premium", "premium_incr",
-                   "margin", "margin_incr")
-  prop_vars   <- c("loss_share", "loss_incr_share",
-                   "premium_share", "premium_incr_share")
+  ratio_vars  <- c("lr", "incr_lr")
+  amount_vars <- c("loss", "incr_loss",
+                   "prem", "incr_prem",
+                   "margin", "incr_margin")
+  prop_vars   <- c("loss_share", "incr_loss_share",
+                   "prem_share", "incr_prem_share")
 
   # Resolve `amount_divisor = "auto"` based on the values the labels
   # will actually display. Amount metrics consult the metric column;
-  # ratio metrics in `detail` mode show (loss / premium) below the LR,
-  # so we resolve against the larger denominator (premium). Proportion
+  # ratio metrics in `detail` mode show (loss / prem) below the LR,
+  # so we resolve against the larger denominator (prem). Proportion
   # metrics never use `amount_divisor`, but resolve anyway to avoid a
   # validation surprise.
   divisor_values <- if (metric %in% amount_vars) {
     dt[[metric]]
   } else if (metric %in% ratio_vars && label_style == "detail") {
-    dt[[if (metric == "lr") "premium" else "premium_incr"]]
+    dt[[if (metric == "lr") "prem" else "incr_prem"]]
   } else {
     numeric(0)
   }
@@ -682,8 +682,8 @@ plot_triangle.Triangle <- function(x,
   if (metric %in% ratio_vars) {
 
     is_cum <- metric == "lr"
-    loss_col    <- if (is_cum) "loss"    else "loss_incr"
-    premium_col <- if (is_cum) "premium" else "premium_incr"
+    loss_col    <- if (is_cum) "loss"    else "incr_loss"
+    prem_col <- if (is_cum) "prem" else "incr_prem"
 
     if (label_style == "value") {
       dt[, ("label") := sprintf("%.0f", dt[[metric]] * 100)]
@@ -692,7 +692,7 @@ plot_triangle.Triangle <- function(x,
         "%.0f\n(%.1f/%.1f)",
         dt[[metric]]    * 100,
         dt[[loss_col]]    / amount_divisor,
-        dt[[premium_col]] / amount_divisor
+        dt[[prem_col]] / amount_divisor
       )]
     }
 
@@ -722,11 +722,11 @@ plot_triangle.Triangle <- function(x,
     title_txt <- switch(
       metric,
       loss         = "Cumulative Loss",
-      loss_incr    = "Per-Period Loss",
-      premium      = "Cumulative Premium",
-      premium_incr = "Per-Period Premium",
+      incr_loss    = "Per-Period Loss",
+      prem      = "Cumulative Premium",
+      incr_prem = "Per-Period Premium",
       margin       = "Cumulative Margin",
-      margin_incr  = "Per-Period Margin"
+      incr_margin  = "Per-Period Margin"
     )
 
     caption_txt <- sprintf("Unit: %s", .get_amount_unit(amount_divisor))
@@ -748,9 +748,9 @@ plot_triangle.Triangle <- function(x,
     title_txt <- switch(
       metric,
       loss_share         = "Cumulative Loss Proportion",
-      loss_incr_share    = "Per-Period Loss Proportion",
-      premium_share      = "Cumulative Premium Proportion",
-      premium_incr_share = "Per-Period Premium Proportion"
+      incr_loss_share    = "Per-Period Loss Proportion",
+      prem_share      = "Cumulative Premium Proportion",
+      incr_prem_share = "Per-Period Premium Proportion"
     )
 
     caption_txt <- "Unit: %"
@@ -793,8 +793,8 @@ plot_triangle.Triangle <- function(x,
 #'
 #' @param x An object of class `Total`.
 #' @param metric A single metric to plot. Must be one of the columns
-#'   carried by a `Total`: `"lr"`, `"loss"`, `"premium"`, `"loss_share"`, or
-#'   `"premium_share"`. Default `"lr"`.
+#'   carried by a `Total`: `"lr"`, `"loss"`, `"prem"`, `"loss_share"`, or
+#'   `"prem_share"`. Default `"lr"`.
 #' @param amount_divisor Numeric scaling factor used only for y-axis
 #'   labels of amount variables. Default `1e8`.
 #' @param theme A string passed to [.switch_theme()]
@@ -819,8 +819,8 @@ plot_triangle.Triangle <- function(x,
 #'   groups  = "coverage",
 #'   cohort  = "uy_m",
 #'   dev     = "dev_m",
-#'   loss    = "loss_incr",
-#'   premium = "premium_incr"
+#'   loss    = "incr_loss",
+#'   prem = "incr_prem"
 #' )
 #' plot(tot)
 #' plot(tot, metric = "loss")
@@ -846,13 +846,13 @@ plot.Total <- function(x,
   grp     <- attr(x, "groups")
   metric <- .capture_names(x, !!rlang::enquo(metric))
 
-  valid_vars <- c("lr", "loss", "premium", "loss_share", "premium_share")
+  valid_vars <- c("lr", "loss", "prem", "loss_share", "prem_share")
 
   if (length(metric) != 1L || !(metric %in% valid_vars)) {
     stop(
       paste0(
         "`metric` must be one of ",
-        "'lr', 'loss', 'premium', 'loss_share', or 'premium_share'."
+        "'lr', 'loss', 'prem', 'loss_share', or 'prem_share'."
       ),
       call. = FALSE
     )
@@ -1241,7 +1241,7 @@ plot.Total <- function(x,
 # when `regime` is set, (2) `.compute_triangle_usage()` to assign each
 # cell one of `used` / `unused` / `holdout` / `future`.
 #
-# Called once at *fit time* (by `fit_loss`, `fit_premium`, `fit_lr`,
+# Called once at *fit time* (by `fit_loss`, `fit_prem`, `fit_lr`,
 # `backtest`) so the resulting `data.table` can be attached as
 # `fit$usage`; downstream `plot_triangle(fit, view = "usage")` then
 # renders without re-deriving anything. Also reused directly by

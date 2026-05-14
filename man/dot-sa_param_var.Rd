@@ -6,7 +6,7 @@
 \usage{
 .sa_param_var(
   loss_proj,
-  premium_proj,
+  prem_proj,
   g_var,
   f_var,
   f_selected,

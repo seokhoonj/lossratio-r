@@ -20,7 +20,7 @@
 
 \item{cell_type}{Which projection view to display. One of
 \code{"cumulative"} (default; uses \code{ae_err}) or \code{"incremental"} (uses
-\code{ae_err_incr}). Both are stored on every \code{Backtest} object -- pick
+\code{incr_ae_err}). Both are stored on every \code{Backtest} object -- pick
 the view at plot time.}
 
 \item{scales}{Facet scale argument. One of \code{"fixed"}, \code{"free"},

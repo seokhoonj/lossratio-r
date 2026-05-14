@@ -17,11 +17,11 @@ A \code{data.table} grouped by \code{groups} and \code{dev}, containing:
 \item{n_cohorts}{Number of observations in the cell}
 \item{lr_mean}{Mean of cumulative loss ratios}
 \item{lr_median}{Median of cumulative loss ratios}
-\item{lr_wt}{Weighted cumulative loss ratio (\code{sum(loss) / sum(premium)})}
-\item{lr_incr_mean}{Mean of per-period loss ratios}
-\item{lr_incr_median}{Median of per-period loss ratios}
-\item{lr_incr_wt}{Weighted per-period loss ratio
-(\code{sum(loss_incr) / sum(premium_incr)})}
+\item{lr_wt}{Weighted cumulative loss ratio (\code{sum(loss) / sum(prem)})}
+\item{incr_lr_mean}{Mean of per-period loss ratios}
+\item{incr_lr_median}{Median of per-period loss ratios}
+\item{incr_lr_wt}{Weighted per-period loss ratio
+(\code{sum(incr_loss) / sum(incr_prem)})}
 }
 
 The returned object keeps the attributes \code{groups} and \code{dev},
@@ -30,7 +30,7 @@ and its class is updated to \code{"TriangleSummary"}.
 \description{
 S3 method for \code{summary()} on \code{Triangle} objects. Computes group-wise summary
 statistics for cumulative loss ratios (\code{lr}) and per-period loss ratios
-(\code{lr_incr}).
+(\code{incr_lr}).
 
 The function aggregates data by the grouping variables stored in
 \code{attr(x, "groups")} and the development variable stored in
@@ -46,11 +46,11 @@ The following statistics are computed:
 \details{
 The weighted mean is computed as:
 \itemize{
-\item \code{lr_wt      = sum(loss)      / sum(premium)}
-\item \code{lr_incr_wt = sum(loss_incr) / sum(premium_incr)}
+\item \code{lr_wt      = sum(loss)      / sum(prem)}
+\item \code{incr_lr_wt = sum(incr_loss) / sum(incr_prem)}
 }
 
-These correspond to portfolio-level loss ratios based on premium and
+These correspond to portfolio-level loss ratios based on prem and
 are typically more stable than simple averages when exposure sizes differ
 across cohorts.
 
@@ -63,8 +63,8 @@ d <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  prem  = "incr_prem"
 )
 smr <- summary(d)
 head(smr)

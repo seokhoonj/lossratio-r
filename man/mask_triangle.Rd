@@ -32,7 +32,7 @@ calendar indices are dropped.
 data(experience)
 tri <- as_triangle(experience, groups = "coverage",
                       cohort = "uy_m", calendar = "cy_m",
-                      loss = "loss_incr", premium = "premium_incr")
+                      loss = "incr_loss", prem = "incr_prem")
 
 # Inspect what the analyst at a 6-month historical cutoff would see
 tri_masked <- mask_triangle(tri, holdout = 6L)
