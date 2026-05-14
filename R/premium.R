@@ -8,7 +8,7 @@
 #'   \item{`"ed"` (default)}{Additive recursion. Empirically more robust
 #'     on long-projection prem triangles -- the multiplicative
 #'     scaling of the classical CL recursion can blow up under cohort-wise
-#'     heterogeneity (regime changes in prem, channel changes,
+#'     heterogeneity (regime changes in premium, channel changes,
 #'     amendments). See `dev/prem_projection.qmd`.}
 #'   \item{`"cl"`}{Mack (1993) multiplicative recursion. Point projection
 #'     identical to ED; only the SE accumulation differs.}
@@ -47,7 +47,7 @@
 #'
 #' @return An object of class `"PremiumFit"` (a list with the same
 #'   structure as `CLFit`). Components: `selected`, `full`, `data`,
-#'   plus attribute `prem_method`. The `$full` data.table uses
+#'   plus attribute `premium_method`. The `$full` data.table uses
 #'   role-specific column names (`prem_obs`, `prem_proj`,
 #'   `incr_prem_proj`, `prem_proc_se`, `prem_param_se`,
 #'   `prem_total_se`, `prem_proc_cv`, `prem_param_cv`,
@@ -64,19 +64,19 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem  = "incr_prem"
+#'   premium  = "incr_prem"
 #' )
 #'
 #' # ED-additive recursion (default; robust on long projections)
-#' pf <- fit_prem(tri)
+#' pf <- fit_premium(tri)
 #' summary(pf)
 #'
 #' # CL-multiplicative recursion (Mack)
-#' pf_cl <- fit_prem(tri, method = "cl")
+#' pf_cl <- fit_premium(tri, method = "cl")
 #' }
 #'
 #' @export
-fit_prem <- function(x,
+fit_premium <- function(x,
                         method       = c("ed", "cl"),
                         alpha        = 1,
                         regime       = NULL,
@@ -85,7 +85,7 @@ fit_prem <- function(x,
                         tail         = FALSE,
                         conf_level   = 0.95) {
 
-  .assert_triangle_input(x, "fit_prem()")
+  .assert_triangle_input(x, "fit_premium()")
   method       <- match.arg(method)
   sigma_method <- match.arg(sigma_method)
 
@@ -138,7 +138,7 @@ fit_prem <- function(x,
   cl_fit$usage <- prem_usage
 
   cl_fit$regime                  <- regime
-  attr(cl_fit, "prem_method") <- method
+  attr(cl_fit, "premium_method") <- method
   attr(cl_fit, "conf_level")     <- conf_level
   class(cl_fit) <- c("PremiumFit", class(cl_fit))
   cl_fit
@@ -313,7 +313,7 @@ fit_prem <- function(x,
 #' @param ... Unused.
 #' @export
 print.PremiumFit <- function(x, ...) {
-  method <- attr(x, "prem_method")
+  method <- attr(x, "premium_method")
   cat("PremiumFit\n")
   cat("  variance     :", switch(method,
     ed = "ED-additive recursion",

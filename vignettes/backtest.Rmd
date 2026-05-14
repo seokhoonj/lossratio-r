@@ -45,8 +45,8 @@ tri_sur <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 
 bt <- backtest(tri_sur, holdout = 6L)

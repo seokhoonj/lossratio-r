@@ -573,7 +573,7 @@ plot_triangle.TriangleValidation <- function(x,
 #' column.
 #'
 #' The result contains:
-#' - cumulative loss and cumulative prem,
+#' - cumulative loss and cumulative premium,
 #' - per-period and cumulative proportions,
 #' - per-period and cumulative margin,
 #' - profit indicators,
@@ -642,7 +642,7 @@ plot_triangle.TriangleValidation <- function(x,
 #'   \describe{
 #'     \item{n_cohorts}{Number of distinct cohorts observed}
 #'     \item{loss, incr_loss}{Cumulative and per-period loss}
-#'     \item{prem, incr_prem}{Cumulative and per-period prem}
+#'     \item{premium, incr_prem}{Cumulative and per-period prem}
 #'     \item{lr, incr_lr}{Cumulative and per-period loss ratio}
 #'     \item{margin, incr_margin}{Cumulative and per-period margin
 #'       (`prem - loss`)}
@@ -675,7 +675,7 @@ plot_triangle.TriangleValidation <- function(x,
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem  = "incr_prem"
+#'   premium  = "incr_prem"
 #' )
 #'
 #' # explicit quarterly view (re-bins monthly input to quarterly)
@@ -685,7 +685,7 @@ plot_triangle.TriangleValidation <- function(x,
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem  = "incr_prem",
+#'   premium  = "incr_prem",
 #'   grain    = "Q"
 #' )
 #'
@@ -700,7 +700,7 @@ as_triangle <- function(df,
                            calendar    = NULL,
                            development = NULL,
                            loss,
-                           prem,
+                           premium,
                            grain       = "auto",
                            cell_type   = c("incremental", "cumulative"),
                            fill_gaps   = FALSE) {
@@ -709,7 +709,7 @@ as_triangle <- function(df,
 
   if (missing(cohort))  stop("`cohort` is required.",  call. = FALSE)
   if (missing(loss))    stop("`loss` is required.",    call. = FALSE)
-  if (missing(prem)) stop("`prem` is required.", call. = FALSE)
+  if (missing(premium)) stop("`premium` is required.", call. = FALSE)
 
   if (!is.logical(fill_gaps) || length(fill_gaps) != 1L || is.na(fill_gaps))
     stop("`fill_gaps` must be a single non-missing logical value.",
@@ -724,15 +724,17 @@ as_triangle <- function(df,
   if (length(groups)) .assert_column_arg(groups, "groups", dt)
   .assert_column_arg(cohort,  "cohort",  dt, length_one = TRUE)
   .assert_column_arg(loss,    "loss",    dt, length_one = TRUE)
-  .assert_column_arg(prem, "prem", dt, length_one = TRUE)
+  .assert_column_arg(premium, "premium", dt, length_one = TRUE)
   if (!is.null(calendar))
     .assert_column_arg(calendar,    "calendar",    dt, length_one = TRUE)
   if (!is.null(development))
     .assert_column_arg(development, "development", dt, length_one = TRUE)
 
+  # Capture full-word args into short internal vars (CLAUDE.md naming
+  # convention: input boundary is full English, internal vars are short).
   grp  <- groups
   coh  <- cohort
-  prem <- prem
+  prem <- premium
   cal  <- calendar
   dev  <- development
 
@@ -968,7 +970,7 @@ as_triangle <- function(df,
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem  = "incr_prem"
+#'   premium  = "incr_prem"
 #' )
 #' smr <- summary(d)
 #' head(smr)
@@ -1047,7 +1049,7 @@ longer.TriangleSummary <- function(x, ...) {
 #'
 #' The result is a long-format `data.table` with class
 #' `c("Calendar", "data.table", "data.frame")` containing cumulative
-#' loss / prem, incremental and cumulative LR, margin, profit, and
+#' loss / premium, incremental and cumulative LR, margin, profit, and
 #' share columns within each `calendar` cell.
 #'
 #' The cumulative loss ratio is defined as:
@@ -1088,7 +1090,7 @@ longer.TriangleSummary <- function(x, ...) {
 #'       Useful for aligning groups with different starting periods on a
 #'       common index scale.}
 #'     \item{loss, incr_loss}{Cumulative and per-period loss}
-#'     \item{prem, incr_prem}{Cumulative and per-period prem}
+#'     \item{premium, incr_prem}{Cumulative and per-period prem}
 #'     \item{lr, incr_lr}{Cumulative and per-period loss ratio}
 #'     \item{margin, incr_margin}{Cumulative and per-period margin}
 #'     \item{profit, incr_profit}{Profit indicator}
@@ -1107,7 +1109,7 @@ longer.TriangleSummary <- function(x, ...) {
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem  = "incr_prem"
+#'   premium  = "incr_prem"
 #' )
 #'
 #' cal <- as_calendar(tri)
@@ -1139,9 +1141,16 @@ as_calendar <- function(x) {
   incr_vars <- c("incr_loss", "incr_prem")
   cum_vars  <- c("loss", "prem")
 
-  # Aggregate Triangle's incrementals to (groups, calendar).
-  ds <- dt[, lapply(.SD, sum),
-           by = grp_cal, .SDcols = incr_vars]
+  # Aggregate Triangle's incrementals to (groups, calendar). Also carry
+  # `n_cohorts` -- how many distinct cohorts contributed to each
+  # calendar diagonal cell (lower calendars: 1 cohort; later calendars:
+  # progressively more, up to the triangle's full cohort count).
+  cohort <- NULL  # NSE binding for bare ref in agg expression below
+  ds <- dt[, c(
+            list(n_cohorts = data.table::uniqueN(cohort)),
+            lapply(.SD, sum)
+          ),
+          by = grp_cal, .SDcols = incr_vars]
 
   data.table::setorderv(ds, c(grp, "calendar"))
 
@@ -1204,7 +1213,7 @@ as_calendar <- function(x) {
 
   # final column order: cum-first paired
   out_cols <- c(
-    grp, "calendar", "t",
+    grp, "calendar", "t", "n_cohorts",
     "loss", "incr_loss", "prem", "incr_prem",
     "lr", "incr_lr",
     "margin", "incr_margin", "profit", "incr_profit",
@@ -1317,7 +1326,7 @@ as_calendar <- function(x) {
 #'   groups   = "coverage",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem  = "incr_prem"
+#'   premium  = "incr_prem"
 #' )
 #' smr  <- summary(cal)
 #' head(smr)
@@ -1402,7 +1411,7 @@ summary.Calendar <- function(object, ...) {
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem  = "incr_prem"
+#'   premium  = "incr_prem"
 #' )
 #' as_total(tri)
 #' }
@@ -1423,8 +1432,8 @@ as_total <- function(x) {
     n_cohorts   = data.table::uniqueN(cohort),
     sales_start = min(cohort, na.rm = TRUE),
     sales_end   = max(cohort, na.rm = TRUE),
-    loss        = sum(incr_loss,    na.rm = TRUE),
-    prem     = sum(incr_prem, na.rm = TRUE)
+    loss        = sum(incr_loss, na.rm = TRUE),
+    prem        = sum(incr_prem, na.rm = TRUE)
   ))
   ds <- if (length(grp)) dt[, eval(agg_expr), by = grp]
         else             dt[, eval(agg_expr)]
@@ -1469,7 +1478,7 @@ as_total <- function(x) {
 #'   cohort  = "uy_m",
 #'   dev     = "dev_m",
 #'   loss    = "incr_loss",
-#'   prem = "incr_prem"
+#'   premium = "incr_prem"
 #' )
 #' summary(tot)
 #' }
@@ -1534,7 +1543,7 @@ summary.Total <- function(object, digits = 4L, ...) {
 #' data(experience)
 #' tri <- as_triangle(experience, groups = "coverage",
 #'                       cohort = "uy_m", calendar = "cy_m",
-#'                       loss = "incr_loss", prem = "incr_prem")
+#'                       loss = "incr_loss", premium = "incr_prem")
 #'
 #' # Inspect what the analyst at a 6-month historical cutoff would see
 #' tri_masked <- mask_triangle(tri, holdout = 6L)

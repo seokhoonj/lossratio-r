@@ -15,7 +15,7 @@
 }
 \description{
 Internal helper: classifies a Triangle / Calendar / Total / fit
-output metric as ratio (LR, share) vs amount (loss, prem, margin).
+output metric as ratio (LR, share) vs amount (loss, premium, margin).
 Ratio metrics never need an \code{amount_divisor} scaling (they live on
 [0, 1] or thereabouts); amount metrics do.
 }

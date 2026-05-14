@@ -1,8 +1,8 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
-sub <- as_triangle(exp[coverage == "SUR"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
+sub <- as_triangle(exp[coverage == "SUR"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
 
 test_that("backtest returns class 'Backtest'", {
   bt <- backtest(sub, holdout = 6L, target = "loss", loss_method = "cl")
@@ -176,9 +176,9 @@ test_that("plot.Backtest dispatches for lr backtests", {
 
 # target = "prem" support --------------------------------------------
 
-test_that("backtest works with target = 'prem', prem_method = 'ed'", {
+test_that("backtest works with target = 'prem', premium_method = 'ed'", {
   bt <- backtest(sub, holdout = 6L, target = "prem",
-                 prem_method = "ed")
+                 premium_method = "ed")
   expect_s3_class(bt, "Backtest")
   expect_true("expected" %in% names(bt$ae_err))
   expect_true(any(is.finite(bt$ae_err$ae_err)))

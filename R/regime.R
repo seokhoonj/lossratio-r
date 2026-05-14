@@ -150,7 +150,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem  = "incr_prem"
+#'   premium  = "incr_prem"
 #' )
 #'
 #' # Hierarchical clustering (no extra package dependency)
@@ -170,7 +170,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem  = "incr_prem"
+#'   premium  = "incr_prem"
 #' )
 #' r_all <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 #' print(r_all$changes)
@@ -470,11 +470,11 @@ detect_regime <- function(x,
     d[, ("loss_ata") := loss / data.table::shift(loss, 1L, type = "lag"),
       by = by_cols]
   } else if (target == "prem_ata") {
-    d[, ("prem_ata") := prem / data.table::shift(prem, 1L, type = "lag"),
+    d[, ("prem_ata") := prem / data.table::shift(premium, 1L, type = "lag"),
       by = by_cols]
   } else if (target == "loss_ed") {
     d[, ("loss_ed") := (loss - data.table::shift(loss, 1L, type = "lag")) /
-                   data.table::shift(prem, 1L, type = "lag"),
+                   data.table::shift(premium, 1L, type = "lag"),
       by = by_cols]
   } else {
     stop(sprintf("Unknown derived target: '%s'.", target), call. = FALSE)
@@ -915,7 +915,7 @@ print.summary.Regime <- function(x, ...) {
 #' User-facing helper for hand-specifying a regime change (or a set of
 #' per-group changes) without running [detect_regime()]. The returned
 #' `"Regime"` object plugs into any function that consumes a Regime —
-#' `fit_lr()`, `fit_loss()`, `fit_prem()`, [backtest()], and the
+#' `fit_lr()`, `fit_loss()`, `fit_premium()`, [backtest()], and the
 #' regime-change resolver — by carrying the same `$changes` schema as
 #' [detect_regime()] output.
 #'
@@ -1071,7 +1071,7 @@ regime_at <- function(..., treatment = c("latest_only", "segment_wise")) {
 #' deferred** detection -- the change points depend on which cells the
 #' caller decides to expose:
 #'
-#' * In `fit_lr()` / `fit_loss()` / `fit_prem()`, the spec is invoked
+#' * In `fit_lr()` / `fit_loss()` / `fit_premium()`, the spec is invoked
 #'   on the *full* triangle the user passed in.
 #'
 #' * In [backtest()], **the spec is invoked on the masked triangle of
@@ -1127,7 +1127,7 @@ regime_spec <- function(...) {
 #'
 #' @description
 #' Internal 4-type dispatcher used by `fit_lr()`, `fit_loss()`,
-#' `fit_prem()`, and [backtest()] to normalize the `regime`
+#' `fit_premium()`, and [backtest()] to normalize the `regime`
 #' input (or split-axis variants such as `loss_regime`) into a
 #' single representation: either `NULL` (no filter) or a `"Regime"`
 #' object.

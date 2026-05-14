@@ -683,7 +683,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   # 5) build title ------------------------------------------------------
   title_txt <- switch(tgt,
                       loss    = "ATA Factor for Cumulative Loss",
-                      prem = "ATA Factor for Cumulative Premium",
+                      premium = "ATA Factor for Cumulative Premium",
                       lr      = "ATA Factor for Cumulative Loss Ratio",
                       "ATA Factor"
   )

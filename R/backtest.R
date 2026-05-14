@@ -13,8 +13,8 @@
 #' * `target = "lr"` -- score the loss-ratio projection from
 #'   `fit_lr()`.
 #' * `target = "loss"` -- score the loss projection from `fit_loss()`.
-#' * `target = "prem"` -- score the prem projection from
-#'   `fit_prem()`.
+#' * `target = "premium"` -- score the prem projection from
+#'   `fit_premium()`.
 #'
 #' The A/E Error (`ae_err`) follows the standard actuarial A/E
 #' convention and is computed cell-wise as
@@ -30,22 +30,22 @@
 #' @param holdout Integer. Number of latest calendar diagonals to mask
 #'   before refitting. Default `6L`.
 #' @param target Character scalar. Which projection to backtest. One
-#'   of `"lr"` (default), `"loss"`, `"prem"`. Determines which
+#'   of `"lr"` (default), `"loss"`, `"premium"`. Determines which
 #'   fitter is called on the masked triangle and which column on `x`
 #'   is treated as the held-out actual.
 #' @param loss_method Method for the loss-side projection. Passed to
 #'   `fit_lr()` / `fit_loss()` as their `method` argument. One of
-#'   `"sa"`, `"ed"`, `"cl"`. Unused for `target = "prem"`.
-#' @param prem_method Method for the prem-side projection.
-#'   Passed to `fit_lr()` / `fit_loss()` / `fit_prem()`. One of
+#'   `"sa"`, `"ed"`, `"cl"`. Unused for `target = "premium"`.
+#' @param premium_method Method for the prem-side projection.
+#'   Passed to `fit_lr()` / `fit_loss()` / `fit_premium()`. One of
 #'   `"cl"`, `"ed"`.
-#' @param loss_alpha,prem_alpha Mack alpha for loss-side / prem-side
+#' @param loss_alpha,premium_alpha Mack alpha for loss-side / prem-side
 #'   chain-ladder estimation.
 #' @param sigma_method Tail sigma extrapolation method. Forwarded to
 #'   the underlying fitter.
 #' @param recent Calendar-diagonal recency filter forwarded to the
 #'   fitter.
-#' @param loss_regime,prem_regime Regime spec for the loss / prem
+#' @param loss_regime,premium_regime Regime spec for the loss / prem
 #'   side. Each accepts one of four input types, dispatched by
 #'   [`.resolve_regime()`]:
 #'   \itemize{
@@ -57,7 +57,7 @@
 #'     \item A function `function(tri) -> Regime` -- called on the
 #'       masked triangle for the same leakage-safe reason.
 #'   }
-#'   `prem_regime` is resolved independently from `loss_regime`.
+#'   `premium_regime` is resolved independently from `loss_regime`.
 #' @param maturity Maturity input. Used only for `target = "lr"` and
 #'   `target = "loss"` (stage-adaptive). Accepts one of four input
 #'   types, dispatched by [`.resolve_maturity()`]:
@@ -74,13 +74,13 @@
 #'       same leakage-safe reason.
 #'   }
 #' @param se_method Standard-error composition for `fit_lr()`. Unused
-#'   for `target = "loss"` / `target = "prem"`.
+#'   for `target = "loss"` / `target = "premium"`.
 #' @param rho Loss-prem correlation used by `fit_lr()` delta
-#'   method. Unused for `target = "loss"` / `target = "prem"`.
+#'   method. Unused for `target = "loss"` / `target = "premium"`.
 #' @param conf_level Confidence level for `fit_lr()` / `fit_loss()`
-#'   intervals. Unused for `target = "prem"`.
+#'   intervals. Unused for `target = "premium"`.
 #' @param bootstrap,B,seed Bootstrap controls for `fit_lr()`. Unused
-#'   for `target = "loss"` / `target = "prem"`.
+#'   for `target = "loss"` / `target = "premium"`.
 #' @param ... Additional arguments passed to the underlying fitter.
 #'
 #' @return An object of class `"Backtest"` with components:
@@ -108,7 +108,7 @@
 #'       from `x`.}
 #'   }
 #'
-#' @seealso [fit_lr()], [fit_loss()], [fit_prem()], [plot.Backtest()]
+#' @seealso [fit_lr()], [fit_loss()], [fit_premium()], [plot.Backtest()]
 #'
 #' @examples
 #' \dontrun{
@@ -119,12 +119,12 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem  = "incr_prem"
+#'   premium  = "incr_prem"
 #' )
 #'
 #' bt_lr      <- backtest(tri, holdout = 6L, target = "lr")
 #' bt_loss    <- backtest(tri, holdout = 6L, target = "loss")
-#' bt_prem <- backtest(tri, holdout = 6L, target = "prem")
+#' bt_prem <- backtest(tri, holdout = 6L, target = "premium")
 #'
 #' print(bt_lr)
 #' summary(bt_lr)
@@ -134,15 +134,15 @@
 #' @export
 backtest <- function(x,
                      holdout        = 6L,
-                     target         = c("lr", "loss", "prem"),
+                     target         = c("lr", "loss", "premium"),
                      loss_method    = c("sa", "ed", "cl"),
-                     prem_method = c("cl", "ed"),
+                     premium_method = c("cl", "ed"),
                      loss_alpha     = 1,
-                     prem_alpha  = 1,
+                     premium_alpha  = 1,
                      sigma_method   = c("locf", "min_last2", "loglinear"),
                      recent         = NULL,
                      loss_regime    = NULL,
-                     prem_regime = NULL,
+                     premium_regime = NULL,
                      maturity       = "auto",
                      se_method      = c("fixed", "delta"),
                      rho            = 0.95,
@@ -160,7 +160,7 @@ backtest <- function(x,
 
   target         <- match.arg(target)
   loss_method    <- match.arg(loss_method)
-  prem_method <- match.arg(prem_method)
+  premium_method <- match.arg(premium_method)
   sigma_method   <- match.arg(sigma_method)
   se_method      <- match.arg(se_method)
 
@@ -169,21 +169,25 @@ backtest <- function(x,
     stop("`holdout` must be a single positive integer.", call. = FALSE)
   holdout <- as.integer(holdout)
 
-  # Map target -> bare column key (`lr` / `loss` / `prem`). The fit
-  # output's `$full` has both cumulative (`<key>_proj`) and incremental
-  # (`incr_<key>_proj`) projections, and the raw Triangle has both
-  # `<key>` and `incr_<key>` columns -- so a single backtest call yields
-  # both views (`plot.Backtest(cell_type = ...)` selects which to show).
-  actual_cum  <- target
-  incr_actual <- paste0("incr_", target)
-  proj_cum    <- paste0(target, "_proj")
-  proj_incr   <- paste0("incr_", target, "_proj")
+  # Map full-word target arg -> bare column key for fit-output lookup.
+  # User-facing arg is full English (`"lr"` / `"loss"` / `"premium"`)
+  # but the actual `$full` columns use the short `prem` convention, so
+  # `target = "premium"` reads `prem_proj` / `incr_prem_proj`.
+  col_key <- switch(target,
+                    lr      = "lr",
+                    loss    = "loss",
+                    premium = "prem")
+
+  actual_cum  <- col_key
+  actual_incr <- paste0("incr_", col_key)
+  proj_cum    <- paste0(col_key, "_proj")
+  proj_incr   <- paste0("incr_", col_key, "_proj")
   dispatcher <- switch(target,
                         lr      = "fit_lr",
                         loss    = "fit_loss",
-                        prem = "fit_prem")
+                        premium = "fit_premium")
 
-  for (col in c(actual_cum, incr_actual)) {
+  for (col in c(actual_cum, actual_incr)) {
     if (!(col %in% names(x)))
       stop(sprintf("column '%s' not found in `x`.", col), call. = FALSE)
   }
@@ -238,7 +242,7 @@ backtest <- function(x,
   # Passing `masked` as `masked_tri` ensures "auto" and closure forms
   # never see the held-out diagonals.
   loss_regime    <- .resolve_regime(loss_regime,    tri = x, masked_tri = masked)
-  prem_regime <- .resolve_regime(prem_regime, tri = x, masked_tri = masked)
+  premium_regime <- .resolve_regime(premium_regime, tri = x, masked_tri = masked)
 
   # 3) Fit on masked ----------------------------------------------------
   fit_obj <- switch(target,
@@ -247,9 +251,9 @@ backtest <- function(x,
       method         = loss_method,
       loss_alpha     = loss_alpha,
       loss_regime    = loss_regime,
-      prem_method = prem_method,
-      prem_alpha  = prem_alpha,
-      prem_regime = prem_regime,
+      premium_method = premium_method,
+      premium_alpha  = premium_alpha,
+      premium_regime = premium_regime,
       sigma_method   = sigma_method,
       recent         = recent,
       maturity       = maturity,
@@ -266,21 +270,21 @@ backtest <- function(x,
       method         = loss_method,
       alpha          = loss_alpha,
       regime         = loss_regime,
-      prem_method = prem_method,
-      prem_alpha  = prem_alpha,
+      premium_method = premium_method,
+      premium_alpha  = premium_alpha,
       sigma_method   = sigma_method,
       recent         = recent,
       maturity       = maturity,
       conf_level     = conf_level,
       ...
     ),
-    prem = fit_prem(
+    premium = fit_premium(
       masked,
-      method       = prem_method,
-      alpha        = prem_alpha,
+      method       = premium_method,
+      alpha        = premium_alpha,
       sigma_method = sigma_method,
       recent       = recent,
-      regime       = prem_regime,
+      regime       = premium_regime,
       ...
     )
   )
@@ -299,9 +303,9 @@ backtest <- function(x,
 
   obs <- full[.is_held_out == TRUE,
     .SD,
-    .SDcols = c(grp, "cohort", "dev", actual_cum, incr_actual, ".cal_idx")]
+    .SDcols = c(grp, "cohort", "dev", actual_cum, actual_incr, ".cal_idx")]
   data.table::setnames(obs,
-    c(actual_cum, incr_actual, ".cal_idx"),
+    c(actual_cum, actual_incr, ".cal_idx"),
     c("actual", "incr_actual", "calendar_idx")
   )
 
@@ -353,7 +357,7 @@ backtest <- function(x,
   # regime-excluded / future).
   usage_metric <- switch(target,
                          lr = "loss", loss = "loss",
-                         prem = "prem")
+                         premium = "prem")
   usage <- .build_usage(
     x,
     regime   = loss_regime,

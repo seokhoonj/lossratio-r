@@ -9,9 +9,9 @@ fit_lr(
   method = c("sa", "ed", "cl"),
   loss_alpha = 1,
   loss_regime = NULL,
-  prem_method = c("cl", "ed"),
-  prem_alpha = 1,
-  prem_regime = NULL,
+  premium_method = c("cl", "ed"),
+  premium_alpha = 1,
+  premium_regime = NULL,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   maturity = "auto",
@@ -54,13 +54,13 @@ intensities from a regime change.}
 the change date are excluded from estimation.}
 }}
 
-\item{prem_method}{One of \code{"cl"} (default) or \code{"ed"}. Forwarded to
-\code{\link[=fit_prem]{fit_prem()}} when constructing the prem projection.}
+\item{premium_method}{One of \code{"cl"} (default) or \code{"ed"}. Forwarded to
+\code{\link[=fit_premium]{fit_premium()}} when constructing the prem projection.}
 
-\item{prem_alpha}{Numeric scalar for prem chain ladder. Default
+\item{premium_alpha}{Numeric scalar for prem chain ladder. Default
 is \code{1}.}
 
-\item{prem_regime}{Premium-side regime specification. Same four
+\item{premium_regime}{Premium-side regime specification. Same four
 input types as \code{loss_regime} (\code{NULL} / \code{Regime} / \code{"auto"} / function).
 Default \code{NULL} -- prem is fit on the full triangle independently
 of \code{loss_regime} (no lazy default). Set explicitly when the regime
@@ -151,7 +151,7 @@ In all cases, exposure is projected forward using chain ladder:
 \deqn{\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}}
 
 This function is the \emph{composition} layer over \code{\link[=fit_loss]{fit_loss()}} and
-\code{\link[=fit_prem]{fit_prem()}}: it delegates loss projection to \code{fit_loss()},
+\code{\link[=fit_premium]{fit_premium()}}: it delegates loss projection to \code{fit_loss()},
 retrieves the embedded \code{PremiumFit}, and composes the loss-ratio
 point + variance via the delta method (\code{se_method = "fixed"} or
 \code{"delta"}). See \code{ARCHITECTURE.md} for the layered design.
@@ -165,7 +165,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem  = "incr_prem"
+  premium  = "incr_prem"
 )
 
 # Stage-adaptive (default): ED before maturity, CL after
@@ -182,6 +182,6 @@ lr_cl <- fit_lr(tri, method = "cl")
 
 }
 \seealso{
-\code{\link[=fit_loss]{fit_loss()}}, \code{\link[=fit_prem]{fit_prem()}}, \code{\link[=as_triangle]{as_triangle()}},
+\code{\link[=fit_loss]{fit_loss()}}, \code{\link[=fit_premium]{fit_premium()}}, \code{\link[=as_triangle]{as_triangle()}},
 \code{\link[=as_link]{as_link()}}, \code{\link[=fit_ata]{fit_ata()}}, \code{\link[=fit_ed]{fit_ed()}}, \code{\link[=detect_maturity]{detect_maturity()}}
 }

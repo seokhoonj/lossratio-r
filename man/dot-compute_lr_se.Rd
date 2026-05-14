@@ -6,7 +6,7 @@
 \usage{
 .compute_lr_se(
   loss,
-  prem,
+  premium,
   se_loss,
   se_prem = NULL,
   method = c("fixed", "delta"),
@@ -16,8 +16,6 @@
 \arguments{
 \item{loss}{Ultimate loss vector (\code{L}).}
 
-\item{prem}{Ultimate prem vector (\code{E}).}
-
 \item{se_loss}{\code{SE(L)}.}
 
 \item{se_prem}{\code{SE(P)}. Unused for \code{"fixed"}; may be \code{NULL}.}
@@ -26,6 +24,8 @@
 
 \item{rho}{Loss-prem correlation in \verb{(-1, 1)}. Used only for
 \code{"delta"}. Default \code{0.95}.}
+
+\item{prem}{Ultimate prem vector (\code{E}).}
 }
 \value{
 A numeric vector the same length as \code{loss}.

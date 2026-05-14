@@ -6,7 +6,7 @@
 
 test_that("as_triangle accepts a zero-row data.frame and returns empty Triangle", {
   exp_empty <- make_exp()[0L, ]
-  expect_no_error(tri <- as_triangle(exp_empty, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem"))
+  expect_no_error(tri <- as_triangle(exp_empty, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem"))
   expect_s3_class(tri, "Triangle")
   expect_equal(nrow(tri), 0L)
   expect_true(all(c("cohort", "dev", "loss", "prem") %in% names(tri)))
@@ -17,7 +17,7 @@ test_that("as_triangle accepts a zero-row data.frame and returns empty Triangle"
 test_that("as_triangle on a single cohort succeeds", {
   exp <- make_exp()
   single <- exp[uy_m == as.Date("2024-01-01")]
-  tri <- as_triangle(single, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
+  tri <- as_triangle(single, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   expect_s3_class(tri, "Triangle")
   expect_equal(data.table::uniqueN(tri$cohort), 1L)
   expect_gt(nrow(tri), 0L)
@@ -26,7 +26,7 @@ test_that("as_triangle on a single cohort succeeds", {
 test_that("as_link on a single cohort returns Link with valid links", {
   exp <- make_exp()
   single <- exp[uy_m == as.Date("2024-01-01")]
-  tri <- as_triangle(single, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
+  tri <- as_triangle(single, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   ata <- as_link(tri, target = "loss")
   expect_s3_class(ata, "Link")
   expect_true(all(ata$ata_to == ata$ata_from + 1L))
@@ -37,7 +37,7 @@ test_that("as_link on a single cohort returns Link with valid links", {
 test_that("as_triangle on a single group succeeds", {
   exp <- make_exp()
   one_grp <- exp[coverage == "SUR"]
-  tri <- as_triangle(one_grp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
+  tri <- as_triangle(one_grp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   expect_s3_class(tri, "Triangle")
   expect_equal(unique(tri$coverage), "SUR")
 })
@@ -61,7 +61,7 @@ test_that("as_triangle propagates NA loss without erroring", {
   exp <- make_exp()
   exp_na <- data.table::copy(exp)
   exp_na[1:50, incr_loss := NA_real_]
-  expect_no_error(tri <- as_triangle(exp_na, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem"))
+  expect_no_error(tri <- as_triangle(exp_na, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem"))
   expect_s3_class(tri, "Triangle")
   # at least some NAs survive aggregation
   expect_true(anyNA(tri$incr_loss))
@@ -73,7 +73,7 @@ test_that("as_triangle with cohort = 'uy_q' (Q grain) succeeds", {
   exp <- make_exp()
   skip_if_not("uy_q" %in% names(exp), "uy_q not present in experience")
   tri_q <- as_triangle(exp, groups = "coverage",
-                          cohort = "uy_q", calendar = "cy_q", loss = "incr_loss", prem = "incr_prem")
+                          cohort = "uy_q", calendar = "cy_q", loss = "incr_loss", premium = "incr_prem")
   expect_s3_class(tri_q, "Triangle")
   expect_identical(attr(tri_q, "cohort"), "uy_q")
   expect_identical(attr(tri_q, "dev"),    "dev_q")
@@ -85,7 +85,7 @@ test_that("as_triangle with cohort = 'uy_h' (H grain) succeeds", {
   exp <- make_exp()
   skip_if_not("uy_h" %in% names(exp), "uy_h not present in experience")
   tri_h <- as_triangle(exp, groups = "coverage",
-                          cohort = "uy_h", calendar = "cy_h", loss = "incr_loss", prem = "incr_prem")
+                          cohort = "uy_h", calendar = "cy_h", loss = "incr_loss", premium = "incr_prem")
   expect_s3_class(tri_h, "Triangle")
   expect_identical(attr(tri_h, "cohort"), "uy_h")
   expect_identical(attr(tri_h, "dev"),    "dev_h")
@@ -97,7 +97,7 @@ test_that("as_triangle with cohort = 'uy' (Y grain) succeeds", {
   exp <- make_exp()
   skip_if_not("uy" %in% names(exp), "uy not present in experience")
   tri_y <- as_triangle(exp, groups = "coverage",
-                          cohort = "uy", calendar = "cy", loss = "incr_loss", prem = "incr_prem")
+                          cohort = "uy", calendar = "cy", loss = "incr_loss", premium = "incr_prem")
   expect_s3_class(tri_y, "Triangle")
   expect_identical(attr(tri_y, "cohort"), "uy")
   expect_identical(attr(tri_y, "dev"),    "dev_y")
@@ -111,7 +111,7 @@ test_that("as_triangle errors on grain finer than input (uy + grain='M')", {
   expect_error(
     as_triangle(exp, groups = "coverage",
                    cohort = "uy", calendar = "cy",
-                   loss = "incr_loss", prem = "incr_prem",
+                   loss = "incr_loss", premium = "incr_prem",
                    grain = "M"),
     regexp = "grain"
   )
@@ -121,7 +121,7 @@ test_that("as_triangle aggregates M input to Q grain via grain='Q'", {
   exp <- make_exp()
   tri_q <- as_triangle(exp, groups = "coverage",
                           cohort = "uy_m", calendar = "cy_m",
-                          loss = "incr_loss", prem = "incr_prem",
+                          loss = "incr_loss", premium = "incr_prem",
                           grain = "Q")
   expect_s3_class(tri_q, "Triangle")
   expect_identical(attr(tri_q, "grain"),   "Q")
@@ -131,7 +131,7 @@ test_that("as_triangle aggregates M input to Q grain via grain='Q'", {
 test_that("as_calendar with calendar = 'cy_q' returns Calendar quarter", {
   exp <- make_exp()
   skip_if_not("cy_q" %in% names(exp), "cy_q not present in experience")
-  cal_q <- as_calendar(as_triangle(exp, groups = "coverage", cohort = "uy_q", calendar = "cy_q", loss = "incr_loss", prem = "incr_prem"))
+  cal_q <- as_calendar(as_triangle(exp, groups = "coverage", cohort = "uy_q", calendar = "cy_q", loss = "incr_loss", premium = "incr_prem"))
   expect_s3_class(cal_q, "Calendar")
   expect_identical(attr(cal_q, "calendar"), "cy_q")
   expect_gt(nrow(cal_q), 0L)

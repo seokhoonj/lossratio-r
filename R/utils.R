@@ -136,7 +136,7 @@
 #'
 #' @description
 #' Internal helper: classifies a Triangle / Calendar / Total / fit
-#' output metric as ratio (LR, share) vs amount (loss, prem, margin).
+#' output metric as ratio (LR, share) vs amount (loss, premium, margin).
 #' Ratio metrics never need an `amount_divisor` scaling (they live on
 #' \[0, 1\] or thereabouts); amount metrics do.
 #'
@@ -273,7 +273,7 @@
       title = switch(metric,
                        loss         = "Cumulative Loss",
                        incr_loss    = "Per-Period Loss",
-                       prem      = "Cumulative Premium",
+                       premium      = "Cumulative Premium",
                        incr_prem = "Per-Period Premium",
                        margin       = "Cumulative Margin",
                        incr_margin  = "Per-Period Margin"

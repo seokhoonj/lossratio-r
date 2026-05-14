@@ -53,7 +53,7 @@ tot <- as_total(
   cohort  = "uy_m",
   dev     = "dev_m",
   loss    = "incr_loss",
-  prem = "incr_prem"
+  premium = "incr_prem"
 )
 plot(tot)
 plot(tot, metric = "loss")

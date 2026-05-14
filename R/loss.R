@@ -12,10 +12,10 @@
 #'   \item{`"cl"`}{Pure Mack chain ladder (multiplicative).}
 #' }
 #'
-#' This function is the *loss-side* counterpart to [fit_prem()] in
+#' This function is the *loss-side* counterpart to [fit_premium()] in
 #' the role-specific dispatcher layer (see `ARCHITECTURE.md`). It owns
 #' loss projection only -- prem projection is delegated to
-#' [fit_prem()] (called internally when `prem_fit = NULL`), and
+#' [fit_premium()] (called internally when `premium_fit = NULL`), and
 #' the loss-ratio composition with delta method is handled by [fit_lr()].
 #'
 #' @param x A `"Triangle"` object. The standardized `"loss"` and
@@ -36,16 +36,16 @@
 #'   Behavior depends on `method`: SA uses a hybrid 2-pass filter (cohort
 #'   cut for the ED phase, calendar-diagonal wedge for the CL phase);
 #'   ED/CL use a simple cohort cut. The same resolved `Regime` is applied
-#'   to the internal `fit_prem()` call -- callers needing an
+#'   to the internal `fit_premium()` call -- callers needing an
 #'   asymmetric loss/prem split should use [fit_lr()] instead.
-#' @param prem_fit Optional pre-built `PremiumFit` (from
-#'   [fit_prem()]) supplying the prem projection. When `NULL`,
-#'   `fit_loss()` calls `fit_prem()` internally using
-#'   `prem_method`, `prem_alpha`, and the resolved `regime`.
-#' @param prem_method One of `"cl"` (default) or `"ed"`. Used only
-#'   when `prem_fit = NULL`. The default matches the historical
+#' @param premium_fit Optional pre-built `PremiumFit` (from
+#'   [fit_premium()]) supplying the prem projection. When `NULL`,
+#'   `fit_loss()` calls `fit_premium()` internally using
+#'   `premium_method`, `premium_alpha`, and the resolved `regime`.
+#' @param premium_method One of `"cl"` (default) or `"ed"`. Used only
+#'   when `premium_fit = NULL`. The default matches the historical
 #'   `fit_lr()` prem choice.
-#' @param prem_alpha Variance-structure exponent for the prem fit.
+#' @param premium_alpha Variance-structure exponent for the prem fit.
 #'   Default `1`.
 #' @param sigma_method Sigma extrapolation. One of `"locf"` (default),
 #'   `"min_last2"`, `"loglinear"`.
@@ -68,7 +68,7 @@
 #'
 #' @return An object of class `"LossFit"`. List with components:
 #'   `full`, `proj`, `maturity`, `loss_ata_fit`, `prem_ata_fit`,
-#'   `prem_fit`, `ed`, `factor`, `selected`, plus metadata.
+#'   `premium_fit`, `ed`, `factor`, `selected`, plus metadata.
 #'
 #' @section Internal columns:
 #' `$full` retains internal parameter columns (`g_selected`, `g_sigma2`,
@@ -76,7 +76,7 @@
 #' [fit_lr()] can run bootstrap CI on top without re-fitting. Standalone
 #' callers see them as implementation columns.
 #'
-#' @seealso [fit_prem()], [fit_lr()], [fit_cl()], [fit_ed()].
+#' @seealso [fit_premium()], [fit_lr()], [fit_cl()], [fit_ed()].
 #'
 #' @examples
 #' \dontrun{
@@ -87,7 +87,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem  = "incr_prem"
+#'   premium  = "incr_prem"
 #' )
 #'
 #' lf    <- fit_loss(tri)                    # SA (default)
@@ -100,9 +100,9 @@ fit_loss <- function(x,
                      method         = c("sa", "ed", "cl"),
                      alpha          = 1,
                      regime         = NULL,
-                     prem_fit    = NULL,
-                     prem_method = c("cl", "ed"),
-                     prem_alpha  = 1,
+                     premium_fit    = NULL,
+                     premium_method = c("cl", "ed"),
+                     premium_alpha  = 1,
                      sigma_method   = c("locf", "min_last2", "loglinear"),
                      recent         = NULL,
                      maturity       = "auto",
@@ -111,18 +111,18 @@ fit_loss <- function(x,
   .assert_triangle_input(x, "fit_loss()")
   method         <- match.arg(method)
   sigma_method   <- match.arg(sigma_method)
-  prem_method <- match.arg(prem_method)
+  premium_method <- match.arg(premium_method)
 
-  if (!is.null(prem_fit) && !inherits(prem_fit, "PremiumFit"))
-    stop("`prem_fit` must be a PremiumFit object or NULL.",
+  if (!is.null(premium_fit) && !inherits(premium_fit, "PremiumFit"))
+    stop("`premium_fit` must be a PremiumFit object or NULL.",
          call. = FALSE)
 
   if (!is.numeric(alpha) || length(alpha) != 1L ||
       is.na(alpha) || !is.finite(alpha))
     stop("`alpha` must be a single finite numeric value.", call. = FALSE)
-  if (!is.numeric(prem_alpha) || length(prem_alpha) != 1L ||
-      is.na(prem_alpha) || !is.finite(prem_alpha))
-    stop("`prem_alpha` must be a single finite numeric value.",
+  if (!is.numeric(premium_alpha) || length(premium_alpha) != 1L ||
+      is.na(premium_alpha) || !is.finite(premium_alpha))
+    stop("`premium_alpha` must be a single finite numeric value.",
          call. = FALSE)
 
   if (!is.numeric(conf_level) || length(conf_level) != 1L ||
@@ -240,14 +240,14 @@ fit_loss <- function(x,
     # method = "ed"/"cl": leave regime for fit_ata/fit_intensity
   }
 
-  # 3) resolve prem_fit -----------------------------------------------
+  # 3) resolve premium_fit -----------------------------------------------
   # fit_loss is single-role -- the same regime applies to the internal
   # prem fit. Asymmetric loss/prem splits live at fit_lr().
-  if (is.null(prem_fit)) {
-    prem_fit <- fit_prem(
+  if (is.null(premium_fit)) {
+    premium_fit <- fit_premium(
       x,
-      method       = prem_method,
-      alpha        = prem_alpha,
+      method       = premium_method,
+      alpha        = premium_alpha,
       sigma_method = sigma_method,
       regime       = regime_user
     )
@@ -255,11 +255,11 @@ fit_loss <- function(x,
   # Wrap as ATAFit-shaped object for downstream .expand_grid / join paths.
   prem_ata_fit <- structure(
     list(
-      selected     = prem_fit$selected,
-      link         = prem_fit$link,
-      data         = prem_fit$data,
+      selected     = premium_fit$selected,
+      link         = premium_fit$link,
+      data         = premium_fit$data,
       method       = "mack",
-      alpha        = prem_alpha,
+      alpha        = premium_alpha,
       sigma_method = sigma_method,
       maturity     = NULL
     ),
@@ -469,7 +469,7 @@ fit_loss <- function(x,
     maturity        = maturity,
     loss_ata_fit    = loss_ata_fit,
     prem_ata_fit = prem_ata_fit,
-    prem_fit     = prem_fit,
+    premium_fit     = premium_fit,
     ed              = ed_fit$link,
     factor          = ed_fit$factor,
     selected        = ed_fit$selected,

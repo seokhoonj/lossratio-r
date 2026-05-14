@@ -41,8 +41,8 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 ```
 
@@ -50,7 +50,7 @@ tri <- as_triangle(
 
 ```{r}
 plot(tri)                              # cumulative loss-ratio trajectories per cohort
-plot(tri, metric = "lr_incr")       # incremental loss ratio instead of cumulative
+plot(tri, metric = "incr_lr")       # incremental loss ratio instead of cumulative
 plot(tri, summary = TRUE)              # raw + overlay (mean / median / weighted)
 ```
 
@@ -62,10 +62,10 @@ Useful for spotting cohorts that deviate from the central tendency.
 
 ```{r}
 plot_triangle(tri, metric = "lr")          # cumulative lr
-plot_triangle(tri, metric = "lr_incr")     # incremental lr
+plot_triangle(tri, metric = "incr_lr")     # incremental lr
 
 # detail labels (ratio + loss/premium amounts) are 2-line — use quarterly cells
-tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr", grain = "Q")
+tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem", grain = "Q")
 plot_triangle(tri_q, label_style = "detail") # ratio + (loss / premium)
 ```
 
@@ -239,8 +239,8 @@ tri_all <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 detect_maturity(tri_all, target = "loss")
 ```

@@ -55,8 +55,8 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 head(tri)
 ```
@@ -71,7 +71,7 @@ plot(tri)              # one trajectory per cohort, faceted by group
 # so use quarterly cohort and dev to bring each panel down to ~10 x 10
 # cells. This fits the documentation's display size; in practice you
 # can keep monthly resolution by enlarging the plot.
-tri_q <- as_triangle(experience, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr", grain = "Q")
+tri_q <- as_triangle(experience, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem", grain = "Q")
 plot_triangle(tri_q)   # cohort × dev heatmap of lr
 ```
 
@@ -85,7 +85,7 @@ Use `Triangle` as input to:
 ```{r}
 tri <- as_triangle(experience, groups = "coverage",
                    cohort = "uy_m", calendar = "cy_m",
-                   loss = "loss_incr", premium = "premium_incr")
+                   loss = "incr_loss", premium = "incr_prem")
 cal <- as_calendar(tri)
 head(cal)
 ```
@@ -119,7 +119,7 @@ tri_bounded <- as_triangle(
              uy_m <= as.Date("2024-03-01")],
   groups = "coverage", cohort = "uy_m",
   development = "dev_m",
-  loss = "loss_incr", premium = "premium_incr"
+  loss = "incr_loss", premium = "incr_prem"
 )
 tot <- as_total(tri_bounded)
 head(tot)

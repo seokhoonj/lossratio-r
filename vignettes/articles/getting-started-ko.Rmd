@@ -32,7 +32,7 @@ knitr::opts_chunk$set(
 (코호트 × 경과 기간 × 그룹) 셀 하나에 대응한다. 내장 데이터셋
 `experience` 는 2,664 행 테이블로, 여러 집계 주기의 calendar / underwriting
 기간 컬럼, `coverage` 그룹 컬럼, 기간별 금액 컬럼
-(`loss_incr`, `premium_incr`) 을 포함한다.
+(`incr_loss`, `incr_prem`) 을 포함한다.
 
 ```{r}
 library(lossratio)
@@ -49,8 +49,8 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 class(tri)
 names(tri)
@@ -58,7 +58,7 @@ names(tri)
 
 `as_triangle()` 의 동작:
 
-- 필수 컬럼 (`cy_m`, `uy_m`, `loss_incr`, `premium_incr`) 의 존재를
+- 필수 컬럼 (`cy_m`, `uy_m`, `incr_loss`, `incr_prem`) 의 존재를
   확인하고 expected type 으로 코어션한다,
 - 인구통계 차원을 집계하여 제거한다 (여기서는 `age_band`, `gender`),
 - 누적 컬럼 (`loss`, `premium`) 을 추가한다,
@@ -133,8 +133,8 @@ sub <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 detect_regime(sub, method = "e_divisive")
 ```

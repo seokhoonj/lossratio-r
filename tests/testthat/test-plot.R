@@ -1,7 +1,7 @@
 # Setup — full pipeline objects for plot dispatch tests
 data(experience)
 exp  <- experience
-tri  <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
+tri  <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
 cal  <- as_calendar(tri)
 ata  <- as_link(tri, target = "loss")
 af   <- fit_ata(tri, target = "loss")
@@ -9,7 +9,7 @@ ed   <- as_link(tri, target = "loss", exposure = "prem")
 ef   <- fit_ed(tri, target = "loss", exposure = "prem")
 cl_m <- fit_cl(tri, target = "loss", method = "mack")
 lr   <- fit_lr(tri, method = "sa")
-sub  <- as_triangle(exp[coverage == "SUR"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
+sub  <- as_triangle(exp[coverage == "SUR"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
 reg  <- detect_regime(sub, window = 12, method = "e_divisive")
 
 is_plot <- function(x) inherits(x, "ggplot") || inherits(x, "gtable")

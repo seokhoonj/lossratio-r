@@ -11,7 +11,7 @@ as_triangle(
   calendar = NULL,
   development = NULL,
   loss,
-  prem,
+  premium,
   grain = "auto",
   cell_type = c("incremental", "cumulative"),
   fill_gaps = FALSE
@@ -44,11 +44,6 @@ calendar-diagonal logic uses cohort + dev). When both are given,
 \item{loss}{Single character; per-period loss column in \code{df}
 (raw name, e.g., \code{"incr_loss"}).}
 
-\item{prem}{Single character; per-period prem column in \code{df}
-(raw name, e.g., \code{"incr_prem"}). Premium measure used as
-denominator for loss ratio calculations. For long-term health
-insurance applications, risk prem is commonly used.}
-
 \item{grain}{One of \code{"auto"} (default), \code{"M"}, \code{"Q"}, \code{"H"}, \code{"Y"}.
 \code{"auto"} infers the grain from the \code{cohort} value spacing.
 Explicit values must be at least as coarse as the input grain;
@@ -65,6 +60,11 @@ internal triangle is always built on the incremental representation;
 has a consecutive \code{dev} sequence. Default \code{FALSE}, which
 raises an error when gaps are detected. Use
 \code{\link[=validate_triangle]{validate_triangle()}} to inspect gaps before deciding.}
+
+\item{prem}{Single character; per-period prem column in \code{df}
+(raw name, e.g., \code{"incr_prem"}). Premium measure used as
+denominator for loss ratio calculations. For long-term health
+insurance applications, risk prem is commonly used.}
 }
 \value{
 A data.frame with class \code{"Triangle"}, containing the following
@@ -72,7 +72,7 @@ derived columns:
 \describe{
 \item{n_cohorts}{Number of distinct cohorts observed}
 \item{loss, incr_loss}{Cumulative and per-period loss}
-\item{prem, incr_prem}{Cumulative and per-period prem}
+\item{premium, incr_prem}{Cumulative and per-period prem}
 \item{lr, incr_lr}{Cumulative and per-period loss ratio}
 \item{margin, incr_margin}{Cumulative and per-period margin
 (\code{prem - loss})}
@@ -123,7 +123,7 @@ column.
 
 The result contains:
 \itemize{
-\item cumulative loss and cumulative prem,
+\item cumulative loss and cumulative premium,
 \item per-period and cumulative proportions,
 \item per-period and cumulative margin,
 \item profit indicators,
@@ -167,7 +167,7 @@ res_m <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem  = "incr_prem"
+  premium  = "incr_prem"
 )
 
 # explicit quarterly view (re-bins monthly input to quarterly)
@@ -177,7 +177,7 @@ res_q <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem  = "incr_prem",
+  premium  = "incr_prem",
   grain    = "Q"
 )
 

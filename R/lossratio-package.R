@@ -2,7 +2,7 @@
 #' The core loss ratio is defined as:
 #' \deqn{lr = loss / prem}
 #'
-#' where `prem` represents risk prem, not written prem.
+#' where `prem` represents risk premium, not written prem.
 #'
 #' @keywords internal
 "_PACKAGE"

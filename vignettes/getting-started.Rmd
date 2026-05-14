@@ -30,7 +30,7 @@ loss-ratio projection.
 (cohort × dev × group) cell. The bundled dataset
 `experience` is a 2,664-row table with calendar / underwriting
 period columns at multiple granularities, a `coverage` group
-column, and per-period amounts (`loss_incr`, `premium_incr`).
+column, and per-period amounts (`incr_loss`, `incr_prem`).
 
 ```{r}
 library(lossratio)
@@ -47,8 +47,8 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 class(tri)
 names(tri)
@@ -56,14 +56,14 @@ names(tri)
 
 `as_triangle()`:
 
-- validates required columns (`cy_m`, `uy_m`, `loss_incr`,
-  `premium_incr`) and coerces them to the expected types,
+- validates required columns (`cy_m`, `uy_m`, `incr_loss`,
+  `incr_prem`) and coerces them to the expected types,
 - aggregates demographic dimensions away (here: `age_band`, `gender`),
-- standardises raw input names to the per-period slots `loss_incr`
-  and `premium_incr`,
+- standardises raw input names to the per-period slots `incr_loss`
+  and `incr_prem`,
 - adds cumulative companions (`loss`, `premium`) — cumulative is the
   unmarked default; per-period carries the `_incr` suffix,
-- adds derived metrics (`margin` / `margin_incr`, `lr` / `lr_incr`,
+- adds derived metrics (`margin` / `incr_margin`, `lr` / `incr_lr`,
   proportions),
 - standardises the cohort / development columns to the names `cohort`
   and `dev`,
@@ -138,8 +138,8 @@ sub <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 detect_regime(sub, method = "e_divisive")
 ```

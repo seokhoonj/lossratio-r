@@ -102,7 +102,7 @@ d <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem  = "incr_prem"
+  premium  = "incr_prem"
 )
 
 plot_triangle(d)

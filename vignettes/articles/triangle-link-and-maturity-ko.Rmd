@@ -42,8 +42,8 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 ```
 
@@ -51,7 +51,7 @@ tri <- as_triangle(
 
 ```{r}
 plot(tri)                              # 코호트별 누적 손해율 궤적
-plot(tri, metric = "lr_incr")       # 누적 대신 증분 손해율
+plot(tri, metric = "incr_lr")       # 누적 대신 증분 손해율
 plot(tri, summary = TRUE)              # 코호트 선 + overlay (평균 / 중앙값 / 가중)
 ```
 
@@ -62,10 +62,10 @@ plot(tri, summary = TRUE)              # 코호트 선 + overlay (평균 / 중�
 
 ```{r}
 plot_triangle(tri, metric = "lr")          # 누적 lr
-plot_triangle(tri, metric = "lr_incr")     # 증분 lr
+plot_triangle(tri, metric = "incr_lr")     # 증분 lr
 
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly 로 다시 빌드
-tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr", grain = "Q")
+tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem", grain = "Q")
 plot_triangle(tri_q, label_style = "detail")  # 비율 + (loss / premium)
 ```
 
@@ -228,8 +228,8 @@ tri_all <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 detect_maturity(tri_all, target = "loss")
 ```

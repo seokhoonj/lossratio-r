@@ -112,7 +112,7 @@ plot.LRFit <- function(x,
     metric,
     lr      = "Loss Ratio",
     loss    = "Loss",
-    prem = "Premium"
+    premium = "Premium"
   )
   y_lab <- if (is_ratio) col_key else attr(x$data, metric)
   title <- paste0("Projected ", cum_word, " ", base_lab,
@@ -426,7 +426,7 @@ plot_triangle.LRFit <- function(x,
     dt[, ("is_observed") := TRUE]
 
   # 2) compute .value for (metric, cell_type). The `data` region (raw
-  # Triangle) has bare column names (lr, incr_loss, prem, ...). The
+  # Triangle) has bare column names (lr, incr_loss, premium, ...). The
   # `proj` / `full` regions have the `_proj` suffix on the same base.
   if (region == "data") {
     if (!(col_key %in% names(dt)))
@@ -634,7 +634,7 @@ plot_triangle.LRFit <- function(x,
   base_word  <- switch(metric,
                        lr      = "Loss Ratio",
                        loss    = "Loss",
-                       prem = "Premium")
+                       premium = "Premium")
   p <- p + ggplot2::labs(
     title   = paste0(cum_word, " ", base_word, " Triangle",
                      " (method: ", x$method, ")"),

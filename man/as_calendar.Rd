@@ -20,7 +20,7 @@ within its group, not a true development period (\code{cym - uym}).
 Useful for aligning groups with different starting periods on a
 common index scale.}
 \item{loss, incr_loss}{Cumulative and per-period loss}
-\item{prem, incr_prem}{Cumulative and per-period prem}
+\item{premium, incr_prem}{Cumulative and per-period prem}
 \item{lr, incr_lr}{Cumulative and per-period loss ratio}
 \item{margin, incr_margin}{Cumulative and per-period margin}
 \item{profit, incr_profit}{Profit indicator}
@@ -44,7 +44,7 @@ portfolio evolves through time, regardless of cohort membership.
 
 The result is a long-format \code{data.table} with class
 \code{c("Calendar", "data.table", "data.frame")} containing cumulative
-loss / prem, incremental and cumulative LR, margin, profit, and
+loss / premium, incremental and cumulative LR, margin, profit, and
 share columns within each \code{calendar} cell.
 
 The cumulative loss ratio is defined as:
@@ -81,7 +81,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem  = "incr_prem"
+  premium  = "incr_prem"
 )
 
 cal <- as_calendar(tri)
