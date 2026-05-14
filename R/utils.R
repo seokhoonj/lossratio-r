@@ -498,6 +498,10 @@ get_recent_weights <- function(weights, recent) {
                                  grp = character(0),
                                  coh, dev, dev_split = NULL) {
 
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .coh_rank <- .cal_idx <- NULL
+
   if (!data.table::is.data.table(dt))
     stop("`dt` must be a data.table.", call. = FALSE)
 
@@ -534,11 +538,11 @@ get_recent_weights <- function(weights, recent) {
   out <- data.table::copy(dt)
 
   # rank of cohort within group (1 = earliest), then calendar index
-  out[, .coh_rank := data.table::frank(.SD[[1L]], ties.method = "dense"),
+  out[, (".coh_rank") := data.table::frank(.SD[[1L]], ties.method = "dense"),
       by = grp, .SDcols = coh]
-  out[, .cal_idx := .coh_rank + .SD[[1L]] - 1L,
+  out[, (".cal_idx") := .coh_rank + .SD[[1L]] - 1L,
       .SDcols = dev]
-  out[, .max_cal := max(.cal_idx, na.rm = TRUE), by = grp]
+  out[, (".max_cal") := max(.cal_idx, na.rm = TRUE), by = grp]
 
   cal_idx <- out[[".cal_idx"]]
   max_cal <- out[[".max_cal"]]

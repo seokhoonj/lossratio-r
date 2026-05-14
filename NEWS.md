@@ -1,5 +1,42 @@
 # lossratio (development version)
 
+* **BREAKING** — `build_triangle()`, `build_total()`, and
+  `validate_triangle()` rename their `dev =` argument to
+  `development =`. The new name is more explicit about the
+  development-period axis (matching the `coh <- cohort` symmetry
+  inside the function bodies). Migration: replace
+  `build_triangle(..., dev = "dev_m")` with
+  `build_triangle(..., development = "dev_m")`.
+* **BREAKING** — `backtest()` result columns renamed from
+  `value_proj` / `value_actual` (and `_incr` variants) to
+  `target_proj` / `target_actual` (and `_incr` variants), matching
+  the worker-layer `target_*` generic convention.
+* **BREAKING** — summary column renames for `<metric>_<stat>`
+  consistency:
+    * `summary.LossFit` / `summary.PremiumFit`: `se_ultimate` /
+      `cv_ultimate` -> `ultimate_se` / `ultimate_cv`.
+    * `.compute_dv()` output: `median_lr` / `mad_lr` ->
+      `lr_median` / `lr_mad`.
+    * Internal `var_lr` (LR variance scratch column) -> `lr_var`.
+    * `detect_regime_optimal_window()` diagnostics column:
+      `mean_magnitude` -> `magnitude_mean`.
+* `plot_triangle()` now derives the axis grain via `attr(tri, "grain")`
+  when the raw column name (`uy_m`, `cy_q`, ...) is not one of the
+  package-standard forms, so user-supplied names like `uym` or
+  `elap_m` still render tick labels in the abbreviated format
+  (`23.04`, `23.1Q`, ...).
+* `plot_triangle(fit, view = "usage")` regime / segment_wise routing
+  fixed: per-group dispatch now honours `regime$groups` even when
+  `multi_group = FALSE`, so `regime_at(coverage = "SUR", ...)`
+  scopes the hline / cohort cut to the SUR facet only.
+  Filtered-out cells render as `unused` (gray) instead of `future`
+  (white).
+* `.datatable.aware <- TRUE` declared in `R/zzz.R`; data.table NSE
+  NOTEs suppressed via mlr3-style `(".col") :=` LHS pattern + a
+  reorganised `globalVariables()` list. Internal temp markers
+  (`.col` prefix) use function-local `NULL` bindings per the
+  data.table official recommendation.
+
 * **BREAKING** — `as_experience()`, `check_experience()`, and
   `is_experience()` removed along with the `Experience` S3 class.
   `build_triangle()` already validates required columns, coerces dates

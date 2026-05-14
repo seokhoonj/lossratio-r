@@ -71,6 +71,8 @@ home:
   description: Loss ratio analytics for long-term health insurance —
     cohort development analysis, stage-adaptive projection, regime
     detection, and backtest validation.
+  exclude:
+    - ARCHITECTURE.md
 
 navbar:
   structure:
@@ -174,11 +176,17 @@ reference:
     Decide which cells of the triangle to use for estimation.
     `detect_maturity` works along the dev axis (link beyond which
     ATA factors are stable); `detect_regime` works along the cohort
-    axis (structural break across underwriting cohorts).
+    axis (structural break across underwriting cohorts). The
+    `*_at()` / `*_spec()` helpers build manual / lazy-detect input
+    objects for the `maturity` / `loss_regime` / `premium_regime`
+    arguments of the fit functions.
   contents:
   - detect_maturity
   - detect_regime
+  - maturity_at
+  - maturity_spec
   - regime_at
+  - regime_spec
 
 - title: Projection diagnostic
   desc: >

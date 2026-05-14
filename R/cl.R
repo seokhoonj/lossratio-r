@@ -205,23 +205,23 @@ fit_cl <- function(x,
     ]
     full <- wt_obs[full, on = c(grp, "cohort", "dev")]
   } else {
-    full[, wt_obs := NA_real_]
+    full[, ("wt_obs") := NA_real_]
   }
 
   # compute last observed index per cohort
-  full[, last_obs := {
+  full[, ("last_obs") := {
     idx <- which(is.finite(target_obs))
     if (length(idx)) max(idx) else 0L
   }, by = c(grp, "cohort")]
 
   # 9) point projection -------------------------------------------------
-  full[, target_proj := .cl_proj(
+  full[, ("target_proj") := .cl_proj(
     target_obs = target_obs,
     f_selected = f_selected
   ), by = c(grp, "cohort")]
 
   # 10) incremental target projection -----------------------------------
-  full[, target_incr_proj := target_proj -
+  full[, ("target_incr_proj") := target_proj -
          data.table::shift(target_proj, 1L, fill = 0),
        by = c(grp, "cohort")]
 
@@ -243,7 +243,7 @@ fit_cl <- function(x,
     )
   ), by = c(grp, "cohort")]
 
-  full[, target_total_se2 := target_proc_se2 + target_param_se2]
+  full[, ("target_total_se2") := target_proc_se2 + target_param_se2]
 
   full[, `:=`(
     target_proc_se  = sqrt(target_proc_se2),
@@ -445,13 +445,13 @@ print.CLFit <- function(x, ...) {
   full <- obs[full, on = c(grp, "cohort", "dev")]
   data.table::setorderv(full, c(grp, "cohort", "dev"))
 
-  full[, is_observed := is.finite(target_obs)]
+  full[, ("is_observed") := is.finite(target_obs)]
 
   # When ata_fit was fitted with segment_wise treatment, attach
   # segment_id to each grid row so factor join keys by segment.
   if ("segment_id" %in% names(ata_fit$selected)) {
     grp_dt <- if (length(grp)) full[, grp, with = FALSE] else NULL
-    full[, segment_id := .assign_segment(cohort, ata_fit$regime, grp_dt)]
+    full[, ("segment_id") := .assign_segment(cohort, ata_fit$regime, grp_dt)]
   }
 
   full
@@ -511,6 +511,10 @@ print.CLFit <- function(x, ...) {
 
   .assert_class(ata_fit, "ATAFit")
 
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .wt <- .denom <- NULL
+
   grp <- attr(ata_fit$link, "groups")
   if (is.null(grp)) grp <- character(0)
 
@@ -525,9 +529,9 @@ print.CLFit <- function(x, ...) {
     )
 
   if ("weight" %in% names(link_long)) {
-    link_long[, .wt := weight]
+    link_long[, (".wt") := weight]
   } else {
-    link_long[, .wt := 1]
+    link_long[, (".wt") := 1]
   }
 
   link_long <- link_long[is.finite(.wt) & is.finite(target_to) & target_from > 0]
@@ -537,19 +541,19 @@ print.CLFit <- function(x, ...) {
   by_cols <- c(grp, "ata_from", if (has_seg) "segment_id")
 
   link_weights <- link_long[,
-                       .(denom = sum(.wt * target_from^alpha, na.rm = TRUE)),
+                       .(.denom = sum(.wt * target_from^alpha, na.rm = TRUE)),
                        by = by_cols
   ]
 
   sel <- link_weights[sel, on = by_cols]
 
-  sel[, f_var := data.table::fifelse(
-    is.finite(sigma2) & is.finite(denom) & denom > 0,
-    sigma2 / denom,
+  sel[, ("f_var") := data.table::fifelse(
+    is.finite(sigma2) & is.finite(.denom) & .denom > 0,
+    sigma2 / .denom,
     NA_real_
   )]
 
-  sel[, denom := NULL]
+  sel[, (".denom") := NULL]
 
   sel[]
 }

@@ -65,7 +65,7 @@ test_that("CalendarLonger and validation classes set", {
   cal <- build_calendar(exp, groups = "coverage", calendar = "cy_m", loss = "loss_incr", premium = "premium_incr")
   expect_s3_class(attr(cal, "longer"), "CalendarLonger")
 
-  val_tri <- validate_triangle(exp, groups = "coverage", cohort = "uy_m", dev = "dev_m")
+  val_tri <- validate_triangle(exp, groups = "coverage", cohort = "uy_m", development = "dev_m")
   expect_s3_class(val_tri, "TriangleValidation")
 })
 

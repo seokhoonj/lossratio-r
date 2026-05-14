@@ -62,6 +62,10 @@ plot.LRFit <- function(x,
 
   .assert_class(x, "LRFit")
 
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .y <- NULL
+
   metric    <- match.arg(metric)
   cell_type <- match.arg(cell_type)
   scales    <- match.arg(scales)
@@ -122,19 +126,19 @@ plot.LRFit <- function(x,
   #   * Incremental metrics reuse `<metric>_incr_proj` since
   #     loss/premium_proj equals their `_obs` counterparts on observed rows.
   if (is_incr) {
-    obs[, .y := .SD[[1L]], .SDcols = val_col]
+    obs[, (".y") := .SD[[1L]], .SDcols = val_col]
   } else if (metric == "loss") {
-    obs[, .y := loss_obs]
+    obs[, (".y") := loss_obs]
   } else if (metric == "premium") {
-    obs[, .y := premium_obs]
+    obs[, (".y") := premium_obs]
   } else {  # cumulative lr
-    obs[, .y := data.table::fifelse(
+    obs[, (".y") := data.table::fifelse(
       is.finite(premium_obs) & premium_obs != 0,
       loss_obs / premium_obs, NA_real_
     )]
   }
 
-  proj[, .y := proj[[val_col]]]
+  proj[, (".y") := proj[[val_col]]]
 
   # CI bounds read directly from $full (works for both analytical and bootstrap)
   if (show_interval && nrow(proj) &&
@@ -368,6 +372,10 @@ plot_triangle.LRFit <- function(x,
 
   .assert_class(x, "LRFit")
 
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .value <- .fill <- .y <- .px <- .py <- .px_max <- .x_pt <- .y_pt <- NULL
+
   metric      <- match.arg(metric)
   cell_type   <- match.arg(cell_type)
   region      <- match.arg(region)
@@ -411,7 +419,7 @@ plot_triangle.LRFit <- function(x,
   # synthesise it so the projected-cell overlay below sees an empty
   # selection (data region has no projected cells by definition).
   if (region == "data" && !"is_observed" %in% names(dt))
-    dt[, is_observed := TRUE]
+    dt[, ("is_observed") := TRUE]
 
   # 2) compute .value for (metric, cell_type). The `data` region (raw
   # Triangle) has bare column names (lr, loss_incr, premium, ...). The
@@ -420,18 +428,18 @@ plot_triangle.LRFit <- function(x,
     if (!(col_key %in% names(dt)))
       stop(sprintf("column '%s' not found in `x$data`.", col_key),
            call. = FALSE)
-    dt[, .value := .SD[[col_key]], .SDcols = col_key]
+    dt[, (".value") := .SD[[col_key]], .SDcols = col_key]
   } else {
     val_col <- paste0(col_key, "_proj")
     if (!(val_col %in% names(dt)))
       stop(sprintf("column '%s' not found in region '%s'.",
                    val_col, region), call. = FALSE)
-    dt[, .value := .SD[[val_col]], .SDcols = val_col]
+    dt[, (".value") := .SD[[val_col]], .SDcols = val_col]
   }
 
   # 3) build dev link labels
   link_levels <- sort(unique(dt[["dev"]]))
-  dt[, ata_link := factor(sprintf("%s", .SD[[1L]]),
+  dt[, ("ata_link") := factor(sprintf("%s", .SD[[1L]]),
                           levels = as.character(link_levels)),
      .SDcols = "dev"]
 
@@ -439,10 +447,10 @@ plot_triangle.LRFit <- function(x,
   grain    <- attr(x$data, "grain")
   coh_type <- .get_period_type(coh, grain = grain)
   if (!is.na(coh_type)) {
-    dt[, .y := .format_period(.SD[["cohort"]], type = coh_type, abb = TRUE),
+    dt[, (".y") := .format_period(.SD[["cohort"]], type = coh_type, abb = TRUE),
        .SDcols = "cohort"]
   } else {
-    dt[, .y := as.character(.SD[["cohort"]]), .SDcols = "cohort"]
+    dt[, (".y") := as.character(.SD[["cohort"]]), .SDcols = "cohort"]
   }
 
   # 5) build cell labels
@@ -454,11 +462,11 @@ plot_triangle.LRFit <- function(x,
   # breakdown only for ratio metrics — meaningless for amounts.
   if (label_style == "value" || !is_ratio) {
     if (is_ratio) {
-      dt[, label := data.table::fifelse(
+      dt[, ("label") := data.table::fifelse(
         is.finite(.value), sprintf(fmt, .value * 100), ""
       )]
     } else {
-      dt[, label := data.table::fifelse(
+      dt[, ("label") := data.table::fifelse(
         is.finite(.value),
         sprintf("%.1f", .value / amount_divisor), ""
       )]
@@ -475,7 +483,7 @@ plot_triangle.LRFit <- function(x,
     prem_base <- if (is_incr) "premium_incr" else "premium"
     loss_col  <- if (region == "data") loss_base else paste0(loss_base, "_proj")
     prem_col  <- if (region == "data") prem_base else paste0(prem_base, "_proj")
-    dt[, label := data.table::fifelse(
+    dt[, ("label") := data.table::fifelse(
       is.finite(.value),
       sprintf(
         paste0(fmt, "\n(%.1f/%.1f)"),
@@ -492,9 +500,9 @@ plot_triangle.LRFit <- function(x,
   }
 
   # 6) column-wise relative fill (centered on per-dev median)
-  dt[, .fill := .value - stats::median(.value, na.rm = TRUE),
+  dt[, (".fill") := .value - stats::median(.value, na.rm = TRUE),
      by = c(grp, "dev")]
-  dt[!is.finite(.fill), .fill := NA_real_]
+  dt[!is.finite(.fill), (".fill") := NA_real_]
 
   # 7) resolve label_args
   label_args <- .modify_label_args(list(size = label_size))
@@ -505,7 +513,7 @@ plot_triangle.LRFit <- function(x,
   # coercion (factor with levels = sort(unique(.y))), so overlays can map
   # to the same integer positions used internally by ggheatmap.
   y_levels <- sort(unique(plot_data$.y))
-  plot_data[, .y := factor(.y, levels = y_levels)]
+  plot_data[, (".y") := factor(.y, levels = y_levels)]
 
   # 8) base heatmap
   p <- ggshort::ggheatmap(
@@ -584,7 +592,7 @@ plot_triangle.LRFit <- function(x,
     mat <- mat[is.finite(change)]
 
     if (nrow(mat)) {
-      mat[, mat_x := match(change, link_levels)]
+      mat[, ("mat_x") := match(change, link_levels)]
 
       if (length(grp)) {
         p <- p + ggplot2::geom_vline(

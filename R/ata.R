@@ -150,7 +150,7 @@
     )
   }, by = grp_link]
 
-  ds[, valid_ratio := n_valid / n_obs]
+  ds[, ("valid_ratio") := n_valid / n_obs]
 
   # 2) WLS estimation ---------------------------------------------------
   # use weight column if present (added by build_link(weight = ...))
@@ -176,7 +176,7 @@
   )
   data.table::setcolorder(ds, col_order)
 
-  ds[, ata_link := factor(ata_link, levels = unique(dt$ata_link))]
+  ds[, ("ata_link") := factor(ata_link, levels = unique(dt$ata_link))]
 
   # `digits` is retained for downstream display only (see print.ATASummary).
   # Numeric columns are stored at full precision so callers get raw values.
@@ -408,7 +408,7 @@ fit_ata <- function(x,
 
   # 7) extrapolate sigma and compute sigma2 -----------------------------
   selected <- .extrapolate_sigma_ata(selected, method = sigma_method)
-  selected[, sigma2 := sigma^2]
+  selected[, ("sigma2") := sigma^2]
 
   out <- list(
     call         = match.call(),
@@ -552,14 +552,14 @@ print.ATAFit <- function(x, ...) {
           "When there is no `groups`, `maturity` must have exactly one row.",
           call. = FALSE
         )
-      z[, maturity_from := mat_from$maturity_from[1L]]
+      z[, ("maturity_from") := mat_from$maturity_from[1L]]
     }
 
-    z[, selected := data.table::fifelse(
+    z[, ("selected") := data.table::fifelse(
       is.na(maturity_from), TRUE, ata_from >= maturity_from
     )]
-    z[selected == FALSE, f_selected := NA_real_]
-    z[, maturity_from := NULL]
+    z[selected == FALSE, ("f_selected") := NA_real_]
+    z[, ("maturity_from") := NULL]
   }
 
   # --- LOCF fill --------------------------------------------------------
@@ -570,10 +570,10 @@ print.ATAFit <- function(x, ...) {
   if (na_method == "locf") {
     if (length(fill_by)) {
       data.table::setorderv(z, c(fill_by, "ata_from", "ata_to"))
-      z[, f_selected := data.table::nafill(f_selected, type = "locf"),
+      z[, ("f_selected") := data.table::nafill(f_selected, type = "locf"),
         by = fill_by]
     } else {
-      z[, f_selected := data.table::nafill(f_selected, type = "locf")]
+      z[, ("f_selected") := data.table::nafill(f_selected, type = "locf")]
     }
   }
 
@@ -608,7 +608,7 @@ print.ATAFit <- function(x, ...) {
 
   z <- .ensure_dt(x)
 
-  z[, sigma_extrapolated := !is.finite(sigma) | sigma <= 0]
+  z[, ("sigma_extrapolated") := !is.finite(sigma) | sigma <= 0]
 
   idx_valid <- which(!z$sigma_extrapolated)
   idx_pred  <- which( z$sigma_extrapolated)
@@ -634,7 +634,7 @@ print.ATAFit <- function(x, ...) {
       }
       if (method == "min_last2") {
         fill_val <- min(tail(sub$sigma[sub_valid], 2L))
-        z[sub_idx[sub_pred], sigma := fill_val]
+        z[sub_idx[sub_pred], ("sigma") := fill_val]
       } else if (method == "locf") {
         z[sub_idx[sub_pred],
           sigma := sub$sigma[sub_valid[length(sub_valid)]]]
@@ -656,16 +656,16 @@ print.ATAFit <- function(x, ...) {
   if (method == "min_last2") {
     # conservative: use the minimum of the last two valid sigma values
     fill_val <- min(tail(z$sigma[idx_valid], 2L))
-    z[idx_pred, sigma := fill_val]
+    z[idx_pred, ("sigma") := fill_val]
 
   } else if (method == "locf") {
     # carry last valid sigma forward
-    z[idx_pred, sigma := z$sigma[idx_valid[length(idx_valid)]]]
+    z[idx_pred, ("sigma") := z$sigma[idx_valid[length(idx_valid)]]]
 
   } else if (method == "loglinear") {
     # log-linear regression on valid rows; assumes monotone decrease
     fit <- stats::lm(log(sigma) ~ ata_from, data = z[idx_valid])
-    z[idx_pred, sigma := exp(stats::predict(fit, newdata = z[idx_pred]))]
+    z[idx_pred, ("sigma") := exp(stats::predict(fit, newdata = z[idx_pred]))]
   }
 
   z[]

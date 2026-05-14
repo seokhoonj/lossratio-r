@@ -164,7 +164,7 @@ fit_premium <- function(x,
   # Derive incremental projection if not already present.
   if (!"premium_incr_proj" %in% names(full)) {
     by_cols <- c(grp, "cohort")
-    full[, premium_incr_proj := premium_proj -
+    full[, ("premium_incr_proj") := premium_proj -
            data.table::shift(premium_proj, 1L, fill = 0),
          by = by_cols]
   }
@@ -215,6 +215,10 @@ fit_premium <- function(x,
   full <- data.table::copy(.ensure_dt(full))
   selected <- .ensure_dt(selected)
 
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .is_obs <- NULL
+
   grp <- attr(triangle, "groups")
   if (is.null(grp)) grp <- character(0)
 
@@ -223,7 +227,7 @@ fit_premium <- function(x,
   fv <- selected$f_var
 
   data.table::setorder(full, cohort, dev)
-  full[, .is_obs := !is.na(target_obs)]
+  full[, (".is_obs") := !is.na(target_obs)]
 
   ed_one_cohort <- function(.dev, .obs, .vp) {
     K     <- length(.dev)
@@ -262,17 +266,17 @@ fit_premium <- function(x,
     list(r$proc, r$par)
   }, by = by_cols]
 
-  full[, target_total_se2 := target_proc_se2 + target_param_se2]
+  full[, ("target_total_se2") := target_proc_se2 + target_param_se2]
   full[, target_proc_se  := sqrt(pmax(target_proc_se2, 0))]
-  full[, target_param_se := sqrt(pmax(target_param_se2, 0))]
-  full[, target_total_se := sqrt(pmax(target_total_se2, 0))]
+  full[, ("target_param_se") := sqrt(pmax(target_param_se2, 0))]
+  full[, ("target_total_se") := sqrt(pmax(target_total_se2, 0))]
   full[, target_proc_cv  := data.table::fifelse(
     is.finite(target_proj) & target_proj != 0,
     target_proc_se / target_proj, NA_real_)]
-  full[, target_param_cv := data.table::fifelse(
+  full[, ("target_param_cv") := data.table::fifelse(
     is.finite(target_proj) & target_proj != 0,
     target_param_se / target_proj, NA_real_)]
-  full[, target_total_cv := data.table::fifelse(
+  full[, ("target_total_cv") := data.table::fifelse(
     is.finite(target_proj) & target_proj != 0,
     target_total_se / target_proj, NA_real_)]
 
@@ -286,7 +290,7 @@ fit_premium <- function(x,
     target_total_cv  = NA_real_
   )]
 
-  full[, .is_obs := NULL]
+  full[, (".is_obs") := NULL]
   full[]
 }
 
@@ -324,6 +328,6 @@ summary.PremiumFit <- function(object, ...) {
   out <- full[, .SD[which.max(dev)], by = cohort]
   out[, .(cohort,
           ultimate    = premium_proj,
-          se_ultimate = premium_total_se,
-          cv_ultimate = premium_total_cv)]
+          ultimate_se = premium_total_se,
+          ultimate_cv = premium_total_cv)]
 }

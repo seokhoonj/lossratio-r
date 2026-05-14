@@ -316,9 +316,9 @@ detect_maturity <- function(x,
             .SDcols = sum_cols]
 
   if (all(c("loss", "premium") %in% names(agg)))
-    agg[, lr := loss / premium]
+    agg[, ("lr") := loss / premium]
   if (all(c("loss_incr", "premium_incr") %in% names(agg)))
-    agg[, lr_incr := loss_incr / premium_incr]
+    agg[, ("lr_incr") := loss_incr / premium_incr]
 
   data.table::setorderv(agg, by_cols)
 

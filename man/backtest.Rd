@@ -120,8 +120,8 @@ removed).}
 \item{\code{fit}}{The fit object returned by the target-specific
 fitter.}
 \item{\code{ae_err}}{\code{data.table} of held-out cells with columns
-\verb{(group, cohort, dev, value_actual, value_proj, aeg, ae_err, value_actual_incr, value_proj_incr, aeg_incr, ae_err_incr, calendar_idx)}. \code{aeg = value_actual - value_proj} (signed
-error in target units); \code{ae_err = value_actual / value_proj - 1} (relative error). \verb{_incr} siblings are the same metrics
+\verb{(group, cohort, dev, target_actual, target_proj, aeg, ae_err, target_actual_incr, target_proj_incr, aeg_incr, ae_err_incr, calendar_idx)}. \code{aeg = target_actual - target_proj} (signed
+error in target units); \code{ae_err = target_actual / target_proj - 1} (relative error). \verb{_incr} siblings are the same metrics
 on the incremental view.}
 \item{\code{col_summary}}{Per-\code{dev} aggregate A/E Error and AEG
 (mean / median / weighted) with \verb{_incr} variants and \code{n}.}

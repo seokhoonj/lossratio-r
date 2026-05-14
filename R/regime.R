@@ -464,13 +464,13 @@ detect_regime <- function(x,
   d <- data.table::copy(d)
 
   if (target == "loss_ata") {
-    d[, loss_ata := loss / data.table::shift(loss, 1L, type = "lag"),
+    d[, ("loss_ata") := loss / data.table::shift(loss, 1L, type = "lag"),
       by = by_cols]
   } else if (target == "premium_ata") {
-    d[, premium_ata := premium / data.table::shift(premium, 1L, type = "lag"),
+    d[, ("premium_ata") := premium / data.table::shift(premium, 1L, type = "lag"),
       by = by_cols]
   } else if (target == "loss_ed") {
-    d[, loss_ed := (loss - data.table::shift(loss, 1L, type = "lag")) /
+    d[, ("loss_ed") := (loss - data.table::shift(loss, 1L, type = "lag")) /
                    data.table::shift(premium, 1L, type = "lag"),
       by = by_cols]
   } else {
@@ -482,7 +482,7 @@ detect_regime <- function(x,
   # `.detect_regime_single` apply the same `dev <= window` and
   # `n >= window` filters without manual adjustment for the lost dev=1.
   d <- d[is.finite(d[[target]])]
-  d[, dev := dev - 1L]
+  d[, ("dev") := dev - 1L]
   d
 }
 

@@ -9,7 +9,7 @@ validate_triangle(
   groups = character(0),
   cohort,
   calendar = NULL,
-  dev = NULL,
+  development = NULL,
   grain = "auto"
 )
 }
@@ -23,14 +23,14 @@ validate_triangle(
 \item{calendar}{Optional calendar period variable for row-level
 consistency check. When supplied, rows where \code{calendar < cohort} are flagged as invalid. Default \code{NULL} (skip this check).}
 
-\item{dev}{A single development variable (raw column name).
-Optional when \code{calendar} is supplied -- \code{dev} is then derived from
-\verb{(cohort, calendar)} at the resolved \code{grain} (same dispatch as
-\code{\link[=build_triangle]{build_triangle()}}).}
+\item{development}{A single development-period variable (raw column
+name). Optional when \code{calendar} is supplied -- \code{dev} is then
+derived from \verb{(cohort, calendar)} at the resolved \code{grain} (same
+dispatch as \code{\link[=build_triangle]{build_triangle()}}).}
 
 \item{grain}{Grain string (\code{"M"} / \code{"Q"} / \code{"H"} / \code{"Y"}) or
-\code{"auto"} (default) -- used only when \code{dev} is derived from
-\verb{(cohort, calendar)}. Ignored when \code{dev} is supplied.}
+\code{"auto"} (default) -- used only when \code{development} is derived from
+\verb{(cohort, calendar)}. Ignored when \code{development} is supplied.}
 }
 \value{
 A \code{data.table} of class \code{"TriangleValidation"} with one row

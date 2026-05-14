@@ -43,7 +43,7 @@ make_link_set <- function() {
                              calendar = "cy_m",
                              loss = "loss_incr", premium = "premium_incr"),
     tot     = build_total(make_exp(), groups = "coverage",
-                          cohort = "uy_m", dev = "dev_m",
+                          cohort = "uy_m", development = "dev_m",
                           loss = "loss_incr", premium = "premium_incr")
   )
 }

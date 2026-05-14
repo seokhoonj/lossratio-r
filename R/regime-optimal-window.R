@@ -30,7 +30,7 @@
 #'       Kneedle elbow heuristic on `change_count` vs `window`.}
 #'     \item{`diagnostics`}{`data.table` with one row per `window` and (when
 #'       grouped) per combo: `[by..., window, n_cohorts, change_count,
-#'       mean_magnitude]`. Missing window (too few cohorts, etc.) are
+#'       magnitude_mean]`. Missing window (too few cohorts, etc.) are
 #'       omitted.}
 #'     \item{`details`}{Named list of `Regime` objects keyed by `window`
 #'       (preserved for downstream inspection / plotting).}
@@ -82,7 +82,7 @@ detect_regime_optimal_window <- function(x,
     details[i] <- list(res)
   }
 
-  # 2) Diagnostics — change_count + mean_magnitude per (combo, window).
+  # 2) Diagnostics — change_count + magnitude_mean per (combo, window).
   diag_rows <- lapply(seq_along(window_seq), function(i) {
     res <- details[[i]]
     if (is.null(res)) return(NULL)
@@ -96,7 +96,7 @@ detect_regime_optimal_window <- function(x,
           head_row,
           window              = window_seq[i],
           change_count    = nrow(bpg),
-          mean_magnitude = if (nrow(bpg)) mean(bpg$magnitude, na.rm = TRUE) else NA_real_
+          magnitude_mean = if (nrow(bpg)) mean(bpg$magnitude, na.rm = TRUE) else NA_real_
         )
       })
       data.table::rbindlist(rows)
@@ -104,7 +104,7 @@ detect_regime_optimal_window <- function(x,
       data.table::data.table(
         window              = window_seq[i],
         change_count    = nrow(bp),
-        mean_magnitude = if (nrow(bp)) mean(bp$magnitude, na.rm = TRUE) else NA_real_
+        magnitude_mean = if (nrow(bp)) mean(bp$magnitude, na.rm = TRUE) else NA_real_
       )
     }
   })
@@ -186,7 +186,7 @@ summary.RegimeOptimalWindow <- function(object, ...) {
   cat("\n# Break count by window (aggregated):\n")
   agg <- object$diagnostics[
     , .(change_count = sum(change_count, na.rm = TRUE),
-        mean_magnitude = mean(mean_magnitude, na.rm = TRUE)),
+        magnitude_mean = mean(magnitude_mean, na.rm = TRUE)),
     by = "window"
   ]
   data.table::setorderv(agg, "window")
@@ -199,12 +199,12 @@ summary.RegimeOptimalWindow <- function(object, ...) {
 #'
 #' @description
 #' Diagnostic plot for a `detect_regime_optimal_window()` result: shows
-#' `change_count` (and optionally `mean_magnitude`) against the
+#' `change_count` (and optionally `magnitude_mean`) against the
 #' trajectory window `window`, with a vertical line at `optimal_window`.
 #'
 #' @param x A `"RegimeOptimalWindow"` object.
 #' @param show_magnitude Logical; if `TRUE` (default), overlay
-#'   `mean_magnitude` on a secondary y axis (right). Set `FALSE` for
+#'   `magnitude_mean` on a secondary y axis (right). Set `FALSE` for
 #'   a cleaner change-count-only plot.
 #' @param theme A string passed to [.switch_theme()].
 #' @param ... Additional arguments passed to [.switch_theme()].
@@ -224,14 +224,14 @@ plot.RegimeOptimalWindow <- function(x,
   # so the plot mirrors the elbow-detection input.
   agg <- x$diagnostics[
     , .(change_count    = sum(change_count, na.rm = TRUE),
-        mean_magnitude = mean(mean_magnitude, na.rm = TRUE)),
+        magnitude_mean = mean(magnitude_mean, na.rm = TRUE)),
     by = "window"
   ]
   data.table::setorderv(agg, "window")
 
   bc_max <- max(agg$change_count, na.rm = TRUE)
   mag_max <- if (show_magnitude) {
-    max(agg$mean_magnitude, na.rm = TRUE)
+    max(agg$magnitude_mean, na.rm = TRUE)
   } else {
     NA_real_
   }
@@ -246,11 +246,11 @@ plot.RegimeOptimalWindow <- function(x,
     scale_factor <- bc_max / mag_max
     p <- p +
       ggplot2::geom_line(
-        ggplot2::aes(y = mean_magnitude * scale_factor),
+        ggplot2::aes(y = magnitude_mean * scale_factor),
         linewidth = 0.6, color = "#d62728", linetype = "dashed"
       ) +
       ggplot2::geom_point(
-        ggplot2::aes(y = mean_magnitude * scale_factor),
+        ggplot2::aes(y = magnitude_mean * scale_factor),
         size = 1.5, color = "#d62728"
       ) +
       ggplot2::scale_y_continuous(

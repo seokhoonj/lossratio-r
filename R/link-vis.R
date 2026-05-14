@@ -123,6 +123,10 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   .assert_class(x, "Link")
 
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .ata_link_chr <- .label_text <- NULL
+
   type   <- match.arg(type)
   scales <- match.arg(scales)
   theme  <- match.arg(theme)
@@ -137,10 +141,10 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   smr <- summary(x, model = "ata", alpha = alpha)
 
   # 2) build ata_link label lookup (numeric x axis) ---------------------
-  smr[, ata_link_chr := sprintf("%s-%s", ata_from, ata_to)]
+  smr[, (".ata_link_chr") := sprintf("%s-%s", ata_from, ata_to)]
 
   link_labels <- smr[
-    , setNames(ata_link_chr, as.character(ata_from))
+    , setNames(.ata_link_chr, as.character(ata_from))
   ]
 
   .x_scale <- function() {
@@ -212,14 +216,14 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
       mat[, .(ata_from, change, cv, rse)]
     }
 
-    labels[, label_text := sprintf(
+    labels[, (".label_text") := sprintf(
       "maturity: %s-%s\ncv: %.3f\nrse: %.3f\nmin_run: %d",
       ata_from, change, cv, rse, min_run
     )]
 
     p + ggplot2::geom_label(
       data        = labels,
-      mapping     = ggplot2::aes(label = label_text),
+      mapping     = ggplot2::aes(label = .label_text),
       x           = Inf,
       y           = Inf,
       hjust       = 1.05,
@@ -309,12 +313,12 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   if (type == "summary") {
     dm <- data.table::melt(
       smr,
-      id.vars       = c(grp, "ata_from", "ata_link_chr"),
+      id.vars       = c(grp, "ata_from", ".ata_link_chr"),
       measure.vars  = c("mean", "median", "wt"),
       variable.name = "stat",
       value.name    = "value"
     )
-    dm[, stat := factor(stat,
+    dm[, ("stat") := factor(stat,
                         levels = c("mean", "median", "wt"),
                         labels = c("Mean", "Median", "Weighted")
     )]
@@ -358,7 +362,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   if (type == "box") {
     dt <- .ensure_dt(x)
-    dt[, ata_link_chr := sprintf("%s-%s", ata_from, ata_to)]
+    dt[, (".ata_link_chr") := sprintf("%s-%s", ata_from, ata_to)]
 
     p <- ggplot2::ggplot(
       dt,
@@ -447,6 +451,10 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   .assert_class(x, "Link")
 
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .ata_link_chr <- NULL
+
   type   <- match.arg(type)
   scales <- match.arg(scales)
   theme  <- match.arg(theme)
@@ -457,10 +465,10 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   # 1) compute summary
   smr <- summary(x, model = "ed", alpha = alpha)
 
-  smr[, ata_link_chr := sprintf("%s-%s", ata_from, ata_to)]
+  smr[, (".ata_link_chr") := sprintf("%s-%s", ata_from, ata_to)]
 
   link_labels <- smr[
-    , setNames(ata_link_chr, as.character(ata_from))
+    , setNames(.ata_link_chr, as.character(ata_from))
   ]
 
   .x_scale <- function() {
@@ -486,12 +494,12 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   if (type == "summary") {
     dm <- data.table::melt(
       smr,
-      id.vars       = c(grp, "ata_from", "ata_link_chr"),
+      id.vars       = c(grp, "ata_from", ".ata_link_chr"),
       measure.vars  = c("mean", "median", "wt"),
       variable.name = "stat",
       value.name    = "value"
     )
-    dm[, stat := factor(stat,
+    dm[, ("stat") := factor(stat,
                         levels = c("mean", "median", "wt"),
                         labels = c("Mean", "Median", "Weighted")
     )]
@@ -609,6 +617,10 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   .assert_class(x, "Link")
 
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .ata_fill <- .y <- .label_text <- NULL
+
   label_style <- match.arg(label_style)
   theme       <- match.arg(theme)
   if (is.null(label_size))
@@ -627,26 +639,26 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   # 1) build ata_link factor with correct ordering ----------------------
   link_levels <- dt[order(ata_from), unique(sprintf("%s-%s", ata_from, ata_to))]
-  dt[, ata_link := factor(sprintf("%s-%s", ata_from, ata_to),
+  dt[, ("ata_link") := factor(sprintf("%s-%s", ata_from, ata_to),
                           levels = link_levels)]
 
   # 2) format period labels for y axis ----------------------------------
   coh_type <- .get_period_type(coh, grain = attr(x, "grain"))
   if (!is.na(coh_type)) {
-    dt[, .y := .format_period(.SD[["cohort"]], type = coh_type, abb = TRUE),
+    dt[, (".y") := .format_period(.SD[["cohort"]], type = coh_type, abb = TRUE),
        .SDcols = "cohort"]
   } else {
-    dt[, .y := as.character(.SD[["cohort"]]), .SDcols = "cohort"]
+    dt[, (".y") := as.character(.SD[["cohort"]]), .SDcols = "cohort"]
   }
 
   # 3) build cell labels and caption ------------------------------------
   unit_txt <- .get_amount_unit(amount_divisor)
 
   if (label_style == "value") {
-    dt[, label := data.table::fifelse(is.finite(ata), sprintf("%.2f", ata), "")]
+    dt[, ("label") := data.table::fifelse(is.finite(ata), sprintf("%.2f", ata), "")]
     caption_txt <- "Unit: factor (column-wise relative fill)"
   } else {
-    dt[, label := data.table::fifelse(
+    dt[, ("label") := data.table::fifelse(
       is.finite(ata),
       sprintf("%.2f\n(%.1f->%.1f)", ata,
               target_from / amount_divisor,
@@ -660,9 +672,9 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   }
 
   # 4) compute column-wise relative fill --------------------------------
-  dt[, ata_fill := log(ata / stats::median(ata, na.rm = TRUE)),
+  dt[, (".ata_fill") := log(ata / stats::median(ata, na.rm = TRUE)),
      by = c(grp, "ata_link")]
-  dt[!is.finite(ata_fill), ata_fill := NA_real_]
+  dt[!is.finite(.ata_fill), (".ata_fill") := NA_real_]
 
   # 5) build title ------------------------------------------------------
   title_txt <- switch(tgt,
@@ -689,7 +701,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     mat <- mat[is.finite(ata_from)]
 
     if (nrow(mat)) {
-      mat[, ata_link := factor(
+      mat[, ("ata_link") := factor(
         sprintf("%s-%s", ata_from, change),
         levels = link_levels
       )]
@@ -706,7 +718,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     y          = .y,
     label      = label,
     label_args = label_args,
-    fill       = ata_fill,
+    fill       = .ata_fill,
     fill_args  = list(
       low       = "#D9ECFF",
       mid       = "white",
@@ -734,14 +746,14 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
       mat[, .(ata_from, change, cv, rse)]
     }
 
-    labels[, label_text := sprintf(
+    labels[, (".label_text") := sprintf(
       "maturity: %s-%s\ncv: %.3f\nrse: %.3f\nmin_run: %d",
       ata_from, change, cv, rse, min_run
     )]
 
     p <- p + ggplot2::geom_label(
       data        = labels,
-      mapping     = ggplot2::aes(label = label_text),
+      mapping     = ggplot2::aes(label = .label_text),
       x           = Inf,
       y           = -Inf,
       hjust       = 1.05,
@@ -786,6 +798,10 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   .assert_class(x, "Link")
 
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .intensity_fill <- .y <- NULL
+
   label_style <- match.arg(label_style)
   theme       <- match.arg(theme)
   if (is.null(label_size))
@@ -799,25 +815,25 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
 
   # 1) build ata_link factor
   link_levels <- dt[order(ata_from), unique(sprintf("%s-%s", ata_from, ata_to))]
-  dt[, ata_link := factor(sprintf("%s-%s", ata_from, ata_to),
+  dt[, ("ata_link") := factor(sprintf("%s-%s", ata_from, ata_to),
                           levels = link_levels)]
 
   # 2) format period labels
   coh_type <- .get_period_type(coh, grain = attr(x, "grain"))
   if (!is.na(coh_type)) {
-    dt[, .y := .format_period(.SD[["cohort"]], type = coh_type, abb = TRUE),
+    dt[, (".y") := .format_period(.SD[["cohort"]], type = coh_type, abb = TRUE),
        .SDcols = "cohort"]
   } else {
-    dt[, .y := as.character(.SD[["cohort"]]), .SDcols = "cohort"]
+    dt[, (".y") := as.character(.SD[["cohort"]]), .SDcols = "cohort"]
   }
 
   # 3) build cell labels
   if (label_style == "value") {
-    dt[, label := data.table::fifelse(is.finite(intensity),
+    dt[, ("label") := data.table::fifelse(is.finite(intensity),
                                       sprintf("%.3f", intensity), "")]
     caption_txt <- "Unit: g (column-wise relative fill)"
   } else {
-    dt[, label := data.table::fifelse(
+    dt[, ("label") := data.table::fifelse(
       is.finite(intensity),
       sprintf("%.3f\n(%.1f/%.1f)", intensity,
               target_delta / amount_divisor,
@@ -831,9 +847,9 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   }
 
   # 4) column-wise relative fill
-  dt[, intensity_fill := intensity - stats::median(intensity, na.rm = TRUE),
+  dt[, (".intensity_fill") := intensity - stats::median(intensity, na.rm = TRUE),
      by = c(grp, "ata_link")]
-  dt[!is.finite(intensity_fill), intensity_fill := NA_real_]
+  dt[!is.finite(.intensity_fill), (".intensity_fill") := NA_real_]
 
   # 5) resolve label_args
   label_args <- .modify_label_args(list(size = label_size))
@@ -845,7 +861,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     y          = .y,
     label      = label,
     label_args = label_args,
-    fill       = intensity_fill,
+    fill       = .intensity_fill,
     fill_args  = list(
       low       = "#D9ECFF",
       mid       = "white",

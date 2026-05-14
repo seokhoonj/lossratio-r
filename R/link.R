@@ -161,18 +161,18 @@ build_link <- function(x,
   data.table::setorderv(z, c(grp_coh, "dev"))
 
   # 1) link metadata ----------------------------------------------------
-  z[, ata_from := dev]
+  z[, ("ata_from") := dev]
   z[, ata_to   := data.table::shift(dev, type = "lead"),
     by = grp_coh]
-  z[, ata_link := sprintf("%s-%s", ata_from, ata_to)]
+  z[, ("ata_link") := sprintf("%s-%s", ata_from, ata_to)]
 
   # 2) target_from / target_to / target_delta / ata -----------------------
-  z[, target_from := .SD[[tgt]], .SDcols = tgt]
+  z[, ("target_from") := .SD[[tgt]], .SDcols = tgt]
   z[, target_to   := data.table::shift(.SD[[1L]], type = "lead"),
     by      = grp_coh,
     .SDcols = tgt]
-  z[, target_delta := target_to - target_from]
-  z[, ata := data.table::fifelse(
+  z[, ("target_delta") := target_to - target_from]
+  z[, ("ata") := data.table::fifelse(
     target_from > min_denom,
     target_to / target_from,
     NA_real_
@@ -180,12 +180,12 @@ build_link <- function(x,
 
   # 3) exposure_from / exposure_to / exposure_delta / intensity --------
   if (use_exposure) {
-    z[, exposure_from := .SD[[exp]], .SDcols = exp]
+    z[, ("exposure_from") := .SD[[exp]], .SDcols = exp]
     z[, exposure_to   := data.table::shift(.SD[[1L]], type = "lead"),
       by      = grp_coh,
       .SDcols = exp]
-    z[, exposure_delta := exposure_to - exposure_from]
-    z[, intensity := data.table::fifelse(
+    z[, ("exposure_delta") := exposure_to - exposure_from]
+    z[, ("intensity") := data.table::fifelse(
       exposure_from > min_denom,
       target_delta / exposure_from,
       NA_real_
@@ -194,7 +194,7 @@ build_link <- function(x,
 
   # 4) attach weight column --------------------------------------------
   if (use_weight) {
-    z[, weight := .SD[[wt]], .SDcols = wt]
+    z[, ("weight") := .SD[[wt]], .SDcols = wt]
   }
 
   # 5) remove last dev row per cohort (no lead available) --------------
@@ -326,6 +326,10 @@ summary.Link <- function(object,
 
   .assert_class(x, "Link")
 
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .reg_w <- NULL
+
   if (!is.numeric(alpha) || length(alpha) != 1L || is.na(alpha))
     stop("`alpha` must be a single non-missing numeric value.", call. = FALSE)
 
@@ -349,22 +353,22 @@ summary.Link <- function(object,
   if (is.character(weights)) {
     if (length(weights) != 1L || !weights %in% names(dt))
       stop("`weights` must be a single existing column name.", call. = FALSE)
-    dt[, w := .SD, .SDcols = weights]
+    dt[, ("w") := .SD, .SDcols = weights]
   } else {
     if (!is.numeric(weights) || length(weights) != 1L || is.na(weights))
       stop(
         "`weights` must be a single non-missing numeric scalar or a column name.",
         call. = FALSE
       )
-    dt[, w := weights]
+    dt[, ("w") := weights]
   }
 
   # regression weight: w / target_from^(2 - alpha)
   # this corresponds to Mack's variance assumption:
   # Var(C_{i,k+1} | C_{i,k}) proportional to C_{i,k}^alpha / w_{i,k}
   delta <- 2 - alpha
-  dt[, reg_w := w / target_from^delta]
-  dt[, ata_link := sprintf("%s-%s", ata_from, ata_to)]
+  dt[, (".reg_w") := w / target_from^delta]
+  dt[, ("ata_link") := sprintf("%s-%s", ata_from, ata_to)]
 
   # segment_wise treatment annotates rows with segment_id upstream; when
   # present, fit one model per (link, segment) so each regime gets its
@@ -384,7 +388,7 @@ summary.Link <- function(object,
       )
     } else {
       fit <- tryCatch(
-        stats::lm(target_to ~ target_from + 0, weights = reg_w),
+        stats::lm(target_to ~ target_from + 0, weights = .reg_w),
         error = function(e) NULL
       )
 

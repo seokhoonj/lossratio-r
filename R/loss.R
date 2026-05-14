@@ -331,23 +331,23 @@ fit_loss <- function(x,
       full <- m_join[full, on = grp]
     } else {
       if (nrow(m_join) == 1L) {
-        full[, maturity_from := m_join$maturity_from[1L]]
+        full[, ("maturity_from") := m_join$maturity_from[1L]]
       } else {
-        full[, maturity_from := NA_real_]
+        full[, ("maturity_from") := NA_real_]
       }
     }
   } else {
-    full[, maturity_from := NA_real_]
+    full[, ("maturity_from") := NA_real_]
   }
 
   # 11) last_obs per cohort ---------------------------------------------
-  full[, last_obs := {
+  full[, ("last_obs") := {
     idx <- which(is.finite(loss_obs))
     if (length(idx)) max(idx) else 0L
   }, by = c(grp, "cohort")]
 
   # 12) loss point projection -------------------------------------------
-  full[, loss_proj := .sa_proj(
+  full[, ("loss_proj") := .sa_proj(
     loss_obs      = loss_obs,
     premium_proj  = premium_proj,
     g_selected    = g_selected,
@@ -382,7 +382,7 @@ fit_loss <- function(x,
   ), by = c(grp, "cohort")]
 
   # 14) total loss variance and SE -------------------------------------
-  full[, loss_total_se2 := loss_proc_se2 + loss_param_se2]
+  full[, ("loss_total_se2") := loss_proc_se2 + loss_param_se2]
 
   full[, `:=`(
     loss_proc_se  = sqrt(loss_proc_se2),
@@ -390,7 +390,7 @@ fit_loss <- function(x,
     loss_total_se = sqrt(loss_total_se2)
   )]
 
-  full[, loss_total_cv := data.table::fifelse(
+  full[, ("loss_total_cv") := data.table::fifelse(
     is.finite(loss_proj) & loss_proj != 0,
     loss_total_se / abs(loss_proj), NA_real_
   )]
@@ -403,9 +403,9 @@ fit_loss <- function(x,
   )]
 
   # 16) incremental projections (loss + premium) ----------------------
-  full[, loss_incr_proj := loss_proj - data.table::shift(loss_proj, 1L, fill = 0),
+  full[, ("loss_incr_proj") := loss_proj - data.table::shift(loss_proj, 1L, fill = 0),
        by = c(grp, "cohort")]
-  full[, premium_incr_proj := premium_proj - data.table::shift(premium_proj, 1L, fill = 0),
+  full[, ("premium_incr_proj") := premium_proj - data.table::shift(premium_proj, 1L, fill = 0),
        by = c(grp, "cohort")]
 
   # 17) $proj: NA-mask observed cells (loss-side columns only) --------
@@ -524,7 +524,7 @@ summary.LossFit <- function(object, ...) {
   out <- out[, .SD, .SDcols = keep]
   data.table::setnames(out,
     c("loss_proj", "loss_total_se", "loss_total_cv"),
-    c("ultimate",  "se_ultimate",   "cv_ultimate"))
+    c("ultimate",  "ultimate_se",   "ultimate_cv"))
   out[]
 }
 
@@ -770,7 +770,7 @@ summary.LossFit <- function(object, ...) {
   full <- obs[full, on = c(grp, "cohort", "dev")]
   data.table::setorderv(full, c(grp, "cohort", "dev"))
 
-  full[, is_observed := is.finite(loss_obs)]
+  full[, ("is_observed") := is.finite(loss_obs)]
 
   # Attach segment_id when either side of the projection was fitted
   # segment_wise. ED loss-side regime is on ed_fit; premium-side regime
@@ -782,7 +782,7 @@ summary.LossFit <- function(object, ...) {
   if (has_seg_ed || has_seg_prem) {
     reg <- if (has_seg_ed) ed_fit$regime else premium_ata_fit$regime
     grp_dt <- if (length(grp)) full[, grp, with = FALSE] else NULL
-    full[, segment_id := .assign_segment(cohort, reg, grp_dt)]
+    full[, ("segment_id") := .assign_segment(cohort, reg, grp_dt)]
   }
 
   prem_cols <- c(grp, "ata_from",
@@ -794,11 +794,11 @@ summary.LossFit <- function(object, ...) {
   full <- prem_sel[full,
                    on = c(grp, "dev", if (has_seg_prem) "segment_id")]
 
-  full[, premium_proj := .cl_proj(
+  full[, ("premium_proj") := .cl_proj(
     target_obs = premium_obs,
     f_selected = f_exposure
   ), by = c(grp, "cohort")]
 
-  full[, f_exposure := NULL]
+  full[, ("f_exposure") := NULL]
   full
 }

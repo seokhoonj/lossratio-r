@@ -61,7 +61,7 @@ plot.Backtest <- function(x,
       variable.name = "stat",
       value.name    = "ae_err"
     )
-    long[, stat := factor(stat,
+    long[, ("stat") := factor(stat,
                           levels = stat_cols,
                           labels = c("Mean", "Median", "Weighted"))]
     p <- ggplot2::ggplot(
@@ -102,7 +102,7 @@ plot.Backtest <- function(x,
       variable.name = "stat",
       value.name    = "ae_err"
     )
-    long[, stat := factor(stat,
+    long[, ("stat") := factor(stat,
                           levels = stat_cols,
                           labels = c("Mean", "Median", "Weighted"))]
     p <- ggplot2::ggplot(
@@ -209,6 +209,10 @@ plot_triangle.Backtest <- function(x,
   cell_type <- match.arg(cell_type)
   theme     <- match.arg(theme)
 
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .ae <- .y_lab <- NULL
+
   # view = "usage": dispatch to the shared usage renderer with the fit's
   # `regime` and the backtest's `holdout`. The fit may carry either
   # `loss_regime` (LRFit) or `regime` (LossFit / PremiumFit) -- try both.
@@ -233,8 +237,8 @@ plot_triangle.Backtest <- function(x,
   grp <- x$groups
   dt <- .ensure_dt(x$ae_err)
 
-  dt[, .ae := .SD[[1L]], .SDcols = ae_err_col]
-  dt[, .label := sprintf("%.1f", .ae * 100)]
+  dt[, (".ae") := .SD[[1L]], .SDcols = ae_err_col]
+  dt[, (".label") := sprintf("%.1f", .ae * 100)]
   lim <- max(abs(dt$.ae), na.rm = TRUE)
   if (!is.finite(lim) || lim == 0) lim <- 1
 
@@ -246,12 +250,12 @@ plot_triangle.Backtest <- function(x,
   bt_grain <- attr(x$data, "grain")
   coh_type <- .get_period_type(x$cohort, grain = bt_grain)
   if (!is.na(coh_type)) {
-    dt[, .y_lab := .format_period(cohort, type = coh_type, abb = TRUE)]
+    dt[, (".y_lab") := .format_period(cohort, type = coh_type, abb = TRUE)]
   } else {
-    dt[, .y_lab := as.character(cohort)]
+    dt[, (".y_lab") := as.character(cohort)]
   }
   cohort_levels <- sort(unique(dt$.y_lab), decreasing = TRUE)
-  dt[, .y_lab := factor(.y_lab, levels = cohort_levels)]
+  dt[, (".y_lab") := factor(.y_lab, levels = cohort_levels)]
 
   p <- ggplot2::ggplot(
     dt,

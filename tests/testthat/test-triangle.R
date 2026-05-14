@@ -60,7 +60,7 @@ test_that("build_calendar returns class 'Calendar' with expected columns", {
 })
 
 test_that("build_total returns class 'Total' with one row per group", {
-  tot <- build_total(exp, groups = "coverage", cohort = "uy_m", dev = "dev_m", loss = "loss_incr", premium = "premium_incr")
+  tot <- build_total(exp, groups = "coverage", cohort = "uy_m", development = "dev_m", loss = "loss_incr", premium = "premium_incr")
   expect_s3_class(tot, "Total")
   expected <- c("n_obs", "sales_start", "sales_end",
                 "loss", "premium", "lr", "loss_share", "premium_share")
@@ -69,7 +69,7 @@ test_that("build_total returns class 'Total' with one row per group", {
 })
 
 test_that("validate_triangle returns class 'TriangleValidation' with no gaps", {
-  res <- validate_triangle(experience, groups = "coverage", cohort = "uy_m", dev = "dev_m")
+  res <- validate_triangle(experience, groups = "coverage", cohort = "uy_m", development = "dev_m")
   expect_s3_class(res, "TriangleValidation")
   expect_equal(nrow(res), 0L)
 })
@@ -137,7 +137,7 @@ test_that("summary.Calendar row count matches (group, calendar) cells", {
 })
 
 test_that("summary.Total returns TotalSummary ordered by descending lr", {
-  tot <- build_total(exp, groups = "coverage", cohort = "uy_m", dev = "dev_m", loss = "loss_incr", premium = "premium_incr")
+  tot <- build_total(exp, groups = "coverage", cohort = "uy_m", development = "dev_m", loss = "loss_incr", premium = "premium_incr")
   s   <- summary(tot)
   expect_s3_class(s, "TotalSummary")
   expect_false(inherits(s, "Total"))
@@ -147,7 +147,7 @@ test_that("summary.Total returns TotalSummary ordered by descending lr", {
 })
 
 test_that("summary.Total honors digits = NULL (no rounding)", {
-  tot <- build_total(exp, groups = "coverage", cohort = "uy_m", dev = "dev_m", loss = "loss_incr", premium = "premium_incr")
+  tot <- build_total(exp, groups = "coverage", cohort = "uy_m", development = "dev_m", loss = "loss_incr", premium = "premium_incr")
   s_round <- summary(tot, digits = 2L)
   s_raw   <- summary(tot, digits = NULL)
   expect_true(all(s_round$lr == round(s_round$lr, 2L)))
@@ -156,12 +156,12 @@ test_that("summary.Total honors digits = NULL (no rounding)", {
 })
 
 test_that("plot.Total returns a ggplot for default metric = 'lr'", {
-  tot <- build_total(exp, groups = "coverage", cohort = "uy_m", dev = "dev_m", loss = "loss_incr", premium = "premium_incr")
+  tot <- build_total(exp, groups = "coverage", cohort = "uy_m", development = "dev_m", loss = "loss_incr", premium = "premium_incr")
   expect_no_error(p <- plot(tot))
   expect_s3_class(p, "ggplot")
 })
 
 test_that("plot.Total errors on unknown metric", {
-  tot <- build_total(exp, groups = "coverage", cohort = "uy_m", dev = "dev_m", loss = "loss_incr", premium = "premium_incr")
+  tot <- build_total(exp, groups = "coverage", cohort = "uy_m", development = "dev_m", loss = "loss_incr", premium = "premium_incr")
   expect_error(plot(tot, metric = "nope"))
 })

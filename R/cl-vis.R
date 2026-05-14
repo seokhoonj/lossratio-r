@@ -234,7 +234,7 @@ plot.CLFit <- function(x,
     as.character(coh_raw)
   }
 
-  smr[, .coh := factor(coh_lab, levels = unique(coh_lab[order(coh_raw)]))]
+  smr[, (".coh") := factor(coh_lab, levels = unique(coh_lab[order(coh_raw)]))]
 
   if (show_interval) {
     smr[, `:=`(
@@ -362,6 +362,10 @@ plot_triangle.CLFit <- function(x,
 
   .assert_class(x, "CLFit")
 
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .value <- NULL
+
   region      <- match.arg(region)
   view        <- match.arg(view)
   label_style <- match.arg(label_style)
@@ -442,20 +446,20 @@ plot_triangle.CLFit <- function(x,
   )
 
   if (region == "data") {
-    dt[, .value := .SD[[metric]], .SDcols = metric]
+    dt[, (".value") := .SD[[metric]], .SDcols = metric]
   } else {
-    dt[, .value := target_proj]
+    dt[, (".value") := target_proj]
   }
 
   # 2) period label -----------------------------------------------------
   grain    <- attr(x$data, "grain")
   coh_type <- .get_period_type(coh, grain = grain)
   if (!is.na(coh_type)) {
-    dt[, .y := .format_period(
+    dt[, (".y") := .format_period(
       .SD[["cohort"]], type = coh_type, abb = TRUE
     ), .SDcols = "cohort"]
   } else {
-    dt[, .y := as.character(.SD[["cohort"]]), .SDcols = "cohort"]
+    dt[, (".y") := as.character(.SD[["cohort"]]), .SDcols = "cohort"]
   }
 
   # 3) build cell label -------------------------------------------------
@@ -464,17 +468,17 @@ plot_triangle.CLFit <- function(x,
 
   if (label_style == "value" || region == "data") {
     if (is_ratio) {
-      dt[, label := data.table::fifelse(
+      dt[, ("label") := data.table::fifelse(
         is.na(.value), "", sprintf("%.0f", .value * 100)
       )]
     } else {
-      dt[, label := data.table::fifelse(
+      dt[, ("label") := data.table::fifelse(
         is.na(.value), "", sprintf("%.1f", .value / amount_divisor)
       )]
     }
 
   } else {
-    dt[, label := ""]
+    dt[, ("label") := ""]
 
     if (label_style == "cv") {
       dt[is_observed == FALSE & is.finite(target_total_cv),

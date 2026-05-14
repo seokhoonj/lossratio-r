@@ -92,10 +92,10 @@
 #'     \item{`fit`}{The fit object returned by the target-specific
 #'       fitter.}
 #'     \item{`ae_err`}{`data.table` of held-out cells with columns
-#'       `(group, cohort, dev, value_actual, value_proj, aeg, ae_err,
-#'       value_actual_incr, value_proj_incr, aeg_incr, ae_err_incr,
-#'       calendar_idx)`. `aeg = value_actual - value_proj` (signed
-#'       error in target units); `ae_err = value_actual / value_proj
+#'       `(group, cohort, dev, target_actual, target_proj, aeg, ae_err,
+#'       target_actual_incr, target_proj_incr, aeg_incr, ae_err_incr,
+#'       calendar_idx)`. `aeg = target_actual - target_proj` (signed
+#'       error in target units); `ae_err = target_actual / target_proj
 #'       - 1` (relative error). `_incr` siblings are the same metrics
 #'       on the incremental view.}
 #'     \item{`col_summary`}{Per-`dev` aggregate A/E Error and AEG
@@ -154,6 +154,10 @@ backtest <- function(x,
 
   .assert_triangle_input(x, "backtest()")
 
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .coh_rank <- .cal_idx <- .max_cal <- .is_held_out <- NULL
+
   target         <- match.arg(target)
   loss_method    <- match.arg(loss_method)
   premium_method <- match.arg(premium_method)
@@ -201,11 +205,11 @@ backtest <- function(x,
 
   # 1) Tag held-out cells on the original (long-format) triangle ----------
   full <- .ensure_dt(x)
-  full[, .coh_rank := data.table::frank(cohort, ties.method = "dense"),
+  full[, (".coh_rank") := data.table::frank(cohort, ties.method = "dense"),
        by = grp]
-  full[, .cal_idx := .coh_rank + dev - 1L]
-  full[, .max_cal := max(.cal_idx, na.rm = TRUE), by = grp]
-  full[, .is_held_out := .cal_idx > .max_cal - holdout]
+  full[, (".cal_idx") := .coh_rank + dev - 1L]
+  full[, (".max_cal") := max(.cal_idx, na.rm = TRUE), by = grp]
+  full[, (".is_held_out") := .cal_idx > .max_cal - holdout]
 
   if (!any(full$.is_held_out))
     stop("`holdout` exceeds available calendar diagonals.", call. = FALSE)
@@ -298,7 +302,7 @@ backtest <- function(x,
     .SDcols = c(grp, "cohort", "dev", actual_cum, actual_incr, ".cal_idx")]
   data.table::setnames(obs,
     c(actual_cum, actual_incr, ".cal_idx"),
-    c("value_actual", "value_actual_incr", "calendar_idx")
+    c("target_actual", "target_actual_incr", "calendar_idx")
   )
 
   ae_err <- proj[obs,
@@ -306,33 +310,33 @@ backtest <- function(x,
                  nomatch = NULL]
   data.table::setnames(ae_err,
     c(proj_cum, proj_incr),
-    c("value_proj", "value_proj_incr")
+    c("target_proj", "target_proj_incr")
   )
 
   # Drop cells the masked fit cannot reach (cumulative side); the
   # incremental columns may still be NA on those edges, which is fine.
-  ae_err <- ae_err[is.finite(value_proj)]
+  ae_err <- ae_err[is.finite(target_proj)]
 
   # Cumulative ae_err / aeg
-  ae_err[, aeg := value_actual - value_proj]
-  ae_err[, ae_err := data.table::fifelse(
-    is.finite(value_proj) & value_proj != 0,
-    value_actual / value_proj - 1,
+  ae_err[, ("aeg") := target_actual - target_proj]
+  ae_err[, ("ae_err") := data.table::fifelse(
+    is.finite(target_proj) & target_proj != 0,
+    target_actual / target_proj - 1,
     NA_real_
   )]
 
   # Incremental ae_err / aeg
-  ae_err[, aeg_incr := value_actual_incr - value_proj_incr]
-  ae_err[, ae_err_incr := data.table::fifelse(
-    is.finite(value_proj_incr) & value_proj_incr != 0,
-    value_actual_incr / value_proj_incr - 1,
+  ae_err[, ("aeg_incr") := target_actual_incr - target_proj_incr]
+  ae_err[, ("ae_err_incr") := data.table::fifelse(
+    is.finite(target_proj_incr) & target_proj_incr != 0,
+    target_actual_incr / target_proj_incr - 1,
     NA_real_
   )]
 
   data.table::setcolorder(ae_err, c(
     grp, "cohort", "dev",
-    "value_actual",      "value_proj",      "aeg",      "ae_err",
-    "value_actual_incr", "value_proj_incr", "aeg_incr", "ae_err_incr",
+    "target_actual",      "target_proj",      "aeg",      "ae_err",
+    "target_actual_incr", "target_proj_incr", "aeg_incr", "ae_err_incr",
     "calendar_idx"
   ))
   data.table::setorderv(ae_err, c(grp, "cohort", "dev"))
@@ -345,14 +349,14 @@ backtest <- function(x,
     aeg_med          = stats::median(aeg, na.rm = TRUE),
     ae_err_mean      = mean(ae_err, na.rm = TRUE),
     ae_err_med       = stats::median(ae_err, na.rm = TRUE),
-    ae_err_wt        = sum(value_actual - value_proj, na.rm = TRUE) /
-                       sum(value_proj, na.rm = TRUE),
+    ae_err_wt        = sum(target_actual - target_proj, na.rm = TRUE) /
+                       sum(target_proj, na.rm = TRUE),
     aeg_incr_mean    = mean(aeg_incr, na.rm = TRUE),
     aeg_incr_med     = stats::median(aeg_incr, na.rm = TRUE),
     ae_err_incr_mean = mean(ae_err_incr, na.rm = TRUE),
     ae_err_incr_med  = stats::median(ae_err_incr, na.rm = TRUE),
-    ae_err_incr_wt   = sum(value_actual_incr - value_proj_incr, na.rm = TRUE) /
-                       sum(value_proj_incr, na.rm = TRUE)
+    ae_err_incr_wt   = sum(target_actual_incr - target_proj_incr, na.rm = TRUE) /
+                       sum(target_proj_incr, na.rm = TRUE)
   ), by = col_by]
   data.table::setorderv(col_summary, col_by)
 
@@ -363,14 +367,14 @@ backtest <- function(x,
     aeg_med          = stats::median(aeg, na.rm = TRUE),
     ae_err_mean      = mean(ae_err, na.rm = TRUE),
     ae_err_med       = stats::median(ae_err, na.rm = TRUE),
-    ae_err_wt        = sum(value_actual - value_proj, na.rm = TRUE) /
-                       sum(value_proj, na.rm = TRUE),
+    ae_err_wt        = sum(target_actual - target_proj, na.rm = TRUE) /
+                       sum(target_proj, na.rm = TRUE),
     aeg_incr_mean    = mean(aeg_incr, na.rm = TRUE),
     aeg_incr_med     = stats::median(aeg_incr, na.rm = TRUE),
     ae_err_incr_mean = mean(ae_err_incr, na.rm = TRUE),
     ae_err_incr_med  = stats::median(ae_err_incr, na.rm = TRUE),
-    ae_err_incr_wt   = sum(value_actual_incr - value_proj_incr, na.rm = TRUE) /
-                       sum(value_proj_incr, na.rm = TRUE)
+    ae_err_incr_wt   = sum(target_actual_incr - target_proj_incr, na.rm = TRUE) /
+                       sum(target_proj_incr, na.rm = TRUE)
   ), by = diag_by]
   data.table::setorderv(diag_summary, diag_by)
 

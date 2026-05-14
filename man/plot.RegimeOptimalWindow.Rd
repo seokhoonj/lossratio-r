@@ -10,7 +10,7 @@
 \item{x}{A \code{"RegimeOptimalWindow"} object.}
 
 \item{show_magnitude}{Logical; if \code{TRUE} (default), overlay
-\code{mean_magnitude} on a secondary y axis (right). Set \code{FALSE} for
+\code{magnitude_mean} on a secondary y axis (right). Set \code{FALSE} for
 a cleaner change-count-only plot.}
 
 \item{theme}{A string passed to \code{\link[=.switch_theme]{.switch_theme()}}.}
@@ -22,6 +22,6 @@ A \code{ggplot} object.
 }
 \description{
 Diagnostic plot for a \code{detect_regime_optimal_window()} result: shows
-\code{change_count} (and optionally \code{mean_magnitude}) against the
+\code{change_count} (and optionally \code{magnitude_mean}) against the
 trajectory window \code{window}, with a vertical line at \code{optimal_window}.
 }

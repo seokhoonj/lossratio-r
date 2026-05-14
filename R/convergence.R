@@ -17,8 +17,8 @@
 #'   `D_v`; below this threshold the row is flagged `"sparse"` and `D_v`
 #'   is `NA`. Default `5L`.
 #'
-#' @return data.table with columns `dev`, `n_cohorts`, `median_lr`,
-#'   `mad_lr`, `D_v`, `flag` (and grouping columns when present).
+#' @return data.table with columns `dev`, `n_cohorts`, `lr_median`,
+#'   `lr_mad`, `D_v`, `flag` (and grouping columns when present).
 #'
 #' @keywords internal
 .compute_dv <- function(triangle, min_n_cohorts = 5L) {
@@ -34,21 +34,21 @@
 
   out <- dt[, list(
     n_cohorts = .N,
-    median_lr = stats::median(lr),
-    mad_lr    = stats::mad(lr, constant = 1.4826)
+    lr_median = stats::median(lr),
+    lr_mad    = stats::mad(lr, constant = 1.4826)
   ), by = by_cols]
 
-  out[, flag := data.table::fifelse(
+  out[, ("flag") := data.table::fifelse(
     n_cohorts < min_n_cohorts, "sparse",
-    data.table::fifelse(abs(median_lr) < near_zero_floor,
+    data.table::fifelse(abs(lr_median) < near_zero_floor,
                         "near_zero_median", "ok")
   )]
 
-  denom <- pmax(abs(out$median_lr), near_zero_floor)
-  out[, D_v := data.table::fifelse(flag == "sparse", NA_real_, mad_lr / denom)]
+  .denom <- pmax(abs(out$lr_median), near_zero_floor)
+  out[, ("D_v") := data.table::fifelse(flag == "sparse", NA_real_, lr_mad / .denom)]
 
-  data.table::setcolorder(out, c(by_cols, "n_cohorts", "median_lr",
-                                 "mad_lr", "D_v", "flag"))
+  data.table::setcolorder(out, c(by_cols, "n_cohorts", "lr_median",
+                                 "lr_mad", "D_v", "flag"))
   out[]
 }
 
@@ -381,7 +381,7 @@ plot.Convergence <- function(x,
       threshold = x$max_dv
     )
   ))
-  long[, metric := factor(metric, levels = c("R[v] / SE[param]", "D[v]"))]
+  long[, ("metric") := factor(metric, levels = c("R[v] / SE[param]", "D[v]"))]
 
   # threshold table (one row per facet) for geom_hline
   threshold_tbl <- data.table::data.table(

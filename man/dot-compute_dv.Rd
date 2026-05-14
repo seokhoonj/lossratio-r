@@ -14,8 +14,8 @@
 is \code{NA}. Default \code{5L}.}
 }
 \value{
-data.table with columns \code{dev}, \code{n_cohorts}, \code{median_lr},
-\code{mad_lr}, \code{D_v}, \code{flag} (and grouping columns when present).
+data.table with columns \code{dev}, \code{n_cohorts}, \code{lr_median},
+\code{lr_mad}, \code{D_v}, \code{flag} (and grouping columns when present).
 }
 \description{
 Internal helper. For each (group, dev) cell of a \code{Triangle}, computes a

@@ -335,7 +335,7 @@ derive_grain_columns <- function(df) {
 
   # dev_m derived if absent (months between uy_m and cy_m, inclusive).
   if (!has_dev_m && has_uy_m && has_cy_m) {
-    dt[, dev_m := (cy_yr - uy_yr) * 12L + (cy_mo - uy_mo) + 1L]
+    dt[, ("dev_m") := (cy_yr - uy_yr) * 12L + (cy_mo - uy_mo) + 1L]
     data.table::setcolorder(dt, "dev_m", after = "cy_m")
     has_dev_m <- TRUE
   }

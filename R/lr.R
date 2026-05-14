@@ -248,14 +248,14 @@ fit_lr <- function(x,
   }
 
   # 4) loss ratio point projection -------------------------------------
-  full[, lr_proj := data.table::fifelse(
+  full[, ("lr_proj") := data.table::fifelse(
     is.finite(loss_proj) & is.finite(premium_proj) & premium_proj != 0,
     loss_proj / premium_proj,
     NA_real_
   )]
 
   # 5) lr_se via delta method ------------------------------------------
-  full[, lr_se := .compute_lr_se(
+  full[, ("lr_se") := .compute_lr_se(
     loss       = loss_proj,
     premium    = premium_proj,
     se_loss    = loss_total_se,
@@ -264,7 +264,7 @@ fit_lr <- function(x,
     rho        = rho
   )]
 
-  full[, lr_cv := data.table::fifelse(
+  full[, ("lr_cv") := data.table::fifelse(
     is.finite(lr_proj) & lr_proj != 0,
     lr_se / abs(lr_proj), NA_real_
   )]
@@ -315,7 +315,7 @@ fit_lr <- function(x,
   full[, (drop_cols) := NULL]
 
   # 9) LR incremental projection ---------------------------------------
-  full[, lr_incr_proj := data.table::fifelse(
+  full[, ("lr_incr_proj") := data.table::fifelse(
     is.finite(loss_incr_proj) & is.finite(premium_incr_proj) & premium_incr_proj > 0,
     loss_incr_proj / premium_incr_proj, NA_real_
   )]
@@ -519,10 +519,10 @@ summary.LRFit <- function(object, ...) {
   }
 
   # delta: first-order Taylor with premium variance + correlation
-  var_lr <- (se_loss / premium)^2 +
+  lr_var <- (se_loss / premium)^2 +
             (loss * se_premium / premium^2)^2 -
             2 * rho * loss * se_loss * se_premium / premium^3
-  se <- sqrt(pmax(var_lr, 0))
+  se <- sqrt(pmax(lr_var, 0))
   bad <- !is.finite(loss)    | !is.finite(premium) |
          !is.finite(se_loss) | !is.finite(se_premium) |
          premium <= 0
@@ -753,26 +753,26 @@ summary.LRFit <- function(object, ...) {
       premium_total_cv = i.premium_total_cv
     )]
 
-    agg[, var_lr := lr_se^2]
+    agg[, ("lr_var") := lr_se^2]
 
     agg[, `:=`(
       pct_loss = data.table::fifelse(
-        is.finite(var_lr) & var_lr > 0,
-        (i.loss_total_se / i.premium_proj)^2 / var_lr * 100, NA_real_
+        is.finite(lr_var) & lr_var > 0,
+        (i.loss_total_se / i.premium_proj)^2 / lr_var * 100, NA_real_
       ),
       pct_exposure = data.table::fifelse(
-        is.finite(var_lr) & var_lr > 0,
+        is.finite(lr_var) & lr_var > 0,
         (i.loss_proj * i.premium_total_se / i.premium_proj^2)^2 /
-          var_lr * 100, NA_real_
+          lr_var * 100, NA_real_
       ),
       pct_cov = data.table::fifelse(
-        is.finite(var_lr) & var_lr > 0,
+        is.finite(lr_var) & lr_var > 0,
         -2 * rho * i.loss_proj * i.loss_total_se * i.premium_total_se /
-          i.premium_proj^3 / var_lr * 100, NA_real_
+          i.premium_proj^3 / lr_var * 100, NA_real_
       )
     )]
 
-    agg[, var_lr := NULL]
+    agg[, ("lr_var") := NULL]
 
     keep_cols <- c(keep_cols,
                    "premium_total_se", "premium_total_cv",

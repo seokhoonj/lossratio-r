@@ -168,14 +168,14 @@ plot.Triangle <- function(x,
     target_types <- paste0(metric, c("_mean", "_median", "_wt"))
     sm_long <- sm_long[type %in% target_types]
 
-    sm_long[smr, on = c(grp, "dev"), n_obs := i.n_obs]
+    sm_long[smr, on = c(grp, "dev"), ("n_obs") := i.n_obs]
 
     if (!is.null(summary_min_n) && is.finite(summary_min_n)) {
       summary_min_n <- as.integer(summary_min_n)
-      sm_long[n_obs < summary_min_n, value := NA_real_]
+      sm_long[n_obs < summary_min_n, ("value") := NA_real_]
     }
 
-    sm_long[, type := factor(
+    sm_long[, ("type") := factor(
       type,
       levels = paste0(metric, c("_mean", "_median", "_wt")),
       labels = c("Mean", "Median", "Weighted")
@@ -395,7 +395,7 @@ plot.Calendar <- function(x,
 
   } else {
 
-    dt[, .group := interaction(.SD, drop = TRUE), .SDcols = grp]
+    dt[, (".group") := interaction(.SD, drop = TRUE), .SDcols = grp]
 
     p <- ggplot2::ggplot(
       dt,
@@ -610,15 +610,15 @@ plot_triangle.Triangle <- function(x,
   dev_type <- .get_period_type(dev)
 
   if (!is.na(coh_type)) {
-    dt[, .y := .format_period(dt[["cohort"]], type = coh_type)]
+    dt[, (".y") := .format_period(dt[["cohort"]], type = coh_type)]
   } else {
-    dt[, .y := as.character(dt[["cohort"]])]
+    dt[, (".y") := as.character(dt[["cohort"]])]
   }
 
   if (!is.na(dev_type)) {
-    dt[, .x := .format_period(dt[["dev"]], type = dev_type)]
+    dt[, (".x") := .format_period(dt[["dev"]], type = dev_type)]
   } else {
-    dt[, .x := dt[["dev"]]]
+    dt[, (".x") := dt[["dev"]]]
   }
 
   ratio_vars  <- c("lr", "lr_incr")
@@ -635,9 +635,9 @@ plot_triangle.Triangle <- function(x,
     premium_col <- if (is_cum) "premium" else "premium_incr"
 
     if (label_style == "value") {
-      dt[, label := sprintf("%.0f", dt[[metric]] * 100)]
+      dt[, ("label") := sprintf("%.0f", dt[[metric]] * 100)]
     } else {
-      dt[, label := sprintf(
+      dt[, ("label") := sprintf(
         "%.0f\n(%.1f/%.1f)",
         dt[[metric]]    * 100,
         dt[[loss_col]]    / amount_divisor,
@@ -666,7 +666,7 @@ plot_triangle.Triangle <- function(x,
 
   } else if (metric %in% amount_vars) {
 
-    dt[, label := sprintf("%.1f", dt[[metric]] / amount_divisor)]
+    dt[, ("label") := sprintf("%.1f", dt[[metric]] / amount_divisor)]
 
     title_txt <- switch(
       metric,
@@ -692,7 +692,7 @@ plot_triangle.Triangle <- function(x,
 
   } else if (metric %in% prop_vars) {
 
-    dt[, label := sprintf("%.1f", dt[[metric]] * 100)]
+    dt[, ("label") := sprintf("%.1f", dt[[metric]] * 100)]
 
     title_txt <- switch(
       metric,
@@ -786,6 +786,10 @@ plot.Total <- function(x,
 
   .assert_class(x, "Total")
 
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .group <- NULL
+
   theme <- match.arg(theme)
 
   grp     <- attr(x, "groups")
@@ -810,15 +814,15 @@ plot.Total <- function(x,
   dt <- .ensure_dt(x)
 
   if (length(grp) == 1L) {
-    dt[, .group := as.character(.SD[[1L]]), .SDcols = grp]
+    dt[, (".group") := as.character(.SD[[1L]]), .SDcols = grp]
   } else {
-    dt[, .group := as.character(interaction(.SD, drop = TRUE, sep = " | ")),
+    dt[, (".group") := as.character(interaction(.SD, drop = TRUE, sep = " | ")),
        .SDcols = grp]
   }
 
   # order bars by value (ascending so largest is at the top after coord_flip)
   data.table::setorderv(dt, metric)
-  dt[, .group := factor(.group, levels = .group)]
+  dt[, (".group") := factor(.group, levels = .group)]
 
   meta <- .get_plot_meta(metric, amount_divisor = amount_divisor)
 
@@ -903,6 +907,11 @@ plot.Total <- function(x,
 
   .assert_class(x, "Triangle")
 
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .data_present <- .coh_rank <- .cal_idx <- .max_cal <- NULL
+  .max_cal_fit <- .cd_join <- .m_k_join <- .pass_filter <- NULL
+
   grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
@@ -911,7 +920,7 @@ plot.Total <- function(x,
   # full grid (observed plus future) per group
   grp_coh_dev <- c(grp, "cohort", "dev")
   full <- obs[, .SD, .SDcols = grp_coh_dev]
-  full[, is_observed := TRUE]
+  full[, ("is_observed") := TRUE]
 
   if (length(grp)) {
     grid_list <- split(full, by = grp, keep.by = TRUE)
@@ -928,20 +937,20 @@ plot.Total <- function(x,
     expanded <- data.table::CJ(cohort = cohorts, dev = devs)
   }
 
-  expanded[full, on = grp_coh_dev, .data_present := i.is_observed]
-  expanded[is.na(.data_present), .data_present := FALSE]
+  expanded[full, on = grp_coh_dev, (".data_present") := i.is_observed]
+  expanded[is.na(.data_present), (".data_present") := FALSE]
 
   # cohort rank (1 = earliest) and calendar index per group
   if (length(grp)) {
-    expanded[, .coh_rank := data.table::frank(cohort, ties.method = "dense"),
+    expanded[, (".coh_rank") := data.table::frank(cohort, ties.method = "dense"),
              by = grp]
-    expanded[, .cal_idx := .coh_rank + dev - 1L]
-    expanded[, .max_cal := max(.cal_idx[.data_present], na.rm = TRUE),
+    expanded[, (".cal_idx") := .coh_rank + dev - 1L]
+    expanded[, (".max_cal") := max(.cal_idx[.data_present], na.rm = TRUE),
              by = grp]
   } else {
-    expanded[, .coh_rank := data.table::frank(cohort, ties.method = "dense")]
-    expanded[, .cal_idx := .coh_rank + dev - 1L]
-    expanded[, .max_cal := max(.cal_idx[.data_present], na.rm = TRUE)]
+    expanded[, (".coh_rank") := data.table::frank(cohort, ties.method = "dense")]
+    expanded[, (".cal_idx") := .coh_rank + dev - 1L]
+    expanded[, (".max_cal") := max(.cal_idx[.data_present], na.rm = TRUE)]
   }
 
   # `is_observed` reflects what a cell *would* be in the underlying
@@ -949,7 +958,7 @@ plot.Total <- function(x,
   # row. The latter (`.data_present`) may already be filtered (e.g. by
   # regime cut when the input is `fit$data`); we want to surface those
   # filtered-out cells as `unused` (gray), not `future` (white).
-  expanded[, is_observed := .cal_idx <= .max_cal]
+  expanded[, ("is_observed") := .cal_idx <= .max_cal]
 
   # held-out flag, plus an effective max-cal for fit-data filters that
   # excludes the held_out region — this matches `backtest()` semantics,
@@ -960,11 +969,11 @@ plot.Total <- function(x,
         is.na(holdout) || holdout < 1L)
       stop("`holdout` must be a single positive integer.", call. = FALSE)
     holdout <- as.integer(holdout)
-    expanded[, is_held_out := is_observed & .cal_idx > .max_cal - holdout]
-    expanded[, .max_cal_fit := .max_cal - holdout]
+    expanded[, ("is_held_out") := is_observed & .cal_idx > .max_cal - holdout]
+    expanded[, (".max_cal_fit") := .max_cal - holdout]
   } else {
-    expanded[, is_held_out := FALSE]
-    expanded[, .max_cal_fit := .max_cal]
+    expanded[, ("is_held_out") := FALSE]
+    expanded[, (".max_cal_fit") := .max_cal]
   }
 
   # Detect segment_wise treatment up-front: when set, the regime carries
@@ -1011,7 +1020,7 @@ plot.Total <- function(x,
   per_group_cd <- has_change && data.table::is.data.table(cd)
   if (per_group_cd) {
     join_cols <- setdiff(names(cd), "change_date")
-    expanded[, .cd_join := cd[expanded, on = join_cols, x.change_date]]
+    expanded[, (".cd_join") := cd[expanded, on = join_cols, x.change_date]]
   }
 
   # Per-group maturity: when `m_k_dt` is supplied (a `[grp..., m_k]`
@@ -1022,8 +1031,8 @@ plot.Total <- function(x,
                    nrow(m_k_dt) > 0L && "m_k" %in% names(m_k_dt)
   if (per_group_m_k) {
     m_k_join_cols <- setdiff(names(m_k_dt), "m_k")
-    expanded[, .m_k_join := m_k_dt[expanded, on = m_k_join_cols, x.m_k]]
-    if (!is.null(m_k)) expanded[is.na(.m_k_join), .m_k_join := m_k]
+    expanded[, (".m_k_join") := m_k_dt[expanded, on = m_k_join_cols, x.m_k]]
+    if (!is.null(m_k)) expanded[is.na(.m_k_join), (".m_k_join") := m_k]
   }
 
   change_pass <- if (!has_change) {
@@ -1062,39 +1071,39 @@ plot.Total <- function(x,
     # dev >= m_k (CL region). when m_k is NULL, fall back to both
     # filters jointly.
     if (has_m_k) {
-      expanded[, .pass_filter := eval(bquote(
+      expanded[, (".pass_filter") := eval(bquote(
         (.(m_k_lt())  & .(change_pass)) |
         (.(m_k_geq()) & .cal_idx > .max_cal_fit - .(recent))
       ))]
     } else {
-      expanded[, .pass_filter := eval(bquote(
+      expanded[, (".pass_filter") := eval(bquote(
         .(change_pass) & (.cal_idx > .max_cal_fit - .(recent))
       ))]
     }
   } else if (has_recent) {
-    expanded[, .pass_filter := .cal_idx > .max_cal_fit - recent]
+    expanded[, (".pass_filter") := .cal_idx > .max_cal_fit - recent]
   } else if (has_change) {
     # SA semantics: cohort cut applies only on dev < m_k (ED region);
     # CL region (dev >= m_k) keeps all cohorts. When m_k is NULL,
     # fall back to a simple cohort cut across all dev.
     if (has_m_k) {
-      expanded[, .pass_filter := eval(bquote(
+      expanded[, (".pass_filter") := eval(bquote(
         .(m_k_geq()) | .(change_pass)
       ))]
     } else {
-      expanded[, .pass_filter := eval(change_pass)]
+      expanded[, (".pass_filter") := eval(change_pass)]
     }
   } else {
-    expanded[, .pass_filter := TRUE]
+    expanded[, (".pass_filter") := TRUE]
   }
 
   if (per_group_cd)  expanded[, .cd_join  := NULL]
-  if (per_group_m_k) expanded[, .m_k_join := NULL]
+  if (per_group_m_k) expanded[, (".m_k_join") := NULL]
 
-  expanded[, is_fit_data := is_observed & !is_held_out & .pass_filter]
-  expanded[, is_excluded := is_observed & !is_held_out & !is_fit_data]
+  expanded[, ("is_fit_data") := is_observed & !is_held_out & .pass_filter]
+  expanded[, ("is_excluded") := is_observed & !is_held_out & !is_fit_data]
 
-  expanded[, status := factor(
+  expanded[, ("status") := factor(
     data.table::fcase(
       is_held_out, "holdout",
       is_fit_data, "used",
@@ -1122,6 +1131,10 @@ plot.Total <- function(x,
 
   .assert_class(x, "Triangle")
   theme <- match.arg(theme)
+
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .y <- .xint <- .cd <- .yint <- NULL
 
   grp      <- attr(x, "groups")
   coh      <- attr(x, "cohort")
@@ -1187,12 +1200,12 @@ plot.Total <- function(x,
 
   # cohort labels: most recent at top
   if (!is.na(coh_type)) {
-    dt[, .y := .format_period(cohort, type = coh_type)]
+    dt[, (".y") := .format_period(cohort, type = coh_type)]
   } else {
-    dt[, .y := as.character(cohort)]
+    dt[, (".y") := as.character(cohort)]
   }
   y_levels <- sort(unique(dt$.y), decreasing = TRUE)
-  dt[, .y := factor(.y, levels = y_levels)]
+  dt[, (".y") := factor(.y, levels = y_levels)]
 
   status_cols <- c(
     unused  = "#dcdcdc",
@@ -1220,7 +1233,7 @@ plot.Total <- function(x,
   # group / pooled. Mirrors the regime-change hline dispatch below.
   if (!is.null(m_k_dt)) {
     vline_df <- data.table::copy(m_k_dt)
-    vline_df[, .xint := m_k - 0.5]
+    vline_df[, (".xint") := m_k - 0.5]
     p <- p + ggplot2::geom_vline(
       data       = vline_df,
       mapping    = ggplot2::aes(xintercept = .xint),
@@ -1277,7 +1290,7 @@ plot.Total <- function(x,
       if (per_group) {
         hline_df <- bp[, c(rgrp, "change"), with = FALSE]
         data.table::setnames(hline_df, "change", ".cd")
-        hline_df[, .yint := vapply(.cd, .first_post_idx, integer(1L)) + 0.5]
+        hline_df[, (".yint") := vapply(.cd, .first_post_idx, integer(1L)) + 0.5]
         hline_df <- hline_df[is.finite(.yint)]
         if (nrow(hline_df)) {
           p <- p + ggplot2::geom_hline(
@@ -1304,7 +1317,7 @@ plot.Total <- function(x,
     if (data.table::is.data.table(cd) && length(grp)) {
       hline_df <- data.table::copy(cd)
       data.table::setnames(hline_df, "change_date", ".cd")
-      hline_df[, .yint := vapply(.cd, .first_post_idx, integer(1L)) + 0.5]
+      hline_df[, (".yint") := vapply(.cd, .first_post_idx, integer(1L)) + 0.5]
       hline_df <- hline_df[is.finite(.yint)]
       if (nrow(hline_df)) {
         p <- p + ggplot2::geom_hline(

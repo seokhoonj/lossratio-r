@@ -146,7 +146,7 @@ fit_intensity <- function(x,
     na_method  = na_method
   )
   selected <- .extrapolate_sigma_ata(selected, method = sigma_method)
-  selected[, sigma2 := sigma^2]
+  selected[, ("sigma2") := sigma^2]
 
   out <- list(
     call         = match.call(),
@@ -258,7 +258,7 @@ print.IntensityFit <- function(x, ...) {
   na_method <- match.arg(na_method)
 
   z <- .ensure_dt(ed_summary)
-  z[, g_selected := g]
+  z[, ("g_selected") := g]
 
   # When segment_id is present (segment_wise treatment), LOCF fills must
   # happen per segment so factors from one regime never leak into another.
@@ -266,14 +266,14 @@ print.IntensityFit <- function(x, ...) {
   fill_by <- c(grp, if (has_seg) "segment_id")
 
   if (na_method == "zero") {
-    z[is.na(g_selected), g_selected := 0]
+    z[is.na(g_selected), ("g_selected") := 0]
   } else if (na_method == "locf") {
     if (length(fill_by)) {
       data.table::setorderv(z, c(fill_by, "ata_from", "ata_to"))
-      z[, g_selected := data.table::nafill(g_selected, type = "locf"),
+      z[, ("g_selected") := data.table::nafill(g_selected, type = "locf"),
         by = fill_by]
     } else {
-      z[, g_selected := data.table::nafill(g_selected, type = "locf")]
+      z[, ("g_selected") := data.table::nafill(g_selected, type = "locf")]
     }
   }
 

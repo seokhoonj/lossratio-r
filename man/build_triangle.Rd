@@ -9,7 +9,7 @@ build_triangle(
   groups = character(0),
   cohort,
   calendar = NULL,
-  dev = NULL,
+  development = NULL,
   loss,
   premium,
   grain = "auto",
@@ -30,15 +30,16 @@ exposure period start (e.g., \code{"uy_m"}).}
 
 \item{calendar}{Single column (raw name) defining the calendar period of
 the observation (e.g., \code{"cy_m"}). Optional -- supply either \code{calendar}
-or \code{dev} (or both). When \code{calendar} is given, \code{dev} is derived
-internally via \code{count_periods(cohort, calendar, grain)}.}
+or \code{development} (or both). When \code{calendar} is given, \code{dev} is
+derived internally via \code{count_periods(cohort, calendar, grain)}.}
 
-\item{dev}{Single column (raw name) holding pre-computed development
-periods (e.g., \code{"dev_m"}). Optional -- supply either \code{calendar}
-or \code{dev} (or both). When only \code{dev} is given, the calendar
-axis is omitted from the attribute (downstream calendar-diagonal
-logic uses cohort + dev). When both are given, \code{dev} is
-cross-checked against \code{count_periods(cohort, calendar, grain)}.}
+\item{development}{Single column (raw name) holding pre-computed
+development periods (e.g., \code{"dev_m"}). Optional -- supply either
+\code{calendar} or \code{development} (or both). When only \code{development} is
+given, the calendar axis is omitted from the attribute (downstream
+calendar-diagonal logic uses cohort + dev). When both are given,
+\code{development} is cross-checked against
+\code{count_periods(cohort, calendar, grain)}.}
 
 \item{loss}{Single character; per-period loss column in \code{df}
 (raw name, e.g., \code{"loss_incr"}).}

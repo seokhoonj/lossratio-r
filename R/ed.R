@@ -90,7 +90,7 @@
     )
   }, by = grp_link]
 
-  ds[, valid_ratio := n_valid / n_obs]
+  ds[, ("valid_ratio") := n_valid / n_obs]
 
   # 2) WLS estimation
   link_factors <- .lm_ed(object, alpha = alpha, ...)
@@ -113,7 +113,7 @@
   )
   data.table::setcolorder(ds, col_order)
 
-  ds[, ata_link := factor(ata_link, levels = unique(dt$ata_link))]
+  ds[, ("ata_link") := factor(ata_link, levels = unique(dt$ata_link))]
 
   # `digits` is retained for downstream display only (see print.EDSummary).
   # Numeric columns are stored at full precision so callers get raw values.
@@ -335,13 +335,13 @@ fit_ed <- function(x,
   full <- ed_sel[full, on = c(grp, "dev", if (has_seg) "segment_id")]
 
   # 4d) last_obs per cohort
-  full[, last_obs := {
+  full[, ("last_obs") := {
     idx <- which(is.finite(target_obs))
     if (length(idx)) max(idx) else 0L
   }, by = c(grp, "cohort")]
 
   # 4e) target point projection (ED-only, no maturity switch)
-  full[, target_proj := .ed_proj(
+  full[, ("target_proj") := .ed_proj(
     target_obs    = target_obs,
     exposure_proj = exposure_proj,
     g_selected    = g_selected
@@ -362,13 +362,13 @@ fit_ed <- function(x,
     )
   ), by = c(grp, "cohort")]
 
-  full[, target_total_se2 := target_proc_se2 + target_param_se2]
+  full[, ("target_total_se2") := target_proc_se2 + target_param_se2]
   full[, `:=`(
     target_proc_se  = sqrt(target_proc_se2),
     target_param_se = sqrt(target_param_se2),
     target_total_se = sqrt(target_total_se2)
   )]
-  full[, target_total_cv := data.table::fifelse(
+  full[, ("target_total_cv") := data.table::fifelse(
     is.finite(target_proj) & target_proj != 0,
     target_total_se / abs(target_proj), NA_real_
   )]
@@ -377,10 +377,10 @@ fit_ed <- function(x,
   full[, c("g_selected", "g_sigma2", "g_var", "last_obs") := NULL]
 
   # 4h) incremental projections (target + exposure)
-  full[, target_incr_proj := target_proj -
+  full[, ("target_incr_proj") := target_proj -
          data.table::shift(target_proj, 1L, fill = 0),
        by = c(grp, "cohort")]
-  full[, exposure_incr_proj := exposure_proj -
+  full[, ("exposure_incr_proj") := exposure_proj -
          data.table::shift(exposure_proj, 1L, fill = 0),
        by = c(grp, "cohort")]
 
@@ -547,6 +547,10 @@ print.EDFit <- function(x, ...) {
 
   .assert_class(x, "Link")
 
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .reg_w <- NULL
+
   if (is.null(attr(x, "exposure")))
     stop("`.lm_ed()` requires a Link built with `exposure`.",
          call. = FALSE)
@@ -575,8 +579,8 @@ print.EDFit <- function(x, ...) {
   # Var(target_delta) ~ exposure_from^alpha
   # => WLS weight = 1 / exposure_from^(2 - alpha)
   delta <- 2 - alpha
-  dt[, reg_w := 1 / exposure_from^delta]
-  dt[, ata_link := sprintf("%s-%s", ata_from, ata_to)]
+  dt[, (".reg_w") := 1 / exposure_from^delta]
+  dt[, ("ata_link") := sprintf("%s-%s", ata_from, ata_to)]
 
   has_seg <- "segment_id" %in% names(dt)
   by_cols <- c(grp, "ata_from", "ata_to", "ata_link",
@@ -593,7 +597,7 @@ print.EDFit <- function(x, ...) {
       )
     } else {
       fit <- tryCatch(
-        stats::lm(target_delta ~ exposure_from + 0, weights = reg_w),
+        stats::lm(target_delta ~ exposure_from + 0, weights = .reg_w),
         error = function(e) NULL
       )
 
@@ -658,6 +662,10 @@ print.EDFit <- function(x, ...) {
 
   .assert_class(ed_fit, "EDFit")
 
+  # Suppress R CMD check NOTEs for `data.table` temp columns referenced
+  # bare inside `j` expressions later in this function.
+  .denom <- NULL
+
   grp <- attr(ed_fit$link, "groups")
   if (is.null(grp)) grp <- character(0)
 
@@ -677,18 +685,18 @@ print.EDFit <- function(x, ...) {
   by_cols <- c(grp, "ata_from", if (has_seg) "segment_id")
 
   link_weights <- ed_valid[,
-                       .(denom = sum(exposure_from^(2 - alpha), na.rm = TRUE)),
+                       .(.denom = sum(exposure_from^(2 - alpha), na.rm = TRUE)),
                        by = by_cols
   ]
 
   sel <- link_weights[sel, on = by_cols]
 
-  sel[, g_var := data.table::fifelse(
-    is.finite(sigma2) & is.finite(denom) & denom > 0,
-    sigma2 / denom,
+  sel[, ("g_var") := data.table::fifelse(
+    is.finite(sigma2) & is.finite(.denom) & .denom > 0,
+    sigma2 / .denom,
     NA_real_
   )]
 
-  sel[, denom := NULL]
+  sel[, (".denom") := NULL]
   sel[]
 }
