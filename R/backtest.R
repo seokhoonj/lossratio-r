@@ -83,6 +83,13 @@
 #'   target-specific fitter (`fit_lr()` / `fit_loss()` / `fit_premium()`).
 #'   `bootstrap = NULL` (default) defers to the fitter's method-dependent
 #'   resolution: bootstrap for SA/ED methods, analytical for pure CL.
+#'   The fitter accepts the full 4-type dispatch (`NULL` / logical /
+#'   `"auto"` / `BootstrapTriangle` / function). For a leakage-safe
+#'   backtest with a custom bootstrap configuration, prefer a function
+#'   `function(tri) -> BootstrapTriangle` (it is invoked on the *masked*
+#'   triangle, not the original) over a pre-built `BootstrapTriangle`
+#'   object (which may have been built on the unmasked data and would
+#'   leak hold-out cells into the residual pool).
 #' @param ... Additional arguments passed to the underlying fitter.
 #'
 #' @return An object of class `"Backtest"` with components:

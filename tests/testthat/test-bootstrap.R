@@ -657,3 +657,64 @@ test_that("fit_lr bootstrap projected cells have finite LR SE/CI", {
     expect_true(all(proj$lr_ci_lo <= proj$lr_ci_hi), info = method)
   }
 })
+
+
+# ---------------------------------------------------------------------------
+# Phase 2e: backtest pass-through of new bootstrap arg
+# ---------------------------------------------------------------------------
+
+test_that("backtest target='lr' default uses bootstrap (SA -> bootstrap)", {
+  tri <- make_sub_tri("surgery")
+  bt <- backtest(tri, holdout = 6L, target = "lr", seed = 1, B = 50)
+  expect_identical(bt$fit$ci_type, "bootstrap")
+  expect_true(!is.null(bt$fit$bootstrap))
+})
+
+test_that("backtest target='loss' bootstrap=FALSE uses analytical", {
+  tri <- make_sub_tri("surgery")
+  bt <- backtest(tri, holdout = 6L, target = "loss",
+                  loss_method = "cl", bootstrap = FALSE)
+  expect_identical(bt$fit$ci_type, "analytical")
+  expect_null(bt$fit$bootstrap)
+})
+
+test_that("backtest target='premium' bootstrap=TRUE uses bootstrap", {
+  tri <- make_sub_tri("surgery")
+  bt <- backtest(tri, holdout = 6L, target = "premium",
+                  bootstrap = TRUE, seed = 1, B = 50)
+  expect_identical(bt$fit$ci_type, "bootstrap")
+})
+
+test_that("backtest accepts function-based bootstrap (leakage-safe path)", {
+  tri <- make_sub_tri("surgery")
+  fn <- function(t) bootstrap(t, target = "loss", B = 30, seed = 1)
+  bt <- backtest(tri, holdout = 6L, target = "lr", bootstrap = fn)
+  expect_identical(bt$fit$ci_type, "bootstrap")
+  expect_identical(bt$fit$bootstrap$B, 30L)
+})
+
+test_that("backtest function-based bootstrap targets the masked triangle", {
+  # Probe: the bootstrap function receives the *masked* triangle (not the
+  # original). Verify by counting cohorts in the triangle the function
+  # actually sees -- masked has fewer observed cells than original.
+  tri <- make_sub_tri("surgery")
+  seen_rows <- integer(0)
+  probe <- function(t) {
+    seen_rows <<- c(seen_rows, nrow(t))
+    bootstrap(t, target = "loss", B = 5, seed = 1)
+  }
+  invisible(backtest(tri, holdout = 6L, target = "lr", bootstrap = probe))
+  expect_true(length(seen_rows) > 0L)
+  # The masked triangle has fewer rows than the unmasked one (held-out
+  # cells removed for the upper-triangle structure).
+  expect_lt(seen_rows[1L], nrow(tri))
+})
+
+test_that("backtest rejects a BootstrapTriangle on the wrong target", {
+  tri <- make_sub_tri("surgery")
+  b_prem <- bootstrap(tri, target = "prem", B = 30, seed = 1)
+  expect_error(
+    backtest(tri, holdout = 6L, target = "loss", bootstrap = b_prem),
+    "expects target"
+  )
+})

@@ -106,7 +106,14 @@ intervals. Unused for \code{target = "premium"}.}
 \item{bootstrap, B, seed}{Bootstrap controls forwarded to the
 target-specific fitter (\code{fit_lr()} / \code{fit_loss()} / \code{fit_premium()}).
 \code{bootstrap = NULL} (default) defers to the fitter's method-dependent
-resolution: bootstrap for SA/ED methods, analytical for pure CL.}
+resolution: bootstrap for SA/ED methods, analytical for pure CL.
+The fitter accepts the full 4-type dispatch (\code{NULL} / logical /
+\code{"auto"} / \code{BootstrapTriangle} / function). For a leakage-safe
+backtest with a custom bootstrap configuration, prefer a function
+\verb{function(tri) -> BootstrapTriangle} (it is invoked on the \emph{masked}
+triangle, not the original) over a pre-built \code{BootstrapTriangle}
+object (which may have been built on the unmasked data and would
+leak hold-out cells into the residual pool).}
 
 \item{...}{Additional arguments passed to the underlying fitter.}
 
