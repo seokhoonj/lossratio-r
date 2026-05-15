@@ -7,8 +7,8 @@
 .compute_lr_se(
   loss,
   premium,
-  se_loss,
-  se_prem = NULL,
+  loss_se,
+  prem_se = NULL,
   method = c("fixed", "delta"),
   rho = 0.95
 )
@@ -18,9 +18,9 @@
 
 \item{premium}{Ultimate prem vector (\code{E}).}
 
-\item{se_loss}{\code{SE(L)}.}
+\item{loss_se}{\code{SE(L)}.}
 
-\item{se_prem}{\code{SE(P)}. Unused for \code{"fixed"}; may be \code{NULL}.}
+\item{prem_se}{\code{SE(P)}. Unused for \code{"fixed"}; may be \code{NULL}.}
 
 \item{method}{One of \code{"fixed"} (default) or \code{"delta"}.}
 
