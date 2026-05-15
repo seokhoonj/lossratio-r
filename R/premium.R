@@ -44,6 +44,18 @@
 #' @param tail Logical; whether to apply a tail factor. Default `FALSE`.
 #' @param conf_level Confidence level for analytical CI on the prem
 #'   projection (`prem_ci_lo`, `prem_ci_hi`). Default `0.95`.
+#' @param bootstrap Logical or `NULL` (default). When `NULL`, auto-resolved
+#'   by `method`: `TRUE` for `"ed"` (additive variance recursion lacks a
+#'   published derivation -- bootstrap is more defensible), `FALSE` for
+#'   `"cl"` (Mack analytical formula is exact). Set explicitly to override.
+#'   When `TRUE`, the per-cohort multiplicative CL simulation
+#'   ([.cl_bootstrap]) is used regardless of `method` -- the point
+#'   projection is CL in both modes; only the variance interpretation
+#'   differs.
+#' @param B Integer number of bootstrap replicates. Used only when
+#'   `bootstrap = TRUE`. Default `999`.
+#' @param seed Optional integer seed for reproducible bootstrap. Default
+#'   `NULL`.
 #'
 #' @return An object of class `"PremiumFit"` (a list with the same
 #'   structure as `CLFit`). Components: `selected`, `full`, `data`,
@@ -51,7 +63,11 @@
 #'   role-specific column names (`prem_obs`, `prem_proj`,
 #'   `incr_prem_proj`, `prem_proc_se`, `prem_param_se`,
 #'   `prem_total_se`, `prem_proc_cv`, `prem_param_cv`,
-#'   `prem_total_cv`, `prem_ci_lo`, `prem_ci_hi`).
+#'   `prem_total_cv`, `prem_ci_lo`, `prem_ci_hi`). Under
+#'   `bootstrap = TRUE`, `prem_ci_lo` / `prem_ci_hi` are bootstrap
+#'   quantiles and `prem_total_se` / `prem_total_cv` are derived from
+#'   the simulation SD; the analytical proc/param decomposition is
+#'   retained as diagnostic.
 #'
 #' @seealso [fit_cl()], [fit_ed()], [fit_lr()], [as_triangle()].
 #'
@@ -83,7 +99,10 @@ fit_premium <- function(x,
                         sigma_method = c("locf", "min_last2", "loglinear"),
                         recent       = NULL,
                         tail         = FALSE,
-                        conf_level   = 0.95) {
+                        conf_level   = 0.95,
+                        bootstrap    = NULL,
+                        B            = 999,
+                        seed         = NULL) {
 
   .assert_triangle_input(x, "fit_premium()")
   method       <- match.arg(method)
@@ -93,6 +112,21 @@ fit_premium <- function(x,
       is.na(conf_level) || conf_level <= 0 || conf_level >= 1)
     stop("`conf_level` must be a single numeric value in (0, 1).",
          call. = FALSE)
+
+  # Auto-resolve bootstrap default: ED -> bootstrap (additive variance
+  # is an ad-hoc Mack variant without published derivation); CL ->
+  # analytical (Mack's exact formula).
+  if (is.null(bootstrap)) {
+    bootstrap <- method == "ed"
+  }
+  if (!is.logical(bootstrap) || length(bootstrap) != 1L || is.na(bootstrap))
+    stop("`bootstrap` must be a single non-missing logical value (or NULL).",
+         call. = FALSE)
+  if (bootstrap) {
+    if (!is.numeric(B) || length(B) != 1L || is.na(B) || B < 1L)
+      stop("`B` must be a single positive integer.", call. = FALSE)
+    B <- as.integer(B)
+  }
 
   # Resolve regime input (NULL / Regime / "auto" / function) -> NULL or Regime
   regime <- .resolve_regime(regime, x)
@@ -120,6 +154,57 @@ fit_premium <- function(x,
   if (is.null(grp)) grp <- character(0)
 
   cl_fit$full <- .prem_rename_full(cl_fit$full, grp, conf_level)
+
+  # Bootstrap path: overwrite prem_ci_lo / prem_ci_hi / prem_total_se /
+  # prem_total_cv from per-cohort CL bootstrap. The analytical proc/param
+  # decomposition (prem_proc_se / prem_param_se) is kept as diagnostic.
+  if (bootstrap) {
+    if (!is.null(seed)) set.seed(seed)
+    probs <- c((1 - conf_level) / 2, 1 - (1 - conf_level) / 2)
+
+    # Join factor columns from $selected onto $full so the per-cohort
+    # simulator has access to f_sel / sigma^2 / Var(f_hat) per dev.
+    sel_cols <- c(grp, "ata_from", "f_sel", "sigma2", "f_var")
+    sel <- cl_fit$selected[, .SD, .SDcols = intersect(sel_cols,
+                                                     names(cl_fit$selected))]
+    data.table::setnames(sel, "ata_from", "dev")
+    data.table::setnames(sel, "sigma2",   "f_sigma2")
+
+    full_w <- sel[cl_fit$full, on = c(grp, "dev")]
+
+    # Per-cohort last_obs (boundary between filled-observed and simulated).
+    full_w[, ("last_obs_tmp") := {
+      idx <- which(is.finite(prem_obs))
+      if (length(idx)) max(idx) else 0L
+    }, by = c(grp, "cohort")]
+
+    full_w[,
+      c("prem_ci_lo", "prem_ci_hi", "prem_total_se") := {
+        sim <- .cl_bootstrap(
+          target_obs  = prem_obs,
+          target_proj = prem_proj,
+          f_sel       = f_sel,
+          f_sigma2    = f_sigma2,
+          f_var       = f_var,
+          last_obs    = last_obs_tmp[1L],
+          B           = B,
+          alpha       = alpha
+        )
+        s <- .bootstrap_summary(sim, last_obs_tmp[1L], probs)
+        list(s$ci_lo, s$ci_hi, s$se)
+      }, by = c(grp, "cohort")]
+
+    full_w[, ("prem_total_cv") := data.table::fifelse(
+      is.finite(prem_proj) & prem_proj != 0,
+      prem_total_se / abs(prem_proj), NA_real_
+    )]
+
+    full_w[, c("f_sel", "f_sigma2", "f_var", "last_obs_tmp") := NULL]
+    cl_fit$full <- full_w
+  }
+
+  cl_fit$ci_type   <- if (bootstrap) "bootstrap" else "analytical"
+  cl_fit$bootstrap <- if (bootstrap) list(B = B, seed = seed) else NULL
 
   # Usage map. Premium has no maturity concept (g_k -> 0), so we
   # bypass `.build_usage()`'s 2-pass detection and call
@@ -318,7 +403,7 @@ print.PremiumFit <- function(x, ...) {
   method <- attr(x, "premium_method")
 
   static_labels <- c("method", "alpha", "sigma_method", "recent", "regime",
-                     "groups", "n_cohorts", "n_links")
+                     "ci_type", "groups", "n_cohorts", "n_links")
   lw  <- max(nchar(static_labels))
   pad <- function(label) formatC(label, width = lw, flag = "-")
 
@@ -335,6 +420,15 @@ print.PremiumFit <- function(x, ...) {
     cat("\n"); print(x$regime)
   } else {
     cat(" ", format(x$regime), "\n", sep = "")
+  }
+
+  if (!is.null(x$ci_type)) {
+    cat(pad("ci_type"), ":", x$ci_type,
+        if (!is.null(x$bootstrap))
+          sprintf(" (B = %d, seed = %s)", x$bootstrap$B,
+                  if (is.null(x$bootstrap$seed)) "NULL" else x$bootstrap$seed)
+        else "",
+        "\n")
   }
 
   if (length(grp)) {

@@ -65,6 +65,18 @@
 #'   }
 #' @param conf_level Confidence level for analytical CI on the loss
 #'   projection (`loss_ci_lo`, `loss_ci_hi`). Default `0.95`.
+#' @param bootstrap Logical or `NULL` (default). When `NULL`, auto-resolved
+#'   by `method`: `TRUE` for `"sa"` (combined ED+CL variance is
+#'   approximate near the maturity transition) and `"ed"` (additive
+#'   variance recursion lacks a published derivation); `FALSE` for `"cl"`
+#'   (Mack's exact formula). Set explicitly to override. When `TRUE`,
+#'   `loss_ci_lo` / `loss_ci_hi` are bootstrap quantiles and
+#'   `loss_total_se` / `loss_total_cv` are derived from simulation SD;
+#'   the analytical proc/param decomposition is retained as diagnostic.
+#' @param B Integer number of bootstrap replicates. Used only when
+#'   `bootstrap = TRUE`. Default `999`.
+#' @param seed Optional integer seed for reproducible bootstrap. Default
+#'   `NULL`.
 #'
 #' @return An object of class `"LossFit"`. List with components:
 #'   `full`, `proj`, `maturity`, `loss_ata_fit`, `prem_ata_fit`,
@@ -106,7 +118,10 @@ fit_loss <- function(x,
                      sigma_method   = c("locf", "min_last2", "loglinear"),
                      recent         = NULL,
                      maturity       = "auto",
-                     conf_level     = 0.95) {
+                     conf_level     = 0.95,
+                     bootstrap      = NULL,
+                     B              = 999,
+                     seed           = NULL) {
 
   .assert_triangle_input(x, "fit_loss()")
   method         <- match.arg(method)
@@ -129,6 +144,19 @@ fit_loss <- function(x,
       is.na(conf_level) || conf_level <= 0 || conf_level >= 1)
     stop("`conf_level` must be a single numeric value in (0, 1).",
          call. = FALSE)
+
+  # Auto-resolve bootstrap default: SA/ED -> bootstrap, CL -> analytical.
+  if (is.null(bootstrap)) {
+    bootstrap <- method %in% c("sa", "ed")
+  }
+  if (!is.logical(bootstrap) || length(bootstrap) != 1L || is.na(bootstrap))
+    stop("`bootstrap` must be a single non-missing logical value (or NULL).",
+         call. = FALSE)
+  if (bootstrap) {
+    if (!is.numeric(B) || length(B) != 1L || is.na(B) || B < 1L)
+      stop("`B` must be a single positive integer.", call. = FALSE)
+    B <- as.integer(B)
+  }
 
   # Resolve regime input (NULL / Regime / "auto" / function) -> NULL or Regime
   regime <- .resolve_regime(regime, x)
@@ -244,12 +272,15 @@ fit_loss <- function(x,
   # fit_loss is single-role -- the same regime applies to the internal
   # prem fit. Asymmetric loss/prem splits live at fit_lr().
   if (is.null(premium_fit)) {
+    # bootstrap = FALSE: fit_loss treats premium as a fixed projection
+    # (no premium-side simulation in fit_loss's loss-only bootstrap).
     premium_fit <- fit_premium(
       x,
       method       = premium_method,
       alpha        = premium_alpha,
       sigma_method = sigma_method,
-      regime       = regime_user
+      regime       = regime_user,
+      bootstrap    = FALSE
     )
   }
   # Wrap as ATAFit-shaped object for downstream .expand_grid / join paths.
@@ -423,6 +454,64 @@ fit_loss <- function(x,
     loss_ci_hi = loss_proj + z_alpha * loss_total_se
   )]
 
+  # 15b) bootstrap overwrite of CI + total SE -------------------------
+  # Per-cohort method-specific simulator; replaces loss_ci_lo / hi and
+  # loss_total_se with bootstrap quantile-based / SD-based values. The
+  # analytical proc / param decomposition is kept as diagnostic.
+  if (bootstrap) {
+    if (!is.null(seed)) set.seed(seed)
+    probs <- c((1 - conf_level) / 2, 1 - (1 - conf_level) / 2)
+
+    full[,
+      c("loss_ci_lo", "loss_ci_hi", "loss_total_se") := {
+        sim <- switch(method,
+          sa = .sa_bootstrap(
+            target_obs    = loss_obs,
+            target_proj   = loss_proj,
+            exposure_proj = prem_proj,
+            g_sel         = g_sel,
+            f_sel         = f_sel,
+            g_sigma2      = g_sigma2,
+            f_sigma2      = f_sigma2,
+            g_var         = g_var,
+            f_var         = f_var,
+            last_obs      = last_obs[1L],
+            maturity_from = maturity_from[1L],
+            B             = B,
+            alpha         = alpha
+          ),
+          ed = .ed_bootstrap(
+            target_obs    = loss_obs,
+            target_proj   = loss_proj,
+            exposure_proj = prem_proj,
+            g_sel         = g_sel,
+            g_sigma2      = g_sigma2,
+            g_var         = g_var,
+            last_obs      = last_obs[1L],
+            B             = B,
+            alpha         = alpha
+          ),
+          cl = .cl_bootstrap(
+            target_obs    = loss_obs,
+            target_proj   = loss_proj,
+            f_sel         = f_sel,
+            f_sigma2      = f_sigma2,
+            f_var         = f_var,
+            last_obs      = last_obs[1L],
+            B             = B,
+            alpha         = alpha
+          )
+        )
+        s <- .bootstrap_summary(sim, last_obs[1L], probs)
+        list(s$ci_lo, s$ci_hi, s$se)
+      }, by = c(grp, "cohort")]
+
+    full[, ("loss_total_cv") := data.table::fifelse(
+      is.finite(loss_proj) & loss_proj != 0,
+      loss_total_se / abs(loss_proj), NA_real_
+    )]
+  }
+
   # 16) incremental projections (loss + prem) ----------------------
   full[, ("incr_loss_proj") := loss_proj - data.table::shift(loss_proj, 1L, fill = 0),
        by = c(grp, "cohort")]
@@ -479,6 +568,8 @@ fit_loss <- function(x,
     recent          = recent_user,
     regime          = regime_user,
     conf_level      = conf_level,
+    ci_type         = if (bootstrap) "bootstrap" else "analytical",
+    bootstrap       = if (bootstrap) list(B = B, seed = seed) else NULL,
     usage           = usage
   )
 
@@ -511,7 +602,7 @@ print.LossFit <- function(x, ...) {
   }
 
   static_labels <- c("method", "alpha", "sigma_method", "recent", "regime",
-                     "groups", "n_cohorts")
+                     "ci_type", "groups", "n_cohorts")
   lw  <- max(nchar(c(static_labels, mat_labels)))
   pad <- function(label) formatC(label, width = lw, flag = "-")
 
@@ -528,6 +619,15 @@ print.LossFit <- function(x, ...) {
     cat("\n"); print(x$regime)
   } else {
     cat(" ", format(x$regime), "\n", sep = "")
+  }
+
+  if (!is.null(x$ci_type)) {
+    cat(pad("ci_type"), ":", x$ci_type,
+        if (!is.null(x$bootstrap))
+          sprintf(" (B = %d, seed = %s)", x$bootstrap$B,
+                  if (is.null(x$bootstrap$seed)) "NULL" else x$bootstrap$seed)
+        else "",
+        "\n")
   }
 
   if (length(mat_labels)) {

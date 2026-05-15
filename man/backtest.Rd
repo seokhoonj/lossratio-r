@@ -103,10 +103,10 @@ method. Unused for \code{target = "loss"} / \code{target = "premium"}.}
 \item{conf_level}{Confidence level for \code{fit_lr()} / \code{fit_loss()}
 intervals. Unused for \code{target = "premium"}.}
 
-\item{bootstrap, B, seed}{Bootstrap controls forwarded to \code{fit_lr()}.
-\code{bootstrap = NULL} (default) defers to \code{fit_lr}'s method-dependent
-resolution (bootstrap for \code{"sa"}/\code{"ed"}, analytical for \code{"cl"}).
-Unused for \code{target = "loss"} / \code{target = "premium"}.}
+\item{bootstrap, B, seed}{Bootstrap controls forwarded to the
+target-specific fitter (\code{fit_lr()} / \code{fit_loss()} / \code{fit_premium()}).
+\code{bootstrap = NULL} (default) defers to the fitter's method-dependent
+resolution: bootstrap for SA/ED methods, analytical for pure CL.}
 
 \item{...}{Additional arguments passed to the underlying fitter.}
 

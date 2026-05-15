@@ -213,12 +213,16 @@ fit_lr <- function(x,
   # `premium_regime`, then hand it to fit_loss via `premium_fit = ...`
   # so fit_loss's own (single-role) `regime` does not override the
   # prem-side cut.
+  # Explicit bootstrap = FALSE: fit_lr drives its own loss/LR bootstrap
+  # composition; the inner premium_fit is treated as a fixed projection
+  # (premium uncertainty is not propagated unless `se_method = "delta"`).
   premium_fit <- fit_premium(
     x,
     method       = premium_method,
     alpha        = premium_alpha,
     sigma_method = sigma_method,
-    regime       = premium_regime
+    regime       = premium_regime,
+    bootstrap    = FALSE
   )
 
   # 2) delegate loss-side projection to fit_loss() -----------------------
@@ -235,7 +239,8 @@ fit_lr <- function(x,
     sigma_method   = sigma_method,
     recent         = recent,
     maturity       = maturity,
-    conf_level     = conf_level
+    conf_level     = conf_level,
+    bootstrap      = FALSE
   )
 
   grp <- loss_fit$groups

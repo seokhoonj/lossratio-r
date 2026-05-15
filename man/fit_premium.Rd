@@ -12,7 +12,10 @@ fit_premium(
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   tail = FALSE,
-  conf_level = 0.95
+  conf_level = 0.95,
+  bootstrap = NULL,
+  B = 999,
+  seed = NULL
 )
 }
 \arguments{
@@ -48,6 +51,21 @@ filter for the underlying ATA fit. Default \code{NULL}.}
 
 \item{conf_level}{Confidence level for analytical CI on the prem
 projection (\code{prem_ci_lo}, \code{prem_ci_hi}). Default \code{0.95}.}
+
+\item{bootstrap}{Logical or \code{NULL} (default). When \code{NULL}, auto-resolved
+by \code{method}: \code{TRUE} for \code{"ed"} (additive variance recursion lacks a
+published derivation -- bootstrap is more defensible), \code{FALSE} for
+\code{"cl"} (Mack analytical formula is exact). Set explicitly to override.
+When \code{TRUE}, the per-cohort multiplicative CL simulation
+(\link{.cl_bootstrap}) is used regardless of \code{method} -- the point
+projection is CL in both modes; only the variance interpretation
+differs.}
+
+\item{B}{Integer number of bootstrap replicates. Used only when
+\code{bootstrap = TRUE}. Default \code{999}.}
+
+\item{seed}{Optional integer seed for reproducible bootstrap. Default
+\code{NULL}.}
 }
 \value{
 An object of class \code{"PremiumFit"} (a list with the same
@@ -56,7 +74,11 @@ plus attribute \code{premium_method}. The \verb{$full} data.table uses
 role-specific column names (\code{prem_obs}, \code{prem_proj},
 \code{incr_prem_proj}, \code{prem_proc_se}, \code{prem_param_se},
 \code{prem_total_se}, \code{prem_proc_cv}, \code{prem_param_cv},
-\code{prem_total_cv}, \code{prem_ci_lo}, \code{prem_ci_hi}).
+\code{prem_total_cv}, \code{prem_ci_lo}, \code{prem_ci_hi}). Under
+\code{bootstrap = TRUE}, \code{prem_ci_lo} / \code{prem_ci_hi} are bootstrap
+quantiles and \code{prem_total_se} / \code{prem_total_cv} are derived from
+the simulation SD; the analytical proc/param decomposition is
+retained as diagnostic.
 }
 \description{
 Project cumulative prem across the cohort x development grid with

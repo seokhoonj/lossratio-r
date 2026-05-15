@@ -15,7 +15,10 @@ fit_loss(
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   maturity = "auto",
-  conf_level = 0.95
+  conf_level = 0.95,
+  bootstrap = NULL,
+  B = 999,
+  seed = NULL
 )
 }
 \arguments{
@@ -76,6 +79,21 @@ triangle and returning a \code{Maturity} object (e.g. from
 
 \item{conf_level}{Confidence level for analytical CI on the loss
 projection (\code{loss_ci_lo}, \code{loss_ci_hi}). Default \code{0.95}.}
+
+\item{bootstrap}{Logical or \code{NULL} (default). When \code{NULL}, auto-resolved
+by \code{method}: \code{TRUE} for \code{"sa"} (combined ED+CL variance is
+approximate near the maturity transition) and \code{"ed"} (additive
+variance recursion lacks a published derivation); \code{FALSE} for \code{"cl"}
+(Mack's exact formula). Set explicitly to override. When \code{TRUE},
+\code{loss_ci_lo} / \code{loss_ci_hi} are bootstrap quantiles and
+\code{loss_total_se} / \code{loss_total_cv} are derived from simulation SD;
+the analytical proc/param decomposition is retained as diagnostic.}
+
+\item{B}{Integer number of bootstrap replicates. Used only when
+\code{bootstrap = TRUE}. Default \code{999}.}
+
+\item{seed}{Optional integer seed for reproducible bootstrap. Default
+\code{NULL}.}
 }
 \value{
 An object of class \code{"LossFit"}. List with components:

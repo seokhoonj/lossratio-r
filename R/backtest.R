@@ -79,10 +79,10 @@
 #'   method. Unused for `target = "loss"` / `target = "premium"`.
 #' @param conf_level Confidence level for `fit_lr()` / `fit_loss()`
 #'   intervals. Unused for `target = "premium"`.
-#' @param bootstrap,B,seed Bootstrap controls forwarded to `fit_lr()`.
-#'   `bootstrap = NULL` (default) defers to `fit_lr`'s method-dependent
-#'   resolution (bootstrap for `"sa"`/`"ed"`, analytical for `"cl"`).
-#'   Unused for `target = "loss"` / `target = "premium"`.
+#' @param bootstrap,B,seed Bootstrap controls forwarded to the
+#'   target-specific fitter (`fit_lr()` / `fit_loss()` / `fit_premium()`).
+#'   `bootstrap = NULL` (default) defers to the fitter's method-dependent
+#'   resolution: bootstrap for SA/ED methods, analytical for pure CL.
 #' @param ... Additional arguments passed to the underlying fitter.
 #'
 #' @return An object of class `"Backtest"` with components:
@@ -278,6 +278,9 @@ backtest <- function(x,
       recent         = recent,
       maturity       = maturity,
       conf_level     = conf_level,
+      bootstrap      = bootstrap,
+      B              = B,
+      seed           = seed,
       ...
     ),
     premium = fit_premium(
@@ -287,6 +290,9 @@ backtest <- function(x,
       sigma_method = sigma_method,
       recent       = recent,
       regime       = premium_regime,
+      bootstrap    = bootstrap,
+      B            = B,
+      seed         = seed,
       ...
     )
   )
