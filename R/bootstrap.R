@@ -886,3 +886,734 @@ print.BootstrapTriangle <- function(x, ...) {
               nrow(x$alt_triangles)))
   invisible(x)
 }
+
+
+# =============================================================================
+# Phase 2a — Consumer helpers
+#
+# Internal helpers consumed by fit_lr / fit_loss / fit_premium / backtest in
+# Phase 2b-e. Decomposed into single-purpose units so each helper has one job
+# and the call site in fit functions is explicit about every step.
+#
+# Pipeline:
+#   boots      <- .resolve_bootstrap(arg, tri, B, seed, ...)
+#   refit      <- .boot_refit_{cl,ed,sa}(tri, boots, alpha, ...)
+#                 # list(cell_mean, cell_proc_var) — method baked into proc_var
+#   cell_real  <- .boot_add_process_noise(refit$cell_mean, refit$cell_proc_var,
+#                                          boots$meta$process)
+#   se_dt      <- .boot_summarize_se(refit$cell_mean, cell_real)
+# =============================================================================
+
+
+#' Resolve a bootstrap argument to a BootstrapTriangle (4-type dispatch)
+#'
+#' Mirrors `.resolve_maturity()` / `.resolve_regime()` pattern. Accepts:
+#'
+#' \itemize{
+#'   \item `NULL` (or `FALSE`, back-compat) — returns `NULL` (no bootstrap).
+#'   \item `TRUE` (back-compat) — equivalent to `"auto"`.
+#'   \item `"auto"` — internal `bootstrap(tri, ...)` call with supplied
+#'     defaults.
+#'   \item A `BootstrapTriangle` object — returned as-is.
+#'   \item A function `function(tri) -> BootstrapTriangle` — invoked on `tri`.
+#' }
+#'
+#' @param arg The bootstrap argument supplied by the user.
+#' @param tri A `Triangle` object (the data the bootstrap will be computed on).
+#' @param B,seed,method,mode,process,alpha Defaults forwarded to
+#'   `bootstrap.Triangle()` when `arg` resolves to `"auto"` or `TRUE`.
+#'
+#' @return A `BootstrapTriangle` object or `NULL`.
+#'
+#' @keywords internal
+.resolve_bootstrap <- function(arg, tri,
+                                B       = 1000L,
+                                seed    = NULL,
+                                method  = "parametric",
+                                mode    = "dev",
+                                process = "normal",
+                                alpha   = 1) {
+  if (is.null(arg)) return(NULL)
+
+  # Legacy back-compat: bare logical
+  if (is.logical(arg) && length(arg) == 1L && !is.na(arg)) {
+    if (isFALSE(arg)) return(NULL)
+    if (isTRUE(arg))  arg <- "auto"
+  }
+
+  if (inherits(arg, "BootstrapTriangle")) return(arg)
+
+  if (identical(arg, "auto")) {
+    return(bootstrap(tri,
+                     method  = method,
+                     mode    = mode,
+                     process = process,
+                     B       = B,
+                     seed    = seed,
+                     alpha   = alpha))
+  }
+
+  if (is.function(arg)) {
+    out <- arg(tri)
+    if (!inherits(out, "BootstrapTriangle"))
+      stop("bootstrap function must return a `BootstrapTriangle` object; ",
+           "got class: ", paste(class(out), collapse = "/"), ".",
+           call. = FALSE)
+    return(out)
+  }
+
+  stop("`bootstrap` must be NULL, TRUE/FALSE, \"auto\", a `BootstrapTriangle` ",
+       "object, or a function returning one.",
+       call. = FALSE)
+}
+
+
+#' Refit chain-ladder per bootstrap replicate
+#'
+#' For each replicate `b` in `boots$alt_triangles`, take the alt cumulative
+#' loss triangle, refit Mack chain-ladder factors `f*_k` and `sigma^2*_k`,
+#' and compute the per-cell process variance `sigma^2*_k * C_{i,k-1}` for
+#' projected (missing-region) cells. Observed-region cells get
+#' `cell_proc_var = 0` so Stage 2 does not add noise to them.
+#'
+#' `cell_mean` is the alt cumulative loss as already projected by
+#' `bootstrap.Triangle()`. `cell_proc_var` carries the *method-specific*
+#' variance baked in so the downstream Stage 2 helper can stay
+#' method-blind.
+#'
+#' @param triangle The original `Triangle` (carries the observed region
+#'   mask).
+#' @param boots A `BootstrapTriangle` from `bootstrap()`.
+#' @param alpha Mack variance exponent (currently `1` only).
+#'
+#' @return A `data.table` keyed by `[groups..], cohort, dev, rep` with
+#'   columns `cell_mean`, `cell_proc_var`.
+#'
+#' @keywords internal
+.boot_refit_cl <- function(triangle, boots, alpha = 1) {
+  grp <- attr(triangle, "groups")
+  if (is.null(grp)) grp <- character(0)
+
+  if (length(grp) > 0L) {
+    grp_vals <- unique(triangle[, .SD, .SDcols = grp])
+    out_list <- vector("list", nrow(grp_vals))
+    for (gi in seq_len(nrow(grp_vals))) {
+      gkey   <- grp_vals[gi]
+      tri_g  <- merge(triangle, gkey, by = grp, sort = FALSE)
+      alt_g  <- merge(boots$alt_triangles, gkey, by = grp, sort = FALSE)
+      out_list[[gi]] <- .boot_refit_cl_one(tri_g, alt_g, alpha,
+                                            grp_vals = gkey)
+    }
+    data.table::rbindlist(out_list, use.names = TRUE)
+  } else {
+    .boot_refit_cl_one(triangle, boots$alt_triangles, alpha, grp_vals = NULL)
+  }
+}
+
+
+# Per-group CL refit. Returns long-format DT with (cohort, dev, rep,
+# cell_mean, cell_proc_var) [+ optional group cols].
+.boot_refit_cl_one <- function(triangle, alt_long, alpha, grp_vals) {
+
+  cohorts <- sort(unique(triangle$cohort))
+  devs    <- sort(unique(triangle$dev))
+  n_coh   <- length(cohorts)
+  n_dev   <- length(devs)
+  B       <- max(alt_long$rep)
+
+  # Observed-region mask from original Triangle (TRUE where data present).
+  obs_mask <- matrix(FALSE, nrow = n_coh, ncol = n_dev,
+                     dimnames = list(as.character(cohorts),
+                                     as.character(devs)))
+  for (r in seq_len(nrow(triangle))) {
+    ci <- match(as.character(triangle$cohort[r]), rownames(obs_mask))
+    di <- match(as.character(triangle$dev[r]),    colnames(obs_mask))
+    if (!is.na(ci) && !is.na(di) && is.finite(triangle$loss[r]))
+      obs_mask[ci, di] <- TRUE
+  }
+
+  # Rebuild 3D array [cohort × dev × B] from long-format. Phase 1 stored
+  # the array column-major (cohort fastest, then dev, then rep) so a
+  # direct array() call reconstructs it as long as the rows are in that
+  # order.
+  data.table::setorderv(alt_long, c("rep", "dev", "cohort"))
+  arr_mean <- array(alt_long$loss, dim = c(n_coh, n_dev, B),
+                    dimnames = list(as.character(cohorts),
+                                    as.character(devs),
+                                    NULL))
+
+  arr_pvar <- array(0, dim = c(n_coh, n_dev, B))
+
+  for (b in seq_len(B)) {
+    mat_b <- arr_mean[, , b]
+
+    sigma2_star <- rep(NA_real_, n_dev)
+
+    # Refit f_star_k and sigma2_star_k from cells whose ORIGINAL (i, k-1)
+    # AND (i, k) are observed -- i.e., real cohorts contributing to that
+    # link. (For residual method these are perturbed values; for parametric
+    # they are unchanged.)
+    for (k in seq(2L, n_dev)) {
+      from_col <- k - 1L
+      to_col   <- k
+      idx <- obs_mask[, from_col] & obs_mask[, to_col] &
+             is.finite(mat_b[, from_col]) & is.finite(mat_b[, to_col]) &
+             mat_b[, from_col] > 0
+      n_link <- sum(idx)
+      if (n_link < 1L) next
+
+      from_vals <- mat_b[idx, from_col]
+      to_vals   <- mat_b[idx, to_col]
+
+      f_star  <- sum(to_vals) / sum(from_vals)
+      if (n_link >= 2L) {
+        sigma2_star[k] <- sum((to_vals - f_star * from_vals)^2 / from_vals) /
+                          (n_link - 1L)
+      }
+    }
+
+    # Mack tail rule: any link with NA sigma2 inherits the previous dev's
+    # sigma2 (LOCF). Iterate forward so the propagation chains through any
+    # consecutive NA stretch at the tail.
+    for (k in seq_len(n_dev)) {
+      if (is.na(sigma2_star[k]) && k >= 2L && is.finite(sigma2_star[k - 1L])) {
+        sigma2_star[k] <- sigma2_star[k - 1L]
+      }
+    }
+
+    # Apply process variance to projected cells using (now LOCF-filled)
+    # sigma2_star_k * cell_mean[i, k-1, b].
+    for (k in seq(2L, n_dev)) {
+      if (!is.finite(sigma2_star[k]) || sigma2_star[k] <= 0) next
+      proj_idx <- !obs_mask[, k] &
+                  is.finite(mat_b[, k - 1L]) & mat_b[, k - 1L] > 0
+      if (!any(proj_idx)) next
+      arr_pvar[proj_idx, k, b] <- sigma2_star[k] * mat_b[proj_idx, k - 1L]
+    }
+  }
+
+  # Convert 3D arrays to long format. Column-major flatten yields cohort
+  # fastest, then dev, then rep.
+  long <- data.table::data.table(
+    cohort        = rep(rep(cohorts, times = n_dev), times = B),
+    dev           = rep(rep(devs, each = n_coh),    times = B),
+    rep           = rep(seq_len(B), each = n_coh * n_dev),
+    cell_mean     = as.numeric(arr_mean),
+    cell_proc_var = as.numeric(arr_pvar)
+  )
+
+  if (!is.null(grp_vals)) {
+    for (col in names(grp_vals)) {
+      long[, (col) := grp_vals[[col]]]
+    }
+    data.table::setcolorder(long, c(names(grp_vals), "cohort", "dev", "rep",
+                                     "cell_mean", "cell_proc_var"))
+  }
+
+  long[]
+}
+
+
+#' Refit exposure-driven model per bootstrap replicate
+#'
+#' Like `.boot_refit_cl()` but additive: refit intensities
+#' `g*_k = sum(Delta_loss) / sum(P_{k-1})` per replicate (with original
+#' premium kept fixed), then re-project missing cells via the ED additive
+#' recursion. `cell_proc_var = sigma^2*_g_k * P_{i,k-1}` for projected
+#' cells, 0 for observed.
+#'
+#' @inheritParams .boot_refit_cl
+#'
+#' @return Same shape as `.boot_refit_cl()`.
+#'
+#' @keywords internal
+.boot_refit_ed <- function(triangle, boots, alpha = 1) {
+  grp <- attr(triangle, "groups")
+  if (is.null(grp)) grp <- character(0)
+
+  if (length(grp) > 0L) {
+    grp_vals <- unique(triangle[, .SD, .SDcols = grp])
+    out_list <- vector("list", nrow(grp_vals))
+    for (gi in seq_len(nrow(grp_vals))) {
+      gkey   <- grp_vals[gi]
+      tri_g  <- merge(triangle, gkey, by = grp, sort = FALSE)
+      alt_g  <- merge(boots$alt_triangles, gkey, by = grp, sort = FALSE)
+      out_list[[gi]] <- .boot_refit_ed_one(tri_g, alt_g, alpha,
+                                            grp_vals = gkey)
+    }
+    data.table::rbindlist(out_list, use.names = TRUE)
+  } else {
+    .boot_refit_ed_one(triangle, boots$alt_triangles, alpha, grp_vals = NULL)
+  }
+}
+
+
+# Per-group ED refit. Mirrors .boot_refit_cl_one but uses additive
+# recursion against the original (un-bootstrapped) premium column.
+.boot_refit_ed_one <- function(triangle, alt_long, alpha, grp_vals) {
+
+  cohorts <- sort(unique(triangle$cohort))
+  devs    <- sort(unique(triangle$dev))
+  n_coh   <- length(cohorts)
+  n_dev   <- length(devs)
+  B       <- max(alt_long$rep)
+
+  # Observed mask + original cumulative premium matrix.
+  obs_mask <- matrix(FALSE, nrow = n_coh, ncol = n_dev,
+                     dimnames = list(as.character(cohorts),
+                                     as.character(devs)))
+  mat_prem <- matrix(NA_real_, nrow = n_coh, ncol = n_dev,
+                     dimnames = dimnames(obs_mask))
+
+  for (r in seq_len(nrow(triangle))) {
+    ci <- match(as.character(triangle$cohort[r]), rownames(obs_mask))
+    di <- match(as.character(triangle$dev[r]),    colnames(obs_mask))
+    if (!is.na(ci) && !is.na(di)) {
+      if (is.finite(triangle$loss[r])) obs_mask[ci, di] <- TRUE
+      mat_prem[ci, di] <- triangle$prem[r]
+    }
+  }
+
+  # Forward-fill premium beyond observed boundary using the latest observed
+  # cumulative premium (acts as anchor for ED forward projection). For now
+  # we hold premium constant at the last observed value per cohort.
+  for (i in seq_len(n_coh)) {
+    last_p <- NA_real_
+    for (j in seq_len(n_dev)) {
+      if (is.finite(mat_prem[i, j])) {
+        last_p <- mat_prem[i, j]
+      } else if (is.finite(last_p)) {
+        mat_prem[i, j] <- last_p
+      }
+    }
+  }
+
+  # Alt cumulative loss array.
+  data.table::setorderv(alt_long, c("rep", "dev", "cohort"))
+  arr_alt <- array(alt_long$loss, dim = c(n_coh, n_dev, B),
+                   dimnames = list(as.character(cohorts),
+                                   as.character(devs), NULL))
+
+  arr_mean <- array(NA_real_, dim = c(n_coh, n_dev, B))
+  arr_pvar <- array(0,        dim = c(n_coh, n_dev, B))
+
+  for (b in seq_len(B)) {
+    mat_alt <- arr_alt[, , b]
+
+    # Step 1: copy observed-region alt cum loss into cell_mean (these are
+    # the alt observed cells, residual-perturbed in residual mode, or
+    # original in parametric mode).
+    for (i in seq_len(n_coh)) {
+      for (j in seq_len(n_dev)) {
+        if (obs_mask[i, j]) arr_mean[i, j, b] <- mat_alt[i, j]
+      }
+    }
+
+    # Step 2: refit g_star_k per link using alt observed Delta_loss and
+    # original premium denominators.
+    g_star <- rep(NA_real_, n_dev)
+    sigma2_g <- rep(NA_real_, n_dev)
+    for (k in seq(2L, n_dev)) {
+      from_col <- k - 1L
+      to_col   <- k
+      idx <- obs_mask[, from_col] & obs_mask[, to_col] &
+             is.finite(mat_alt[, from_col]) & is.finite(mat_alt[, to_col]) &
+             is.finite(mat_prem[, from_col]) & mat_prem[, from_col] > 0
+      n_link <- sum(idx)
+      if (n_link < 1L) next
+
+      d_loss <- mat_alt[idx, to_col] - mat_alt[idx, from_col]
+      p_prev <- mat_prem[idx, from_col]
+
+      g_star[k] <- sum(d_loss) / sum(p_prev)
+      if (n_link >= 2L) {
+        sigma2_g[k] <- sum((d_loss - g_star[k] * p_prev)^2 / p_prev) /
+                       (n_link - 1L)
+      }
+    }
+
+    # Tail rule LOCF for sigma2_g.
+    for (k in seq_len(n_dev)) {
+      if (is.na(sigma2_g[k]) && k >= 2L && is.finite(sigma2_g[k - 1L]))
+        sigma2_g[k] <- sigma2_g[k - 1L]
+    }
+
+    # Step 3: forward-project missing cells using ED recursion
+    # alt_C[i, k] = alt_C[i, k-1] + g_star_k * P[i, k-1]
+    # and accumulate process variance.
+    for (i in seq_len(n_coh)) {
+      for (j in seq(2L, n_dev)) {
+        if (obs_mask[i, j]) next
+        base <- arr_mean[i, j - 1L, b]
+        if (!is.finite(base)) next
+        p_prev <- mat_prem[i, j - 1L]
+        if (!is.finite(p_prev) || p_prev <= 0) {
+          arr_mean[i, j, b] <- base
+        } else if (is.finite(g_star[j])) {
+          arr_mean[i, j, b] <- base + g_star[j] * p_prev
+          if (is.finite(sigma2_g[j]))
+            arr_pvar[i, j, b] <- sigma2_g[j] * p_prev
+        } else {
+          arr_mean[i, j, b] <- base
+        }
+      }
+    }
+  }
+
+  long <- data.table::data.table(
+    cohort        = rep(rep(cohorts, times = n_dev), times = B),
+    dev           = rep(rep(devs, each = n_coh),    times = B),
+    rep           = rep(seq_len(B), each = n_coh * n_dev),
+    cell_mean     = as.numeric(arr_mean),
+    cell_proc_var = as.numeric(arr_pvar)
+  )
+
+  if (!is.null(grp_vals)) {
+    for (col in names(grp_vals)) {
+      long[, (col) := grp_vals[[col]]]
+    }
+    data.table::setcolorder(long, c(names(grp_vals), "cohort", "dev", "rep",
+                                     "cell_mean", "cell_proc_var"))
+  }
+
+  long[]
+}
+
+
+#' Refit stage-adaptive (SA) hybrid per bootstrap replicate
+#'
+#' ED projection for dev `< maturity$change`, CL projection from
+#' `maturity$change` onward. Maturity is per-group when supplied with
+#' group columns. The per-cell process variance switches between
+#' `sigma^2*_g_k * P_{i,k-1}` (ED region) and
+#' `sigma^2*_f_k * cell_mean[i, k-1]` (CL region) accordingly.
+#'
+#' @inheritParams .boot_refit_cl
+#' @param maturity Resolved `Maturity` object.
+#'
+#' @return Same shape as `.boot_refit_cl()`.
+#'
+#' @keywords internal
+.boot_refit_sa <- function(triangle, boots, alpha = 1, maturity) {
+  grp <- attr(triangle, "groups")
+  if (is.null(grp)) grp <- character(0)
+
+  mat_change_by_grp <- .boot_maturity_lookup(maturity, grp)
+
+  if (length(grp) > 0L) {
+    grp_vals <- unique(triangle[, .SD, .SDcols = grp])
+    out_list <- vector("list", nrow(grp_vals))
+    for (gi in seq_len(nrow(grp_vals))) {
+      gkey   <- grp_vals[gi]
+      tri_g  <- merge(triangle, gkey, by = grp, sort = FALSE)
+      alt_g  <- merge(boots$alt_triangles, gkey, by = grp, sort = FALSE)
+      key_str <- do.call(paste, c(as.list(gkey), sep = "|"))
+      mat_k <- mat_change_by_grp[[key_str]]
+      out_list[[gi]] <- .boot_refit_sa_one(tri_g, alt_g, alpha,
+                                            grp_vals = gkey,
+                                            mat_change = mat_k)
+    }
+    data.table::rbindlist(out_list, use.names = TRUE)
+  } else {
+    mat_k <- mat_change_by_grp[["__single__"]]
+    .boot_refit_sa_one(triangle, boots$alt_triangles, alpha,
+                        grp_vals = NULL, mat_change = mat_k)
+  }
+}
+
+
+.boot_maturity_lookup <- function(maturity, grp) {
+  mat_dt <- data.table::as.data.table(maturity)
+  if (length(grp) == 0L) {
+    return(list(`__single__` = mat_dt$change[1L]))
+  }
+  out <- list()
+  for (i in seq_len(nrow(mat_dt))) {
+    key <- do.call(paste, c(as.list(mat_dt[i, .SD, .SDcols = grp]),
+                            sep = "|"))
+    out[[key]] <- mat_dt$change[i]
+  }
+  out
+}
+
+
+# Per-group SA refit. ED for dev < mat_change, CL for dev >= mat_change.
+.boot_refit_sa_one <- function(triangle, alt_long, alpha, grp_vals,
+                                mat_change) {
+
+  cohorts <- sort(unique(triangle$cohort))
+  devs    <- sort(unique(triangle$dev))
+  n_coh   <- length(cohorts)
+  n_dev   <- length(devs)
+  B       <- max(alt_long$rep)
+
+  if (!is.finite(mat_change)) mat_change <- Inf
+
+  obs_mask <- matrix(FALSE, nrow = n_coh, ncol = n_dev,
+                     dimnames = list(as.character(cohorts),
+                                     as.character(devs)))
+  mat_prem <- matrix(NA_real_, nrow = n_coh, ncol = n_dev,
+                     dimnames = dimnames(obs_mask))
+
+  for (r in seq_len(nrow(triangle))) {
+    ci <- match(as.character(triangle$cohort[r]), rownames(obs_mask))
+    di <- match(as.character(triangle$dev[r]),    colnames(obs_mask))
+    if (!is.na(ci) && !is.na(di)) {
+      if (is.finite(triangle$loss[r])) obs_mask[ci, di] <- TRUE
+      mat_prem[ci, di] <- triangle$prem[r]
+    }
+  }
+  for (i in seq_len(n_coh)) {
+    last_p <- NA_real_
+    for (j in seq_len(n_dev)) {
+      if (is.finite(mat_prem[i, j])) {
+        last_p <- mat_prem[i, j]
+      } else if (is.finite(last_p)) {
+        mat_prem[i, j] <- last_p
+      }
+    }
+  }
+
+  data.table::setorderv(alt_long, c("rep", "dev", "cohort"))
+  arr_alt <- array(alt_long$loss, dim = c(n_coh, n_dev, B),
+                   dimnames = list(as.character(cohorts),
+                                   as.character(devs), NULL))
+
+  arr_mean <- array(NA_real_, dim = c(n_coh, n_dev, B))
+  arr_pvar <- array(0,        dim = c(n_coh, n_dev, B))
+
+  for (b in seq_len(B)) {
+    mat_alt <- arr_alt[, , b]
+
+    # Copy observed cells
+    for (i in seq_len(n_coh)) {
+      for (j in seq_len(n_dev)) {
+        if (obs_mask[i, j]) arr_mean[i, j, b] <- mat_alt[i, j]
+      }
+    }
+
+    # Refit both f_star (CL) and g_star (ED) per link from alt observed.
+    f_star  <- rep(NA_real_, n_dev)
+    s2_f    <- rep(NA_real_, n_dev)
+    g_star  <- rep(NA_real_, n_dev)
+    s2_g    <- rep(NA_real_, n_dev)
+
+    for (k in seq(2L, n_dev)) {
+      from_col <- k - 1L
+      to_col   <- k
+      idx <- obs_mask[, from_col] & obs_mask[, to_col] &
+             is.finite(mat_alt[, from_col]) & is.finite(mat_alt[, to_col]) &
+             mat_alt[, from_col] > 0
+      n_link <- sum(idx)
+      if (n_link < 1L) next
+
+      from_vals <- mat_alt[idx, from_col]
+      to_vals   <- mat_alt[idx, to_col]
+
+      f_star[k] <- sum(to_vals) / sum(from_vals)
+      if (n_link >= 2L) {
+        s2_f[k] <- sum((to_vals - f_star[k] * from_vals)^2 / from_vals) /
+                   (n_link - 1L)
+      }
+
+      p_prev_obs <- mat_prem[idx, from_col]
+      ok_p <- is.finite(p_prev_obs) & p_prev_obs > 0
+      if (any(ok_p)) {
+        d_loss <- (to_vals - from_vals)[ok_p]
+        p_use  <- p_prev_obs[ok_p]
+        g_star[k] <- sum(d_loss) / sum(p_use)
+        n_g <- length(d_loss)
+        if (n_g >= 2L) {
+          s2_g[k] <- sum((d_loss - g_star[k] * p_use)^2 / p_use) /
+                     (n_g - 1L)
+        }
+      }
+    }
+
+    for (k in seq_len(n_dev)) {
+      if (is.na(s2_f[k]) && k >= 2L && is.finite(s2_f[k - 1L]))
+        s2_f[k] <- s2_f[k - 1L]
+      if (is.na(s2_g[k]) && k >= 2L && is.finite(s2_g[k - 1L]))
+        s2_g[k] <- s2_g[k - 1L]
+    }
+
+    # Forward project: ED for k < mat_change, CL for k >= mat_change.
+    for (i in seq_len(n_coh)) {
+      for (j in seq(2L, n_dev)) {
+        if (obs_mask[i, j]) next
+        base <- arr_mean[i, j - 1L, b]
+        if (!is.finite(base)) next
+
+        use_cl <- (devs[j] >= mat_change)
+
+        if (use_cl && is.finite(f_star[j])) {
+          arr_mean[i, j, b] <- f_star[j] * base
+          if (is.finite(s2_f[j]))
+            arr_pvar[i, j, b] <- s2_f[j] * base
+        } else {
+          p_prev <- mat_prem[i, j - 1L]
+          if (is.finite(g_star[j]) && is.finite(p_prev) && p_prev > 0) {
+            arr_mean[i, j, b] <- base + g_star[j] * p_prev
+            if (is.finite(s2_g[j]))
+              arr_pvar[i, j, b] <- s2_g[j] * p_prev
+          } else {
+            arr_mean[i, j, b] <- base
+          }
+        }
+      }
+    }
+  }
+
+  long <- data.table::data.table(
+    cohort        = rep(rep(cohorts, times = n_dev), times = B),
+    dev           = rep(rep(devs, each = n_coh),    times = B),
+    rep           = rep(seq_len(B), each = n_coh * n_dev),
+    cell_mean     = as.numeric(arr_mean),
+    cell_proc_var = as.numeric(arr_pvar)
+  )
+
+  if (!is.null(grp_vals)) {
+    for (col in names(grp_vals)) {
+      long[, (col) := grp_vals[[col]]]
+    }
+    data.table::setcolorder(long, c(names(grp_vals), "cohort", "dev", "rep",
+                                     "cell_mean", "cell_proc_var"))
+  }
+
+  long[]
+}
+
+
+
+#' Add Stage 2 process noise to cell means (method-independent)
+#'
+#' Draws per-cell noise from the configured process distribution. Pure
+#' `(mean, variance, distribution)` -> realized value. The method-specific
+#' variance structure has already been baked into `cell_proc_var` by the
+#' refit step.
+#'
+#' Cells with `cell_proc_var <= 0` (observed region) pass through to
+#' `cell_real = cell_mean` unchanged. Negative realized values are clipped
+#' to 0 (cumulative loss is non-negative).
+#'
+#' @param refit_dt A `data.table` from `.boot_refit_cl()` /
+#'   `.boot_refit_ed()` / `.boot_refit_sa()` with columns `cell_mean` and
+#'   `cell_proc_var`.
+#' @param process_dist One of `"normal"`, `"gamma"`, `"odp"`. Typically
+#'   passed via `boots$meta$process`.
+#'
+#' @return The input `data.table` with an added `cell_real` column.
+#'
+#' @keywords internal
+.boot_add_process_noise <- function(refit_dt,
+                                     process_dist = c("normal", "gamma", "odp")) {
+  process_dist <- match.arg(process_dist)
+
+  dt <- data.table::copy(refit_dt)
+  m  <- dt$cell_mean
+  v  <- dt$cell_proc_var
+
+  cell_real <- m  # default: pass-through (observed cells)
+  has_var <- is.finite(v) & v > 0 & is.finite(m)
+
+  if (any(has_var)) {
+    mh <- m[has_var]
+    vh <- v[has_var]
+
+    if (identical(process_dist, "normal")) {
+      cell_real[has_var] <- mh + stats::rnorm(length(mh), 0, sqrt(vh))
+    } else if (identical(process_dist, "gamma")) {
+      out <- mh
+      pos <- mh > 0 & vh > 0
+      if (any(pos)) {
+        shape <- mh[pos]^2 / vh[pos]
+        rate  <- mh[pos]   / vh[pos]
+        out[pos] <- stats::rgamma(sum(pos), shape = shape, rate = rate)
+      }
+      neg <- !pos
+      if (any(neg)) {
+        out[neg] <- mh[neg] + stats::rnorm(sum(neg), 0, sqrt(vh[neg]))
+      }
+      cell_real[has_var] <- out
+    } else if (identical(process_dist, "odp")) {
+      # Over-dispersed Poisson: var = phi * mean. Draw cell / phi ~
+      # Poisson(mean / phi); thus cell = phi * Poisson(mean / phi).
+      out <- mh
+      pos <- mh > 0 & vh > 0
+      if (any(pos)) {
+        phi    <- vh[pos] / mh[pos]
+        lambda <- mh[pos] / phi
+        out[pos] <- phi * stats::rpois(sum(pos), lambda = lambda)
+      }
+      neg <- !pos
+      if (any(neg)) {
+        out[neg] <- mh[neg] + stats::rnorm(sum(neg), 0, sqrt(vh[neg]))
+      }
+      cell_real[has_var] <- out
+    }
+  }
+
+  cell_real[is.finite(cell_real) & cell_real < 0] <- 0
+  dt[, ("cell_real") := cell_real]
+  dt[]
+}
+
+
+#' Summarize per-cell bootstrap SE decomposition (method-independent)
+#'
+#' Aggregates over the `rep` dimension to produce per-cell SE columns
+#' matching the existing `target_proc_se` / `target_param_se` /
+#' `target_total_se` / `target_total_cv` convention used by `fit_cl()` /
+#' `fit_loss()` / `fit_premium()` / `fit_lr()`.
+#'
+#' Decomposition:
+#' \itemize{
+#'   \item `param_se` = `sd(cell_mean)` across replicates (Stage 1 spread)
+#'   \item `total_se` = `sd(cell_real)` across replicates (Stage 1 + 2)
+#'   \item `proc_se`  = `sqrt(max(total_se^2 - param_se^2, 0))`
+#' }
+#'
+#' @param refit_dt A `data.table` with `cell_mean` and `cell_real` columns
+#'   (the latter produced by `.boot_add_process_noise()`).
+#' @param grp Character vector of group column names (may be `character(0)`).
+#'
+#' @return A `data.table` keyed by `[grp..], cohort, dev` with columns
+#'   `target_proj` (point estimate), `target_proc_se`, `target_param_se`,
+#'   `target_total_se`, `target_total_cv`, plus quantile-based 95% CI
+#'   columns `target_ci_lo` / `target_ci_hi`.
+#'
+#' @keywords internal
+.boot_summarize_se <- function(refit_dt, grp = character(0)) {
+  cell_mean <- cell_real <- NULL  # NSE
+
+  by_cols <- c(grp, "cohort", "dev")
+
+  refit_dt[, {
+    cm <- cell_mean
+    cr <- cell_real
+    cm_ok <- cm[is.finite(cm)]
+    cr_ok <- cr[is.finite(cr)]
+
+    proj <- if (length(cm_ok) > 0L) mean(cm_ok) else NA_real_
+    param_se <- if (length(cm_ok) >= 2L) stats::sd(cm_ok) else 0
+    total_se <- if (length(cr_ok) >= 2L) stats::sd(cr_ok) else 0
+    proc_se  <- sqrt(max(total_se^2 - param_se^2, 0))
+    total_cv <- if (is.finite(proj) && proj != 0) total_se / proj
+                else NA_real_
+
+    qs <- if (length(cr_ok) >= 2L) {
+      stats::quantile(cr_ok, probs = c(0.025, 0.975),
+                      na.rm = TRUE, names = FALSE)
+    } else c(proj, proj)
+
+    list(
+      target_proj     = proj,
+      target_proc_se  = proc_se,
+      target_param_se = param_se,
+      target_total_se = total_se,
+      target_total_cv = total_cv,
+      target_ci_lo    = qs[1L],
+      target_ci_hi    = qs[2L]
+    )
+  }, by = by_cols]
+}

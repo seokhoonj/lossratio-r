@@ -251,3 +251,165 @@ test_that("print.BootstrapTriangle prints all configured fields", {
   expect_true(any(grepl("gamma", out)))
   expect_true(any(grepl("5 replicates", out)))
 })
+
+
+# ---------------------------------------------------------------------------
+# Phase 2a consumer helpers
+# ---------------------------------------------------------------------------
+
+test_that(".resolve_bootstrap dispatches NULL / FALSE / TRUE / 'auto' / obj / fn", {
+  tri <- make_sub_tri("SUR")
+
+  expect_null(.resolve_bootstrap(NULL,  tri, B = 5, seed = 1))
+  expect_null(.resolve_bootstrap(FALSE, tri, B = 5, seed = 1))
+
+  b1 <- .resolve_bootstrap(TRUE,   tri, B = 5, seed = 1)
+  b2 <- .resolve_bootstrap("auto", tri, B = 5, seed = 1)
+  expect_s3_class(b1, "BootstrapTriangle")
+  expect_s3_class(b2, "BootstrapTriangle")
+  expect_identical(b1$meta$B, 5L)
+
+  b_obj <- bootstrap(tri, B = 5, seed = 1)
+  expect_identical(.resolve_bootstrap(b_obj, tri), b_obj)
+
+  fn <- function(t) bootstrap(t, B = 3, seed = 1, method = "residual")
+  b_fn <- .resolve_bootstrap(fn, tri)
+  expect_identical(b_fn$meta$B, 3L)
+  expect_identical(b_fn$meta$method, "residual")
+})
+
+test_that(".resolve_bootstrap rejects bad input", {
+  tri <- make_sub_tri("SUR")
+  expect_error(.resolve_bootstrap("garbage", tri), "must be NULL")
+  expect_error(.resolve_bootstrap(function(t) 42, tri), "BootstrapTriangle")
+})
+
+
+test_that(".boot_refit_cl / refit_ed / refit_sa return same shape", {
+  tri <- make_sub_tri("SUR")
+  boots <- bootstrap(tri, B = 30, seed = 1)
+  mat   <- detect_maturity(tri)
+
+  r_cl <- .boot_refit_cl(tri, boots, alpha = 1)
+  r_ed <- .boot_refit_ed(tri, boots, alpha = 1)
+  r_sa <- .boot_refit_sa(tri, boots, alpha = 1, maturity = mat)
+
+  for (rdt in list(r_cl, r_ed, r_sa)) {
+    expect_true(all(c("coverage", "cohort", "dev", "rep",
+                      "cell_mean", "cell_proc_var") %in% names(rdt)))
+    expect_equal(nrow(rdt), length(unique(tri$cohort)) *
+                              length(unique(tri$dev)) * 30L)
+    expect_true(all(rdt$cell_proc_var >= 0 | is.na(rdt$cell_proc_var)))
+  }
+})
+
+test_that("refit_cl observed cells have cell_proc_var = 0", {
+  tri <- make_sub_tri("SUR")
+  boots <- bootstrap(tri, B = 10, seed = 1)
+  r_cl  <- .boot_refit_cl(tri, boots, alpha = 1)
+
+  # Pick an obviously-observed cell: cohort 2023-01-01 dev 1.
+  cells <- r_cl[cohort == as.Date("2023-01-01") & dev == 1L]
+  expect_equal(unique(cells$cell_proc_var), 0)
+})
+
+test_that("refit_cl projected cells have positive cell_proc_var", {
+  tri <- make_sub_tri("SUR")
+  boots <- bootstrap(tri, B = 30, seed = 1)
+  r_cl  <- .boot_refit_cl(tri, boots, alpha = 1)
+
+  # Pick a clearly-projected cell: latest cohort, dev near the tail.
+  cells <- r_cl[cohort == as.Date("2025-12-01") & dev == 10L]
+  expect_true(all(cells$cell_proc_var > 0 | !is.finite(cells$cell_mean)))
+})
+
+
+test_that(".boot_add_process_noise leaves observed cells untouched", {
+  tri <- make_sub_tri("SUR")
+  boots <- bootstrap(tri, B = 10, seed = 1)
+  r_cl  <- .boot_refit_cl(tri, boots, alpha = 1)
+
+  withn <- .boot_add_process_noise(r_cl, "normal")
+  obs_rows <- withn[cell_proc_var == 0]
+  expect_equal(obs_rows$cell_real, obs_rows$cell_mean)
+})
+
+test_that(".boot_add_process_noise normal vs gamma both finite", {
+  tri <- make_sub_tri("SUR")
+  boots <- bootstrap(tri, B = 30, seed = 1)
+  r_cl  <- .boot_refit_cl(tri, boots, alpha = 1)
+
+  set.seed(1)
+  wn_norm  <- .boot_add_process_noise(r_cl, "normal")
+  set.seed(1)
+  wn_gamma <- .boot_add_process_noise(r_cl, "gamma")
+  set.seed(1)
+  wn_odp   <- .boot_add_process_noise(r_cl, "odp")
+
+  # All produce finite cell_real where cell_mean is finite
+  for (wn in list(wn_norm, wn_gamma, wn_odp)) {
+    ok <- is.finite(wn$cell_mean) & wn$cell_proc_var > 0
+    expect_true(all(is.finite(wn$cell_real[ok])))
+  }
+
+  # Gamma / ODP produce non-negative cell_real for positive-mean projected cells
+  pos_gamma <- wn_gamma[is.finite(cell_mean) & cell_mean > 0 & cell_proc_var > 0]
+  expect_true(all(pos_gamma$cell_real >= 0))
+  pos_odp <- wn_odp[is.finite(cell_mean) & cell_mean > 0 & cell_proc_var > 0]
+  expect_true(all(pos_odp$cell_real >= 0))
+})
+
+
+test_that(".boot_summarize_se produces expected columns and SE decomposition", {
+  tri <- make_sub_tri("SUR")
+  boots <- bootstrap(tri, B = 50, seed = 1)
+  r_cl  <- .boot_refit_cl(tri, boots, alpha = 1)
+  wn    <- .boot_add_process_noise(r_cl, "normal")
+  se    <- .boot_summarize_se(wn, grp = "coverage")
+
+  expect_true(all(c("coverage", "cohort", "dev",
+                    "target_proj", "target_proc_se", "target_param_se",
+                    "target_total_se", "target_total_cv",
+                    "target_ci_lo", "target_ci_hi") %in% names(se)))
+
+  expect_equal(nrow(se),
+               length(unique(tri$cohort)) * length(unique(tri$dev)))
+
+  # SE decomposition: total^2 = proc^2 + param^2 (exact by construction
+  # of proc_se = sqrt(max(total^2 - param^2, 0))). Use relative tolerance
+  # because squared SE values can be huge (losses in tens of millions).
+  proj <- se[target_proc_se > 0]
+  if (nrow(proj) > 0L) {
+    decomp <- proj$target_proc_se^2 + proj$target_param_se^2
+    rel_err <- abs(proj$target_total_se^2 - decomp) /
+               pmax(proj$target_total_se^2, 1e-12)
+    expect_true(all(rel_err < 1e-9))
+  }
+
+  # Observed cells: SE = 0 for parametric (data unchanged); SE = param_se
+  # for residual (data perturbed). At minimum, target_proc_se should be 0.
+  obs_dev1 <- se[dev == 1L]
+  expect_true(all(obs_dev1$target_proc_se == 0))
+})
+
+
+test_that("full Phase 2a pipeline runs end-to-end on multi-group Triangle", {
+  tri <- make_tri()
+  boots <- bootstrap(tri, method = "residual", mode = "dev",
+                      process = "gamma", B = 20, seed = 1)
+
+  for (method in c("cl", "ed", "sa")) {
+    refit <- switch(
+      method,
+      cl = .boot_refit_cl(tri, boots, alpha = 1),
+      ed = .boot_refit_ed(tri, boots, alpha = 1),
+      sa = .boot_refit_sa(tri, boots, alpha = 1,
+                           maturity = detect_maturity(tri))
+    )
+    wn <- .boot_add_process_noise(refit, boots$meta$process)
+    se <- .boot_summarize_se(wn, grp = "coverage")
+    expect_true(nrow(se) > 0L, info = method)
+    expect_true(all(is.finite(se$target_proj) | is.na(se$target_proj)),
+                info = method)
+  }
+})
