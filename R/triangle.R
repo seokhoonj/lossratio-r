@@ -583,7 +583,7 @@ plot_triangle.TriangleValidation <- function(x,
 #' The cumulative loss ratio is defined as:
 #' \deqn{lr = loss / prem}
 #'
-#' For long-term health insurance applications, risk prem is commonly
+#' For long-term health insurance applications, risk premium is commonly
 #' used as the `prem` measure.
 #'
 #' Proportion variables are computed within each `(cohort, dev)` cell:
@@ -621,7 +621,7 @@ plot_triangle.TriangleValidation <- function(x,
 #' @param premium Single character; per-period prem column in `df`
 #'   (raw name, e.g., `"incr_prem"`). Premium measure used as
 #'   denominator for loss ratio calculations. For long-term health
-#'   insurance applications, risk prem is commonly used.
+#'   insurance applications, risk premium is commonly used.
 #' @param grain One of `"auto"` (default), `"M"`, `"Q"`, `"H"`, `"Y"`.
 #'   `"auto"` infers the grain from the `cohort` value spacing.
 #'   Explicit values must be at least as coarse as the input grain;
@@ -1055,7 +1055,7 @@ longer.TriangleSummary <- function(x, ...) {
 #' The cumulative loss ratio is defined as:
 #' \deqn{lr = loss / prem}
 #'
-#' For long-term health insurance applications, risk prem is commonly
+#' For long-term health insurance applications, risk premium is commonly
 #' used as the `prem` measure.
 #'
 #' Proportion variables are computed within each `calendar` cell:

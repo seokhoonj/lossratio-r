@@ -80,7 +80,7 @@ the loss-side ATA, the exposure-driven intensity
 \eqn{g = \Delta loss / prem_{from}} is computed and stored in
 the \code{intensity} column. Premium measure used as denominator for
 loss ratio calculations; for long-term health insurance
-applications, risk prem is commonly used.}
+applications, risk premium is commonly used.}
 }
 }
 \examples{

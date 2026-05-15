@@ -37,7 +37,7 @@ via \code{...}. See \code{vignette("regime-change-filter")} for details.}
 \item{label_style}{Label display style. One of:
 \describe{
 \item{"value"}{Show only the selected metric.}
-\item{"detail"}{For \code{lr} / \code{lr}, show the ratio in percent and, on the
+\item{"detail"}{For \code{lr} / \code{incr_lr}, show the ratio in percent and, on the
 next line, the associated loss / prem amounts. For amount and
 proportion metrics, this falls back to \code{"value"}.}
 }}
@@ -68,8 +68,8 @@ A ggplot object.
 Visualise a \code{Triangle} object as a triangle-style table. Cells are arranged by
 period and dev dimensions, and each cell displays the selected metric.
 
-For ratio metrics (\code{lr}, \code{lr}), labels can show either the ratio alone or
-the ratio together with the associated loss / risk prem amounts.
+For ratio metrics (\code{lr}, \code{incr_lr}), labels can show either the ratio alone or
+the ratio together with the associated loss / risk premium amounts.
 
 For amount metrics (\code{loss}, \code{incr_loss}, \code{prem}, \code{incr_prem}, \code{margin}, \code{incr_margin}),
 labels show the selected amount only.
@@ -80,7 +80,7 @@ labels are displayed as percentages.
 The loss ratio is defined as:
 \deqn{lr = loss / prem}
 
-where \code{prem} denotes risk prem rather than written prem.
+where \code{prem} denotes risk premium rather than written prem.
 }
 \details{
 The x-axis uses the development variable stored in \code{attr(x, "dev")}, and

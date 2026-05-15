@@ -47,7 +47,7 @@ calendar-diagonal logic uses cohort + dev). When both are given,
 \item{premium}{Single character; per-period prem column in \code{df}
 (raw name, e.g., \code{"incr_prem"}). Premium measure used as
 denominator for loss ratio calculations. For long-term health
-insurance applications, risk prem is commonly used.}
+insurance applications, risk premium is commonly used.}
 
 \item{grain}{One of \code{"auto"} (default), \code{"M"}, \code{"Q"}, \code{"H"}, \code{"Y"}.
 \code{"auto"} infers the grain from the \code{cohort} value spacing.
@@ -134,7 +134,7 @@ cumulative loss ratio (\code{lr = loss / prem}).
 The cumulative loss ratio is defined as:
 \deqn{lr = loss / prem}
 
-For long-term health insurance applications, risk prem is commonly
+For long-term health insurance applications, risk premium is commonly
 used as the \code{prem} measure.
 
 Proportion variables are computed within each \verb{(cohort, dev)} cell:

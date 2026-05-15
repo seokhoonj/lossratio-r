@@ -26,7 +26,7 @@
 #'     \eqn{g = \Delta loss / prem_{from}} is computed and stored in
 #'     the `intensity` column. Premium measure used as denominator for
 #'     loss ratio calculations; for long-term health insurance
-#'     applications, risk prem is commonly used.}
+#'     applications, risk premium is commonly used.}
 #' }
 #'
 #' @param x A `Triangle` object.

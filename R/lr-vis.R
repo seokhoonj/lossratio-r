@@ -112,7 +112,7 @@ plot.LRFit <- function(x,
     metric,
     lr      = "Loss Ratio",
     loss    = "Loss",
-    premium = "Premium"
+    prem    = "Premium"
   )
   y_lab <- if (is_ratio) col_key else attr(x$data, metric)
   title <- paste0("Projected ", cum_word, " ", base_lab,
@@ -342,7 +342,7 @@ plot.LRFit <- function(x,
 #'       ignored.}
 #'   }
 #' @param label_style One of `"value"` (lr only) or `"detail"`
-#'   (lr with loss/exposure amounts). Default is `"value"`.
+#'   (lr with loss/prem amounts). Default is `"value"`.
 #' @param label_size Numeric label text size forwarded to
 #'   [ggshort::ggtable()]. Defaults to `3` for `label_style = "value"`
 #'   and `2.5` for `label_style = "detail"` (two-line labels).
@@ -634,7 +634,7 @@ plot_triangle.LRFit <- function(x,
   base_word  <- switch(metric,
                        lr      = "Loss Ratio",
                        loss    = "Loss",
-                       premium = "Premium")
+                       prem    = "Premium")
   p <- p + ggplot2::labs(
     title   = paste0(cum_word, " ", base_word, " Triangle",
                      " (method: ", x$method, ")"),

@@ -271,12 +271,12 @@
     list(
       type  = "amount",
       title = switch(metric,
-                       loss         = "Cumulative Loss",
-                       incr_loss    = "Per-Period Loss",
-                       premium      = "Cumulative Premium",
-                       incr_prem = "Per-Period Premium",
-                       margin       = "Cumulative Margin",
-                       incr_margin  = "Per-Period Margin"
+                       loss        = "Cumulative Loss",
+                       incr_loss   = "Per-Period Loss",
+                       prem        = "Cumulative Premium",
+                       incr_prem   = "Per-Period Premium",
+                       margin      = "Cumulative Margin",
+                       incr_margin = "Per-Period Margin"
       ),
       caption = if (nzchar(unit_txt)) paste("Unit:", unit_txt) else NULL,
       hline   = 0

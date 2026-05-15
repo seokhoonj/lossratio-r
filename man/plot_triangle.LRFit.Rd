@@ -48,7 +48,7 @@ ignored.}
 }}
 
 \item{label_style}{One of \code{"value"} (lr only) or \code{"detail"}
-(lr with loss/exposure amounts). Default is \code{"value"}.}
+(lr with loss/prem amounts). Default is \code{"value"}.}
 
 \item{label_size}{Numeric label text size forwarded to
 \code{\link[ggshort:ggtable]{ggshort::ggtable()}}. Defaults to \code{3} for \code{label_style = "value"}

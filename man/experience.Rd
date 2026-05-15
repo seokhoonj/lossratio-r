@@ -25,7 +25,7 @@ cancer; cancer is the separate \code{CAN} coverage.
 \item{dev_y, dev_h, dev_q, dev_m}{Development period (year / half / quarter / month) as integer.}
 \item{incr_loss}{Per-period loss amount (numeric).}
 \item{incr_prem}{Per-period prem amount (numeric); for
-long-term health insurance applications, risk prem is
+long-term health insurance applications, risk premium is
 commonly used.}
 }
 }

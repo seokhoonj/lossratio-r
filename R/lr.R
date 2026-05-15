@@ -677,7 +677,7 @@ summary.LRFit <- function(object, ...) {
     lr_i <- loss_i / e_i
 
     ql <- stats::quantile(loss_i, probs = probs, na.rm = TRUE, names = FALSE)
-    qc <- stats::quantile(lr_i,  probs = probs, na.rm = TRUE, names = FALSE)
+    qc <- stats::quantile(lr_i,   probs = probs, na.rm = TRUE, names = FALSE)
 
     loss_ci_lo[i] <- ql[1]
     loss_ci_hi[i] <- ql[2]

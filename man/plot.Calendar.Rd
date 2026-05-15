@@ -48,7 +48,7 @@ Visualise an object of class \code{Calendar} as a time-series plot.
 The selected metric is plotted over the calendar-style \code{calendar},
 or over the calendar development variable stored in \code{attr(x, "dev")}.
 
-Ratio metrics (\code{lr}, \code{lr}) and proportion metrics
+Ratio metrics (\code{lr}, \code{incr_lr}) and proportion metrics
 (\code{loss_share}, \code{incr_loss_share}, \code{prem_share}, \code{incr_prem_share}) are plotted on the
 original scale and displayed as percentages via y-axis labels.
 Amount metrics (\code{loss}, \code{incr_loss}, \code{prem}, \code{incr_prem}, \code{margin}, \code{incr_margin}) are
@@ -64,7 +64,7 @@ The x-axis is the calendar variable stored in \code{attr(x, "calendar")}
 The loss ratio is defined as:
 \deqn{lr = loss / prem}
 
-where \code{prem} denotes risk prem rather than written prem.
+where \code{prem} denotes risk premium rather than written prem.
 }
 \examples{
 \dontrun{

@@ -287,11 +287,11 @@ detect_regime <- function(x,
     )
     if (!is.null(m_dt) && length(grp) > 0L &&
         all(grp %in% names(m_dt)) &&
-        "ata_to" %in% names(m_dt)) {
+        "change" %in% names(m_dt)) {
       vapply(seq_len(n_combos), function(i) {
         combo_row <- grp_combos[i]
         m <- m_dt[combo_row, on = grp, nomatch = NULL]
-        v <- if (nrow(m)) m[["ata_to"]][1L] else NA_integer_
+        v <- if (nrow(m)) m[["change"]][1L] else NA_integer_
         if (is.na(v)) WINDOW_AUTO_FALLBACK else as.integer(v)
       }, integer(1L))
     } else {
@@ -470,11 +470,11 @@ detect_regime <- function(x,
     d[, ("loss_ata") := loss / data.table::shift(loss, 1L, type = "lag"),
       by = by_cols]
   } else if (target == "prem_ata") {
-    d[, ("prem_ata") := prem / data.table::shift(premium, 1L, type = "lag"),
+    d[, ("prem_ata") := prem / data.table::shift(prem, 1L, type = "lag"),
       by = by_cols]
   } else if (target == "loss_ed") {
     d[, ("loss_ed") := (loss - data.table::shift(loss, 1L, type = "lag")) /
-                   data.table::shift(premium, 1L, type = "lag"),
+                   data.table::shift(prem, 1L, type = "lag"),
       by = by_cols]
   } else {
     stop(sprintf("Unknown derived target: '%s'.", target), call. = FALSE)

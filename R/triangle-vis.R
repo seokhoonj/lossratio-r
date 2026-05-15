@@ -54,7 +54,7 @@
 #' The cumulative loss ratio is defined here as:
 #' \deqn{lr = loss / prem}
 #'
-#' For long-term health insurance applications, risk prem is commonly
+#' For long-term health insurance applications, risk premium is commonly
 #' used as the `prem` measure.
 #'
 #' The weighted mean is defined as:
@@ -274,7 +274,7 @@ plot.Triangle <- function(x,
 #' The selected metric is plotted over the calendar-style `calendar`,
 #' or over the calendar development variable stored in `attr(x, "dev")`.
 #'
-#' Ratio metrics (`lr`, `lr`) and proportion metrics
+#' Ratio metrics (`lr`, `incr_lr`) and proportion metrics
 #' (`loss_share`, `incr_loss_share`, `prem_share`, `incr_prem_share`) are plotted on the
 #' original scale and displayed as percentages via y-axis labels.
 #' Amount metrics (`loss`, `incr_loss`, `prem`, `incr_prem`, `margin`, `incr_margin`) are
@@ -309,7 +309,7 @@ plot.Triangle <- function(x,
 #' The loss ratio is defined as:
 #' \deqn{lr = loss / prem}
 #'
-#' where `prem` denotes risk prem rather than written prem.
+#' where `prem` denotes risk premium rather than written prem.
 #'
 #' @return A `ggplot` object.
 #'
@@ -496,8 +496,8 @@ plot_triangle <- function(x, ...) {
 #' Visualise a `Triangle` object as a triangle-style table. Cells are arranged by
 #' period and dev dimensions, and each cell displays the selected metric.
 #'
-#' For ratio metrics (`lr`, `lr`), labels can show either the ratio alone or
-#' the ratio together with the associated loss / risk prem amounts.
+#' For ratio metrics (`lr`, `incr_lr`), labels can show either the ratio alone or
+#' the ratio together with the associated loss / risk premium amounts.
 #'
 #' For amount metrics (`loss`, `incr_loss`, `prem`, `incr_prem`, `margin`, `incr_margin`),
 #' labels show the selected amount only.
@@ -508,7 +508,7 @@ plot_triangle <- function(x, ...) {
 #' The loss ratio is defined as:
 #' \deqn{lr = loss / prem}
 #'
-#' where `prem` denotes risk prem rather than written prem.
+#' where `prem` denotes risk premium rather than written prem.
 #'
 #' @param x An object of class `Triangle`.
 #' @param view Plot view. One of:
@@ -526,7 +526,7 @@ plot_triangle <- function(x, ...) {
 #' @param label_style Label display style. One of:
 #'   \describe{
 #'     \item{"value"}{Show only the selected metric.}
-#'     \item{"detail"}{For `lr` / `lr`, show the ratio in percent and, on the
+#'     \item{"detail"}{For `lr` / `incr_lr`, show the ratio in percent and, on the
 #'       next line, the associated loss / prem amounts. For amount and
 #'       proportion metrics, this falls back to `"value"`.}
 #'   }
@@ -721,12 +721,12 @@ plot_triangle.Triangle <- function(x,
 
     title_txt <- switch(
       metric,
-      loss         = "Cumulative Loss",
-      incr_loss    = "Per-Period Loss",
-      premium      = "Cumulative Premium",
-      incr_prem = "Per-Period Premium",
-      margin       = "Cumulative Margin",
-      incr_margin  = "Per-Period Margin"
+      loss        = "Cumulative Loss",
+      incr_loss   = "Per-Period Loss",
+      prem        = "Cumulative Premium",
+      incr_prem   = "Per-Period Premium",
+      margin      = "Cumulative Margin",
+      incr_margin = "Per-Period Margin"
     )
 
     caption_txt <- sprintf("Unit: %s", .get_amount_unit(amount_divisor))

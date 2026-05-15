@@ -50,7 +50,7 @@ share columns within each \code{calendar} cell.
 The cumulative loss ratio is defined as:
 \deqn{lr = loss / prem}
 
-For long-term health insurance applications, risk prem is commonly
+For long-term health insurance applications, risk premium is commonly
 used as the \code{prem} measure.
 
 Proportion variables are computed within each \code{calendar} cell:
