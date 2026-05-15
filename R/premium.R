@@ -44,16 +44,26 @@
 #' @param tail Logical; whether to apply a tail factor. Default `FALSE`.
 #' @param conf_level Confidence level for analytical CI on the prem
 #'   projection (`prem_ci_lo`, `prem_ci_hi`). Default `0.95`.
-#' @param bootstrap Logical or `NULL` (default). When `NULL`, auto-resolved
-#'   by `method`: `TRUE` for `"ed"` (additive variance recursion lacks a
-#'   published derivation -- bootstrap is more defensible), `FALSE` for
-#'   `"cl"` (Mack analytical formula is exact). Set explicitly to override.
-#'   When `TRUE`, the per-cohort multiplicative CL simulation
-#'   ([.cl_bootstrap]) is used regardless of `method` -- the point
-#'   projection is CL in both modes; only the variance interpretation
-#'   differs.
+#' @param bootstrap Bootstrap configuration. Five forms accepted:
+#'   \describe{
+#'     \item{`NULL` (default)}{Auto-resolved by `method`: bootstrap for
+#'       `"ed"`, analytical for `"cl"`. Same behavior as the legacy
+#'       `bootstrap = NULL` shape.}
+#'     \item{`TRUE` / `FALSE`}{Back-compat with the legacy logical arg.
+#'       `TRUE` triggers `bootstrap = "auto"`; `FALSE` disables.}
+#'     \item{`"auto"`}{Internal `bootstrap()` call on the premium triangle
+#'       with defaults `(method = "parametric", mode = "dev",
+#'       process = "normal", target = "prem")`.}
+#'     \item{`BootstrapTriangle`}{Pre-built object from `bootstrap()`.
+#'       Must have `meta$target == "prem"`.}
+#'     \item{Function `function(tri) -> BootstrapTriangle`}{Lazy spec
+#'       invoked on the input Triangle (leakage-safe for `backtest()`).}
+#'   }
+#'   Regardless of `method`, the bootstrap path uses CL recursion --
+#'   premium's self-anchor makes ED and CL algebraically equivalent
+#'   (`g_k = f_k - 1`, `sigma^2_g = sigma^2_f`).
 #' @param B Integer number of bootstrap replicates. Used only when
-#'   `bootstrap = TRUE`. Default `999`.
+#'   `bootstrap` resolves to `"auto"`. Default `999`.
 #' @param seed Optional integer seed for reproducible bootstrap. Default
 #'   `NULL`.
 #'
@@ -113,20 +123,15 @@ fit_premium <- function(x,
     stop("`conf_level` must be a single numeric value in (0, 1).",
          call. = FALSE)
 
-  # Auto-resolve bootstrap default: ED -> bootstrap (additive variance
-  # is an ad-hoc Mack variant without published derivation); CL ->
-  # analytical (Mack's exact formula).
+  # Legacy back-compat: NULL maps to method-dependent default (ED ->
+  # bootstrap, CL -> analytical). All other shapes flow through
+  # `.resolve_bootstrap()` below.
   if (is.null(bootstrap)) {
-    bootstrap <- method == "ed"
+    bootstrap <- if (method == "ed") "auto" else FALSE
   }
-  if (!is.logical(bootstrap) || length(bootstrap) != 1L || is.na(bootstrap))
-    stop("`bootstrap` must be a single non-missing logical value (or NULL).",
-         call. = FALSE)
-  if (bootstrap) {
-    if (!is.numeric(B) || length(B) != 1L || is.na(B) || B < 1L)
-      stop("`B` must be a single positive integer.", call. = FALSE)
-    B <- as.integer(B)
-  }
+  if (!is.numeric(B) || length(B) != 1L || is.na(B) || B < 1L)
+    stop("`B` must be a single positive integer.", call. = FALSE)
+  B <- as.integer(B)
 
   # Resolve regime input (NULL / Regime / "auto" / function) -> NULL or Regime
   regime <- .resolve_regime(regime, x)
@@ -155,56 +160,58 @@ fit_premium <- function(x,
 
   cl_fit$full <- .prem_rename_full(cl_fit$full, grp, conf_level)
 
-  # Bootstrap path: overwrite prem_ci_lo / prem_ci_hi / prem_total_se /
-  # prem_total_cv from per-cohort CL bootstrap. The analytical proc/param
-  # decomposition (prem_proc_se / prem_param_se) is kept as diagnostic.
-  if (bootstrap) {
-    if (!is.null(seed)) set.seed(seed)
-    probs <- c((1 - conf_level) / 2, 1 - (1 - conf_level) / 2)
+  # Bootstrap path (Phase 2 — new pipeline). Overwrites prem_ci_lo /
+  # prem_ci_hi / prem_total_se / prem_total_cv from the Triangle-level
+  # bootstrap + per-replicate CL refit + Stage 2 process noise. The
+  # analytical proc/param decomposition (prem_proc_se / prem_param_se)
+  # is preserved as a diagnostic and not overwritten.
+  boots <- .resolve_bootstrap(
+    bootstrap, x,
+    B       = B,
+    seed    = seed,
+    method  = "parametric",
+    mode    = "dev",
+    process = "normal",
+    target  = "prem",
+    alpha   = alpha
+  )
 
-    # Join factor columns from $selected onto $full so the per-cohort
-    # simulator has access to f_sel / sigma^2 / Var(f_hat) per dev.
-    sel_cols <- c(grp, "ata_from", "f_sel", "sigma2", "f_var")
-    sel <- cl_fit$selected[, .SD, .SDcols = intersect(sel_cols,
-                                                     names(cl_fit$selected))]
-    data.table::setnames(sel, "ata_from", "dev")
-    data.table::setnames(sel, "sigma2",   "f_sigma2")
+  if (!is.null(boots)) {
+    refit  <- .boot_refit(x, boots, method = "cl", alpha = alpha)
+    wn     <- .boot_add_process_noise(refit, boots$meta$process)
+    se     <- .boot_summarize_se(wn, grp = grp)
 
-    full_w <- sel[cl_fit$full, on = c(grp, "dev")]
+    # Map worker-generic target_* names to role-specific prem_* names.
+    data.table::setnames(se,
+      c("target_proj", "target_total_se", "target_total_cv",
+        "target_ci_lo", "target_ci_hi"),
+      c("prem_proj_boot", "prem_total_se_boot", "prem_total_cv_boot",
+        "prem_ci_lo_boot", "prem_ci_hi_boot"))
+    se[, c("target_proc_se", "target_param_se") := NULL]
 
-    # Per-cohort last_obs (boundary between filled-observed and simulated).
-    full_w[, ("last_obs_tmp") := {
-      idx <- which(is.finite(prem_obs))
-      if (length(idx)) max(idx) else 0L
-    }, by = c(grp, "cohort")]
+    cl_fit$full <- merge(cl_fit$full,
+                         se[, .SD, .SDcols = c(grp, "cohort", "dev",
+                                                "prem_ci_lo_boot",
+                                                "prem_ci_hi_boot",
+                                                "prem_total_se_boot",
+                                                "prem_total_cv_boot")],
+                         by = c(grp, "cohort", "dev"), all.x = TRUE,
+                         sort = FALSE)
 
-    full_w[,
-      c("prem_ci_lo", "prem_ci_hi", "prem_total_se") := {
-        sim <- .cl_bootstrap(
-          target_obs  = prem_obs,
-          target_proj = prem_proj,
-          f_sel       = f_sel,
-          f_sigma2    = f_sigma2,
-          f_var       = f_var,
-          last_obs    = last_obs_tmp[1L],
-          B           = B,
-          alpha       = alpha
-        )
-        s <- .bootstrap_summary(sim, last_obs_tmp[1L], probs)
-        list(s$ci_lo, s$ci_hi, s$se)
-      }, by = c(grp, "cohort")]
-
-    full_w[, ("prem_total_cv") := data.table::fifelse(
-      is.finite(prem_proj) & prem_proj != 0,
-      prem_total_se / abs(prem_proj), NA_real_
-    )]
-
-    full_w[, c("f_sel", "f_sigma2", "f_var", "last_obs_tmp") := NULL]
-    cl_fit$full <- full_w
+    # Overwrite the analytical CI/SE columns for projected cells. Observed
+    # cells (cell_proc_var = 0 across reps) keep the analytical 0-SE since
+    # the bootstrap output for them is degenerate.
+    cl_fit$full[is.finite(prem_ci_lo_boot),  prem_ci_lo    := prem_ci_lo_boot]
+    cl_fit$full[is.finite(prem_ci_hi_boot),  prem_ci_hi    := prem_ci_hi_boot]
+    cl_fit$full[is.finite(prem_total_se_boot), prem_total_se := prem_total_se_boot]
+    cl_fit$full[is.finite(prem_total_cv_boot), prem_total_cv := prem_total_cv_boot]
+    cl_fit$full[, c("prem_ci_lo_boot", "prem_ci_hi_boot",
+                     "prem_total_se_boot", "prem_total_cv_boot") := NULL]
   }
 
-  cl_fit$ci_type   <- if (bootstrap) "bootstrap" else "analytical"
-  cl_fit$bootstrap <- if (bootstrap) list(B = B, seed = seed) else NULL
+  cl_fit$ci_type   <- if (!is.null(boots)) "bootstrap" else "analytical"
+  cl_fit$bootstrap <- if (!is.null(boots))
+                       list(B = boots$meta$B, seed = boots$meta$seed) else NULL
 
   # Usage map. Premium has no maturity concept (g_k -> 0), so we
   # bypass `.build_usage()`'s 2-pass detection and call

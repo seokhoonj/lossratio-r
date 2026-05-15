@@ -52,17 +52,26 @@ filter for the underlying ATA fit. Default \code{NULL}.}
 \item{conf_level}{Confidence level for analytical CI on the prem
 projection (\code{prem_ci_lo}, \code{prem_ci_hi}). Default \code{0.95}.}
 
-\item{bootstrap}{Logical or \code{NULL} (default). When \code{NULL}, auto-resolved
-by \code{method}: \code{TRUE} for \code{"ed"} (additive variance recursion lacks a
-published derivation -- bootstrap is more defensible), \code{FALSE} for
-\code{"cl"} (Mack analytical formula is exact). Set explicitly to override.
-When \code{TRUE}, the per-cohort multiplicative CL simulation
-(\link{.cl_bootstrap}) is used regardless of \code{method} -- the point
-projection is CL in both modes; only the variance interpretation
-differs.}
+\item{bootstrap}{Bootstrap configuration. Five forms accepted:
+\describe{
+\item{\code{NULL} (default)}{Auto-resolved by \code{method}: bootstrap for
+\code{"ed"}, analytical for \code{"cl"}. Same behavior as the legacy
+\code{bootstrap = NULL} shape.}
+\item{\code{TRUE} / \code{FALSE}}{Back-compat with the legacy logical arg.
+\code{TRUE} triggers \code{bootstrap = "auto"}; \code{FALSE} disables.}
+\item{\code{"auto"}}{Internal \code{bootstrap()} call on the premium triangle
+with defaults \verb{(method = "parametric", mode = "dev", process = "normal", target = "prem")}.}
+\item{\code{BootstrapTriangle}}{Pre-built object from \code{bootstrap()}.
+Must have \code{meta$target == "prem"}.}
+\item{Function \verb{function(tri) -> BootstrapTriangle}}{Lazy spec
+invoked on the input Triangle (leakage-safe for \code{backtest()}).}
+}
+Regardless of \code{method}, the bootstrap path uses CL recursion --
+premium's self-anchor makes ED and CL algebraically equivalent
+(\code{g_k = f_k - 1}, \verb{sigma^2_g = sigma^2_f}).}
 
 \item{B}{Integer number of bootstrap replicates. Used only when
-\code{bootstrap = TRUE}. Default \code{999}.}
+\code{bootstrap} resolves to \code{"auto"}. Default \code{999}.}
 
 \item{seed}{Optional integer seed for reproducible bootstrap. Default
 \code{NULL}.}

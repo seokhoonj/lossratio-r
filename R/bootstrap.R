@@ -388,11 +388,15 @@ bootstrap <- function(x, ...) {
 
 
 #' @rdname bootstrap
+#' @param target Cumulative metric to perturb. One of `"loss"` (default) or
+#'   `"prem"`. The value column in `$alt_triangles` is named after this
+#'   target so downstream refit helpers know which column to read.
 #' @export
 bootstrap.Triangle <- function(x,
                                 method   = c("parametric", "residual"),
                                 mode     = c("dev", "pooled", "dev_maturity"),
                                 process  = c("normal", "gamma", "odp"),
+                                target   = c("loss", "prem"),
                                 B        = 1000L,
                                 seed     = NULL,
                                 alpha    = 1,
@@ -403,6 +407,7 @@ bootstrap.Triangle <- function(x,
   method  <- match.arg(method)
   mode    <- match.arg(mode)
   process <- match.arg(process)
+  target  <- match.arg(target)
 
   if (!is.numeric(B) || length(B) != 1L || is.na(B) || B < 1L)
     stop("`B` must be a single positive integer.", call. = FALSE)
@@ -431,8 +436,8 @@ bootstrap.Triangle <- function(x,
   grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  # 1) Build Link (loss-side ATA) -------------------------------------------
-  link <- as_link(x, target = "loss", drop_invalid = TRUE)
+  # 1) Build Link on the chosen target --------------------------------------
+  link <- as_link(x, target = target, drop_invalid = TRUE)
 
   # 2) Compute Mack anchor per (group, ata_to) ------------------------------
   anchor <- .boot_anchor(link, grp = grp, alpha = alpha)
@@ -447,7 +452,8 @@ bootstrap.Triangle <- function(x,
   # 5) Stage 1 — B alt triangles -------------------------------------------
   alt_triangles <- .boot_stage1(
     triangle = x, link = link, anchor = anchor, pool = pool,
-    grp = grp, method = method, B = B, alpha = alpha
+    grp = grp, method = method, B = B, alpha = alpha,
+    target = target
   )
 
   # 6) Assemble -------------------------------------------------------------
@@ -468,7 +474,7 @@ bootstrap.Triangle <- function(x,
         B        = B,
         seed     = seed,
         alpha    = alpha,
-        target   = "loss",
+        target   = target,
         groups   = grp,
         maturity = maturity
       )
@@ -652,7 +658,7 @@ bootstrap.Triangle <- function(x,
 # Returns a long-format data.table with columns [grp..], cohort, dev, rep,
 # loss.
 .boot_stage1 <- function(triangle, link, anchor, pool,
-                          grp, method, B, alpha) {
+                          grp, method, B, alpha, target = "loss") {
 
   # Per-group iteration
   if (length(grp) > 0L) {
@@ -667,14 +673,15 @@ bootstrap.Triangle <- function(x,
       out_list[[gi]] <- .boot_stage1_one(
         triangle = tri_g, link = link_g, anchor = anchor_g, pool = pool_g,
         method = method, B = B, alpha = alpha,
-        grp_vals = gkey
+        grp_vals = gkey, target = target
       )
     }
     data.table::rbindlist(out_list, use.names = TRUE)
   } else {
     .boot_stage1_one(
       triangle = triangle, link = link, anchor = anchor, pool = pool,
-      method = method, B = B, alpha = alpha, grp_vals = NULL
+      method = method, B = B, alpha = alpha, grp_vals = NULL,
+      target = target
     )
   }
 }
@@ -682,9 +689,9 @@ bootstrap.Triangle <- function(x,
 
 # Per-group worker for Stage 1. Returns long-format with `rep` column.
 .boot_stage1_one <- function(triangle, link, anchor, pool,
-                              method, B, alpha, grp_vals) {
+                              method, B, alpha, grp_vals, target = "loss") {
 
-  cohort <- dev <- loss <- NULL  # NSE
+  cohort <- dev <- NULL  # NSE
 
   # Snapshot cohort x dev cumulative loss matrix
   cohorts <- sort(unique(triangle$cohort))
@@ -695,12 +702,12 @@ bootstrap.Triangle <- function(x,
   # Wide observed matrix [cohort × dev]
   mat_obs <- matrix(NA_real_, nrow = n_coh, ncol = n_dev,
                     dimnames = list(as.character(cohorts), as.character(devs)))
-  obs_dt <- triangle[, .SD, .SDcols = c("cohort", "dev", "loss")]
+  obs_dt <- triangle[, .SD, .SDcols = c("cohort", "dev", target)]
   for (r in seq_len(nrow(obs_dt))) {
     ci <- match(as.character(obs_dt$cohort[r]), rownames(mat_obs))
     di <- match(as.character(obs_dt$dev[r]),    colnames(mat_obs))
     if (!is.na(ci) && !is.na(di))
-      mat_obs[ci, di] <- obs_dt$loss[r]
+      mat_obs[ci, di] <- obs_dt[[target]][r]
   }
 
   # f_hat and sigma2 per link, indexed by ata_to (= colname after first)
@@ -838,21 +845,22 @@ bootstrap.Triangle <- function(x,
     }
   }
 
-  # Reshape 3D array -> long data.table.
-  # `as.numeric(out_arr)` flattens column-major: cohort fastest, then dev,
-  # then rep. We construct the index columns to match exactly that order.
+  # Reshape 3D array -> long data.table. The value column is named after
+  # `target` ("loss" or "prem") so downstream refit helpers know what to
+  # read. `as.numeric(out_arr)` flattens column-major: cohort fastest,
+  # then dev, then rep.
   long <- data.table::data.table(
     cohort = rep(rep(cohorts, times = n_dev), times = B),
     dev    = rep(rep(devs, each = n_coh),    times = B),
-    rep    = rep(seq_len(B), each = n_coh * n_dev),
-    loss   = as.numeric(out_arr)
+    rep    = rep(seq_len(B), each = n_coh * n_dev)
   )
+  long[, (target) := as.numeric(out_arr)]
 
   if (!is.null(grp_vals)) {
     for (col in names(grp_vals)) {
       long[, (col) := grp_vals[[col]]]
     }
-    data.table::setcolorder(long, c(names(grp_vals), "cohort", "dev", "rep", "loss"))
+    data.table::setcolorder(long, c(names(grp_vals), "cohort", "dev", "rep", target))
   }
 
   long[]
@@ -932,6 +940,7 @@ print.BootstrapTriangle <- function(x, ...) {
                                 method  = "parametric",
                                 mode    = "dev",
                                 process = "normal",
+                                target  = "loss",
                                 alpha   = 1) {
   if (is.null(arg)) return(NULL)
 
@@ -941,13 +950,22 @@ print.BootstrapTriangle <- function(x, ...) {
     if (isTRUE(arg))  arg <- "auto"
   }
 
-  if (inherits(arg, "BootstrapTriangle")) return(arg)
+  if (inherits(arg, "BootstrapTriangle")) {
+    boots_target <- arg$meta$target
+    if (is.null(boots_target)) boots_target <- "loss"
+    if (!identical(boots_target, target))
+      stop("supplied `BootstrapTriangle` has meta$target = '", boots_target,
+           "' but this fit expects target = '", target, "'.",
+           call. = FALSE)
+    return(arg)
+  }
 
   if (identical(arg, "auto")) {
     return(bootstrap(tri,
                      method  = method,
                      mode    = mode,
                      process = process,
+                     target  = target,
                      B       = B,
                      seed    = seed,
                      alpha   = alpha))
@@ -959,6 +977,13 @@ print.BootstrapTriangle <- function(x, ...) {
       stop("bootstrap function must return a `BootstrapTriangle` object; ",
            "got class: ", paste(class(out), collapse = "/"), ".",
            call. = FALSE)
+    out_target <- out$meta$target
+    if (is.null(out_target)) out_target <- "loss"
+    if (!identical(out_target, target))
+      stop("bootstrap function returned a `BootstrapTriangle` with ",
+           "meta$target = '", out_target, "' but this fit expects ",
+           "target = '", target, "'.",
+           call. = FALSE)
     return(out)
   }
 
@@ -968,52 +993,102 @@ print.BootstrapTriangle <- function(x, ...) {
 }
 
 
-#' Refit chain-ladder per bootstrap replicate
+#' Refit chain-ladder per bootstrap replicate (unified entry point)
 #'
-#' For each replicate `b` in `boots$alt_triangles`, take the alt cumulative
-#' loss triangle, refit Mack chain-ladder factors `f*_k` and `sigma^2*_k`,
-#' and compute the per-cell process variance `sigma^2*_k * C_{i,k-1}` for
-#' projected (missing-region) cells. Observed-region cells get
-#' `cell_proc_var = 0` so Stage 2 does not add noise to them.
-#'
-#' `cell_mean` is the alt cumulative loss as already projected by
-#' `bootstrap.Triangle()`. `cell_proc_var` carries the *method-specific*
+#' For each replicate `b` in `boots$alt_triangles`, refit factors and
+#' compute the per-cell mean projection and process variance. Method
+#' dispatch (`"cl"` / `"ed"` / `"sa"`) determines the recursion and the
+#' variance structure. `cell_proc_var` carries the method-specific
 #' variance baked in so the downstream Stage 2 helper can stay
 #' method-blind.
+#'
+#' Recursions:
+#' \itemize{
+#'   \item `"cl"` — Mack multiplicative: `C_{k+1} = f_k * C_k`,
+#'     `proc_var = sigma^2_f_k * C_k`.
+#'   \item `"ed"` — additive exposure-driven: `C_{k+1} = C_k + g_k * P_k`,
+#'     `proc_var = sigma^2_g_k * P_k`. Uses the triangle's `prem` column
+#'     as the exposure anchor.
+#'   \item `"sa"` — stage-adaptive hybrid: ED for `dev < maturity$change`,
+#'     CL from `maturity$change` onward.
+#' }
+#'
+#' The CL path reads the target column from `boots$meta$target` (`"loss"`
+#' by default, but `fit_premium()` passes `"prem"`). ED and SA paths are
+#' loss-specific (they need an external exposure column) and only support
+#' `target = "loss"`.
 #'
 #' @param triangle The original `Triangle` (carries the observed region
 #'   mask).
 #' @param boots A `BootstrapTriangle` from `bootstrap()`.
+#' @param method One of `"cl"`, `"ed"`, `"sa"`.
 #' @param alpha Mack variance exponent (currently `1` only).
+#' @param maturity Required when `method = "sa"`. A resolved `Maturity`
+#'   object (use `.resolve_maturity()` upstream).
 #'
 #' @return A `data.table` keyed by `[groups..], cohort, dev, rep` with
 #'   columns `cell_mean`, `cell_proc_var`.
 #'
 #' @keywords internal
-.boot_refit_cl <- function(triangle, boots, alpha = 1) {
+.boot_refit <- function(triangle, boots,
+                         method = c("cl", "ed", "sa"),
+                         alpha = 1,
+                         maturity = NULL) {
+  method <- match.arg(method)
+  target <- boots$meta$target
+  if (is.null(target)) target <- "loss"
+
+  if (method %in% c("ed", "sa") && !identical(target, "loss")) {
+    stop("method = '", method, "' only supports target = 'loss'; ",
+         "boots$meta$target = '", target, "'.",
+         call. = FALSE)
+  }
+  if (identical(method, "sa") && is.null(maturity)) {
+    stop("method = 'sa' requires a resolved Maturity object.",
+         call. = FALSE)
+  }
+
   grp <- attr(triangle, "groups")
   if (is.null(grp)) grp <- character(0)
+
+  one_fn <- switch(method,
+    cl = function(tri_g, alt_g, gkey)
+           .boot_refit_cl_one(tri_g, alt_g, alpha, grp_vals = gkey,
+                               target = target),
+    ed = function(tri_g, alt_g, gkey)
+           .boot_refit_ed_one(tri_g, alt_g, alpha, grp_vals = gkey),
+    sa = function(tri_g, alt_g, gkey) {
+           key_str <- if (is.null(gkey)) "__single__"
+                      else do.call(paste, c(as.list(gkey), sep = "|"))
+           .boot_refit_sa_one(tri_g, alt_g, alpha, grp_vals = gkey,
+                               mat_change = mat_change_by_grp[[key_str]])
+         }
+  )
+
+  if (identical(method, "sa")) {
+    mat_change_by_grp <- .boot_maturity_lookup(maturity, grp)
+  }
 
   if (length(grp) > 0L) {
     grp_vals <- unique(triangle[, .SD, .SDcols = grp])
     out_list <- vector("list", nrow(grp_vals))
     for (gi in seq_len(nrow(grp_vals))) {
-      gkey   <- grp_vals[gi]
-      tri_g  <- merge(triangle, gkey, by = grp, sort = FALSE)
-      alt_g  <- merge(boots$alt_triangles, gkey, by = grp, sort = FALSE)
-      out_list[[gi]] <- .boot_refit_cl_one(tri_g, alt_g, alpha,
-                                            grp_vals = gkey)
+      gkey  <- grp_vals[gi]
+      tri_g <- merge(triangle, gkey, by = grp, sort = FALSE)
+      alt_g <- merge(boots$alt_triangles, gkey, by = grp, sort = FALSE)
+      out_list[[gi]] <- one_fn(tri_g, alt_g, gkey)
     }
     data.table::rbindlist(out_list, use.names = TRUE)
   } else {
-    .boot_refit_cl_one(triangle, boots$alt_triangles, alpha, grp_vals = NULL)
+    one_fn(triangle, boots$alt_triangles, NULL)
   }
 }
 
 
 # Per-group CL refit. Returns long-format DT with (cohort, dev, rep,
 # cell_mean, cell_proc_var) [+ optional group cols].
-.boot_refit_cl_one <- function(triangle, alt_long, alpha, grp_vals) {
+.boot_refit_cl_one <- function(triangle, alt_long, alpha, grp_vals,
+                                target = "loss") {
 
   cohorts <- sort(unique(triangle$cohort))
   devs    <- sort(unique(triangle$dev))
@@ -1025,19 +1100,20 @@ print.BootstrapTriangle <- function(x, ...) {
   obs_mask <- matrix(FALSE, nrow = n_coh, ncol = n_dev,
                      dimnames = list(as.character(cohorts),
                                      as.character(devs)))
+  tri_target <- triangle[[target]]
   for (r in seq_len(nrow(triangle))) {
     ci <- match(as.character(triangle$cohort[r]), rownames(obs_mask))
     di <- match(as.character(triangle$dev[r]),    colnames(obs_mask))
-    if (!is.na(ci) && !is.na(di) && is.finite(triangle$loss[r]))
+    if (!is.na(ci) && !is.na(di) && is.finite(tri_target[r]))
       obs_mask[ci, di] <- TRUE
   }
 
   # Rebuild 3D array [cohort × dev × B] from long-format. Phase 1 stored
   # the array column-major (cohort fastest, then dev, then rep) so a
   # direct array() call reconstructs it as long as the rows are in that
-  # order.
+  # order. The value column in alt_long is named after the target.
   data.table::setorderv(alt_long, c("rep", "dev", "cohort"))
-  arr_mean <- array(alt_long$loss, dim = c(n_coh, n_dev, B),
+  arr_mean <- array(alt_long[[target]], dim = c(n_coh, n_dev, B),
                     dimnames = list(as.character(cohorts),
                                     as.character(devs),
                                     NULL))
@@ -1114,42 +1190,9 @@ print.BootstrapTriangle <- function(x, ...) {
 }
 
 
-#' Refit exposure-driven model per bootstrap replicate
-#'
-#' Like `.boot_refit_cl()` but additive: refit intensities
-#' `g*_k = sum(Delta_loss) / sum(P_{k-1})` per replicate (with original
-#' premium kept fixed), then re-project missing cells via the ED additive
-#' recursion. `cell_proc_var = sigma^2*_g_k * P_{i,k-1}` for projected
-#' cells, 0 for observed.
-#'
-#' @inheritParams .boot_refit_cl
-#'
-#' @return Same shape as `.boot_refit_cl()`.
-#'
-#' @keywords internal
-.boot_refit_ed <- function(triangle, boots, alpha = 1) {
-  grp <- attr(triangle, "groups")
-  if (is.null(grp)) grp <- character(0)
-
-  if (length(grp) > 0L) {
-    grp_vals <- unique(triangle[, .SD, .SDcols = grp])
-    out_list <- vector("list", nrow(grp_vals))
-    for (gi in seq_len(nrow(grp_vals))) {
-      gkey   <- grp_vals[gi]
-      tri_g  <- merge(triangle, gkey, by = grp, sort = FALSE)
-      alt_g  <- merge(boots$alt_triangles, gkey, by = grp, sort = FALSE)
-      out_list[[gi]] <- .boot_refit_ed_one(tri_g, alt_g, alpha,
-                                            grp_vals = gkey)
-    }
-    data.table::rbindlist(out_list, use.names = TRUE)
-  } else {
-    .boot_refit_ed_one(triangle, boots$alt_triangles, alpha, grp_vals = NULL)
-  }
-}
-
-
 # Per-group ED refit. Mirrors .boot_refit_cl_one but uses additive
 # recursion against the original (un-bootstrapped) premium column.
+# Dispatched via `.boot_refit(method = "ed")`.
 .boot_refit_ed_one <- function(triangle, alt_long, alpha, grp_vals) {
 
   cohorts <- sort(unique(triangle$cohort))
@@ -1280,48 +1323,9 @@ print.BootstrapTriangle <- function(x, ...) {
 }
 
 
-#' Refit stage-adaptive (SA) hybrid per bootstrap replicate
-#'
-#' ED projection for dev `< maturity$change`, CL projection from
-#' `maturity$change` onward. Maturity is per-group when supplied with
-#' group columns. The per-cell process variance switches between
-#' `sigma^2*_g_k * P_{i,k-1}` (ED region) and
-#' `sigma^2*_f_k * cell_mean[i, k-1]` (CL region) accordingly.
-#'
-#' @inheritParams .boot_refit_cl
-#' @param maturity Resolved `Maturity` object.
-#'
-#' @return Same shape as `.boot_refit_cl()`.
-#'
-#' @keywords internal
-.boot_refit_sa <- function(triangle, boots, alpha = 1, maturity) {
-  grp <- attr(triangle, "groups")
-  if (is.null(grp)) grp <- character(0)
-
-  mat_change_by_grp <- .boot_maturity_lookup(maturity, grp)
-
-  if (length(grp) > 0L) {
-    grp_vals <- unique(triangle[, .SD, .SDcols = grp])
-    out_list <- vector("list", nrow(grp_vals))
-    for (gi in seq_len(nrow(grp_vals))) {
-      gkey   <- grp_vals[gi]
-      tri_g  <- merge(triangle, gkey, by = grp, sort = FALSE)
-      alt_g  <- merge(boots$alt_triangles, gkey, by = grp, sort = FALSE)
-      key_str <- do.call(paste, c(as.list(gkey), sep = "|"))
-      mat_k <- mat_change_by_grp[[key_str]]
-      out_list[[gi]] <- .boot_refit_sa_one(tri_g, alt_g, alpha,
-                                            grp_vals = gkey,
-                                            mat_change = mat_k)
-    }
-    data.table::rbindlist(out_list, use.names = TRUE)
-  } else {
-    mat_k <- mat_change_by_grp[["__single__"]]
-    .boot_refit_sa_one(triangle, boots$alt_triangles, alpha,
-                        grp_vals = NULL, mat_change = mat_k)
-  }
-}
-
-
+# Build a per-group lookup `key -> mat_change` from a resolved Maturity
+# object. Single-group case uses the sentinel key `"__single__"`.
+# Used by `.boot_refit(method = "sa")`.
 .boot_maturity_lookup <- function(maturity, grp) {
   mat_dt <- data.table::as.data.table(maturity)
   if (length(grp) == 0L) {

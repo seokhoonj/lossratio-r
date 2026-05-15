@@ -12,6 +12,7 @@ bootstrap(x, ...)
   method = c("parametric", "residual"),
   mode = c("dev", "pooled", "dev_maturity"),
   process = c("normal", "gamma", "odp"),
+  target = c("loss", "prem"),
   B = 1000L,
   seed = NULL,
   alpha = 1,
@@ -39,6 +40,10 @@ uses per-link before maturity and pooled after.}
 downstream fit functions read this to choose the Stage 2 noise
 distribution. \code{"gamma"} matches \code{ChainLadder::BootChainLadder}
 defaults for non-negative right-skewed loss data.}
+
+\item{target}{Cumulative metric to perturb. One of \code{"loss"} (default) or
+\code{"prem"}. The value column in \verb{$alt_triangles} is named after this
+target so downstream refit helpers know which column to read.}
 
 \item{B}{Number of bootstrap replicates. Default \code{1000}.}
 

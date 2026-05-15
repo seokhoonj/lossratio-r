@@ -12,6 +12,7 @@
   method = "parametric",
   mode = "dev",
   process = "normal",
+  target = "loss",
   alpha = 1
 )
 }

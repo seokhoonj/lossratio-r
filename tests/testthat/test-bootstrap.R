@@ -285,14 +285,14 @@ test_that(".resolve_bootstrap rejects bad input", {
 })
 
 
-test_that(".boot_refit_cl / refit_ed / refit_sa return same shape", {
+test_that(".boot_refit returns same shape for all methods", {
   tri <- make_sub_tri("SUR")
   boots <- bootstrap(tri, B = 30, seed = 1)
   mat   <- detect_maturity(tri)
 
-  r_cl <- .boot_refit_cl(tri, boots, alpha = 1)
-  r_ed <- .boot_refit_ed(tri, boots, alpha = 1)
-  r_sa <- .boot_refit_sa(tri, boots, alpha = 1, maturity = mat)
+  r_cl <- .boot_refit(tri, boots, method = "cl", alpha = 1)
+  r_ed <- .boot_refit(tri, boots, method = "ed", alpha = 1)
+  r_sa <- .boot_refit(tri, boots, method = "sa", alpha = 1, maturity = mat)
 
   for (rdt in list(r_cl, r_ed, r_sa)) {
     expect_true(all(c("coverage", "cohort", "dev", "rep",
@@ -303,20 +303,20 @@ test_that(".boot_refit_cl / refit_ed / refit_sa return same shape", {
   }
 })
 
-test_that("refit_cl observed cells have cell_proc_var = 0", {
+test_that(".boot_refit(method='cl') observed cells have cell_proc_var = 0", {
   tri <- make_sub_tri("SUR")
   boots <- bootstrap(tri, B = 10, seed = 1)
-  r_cl  <- .boot_refit_cl(tri, boots, alpha = 1)
+  r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
 
   # Pick an obviously-observed cell: cohort 2023-01-01 dev 1.
   cells <- r_cl[cohort == as.Date("2023-01-01") & dev == 1L]
   expect_equal(unique(cells$cell_proc_var), 0)
 })
 
-test_that("refit_cl projected cells have positive cell_proc_var", {
+test_that(".boot_refit(method='cl') projected cells have positive cell_proc_var", {
   tri <- make_sub_tri("SUR")
   boots <- bootstrap(tri, B = 30, seed = 1)
-  r_cl  <- .boot_refit_cl(tri, boots, alpha = 1)
+  r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
 
   # Pick a clearly-projected cell: latest cohort, dev near the tail.
   cells <- r_cl[cohort == as.Date("2025-12-01") & dev == 10L]
@@ -327,7 +327,7 @@ test_that("refit_cl projected cells have positive cell_proc_var", {
 test_that(".boot_add_process_noise leaves observed cells untouched", {
   tri <- make_sub_tri("SUR")
   boots <- bootstrap(tri, B = 10, seed = 1)
-  r_cl  <- .boot_refit_cl(tri, boots, alpha = 1)
+  r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
 
   withn <- .boot_add_process_noise(r_cl, "normal")
   obs_rows <- withn[cell_proc_var == 0]
@@ -337,7 +337,7 @@ test_that(".boot_add_process_noise leaves observed cells untouched", {
 test_that(".boot_add_process_noise normal vs gamma both finite", {
   tri <- make_sub_tri("SUR")
   boots <- bootstrap(tri, B = 30, seed = 1)
-  r_cl  <- .boot_refit_cl(tri, boots, alpha = 1)
+  r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
 
   set.seed(1)
   wn_norm  <- .boot_add_process_noise(r_cl, "normal")
@@ -363,7 +363,7 @@ test_that(".boot_add_process_noise normal vs gamma both finite", {
 test_that(".boot_summarize_se produces expected columns and SE decomposition", {
   tri <- make_sub_tri("SUR")
   boots <- bootstrap(tri, B = 50, seed = 1)
-  r_cl  <- .boot_refit_cl(tri, boots, alpha = 1)
+  r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
   wn    <- .boot_add_process_noise(r_cl, "normal")
   se    <- .boot_summarize_se(wn, grp = "coverage")
 
@@ -399,17 +399,114 @@ test_that("full Phase 2a pipeline runs end-to-end on multi-group Triangle", {
                       process = "gamma", B = 20, seed = 1)
 
   for (method in c("cl", "ed", "sa")) {
-    refit <- switch(
-      method,
-      cl = .boot_refit_cl(tri, boots, alpha = 1),
-      ed = .boot_refit_ed(tri, boots, alpha = 1),
-      sa = .boot_refit_sa(tri, boots, alpha = 1,
-                           maturity = detect_maturity(tri))
-    )
+    refit <- .boot_refit(tri, boots, method = method, alpha = 1,
+                          maturity = if (method == "sa") detect_maturity(tri)
+                                     else NULL)
     wn <- .boot_add_process_noise(refit, boots$meta$process)
     se <- .boot_summarize_se(wn, grp = "coverage")
     expect_true(nrow(se) > 0L, info = method)
     expect_true(all(is.finite(se$target_proj) | is.na(se$target_proj)),
                 info = method)
   }
+})
+
+
+# ---------------------------------------------------------------------------
+# bootstrap.Triangle target arg + unified .boot_refit
+# ---------------------------------------------------------------------------
+
+test_that("bootstrap.Triangle accepts target = 'prem'", {
+  tri <- make_sub_tri("SUR")
+  b <- bootstrap(tri, target = "prem", B = 10, seed = 1)
+  expect_identical(b$meta$target, "prem")
+  expect_true("prem" %in% names(b$alt_triangles))
+  expect_false("loss" %in% names(b$alt_triangles))
+})
+
+test_that(".boot_refit rejects ed/sa on premium target", {
+  tri   <- make_sub_tri("SUR")
+  b_prem <- bootstrap(tri, target = "prem", B = 5, seed = 1)
+  expect_error(.boot_refit(tri, b_prem, method = "ed"),
+               "ed.*supports.*loss")
+  expect_error(.boot_refit(tri, b_prem, method = "sa",
+                            maturity = detect_maturity(tri)),
+               "sa.*supports.*loss")
+})
+
+test_that(".boot_refit method = sa requires maturity", {
+  tri   <- make_sub_tri("SUR")
+  boots <- bootstrap(tri, B = 5, seed = 1)
+  expect_error(.boot_refit(tri, boots, method = "sa"),
+               "Maturity")
+})
+
+test_that(".resolve_bootstrap target mismatch is rejected", {
+  tri <- make_sub_tri("SUR")
+  b_loss <- bootstrap(tri, target = "loss", B = 5, seed = 1)
+  b_prem <- bootstrap(tri, target = "prem", B = 5, seed = 1)
+
+  expect_error(.resolve_bootstrap(b_loss, tri, target = "prem"),
+               "expects target")
+  expect_error(.resolve_bootstrap(b_prem, tri, target = "loss"),
+               "expects target")
+  expect_identical(.resolve_bootstrap(b_prem, tri, target = "prem"), b_prem)
+})
+
+
+# ---------------------------------------------------------------------------
+# Phase 2b: fit_premium migration to new bootstrap pipeline
+# ---------------------------------------------------------------------------
+
+test_that("fit_premium default (method=ed) uses bootstrap", {
+  tri <- make_sub_tri("SUR")
+  pf <- fit_premium(tri, seed = 1, B = 50)
+  expect_identical(pf$ci_type, "bootstrap")
+  expect_true(!is.null(pf$bootstrap))
+})
+
+test_that("fit_premium method=cl bootstrap=FALSE uses analytical", {
+  tri <- make_sub_tri("SUR")
+  pf <- fit_premium(tri, method = "cl", bootstrap = FALSE)
+  expect_identical(pf$ci_type, "analytical")
+  expect_null(pf$bootstrap)
+})
+
+test_that("fit_premium method=cl bootstrap=TRUE uses bootstrap", {
+  tri <- make_sub_tri("SUR")
+  pf <- fit_premium(tri, method = "cl", bootstrap = TRUE, seed = 1, B = 50)
+  expect_identical(pf$ci_type, "bootstrap")
+})
+
+test_that("fit_premium accepts a pre-built BootstrapTriangle", {
+  tri <- make_sub_tri("SUR")
+  b <- bootstrap(tri, target = "prem", B = 50, seed = 1)
+  pf <- fit_premium(tri, method = "ed", bootstrap = b)
+  expect_identical(pf$ci_type, "bootstrap")
+  expect_identical(pf$bootstrap$B, 50L)
+})
+
+test_that("fit_premium accepts a bootstrap function (lazy spec)", {
+  tri <- make_sub_tri("SUR")
+  fn <- function(t) bootstrap(t, target = "prem", B = 30, seed = 1)
+  pf <- fit_premium(tri, bootstrap = fn)
+  expect_identical(pf$ci_type, "bootstrap")
+  expect_identical(pf$bootstrap$B, 30L)
+})
+
+test_that("fit_premium rejects a BootstrapTriangle built on the wrong target", {
+  tri <- make_sub_tri("SUR")
+  b_loss <- bootstrap(tri, target = "loss", B = 30, seed = 1)
+  expect_error(fit_premium(tri, bootstrap = b_loss),
+               "expects target")
+})
+
+test_that("fit_premium projected cells have finite SE/CI under bootstrap", {
+  tri <- make_sub_tri("SUR")
+  pf <- fit_premium(tri, seed = 1, B = 100)
+  proj <- pf$full[is_observed == FALSE]
+  expect_true(all(is.finite(proj$prem_proj)))
+  expect_true(all(is.finite(proj$prem_total_se)))
+  expect_true(all(is.finite(proj$prem_ci_lo)))
+  expect_true(all(is.finite(proj$prem_ci_hi)))
+  expect_true(all(proj$prem_ci_lo <= proj$prem_ci_hi))
 })
