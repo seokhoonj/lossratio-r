@@ -297,8 +297,10 @@ fit_lr <- function(x,
     if (!is.null(seed)) set.seed(seed)
     .probs <- c((1 - conf_level) / 2, 1 - (1 - conf_level) / 2)
 
-    full[, c("lr_ci_lo", "lr_ci_hi", "loss_ci_lo", "loss_ci_hi") :=
-      .bootstrap_cohort(
+    full[,
+      c("lr_ci_lo", "lr_ci_hi", "lr_se",
+        "loss_ci_lo", "loss_ci_hi", "loss_total_se") :=
+      .lr_bootstrap_cohort(
         loss_obs      = loss_obs,
         loss_proj     = loss_proj,
         prem_proj     = prem_proj,
@@ -316,6 +318,19 @@ fit_lr <- function(x,
         probs         = .probs
       ), by = c(grp, "cohort")
     ]
+
+    # Bootstrap-derived SE overwrites the analytical loss_total_se; the
+    # process / parameter decomposition (loss_proc_se / loss_param_se)
+    # is kept as a diagnostic but no longer sums to total under bootstrap.
+    full[, ("loss_total_cv") := data.table::fifelse(
+      is.finite(loss_proj) & loss_proj != 0,
+      loss_total_se / abs(loss_proj), NA_real_
+    )]
+    full[, ("lr_cv") := data.table::fifelse(
+      is.finite(lr_proj) & lr_proj != 0,
+      lr_se / abs(lr_proj), NA_real_
+    )]
+
     ci_type <- "bootstrap"
   }
 
@@ -558,160 +573,113 @@ summary.LRFit <- function(object, ...) {
 }
 
 
-# Bootstrap helper ----------------------------------------------------------
+# LR bootstrap composition --------------------------------------------------
 
-#' Parametric bootstrap for one cohort's loss and loss-ratio CI
+#' LR-level bootstrap CI / SE composition for one cohort
 #'
 #' @description
-#' Internal helper for bootstrap CI calculation used by [fit_lr()] when
-#' `bootstrap = TRUE`. For a single cohort, simulates `B` replicates of the
-#' projected loss path using Mack-style variance estimates as sampling
-#' inputs, and returns percentile-based CI bounds aligned with the input
-#' rows.
+#' Internal helper for [fit_lr()] bootstrap mode. Composes per-dev
+#' bootstrap CI / SE for both *cumulative loss* and *loss ratio* from a
+#' single simulation of the loss path. Premium is treated as known
+#' (fixed `prem_proj`), so LR uncertainty inherits from loss uncertainty
+#' divided by the fixed premium projection -- the `se_method = "fixed"`
+#' analytical analogue.
 #'
-#' Observed rows (index <= `last_obs`) are returned with CI equal to the
-#' observed value (no uncertainty). Projected rows get bootstrap
-#' percentiles.
+#' Dispatches to one of the single-role per-cohort simulators based on
+#' `method`:
+#' \describe{
+#'   \item{`"sa"`}{[.sa_bootstrap] -- ED before maturity, CL after.}
+#'   \item{`"ed"`}{[.ed_bootstrap] -- additive ED throughout.}
+#'   \item{`"cl"`}{[.cl_bootstrap] -- multiplicative CL throughout.}
+#' }
 #'
-#' @return A list with four vectors of length `length(prem_proj)`:
-#'   `lr_ci_lo`, `lr_ci_hi` (for LR), and `loss_ci_lo`,
-#'   `loss_ci_hi` (for cumulative loss).
+#' @return A list of six numeric vectors aligned with the input cohort
+#'   rows: `lr_ci_lo`, `lr_ci_hi`, `lr_se`, `loss_ci_lo`, `loss_ci_hi`,
+#'   `loss_total_se`.
 #'
 #' @keywords internal
-.bootstrap_cohort <- function(loss_obs,
-                              loss_proj,
-                              prem_proj,
-                              g_sel,
-                              f_sel,
-                              g_sigma2,
-                              f_sigma2,
-                              g_var,
-                              f_var,
-                              last_obs,
-                              maturity_from,
-                              B,
-                              loss_alpha,
-                              method,
-                              probs) {
+.lr_bootstrap_cohort <- function(loss_obs,
+                                 loss_proj,
+                                 prem_proj,
+                                 g_sel,
+                                 f_sel,
+                                 g_sigma2,
+                                 f_sigma2,
+                                 g_var,
+                                 f_var,
+                                 last_obs,
+                                 maturity_from,
+                                 B,
+                                 loss_alpha,
+                                 method,
+                                 probs,
+                                 process = "normal") {
 
-  n <- length(prem_proj)
-
-  # default (for observed cells, degenerate CI = point value)
-  loss_ci_lo <- loss_proj
-  loss_ci_hi <- loss_proj
-  lr_ci_lo <- data.table::fifelse(
-    is.finite(loss_proj) & is.finite(prem_proj) & prem_proj > 0,
-    loss_proj / prem_proj, NA_real_
+  sim <- switch(method,
+    sa = .sa_bootstrap(
+      target_obs    = loss_obs,
+      target_proj   = loss_proj,
+      exposure_proj = prem_proj,
+      g_sel         = g_sel,
+      f_sel         = f_sel,
+      g_sigma2      = g_sigma2,
+      f_sigma2      = f_sigma2,
+      g_var         = g_var,
+      f_var         = f_var,
+      last_obs      = last_obs,
+      maturity_from = maturity_from,
+      B             = B,
+      alpha         = loss_alpha,
+      process       = process
+    ),
+    ed = .ed_bootstrap(
+      target_obs    = loss_obs,
+      target_proj   = loss_proj,
+      exposure_proj = prem_proj,
+      g_sel         = g_sel,
+      g_sigma2      = g_sigma2,
+      g_var         = g_var,
+      last_obs      = last_obs,
+      B             = B,
+      alpha         = loss_alpha,
+      process       = process
+    ),
+    cl = .cl_bootstrap(
+      target_obs    = loss_obs,
+      target_proj   = loss_proj,
+      f_sel         = f_sel,
+      f_sigma2      = f_sigma2,
+      f_var         = f_var,
+      last_obs      = last_obs,
+      B             = B,
+      alpha         = loss_alpha,
+      process       = process
+    ),
+    stop("Unknown method: ", method, call. = FALSE)
   )
-  lr_ci_hi <- lr_ci_lo
 
-  if (last_obs >= n || last_obs < 1L || B < 1L) {
-    return(list(
-      lr_ci_lo   = lr_ci_lo,
-      lr_ci_hi   = lr_ci_hi,
-      loss_ci_lo = loss_ci_lo,
-      loss_ci_hi = loss_ci_hi
-    ))
-  }
+  loss <- .bootstrap_summary(sim, last_obs, probs)
 
-  # phase switch point
-  mat <- if (method == "sa" && is.finite(maturity_from)) {
-    maturity_from
-  } else if (method == "cl") {
-    0
-  } else {
-    Inf
-  }
-
-  # simulation matrix (rows = dev, cols = replicates)
-  loss_mat <- matrix(NA_real_, nrow = n, ncol = B)
-  for (i in seq_len(last_obs)) loss_mat[i, ] <- loss_obs[i]
-
-  for (i in seq(last_obs + 1L, n)) {
-    k    <- i - 1L
-    e_k  <- prem_proj[k]
-    prev <- loss_mat[i - 1L, ]
-
-    if (k < mat) {
-      # ED phase -----------------------------------------------------------
-      g_hat <- g_sel[k]
-      g_sd  <- if (is.finite(g_var[k])) sqrt(max(g_var[k], 0)) else 0
-      s2    <- g_sigma2[k]
-
-      g_samp <- if (is.finite(g_hat) && g_sd > 0) {
-        stats::rnorm(B, g_hat, g_sd)
-      } else if (is.finite(g_hat)) {
-        rep(g_hat, B)
-      } else {
-        rep(NA_real_, B)
-      }
-
-      eps_sd <- if (is.finite(s2) && is.finite(e_k) && e_k > 0) {
-        sqrt(max(s2 * e_k^loss_alpha, 0))
-      } else 0
-
-      eps <- if (eps_sd > 0) stats::rnorm(B, 0, eps_sd) else rep(0, B)
-
-      loss_mat[i, ] <- prev + g_samp * e_k + eps
-
+  # LR sim: divide each row by the (fixed) premium projection at that dev
+  # Rows where prem_proj is non-finite or <= 0 produce NA across all reps.
+  lr_sim <- sim
+  for (i in seq_len(nrow(sim))) {
+    e_i <- prem_proj[i]
+    lr_sim[i, ] <- if (is.finite(e_i) && e_i > 0) {
+      sim[i, ] / e_i
     } else {
-      # CL phase (multiplicative, Mack) ------------------------------------
-      f_hat <- f_sel[k]
-      f_sd  <- if (is.finite(f_var[k])) sqrt(max(f_var[k], 0)) else 0
-      s2    <- f_sigma2[k]
-
-      f_samp <- if (is.finite(f_hat) && f_sd > 0) {
-        stats::rnorm(B, f_hat, f_sd)
-      } else if (is.finite(f_hat)) {
-        rep(f_hat, B)
-      } else {
-        rep(1, B)
-      }
-
-      # per-replicate process SD: sigma^2 * prev^alpha
-      eps_sd_vec <- ifelse(
-        is.finite(s2) & is.finite(prev) & prev > 0,
-        sqrt(pmax(s2 * abs(prev)^loss_alpha, 0)),
-        0
-      )
-      eps <- stats::rnorm(B) * eps_sd_vec
-
-      loss_mat[i, ] <- f_samp * prev + eps
+      NA_real_
     }
   }
-
-  # clip negative losses at 0
-  loss_mat[!is.na(loss_mat) & loss_mat < 0] <- 0
-
-  # percentiles for projected rows
-  for (i in seq(last_obs + 1L, n)) {
-    e_i    <- prem_proj[i]
-    loss_i <- loss_mat[i, ]
-
-    if (!is.finite(e_i) || e_i <= 0 || all(!is.finite(loss_i))) {
-      lr_ci_lo[i]   <- NA_real_
-      lr_ci_hi[i]   <- NA_real_
-      loss_ci_lo[i] <- NA_real_
-      loss_ci_hi[i] <- NA_real_
-      next
-    }
-
-    lr_i <- loss_i / e_i
-
-    ql <- stats::quantile(loss_i, probs = probs, na.rm = TRUE, names = FALSE)
-    qc <- stats::quantile(lr_i,   probs = probs, na.rm = TRUE, names = FALSE)
-
-    loss_ci_lo[i] <- ql[1]
-    loss_ci_hi[i] <- ql[2]
-    lr_ci_lo[i]   <- qc[1]
-    lr_ci_hi[i]   <- qc[2]
-  }
+  lr <- .bootstrap_summary(lr_sim, last_obs, probs)
 
   list(
-    lr_ci_lo   = lr_ci_lo,
-    lr_ci_hi   = lr_ci_hi,
-    loss_ci_lo = loss_ci_lo,
-    loss_ci_hi = loss_ci_hi
+    lr_ci_lo      = lr$ci_lo,
+    lr_ci_hi      = lr$ci_hi,
+    lr_se         = lr$se,
+    loss_ci_lo    = loss$ci_lo,
+    loss_ci_hi    = loss$ci_hi,
+    loss_total_se = loss$se
   )
 }
 
