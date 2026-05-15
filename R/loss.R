@@ -498,10 +498,15 @@ fit_loss <- function(x,
     full <- merge(full, se,
                   by = c(grp, "cohort", "dev"),
                   all.x = TRUE, sort = FALSE)
-    full[is.finite(loss_total_se_boot), loss_total_se := loss_total_se_boot]
-    full[is.finite(loss_total_cv_boot), loss_total_cv := loss_total_cv_boot]
-    full[is.finite(loss_ci_lo_boot),    loss_ci_lo    := loss_ci_lo_boot]
-    full[is.finite(loss_ci_hi_boot),    loss_ci_hi    := loss_ci_hi_boot]
+    # Only override SE/CI for non-observed cells. Observed cells keep
+    # their analytical SE = 0 (the value is known); under residual
+    # bootstrap, the alt observed cells get perturbed and would
+    # otherwise produce a spurious nonzero SE.
+    is_proj <- full$is_observed == FALSE
+    full[is_proj & is.finite(loss_total_se_boot), loss_total_se := loss_total_se_boot]
+    full[is_proj & is.finite(loss_total_cv_boot), loss_total_cv := loss_total_cv_boot]
+    full[is_proj & is.finite(loss_ci_lo_boot),    loss_ci_lo    := loss_ci_lo_boot]
+    full[is_proj & is.finite(loss_ci_hi_boot),    loss_ci_hi    := loss_ci_hi_boot]
     full[, c("loss_total_se_boot", "loss_total_cv_boot",
              "loss_ci_lo_boot",    "loss_ci_hi_boot") := NULL]
   }

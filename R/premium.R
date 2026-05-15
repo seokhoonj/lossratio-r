@@ -201,10 +201,15 @@ fit_premium <- function(x,
     # Overwrite the analytical CI/SE columns for projected cells. Observed
     # cells (cell_proc_var = 0 across reps) keep the analytical 0-SE since
     # the bootstrap output for them is degenerate.
-    cl_fit$full[is.finite(prem_ci_lo_boot),  prem_ci_lo    := prem_ci_lo_boot]
-    cl_fit$full[is.finite(prem_ci_hi_boot),  prem_ci_hi    := prem_ci_hi_boot]
-    cl_fit$full[is.finite(prem_total_se_boot), prem_total_se := prem_total_se_boot]
-    cl_fit$full[is.finite(prem_total_cv_boot), prem_total_cv := prem_total_cv_boot]
+    # Only override SE/CI for non-observed cells. Observed cells keep
+    # their analytical SE = 0 (the value is known); under residual
+    # bootstrap, the alt observed cells get perturbed and would otherwise
+    # produce a spurious nonzero SE.
+    is_proj <- cl_fit$full$is_observed == FALSE
+    cl_fit$full[is_proj & is.finite(prem_ci_lo_boot),    prem_ci_lo    := prem_ci_lo_boot]
+    cl_fit$full[is_proj & is.finite(prem_ci_hi_boot),    prem_ci_hi    := prem_ci_hi_boot]
+    cl_fit$full[is_proj & is.finite(prem_total_se_boot), prem_total_se := prem_total_se_boot]
+    cl_fit$full[is_proj & is.finite(prem_total_cv_boot), prem_total_cv := prem_total_cv_boot]
     cl_fit$full[, c("prem_ci_lo_boot", "prem_ci_hi_boot",
                      "prem_total_se_boot", "prem_total_cv_boot") := NULL]
   }
