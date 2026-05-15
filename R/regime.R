@@ -145,7 +145,7 @@
 #' \dontrun{
 #' data(experience)
 #' tri_sur <- as_triangle(
-#'   experience[coverage == "SUR"],
+#'   experience[coverage == "surgery"],
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
@@ -962,14 +962,14 @@ print.summary.Regime <- function(x, ...) {
 #' regime_at(change = "2024-07-01")
 #'
 #' # Single-group change
-#' regime_at(coverage = "SUR", change = "2024-04-01")
+#' regime_at(coverage = "surgery", change = "2024-04-01")
 #'
 #' # Multiple groups, one column
-#' regime_at(coverage = c("SUR", "CAN"),
+#' regime_at(coverage = c("surgery", "cancer"),
 #'           change   = c("2024-04-01", "2023-09-01"))
 #'
 #' # Multi-dimensional group keys
-#' regime_at(coverage = c("SUR", "SUR"),
+#' regime_at(coverage = c("surgery", "surgery"),
 #'           channel  = c("online", "agent"),
 #'           change   = c("2024-04-01", "2024-05-01"))
 #' }

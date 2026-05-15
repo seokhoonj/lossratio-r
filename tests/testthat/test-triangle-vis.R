@@ -1,7 +1,7 @@
 data(experience, package = "lossratio")
 
 test_that("plot_triangle(view = 'usage') returns ggplot", {
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   p <- plot_triangle(tri, view = "usage", holdout = 6L)
@@ -9,7 +9,7 @@ test_that("plot_triangle(view = 'usage') returns ggplot", {
 })
 
 test_that("plot_triangle(view = 'usage', recent) marks excluded cells", {
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   p <- plot_triangle(tri, view = "usage", recent = 18L, holdout = 6L)
@@ -17,7 +17,7 @@ test_that("plot_triangle(view = 'usage', recent) marks excluded cells", {
 })
 
 test_that("plot_triangle(view = 'usage') with regime + recent activates hybrid", {
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   p <- plot_triangle(tri, view = "usage", recent = 18L,
@@ -35,7 +35,7 @@ test_that("plot_triangle(view = 'usage') with regime + recent activates hybrid",
 })
 
 test_that(".compute_triangle_usage hybrid mask matches expected pattern", {
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   d <- lossratio:::.compute_triangle_usage(
@@ -54,7 +54,7 @@ test_that(".compute_triangle_usage hybrid mask matches expected pattern", {
 })
 
 test_that(".compute_triangle_usage status counts add up", {
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   d <- lossratio:::.compute_triangle_usage(tri, holdout = 6L)

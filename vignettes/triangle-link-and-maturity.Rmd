@@ -29,13 +29,13 @@ trust for chain-ladder projection.
 
 ## Triangle-level diagnostics
 
-For brevity this vignette uses the `SUR` group only — every step
+For brevity this vignette uses the `surgery` group only — every step
 generalises to multi-group input.
 
 ```{r}
 library(lossratio)
 data(experience)
-exp <- experience[coverage == "SUR"]
+exp <- experience[coverage == "surgery"]
 tri <- as_triangle(
   exp,
   groups   = "coverage",

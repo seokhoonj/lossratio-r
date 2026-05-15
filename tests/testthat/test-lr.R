@@ -93,7 +93,7 @@ test_that("print.LRFit doesn't error", {
 
 test_that("fit_lr with loss_regime + method=sa applies hybrid filter", {
   data(experience)
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   reg <- regime_at(change = "2025-07-01")
@@ -108,7 +108,7 @@ test_that("fit_lr with loss_regime + method=sa applies hybrid filter", {
 
 test_that("fit_lr with loss_regime + method=ed drops pre-break cohorts", {
   data(experience)
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   reg <- regime_at(change = "2025-07-01")
@@ -119,7 +119,7 @@ test_that("fit_lr with loss_regime + method=ed drops pre-break cohorts", {
 
 test_that("fit_lr with NULL loss_regime is unchanged", {
   data(experience)
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   a <- fit_lr(tri, method = "sa", bootstrap = FALSE)
@@ -129,7 +129,7 @@ test_that("fit_lr with NULL loss_regime is unchanged", {
 
 test_that("fit_lr with Regime preserves the Regime object", {
   data(experience)
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   reg <- detect_regime(tri)

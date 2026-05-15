@@ -41,7 +41,7 @@ actual exceeded expected) and negative values flag over-projection.
 library(lossratio)
 data(experience)
 tri_sur <- as_triangle(
-  experience[coverage == "SUR"],
+  experience[coverage == "surgery"],
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
@@ -107,7 +107,7 @@ see by construction.
 bt$diag_summary
 ```
 
-A monotone drift across calendar diagonals (as in the SUR example
+A monotone drift across calendar diagonals (as in the surgery example
 above, where A/E Error becomes increasingly positive across
 `25, ..., 30`) typically indicates that actuals on the latest
 diagonals are running above what the earlier-cohort link factors

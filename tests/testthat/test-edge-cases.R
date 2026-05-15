@@ -36,21 +36,21 @@ test_that("as_link on a single cohort returns Link with valid links", {
 
 test_that("as_triangle on a single group succeeds", {
   exp <- make_exp()
-  one_grp <- exp[coverage == "SUR"]
+  one_grp <- exp[coverage == "surgery"]
   tri <- as_triangle(one_grp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   expect_s3_class(tri, "Triangle")
-  expect_equal(unique(tri$coverage), "SUR")
+  expect_equal(unique(tri$coverage), "surgery")
 })
 
 test_that("summary.Triangle on a single group returns one row per dev", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   smr  <- summary(tri)
   expect_s3_class(smr, "TriangleSummary")
   expect_equal(nrow(smr), data.table::uniqueN(tri$dev))
 })
 
 test_that("fit_cl runs on a single-group triangle", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   expect_no_error(cl <- fit_cl(tri, target = "loss", method = "mack"))
   expect_s3_class(cl, "CLFit")
 })

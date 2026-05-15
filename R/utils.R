@@ -451,7 +451,7 @@
 #'
 #' With one variable, labels are returned as-is (formatted).
 #' With multiple variables, labels are combined as
-#' `"first (rest1, rest2, ...)"` — e.g. `"SUR (23.01)"`.
+#' `"first (rest1, rest2, ...)"` — e.g. `"surgery (23.01)"`.
 #'
 #' @param vars Character vector of facet column names.
 #' @param sep Separator used to join the non-first variables. Default `", "`.
@@ -623,7 +623,7 @@
     # Per-group path: dispatched whenever the Regime carries group
     # columns (`regime$groups`) that intersect the caller's `by`. We
     # honour this even when `regime$multi_group = FALSE` (e.g. the
-    # user wrote `regime_at(coverage = "SUR", ...)` with a single
+    # user wrote `regime_at(coverage = "surgery", ...)` with a single
     # unique value) -- the explicit group column reflects intent to
     # scope the regime to just that group, not apply it globally.
     if (!is.null(by) && length(by) > 0L &&

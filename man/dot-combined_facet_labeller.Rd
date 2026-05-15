@@ -23,6 +23,6 @@ formatted via \code{\link[=.format_facet_col]{.format_facet_col()}}.
 
 With one variable, labels are returned as-is (formatted).
 With multiple variables, labels are combined as
-\code{"first (rest1, rest2, ...)"} — e.g. \code{"SUR (23.01)"}.
+\code{"first (rest1, rest2, ...)"} — e.g. \code{"surgery (23.01)"}.
 }
 \keyword{internal}

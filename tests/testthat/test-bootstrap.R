@@ -12,7 +12,7 @@
 # ---------------------------------------------------------------------------
 
 test_that("bootstrap.Triangle returns BootstrapTriangle with expected slots", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, method = "residual", mode = "dev", B = 20, seed = 1)
 
   expect_s3_class(b, "BootstrapTriangle")
@@ -23,7 +23,7 @@ test_that("bootstrap.Triangle returns BootstrapTriangle with expected slots", {
 })
 
 test_that("meta records all configured arguments", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, method = "residual", mode = "pooled",
                   process = "gamma", B = 17L, seed = 42, alpha = 1)
   m <- b$meta
@@ -42,7 +42,7 @@ test_that("meta records all configured arguments", {
 # ---------------------------------------------------------------------------
 
 test_that("alt_triangles has [cohort × dev × B] rows per group", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   n_coh <- length(unique(tri$cohort))
   n_dev <- length(unique(tri$dev))
   B     <- 20L
@@ -68,21 +68,21 @@ test_that("alt_triangles multi-group splits evenly per group", {
 # ---------------------------------------------------------------------------
 
 test_that("same seed reproduces identical alt_triangles (residual)", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   a <- bootstrap(tri, method = "residual", B = 30, seed = 7)$alt_triangles$loss
   b <- bootstrap(tri, method = "residual", B = 30, seed = 7)$alt_triangles$loss
   expect_identical(a, b)
 })
 
 test_that("different seeds give different draws (residual)", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   a <- bootstrap(tri, method = "residual", B = 30, seed = 7)$alt_triangles$loss
   b <- bootstrap(tri, method = "residual", B = 30, seed = 8)$alt_triangles$loss
   expect_false(identical(a, b))
 })
 
 test_that("same seed reproduces identical alt_triangles (parametric)", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   a <- bootstrap(tri, method = "parametric", B = 30, seed = 7)$alt_triangles$loss
   b <- bootstrap(tri, method = "parametric", B = 30, seed = 7)$alt_triangles$loss
   expect_identical(a, b)
@@ -94,7 +94,7 @@ test_that("same seed reproduces identical alt_triangles (parametric)", {
 # ---------------------------------------------------------------------------
 
 test_that("parametric method preserves observed cells across replicates", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, method = "parametric", B = 30, seed = 1)
   obs <- tri[1L]
   matched <- b$alt_triangles[
@@ -110,14 +110,14 @@ test_that("parametric method preserves observed cells across replicates", {
 # ---------------------------------------------------------------------------
 
 test_that("mode = 'dev' gives one pool per (group, ata_to)", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, method = "residual", mode = "dev", B = 5, seed = 1)
   n_links <- nrow(b$f_anchor)
   expect_equal(length(unique(b$residual_pool$pool_id)), n_links)
 })
 
 test_that("mode = 'pooled' single-group gives one pool", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, method = "residual", mode = "pooled", B = 5, seed = 1)
   expect_equal(length(unique(b$residual_pool$pool_id)), 1L)
 })
@@ -130,7 +130,7 @@ test_that("mode = 'pooled' multi-group gives one pool per group", {
 })
 
 test_that("mode = 'dev_maturity' requires non-null maturity", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   expect_error(
     bootstrap(tri, method = "residual", mode = "dev_maturity",
               maturity = NULL, B = 5, seed = 1),
@@ -139,7 +139,7 @@ test_that("mode = 'dev_maturity' requires non-null maturity", {
 })
 
 test_that("mode = 'dev_maturity' with 'auto' produces POST + per-dev pools", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, method = "residual", mode = "dev_maturity",
                   maturity = "auto", B = 5, seed = 1)
   pool_ids <- unique(b$residual_pool$pool_id)
@@ -154,7 +154,7 @@ test_that("mode = 'dev_maturity' with 'auto' produces POST + per-dev pools", {
 # ---------------------------------------------------------------------------
 
 test_that("residual bootstrap induces variability in projected cells", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, method = "residual", B = 200, seed = 1)
   cohorts <- sort(unique(b$alt_triangles$cohort))
   last_coh <- cohorts[length(cohorts)]
@@ -166,7 +166,7 @@ test_that("residual bootstrap induces variability in projected cells", {
 })
 
 test_that("parametric bootstrap induces variability in projected cells", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, method = "parametric", B = 200, seed = 1)
   cohorts <- sort(unique(b$alt_triangles$cohort))
   last_coh <- cohorts[length(cohorts)]
@@ -183,7 +183,7 @@ test_that("parametric bootstrap induces variability in projected cells", {
 # ---------------------------------------------------------------------------
 
 test_that("f_anchor has expected columns and one row per link", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, method = "residual", B = 5, seed = 1)
   for (nm in c("coverage", "ata_from", "ata_to", "f_hat", "n_cohorts")) {
     expect_true(nm %in% names(b$f_anchor), info = paste("missing", nm))
@@ -193,7 +193,7 @@ test_that("f_anchor has expected columns and one row per link", {
 })
 
 test_that("sigma2_anchor has expected columns and non-negative sigma2", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, method = "residual", B = 5, seed = 1)
   for (nm in c("coverage", "ata_from", "ata_to", "sigma2", "f_var")) {
     expect_true(nm %in% names(b$sigma2_anchor), info = paste("missing", nm))
@@ -208,7 +208,7 @@ test_that("sigma2_anchor has expected columns and non-negative sigma2", {
 # ---------------------------------------------------------------------------
 
 test_that("invalid B raises an error", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   expect_error(bootstrap(tri, B = 0),    "B")
   expect_error(bootstrap(tri, B = -1),   "B")
   expect_error(bootstrap(tri, B = NA),   "B")
@@ -216,19 +216,19 @@ test_that("invalid B raises an error", {
 })
 
 test_that("invalid alpha raises an error", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   expect_error(bootstrap(tri, alpha = NA),    "alpha")
   expect_error(bootstrap(tri, alpha = "1"),   "alpha")
 })
 
 test_that("invalid seed raises an error", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   expect_error(bootstrap(tri, seed = "x"),  "seed")
   expect_error(bootstrap(tri, seed = c(1, 2)), "seed")
 })
 
 test_that("invalid method/mode/process raise match.arg errors", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   expect_error(bootstrap(tri, method  = "wrong"))
   expect_error(bootstrap(tri, mode    = "wrong"))
   expect_error(bootstrap(tri, process = "wrong"))
@@ -240,7 +240,7 @@ test_that("invalid method/mode/process raise match.arg errors", {
 # ---------------------------------------------------------------------------
 
 test_that("print.BootstrapTriangle prints all configured fields", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, method = "residual", mode = "dev",
                   process = "gamma", B = 5, seed = 1)
   out <- utils::capture.output(print(b))
@@ -258,7 +258,7 @@ test_that("print.BootstrapTriangle prints all configured fields", {
 # ---------------------------------------------------------------------------
 
 test_that(".resolve_bootstrap dispatches NULL / FALSE / TRUE / 'auto' / obj / fn", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
 
   expect_null(.resolve_bootstrap(NULL,  tri, B = 5, seed = 1))
   expect_null(.resolve_bootstrap(FALSE, tri, B = 5, seed = 1))
@@ -279,14 +279,14 @@ test_that(".resolve_bootstrap dispatches NULL / FALSE / TRUE / 'auto' / obj / fn
 })
 
 test_that(".resolve_bootstrap rejects bad input", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   expect_error(.resolve_bootstrap("garbage", tri), "must be NULL")
   expect_error(.resolve_bootstrap(function(t) 42, tri), "BootstrapTriangle")
 })
 
 
 test_that(".boot_refit returns same shape for all methods", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   boots <- bootstrap(tri, B = 30, seed = 1)
   mat   <- detect_maturity(tri)
 
@@ -304,7 +304,7 @@ test_that(".boot_refit returns same shape for all methods", {
 })
 
 test_that(".boot_refit(method='cl') observed cells have cell_proc_var = 0", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   boots <- bootstrap(tri, B = 10, seed = 1)
   r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
 
@@ -314,7 +314,7 @@ test_that(".boot_refit(method='cl') observed cells have cell_proc_var = 0", {
 })
 
 test_that(".boot_refit(method='cl') projected cells have positive cell_proc_var", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   boots <- bootstrap(tri, B = 30, seed = 1)
   r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
 
@@ -325,7 +325,7 @@ test_that(".boot_refit(method='cl') projected cells have positive cell_proc_var"
 
 
 test_that(".boot_add_process_noise leaves observed cells untouched", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   boots <- bootstrap(tri, B = 10, seed = 1)
   r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
 
@@ -335,7 +335,7 @@ test_that(".boot_add_process_noise leaves observed cells untouched", {
 })
 
 test_that(".boot_add_process_noise normal vs gamma both finite", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   boots <- bootstrap(tri, B = 30, seed = 1)
   r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
 
@@ -361,7 +361,7 @@ test_that(".boot_add_process_noise normal vs gamma both finite", {
 
 
 test_that(".boot_summarize_se produces expected columns and SE decomposition", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   boots <- bootstrap(tri, B = 50, seed = 1)
   r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
   wn    <- .boot_add_process_noise(r_cl, "normal")
@@ -416,7 +416,7 @@ test_that("full Phase 2a pipeline runs end-to-end on multi-group Triangle", {
 # ---------------------------------------------------------------------------
 
 test_that("bootstrap.Triangle accepts target = 'prem'", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, target = "prem", B = 10, seed = 1)
   expect_identical(b$meta$target, "prem")
   expect_true("prem" %in% names(b$alt_triangles))
@@ -424,7 +424,7 @@ test_that("bootstrap.Triangle accepts target = 'prem'", {
 })
 
 test_that(".boot_refit rejects ed/sa on premium target", {
-  tri   <- make_sub_tri("SUR")
+  tri   <- make_sub_tri("surgery")
   b_prem <- bootstrap(tri, target = "prem", B = 5, seed = 1)
   expect_error(.boot_refit(tri, b_prem, method = "ed"),
                "ed.*supports.*loss")
@@ -434,14 +434,14 @@ test_that(".boot_refit rejects ed/sa on premium target", {
 })
 
 test_that(".boot_refit method = sa requires maturity", {
-  tri   <- make_sub_tri("SUR")
+  tri   <- make_sub_tri("surgery")
   boots <- bootstrap(tri, B = 5, seed = 1)
   expect_error(.boot_refit(tri, boots, method = "sa"),
                "Maturity")
 })
 
 test_that(".resolve_bootstrap target mismatch is rejected", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   b_loss <- bootstrap(tri, target = "loss", B = 5, seed = 1)
   b_prem <- bootstrap(tri, target = "prem", B = 5, seed = 1)
 
@@ -458,27 +458,27 @@ test_that(".resolve_bootstrap target mismatch is rejected", {
 # ---------------------------------------------------------------------------
 
 test_that("fit_premium default (method=ed) uses bootstrap", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   pf <- fit_premium(tri, seed = 1, B = 50)
   expect_identical(pf$ci_type, "bootstrap")
   expect_true(!is.null(pf$bootstrap))
 })
 
 test_that("fit_premium method=cl bootstrap=FALSE uses analytical", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   pf <- fit_premium(tri, method = "cl", bootstrap = FALSE)
   expect_identical(pf$ci_type, "analytical")
   expect_null(pf$bootstrap)
 })
 
 test_that("fit_premium method=cl bootstrap=TRUE uses bootstrap", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   pf <- fit_premium(tri, method = "cl", bootstrap = TRUE, seed = 1, B = 50)
   expect_identical(pf$ci_type, "bootstrap")
 })
 
 test_that("fit_premium accepts a pre-built BootstrapTriangle", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, target = "prem", B = 50, seed = 1)
   pf <- fit_premium(tri, method = "ed", bootstrap = b)
   expect_identical(pf$ci_type, "bootstrap")
@@ -486,7 +486,7 @@ test_that("fit_premium accepts a pre-built BootstrapTriangle", {
 })
 
 test_that("fit_premium accepts a bootstrap function (lazy spec)", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   fn <- function(t) bootstrap(t, target = "prem", B = 30, seed = 1)
   pf <- fit_premium(tri, bootstrap = fn)
   expect_identical(pf$ci_type, "bootstrap")
@@ -494,14 +494,14 @@ test_that("fit_premium accepts a bootstrap function (lazy spec)", {
 })
 
 test_that("fit_premium rejects a BootstrapTriangle built on the wrong target", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   b_loss <- bootstrap(tri, target = "loss", B = 30, seed = 1)
   expect_error(fit_premium(tri, bootstrap = b_loss),
                "expects target")
 })
 
 test_that("fit_premium projected cells have finite SE/CI under bootstrap", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   pf <- fit_premium(tri, seed = 1, B = 100)
   proj <- pf$full[is_observed == FALSE]
   expect_true(all(is.finite(proj$prem_proj)))
@@ -517,33 +517,33 @@ test_that("fit_premium projected cells have finite SE/CI under bootstrap", {
 # ---------------------------------------------------------------------------
 
 test_that("fit_loss default (method=sa) uses bootstrap", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   lf <- fit_loss(tri, seed = 1, B = 50)
   expect_identical(lf$ci_type, "bootstrap")
   expect_true(!is.null(lf$bootstrap))
 })
 
 test_that("fit_loss method=ed uses bootstrap by default", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   lf <- fit_loss(tri, method = "ed", seed = 1, B = 50)
   expect_identical(lf$ci_type, "bootstrap")
 })
 
 test_that("fit_loss method=cl bootstrap=FALSE uses analytical", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   lf <- fit_loss(tri, method = "cl", bootstrap = FALSE)
   expect_identical(lf$ci_type, "analytical")
   expect_null(lf$bootstrap)
 })
 
 test_that("fit_loss method=cl bootstrap=TRUE uses bootstrap", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   lf <- fit_loss(tri, method = "cl", bootstrap = TRUE, seed = 1, B = 50)
   expect_identical(lf$ci_type, "bootstrap")
 })
 
 test_that("fit_loss accepts a pre-built BootstrapTriangle", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, target = "loss", B = 50, seed = 1)
   lf <- fit_loss(tri, method = "sa", bootstrap = b)
   expect_identical(lf$ci_type, "bootstrap")
@@ -551,7 +551,7 @@ test_that("fit_loss accepts a pre-built BootstrapTriangle", {
 })
 
 test_that("fit_loss accepts a bootstrap function (lazy spec)", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   fn <- function(t) bootstrap(t, target = "loss", B = 30, seed = 1)
   lf <- fit_loss(tri, method = "ed", bootstrap = fn)
   expect_identical(lf$ci_type, "bootstrap")
@@ -559,14 +559,14 @@ test_that("fit_loss accepts a bootstrap function (lazy spec)", {
 })
 
 test_that("fit_loss rejects a BootstrapTriangle on the wrong target", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   b_prem <- bootstrap(tri, target = "prem", B = 30, seed = 1)
   expect_error(fit_loss(tri, bootstrap = b_prem),
                "expects target")
 })
 
 test_that("fit_loss projected cells have finite SE/CI where loss_proj is defined", {
-  tri <- make_sub_tri("SUR")
+  tri <- make_sub_tri("surgery")
   for (method in c("sa", "ed", "cl")) {
     lf <- fit_loss(tri, method = method, bootstrap = TRUE,
                     seed = 1, B = 50)

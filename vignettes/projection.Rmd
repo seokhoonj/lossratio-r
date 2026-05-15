@@ -69,7 +69,7 @@ When to use:
 library(lossratio)
 data(experience)
 tri <- as_triangle(
-  experience[coverage == "SUR"],
+  experience[coverage == "surgery"],
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
@@ -211,5 +211,5 @@ projection switches from ED to CL. By default `fit_lr()` /
   time (leakage-safe for `backtest()`).
 - `maturity = detect_maturity(tri, ...)` — pre-built `Maturity`
   object, fixed across refits.
-- `maturity = maturity_at(coverage = "SUR", change = 4)` — manual
+- `maturity = maturity_at(coverage = "surgery", change = 4)` — manual
   per-group override (e.g. company-standard $k^*$).

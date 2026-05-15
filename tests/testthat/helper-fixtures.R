@@ -17,7 +17,7 @@ make_tri <- function(group = "coverage", ...) {
                  loss = "incr_loss", premium = "incr_prem", ...)
 }
 
-make_sub_tri <- function(cv = "SUR") {
+make_sub_tri <- function(cv = "surgery") {
   exp <- make_exp()
   as_triangle(exp[coverage == cv], groups = "coverage",
                  cohort = "uy_m", calendar = "cy_m",

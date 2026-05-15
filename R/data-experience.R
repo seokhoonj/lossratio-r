@@ -10,7 +10,7 @@
 #' real-portfolio data is shipped. The runoff shape uses a small dev-1
 #' "waiting-period" dip followed by roughly constant incremental loss
 #' per dev, so the cumulative LR rises monotonically toward the target.
-#' The SUR coverage carries a synthetic 2024-07 cohort regime change
+#' The surgery coverage carries a synthetic 2024-07 cohort regime change
 #' (target LR scaled by 0.6) so the `detect_regime()` example has a
 #' clear shift to find.
 #'
@@ -24,10 +24,10 @@
 #'         covering cerebrovascular disease (stroke, cerebral
 #'         infarction, cerebral haemorrhage) and ischemic heart disease
 #'         (angina, acute myocardial infarction). Does **not** include
-#'         cancer; cancer is the separate `CAN` coverage.
-#'       \item `CAN` — cancer.
-#'       \item `HOS` — hospitalisation per-day fixed benefit.
-#'       \item `SUR` — surgery per-event fixed benefit.
+#'         cancer; cancer is the separate `cancer` coverage.
+#'       \item `cancer` — cancer.
+#'       \item `inpatient` — hospitalisation per-day fixed benefit.
+#'       \item `surgery` — surgery per-event fixed benefit.
 #'     }}
 #'   \item{uy, uy_h, uy_q, uy_m}{Underwriting period (year / half / quarter / month) as `Date`.}
 #'   \item{cy, cy_h, cy_q, cy_m}{Calendar period (year / half / quarter / month) as `Date`.}

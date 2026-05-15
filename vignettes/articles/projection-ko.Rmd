@@ -69,7 +69,7 @@ $$
 library(lossratio)
 data(experience)
 tri <- as_triangle(
-  experience[coverage == "SUR"],
+  experience[coverage == "surgery"],
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
@@ -204,5 +204,5 @@ SA 는 성숙점 이전엔 ED, 이후엔 CL 로 자연 전환하는 결합이다
   실행됨 (`backtest()` 에서 leakage-safe).
 - `maturity = detect_maturity(tri, ...)` — 미리 산출된 `Maturity`
   객체. 다중 refit 에서 고정.
-- `maturity = maturity_at(coverage = "SUR", change = 4)` — 그룹별
+- `maturity = maturity_at(coverage = "surgery", change = 4)` — 그룹별
   $k^*$ 수동 지정 (예: 회사 표준값).

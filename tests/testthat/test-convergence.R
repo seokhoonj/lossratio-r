@@ -1,7 +1,7 @@
 # Setup
 data(experience)
 exp <- experience
-sub <- as_triangle(exp[coverage == "SUR"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
+sub <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
 tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
 
 test_that("detect_convergence returns class 'Convergence' with required fields", {
@@ -30,7 +30,7 @@ test_that("conv_k is >= mat_k when non-NA", {
 
 test_that("insufficient history yields conv_k == NA", {
   mat_k_guess <- 6L
-  short_exp <- exp[coverage == "SUR" & dev_m <= mat_k_guess + 2L]
+  short_exp <- exp[coverage == "surgery" & dev_m <= mat_k_guess + 2L]
   short_tri <- as_triangle(short_exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   res <- detect_convergence(short_tri, mat_k = mat_k_guess)
   expect_true(is.na(res$conv_k))
@@ -167,7 +167,7 @@ test_that("print and summary methods execute and return non-NULL", {
 test_that("no-candidate dev sequence emits warning and returns conv_k = NA", {
   # When mat_k + 2 > dev_max, dev_cand is empty and conv_k must be NA.
   # Use a tiny triangle (max dev = 4) with explicit mat_k = 4.
-  tiny_exp <- exp[coverage == "SUR" & dev_m <= 4L]
+  tiny_exp <- exp[coverage == "surgery" & dev_m <= 4L]
   tiny_tri <- as_triangle(tiny_exp, groups = "coverage", cohort = "uy_m",
                           calendar = "cy_m", loss = "incr_loss",
                           premium = "incr_prem")
@@ -181,7 +181,7 @@ test_that("no-candidate dev sequence emits warning and returns conv_k = NA", {
 
 test_that("auto mat_k failure error explains the cause + how to override", {
   # Use a single-cohort triangle so detect_maturity returns no mature link.
-  one_coh <- exp[coverage == "SUR" & uy_m == as.Date("2023-04-01") & dev_m <= 12L]
+  one_coh <- exp[coverage == "surgery" & uy_m == as.Date("2023-04-01") & dev_m <= 12L]
   tri <- tryCatch(
     as_triangle(one_coh, groups = "coverage", cohort = "uy_m",
                 calendar = "cy_m", loss = "incr_loss",

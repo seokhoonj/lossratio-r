@@ -103,7 +103,7 @@ raw `Date` / 문자열 / 벡터 입력은 더 이상 받지 않는다 — `regim
 library(lossratio)
 data(experience)
 tri_sur <- as_triangle(
-  experience[coverage == "SUR"],
+  experience[coverage == "surgery"],
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
@@ -166,7 +166,7 @@ plot_triangle(tri_sur, view = "usage", recent = 12L,
               regime = "2024-07-01", holdout = 6L)                              # hybrid
 ```
 
-![SUR triangle 에서 네 가지 필터 설정이 사용하는 셀. 파랑 = 적합에 사용,
+![surgery triangle 에서 네 가지 필터 설정이 사용하는 셀. 파랑 = 적합에 사용,
 빨강 = hold-out (최근 6개 대각선), 연회색 = 필터로 제외된 셀, 흰색 =
 미관측. 수직 점선은 성숙점 $k^*$, 수평 점선은 regime change 코호트
 경계를 나타낸다.](figs/triangle_usage_panels.png)
@@ -175,15 +175,15 @@ hybrid 패널은 SA 모드가 적용하는 dev-축 split — ED 쪽은 cohort cu
 CL 쪽은 calendar 대각선 cut 이 $k^*$ 에서 만나는 사다리꼴 합집합 — 을
 그대로 시각화한다.
 
-## 5. 케이스 스터디 — SUR 그룹
+## 5. 케이스 스터디 — surgery 그룹
 
-내부 `experience` 데이터셋의 SUR 보장은 24.04 에 합성 regime change 가
+내부 `experience` 데이터셋의 surgery 보장은 24.04 에 합성 regime change 가
 삽입되어 있다. 동일 triangle 에 네 가지 변종으로 backtest 를 돌리고
 결과를 비교한다.
 
 ```r
 tri_sur <- as_triangle(
-  experience[coverage == "SUR"],
+  experience[coverage == "surgery"],
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
@@ -249,7 +249,7 @@ fits <- lapply(groups, function(g) {
 names(fits) <- groups
 ```
 
-향후 `loss_regime = list(SUR = regime_at(...), CAN = regime_at(...))`
+향후 `loss_regime = list(surgery = regime_at(...), cancer = regime_at(...))`
 같은 named list 입력을 지원할 수 있으나, 현재는 `NULL` / `Regime` /
 `"auto"` / closure 네 형태만 동작한다.
 

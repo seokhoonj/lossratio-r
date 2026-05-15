@@ -139,7 +139,7 @@ callers see them as implementation columns.
 \dontrun{
 data(experience)
 tri <- as_triangle(
-  experience[coverage == "SUR"],
+  experience[coverage == "surgery"],
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",

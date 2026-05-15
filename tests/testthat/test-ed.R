@@ -87,7 +87,7 @@ test_that("summary.Link (ed mode) returns EDSummary with expected columns", {
 
 test_that("fit_ed with regime drops pre-break cohorts", {
   data(experience)
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   ed <- as_link(tri, target = "loss", exposure = "prem")
@@ -101,7 +101,7 @@ test_that("fit_ed with regime drops pre-break cohorts", {
 
 test_that("fit_ed with NULL regime is unchanged", {
   data(experience)
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   ed <- as_link(tri, target = "loss", exposure = "prem")
@@ -113,7 +113,7 @@ test_that("fit_ed with NULL regime is unchanged", {
 
 test_that("fit_ed with Regime input preserves the Regime object", {
   data(experience)
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   reg <- detect_regime(tri)
@@ -127,7 +127,7 @@ test_that("fit_ed with Regime input preserves the Regime object", {
 
 test_that("fit_ed returns $full with projection columns", {
   data(experience)
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   ef <- fit_ed(tri, target = "loss", exposure = "prem")
@@ -147,7 +147,7 @@ test_that("fit_ed returns $full with projection columns", {
 
 test_that("fit_ed target projection matches fit_lr method = 'ed'", {
   data(experience)
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   ef <- fit_ed(tri, target = "loss", exposure = "prem")

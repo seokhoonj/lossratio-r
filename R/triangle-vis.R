@@ -1287,8 +1287,8 @@ plot.Total <- function(x,
       mat <- fit_for_mat$maturity
       # Per-group dispatch whenever the maturity dt carries group
       # columns -- honour scope even for single-group input (e.g.
-      # `maturity_at(cv_nm = "SUR", change = 4)` returns a 1-row dt
-      # that should still mark *only* SUR, not every facet).
+      # `maturity_at(cv_nm = "surgery", change = 4)` returns a 1-row dt
+      # that should still mark *only* surgery, not every facet).
       if (length(grp) > 0L && all(grp %in% names(mat))) {
         m_k_dt <- mat[, c(grp, "change"), with = FALSE]
         data.table::setnames(m_k_dt, "change", "m_k")
@@ -1460,7 +1460,7 @@ plot.Total <- function(x,
       # `regime$changes` carries group columns (`regime$groups`) that
       # match the plot's facet groups (`grp`). We honour this even when
       # `regime$multi_group = FALSE` (e.g. user wrote
-      # `regime_at(coverage = c("SUR", "SUR"), change = ...)` with only
+      # `regime_at(coverage = c("surgery", "surgery"), change = ...)` with only
       # one unique value) -- the explicit group column reflects intent
       # to scope the regime to just that group.
       rgrp <- intersect(grp,

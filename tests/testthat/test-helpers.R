@@ -4,7 +4,7 @@
 # regime_at() has its own coverage in test-regime.R.
 
 data(experience)
-sub <- as_triangle(experience[coverage == "SUR"],
+sub <- as_triangle(experience[coverage == "surgery"],
                    groups = "coverage", cohort = "uy_m", calendar = "cy_m",
                    loss = "incr_loss", premium = "incr_prem")
 
@@ -21,28 +21,28 @@ test_that("maturity_at returns a Maturity object with scalar change", {
 })
 
 test_that("maturity_at supports per-group changes", {
-  m <- maturity_at(coverage = c("SUR", "CAN"),
+  m <- maturity_at(coverage = c("surgery", "cancer"),
                    change   = c(4, 7))
   expect_s3_class(m, "Maturity")
   expect_equal(nrow(m), 2L)
-  expect_equal(sort(m$coverage), c("CAN", "SUR"))
-  expect_equal(setNames(m$change, m$coverage)[c("SUR", "CAN")], c(SUR = 4, CAN = 7))
+  expect_equal(sort(m$coverage), c("cancer", "surgery"))
+  expect_equal(setNames(m$change, m$coverage)[c("surgery", "cancer")], c(surgery = 4, cancer = 7))
   expect_identical(attr(m, "groups"), "coverage")
 })
 
 test_that("maturity_at rejects unnamed / empty / mismatched args", {
   expect_error(maturity_at(4L),
                regexp = "must be named")
-  expect_error(maturity_at(coverage = "SUR"),
+  expect_error(maturity_at(coverage = "surgery"),
                regexp = "requires a `change`")
-  expect_error(maturity_at(coverage = c("SUR", "CAN"), change = 4),
+  expect_error(maturity_at(coverage = c("surgery", "cancer"), change = 4),
                regexp = "equal length")
   expect_error(maturity_at(change = integer(0)),
                regexp = "length >= 1")
 })
 
 test_that("maturity_at output passes through fit_lr's maturity dispatch", {
-  m <- maturity_at(coverage = "SUR", change = 4)
+  m <- maturity_at(coverage = "surgery", change = 4)
   fit <- fit_lr(sub, maturity = m, bootstrap = FALSE)
   expect_s3_class(fit, "LRFit")
   # The dispatched object survives end-to-end
@@ -101,7 +101,7 @@ test_that("fit_lr maturity arg accepts all 4 input types", {
   expect_null(fit_null$maturity)
 
   # 2. Maturity object (from maturity_at)
-  fit_obj <- fit_lr(sub, maturity = maturity_at(coverage = "SUR", change = 4),
+  fit_obj <- fit_lr(sub, maturity = maturity_at(coverage = "surgery", change = 4),
                     bootstrap = FALSE)
   expect_s3_class(fit_obj$maturity, "Maturity")
 

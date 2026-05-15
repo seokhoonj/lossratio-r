@@ -39,7 +39,7 @@ one of four triggers:
 4. **Underwriting guideline change** — eligibility, declarations, or
    loading rule revisions
 
-The bundled `experience` dataset's SUR coverage carries a synthetic
+The bundled `experience` dataset's surgery coverage carries a synthetic
 2024-04 break representing one of these triggers, so the demonstration
 below has a clear shift for `detect_regime()` to find.
 
@@ -63,7 +63,7 @@ library(lossratio)
 
 data(experience)
 tri_sur <- as_triangle(
-  experience[coverage == "SUR"],
+  experience[coverage == "surgery"],
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
@@ -182,7 +182,7 @@ book-size growth — both useful diagnostics.
   post-`t` in the other), the shift is structural rather than an
   artefact of the method.
 
-In practice, agreement across all three methods — as in the SUR
+In practice, agreement across all three methods — as in the surgery
 example above, where `"e_divisive"`, `"pelt"`, and `"hclust"` all locate
 `24.04` as the regime boundary — is strong evidence of a real
 underwriting/rate shift.

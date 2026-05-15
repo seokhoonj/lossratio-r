@@ -101,7 +101,7 @@ in `regime_at()` first to make the change explicit:
 library(lossratio)
 data(experience)
 tri_sur <- as_triangle(
-  experience[coverage == "SUR"],
+  experience[coverage == "surgery"],
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
@@ -157,7 +157,7 @@ plot_triangle(tri_sur, view = "usage", recent = 12L,
               regime = "2024-07-01", holdout = 6L)                              # hybrid
 ```
 
-![Cells used by each filter configuration on the SUR triangle. Blue =
+![Cells used by each filter configuration on the surgery triangle. Blue =
 fit data, red = held out (last 6 calendar diagonals), light grey =
 excluded by the filter, white = future. Vertical dashed line marks the
 maturity switch $k^*$; horizontal dashed line marks the regime change
@@ -167,10 +167,10 @@ The hybrid panel shows the dev-axis split that SA mode applies: a
 cohort cut on the ED side and a calendar diagonal cut on the CL side,
 joined at $k^*$.
 
-## Case study — SUR cohort
+## Case study — surgery cohort
 
 The bundled `experience` dataset embeds a synthetic 2024-04 regime
-change in the SUR coverage. Backtests on the same triangle with four
+change in the surgery coverage. Backtests on the same triangle with four
 variants:
 
 ```r
@@ -229,8 +229,8 @@ fits <- lapply(unique(exp$coverage), function(g) {
 })
 ```
 
-A future extension may accept `loss_regime = list(SUR = regime_at(...),
-CAN = regime_at(...))`. Today only `NULL` / `Regime` / `"auto"` /
+A future extension may accept `loss_regime = list(surgery = regime_at(...),
+cancer = regime_at(...))`. Today only `NULL` / `Regime` / `"auto"` /
 closure are supported.
 
 ## Limitations

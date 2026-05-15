@@ -1,7 +1,7 @@
 # Setup — use a single-group subset to keep test fast
 data(experience)
 exp <- experience
-sub <- as_triangle(exp[coverage == "SUR"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
+sub <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
 
 test_that("detect_regime returns class 'Regime' (e_divisive default)", {
   r <- detect_regime(sub, window = 12, method = "e_divisive")
@@ -184,7 +184,7 @@ test_that("detect_regime warns and skips groups that fail individually", {
   # Build a synthetic triangle where one group has too few cohorts but
   # others remain valid. Drop most of one coverage's cohorts.
   big_K <- 12L
-  exp_part <- experience[!(coverage == "CI" & uy_m > as.Date("2023-03-01"))]
+  exp_part <- experience[!(coverage == "ci" & uy_m > as.Date("2023-03-01"))]
   tri_part <- as_triangle(exp_part, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   expect_warning(
     r_part <- detect_regime(tri_part, by = "coverage", window = big_K,
@@ -193,7 +193,7 @@ test_that("detect_regime warns and skips groups that fail individually", {
   )
   expect_s3_class(r_part, "Regime")
   expect_true(isTRUE(r_part$multi_group))
-  expect_false("CI" %in% names(r_part$trajectory))
+  expect_false("ci" %in% names(r_part$trajectory))
 })
 
 test_that("detect_regime(tri) auto-uses attr(tri, 'groups')", {
@@ -211,7 +211,7 @@ test_that("detect_regime(tri) auto-uses attr(tri, 'groups')", {
 test_that("by = character(0) forces pooled detection on multi-group Triangle", {
   # Subset to one coverage so pooled detection succeeds; by = character(0)
   # then differs from the default by skipping the attr("groups") fallback.
-  tri_one <- as_triangle(experience[coverage == "SUR"],
+  tri_one <- as_triangle(experience[coverage == "surgery"],
                             groups = "coverage",
                             cohort = "uy_m", calendar = "cy_m",
                             loss = "incr_loss", premium = "incr_prem")

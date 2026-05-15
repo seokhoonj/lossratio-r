@@ -140,7 +140,7 @@ test_that("summary.ATAFit returns the link-level ATASummary", {
 
 test_that("fit_ata with regime drops pre-break cohorts", {
   data(experience)
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   ata <- as_link(tri, target = "loss")
@@ -158,7 +158,7 @@ test_that("fit_ata with regime drops pre-break cohorts", {
 
 test_that("fit_ata with NULL regime is unchanged from default", {
   data(experience)
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   ata <- as_link(tri, target = "loss")
@@ -170,7 +170,7 @@ test_that("fit_ata with NULL regime is unchanged from default", {
 
 test_that("fit_ata with Regime input preserves the Regime object", {
   data(experience)
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   reg <- detect_regime(tri)
@@ -182,7 +182,7 @@ test_that("fit_ata with Regime input preserves the Regime object", {
 
 test_that("fit_ata with treatment='segment_wise' yields per-segment factors", {
   data(experience)
-  exp <- experience[coverage == "SUR"]
+  exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m",
                         loss = "incr_loss", premium = "incr_prem")

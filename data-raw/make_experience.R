@@ -4,9 +4,10 @@
 # set.seed(20260501). Calibration scalars (target LR, prem volume,
 # cell noise CV) per coverage were measured once on a real long-term
 # Korean health-insurance portfolio and are baked in here as constants
-# so this script ships without any real-data dependency. SUR carries a
-# regime shift at cohort 18 (2024-07): target LR is scaled down to
-# 0.6x to mimic the real portfolio's underwriting tightening.
+# so this script ships without any real-data dependency. `surgery`
+# carries a regime shift at cohort idx 18 (2024-07): target LR is
+# scaled to 0.6x to mimic the real portfolio's underwriting
+# tightening.
 #
 # Run from the package root:
 #   Rscript -e 'source("data-raw/make_experience.R")'
@@ -20,27 +21,27 @@ set.seed(20260501L)
 
 # ---- Calibration constants (per coverage) -----------------------------------
 #
-# Coverage codes (letter-first uppercase, valid bare identifiers):
-#   CI   The two major non-cancer critical illnesses:
-#          - cerebrovascular disease (stroke, cerebral infarction,
-#            cerebral haemorrhage)
-#          - ischemic heart disease (angina, acute myocardial
-#            infarction)
-#        Does NOT include cancer; cancer is the separate `CAN` coverage.
-#   CAN  Cancer
-#   HOS  Hospitalisation (per-day fixed benefit)
-#   SUR  Surgery (per-event fixed benefit)
+# Coverage labels (lowercase full-word, audience-facing):
+#   ci         Critical-illness rider covering the two major non-cancer
+#              CIs: cerebrovascular disease (stroke, cerebral infarction,
+#              cerebral haemorrhage) and ischemic heart disease (angina,
+#              acute MI). Does NOT include cancer; cancer is its own
+#              `cancer` coverage.
+#   cancer     Cancer rider.
+#   inpatient  Hospitalisation rider (per-day fixed benefit).
+#   surgery    Surgery rider (per-event fixed benefit).
 calib <- data.table(
-  coverage  = c("CI",       "CAN",      "HOS",      "SUR"),
-  target_lr = c(0.6041798,  0.4966633,  0.3533962,  1.4291995),
-  prem_mean = c(490082826,  403465899,  32725571,   704738057),
-  prem_cv   = c(0.9332768,  0.8684393,  0.8545352,  0.6738675),
-  cell_cv   = c(1.3679838,  1.6660074,  0.8603264,  0.3589258)
+  coverage  = c("ci",       "cancer",   "inpatient", "surgery"),
+  target_lr = c(0.6041798,  0.4966633,  0.3533962,   1.4291995),
+  prem_mean = c(490082826,  403465899,  32725571,    704738057),
+  prem_cv   = c(0.9332768,  0.8684393,  0.8545352,   0.6738675),
+  cell_cv   = c(1.3679838,  1.6660074,  0.8603264,   0.3589258)
 )
 
-# Single regime shift on SUR at cohort idx 18 (2024-07): scale target
-# LR by 0.6 (1.43 -> ~0.86), reflecting an underwriting tightening.
-shifts <- list("SUR" = list(at = 18L, scale = 0.60))
+# Single regime shift on `surgery` at cohort idx 18 (2024-07): scale
+# target LR by 0.6 (1.43 -> ~0.86), reflecting an underwriting
+# tightening.
+shifts <- list("surgery" = list(at = 18L, scale = 0.60))
 
 # ---- Synthesis grid -------------------------------------------------------
 

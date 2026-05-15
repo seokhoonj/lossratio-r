@@ -87,7 +87,7 @@ test_that("plot.TriangleValidation handles empty and non-empty cases", {
   expect_null(suppressMessages(plot(res_empty)))
 
   # Non-empty: induce gaps by dropping all dev=3 rows for one coverage.
-  exp_drop  <- experience[!(coverage == "SUR" & dev_m == 3)]
+  exp_drop  <- experience[!(coverage == "surgery" & dev_m == 3)]
   res_gaps  <- validate_triangle(exp_drop, groups = "coverage",
                                  cohort = "uy_m", dev = "dev_m")
   expect_gt(nrow(res_gaps), 0L)
@@ -110,7 +110,7 @@ test_that("plot.TriangleValidation handles empty and non-empty cases", {
 })
 
 test_that("TriangleValidation carries dev_min / dev_max columns", {
-  exp_drop <- experience[!(coverage == "SUR" & dev_m == 3)]
+  exp_drop <- experience[!(coverage == "surgery" & dev_m == 3)]
   res <- validate_triangle(exp_drop, groups = "coverage",
                           cohort = "uy_m", dev = "dev_m")
   expect_true(all(c("dev_min", "dev_max") %in% names(res)))
@@ -124,7 +124,7 @@ test_that("as_triangle errors when group is invalid", {
 })
 
 test_that("as_triangle Mode 2: cohort + development only (no calendar)", {
-  sur <- experience[coverage == "SUR"]
+  sur <- experience[coverage == "surgery"]
   tri <- as_triangle(sur, groups = "coverage",
                      cohort = "uy_m", development = "dev_m",
                      loss = "incr_loss", premium = "incr_prem")
@@ -138,7 +138,7 @@ test_that("as_triangle Mode 2: cohort + development only (no calendar)", {
 })
 
 test_that("as_triangle Mode 3: cohort + calendar + development (cross-check ok)", {
-  sur <- experience[coverage == "SUR"]
+  sur <- experience[coverage == "surgery"]
   tri <- as_triangle(sur, groups = "coverage",
                      cohort = "uy_m", calendar = "cy_m", development = "dev_m",
                      loss = "incr_loss", premium = "incr_prem")

@@ -36,7 +36,7 @@ knitr::opts_chunk$set(
 3. **가입금액 한도 변경** — 1인당 최대 가입금액 상·하한 조정
 4. **Underwriting 가이드라인 변경** — 인수 자격·고지 항목·할증 기준의 개정
 
-번들로 제공되는 `experience` 데이터셋의 SUR 종목에는 위 트리거 중 하나가
+번들로 제공되는 `experience` 데이터셋의 surgery 종목에는 위 트리거 중 하나가
 2024-04 시점에 발생했다고 가정한 합성 break 가 심어져 있다. 따라서 아래
 시연에서 `detect_regime()` 이 잡아낼 명확한 변화점이 존재한다.
 
@@ -58,7 +58,7 @@ library(lossratio)
 
 data(experience)
 tri_sur <- as_triangle(
-  experience[coverage == "SUR"],
+  experience[coverage == "surgery"],
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
@@ -167,7 +167,7 @@ detect_regime(tri_sur, target = "loss_ata")
   모든 사후-`t` 가 다른 클러스터) 을 만들어 낸다면, 이 변화는 방법론적
   인공물이 아닌 구조적 변화이다.
 
-실무에서는 세 방법이 모두 일치하는 경우 — 위 SUR 예시처럼 `"e_divisive"`, `"pelt"`,
+실무에서는 세 방법이 모두 일치하는 경우 — 위 surgery 예시처럼 `"e_divisive"`, `"pelt"`,
 `"hclust"` 가 모두 `24.04` 를 regime 경계로 지목하는 경우 — 실제 인수/요율
 변경의 강력한 증거가 된다.
 
