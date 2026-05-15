@@ -155,7 +155,7 @@ validate_triangle <- function(df,
       list(
         dev_min    = as.integer(min(e)),
         dev_max    = as.integer(max(e)),
-        n_dev = length(unique(e)),
+        n_dev      = length(unique(e)),
         n_expected = length(rng),
         missing    = list(miss)
       )
@@ -267,8 +267,8 @@ plot.TriangleValidation <- function(x, ...) {
 
   p <- ggplot2::ggplot(
     long,
-    ggplot2::aes(x = factor(.data[[coh]]),
-                 y = .data[["n"]],
+    ggplot2::aes(x    = factor(.data[[coh]]),
+                 y    = .data[["n"]],
                  fill = .data[["kind"]])
   ) +
     ggplot2::geom_col(position = "dodge") +
@@ -278,7 +278,7 @@ plot.TriangleValidation <- function(x, ...) {
     ) +
     ggplot2::labs(
       title = "Cohort dev-sequence gaps",
-      x = "cohort", y = "dev count"
+      x     = "cohort", y = "dev count"
     ) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
 
@@ -431,7 +431,7 @@ plot_triangle.TriangleValidation <- function(x,
                           color = "black", linewidth = 0.7) +
       ggplot2::scale_fill_manual(
         values = c(observed = "#1f77b4", invalid = "#d62728"),
-        name = NULL, drop = FALSE
+        name   = NULL, drop = FALSE
       ) +
       ggplot2::scale_x_continuous(expand = c(0, 0)) +
       ggplot2::scale_y_discrete(expand = c(0, 0)) +
@@ -507,7 +507,7 @@ plot_triangle.TriangleValidation <- function(x,
       ) +
       ggplot2::scale_fill_manual(
         values = c(observed = "#1f77b4", invalid = "#d62728"),
-        name = NULL, drop = FALSE
+        name   = NULL, drop = FALSE
       ) +
       ggplot2::scale_x_discrete(expand = c(0, 0)) +
       ggplot2::scale_y_discrete(expand = c(0, 0)) +
@@ -989,7 +989,7 @@ summary.Triangle <- function(object, ...) {
   grp_dev <- c(grp, "dev")
 
   ds <- dt[, .(
-    n_cohorts          = .N,
+    n_cohorts      = .N,
     lr_mean        = mean(lr),
     lr_median      = median(lr),
     lr_wt          = sum(loss)      / sum(prem),
@@ -1261,7 +1261,7 @@ as_calendar <- function(x) {
     exp_seq <- seq(min(p), max(p), by = step)
     miss    <- setdiff(exp_seq, p)
     list(
-      n_dev = length(p),
+      n_dev      = length(p),
       n_expected = length(exp_seq),
       missing    = list(as.Date(miss, origin = "1970-01-01"))
     )
@@ -1272,7 +1272,7 @@ as_calendar <- function(x) {
   } else {
     r <- .row(dt[[cal]])
     gaps <- data.table::data.table(
-      n_dev = r$n_dev,
+      n_dev      = r$n_dev,
       n_expected = r$n_expected,
       missing    = r$missing
     )
@@ -1344,7 +1344,7 @@ summary.Calendar <- function(object, ...) {
   grp_cal <- c(grp, "calendar")
 
   ds <- dt[, .(
-    n_cohorts          = .N,
+    n_cohorts      = .N,
     lr_mean        = mean(lr),
     lr_median      = stats::median(lr),
     lr_wt          = sum(loss)      / sum(prem),

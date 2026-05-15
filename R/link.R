@@ -387,9 +387,9 @@ summary.Link <- function(object,
   res <- dt[, {
     if (.N == 1L) {
       data.table::data.table(
-        f     = target_to[1L] / target_from[1L],
-        f_se  = NA_real_,
-        sigma = NA_real_,
+        f         = target_to[1L] / target_from[1L],
+        f_se      = NA_real_,
+        sigma     = NA_real_,
         n_cohorts = 1L
       )
     } else {
@@ -413,9 +413,9 @@ summary.Link <- function(object,
         if (is.finite(sigma_val) && abs(sigma_val) < tol) sigma_val <- 0
 
         data.table::data.table(
-          f     = f_val,
-          f_se  = f_se_val,
-          sigma = sigma_val,
+          f         = f_val,
+          f_se      = f_se_val,
+          sigma     = sigma_val,
           n_cohorts = .N
         )
       }

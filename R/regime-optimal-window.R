@@ -43,12 +43,12 @@
 #' @keywords internal
 #' @noRd
 detect_regime_optimal_window <- function(x,
-                                    by        = NULL,
-                                    window_seq     = 2:24,
-                                    method    = c("elbow"),
-                                    target    = "lr",
-                                    sig_level = 0.05,
-                                    min_size  = 3L) {
+                                         by         = NULL,
+                                         window_seq = 2:24,
+                                         method     = c("elbow"),
+                                         target     = "lr",
+                                         sig_level  = 0.05,
+                                         min_size   = 3L) {
 
   .assert_triangle_input(x, "detect_regime_optimal_window()")
   method <- match.arg(method)
@@ -72,7 +72,7 @@ detect_regime_optimal_window <- function(x,
         x,
         target    = target,
         by        = by,
-        window         = k,
+        window    = k,
         method    = "e_divisive",
         sig_level = sig_level,
         min_size  = min_size
@@ -94,16 +94,16 @@ detect_regime_optimal_window <- function(x,
         head_row <- bpg[1L, by, with = FALSE]
         data.table::data.table(
           head_row,
-          window              = window_seq[i],
-          change_count    = nrow(bpg),
+          window         = window_seq[i],
+          change_count   = nrow(bpg),
           magnitude_mean = if (nrow(bpg)) mean(bpg$magnitude, na.rm = TRUE) else NA_real_
         )
       })
       data.table::rbindlist(rows)
     } else {
       data.table::data.table(
-        window              = window_seq[i],
-        change_count    = nrow(bp),
+        window         = window_seq[i],
+        change_count   = nrow(bp),
         magnitude_mean = if (nrow(bp)) mean(bp$magnitude, na.rm = TRUE) else NA_real_
       )
     }
@@ -125,11 +125,11 @@ detect_regime_optimal_window <- function(x,
   optimal_window <- .kneedle_elbow(agg$window, agg$change_count)
 
   out <- list(
-    call        = call_obj,
-    optimal_window   = optimal_window,
-    diagnostics = diagnostics,
-    details     = details,
-    window_seq       = window_seq
+    call           = call_obj,
+    optimal_window = optimal_window,
+    diagnostics    = diagnostics,
+    details        = details,
+    window_seq     = window_seq
   )
   class(out) <- "RegimeOptimalWindow"
   out

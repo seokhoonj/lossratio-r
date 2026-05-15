@@ -221,7 +221,7 @@ fit_cl <- function(x,
   # 9) point projection -------------------------------------------------
   full[, ("target_proj") := .cl_proj(
     target_obs = target_obs,
-    f_sel = f_sel
+    f_sel      = f_sel
   ), by = c(grp, "cohort")]
 
   # 10) incremental target projection -----------------------------------
@@ -233,7 +233,7 @@ fit_cl <- function(x,
   full[, `:=`(
     target_proc_se2  = .mack_proc_var(
       target_proj = target_proj,
-      f_sel  = f_sel,
+      f_sel       = f_sel,
       sigma2      = sigma2,
       last_obs    = last_obs[1L],
       alpha       = alpha,
@@ -241,7 +241,7 @@ fit_cl <- function(x,
     ),
     target_param_se2 = .mack_param_var(
       target_proj = target_proj,
-      f_sel  = f_sel,
+      f_sel       = f_sel,
       f_var       = f_var,
       last_obs    = last_obs[1L]
     )
@@ -272,11 +272,11 @@ fit_cl <- function(x,
 
   # 12) drop intermediate columns ---------------------------------------
   full[, `:=`(
-    f_sel = NULL,
-    sigma2     = NULL,
-    f_var      = NULL,
-    wt_obs     = NULL,
-    last_obs   = NULL
+    f_sel    = NULL,
+    sigma2   = NULL,
+    f_var    = NULL,
+    wt_obs   = NULL,
+    last_obs = NULL
   )]
 
   # 13) proj: NA out observed cells -------------------------------------

@@ -431,8 +431,8 @@ plot_triangle.CLFit <- function(x,
     incr_margin        = "Per-Period Margin",
     loss_share         = "Cumulative Loss Proportion",
     incr_loss_share    = "Per-Period Loss Proportion",
-    prem_share      = "Cumulative Premium Proportion",
-    incr_prem_share = "Per-Period Premium Proportion",
+    prem_share         = "Cumulative Premium Proportion",
+    incr_prem_share    = "Per-Period Premium Proportion",
     metric
   )
 

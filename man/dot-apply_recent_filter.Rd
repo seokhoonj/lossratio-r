@@ -46,13 +46,11 @@ A filtered copy of \code{dt} (class preserved), keeping only rows
 within the recent-diagonal window.
 }
 \description{
-Internal long-format analogue of \code{\link[=get_recent_weights]{get_recent_weights()}}. Returns a
-subset of the input \code{data.table} containing only rows whose calendar
-position falls within the last \code{recent} calendar diagonals of its
-group.
+Returns a subset of the input \code{data.table} containing only rows whose
+calendar position falls within the last \code{recent} calendar diagonals of
+its group.
 
-The matrix-form condition \code{row + col >= m - recent + 2} is translated
-to the group-wise long-form condition
+The group-wise long-form condition is
 \code{rank(cohort) + dev - 1 > max(rank(cohort) + dev - 1) - recent}.
 }
 \keyword{internal}

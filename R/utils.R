@@ -286,8 +286,8 @@
     list(
       type  = "prop",
       title = switch(metric,
-                       loss_share         = "Cumulative Loss Proportion",
-                       incr_loss_share    = "Per-Period Loss Proportion",
+                       loss_share      = "Cumulative Loss Proportion",
+                       incr_loss_share = "Per-Period Loss Proportion",
                        prem_share      = "Cumulative Premium Proportion",
                        incr_prem_share = "Per-Period Premium Proportion"
       ),
@@ -372,11 +372,11 @@
     uy_m  = "underwriting months",
     uy_q  = "underwriting quarters",
     uy_h  = "underwriting halves",
-    uy  = "underwriting years",
+    uy    = "underwriting years",
     cy_m  = "calendar months",
     cy_q  = "calendar quarters",
     cy_h  = "calendar halves",
-    cy  = "calendar years",
+    cy    = "calendar years",
     dev_m = "development months",
     dev_q = "development quarters",
     dev_h = "development halves",
@@ -478,71 +478,16 @@
 }
 
 
-# Recent-diagonal weight filter --------------------------------------------
-
-#' Recent-diagonal weights for a development triangle
-#'
-#' @description
-#' Returns a weight matrix that restricts a development triangle to its
-#' most recent `recent` calendar diagonals. Cells on or after the last
-#' `recent` diagonals retain their input values; earlier observed cells
-#' are set to `0`. Cells that are `NA` in the input (not yet observed)
-#' are left as `NA`.
-#'
-#' This is a standard construct for restricting chain-ladder estimation
-#' to recent calendar periods when older experience is considered less
-#' representative of current conditions (e.g. after a rate change or a
-#' claim-handling reform).
-#'
-#' @section Handling of NA cells:
-#' `NA` cells in the input (not yet observed) remain `NA` in the output.
-#' They are semantically distinct from the `0` cells produced by the
-#' recency filter, which represent observed values explicitly excluded
-#' from the current weighting scheme. Callers who want both to behave
-#' identically can post-process with `w[is.na(w)] <- 0`.
-#'
-#' @param weights A triangle-shaped numeric matrix, with origin periods
-#'   as rows and development periods as columns. Unobserved future cells
-#'   should be `NA`.
-#' @param recent Optional positive integer: the number of most recent
-#'   calendar diagonals to keep. When missing or `NULL`, `weights` is
-#'   returned unchanged.
-#'
-#' @return A numeric matrix of the same shape as `weights`.
-#'
-#' @examples
-#' \dontrun{
-#' m <- ChainLadder::RAA
-#' get_recent_weights(m)       # unchanged (no `recent` supplied)
-#' get_recent_weights(m, 3)    # keep only the last 3 calendar diagonals
-#' }
-#'
-#' @export
-get_recent_weights <- function(weights, recent) {
-  if (!missing(recent) && !is.null(recent)) {
-    if (!is.numeric(recent) || length(recent) != 1L ||
-        is.na(recent) || recent < 1L)
-      stop("`recent` must be a single positive integer.", call. = FALSE)
-
-    recent <- as.integer(recent)
-    m <- nrow(weights)
-    i <- m - recent + 1L
-    weights[(row(weights) + col(weights) < i + 1L)] <- 0
-  }
-  weights
-}
-
+# Recent-diagonal filter (long-format) -------------------------------------
 
 #' Filter a long-format table to recent calendar diagonals
 #'
 #' @description
-#' Internal long-format analogue of [get_recent_weights()]. Returns a
-#' subset of the input `data.table` containing only rows whose calendar
-#' position falls within the last `recent` calendar diagonals of its
-#' group.
+#' Returns a subset of the input `data.table` containing only rows whose
+#' calendar position falls within the last `recent` calendar diagonals of
+#' its group.
 #'
-#' The matrix-form condition `row + col >= m - recent + 2` is translated
-#' to the group-wise long-form condition
+#' The group-wise long-form condition is
 #' `rank(cohort) + dev - 1 > max(rank(cohort) + dev - 1) - recent`.
 #'
 #' @param dt A long-format development `data.table`.

@@ -110,7 +110,7 @@
 #'   are derived via residual bootstrap rather than the analytical
 #'   delta method. Default is `FALSE`.
 #' @param B Integer number of bootstrap replications. Used only when
-#'   `bootstrap = TRUE`. Default is `1000`.
+#'   `bootstrap = TRUE`. Default is `999`.
 #' @param seed Optional integer seed for reproducible bootstrap.
 #'   Default is `NULL`.
 #'
@@ -158,7 +158,7 @@ fit_lr <- function(x,
                    rho            = 0.95,
                    conf_level     = 0.95,
                    bootstrap      = FALSE,
-                   B              = 1000,
+                   B              = 999,
                    seed           = NULL) {
 
   .assert_triangle_input(x, "fit_lr()")
@@ -259,7 +259,7 @@ fit_lr <- function(x,
     loss       = loss_proj,
     premium    = prem_proj,
     loss_se    = loss_total_se,
-    prem_se = if (se_method == "delta") prem_total_se else NULL,
+    prem_se    = if (se_method == "delta") prem_total_se else NULL,
     method     = se_method,
     rho        = rho
   )]
@@ -288,9 +288,9 @@ fit_lr <- function(x,
       .bootstrap_cohort(
         loss_obs      = loss_obs,
         loss_proj     = loss_proj,
-        prem_proj  = prem_proj,
-        g_sel    = g_sel,
-        f_sel    = f_sel,
+        prem_proj     = prem_proj,
+        g_sel         = g_sel,
+        f_sel         = f_sel,
         g_sigma2      = g_sigma2,
         f_sigma2      = f_sigma2,
         g_var         = g_var,
@@ -350,7 +350,7 @@ fit_lr <- function(x,
     factor          = loss_fit$factor,
     selected        = loss_fit$selected,
     loss_ata_fit    = loss_fit$loss_ata_fit,
-    prem_ata_fit = prem_ata_fit,
+    prem_ata_fit    = prem_ata_fit,
     maturity        = loss_fit$maturity,
     method          = method,
     ci_type         = ci_type,
@@ -387,27 +387,47 @@ print.LRFit <- function(x, ...) {
   grp <- x$groups
   if (is.null(grp)) grp <- character(0)
 
-  cat("<LRFit>\n")
-  cat("method         :", x$method,        "\n")
-  cat("loss_alpha     :", x$loss_alpha,    "\n")
-  cat("premium_alpha  :", x$premium_alpha, "\n")
-  cat("se_method      :", x$se_method,     "\n")
-  if (identical(x$se_method, "delta")) {
-    cat("rho            :", x$rho,         "\n")
+  # Maturity labels (dynamic — width depends on group string lengths).
+  mat_labels <- character(0)
+  if (!is.null(x$maturity) && nrow(x$maturity)) {
+    if (length(grp)) {
+      grp_txt <- vapply(seq_len(nrow(x$maturity)), function(i)
+        paste(x$maturity[i, grp, with = FALSE], collapse = "/"),
+        character(1L))
+      mat_labels <- sprintf("maturity[%s]", grp_txt)
+    } else {
+      mat_labels <- "maturity"
+    }
   }
-  cat("conf_level     :", x$conf_level,    "\n")
+
+  static_labels <- c("method", "loss_alpha", "premium_alpha", "se_method",
+                     "rho", "conf_level", "ci_type", "sigma_method",
+                     "recent", "loss_regime", "premium_regime",
+                     "groups", "periods")
+  lw  <- max(nchar(c(static_labels, mat_labels)))
+  pad <- function(label) formatC(label, width = lw, flag = "-")
+
+  cat("<LRFit>\n")
+  cat(pad("method"),        ":", x$method,        "\n")
+  cat(pad("loss_alpha"),    ":", x$loss_alpha,    "\n")
+  cat(pad("premium_alpha"), ":", x$premium_alpha, "\n")
+  cat(pad("se_method"),     ":", x$se_method,     "\n")
+  if (identical(x$se_method, "delta")) {
+    cat(pad("rho"),         ":", x$rho,           "\n")
+  }
+  cat(pad("conf_level"),    ":", x$conf_level,    "\n")
   if (!is.null(x$ci_type)) {
-    cat("ci_type        :", x$ci_type,
+    cat(pad("ci_type"),     ":", x$ci_type,
         if (!is.null(x$bootstrap))
           sprintf(" (B = %d, seed = %s)", x$bootstrap$B,
                   if (is.null(x$bootstrap$seed)) "NULL" else x$bootstrap$seed)
         else "",
         "\n")
   }
-  cat("sigma_method   :", x$sigma_method,  "\n")
-  cat("recent         :",
+  cat(pad("sigma_method"),  ":", x$sigma_method,  "\n")
+  cat(pad("recent"),        ":",
       if (!is.null(x$recent)) x$recent else "all", "\n")
-  cat("loss_regime    :")
+  cat(pad("loss_regime"),   ":")
   if (is.null(x$loss_regime)) {
     cat(" none\n")
   } else if (inherits(x$loss_regime, "Regime")) {
@@ -415,7 +435,7 @@ print.LRFit <- function(x, ...) {
   } else {
     cat(" ", format(x$loss_regime), "\n", sep = "")
   }
-  cat("premium_regime :")
+  cat(pad("premium_regime"), ":")
   if (is.null(x$premium_regime)) {
     cat(" none\n")
   } else if (inherits(x$premium_regime, "Regime")) {
@@ -424,21 +444,10 @@ print.LRFit <- function(x, ...) {
     cat(" ", format(x$premium_regime), "\n", sep = "")
   }
 
-  # Use the same label width as the top block (`premium_regime` is the
-  # longest at 14 chars) so colons align across the printout.
-  lw <- 14L
-  pad <- function(label) formatC(label, width = lw, flag = "-")
-
-  if (!is.null(x$maturity) && nrow(x$maturity)) {
+  if (length(mat_labels)) {
     mat <- .copy_dt(x$maturity)
-    if (length(grp)) {
-      grp_txt <- vapply(seq_len(nrow(mat)), function(i)
-        paste(mat[i, grp, with = FALSE], collapse = "/"), character(1L))
-      for (i in seq_along(grp_txt))
-        cat(pad(sprintf("maturity[%s]", grp_txt[i])), ":",
-            mat$change[i], "\n")
-    } else {
-      cat(pad("maturity"), ":", mat$change[1L], "\n")
+    for (i in seq_along(mat_labels)) {
+      cat(pad(mat_labels[i]), ":", mat$change[i], "\n")
     }
   }
 
@@ -506,7 +515,7 @@ summary.LRFit <- function(object, ...) {
 .compute_lr_se <- function(loss,
                            premium,
                            loss_se,
-                           prem_se = NULL,
+                           prem_se    = NULL,
                            method     = c("fixed", "delta"),
                            rho        = 0.95) {
 
@@ -707,8 +716,8 @@ summary.LRFit <- function(object, ...) {
 
   .assert_class(x, "LRFit")
 
-  grp    <- x$groups
-  coh    <- x$cohort
+  grp        <- x$groups
+  coh        <- x$cohort
   full       <- x$full
   se_method  <- x$se_method
   rho        <- x$rho
@@ -720,11 +729,11 @@ summary.LRFit <- function(object, ...) {
   agg <- latest_obs[ult, on = c(grp, "cohort")]
 
   agg[, `:=`(
-    latest      = loss_obs,
-    loss_ult    = i.loss_proj,
-    reserve     = i.loss_proj - loss_obs,
-    prem_ult = i.prem_proj,
-    lr_latest   = data.table::fifelse(
+    latest        = loss_obs,
+    loss_ult      = i.loss_proj,
+    reserve       = i.loss_proj - loss_obs,
+    prem_ult      = i.prem_proj,
+    lr_latest     = data.table::fifelse(
       is.finite(prem_obs) & prem_obs != 0,
       loss_obs / prem_obs, NA_real_
     ),
@@ -737,10 +746,10 @@ summary.LRFit <- function(object, ...) {
       is.finite(i.loss_proj) & i.loss_proj != 0,
       i.loss_total_se / abs(i.loss_proj), NA_real_
     ),
-    lr_se       = i.lr_se,
-    lr_cv       = i.lr_cv,
-    lr_ci_lo = i.lr_ci_lo,
-    lr_ci_hi = i.lr_ci_hi
+    lr_se         = i.lr_se,
+    lr_cv         = i.lr_cv,
+    lr_ci_lo      = i.lr_ci_lo,
+    lr_ci_hi      = i.lr_ci_hi
   )]
 
   keep_cols <- c(
@@ -761,7 +770,7 @@ summary.LRFit <- function(object, ...) {
     agg[, ("lr_var") := lr_se^2]
 
     agg[, `:=`(
-      pct_loss = data.table::fifelse(
+      pct_loss     = data.table::fifelse(
         is.finite(lr_var) & lr_var > 0,
         (i.loss_total_se / i.prem_proj)^2 / lr_var * 100, NA_real_
       ),
@@ -770,7 +779,7 @@ summary.LRFit <- function(object, ...) {
         (i.loss_proj * i.prem_total_se / i.prem_proj^2)^2 /
           lr_var * 100, NA_real_
       ),
-      pct_cov = data.table::fifelse(
+      pct_cov      = data.table::fifelse(
         is.finite(lr_var) & lr_var > 0,
         -2 * rho * i.loss_proj * i.loss_total_se * i.prem_total_se /
           i.prem_proj^3 / lr_var * 100, NA_real_

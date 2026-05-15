@@ -435,10 +435,10 @@ plot.Calendar <- function(x,
          .SDcols = metric]
     }
     p <- p + ggplot2::geom_text(
-      data    = dt,
-      mapping = ggplot2::aes(label = .data[[".value_label"]]),
-      size    = label_size,
-      vjust   = -0.6,
+      data        = dt,
+      mapping     = ggplot2::aes(label = .data[[".value_label"]]),
+      size        = label_size,
+      vjust       = -0.6,
       show.legend = FALSE
     )
   }
@@ -747,8 +747,8 @@ plot_triangle.Triangle <- function(x,
 
     title_txt <- switch(
       metric,
-      loss_share         = "Cumulative Loss Proportion",
-      incr_loss_share    = "Per-Period Loss Proportion",
+      loss_share      = "Cumulative Loss Proportion",
+      incr_loss_share = "Per-Period Loss Proportion",
       prem_share      = "Cumulative Premium Proportion",
       incr_prem_share = "Per-Period Premium Proportion"
     )

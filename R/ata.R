@@ -139,14 +139,14 @@
     m    <- mean(vals)
 
     .(
-      mean    = m,
-      median  = stats::median(vals),
-      wt      = sum(vt, na.rm = TRUE) / sum(vf, na.rm = TRUE),
-      cv      = stats::sd(vals, na.rm = TRUE) / m,
-      n_cohorts   = .N,
-      n_valid = sum(is.finite(ata)),
-      n_inf   = sum(is.infinite(ata)),
-      n_nan   = sum(is.nan(ata))
+      mean      = m,
+      median    = stats::median(vals),
+      wt        = sum(vt, na.rm = TRUE) / sum(vf, na.rm = TRUE),
+      cv        = stats::sd(vals, na.rm = TRUE) / m,
+      n_cohorts = .N,
+      n_valid   = sum(is.finite(ata)),
+      n_inf     = sum(is.infinite(ata)),
+      n_nan     = sum(is.nan(ata))
     )
   }, by = grp_link]
 

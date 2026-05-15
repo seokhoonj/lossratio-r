@@ -309,11 +309,11 @@ fit_loss <- function(x,
 
   # 7) expand triangle to full projection grid --------------------------
   full <- .expand_grid(
-    triangle        = x,
-    ed_fit          = ed_fit,
+    triangle     = x,
+    ed_fit       = ed_fit,
     prem_ata_fit = prem_ata_fit,
-    target          = "loss",
-    exposure        = "prem"
+    target       = "loss",
+    exposure     = "prem"
   )
 
   # Detect whether either side carries segment_id (segment_wise treatment);
@@ -370,9 +370,9 @@ fit_loss <- function(x,
   # 12) loss point projection -------------------------------------------
   full[, ("loss_proj") := .sa_proj(
     loss_obs      = loss_obs,
-    prem_proj  = prem_proj,
-    g_sel    = g_sel,
-    f_sel    = f_sel,
+    prem_proj     = prem_proj,
+    g_sel         = g_sel,
+    f_sel         = f_sel,
     maturity_from = maturity_from[1L],
     method        = method
   ), by = c(grp, "cohort")]
@@ -381,10 +381,10 @@ fit_loss <- function(x,
   full[, `:=`(
     loss_proc_se2  = .sa_proc_var(
       loss_proj     = loss_proj,
-      prem_proj  = prem_proj,
+      prem_proj     = prem_proj,
       g_sigma2      = g_sigma2,
       f_sigma2      = f_sigma2,
-      f_sel    = f_sel,
+      f_sel         = f_sel,
       last_obs      = last_obs[1L],
       maturity_from = maturity_from[1L],
       alpha         = alpha,
@@ -392,10 +392,10 @@ fit_loss <- function(x,
     ),
     loss_param_se2 = .sa_param_var(
       loss_proj     = loss_proj,
-      prem_proj  = prem_proj,
+      prem_proj     = prem_proj,
       g_var         = g_var,
       f_var         = f_var,
-      f_sel    = f_sel,
+      f_sel         = f_sel,
       last_obs      = last_obs[1L],
       maturity_from = maturity_from[1L],
       method        = method
@@ -468,7 +468,7 @@ fit_loss <- function(x,
     proj            = proj,
     maturity        = maturity,
     loss_ata_fit    = loss_ata_fit,
-    prem_ata_fit = prem_ata_fit,
+    prem_ata_fit    = prem_ata_fit,
     premium_fit     = premium_fit,
     ed              = ed_fit$link,
     factor          = ed_fit$factor,
@@ -495,13 +495,33 @@ print.LossFit <- function(x, ...) {
   grp <- x$groups
   if (is.null(grp)) grp <- character(0)
 
+  # Maturity labels are dynamic (depend on group string lengths), so
+  # the colon column is computed from the union of static + dynamic
+  # labels rather than a hardcoded width.
+  mat_labels <- character(0)
+  if (!is.null(x$maturity) && nrow(x$maturity)) {
+    if (length(grp)) {
+      grp_txt <- vapply(seq_len(nrow(x$maturity)), function(i)
+        paste(x$maturity[i, grp, with = FALSE], collapse = "/"),
+        character(1L))
+      mat_labels <- sprintf("maturity[%s]", grp_txt)
+    } else {
+      mat_labels <- "maturity"
+    }
+  }
+
+  static_labels <- c("method", "alpha", "sigma_method", "recent", "regime",
+                     "groups", "n_cohorts")
+  lw  <- max(nchar(c(static_labels, mat_labels)))
+  pad <- function(label) formatC(label, width = lw, flag = "-")
+
   cat("<LossFit>\n")
-  cat("method       :", x$method,       "\n")
-  cat("alpha        :", x$alpha,        "\n")
-  cat("sigma_method :", x$sigma_method, "\n")
-  cat("recent       :",
+  cat(pad("method"),       ":", x$method,       "\n")
+  cat(pad("alpha"),        ":", x$alpha,        "\n")
+  cat(pad("sigma_method"), ":", x$sigma_method, "\n")
+  cat(pad("recent"),       ":",
       if (!is.null(x$recent)) x$recent else "all", "\n")
-  cat("regime       :")
+  cat(pad("regime"),       ":")
   if (is.null(x$regime)) {
     cat(" none\n")
   } else if (inherits(x$regime, "Regime")) {
@@ -510,32 +530,20 @@ print.LossFit <- function(x, ...) {
     cat(" ", format(x$regime), "\n", sep = "")
   }
 
-  if (!is.null(x$maturity) && nrow(x$maturity)) {
+  if (length(mat_labels)) {
     mat <- .copy_dt(x$maturity)
-    if (length(grp)) {
-      grp_txt <- vapply(seq_len(nrow(mat)), function(i)
-        paste(mat[i, grp, with = FALSE], collapse = "/"), character(1L))
-      rows <- .format_record_table(
-        list(
-          label = sprintf("maturity[%s]", grp_txt),
-          value = sprintf(": %d", mat$change)
-        ),
-        justify = c("left", "left"),
-        sep     = " "
-      )
-      for (row in rows) cat(row, "\n", sep = "")
-    } else {
-      cat("maturity     :", mat$change[1L], "\n")
+    for (i in seq_along(mat_labels)) {
+      cat(pad(mat_labels[i]), ":", mat$change[i], "\n")
     }
   }
 
   if (length(grp)) {
-    cat("groups       :", paste(grp, collapse = ", "), "\n")
+    cat(pad("groups"), ":", paste(grp, collapse = ", "), "\n")
   } else {
-    cat("groups       : none\n")
+    cat(pad("groups"), ": none\n", sep = "")
   }
 
-  cat("n_cohorts    :", length(unique(x$full$cohort)), "\n")
+  cat(pad("n_cohorts"), ":", length(unique(x$full$cohort)), "\n")
   invisible(x)
 }
 
@@ -557,9 +565,7 @@ summary.LossFit <- function(object, ...) {
   out <- full[, .SD[which.max(dev)], by = by_cols]
   keep <- c(by_cols, "loss_proj", "loss_total_se", "loss_total_cv")
   out <- out[, .SD, .SDcols = keep]
-  data.table::setnames(out,
-    c("loss_proj", "loss_total_se", "loss_total_cv"),
-    c("ultimate",  "ultimate_se",   "ultimate_cv"))
+  data.table::setnames(out, "loss_proj", "loss_ult")
   out[]
 }
 
@@ -791,7 +797,7 @@ summary.LossFit <- function(object, ...) {
   raw <- .copy_dt(triangle)
 
   obs <- raw[, .(
-    loss_obs    = .SD[[target]],
+    loss_obs = .SD[[target]],
     prem_obs = .SD[[exposure]]
   ), by = c(grp, "cohort", "dev")]
 
@@ -831,7 +837,7 @@ summary.LossFit <- function(object, ...) {
 
   full[, ("prem_proj") := .cl_proj(
     target_obs = prem_obs,
-    f_sel = f_exposure
+    f_sel      = f_exposure
   ), by = c(grp, "cohort")]
 
   full[, ("f_exposure") := NULL]

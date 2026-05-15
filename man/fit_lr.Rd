@@ -19,7 +19,7 @@ fit_lr(
   rho = 0.95,
   conf_level = 0.95,
   bootstrap = FALSE,
-  B = 1000,
+  B = 999,
   seed = NULL
 )
 }
@@ -116,7 +116,7 @@ are derived via residual bootstrap rather than the analytical
 delta method. Default is \code{FALSE}.}
 
 \item{B}{Integer number of bootstrap replications. Used only when
-\code{bootstrap = TRUE}. Default is \code{1000}.}
+\code{bootstrap = TRUE}. Default is \code{999}.}
 
 \item{seed}{Optional integer seed for reproducible bootstrap.
 Default is \code{NULL}.}

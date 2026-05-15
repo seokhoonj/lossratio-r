@@ -313,21 +313,38 @@ fit_premium <- function(x,
 #' @param ... Unused.
 #' @export
 print.PremiumFit <- function(x, ...) {
+  grp    <- x$groups
+  if (is.null(grp)) grp <- character(0)
   method <- attr(x, "premium_method")
-  cat("PremiumFit\n")
-  cat("  variance     :", switch(method,
-    ed = "ED-additive recursion",
-    cl = "CL-multiplicative recursion (Mack)"), "\n")
-  cat("  n_cohorts    :", length(unique(x$full$cohort)), "\n")
-  cat("  n_links      :", nrow(x$selected), "\n")
-  cat("  regime       :")
+
+  static_labels <- c("method", "alpha", "sigma_method", "recent", "regime",
+                     "groups", "n_cohorts", "n_links")
+  lw  <- max(nchar(static_labels))
+  pad <- function(label) formatC(label, width = lw, flag = "-")
+
+  cat("<PremiumFit>\n")
+  cat(pad("method"),       ":", method,         "\n")
+  cat(pad("alpha"),        ":", x$alpha,        "\n")
+  cat(pad("sigma_method"), ":", x$sigma_method, "\n")
+  cat(pad("recent"),       ":",
+      if (!is.null(x$recent)) x$recent else "all", "\n")
+  cat(pad("regime"),       ":")
   if (is.null(x$regime)) {
-    cat(" NULL\n")
+    cat(" none\n")
   } else if (inherits(x$regime, "Regime")) {
     cat("\n"); print(x$regime)
   } else {
     cat(" ", format(x$regime), "\n", sep = "")
   }
+
+  if (length(grp)) {
+    cat(pad("groups"), ":", paste(grp, collapse = ", "), "\n")
+  } else {
+    cat(pad("groups"), ": none\n", sep = "")
+  }
+
+  cat(pad("n_cohorts"), ":", length(unique(x$full$cohort)), "\n")
+  cat(pad("n_links"),   ":", nrow(x$selected),              "\n")
   invisible(x)
 }
 
@@ -337,10 +354,14 @@ print.PremiumFit <- function(x, ...) {
 #' @param ... Unused.
 #' @export
 summary.PremiumFit <- function(object, ...) {
+  grp <- object$groups
+  if (is.null(grp)) grp <- character(0)
+
   full <- .copy_dt(object$full)
-  out <- full[, .SD[which.max(dev)], by = cohort]
-  out[, .(cohort,
-          ultimate    = prem_proj,
-          ultimate_se = prem_total_se,
-          ultimate_cv = prem_total_cv)]
+  by_cols <- c(grp, "cohort")
+  out <- full[, .SD[which.max(dev)], by = by_cols]
+  keep <- c(by_cols, "prem_proj", "prem_total_se", "prem_total_cv")
+  out <- out[, .SD, .SDcols = keep]
+  data.table::setnames(out, "prem_proj", "prem_ult")
+  out[]
 }

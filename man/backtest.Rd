@@ -24,7 +24,7 @@ backtest(
   rho = 0.95,
   conf_level = 0.95,
   bootstrap = FALSE,
-  B = 1000,
+  B = 999,
   seed = NULL,
   ...
 )

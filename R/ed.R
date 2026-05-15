@@ -79,14 +79,14 @@
     m    <- mean(vals)
 
     .(
-      mean    = m,
-      median  = stats::median(vals),
-      wt      = sum(dl, na.rm = TRUE) / sum(ef, na.rm = TRUE),
-      cv      = stats::sd(vals, na.rm = TRUE) / abs(m),
-      n_cohorts   = .N,
-      n_valid = sum(is.finite(intensity)),
-      n_inf   = sum(is.infinite(intensity)),
-      n_nan   = sum(is.nan(intensity))
+      mean      = m,
+      median    = stats::median(vals),
+      wt        = sum(dl, na.rm = TRUE) / sum(ef, na.rm = TRUE),
+      cv        = stats::sd(vals, na.rm = TRUE) / abs(m),
+      n_cohorts = .N,
+      n_valid   = sum(is.finite(intensity)),
+      n_inf     = sum(is.infinite(intensity)),
+      n_nan     = sum(is.nan(intensity))
     )
   }, by = grp_link]
 
@@ -309,11 +309,11 @@ fit_ed <- function(x,
 
   # 4b) expand grid (joins prem_proj from prem_ata_fit)
   full <- .expand_grid(
-    triangle        = x,
-    ed_fit          = out,
+    triangle     = x,
+    ed_fit       = out,
     prem_ata_fit = prem_ata_fit,
-    target          = target,
-    exposure        = exposure
+    target       = target,
+    exposure     = exposure
   )
 
   # rename .expand_grid output to generic worker names
@@ -344,7 +344,7 @@ fit_ed <- function(x,
   full[, ("target_proj") := .ed_proj(
     target_obs    = target_obs,
     exposure_proj = exposure_proj,
-    g_sel    = g_sel
+    g_sel         = g_sel
   ), by = c(grp, "cohort")]
 
   # 4f) target variance (ED additive recursion)
@@ -590,9 +590,9 @@ print.EDFit <- function(x, ...) {
   res <- dt[, {
     if (.N == 1L) {
       data.table::data.table(
-        g     = target_delta[1L] / exposure_from[1L],
-        g_se  = NA_real_,
-        sigma = NA_real_,
+        g         = target_delta[1L] / exposure_from[1L],
+        g_se      = NA_real_,
+        sigma     = NA_real_,
         n_cohorts = 1L
       )
     } else {
@@ -616,9 +616,9 @@ print.EDFit <- function(x, ...) {
         if (is.finite(sigma_val) && abs(sigma_val) < tol) sigma_val <- 0
 
         data.table::data.table(
-          g     = g_val,
-          g_se  = g_se_val,
-          sigma = sigma_val,
+          g         = g_val,
+          g_se      = g_se_val,
+          sigma     = sigma_val,
           n_cohorts = .N
         )
       }

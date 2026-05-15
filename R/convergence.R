@@ -186,16 +186,16 @@
 #'
 #' @export
 detect_convergence <- function(triangle,
-                              method        = c("tail", "window",
-                                                "slope", "all"),
-                              max_drift     = 0.01,
-                              max_slope     = 1e-3,
-                              max_dispersion        = 0.15,
-                              window        = 5L,
-                              mat_k        = NULL,
-                              holdout_max   = NULL,
-                              min_n_cohorts = 5L,
-                              ...) {
+                               method         = c("tail", "window",
+                                                  "slope", "all"),
+                               max_drift      = 0.01,
+                               max_slope      = 1e-3,
+                               max_dispersion = 0.15,
+                               window         = 5L,
+                               mat_k          = NULL,
+                               holdout_max    = NULL,
+                               min_n_cohorts  = 5L,
+                               ...) {
 
   # LR convergence detection always backtests the LR projection from
   # fit_lr; the dispatcher is fixed (no `target=` dispatch).
@@ -358,28 +358,28 @@ detect_convergence <- function(triangle,
 
   # 12) assemble return object -----------------------------------------
   out <- list(
-    call          = match.call(),
-    conv_k        = conv_k,
-    method        = method,
-    mat_k        = mat_k,
-    dev_max       = dev_max,
-    dev_cand      = dev_cand,
-    lr            = lr,
-    revision      = revision,
-    drift_window  = drift_window,
-    drift_tail    = drift_tail,
-    slope         = slope,
-    dispersion    = dispersion,
-    pass_window   = pass_window,
-    pass_tail     = pass_tail,
-    pass_slope    = pass_slope,
-    pass          = pass,
-    max_drift     = max_drift,
-    max_slope     = max_slope,
-    max_dispersion        = max_dispersion,
-    window        = window,
-    holdout_max   = holdout_max,
-    min_n_cohorts = min_n_cohorts
+    call           = match.call(),
+    conv_k         = conv_k,
+    method         = method,
+    mat_k          = mat_k,
+    dev_max        = dev_max,
+    dev_cand       = dev_cand,
+    lr             = lr,
+    revision       = revision,
+    drift_window   = drift_window,
+    drift_tail     = drift_tail,
+    slope          = slope,
+    dispersion     = dispersion,
+    pass_window    = pass_window,
+    pass_tail      = pass_tail,
+    pass_slope     = pass_slope,
+    pass           = pass,
+    max_drift      = max_drift,
+    max_slope      = max_slope,
+    max_dispersion = max_dispersion,
+    window         = window,
+    holdout_max    = holdout_max,
+    min_n_cohorts  = min_n_cohorts
   )
 
   data.table::setattr(out, "groups",     grp)
