@@ -258,8 +258,8 @@ fit_lr <- function(x,
   full[, ("lr_se") := .compute_lr_se(
     loss       = loss_proj,
     premium    = prem_proj,
-    se_loss    = loss_total_se,
-    se_prem = if (se_method == "delta") prem_total_se else NULL,
+    loss_se    = loss_total_se,
+    prem_se = if (se_method == "delta") prem_total_se else NULL,
     method     = se_method,
     rho        = rho
   )]
@@ -494,8 +494,8 @@ summary.LRFit <- function(object, ...) {
 #'
 #' @param loss Ultimate loss vector (`L`).
 #' @param premium Ultimate prem vector (`E`).
-#' @param se_loss `SE(L)`.
-#' @param se_prem `SE(P)`. Unused for `"fixed"`; may be `NULL`.
+#' @param loss_se `SE(L)`.
+#' @param prem_se `SE(P)`. Unused for `"fixed"`; may be `NULL`.
 #' @param method One of `"fixed"` (default) or `"delta"`.
 #' @param rho Loss-prem correlation in `(-1, 1)`. Used only for
 #'   `"delta"`. Default `0.95`.
@@ -505,8 +505,8 @@ summary.LRFit <- function(object, ...) {
 #' @keywords internal
 .compute_lr_se <- function(loss,
                            premium,
-                           se_loss,
-                           se_prem = NULL,
+                           loss_se,
+                           prem_se = NULL,
                            method     = c("fixed", "delta"),
                            rho        = 0.95) {
 
@@ -518,18 +518,18 @@ summary.LRFit <- function(object, ...) {
 
   if (method == "fixed") {
     return(data.table::fifelse(
-      is.finite(se_loss) & is.finite(prem) & prem != 0,
-      se_loss / prem, NA_real_
+      is.finite(loss_se) & is.finite(prem) & prem != 0,
+      loss_se / prem, NA_real_
     ))
   }
 
   # delta: first-order Taylor with prem variance + correlation
-  lr_var <- (se_loss / prem)^2 +
-            (loss * se_prem / prem^2)^2 -
-            2 * rho * loss * se_loss * se_prem / prem^3
+  lr_var <- (loss_se / prem)^2 +
+            (loss * prem_se / prem^2)^2 -
+            2 * rho * loss * loss_se * prem_se / prem^3
   se <- sqrt(pmax(lr_var, 0))
   bad <- !is.finite(loss)    | !is.finite(prem) |
-         !is.finite(se_loss) | !is.finite(se_prem) |
+         !is.finite(loss_se) | !is.finite(prem_se) |
          prem <= 0
   se[bad] <- NA_real_
   se
