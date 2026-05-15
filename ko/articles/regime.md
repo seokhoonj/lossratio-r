@@ -70,11 +70,11 @@ r
 #>   method    : e_divisive
 #>   target    : lr
 #>   treatment : latest_only
-#>   window (window) : dev_m 1-6
-#>   cohorts    : 31 analysed (5 dropped)
+#>   window (window) : dev_m 1-4
+#>   cohorts    : 33 analysed (3 dropped)
 #>   regimes    : 2
 #>   changes    : 24.07
-#>   PC1 / PC2  : 80.0% / 12.7%
+#>   PC1 / PC2  : 75.6% / 18.9%
 ```
 
 The `window` argument controls how many development periods define the
@@ -93,12 +93,12 @@ summary(r)
 #>   method    : e_divisive
 #>   target    : lr
 #>   treatment : latest_only
-#>   window    : dev_m 1-6
-#>   cohorts   : 31 analysed (5 dropped)
+#>   window    : dev_m 1-4
+#>   cohorts   : 33 analysed (3 dropped)
 #> 
 #> Regimes (2):
 #>   1: 23.01-24.06 (18 cohorts)
-#>   2: 24.07-25.07 (13 cohorts)
+#>   2: 24.07-25.09 (15 cohorts)
 #> 
 #> Changes: 24.07
 
@@ -123,19 +123,21 @@ r$labels
 #> 16:      SUR 2024-04-01 23.01-24.06         1
 #> 17:      SUR 2024-05-01 23.01-24.06         1
 #> 18:      SUR 2024-06-01 23.01-24.06         1
-#> 19:      SUR 2024-07-01 24.07-25.07         2
-#> 20:      SUR 2024-08-01 24.07-25.07         2
-#> 21:      SUR 2024-09-01 24.07-25.07         2
-#> 22:      SUR 2024-10-01 24.07-25.07         2
-#> 23:      SUR 2024-11-01 24.07-25.07         2
-#> 24:      SUR 2024-12-01 24.07-25.07         2
-#> 25:      SUR 2025-01-01 24.07-25.07         2
-#> 26:      SUR 2025-02-01 24.07-25.07         2
-#> 27:      SUR 2025-03-01 24.07-25.07         2
-#> 28:      SUR 2025-04-01 24.07-25.07         2
-#> 29:      SUR 2025-05-01 24.07-25.07         2
-#> 30:      SUR 2025-06-01 24.07-25.07         2
-#> 31:      SUR 2025-07-01 24.07-25.07         2
+#> 19:      SUR 2024-07-01 24.07-25.09         2
+#> 20:      SUR 2024-08-01 24.07-25.09         2
+#> 21:      SUR 2024-09-01 24.07-25.09         2
+#> 22:      SUR 2024-10-01 24.07-25.09         2
+#> 23:      SUR 2024-11-01 24.07-25.09         2
+#> 24:      SUR 2024-12-01 24.07-25.09         2
+#> 25:      SUR 2025-01-01 24.07-25.09         2
+#> 26:      SUR 2025-02-01 24.07-25.09         2
+#> 27:      SUR 2025-03-01 24.07-25.09         2
+#> 28:      SUR 2025-04-01 24.07-25.09         2
+#> 29:      SUR 2025-05-01 24.07-25.09         2
+#> 30:      SUR 2025-06-01 24.07-25.09         2
+#> 31:      SUR 2025-07-01 24.07-25.09         2
+#> 32:      SUR 2025-08-01 24.07-25.09         2
+#> 33:      SUR 2025-09-01 24.07-25.09         2
 #>     coverage     cohort      regime regime_id
 #>       <char>     <Date>      <fctr>     <int>
 ```
@@ -248,15 +250,15 @@ summary(r2)
 #>   method    : e_divisive
 #>   target    : lr
 #>   treatment : latest_only
-#>   window    : dev_m 1-6
-#>   cohorts   : 31 analysed (5 dropped)
+#>   window    : dev_m 1-4
+#>   cohorts   : 33 analysed (3 dropped)
 #> 
 #> Regimes (3):
-#>   1: 23.01-23.08 (8 cohorts)
-#>   2: 23.09-24.06 (10 cohorts)
-#>   3: 24.07-25.07 (13 cohorts)
+#>   1: 23.01-24.06 (18 cohorts)
+#>   2: 24.07-25.06 (12 cohorts)
+#>   3: 25.07-25.09 (3 cohorts)
 #> 
-#> Changes: 23.09, 24.07
+#> Changes: 24.07, 25.07
 ```
 
 For `"e_divisive"` and `"pelt"`, `n_regimes` is a request (the algorithm
@@ -283,7 +285,7 @@ r_all   <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 r_all$changes
 #>    coverage     change regime_id pre_value post_value magnitude
 #>      <char>     <Date>     <int>     <num>      <num>     <num>
-#> 1:      SUR 2024-07-01         2  1.041267  0.5968553 0.4444118
+#> 1:      SUR 2024-07-01         2 0.9065895  0.5479919 0.3585976
 ```
 
 In multi-group mode `r_all$changes` is a `data.table` with the group

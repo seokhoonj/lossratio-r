@@ -99,8 +99,8 @@ Cohort lines are grouped by the period variable stored in
 
 The cumulative loss ratio is defined here as: \$\$lr = loss / prem\$\$
 
-For long-term health insurance applications, risk prem is commonly used
-as the `prem` measure.
+For long-term health insurance applications, risk premium is commonly
+used as the `prem` measure.
 
 The weighted mean is defined as:
 

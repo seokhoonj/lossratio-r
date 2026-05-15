@@ -67,8 +67,8 @@ plot_triangle(
 
 - label_style:
 
-  One of `"value"` (lr only) or `"detail"` (lr with loss/exposure
-  amounts). Default is `"value"`.
+  One of `"value"` (lr only) or `"detail"` (lr with loss/prem amounts).
+  Default is `"value"`.
 
 - label_size:
 

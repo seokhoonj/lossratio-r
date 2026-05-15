@@ -562,11 +562,11 @@ detect_regime(sub, method = "e_divisive")
 #>   method    : e_divisive
 #>   target    : lr
 #>   treatment : latest_only
-#>   window (window) : dev_m 1-6
-#>   cohorts    : 31 analysed (5 dropped)
+#>   window (window) : dev_m 1-4
+#>   cohorts    : 33 analysed (3 dropped)
 #>   regimes    : 2
 #>   changes    : 24.07
-#>   PC1 / PC2  : 80.0% / 12.7%
+#>   PC1 / PC2  : 75.6% / 18.9%
 ```
 
 상세 설명은

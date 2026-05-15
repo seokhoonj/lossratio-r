@@ -60,7 +60,7 @@ up-to-36-dev jagged triangle:
 - incr_prem:
 
   Per-period prem amount (numeric); for long-term health insurance
-  applications, risk prem is commonly used.
+  applications, risk premium is commonly used.
 
 ## Source
 

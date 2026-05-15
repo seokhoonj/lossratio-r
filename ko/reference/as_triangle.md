@@ -53,8 +53,8 @@ The result contains:
 
 The cumulative loss ratio is defined as: \$\$lr = loss / prem\$\$
 
-For long-term health insurance applications, risk prem is commonly used
-as the `prem` measure.
+For long-term health insurance applications, risk premium is commonly
+used as the `prem` measure.
 
 Proportion variables are computed within each `(cohort, dev)` cell:
 
@@ -131,8 +131,8 @@ as_triangle(
 
   Single character; per-period prem column in `df` (raw name, e.g.,
   `"incr_prem"`). Premium measure used as denominator for loss ratio
-  calculations. For long-term health insurance applications, risk prem
-  is commonly used.
+  calculations. For long-term health insurance applications, risk
+  premium is commonly used.
 
 - grain:
 

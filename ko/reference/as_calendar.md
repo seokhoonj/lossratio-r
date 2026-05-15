@@ -22,8 +22,8 @@ columns within each `calendar` cell.
 
 The cumulative loss ratio is defined as: \$\$lr = loss / prem\$\$
 
-For long-term health insurance applications, risk prem is commonly used
-as the `prem` measure.
+For long-term health insurance applications, risk premium is commonly
+used as the `prem` measure.
 
 Proportion variables are computed within each `calendar` cell:
 

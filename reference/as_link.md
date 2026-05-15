@@ -32,8 +32,8 @@ Two modes are produced depending on `exposure`:
   In addition to the loss-side ATA, the exposure-driven intensity \\g =
   \Delta loss / prem\_{from}\\ is computed and stored in the `intensity`
   column. Premium measure used as denominator for loss ratio
-  calculations; for long-term health insurance applications, risk prem
-  is commonly used.
+  calculations; for long-term health insurance applications, risk
+  premium is commonly used.
 
 ## Usage
 

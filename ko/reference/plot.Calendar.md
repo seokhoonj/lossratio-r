@@ -4,7 +4,7 @@ Visualise an object of class `Calendar` as a time-series plot. The
 selected metric is plotted over the calendar-style `calendar`, or over
 the calendar development variable stored in `attr(x, "dev")`.
 
-Ratio metrics (`lr`, `lr`) and proportion metrics (`loss_share`,
+Ratio metrics (`lr`, `incr_lr`) and proportion metrics (`loss_share`,
 `incr_loss_share`, `prem_share`, `incr_prem_share`) are plotted on the
 original scale and displayed as percentages via y-axis labels. Amount
 metrics (`loss`, `incr_loss`, `prem`, `incr_prem`, `margin`,
@@ -82,7 +82,7 @@ Date, formatted per the triangle's `grain`).
 
 The loss ratio is defined as: \$\$lr = loss / prem\$\$
 
-where `prem` denotes risk prem rather than written prem.
+where `prem` denotes risk premium rather than written prem.
 
 ## Examples
 

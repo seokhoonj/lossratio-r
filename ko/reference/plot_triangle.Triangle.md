@@ -4,8 +4,9 @@ Visualise a `Triangle` object as a triangle-style table. Cells are
 arranged by period and dev dimensions, and each cell displays the
 selected metric.
 
-For ratio metrics (`lr`, `lr`), labels can show either the ratio alone
-or the ratio together with the associated loss / risk prem amounts.
+For ratio metrics (`lr`, `incr_lr`), labels can show either the ratio
+alone or the ratio together with the associated loss / risk premium
+amounts.
 
 For amount metrics (`loss`, `incr_loss`, `prem`, `incr_prem`, `margin`,
 `incr_margin`), labels show the selected amount only.
@@ -15,7 +16,7 @@ For proportion metrics (`loss_share`, `incr_loss_share`, `prem_share`,
 
 The loss ratio is defined as: \$\$lr = loss / prem\$\$
 
-where `prem` denotes risk prem rather than written prem.
+where `prem` denotes risk premium rather than written prem.
 
 ## Usage
 
@@ -74,9 +75,9 @@ plot_triangle(
 
   "detail"
 
-  :   For `lr` / `lr`, show the ratio in percent and, on the next line,
-      the associated loss / prem amounts. For amount and proportion
-      metrics, this falls back to `"value"`.
+  :   For `lr` / `incr_lr`, show the ratio in percent and, on the next
+      line, the associated loss / prem amounts. For amount and
+      proportion metrics, this falls back to `"value"`.
 
 - label_size:
 
