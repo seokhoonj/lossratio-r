@@ -29,8 +29,8 @@ utility.
 .compute_lr_se(
   loss,
   premium,
-  se_loss,
-  se_prem = NULL,
+  loss_se,
+  prem_se = NULL,
   method = c("fixed", "delta"),
   rho = 0.95
 )
@@ -46,11 +46,11 @@ utility.
 
   Ultimate prem vector (`E`).
 
-- se_loss:
+- loss_se:
 
   `SE(L)`.
 
-- se_prem:
+- prem_se:
 
   `SE(P)`. Unused for `"fixed"`; may be `NULL`.
 

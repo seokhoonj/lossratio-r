@@ -172,8 +172,8 @@ so this helper is <em>not</em> a generic ratio-SE utility.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.compute_lr_se</span><span class="op">(</span></span>
 <span>  <span class="va">loss</span>,</span>
 <span>  <span class="va">premium</span>,</span>
-<span>  <span class="va">se_loss</span>,</span>
-<span>  se_prem <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">loss_se</span>,</span>
+<span>  prem_se <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fixed"</span>, <span class="st">"delta"</span><span class="op">)</span>,</span>
 <span>  rho <span class="op">=</span> <span class="fl">0.95</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -191,11 +191,11 @@ so this helper is <em>not</em> a generic ratio-SE utility.</p>
 <dd><p>Ultimate prem vector (<code>E</code>).</p></dd>
 
 
-<dt id="arg-se-loss">se_loss<a class="anchor" aria-label="anchor" href="#arg-se-loss"></a></dt>
+<dt id="arg-loss-se">loss_se<a class="anchor" aria-label="anchor" href="#arg-loss-se"></a></dt>
 <dd><p><code>SE(L)</code>.</p></dd>
 
 
-<dt id="arg-se-prem">se_prem<a class="anchor" aria-label="anchor" href="#arg-se-prem"></a></dt>
+<dt id="arg-prem-se">prem_se<a class="anchor" aria-label="anchor" href="#arg-prem-se"></a></dt>
 <dd><p><code>SE(P)</code>. Unused for <code>"fixed"</code>; may be <code>NULL</code>.</p></dd>
 
 
