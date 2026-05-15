@@ -80,17 +80,26 @@ triangle and returning a \code{Maturity} object (e.g. from
 \item{conf_level}{Confidence level for analytical CI on the loss
 projection (\code{loss_ci_lo}, \code{loss_ci_hi}). Default \code{0.95}.}
 
-\item{bootstrap}{Logical or \code{NULL} (default). When \code{NULL}, auto-resolved
-by \code{method}: \code{TRUE} for \code{"sa"} (combined ED+CL variance is
-approximate near the maturity transition) and \code{"ed"} (additive
-variance recursion lacks a published derivation); \code{FALSE} for \code{"cl"}
-(Mack's exact formula). Set explicitly to override. When \code{TRUE},
-\code{loss_ci_lo} / \code{loss_ci_hi} are bootstrap quantiles and
-\code{loss_total_se} / \code{loss_total_cv} are derived from simulation SD;
-the analytical proc/param decomposition is retained as diagnostic.}
+\item{bootstrap}{Bootstrap configuration. Five forms accepted:
+\describe{
+\item{\code{NULL} (default)}{Auto-resolved by \code{method}: bootstrap for
+\code{"sa"}/\code{"ed"}, analytical for \code{"cl"}. Matches the legacy
+\code{bootstrap = NULL} behavior.}
+\item{\code{TRUE} / \code{FALSE}}{Back-compat with the legacy logical arg.
+\code{TRUE} triggers \code{"auto"}; \code{FALSE} disables.}
+\item{\code{"auto"}}{Internal \code{bootstrap()} call on the loss triangle
+with defaults \verb{(method = "parametric", mode = "dev", process = "normal", target = "loss")}.}
+\item{\code{BootstrapTriangle}}{Pre-built object from \code{bootstrap()}.
+Must have \code{meta$target == "loss"}.}
+\item{Function \verb{function(tri) -> BootstrapTriangle}}{Lazy spec
+invoked on the input Triangle (leakage-safe for \code{backtest()}).}
+}
+Premium stays at its observed values during the bootstrap (the
+loss-only convention); premium-side uncertainty is layered in by
+\code{fit_lr()} via its own bootstrap.}
 
 \item{B}{Integer number of bootstrap replicates. Used only when
-\code{bootstrap = TRUE}. Default \code{999}.}
+\code{bootstrap} resolves to \code{"auto"}. Default \code{999}.}
 
 \item{seed}{Optional integer seed for reproducible bootstrap. Default
 \code{NULL}.}

@@ -510,3 +510,73 @@ test_that("fit_premium projected cells have finite SE/CI under bootstrap", {
   expect_true(all(is.finite(proj$prem_ci_hi)))
   expect_true(all(proj$prem_ci_lo <= proj$prem_ci_hi))
 })
+
+
+# ---------------------------------------------------------------------------
+# Phase 2c: fit_loss migration to new bootstrap pipeline
+# ---------------------------------------------------------------------------
+
+test_that("fit_loss default (method=sa) uses bootstrap", {
+  tri <- make_sub_tri("SUR")
+  lf <- fit_loss(tri, seed = 1, B = 50)
+  expect_identical(lf$ci_type, "bootstrap")
+  expect_true(!is.null(lf$bootstrap))
+})
+
+test_that("fit_loss method=ed uses bootstrap by default", {
+  tri <- make_sub_tri("SUR")
+  lf <- fit_loss(tri, method = "ed", seed = 1, B = 50)
+  expect_identical(lf$ci_type, "bootstrap")
+})
+
+test_that("fit_loss method=cl bootstrap=FALSE uses analytical", {
+  tri <- make_sub_tri("SUR")
+  lf <- fit_loss(tri, method = "cl", bootstrap = FALSE)
+  expect_identical(lf$ci_type, "analytical")
+  expect_null(lf$bootstrap)
+})
+
+test_that("fit_loss method=cl bootstrap=TRUE uses bootstrap", {
+  tri <- make_sub_tri("SUR")
+  lf <- fit_loss(tri, method = "cl", bootstrap = TRUE, seed = 1, B = 50)
+  expect_identical(lf$ci_type, "bootstrap")
+})
+
+test_that("fit_loss accepts a pre-built BootstrapTriangle", {
+  tri <- make_sub_tri("SUR")
+  b <- bootstrap(tri, target = "loss", B = 50, seed = 1)
+  lf <- fit_loss(tri, method = "sa", bootstrap = b)
+  expect_identical(lf$ci_type, "bootstrap")
+  expect_identical(lf$bootstrap$B, 50L)
+})
+
+test_that("fit_loss accepts a bootstrap function (lazy spec)", {
+  tri <- make_sub_tri("SUR")
+  fn <- function(t) bootstrap(t, target = "loss", B = 30, seed = 1)
+  lf <- fit_loss(tri, method = "ed", bootstrap = fn)
+  expect_identical(lf$ci_type, "bootstrap")
+  expect_identical(lf$bootstrap$B, 30L)
+})
+
+test_that("fit_loss rejects a BootstrapTriangle on the wrong target", {
+  tri <- make_sub_tri("SUR")
+  b_prem <- bootstrap(tri, target = "prem", B = 30, seed = 1)
+  expect_error(fit_loss(tri, bootstrap = b_prem),
+               "expects target")
+})
+
+test_that("fit_loss projected cells have finite SE/CI where loss_proj is defined", {
+  tri <- make_sub_tri("SUR")
+  for (method in c("sa", "ed", "cl")) {
+    lf <- fit_loss(tri, method = method, bootstrap = TRUE,
+                    seed = 1, B = 50)
+    # Some method=cl projected cells can have NA loss_proj (analytical
+    # projection requires sufficient prior-dev data). Only test cells
+    # where the analytical projection itself produced a finite value.
+    proj <- lf$full[is_observed == FALSE & is.finite(loss_proj)]
+    expect_true(all(is.finite(proj$loss_total_se)), info = method)
+    expect_true(all(is.finite(proj$loss_ci_lo)),    info = method)
+    expect_true(all(is.finite(proj$loss_ci_hi)),    info = method)
+    expect_true(all(proj$loss_ci_lo <= proj$loss_ci_hi), info = method)
+  }
+})
