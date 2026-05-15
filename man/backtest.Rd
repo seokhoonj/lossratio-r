@@ -23,7 +23,7 @@ backtest(
   se_method = c("fixed", "delta"),
   rho = 0.95,
   conf_level = 0.95,
-  bootstrap = FALSE,
+  bootstrap = NULL,
   B = 999,
   seed = NULL,
   ...
@@ -103,8 +103,10 @@ method. Unused for \code{target = "loss"} / \code{target = "premium"}.}
 \item{conf_level}{Confidence level for \code{fit_lr()} / \code{fit_loss()}
 intervals. Unused for \code{target = "premium"}.}
 
-\item{bootstrap, B, seed}{Bootstrap controls for \code{fit_lr()}. Unused
-for \code{target = "loss"} / \code{target = "premium"}.}
+\item{bootstrap, B, seed}{Bootstrap controls forwarded to \code{fit_lr()}.
+\code{bootstrap = NULL} (default) defers to \code{fit_lr}'s method-dependent
+resolution (bootstrap for \code{"sa"}/\code{"ed"}, analytical for \code{"cl"}).
+Unused for \code{target = "loss"} / \code{target = "premium"}.}
 
 \item{...}{Additional arguments passed to the underlying fitter.}
 

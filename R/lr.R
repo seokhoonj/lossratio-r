@@ -106,9 +106,15 @@
 #'   to the paid/incurred correlation used in Munich chain ladder).
 #' @param conf_level Confidence level used for `lr_ci_lo`/`lr_ci_hi`
 #'   in the cohort summary. Default is `0.95`.
-#' @param bootstrap Logical; if `TRUE`, parameter and process variance
-#'   are derived via residual bootstrap rather than the analytical
-#'   delta method. Default is `FALSE`.
+#' @param bootstrap Logical or `NULL` (default). When `NULL`, the
+#'   variance method is chosen by `method`: bootstrap for `"sa"` and
+#'   `"ed"`, analytical (Mack-style delta) for `"cl"`. SA combines ED
+#'   (pre-maturity) and CL (post-maturity); the closed-form variance
+#'   across the transition is approximate. ED's analytical variance is
+#'   an additive variant of Mack's multiplicative formula without a
+#'   published derivation. Bootstrap avoids both issues. Pure CL has
+#'   Mack's exact formula, so analytical is the default there. Set
+#'   `TRUE`/`FALSE` explicitly to override.
 #' @param B Integer number of bootstrap replications. Used only when
 #'   `bootstrap = TRUE`. Default is `999`.
 #' @param seed Optional integer seed for reproducible bootstrap.
@@ -157,7 +163,7 @@ fit_lr <- function(x,
                    se_method      = c("fixed", "delta"),
                    rho            = 0.95,
                    conf_level     = 0.95,
-                   bootstrap      = FALSE,
+                   bootstrap      = NULL,
                    B              = 999,
                    seed           = NULL) {
 
@@ -175,8 +181,15 @@ fit_lr <- function(x,
   # Resolve 4-type maturity input (NULL / Maturity / "auto" / function).
   maturity <- .resolve_maturity(maturity, x)
 
+  # Auto-resolve bootstrap default: TRUE for SA/ED (their analytical
+  # variance has known shortcomings), FALSE for CL (Mack's formula is
+  # the published gold standard).
+  if (is.null(bootstrap)) {
+    bootstrap <- method %in% c("sa", "ed")
+  }
+
   if (!is.logical(bootstrap) || length(bootstrap) != 1L || is.na(bootstrap))
-    stop("`bootstrap` must be a single non-missing logical value.",
+    stop("`bootstrap` must be a single non-missing logical value (or NULL).",
          call. = FALSE)
 
   if (bootstrap) {

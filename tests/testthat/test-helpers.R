@@ -43,7 +43,7 @@ test_that("maturity_at rejects unnamed / empty / mismatched args", {
 
 test_that("maturity_at output passes through fit_lr's maturity dispatch", {
   m <- maturity_at(coverage = "SUR", change = 4)
-  fit <- fit_lr(sub, maturity = m)
+  fit <- fit_lr(sub, maturity = m, bootstrap = FALSE)
   expect_s3_class(fit, "LRFit")
   # The dispatched object survives end-to-end
   expect_s3_class(fit$maturity, "Maturity")
@@ -66,7 +66,7 @@ test_that("maturity_spec captures kwargs and applies on triangle", {
 })
 
 test_that("maturity_spec plugs into fit_lr (closure form)", {
-  fit <- fit_lr(sub, maturity = maturity_spec(min_run = 2))
+  fit <- fit_lr(sub, maturity = maturity_spec(min_run = 2), bootstrap = FALSE)
   expect_s3_class(fit, "LRFit")
   expect_s3_class(fit$maturity, "Maturity")
 })
@@ -86,7 +86,7 @@ test_that("regime_spec captures kwargs and applies on triangle", {
 })
 
 test_that("regime_spec plugs into fit_lr (closure form)", {
-  fit <- fit_lr(sub, loss_regime = regime_spec(window = 12L))
+  fit <- fit_lr(sub, loss_regime = regime_spec(window = 12L), bootstrap = FALSE)
   expect_s3_class(fit, "LRFit")
   # The resolved Regime is attached to the fit
   expect_s3_class(fit$loss_regime, "Regime")
@@ -96,40 +96,42 @@ test_that("regime_spec plugs into fit_lr (closure form)", {
 
 test_that("fit_lr maturity arg accepts all 4 input types", {
   # 1. NULL — no maturity filter (allowed for non-SA methods)
-  fit_null <- fit_lr(sub, method = "cl", maturity = NULL)
+  fit_null <- fit_lr(sub, method = "cl", maturity = NULL, bootstrap = FALSE)
   expect_s3_class(fit_null, "LRFit")
   expect_null(fit_null$maturity)
 
   # 2. Maturity object (from maturity_at)
-  fit_obj <- fit_lr(sub, maturity = maturity_at(coverage = "SUR", change = 4))
+  fit_obj <- fit_lr(sub, maturity = maturity_at(coverage = "SUR", change = 4),
+                    bootstrap = FALSE)
   expect_s3_class(fit_obj$maturity, "Maturity")
 
   # 3. "auto" sentinel
-  fit_auto <- fit_lr(sub, maturity = "auto")
+  fit_auto <- fit_lr(sub, maturity = "auto", bootstrap = FALSE)
   expect_s3_class(fit_auto$maturity, "Maturity")
 
   # 4. Function (from maturity_spec)
-  fit_fn <- fit_lr(sub, maturity = maturity_spec(min_run = 2))
+  fit_fn <- fit_lr(sub, maturity = maturity_spec(min_run = 2), bootstrap = FALSE)
   expect_s3_class(fit_fn$maturity, "Maturity")
 })
 
 test_that("fit_lr loss_regime arg accepts all 4 input types", {
   # 1. NULL
-  fit_null <- fit_lr(sub, loss_regime = NULL)
+  fit_null <- fit_lr(sub, loss_regime = NULL, bootstrap = FALSE)
   expect_s3_class(fit_null, "LRFit")
   expect_null(fit_null$loss_regime)
 
   # 2. Regime object (from regime_at)
   fit_obj <- fit_lr(sub,
-                    loss_regime = regime_at(change = "2024-04-01"))
+                    loss_regime = regime_at(change = "2024-04-01"),
+                    bootstrap = FALSE)
   expect_s3_class(fit_obj$loss_regime, "Regime")
 
   # 3. "auto" sentinel
-  fit_auto <- fit_lr(sub, loss_regime = "auto")
+  fit_auto <- fit_lr(sub, loss_regime = "auto", bootstrap = FALSE)
   expect_s3_class(fit_auto$loss_regime, "Regime")
 
   # 4. Function (from regime_spec)
-  fit_fn <- fit_lr(sub, loss_regime = regime_spec(window = 12L))
+  fit_fn <- fit_lr(sub, loss_regime = regime_spec(window = 12L), bootstrap = FALSE)
   expect_s3_class(fit_fn$loss_regime, "Regime")
 })
 

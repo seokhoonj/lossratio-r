@@ -151,7 +151,7 @@ test_that("fit_ed target projection matches fit_lr method = 'ed'", {
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
   ef <- fit_ed(tri, target = "loss", exposure = "prem")
-  lr <- fit_lr(tri, method = "ed")
+  lr <- fit_lr(tri, method = "ed", bootstrap = FALSE)
 
   # Worker (fit_ed) produces the target/exposure projection; the LR
   # composition (lr_proj) is fit_lr's concern. Compare common columns.

@@ -79,8 +79,10 @@
 #'   method. Unused for `target = "loss"` / `target = "premium"`.
 #' @param conf_level Confidence level for `fit_lr()` / `fit_loss()`
 #'   intervals. Unused for `target = "premium"`.
-#' @param bootstrap,B,seed Bootstrap controls for `fit_lr()`. Unused
-#'   for `target = "loss"` / `target = "premium"`.
+#' @param bootstrap,B,seed Bootstrap controls forwarded to `fit_lr()`.
+#'   `bootstrap = NULL` (default) defers to `fit_lr`'s method-dependent
+#'   resolution (bootstrap for `"sa"`/`"ed"`, analytical for `"cl"`).
+#'   Unused for `target = "loss"` / `target = "premium"`.
 #' @param ... Additional arguments passed to the underlying fitter.
 #'
 #' @return An object of class `"Backtest"` with components:
@@ -147,7 +149,7 @@ backtest <- function(x,
                      se_method      = c("fixed", "delta"),
                      rho            = 0.95,
                      conf_level     = 0.95,
-                     bootstrap      = FALSE,
+                     bootstrap      = NULL,
                      B              = 999,
                      seed           = NULL,
                      ...) {

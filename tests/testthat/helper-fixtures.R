@@ -38,7 +38,7 @@ make_link_set <- function() {
     ed_fit  = fit_ed(tri, target = "loss", exposure = "prem"),
     ed_sm   = summary(ed),
     cl      = fit_cl(tri, target = "loss", method = "mack"),
-    lr      = fit_lr(tri, method = "sa"),
+    lr      = fit_lr(tri, method = "sa", bootstrap = FALSE),
     cal     = as_calendar(tri),
     tot     = as_total(tri)
   )

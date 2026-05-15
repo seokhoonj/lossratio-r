@@ -18,7 +18,7 @@ fit_lr(
   se_method = c("fixed", "delta"),
   rho = 0.95,
   conf_level = 0.95,
-  bootstrap = FALSE,
+  bootstrap = NULL,
   B = 999,
   seed = NULL
 )
@@ -111,9 +111,15 @@ to the paid/incurred correlation used in Munich chain ladder).}
 \item{conf_level}{Confidence level used for \code{lr_ci_lo}/\code{lr_ci_hi}
 in the cohort summary. Default is \code{0.95}.}
 
-\item{bootstrap}{Logical; if \code{TRUE}, parameter and process variance
-are derived via residual bootstrap rather than the analytical
-delta method. Default is \code{FALSE}.}
+\item{bootstrap}{Logical or \code{NULL} (default). When \code{NULL}, the
+variance method is chosen by \code{method}: bootstrap for \code{"sa"} and
+\code{"ed"}, analytical (Mack-style delta) for \code{"cl"}. SA combines ED
+(pre-maturity) and CL (post-maturity); the closed-form variance
+across the transition is approximate. ED's analytical variance is
+an additive variant of Mack's multiplicative formula without a
+published derivation. Bootstrap avoids both issues. Pure CL has
+Mack's exact formula, so analytical is the default there. Set
+\code{TRUE}/\code{FALSE} explicitly to override.}
 
 \item{B}{Integer number of bootstrap replications. Used only when
 \code{bootstrap = TRUE}. Default is \code{999}.}

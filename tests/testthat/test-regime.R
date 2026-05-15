@@ -242,7 +242,7 @@ test_that("multi-group Regime drives per-group fit_ata filtering", {
 test_that("multi-group Regime flows through fit_lr -> dispatcher -> worker", {
   r <- detect_regime(tri_all, by = "coverage", window = 6L,
                      method = "e_divisive")
-  fit <- fit_lr(tri_all, loss_regime = r)
+  fit <- fit_lr(tri_all, loss_regime = r, bootstrap = FALSE)
   expect_s3_class(fit, "LRFit")
   expect_true(nrow(fit$full) > 0L)
   # loss_regime preserves the original Regime object (multi-group
@@ -256,7 +256,7 @@ test_that("backtest passes multi-group Regime through to dispatcher", {
                      method = "e_divisive")
   bt <- backtest(tri_all, holdout = 6L, target = "lr",
                 loss_method = "sa", premium_method = "ed",
-                loss_regime = r)
+                loss_regime = r, bootstrap = FALSE)
   expect_s3_class(bt, "Backtest")
   expect_true(nrow(bt$ae_err) > 0L)
 })

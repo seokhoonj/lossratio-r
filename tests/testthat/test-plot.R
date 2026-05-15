@@ -8,7 +8,7 @@ af   <- fit_ata(tri, target = "loss")
 ed   <- as_link(tri, target = "loss", exposure = "prem")
 ef   <- fit_ed(tri, target = "loss", exposure = "prem")
 cl_m <- fit_cl(tri, target = "loss", method = "mack")
-lr   <- fit_lr(tri, method = "sa")
+lr   <- fit_lr(tri, method = "sa", bootstrap = FALSE)
 sub  <- as_triangle(exp[coverage == "SUR"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
 reg  <- detect_regime(sub, window = 12, method = "e_divisive")
 

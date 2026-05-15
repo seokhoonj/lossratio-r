@@ -131,7 +131,7 @@ test_that("plot_triangle.Backtest dispatches", {
 # fit_lr / target = "lr" support ----------------------------------------
 
 test_that("backtest works with target = 'lr', loss_method = 'sa'", {
-  bt <- backtest(sub, holdout = 6L, target = "lr", loss_method = "sa")
+  bt <- backtest(sub, holdout = 6L, target = "lr", loss_method = "sa", bootstrap = FALSE)
   expect_s3_class(bt, "Backtest")
   expect_s3_class(bt$fit, "LRFit")
   expect_true("expected" %in% names(bt$ae_err))
@@ -139,7 +139,7 @@ test_that("backtest works with target = 'lr', loss_method = 'sa'", {
 })
 
 test_that("backtest works with target = 'lr', loss_method = 'ed'", {
-  bt <- backtest(sub, holdout = 6L, target = "lr", loss_method = "ed")
+  bt <- backtest(sub, holdout = 6L, target = "lr", loss_method = "ed", bootstrap = FALSE)
   expect_s3_class(bt, "Backtest")
   expect_s3_class(bt$fit, "LRFit")
   expect_true(any(is.finite(bt$ae_err$ae_err)))
@@ -153,7 +153,7 @@ test_that("backtest works with target = 'lr', loss_method = 'cl'", {
 })
 
 test_that("backtest target = 'lr' uses lr_proj", {
-  bt <- backtest(sub, holdout = 6L, target = "lr", loss_method = "sa")
+  bt <- backtest(sub, holdout = 6L, target = "lr", loss_method = "sa", bootstrap = FALSE)
   cell <- bt$ae_err[is.finite(bt$ae_err$expected), ][1L, ]
   full <- bt$fit$full
   match_row <- full[full$cohort == cell$cohort & full$dev == cell$dev, ]
@@ -167,7 +167,7 @@ test_that("backtest preserves multi-group structure with target = 'lr'", {
 })
 
 test_that("plot.Backtest dispatches for lr backtests", {
-  bt <- backtest(sub, holdout = 6L, target = "lr", loss_method = "sa")
+  bt <- backtest(sub, holdout = 6L, target = "lr", loss_method = "sa", bootstrap = FALSE)
   for (tp in c("col", "diag", "cell")) {
     p <- suppressWarnings(plot(bt, type = tp))
     expect_true(is_plot(p), info = paste("type =", tp))
@@ -190,7 +190,8 @@ test_that("backtest accepts segment_wise Regime via loss_regime", {
   bt <- backtest(
     sub, holdout = 6L, target = "lr",
     loss_regime = regime_at(change    = c("2024-01-01", "2024-07-01"),
-                            treatment = "segment_wise")
+                            treatment = "segment_wise"),
+    bootstrap = FALSE
   )
   expect_s3_class(bt, "Backtest")
   expect_s3_class(bt$fit, "LRFit")
@@ -204,7 +205,8 @@ test_that("fit_lr accepts segment_wise Regime via loss_regime", {
   fit <- fit_lr(
     sub,
     loss_regime = regime_at(change    = c("2024-01-01", "2024-07-01"),
-                            treatment = "segment_wise")
+                            treatment = "segment_wise"),
+    bootstrap = FALSE
   )
   expect_s3_class(fit, "LRFit")
   expect_equal(fit$loss_regime$treatment, "segment_wise")
