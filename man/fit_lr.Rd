@@ -111,18 +111,28 @@ to the paid/incurred correlation used in Munich chain ladder).}
 \item{conf_level}{Confidence level used for \code{lr_ci_lo}/\code{lr_ci_hi}
 in the cohort summary. Default is \code{0.95}.}
 
-\item{bootstrap}{Logical or \code{NULL} (default). When \code{NULL}, the
-variance method is chosen by \code{method}: bootstrap for \code{"sa"} and
-\code{"ed"}, analytical (Mack-style delta) for \code{"cl"}. SA combines ED
-(pre-maturity) and CL (post-maturity); the closed-form variance
-across the transition is approximate. ED's analytical variance is
-an additive variant of Mack's multiplicative formula without a
-published derivation. Bootstrap avoids both issues. Pure CL has
-Mack's exact formula, so analytical is the default there. Set
-\code{TRUE}/\code{FALSE} explicitly to override.}
+\item{bootstrap}{Bootstrap configuration. Five forms accepted:
+\describe{
+\item{\code{NULL} (default)}{Auto-resolved by \code{method}: bootstrap for
+\code{"sa"}/\code{"ed"}, analytical for \code{"cl"}. Matches legacy behavior.}
+\item{\code{TRUE} / \code{FALSE}}{Back-compat with the legacy logical arg.
+\code{TRUE} triggers \code{"auto"}; \code{FALSE} disables.}
+\item{\code{"auto"}}{Internal \code{bootstrap()} call on the loss triangle
+with defaults \verb{(method = "parametric", mode = "dev", process = "normal", target = "loss")}.}
+\item{\code{BootstrapTriangle}}{Pre-built object from \code{bootstrap()}.
+Must have \code{meta$target == "loss"}.}
+\item{Function \verb{function(tri) -> BootstrapTriangle}}{Lazy spec
+invoked on the input Triangle (leakage-safe for \code{backtest()}).}
+}
+Premium is held at observed values during the bootstrap (loss-only
+convention). \code{lr_se} is recomputed from the bootstrap-derived
+\code{loss_total_se} via \code{.compute_lr_se()}, combined with the
+premium-side SE per \code{se_method} (\code{"fixed"} ignores premium SE;
+\code{"delta"} uses \code{prem_total_se} from the inner \code{fit_premium()} plus
+\code{rho} correlation).}
 
 \item{B}{Integer number of bootstrap replications. Used only when
-\code{bootstrap = TRUE}. Default is \code{999}.}
+\code{bootstrap} resolves to \code{"auto"}. Default is \code{999}.}
 
 \item{seed}{Optional integer seed for reproducible bootstrap.
 Default is \code{NULL}.}

@@ -580,3 +580,80 @@ test_that("fit_loss projected cells have finite SE/CI where loss_proj is defined
     expect_true(all(proj$loss_ci_lo <= proj$loss_ci_hi), info = method)
   }
 })
+
+
+# ---------------------------------------------------------------------------
+# Phase 2d: fit_lr migration to new bootstrap pipeline
+# ---------------------------------------------------------------------------
+
+test_that("fit_lr default (method=sa) uses bootstrap", {
+  tri <- make_sub_tri("surgery")
+  lf <- fit_lr(tri, seed = 1, B = 50)
+  expect_identical(lf$ci_type, "bootstrap")
+  expect_true(!is.null(lf$bootstrap))
+})
+
+test_that("fit_lr method=cl bootstrap=FALSE uses analytical", {
+  tri <- make_sub_tri("surgery")
+  lf <- fit_lr(tri, method = "cl", bootstrap = FALSE)
+  expect_identical(lf$ci_type, "analytical")
+  expect_null(lf$bootstrap)
+})
+
+test_that("fit_lr method=cl bootstrap=TRUE uses bootstrap", {
+  tri <- make_sub_tri("surgery")
+  lf <- fit_lr(tri, method = "cl", bootstrap = TRUE, seed = 1, B = 50)
+  expect_identical(lf$ci_type, "bootstrap")
+})
+
+test_that("fit_lr accepts a pre-built BootstrapTriangle", {
+  tri <- make_sub_tri("surgery")
+  b <- bootstrap(tri, target = "loss", B = 50, seed = 1)
+  lf <- fit_lr(tri, method = "sa", bootstrap = b)
+  expect_identical(lf$ci_type, "bootstrap")
+  expect_identical(lf$bootstrap$B, 50L)
+})
+
+test_that("fit_lr accepts a bootstrap function (lazy spec)", {
+  tri <- make_sub_tri("surgery")
+  fn <- function(t) bootstrap(t, target = "loss", B = 30, seed = 1)
+  lf <- fit_lr(tri, method = "ed", bootstrap = fn)
+  expect_identical(lf$ci_type, "bootstrap")
+  expect_identical(lf$bootstrap$B, 30L)
+})
+
+test_that("fit_lr rejects a BootstrapTriangle on the wrong target", {
+  tri <- make_sub_tri("surgery")
+  b_prem <- bootstrap(tri, target = "prem", B = 30, seed = 1)
+  expect_error(fit_lr(tri, bootstrap = b_prem),
+               "expects target")
+})
+
+test_that("fit_lr se_method='delta' incorporates premium SE", {
+  tri <- make_sub_tri("surgery")
+  lf_fixed <- fit_lr(tri, method = "sa", se_method = "fixed",
+                     seed = 1, B = 50)
+  lf_delta <- fit_lr(tri, method = "sa", se_method = "delta",
+                     seed = 1, B = 50)
+  # `delta` typically gives smaller lr_se than `fixed` because rho > 0
+  # cancels part of the loss/premium variance (the strong positive
+  # correlation between cumulative loss and premium projection).
+  proj_fixed <- lf_fixed$full[is_observed == FALSE & is.finite(lr_proj)]
+  proj_delta <- lf_delta$full[is_observed == FALSE & is.finite(lr_proj)]
+  expect_true(all(is.finite(proj_delta$lr_se)))
+  expect_true(all(is.finite(proj_delta$prem_total_se)))
+  expect_true(mean(proj_delta$lr_se) < mean(proj_fixed$lr_se))
+})
+
+test_that("fit_lr bootstrap projected cells have finite LR SE/CI", {
+  tri <- make_sub_tri("surgery")
+  for (method in c("sa", "ed", "cl")) {
+    lf <- fit_lr(tri, method = method, bootstrap = TRUE,
+                 seed = 1, B = 50)
+    proj <- lf$full[is_observed == FALSE & is.finite(lr_proj)]
+    expect_true(all(is.finite(proj$lr_se)),    info = method)
+    expect_true(all(is.finite(proj$lr_ci_lo)), info = method)
+    expect_true(all(is.finite(proj$lr_ci_hi)), info = method)
+    expect_true(all(proj$lr_ci_lo <= proj$lr_ci_hi), info = method)
+  }
+})

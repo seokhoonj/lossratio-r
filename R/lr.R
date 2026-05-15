@@ -106,17 +106,28 @@
 #'   to the paid/incurred correlation used in Munich chain ladder).
 #' @param conf_level Confidence level used for `lr_ci_lo`/`lr_ci_hi`
 #'   in the cohort summary. Default is `0.95`.
-#' @param bootstrap Logical or `NULL` (default). When `NULL`, the
-#'   variance method is chosen by `method`: bootstrap for `"sa"` and
-#'   `"ed"`, analytical (Mack-style delta) for `"cl"`. SA combines ED
-#'   (pre-maturity) and CL (post-maturity); the closed-form variance
-#'   across the transition is approximate. ED's analytical variance is
-#'   an additive variant of Mack's multiplicative formula without a
-#'   published derivation. Bootstrap avoids both issues. Pure CL has
-#'   Mack's exact formula, so analytical is the default there. Set
-#'   `TRUE`/`FALSE` explicitly to override.
+#' @param bootstrap Bootstrap configuration. Five forms accepted:
+#'   \describe{
+#'     \item{`NULL` (default)}{Auto-resolved by `method`: bootstrap for
+#'       `"sa"`/`"ed"`, analytical for `"cl"`. Matches legacy behavior.}
+#'     \item{`TRUE` / `FALSE`}{Back-compat with the legacy logical arg.
+#'       `TRUE` triggers `"auto"`; `FALSE` disables.}
+#'     \item{`"auto"`}{Internal `bootstrap()` call on the loss triangle
+#'       with defaults `(method = "parametric", mode = "dev",
+#'       process = "normal", target = "loss")`.}
+#'     \item{`BootstrapTriangle`}{Pre-built object from `bootstrap()`.
+#'       Must have `meta$target == "loss"`.}
+#'     \item{Function `function(tri) -> BootstrapTriangle`}{Lazy spec
+#'       invoked on the input Triangle (leakage-safe for `backtest()`).}
+#'   }
+#'   Premium is held at observed values during the bootstrap (loss-only
+#'   convention). `lr_se` is recomputed from the bootstrap-derived
+#'   `loss_total_se` via `.compute_lr_se()`, combined with the
+#'   premium-side SE per `se_method` (`"fixed"` ignores premium SE;
+#'   `"delta"` uses `prem_total_se` from the inner `fit_premium()` plus
+#'   `rho` correlation).
 #' @param B Integer number of bootstrap replications. Used only when
-#'   `bootstrap = TRUE`. Default is `999`.
+#'   `bootstrap` resolves to `"auto"`. Default is `999`.
 #' @param seed Optional integer seed for reproducible bootstrap.
 #'   Default is `NULL`.
 #'
@@ -181,22 +192,15 @@ fit_lr <- function(x,
   # Resolve 4-type maturity input (NULL / Maturity / "auto" / function).
   maturity <- .resolve_maturity(maturity, x)
 
-  # Auto-resolve bootstrap default: TRUE for SA/ED (their analytical
-  # variance has known shortcomings), FALSE for CL (Mack's formula is
-  # the published gold standard).
+  # Legacy back-compat: NULL maps to method-dependent default (SA/ED ->
+  # bootstrap, CL -> analytical). All other shapes flow through
+  # `.resolve_bootstrap()` later.
   if (is.null(bootstrap)) {
-    bootstrap <- method %in% c("sa", "ed")
+    bootstrap <- if (method %in% c("sa", "ed")) "auto" else FALSE
   }
-
-  if (!is.logical(bootstrap) || length(bootstrap) != 1L || is.na(bootstrap))
-    stop("`bootstrap` must be a single non-missing logical value (or NULL).",
-         call. = FALSE)
-
-  if (bootstrap) {
-    if (!is.numeric(B) || length(B) != 1L || is.na(B) || B < 1L)
-      stop("`B` must be a single positive integer.", call. = FALSE)
-    B <- as.integer(B)
-  }
+  if (!is.numeric(B) || length(B) != 1L || is.na(B) || B < 1L)
+    stop("`B` must be a single positive integer.", call. = FALSE)
+  B <- as.integer(B)
 
   if (!is.numeric(rho) || length(rho) != 1L || is.na(rho) ||
       rho <= -1 || rho >= 1)
@@ -298,42 +302,71 @@ fit_lr <- function(x,
   ci_type <- "analytical"
 
   # 7) bootstrap CI (optional, overwrites analytical CI columns) -------
-  if (bootstrap) {
-    if (!is.null(seed)) set.seed(seed)
-    .probs <- c((1 - conf_level) / 2, 1 - (1 - conf_level) / 2)
+  # Phase 2d new pipeline: bootstrap the loss triangle once via the
+  # shared `bootstrap()` worker, refit the method-specific recursion
+  # per replicate, then update `loss_total_se` / `loss_ci_lo` /
+  # `loss_ci_hi` from the aggregated bootstrap output. `lr_se` is
+  # recomputed via `.compute_lr_se()` so it picks up the new
+  # `loss_total_se` (and -- under `se_method = "delta"` -- combines
+  # with `prem_total_se` from the inner `fit_premium()` plus `rho`).
+  boots <- .resolve_bootstrap(
+    bootstrap, x,
+    B       = B,
+    seed    = seed,
+    method  = "parametric",
+    mode    = "dev",
+    process = "normal",
+    target  = "loss",
+    alpha   = loss_alpha
+  )
 
-    full[,
-      c("lr_ci_lo", "lr_ci_hi", "lr_se",
-        "loss_ci_lo", "loss_ci_hi", "loss_total_se") :=
-      .lr_bootstrap_cohort(
-        loss_obs      = loss_obs,
-        loss_proj     = loss_proj,
-        prem_proj     = prem_proj,
-        g_sel         = g_sel,
-        f_sel         = f_sel,
-        g_sigma2      = g_sigma2,
-        f_sigma2      = f_sigma2,
-        g_var         = g_var,
-        f_var         = f_var,
-        last_obs      = last_obs[1L],
-        maturity_from = maturity_from[1L],
-        B             = B,
-        loss_alpha    = loss_alpha,
-        method        = method,
-        probs         = .probs
-      ), by = c(grp, "cohort")
-    ]
+  if (!is.null(boots)) {
+    refit <- .boot_refit(
+      x, boots,
+      method   = method,
+      alpha    = loss_alpha,
+      maturity = if (identical(method, "sa")) maturity else NULL
+    )
+    wn <- .boot_add_process_noise(refit, boots$meta$process)
+    se <- .boot_summarize_se(wn, grp = grp)
 
-    # Bootstrap-derived SE overwrites the analytical loss_total_se; the
-    # process / parameter decomposition (loss_proc_se / loss_param_se)
-    # is kept as a diagnostic but no longer sums to total under bootstrap.
-    full[, ("loss_total_cv") := data.table::fifelse(
-      is.finite(loss_proj) & loss_proj != 0,
-      loss_total_se / abs(loss_proj), NA_real_
+    data.table::setnames(se,
+      c("target_total_se", "target_total_cv",
+        "target_ci_lo",    "target_ci_hi"),
+      c("loss_total_se_boot", "loss_total_cv_boot",
+        "loss_ci_lo_boot",    "loss_ci_hi_boot"))
+    se[, c("target_proj", "target_proc_se", "target_param_se") := NULL]
+
+    full <- merge(full, se,
+                  by = c(grp, "cohort", "dev"),
+                  all.x = TRUE, sort = FALSE)
+    full[is.finite(loss_total_se_boot), loss_total_se := loss_total_se_boot]
+    full[is.finite(loss_total_cv_boot), loss_total_cv := loss_total_cv_boot]
+    full[is.finite(loss_ci_lo_boot),    loss_ci_lo    := loss_ci_lo_boot]
+    full[is.finite(loss_ci_hi_boot),    loss_ci_hi    := loss_ci_hi_boot]
+    full[, c("loss_total_se_boot", "loss_total_cv_boot",
+             "loss_ci_lo_boot",    "loss_ci_hi_boot") := NULL]
+
+    # Recompute lr_se from bootstrap-derived loss_total_se. Under
+    # `se_method = "delta"`, this combines with `prem_total_se` (analytic
+    # from the inner fit_premium) and `rho` to capture the full LR
+    # variance. Under `"fixed"`, premium is treated as known and
+    # lr_se = loss_total_se / prem_proj.
+    full[, ("lr_se") := .compute_lr_se(
+      loss       = loss_proj,
+      premium    = prem_proj,
+      loss_se    = loss_total_se,
+      prem_se    = if (se_method == "delta") prem_total_se else NULL,
+      method     = se_method,
+      rho        = rho
     )]
     full[, ("lr_cv") := data.table::fifelse(
       is.finite(lr_proj) & lr_proj != 0,
       lr_se / abs(lr_proj), NA_real_
+    )]
+    full[, `:=`(
+      lr_ci_lo = pmax(0, lr_proj - z_alpha * lr_se),
+      lr_ci_hi = lr_proj + z_alpha * lr_se
     )]
 
     ci_type <- "bootstrap"
@@ -387,7 +420,9 @@ fit_lr <- function(x,
     maturity        = loss_fit$maturity,
     method          = method,
     ci_type         = ci_type,
-    bootstrap       = if (bootstrap) list(B = B, seed = seed) else NULL,
+    bootstrap       = if (!is.null(boots))
+                        list(B = boots$meta$B, seed = boots$meta$seed)
+                      else NULL,
     loss_alpha      = loss_alpha,
     premium_alpha   = premium_alpha,
     se_method       = se_method,
