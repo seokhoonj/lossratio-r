@@ -998,6 +998,18 @@ bootstrap.Triangle <- function(x,
   # Per-group iteration
   if (length(grp) > 0L) {
     grp_vals <- unique(triangle[, .SD, .SDcols = grp])
+    single_grp <- nrow(grp_vals) == 1L
+    if (single_grp) {
+      # Fast path: skip merges, rbindlist, setcolorder for the common
+      # single-group input.
+      gkey <- grp_vals[1L]
+      one <- .boot_cell_residuals_one(triangle, anchor, target, hat_adj)
+      phi_one <- attr(one, "phi")
+      for (col in names(gkey)) one[, (col) := gkey[[col]]]
+      data.table::setcolorder(one, c(grp, "cohort", "dev", "residual", "mu_hat"))
+      attr(one, "phi_dt") <- data.table::data.table(gkey, phi = phi_one)
+      return(one)
+    }
     out_list <- vector("list", nrow(grp_vals))
     phi_list <- vector("list", nrow(grp_vals))
     for (gi in seq_len(nrow(grp_vals))) {
@@ -1028,16 +1040,15 @@ bootstrap.Triangle <- function(x,
   n_coh   <- length(cohorts)
   n_dev   <- length(devs)
 
-  # Wide observed cumulative matrix
+  # Wide observed cumulative matrix — vectorised fill via integer index
   mat_obs <- matrix(NA_real_, nrow = n_coh, ncol = n_dev,
                     dimnames = list(as.character(cohorts),
                                     as.character(devs)))
-  obs_dt <- triangle[, .SD, .SDcols = c("cohort", "dev", target)]
-  for (r in seq_len(nrow(obs_dt))) {
-    ci <- match(as.character(obs_dt$cohort[r]), rownames(mat_obs))
-    di <- match(as.character(obs_dt$dev[r]),    colnames(mat_obs))
-    if (!is.na(ci) && !is.na(di))
-      mat_obs[ci, di] <- obs_dt[[target]][r]
+  ci_vec <- match(triangle$cohort, cohorts)
+  di_vec <- match(triangle$dev,    devs)
+  ok <- !is.na(ci_vec) & !is.na(di_vec)
+  if (any(ok)) {
+    mat_obs[cbind(ci_vec[ok], di_vec[ok])] <- triangle[[target]][ok]
   }
   last_obs_idx <- apply(mat_obs, 1L, function(row) {
     ok <- which(is.finite(row))
@@ -1225,15 +1236,24 @@ bootstrap.Triangle <- function(x,
   # Per-group iteration
   if (length(grp) > 0L) {
     grp_vals <- unique(triangle[, .SD, .SDcols = grp])
+    single_grp <- nrow(grp_vals) == 1L
+    if (single_grp) {
+      # Fast path: skip merges + rbindlist when only one group is present.
+      return(.boot_stage1_one(
+        triangle = triangle, link = link, anchor = anchor, pool = pool,
+        is_residual_mode = is_residual_mode, residual = residual,
+        B = B, alpha = alpha,
+        grp_vals = grp_vals[1L], target = target
+      ))
+    }
     out_list <- vector("list", nrow(grp_vals))
     for (gi in seq_len(nrow(grp_vals))) {
       gkey <- grp_vals[gi]
       tri_g <- merge(triangle, gkey, by = grp, sort = FALSE)
       link_g <- merge(link, gkey, by = grp, sort = FALSE)
       anchor_g <- merge(anchor, gkey, by = grp, sort = FALSE)
-      pool_g <- if (nrow(pool) > 0L) {
-        merge(pool, gkey, by = grp, sort = FALSE)
-      } else pool
+      pool_g <- if (nrow(pool) > 0L) merge(pool, gkey, by = grp, sort = FALSE)
+                else pool
       out_list[[gi]] <- .boot_stage1_one(
         triangle = tri_g, link = link_g, anchor = anchor_g, pool = pool_g,
         is_residual_mode = is_residual_mode, residual = residual,
@@ -1267,15 +1287,14 @@ bootstrap.Triangle <- function(x,
   n_coh   <- length(cohorts)
   n_dev   <- length(devs)
 
-  # Wide observed matrix [cohort × dev]
+  # Wide observed matrix [cohort × dev] — vectorised fill via integer index
   mat_obs <- matrix(NA_real_, nrow = n_coh, ncol = n_dev,
                     dimnames = list(as.character(cohorts), as.character(devs)))
-  obs_dt <- triangle[, .SD, .SDcols = c("cohort", "dev", target)]
-  for (r in seq_len(nrow(obs_dt))) {
-    ci <- match(as.character(obs_dt$cohort[r]), rownames(mat_obs))
-    di <- match(as.character(obs_dt$dev[r]),    colnames(mat_obs))
-    if (!is.na(ci) && !is.na(di))
-      mat_obs[ci, di] <- obs_dt[[target]][r]
+  ci_vec <- match(triangle$cohort, cohorts)
+  di_vec <- match(triangle$dev,    devs)
+  ok <- !is.na(ci_vec) & !is.na(di_vec)
+  if (any(ok)) {
+    mat_obs[cbind(ci_vec[ok], di_vec[ok])] <- triangle[[target]][ok]
   }
 
   # f_hat and sigma2 per link, indexed by ata_to (= colname after first)
@@ -1325,7 +1344,80 @@ bootstrap.Triangle <- function(x,
   # Allocate B output replicates as 3D array [cohort × dev × B]
   out_arr <- array(NA_real_, dim = c(n_coh, n_dev, B))
 
-  for (b in seq_len(B)) {
+  # Hoisted lookups (invariant over the b loop and over inner i/j loops).
+  # Avoids per-cell as.character() / match() calls inside the B*n_cells hot path.
+  devs_chr   <- as.character(devs)
+  k_idx_by_j <- match(devs, anchor$ata_to)
+  pid_by_dev <- if (length(pool_id_by_dev) > 0L) pool_id_by_dev[devs_chr]
+                else rep(NA_character_, n_dev)
+  pid_by_to  <- if (length(pool_id_by_to)  > 0L) pool_id_by_to[devs_chr]
+                else rep(NA_character_, n_dev)
+
+  # ----- Cell-residual stage 1 — single native kernel ----------------------
+  # bootstrap_cell_kernel performs sampling + pseudo-cumulative build +
+  # f* refit + forward projection + negative clipping in one C pass for
+  # all B replicates. Link and parametric branches retain the per-b loop
+  # below.
+  cell_branch_done <- FALSE
+  if (is_residual_mode && identical(residual, "cell")) {
+    # Active cell index (upper triangle ∩ finite μ̂)
+    upper_full <- matrix(FALSE, n_coh, n_dev)
+    for (i in seq_len(n_coh)) {
+      lj <- last_obs_idx[i]
+      if (!is.na(lj) && lj >= 1L) upper_full[i, seq_len(lj)] <- TRUE
+    }
+    upper_mask       <- upper_full & is.finite(mu_hat_grid)
+    cell_active_lin  <- which(upper_mask)
+    n_active         <- length(cell_active_lin)
+    active_j         <- ((cell_active_lin - 1L) %/% n_coh) + 1L
+    cell_active_mu   <- mu_hat_grid[cell_active_lin]
+    cell_active_sqrt <- sqrt(abs(cell_active_mu))
+
+    # Flatten pool list to CSR-like format for the kernel: a single
+    # `pool_residuals` vector with `pool_starts` boundary offsets, plus
+    # a per-active-cell pool index (1-indexed; 0 means "no pool").
+    pool_names <- names(pool_by_id)
+    if (length(pool_names) > 0L) {
+      pool_lens      <- lengths(pool_by_id)
+      pool_starts    <- as.integer(c(0L, cumsum(pool_lens)))
+      pool_residuals <- unlist(pool_by_id, use.names = FALSE)
+      pool_pos       <- setNames(seq_along(pool_names), pool_names)
+      active_pid_chr <- pid_by_dev[active_j]
+      cell_pool_idx  <- pool_pos[active_pid_chr]
+      cell_pool_idx[is.na(cell_pool_idx)] <- 0L
+      cell_pool_idx  <- as.integer(cell_pool_idx)
+    } else {
+      pool_residuals <- numeric(0)
+      pool_starts    <- 0L
+      cell_pool_idx  <- integer(n_active)
+    }
+
+    out_arr <- .Call(
+      C_bootstrap_cell_kernel,
+      B,
+      as.numeric(cell_active_mu),
+      as.numeric(cell_active_sqrt),
+      as.integer(cell_active_lin),
+      cell_pool_idx,
+      pool_residuals,
+      pool_starts,
+      as.integer(last_obs_idx),
+      as.integer(link_to_idx),
+      as.integer(k_idx_by_j),
+      as.numeric(f_hat_vec),
+      n_coh, n_dev
+    )
+    cell_branch_done <- TRUE
+  }
+
+  if (cell_branch_done) {
+    # Skip the per-b loop entirely — cell branch already filled out_arr.
+    B_iter <- integer(0)
+  } else {
+    B_iter <- seq_len(B)
+  }
+
+  for (b in B_iter) {
 
     if (is_residual_mode && identical(residual, "link")) {
 
@@ -1347,7 +1439,7 @@ bootstrap.Triangle <- function(x,
 
         n_alt <- sum(was_obs)
         if (n_alt > 0L) {
-          pid <- pool_id_by_to[as.character(devs[to_col])]
+          pid <- pid_by_to[to_col]
           r_pool <- if (!is.na(pid)) pool_by_id[[pid]] else NULL
           if (is.null(r_pool) || length(r_pool) == 0L) {
             r_draw <- rep(0, n_alt)
@@ -1383,7 +1475,7 @@ bootstrap.Triangle <- function(x,
         base <- mat_alt[i, last_j]
         if (!is.finite(base)) next
         for (j in seq(last_j + 1L, n_dev)) {
-          k_idx <- match(devs[j], anchor$ata_to)
+          k_idx <- k_idx_by_j[j]
           if (is.na(k_idx)) {
             mat_alt[i, j] <- base
           } else {
@@ -1393,72 +1485,6 @@ bootstrap.Triangle <- function(x,
         }
       }
 
-      out_arr[, , b] <- mat_alt
-
-    } else if (is_residual_mode && identical(residual, "cell")) {
-
-      # E-V 1999/2002 cell-residual resample. For each observed (i, j):
-      #   X*_ij = μ̂_ij + r*_ij · sqrt(|μ̂_ij|)
-      # Build pseudo-cumulative C* by row-cumsum, refit f*_k from upper
-      # triangle of C*, then forward-project lower triangle from f*_k.
-      mat_inc_alt <- matrix(NA_real_, nrow = n_coh, ncol = n_dev)
-      for (i in seq_len(n_coh)) {
-        last_j <- last_obs_idx[i]
-        if (is.na(last_j)) next
-        for (j in seq_len(last_j)) {
-          mu_ij <- mu_hat_grid[i, j]
-          if (!is.finite(mu_ij)) next
-          pid <- pool_id_by_dev[as.character(devs[j])]
-          r_pool <- if (!is.na(pid)) pool_by_id[[pid]] else NULL
-          r_star <- if (is.null(r_pool) || length(r_pool) == 0L) 0
-                    else sample(r_pool, 1L)
-          mat_inc_alt[i, j] <- mu_ij + r_star * sqrt(abs(mu_ij))
-        }
-      }
-
-      # Pseudo-cumulative on observed region (row-cumsum over finite vals)
-      mat_alt <- matrix(NA_real_, nrow = n_coh, ncol = n_dev)
-      for (i in seq_len(n_coh)) {
-        last_j <- last_obs_idx[i]
-        if (is.na(last_j)) next
-        v <- mat_inc_alt[i, seq_len(last_j)]
-        v[!is.finite(v)] <- 0
-        mat_alt[i, seq_len(last_j)] <- cumsum(v)
-      }
-      # Pass-through negative cumulatives (chainladder-py parity); refit
-      # below tolerates them via na.rm and the den > 0 guard.
-
-      # Refit f_k* from pseudo-cumulative (Mack: cohorts with BOTH from and to)
-      f_star <- f_hat_vec  # fallback
-      for (k in seq_len(n_links)) {
-        to_col <- link_to_idx[k]
-        if (is.na(to_col) || to_col < 2L) next
-        from_col <- to_col - 1L
-        has_both <- is.finite(mat_alt[, from_col]) &
-                    is.finite(mat_alt[, to_col])
-        num <- sum(mat_alt[has_both, to_col],   na.rm = TRUE)
-        den <- sum(mat_alt[has_both, from_col], na.rm = TRUE)
-        if (is.finite(den) && den > 0) f_star[k] <- num / den
-      }
-
-      # Forward-project missing cells using f_star
-      for (i in seq_len(n_coh)) {
-        last_j <- last_obs_idx[i]
-        if (is.na(last_j) || last_j >= n_dev) next
-        base <- mat_alt[i, last_j]
-        if (!is.finite(base)) next
-        for (j in seq(last_j + 1L, n_dev)) {
-          k_idx <- match(devs[j], anchor$ata_to)
-          if (is.na(k_idx)) {
-            mat_alt[i, j] <- base
-          } else {
-            mat_alt[i, j] <- f_star[k_idx] * base
-            base <- mat_alt[i, j]
-          }
-        }
-      }
-
-      mat_alt[mat_alt < 0 & is.finite(mat_alt)] <- 0
       out_arr[, , b] <- mat_alt
 
     } else {
@@ -1482,7 +1508,7 @@ bootstrap.Triangle <- function(x,
         base <- mat_alt[i, last_j]
         if (!is.finite(base)) next
         for (j in seq(last_j + 1L, n_dev)) {
-          k_idx <- match(devs[j], anchor$ata_to)
+          k_idx <- k_idx_by_j[j]
           if (is.na(k_idx)) {
             mat_alt[i, j] <- base
           } else {
@@ -1500,22 +1526,37 @@ bootstrap.Triangle <- function(x,
   # Reshape 3D array -> long data.table. The value column is named after
   # `target` ("loss" or "prem") so downstream refit helpers know what to
   # read. `as.numeric(out_arr)` flattens column-major: cohort fastest,
-  # then dev, then rep.
-  long <- data.table::data.table(
-    cohort = rep(rep(cohorts, times = n_dev), times = B),
-    dev    = rep(rep(devs, each = n_coh),    times = B),
-    rep    = rep(seq_len(B), each = n_coh * n_dev)
-  )
-  long[, (target) := as.numeric(out_arr)]
+  # then dev, then rep. Build as a plain list first and call setDT() once
+  # so no per-column [, := ] copy is incurred — large speedup on the
+  # B * n_coh * n_dev hot path. For Date cohorts we unclass to integer
+  # before rep() so the repeat goes through fast int routines, then
+  # restore the class once at the end.
+  cohort_cls  <- oldClass(cohorts)
+  cohort_int  <- unclass(cohorts)
+  cohort_col  <- rep.int(rep.int(cohort_int, n_dev), B)
+  if (!is.null(cohort_cls)) oldClass(cohort_col) <- cohort_cls
+  dev_col     <- rep.int(rep(devs, each = n_coh), B)
+  rep_col     <- rep(seq_len(B), each = n_coh * n_dev)
+  val_col     <- as.numeric(out_arr)
 
-  if (!is.null(grp_vals)) {
+  n_long <- length(val_col)
+  if (is.null(grp_vals)) {
+    cols <- list(cohort = cohort_col, dev = dev_col, rep = rep_col)
+    cols[[target]] <- val_col
+  } else {
+    # Group columns recycle to the long length; place them first.
+    cols <- list()
     for (col in names(grp_vals)) {
-      long[, (col) := grp_vals[[col]]]
+      v <- grp_vals[[col]]
+      cols[[col]] <- if (length(v) == n_long) v else rep_len(v, n_long)
     }
-    data.table::setcolorder(long, c(names(grp_vals), "cohort", "dev", "rep", target))
+    cols$cohort <- cohort_col
+    cols$dev    <- dev_col
+    cols$rep    <- rep_col
+    cols[[target]] <- val_col
   }
-
-  long[]
+  data.table::setDT(cols)
+  cols[]
 }
 
 
@@ -2049,7 +2090,7 @@ print.BootstrapTriangle <- function(x, ...) {
 # recursion against the original (un-bootstrapped) premium column.
 # Dispatched via `.boot_refit(method = "ed")`.
 .boot_refit_ed_one <- function(triangle, alt_long, alpha, grp_vals,
-                                process_dist = "normal") {
+                               process_dist = "normal") {
 
   cohorts <- sort(unique(triangle$cohort))
   devs    <- sort(unique(triangle$dev))
@@ -2189,8 +2230,10 @@ print.BootstrapTriangle <- function(x, ...) {
     for (col in names(grp_vals)) {
       long[, (col) := grp_vals[[col]]]
     }
-    data.table::setcolorder(long, c(names(grp_vals), "cohort", "dev", "rep",
-                                     "cell_mean", "cell_real"))
+    data.table::setcolorder(
+      long,
+      c(names(grp_vals), "cohort", "dev", "rep", "cell_mean", "cell_real")
+    )
   }
 
   long[]
@@ -2217,8 +2260,7 @@ print.BootstrapTriangle <- function(x, ...) {
 
 # Per-group SA refit. ED for dev < mat_change, CL for dev >= mat_change.
 .boot_refit_sa_one <- function(triangle, alt_long, alpha, grp_vals,
-                                mat_change,
-                                process_dist = "normal") {
+                               mat_change, process_dist = "normal") {
 
   cohorts <- sort(unique(triangle$cohort))
   devs    <- sort(unique(triangle$dev))

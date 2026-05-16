@@ -8,6 +8,7 @@
 "_PACKAGE"
 
 ## usethis namespace: start
+#' @useDynLib lossratio, .registration = TRUE
 #' @importFrom data.table `:=` `.BY` `.GRP` `.I` `.N` `.SD` as.data.table copy
 #'   data.table fifelse melt set setattr setcolorder setnames setorderv shift
 #' @importFrom ggplot2 aes coord_flip facet_wrap geom_boxplot geom_hline
