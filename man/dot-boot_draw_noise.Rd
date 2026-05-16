@@ -4,7 +4,7 @@
 \alias{.boot_draw_noise}
 \title{Refit chain-ladder per bootstrap replicate (unified entry point)}
 \usage{
-.boot_draw_noise(mu, var, dist = c("normal", "gamma", "odp"))
+.boot_draw_noise(mu, var, dist)
 }
 \arguments{
 \item{triangle}{The original \code{Triangle} (carries the observed region

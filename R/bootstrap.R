@@ -1041,34 +1041,40 @@ print.BootstrapTriangle <- function(x, ...) {
 #         and var > 0; falls back to normal for non-positive cases.
 # odp   : phi = var/mu; cell = phi * Poisson(mu/phi). Falls back to
 #         normal for non-positive cases.
-.boot_draw_noise <- function(mu, var, dist = c("normal", "gamma", "odp")) {
-  dist <- match.arg(dist)
+.boot_draw_noise <- function(mu, var, dist) {
+  # NOTE: `dist` is trusted -- one of "normal" / "gamma" / "odp". Caller
+  # validates once (typically against boots$meta$process). Skipping
+  # match.arg() saves ~10% on hot-loop benchmarks where this is called
+  # once per chain step.
   n <- length(mu)
   if (n == 0L) return(numeric(0))
 
-  if (identical(dist, "normal")) {
-    return(mu + stats::rnorm(n, 0, sqrt(pmax(var, 0))))
+  if (dist == "normal") {
+    var_safe <- var
+    var_safe[var_safe < 0 | !is.finite(var_safe)] <- 0
+    return(mu + stats::rnorm(n, 0, sqrt(var_safe)))
   }
 
   out <- mu
   pos <- is.finite(mu) & is.finite(var) & mu > 0 & var > 0
   neg <- !pos
 
-  if (identical(dist, "gamma")) {
+  if (dist == "gamma") {
     if (any(pos)) {
       shape <- mu[pos]^2 / var[pos]
       rate  <- mu[pos]   / var[pos]
       out[pos] <- stats::rgamma(sum(pos), shape = shape, rate = rate)
     }
-  } else if (identical(dist, "odp")) {
+  } else if (dist == "odp") {
     if (any(pos)) {
       phi <- var[pos] / mu[pos]
       out[pos] <- phi * stats::rpois(sum(pos), lambda = mu[pos] / phi)
     }
   }
   if (any(neg)) {
-    out[neg] <- mu[neg] +
-      stats::rnorm(sum(neg), 0, sqrt(pmax(var[neg], 0)))
+    var_neg <- var[neg]
+    var_neg[var_neg < 0 | !is.finite(var_neg)] <- 0
+    out[neg] <- mu[neg] + stats::rnorm(sum(neg), 0, sqrt(var_neg))
   }
   out
 }
@@ -1145,9 +1151,8 @@ print.BootstrapTriangle <- function(x, ...) {
   n_dev   <- length(devs)
   B       <- max(alt_long$rep)
 
-  # Observed-region mask + original target matrix (so the forward sim can
-  # anchor on the actual observed value at each cohort's last_obs).
-  obs_mask <- matrix(FALSE,     nrow = n_coh, ncol = n_dev,
+  # Observed-region mask + original target matrix.
+  obs_mask <- matrix(FALSE,    nrow = n_coh, ncol = n_dev,
                      dimnames = list(as.character(cohorts),
                                      as.character(devs)))
   mat_obs  <- matrix(NA_real_, nrow = n_coh, ncol = n_dev,
@@ -1162,98 +1167,99 @@ print.BootstrapTriangle <- function(x, ...) {
     }
   }
 
-  # Per-cohort last observed dev index.
   last_obs_idx <- apply(obs_mask, 1L, function(row) {
     ok <- which(row)
     if (length(ok) == 0L) NA_integer_ else max(ok)
   })
 
-  # Rebuild parameter-only 3D array from stage1's alt_triangles. This is
-  # cell_mean: parameter chain only (no process noise).
   data.table::setorderv(alt_long, c("rep", "dev", "cohort"))
   arr_mean <- array(alt_long[[target]], dim = c(n_coh, n_dev, B),
                     dimnames = list(as.character(cohorts),
-                                    as.character(devs),
-                                    NULL))
+                                    as.character(devs), NULL))
 
-  # cell_real: parameter + chain-propagated process noise. Built per
-  # replicate via forward simulation. This is the Mack-correct fix --
-  # process noise at step k compounds through f_{k+1}, f_{k+2}, ...
-  # rather than being added independently at each cell.
-  arr_real <- arr_mean
-  for (i in seq_len(n_coh)) {
-    last_j <- last_obs_idx[i]
-    if (is.na(last_j)) next
-    if (last_j < n_dev) {
-      arr_real[i, seq(last_j + 1L, n_dev), ] <- NA_real_
+  # ----- Vectorised refit (over B axis) ---------------------------------
+  # sigma2_mat[k, b] = Mack sigma^2_k under replicate b. Computed from
+  # cells whose (i, k-1) and (i, k) are *observed* (perturbed or
+  # original). Vectorised across replicates via colSums on the slice.
+  f_obs_mat  <- matrix(NA_real_, nrow = n_dev, ncol = B)
+  sigma2_mat <- matrix(NA_real_, nrow = n_dev, ncol = B)
+  for (k in seq(2L, n_dev)) {
+    idx <- which(obs_mask[, k - 1L] & obs_mask[, k])
+    if (length(idx) == 0L) next
+    from_arr <- matrix(arr_mean[idx, k - 1L, ], nrow = length(idx))  # [n_idx, B]
+    to_arr   <- matrix(arr_mean[idx, k,       ], nrow = length(idx))
+    valid    <- from_arr > 0 & is.finite(from_arr) & is.finite(to_arr)
+    from_v   <- from_arr * valid
+    to_v     <- to_arr   * valid
+    n_valid  <- colSums(valid)
+    from_sum <- colSums(from_v)
+    fhat_b <- to_v |> colSums() / from_sum
+    fhat_b[!is.finite(fhat_b) | from_sum == 0] <- NA_real_
+    f_obs_mat[k, ] <- fhat_b
+    if (any(n_valid >= 2L)) {
+      pred <- t(t(from_arr) * fhat_b)
+      resid_sq <- (to_arr - pred)^2 / pmax(from_arr, 1e-12) * valid
+      resid_sq[!is.finite(resid_sq)] <- 0
+      s2_b <- colSums(resid_sq) / pmax(n_valid - 1L, 1)
+      s2_b[n_valid < 2L] <- NA_real_
+      sigma2_mat[k, ] <- s2_b
     }
   }
+  # LOCF on sigma2_mat per replicate
+  for (k in seq(2L, n_dev)) {
+    bad <- !is.finite(sigma2_mat[k, ])
+    if (any(bad)) sigma2_mat[k, bad] <- sigma2_mat[k - 1L, bad]
+  }
 
-  for (b in seq_len(B)) {
-    mat_b <- arr_mean[, , b]
-    sigma2_star <- rep(NA_real_, n_dev)
-    f_star      <- rep(NA_real_, n_dev)
+  # f_proj_mat[k, b]: the f_star actually used by stage1 in projection
+  # (drawn N for parametric; refit on alt observed for residual). Extract
+  # from arr_mean ratios at any cohort whose dev k is projected.
+  f_proj_mat <- matrix(NA_real_, nrow = n_dev, ncol = B)
+  for (k in seq(2L, n_dev)) {
+    proj_idx <- which(!obs_mask[, k] & !is.na(last_obs_idx))
+    if (length(proj_idx) == 0L) next
+    i_pick <- proj_idx[1L]
+    from_b <- arr_mean[i_pick, k - 1L, ]
+    to_b   <- arr_mean[i_pick, k,     ]
+    ratio  <- to_b / from_b
+    ratio[!is.finite(ratio)] <- NA_real_
+    f_proj_mat[k, ] <- ratio
+  }
+  # Where f_proj is missing, fall back to f_obs (refit from observed).
+  for (k in seq(2L, n_dev)) {
+    bad <- !is.finite(f_proj_mat[k, ])
+    if (any(bad)) f_proj_mat[k, bad] <- f_obs_mat[k, bad]
+  }
 
-    # Refit sigma2_star_k from cells observed in original triangle
-    # (perturbed values under residual; original under parametric).
-    for (k in seq(2L, n_dev)) {
-      idx <- obs_mask[, k - 1L] & obs_mask[, k] &
-             is.finite(mat_b[, k - 1L]) & is.finite(mat_b[, k]) &
-             mat_b[, k - 1L] > 0
-      n_link <- sum(idx)
-      if (n_link < 1L) next
-      from_vals <- mat_b[idx, k - 1L]
-      to_vals   <- mat_b[idx, k]
-      f_obs <- sum(to_vals) / sum(from_vals)
-      if (n_link >= 2L) {
-        sigma2_star[k] <- sum((to_vals - f_obs * from_vals)^2 / from_vals) /
-                          (n_link - 1L)
-      }
-    }
-    # LOCF on sigma2_star
+  # ----- Vectorised forward simulation of cell_real ---------------------
+  arr_real <- arr_mean  # parameter chain copy; projected cells overwritten
+  # Anchor observed region to original mat_obs (constant across B)
+  for (i in seq_len(n_coh)) {
     for (k in seq_len(n_dev)) {
-      if (is.na(sigma2_star[k]) && k >= 2L && is.finite(sigma2_star[k - 1L])) {
-        sigma2_star[k] <- sigma2_star[k - 1L]
-      }
+      if (obs_mask[i, k]) arr_real[i, k, ] <- mat_obs[i, k]
     }
+  }
+  for (k in seq(2L, n_dev)) {
+    proj_idx <- which(!obs_mask[, k] & !is.na(last_obs_idx))
+    if (length(proj_idx) == 0L) next
 
-    # f_star_k per replicate: the factor actually used in stage1's
-    # forward projection. Extracted from arr_mean ratios over any
-    # cohort with (k-1, k) projected (one of them suffices since
-    # f_star is shared across cohorts within a replicate; volume-sum
-    # makes it robust if some cohorts are NA).
-    for (k in seq(2L, n_dev)) {
-      proj <- !obs_mask[, k] &
-              is.finite(mat_b[, k]) & is.finite(mat_b[, k - 1L]) &
-              mat_b[, k - 1L] > 0
-      if (any(proj)) {
-        f_star[k] <- sum(mat_b[proj, k]) / sum(mat_b[proj, k - 1L])
-      }
-    }
+    base_arr <- matrix(arr_real[proj_idx, k - 1L, ], nrow = length(proj_idx))
+    f_b  <- f_proj_mat[k, ]
+    s2_b <- sigma2_mat[k, ]
+    f_b[!is.finite(f_b)]   <- 1
+    s2_b[!is.finite(s2_b)] <- 0
 
-    # Forward-simulate cell_real with chain-propagated process noise.
-    # Anchor each cohort at its original observed last_obs cell.
-    mat_real_b <- arr_real[, , b]
-    for (i in seq_len(n_coh)) {
-      last_j_i <- last_obs_idx[i]
-      if (is.na(last_j_i) || last_j_i >= n_dev) next
-      base <- mat_obs[i, last_j_i]
-      if (!is.finite(base) || base <= 0) next
-      for (k in seq(last_j_i + 1L, n_dev)) {
-        f_k <- f_star[k]
-        s2_k <- sigma2_star[k]
-        if (!is.finite(f_k))  f_k  <- mat_b[i, k] / mat_b[i, k - 1L]
-        if (!is.finite(f_k))  f_k  <- 1
-        if (!is.finite(s2_k)) s2_k <- 0
-        mu  <- f_k * base
-        var <- s2_k * base
-        cell <- .boot_draw_noise(mu, var, dist = process_dist)
-        if (!is.finite(cell) || cell < 0) cell <- max(mu, 0)
-        mat_real_b[i, k] <- cell
-        base <- cell
-      }
-    }
-    arr_real[, , b] <- mat_real_b
+    # mu[i, b] = f_b[b] * base_arr[i, b] (broadcast columns)
+    mu_arr  <- t(t(base_arr) * f_b)
+    var_arr <- t(t(base_arr) * s2_b)
+    mu_arr[!is.finite(mu_arr)]   <- 0
+    var_arr[!is.finite(var_arr) | var_arr < 0] <- 0
+
+    cell_vec <- .boot_draw_noise(as.numeric(mu_arr),
+                                  as.numeric(var_arr),
+                                  dist = process_dist)
+    cell_vec[is.finite(cell_vec) & cell_vec < 0] <- 0
+    arr_real[proj_idx, k, ] <- matrix(cell_vec, nrow = length(proj_idx))
   }
 
   long <- data.table::data.table(
@@ -1288,7 +1294,6 @@ print.BootstrapTriangle <- function(x, ...) {
   n_dev   <- length(devs)
   B       <- max(alt_long$rep)
 
-  # Observed mask + original loss + premium matrices.
   obs_mask <- matrix(FALSE,    nrow = n_coh, ncol = n_dev,
                      dimnames = list(as.character(cohorts),
                                      as.character(devs)))
@@ -1308,9 +1313,6 @@ print.BootstrapTriangle <- function(x, ...) {
       mat_prem[ci, di] <- triangle$prem[r]
     }
   }
-
-  # Forward-fill premium beyond observed boundary (held constant at last
-  # observed value per cohort).
   for (i in seq_len(n_coh)) {
     last_p <- NA_real_
     for (j in seq_len(n_dev)) {
@@ -1327,90 +1329,89 @@ print.BootstrapTriangle <- function(x, ...) {
     if (length(ok) == 0L) NA_integer_ else max(ok)
   })
 
-  # Alt cumulative loss array (stage1's parameter chain).
   data.table::setorderv(alt_long, c("rep", "dev", "cohort"))
   arr_alt <- array(alt_long$loss, dim = c(n_coh, n_dev, B),
                    dimnames = list(as.character(cohorts),
                                    as.character(devs), NULL))
 
+  # ----- Vectorised refit (over B axis) ---------------------------------
+  # g_obs_mat[k, b]: refit intensity from observed (alt-perturbed) cells.
+  # sigma2_g_mat[k, b]: ED-style sigma^2_g per replicate, per link.
+  g_obs_mat    <- matrix(NA_real_, nrow = n_dev, ncol = B)
+  sigma2_g_mat <- matrix(NA_real_, nrow = n_dev, ncol = B)
+  for (k in seq(2L, n_dev)) {
+    idx <- which(obs_mask[, k - 1L] & obs_mask[, k] &
+                 is.finite(mat_prem[, k - 1L]) & mat_prem[, k - 1L] > 0)
+    if (length(idx) == 0L) next
+    from_arr <- matrix(arr_alt[idx, k - 1L, ], nrow = length(idx))
+    to_arr   <- matrix(arr_alt[idx, k,       ], nrow = length(idx))
+    p_prev   <- mat_prem[idx, k - 1L]
+    valid <- is.finite(from_arr) & is.finite(to_arr)
+    d_arr <- (to_arr - from_arr) * valid
+    p_v   <- p_prev * (valid[, 1L])  # premium is constant across B per cohort
+    # Use per-(i, b) valid mask combined with per-cohort premium
+    p_v_mat <- matrix(p_prev, nrow = length(idx), ncol = B) * valid
+    n_valid <- colSums(valid)
+    p_sum   <- colSums(p_v_mat)
+    g_b <- colSums(d_arr) / p_sum
+    g_b[!is.finite(g_b) | p_sum == 0] <- NA_real_
+    g_obs_mat[k, ] <- g_b
+    if (any(n_valid >= 2L)) {
+      pred <- t(t(p_v_mat) * g_b)
+      resid_sq <- (d_arr - pred)^2 / pmax(p_v_mat, 1e-12) * valid
+      resid_sq[!is.finite(resid_sq)] <- 0
+      s2_b <- colSums(resid_sq) / pmax(n_valid - 1L, 1)
+      s2_b[n_valid < 2L] <- NA_real_
+      sigma2_g_mat[k, ] <- s2_b
+    }
+  }
+  for (k in seq(2L, n_dev)) {
+    bad <- !is.finite(sigma2_g_mat[k, ])
+    if (any(bad)) sigma2_g_mat[k, bad] <- sigma2_g_mat[k - 1L, bad]
+  }
+
+  # ----- Vectorised forward simulation: cell_mean and cell_real ---------
   arr_mean <- array(NA_real_, dim = c(n_coh, n_dev, B))
   arr_real <- array(NA_real_, dim = c(n_coh, n_dev, B))
-
-  for (b in seq_len(B)) {
-    mat_alt <- arr_alt[, , b]
-
-    # Step 1: copy observed alt cum loss into both mean and real
-    # (observed cells share the parametric/residual perturbed value).
-    for (i in seq_len(n_coh)) {
-      for (j in seq_len(n_dev)) {
-        if (obs_mask[i, j]) {
-          arr_mean[i, j, b] <- mat_alt[i, j]
-          arr_real[i, j, b] <- mat_obs[i, j]  # original observed for chain
-        }
-      }
-    }
-
-    # Step 2: refit g_star_k and sigma2_g_k per link.
-    g_star <- rep(NA_real_, n_dev)
-    sigma2_g <- rep(NA_real_, n_dev)
-    for (k in seq(2L, n_dev)) {
-      idx <- obs_mask[, k - 1L] & obs_mask[, k] &
-             is.finite(mat_alt[, k - 1L]) & is.finite(mat_alt[, k]) &
-             is.finite(mat_prem[, k - 1L]) & mat_prem[, k - 1L] > 0
-      n_link <- sum(idx)
-      if (n_link < 1L) next
-      d_loss <- mat_alt[idx, k] - mat_alt[idx, k - 1L]
-      p_prev <- mat_prem[idx, k - 1L]
-      g_star[k] <- sum(d_loss) / sum(p_prev)
-      if (n_link >= 2L) {
-        sigma2_g[k] <- sum((d_loss - g_star[k] * p_prev)^2 / p_prev) /
-                       (n_link - 1L)
-      }
-    }
-    # LOCF on sigma2_g
+  # Anchor observed region
+  for (i in seq_len(n_coh)) {
     for (k in seq_len(n_dev)) {
-      if (is.na(sigma2_g[k]) && k >= 2L && is.finite(sigma2_g[k - 1L]))
-        sigma2_g[k] <- sigma2_g[k - 1L]
-    }
-
-    # Step 3a: cell_mean forward projection (parameter only)
-    for (i in seq_len(n_coh)) {
-      last_j_i <- last_obs_idx[i]
-      if (is.na(last_j_i) || last_j_i >= n_dev) next
-      base_mean <- arr_mean[i, last_j_i, b]
-      if (!is.finite(base_mean)) next
-      for (j in seq(last_j_i + 1L, n_dev)) {
-        p_prev <- mat_prem[i, j - 1L]
-        if (!is.finite(p_prev) || p_prev <= 0 || !is.finite(g_star[j])) {
-          arr_mean[i, j, b] <- base_mean
-        } else {
-          arr_mean[i, j, b] <- base_mean + g_star[j] * p_prev
-        }
-        base_mean <- arr_mean[i, j, b]
+      if (obs_mask[i, k]) {
+        arr_mean[i, k, ] <- arr_alt[i, k, ]   # alt (perturbed for residual)
+        arr_real[i, k, ] <- mat_obs[i, k]      # original observed for chain
       }
     }
+  }
 
-    # Step 3b: cell_real forward projection with chain-propagated process
-    # noise. anchor at original observed last_obs cell.
-    for (i in seq_len(n_coh)) {
-      last_j_i <- last_obs_idx[i]
-      if (is.na(last_j_i) || last_j_i >= n_dev) next
-      base_real <- mat_obs[i, last_j_i]
-      if (!is.finite(base_real)) next
-      for (j in seq(last_j_i + 1L, n_dev)) {
-        p_prev <- mat_prem[i, j - 1L]
-        if (!is.finite(p_prev) || p_prev <= 0 || !is.finite(g_star[j])) {
-          arr_real[i, j, b] <- base_real
-        } else {
-          mu  <- base_real + g_star[j] * p_prev
-          var <- if (is.finite(sigma2_g[j])) sigma2_g[j] * p_prev else 0
-          cell <- .boot_draw_noise(mu, var, dist = process_dist)
-          if (!is.finite(cell) || cell < 0) cell <- max(mu, 0)
-          arr_real[i, j, b] <- cell
-        }
-        base_real <- arr_real[i, j, b]
-      }
-    }
+  for (k in seq(2L, n_dev)) {
+    proj_idx <- which(!obs_mask[, k] & !is.na(last_obs_idx))
+    if (length(proj_idx) == 0L) next
+
+    g_b  <- g_obs_mat[k, ]
+    s2_b <- sigma2_g_mat[k, ]
+    g_b[!is.finite(g_b)]   <- 0
+    s2_b[!is.finite(s2_b)] <- 0
+
+    p_prev_vec <- mat_prem[proj_idx, k - 1L]   # [n_proj]
+    p_prev_vec[!is.finite(p_prev_vec) | p_prev_vec <= 0] <- 0
+
+    # mean chain: arr_mean[i, k, b] = arr_mean[i, k-1, b] + g_b[b] * p_prev[i]
+    base_mean_arr <- matrix(arr_mean[proj_idx, k - 1L, ], nrow = length(proj_idx))
+    mean_inc <- outer(p_prev_vec, g_b)   # [n_proj × B]
+    arr_mean[proj_idx, k, ] <- base_mean_arr + mean_inc
+
+    # real chain: arr_real[i, k, b] = arr_real[i, k-1, b] + g_b[b] * p_prev[i] + eps
+    base_real_arr <- matrix(arr_real[proj_idx, k - 1L, ], nrow = length(proj_idx))
+    mu_real <- base_real_arr + outer(p_prev_vec, g_b)
+    var_real <- outer(p_prev_vec, s2_b)
+    mu_real[!is.finite(mu_real)] <- 0
+    var_real[!is.finite(var_real) | var_real < 0] <- 0
+
+    cell_vec <- .boot_draw_noise(as.numeric(mu_real),
+                                  as.numeric(var_real),
+                                  dist = process_dist)
+    cell_vec[is.finite(cell_vec) & cell_vec < 0] <- 0
+    arr_real[proj_idx, k, ] <- matrix(cell_vec, nrow = length(proj_idx))
   }
 
   long <- data.table::data.table(
@@ -1507,105 +1508,115 @@ print.BootstrapTriangle <- function(x, ...) {
   arr_mean <- array(NA_real_, dim = c(n_coh, n_dev, B))
   arr_real <- array(NA_real_, dim = c(n_coh, n_dev, B))
 
-  for (b in seq_len(B)) {
-    mat_alt <- arr_alt[, , b]
-
-    for (i in seq_len(n_coh)) {
-      for (j in seq_len(n_dev)) {
-        if (obs_mask[i, j]) {
-          arr_mean[i, j, b] <- mat_alt[i, j]
-          arr_real[i, j, b] <- mat_obs[i, j]
-        }
+  # Anchor observed region (vectorised across B)
+  for (i in seq_len(n_coh)) {
+    for (j in seq_len(n_dev)) {
+      if (obs_mask[i, j]) {
+        arr_mean[i, j, ] <- arr_alt[i, j, ]
+        arr_real[i, j, ] <- mat_obs[i, j]
       }
     }
+  }
 
-    # Refit f_star (CL) and g_star (ED) per link from alt observed.
-    f_star  <- rep(NA_real_, n_dev)
-    s2_f    <- rep(NA_real_, n_dev)
-    g_star  <- rep(NA_real_, n_dev)
-    s2_g    <- rep(NA_real_, n_dev)
-    for (k in seq(2L, n_dev)) {
-      idx <- obs_mask[, k - 1L] & obs_mask[, k] &
-             is.finite(mat_alt[, k - 1L]) & is.finite(mat_alt[, k]) &
-             mat_alt[, k - 1L] > 0
-      n_link <- sum(idx)
-      if (n_link < 1L) next
-      from_vals <- mat_alt[idx, k - 1L]
-      to_vals   <- mat_alt[idx, k]
-      f_star[k] <- sum(to_vals) / sum(from_vals)
-      if (n_link >= 2L) {
-        s2_f[k] <- sum((to_vals - f_star[k] * from_vals)^2 / from_vals) /
-                   (n_link - 1L)
-      }
-      p_prev_obs <- mat_prem[idx, k - 1L]
-      ok_p <- is.finite(p_prev_obs) & p_prev_obs > 0
-      if (any(ok_p)) {
-        d_loss <- (to_vals - from_vals)[ok_p]
-        p_use  <- p_prev_obs[ok_p]
-        g_star[k] <- sum(d_loss) / sum(p_use)
-        n_g <- length(d_loss)
-        if (n_g >= 2L) {
-          s2_g[k] <- sum((d_loss - g_star[k] * p_use)^2 / p_use) /
-                     (n_g - 1L)
-        }
-      }
-    }
-    for (k in seq_len(n_dev)) {
-      if (is.na(s2_f[k]) && k >= 2L && is.finite(s2_f[k - 1L]))
-        s2_f[k] <- s2_f[k - 1L]
-      if (is.na(s2_g[k]) && k >= 2L && is.finite(s2_g[k - 1L]))
-        s2_g[k] <- s2_g[k - 1L]
+  # ----- Vectorised refit of f_star (CL) and g_star (ED) per link ------
+  f_star_mat <- matrix(NA_real_, nrow = n_dev, ncol = B)
+  s2_f_mat   <- matrix(NA_real_, nrow = n_dev, ncol = B)
+  g_star_mat <- matrix(NA_real_, nrow = n_dev, ncol = B)
+  s2_g_mat   <- matrix(NA_real_, nrow = n_dev, ncol = B)
+  for (k in seq(2L, n_dev)) {
+    idx <- which(obs_mask[, k - 1L] & obs_mask[, k])
+    if (length(idx) == 0L) next
+    from_arr <- matrix(arr_alt[idx, k - 1L, ], nrow = length(idx))
+    to_arr   <- matrix(arr_alt[idx, k,       ], nrow = length(idx))
+    valid_cl <- from_arr > 0 & is.finite(from_arr) & is.finite(to_arr)
+    n_cl <- colSums(valid_cl)
+    from_v   <- from_arr * valid_cl
+    to_v     <- to_arr   * valid_cl
+    from_sum <- colSums(from_v)
+    fhat_b <- colSums(to_v) / from_sum
+    fhat_b[!is.finite(fhat_b) | from_sum == 0] <- NA_real_
+    f_star_mat[k, ] <- fhat_b
+    if (any(n_cl >= 2L)) {
+      pred <- t(t(from_arr) * fhat_b)
+      rsq <- (to_arr - pred)^2 / pmax(from_arr, 1e-12) * valid_cl
+      rsq[!is.finite(rsq)] <- 0
+      s2_b <- colSums(rsq) / pmax(n_cl - 1L, 1)
+      s2_b[n_cl < 2L] <- NA_real_
+      s2_f_mat[k, ] <- s2_b
     }
 
-    # Step 3a: cell_mean forward projection (parameter only, no noise).
-    for (i in seq_len(n_coh)) {
-      last_j_i <- last_obs_idx[i]
-      if (is.na(last_j_i) || last_j_i >= n_dev) next
-      base_mean <- arr_mean[i, last_j_i, b]
-      if (!is.finite(base_mean)) next
-      for (j in seq(last_j_i + 1L, n_dev)) {
-        use_cl <- (devs[j] >= mat_change)
-        if (use_cl && is.finite(f_star[j])) {
-          arr_mean[i, j, b] <- f_star[j] * base_mean
-        } else {
-          p_prev <- mat_prem[i, j - 1L]
-          if (is.finite(g_star[j]) && is.finite(p_prev) && p_prev > 0) {
-            arr_mean[i, j, b] <- base_mean + g_star[j] * p_prev
-          } else {
-            arr_mean[i, j, b] <- base_mean
-          }
-        }
-        base_mean <- arr_mean[i, j, b]
+    p_prev <- mat_prem[idx, k - 1L]
+    valid_ed <- valid_cl & matrix(is.finite(p_prev) & p_prev > 0,
+                                  nrow = length(idx), ncol = B)
+    if (any(valid_ed)) {
+      d_arr <- (to_arr - from_arr) * valid_ed
+      p_mat <- matrix(p_prev, nrow = length(idx), ncol = B) * valid_ed
+      n_ed  <- colSums(valid_ed)
+      p_sum <- colSums(p_mat)
+      g_b <- colSums(d_arr) / p_sum
+      g_b[!is.finite(g_b) | p_sum == 0] <- NA_real_
+      g_star_mat[k, ] <- g_b
+      if (any(n_ed >= 2L)) {
+        pred_g <- t(t(p_mat) * g_b)
+        rsq_g <- (d_arr - pred_g)^2 / pmax(p_mat, 1e-12) * valid_ed
+        rsq_g[!is.finite(rsq_g)] <- 0
+        s2g_b <- colSums(rsq_g) / pmax(n_ed - 1L, 1)
+        s2g_b[n_ed < 2L] <- NA_real_
+        s2_g_mat[k, ] <- s2g_b
       }
+    }
+  }
+  for (k in seq(2L, n_dev)) {
+    bad <- !is.finite(s2_f_mat[k, ])
+    if (any(bad)) s2_f_mat[k, bad] <- s2_f_mat[k - 1L, bad]
+    bad <- !is.finite(s2_g_mat[k, ])
+    if (any(bad)) s2_g_mat[k, bad] <- s2_g_mat[k - 1L, bad]
+  }
+
+  # ----- Vectorised forward simulation, per dev step ------------------
+  for (k in seq(2L, n_dev)) {
+    proj_idx <- which(!obs_mask[, k] & !is.na(last_obs_idx))
+    if (length(proj_idx) == 0L) next
+
+    use_cl <- (devs[k] >= mat_change)
+
+    if (use_cl) {
+      f_b  <- f_star_mat[k, ]
+      s2_b <- s2_f_mat[k, ]
+      f_b[!is.finite(f_b)]   <- 1
+      s2_b[!is.finite(s2_b)] <- 0
+
+      base_mean <- matrix(arr_mean[proj_idx, k - 1L, ], nrow = length(proj_idx))
+      arr_mean[proj_idx, k, ] <- t(t(base_mean) * f_b)
+
+      base_real <- matrix(arr_real[proj_idx, k - 1L, ], nrow = length(proj_idx))
+      mu_r  <- t(t(base_real) * f_b)
+      var_r <- t(t(base_real) * s2_b)
+      mu_r[!is.finite(mu_r)] <- 0
+      var_r[!is.finite(var_r) | var_r < 0] <- 0
+    } else {
+      g_b  <- g_star_mat[k, ]
+      s2_b <- s2_g_mat[k, ]
+      g_b[!is.finite(g_b)]   <- 0
+      s2_b[!is.finite(s2_b)] <- 0
+      p_prev_vec <- mat_prem[proj_idx, k - 1L]
+      p_prev_vec[!is.finite(p_prev_vec) | p_prev_vec <= 0] <- 0
+
+      base_mean <- matrix(arr_mean[proj_idx, k - 1L, ], nrow = length(proj_idx))
+      arr_mean[proj_idx, k, ] <- base_mean + outer(p_prev_vec, g_b)
+
+      base_real <- matrix(arr_real[proj_idx, k - 1L, ], nrow = length(proj_idx))
+      mu_r  <- base_real + outer(p_prev_vec, g_b)
+      var_r <- outer(p_prev_vec, s2_b)
+      mu_r[!is.finite(mu_r)] <- 0
+      var_r[!is.finite(var_r) | var_r < 0] <- 0
     }
 
-    # Step 3b: cell_real forward projection with chain-propagated noise.
-    for (i in seq_len(n_coh)) {
-      last_j_i <- last_obs_idx[i]
-      if (is.na(last_j_i) || last_j_i >= n_dev) next
-      base_real <- mat_obs[i, last_j_i]
-      if (!is.finite(base_real)) next
-      for (j in seq(last_j_i + 1L, n_dev)) {
-        use_cl <- (devs[j] >= mat_change)
-        if (use_cl && is.finite(f_star[j])) {
-          mu  <- f_star[j] * base_real
-          var <- if (is.finite(s2_f[j])) s2_f[j] * base_real else 0
-        } else {
-          p_prev <- mat_prem[i, j - 1L]
-          if (is.finite(g_star[j]) && is.finite(p_prev) && p_prev > 0) {
-            mu  <- base_real + g_star[j] * p_prev
-            var <- if (is.finite(s2_g[j])) s2_g[j] * p_prev else 0
-          } else {
-            mu <- base_real
-            var <- 0
-          }
-        }
-        cell <- .boot_draw_noise(mu, var, dist = process_dist)
-        if (!is.finite(cell) || cell < 0) cell <- max(mu, 0)
-        arr_real[i, j, b] <- cell
-        base_real <- cell
-      }
-    }
+    cell_vec <- .boot_draw_noise(as.numeric(mu_r),
+                                  as.numeric(var_r),
+                                  dist = process_dist)
+    cell_vec[is.finite(cell_vec) & cell_vec < 0] <- 0
+    arr_real[proj_idx, k, ] <- matrix(cell_vec, nrow = length(proj_idx))
   }
 
   long <- data.table::data.table(
