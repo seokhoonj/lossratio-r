@@ -1330,14 +1330,16 @@ bootstrap.Triangle <- function(x,
       # Clip alt observed cells to >=0 (cumulative loss is non-negative)
       mat_alt[mat_alt < 0 & is.finite(mat_alt)] <- 0
 
-      # Refit f_k* from alt observed
+      # Refit f_k* from alt observed (Mack: cohorts with BOTH from and to)
       f_star <- f_hat_vec  # fallback
       for (k in seq_len(n_links)) {
         to_col <- link_to_idx[k]
         if (is.na(to_col) || to_col < 2L) next
         from_col <- to_col - 1L
-        num <- sum(mat_alt[, to_col],   na.rm = TRUE)
-        den <- sum(mat_alt[, from_col], na.rm = TRUE)
+        has_both <- is.finite(mat_alt[, from_col]) &
+                    is.finite(mat_alt[, to_col])
+        num <- sum(mat_alt[has_both, to_col],   na.rm = TRUE)
+        den <- sum(mat_alt[has_both, from_col], na.rm = TRUE)
         if (is.finite(den) && den > 0) f_star[k] <- num / den
       }
 
@@ -1393,14 +1395,16 @@ bootstrap.Triangle <- function(x,
       # Pass-through negative cumulatives (chainladder-py parity); refit
       # below tolerates them via na.rm and the den > 0 guard.
 
-      # Refit f_k* from pseudo-cumulative observed cells
+      # Refit f_k* from pseudo-cumulative (Mack: cohorts with BOTH from and to)
       f_star <- f_hat_vec  # fallback
       for (k in seq_len(n_links)) {
         to_col <- link_to_idx[k]
         if (is.na(to_col) || to_col < 2L) next
         from_col <- to_col - 1L
-        num <- sum(mat_alt[, to_col],   na.rm = TRUE)
-        den <- sum(mat_alt[, from_col], na.rm = TRUE)
+        has_both <- is.finite(mat_alt[, from_col]) &
+                    is.finite(mat_alt[, to_col])
+        num <- sum(mat_alt[has_both, to_col],   na.rm = TRUE)
+        den <- sum(mat_alt[has_both, from_col], na.rm = TRUE)
         if (is.finite(den) && den > 0) f_star[k] <- num / den
       }
 
