@@ -60,7 +60,7 @@ projection (\code{prem_ci_lo}, \code{prem_ci_hi}). Default \code{0.95}.}
 \item{\code{TRUE} / \code{FALSE}}{Back-compat with the legacy logical arg.
 \code{TRUE} triggers \code{bootstrap = "auto"}; \code{FALSE} disables.}
 \item{\code{"auto"}}{Internal \code{bootstrap()} call on the premium triangle
-with defaults \verb{(method = "parametric", mode = "dev", process = "normal", target = "prem")}.}
+with defaults \verb{(type = "parametric", process = "normal", target = "prem")}.}
 \item{\code{BootstrapTriangle}}{Pre-built object from \code{bootstrap()}.
 Must have \code{meta$target == "prem"}.}
 \item{Function \verb{function(tri) -> BootstrapTriangle}}{Lazy spec

@@ -296,14 +296,102 @@
 # =============================================================================
 
 
+#' Validate the bootstrap argument combination
+#'
+#' Internal helper called by `bootstrap.Triangle()` after `match.arg()`.
+#' Enforces the type/residual/process/method/tail combination matrix and
+#' warns when an argument is silently ignored.
+#'
+#' @param type,residual,process,method,tail Resolved (post-match.arg) values.
+#' @param min_pool,hat_adj,maturity Scalar values to validate.
+#' @param residual_set,process_set,method_set,tail_set,hat_adj_set,min_pool_set
+#'   Logicals indicating whether the user explicitly passed each argument
+#'   (computed via `match.call()` in the caller).
+#'
+#' @return `invisible(TRUE)` after raising any errors / warnings.
+#'
+#' @keywords internal
+.validate_bootstrap_args <- function(type, residual, process, method, tail,
+                                     min_pool, hat_adj, maturity,
+                                     residual_set, process_set,
+                                     method_set, tail_set, hat_adj_set,
+                                     min_pool_set) {
+
+  # `min_pool` must be a single positive integer regardless of type/method.
+  if (!is.numeric(min_pool) || length(min_pool) != 1L ||
+      is.na(min_pool) || min_pool < 1L ||
+      !isTRUE(all.equal(min_pool, round(min_pool))))
+    stop("`min_pool` must be a single positive integer.", call. = FALSE)
+
+  if (identical(type, "parametric")) {
+    if (process_set && !identical(process, "normal"))
+      stop("type = 'parametric' (Mack 1993 closed-form) requires ",
+           "process = 'normal'. For other process distributions use ",
+           "type = 'nonparametric'.",
+           call. = FALSE)
+    if (residual_set)
+      warning("type = 'parametric' uses closed-form simulation; ",
+              "'residual' argument is ignored.",
+              call. = FALSE)
+    if (method_set)
+      warning("type = 'parametric' has no residual pool; ",
+              "'method' argument is ignored.",
+              call. = FALSE)
+    if (tail_set)
+      warning("type = 'parametric' has no residual pool; ",
+              "'tail' argument is ignored.",
+              call. = FALSE)
+    if (min_pool_set)
+      warning("type = 'parametric' has no residual pool; ",
+              "'min_pool' argument is ignored.",
+              call. = FALSE)
+    if (hat_adj_set && isTRUE(hat_adj))
+      warning("'hat_adj' is only defined for residual = 'cell'; ignored.",
+              call. = FALSE)
+  } else {
+    # type == "nonparametric"
+    if (identical(residual, "cell"))
+      stop("residual = 'cell' (Pearson on incremental cells, ",
+           "E-V 1999/2002 path) is not yet implemented. Use ",
+           "residual = 'link' (Mack 1993 / Pinheiro 2003) for now. ",
+           "Cell support arrives in Phase 5b.2.",
+           call. = FALSE)
+    if (identical(residual, "link") && isTRUE(hat_adj))
+      warning("hat_adj is currently only implemented for residual = ",
+              "'cell'. Pinheiro 2003 defines it for link residuals but ",
+              "implementation is deferred to a future release. Ignored.",
+              call. = FALSE)
+    if (identical(process, "lognormal"))
+      stop("process = 'lognormal' not yet implemented (Phase 5b.3). ",
+           "Use 'gamma', 'od_pois', or 'normal'.",
+           call. = FALSE)
+    if (!identical(method, "tail_pooled")) {
+      if (tail_set)
+        warning("'tail' applies only to method = 'tail_pooled'; ignored.",
+                call. = FALSE)
+      if (min_pool_set)
+        warning("'min_pool' applies only to method = 'tail_pooled' ",
+                "with tail = 'auto'; ignored.",
+                call. = FALSE)
+    } else {
+      if (!identical(tail, "auto") && min_pool_set)
+        warning("'min_pool' applies only to tail = 'auto'; ignored.",
+                call. = FALSE)
+    }
+  }
+
+  invisible(TRUE)
+}
+
+
 #' Bootstrap a Triangle
 #'
 #' @description
-#' Generate `B` alternative realizations of a `Triangle` via residual
-#' (England-Verrall) or parametric (Mack normal) Stage 1 perturbation. The
-#' output is a model-agnostic `BootstrapTriangle` object that downstream
-#' fit functions (`fit_cl` / `fit_ed` / `fit_lr`) consume to recover
-#' parameter and process risk decomposition.
+#' Generate `B` alternative realizations of a `Triangle` via nonparametric
+#' (England-Verrall residual) or parametric (Mack normal closed-form) Stage 1
+#' perturbation. The output is a model-agnostic `BootstrapTriangle` object
+#' that downstream fit functions (`fit_cl` / `fit_ed` / `fit_lr`) consume to
+#' recover parameter and process risk decomposition.
 #'
 #' This entry point sits at the Triangle level — it knows nothing about CL,
 #' ED, or SA. Each fit method later refits its own model on every alt
@@ -322,27 +410,41 @@
 #'    distribution to use.
 #'
 #' @param x A `Triangle` object.
-#' @param method One of `"parametric"` or `"residual"`. `"parametric"` draws
-#'   new link factors from `N(f_hat, sqrt(Var(f_hat)))` (Mack-style);
-#'   `"residual"` resamples standardized Pearson residuals and reconstructs
-#'   the alt triangle.
-#' @param mode One of `"dev"`, `"pooled"`, `"dev_maturity"`. Controls how
-#'   residuals (residual method) or per-link sigma (parametric method) are
-#'   grouped. `"dev"` keeps each development link independent
-#'   (Mack-faithful). `"pooled"` shares residuals across links. `"dev_maturity"`
-#'   uses per-link before maturity and pooled after.
-#' @param process One of `"normal"`, `"gamma"`, `"odp"`. Stored as metadata;
-#'   downstream fit functions read this to choose the Stage 2 noise
-#'   distribution. `"gamma"` matches `ChainLadder::BootChainLadder`
-#'   defaults for non-negative right-skewed loss data.
+#' @param type One of `"nonparametric"` or `"parametric"`. `"parametric"`
+#'   draws new link factors from `N(f_hat, sqrt(Var(f_hat)))` (Mack 1993
+#'   closed-form); `"nonparametric"` resamples standardized residuals and
+#'   reconstructs the alt triangle (England-Verrall / Pinheiro).
+#' @param residual Residual scope for `type = "nonparametric"`. One of
+#'   `"link"` (Mack 1993 / Pinheiro 2003 — Pearson residuals on link
+#'   factors) or `"cell"` (E-V 1999/2002 — Pearson residuals on
+#'   incremental cells; *not yet implemented*, arrives in Phase 5b.2).
+#' @param hat_adj Logical. Hat-matrix adjustment for the cell residual
+#'   path. Defaults `FALSE`. Currently only defined for `residual = "cell"`;
+#'   warned-ignored otherwise.
+#' @param process One of `"gamma"`, `"od_pois"`, `"normal"`, `"lognormal"`.
+#'   Stored as metadata; downstream fit functions read this to choose the
+#'   Stage 2 noise distribution. `"gamma"` matches
+#'   `ChainLadder::BootChainLadder` defaults for non-negative right-skewed
+#'   loss data. `"lognormal"` is reserved for Phase 5b.3 and currently
+#'   errors.
+#' @param method Residual-pool grouping. One of `"pooled"`, `"separated"`,
+#'   `"tail_pooled"`. `"pooled"` shares residuals across all links;
+#'   `"separated"` keeps each development link independent (Mack-faithful);
+#'   `"tail_pooled"` uses per-link pools before a cut and a single pooled
+#'   bucket after.
+#' @param tail Tail-cut rule for `method = "tail_pooled"`. One of `"auto"`
+#'   (cut at the smallest `ata_to` whose residual count drops below
+#'   `min_pool`) or `"maturity"` (cut at the resolved `Maturity` change
+#'   point).
+#' @param min_pool Minimum residual count per per-link pool under
+#'   `method = "tail_pooled" && tail = "auto"`. Default `5`.
+#' @param maturity Required only when `method = "tail_pooled" &&
+#'   tail = "maturity"`. Four-type dispatch: `NULL`, a `Maturity` object,
+#'   the string `"auto"`, or a function `function(tri) -> Maturity`.
 #' @param B Number of bootstrap replicates. Default `1000`.
 #' @param seed Optional integer seed for reproducibility.
 #' @param alpha Variance exponent in Mack's `Var(C_{k+1} | C_k) = sigma_k^2
 #'   C_k^alpha`. Default `1` (volume-weighted).
-#' @param maturity Required only when `mode = "dev_maturity"`. Four-type
-#'   dispatch following the package convention: `NULL` (error in this mode),
-#'   a `Maturity` object, the string `"auto"`, or a function
-#'   `function(tri) -> Maturity`.
 #' @param ... Reserved for future use.
 #'
 #' @return An object of class `BootstrapTriangle` (a list) with elements:
@@ -354,12 +456,12 @@
 #'     Stage 1 forward projection means.}
 #'   \item{`residual_pool`}{`data.table` of the standardized residuals used,
 #'     with the `pool_id` column identifying which pool each residual
-#'     belongs to (depends on `mode`).}
+#'     belongs to (depends on `method`/`tail`).}
 #'   \item{`f_anchor`}{Per-link Mack factor estimates `f_hat` with
 #'     `n_cohorts`.}
 #'   \item{`sigma2_anchor`}{Per-link Mack `sigma^2` and `Var(f_hat)`.}
-#'   \item{`meta`}{`list(method, mode, process, B, seed, alpha, target,
-#'     groups, maturity)`.}
+#'   \item{`meta`}{`list(type, residual, hat_adj, process, method, tail,
+#'     min_pool, B, seed, alpha, target, groups, maturity)`.}
 #' }
 #'
 #' @seealso `dev/BOOTSTRAP.md` for the full design rationale.
@@ -376,8 +478,9 @@
 #'   premium  = "premium_incr"
 #' )
 #'
-#' boots <- bootstrap(tri, method = "residual", mode = "dev",
-#'                    process = "gamma", B = 500, seed = 1)
+#' boots <- bootstrap(tri, type = "nonparametric", residual = "link",
+#'                    method = "separated", process = "gamma",
+#'                    B = 500, seed = 1)
 #' print(boots)
 #' }
 #'
@@ -393,21 +496,41 @@ bootstrap <- function(x, ...) {
 #'   target so downstream refit helpers know which column to read.
 #' @export
 bootstrap.Triangle <- function(x,
-                                method   = c("parametric", "residual"),
-                                mode     = c("dev", "pooled", "dev_maturity"),
-                                process  = c("normal", "gamma", "odp"),
+                                type     = c("nonparametric", "parametric"),
+                                residual = c("link", "cell"),
+                                hat_adj  = FALSE,
+                                process  = c("gamma", "od_pois", "normal",
+                                             "lognormal"),
+                                method   = c("pooled", "separated",
+                                             "tail_pooled"),
+                                tail     = c("auto", "maturity"),
+                                min_pool = 5L,
+                                maturity = NULL,
                                 target   = c("loss", "prem"),
                                 B        = 1000L,
                                 seed     = NULL,
                                 alpha    = 1,
-                                maturity = NULL,
                                 ...) {
 
   .assert_class(x, "Triangle")
-  method  <- match.arg(method)
-  mode    <- match.arg(mode)
-  process <- match.arg(process)
-  target  <- match.arg(target)
+
+  # Detect explicitly-passed args (before match.arg() overwrites) so the
+  # validator can issue "ignored" warnings only when the user actually
+  # supplied a value.
+  mc <- match.call()
+  residual_set <- "residual" %in% names(mc)
+  process_set  <- "process"  %in% names(mc)
+  method_set   <- "method"   %in% names(mc)
+  tail_set     <- "tail"     %in% names(mc)
+  hat_adj_set  <- "hat_adj"  %in% names(mc)
+  min_pool_set <- "min_pool" %in% names(mc)
+
+  type     <- match.arg(type)
+  residual <- match.arg(residual)
+  process  <- match.arg(process)
+  method   <- match.arg(method)
+  tail     <- match.arg(tail)
+  target   <- match.arg(target)
 
   if (!is.numeric(B) || length(B) != 1L || is.na(B) || B < 1L)
     stop("`B` must be a single positive integer.", call. = FALSE)
@@ -423,12 +546,33 @@ bootstrap.Triangle <- function(x,
     set.seed(as.integer(seed))
   }
 
-  if (identical(mode, "dev_maturity")) {
+  .validate_bootstrap_args(
+    type = type, residual = residual, process = process,
+    method = method, tail = tail,
+    min_pool = min_pool, hat_adj = hat_adj, maturity = maturity,
+    residual_set = residual_set, process_set = process_set,
+    method_set = method_set, tail_set = tail_set,
+    hat_adj_set = hat_adj_set, min_pool_set = min_pool_set
+  )
+
+  min_pool <- as.integer(min_pool)
+
+  # Parametric path has only one supported process (Mack 1993 closed-form
+  # uses Normal). When the user didn't explicitly request a different
+  # process, silently coerce to "normal" so meta$process truthfully
+  # records what Stage 1 simulated under. (If the user *did* set process
+  # to something non-normal, the validator already errored above.)
+  if (identical(type, "parametric")) process <- "normal"
+
+  # Resolve maturity when tail_pooled + maturity. Note: for tail = "auto"
+  # we don't need a Maturity object — the cut is derived from residual
+  # counts vs `min_pool`.
+  if (identical(method, "tail_pooled") && identical(tail, "maturity")) {
     maturity <- .resolve_maturity(maturity, x)
     if (is.null(maturity))
-      stop("`mode = 'dev_maturity'` requires a maturity. Pass ",
-           "`maturity = 'auto'` for automatic detection, or supply a ",
-           "Maturity object.", call. = FALSE)
+      stop("`method = 'tail_pooled'` with `tail = 'maturity'` requires a ",
+           "maturity. Pass `maturity = 'auto'` for automatic detection, ",
+           "or supply a Maturity object.", call. = FALSE)
   } else {
     maturity <- NULL
   }
@@ -436,24 +580,36 @@ bootstrap.Triangle <- function(x,
   grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  # 1) Build Link on the chosen target --------------------------------------
-  link <- as_link(x, target = target, drop_invalid = TRUE)
+  is_residual_mode <- identical(type, "nonparametric")
 
-  # 2) Compute Mack anchor per (group, ata_to) ------------------------------
-  anchor <- .boot_anchor(link, grp = grp, alpha = alpha)
+  if (is_residual_mode) {
+    # 1) Build Link on the chosen target
+    link <- as_link(x, target = target, drop_invalid = TRUE)
 
-  # 3) Attach standardized residuals to each Link row ----------------------
-  link <- .boot_attach_residuals(link, anchor = anchor, grp = grp)
+    # 2) Compute Mack anchor per (group, ata_to)
+    anchor <- .boot_anchor(link, grp = grp, alpha = alpha)
 
-  # 4) Build residual pool per mode ----------------------------------------
-  pool <- .boot_build_pool(link, anchor = anchor, grp = grp,
-                            mode = mode, maturity = maturity)
+    # 3) Attach standardized residuals to each Link row
+    link <- .boot_attach_residuals(link, anchor = anchor, grp = grp)
+
+    # 4) Build residual pool per (method, tail)
+    pool <- .boot_build_pool(link, anchor = anchor, grp = grp,
+                              method = method, tail = tail,
+                              min_pool = min_pool, maturity = maturity)
+  } else {
+    # parametric path: closed-form simulation, no residual pool needed.
+    # We still compute the anchor (f_hat, sigma2, f_var) — those drive
+    # the N(f_hat, sqrt(Var(f_hat))) draws inside .boot_stage1_one.
+    link   <- as_link(x, target = target, drop_invalid = TRUE)
+    anchor <- .boot_anchor(link, grp = grp, alpha = alpha)
+    pool   <- .boot_empty_pool(grp)
+  }
 
   # 5) Stage 1 — B alt triangles -------------------------------------------
   alt_triangles <- .boot_stage1(
     triangle = x, link = link, anchor = anchor, pool = pool,
-    grp = grp, method = method, B = B, alpha = alpha,
-    target = target
+    grp = grp, is_residual_mode = is_residual_mode,
+    B = B, alpha = alpha, target = target
   )
 
   # 6) Assemble -------------------------------------------------------------
@@ -468,9 +624,16 @@ bootstrap.Triangle <- function(x,
                               .SDcols = c(grp, "ata_from", "ata_to",
                                           "sigma2", "f_var")],
       meta = list(
-        method   = method,
-        mode     = mode,
+        type     = type,
+        residual = residual,
+        hat_adj  = hat_adj,
         process  = process,
+        method   = method,
+        tail     = if (identical(method, "tail_pooled")) tail
+                   else NA_character_,
+        min_pool = if (identical(method, "tail_pooled") &&
+                       identical(tail, "auto")) min_pool
+                   else NA_integer_,
         B        = B,
         seed     = seed,
         alpha    = alpha,
@@ -481,6 +644,20 @@ bootstrap.Triangle <- function(x,
     ),
     class = c("BootstrapTriangle", "list")
   )
+}
+
+
+# Empty residual pool used by the parametric path so downstream code that
+# inspects `pool$residual` / `pool$pool_id` sees a well-formed 0-row table.
+.boot_empty_pool <- function(grp) {
+  keep <- c(grp, "cohort", "ata_from", "ata_to", "residual", "pool_id")
+  out <- data.table::data.table()
+  for (col in keep) {
+    out[, (col) := if (col == "residual") numeric(0)
+                   else if (col %in% c("ata_from", "ata_to")) integer(0)
+                   else character(0)]
+  }
+  out
 }
 
 
@@ -590,9 +767,12 @@ bootstrap.Triangle <- function(x,
 }
 
 
-# Internal: build residual pool with `pool_id` per mode -------------------
-.boot_build_pool <- function(link, anchor, grp, mode, maturity) {
-  residual <- ata_to <- mat_change <- grp_key <- NULL  # NSE
+# Internal: build residual pool with `pool_id` per (method, tail) ---------
+.boot_build_pool <- function(link, anchor, grp, method, tail, min_pool,
+                              maturity) {
+  # data.table NSE
+  residual <- ata_to <- mat_change <- grp_key <- N <- below <-
+    cut_to <- is_post <- NULL
 
   dt <- link[is.finite(residual)]
 
@@ -603,33 +783,57 @@ bootstrap.Triangle <- function(x,
     dt[, ("grp_key") := ""]
   }
 
-  if (identical(mode, "dev")) {
+  if (identical(method, "separated")) {
     dt[, ("pool_id") := paste(grp_key, as.character(ata_to), sep = "|")]
-  } else if (identical(mode, "pooled")) {
+  } else if (identical(method, "pooled")) {
     dt[, ("pool_id") := data.table::fifelse(grp_key == "", "all", grp_key)]
-  } else if (identical(mode, "dev_maturity")) {
-    # per-group maturity boundary: ata_to < k* keeps per-dev pool, ata_to >= k*
-    # collapses to a single group-level pooled bucket ("POST").
-    if (length(grp) > 0L) {
-      mat <- data.table::as.data.table(maturity)
-      mat <- mat[, .SD, .SDcols = c(grp, "change")]
-      data.table::setnames(mat, "change", "mat_change")
-      dt <- merge(dt, mat, by = grp, all.x = TRUE, sort = FALSE)
-    } else {
-      mc <- attr(maturity, "change")
-      if (is.null(mc)) {
-        mat_df <- data.table::as.data.table(maturity)
-        mc <- mat_df$change[1L]
+  } else if (identical(method, "tail_pooled")) {
+    if (identical(tail, "maturity")) {
+      # per-group maturity boundary: ata_to < k* keeps per-dev pool, ata_to
+      # >= k* collapses to a single group-level pooled bucket ("POST").
+      if (length(grp) > 0L) {
+        mat <- data.table::as.data.table(maturity)
+        mat <- mat[, .SD, .SDcols = c(grp, "change")]
+        data.table::setnames(mat, "change", "mat_change")
+        dt <- merge(dt, mat, by = grp, all.x = TRUE, sort = FALSE)
+      } else {
+        mc <- attr(maturity, "change")
+        if (is.null(mc)) {
+          mat_df <- data.table::as.data.table(maturity)
+          mc <- mat_df$change[1L]
+        }
+        dt[, ("mat_change") := mc]
       }
-      dt[, ("mat_change") := mc]
+      dt[, ("is_post") := is.finite(mat_change) & ata_to >= mat_change]
+      dt[, ("pool_id") := data.table::fifelse(
+        is_post,
+        paste(grp_key, "POST", sep = "|"),
+        paste(grp_key, as.character(ata_to), sep = "|")
+      )]
+      dt[, c("mat_change", "is_post") := NULL]
+    } else {
+      # tail = "auto" -- per-group cut at the smallest ata_to whose count
+      # falls below `min_pool`. ata_to < cut_to keeps per-dev pool; ata_to
+      # >= cut_to collapses into a single group-level "POST" bucket. No
+      # cut (all counts >= min_pool) gives fully per-dev pools; first
+      # ata_to below min_pool gives fully pooled (POST only).
+      counts <- dt[, .N, by = c("grp_key", "ata_to")]
+      data.table::setorderv(counts, c("grp_key", "ata_to"))
+      counts[, ("below") := N < min_pool]
+      cut_lookup <- counts[, {
+        first_below <- which(below)[1L]
+        list(cut_to = if (is.na(first_below)) NA_real_
+                       else as.numeric(ata_to[first_below]))
+      }, by = "grp_key"]
+      dt <- merge(dt, cut_lookup, by = "grp_key", all.x = TRUE, sort = FALSE)
+      dt[, ("is_post") := is.finite(cut_to) & ata_to >= cut_to]
+      dt[, ("pool_id") := data.table::fifelse(
+        is_post,
+        paste(grp_key, "POST", sep = "|"),
+        paste(grp_key, as.character(ata_to), sep = "|")
+      )]
+      dt[, c("cut_to", "is_post") := NULL]
     }
-    is_post <- is.finite(dt$mat_change) & dt$ata_to >= dt$mat_change
-    dt[, ("pool_id") := data.table::fifelse(
-      is_post,
-      paste(grp_key, "POST", sep = "|"),
-      paste(grp_key, as.character(ata_to), sep = "|")
-    )]
-    dt[, mat_change := NULL]
   }
 
   dt[, grp_key := NULL]
@@ -658,7 +862,8 @@ bootstrap.Triangle <- function(x,
 # Returns a long-format data.table with columns [grp..], cohort, dev, rep,
 # loss.
 .boot_stage1 <- function(triangle, link, anchor, pool,
-                          grp, method, B, alpha, target = "loss") {
+                          grp, is_residual_mode, B, alpha,
+                          target = "loss") {
 
   # Per-group iteration
   if (length(grp) > 0L) {
@@ -669,10 +874,12 @@ bootstrap.Triangle <- function(x,
       tri_g <- merge(triangle, gkey, by = grp, sort = FALSE)
       link_g <- merge(link, gkey, by = grp, sort = FALSE)
       anchor_g <- merge(anchor, gkey, by = grp, sort = FALSE)
-      pool_g <- merge(pool, gkey, by = grp, sort = FALSE)
+      pool_g <- if (nrow(pool) > 0L) {
+        merge(pool, gkey, by = grp, sort = FALSE)
+      } else pool
       out_list[[gi]] <- .boot_stage1_one(
         triangle = tri_g, link = link_g, anchor = anchor_g, pool = pool_g,
-        method = method, B = B, alpha = alpha,
+        is_residual_mode = is_residual_mode, B = B, alpha = alpha,
         grp_vals = gkey, target = target
       )
     }
@@ -680,8 +887,8 @@ bootstrap.Triangle <- function(x,
   } else {
     .boot_stage1_one(
       triangle = triangle, link = link, anchor = anchor, pool = pool,
-      method = method, B = B, alpha = alpha, grp_vals = NULL,
-      target = target
+      is_residual_mode = is_residual_mode, B = B, alpha = alpha,
+      grp_vals = NULL, target = target
     )
   }
 }
@@ -689,7 +896,8 @@ bootstrap.Triangle <- function(x,
 
 # Per-group worker for Stage 1. Returns long-format with `rep` column.
 .boot_stage1_one <- function(triangle, link, anchor, pool,
-                              method, B, alpha, grp_vals, target = "loss") {
+                              is_residual_mode, B, alpha, grp_vals,
+                              target = "loss") {
 
   cohort <- dev <- NULL  # NSE
 
@@ -726,7 +934,7 @@ bootstrap.Triangle <- function(x,
   # For residual method, we need to know which pool_id each (cohort, ata_to)
   # row maps to. Build a lookup keyed by ata_to (since pool_id was built
   # per group already inside .boot_build_pool, and we are inside one group).
-  if (identical(method, "residual")) {
+  if (is_residual_mode && nrow(pool) > 0L) {
     pool_lookup <- unique(pool[, .SD, .SDcols = c("ata_to", "pool_id")])
     pool_id_by_to <- setNames(pool_lookup$pool_id,
                               as.character(pool_lookup$ata_to))
@@ -743,7 +951,7 @@ bootstrap.Triangle <- function(x,
 
   for (b in seq_len(B)) {
 
-    if (identical(method, "residual")) {
+    if (is_residual_mode) {
 
       # Chain residual resample forward through the cumulative recursion.
       # alt_C[i, k] = f_hat_k * alt_C[i, k-1] + r* * sqrt(sigma2_k * alt_C[i, k-1])
@@ -874,11 +1082,24 @@ bootstrap.Triangle <- function(x,
 #' @export
 print.BootstrapTriangle <- function(x, ...) {
   m <- x$meta
+  is_param <- identical(m$type, "parametric")
+  is_tail  <- identical(m$method, "tail_pooled")
+
   cat("<BootstrapTriangle>\n")
-  cat(sprintf("  method   : %s\n", m$method))
-  cat(sprintf("  mode     : %s\n", m$mode))
-  cat(sprintf("  process  : %s (Stage 2 distribution, applied by fit)\n",
-              m$process))
+  cat(sprintf("  type     : %s\n", m$type))
+  if (!is_param) {
+    cat(sprintf("  residual : %s\n", m$residual))
+    cat(sprintf("  hat_adj  : %s\n", as.character(isTRUE(m$hat_adj))))
+  }
+  cat(sprintf("  process  : %s\n", m$process))
+  if (!is_param) {
+    cat(sprintf("  method   : %s\n", m$method))
+    if (is_tail) {
+      cat(sprintf("  tail     : %s\n", m$tail))
+      if (identical(m$tail, "auto"))
+        cat(sprintf("  min_pool : %d\n", as.integer(m$min_pool)))
+    }
+  }
   cat(sprintf("  B        : %d replicates\n", m$B))
   cat(sprintf("  alpha    : %g\n", m$alpha))
   if (!is.null(m$seed))
@@ -928,20 +1149,26 @@ print.BootstrapTriangle <- function(x, ...) {
 #'
 #' @param arg The bootstrap argument supplied by the user.
 #' @param tri A `Triangle` object (the data the bootstrap will be computed on).
-#' @param B,seed,method,mode,process,alpha Defaults forwarded to
-#'   `bootstrap.Triangle()` when `arg` resolves to `"auto"` or `TRUE`.
+#' @param B,seed,type,residual,hat_adj,process,method,tail,min_pool,maturity,target,alpha
+#'   Defaults forwarded to `bootstrap.Triangle()` when `arg` resolves to
+#'   `"auto"` or `TRUE`.
 #'
 #' @return A `BootstrapTriangle` object or `NULL`.
 #'
 #' @keywords internal
 .resolve_bootstrap <- function(arg, tri,
-                                B       = 1000L,
-                                seed    = NULL,
-                                method  = "parametric",
-                                mode    = "dev",
-                                process = "normal",
-                                target  = "loss",
-                                alpha   = 1) {
+                                B        = 1000L,
+                                seed     = NULL,
+                                type     = "parametric",
+                                residual = "link",
+                                hat_adj  = FALSE,
+                                process  = "normal",
+                                method   = "pooled",
+                                tail     = "auto",
+                                min_pool = 5L,
+                                maturity = NULL,
+                                target   = "loss",
+                                alpha    = 1) {
   if (is.null(arg)) return(NULL)
 
   # Legacy back-compat: bare logical
@@ -961,14 +1188,27 @@ print.BootstrapTriangle <- function(x, ...) {
   }
 
   if (identical(arg, "auto")) {
-    return(bootstrap(tri,
-                     method  = method,
-                     mode    = mode,
-                     process = process,
-                     target  = target,
-                     B       = B,
-                     seed    = seed,
-                     alpha   = alpha))
+    # Pass only the args that apply to the chosen `type`. Parametric path
+    # has no residual pool, so omitting residual/hat_adj/method/tail/
+    # min_pool/maturity prevents the validator from triggering "ignored"
+    # warnings inside fit_loss / fit_premium / fit_lr (which always
+    # forward `type = "parametric"` for their internal default).
+    args <- list(tri,
+                 type    = type,
+                 process = process,
+                 target  = target,
+                 B       = B,
+                 seed    = seed,
+                 alpha   = alpha)
+    if (identical(type, "nonparametric")) {
+      args <- c(args, list(residual = residual,
+                           hat_adj  = hat_adj,
+                           method   = method,
+                           tail     = tail,
+                           min_pool = min_pool,
+                           maturity = maturity))
+    }
+    return(do.call(bootstrap, args))
   }
 
   if (is.function(arg)) {
@@ -1042,8 +1282,8 @@ print.BootstrapTriangle <- function(x, ...) {
 # odp   : phi = var/mu; cell = phi * Poisson(mu/phi). Falls back to
 #         normal for non-positive cases.
 .boot_draw_noise <- function(mu, var, dist) {
-  # NOTE: `dist` is trusted -- one of "normal" / "gamma" / "odp". Caller
-  # validates once (typically against boots$meta$process). Skipping
+  # NOTE: `dist` is trusted -- one of "normal" / "gamma" / "od_pois".
+  # Caller validates once (typically against boots$meta$process). Skipping
   # match.arg() saves ~10% on hot-loop benchmarks where this is called
   # once per chain step.
   n <- length(mu)
@@ -1065,7 +1305,7 @@ print.BootstrapTriangle <- function(x, ...) {
       rate  <- mu[pos]   / var[pos]
       out[pos] <- stats::rgamma(sum(pos), shape = shape, rate = rate)
     }
-  } else if (dist == "odp") {
+  } else if (dist == "od_pois") {
     if (any(pos)) {
       phi <- var[pos] / mu[pos]
       out[pos] <- phi * stats::rpois(sum(pos), lambda = mu[pos] / phi)

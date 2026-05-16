@@ -113,8 +113,8 @@
 #'     \item{`TRUE` / `FALSE`}{Back-compat with the legacy logical arg.
 #'       `TRUE` triggers `"auto"`; `FALSE` disables.}
 #'     \item{`"auto"`}{Internal `bootstrap()` call on the loss triangle
-#'       with defaults `(method = "parametric", mode = "dev",
-#'       process = "normal", target = "loss")`.}
+#'       with defaults `(type = "parametric", process = "normal",
+#'       target = "loss")`.}
 #'     \item{`BootstrapTriangle`}{Pre-built object from `bootstrap()`.
 #'       Must have `meta$target == "loss"`.}
 #'     \item{Function `function(tri) -> BootstrapTriangle`}{Lazy spec
@@ -313,8 +313,7 @@ fit_lr <- function(x,
     bootstrap, x,
     B       = B,
     seed    = seed,
-    method  = "parametric",
-    mode    = "dev",
+    type    = "parametric",
     process = "normal",
     target  = "loss",
     alpha   = loss_alpha

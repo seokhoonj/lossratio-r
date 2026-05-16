@@ -9,9 +9,14 @@
   tri,
   B = 1000L,
   seed = NULL,
-  method = "parametric",
-  mode = "dev",
+  type = "parametric",
+  residual = "link",
+  hat_adj = FALSE,
   process = "normal",
+  method = "pooled",
+  tail = "auto",
+  min_pool = 5L,
+  maturity = NULL,
   target = "loss",
   alpha = 1
 )
@@ -21,8 +26,8 @@
 
 \item{tri}{A \code{Triangle} object (the data the bootstrap will be computed on).}
 
-\item{B, seed, method, mode, process, alpha}{Defaults forwarded to
-\code{bootstrap.Triangle()} when \code{arg} resolves to \code{"auto"} or \code{TRUE}.}
+\item{B, seed, type, residual, hat_adj, process, method, tail, min_pool, maturity, target, alpha}{Defaults forwarded to \code{bootstrap.Triangle()} when \code{arg} resolves to
+\code{"auto"} or \code{TRUE}.}
 }
 \value{
 A \code{BootstrapTriangle} object or \code{NULL}.

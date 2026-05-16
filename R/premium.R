@@ -52,8 +52,8 @@
 #'     \item{`TRUE` / `FALSE`}{Back-compat with the legacy logical arg.
 #'       `TRUE` triggers `bootstrap = "auto"`; `FALSE` disables.}
 #'     \item{`"auto"`}{Internal `bootstrap()` call on the premium triangle
-#'       with defaults `(method = "parametric", mode = "dev",
-#'       process = "normal", target = "prem")`.}
+#'       with defaults `(type = "parametric", process = "normal",
+#'       target = "prem")`.}
 #'     \item{`BootstrapTriangle`}{Pre-built object from `bootstrap()`.
 #'       Must have `meta$target == "prem"`.}
 #'     \item{Function `function(tri) -> BootstrapTriangle`}{Lazy spec
@@ -169,8 +169,7 @@ fit_premium <- function(x,
     bootstrap, x,
     B       = B,
     seed    = seed,
-    method  = "parametric",
-    mode    = "dev",
+    type    = "parametric",
     process = "normal",
     target  = "prem",
     alpha   = alpha

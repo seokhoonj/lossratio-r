@@ -9,14 +9,18 @@ bootstrap(x, ...)
 
 \method{bootstrap}{Triangle}(
   x,
-  method = c("parametric", "residual"),
-  mode = c("dev", "pooled", "dev_maturity"),
-  process = c("normal", "gamma", "odp"),
+  type = c("nonparametric", "parametric"),
+  residual = c("link", "cell"),
+  hat_adj = FALSE,
+  process = c("gamma", "od_pois", "normal", "lognormal"),
+  method = c("pooled", "separated", "tail_pooled"),
+  tail = c("auto", "maturity"),
+  min_pool = 5L,
+  maturity = NULL,
   target = c("loss", "prem"),
   B = 1000L,
   seed = NULL,
   alpha = 1,
-  maturity = NULL,
   ...
 )
 }
@@ -25,21 +29,43 @@ bootstrap(x, ...)
 
 \item{...}{Reserved for future use.}
 
-\item{method}{One of \code{"parametric"} or \code{"residual"}. \code{"parametric"} draws
-new link factors from \code{N(f_hat, sqrt(Var(f_hat)))} (Mack-style);
-\code{"residual"} resamples standardized Pearson residuals and reconstructs
-the alt triangle.}
+\item{type}{One of \code{"nonparametric"} or \code{"parametric"}. \code{"parametric"}
+draws new link factors from \code{N(f_hat, sqrt(Var(f_hat)))} (Mack 1993
+closed-form); \code{"nonparametric"} resamples standardized residuals and
+reconstructs the alt triangle (England-Verrall / Pinheiro).}
 
-\item{mode}{One of \code{"dev"}, \code{"pooled"}, \code{"dev_maturity"}. Controls how
-residuals (residual method) or per-link sigma (parametric method) are
-grouped. \code{"dev"} keeps each development link independent
-(Mack-faithful). \code{"pooled"} shares residuals across links. \code{"dev_maturity"}
-uses per-link before maturity and pooled after.}
+\item{residual}{Residual scope for \code{type = "nonparametric"}. One of
+\code{"link"} (Mack 1993 / Pinheiro 2003 — Pearson residuals on link
+factors) or \code{"cell"} (E-V 1999/2002 — Pearson residuals on
+incremental cells; \emph{not yet implemented}, arrives in Phase 5b.2).}
 
-\item{process}{One of \code{"normal"}, \code{"gamma"}, \code{"odp"}. Stored as metadata;
-downstream fit functions read this to choose the Stage 2 noise
-distribution. \code{"gamma"} matches \code{ChainLadder::BootChainLadder}
-defaults for non-negative right-skewed loss data.}
+\item{hat_adj}{Logical. Hat-matrix adjustment for the cell residual
+path. Defaults \code{FALSE}. Currently only defined for \code{residual = "cell"};
+warned-ignored otherwise.}
+
+\item{process}{One of \code{"gamma"}, \code{"od_pois"}, \code{"normal"}, \code{"lognormal"}.
+Stored as metadata; downstream fit functions read this to choose the
+Stage 2 noise distribution. \code{"gamma"} matches
+\code{ChainLadder::BootChainLadder} defaults for non-negative right-skewed
+loss data. \code{"lognormal"} is reserved for Phase 5b.3 and currently
+errors.}
+
+\item{method}{Residual-pool grouping. One of \code{"pooled"}, \code{"separated"},
+\code{"tail_pooled"}. \code{"pooled"} shares residuals across all links;
+\code{"separated"} keeps each development link independent (Mack-faithful);
+\code{"tail_pooled"} uses per-link pools before a cut and a single pooled
+bucket after.}
+
+\item{tail}{Tail-cut rule for \code{method = "tail_pooled"}. One of \code{"auto"}
+(cut at the smallest \code{ata_to} whose residual count drops below
+\code{min_pool}) or \code{"maturity"} (cut at the resolved \code{Maturity} change
+point).}
+
+\item{min_pool}{Minimum residual count per per-link pool under
+\code{method = "tail_pooled" && tail = "auto"}. Default \code{5}.}
+
+\item{maturity}{Required only when \code{method = "tail_pooled" && tail = "maturity"}. Four-type dispatch: \code{NULL}, a \code{Maturity} object,
+the string \code{"auto"}, or a function \verb{function(tri) -> Maturity}.}
 
 \item{target}{Cumulative metric to perturb. One of \code{"loss"} (default) or
 \code{"prem"}. The value column in \verb{$alt_triangles} is named after this
@@ -50,11 +76,6 @@ target so downstream refit helpers know which column to read.}
 \item{seed}{Optional integer seed for reproducibility.}
 
 \item{alpha}{Variance exponent in Mack's \verb{Var(C_\{k+1\} | C_k) = sigma_k^2 C_k^alpha}. Default \code{1} (volume-weighted).}
-
-\item{maturity}{Required only when \code{mode = "dev_maturity"}. Four-type
-dispatch following the package convention: \code{NULL} (error in this mode),
-a \code{Maturity} object, the string \code{"auto"}, or a function
-\verb{function(tri) -> Maturity}.}
 }
 \value{
 An object of class \code{BootstrapTriangle} (a list) with elements:
@@ -66,19 +87,19 @@ Observed-region cells contain residual-perturbed (or original for
 Stage 1 forward projection means.}
 \item{\code{residual_pool}}{\code{data.table} of the standardized residuals used,
 with the \code{pool_id} column identifying which pool each residual
-belongs to (depends on \code{mode}).}
+belongs to (depends on \code{method}/\code{tail}).}
 \item{\code{f_anchor}}{Per-link Mack factor estimates \code{f_hat} with
 \code{n_cohorts}.}
 \item{\code{sigma2_anchor}}{Per-link Mack \code{sigma^2} and \code{Var(f_hat)}.}
-\item{\code{meta}}{\code{list(method, mode, process, B, seed, alpha, target, groups, maturity)}.}
+\item{\code{meta}}{\code{list(type, residual, hat_adj, process, method, tail, min_pool, B, seed, alpha, target, groups, maturity)}.}
 }
 }
 \description{
-Generate \code{B} alternative realizations of a \code{Triangle} via residual
-(England-Verrall) or parametric (Mack normal) Stage 1 perturbation. The
-output is a model-agnostic \code{BootstrapTriangle} object that downstream
-fit functions (\code{fit_cl} / \code{fit_ed} / \code{fit_lr}) consume to recover
-parameter and process risk decomposition.
+Generate \code{B} alternative realizations of a \code{Triangle} via nonparametric
+(England-Verrall residual) or parametric (Mack normal closed-form) Stage 1
+perturbation. The output is a model-agnostic \code{BootstrapTriangle} object
+that downstream fit functions (\code{fit_cl} / \code{fit_ed} / \code{fit_lr}) consume to
+recover parameter and process risk decomposition.
 
 This entry point sits at the Triangle level — it knows nothing about CL,
 ED, or SA. Each fit method later refits its own model on every alt
@@ -109,8 +130,9 @@ tri <- as_triangle(
   premium  = "premium_incr"
 )
 
-boots <- bootstrap(tri, method = "residual", mode = "dev",
-                   process = "gamma", B = 500, seed = 1)
+boots <- bootstrap(tri, type = "nonparametric", residual = "link",
+                   method = "separated", process = "gamma",
+                   B = 500, seed = 1)
 print(boots)
 }
 
