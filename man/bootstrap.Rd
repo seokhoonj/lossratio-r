@@ -10,8 +10,8 @@ bootstrap(x, ...)
 \method{bootstrap}{Triangle}(
   x,
   type = c("nonparametric", "parametric"),
-  residual = c("link", "cell"),
-  hat_adj = FALSE,
+  residual = c("cell", "link"),
+  hat_adj = TRUE,
   process = c("gamma", "od_pois", "normal", "lognormal"),
   method = c("pooled", "separated", "tail_pooled"),
   tail = c("auto", "maturity"),
@@ -35,13 +35,21 @@ closed-form); \code{"nonparametric"} resamples standardized residuals and
 reconstructs the alt triangle (England-Verrall / Pinheiro).}
 
 \item{residual}{Residual scope for \code{type = "nonparametric"}. One of
-\code{"link"} (Mack 1993 / Pinheiro 2003 — Pearson residuals on link
-factors) or \code{"cell"} (E-V 1999/2002 — Pearson residuals on
-incremental cells; \emph{not yet implemented}, arrives in Phase 5b.2).}
+\code{"cell"} (default — England-Verrall 1999/2002, Pearson residuals on
+incremental cells; ODP GLM equivalent via Renshaw-Verrall 1998) or
+\code{"link"} (Mack 1993 / Pinheiro 2003, Pearson residuals on link
+factors).}
 
-\item{hat_adj}{Logical. Hat-matrix adjustment for the cell residual
-path. Defaults \code{FALSE}. Currently only defined for \code{residual = "cell"};
-warned-ignored otherwise.}
+\item{hat_adj}{Logical. Hat-matrix leverage adjustment
+(\code{r_h = r / sqrt(1 - h_ii)}) for the cell residual path. Default
+\code{TRUE} (England-Verrall 2002 Addendum / chainladder-py parity); set
+\code{FALSE} to use the simpler degrees-of-freedom factor
+\code{sqrt(n / (n - p))} (England-Verrall 1999 / \code{BootChainLadder}
+parity). Only defined for \code{residual = "cell"}; warned-ignored
+otherwise. Note that \code{hat_adj} drops corner cells where \code{h_ii = 1}
+(always \verb{(I, 1)} and \verb{(1, J)} of the upper triangle); on small
+triangles this can be a meaningful pool reduction — set \code{FALSE} if
+that matters.}
 
 \item{process}{One of \code{"gamma"}, \code{"od_pois"}, \code{"normal"}, \code{"lognormal"}.
 Stored as metadata; downstream fit functions read this to choose the
@@ -87,7 +95,8 @@ Observed-region cells contain residual-perturbed (or original for
 Stage 1 forward projection means.}
 \item{\code{residual_pool}}{\code{data.table} of the standardized residuals used,
 with the \code{pool_id} column identifying which pool each residual
-belongs to (depends on \code{method}/\code{tail}).}
+belongs to (depends on \code{method}/\code{tail}). Schema differs by
+residual mode: \verb{[groups, cohort, ata_from, ata_to, residual, pool_id]} for \code{residual = "link"}, and \verb{[groups, cohort, dev, residual, pool_id]} for \code{residual = "cell"}.}
 \item{\code{f_anchor}}{Per-link Mack factor estimates \code{f_hat} with
 \code{n_cohorts}.}
 \item{\code{sigma2_anchor}}{Per-link Mack \code{sigma^2} and \code{Var(f_hat)}.}
@@ -130,10 +139,16 @@ tri <- as_triangle(
   premium  = "premium_incr"
 )
 
-boots <- bootstrap(tri, type = "nonparametric", residual = "link",
-                   method = "separated", process = "gamma",
+# Cell-residual bootstrap (default — chainladder-py parity)
+boots <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                   hat_adj = TRUE, process = "gamma",
                    B = 500, seed = 1)
 print(boots)
+
+# Link-residual bootstrap (Mack 1993 / Pinheiro 2003 path)
+boots_link <- bootstrap(tri, type = "nonparametric", residual = "link",
+                        method = "separated", process = "gamma",
+                        B = 500, seed = 1)
 }
 
 }

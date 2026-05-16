@@ -293,12 +293,12 @@ test_that("type = 'parametric' with non-normal process errors", {
   )
 })
 
-test_that("residual = 'cell' errors with 'not yet implemented' message", {
+test_that("residual = 'cell' with normal process errors (positivity)", {
   tri <- make_sub_tri("surgery")
   expect_error(
     bootstrap(tri, type = "nonparametric", residual = "cell",
-              B = 5, seed = 1),
-    "not yet implemented"
+              process = "normal", B = 5, seed = 1),
+    "ODP.*positivity|positivity"
   )
 })
 
@@ -361,6 +361,105 @@ test_that("invalid min_pool errors", {
               B = 5, seed = 1),
     "min_pool"
   )
+})
+
+
+# ---------------------------------------------------------------------------
+# Cell residual + hat_adj (Phase 5b.2)
+# ---------------------------------------------------------------------------
+
+test_that("residual = 'cell' returns a BootstrapTriangle with cell pool schema", {
+  tri <- make_sub_tri("surgery")
+  b <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                 hat_adj = TRUE, process = "gamma", B = 10, seed = 1)
+  expect_s3_class(b, "BootstrapTriangle")
+  # Cell pool keys by dev (not ata_to/ata_from)
+  expect_true("dev" %in% names(b$residual_pool))
+  expect_false("ata_from" %in% names(b$residual_pool))
+  expect_true("pool_id" %in% names(b$residual_pool))
+  # alt_triangles shape preserved across modes
+  n_coh <- length(unique(tri$cohort))
+  n_dev <- length(unique(tri$dev))
+  expect_equal(nrow(b$alt_triangles), n_coh * n_dev * 10L)
+})
+
+test_that("residual = 'cell' default hat_adj is TRUE (chainladder-py parity)", {
+  tri <- make_sub_tri("surgery")
+  b <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                 process = "gamma", B = 5, seed = 1)
+  expect_true(isTRUE(b$meta$hat_adj))
+})
+
+test_that("residual default is 'cell' (chainladder-py parity)", {
+  tri <- make_sub_tri("surgery")
+  b <- bootstrap(tri, type = "nonparametric", process = "gamma",
+                 B = 5, seed = 1)
+  expect_identical(b$meta$residual, "cell")
+})
+
+test_that("cell residual with hat_adj = FALSE applies DF correction", {
+  tri <- make_sub_tri("surgery")
+  b <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                 hat_adj = FALSE, process = "gamma", B = 10, seed = 1)
+  expect_s3_class(b, "BootstrapTriangle")
+  expect_false(isTRUE(b$meta$hat_adj))
+  # Pool residuals are finite and centred at zero per pool
+  expect_true(all(is.finite(b$residual_pool$residual)))
+  expect_lt(abs(mean(b$residual_pool$residual)), 1e-9)
+})
+
+test_that("cell residual + hat_adj = TRUE drops corner cells (h_ii = 1)", {
+  tri <- make_sub_tri("surgery")
+  b_hat <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                     hat_adj = TRUE, process = "gamma", B = 5, seed = 1)
+  b_nohat <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                       hat_adj = FALSE, process = "gamma", B = 5, seed = 1)
+  # hat_adj drops the two corner cells where h_ii = 1; pool size strictly
+  # smaller than DF-corrected pool (which uses every observed cell with
+  # finite μ̂).
+  expect_lt(nrow(b_hat$residual_pool), nrow(b_nohat$residual_pool))
+})
+
+test_that("cell residual same seed reproduces identical alt_triangles", {
+  tri <- make_sub_tri("surgery")
+  b1 <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                  hat_adj = TRUE, process = "gamma", B = 20, seed = 7)
+  b2 <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                  hat_adj = TRUE, process = "gamma", B = 20, seed = 7)
+  expect_identical(b1$alt_triangles, b2$alt_triangles)
+})
+
+test_that("cell residual induces variability in projected cells", {
+  tri <- make_sub_tri("surgery")
+  b <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                 hat_adj = TRUE, process = "gamma", B = 200, seed = 1)
+  # Pick one projected cell (cohort with shortest history -> most projection)
+  alt <- b$alt_triangles
+  by_cell <- alt[, list(sd_v = stats::sd(loss)),
+                   by = c("cohort", "dev")]
+  # At least some cells should show variability (std > 0)
+  expect_gt(max(by_cell$sd_v, na.rm = TRUE), 0)
+})
+
+test_that("cell residual + method = 'separated' gives one pool per dev", {
+  tri <- make_sub_tri("surgery")
+  b <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                 hat_adj = FALSE, process = "gamma",
+                 method = "separated", B = 5, seed = 1)
+  pool <- b$residual_pool
+  # pool_id should encode dev, so unique pool_ids == unique observed devs
+  # (subject to all-NaN dev filtering)
+  n_pools <- length(unique(pool$pool_id))
+  n_devs  <- length(unique(pool$dev))
+  expect_equal(n_pools, n_devs)
+})
+
+test_that("cell residual + method = 'pooled' gives one pool", {
+  tri <- make_sub_tri("surgery")
+  b <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                 hat_adj = FALSE, process = "gamma",
+                 method = "pooled", B = 5, seed = 1)
+  expect_equal(length(unique(b$residual_pool$pool_id)), 1L)
 })
 
 
