@@ -327,8 +327,10 @@ fit_lr <- function(x,
       alpha    = loss_alpha,
       maturity = if (identical(method, "sa")) maturity else NULL
     )
-    wn <- .boot_add_process_noise(refit, boots$meta$process)
-    se <- .boot_summarize_se(wn, grp = grp)
+    # `.boot_refit()` now returns chain-propagated cell_real directly;
+    # the legacy `.boot_add_process_noise()` per-cell pass-through is
+    # no longer needed.
+    se <- .boot_summarize_se(refit, grp = grp)
 
     data.table::setnames(se,
       c("target_total_se", "target_total_cv",

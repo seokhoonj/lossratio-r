@@ -178,8 +178,10 @@ fit_premium <- function(x,
 
   if (!is.null(boots)) {
     refit  <- .boot_refit(x, boots, method = "cl", alpha = alpha)
-    wn     <- .boot_add_process_noise(refit, boots$meta$process)
-    se     <- .boot_summarize_se(wn, grp = grp)
+    # `.boot_refit()` now returns cell_real (chain-propagated process
+    # noise baked in via the boots$meta$process distribution). Skip the
+    # legacy `.boot_add_process_noise()` per-cell pass-through.
+    se     <- .boot_summarize_se(refit, grp = grp)
 
     # Map worker-generic target_* names to role-specific prem_* names.
     data.table::setnames(se,

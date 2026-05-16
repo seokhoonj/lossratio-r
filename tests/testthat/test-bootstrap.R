@@ -296,76 +296,41 @@ test_that(".boot_refit returns same shape for all methods", {
 
   for (rdt in list(r_cl, r_ed, r_sa)) {
     expect_true(all(c("coverage", "cohort", "dev", "rep",
-                      "cell_mean", "cell_proc_var") %in% names(rdt)))
+                      "cell_mean", "cell_real") %in% names(rdt)))
     expect_equal(nrow(rdt), length(unique(tri$cohort)) *
                               length(unique(tri$dev)) * 30L)
-    expect_true(all(rdt$cell_proc_var >= 0 | is.na(rdt$cell_proc_var)))
   }
 })
 
-test_that(".boot_refit(method='cl') observed cells have cell_proc_var = 0", {
+test_that(".boot_refit(method='cl') observed cells share value across reps", {
   tri <- make_sub_tri("surgery")
   boots <- bootstrap(tri, B = 10, seed = 1)
   r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
 
-  # Pick an obviously-observed cell: cohort 2023-01-01 dev 1.
+  # Observed cell: cell_real should equal the original observed value
+  # across all replicates (no chain noise on the observed region).
   cells <- r_cl[cohort == as.Date("2023-01-01") & dev == 1L]
-  expect_equal(unique(cells$cell_proc_var), 0)
+  expect_length(unique(cells$cell_real), 1L)
 })
 
-test_that(".boot_refit(method='cl') projected cells have positive cell_proc_var", {
+test_that(".boot_refit(method='cl') projected cells vary across reps", {
   tri <- make_sub_tri("surgery")
   boots <- bootstrap(tri, B = 30, seed = 1)
   r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
 
-  # Pick a clearly-projected cell: latest cohort, dev near the tail.
+  # A clearly-projected cell: latest cohort, mid-tail dev. cell_real
+  # should vary across replicates due to chain-propagated process noise.
   cells <- r_cl[cohort == as.Date("2025-12-01") & dev == 10L]
-  expect_true(all(cells$cell_proc_var > 0 | !is.finite(cells$cell_mean)))
-})
-
-
-test_that(".boot_add_process_noise leaves observed cells untouched", {
-  tri <- make_sub_tri("surgery")
-  boots <- bootstrap(tri, B = 10, seed = 1)
-  r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
-
-  withn <- .boot_add_process_noise(r_cl, "normal")
-  obs_rows <- withn[cell_proc_var == 0]
-  expect_equal(obs_rows$cell_real, obs_rows$cell_mean)
-})
-
-test_that(".boot_add_process_noise normal vs gamma both finite", {
-  tri <- make_sub_tri("surgery")
-  boots <- bootstrap(tri, B = 30, seed = 1)
-  r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
-
-  set.seed(1)
-  wn_norm  <- .boot_add_process_noise(r_cl, "normal")
-  set.seed(1)
-  wn_gamma <- .boot_add_process_noise(r_cl, "gamma")
-  set.seed(1)
-  wn_odp   <- .boot_add_process_noise(r_cl, "odp")
-
-  # All produce finite cell_real where cell_mean is finite
-  for (wn in list(wn_norm, wn_gamma, wn_odp)) {
-    ok <- is.finite(wn$cell_mean) & wn$cell_proc_var > 0
-    expect_true(all(is.finite(wn$cell_real[ok])))
-  }
-
-  # Gamma / ODP produce non-negative cell_real for positive-mean projected cells
-  pos_gamma <- wn_gamma[is.finite(cell_mean) & cell_mean > 0 & cell_proc_var > 0]
-  expect_true(all(pos_gamma$cell_real >= 0))
-  pos_odp <- wn_odp[is.finite(cell_mean) & cell_mean > 0 & cell_proc_var > 0]
-  expect_true(all(pos_odp$cell_real >= 0))
+  expect_true(stats::sd(cells$cell_real, na.rm = TRUE) > 0 ||
+              all(!is.finite(cells$cell_mean)))
 })
 
 
 test_that(".boot_summarize_se produces expected columns and SE decomposition", {
   tri <- make_sub_tri("surgery")
   boots <- bootstrap(tri, B = 50, seed = 1)
-  r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
-  wn    <- .boot_add_process_noise(r_cl, "normal")
-  se    <- .boot_summarize_se(wn, grp = "coverage")
+  refit <- .boot_refit(tri, boots, method = "cl", alpha = 1)
+  se    <- .boot_summarize_se(refit, grp = "coverage")
 
   expect_true(all(c("coverage", "cohort", "dev",
                     "target_proj", "target_proc_se", "target_param_se",
@@ -402,8 +367,7 @@ test_that("full Phase 2a pipeline runs end-to-end on multi-group Triangle", {
     refit <- .boot_refit(tri, boots, method = method, alpha = 1,
                           maturity = if (method == "sa") detect_maturity(tri)
                                      else NULL)
-    wn <- .boot_add_process_noise(refit, boots$meta$process)
-    se <- .boot_summarize_se(wn, grp = "coverage")
+    se <- .boot_summarize_se(refit, grp = "coverage")
     expect_true(nrow(se) > 0L, info = method)
     expect_true(all(is.finite(se$target_proj) | is.na(se$target_proj)),
                 info = method)
