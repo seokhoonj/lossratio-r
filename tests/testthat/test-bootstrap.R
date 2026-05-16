@@ -408,16 +408,20 @@ test_that("cell residual with hat_adj = FALSE applies DF correction", {
   expect_lt(abs(mean(b$residual_pool$residual)), 1e-9)
 })
 
-test_that("cell residual + hat_adj = TRUE drops corner cells (h_ii = 1)", {
+test_that("cell residual + hat_adj = TRUE produces different residual magnitudes", {
   tri <- make_sub_tri("surgery")
   b_hat <- bootstrap(tri, type = "nonparametric", residual = "cell",
                      hat_adj = TRUE, process = "gamma", B = 5, seed = 1)
   b_nohat <- bootstrap(tri, type = "nonparametric", residual = "cell",
                        hat_adj = FALSE, process = "gamma", B = 5, seed = 1)
-  # hat_adj drops the two corner cells where h_ii = 1; pool size strictly
-  # smaller than DF-corrected pool (which uses every observed cell with
-  # finite μ̂).
-  expect_lt(nrow(b_hat$residual_pool), nrow(b_nohat$residual_pool))
+  # Both pools drop zero residuals (latest-observed diagonal cells). The
+  # observable difference between hat=T / hat=F is in residual magnitudes:
+  # hat=T inflates each retained residual by 1/sqrt(1 - h_ii); hat=F applies
+  # a uniform sqrt(n/(n-p)) DF factor. Pool sizes can coincide after the
+  # zero-drop, so test the residual scale instead.
+  sd_hat   <- stats::sd(b_hat$residual_pool$residual,   na.rm = TRUE)
+  sd_nohat <- stats::sd(b_nohat$residual_pool$residual, na.rm = TRUE)
+  expect_false(isTRUE(all.equal(sd_hat, sd_nohat, tolerance = 1e-3)))
 })
 
 test_that("cell residual same seed reproduces identical alt_triangles", {
@@ -534,15 +538,27 @@ test_that(".boot_refit returns same shape for all methods", {
   }
 })
 
-test_that(".boot_refit(method='cl') observed cells share value across reps", {
+test_that(".boot_refit(method='cl') observed cells share value across reps (link paradigm)", {
   tri <- make_sub_tri("surgery")
-  boots <- bootstrap(tri, B = 10, seed = 1)
+  boots <- bootstrap(tri, B = 10, seed = 1, residual = "link")
   r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
 
-  # Observed cell: cell_real should equal the original observed value
-  # across all replicates (no chain noise on the observed region).
+  # Link paradigm: forward sim anchors at ORIGINAL observed cumulative.
+  # cell_real on the observed region equals the original value across all reps.
   cells <- r_cl[cohort == as.Date("2023-01-01") & dev == 1L]
   expect_length(unique(cells$cell_real), 1L)
+})
+
+test_that(".boot_refit(method='cl') observed cells = pseudo across reps (cell paradigm)", {
+  tri <- make_sub_tri("surgery")
+  boots <- bootstrap(tri, B = 30, seed = 1, residual = "cell")
+  r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
+
+  # Cell paradigm (E-V / BCL parity): forward sim starts from PSEUDO latest,
+  # so observed cells in cell_real carry the resampled increment cumsum -
+  # i.e., they vary across replicates by construction.
+  cells <- r_cl[cohort == as.Date("2023-01-01") & dev == 1L]
+  expect_gt(length(unique(cells$cell_real)), 1L)
 })
 
 test_that(".boot_refit(method='cl') projected cells vary across reps", {

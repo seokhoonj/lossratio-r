@@ -143,8 +143,8 @@ plot(lr, metric = "lr", cell_type = "cumulative")
 summary(lr)
 
 # Cell selection: maturity (dev axis) + regime (cohort axis)
-detect_maturity(tri[coverage == "SUR"])
-detect_regime(tri[coverage == "SUR"], method = "e_divisive")
+detect_maturity(tri[coverage == "surgery"])
+detect_regime(tri[coverage == "surgery"], method = "e_divisive")
 
 # Projection diagnostic: when does the projected ultimate LR stop revising?
 detect_convergence(lr)

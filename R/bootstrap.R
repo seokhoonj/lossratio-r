@@ -618,6 +618,9 @@ bootstrap.Triangle <- function(x,
       # leverage-corrected (hat_adj). Pool keyed by (cohort, dev).
       cell_resid <- .boot_cell_residuals(x, anchor = anchor, grp = grp,
                                           target = target, hat_adj = hat_adj)
+      # Extract per-group phi (ODP single scale) BEFORE pool transforms
+      # the table — the pool builder isn't required to preserve attrs.
+      phi_dt <- attr(cell_resid, "phi_dt")
       pool <- .boot_build_pool_cell(cell_resid, grp = grp,
                                      method = method, tail = tail,
                                      min_pool = min_pool, maturity = maturity)
@@ -629,6 +632,11 @@ bootstrap.Triangle <- function(x,
     link   <- as_link(x, target = target, drop_invalid = TRUE)
     anchor <- .boot_anchor(link, grp = grp, alpha = alpha)
     pool   <- .boot_empty_pool(grp)
+  }
+
+  # phi_dt: cell mode only; otherwise NULL (Mack paradigm uses sigma2).
+  if (!(is_residual_mode && identical(residual, "cell"))) {
+    phi_dt <- NULL
   }
 
   # 5) Stage 1 — B alt triangles -------------------------------------------
@@ -665,7 +673,8 @@ bootstrap.Triangle <- function(x,
         alpha    = alpha,
         target   = target,
         groups   = grp,
-        maturity = maturity
+        maturity = maturity,
+        phi_dt   = phi_dt
       )
     ),
     class = c("BootstrapTriangle", "list")
@@ -990,19 +999,25 @@ bootstrap.Triangle <- function(x,
   if (length(grp) > 0L) {
     grp_vals <- unique(triangle[, .SD, .SDcols = grp])
     out_list <- vector("list", nrow(grp_vals))
+    phi_list <- vector("list", nrow(grp_vals))
     for (gi in seq_len(nrow(grp_vals))) {
       gkey <- grp_vals[gi]
       tri_g <- merge(triangle, gkey, by = grp, sort = FALSE)
       anc_g <- merge(anchor,   gkey, by = grp, sort = FALSE)
       one <- .boot_cell_residuals_one(tri_g, anc_g, target, hat_adj)
+      phi_one <- attr(one, "phi")
       for (col in names(gkey)) one[, (col) := gkey[[col]]]
       out_list[[gi]] <- one
+      phi_list[[gi]] <- data.table::data.table(gkey, phi = phi_one)
     }
     res <- data.table::rbindlist(out_list, use.names = TRUE, fill = TRUE)
     data.table::setcolorder(res, c(grp, "cohort", "dev", "residual", "mu_hat"))
+    attr(res, "phi_dt") <- data.table::rbindlist(phi_list, use.names = TRUE)
     res
   } else {
-    .boot_cell_residuals_one(triangle, anchor, target, hat_adj)
+    one <- .boot_cell_residuals_one(triangle, anchor, target, hat_adj)
+    attr(one, "phi_dt") <- data.table::data.table(phi = attr(one, "phi"))
+    one
   }
 }
 
@@ -1068,6 +1083,17 @@ bootstrap.Triangle <- function(x,
   # Cells with non-positive μ̂ — set residual to NA (excluded from pool)
   r_raw[!is.finite(r_raw) | mu_obs <= 0] <- NA_real_
 
+  # ODP single dispersion phi = Σ r_raw² / (n_obs − p). Computed from RAW
+  # residuals (pre-adjustment) — invariant across hat/DF choices. Used by
+  # the cell paradigm consumer (`.boot_refit_cl_one`) as the process noise
+  # scale for forward simulation (E-V 1999, BCL/chainladder-py parity).
+  n_obs_phi <- sum(is.finite(r_raw))
+  p_phi     <- n_coh + n_dev - 1L
+  df_phi    <- n_obs_phi - p_phi
+  phi_val   <- if (df_phi > 0)
+                 sum(r_raw^2, na.rm = TRUE) / df_phi
+               else NA_real_
+
   # Stage correction: hat OR DF (alternatives, not stacked)
   if (isTRUE(hat_adj)) {
     h <- .boot_hat_diag(mu_obs, coh_idx, dev_idx, n_coh, n_dev)
@@ -1076,18 +1102,20 @@ bootstrap.Triangle <- function(x,
     r_adj <- r_raw / sqrt(pmax(1 - h, eps))
     r_adj[drop] <- NA_real_
   } else {
-    n_obs <- sum(is.finite(r_raw))
-    p     <- n_coh + n_dev - 1L
-    df_factor <- if (n_obs > p) sqrt(n_obs / (n_obs - p)) else 1
+    df_factor <- if (df_phi > 0) sqrt(n_obs_phi / df_phi) else 1
     r_adj <- r_raw * df_factor
   }
 
-  data.table::data.table(
+  out <- data.table::data.table(
     cohort   = cohorts[coh_idx],
     dev      = devs[dev_idx],
     residual = r_adj,
     mu_hat   = mu_obs
   )
+  attr(out, "phi")   <- phi_val
+  attr(out, "n_obs") <- n_obs_phi
+  attr(out, "p")     <- p_phi
+  out
 }
 
 
@@ -1104,7 +1132,12 @@ bootstrap.Triangle <- function(x,
   residual <- dev <- mat_change <- grp_key <- N <- below <-
     cut_to <- is_post <- NULL
 
-  dt <- cell_resid[is.finite(residual)]
+  # Drop NaN/Inf and exact zeros. Exact zeros arise at corner cells (each
+  # cohort's latest-observed dev: fitted = observed, so r = 0). Resampling
+  # a 0 makes the corresponding pseudo cell deterministic (= μ̂), which
+  # artificially narrows the bootstrap distribution. Shapland (2010)
+  # recommends removing zeros from the pool; chainladder-py adopts this.
+  dt <- cell_resid[is.finite(residual) & residual != 0]
 
   # Mean-centre residuals within each group (chainladder-py default —
   # small bias correction; Shapland endorses).
@@ -1741,6 +1774,12 @@ print.BootstrapTriangle <- function(x, ...) {
   process_dist <- boots$meta$process
   if (is.null(process_dist)) process_dist <- "normal"
 
+  # Paradigm + ODP phi for cell-mode forward simulation (E-V / BCL parity).
+  # phi_dt is grp x phi; for ungrouped triangles it has a single row.
+  residual <- boots$meta$residual
+  if (is.null(residual)) residual <- "link"
+  phi_dt <- boots$meta$phi_dt  # NULL outside cell mode
+
   if (method %in% c("ed", "sa") && !identical(target, "loss")) {
     stop("method = '", method, "' only supports target = 'loss'; ",
          "boots$meta$target = '", target, "'.",
@@ -1754,10 +1793,19 @@ print.BootstrapTriangle <- function(x, ...) {
   grp <- attr(triangle, "groups")
   if (is.null(grp)) grp <- character(0)
 
+  # Per-group phi lookup helper. Returns NA when cell mode is inactive.
+  .phi_for <- function(gkey) {
+    if (is.null(phi_dt) || nrow(phi_dt) == 0L) return(NA_real_)
+    if (is.null(gkey) || length(grp) == 0L) return(phi_dt$phi[1L])
+    row <- merge(phi_dt, gkey, by = grp, sort = FALSE)
+    if (nrow(row) == 0L) NA_real_ else row$phi[1L]
+  }
+
   one_fn <- switch(method,
     cl = function(tri_g, alt_g, gkey)
            .boot_refit_cl_one(tri_g, alt_g, alpha, grp_vals = gkey,
-                               target = target, process_dist = process_dist),
+                               target = target, process_dist = process_dist,
+                               residual = residual, phi = .phi_for(gkey)),
     ed = function(tri_g, alt_g, gkey)
            .boot_refit_ed_one(tri_g, alt_g, alpha, grp_vals = gkey,
                                process_dist = process_dist),
@@ -1791,10 +1839,19 @@ print.BootstrapTriangle <- function(x, ...) {
 
 
 # Per-group CL refit. Returns long-format DT with (cohort, dev, rep,
-# cell_mean, cell_proc_var) [+ optional group cols].
+# cell_mean, cell_real) [+ optional group cols].
+#
+# `residual` controls which process-variance paradigm is used for forward
+# simulation of `cell_real`:
+#   - "cell": ODP single scale phi -> var = phi * mu_inc  (E-V / BCL)
+#   - "link" / parametric: Mack per-link sigma^2_k -> var = sigma^2_k * C_cum
+# `phi` is the ODP dispersion (required when residual == "cell"; ignored
+# otherwise). Pass NA_real_ to fall back to Mack scale.
 .boot_refit_cl_one <- function(triangle, alt_long, alpha, grp_vals,
                                 target = "loss",
-                                process_dist = "normal") {
+                                process_dist = "normal",
+                                residual = "link",
+                                phi = NA_real_) {
 
   cohorts <- sort(unique(triangle$cohort))
   devs    <- sort(unique(triangle$dev))
@@ -1883,34 +1940,63 @@ print.BootstrapTriangle <- function(x, ...) {
   }
 
   # ----- Vectorised forward simulation of cell_real ---------------------
-  arr_real <- arr_mean  # parameter chain copy; projected cells overwritten
-  # Anchor observed region to original mat_obs (constant across B)
-  for (i in seq_len(n_coh)) {
-    for (k in seq_len(n_dev)) {
-      if (obs_mask[i, k]) arr_real[i, k, ] <- mat_obs[i, k]
+  # Paradigm: cell-mode uses ODP single-phi noise on incrementals
+  # (E-V 1999 / BCL / chainladder-py parity); link/parametric uses Mack
+  # per-link sigma^2_k noise on cumulatives (Pinheiro 2003 / Mack 1993).
+  use_odp <- identical(residual, "cell") && is.finite(phi) && phi > 0
+
+  # arr_real observed region:
+  #   ODP / cell: keep pseudo (= arr_mean, the row-cumsum of resampled
+  #     increments). Forward sim starts from pseudo latest -- BCL parity.
+  #   Mack / link / parametric: anchor at the original observed cumulative
+  #     (constant across replicates). Forward sim starts from ORIG latest.
+  arr_real <- arr_mean
+  if (!use_odp) {
+    for (i in seq_len(n_coh)) {
+      for (k in seq_len(n_dev)) {
+        if (obs_mask[i, k]) arr_real[i, k, ] <- mat_obs[i, k]
+      }
     }
   }
+
   for (k in seq(2L, n_dev)) {
     proj_idx <- which(!obs_mask[, k] & !is.na(last_obs_idx))
     if (length(proj_idx) == 0L) next
 
     base_arr <- matrix(arr_real[proj_idx, k - 1L, ], nrow = length(proj_idx))
     f_b  <- f_proj_mat[k, ]
-    s2_b <- sigma2_mat[k, ]
-    f_b[!is.finite(f_b)]   <- 1
-    s2_b[!is.finite(s2_b)] <- 0
+    f_b[!is.finite(f_b)] <- 1
 
-    # mu[i, b] = f_b[b] * base_arr[i, b] (broadcast columns)
-    mu_arr  <- t(t(base_arr) * f_b)
-    var_arr <- t(t(base_arr) * s2_b)
-    mu_arr[!is.finite(mu_arr)]   <- 0
-    var_arr[!is.finite(var_arr) | var_arr < 0] <- 0
+    if (use_odp) {
+      # Incremental mean: mu_inc[i, b] = (f_b - 1) * base[i, b]
+      # Process noise on increments with Var = phi * mu_inc.
+      mu_inc_arr  <- t(t(base_arr) * (f_b - 1))
+      var_inc_arr <- phi * abs(mu_inc_arr)
+      mu_inc_arr[!is.finite(mu_inc_arr)] <- 0
+      var_inc_arr[!is.finite(var_inc_arr) | var_inc_arr < 0] <- 0
 
-    cell_vec <- .boot_draw_noise(as.numeric(mu_arr),
-                                  as.numeric(var_arr),
-                                  dist = process_dist)
-    cell_vec[is.finite(cell_vec) & cell_vec < 0] <- 0
-    arr_real[proj_idx, k, ] <- matrix(cell_vec, nrow = length(proj_idx))
+      inc_vec <- .boot_draw_noise(as.numeric(mu_inc_arr),
+                                   as.numeric(var_inc_arr),
+                                   dist = process_dist)
+      # Cumulative = previous base + simulated increment. Clip to >=0.
+      cum_vec <- as.numeric(base_arr) + inc_vec
+      cum_vec[is.finite(cum_vec) & cum_vec < 0] <- 0
+      arr_real[proj_idx, k, ] <- matrix(cum_vec, nrow = length(proj_idx))
+    } else {
+      # Mack paradigm: cumulative mean mu = f * base, variance sigma^2_k * base.
+      s2_b <- sigma2_mat[k, ]
+      s2_b[!is.finite(s2_b)] <- 0
+      mu_arr  <- t(t(base_arr) * f_b)
+      var_arr <- t(t(base_arr) * s2_b)
+      mu_arr[!is.finite(mu_arr)]   <- 0
+      var_arr[!is.finite(var_arr) | var_arr < 0] <- 0
+
+      cell_vec <- .boot_draw_noise(as.numeric(mu_arr),
+                                    as.numeric(var_arr),
+                                    dist = process_dist)
+      cell_vec[is.finite(cell_vec) & cell_vec < 0] <- 0
+      arr_real[proj_idx, k, ] <- matrix(cell_vec, nrow = length(proj_idx))
+    }
   }
 
   long <- data.table::data.table(
