@@ -1940,57 +1940,83 @@ print.BootstrapTriangle <- function(x, ...) {
   }
 
   # ----- Vectorised forward simulation of cell_real ---------------------
-  # Paradigm: cell-mode uses ODP single-phi noise on incrementals
-  # (E-V 1999 / BCL / chainladder-py parity); link/parametric uses Mack
-  # per-link sigma^2_k noise on cumulatives (Pinheiro 2003 / Mack 1993).
+  # Two model families with matched forward simulation:
+  #
+  # 1. ODP GLM (residual = "cell", phi finite). Cells are conditionally
+  #    independent given (alpha_i, beta_j). Process noise on each lower
+  #    cell is drawn from gamma(mean = mu_inc, var = phi * mu_inc), with
+  #    mu_inc taken from a noise-FREE deterministic chain mean (so an
+  #    earlier cell's process noise does NOT feed the next cell's base).
+  #    The cumulative cell_real then accumulates those independent
+  #    increments on top of the pseudo latest.
+  #
+  # 2. Mack Markov chain (residual = "link" or parametric). The chain is
+  #    C_{k+1} | C_k ~ ?(f * C_k, sigma^2_k * C_k); each step's noisy
+  #    cum feeds the next step's base, propagating variance forward.
+  #    Observed region anchors at the ORIGINAL cumulative (constant
+  #    across replicates).
   use_odp <- identical(residual, "cell") && is.finite(phi) && phi > 0
 
-  # arr_real observed region:
-  #   ODP / cell: keep pseudo (= arr_mean, the row-cumsum of resampled
-  #     increments). Forward sim starts from pseudo latest -- BCL parity.
-  #   Mack / link / parametric: anchor at the original observed cumulative
-  #     (constant across replicates). Forward sim starts from ORIG latest.
   arr_real <- arr_mean
-  if (!use_odp) {
+
+  if (use_odp) {
+    # Step 1: noise-free deterministic chain cumulative mean per (i, k, b).
+    # Observed region carries the pseudo latest (= arr_mean); lower triangle
+    # extended by f_proj_mat without adding process noise.
+    mu_cum_arr <- arr_mean
+    for (k in seq(2L, n_dev)) {
+      proj_idx <- which(!obs_mask[, k] & !is.na(last_obs_idx))
+      if (length(proj_idx) == 0L) next
+      base_arr <- matrix(mu_cum_arr[proj_idx, k - 1L, ],
+                         nrow = length(proj_idx))
+      f_b <- f_proj_mat[k, ]
+      f_b[!is.finite(f_b)] <- 1
+      mu_cum_arr[proj_idx, k, ] <- t(t(base_arr) * f_b)
+    }
+
+    # Step 2: per-cell process noise on incrementals. Each lower-triangle
+    # cell draws an independent gamma. The chain mean stays deterministic.
+    for (k in seq(2L, n_dev)) {
+      proj_idx <- which(!obs_mask[, k] & !is.na(last_obs_idx))
+      if (length(proj_idx) == 0L) next
+      mu_inc_slice <- matrix(
+        mu_cum_arr[proj_idx, k, ] - mu_cum_arr[proj_idx, k - 1L, ],
+        nrow = length(proj_idx)
+      )
+      var_inc_slice <- phi * abs(mu_inc_slice)
+      mu_inc_slice[!is.finite(mu_inc_slice)] <- 0
+      var_inc_slice[!is.finite(var_inc_slice) | var_inc_slice < 0] <- 0
+      inc_vec <- .boot_draw_noise(as.numeric(mu_inc_slice),
+                                   as.numeric(var_inc_slice),
+                                   dist = process_dist)
+      # cum_real[i, k] = previous arr_real[i, k-1] + proc_inc[i, k]
+      base_arr <- matrix(arr_real[proj_idx, k - 1L, ],
+                         nrow = length(proj_idx))
+      cum_arr <- base_arr + matrix(inc_vec, nrow = length(proj_idx))
+      cum_arr[is.finite(cum_arr) & cum_arr < 0] <- 0
+      arr_real[proj_idx, k, ] <- cum_arr
+    }
+
+  } else {
+    # Mack paradigm: anchor observed region to original (constant across B).
     for (i in seq_len(n_coh)) {
       for (k in seq_len(n_dev)) {
         if (obs_mask[i, k]) arr_real[i, k, ] <- mat_obs[i, k]
       }
     }
-  }
-
-  for (k in seq(2L, n_dev)) {
-    proj_idx <- which(!obs_mask[, k] & !is.na(last_obs_idx))
-    if (length(proj_idx) == 0L) next
-
-    base_arr <- matrix(arr_real[proj_idx, k - 1L, ], nrow = length(proj_idx))
-    f_b  <- f_proj_mat[k, ]
-    f_b[!is.finite(f_b)] <- 1
-
-    if (use_odp) {
-      # Incremental mean: mu_inc[i, b] = (f_b - 1) * base[i, b]
-      # Process noise on increments with Var = phi * mu_inc.
-      mu_inc_arr  <- t(t(base_arr) * (f_b - 1))
-      var_inc_arr <- phi * abs(mu_inc_arr)
-      mu_inc_arr[!is.finite(mu_inc_arr)] <- 0
-      var_inc_arr[!is.finite(var_inc_arr) | var_inc_arr < 0] <- 0
-
-      inc_vec <- .boot_draw_noise(as.numeric(mu_inc_arr),
-                                   as.numeric(var_inc_arr),
-                                   dist = process_dist)
-      # Cumulative = previous base + simulated increment. Clip to >=0.
-      cum_vec <- as.numeric(base_arr) + inc_vec
-      cum_vec[is.finite(cum_vec) & cum_vec < 0] <- 0
-      arr_real[proj_idx, k, ] <- matrix(cum_vec, nrow = length(proj_idx))
-    } else {
-      # Mack paradigm: cumulative mean mu = f * base, variance sigma^2_k * base.
+    for (k in seq(2L, n_dev)) {
+      proj_idx <- which(!obs_mask[, k] & !is.na(last_obs_idx))
+      if (length(proj_idx) == 0L) next
+      base_arr <- matrix(arr_real[proj_idx, k - 1L, ],
+                         nrow = length(proj_idx))
+      f_b  <- f_proj_mat[k, ]
+      f_b[!is.finite(f_b)] <- 1
       s2_b <- sigma2_mat[k, ]
       s2_b[!is.finite(s2_b)] <- 0
       mu_arr  <- t(t(base_arr) * f_b)
       var_arr <- t(t(base_arr) * s2_b)
       mu_arr[!is.finite(mu_arr)]   <- 0
       var_arr[!is.finite(var_arr) | var_arr < 0] <- 0
-
       cell_vec <- .boot_draw_noise(as.numeric(mu_arr),
                                     as.numeric(var_arr),
                                     dist = process_dist)
