@@ -168,16 +168,16 @@ bootstrap(
 
 - quantile_ci:
 
-  Logical. Whether to include the empirical percentile CI columns
-  (`ci_lo` / `ci_hi` = 2.5% / 97.5% quantiles of `loss_sampled` across
-  replicates) in the `$summary` slot. Default `FALSE` – the per-cohort x
-  dev quantile call is relatively expensive (~70% of total `$summary`
-  cost on typical triangles, because R-level group-wise quantile
-  bypasses
-  [`data.table::gforce`](https://rdrr.io/pkg/data.table/man/datatable-optimize.html)).
-  Set `TRUE` for Solvency II / K-ICS VaR reporting. When `FALSE`, the
-  Normal-approximation CI (`mean_proj +/- 1.96 * total_se`) is still
-  derivable from the `total_se` column for interactive use.
+  Logical. Opt-in flag for the empirical percentile CI columns (`ci_lo`
+  / `ci_hi` = 2.5% / 97.5% quantiles of `loss_sampled` across
+  replicates, Davison & Hinkley (1997) type=1 ordinal) in the `$summary`
+  slot. Default `FALSE`. The Normal- approximation CI
+  (`mean_proj +/- 1.96 * total_se`) derivable from `total_se` is usually
+  enough for interactive use; set `TRUE` for Solvency II / K-ICS VaR
+  reporting where you need the empirical tail. The C kernel computes
+  both CI bounds in the same pass as the SE decomposition (per-cell
+  qsort dominated by Stage 1 work), so the marginal cost over `FALSE` is
+  small.
 
 - keep_pseudo:
 

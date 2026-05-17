@@ -259,16 +259,16 @@ published convention pass <code>B = 999</code>.</p></dd>
 
 
 <dt id="arg-quantile-ci">quantile_ci<a class="anchor" aria-label="anchor" href="#arg-quantile-ci"></a></dt>
-<dd><p>Logical. Whether to include the empirical
-percentile CI columns (<code>ci_lo</code> / <code>ci_hi</code> = 2.5% / 97.5%
-quantiles of <code>loss_sampled</code> across replicates) in the <code>$summary</code>
-slot. Default <code>FALSE</code> – the per-cohort x dev quantile call is
-relatively expensive (~70% of total <code>$summary</code> cost on typical
-triangles, because R-level group-wise quantile bypasses
-<code><a href="https://rdrr.io/pkg/data.table/man/datatable-optimize.html" class="external-link">data.table::gforce</a></code>). Set <code>TRUE</code> for Solvency II / K-ICS VaR
-reporting. When <code>FALSE</code>, the Normal-approximation CI
-(<code>mean_proj +/- 1.96 * total_se</code>) is still derivable from the
-<code>total_se</code> column for interactive use.</p></dd>
+<dd><p>Logical. Opt-in flag for the empirical percentile
+CI columns (<code>ci_lo</code> / <code>ci_hi</code> = 2.5% / 97.5% quantiles of
+<code>loss_sampled</code> across replicates, Davison &amp; Hinkley (1997) type=1
+ordinal) in the <code>$summary</code> slot. Default <code>FALSE</code>. The Normal-
+approximation CI (<code>mean_proj +/- 1.96 * total_se</code>) derivable from
+<code>total_se</code> is usually enough for interactive use; set <code>TRUE</code> for
+Solvency II / K-ICS VaR reporting where you need the empirical
+tail. The C kernel computes both CI bounds in the same pass as
+the SE decomposition (per-cell qsort dominated by Stage 1 work),
+so the marginal cost over <code>FALSE</code> is small.</p></dd>
 
 
 <dt id="arg-keep-pseudo">keep_pseudo<a class="anchor" aria-label="anchor" href="#arg-keep-pseudo"></a></dt>
