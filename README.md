@@ -61,13 +61,14 @@ A long-format `data.frame` / `data.table`. Column names are
 configurable -- pass them via `as_triangle()` arguments and the
 function standardises internally.
 
-| `as_triangle()` argument        | Meaning                                            | Example column   |
-|---------------------------------|----------------------------------------------------|------------------|
-| `cohort`                        | Underwriting / accident period (Date)              | `uy_m`, `uy`     |
-| `calendar` *or* `development`   | Calendar period (Date) *or* dev period (integer)   | `cy_m` / `dev_m` |
-| `loss`                          | Per-period *or* cumulative claim amount            | `incr_loss`      |
-| `premium`                       | Per-period *or* cumulative premium                 | `incr_prem`      |
-| `groups` *(optional)*           | Grouping column(s): product, coverage, age, ...    | `coverage`       |
+| `as_triangle()` argument        | Meaning                                            | Example                          |
+|---------------------------------|----------------------------------------------------|----------------------------------|
+| `cohort`                        | Underwriting / accident period (Date)              | `"uy_m"`, `"uy"`                 |
+| `calendar` *or* `development`   | Calendar period (Date) *or* dev period (integer)   | `"cy_m"` / `"dev_m"`             |
+| `loss`                          | Per-period *or* cumulative claim amount            | `"incr_loss"` / `"loss"`         |
+| `premium`                       | Per-period *or* cumulative premium                 | `"incr_prem"` / `"prem"`         |
+| `groups` *(optional)*           | Grouping column(s): product, coverage, age, ...    | `"coverage"`                     |
+| `cell_type` *(default)*         | Interpretation of `loss` / `premium` values        | `"incremental"` / `"cumulative"` |
 
 Two more arguments govern interpretation:
 
@@ -133,11 +134,12 @@ data(experience)
 # Build the canonical cohort × dev structure
 tri <- as_triangle(
   experience,
-  groups   = "coverage",
-  cohort   = "uy_m",
-  calendar = "cy_m",
-  loss     = "incr_loss",
-  premium  = "incr_prem"
+  groups    = "coverage",
+  cohort    = "uy_m",
+  calendar  = "cy_m",
+  loss      = "incr_loss",
+  premium   = "incr_prem",
+  cell_type = "incremental"   # default; use "cumulative" for pre-summed cells
 )
 
 plot(tri)              # cohort trajectories

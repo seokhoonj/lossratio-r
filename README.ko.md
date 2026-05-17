@@ -48,11 +48,12 @@ data(experience)           # 번들 합성 데이터 (4 coverages)
 exp_surgery <- experience[coverage == "surgery"]
 tri <- as_triangle(
   exp_surgery,
-  groups   = "coverage",
-  cohort   = "uy_m",
-  calendar = "cy_m",
-  loss     = "incr_loss",
-  premium  = "incr_prem"
+  groups    = "coverage",
+  cohort    = "uy_m",
+  calendar  = "cy_m",
+  loss      = "incr_loss",
+  premium   = "incr_prem",
+  cell_type = "incremental"   # default; "cumulative" 면 누적 입력
 )
 plot(tri)
 
@@ -90,13 +91,14 @@ plot_triangle(bt)
 long-format `data.frame` / `data.table`. 컬럼명은 자유 — `as_triangle()`
 인자로 어떤 이름이든 넘기면 함수가 표준화함.
 
-| `as_triangle()` 인자                | 의미                                            | 예시 컬럼명      |
-|-------------------------------------|-------------------------------------------------|------------------|
-| `cohort`                            | 인수 / 사고 시점 (Date)                          | `uy_m`, `uy`     |
-| `calendar` *또는* `development`     | 달력 시점 (Date) *또는* 경과 기간 (int)           | `cy_m` / `dev_m` |
-| `loss`                              | 기간별 *또는* 누적 손해                           | `incr_loss`      |
-| `premium`                           | 기간별 *또는* 누적 보험료 (장기 health 는 위험보험료) | `incr_prem`      |
-| `groups` *(선택)*                   | 그룹 컬럼: 상품 / 담보 / 연령 / 성별 / 가입금액   | `coverage`       |
+| `as_triangle()` 인자                | 의미                                            | 예시                              |
+|-------------------------------------|-------------------------------------------------|-----------------------------------|
+| `cohort`                            | 인수 / 사고 시점 (Date)                          | `"uy_m"`, `"uy"`                  |
+| `calendar` *또는* `development`     | 달력 시점 (Date) *또는* 경과 기간 (int)           | `"cy_m"` / `"dev_m"`              |
+| `loss`                              | 기간별 *또는* 누적 손해                           | `"incr_loss"` / `"loss"`          |
+| `premium`                           | 기간별 *또는* 누적 보험료 (장기 health 는 위험보험료) | `"incr_prem"` / `"prem"`     |
+| `groups` *(선택)*                   | 그룹 컬럼: 상품 / 담보 / 연령 / 성별 / 가입금액   | `"coverage"`                      |
+| `cell_type` *(default)*             | `loss` / `premium` 값의 해석                     | `"incremental"` / `"cumulative"`  |
 
 해석을 정하는 두 인자:
 
