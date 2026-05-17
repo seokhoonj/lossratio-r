@@ -179,22 +179,22 @@
 <p>A long-format <code>data.frame</code> / <code>data.table</code>. Column names are configurable – pass them via <code><a href="reference/as_triangle.html">as_triangle()</a></code> arguments and the function standardises internally.</p>
 <table class="table">
 <colgroup>
-<col width="32%">
-<col width="50%">
-<col width="17%">
+<col width="27%">
+<col width="43%">
+<col width="28%">
 </colgroup>
 <thead><tr>
 <th>
 <code><a href="reference/as_triangle.html">as_triangle()</a></code> argument</th>
 <th>Meaning</th>
-<th>Example column</th>
+<th>Example</th>
 </tr></thead>
 <tbody>
 <tr>
 <td><code>cohort</code></td>
 <td>Underwriting / accident period (Date)</td>
 <td>
-<code>uy_m</code>, <code>uy</code>
+<code>"uy_m"</code>, <code>"uy"</code>
 </td>
 </tr>
 <tr>
@@ -203,25 +203,38 @@
 </td>
 <td>Calendar period (Date) <em>or</em> dev period (integer)</td>
 <td>
-<code>cy_m</code> / <code>dev_m</code>
+<code>"cy_m"</code> / <code>"dev_m"</code>
 </td>
 </tr>
 <tr>
 <td><code>loss</code></td>
 <td>Per-period <em>or</em> cumulative claim amount</td>
-<td><code>incr_loss</code></td>
+<td>
+<code>"incr_loss"</code> / <code>"loss"</code>
+</td>
 </tr>
 <tr>
 <td><code>premium</code></td>
 <td>Per-period <em>or</em> cumulative premium</td>
-<td><code>incr_prem</code></td>
+<td>
+<code>"incr_prem"</code> / <code>"prem"</code>
+</td>
 </tr>
 <tr>
 <td>
 <code>groups</code> <em>(optional)</em>
 </td>
 <td>Grouping column(s): product, coverage, age, …</td>
-<td><code>coverage</code></td>
+<td><code>"coverage"</code></td>
+</tr>
+<tr>
+<td>
+<code>cell_type</code> <em>(default)</em>
+</td>
+<td>Interpretation of <code>loss</code> / <code>premium</code> values</td>
+<td>
+<code>"incremental"</code> / <code>"cumulative"</code>
+</td>
 </tr>
 </tbody>
 </table>
@@ -299,11 +312,12 @@
 <span><span class="co"># Build the canonical cohort × dev structure</span></span>
 <span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">experience</span>,</span>
-<span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
-<span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
-<span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
-<span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>  groups    <span class="op">=</span> <span class="st">"coverage"</span>,</span>
+<span>  cohort    <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
+<span>  calendar  <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
+<span>  loss      <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
+<span>  premium   <span class="op">=</span> <span class="st">"incr_prem"</span>,</span>
+<span>  cell_type <span class="op">=</span> <span class="st">"incremental"</span>   <span class="co"># default; use "cumulative" for pre-summed cells</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>              <span class="co"># cohort trajectories</span></span>

@@ -159,11 +159,12 @@
 <span><span class="va">exp_surgery</span> <span class="op">&lt;-</span> <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"surgery"</span><span class="op">]</span></span>
 <span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">exp_surgery</span>,</span>
-<span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
-<span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
-<span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
-<span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>  groups    <span class="op">=</span> <span class="st">"coverage"</span>,</span>
+<span>  cohort    <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
+<span>  calendar  <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
+<span>  loss      <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
+<span>  premium   <span class="op">=</span> <span class="st">"incr_prem"</span>,</span>
+<span>  cell_type <span class="op">=</span> <span class="st">"incremental"</span>   <span class="co"># default; "cumulative" 면 누적 입력</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span></span>
@@ -216,33 +217,45 @@
 <div class="section level2">
 <h2 id="입력-형식">입력 형식<a class="anchor" aria-label="anchor" href="#%EC%9E%85%EB%A0%A5-%ED%98%95%EC%8B%9D"></a></h2>
 <p>long-format <code>data.frame</code> / <code>data.table</code>. 컬럼명은 자유 — <code><a href="reference/as_triangle.html">as_triangle()</a></code> 인자로 어떤 이름이든 넘기면 함수가 표준화함.</p>
-<table class="table"><colgroup><col width="35%"><col width="47%"><col width="17%"></colgroup><thead><tr><th>
+<table class="table"><colgroup><col width="30%"><col width="40%"><col width="28%"></colgroup><thead><tr><th>
 <code><a href="reference/as_triangle.html">as_triangle()</a></code> 인자</th>
 <th>의미</th>
-<th>예시 컬럼명</th>
+<th>예시</th>
 </tr></thead><tbody><tr><td><code>cohort</code></td>
 <td>인수 / 사고 시점 (Date)</td>
 <td>
-<code>uy_m</code>, <code>uy</code>
+<code>"uy_m"</code>, <code>"uy"</code>
 </td>
 </tr><tr><td>
 <code>calendar</code> <em>또는</em> <code>development</code>
 </td>
 <td>달력 시점 (Date) <em>또는</em> 경과 기간 (int)</td>
 <td>
-<code>cy_m</code> / <code>dev_m</code>
+<code>"cy_m"</code> / <code>"dev_m"</code>
 </td>
 </tr><tr><td><code>loss</code></td>
 <td>기간별 <em>또는</em> 누적 손해</td>
-<td><code>incr_loss</code></td>
+<td>
+<code>"incr_loss"</code> / <code>"loss"</code>
+</td>
 </tr><tr><td><code>premium</code></td>
 <td>기간별 <em>또는</em> 누적 보험료 (장기 health 는 위험보험료)</td>
-<td><code>incr_prem</code></td>
+<td>
+<code>"incr_prem"</code> / <code>"prem"</code>
+</td>
 </tr><tr><td>
 <code>groups</code> <em>(선택)</em>
 </td>
 <td>그룹 컬럼: 상품 / 담보 / 연령 / 성별 / 가입금액</td>
-<td><code>coverage</code></td>
+<td><code>"coverage"</code></td>
+</tr><tr><td>
+<code>cell_type</code> <em>(default)</em>
+</td>
+<td>
+<code>loss</code> / <code>premium</code> 값의 해석</td>
+<td>
+<code>"incremental"</code> / <code>"cumulative"</code>
+</td>
 </tr></tbody></table><p>해석을 정하는 두 인자:</p>
 <ul><li>
 <strong><code>cell_type</code></strong> — <code>"incremental"</code> (default) 또는 <code>"cumulative"</code>. 일반적 raw experience 는 incremental; 이미 누적 합산된 데이터라면 <code>cell_type = "cumulative"</code> 로 넘기면 함수가 per-cohort diff 로 incremental 도 derive.</li>
