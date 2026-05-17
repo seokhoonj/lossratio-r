@@ -1483,6 +1483,7 @@ bootstrap.Triangle <- function(x,
 .boot_summary_decompose <- function(pseudo_long, grp, target = "loss",
                                      quantile_ci = FALSE) {
   param_se <- proc_se <- total_se <- mean_proj <- NULL  # NSE
+  ci_lo <- ci_hi <- NULL  # NSE
   col_mean    <- paste0(target, "_mean")
   col_sampled <- paste0(target, "_sampled")
   by_cols <- c(grp, "cohort", "dev")
@@ -1511,7 +1512,7 @@ bootstrap.Triangle <- function(x,
                as.numeric(pseudo_long[[col_mean]]),
                as.numeric(pseudo_long[[col_sampled]]),
                n_coh, n_dev, n_groups,
-               FALSE, c(0.025, 0.975))
+               as.logical(quantile_ci), c(0.025, 0.975))
 
   # Build the data.table from the five flat output vectors. Group block
   # is outermost; within each group block, cohort is fastest then dev.
@@ -1546,18 +1547,12 @@ bootstrap.Triangle <- function(x,
     }
   }
 
-  # ----- Optional quantile CI (R-level -- opt-in path for keep_pseudo =
-  # TRUE only; the production keep_pseudo = FALSE path is C-ified in
-  # bootstrap_summary_kernel). data.table's group-wise quantile is fine
-  # here because this branch is diagnostic, not the hot path.
+  # Attach C-computed CI columns -- bootstrap_summary_kernel emits ci_lo /
+  # ci_hi in the same single .Call above when quantile_ci = TRUE (mirrors
+  # the keep_pseudo = FALSE hot path in .boot_summary_from_arrays).
   if (isTRUE(quantile_ci)) {
-    ci_dt <- pseudo_long[, .(
-      ci_lo = stats::quantile(.SD[[1L]], 0.025, type = 1, na.rm = TRUE,
-                                  names = FALSE),
-      ci_hi = stats::quantile(.SD[[1L]], 0.975, type = 1, na.rm = TRUE,
-                                  names = FALSE)
-    ), by = by_cols, .SDcols = col_sampled]
-    dt <- merge(dt, ci_dt, by = by_cols, sort = FALSE)
+    dt[, ci_lo := res$ci_lo]
+    dt[, ci_hi := res$ci_hi]
   }
 
   out_cols <- c(by_cols, "mean_proj",
