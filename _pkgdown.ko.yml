@@ -99,14 +99,14 @@ reference:
     Triangle 위에서 projection 을 산출하는 모형. 기본 알고리즘:
     `fit_cl` (chain ladder / multiplicative), `fit_ed`
     (exposure-driven / additive). Role dispatcher: `fit_loss`
-    (loss 측 sa/ed/cl), `fit_premium` (premium 측 ed/cl). 합성:
+    (loss 측 sa/ed/cl), `fit_prem` (premium 측 ed/cl). 합성:
     `fit_lr` (손해율 통합 인터페이스, delta-method SE). 모두 결과
     객체에 `$full` projection table 을 보유.
   contents:
   - fit_cl
   - fit_ed
   - fit_loss
-  - fit_premium
+  - fit_prem
   - fit_lr
 
 - title: 인자 진단
@@ -126,7 +126,7 @@ reference:
     Triangle 의 어떤 셀을 추정에 쓸지 결정. `detect_maturity` 는
     dev 축 (ATA 인자가 안정화되는 링크 이후), `detect_regime` 은
     cohort 축 (인수 코호트 간 구조적 변화). `*_at()` / `*_spec()`
-    헬퍼는 fit 함수의 `maturity` / `loss_regime` / `premium_regime`
+    헬퍼는 fit 함수의 `maturity` / `loss_regime` / `prem_regime`
     인자에 들어갈 수동 (`_at()`) 혹은 lazy-detect (`_spec()`) 입력
     객체를 만든다.
   contents:
@@ -140,7 +140,7 @@ reference:
 - title: 부트스트랩
   desc: >
     cohort × dev 단위 표준오차 분해를 시뮬레이션으로 산출 (피타고라스
-    분해 — parameter + process). 반환 객체는 `fit_loss` / `fit_premium` /
+    분해 — parameter + process). 반환 객체는 `fit_loss` / `fit_prem` /
     `fit_lr` 의 `bootstrap` 인자에 전달되어 분석식 SE / CI 를 경험적
     값으로 교체.
   contents:
