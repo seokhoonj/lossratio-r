@@ -109,16 +109,16 @@ published convention pass \code{B = 999}.}
 
 \item{alpha}{Variance exponent in Mack's \verb{Var(C_\{k+1\} | C_k) = sigma_k^2 C_k^alpha}. Default \code{1} (volume-weighted).}
 
-\item{quantile_ci}{Logical. Whether to include the empirical
-percentile CI columns (\code{ci_lo} / \code{ci_hi} = 2.5\% / 97.5\%
-quantiles of \code{loss_sampled} across replicates) in the \verb{$summary}
-slot. Default \code{FALSE} -- the per-cohort x dev quantile call is
-relatively expensive (~70\% of total \verb{$summary} cost on typical
-triangles, because R-level group-wise quantile bypasses
-\code{data.table::gforce}). Set \code{TRUE} for Solvency II / K-ICS VaR
-reporting. When \code{FALSE}, the Normal-approximation CI
-(\verb{mean_proj +/- 1.96 * total_se}) is still derivable from the
-\code{total_se} column for interactive use.}
+\item{quantile_ci}{Logical. Opt-in flag for the empirical percentile
+CI columns (\code{ci_lo} / \code{ci_hi} = 2.5\% / 97.5\% quantiles of
+\code{loss_sampled} across replicates, Davison & Hinkley (1997) type=1
+ordinal) in the \verb{$summary} slot. Default \code{FALSE}. The Normal-
+approximation CI (\verb{mean_proj +/- 1.96 * total_se}) derivable from
+\code{total_se} is usually enough for interactive use; set \code{TRUE} for
+Solvency II / K-ICS VaR reporting where you need the empirical
+tail. The C kernel computes both CI bounds in the same pass as
+the SE decomposition (per-cell qsort dominated by Stage 1 work),
+so the marginal cost over \code{FALSE} is small.}
 
 \item{keep_pseudo}{Logical. Whether to materialise the per-replicate
 long-format \code{pseudo_triangles} slot. Default \code{TRUE}. \code{FALSE} skips

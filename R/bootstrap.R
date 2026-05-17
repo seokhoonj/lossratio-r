@@ -198,16 +198,16 @@
 #' @param seed Optional integer seed for reproducibility.
 #' @param alpha Variance exponent in Mack's `Var(C_{k+1} | C_k) = sigma_k^2
 #'   C_k^alpha`. Default `1` (volume-weighted).
-#' @param quantile_ci Logical. Whether to include the empirical
-#'   percentile CI columns (`ci_lo` / `ci_hi` = 2.5% / 97.5%
-#'   quantiles of `loss_sampled` across replicates) in the `$summary`
-#'   slot. Default `FALSE` -- the per-cohort x dev quantile call is
-#'   relatively expensive (~70% of total `$summary` cost on typical
-#'   triangles, because R-level group-wise quantile bypasses
-#'   `data.table::gforce`). Set `TRUE` for Solvency II / K-ICS VaR
-#'   reporting. When `FALSE`, the Normal-approximation CI
-#'   (`mean_proj +/- 1.96 * total_se`) is still derivable from the
-#'   `total_se` column for interactive use.
+#' @param quantile_ci Logical. Opt-in flag for the empirical percentile
+#'   CI columns (`ci_lo` / `ci_hi` = 2.5% / 97.5% quantiles of
+#'   `loss_sampled` across replicates, Davison & Hinkley (1997) type=1
+#'   ordinal) in the `$summary` slot. Default `FALSE`. The Normal-
+#'   approximation CI (`mean_proj +/- 1.96 * total_se`) derivable from
+#'   `total_se` is usually enough for interactive use; set `TRUE` for
+#'   Solvency II / K-ICS VaR reporting where you need the empirical
+#'   tail. The C kernel computes both CI bounds in the same pass as
+#'   the SE decomposition (per-cell qsort dominated by Stage 1 work),
+#'   so the marginal cost over `FALSE` is small.
 #' @param keep_pseudo Logical. Whether to materialise the per-replicate
 #'   long-format `pseudo_triangles` slot. Default `TRUE`. `FALSE` skips
 #'   the long-format build, keeping only the precomputed `$summary` --
@@ -1439,7 +1439,9 @@ bootstrap.Triangle <- function(x,
 
   res <- .Call(C_bootstrap_summary_kernel,
                cum_mean_concat, cum_sampled_concat,
-               n_coh, n_dev, as.integer(n_groups))
+               n_coh, n_dev, as.integer(n_groups),
+               as.logical(quantile_ci),
+               c(0.025, 0.975))
 
   cell_n <- n_coh * n_dev
   dt <- data.table::data.table(
@@ -1462,41 +1464,11 @@ bootstrap.Triangle <- function(x,
   }
 
   if (isTRUE(quantile_ci)) {
-    # Quantile CI from 3D arrays -- vectorised per-cell quickselect via
-    # matrix(byrow = FALSE) reshape + apply. Still R-level (task #16
-    # will move this to C); for now we honour the opt-in flag.
-    grid <- data.table::data.table(
-      cohort = rep.int(rep.int(cohorts, n_dev), n_groups),
-      dev    = rep.int(rep(devs, each = n_coh), n_groups)
-    )
-    if (length(grp) > 0L && !is.null(grp_vals)) {
-      for (col in grp)
-        grid[, (col) := rep(grp_vals[[col]], each = cell_n)]
-    }
-    # cum_sampled reshape: cells x B per group, stacked
-    B  <- stage1_out$B
-    ci_lo <- numeric(length(res$mean_proj))
-    ci_hi <- numeric(length(res$mean_proj))
-    for (g in seq_len(n_groups)) {
-      off <- (g - 1L) * cell_n * B
-      block <- cum_sampled_concat[off + seq_len(cell_n * B)]
-      mat <- matrix(block, nrow = cell_n, ncol = B)
-      cell_off <- (g - 1L) * cell_n
-      for (k in seq_len(cell_n)) {
-        x <- mat[k, ]
-        x <- x[is.finite(x)]
-        if (length(x) < 2L) {
-          ci_lo[cell_off + k] <- NA_real_
-          ci_hi[cell_off + k] <- NA_real_
-        } else {
-          q <- stats::quantile(x, c(0.025, 0.975), type = 1, names = FALSE)
-          ci_lo[cell_off + k] <- q[1L]
-          ci_hi[cell_off + k] <- q[2L]
-        }
-      }
-    }
-    dt[, ci_lo := ci_lo]
-    dt[, ci_hi := ci_hi]
+    # Quantile CI is now C-computed by bootstrap_summary_kernel in the
+    # same single .Call above -- just attach the returned ci_lo / ci_hi
+    # columns.
+    dt[, ci_lo := res$ci_lo]
+    dt[, ci_hi := res$ci_hi]
   }
 
   by_cols  <- c(grp, "cohort", "dev")
@@ -1538,7 +1510,8 @@ bootstrap.Triangle <- function(x,
   res <- .Call(C_bootstrap_summary_kernel,
                as.numeric(pseudo_long[[col_mean]]),
                as.numeric(pseudo_long[[col_sampled]]),
-               n_coh, n_dev, n_groups)
+               n_coh, n_dev, n_groups,
+               FALSE, c(0.025, 0.975))
 
   # Build the data.table from the five flat output vectors. Group block
   # is outermost; within each group block, cohort is fastest then dev.
@@ -1573,7 +1546,10 @@ bootstrap.Triangle <- function(x,
     }
   }
 
-  # ----- Optional quantile CI (R-level -- task #17b will C-ify) ---------
+  # ----- Optional quantile CI (R-level -- opt-in path for keep_pseudo =
+  # TRUE only; the production keep_pseudo = FALSE path is C-ified in
+  # bootstrap_summary_kernel). data.table's group-wise quantile is fine
+  # here because this branch is diagnostic, not the hot path.
   if (isTRUE(quantile_ci)) {
     ci_dt <- pseudo_long[, .(
       ci_lo = stats::quantile(.SD[[1L]], 0.025, type = 1, na.rm = TRUE,

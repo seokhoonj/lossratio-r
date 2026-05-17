@@ -93,14 +93,22 @@ SEXP bootstrap_kernel_parametric(
 
 /* Pythagorean SE decomposition over the two [n_coh, n_dev, B] cumulative
  * arrays — replaces the R-level data.table group-wise aggregation in
- * .boot_summary_decompose(). Returns a named list of five flat
- * length n_coh × n_dev REALSXPs: mean_proj, param_se, proc_se,
- * total_se, total_cv. See src/bootstrap.c for the contract. */
+ * .boot_summary_from_arrays() / .boot_summary_decompose(). Returns a
+ * named list of five flat length n_coh × n_dev REALSXPs: mean_proj,
+ * param_se, proc_se, total_se, total_cv. When `quantile_ci_sxp` is
+ * TRUE, the returned list additionally carries `ci_lo` and `ci_hi`
+ * empirical percentile bounds (Davison-Hinkley type=1 ordinal: rank
+ * `ceil(p * n_finite)` 1-indexed; NA_real_ when fewer than 2 finite
+ * values per cell). `probs_sxp` carries the probabilities (typically
+ * c(0.025, 0.975); length-2 in practice, parameterised for future
+ * extension). See src/bootstrap.c for the full contract. */
 SEXP bootstrap_summary_kernel(
     SEXP cum_mean_sxp,
     SEXP cum_sampled_sxp,
     SEXP n_coh_sxp,
     SEXP n_dev_sxp,
-    SEXP n_groups_sxp);
+    SEXP n_groups_sxp,
+    SEXP quantile_ci_sxp,
+    SEXP probs_sxp);
 
 #endif /* LOSSRATIO_H */

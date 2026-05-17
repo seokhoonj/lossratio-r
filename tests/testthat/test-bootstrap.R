@@ -891,6 +891,49 @@ test_that("$summary CI bounds bracket mean_proj on projected cells", {
   expect_true(all(proj$ci_hi >= proj$mean_proj - 1e-6))
 })
 
+test_that("quantile_ci returns C-computed values matching stats::quantile(type=1)", {
+  tri <- make_sub_tri("surgery")
+  bt <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                  hat_adj = FALSE, process = "gamma",
+                  B = 99L, seed = 42, quantile_ci = TRUE,
+                  keep_pseudo = TRUE)
+  sm <- bt$summary
+  pl <- bt$pseudo_triangles
+  grp <- attr(bt, "groups")
+  if (is.null(grp)) grp <- intersect(names(sm), names(pl))
+  grp <- setdiff(grp, c("cohort", "dev", "rep",
+                        "mean_proj", "param_se", "proc_se",
+                        "total_se", "total_cv", "ci_lo", "ci_hi",
+                        "loss_mean", "loss_sampled"))
+  by_cols <- c(grp, "cohort", "dev")
+
+  # Compute R-level type=1 quantiles per cell with na.rm = TRUE.
+  ref <- pl[, .(
+    ci_lo_ref = stats::quantile(loss_sampled, 0.025, type = 1,
+                                names = FALSE, na.rm = TRUE),
+    ci_hi_ref = stats::quantile(loss_sampled, 0.975, type = 1,
+                                names = FALSE, na.rm = TRUE),
+    n_fin     = sum(is.finite(loss_sampled))
+  ), by = by_cols]
+
+  m <- merge(sm[, c(by_cols, "ci_lo", "ci_hi"), with = FALSE],
+             ref, by = by_cols, sort = FALSE)
+
+  # n_fin < 2 cells must produce NA on both sides.
+  na_rows <- m$n_fin < 2L
+  if (any(na_rows)) {
+    expect_true(all(is.na(m$ci_lo[na_rows])))
+    expect_true(all(is.na(m$ci_hi[na_rows])))
+  }
+  # n_fin >= 2 cells: C output must equal stats::quantile(type=1) exactly
+  # (type=1 is ordinal selection of an existing sample -- no float math).
+  ok <- !na_rows
+  if (any(ok)) {
+    expect_identical(m$ci_lo[ok], m$ci_lo_ref[ok])
+    expect_identical(m$ci_hi[ok], m$ci_hi_ref[ok])
+  }
+})
+
 
 # ---------------------------------------------------------------------------
 # demean toggle (cell mode)
