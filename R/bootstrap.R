@@ -1,13 +1,10 @@
 # Bootstrap helpers ---------------------------------------------------------
 #
-# Single-role per-cohort bootstrap simulators. Each returns the full
-# [n_dev x B] simulation matrix; CI / SE extraction is left to a separate
-# helper so the caller can derive both per-dev quantities directly from
-# the matrix.
-#
-# Phase 2a scope: Normal parametric residuals only (Mack 1993 variance
-# structure). ODP / Gamma process distributions and maturity-stratified
-# shape estimation are deferred to Phase 2b/2c.
+# Triangle-level bootstrap worker. Layer 1 (`bootstrap.Triangle()`)
+# performs the data perturbation (Stage 1 pseudo triangles) once; Layer 2
+# (refit consumers per method) reuses those pseudo triangles B times. The
+# B-dependent inner loop of `residual = "cell"` Stage 1 lives in C
+# (`src/bootstrap.c`); R drives the surrounding orchestration.
 #
 # References:
 #   Mack (1993, ASTIN Bull 23/2)        -- sigma_k^2 / f_k variance form.
@@ -16,308 +13,31 @@
 #   Barnett & Zehnwirth (2007, IW TR)   -- residual diagnostic critique.
 
 
-#' Per-step CL random draw (Normal residuals)
-#'
-#' One Mack-style multiplicative step `C_{k+1} = f_k * C_k + eps` with
-#' parameter `f_k ~ N(f_hat, Var(f_hat))` and process noise
-#' `eps ~ N(0, sigma_k^2 * |C_k|^alpha)`.
-#'
-#' @keywords internal
-.cl_step <- function(prev, f_hat, f_var_k, sigma2_k, alpha, B, process) {
-  f_sd <- if (is.finite(f_var_k)) sqrt(max(f_var_k, 0)) else 0
-
-  f_samp <- if (is.finite(f_hat) && f_sd > 0) {
-    stats::rnorm(B, f_hat, f_sd)
-  } else if (is.finite(f_hat)) {
-    rep(f_hat, B)
-  } else {
-    rep(1, B)
-  }
-
-  eps_sd_vec <- ifelse(
-    is.finite(sigma2_k) & is.finite(prev) & prev > 0,
-    sqrt(pmax(sigma2_k * abs(prev)^alpha, 0)),
-    0
-  )
-
-  eps <- switch(process,
-    normal = stats::rnorm(B) * eps_sd_vec,
-    stop("process = '", process, "' not yet implemented (Phase 2b).",
-         call. = FALSE)
-  )
-
-  f_samp * prev + eps
-}
-
-
-#' Per-step ED random draw (Normal residuals)
-#'
-#' One additive step `C_{k+1} = C_k + g_k * P_k + eps` with parameter
-#' `g_k ~ N(g_hat, Var(g_hat))` and process noise
-#' `eps ~ N(0, sigma_k^2 * P_k^alpha)`.
-#'
-#' @keywords internal
-.ed_step <- function(prev, e_k, g_hat, g_var_k, sigma2_k, alpha, B, process) {
-  g_sd <- if (is.finite(g_var_k)) sqrt(max(g_var_k, 0)) else 0
-
-  g_samp <- if (is.finite(g_hat) && g_sd > 0) {
-    stats::rnorm(B, g_hat, g_sd)
-  } else if (is.finite(g_hat)) {
-    rep(g_hat, B)
-  } else {
-    rep(NA_real_, B)
-  }
-
-  eps_sd <- if (is.finite(sigma2_k) && is.finite(e_k) && e_k > 0) {
-    sqrt(max(sigma2_k * e_k^alpha, 0))
-  } else 0
-
-  eps <- switch(process,
-    normal = if (eps_sd > 0) stats::rnorm(B, 0, eps_sd) else rep(0, B),
-    stop("process = '", process, "' not yet implemented (Phase 2b).",
-         call. = FALSE)
-  )
-
-  prev + g_samp * e_k + eps
-}
-
-
-#' Per-cohort CL parametric bootstrap (sim matrix only)
-#'
-#' @description
-#' Simulates `B` replicates of a Mack chain-ladder projection path for a
-#' single cohort. Future cells (`k > last_obs`) are drawn via the
-#' multiplicative recursion (see [.cl_step]); observed cells are filled
-#' with the observed value across all replicates.
-#'
-#' @param target_obs Numeric vector of observed cumulative target by dev
-#'   (NA for not-yet-observed cells).
-#' @param target_proj Numeric vector of projected cumulative target (used
-#'   only for length; values not consumed in simulation).
-#' @param f_sel,f_sigma2,f_var Per-dev factor / Mack-sigma^2 / Var(f_hat)
-#'   vectors, aligned with `target_proj` indices `1..n-1` (link k -> k+1).
-#' @param last_obs Index of the last observed dev (boundary between
-#'   observed-rows-fixed and projected-rows-simulated).
-#' @param B Integer number of bootstrap replicates.
-#' @param alpha Variance exponent in `sigma_k^2 * C_k^alpha` (Mack uses 1).
-#' @param process Process distribution. Phase 2a: only `"normal"`.
-#'
-#' @return A `[length(target_proj) x B]` numeric matrix. Observed rows
-#'   are constant across columns (the observed value); projected rows
-#'   contain `B` simulated cumulative values. Negative simulations are
-#'   clipped to 0.
-#'
-#' @keywords internal
-.cl_bootstrap <- function(target_obs, target_proj,
-                          f_sel, f_sigma2, f_var,
-                          last_obs, B, alpha,
-                          process = c("normal")) {
-  process <- match.arg(process)
-  n <- length(target_proj)
-
-  sim <- matrix(NA_real_, nrow = n, ncol = B)
-  for (i in seq_len(last_obs)) sim[i, ] <- target_obs[i]
-
-  if (last_obs >= n || last_obs < 1L || B < 1L) {
-    sim[!is.na(sim) & sim < 0] <- 0
-    return(sim)
-  }
-
-  for (i in seq(last_obs + 1L, n)) {
-    k    <- i - 1L
-    prev <- sim[i - 1L, ]
-    sim[i, ] <- .cl_step(prev, f_sel[k], f_var[k], f_sigma2[k],
-                         alpha, B, process)
-  }
-
-  sim[!is.na(sim) & sim < 0] <- 0
-  sim
-}
-
-
-#' Per-cohort ED parametric bootstrap (sim matrix only)
-#'
-#' @description
-#' Simulates `B` replicates of an exposure-driven projection path for a
-#' single cohort. Future cells are drawn via the additive recursion (see
-#' [.ed_step]).
-#'
-#' @param target_obs,target_proj See [.cl_bootstrap].
-#' @param exposure_proj Numeric vector of projected exposure (premium) by
-#'   dev; supplies the `P_k` multiplier for the ED intensity.
-#' @param g_sel,g_sigma2,g_var Per-dev intensity / Mack-sigma^2 /
-#'   Var(g_hat) vectors.
-#' @param last_obs,B,alpha,process See [.cl_bootstrap].
-#'
-#' @return A `[length(target_proj) x B]` numeric matrix; same convention
-#'   as [.cl_bootstrap].
-#'
-#' @keywords internal
-.ed_bootstrap <- function(target_obs, target_proj, exposure_proj,
-                          g_sel, g_sigma2, g_var,
-                          last_obs, B, alpha,
-                          process = c("normal")) {
-  process <- match.arg(process)
-  n <- length(target_proj)
-
-  sim <- matrix(NA_real_, nrow = n, ncol = B)
-  for (i in seq_len(last_obs)) sim[i, ] <- target_obs[i]
-
-  if (last_obs >= n || last_obs < 1L || B < 1L) {
-    sim[!is.na(sim) & sim < 0] <- 0
-    return(sim)
-  }
-
-  for (i in seq(last_obs + 1L, n)) {
-    k    <- i - 1L
-    prev <- sim[i - 1L, ]
-    e_k  <- exposure_proj[k]
-    sim[i, ] <- .ed_step(prev, e_k, g_sel[k], g_var[k], g_sigma2[k],
-                         alpha, B, process)
-  }
-
-  sim[!is.na(sim) & sim < 0] <- 0
-  sim
-}
-
-
-#' Per-cohort SA parametric bootstrap (ED before maturity, CL after)
-#'
-#' @description
-#' Simulates the stage-adaptive projection path: cells with dev source
-#' `k < maturity_from` use the ED additive recursion; cells with
-#' `k >= maturity_from` use the CL multiplicative recursion. When
-#' `maturity_from` is non-finite, the function degenerates to pure ED.
-#'
-#' @inheritParams .ed_bootstrap
-#' @param f_sel,f_sigma2,f_var CL factor / Mack-sigma^2 / Var(f_hat).
-#' @param maturity_from Source-dev index k\* where the SA boundary lies.
-#'   Cells with `k < maturity_from` are in the ED phase; cells with
-#'   `k >= maturity_from` are in the CL phase.
-#'
-#' @return A `[length(target_proj) x B]` numeric matrix.
-#'
-#' @keywords internal
-.sa_bootstrap <- function(target_obs, target_proj, exposure_proj,
-                          g_sel, f_sel,
-                          g_sigma2, f_sigma2, g_var, f_var,
-                          last_obs, maturity_from, B, alpha,
-                          process = c("normal")) {
-  process <- match.arg(process)
-  n <- length(target_proj)
-
-  sim <- matrix(NA_real_, nrow = n, ncol = B)
-  for (i in seq_len(last_obs)) sim[i, ] <- target_obs[i]
-
-  if (last_obs >= n || last_obs < 1L || B < 1L) {
-    sim[!is.na(sim) & sim < 0] <- 0
-    return(sim)
-  }
-
-  mat <- if (is.finite(maturity_from)) maturity_from else Inf
-
-  for (i in seq(last_obs + 1L, n)) {
-    k    <- i - 1L
-    prev <- sim[i - 1L, ]
-
-    if (k < mat) {
-      e_k <- exposure_proj[k]
-      sim[i, ] <- .ed_step(prev, e_k, g_sel[k], g_var[k], g_sigma2[k],
-                           alpha, B, process)
-    } else {
-      sim[i, ] <- .cl_step(prev, f_sel[k], f_var[k], f_sigma2[k],
-                           alpha, B, process)
-    }
-  }
-
-  sim[!is.na(sim) & sim < 0] <- 0
-  sim
-}
-
-
-#' Per-dev CI bounds and SE from a bootstrap simulation matrix
-#'
-#' @description
-#' Extracts percentile-based CI and standard deviation per dev row from a
-#' `[n_dev x B]` simulation matrix. Observed rows (index `<= last_obs`)
-#' return the constant observed value with SE = 0; projected rows return
-#' quantile-based CI and empirical SD.
-#'
-#' @param sim `[n_dev x B]` simulation matrix from one of
-#'   [.cl_bootstrap] / [.ed_bootstrap] / [.sa_bootstrap].
-#' @param last_obs Boundary index (observed-row count).
-#' @param probs Length-2 numeric vector of lower/upper quantile probs
-#'   (e.g., `c(0.025, 0.975)`).
-#'
-#' @return A list with three numeric vectors of length `nrow(sim)`:
-#'   `ci_lo`, `ci_hi`, `se`.
-#'
-#' @keywords internal
-.bootstrap_summary <- function(sim, last_obs, probs) {
-  n <- nrow(sim)
-  ci_lo <- rep(NA_real_, n)
-  ci_hi <- rep(NA_real_, n)
-  se    <- rep(NA_real_, n)
-
-  for (i in seq_len(last_obs)) {
-    v <- sim[i, 1L]
-    ci_lo[i] <- v
-    ci_hi[i] <- v
-    se[i]    <- 0
-  }
-
-  if (last_obs < n) {
-    for (i in seq(last_obs + 1L, n)) {
-      vals <- sim[i, ]
-      if (all(!is.finite(vals))) next
-      q <- stats::quantile(vals, probs = probs, na.rm = TRUE, names = FALSE)
-      ci_lo[i] <- q[1L]
-      ci_hi[i] <- q[2L]
-      se[i]    <- stats::sd(vals, na.rm = TRUE)
-    }
-  }
-
-  list(ci_lo = ci_lo, ci_hi = ci_hi, se = se)
-}
-
-
-# =============================================================================
-# Phase 1 — Triangle-level bootstrap worker (new entry point)
-#
-# Design: dev/BOOTSTRAP.md
-#
-# Layer 1 (Triangle worker, 1x): data perturbation, model-agnostic output.
-# Layer 2 (fit consumers, per method, B times): refit + Stage 2 process noise.
-#
-# Legacy helpers above (.cl_step / .ed_step / .cl_bootstrap / .ed_bootstrap /
-# .sa_bootstrap / .bootstrap_summary) remain unchanged so the current
-# fit_lr/fit_loss/fit_premium/backtest pipeline keeps working. Phase 2 will
-# migrate them onto `bootstrap.Triangle()`; phase 3 drops the legacy helpers.
-# =============================================================================
+# Section 1 -- Argument validation ============================================
 
 
 #' Validate the bootstrap argument combination
 #'
 #' Internal helper called by `bootstrap.Triangle()` after `match.arg()`.
-#' Enforces the type/residual/process/method/tail combination matrix and
-#' warns when an argument is silently ignored.
+#' Enforces the type/residual/process/method/pooling/tail combination
+#' matrix and warns when an argument is silently ignored.
 #'
-#' @param type,residual,process,method,tail Resolved (post-match.arg) values.
-#' @param min_pool,hat_adj,maturity Scalar values to validate.
-#' @param residual_set,process_set,method_set,tail_set,hat_adj_set,min_pool_set
+#' @param type,residual,process,method,pooling,tail Resolved (post-match.arg) values.
+#' @param min_pool,hat_adj,demean,maturity Scalar values to validate.
+#' @param residual_set,process_set,pooling_set,tail_set,hat_adj_set,demean_set,min_pool_set
 #'   Logicals indicating whether the user explicitly passed each argument
 #'   (computed via `match.call()` in the caller).
 #'
 #' @return `invisible(TRUE)` after raising any errors / warnings.
 #'
 #' @keywords internal
-.validate_bootstrap_args <- function(type, residual, process, method, tail,
-                                     min_pool, hat_adj, maturity,
+.validate_bootstrap_args <- function(type, residual, process, method, pooling,
+                                     tail, min_pool, hat_adj, demean, maturity,
                                      residual_set, process_set,
-                                     method_set, tail_set, hat_adj_set,
-                                     min_pool_set) {
+                                     pooling_set, tail_set, hat_adj_set,
+                                     demean_set, min_pool_set) {
 
-  # `min_pool` must be a single positive integer regardless of type/method.
+  # `min_pool` must be a single positive integer regardless of type/pooling.
   if (!is.numeric(min_pool) || length(min_pool) != 1L ||
       is.na(min_pool) || min_pool < 1L ||
       !isTRUE(all.equal(min_pool, round(min_pool))))
@@ -333,9 +53,9 @@
       warning("type = 'parametric' uses closed-form simulation; ",
               "'residual' argument is ignored.",
               call. = FALSE)
-    if (method_set)
+    if (pooling_set)
       warning("type = 'parametric' has no residual pool; ",
-              "'method' argument is ignored.",
+              "'pooling' argument is ignored.",
               call. = FALSE)
     if (tail_set)
       warning("type = 'parametric' has no residual pool; ",
@@ -348,12 +68,18 @@
     if (hat_adj_set && isTRUE(hat_adj))
       warning("'hat_adj' is only defined for residual = 'cell'; ignored.",
               call. = FALSE)
+    if (demean_set)
+      warning("'demean' is only defined for residual = 'cell'; ignored.",
+              call. = FALSE)
   } else {
     # type == "nonparametric"
     if (identical(residual, "link") && hat_adj_set && isTRUE(hat_adj))
       warning("hat_adj is currently only implemented for residual = ",
               "'cell'. Pinheiro 2003 defines it for link residuals but ",
               "implementation is deferred to a future release. Ignored.",
+              call. = FALSE)
+    if (identical(residual, "link") && demean_set)
+      warning("'demean' is only defined for residual = 'cell'; ignored.",
               call. = FALSE)
     if (identical(residual, "cell") && identical(process, "normal"))
       stop("residual = 'cell' (ODP path, England-Verrall 1999/2002) ",
@@ -365,12 +91,12 @@
       stop("process = 'lognormal' not yet implemented (Phase 5b.3). ",
            "Use 'gamma', 'od_pois', or 'normal'.",
            call. = FALSE)
-    if (!identical(method, "tail_pooled")) {
+    if (!identical(pooling, "tail_pooled")) {
       if (tail_set)
-        warning("'tail' applies only to method = 'tail_pooled'; ignored.",
+        warning("'tail' applies only to pooling = 'tail_pooled'; ignored.",
                 call. = FALSE)
       if (min_pool_set)
-        warning("'min_pool' applies only to method = 'tail_pooled' ",
+        warning("'min_pool' applies only to pooling = 'tail_pooled' ",
                 "with tail = 'auto'; ignored.",
                 call. = FALSE)
     } else {
@@ -393,18 +119,18 @@
 #' that downstream fit functions (`fit_cl` / `fit_ed` / `fit_lr`) consume to
 #' recover parameter and process risk decomposition.
 #'
-#' This entry point sits at the Triangle level — it knows nothing about CL,
+#' This entry point sits at the Triangle level -- it knows nothing about CL,
 #' ED, or SA. Each fit method later refits its own model on every alt
 #' triangle and adds Stage 2 process noise using its own variance recipe.
 #' The same bootstrap object is therefore reusable across all fit methods.
 #'
 #' Bootstrap proceeds in two conceptual stages (see `dev/BOOTSTRAP.md`):
 #'
-#' 1. **Stage 1 — parameter uncertainty**: residual resample (or parametric
+#' 1. **Stage 1 -- parameter uncertainty**: residual resample (or parametric
 #'    Normal draw) propagated through the cumulative loss chain, refitted
 #'    factors per replicate. This produces `B` alternative *mean*
 #'    predictions per cell.
-#' 2. **Stage 2 — process uncertainty**: added *inside the fit function*
+#' 2. **Stage 2 -- process uncertainty**: added *inside the fit function*
 #'    on demand, using the method-specific `sigma^2`. The `process` argument
 #'    here is stored as metadata so the consuming fit method knows which
 #'    distribution to use.
@@ -413,51 +139,88 @@
 #' @param type One of `"nonparametric"` or `"parametric"`. `"parametric"`
 #'   draws new link factors from `N(f_hat, sqrt(Var(f_hat)))` (Mack 1993
 #'   closed-form); `"nonparametric"` resamples standardized residuals and
-#'   reconstructs the alt triangle (England-Verrall / Pinheiro).
+#'   reconstructs the pseudo triangle (England-Verrall / Pinheiro).
 #' @param residual Residual scope for `type = "nonparametric"`. One of
-#'   `"cell"` (default — England-Verrall 1999/2002, Pearson residuals on
+#'   `"cell"` (default -- England-Verrall 1999/2002, Pearson residuals on
 #'   incremental cells; ODP GLM equivalent via Renshaw-Verrall 1998) or
 #'   `"link"` (Mack 1993 / Pinheiro 2003, Pearson residuals on link
 #'   factors).
 #' @param hat_adj Logical. Hat-matrix leverage adjustment
 #'   (`r_h = r / sqrt(1 - h_ii)`) for the cell residual path. Default
-#'   `TRUE` (England-Verrall 2002 Addendum / chainladder-py parity); set
-#'   `FALSE` to use the simpler degrees-of-freedom factor
-#'   `sqrt(n / (n - p))` (England-Verrall 1999 / `BootChainLadder`
-#'   parity). Only defined for `residual = "cell"`; warned-ignored
-#'   otherwise. Note that `hat_adj` drops corner cells where `h_ii = 1`
-#'   (always `(I, 1)` and `(1, J)` of the upper triangle); on small
-#'   triangles this can be a meaningful pool reduction — set `FALSE` if
-#'   that matters.
+#'   `TRUE` (England-Verrall 2002 Addendum); set `FALSE` to use the
+#'   simpler degrees-of-freedom factor `sqrt(n / (n - p))`
+#'   (England-Verrall 1999). Only defined for `residual = "cell"`;
+#'   warned-ignored otherwise. Note that `hat_adj` drops corner cells
+#'   where `h_ii = 1` (always `(I, 1)` and `(1, J)` of the upper
+#'   triangle); on small triangles this can be a meaningful pool
+#'   reduction -- set `FALSE` if that matters.
+#' @param demean Logical. Subtract the per-group residual mean from
+#'   each residual in the cell-residual pool before resampling
+#'   (`de-` + `mean`: remove the mean, leaving a zero-mean pool).
+#'   Default `TRUE`. Shapland (2010, Sec.4.2) discusses this as one option
+#'   among others -- see the *Bootstrap SE decomposition* vignette for
+#'   the trade-off. Only defined for `residual = "cell"`; warned-ignored
+#'   otherwise.
 #' @param process One of `"gamma"`, `"od_pois"`, `"normal"`, `"lognormal"`.
-#'   Stored as metadata; downstream fit functions read this to choose the
-#'   Stage 2 noise distribution. `"gamma"` matches
-#'   `ChainLadder::BootChainLadder` defaults for non-negative right-skewed
-#'   loss data. `"lognormal"` is reserved for Phase 5b.3 and currently
-#'   errors.
-#' @param method Residual-pool grouping. One of `"pooled"`, `"separated"`,
+#'   Stored as metadata; downstream fit functions read this to choose
+#'   the Stage 2 noise distribution. `"gamma"` is the default for
+#'   non-negative right-skewed loss data. `"lognormal"` is reserved for
+#'   Phase 5b.3 and currently errors.
+#' @param method Fit-model paradigm whose lower-triangle forward projection
+#'   the bootstrap should produce. One of `"sa"` (stage-adaptive -- ED before
+#'   maturity, CL after; default), `"cl"` (chain-ladder multiplicative
+#'   recursion across all dev), `"ed"` (exposure-driven additive recursion
+#'   across all dev). Mirrors the `loss_method` argument of `fit_lr()`; the
+#'   resulting `BootstrapTriangle` is consumed by the corresponding
+#'   `fit_*(..., bootstrap = bt)` branch.
+#' @param pooling Residual-pool grouping. One of `"pooled"`, `"separated"`,
 #'   `"tail_pooled"`. `"pooled"` shares residuals across all links;
 #'   `"separated"` keeps each development link independent (Mack-faithful);
 #'   `"tail_pooled"` uses per-link pools before a cut and a single pooled
 #'   bucket after.
-#' @param tail Tail-cut rule for `method = "tail_pooled"`. One of `"auto"`
+#' @param tail Tail-cut rule for `pooling = "tail_pooled"`. One of `"auto"`
 #'   (cut at the smallest `ata_to` whose residual count drops below
 #'   `min_pool`) or `"maturity"` (cut at the resolved `Maturity` change
 #'   point).
 #' @param min_pool Minimum residual count per per-link pool under
-#'   `method = "tail_pooled" && tail = "auto"`. Default `5`.
-#' @param maturity Required only when `method = "tail_pooled" &&
+#'   `pooling = "tail_pooled" && tail = "auto"`. Default `5`.
+#' @param maturity Required only when `pooling = "tail_pooled" &&
 #'   tail = "maturity"`. Four-type dispatch: `NULL`, a `Maturity` object,
 #'   the string `"auto"`, or a function `function(tri) -> Maturity`.
-#' @param B Number of bootstrap replicates. Default `1000`.
+#' @param B Number of bootstrap replicates. Default `499` -- the Davison &
+#'   Hinkley (1997) convention picks `B` so that `(B + 1) p` is an integer
+#'   for the target quantile `p`. With `B = 499` (so `B + 1 = 500`), every
+#'   one-sided VaR commonly reported in reserving -- `p = 0.50, 0.75, 0.90,
+#'   0.95, 0.99` -- lands on an exact integer ordinal index, so the
+#'   empirical CI is exact without interpolation. For Solvency II /
+#'   K-ICS 99.5% TVaR reporting pass `B = 1999`; for the gold-standard
+#'   published convention pass `B = 999`.
 #' @param seed Optional integer seed for reproducibility.
 #' @param alpha Variance exponent in Mack's `Var(C_{k+1} | C_k) = sigma_k^2
 #'   C_k^alpha`. Default `1` (volume-weighted).
+#' @param quantile_ci Logical. Whether to include the empirical
+#'   percentile CI columns (`ci_lo` / `ci_hi` = 2.5% / 97.5%
+#'   quantiles of `loss_sampled` across replicates) in the `$summary`
+#'   slot. Default `FALSE` -- the per-cohort x dev quantile call is
+#'   relatively expensive (~70% of total `$summary` cost on typical
+#'   triangles, because R-level group-wise quantile bypasses
+#'   `data.table::gforce`). Set `TRUE` for Solvency II / K-ICS VaR
+#'   reporting. When `FALSE`, the Normal-approximation CI
+#'   (`mean_proj +/- 1.96 * total_se`) is still derivable from the
+#'   `total_se` column for interactive use.
+#' @param keep_pseudo Logical. Whether to materialise the per-replicate
+#'   long-format `pseudo_triangles` slot. Default `TRUE`. `FALSE` skips
+#'   the long-format build, keeping only the precomputed `$summary` --
+#'   for large portfolios this saves a multi-million-row data.table
+#'   (~200 MB on a typical 4-group experience triangle at `B = 999`)
+#'   at the cost of being unable to extract individual replicate
+#'   values. `fit_lr()` / `fit_loss()` / `fit_premium()` already pass
+#'   `keep_pseudo = FALSE` internally because they only read `$summary`.
 #' @param ... Reserved for future use.
 #'
 #' @return An object of class `BootstrapTriangle` (a list) with elements:
 #' \describe{
-#'   \item{`alt_triangles`}{Long-format `data.table` with columns
+#'   \item{`pseudo_triangles`}{Long-format `data.table` with columns
 #'     `[groups]`, `cohort`, `dev`, `rep`, `loss`. `rep` ranges over `1..B`.
 #'     Observed-region cells contain residual-perturbed (or original for
 #'     `"parametric"`) cumulative loss; the missing region contains
@@ -471,8 +234,8 @@
 #'   \item{`f_anchor`}{Per-link Mack factor estimates `f_hat` with
 #'     `n_cohorts`.}
 #'   \item{`sigma2_anchor`}{Per-link Mack `sigma^2` and `Var(f_hat)`.}
-#'   \item{`meta`}{`list(type, residual, hat_adj, process, method, tail,
-#'     min_pool, B, seed, alpha, target, groups, maturity)`.}
+#'   \item{`meta`}{`list(type, residual, hat_adj, process, method, pooling,
+#'     tail, min_pool, B, seed, alpha, target, groups, maturity)`.}
 #' }
 #'
 #' @seealso `dev/BOOTSTRAP.md` for the full design rationale.
@@ -489,7 +252,7 @@
 #'   premium  = "premium_incr"
 #' )
 #'
-#' # Cell-residual bootstrap (default — chainladder-py parity)
+#' # Cell-residual bootstrap (default)
 #' boots <- bootstrap(tri, type = "nonparametric", residual = "cell",
 #'                    hat_adj = TRUE, process = "gamma",
 #'                    B = 500, seed = 1)
@@ -497,10 +260,13 @@
 #'
 #' # Link-residual bootstrap (Mack 1993 / Pinheiro 2003 path)
 #' boots_link <- bootstrap(tri, type = "nonparametric", residual = "link",
-#'                         method = "separated", process = "gamma",
+#'                         pooling = "separated", process = "gamma",
 #'                         B = 500, seed = 1)
 #' }
 #'
+
+# Section 2 -- Public entry point (S3 generic + Triangle method) ==============
+
 #' @export
 bootstrap <- function(x, ...) {
   UseMethod("bootstrap")
@@ -509,24 +275,28 @@ bootstrap <- function(x, ...) {
 
 #' @rdname bootstrap
 #' @param target Cumulative metric to perturb. One of `"loss"` (default) or
-#'   `"prem"`. The value column in `$alt_triangles` is named after this
+#'   `"prem"`. The value column in `$pseudo_triangles` is named after this
 #'   target so downstream refit helpers know which column to read.
 #' @export
 bootstrap.Triangle <- function(x,
-                                type     = c("nonparametric", "parametric"),
-                                residual = c("cell", "link"),
-                                hat_adj  = TRUE,
-                                process  = c("gamma", "od_pois", "normal",
-                                             "lognormal"),
-                                method   = c("pooled", "separated",
-                                             "tail_pooled"),
-                                tail     = c("auto", "maturity"),
-                                min_pool = 5L,
-                                maturity = NULL,
-                                target   = c("loss", "prem"),
-                                B        = 1000L,
-                                seed     = NULL,
-                                alpha    = 1,
+                                type        = c("nonparametric", "parametric"),
+                                residual    = c("cell", "link"),
+                                hat_adj     = TRUE,
+                                demean      = TRUE,
+                                process     = c("gamma", "od_pois", "normal",
+                                                "lognormal"),
+                                method      = c("sa", "cl", "ed"),
+                                pooling     = c("pooled", "separated",
+                                                "tail_pooled"),
+                                tail        = c("auto", "maturity"),
+                                min_pool    = 5L,
+                                maturity    = NULL,
+                                target      = c("loss", "prem"),
+                                B           = 499L,
+                                seed        = NULL,
+                                alpha       = 1,
+                                quantile_ci = FALSE,
+                                keep_pseudo = TRUE,
                                 ...) {
 
   .assert_class(x, "Triangle")
@@ -537,15 +307,17 @@ bootstrap.Triangle <- function(x,
   mc <- match.call()
   residual_set <- "residual" %in% names(mc)
   process_set  <- "process"  %in% names(mc)
-  method_set   <- "method"   %in% names(mc)
+  pooling_set  <- "pooling"  %in% names(mc)
   tail_set     <- "tail"     %in% names(mc)
   hat_adj_set  <- "hat_adj"  %in% names(mc)
+  demean_set   <- "demean"   %in% names(mc)
   min_pool_set <- "min_pool" %in% names(mc)
 
   type     <- match.arg(type)
   residual <- match.arg(residual)
   process  <- match.arg(process)
   method   <- match.arg(method)
+  pooling  <- match.arg(pooling)
   tail     <- match.arg(tail)
   target   <- match.arg(target)
 
@@ -565,11 +337,13 @@ bootstrap.Triangle <- function(x,
 
   .validate_bootstrap_args(
     type = type, residual = residual, process = process,
-    method = method, tail = tail,
-    min_pool = min_pool, hat_adj = hat_adj, maturity = maturity,
+    method = method, pooling = pooling, tail = tail,
+    min_pool = min_pool, hat_adj = hat_adj, demean = demean,
+    maturity = maturity,
     residual_set = residual_set, process_set = process_set,
-    method_set = method_set, tail_set = tail_set,
-    hat_adj_set = hat_adj_set, min_pool_set = min_pool_set
+    pooling_set = pooling_set, tail_set = tail_set,
+    hat_adj_set = hat_adj_set, demean_set = demean_set,
+    min_pool_set = min_pool_set
   )
 
   min_pool <- as.integer(min_pool)
@@ -582,12 +356,12 @@ bootstrap.Triangle <- function(x,
   if (identical(type, "parametric")) process <- "normal"
 
   # Resolve maturity when tail_pooled + maturity. Note: for tail = "auto"
-  # we don't need a Maturity object — the cut is derived from residual
+  # we don't need a Maturity object -- the cut is derived from residual
   # counts vs `min_pool`.
-  if (identical(method, "tail_pooled") && identical(tail, "maturity")) {
+  if (identical(pooling, "tail_pooled") && identical(tail, "maturity")) {
     maturity <- .resolve_maturity(maturity, x)
     if (is.null(maturity))
-      stop("`method = 'tail_pooled'` with `tail = 'maturity'` requires a ",
+      stop("`pooling = 'tail_pooled'` with `tail = 'maturity'` requires a ",
            "maturity. Pass `maturity = 'auto'` for automatic detection, ",
            "or supply a Maturity object.", call. = FALSE)
   } else {
@@ -600,7 +374,7 @@ bootstrap.Triangle <- function(x,
   is_residual_mode <- identical(type, "nonparametric")
 
   if (is_residual_mode) {
-    # 1) Build Link on the chosen target (always — anchor + cell-mode fitted
+    # 1) Build Link on the chosen target (always -- anchor + cell-mode fitted
     #    means both depend on volume-weighted f_hat per link)
     link <- as_link(x, target = target, drop_invalid = TRUE)
 
@@ -611,7 +385,7 @@ bootstrap.Triangle <- function(x,
       # Pinheiro 2003: standardized link residuals on each Link row
       link <- .boot_attach_residuals(link, anchor = anchor, grp = grp)
       pool <- .boot_build_pool(link, anchor = anchor, grp = grp,
-                                method = method, tail = tail,
+                                pooling = pooling, tail = tail,
                                 min_pool = min_pool, maturity = maturity)
     } else {
       # E-V 1999/2002: Pearson residuals on incremental cells, optionally
@@ -619,15 +393,16 @@ bootstrap.Triangle <- function(x,
       cell_resid <- .boot_cell_residuals(x, anchor = anchor, grp = grp,
                                           target = target, hat_adj = hat_adj)
       # Extract per-group phi (ODP single scale) BEFORE pool transforms
-      # the table — the pool builder isn't required to preserve attrs.
+      # the table -- the pool builder isn't required to preserve attrs.
       phi_dt <- attr(cell_resid, "phi_dt")
       pool <- .boot_build_pool_cell(cell_resid, grp = grp,
-                                     method = method, tail = tail,
-                                     min_pool = min_pool, maturity = maturity)
+                                     pooling = pooling, tail = tail,
+                                     min_pool = min_pool, maturity = maturity,
+                                     demean = demean)
     }
   } else {
     # parametric path: closed-form simulation, no residual pool needed.
-    # We still compute the anchor (f_hat, sigma2, f_var) — those drive
+    # We still compute the anchor (f_hat, sigma2, f_var) -- those drive
     # the N(f_hat, sqrt(Var(f_hat))) draws inside .boot_stage1_one.
     link   <- as_link(x, target = target, drop_invalid = TRUE)
     anchor <- .boot_anchor(link, grp = grp, alpha = alpha)
@@ -639,17 +414,38 @@ bootstrap.Triangle <- function(x,
     phi_dt <- NULL
   }
 
-  # 5) Stage 1 — B alt triangles -------------------------------------------
-  alt_triangles <- .boot_stage1(
+  # 5) Stage 1 + 2 -- B pseudo triangles (loss_mean + loss_sampled) ------------
+  # When keep_pseudo = FALSE, `.boot_stage1()` returns the raw 3D arrays
+  # (no long-format build) and `summary_dt` is computed straight from
+  # those -- bypassing the ~250 ms long-format reshape on top of the
+  # ~200 MB allocation it would otherwise produce.
+  stage1_out <- .boot_stage1(
     triangle = x, link = link, anchor = anchor, pool = pool,
+    phi_dt = phi_dt,
     grp = grp, is_residual_mode = is_residual_mode, residual = residual,
-    B = B, alpha = alpha, target = target
+    process = process, B = B, alpha = alpha, target = target,
+    keep_pseudo = keep_pseudo
   )
 
+  if (isTRUE(keep_pseudo)) {
+    pseudo_triangles <- stage1_out
+    summary_dt    <- .boot_summary_decompose(pseudo_triangles, grp = grp,
+                                              target = target,
+                                              quantile_ci = quantile_ci)
+  } else {
+    pseudo_triangles <- NULL
+    summary_dt    <- .boot_summary_from_arrays(stage1_out, grp = grp,
+                                                target = target,
+                                                quantile_ci = quantile_ci)
+  }
+
   # 6) Assemble -------------------------------------------------------------
+  # pseudo_triangles is already NULL when keep_pseudo = FALSE (set above when
+  # branching the summary path); no extra drop needed here.
   structure(
     list(
-      alt_triangles = alt_triangles,
+      pseudo_triangles = pseudo_triangles,
+      summary       = summary_dt,
       residual_pool = pool,
       f_anchor      = anchor[, .SD,
                               .SDcols = c(grp, "ata_from", "ata_to",
@@ -658,29 +454,44 @@ bootstrap.Triangle <- function(x,
                               .SDcols = c(grp, "ata_from", "ata_to",
                                           "sigma2", "f_var")],
       meta = list(
-        type     = type,
-        residual = residual,
-        hat_adj  = hat_adj,
-        process  = process,
-        method   = method,
-        tail     = if (identical(method, "tail_pooled")) tail
-                   else NA_character_,
-        min_pool = if (identical(method, "tail_pooled") &&
-                       identical(tail, "auto")) min_pool
-                   else NA_integer_,
-        B        = B,
-        seed     = seed,
-        alpha    = alpha,
-        target   = target,
-        groups   = grp,
-        maturity = maturity,
-        phi_dt   = phi_dt
+        type        = type,
+        residual    = residual,
+        hat_adj     = hat_adj,
+        demean      = demean,
+        process     = process,
+        method      = method,
+        pooling     = pooling,
+        quantile_ci = quantile_ci,
+        tail        = if (identical(pooling, "tail_pooled")) tail
+                      else NA_character_,
+        min_pool    = if (identical(pooling, "tail_pooled") &&
+                          identical(tail, "auto")) min_pool
+                      else NA_integer_,
+        B           = B,
+        seed        = seed,
+        alpha       = alpha,
+        target      = target,
+        groups      = grp,
+        maturity    = maturity,
+        phi_dt      = phi_dt
       )
     ),
     class = c("BootstrapTriangle", "list")
   )
 }
 
+
+
+# Section 3 -- Anchor + residual pool builders ================================
+#   .boot_empty_pool      (parametric path placeholder)
+#   .boot_anchor          (per-link f_hat, sigma2, f_var)
+#   .boot_fill_sigma2     (Mack tail-rule fill)
+#   .boot_attach_residuals (link mode: per-link Mack residuals)
+#   .boot_build_pool      (link mode: per-link pool assembly)
+#   .boot_fitted_grid     (cell mode: chain-anchored fitted incrementals)
+#   .boot_hat_diag        (cell mode: GLM hat matrix leverage)
+#   .boot_cell_residuals(_one)  (cell mode: Pearson residuals per cell)
+#   .boot_build_pool_cell (cell mode: pool assembly with zero-drop + centering)
 
 # Empty residual pool used by the parametric path so downstream code that
 # inspects `pool$residual` / `pool$pool_id` sees a well-formed 0-row table.
@@ -802,8 +613,8 @@ bootstrap.Triangle <- function(x,
 }
 
 
-# Internal: build residual pool with `pool_id` per (method, tail) ---------
-.boot_build_pool <- function(link, anchor, grp, method, tail, min_pool,
+# Internal: build residual pool with `pool_id` per (pooling, tail) --------
+.boot_build_pool <- function(link, anchor, grp, pooling, tail, min_pool,
                               maturity) {
   # data.table NSE
   residual <- ata_to <- mat_change <- grp_key <- N <- below <-
@@ -818,11 +629,11 @@ bootstrap.Triangle <- function(x,
     dt[, ("grp_key") := ""]
   }
 
-  if (identical(method, "separated")) {
+  if (identical(pooling, "separated")) {
     dt[, ("pool_id") := paste(grp_key, as.character(ata_to), sep = "|")]
-  } else if (identical(method, "pooled")) {
+  } else if (identical(pooling, "pooled")) {
     dt[, ("pool_id") := data.table::fifelse(grp_key == "", "all", grp_key)]
-  } else if (identical(method, "tail_pooled")) {
+  } else if (identical(pooling, "tail_pooled")) {
     if (identical(tail, "maturity")) {
       # per-group maturity boundary: ata_to < k* keeps per-dev pool, ata_to
       # >= k* collapses to a single group-level pooled bucket ("POST").
@@ -878,19 +689,19 @@ bootstrap.Triangle <- function(x,
 }
 
 
-# Internal: fitted incremental means μ̂_{ij} on the full I × J grid --------
+# Internal: fitted incremental means mu_hat_{ij} on the full I x J grid --------
 #
 # Renshaw-Verrall (1998) ODP MLE equivalence: chain-ladder factors define
 # fitted incrementals via back-from-ultimate:
-#   1. Project ultimates Û_i = C_{i, last_obs_i} * Π_{k=last_obs_i}^{J-1} f_k
-#   2. Back-fill cumulative grid: Ĉ_{iJ} = Û_i; Ĉ_{ij} = Ĉ_{i,j+1} / f_j
-#   3. Differentiate row-wise: μ̂_{i1} = Ĉ_{i1}; μ̂_{ij} = Ĉ_{ij} - Ĉ_{i,j-1}
+#   1. Project ultimates U_hat_i = C_{i, last_obs_i} * prod_{k=last_obs_i}^{J-1} f_k
+#   2. Back-fill cumulative grid: C_hat_{iJ} = U_hat_i; C_hat_{ij} = C_hat_{i,j+1} / f_j
+#   3. Differentiate row-wise: mu_hat_{i1} = C_hat_{i1}; mu_hat_{ij} = C_hat_{ij} - C_hat_{i,j-1}
 #
-# Returns an n_coh × n_dev matrix of fitted incrementals (full grid;
+# Returns an n_coh x n_dev matrix of fitted incrementals (full grid;
 # upper triangle is fit, lower triangle is projection).
 .boot_fitted_grid <- function(mat_obs, last_obs_idx, f_hat_vec, link_to_idx,
                               n_coh, n_dev) {
-  # Step 1+2: build fitted cumulative grid Ĉ
+  # Step 1+2: build fitted cumulative grid C_hat
   c_hat <- matrix(NA_real_, nrow = n_coh, ncol = n_dev)
 
   # Per-cohort: anchor at last observed cumulative, project forward with
@@ -941,19 +752,19 @@ bootstrap.Triangle <- function(x,
 
 # Internal: hat-matrix diagonal h_ii via QR ------------------------------
 #
-# ODP GLM design matrix X for the model log(μ_{ij}) = α_i + β_j with
-# corner constraint β_1 = 0 (drop dev=1 indicator). Columns: I origin
+# ODP GLM design matrix X for the model log(mu_{ij}) = alpha_i + beta_j with
+# corner constraint beta_1 = 0 (drop dev=1 indicator). Columns: I origin
 # indicators + (J-1) dev indicators (j = 2..J). One row per observed
 # cell; identifiability gives p = I + J - 1.
 #
-# h_ii = diag(W^{1/2} X (X' W X)^{-1} X' W^{1/2}) with W = diag(μ̂).
+# h_ii = diag(W^{1/2} X (X' W X)^{-1} X' W^{1/2}) with W = diag(mu_hat).
 # Computed via QR of W^{1/2} X: h = rowSums(Q^2). Stable and avoids
 # explicit inverse.
 .boot_hat_diag <- function(mu_hat_obs, coh_idx, dev_idx, n_coh, n_dev) {
   n <- length(mu_hat_obs)
   if (n == 0L) return(numeric(0))
   if (n_dev < 2L) {
-    # Only one dev column => degenerate (no β columns); X reduces to row
+    # Only one dev column => degenerate (no beta columns); X reduces to row
     # indicators alone, h = 1 for every cell. Surface this so corner-drop
     # logic excludes everything (caller will fall back to DF correction).
     return(rep(1, n))
@@ -984,7 +795,7 @@ bootstrap.Triangle <- function(x,
 #
 # For each group, vectorise observed cells in (cohort, dev) order and
 # compute:
-#   r_ij^raw = (X_ij - μ̂_ij) / sqrt(|μ̂_ij|)
+#   r_ij^raw = (X_ij - mu_hat_ij) / sqrt(|mu_hat_ij|)
 # Apply ONE of (alternatives, not stacked):
 #   - hat_adj = TRUE:  r_ij = r_ij^raw / sqrt(1 - h_ii)
 #   - hat_adj = FALSE: r_ij = r_ij^raw * sqrt(n / (n - p))  with p = I+J-1
@@ -1040,7 +851,7 @@ bootstrap.Triangle <- function(x,
   n_coh   <- length(cohorts)
   n_dev   <- length(devs)
 
-  # Wide observed cumulative matrix — vectorised fill via integer index
+  # Wide observed cumulative matrix -- vectorised fill via integer index
   mat_obs <- matrix(NA_real_, nrow = n_coh, ncol = n_dev,
                     dimnames = list(as.character(cohorts),
                                     as.character(devs)))
@@ -1088,16 +899,16 @@ bootstrap.Triangle <- function(x,
   mu_obs  <- mu_hat_grid[obs_mask]
   x_obs   <- x_inc[obs_mask]
 
-  # Raw Pearson residuals (use |μ̂| for numerical safety on incurred data)
+  # Raw Pearson residuals (use |mu_hat| for numerical safety on incurred data)
   denom <- sqrt(pmax(abs(mu_obs), .Machine$double.eps))
   r_raw <- (x_obs - mu_obs) / denom
-  # Cells with non-positive μ̂ — set residual to NA (excluded from pool)
+  # Cells with non-positive mu_hat -- set residual to NA (excluded from pool)
   r_raw[!is.finite(r_raw) | mu_obs <= 0] <- NA_real_
 
-  # ODP single dispersion phi = Σ r_raw² / (n_obs − p). Computed from RAW
-  # residuals (pre-adjustment) — invariant across hat/DF choices. Used by
-  # the cell paradigm consumer (`.boot_refit_cl_one`) as the process noise
-  # scale for forward simulation (E-V 1999, BCL/chainladder-py parity).
+  # ODP single dispersion phi = sum r_raw^2 / (n_obs - p). Computed from RAW
+  # residuals (pre-adjustment) -- invariant across hat/DF choices. Used by
+  # the cell paradigm consumer (C kernel `bootstrap_kernel_cell`) as the
+  # process noise scale for forward simulation (England-Verrall 1999).
   n_obs_phi <- sum(is.finite(r_raw))
   p_phi     <- n_coh + n_dev - 1L
   df_phi    <- n_obs_phi - p_phi
@@ -1130,40 +941,48 @@ bootstrap.Triangle <- function(x,
 }
 
 
-# Internal: build cell residual pool with `pool_id` per (method, tail) ----
+# Internal: build cell residual pool with `pool_id` per (pooling, tail) ---
 #
 # Cell pool schema differs from link pool: residual lives at (cohort, dev)
 # not (cohort, ata_from -> ata_to). Pool strategies:
 #   - separated: per-dev pool ("grp_key|dev_j")
 #   - pooled:    one pool per group ("grp_key" or "all")
 #   - tail_pooled: per-dev pre-cut, single "POST" bucket post-cut
-.boot_build_pool_cell <- function(cell_resid, grp, method, tail, min_pool,
-                                   maturity) {
+.boot_build_pool_cell <- function(cell_resid, grp, pooling, tail, min_pool,
+                                   maturity, demean = TRUE) {
   # NSE
   residual <- dev <- mat_change <- grp_key <- N <- below <-
     cut_to <- is_post <- NULL
 
   # Drop NaN/Inf and exact zeros. Exact zeros arise at corner cells (each
   # cohort's latest-observed dev: fitted = observed, so r = 0). Resampling
-  # a 0 makes the corresponding pseudo cell deterministic (= μ̂), which
+  # a 0 makes the corresponding pseudo cell deterministic (= mu_hat), which
   # artificially narrows the bootstrap distribution. Shapland (2010)
-  # recommends removing zeros from the pool; chainladder-py adopts this.
+  # recommends removing zeros from the pool.
   dt <- cell_resid[is.finite(residual) & residual != 0]
 
-  # Mean-centre residuals within each group (chainladder-py default —
-  # small bias correction; Shapland endorses).
+  # demean = TRUE (default): subtract per-group residual mean. Shapland
+  # (2010, Sec.4.2 "Negative Incremental Losses") discusses this as one
+  # option: "if a zero residual average is desired, then one option is
+  # the addition of a single constant to all residuals, such that the
+  # sum of the shifted residuals is zero" -- while also noting the
+  # counter-view that the non-zero average may be a "characteristic of
+  # the data set" and need not be removed. demean = FALSE leaves the
+  # raw residuals untouched.
   if (length(grp) > 0L) {
     dt[, ("grp_key") := do.call(paste, c(.SD, sep = "|")), .SDcols = grp]
   } else {
     dt[, ("grp_key") := ""]
   }
-  dt[, ("residual") := residual - mean(residual), by = "grp_key"]
+  if (isTRUE(demean)) {
+    dt[, ("residual") := residual - mean(residual), by = "grp_key"]
+  }
 
-  if (identical(method, "separated")) {
+  if (identical(pooling, "separated")) {
     dt[, ("pool_id") := paste(grp_key, as.character(dev), sep = "|")]
-  } else if (identical(method, "pooled")) {
+  } else if (identical(pooling, "pooled")) {
     dt[, ("pool_id") := data.table::fifelse(grp_key == "", "all", grp_key)]
-  } else if (identical(method, "tail_pooled")) {
+  } else if (identical(pooling, "tail_pooled")) {
     if (identical(tail, "maturity")) {
       if (length(grp) > 0L) {
         mat <- data.table::as.data.table(maturity)
@@ -1211,27 +1030,30 @@ bootstrap.Triangle <- function(x,
 }
 
 
-# Internal: Stage 1 — generate B alt triangles -----------------------------
+
+# Section 4 -- Stage 1: generate B pseudo triangles ===========================
 #
-# For each group:
-#   1. Snapshot the original cumulative loss matrix (cohort x dev grid).
-#   2. Identify observed and missing cells.
-#   3. For each replicate b in 1..B:
-#       a. Build alt observed cells:
-#          - residual method: chain residual resample through the cumulative
-#            recursion: alt C_{i,k} = f_hat_k * alt C_{i,k-1} + r* * sd_k
-#          - parametric method: keep original observed; draw f_k* ~
-#            N(f_hat, sqrt(Var(f_hat))) for projection.
-#       b. Refit f_k* from alt observed (residual) or use drawn f_k*
-#          (parametric).
-#       c. Forward-project missing cells using f_k*.
-#       d. Stack into long-format with rep = b.
+# For each group, build B perturbed [cohort x dev] cumulative loss
+# triangles. Three modes share the same output shape but use different
+# first-stage algorithms:
 #
-# Returns a long-format data.table with columns [grp..], cohort, dev, rep,
-# loss.
-.boot_stage1 <- function(triangle, link, anchor, pool,
-                          grp, is_residual_mode, residual, B, alpha,
-                          target = "loss") {
+#   residual = "cell":  ODP cell-residual resample -> cumsum -> refit f* ->
+#                       forward project. B-loop replaced by a single C
+#                       kernel call (see `src/bootstrap.c`).
+#   residual = "link":  Mack chain residual chained through the cumulative
+#                       recursion alt[i, k+1] = f_k * alt[i, k] +
+#                       r* * sqrt(sigma_k^2 * alt[i, k]). Per-replicate
+#                       R loop (sequential over k).
+#   type = "parametric": Draw f_k* ~ N(f_hat, sqrt(Var(f_hat))) per
+#                       replicate; observed cells unchanged; forward
+#                       project lower triangle.
+#
+# Returns long-format data.table [grp..., cohort, dev, rep, <target>].
+
+.boot_stage1 <- function(triangle, link, anchor, pool, phi_dt,
+                          grp, is_residual_mode, residual, process,
+                          B, alpha, target = "loss",
+                          keep_pseudo = TRUE) {
 
   # Per-group iteration
   if (length(grp) > 0L) {
@@ -1239,11 +1061,16 @@ bootstrap.Triangle <- function(x,
     single_grp <- nrow(grp_vals) == 1L
     if (single_grp) {
       # Fast path: skip merges + rbindlist when only one group is present.
+      phi_g <- if (!is.null(phi_dt) && nrow(phi_dt) > 0L)
+                 merge(phi_dt, grp_vals[1L], by = grp, sort = FALSE)
+               else phi_dt
       return(.boot_stage1_one(
         triangle = triangle, link = link, anchor = anchor, pool = pool,
+        phi_dt = phi_g,
         is_residual_mode = is_residual_mode, residual = residual,
-        B = B, alpha = alpha,
-        grp_vals = grp_vals[1L], target = target
+        process = process, B = B, alpha = alpha,
+        grp_vals = grp_vals[1L], target = target,
+        keep_pseudo = keep_pseudo
       ))
     }
     out_list <- vector("list", nrow(grp_vals))
@@ -1254,30 +1081,60 @@ bootstrap.Triangle <- function(x,
       anchor_g <- merge(anchor, gkey, by = grp, sort = FALSE)
       pool_g <- if (nrow(pool) > 0L) merge(pool, gkey, by = grp, sort = FALSE)
                 else pool
+      phi_g  <- if (!is.null(phi_dt) && nrow(phi_dt) > 0L)
+                  merge(phi_dt, gkey, by = grp, sort = FALSE)
+                else phi_dt
       out_list[[gi]] <- .boot_stage1_one(
         triangle = tri_g, link = link_g, anchor = anchor_g, pool = pool_g,
+        phi_dt = phi_g,
         is_residual_mode = is_residual_mode, residual = residual,
-        B = B, alpha = alpha,
-        grp_vals = gkey, target = target
+        process = process, B = B, alpha = alpha,
+        grp_vals = gkey, target = target,
+        keep_pseudo = keep_pseudo
       )
     }
-    data.table::rbindlist(out_list, use.names = TRUE)
+    # keep_pseudo = TRUE  -> per-group DTs, rbindlist into the long-format DT
+    # keep_pseudo = FALSE -> per-group lists, combine into one parent list with
+    #                      named slots `cum_mean` / `cum_sampled` (named by
+    #                      group key) plus shared cohorts/devs/B/grp_vals.
+    if (isTRUE(keep_pseudo)) {
+      data.table::rbindlist(out_list, use.names = TRUE)
+    } else {
+      list(
+        cum_mean    = lapply(out_list, `[[`, "cum_mean"),
+        cum_sampled = lapply(out_list, `[[`, "cum_sampled"),
+        cohorts     = out_list[[1L]]$cohorts,
+        devs        = out_list[[1L]]$devs,
+        B           = out_list[[1L]]$B,
+        grp_vals    = grp_vals,
+        n_groups    = nrow(grp_vals)
+      )
+    }
   } else {
     .boot_stage1_one(
       triangle = triangle, link = link, anchor = anchor, pool = pool,
+      phi_dt = phi_dt,
       is_residual_mode = is_residual_mode, residual = residual,
-      B = B, alpha = alpha,
-      grp_vals = NULL, target = target
+      process = process, B = B, alpha = alpha,
+      grp_vals = NULL, target = target,
+      keep_pseudo = keep_pseudo
     )
   }
 }
 
 
-# Per-group worker for Stage 1. Returns long-format with `rep` column.
-.boot_stage1_one <- function(triangle, link, anchor, pool,
+# Per-group worker for Stage 1. Returns long-format with `rep` column
+# when `keep_pseudo = TRUE` (default). When `keep_pseudo = FALSE`, returns a
+# list(cum_mean, cum_sampled, cohorts, devs, B, grp_vals) of the raw
+# C-side arrays -- the caller (`bootstrap.Triangle`) can hand those
+# straight to the summary kernel without paying the long-format build
+# cost (~250 ms on a 5M-row 4-group triangle).
+.boot_stage1_one <- function(triangle, link, anchor, pool, phi_dt = NULL,
                               is_residual_mode, residual = "link",
+                              process = "gamma",
                               B, alpha, grp_vals,
-                              target = "loss") {
+                              target = "loss",
+                              keep_pseudo = TRUE) {
 
   cohort <- dev <- NULL  # NSE
 
@@ -1287,7 +1144,7 @@ bootstrap.Triangle <- function(x,
   n_coh   <- length(cohorts)
   n_dev   <- length(devs)
 
-  # Wide observed matrix [cohort × dev] — vectorised fill via integer index
+  # Wide observed matrix [cohort x dev] -- vectorised fill via integer index
   mat_obs <- matrix(NA_real_, nrow = n_coh, ncol = n_dev,
                     dimnames = list(as.character(cohorts), as.character(devs)))
   ci_vec <- match(triangle$cohort, cohorts)
@@ -1333,19 +1190,17 @@ bootstrap.Triangle <- function(x,
     if (length(ok) == 0L) NA_integer_ else max(ok)
   })
 
-  # Cell mode: precompute fitted incremental means μ̂_{ij} (full grid).
-  # Reused across replicates — these are the original-data fits, not
+  # Cell mode: precompute fitted incremental means mu_hat_{ij} (full grid).
+  # Reused across replicates -- these are the original-data fits, not
   # per-replicate refits.
   if (is_residual_mode && identical(residual, "cell")) {
     mu_hat_grid <- .boot_fitted_grid(mat_obs, last_obs_idx, f_hat_vec,
                                       link_to_idx, n_coh, n_dev)
   }
 
-  # Allocate B output replicates as 3D array [cohort × dev × B]
-  out_arr <- array(NA_real_, dim = c(n_coh, n_dev, B))
-
-  # Hoisted lookups (invariant over the b loop and over inner i/j loops).
-  # Avoids per-cell as.character() / match() calls inside the B*n_cells hot path.
+  # Hoisted lookups used by every branch (kernel-internal vectors require
+  # them prebuilt). Avoids per-cell as.character() / match() inside the
+  # B * n_cells hot path.
   devs_chr   <- as.character(devs)
   k_idx_by_j <- match(devs, anchor$ata_to)
   pid_by_dev <- if (length(pool_id_by_dev) > 0L) pool_id_by_dev[devs_chr]
@@ -1353,14 +1208,28 @@ bootstrap.Triangle <- function(x,
   pid_by_to  <- if (length(pool_id_by_to)  > 0L) pool_id_by_to[devs_chr]
                 else rep(NA_character_, n_dev)
 
-  # ----- Cell-residual stage 1 — single native kernel ----------------------
-  # bootstrap_cell_kernel performs sampling + pseudo-cumulative build +
-  # f* refit + forward projection + negative clipping in one C pass for
-  # all B replicates. Link and parametric branches retain the per-b loop
-  # below.
-  cell_branch_done <- FALSE
+  # Flatten the pool list to CSR-like format reused by cell + link kernels.
+  # `pool_pos[name]` maps a pool_id string to its 1-indexed slot; cells /
+  # links not mapped to any pool get index 0 (kernel reads as "no draw").
+  pool_names <- names(pool_by_id)
+  if (length(pool_names) > 0L) {
+    pool_lens      <- lengths(pool_by_id)
+    pool_starts    <- as.integer(c(0L, cumsum(pool_lens)))
+    pool_residuals <- unlist(pool_by_id, use.names = FALSE)
+    pool_pos       <- setNames(seq_along(pool_names), pool_names)
+  } else {
+    pool_starts    <- 0L
+    pool_residuals <- numeric(0)
+    pool_pos       <- integer(0)
+  }
+
+  # ----- Stage 1 -- single native kernel per branch -------------------------
+  # Each kernel returns the full [n_coh x n_dev x B] cumulative array
+  # (residual resample / parametric draw + per-replicate f* + forward
+  # project + clip). Branches share the bootstrap_refit_fstar and
+  # bootstrap_project_and_clip C helpers; see src/bootstrap.c.
   if (is_residual_mode && identical(residual, "cell")) {
-    # Active cell index (upper triangle ∩ finite μ̂)
+    # Active cell index (upper triangle cap finite mu_hat)
     upper_full <- matrix(FALSE, n_coh, n_dev)
     for (i in seq_len(n_coh)) {
       lj <- last_obs_idx[i]
@@ -1373,27 +1242,29 @@ bootstrap.Triangle <- function(x,
     cell_active_mu   <- mu_hat_grid[cell_active_lin]
     cell_active_sqrt <- sqrt(abs(cell_active_mu))
 
-    # Flatten pool list to CSR-like format for the kernel: a single
-    # `pool_residuals` vector with `pool_starts` boundary offsets, plus
-    # a per-active-cell pool index (1-indexed; 0 means "no pool").
-    pool_names <- names(pool_by_id)
     if (length(pool_names) > 0L) {
-      pool_lens      <- lengths(pool_by_id)
-      pool_starts    <- as.integer(c(0L, cumsum(pool_lens)))
-      pool_residuals <- unlist(pool_by_id, use.names = FALSE)
-      pool_pos       <- setNames(seq_along(pool_names), pool_names)
-      active_pid_chr <- pid_by_dev[active_j]
-      cell_pool_idx  <- pool_pos[active_pid_chr]
+      cell_pool_idx <- pool_pos[pid_by_dev[active_j]]
       cell_pool_idx[is.na(cell_pool_idx)] <- 0L
-      cell_pool_idx  <- as.integer(cell_pool_idx)
+      cell_pool_idx <- as.integer(cell_pool_idx)
     } else {
-      pool_residuals <- numeric(0)
-      pool_starts    <- 0L
-      cell_pool_idx  <- integer(n_active)
+      cell_pool_idx <- integer(n_active)
     }
 
-    out_arr <- .Call(
-      C_bootstrap_cell_kernel,
+    # Extract scalar phi for current group (cell ODP dispersion).
+    # phi_dt is per-group; .boot_stage1 already subset it to grp_vals.
+    phi <- if (!is.null(phi_dt) && nrow(phi_dt) > 0L) {
+      phi_dt$phi[1L]
+    } else {
+      NA_real_
+    }
+    process_code <- switch(process,
+                           gamma   = 1L,
+                           od_pois = 2L,
+                           normal  = 3L,
+                           1L)
+
+    kernel_out <- .Call(
+      C_bootstrap_kernel_cell,
       B,
       as.numeric(cell_active_mu),
       as.numeric(cell_active_sqrt),
@@ -1405,146 +1276,115 @@ bootstrap.Triangle <- function(x,
       as.integer(link_to_idx),
       as.integer(k_idx_by_j),
       as.numeric(f_hat_vec),
+      as.numeric(phi),
+      as.numeric(alpha),
+      process_code,
       n_coh, n_dev
     )
-    cell_branch_done <- TRUE
-  }
+    # Dual-output: list(cum_mean, cum_sampled).
+    out_arr_mean    <- kernel_out$cum_mean
+    out_arr_sampled <- kernel_out$cum_sampled
 
-  if (cell_branch_done) {
-    # Skip the per-b loop entirely — cell branch already filled out_arr.
-    B_iter <- integer(0)
-  } else {
-    B_iter <- seq_len(B)
-  }
+  } else if (is_residual_mode && identical(residual, "link")) {
 
-  for (b in B_iter) {
-
-    if (is_residual_mode && identical(residual, "link")) {
-
-      # Chain residual resample forward through the cumulative recursion.
-      # alt_C[i, k] = f_hat_k * alt_C[i, k-1] + r* * sqrt(sigma2_k * alt_C[i, k-1])
-      # Base column (dev index 1) keeps the original observed C.
-      mat_alt <- matrix(NA_real_, nrow = n_coh, ncol = n_dev)
-      mat_alt[, 1L] <- mat_obs[, 1L]
-
-      for (k in seq_len(n_links)) {
-        to_col <- link_to_idx[k]
-        if (is.na(to_col) || to_col < 2L) next
-        from_col <- to_col - 1L
-        f_k  <- f_hat_vec[k]
-        s2_k <- sigma2_vec[k]
-        # cohorts with both alt_C[from] and originally observed C[to] are alt-able
-        prev_alt <- mat_alt[, from_col]
-        was_obs  <- is.finite(mat_obs[, to_col]) & is.finite(prev_alt) & prev_alt > 0
-
-        n_alt <- sum(was_obs)
-        if (n_alt > 0L) {
-          pid <- pid_by_to[to_col]
-          r_pool <- if (!is.na(pid)) pool_by_id[[pid]] else NULL
-          if (is.null(r_pool) || length(r_pool) == 0L) {
-            r_draw <- rep(0, n_alt)
-          } else {
-            r_draw <- sample(r_pool, n_alt, replace = TRUE)
-          }
-          if (!is.finite(s2_k) || s2_k < 0) s2_k <- 0
-          mat_alt[was_obs, to_col] <- f_k * prev_alt[was_obs] +
-            r_draw * sqrt(s2_k * prev_alt[was_obs])
-        }
-      }
-
-      # Clip alt observed cells to >=0 (cumulative loss is non-negative)
-      mat_alt[mat_alt < 0 & is.finite(mat_alt)] <- 0
-
-      # Refit f_k* from alt observed (Mack: cohorts with BOTH from and to)
-      f_star <- f_hat_vec  # fallback
-      for (k in seq_len(n_links)) {
-        to_col <- link_to_idx[k]
-        if (is.na(to_col) || to_col < 2L) next
-        from_col <- to_col - 1L
-        has_both <- is.finite(mat_alt[, from_col]) &
-                    is.finite(mat_alt[, to_col])
-        num <- sum(mat_alt[has_both, to_col],   na.rm = TRUE)
-        den <- sum(mat_alt[has_both, from_col], na.rm = TRUE)
-        if (is.finite(den) && den > 0) f_star[k] <- num / den
-      }
-
-      # Forward-project missing cells from each cohort's last observed dev
-      for (i in seq_len(n_coh)) {
-        last_j <- last_obs_idx[i]
-        if (is.na(last_j) || last_j >= n_dev) next
-        base <- mat_alt[i, last_j]
-        if (!is.finite(base)) next
-        for (j in seq(last_j + 1L, n_dev)) {
-          k_idx <- k_idx_by_j[j]
-          if (is.na(k_idx)) {
-            mat_alt[i, j] <- base
-          } else {
-            mat_alt[i, j] <- f_star[k_idx] * base
-            base <- mat_alt[i, j]
-          }
-        }
-      }
-
-      out_arr[, , b] <- mat_alt
-
+    if (length(pool_names) > 0L) {
+      link_pool_idx <- pool_pos[pid_by_to[link_to_idx]]
+      link_pool_idx[is.na(link_pool_idx)] <- 0L
+      link_pool_idx <- as.integer(link_pool_idx)
     } else {
-
-      # Parametric method: original observed cells unchanged; draw f_k* ~
-      # N(f_hat, sqrt(Var(f_hat))). Forward-project from each cohort's last
-      # observed dev using the drawn f_k*.
-      f_star <- f_hat_vec
-      for (k in seq_len(n_links)) {
-        fv <- fvar_vec[k]
-        if (is.finite(fv) && fv > 0) {
-          f_star[k] <- stats::rnorm(1L, f_hat_vec[k], sqrt(fv))
-        }
-      }
-
-      mat_alt <- mat_obs
-
-      for (i in seq_len(n_coh)) {
-        last_j <- last_obs_idx[i]
-        if (is.na(last_j) || last_j >= n_dev) next
-        base <- mat_alt[i, last_j]
-        if (!is.finite(base)) next
-        for (j in seq(last_j + 1L, n_dev)) {
-          k_idx <- k_idx_by_j[j]
-          if (is.na(k_idx)) {
-            mat_alt[i, j] <- base
-          } else {
-            mat_alt[i, j] <- f_star[k_idx] * base
-            base <- mat_alt[i, j]
-          }
-        }
-      }
-
-      mat_alt[mat_alt < 0 & is.finite(mat_alt)] <- 0
-      out_arr[, , b] <- mat_alt
+      link_pool_idx <- integer(n_links)
     }
+
+    process_code <- switch(process,
+                           gamma   = 1L,
+                           od_pois = 2L,
+                           normal  = 3L,
+                           3L)
+    kernel_out <- .Call(
+      C_bootstrap_kernel_link,
+      B,
+      as.numeric(mat_obs),
+      as.integer(last_obs_idx),
+      as.integer(link_to_idx),
+      as.integer(k_idx_by_j),
+      as.numeric(f_hat_vec),
+      as.numeric(sigma2_vec),
+      link_pool_idx,
+      pool_residuals,
+      pool_starts,
+      as.numeric(alpha),
+      process_code,
+      n_coh, n_dev
+    )
+    out_arr_mean    <- kernel_out$cum_mean
+    out_arr_sampled <- kernel_out$cum_sampled
+
+  } else {
+    # Parametric: observed cells unchanged; per-replicate f* ~ N(f_hat,
+    # sqrt(Var(f_hat))); forward-project + clip; Stage 2 noise via sigma2_k.
+    process_code <- switch(process,
+                           gamma   = 1L,
+                           od_pois = 2L,
+                           normal  = 3L,
+                           3L)
+    kernel_out <- .Call(
+      C_bootstrap_kernel_parametric,
+      B,
+      as.numeric(mat_obs),
+      as.integer(last_obs_idx),
+      as.integer(k_idx_by_j),
+      as.numeric(f_hat_vec),
+      as.numeric(fvar_vec),
+      as.numeric(sigma2_vec),
+      as.numeric(alpha),
+      process_code,
+      n_coh, n_dev
+    )
+    out_arr_mean    <- kernel_out$cum_mean
+    out_arr_sampled <- kernel_out$cum_sampled
   }
 
-  # Reshape 3D array -> long data.table. The value column is named after
-  # `target` ("loss" or "prem") so downstream refit helpers know what to
-  # read. `as.numeric(out_arr)` flattens column-major: cohort fastest,
-  # then dev, then rep. Build as a plain list first and call setDT() once
-  # so no per-column [, := ] copy is incurred — large speedup on the
-  # B * n_coh * n_dev hot path. For Date cohorts we unclass to integer
-  # before rep() so the repeat goes through fast int routines, then
-  # restore the class once at the end.
+  # ----- keep_pseudo = FALSE -- skip the long-format reshape ---------------
+  # When the caller doesn't need raw per-replicate values, return the
+  # raw C-side 3D arrays + per-group metadata so bootstrap.Triangle()
+  # can drive the summary kernel directly. Saves the long-format build
+  # (rep.int / setDT) and the resulting ~200 MB data.table for typical
+  # 4-group experience triangles.
+  if (!isTRUE(keep_pseudo)) {
+    return(list(
+      cum_mean    = out_arr_mean,
+      cum_sampled = out_arr_sampled,
+      cohorts     = cohorts,
+      devs        = devs,
+      B           = B,
+      grp_vals    = grp_vals
+    ))
+  }
+
+  # Reshape 3D arrays -> long data.table with TWO value columns:
+  #   <target>_mean    = Stage 1 only       (out_arr_mean)
+  #   <target>_sampled = Stage 1 + Stage 2  (out_arr_sampled)
+  # as.numeric() flattens column-major: cohort fastest, then dev, then rep.
+  # Build as plain list + setDT() once (no per-column copy).
+  # For Date cohorts we unclass to integer before rep() so the repeat goes
+  # through fast int routines, then restore the class once at the end.
   cohort_cls  <- oldClass(cohorts)
   cohort_int  <- unclass(cohorts)
   cohort_col  <- rep.int(rep.int(cohort_int, n_dev), B)
   if (!is.null(cohort_cls)) oldClass(cohort_col) <- cohort_cls
-  dev_col     <- rep.int(rep(devs, each = n_coh), B)
-  rep_col     <- rep(seq_len(B), each = n_coh * n_dev)
-  val_col     <- as.numeric(out_arr)
+  dev_col       <- rep.int(rep(devs, each = n_coh), B)
+  rep_col       <- rep(seq_len(B), each = n_coh * n_dev)
+  val_col_mean    <- as.numeric(out_arr_mean)
+  val_col_sampled <- as.numeric(out_arr_sampled)
 
-  n_long <- length(val_col)
+  n_long <- length(val_col_mean)
+  col_mean    <- paste0(target, "_mean")
+  col_sampled <- paste0(target, "_sampled")
   if (is.null(grp_vals)) {
     cols <- list(cohort = cohort_col, dev = dev_col, rep = rep_col)
-    cols[[target]] <- val_col
+    cols[[col_mean]]    <- val_col_mean
+    cols[[col_sampled]] <- val_col_sampled
   } else {
-    # Group columns recycle to the long length; place them first.
     cols <- list()
     for (col in names(grp_vals)) {
       v <- grp_vals[[col]]
@@ -1553,12 +1393,207 @@ bootstrap.Triangle <- function(x,
     cols$cohort <- cohort_col
     cols$dev    <- dev_col
     cols$rep    <- rep_col
-    cols[[target]] <- val_col
+    cols[[col_mean]]    <- val_col_mean
+    cols[[col_sampled]] <- val_col_sampled
   }
   data.table::setDT(cols)
   cols[]
 }
 
+
+# Cohort x dev SE decomposition from the dual-column long-format pseudo_triangles.
+#
+# Pythagorean decomposition (law of total variance):
+#   param_se = sd(loss_mean across rep)           (Stage 1 / parameter)
+#   total_se = sd(loss_sampled across rep)        (Stage 1 + Stage 2)
+#   proc_se  = sqrt(pmax(total_se^2 - param_se^2, 0))   (Stage 2 / process)
+#
+# CI uses type = 1 (Davison-Hinkley `(B+1) p in Z` convention) so the
+# 0.025/0.975 quantiles land on integer ordinal indices for B = 999, 1999.
+# Build $summary directly from the raw 3D arrays produced by
+# .boot_stage1(keep_pseudo = FALSE) -- skips the long-format reshape and
+# its ~200 MB intermediate. Mirrors .boot_summary_decompose's column
+# schema so downstream consumers see the same shape regardless of path.
+.boot_summary_from_arrays <- function(stage1_out, grp, target = "loss",
+                                      quantile_ci = FALSE) {
+  is_multi <- !is.null(stage1_out$grp_vals) &&
+              !is.null(stage1_out$n_groups) &&
+              stage1_out$n_groups > 0L
+  if (is_multi) {
+    cum_mean_concat    <- do.call(c, lapply(stage1_out$cum_mean,    as.numeric))
+    cum_sampled_concat <- do.call(c, lapply(stage1_out$cum_sampled, as.numeric))
+    n_groups <- stage1_out$n_groups
+    grp_vals <- stage1_out$grp_vals
+  } else {
+    # Single group (or no grouping columns) -- stage1_out is the single
+    # per-group list as returned by .boot_stage1_one().
+    cum_mean_concat    <- as.numeric(stage1_out$cum_mean)
+    cum_sampled_concat <- as.numeric(stage1_out$cum_sampled)
+    n_groups <- 1L
+    grp_vals <- stage1_out$grp_vals
+  }
+  cohorts <- stage1_out$cohorts
+  devs    <- stage1_out$devs
+  n_coh   <- length(cohorts)
+  n_dev   <- length(devs)
+
+  res <- .Call(C_bootstrap_summary_kernel,
+               cum_mean_concat, cum_sampled_concat,
+               n_coh, n_dev, as.integer(n_groups))
+
+  cell_n <- n_coh * n_dev
+  dt <- data.table::data.table(
+    cohort    = rep.int(rep.int(cohorts, n_dev), n_groups),
+    dev       = rep.int(rep(devs, each = n_coh), n_groups),
+    mean_proj = res$mean_proj,
+    param_se  = res$param_se,
+    proc_se   = res$proc_se,
+    total_se  = res$total_se,
+    total_cv  = res$total_cv
+  )
+  if (length(grp) > 0L && !is.null(grp_vals)) {
+    if (is.data.frame(grp_vals) && nrow(grp_vals) == n_groups) {
+      for (col in grp)
+        dt[, (col) := rep(grp_vals[[col]], each = cell_n)]
+    } else {
+      # single-group fast path: grp_vals is a length-1 data.frame
+      for (col in grp) dt[, (col) := grp_vals[[col]]]
+    }
+  }
+
+  if (isTRUE(quantile_ci)) {
+    # Quantile CI from 3D arrays -- vectorised per-cell quickselect via
+    # matrix(byrow = FALSE) reshape + apply. Still R-level (task #16
+    # will move this to C); for now we honour the opt-in flag.
+    grid <- data.table::data.table(
+      cohort = rep.int(rep.int(cohorts, n_dev), n_groups),
+      dev    = rep.int(rep(devs, each = n_coh), n_groups)
+    )
+    if (length(grp) > 0L && !is.null(grp_vals)) {
+      for (col in grp)
+        grid[, (col) := rep(grp_vals[[col]], each = cell_n)]
+    }
+    # cum_sampled reshape: cells x B per group, stacked
+    B  <- stage1_out$B
+    ci_lo <- numeric(length(res$mean_proj))
+    ci_hi <- numeric(length(res$mean_proj))
+    for (g in seq_len(n_groups)) {
+      off <- (g - 1L) * cell_n * B
+      block <- cum_sampled_concat[off + seq_len(cell_n * B)]
+      mat <- matrix(block, nrow = cell_n, ncol = B)
+      cell_off <- (g - 1L) * cell_n
+      for (k in seq_len(cell_n)) {
+        x <- mat[k, ]
+        x <- x[is.finite(x)]
+        if (length(x) < 2L) {
+          ci_lo[cell_off + k] <- NA_real_
+          ci_hi[cell_off + k] <- NA_real_
+        } else {
+          q <- stats::quantile(x, c(0.025, 0.975), type = 1, names = FALSE)
+          ci_lo[cell_off + k] <- q[1L]
+          ci_hi[cell_off + k] <- q[2L]
+        }
+      }
+    }
+    dt[, ci_lo := ci_lo]
+    dt[, ci_hi := ci_hi]
+  }
+
+  by_cols  <- c(grp, "cohort", "dev")
+  out_cols <- c(by_cols, "mean_proj",
+                "param_se", "proc_se", "total_se", "total_cv")
+  if (isTRUE(quantile_ci)) out_cols <- c(out_cols, "ci_lo", "ci_hi")
+  data.table::setcolorder(dt, out_cols)
+  dt[]
+}
+
+
+.boot_summary_decompose <- function(pseudo_long, grp, target = "loss",
+                                     quantile_ci = FALSE) {
+  param_se <- proc_se <- total_se <- mean_proj <- NULL  # NSE
+  col_mean    <- paste0(target, "_mean")
+  col_sampled <- paste0(target, "_sampled")
+  by_cols <- c(grp, "cohort", "dev")
+
+  # ----- Single-call C summary (all groups in one pass) ----------------
+  # `.boot_stage1()` emits the long-format pseudo_triangles as group-major:
+  # each group's chunk is a contiguous block of (cohort-fastest, dev,
+  # rep) rows. The C summary kernel takes that layout directly and
+  # loops over groups internally -- no per-group R-level filter / copy
+  # / .Call. With four groups this trims ~200-400 ms of R-side
+  # dispatch on a 5M-row pseudo_triangles.
+  cohorts <- sort(unique(pseudo_long$cohort))
+  devs    <- sort(unique(pseudo_long$dev))
+  n_coh   <- length(cohorts)
+  n_dev   <- length(devs)
+  if (length(grp) > 0L) {
+    # Preserve the rbindlist() emission order so the C side's block-major
+    # offsets line up with the group keys we attach below.
+    grp_vals <- unique(pseudo_long[, .SD, .SDcols = grp])
+  } else {
+    grp_vals <- NULL
+  }
+  n_groups <- if (is.null(grp_vals)) 1L else nrow(grp_vals)
+
+  res <- .Call(C_bootstrap_summary_kernel,
+               as.numeric(pseudo_long[[col_mean]]),
+               as.numeric(pseudo_long[[col_sampled]]),
+               n_coh, n_dev, n_groups)
+
+  # Build the data.table from the five flat output vectors. Group block
+  # is outermost; within each group block, cohort is fastest then dev.
+  if (n_groups == 1L) {
+    dt <- data.table::data.table(
+      cohort    = rep.int(cohorts, n_dev),
+      dev       = rep(devs, each = n_coh),
+      mean_proj = res$mean_proj,
+      param_se  = res$param_se,
+      proc_se   = res$proc_se,
+      total_se  = res$total_se,
+      total_cv  = res$total_cv
+    )
+    if (!is.null(grp_vals)) {
+      for (col in names(grp_vals)) dt[, (col) := grp_vals[[col]]]
+    }
+  } else {
+    # Multi-group: per-block cohort/dev grid, group columns recycled to
+    # full length (each group contributes n_coh * n_dev rows).
+    cell_n <- n_coh * n_dev
+    dt <- data.table::data.table(
+      cohort    = rep.int(rep.int(cohorts, n_dev), n_groups),
+      dev       = rep.int(rep(devs, each = n_coh), n_groups),
+      mean_proj = res$mean_proj,
+      param_se  = res$param_se,
+      proc_se   = res$proc_se,
+      total_se  = res$total_se,
+      total_cv  = res$total_cv
+    )
+    for (col in grp) {
+      dt[, (col) := rep(grp_vals[[col]], each = cell_n)]
+    }
+  }
+
+  # ----- Optional quantile CI (R-level -- task #17b will C-ify) ---------
+  if (isTRUE(quantile_ci)) {
+    ci_dt <- pseudo_long[, .(
+      ci_lo = stats::quantile(.SD[[1L]], 0.025, type = 1, na.rm = TRUE,
+                                  names = FALSE),
+      ci_hi = stats::quantile(.SD[[1L]], 0.975, type = 1, na.rm = TRUE,
+                                  names = FALSE)
+    ), by = by_cols, .SDcols = col_sampled]
+    dt <- merge(dt, ci_dt, by = by_cols, sort = FALSE)
+  }
+
+  out_cols <- c(by_cols, "mean_proj",
+                "param_se", "proc_se", "total_se", "total_cv")
+  if (isTRUE(quantile_ci)) out_cols <- c(out_cols, "ci_lo", "ci_hi")
+  data.table::setcolorder(dt, out_cols)
+  dt[]
+}
+
+
+
+# Section 5 -- BootstrapTriangle S3 methods (print) ===========================
 
 #' Print method for BootstrapTriangle
 #' @param x A `BootstrapTriangle` object.
@@ -1568,17 +1603,23 @@ bootstrap.Triangle <- function(x,
 print.BootstrapTriangle <- function(x, ...) {
   m <- x$meta
   is_param <- identical(m$type, "parametric")
-  is_tail  <- identical(m$method, "tail_pooled")
+  is_tail  <- identical(m$pooling, "tail_pooled")
 
   cat("<BootstrapTriangle>\n")
   cat(sprintf("  type     : %s\n", m$type))
+  cat(sprintf("  method   : %s\n", m$method))
   if (!is_param) {
     cat(sprintf("  residual : %s\n", m$residual))
-    cat(sprintf("  hat_adj  : %s\n", as.character(isTRUE(m$hat_adj))))
+    if (identical(m$residual, "cell")) {
+      cat(sprintf("  hat_adj  : %s\n", as.character(isTRUE(m$hat_adj))))
+      cat(sprintf("  demean   : %s\n", as.character(isTRUE(m$demean))))
+    } else {
+      cat(sprintf("  hat_adj  : %s\n", as.character(isTRUE(m$hat_adj))))
+    }
   }
   cat(sprintf("  process  : %s\n", m$process))
   if (!is_param) {
-    cat(sprintf("  method   : %s\n", m$method))
+    cat(sprintf("  pooling  : %s\n", m$pooling))
     if (is_tail) {
       cat(sprintf("  tail     : %s\n", m$tail))
       if (identical(m$tail, "auto"))
@@ -1596,27 +1637,34 @@ print.BootstrapTriangle <- function(x, ...) {
   cat(sprintf("  n_pool   : %d residuals (%d unique pool_id)\n",
               nrow(x$residual_pool),
               length(unique(x$residual_pool$pool_id))))
-  cat(sprintf("  alt size : %d rows ([cohort x dev x B] long-format)\n",
-              nrow(x$alt_triangles)))
+  if (!is.null(x$summary)) {
+    has_ci <- "ci_lo" %in% names(x$summary)
+    cat(sprintf("  summary  : %d cohort x dev rows (%s)\n",
+                nrow(x$summary),
+                if (has_ci)
+                  "mean_proj, param_se, proc_se, total_se, total_cv, ci_lo, ci_hi"
+                else
+                  "mean_proj, param_se, proc_se, total_se, total_cv  -- quantile_ci off"))
+  }
+  if (is.null(x$pseudo_triangles)) {
+    cat("  pseudo size : 0 rows (keep_pseudo = FALSE -- long-format not built)\n")
+  } else {
+    cat(sprintf("  pseudo size : %d rows ([cohort x dev x B] long-format)\n",
+                nrow(x$pseudo_triangles)))
+  }
   invisible(x)
 }
 
 
-# =============================================================================
-# Phase 2a — Consumer helpers
+# Section 6 -- Bootstrap argument resolver ====================================
 #
-# Internal helpers consumed by fit_lr / fit_loss / fit_premium / backtest in
-# Phase 2b-e. Decomposed into single-purpose units so each helper has one job
-# and the call site in fit functions is explicit about every step.
-#
-# Pipeline:
-#   boots      <- .resolve_bootstrap(arg, tri, B, seed, ...)
-#   refit      <- .boot_refit_{cl,ed,sa}(tri, boots, alpha, ...)
-#                 # list(cell_mean, cell_proc_var) — method baked into proc_var
-#   cell_real  <- .boot_add_process_noise(refit$cell_mean, refit$cell_proc_var,
-#                                          boots$meta$process)
-#   se_dt      <- .boot_summarize_se(refit$cell_mean, cell_real)
-# =============================================================================
+# fit_lr / fit_loss / fit_premium / backtest pass the user-supplied
+# `bootstrap` argument through this single resolver. Output is either
+# `NULL` (analytical path) or a `BootstrapTriangle`. The fit functions
+# then read `bt$summary` directly -- the SE decomposition + CI columns
+# are precomputed by `bootstrap()` itself, so no per-replicate refit
+# loop lives in the fit functions (that work is done once inside the
+# C kernel during `bootstrap()`).
 
 
 #' Resolve a bootstrap argument to a BootstrapTriangle (4-type dispatch)
@@ -1624,17 +1672,17 @@ print.BootstrapTriangle <- function(x, ...) {
 #' Mirrors `.resolve_maturity()` / `.resolve_regime()` pattern. Accepts:
 #'
 #' \itemize{
-#'   \item `NULL` (or `FALSE`, back-compat) — returns `NULL` (no bootstrap).
-#'   \item `TRUE` (back-compat) — equivalent to `"auto"`.
-#'   \item `"auto"` — internal `bootstrap(tri, ...)` call with supplied
+#'   \item `NULL` (or `FALSE`, back-compat) -- returns `NULL` (no bootstrap).
+#'   \item `TRUE` (back-compat) -- equivalent to `"auto"`.
+#'   \item `"auto"` -- internal `bootstrap(tri, ...)` call with supplied
 #'     defaults.
-#'   \item A `BootstrapTriangle` object — returned as-is.
-#'   \item A function `function(tri) -> BootstrapTriangle` — invoked on `tri`.
+#'   \item A `BootstrapTriangle` object -- returned as-is.
+#'   \item A function `function(tri) -> BootstrapTriangle` -- invoked on `tri`.
 #' }
 #'
 #' @param arg The bootstrap argument supplied by the user.
 #' @param tri A `Triangle` object (the data the bootstrap will be computed on).
-#' @param B,seed,type,residual,hat_adj,process,method,tail,min_pool,maturity,target,alpha
+#' @param B,seed,type,residual,hat_adj,process,method,pooling,tail,min_pool,maturity,target,alpha
 #'   Defaults forwarded to `bootstrap.Triangle()` when `arg` resolves to
 #'   `"auto"` or `TRUE`.
 #'
@@ -1642,18 +1690,22 @@ print.BootstrapTriangle <- function(x, ...) {
 #'
 #' @keywords internal
 .resolve_bootstrap <- function(arg, tri,
-                                B        = 1000L,
-                                seed     = NULL,
-                                type     = "parametric",
-                                residual = "cell",
-                                hat_adj  = TRUE,
-                                process  = "normal",
-                                method   = "pooled",
-                                tail     = "auto",
-                                min_pool = 5L,
-                                maturity = NULL,
-                                target   = "loss",
-                                alpha    = 1) {
+                                B           = 499L,
+                                seed        = NULL,
+                                type        = "parametric",
+                                residual    = "cell",
+                                hat_adj     = TRUE,
+                                demean      = TRUE,
+                                process     = "normal",
+                                method      = "sa",
+                                pooling     = "pooled",
+                                quantile_ci = FALSE,
+                                keep_pseudo = TRUE,
+                                tail        = "auto",
+                                min_pool    = 5L,
+                                maturity    = NULL,
+                                target      = "loss",
+                                alpha       = 1) {
   if (is.null(arg)) return(NULL)
 
   # Legacy back-compat: bare logical
@@ -1674,21 +1726,25 @@ print.BootstrapTriangle <- function(x, ...) {
 
   if (identical(arg, "auto")) {
     # Pass only the args that apply to the chosen `type`. Parametric path
-    # has no residual pool, so omitting residual/hat_adj/method/tail/
+    # has no residual pool, so omitting residual/hat_adj/pooling/tail/
     # min_pool/maturity prevents the validator from triggering "ignored"
     # warnings inside fit_loss / fit_premium / fit_lr (which always
     # forward `type = "parametric"` for their internal default).
     args <- list(tri,
-                 type    = type,
-                 process = process,
-                 target  = target,
-                 B       = B,
-                 seed    = seed,
-                 alpha   = alpha)
+                 type        = type,
+                 method      = method,
+                 process     = process,
+                 target      = target,
+                 B           = B,
+                 seed        = seed,
+                 alpha       = alpha,
+                 quantile_ci = quantile_ci,
+                 keep_pseudo = keep_pseudo)
     if (identical(type, "nonparametric")) {
       args <- c(args, list(residual = residual,
                            hat_adj  = hat_adj,
-                           method   = method,
+                           demean   = demean,
+                           pooling  = pooling,
                            tail     = tail,
                            min_pool = min_pool,
                            maturity = maturity))
@@ -1717,789 +1773,3 @@ print.BootstrapTriangle <- function(x, ...) {
        call. = FALSE)
 }
 
-
-#' Refit chain-ladder per bootstrap replicate (unified entry point)
-#'
-#' For each replicate `b` in `boots$alt_triangles`, refit factors and
-#' compute the per-cell mean projection and process variance. Method
-#' dispatch (`"cl"` / `"ed"` / `"sa"`) determines the recursion and the
-#' variance structure. `cell_proc_var` carries the method-specific
-#' variance baked in so the downstream Stage 2 helper can stay
-#' method-blind.
-#'
-#' Recursions:
-#' \itemize{
-#'   \item `"cl"` — Mack multiplicative: `C_{k+1} = f_k * C_k`,
-#'     `proc_var = sigma^2_f_k * C_k`.
-#'   \item `"ed"` — additive exposure-driven: `C_{k+1} = C_k + g_k * P_k`,
-#'     `proc_var = sigma^2_g_k * P_k`. Uses the triangle's `prem` column
-#'     as the exposure anchor.
-#'   \item `"sa"` — stage-adaptive hybrid: ED for `dev < maturity$change`,
-#'     CL from `maturity$change` onward.
-#' }
-#'
-#' The CL path reads the target column from `boots$meta$target` (`"loss"`
-#' by default, but `fit_premium()` passes `"prem"`). ED and SA paths are
-#' loss-specific (they need an external exposure column) and only support
-#' `target = "loss"`.
-#'
-#' @param triangle The original `Triangle` (carries the observed region
-#'   mask).
-#' @param boots A `BootstrapTriangle` from `bootstrap()`.
-#' @param method One of `"cl"`, `"ed"`, `"sa"`.
-#' @param alpha Mack variance exponent (currently `1` only).
-#' @param maturity Required when `method = "sa"`. A resolved `Maturity`
-#'   object (use `.resolve_maturity()` upstream).
-#'
-#' @return A `data.table` keyed by `[groups..], cohort, dev, rep` with
-#'   columns `cell_mean`, `cell_proc_var`.
-#'
-#' @keywords internal
-# Draw realised cell value with given mean and variance, per process
-# distribution. Vectorised over `mu` / `var`. Pure numerical kernel --
-# designed to map cleanly to a future C port (one call per chain step in
-# refit_*_one).
-#
-# normal: cell = mu + N(0, sqrt(var)). Can go negative -> clipped to 0
-#         by caller.
-# gamma : cell = Gamma(shape = mu^2/var, rate = mu/var). Requires mu > 0
-#         and var > 0; falls back to normal for non-positive cases.
-# odp   : phi = var/mu; cell = phi * Poisson(mu/phi). Falls back to
-#         normal for non-positive cases.
-.boot_draw_noise <- function(mu, var, dist) {
-  # NOTE: `dist` is trusted -- one of "normal" / "gamma" / "od_pois".
-  # Caller validates once (typically against boots$meta$process). Skipping
-  # match.arg() saves ~10% on hot-loop benchmarks where this is called
-  # once per chain step.
-  n <- length(mu)
-  if (n == 0L) return(numeric(0))
-
-  if (dist == "normal") {
-    var_safe <- var
-    var_safe[var_safe < 0 | !is.finite(var_safe)] <- 0
-    return(mu + stats::rnorm(n, 0, sqrt(var_safe)))
-  }
-
-  out <- mu
-  pos <- is.finite(mu) & is.finite(var) & mu > 0 & var > 0
-  neg <- !pos
-
-  if (dist == "gamma") {
-    if (any(pos)) {
-      shape <- mu[pos]^2 / var[pos]
-      rate  <- mu[pos]   / var[pos]
-      out[pos] <- stats::rgamma(sum(pos), shape = shape, rate = rate)
-    }
-  } else if (dist == "od_pois") {
-    if (any(pos)) {
-      phi <- var[pos] / mu[pos]
-      out[pos] <- phi * stats::rpois(sum(pos), lambda = mu[pos] / phi)
-    }
-  }
-  if (any(neg)) {
-    var_neg <- var[neg]
-    var_neg[var_neg < 0 | !is.finite(var_neg)] <- 0
-    out[neg] <- mu[neg] + stats::rnorm(sum(neg), 0, sqrt(var_neg))
-  }
-  out
-}
-
-
-.boot_refit <- function(triangle, boots,
-                         method = c("cl", "ed", "sa"),
-                         alpha = 1,
-                         maturity = NULL) {
-  method <- match.arg(method)
-  target <- boots$meta$target
-  if (is.null(target)) target <- "loss"
-  process_dist <- boots$meta$process
-  if (is.null(process_dist)) process_dist <- "normal"
-
-  # Paradigm + ODP phi for cell-mode forward simulation (E-V / BCL parity).
-  # phi_dt is grp x phi; for ungrouped triangles it has a single row.
-  residual <- boots$meta$residual
-  if (is.null(residual)) residual <- "link"
-  phi_dt <- boots$meta$phi_dt  # NULL outside cell mode
-
-  if (method %in% c("ed", "sa") && !identical(target, "loss")) {
-    stop("method = '", method, "' only supports target = 'loss'; ",
-         "boots$meta$target = '", target, "'.",
-         call. = FALSE)
-  }
-  if (identical(method, "sa") && is.null(maturity)) {
-    stop("method = 'sa' requires a resolved Maturity object.",
-         call. = FALSE)
-  }
-
-  grp <- attr(triangle, "groups")
-  if (is.null(grp)) grp <- character(0)
-
-  # Per-group phi lookup helper. Returns NA when cell mode is inactive.
-  .phi_for <- function(gkey) {
-    if (is.null(phi_dt) || nrow(phi_dt) == 0L) return(NA_real_)
-    if (is.null(gkey) || length(grp) == 0L) return(phi_dt$phi[1L])
-    row <- merge(phi_dt, gkey, by = grp, sort = FALSE)
-    if (nrow(row) == 0L) NA_real_ else row$phi[1L]
-  }
-
-  one_fn <- switch(method,
-    cl = function(tri_g, alt_g, gkey)
-           .boot_refit_cl_one(tri_g, alt_g, alpha, grp_vals = gkey,
-                               target = target, process_dist = process_dist,
-                               residual = residual, phi = .phi_for(gkey)),
-    ed = function(tri_g, alt_g, gkey)
-           .boot_refit_ed_one(tri_g, alt_g, alpha, grp_vals = gkey,
-                               process_dist = process_dist),
-    sa = function(tri_g, alt_g, gkey) {
-           key_str <- if (is.null(gkey)) "__single__"
-                      else do.call(paste, c(as.list(gkey), sep = "|"))
-           .boot_refit_sa_one(tri_g, alt_g, alpha, grp_vals = gkey,
-                               mat_change = mat_change_by_grp[[key_str]],
-                               process_dist = process_dist)
-         }
-  )
-
-  if (identical(method, "sa")) {
-    mat_change_by_grp <- .boot_maturity_lookup(maturity, grp)
-  }
-
-  if (length(grp) > 0L) {
-    grp_vals <- unique(triangle[, .SD, .SDcols = grp])
-    out_list <- vector("list", nrow(grp_vals))
-    for (gi in seq_len(nrow(grp_vals))) {
-      gkey  <- grp_vals[gi]
-      tri_g <- merge(triangle, gkey, by = grp, sort = FALSE)
-      alt_g <- merge(boots$alt_triangles, gkey, by = grp, sort = FALSE)
-      out_list[[gi]] <- one_fn(tri_g, alt_g, gkey)
-    }
-    data.table::rbindlist(out_list, use.names = TRUE)
-  } else {
-    one_fn(triangle, boots$alt_triangles, NULL)
-  }
-}
-
-
-# Per-group CL refit. Returns long-format DT with (cohort, dev, rep,
-# cell_mean, cell_real) [+ optional group cols].
-#
-# `residual` controls which process-variance paradigm is used for forward
-# simulation of `cell_real`:
-#   - "cell": ODP single scale phi -> var = phi * mu_inc  (E-V / BCL)
-#   - "link" / parametric: Mack per-link sigma^2_k -> var = sigma^2_k * C_cum
-# `phi` is the ODP dispersion (required when residual == "cell"; ignored
-# otherwise). Pass NA_real_ to fall back to Mack scale.
-.boot_refit_cl_one <- function(triangle, alt_long, alpha, grp_vals,
-                                target = "loss",
-                                process_dist = "normal",
-                                residual = "link",
-                                phi = NA_real_) {
-
-  cohorts <- sort(unique(triangle$cohort))
-  devs    <- sort(unique(triangle$dev))
-  n_coh   <- length(cohorts)
-  n_dev   <- length(devs)
-  B       <- max(alt_long$rep)
-
-  # Observed-region mask + original target matrix.
-  obs_mask <- matrix(FALSE,    nrow = n_coh, ncol = n_dev,
-                     dimnames = list(as.character(cohorts),
-                                     as.character(devs)))
-  mat_obs  <- matrix(NA_real_, nrow = n_coh, ncol = n_dev,
-                     dimnames = dimnames(obs_mask))
-  tri_target <- triangle[[target]]
-  for (r in seq_len(nrow(triangle))) {
-    ci <- match(as.character(triangle$cohort[r]), rownames(obs_mask))
-    di <- match(as.character(triangle$dev[r]),    colnames(obs_mask))
-    if (!is.na(ci) && !is.na(di) && is.finite(tri_target[r])) {
-      obs_mask[ci, di] <- TRUE
-      mat_obs[ci, di]  <- tri_target[r]
-    }
-  }
-
-  last_obs_idx <- apply(obs_mask, 1L, function(row) {
-    ok <- which(row)
-    if (length(ok) == 0L) NA_integer_ else max(ok)
-  })
-
-  data.table::setorderv(alt_long, c("rep", "dev", "cohort"))
-  arr_mean <- array(alt_long[[target]], dim = c(n_coh, n_dev, B),
-                    dimnames = list(as.character(cohorts),
-                                    as.character(devs), NULL))
-
-  # ----- Vectorised refit (over B axis) ---------------------------------
-  # sigma2_mat[k, b] = Mack sigma^2_k under replicate b. Computed from
-  # cells whose (i, k-1) and (i, k) are *observed* (perturbed or
-  # original). Vectorised across replicates via colSums on the slice.
-  f_obs_mat  <- matrix(NA_real_, nrow = n_dev, ncol = B)
-  sigma2_mat <- matrix(NA_real_, nrow = n_dev, ncol = B)
-  for (k in seq(2L, n_dev)) {
-    idx <- which(obs_mask[, k - 1L] & obs_mask[, k])
-    if (length(idx) == 0L) next
-    from_arr <- matrix(arr_mean[idx, k - 1L, ], nrow = length(idx))  # [n_idx, B]
-    to_arr   <- matrix(arr_mean[idx, k,       ], nrow = length(idx))
-    valid    <- from_arr > 0 & is.finite(from_arr) & is.finite(to_arr)
-    from_v   <- from_arr * valid
-    to_v     <- to_arr   * valid
-    n_valid  <- colSums(valid)
-    from_sum <- colSums(from_v)
-    fhat_b <- to_v |> colSums() / from_sum
-    fhat_b[!is.finite(fhat_b) | from_sum == 0] <- NA_real_
-    f_obs_mat[k, ] <- fhat_b
-    if (any(n_valid >= 2L)) {
-      pred <- t(t(from_arr) * fhat_b)
-      resid_sq <- (to_arr - pred)^2 / pmax(from_arr, 1e-12) * valid
-      resid_sq[!is.finite(resid_sq)] <- 0
-      s2_b <- colSums(resid_sq) / pmax(n_valid - 1L, 1)
-      s2_b[n_valid < 2L] <- NA_real_
-      sigma2_mat[k, ] <- s2_b
-    }
-  }
-  # LOCF on sigma2_mat per replicate
-  for (k in seq(2L, n_dev)) {
-    bad <- !is.finite(sigma2_mat[k, ])
-    if (any(bad)) sigma2_mat[k, bad] <- sigma2_mat[k - 1L, bad]
-  }
-
-  # f_proj_mat[k, b]: the f_star actually used by stage1 in projection
-  # (drawn N for parametric; refit on alt observed for residual). Extract
-  # from arr_mean ratios at any cohort whose dev k is projected.
-  f_proj_mat <- matrix(NA_real_, nrow = n_dev, ncol = B)
-  for (k in seq(2L, n_dev)) {
-    proj_idx <- which(!obs_mask[, k] & !is.na(last_obs_idx))
-    if (length(proj_idx) == 0L) next
-    i_pick <- proj_idx[1L]
-    from_b <- arr_mean[i_pick, k - 1L, ]
-    to_b   <- arr_mean[i_pick, k,     ]
-    ratio  <- to_b / from_b
-    ratio[!is.finite(ratio)] <- NA_real_
-    f_proj_mat[k, ] <- ratio
-  }
-  # Where f_proj is missing, fall back to f_obs (refit from observed).
-  for (k in seq(2L, n_dev)) {
-    bad <- !is.finite(f_proj_mat[k, ])
-    if (any(bad)) f_proj_mat[k, bad] <- f_obs_mat[k, bad]
-  }
-
-  # ----- Vectorised forward simulation of cell_real ---------------------
-  # Two model families with matched forward simulation:
-  #
-  # 1. ODP GLM (residual = "cell", phi finite). Cells are conditionally
-  #    independent given (alpha_i, beta_j). Process noise on each lower
-  #    cell is drawn from gamma(mean = mu_inc, var = phi * mu_inc), with
-  #    mu_inc taken from a noise-FREE deterministic chain mean (so an
-  #    earlier cell's process noise does NOT feed the next cell's base).
-  #    The cumulative cell_real then accumulates those independent
-  #    increments on top of the pseudo latest.
-  #
-  # 2. Mack Markov chain (residual = "link" or parametric). The chain is
-  #    C_{k+1} | C_k ~ ?(f * C_k, sigma^2_k * C_k); each step's noisy
-  #    cum feeds the next step's base, propagating variance forward.
-  #    Observed region anchors at the ORIGINAL cumulative (constant
-  #    across replicates).
-  use_odp <- identical(residual, "cell") && is.finite(phi) && phi > 0
-
-  arr_real <- arr_mean
-
-  if (use_odp) {
-    # Step 1: noise-free deterministic chain cumulative mean per (i, k, b).
-    # Observed region carries the pseudo latest (= arr_mean); lower triangle
-    # extended by f_proj_mat without adding process noise.
-    mu_cum_arr <- arr_mean
-    for (k in seq(2L, n_dev)) {
-      proj_idx <- which(!obs_mask[, k] & !is.na(last_obs_idx))
-      if (length(proj_idx) == 0L) next
-      base_arr <- matrix(mu_cum_arr[proj_idx, k - 1L, ],
-                         nrow = length(proj_idx))
-      f_b <- f_proj_mat[k, ]
-      f_b[!is.finite(f_b)] <- 1
-      mu_cum_arr[proj_idx, k, ] <- t(t(base_arr) * f_b)
-    }
-
-    # Step 2: per-cell process noise on incrementals. Each lower-triangle
-    # cell draws an independent gamma. The chain mean stays deterministic.
-    for (k in seq(2L, n_dev)) {
-      proj_idx <- which(!obs_mask[, k] & !is.na(last_obs_idx))
-      if (length(proj_idx) == 0L) next
-      mu_inc_slice <- matrix(
-        mu_cum_arr[proj_idx, k, ] - mu_cum_arr[proj_idx, k - 1L, ],
-        nrow = length(proj_idx)
-      )
-      var_inc_slice <- phi * abs(mu_inc_slice)
-      mu_inc_slice[!is.finite(mu_inc_slice)] <- 0
-      var_inc_slice[!is.finite(var_inc_slice) | var_inc_slice < 0] <- 0
-      inc_vec <- .boot_draw_noise(as.numeric(mu_inc_slice),
-                                   as.numeric(var_inc_slice),
-                                   dist = process_dist)
-      # cum_real[i, k] = previous arr_real[i, k-1] + proc_inc[i, k]
-      base_arr <- matrix(arr_real[proj_idx, k - 1L, ],
-                         nrow = length(proj_idx))
-      cum_arr <- base_arr + matrix(inc_vec, nrow = length(proj_idx))
-      cum_arr[is.finite(cum_arr) & cum_arr < 0] <- 0
-      arr_real[proj_idx, k, ] <- cum_arr
-    }
-
-  } else {
-    # Mack paradigm: anchor observed region to original (constant across B).
-    for (i in seq_len(n_coh)) {
-      for (k in seq_len(n_dev)) {
-        if (obs_mask[i, k]) arr_real[i, k, ] <- mat_obs[i, k]
-      }
-    }
-    for (k in seq(2L, n_dev)) {
-      proj_idx <- which(!obs_mask[, k] & !is.na(last_obs_idx))
-      if (length(proj_idx) == 0L) next
-      base_arr <- matrix(arr_real[proj_idx, k - 1L, ],
-                         nrow = length(proj_idx))
-      f_b  <- f_proj_mat[k, ]
-      f_b[!is.finite(f_b)] <- 1
-      s2_b <- sigma2_mat[k, ]
-      s2_b[!is.finite(s2_b)] <- 0
-      mu_arr  <- t(t(base_arr) * f_b)
-      var_arr <- t(t(base_arr) * s2_b)
-      mu_arr[!is.finite(mu_arr)]   <- 0
-      var_arr[!is.finite(var_arr) | var_arr < 0] <- 0
-      cell_vec <- .boot_draw_noise(as.numeric(mu_arr),
-                                    as.numeric(var_arr),
-                                    dist = process_dist)
-      cell_vec[is.finite(cell_vec) & cell_vec < 0] <- 0
-      arr_real[proj_idx, k, ] <- matrix(cell_vec, nrow = length(proj_idx))
-    }
-  }
-
-  long <- data.table::data.table(
-    cohort    = rep(rep(cohorts, times = n_dev), times = B),
-    dev       = rep(rep(devs, each = n_coh),    times = B),
-    rep       = rep(seq_len(B), each = n_coh * n_dev),
-    cell_mean = as.numeric(arr_mean),
-    cell_real = as.numeric(arr_real)
-  )
-
-  if (!is.null(grp_vals)) {
-    for (col in names(grp_vals)) {
-      long[, (col) := grp_vals[[col]]]
-    }
-    data.table::setcolorder(long, c(names(grp_vals), "cohort", "dev", "rep",
-                                     "cell_mean", "cell_real"))
-  }
-
-  long[]
-}
-
-
-# Per-group ED refit. Mirrors .boot_refit_cl_one but uses additive
-# recursion against the original (un-bootstrapped) premium column.
-# Dispatched via `.boot_refit(method = "ed")`.
-.boot_refit_ed_one <- function(triangle, alt_long, alpha, grp_vals,
-                               process_dist = "normal") {
-
-  cohorts <- sort(unique(triangle$cohort))
-  devs    <- sort(unique(triangle$dev))
-  n_coh   <- length(cohorts)
-  n_dev   <- length(devs)
-  B       <- max(alt_long$rep)
-
-  obs_mask <- matrix(FALSE,    nrow = n_coh, ncol = n_dev,
-                     dimnames = list(as.character(cohorts),
-                                     as.character(devs)))
-  mat_obs  <- matrix(NA_real_, nrow = n_coh, ncol = n_dev,
-                     dimnames = dimnames(obs_mask))
-  mat_prem <- matrix(NA_real_, nrow = n_coh, ncol = n_dev,
-                     dimnames = dimnames(obs_mask))
-
-  for (r in seq_len(nrow(triangle))) {
-    ci <- match(as.character(triangle$cohort[r]), rownames(obs_mask))
-    di <- match(as.character(triangle$dev[r]),    colnames(obs_mask))
-    if (!is.na(ci) && !is.na(di)) {
-      if (is.finite(triangle$loss[r])) {
-        obs_mask[ci, di] <- TRUE
-        mat_obs[ci, di]  <- triangle$loss[r]
-      }
-      mat_prem[ci, di] <- triangle$prem[r]
-    }
-  }
-  for (i in seq_len(n_coh)) {
-    last_p <- NA_real_
-    for (j in seq_len(n_dev)) {
-      if (is.finite(mat_prem[i, j])) {
-        last_p <- mat_prem[i, j]
-      } else if (is.finite(last_p)) {
-        mat_prem[i, j] <- last_p
-      }
-    }
-  }
-
-  last_obs_idx <- apply(obs_mask, 1L, function(row) {
-    ok <- which(row)
-    if (length(ok) == 0L) NA_integer_ else max(ok)
-  })
-
-  data.table::setorderv(alt_long, c("rep", "dev", "cohort"))
-  arr_alt <- array(alt_long$loss, dim = c(n_coh, n_dev, B),
-                   dimnames = list(as.character(cohorts),
-                                   as.character(devs), NULL))
-
-  # ----- Vectorised refit (over B axis) ---------------------------------
-  # g_obs_mat[k, b]: refit intensity from observed (alt-perturbed) cells.
-  # sigma2_g_mat[k, b]: ED-style sigma^2_g per replicate, per link.
-  g_obs_mat    <- matrix(NA_real_, nrow = n_dev, ncol = B)
-  sigma2_g_mat <- matrix(NA_real_, nrow = n_dev, ncol = B)
-  for (k in seq(2L, n_dev)) {
-    idx <- which(obs_mask[, k - 1L] & obs_mask[, k] &
-                 is.finite(mat_prem[, k - 1L]) & mat_prem[, k - 1L] > 0)
-    if (length(idx) == 0L) next
-    from_arr <- matrix(arr_alt[idx, k - 1L, ], nrow = length(idx))
-    to_arr   <- matrix(arr_alt[idx, k,       ], nrow = length(idx))
-    p_prev   <- mat_prem[idx, k - 1L]
-    valid <- is.finite(from_arr) & is.finite(to_arr)
-    d_arr <- (to_arr - from_arr) * valid
-    p_v   <- p_prev * (valid[, 1L])  # premium is constant across B per cohort
-    # Use per-(i, b) valid mask combined with per-cohort premium
-    p_v_mat <- matrix(p_prev, nrow = length(idx), ncol = B) * valid
-    n_valid <- colSums(valid)
-    p_sum   <- colSums(p_v_mat)
-    g_b <- colSums(d_arr) / p_sum
-    g_b[!is.finite(g_b) | p_sum == 0] <- NA_real_
-    g_obs_mat[k, ] <- g_b
-    if (any(n_valid >= 2L)) {
-      pred <- t(t(p_v_mat) * g_b)
-      resid_sq <- (d_arr - pred)^2 / pmax(p_v_mat, 1e-12) * valid
-      resid_sq[!is.finite(resid_sq)] <- 0
-      s2_b <- colSums(resid_sq) / pmax(n_valid - 1L, 1)
-      s2_b[n_valid < 2L] <- NA_real_
-      sigma2_g_mat[k, ] <- s2_b
-    }
-  }
-  for (k in seq(2L, n_dev)) {
-    bad <- !is.finite(sigma2_g_mat[k, ])
-    if (any(bad)) sigma2_g_mat[k, bad] <- sigma2_g_mat[k - 1L, bad]
-  }
-
-  # ----- Vectorised forward simulation: cell_mean and cell_real ---------
-  arr_mean <- array(NA_real_, dim = c(n_coh, n_dev, B))
-  arr_real <- array(NA_real_, dim = c(n_coh, n_dev, B))
-  # Anchor observed region
-  for (i in seq_len(n_coh)) {
-    for (k in seq_len(n_dev)) {
-      if (obs_mask[i, k]) {
-        arr_mean[i, k, ] <- arr_alt[i, k, ]   # alt (perturbed for residual)
-        arr_real[i, k, ] <- mat_obs[i, k]      # original observed for chain
-      }
-    }
-  }
-
-  for (k in seq(2L, n_dev)) {
-    proj_idx <- which(!obs_mask[, k] & !is.na(last_obs_idx))
-    if (length(proj_idx) == 0L) next
-
-    g_b  <- g_obs_mat[k, ]
-    s2_b <- sigma2_g_mat[k, ]
-    g_b[!is.finite(g_b)]   <- 0
-    s2_b[!is.finite(s2_b)] <- 0
-
-    p_prev_vec <- mat_prem[proj_idx, k - 1L]   # [n_proj]
-    p_prev_vec[!is.finite(p_prev_vec) | p_prev_vec <= 0] <- 0
-
-    # mean chain: arr_mean[i, k, b] = arr_mean[i, k-1, b] + g_b[b] * p_prev[i]
-    base_mean_arr <- matrix(arr_mean[proj_idx, k - 1L, ], nrow = length(proj_idx))
-    mean_inc <- outer(p_prev_vec, g_b)   # [n_proj × B]
-    arr_mean[proj_idx, k, ] <- base_mean_arr + mean_inc
-
-    # real chain: arr_real[i, k, b] = arr_real[i, k-1, b] + g_b[b] * p_prev[i] + eps
-    base_real_arr <- matrix(arr_real[proj_idx, k - 1L, ], nrow = length(proj_idx))
-    mu_real <- base_real_arr + outer(p_prev_vec, g_b)
-    var_real <- outer(p_prev_vec, s2_b)
-    mu_real[!is.finite(mu_real)] <- 0
-    var_real[!is.finite(var_real) | var_real < 0] <- 0
-
-    cell_vec <- .boot_draw_noise(as.numeric(mu_real),
-                                  as.numeric(var_real),
-                                  dist = process_dist)
-    cell_vec[is.finite(cell_vec) & cell_vec < 0] <- 0
-    arr_real[proj_idx, k, ] <- matrix(cell_vec, nrow = length(proj_idx))
-  }
-
-  long <- data.table::data.table(
-    cohort    = rep(rep(cohorts, times = n_dev), times = B),
-    dev       = rep(rep(devs, each = n_coh),    times = B),
-    rep       = rep(seq_len(B), each = n_coh * n_dev),
-    cell_mean = as.numeric(arr_mean),
-    cell_real = as.numeric(arr_real)
-  )
-
-  if (!is.null(grp_vals)) {
-    for (col in names(grp_vals)) {
-      long[, (col) := grp_vals[[col]]]
-    }
-    data.table::setcolorder(
-      long,
-      c(names(grp_vals), "cohort", "dev", "rep", "cell_mean", "cell_real")
-    )
-  }
-
-  long[]
-}
-
-
-# Build a per-group lookup `key -> mat_change` from a resolved Maturity
-# object. Single-group case uses the sentinel key `"__single__"`.
-# Used by `.boot_refit(method = "sa")`.
-.boot_maturity_lookup <- function(maturity, grp) {
-  mat_dt <- data.table::as.data.table(maturity)
-  if (length(grp) == 0L) {
-    return(list(`__single__` = mat_dt$change[1L]))
-  }
-  out <- list()
-  for (i in seq_len(nrow(mat_dt))) {
-    key <- do.call(paste, c(as.list(mat_dt[i, .SD, .SDcols = grp]),
-                            sep = "|"))
-    out[[key]] <- mat_dt$change[i]
-  }
-  out
-}
-
-
-# Per-group SA refit. ED for dev < mat_change, CL for dev >= mat_change.
-.boot_refit_sa_one <- function(triangle, alt_long, alpha, grp_vals,
-                               mat_change, process_dist = "normal") {
-
-  cohorts <- sort(unique(triangle$cohort))
-  devs    <- sort(unique(triangle$dev))
-  n_coh   <- length(cohorts)
-  n_dev   <- length(devs)
-  B       <- max(alt_long$rep)
-
-  if (!is.finite(mat_change)) mat_change <- Inf
-
-  obs_mask <- matrix(FALSE,    nrow = n_coh, ncol = n_dev,
-                     dimnames = list(as.character(cohorts),
-                                     as.character(devs)))
-  mat_obs  <- matrix(NA_real_, nrow = n_coh, ncol = n_dev,
-                     dimnames = dimnames(obs_mask))
-  mat_prem <- matrix(NA_real_, nrow = n_coh, ncol = n_dev,
-                     dimnames = dimnames(obs_mask))
-
-  for (r in seq_len(nrow(triangle))) {
-    ci <- match(as.character(triangle$cohort[r]), rownames(obs_mask))
-    di <- match(as.character(triangle$dev[r]),    colnames(obs_mask))
-    if (!is.na(ci) && !is.na(di)) {
-      if (is.finite(triangle$loss[r])) {
-        obs_mask[ci, di] <- TRUE
-        mat_obs[ci, di]  <- triangle$loss[r]
-      }
-      mat_prem[ci, di] <- triangle$prem[r]
-    }
-  }
-  for (i in seq_len(n_coh)) {
-    last_p <- NA_real_
-    for (j in seq_len(n_dev)) {
-      if (is.finite(mat_prem[i, j])) {
-        last_p <- mat_prem[i, j]
-      } else if (is.finite(last_p)) {
-        mat_prem[i, j] <- last_p
-      }
-    }
-  }
-
-  last_obs_idx <- apply(obs_mask, 1L, function(row) {
-    ok <- which(row)
-    if (length(ok) == 0L) NA_integer_ else max(ok)
-  })
-
-  data.table::setorderv(alt_long, c("rep", "dev", "cohort"))
-  arr_alt <- array(alt_long$loss, dim = c(n_coh, n_dev, B),
-                   dimnames = list(as.character(cohorts),
-                                   as.character(devs), NULL))
-
-  arr_mean <- array(NA_real_, dim = c(n_coh, n_dev, B))
-  arr_real <- array(NA_real_, dim = c(n_coh, n_dev, B))
-
-  # Anchor observed region (vectorised across B)
-  for (i in seq_len(n_coh)) {
-    for (j in seq_len(n_dev)) {
-      if (obs_mask[i, j]) {
-        arr_mean[i, j, ] <- arr_alt[i, j, ]
-        arr_real[i, j, ] <- mat_obs[i, j]
-      }
-    }
-  }
-
-  # ----- Vectorised refit of f_star (CL) and g_star (ED) per link ------
-  f_star_mat <- matrix(NA_real_, nrow = n_dev, ncol = B)
-  s2_f_mat   <- matrix(NA_real_, nrow = n_dev, ncol = B)
-  g_star_mat <- matrix(NA_real_, nrow = n_dev, ncol = B)
-  s2_g_mat   <- matrix(NA_real_, nrow = n_dev, ncol = B)
-  for (k in seq(2L, n_dev)) {
-    idx <- which(obs_mask[, k - 1L] & obs_mask[, k])
-    if (length(idx) == 0L) next
-    from_arr <- matrix(arr_alt[idx, k - 1L, ], nrow = length(idx))
-    to_arr   <- matrix(arr_alt[idx, k,       ], nrow = length(idx))
-    valid_cl <- from_arr > 0 & is.finite(from_arr) & is.finite(to_arr)
-    n_cl <- colSums(valid_cl)
-    from_v   <- from_arr * valid_cl
-    to_v     <- to_arr   * valid_cl
-    from_sum <- colSums(from_v)
-    fhat_b <- colSums(to_v) / from_sum
-    fhat_b[!is.finite(fhat_b) | from_sum == 0] <- NA_real_
-    f_star_mat[k, ] <- fhat_b
-    if (any(n_cl >= 2L)) {
-      pred <- t(t(from_arr) * fhat_b)
-      rsq <- (to_arr - pred)^2 / pmax(from_arr, 1e-12) * valid_cl
-      rsq[!is.finite(rsq)] <- 0
-      s2_b <- colSums(rsq) / pmax(n_cl - 1L, 1)
-      s2_b[n_cl < 2L] <- NA_real_
-      s2_f_mat[k, ] <- s2_b
-    }
-
-    p_prev <- mat_prem[idx, k - 1L]
-    valid_ed <- valid_cl & matrix(is.finite(p_prev) & p_prev > 0,
-                                  nrow = length(idx), ncol = B)
-    if (any(valid_ed)) {
-      d_arr <- (to_arr - from_arr) * valid_ed
-      p_mat <- matrix(p_prev, nrow = length(idx), ncol = B) * valid_ed
-      n_ed  <- colSums(valid_ed)
-      p_sum <- colSums(p_mat)
-      g_b <- colSums(d_arr) / p_sum
-      g_b[!is.finite(g_b) | p_sum == 0] <- NA_real_
-      g_star_mat[k, ] <- g_b
-      if (any(n_ed >= 2L)) {
-        pred_g <- t(t(p_mat) * g_b)
-        rsq_g <- (d_arr - pred_g)^2 / pmax(p_mat, 1e-12) * valid_ed
-        rsq_g[!is.finite(rsq_g)] <- 0
-        s2g_b <- colSums(rsq_g) / pmax(n_ed - 1L, 1)
-        s2g_b[n_ed < 2L] <- NA_real_
-        s2_g_mat[k, ] <- s2g_b
-      }
-    }
-  }
-  for (k in seq(2L, n_dev)) {
-    bad <- !is.finite(s2_f_mat[k, ])
-    if (any(bad)) s2_f_mat[k, bad] <- s2_f_mat[k - 1L, bad]
-    bad <- !is.finite(s2_g_mat[k, ])
-    if (any(bad)) s2_g_mat[k, bad] <- s2_g_mat[k - 1L, bad]
-  }
-
-  # ----- Vectorised forward simulation, per dev step ------------------
-  for (k in seq(2L, n_dev)) {
-    proj_idx <- which(!obs_mask[, k] & !is.na(last_obs_idx))
-    if (length(proj_idx) == 0L) next
-
-    use_cl <- (devs[k] >= mat_change)
-
-    if (use_cl) {
-      f_b  <- f_star_mat[k, ]
-      s2_b <- s2_f_mat[k, ]
-      f_b[!is.finite(f_b)]   <- 1
-      s2_b[!is.finite(s2_b)] <- 0
-
-      base_mean <- matrix(arr_mean[proj_idx, k - 1L, ], nrow = length(proj_idx))
-      arr_mean[proj_idx, k, ] <- t(t(base_mean) * f_b)
-
-      base_real <- matrix(arr_real[proj_idx, k - 1L, ], nrow = length(proj_idx))
-      mu_r  <- t(t(base_real) * f_b)
-      var_r <- t(t(base_real) * s2_b)
-      mu_r[!is.finite(mu_r)] <- 0
-      var_r[!is.finite(var_r) | var_r < 0] <- 0
-    } else {
-      g_b  <- g_star_mat[k, ]
-      s2_b <- s2_g_mat[k, ]
-      g_b[!is.finite(g_b)]   <- 0
-      s2_b[!is.finite(s2_b)] <- 0
-      p_prev_vec <- mat_prem[proj_idx, k - 1L]
-      p_prev_vec[!is.finite(p_prev_vec) | p_prev_vec <= 0] <- 0
-
-      base_mean <- matrix(arr_mean[proj_idx, k - 1L, ], nrow = length(proj_idx))
-      arr_mean[proj_idx, k, ] <- base_mean + outer(p_prev_vec, g_b)
-
-      base_real <- matrix(arr_real[proj_idx, k - 1L, ], nrow = length(proj_idx))
-      mu_r  <- base_real + outer(p_prev_vec, g_b)
-      var_r <- outer(p_prev_vec, s2_b)
-      mu_r[!is.finite(mu_r)] <- 0
-      var_r[!is.finite(var_r) | var_r < 0] <- 0
-    }
-
-    cell_vec <- .boot_draw_noise(as.numeric(mu_r),
-                                  as.numeric(var_r),
-                                  dist = process_dist)
-    cell_vec[is.finite(cell_vec) & cell_vec < 0] <- 0
-    arr_real[proj_idx, k, ] <- matrix(cell_vec, nrow = length(proj_idx))
-  }
-
-  long <- data.table::data.table(
-    cohort    = rep(rep(cohorts, times = n_dev), times = B),
-    dev       = rep(rep(devs, each = n_coh),    times = B),
-    rep       = rep(seq_len(B), each = n_coh * n_dev),
-    cell_mean = as.numeric(arr_mean),
-    cell_real = as.numeric(arr_real)
-  )
-
-  if (!is.null(grp_vals)) {
-    for (col in names(grp_vals)) {
-      long[, (col) := grp_vals[[col]]]
-    }
-    data.table::setcolorder(long, c(names(grp_vals), "cohort", "dev", "rep",
-                                     "cell_mean", "cell_real"))
-  }
-
-  long[]
-}
-
-
-
-#' Summarize per-cell bootstrap SE decomposition (method-independent)
-#'
-#' Aggregates over the `rep` dimension to produce per-cell SE columns
-#' matching the existing `target_proc_se` / `target_param_se` /
-#' `target_total_se` / `target_total_cv` convention used by `fit_cl()` /
-#' `fit_loss()` / `fit_premium()` / `fit_lr()`.
-#'
-#' Decomposition:
-#' \itemize{
-#'   \item `param_se` = `sd(cell_mean)` across replicates (Stage 1 spread)
-#'   \item `total_se` = `sd(cell_real)` across replicates (Stage 1 + 2)
-#'   \item `proc_se`  = `sqrt(max(total_se^2 - param_se^2, 0))`
-#' }
-#'
-#' @param refit_dt A `data.table` with `cell_mean` and `cell_real` columns
-#'   (the latter produced by `.boot_add_process_noise()`).
-#' @param grp Character vector of group column names (may be `character(0)`).
-#'
-#' @return A `data.table` keyed by `[grp..], cohort, dev` with columns
-#'   `target_proj` (point estimate), `target_proc_se`, `target_param_se`,
-#'   `target_total_se`, `target_total_cv`, plus quantile-based 95% CI
-#'   columns `target_ci_lo` / `target_ci_hi`.
-#'
-#' @keywords internal
-.boot_summarize_se <- function(refit_dt, grp = character(0)) {
-  cell_mean <- cell_real <- NULL  # NSE
-
-  by_cols <- c(grp, "cohort", "dev")
-
-  refit_dt[, {
-    cm <- cell_mean
-    cr <- cell_real
-    cm_ok <- cm[is.finite(cm)]
-    cr_ok <- cr[is.finite(cr)]
-
-    proj <- if (length(cm_ok) > 0L) mean(cm_ok) else NA_real_
-    param_se <- if (length(cm_ok) >= 2L) stats::sd(cm_ok) else 0
-    total_se <- if (length(cr_ok) >= 2L) stats::sd(cr_ok) else 0
-    proc_se  <- sqrt(max(total_se^2 - param_se^2, 0))
-    total_cv <- if (is.finite(proj) && proj != 0) total_se / proj
-                else NA_real_
-
-    qs <- if (length(cr_ok) >= 2L) {
-      stats::quantile(cr_ok, probs = c(0.025, 0.975),
-                      na.rm = TRUE, names = FALSE)
-    } else c(proj, proj)
-
-    list(
-      target_proj     = proj,
-      target_proc_se  = proc_se,
-      target_param_se = param_se,
-      target_total_se = total_se,
-      target_total_cv = total_cv,
-      target_ci_lo    = qs[1L],
-      target_ci_hi    = qs[2L]
-    )
-  }, by = by_cols]
-}

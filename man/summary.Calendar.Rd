@@ -27,7 +27,7 @@ A \code{data.table} of class \code{"CalendarSummary"} with one row per
 }
 
 The returned object preserves the attributes \code{groups},
-\code{calendar}, and \code{calendar_type}.
+\code{calendar}, and \code{grain}.
 }
 \description{
 S3 method for \code{summary()} on \code{Calendar} objects. Computes

@@ -1,11 +1,11 @@
-# Tests for the new Triangle-level bootstrap worker (Phase 1).
+# Tests for the Triangle-level bootstrap worker.
 #
 # Scope:
 #   - bootstrap() S3 generic + bootstrap.Triangle() method
 #   - print.BootstrapTriangle()
-#   - Legacy .cl_bootstrap / .ed_bootstrap / .sa_bootstrap helpers are
-#     intentionally NOT covered here -- they remain in use by
-#     fit_lr/fit_loss/fit_premium/backtest until Phase 2 migration.
+#   - Per-cohort × dev $summary slot (Pythagorean SE decomposition)
+#   - keep_pseudo toggle (pseudo_triangles long-format build skip)
+#   - .resolve_bootstrap 4-type arg dispatch
 
 # ---------------------------------------------------------------------------
 # Basic structure
@@ -14,10 +14,10 @@
 test_that("bootstrap.Triangle returns BootstrapTriangle with expected slots", {
   tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, type = "nonparametric", residual = "link",
-                  method = "separated", B = 20, seed = 1)
+                  pooling = "separated", B = 20, seed = 1)
 
   expect_s3_class(b, "BootstrapTriangle")
-  for (nm in c("alt_triangles", "residual_pool", "f_anchor",
+  for (nm in c("pseudo_triangles", "residual_pool", "f_anchor",
                "sigma2_anchor", "meta")) {
     expect_true(nm %in% names(b), info = paste("missing", nm))
   }
@@ -26,12 +26,13 @@ test_that("bootstrap.Triangle returns BootstrapTriangle with expected slots", {
 test_that("meta records all configured arguments", {
   tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, type = "nonparametric", residual = "link",
-                  method = "pooled", process = "gamma",
+                  method = "cl", pooling = "pooled", process = "gamma",
                   B = 17L, seed = 42, alpha = 1)
   m <- b$meta
   expect_identical(m$type,     "nonparametric")
   expect_identical(m$residual, "link")
-  expect_identical(m$method,   "pooled")
+  expect_identical(m$method,   "cl")
+  expect_identical(m$pooling,  "pooled")
   expect_identical(m$process,  "gamma")
   expect_identical(m$B,        17L)
   expect_identical(m$seed,     42)
@@ -41,27 +42,28 @@ test_that("meta records all configured arguments", {
 
 
 # ---------------------------------------------------------------------------
-# alt_triangles long-format shape
+# pseudo_triangles long-format shape
 # ---------------------------------------------------------------------------
 
-test_that("alt_triangles has [cohort × dev × B] rows per group", {
+test_that("pseudo_triangles has [cohort × dev × B] rows per group", {
   tri <- make_sub_tri("surgery")
   n_coh <- length(unique(tri$cohort))
   n_dev <- length(unique(tri$dev))
   B     <- 20L
 
   b <- bootstrap(tri, type = "nonparametric", residual = "link", B = B, seed = 1)
-  expect_equal(nrow(b$alt_triangles), n_coh * n_dev * B)
-  expect_true(all(c("coverage", "cohort", "dev", "rep", "loss") %in%
-                    names(b$alt_triangles)))
-  expect_equal(sort(unique(b$alt_triangles$rep)), seq_len(B))
+  expect_equal(nrow(b$pseudo_triangles), n_coh * n_dev * B)
+  expect_true(all(c("coverage", "cohort", "dev", "rep",
+                     "loss_mean", "loss_sampled") %in%
+                    names(b$pseudo_triangles)))
+  expect_equal(sort(unique(b$pseudo_triangles$rep)), seq_len(B))
 })
 
-test_that("alt_triangles multi-group splits evenly per group", {
+test_that("pseudo_triangles multi-group splits evenly per group", {
   tri <- make_tri()
   B <- 10L
   b <- bootstrap(tri, type = "nonparametric", residual = "link", B = B, seed = 1)
-  counts <- b$alt_triangles[, .N, by = coverage]
+  counts <- b$pseudo_triangles[, .N, by = coverage]
   expect_true(all(counts$N == counts$N[1L]))
 })
 
@@ -70,28 +72,28 @@ test_that("alt_triangles multi-group splits evenly per group", {
 # Seed reproducibility
 # ---------------------------------------------------------------------------
 
-test_that("same seed reproduces identical alt_triangles (nonparametric link)", {
+test_that("same seed reproduces identical pseudo_triangles (nonparametric link)", {
   tri <- make_sub_tri("surgery")
   a <- bootstrap(tri, type = "nonparametric", residual = "link",
-                  B = 30, seed = 7)$alt_triangles$loss
+                  B = 30, seed = 7)$pseudo_triangles$loss_mean
   b <- bootstrap(tri, type = "nonparametric", residual = "link",
-                  B = 30, seed = 7)$alt_triangles$loss
+                  B = 30, seed = 7)$pseudo_triangles$loss_mean
   expect_identical(a, b)
 })
 
 test_that("different seeds give different draws (nonparametric link)", {
   tri <- make_sub_tri("surgery")
   a <- bootstrap(tri, type = "nonparametric", residual = "link",
-                  B = 30, seed = 7)$alt_triangles$loss
+                  B = 30, seed = 7)$pseudo_triangles$loss_mean
   b <- bootstrap(tri, type = "nonparametric", residual = "link",
-                  B = 30, seed = 8)$alt_triangles$loss
+                  B = 30, seed = 8)$pseudo_triangles$loss_mean
   expect_false(identical(a, b))
 })
 
-test_that("same seed reproduces identical alt_triangles (parametric)", {
+test_that("same seed reproduces identical pseudo_triangles (parametric)", {
   tri <- make_sub_tri("surgery")
-  a <- bootstrap(tri, type = "parametric", B = 30, seed = 7)$alt_triangles$loss
-  b <- bootstrap(tri, type = "parametric", B = 30, seed = 7)$alt_triangles$loss
+  a <- bootstrap(tri, type = "parametric", B = 30, seed = 7)$pseudo_triangles$loss_mean
+  b <- bootstrap(tri, type = "parametric", B = 30, seed = 7)$pseudo_triangles$loss_mean
   expect_identical(a, b)
 })
 
@@ -104,8 +106,11 @@ test_that("parametric type preserves observed cells across replicates", {
   tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, type = "parametric", B = 30, seed = 1)
   obs <- tri[1L]
-  matched <- b$alt_triangles[
-    cohort == obs$cohort & dev == obs$dev, loss
+  # Parametric preserves observed cells across replicates (both columns
+  # agree on the upper triangle — loss_mean is the observed value, and
+  # loss_sampled has no Stage 2 noise added there).
+  matched <- b$pseudo_triangles[
+    cohort == obs$cohort & dev == obs$dev, loss_mean
   ]
   expect_length(unique(matched), 1L)
   expect_equal(matched[1L], obs$loss)
@@ -113,46 +118,46 @@ test_that("parametric type preserves observed cells across replicates", {
 
 
 # ---------------------------------------------------------------------------
-# method-specific pool structure
+# pooling-specific pool structure
 # ---------------------------------------------------------------------------
 
-test_that("method = 'separated' gives one pool per (group, ata_to)", {
+test_that("pooling = 'separated' gives one pool per (group, ata_to)", {
   tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, type = "nonparametric", residual = "link",
-                  method = "separated", B = 5, seed = 1)
+                  pooling = "separated", B = 5, seed = 1)
   n_links <- nrow(b$f_anchor)
   expect_equal(length(unique(b$residual_pool$pool_id)), n_links)
 })
 
-test_that("method = 'pooled' single-group gives one pool", {
+test_that("pooling = 'pooled' single-group gives one pool", {
   tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, type = "nonparametric", residual = "link",
-                  method = "pooled", B = 5, seed = 1)
+                  pooling = "pooled", B = 5, seed = 1)
   expect_equal(length(unique(b$residual_pool$pool_id)), 1L)
 })
 
-test_that("method = 'pooled' multi-group gives one pool per group", {
+test_that("pooling = 'pooled' multi-group gives one pool per group", {
   tri <- make_tri()
   b <- bootstrap(tri, type = "nonparametric", residual = "link",
-                  method = "pooled", B = 5, seed = 1)
+                  pooling = "pooled", B = 5, seed = 1)
   expect_equal(length(unique(b$residual_pool$pool_id)),
                length(unique(tri$coverage)))
 })
 
-test_that("method = 'tail_pooled', tail = 'maturity' requires non-null maturity", {
+test_that("pooling = 'tail_pooled', tail = 'maturity' requires non-null maturity", {
   tri <- make_sub_tri("surgery")
   expect_error(
     bootstrap(tri, type = "nonparametric", residual = "link",
-              method = "tail_pooled", tail = "maturity",
+              pooling = "tail_pooled", tail = "maturity",
               maturity = NULL, B = 5, seed = 1),
     "maturity"
   )
 })
 
-test_that("method = 'tail_pooled', tail = 'maturity', maturity = 'auto' produces POST + per-dev pools", {
+test_that("pooling = 'tail_pooled', tail = 'maturity', maturity = 'auto' produces POST + per-dev pools", {
   tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, type = "nonparametric", residual = "link",
-                  method = "tail_pooled", tail = "maturity",
+                  pooling = "tail_pooled", tail = "maturity",
                   maturity = "auto", B = 5, seed = 1)
   pool_ids <- unique(b$residual_pool$pool_id)
   # Expect at least one POST bucket and at least one per-dev bucket
@@ -160,13 +165,13 @@ test_that("method = 'tail_pooled', tail = 'maturity', maturity = 'auto' produces
   expect_true(any(!grepl("POST$", pool_ids)))
 })
 
-test_that("method = 'tail_pooled', tail = 'auto' cuts when residual count < min_pool", {
+test_that("pooling = 'tail_pooled', tail = 'auto' cuts when residual count < min_pool", {
   tri <- make_sub_tri("surgery")
   # The 30-month dev triangle has shrinking residual counts deep in the
   # tail: late ata_to has 1-2 cohorts. With min_pool = 5 the cut should
   # land somewhere in the late dev range and produce a POST bucket.
   b <- bootstrap(tri, type = "nonparametric", residual = "link",
-                  method = "tail_pooled", tail = "auto",
+                  pooling = "tail_pooled", tail = "auto",
                   min_pool = 5L, B = 5, seed = 1)
   pool_ids <- unique(b$residual_pool$pool_id)
   expect_true(any(grepl("POST$", pool_ids)))
@@ -175,11 +180,11 @@ test_that("method = 'tail_pooled', tail = 'auto' cuts when residual count < min_
   expect_identical(b$meta$min_pool, 5L)
 })
 
-test_that("method = 'tail_pooled', tail = 'auto' is fully separated when all pools meet min_pool", {
+test_that("pooling = 'tail_pooled', tail = 'auto' is fully separated when all pools meet min_pool", {
   tri <- make_sub_tri("surgery")
   # min_pool = 1 lets every per-dev pool keep its own bucket -- no POST.
   b <- bootstrap(tri, type = "nonparametric", residual = "link",
-                  method = "tail_pooled", tail = "auto",
+                  pooling = "tail_pooled", tail = "auto",
                   min_pool = 1L, B = 5, seed = 1)
   pool_ids <- unique(b$residual_pool$pool_id)
   expect_false(any(grepl("POST$", pool_ids)))
@@ -194,11 +199,11 @@ test_that("residual bootstrap induces variability in projected cells", {
   tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, type = "nonparametric", residual = "link",
                   B = 200, seed = 1)
-  cohorts <- sort(unique(b$alt_triangles$cohort))
+  cohorts <- sort(unique(b$pseudo_triangles$cohort))
   last_coh <- cohorts[length(cohorts)]
-  devs <- sort(unique(b$alt_triangles$dev))
+  devs <- sort(unique(b$pseudo_triangles$dev))
   late_dev <- devs[length(devs) - 1L]
-  vals <- b$alt_triangles[cohort == last_coh & dev == late_dev, loss]
+  vals <- b$pseudo_triangles[cohort == last_coh & dev == late_dev, loss_mean]
   expect_true(is.finite(stats::sd(vals)))
   expect_gt(stats::sd(vals), 0)
 })
@@ -206,11 +211,11 @@ test_that("residual bootstrap induces variability in projected cells", {
 test_that("parametric bootstrap induces variability in projected cells", {
   tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, type = "parametric", B = 200, seed = 1)
-  cohorts <- sort(unique(b$alt_triangles$cohort))
+  cohorts <- sort(unique(b$pseudo_triangles$cohort))
   last_coh <- cohorts[length(cohorts)]
-  devs <- sort(unique(b$alt_triangles$dev))
+  devs <- sort(unique(b$pseudo_triangles$dev))
   late_dev <- devs[length(devs) - 1L]
-  vals <- b$alt_triangles[cohort == last_coh & dev == late_dev, loss]
+  vals <- b$pseudo_triangles[cohort == last_coh & dev == late_dev, loss_mean]
   expect_true(is.finite(stats::sd(vals)))
   expect_gt(stats::sd(vals), 0)
 })
@@ -267,11 +272,12 @@ test_that("invalid seed raises an error", {
   expect_error(bootstrap(tri, seed = c(1, 2)), "seed")
 })
 
-test_that("invalid type/residual/method/tail/process raise match.arg errors", {
+test_that("invalid type/residual/method/pooling/tail/process raise match.arg errors", {
   tri <- make_sub_tri("surgery")
   expect_error(bootstrap(tri, type     = "wrong"))
   expect_error(bootstrap(tri, residual = "wrong"))
   expect_error(bootstrap(tri, method   = "wrong"))
+  expect_error(bootstrap(tri, pooling  = "wrong"))
   expect_error(bootstrap(tri, tail     = "wrong"))
   expect_error(bootstrap(tri, process  = "wrong"))
 })
@@ -320,12 +326,12 @@ test_that("residual = 'link' with hat_adj = TRUE warns and ignores", {
   )
 })
 
-test_that("type = 'parametric' warns when method/tail/min_pool explicitly set", {
+test_that("type = 'parametric' warns when pooling/tail/min_pool explicitly set", {
   tri <- make_sub_tri("surgery")
   expect_warning(
-    bootstrap(tri, type = "parametric", method = "separated",
+    bootstrap(tri, type = "parametric", pooling = "separated",
               B = 5, seed = 1),
-    "method.*ignored"
+    "pooling.*ignored"
   )
   expect_warning(
     bootstrap(tri, type = "parametric", min_pool = 10L, B = 5, seed = 1),
@@ -333,16 +339,16 @@ test_that("type = 'parametric' warns when method/tail/min_pool explicitly set", 
   )
 })
 
-test_that("method != 'tail_pooled' warns when tail/min_pool explicitly set", {
+test_that("pooling != 'tail_pooled' warns when tail/min_pool explicitly set", {
   tri <- make_sub_tri("surgery")
   expect_warning(
     bootstrap(tri, type = "nonparametric", residual = "link",
-              method = "separated", tail = "auto", B = 5, seed = 1),
+              pooling = "separated", tail = "auto", B = 5, seed = 1),
     "tail.*ignored"
   )
   expect_warning(
     bootstrap(tri, type = "nonparametric", residual = "link",
-              method = "separated", min_pool = 10L, B = 5, seed = 1),
+              pooling = "separated", min_pool = 10L, B = 5, seed = 1),
     "min_pool.*ignored"
   )
 })
@@ -351,13 +357,13 @@ test_that("invalid min_pool errors", {
   tri <- make_sub_tri("surgery")
   expect_error(
     bootstrap(tri, type = "nonparametric", residual = "link",
-              method = "tail_pooled", tail = "auto", min_pool = 0L,
+              pooling = "tail_pooled", tail = "auto", min_pool = 0L,
               B = 5, seed = 1),
     "min_pool"
   )
   expect_error(
     bootstrap(tri, type = "nonparametric", residual = "link",
-              method = "tail_pooled", tail = "auto", min_pool = -1L,
+              pooling = "tail_pooled", tail = "auto", min_pool = -1L,
               B = 5, seed = 1),
     "min_pool"
   )
@@ -377,10 +383,10 @@ test_that("residual = 'cell' returns a BootstrapTriangle with cell pool schema",
   expect_true("dev" %in% names(b$residual_pool))
   expect_false("ata_from" %in% names(b$residual_pool))
   expect_true("pool_id" %in% names(b$residual_pool))
-  # alt_triangles shape preserved across modes
+  # pseudo_triangles shape preserved across modes
   n_coh <- length(unique(tri$cohort))
   n_dev <- length(unique(tri$dev))
-  expect_equal(nrow(b$alt_triangles), n_coh * n_dev * 10L)
+  expect_equal(nrow(b$pseudo_triangles), n_coh * n_dev * 10L)
 })
 
 test_that("residual = 'cell' default hat_adj is TRUE (chainladder-py parity)", {
@@ -424,13 +430,13 @@ test_that("cell residual + hat_adj = TRUE produces different residual magnitudes
   expect_false(isTRUE(all.equal(sd_hat, sd_nohat, tolerance = 1e-3)))
 })
 
-test_that("cell residual same seed reproduces identical alt_triangles", {
+test_that("cell residual same seed reproduces identical pseudo_triangles", {
   tri <- make_sub_tri("surgery")
   b1 <- bootstrap(tri, type = "nonparametric", residual = "cell",
                   hat_adj = TRUE, process = "gamma", B = 20, seed = 7)
   b2 <- bootstrap(tri, type = "nonparametric", residual = "cell",
                   hat_adj = TRUE, process = "gamma", B = 20, seed = 7)
-  expect_identical(b1$alt_triangles, b2$alt_triangles)
+  expect_identical(b1$pseudo_triangles, b2$pseudo_triangles)
 })
 
 test_that("cell residual induces variability in projected cells", {
@@ -438,18 +444,18 @@ test_that("cell residual induces variability in projected cells", {
   b <- bootstrap(tri, type = "nonparametric", residual = "cell",
                  hat_adj = TRUE, process = "gamma", B = 200, seed = 1)
   # Pick one projected cell (cohort with shortest history -> most projection)
-  alt <- b$alt_triangles
-  by_cell <- alt[, list(sd_v = stats::sd(loss)),
+  alt <- b$pseudo_triangles
+  by_cell <- alt[, list(sd_v = stats::sd(loss_mean)),
                    by = c("cohort", "dev")]
   # At least some cells should show variability (std > 0)
   expect_gt(max(by_cell$sd_v, na.rm = TRUE), 0)
 })
 
-test_that("cell residual + method = 'separated' gives one pool per dev", {
+test_that("cell residual + pooling = 'separated' gives one pool per dev", {
   tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, type = "nonparametric", residual = "cell",
                  hat_adj = FALSE, process = "gamma",
-                 method = "separated", B = 5, seed = 1)
+                 pooling = "separated", B = 5, seed = 1)
   pool <- b$residual_pool
   # pool_id should encode dev, so unique pool_ids == unique observed devs
   # (subject to all-NaN dev filtering)
@@ -458,11 +464,11 @@ test_that("cell residual + method = 'separated' gives one pool per dev", {
   expect_equal(n_pools, n_devs)
 })
 
-test_that("cell residual + method = 'pooled' gives one pool", {
+test_that("cell residual + pooling = 'pooled' gives one pool", {
   tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, type = "nonparametric", residual = "cell",
                  hat_adj = FALSE, process = "gamma",
-                 method = "pooled", B = 5, seed = 1)
+                 pooling = "pooled", B = 5, seed = 1)
   expect_equal(length(unique(b$residual_pool$pool_id)), 1L)
 })
 
@@ -474,7 +480,7 @@ test_that("cell residual + method = 'pooled' gives one pool", {
 test_that("print.BootstrapTriangle prints all configured fields", {
   tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, type = "nonparametric", residual = "link",
-                  method = "separated", process = "gamma",
+                  pooling = "separated", process = "gamma",
                   B = 5, seed = 1)
   out <- utils::capture.output(print(b))
   expect_true(any(grepl("BootstrapTriangle", out)))
@@ -521,136 +527,24 @@ test_that(".resolve_bootstrap rejects bad input", {
 })
 
 
-test_that(".boot_refit returns same shape for all methods", {
-  tri <- make_sub_tri("surgery")
-  boots <- bootstrap(tri, B = 30, seed = 1)
-  mat   <- detect_maturity(tri)
-
-  r_cl <- .boot_refit(tri, boots, method = "cl", alpha = 1)
-  r_ed <- .boot_refit(tri, boots, method = "ed", alpha = 1)
-  r_sa <- .boot_refit(tri, boots, method = "sa", alpha = 1, maturity = mat)
-
-  for (rdt in list(r_cl, r_ed, r_sa)) {
-    expect_true(all(c("coverage", "cohort", "dev", "rep",
-                      "cell_mean", "cell_real") %in% names(rdt)))
-    expect_equal(nrow(rdt), length(unique(tri$cohort)) *
-                              length(unique(tri$dev)) * 30L)
-  }
-})
-
-test_that(".boot_refit(method='cl') observed cells share value across reps (link paradigm)", {
-  tri <- make_sub_tri("surgery")
-  boots <- bootstrap(tri, B = 10, seed = 1, residual = "link")
-  r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
-
-  # Link paradigm: forward sim anchors at ORIGINAL observed cumulative.
-  # cell_real on the observed region equals the original value across all reps.
-  cells <- r_cl[cohort == as.Date("2023-01-01") & dev == 1L]
-  expect_length(unique(cells$cell_real), 1L)
-})
-
-test_that(".boot_refit(method='cl') observed cells = pseudo across reps (cell paradigm)", {
-  tri <- make_sub_tri("surgery")
-  boots <- bootstrap(tri, B = 30, seed = 1, residual = "cell")
-  r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
-
-  # Cell paradigm (E-V / BCL parity): forward sim starts from PSEUDO latest,
-  # so observed cells in cell_real carry the resampled increment cumsum -
-  # i.e., they vary across replicates by construction.
-  cells <- r_cl[cohort == as.Date("2023-01-01") & dev == 1L]
-  expect_gt(length(unique(cells$cell_real)), 1L)
-})
-
-test_that(".boot_refit(method='cl') projected cells vary across reps", {
-  tri <- make_sub_tri("surgery")
-  boots <- bootstrap(tri, B = 30, seed = 1)
-  r_cl  <- .boot_refit(tri, boots, method = "cl", alpha = 1)
-
-  # A clearly-projected cell: latest cohort, mid-tail dev. cell_real
-  # should vary across replicates due to chain-propagated process noise.
-  cells <- r_cl[cohort == as.Date("2025-12-01") & dev == 10L]
-  expect_true(stats::sd(cells$cell_real, na.rm = TRUE) > 0 ||
-              all(!is.finite(cells$cell_mean)))
-})
-
-
-test_that(".boot_summarize_se produces expected columns and SE decomposition", {
-  tri <- make_sub_tri("surgery")
-  boots <- bootstrap(tri, B = 50, seed = 1)
-  refit <- .boot_refit(tri, boots, method = "cl", alpha = 1)
-  se    <- .boot_summarize_se(refit, grp = "coverage")
-
-  expect_true(all(c("coverage", "cohort", "dev",
-                    "target_proj", "target_proc_se", "target_param_se",
-                    "target_total_se", "target_total_cv",
-                    "target_ci_lo", "target_ci_hi") %in% names(se)))
-
-  expect_equal(nrow(se),
-               length(unique(tri$cohort)) * length(unique(tri$dev)))
-
-  # SE decomposition: total^2 = proc^2 + param^2 (exact by construction
-  # of proc_se = sqrt(max(total^2 - param^2, 0))). Use relative tolerance
-  # because squared SE values can be huge (losses in tens of millions).
-  proj <- se[target_proc_se > 0]
-  if (nrow(proj) > 0L) {
-    decomp <- proj$target_proc_se^2 + proj$target_param_se^2
-    rel_err <- abs(proj$target_total_se^2 - decomp) /
-               pmax(proj$target_total_se^2, 1e-12)
-    expect_true(all(rel_err < 1e-9))
-  }
-
-  # Observed cells: SE = 0 for parametric (data unchanged); SE = param_se
-  # for residual (data perturbed). At minimum, target_proc_se should be 0.
-  obs_dev1 <- se[dev == 1L]
-  expect_true(all(obs_dev1$target_proc_se == 0))
-})
-
-
-test_that("full Phase 2a pipeline runs end-to-end on multi-group Triangle", {
-  tri <- make_tri()
-  boots <- bootstrap(tri, type = "nonparametric", residual = "link",
-                      method = "separated", process = "gamma",
-                      B = 20, seed = 1)
-
-  for (method in c("cl", "ed", "sa")) {
-    refit <- .boot_refit(tri, boots, method = method, alpha = 1,
-                          maturity = if (method == "sa") detect_maturity(tri)
-                                     else NULL)
-    se <- .boot_summarize_se(refit, grp = "coverage")
-    expect_true(nrow(se) > 0L, info = method)
-    expect_true(all(is.finite(se$target_proj) | is.na(se$target_proj)),
-                info = method)
-  }
-})
+# Legacy .boot_refit / .boot_summarize_se tests removed — fit_* now read
+# bt$summary directly (wrap-only), so those helpers and the tests that
+# exercised them in isolation are obsolete. Bootstrap behaviour is now
+# verified through the public fit_lr / fit_loss / fit_premium interface
+# and the bt$summary structure tests above.
 
 
 # ---------------------------------------------------------------------------
-# bootstrap.Triangle target arg + unified .boot_refit
+# bootstrap.Triangle target arg
 # ---------------------------------------------------------------------------
 
 test_that("bootstrap.Triangle accepts target = 'prem'", {
   tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, target = "prem", B = 10, seed = 1)
   expect_identical(b$meta$target, "prem")
-  expect_true("prem" %in% names(b$alt_triangles))
-  expect_false("loss" %in% names(b$alt_triangles))
-})
-
-test_that(".boot_refit rejects ed/sa on premium target", {
-  tri   <- make_sub_tri("surgery")
-  b_prem <- bootstrap(tri, target = "prem", B = 5, seed = 1)
-  expect_error(.boot_refit(tri, b_prem, method = "ed"),
-               "ed.*supports.*loss")
-  expect_error(.boot_refit(tri, b_prem, method = "sa",
-                            maturity = detect_maturity(tri)),
-               "sa.*supports.*loss")
-})
-
-test_that(".boot_refit method = sa requires maturity", {
-  tri   <- make_sub_tri("surgery")
-  boots <- bootstrap(tri, B = 5, seed = 1)
-  expect_error(.boot_refit(tri, boots, method = "sa"),
-               "Maturity")
+  expect_true("prem_mean"    %in% names(b$pseudo_triangles))
+  expect_true("prem_sampled" %in% names(b$pseudo_triangles))
+  expect_false("loss_mean" %in% names(b$pseudo_triangles))
 })
 
 test_that(".resolve_bootstrap target mismatch is rejected", {
@@ -930,4 +824,164 @@ test_that("backtest rejects a BootstrapTriangle on the wrong target", {
     backtest(tri, holdout = 6L, target = "loss", bootstrap = b_prem),
     "expects target"
   )
+})
+
+
+# ---------------------------------------------------------------------------
+# BootstrapTriangle$summary slot — Pythagorean SE decomposition
+# ---------------------------------------------------------------------------
+
+test_that("$summary default schema (quantile_ci = FALSE) omits CI columns", {
+  tri <- make_sub_tri("surgery")
+  bt <- bootstrap(tri, residual = "cell", method = "sa",
+                  pooling = "tail_pooled", tail = "auto",
+                  B = 50, seed = 1)
+  expect_true(is.data.frame(bt$summary))
+  expect_true(all(c("cohort", "dev",
+                     "mean_proj", "param_se", "proc_se",
+                     "total_se", "total_cv")
+                   %in% names(bt$summary)))
+  expect_false("ci_lo" %in% names(bt$summary))
+  expect_false("ci_hi" %in% names(bt$summary))
+})
+
+test_that("$summary with quantile_ci = TRUE adds CI columns", {
+  tri <- make_sub_tri("surgery")
+  bt <- bootstrap(tri, residual = "cell", method = "sa",
+                  pooling = "tail_pooled", tail = "auto",
+                  B = 50, seed = 1, quantile_ci = TRUE)
+  expect_true(all(c("ci_lo", "ci_hi") %in% names(bt$summary)))
+})
+
+test_that("$summary SE decomposition satisfies Pythagorean (proc^2 = max(total^2-param^2, 0))", {
+  tri <- make_sub_tri("surgery")
+  bt <- bootstrap(tri, residual = "cell", method = "sa",
+                  pooling = "tail_pooled", tail = "auto",
+                  B = 200, seed = 7)
+  s <- bt$summary
+  # When total >= param (most cells under finite-B): identity holds.
+  # When total < param (finite-B noise): proc clamped to 0, identity
+  # holds in the same form (proc^2 = 0).
+  ok <- is.finite(s$param_se) & is.finite(s$total_se) & is.finite(s$proc_se)
+  diff <- abs(s$proc_se[ok]^2 - pmax(s$total_se[ok]^2 - s$param_se[ok]^2, 0))
+  expect_true(all(diff < 1e-6 + 1e-6 * (s$total_se[ok]^2 + 1)))
+  expect_true(all(s$proc_se[ok] >= 0))
+})
+
+test_that("$summary mean_proj matches Stage 1 mean across replicates", {
+  tri <- make_sub_tri("surgery")
+  bt <- bootstrap(tri, residual = "cell", method = "sa",
+                  pooling = "tail_pooled", tail = "auto",
+                  B = 100, seed = 13)
+  by_cell <- bt$pseudo_triangles[, .(mp = mean(loss_mean, na.rm = TRUE)),
+                               by = .(coverage, cohort, dev)]
+  m <- merge(by_cell, bt$summary[, .(coverage, cohort, dev, mean_proj)],
+             by = c("coverage", "cohort", "dev"))
+  expect_equal(m$mp, m$mean_proj, tolerance = 1e-10)
+})
+
+test_that("$summary CI bounds bracket mean_proj on projected cells", {
+  tri <- make_sub_tri("surgery")
+  bt <- bootstrap(tri, residual = "cell", method = "sa",
+                  pooling = "tail_pooled", tail = "auto",
+                  B = 100, seed = 21, quantile_ci = TRUE)
+  proj <- bt$summary[is.finite(ci_lo) & is.finite(ci_hi) & is.finite(mean_proj)]
+  expect_true(all(proj$ci_lo <= proj$ci_hi))
+  expect_true(all(proj$ci_lo <= proj$mean_proj + 1e-6))
+  expect_true(all(proj$ci_hi >= proj$mean_proj - 1e-6))
+})
+
+
+# ---------------------------------------------------------------------------
+# demean toggle (cell mode)
+# ---------------------------------------------------------------------------
+
+test_that("demean = TRUE produces zero-mean residual pool per group", {
+  tri <- make_sub_tri("surgery")
+  b <- bootstrap(tri, residual = "cell", method = "sa",
+                  pooling = "tail_pooled", tail = "auto",
+                  demean = TRUE, B = 30, seed = 1)
+  means <- b$residual_pool[, mean(residual), by = "coverage"]$V1
+  # After mean-centering, each group's residual mean is numerically ~ 0
+  expect_true(all(abs(means) < 1e-10))
+})
+
+test_that("demean = FALSE preserves raw residual pool mean (non-zero in general)", {
+  tri <- make_sub_tri("surgery")
+  b_off <- bootstrap(tri, residual = "cell", method = "sa",
+                      pooling = "tail_pooled", tail = "auto",
+                      demean = FALSE, B = 30, seed = 1)
+  b_on  <- bootstrap(tri, residual = "cell", method = "sa",
+                      pooling = "tail_pooled", tail = "auto",
+                      demean = TRUE,  B = 30, seed = 1)
+  # The two pools differ when the raw mean is non-zero (the typical case)
+  expect_false(identical(b_off$residual_pool$residual,
+                         b_on$residual_pool$residual))
+})
+
+test_that("demean default is TRUE and recorded in meta", {
+  tri <- make_sub_tri("surgery")
+  b <- bootstrap(tri, residual = "cell", method = "sa",
+                  pooling = "tail_pooled", tail = "auto",
+                  B = 20, seed = 1)
+  expect_identical(b$meta$demean, TRUE)
+})
+
+test_that("demean warns-and-ignores under residual = 'link'", {
+  tri <- make_sub_tri("surgery")
+  expect_warning(
+    bootstrap(tri, residual = "link", pooling = "separated",
+              demean = FALSE, B = 5, seed = 1),
+    "demean.*ignored"
+  )
+})
+
+test_that("demean warns-and-ignores under type = 'parametric'", {
+  tri <- make_sub_tri("surgery")
+  expect_warning(
+    bootstrap(tri, type = "parametric",
+              demean = FALSE, B = 5, seed = 1),
+    "demean.*ignored"
+  )
+})
+
+
+# ---------------------------------------------------------------------------
+# keep_pseudo toggle (memory-lean mode)
+# ---------------------------------------------------------------------------
+
+test_that("keep_pseudo = FALSE drops pseudo_triangles and keeps $summary", {
+  tri <- make_sub_tri("surgery")
+  bt <- bootstrap(tri, residual = "cell", method = "sa",
+                  pooling = "tail_pooled", tail = "auto",
+                  B = 50, seed = 1, keep_pseudo = FALSE)
+  expect_null(bt$pseudo_triangles)
+  expect_true(is.data.frame(bt$summary))
+  # core decomposition columns still present
+  expect_true(all(c("mean_proj", "param_se", "proc_se",
+                     "total_se", "total_cv") %in% names(bt$summary)))
+})
+
+test_that("keep_pseudo = TRUE preserves pseudo_triangles long-format (default)", {
+  tri <- make_sub_tri("surgery")
+  bt <- bootstrap(tri, residual = "cell", method = "sa",
+                  pooling = "tail_pooled", tail = "auto",
+                  B = 30, seed = 1)
+  expect_false(is.null(bt$pseudo_triangles))
+  expect_true(all(c("cohort", "dev", "rep",
+                     "loss_mean", "loss_sampled")
+                   %in% names(bt$pseudo_triangles)))
+})
+
+test_that("keep_pseudo = FALSE $summary matches keep_pseudo = TRUE summary numerically", {
+  tri <- make_sub_tri("surgery")
+  set.seed(42)
+  bt_full <- bootstrap(tri, residual = "cell", method = "sa",
+                        pooling = "tail_pooled", tail = "auto", B = 100)
+  set.seed(42)
+  bt_lean <- bootstrap(tri, residual = "cell", method = "sa",
+                        pooling = "tail_pooled", tail = "auto", B = 100,
+                        keep_pseudo = FALSE)
+  # Same RNG state -> identical summary
+  expect_equal(bt_full$summary, bt_lean$summary)
 })

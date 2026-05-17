@@ -7,13 +7,17 @@
 .resolve_bootstrap(
   arg,
   tri,
-  B = 1000L,
+  B = 499L,
   seed = NULL,
   type = "parametric",
   residual = "cell",
   hat_adj = TRUE,
+  demean = TRUE,
   process = "normal",
-  method = "pooled",
+  method = "sa",
+  pooling = "pooled",
+  quantile_ci = FALSE,
+  keep_pseudo = TRUE,
   tail = "auto",
   min_pool = 5L,
   maturity = NULL,
@@ -26,7 +30,7 @@
 
 \item{tri}{A \code{Triangle} object (the data the bootstrap will be computed on).}
 
-\item{B, seed, type, residual, hat_adj, process, method, tail, min_pool, maturity, target, alpha}{Defaults forwarded to \code{bootstrap.Triangle()} when \code{arg} resolves to
+\item{B, seed, type, residual, hat_adj, process, method, pooling, tail, min_pool, maturity, target, alpha}{Defaults forwarded to \code{bootstrap.Triangle()} when \code{arg} resolves to
 \code{"auto"} or \code{TRUE}.}
 }
 \value{
@@ -37,12 +41,12 @@ Mirrors \code{.resolve_maturity()} / \code{.resolve_regime()} pattern. Accepts:
 }
 \details{
 \itemize{
-\item \code{NULL} (or \code{FALSE}, back-compat) — returns \code{NULL} (no bootstrap).
-\item \code{TRUE} (back-compat) — equivalent to \code{"auto"}.
-\item \code{"auto"} — internal \code{bootstrap(tri, ...)} call with supplied
+\item \code{NULL} (or \code{FALSE}, back-compat) -- returns \code{NULL} (no bootstrap).
+\item \code{TRUE} (back-compat) -- equivalent to \code{"auto"}.
+\item \code{"auto"} -- internal \code{bootstrap(tri, ...)} call with supplied
 defaults.
-\item A \code{BootstrapTriangle} object — returned as-is.
-\item A function \verb{function(tri) -> BootstrapTriangle} — invoked on \code{tri}.
+\item A \code{BootstrapTriangle} object -- returned as-is.
+\item A function \verb{function(tri) -> BootstrapTriangle} -- invoked on \code{tri}.
 }
 }
 \keyword{internal}

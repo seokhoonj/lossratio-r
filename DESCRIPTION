@@ -17,7 +17,9 @@ Description: A loss ratio analytics toolkit for long-term health
     cumulative loss and exposure setting with sufficient sample per
     cell.
 License: GPL (>= 2)
-URL: https://seokhoonj.github.io/lossratio, https://github.com/seokhoonj/lossratio
+URL: https://seokhoonj.github.io/lossratio,
+    https://seokhoonj.github.io/lossratio/ko,
+    https://github.com/seokhoonj/lossratio
 BugReports: https://github.com/seokhoonj/lossratio/issues
 Encoding: UTF-8
 LazyData: true

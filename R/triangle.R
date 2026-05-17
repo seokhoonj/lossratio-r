@@ -709,7 +709,14 @@ as_triangle <- function(df,
 
   if (missing(cohort))  stop("`cohort` is required.",  call. = FALSE)
   if (missing(loss))    stop("`loss` is required.",    call. = FALSE)
-  if (missing(premium)) stop("`premium` is required.", call. = FALSE)
+  if (missing(premium))
+    stop("`premium` is required -- lossratio is a loss-ratio package ",
+         "(lr = loss / premium).\n",
+         "For loss-only triangles, add a constant column before calling ",
+         "as_triangle():\n",
+         "    df$premium <- 1\n",
+         "Loss ratio will equal loss in that case (interpretation: scaled loss).",
+         call. = FALSE)
 
   if (!is.logical(fill_gaps) || length(fill_gaps) != 1L || is.na(fill_gaps))
     stop("`fill_gaps` must be a single non-missing logical value.",
@@ -783,7 +790,11 @@ as_triangle <- function(df,
     dt[, ("dev") := .count_periods(.SD[[1L]], .SD[[2L]], grain),
        .SDcols = c(coh, cal)]
   } else {
-    dt[, ("dev") := as.integer(dt[[dev]])]
+    # NSE-safe: when user passes `development = "dev"` (column is also
+    # named "dev"), reading `dt[[dev]]` inside the j-expression resolves
+    # `dev` to the column's factor values instead of the local character.
+    # `.SDcols = dev` captures the source column first; LHS then overwrites.
+    dt[, ("dev") := as.integer(.SD[[1L]]), .SDcols = dev]
     if (dev != "dev") dt[, (dev) := NULL]
   }
 
@@ -1317,7 +1328,7 @@ as_calendar <- function(x) {
 #' }
 #'
 #' The returned object preserves the attributes `groups`,
-#' `calendar`, and `calendar_type`.
+#' `calendar`, and `grain`.
 #'
 #' @examples
 #' \dontrun{

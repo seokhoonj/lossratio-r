@@ -43,9 +43,3 @@ README.ko.bak.md
 /doc/
 /Meta/
 Rplots.pdf
-
-# Native build artifacts
-src/*.o
-src/*.so
-src/*.dll
-src/symbols.rds

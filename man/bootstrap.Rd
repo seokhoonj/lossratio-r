@@ -12,15 +12,19 @@ bootstrap(x, ...)
   type = c("nonparametric", "parametric"),
   residual = c("cell", "link"),
   hat_adj = TRUE,
+  demean = TRUE,
   process = c("gamma", "od_pois", "normal", "lognormal"),
-  method = c("pooled", "separated", "tail_pooled"),
+  method = c("sa", "cl", "ed"),
+  pooling = c("pooled", "separated", "tail_pooled"),
   tail = c("auto", "maturity"),
   min_pool = 5L,
   maturity = NULL,
   target = c("loss", "prem"),
-  B = 1000L,
+  B = 499L,
   seed = NULL,
   alpha = 1,
+  quantile_ci = FALSE,
+  keep_pseudo = TRUE,
   ...
 )
 }
@@ -32,63 +36,103 @@ bootstrap(x, ...)
 \item{type}{One of \code{"nonparametric"} or \code{"parametric"}. \code{"parametric"}
 draws new link factors from \code{N(f_hat, sqrt(Var(f_hat)))} (Mack 1993
 closed-form); \code{"nonparametric"} resamples standardized residuals and
-reconstructs the alt triangle (England-Verrall / Pinheiro).}
+reconstructs the pseudo triangle (England-Verrall / Pinheiro).}
 
 \item{residual}{Residual scope for \code{type = "nonparametric"}. One of
-\code{"cell"} (default — England-Verrall 1999/2002, Pearson residuals on
+\code{"cell"} (default -- England-Verrall 1999/2002, Pearson residuals on
 incremental cells; ODP GLM equivalent via Renshaw-Verrall 1998) or
 \code{"link"} (Mack 1993 / Pinheiro 2003, Pearson residuals on link
 factors).}
 
 \item{hat_adj}{Logical. Hat-matrix leverage adjustment
 (\code{r_h = r / sqrt(1 - h_ii)}) for the cell residual path. Default
-\code{TRUE} (England-Verrall 2002 Addendum / chainladder-py parity); set
-\code{FALSE} to use the simpler degrees-of-freedom factor
-\code{sqrt(n / (n - p))} (England-Verrall 1999 / \code{BootChainLadder}
-parity). Only defined for \code{residual = "cell"}; warned-ignored
-otherwise. Note that \code{hat_adj} drops corner cells where \code{h_ii = 1}
-(always \verb{(I, 1)} and \verb{(1, J)} of the upper triangle); on small
-triangles this can be a meaningful pool reduction — set \code{FALSE} if
-that matters.}
+\code{TRUE} (England-Verrall 2002 Addendum); set \code{FALSE} to use the
+simpler degrees-of-freedom factor \code{sqrt(n / (n - p))}
+(England-Verrall 1999). Only defined for \code{residual = "cell"};
+warned-ignored otherwise. Note that \code{hat_adj} drops corner cells
+where \code{h_ii = 1} (always \verb{(I, 1)} and \verb{(1, J)} of the upper
+triangle); on small triangles this can be a meaningful pool
+reduction -- set \code{FALSE} if that matters.}
+
+\item{demean}{Logical. Subtract the per-group residual mean from
+each residual in the cell-residual pool before resampling
+(\verb{de-} + \code{mean}: remove the mean, leaving a zero-mean pool).
+Default \code{TRUE}. Shapland (2010, Sec.4.2) discusses this as one option
+among others -- see the \emph{Bootstrap SE decomposition} vignette for
+the trade-off. Only defined for \code{residual = "cell"}; warned-ignored
+otherwise.}
 
 \item{process}{One of \code{"gamma"}, \code{"od_pois"}, \code{"normal"}, \code{"lognormal"}.
-Stored as metadata; downstream fit functions read this to choose the
-Stage 2 noise distribution. \code{"gamma"} matches
-\code{ChainLadder::BootChainLadder} defaults for non-negative right-skewed
-loss data. \code{"lognormal"} is reserved for Phase 5b.3 and currently
-errors.}
+Stored as metadata; downstream fit functions read this to choose
+the Stage 2 noise distribution. \code{"gamma"} is the default for
+non-negative right-skewed loss data. \code{"lognormal"} is reserved for
+Phase 5b.3 and currently errors.}
 
-\item{method}{Residual-pool grouping. One of \code{"pooled"}, \code{"separated"},
+\item{method}{Fit-model paradigm whose lower-triangle forward projection
+the bootstrap should produce. One of \code{"sa"} (stage-adaptive -- ED before
+maturity, CL after; default), \code{"cl"} (chain-ladder multiplicative
+recursion across all dev), \code{"ed"} (exposure-driven additive recursion
+across all dev). Mirrors the \code{loss_method} argument of \code{fit_lr()}; the
+resulting \code{BootstrapTriangle} is consumed by the corresponding
+\verb{fit_*(..., bootstrap = bt)} branch.}
+
+\item{pooling}{Residual-pool grouping. One of \code{"pooled"}, \code{"separated"},
 \code{"tail_pooled"}. \code{"pooled"} shares residuals across all links;
 \code{"separated"} keeps each development link independent (Mack-faithful);
 \code{"tail_pooled"} uses per-link pools before a cut and a single pooled
 bucket after.}
 
-\item{tail}{Tail-cut rule for \code{method = "tail_pooled"}. One of \code{"auto"}
+\item{tail}{Tail-cut rule for \code{pooling = "tail_pooled"}. One of \code{"auto"}
 (cut at the smallest \code{ata_to} whose residual count drops below
 \code{min_pool}) or \code{"maturity"} (cut at the resolved \code{Maturity} change
 point).}
 
 \item{min_pool}{Minimum residual count per per-link pool under
-\code{method = "tail_pooled" && tail = "auto"}. Default \code{5}.}
+\code{pooling = "tail_pooled" && tail = "auto"}. Default \code{5}.}
 
-\item{maturity}{Required only when \code{method = "tail_pooled" && tail = "maturity"}. Four-type dispatch: \code{NULL}, a \code{Maturity} object,
+\item{maturity}{Required only when \code{pooling = "tail_pooled" && tail = "maturity"}. Four-type dispatch: \code{NULL}, a \code{Maturity} object,
 the string \code{"auto"}, or a function \verb{function(tri) -> Maturity}.}
 
 \item{target}{Cumulative metric to perturb. One of \code{"loss"} (default) or
-\code{"prem"}. The value column in \verb{$alt_triangles} is named after this
+\code{"prem"}. The value column in \verb{$pseudo_triangles} is named after this
 target so downstream refit helpers know which column to read.}
 
-\item{B}{Number of bootstrap replicates. Default \code{1000}.}
+\item{B}{Number of bootstrap replicates. Default \code{499} -- the Davison &
+Hinkley (1997) convention picks \code{B} so that \verb{(B + 1) p} is an integer
+for the target quantile \code{p}. With \code{B = 499} (so \code{B + 1 = 500}), every
+one-sided VaR commonly reported in reserving -- \verb{p = 0.50, 0.75, 0.90, 0.95, 0.99} -- lands on an exact integer ordinal index, so the
+empirical CI is exact without interpolation. For Solvency II /
+K-ICS 99.5\% TVaR reporting pass \code{B = 1999}; for the gold-standard
+published convention pass \code{B = 999}.}
 
 \item{seed}{Optional integer seed for reproducibility.}
 
 \item{alpha}{Variance exponent in Mack's \verb{Var(C_\{k+1\} | C_k) = sigma_k^2 C_k^alpha}. Default \code{1} (volume-weighted).}
+
+\item{quantile_ci}{Logical. Whether to include the empirical
+percentile CI columns (\code{ci_lo} / \code{ci_hi} = 2.5\% / 97.5\%
+quantiles of \code{loss_sampled} across replicates) in the \verb{$summary}
+slot. Default \code{FALSE} -- the per-cohort x dev quantile call is
+relatively expensive (~70\% of total \verb{$summary} cost on typical
+triangles, because R-level group-wise quantile bypasses
+\code{data.table::gforce}). Set \code{TRUE} for Solvency II / K-ICS VaR
+reporting. When \code{FALSE}, the Normal-approximation CI
+(\verb{mean_proj +/- 1.96 * total_se}) is still derivable from the
+\code{total_se} column for interactive use.}
+
+\item{keep_pseudo}{Logical. Whether to materialise the per-replicate
+long-format \code{pseudo_triangles} slot. Default \code{TRUE}. \code{FALSE} skips
+the long-format build, keeping only the precomputed \verb{$summary} --
+for large portfolios this saves a multi-million-row data.table
+(~200 MB on a typical 4-group experience triangle at \code{B = 999})
+at the cost of being unable to extract individual replicate
+values. \code{fit_lr()} / \code{fit_loss()} / \code{fit_premium()} already pass
+\code{keep_pseudo = FALSE} internally because they only read \verb{$summary}.}
 }
 \value{
 An object of class \code{BootstrapTriangle} (a list) with elements:
 \describe{
-\item{\code{alt_triangles}}{Long-format \code{data.table} with columns
+\item{\code{pseudo_triangles}}{Long-format \code{data.table} with columns
 \verb{[groups]}, \code{cohort}, \code{dev}, \code{rep}, \code{loss}. \code{rep} ranges over \verb{1..B}.
 Observed-region cells contain residual-perturbed (or original for
 \code{"parametric"}) cumulative loss; the missing region contains
@@ -100,7 +144,7 @@ residual mode: \verb{[groups, cohort, ata_from, ata_to, residual, pool_id]} for 
 \item{\code{f_anchor}}{Per-link Mack factor estimates \code{f_hat} with
 \code{n_cohorts}.}
 \item{\code{sigma2_anchor}}{Per-link Mack \code{sigma^2} and \code{Var(f_hat)}.}
-\item{\code{meta}}{\code{list(type, residual, hat_adj, process, method, tail, min_pool, B, seed, alpha, target, groups, maturity)}.}
+\item{\code{meta}}{\code{list(type, residual, hat_adj, process, method, pooling, tail, min_pool, B, seed, alpha, target, groups, maturity)}.}
 }
 }
 \description{
@@ -110,18 +154,18 @@ perturbation. The output is a model-agnostic \code{BootstrapTriangle} object
 that downstream fit functions (\code{fit_cl} / \code{fit_ed} / \code{fit_lr}) consume to
 recover parameter and process risk decomposition.
 
-This entry point sits at the Triangle level — it knows nothing about CL,
+This entry point sits at the Triangle level -- it knows nothing about CL,
 ED, or SA. Each fit method later refits its own model on every alt
 triangle and adds Stage 2 process noise using its own variance recipe.
 The same bootstrap object is therefore reusable across all fit methods.
 
 Bootstrap proceeds in two conceptual stages (see \code{dev/BOOTSTRAP.md}):
 \enumerate{
-\item \strong{Stage 1 — parameter uncertainty}: residual resample (or parametric
+\item \strong{Stage 1 -- parameter uncertainty}: residual resample (or parametric
 Normal draw) propagated through the cumulative loss chain, refitted
 factors per replicate. This produces \code{B} alternative \emph{mean}
 predictions per cell.
-\item \strong{Stage 2 — process uncertainty}: added \emph{inside the fit function}
+\item \strong{Stage 2 -- process uncertainty}: added \emph{inside the fit function}
 on demand, using the method-specific \code{sigma^2}. The \code{process} argument
 here is stored as metadata so the consuming fit method knows which
 distribution to use.
@@ -139,7 +183,7 @@ tri <- as_triangle(
   premium  = "premium_incr"
 )
 
-# Cell-residual bootstrap (default — chainladder-py parity)
+# Cell-residual bootstrap (default)
 boots <- bootstrap(tri, type = "nonparametric", residual = "cell",
                    hat_adj = TRUE, process = "gamma",
                    B = 500, seed = 1)
@@ -147,7 +191,7 @@ print(boots)
 
 # Link-residual bootstrap (Mack 1993 / Pinheiro 2003 path)
 boots_link <- bootstrap(tri, type = "nonparametric", residual = "link",
-                        method = "separated", process = "gamma",
+                        pooling = "separated", process = "gamma",
                         B = 500, seed = 1)
 }
 

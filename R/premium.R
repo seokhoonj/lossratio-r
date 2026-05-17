@@ -114,6 +114,12 @@ fit_premium <- function(x,
                         B            = 999,
                         seed         = NULL) {
 
+  # data.table NSE bindings for R CMD check
+  prem_total_se <- prem_total_cv <- prem_ci_lo <- prem_ci_hi <- NULL
+  prem_proj_boot <- prem_param_se_boot <- prem_proc_se_boot <- NULL
+  prem_total_se_boot <- prem_total_cv_boot <- NULL
+  prem_ci_lo_boot <- prem_ci_hi_boot <- NULL
+
   .assert_triangle_input(x, "fit_premium()")
   method       <- match.arg(method)
   sigma_method <- match.arg(sigma_method)
@@ -165,54 +171,53 @@ fit_premium <- function(x,
   # bootstrap + per-replicate CL refit + Stage 2 process noise. The
   # analytical proc/param decomposition (prem_proc_se / prem_param_se)
   # is preserved as a diagnostic and not overwritten.
+  # Wrap-only path: read the precomputed cohort × dev summary directly
+  # from boots$summary, map to prem_* role-specific column names.
   boots <- .resolve_bootstrap(
     bootstrap, x,
-    B       = B,
-    seed    = seed,
-    type    = "parametric",
-    process = "normal",
-    target  = "prem",
-    alpha   = alpha
+    B           = B,
+    seed        = seed,
+    type        = "parametric",
+    process     = "normal",
+    target      = "prem",
+    alpha       = alpha,
+    quantile_ci = TRUE,
+    keep_pseudo = FALSE
   )
 
   if (!is.null(boots)) {
-    refit  <- .boot_refit(x, boots, method = "cl", alpha = alpha)
-    # `.boot_refit()` now returns cell_real (chain-propagated process
-    # noise baked in via the boots$meta$process distribution). Skip the
-    # legacy `.boot_add_process_noise()` per-cell pass-through.
-    se     <- .boot_summarize_se(refit, grp = grp)
+    bsum <- data.table::copy(boots$summary)
+    data.table::setnames(
+      bsum,
+      c("mean_proj", "param_se", "proc_se", "total_se", "total_cv"),
+      c("prem_proj_boot", "prem_param_se_boot", "prem_proc_se_boot",
+        "prem_total_se_boot", "prem_total_cv_boot")
+    )
+    has_ci <- all(c("ci_lo", "ci_hi") %in% names(bsum))
+    if (has_ci) {
+      data.table::setnames(bsum, c("ci_lo", "ci_hi"),
+                                  c("prem_ci_lo_boot", "prem_ci_hi_boot"))
+    }
 
-    # Map worker-generic target_* names to role-specific prem_* names.
-    data.table::setnames(se,
-      c("target_proj", "target_total_se", "target_total_cv",
-        "target_ci_lo", "target_ci_hi"),
-      c("prem_proj_boot", "prem_total_se_boot", "prem_total_cv_boot",
-        "prem_ci_lo_boot", "prem_ci_hi_boot"))
-    se[, c("target_proc_se", "target_param_se") := NULL]
-
-    cl_fit$full <- merge(cl_fit$full,
-                         se[, .SD, .SDcols = c(grp, "cohort", "dev",
-                                                "prem_ci_lo_boot",
-                                                "prem_ci_hi_boot",
-                                                "prem_total_se_boot",
-                                                "prem_total_cv_boot")],
+    cl_fit$full <- merge(cl_fit$full, bsum,
                          by = c(grp, "cohort", "dev"), all.x = TRUE,
                          sort = FALSE)
 
-    # Overwrite the analytical CI/SE columns for projected cells. Observed
-    # cells (cell_proc_var = 0 across reps) keep the analytical 0-SE since
-    # the bootstrap output for them is degenerate.
-    # Only override SE/CI for non-observed cells. Observed cells keep
-    # their analytical SE = 0 (the value is known); under residual
-    # bootstrap, the alt observed cells get perturbed and would otherwise
-    # produce a spurious nonzero SE.
+    # Overwrite SE/CI for projected cells. Observed cells keep analytical
+    # SE = 0 (the value is known); under residual bootstrap, pseudo observed
+    # cells would otherwise produce a spurious nonzero SE.
     is_proj <- cl_fit$full$is_observed == FALSE
-    cl_fit$full[is_proj & is.finite(prem_ci_lo_boot),    prem_ci_lo    := prem_ci_lo_boot]
-    cl_fit$full[is_proj & is.finite(prem_ci_hi_boot),    prem_ci_hi    := prem_ci_hi_boot]
     cl_fit$full[is_proj & is.finite(prem_total_se_boot), prem_total_se := prem_total_se_boot]
     cl_fit$full[is_proj & is.finite(prem_total_cv_boot), prem_total_cv := prem_total_cv_boot]
-    cl_fit$full[, c("prem_ci_lo_boot", "prem_ci_hi_boot",
-                     "prem_total_se_boot", "prem_total_cv_boot") := NULL]
+    if (has_ci) {
+      cl_fit$full[is_proj & is.finite(prem_ci_lo_boot), prem_ci_lo := prem_ci_lo_boot]
+      cl_fit$full[is_proj & is.finite(prem_ci_hi_boot), prem_ci_hi := prem_ci_hi_boot]
+    }
+    drop_boot <- c("prem_proj_boot", "prem_param_se_boot",
+                    "prem_proc_se_boot", "prem_total_se_boot",
+                    "prem_total_cv_boot")
+    if (has_ci) drop_boot <- c(drop_boot, "prem_ci_lo_boot", "prem_ci_hi_boot")
+    cl_fit$full[, (drop_boot) := NULL]
   }
 
   cl_fit$ci_type   <- if (!is.null(boots)) "bootstrap" else "analytical"

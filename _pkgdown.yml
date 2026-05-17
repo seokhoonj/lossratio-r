@@ -102,6 +102,8 @@ navbar:
         href: articles/backtest.html
       - text: Convergence
         href: articles/convergence.html
+      - text: Bootstrap SE decomposition
+        href: articles/bootstrap-se-decomposition.html
       - text: -------
       - text: (Reference) Chain ladder reserving
         href: articles/chain-ladder-reserving.html
@@ -185,6 +187,16 @@ reference:
   - regime_at
   - regime_spec
 
+- title: Bootstrap
+  desc: >
+    Cohort × dev standard-error decomposition via simulation (Pythagorean
+    split into parameter and process components). Returned object is
+    consumed by `fit_loss` / `fit_premium` / `fit_lr` through their
+    `bootstrap` argument to replace analytical SE / CI with empirical
+    counterparts.
+  contents:
+  - bootstrap
+
 - title: Projection diagnostic
   desc: >
     Operates on a fitted `LRFit`, not on the raw triangle. Locates
@@ -220,7 +232,6 @@ reference:
 
 - title: Helpers
   contents:
-  - get_recent_weights
   - longer
   - mask_triangle
 
@@ -239,6 +250,7 @@ articles:
   - regime-change-filter
   - backtest
   - convergence
+  - bootstrap-se-decomposition
 - title: Reference
   navbar: ~
   contents:
@@ -255,4 +267,5 @@ articles:
   - "articles/regime-change-filter-ko"
   - "articles/backtest-ko"
   - "articles/convergence-ko"
+  - "articles/bootstrap-se-decomposition-ko"
   - "articles/chain-ladder-reserving-ko"

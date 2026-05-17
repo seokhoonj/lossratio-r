@@ -9,24 +9,27 @@
   residual,
   process,
   method,
+  pooling,
   tail,
   min_pool,
   hat_adj,
+  demean,
   maturity,
   residual_set,
   process_set,
-  method_set,
+  pooling_set,
   tail_set,
   hat_adj_set,
+  demean_set,
   min_pool_set
 )
 }
 \arguments{
-\item{type, residual, process, method, tail}{Resolved (post-match.arg) values.}
+\item{type, residual, process, method, pooling, tail}{Resolved (post-match.arg) values.}
 
-\item{min_pool, hat_adj, maturity}{Scalar values to validate.}
+\item{min_pool, hat_adj, demean, maturity}{Scalar values to validate.}
 
-\item{residual_set, process_set, method_set, tail_set, hat_adj_set, min_pool_set}{Logicals indicating whether the user explicitly passed each argument
+\item{residual_set, process_set, pooling_set, tail_set, hat_adj_set, demean_set, min_pool_set}{Logicals indicating whether the user explicitly passed each argument
 (computed via \code{match.call()} in the caller).}
 }
 \value{
@@ -34,7 +37,7 @@
 }
 \description{
 Internal helper called by \code{bootstrap.Triangle()} after \code{match.arg()}.
-Enforces the type/residual/process/method/tail combination matrix and
-warns when an argument is silently ignored.
+Enforces the type/residual/process/method/pooling/tail combination
+matrix and warns when an argument is silently ignored.
 }
 \keyword{internal}

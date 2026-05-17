@@ -133,6 +133,13 @@ fit_loss <- function(x,
                      B              = 999,
                      seed           = NULL) {
 
+  # data.table NSE bindings for R CMD check
+  loss_param_se <- loss_proc_se <- loss_total_se <- loss_total_cv <- NULL
+  loss_ci_lo <- loss_ci_hi <- NULL
+  loss_proj_boot <- loss_param_se_boot <- loss_proc_se_boot <- NULL
+  loss_total_se_boot <- loss_total_cv_boot <- NULL
+  loss_ci_lo_boot <- loss_ci_hi_boot <- NULL
+
   .assert_triangle_input(x, "fit_loss()")
   method         <- match.arg(method)
   sigma_method   <- match.arg(sigma_method)
@@ -462,54 +469,60 @@ fit_loss <- function(x,
   )]
 
   # 15b) bootstrap overwrite of CI + total SE -------------------------
-  # New pipeline (Phase 2c): resolve the bootstrap arg, perturb the loss
-  # triangle once via `bootstrap()`, then for each replicate refit the
-  # method-specific recursion and add Stage 2 process noise. Premium
-  # stays at observed values (loss-only bootstrap; premium-side
-  # uncertainty is layered in by fit_lr).
+  # Wrap-only path: bootstrap() already produces the cohort × dev
+  # `$summary` with the Pythagorean SE decomposition (param_se /
+  # proc_se / total_se / total_cv + opt. ci_lo / ci_hi). fit_loss
+  # just maps those columns into its own `$full` schema. Premium stays
+  # at observed values (loss-only bootstrap — premium uncertainty is
+  # layered in by fit_lr).
   boots <- .resolve_bootstrap(
     bootstrap, x_full,
-    B       = B,
-    seed    = seed,
-    type    = "parametric",
-    process = "normal",
-    target  = "loss",
-    alpha   = alpha
+    B           = B,
+    seed        = seed,
+    type        = "parametric",
+    process     = "normal",
+    target      = "loss",
+    alpha       = alpha,
+    quantile_ci = TRUE,
+    keep_pseudo = FALSE
   )
 
   if (!is.null(boots)) {
-    refit <- .boot_refit(
-      x_full, boots,
-      method   = method,
-      alpha    = alpha,
-      maturity = if (identical(method, "sa")) maturity else NULL
+    bsum <- data.table::copy(boots$summary)
+    data.table::setnames(
+      bsum,
+      c("mean_proj", "param_se", "proc_se", "total_se", "total_cv"),
+      c("loss_proj_boot", "loss_param_se_boot", "loss_proc_se_boot",
+        "loss_total_se_boot", "loss_total_cv_boot")
     )
-    # `.boot_refit()` now returns chain-propagated cell_real directly;
-    # the legacy `.boot_add_process_noise()` per-cell pass-through is
-    # no longer needed.
-    se <- .boot_summarize_se(refit, grp = grp)
+    has_ci <- all(c("ci_lo", "ci_hi") %in% names(bsum))
+    if (has_ci) {
+      data.table::setnames(bsum, c("ci_lo", "ci_hi"),
+                                  c("loss_ci_lo_boot", "loss_ci_hi_boot"))
+    }
 
-    data.table::setnames(se,
-      c("target_total_se", "target_total_cv",
-        "target_ci_lo",    "target_ci_hi"),
-      c("loss_total_se_boot", "loss_total_cv_boot",
-        "loss_ci_lo_boot",    "loss_ci_hi_boot"))
-    se[, c("target_proj", "target_proc_se", "target_param_se") := NULL]
-
-    full <- merge(full, se,
+    full <- merge(full, bsum,
                   by = c(grp, "cohort", "dev"),
                   all.x = TRUE, sort = FALSE)
+
     # Only override SE/CI for non-observed cells. Observed cells keep
     # their analytical SE = 0 (the value is known); under residual
-    # bootstrap, the alt observed cells get perturbed and would
-    # otherwise produce a spurious nonzero SE.
+    # bootstrap, the pseudo observed cells would otherwise produce a
+    # spurious nonzero SE.
     is_proj <- full$is_observed == FALSE
+    full[is_proj & is.finite(loss_param_se_boot), loss_param_se := loss_param_se_boot]
+    full[is_proj & is.finite(loss_proc_se_boot),  loss_proc_se  := loss_proc_se_boot]
     full[is_proj & is.finite(loss_total_se_boot), loss_total_se := loss_total_se_boot]
     full[is_proj & is.finite(loss_total_cv_boot), loss_total_cv := loss_total_cv_boot]
-    full[is_proj & is.finite(loss_ci_lo_boot),    loss_ci_lo    := loss_ci_lo_boot]
-    full[is_proj & is.finite(loss_ci_hi_boot),    loss_ci_hi    := loss_ci_hi_boot]
-    full[, c("loss_total_se_boot", "loss_total_cv_boot",
-             "loss_ci_lo_boot",    "loss_ci_hi_boot") := NULL]
+    if (has_ci) {
+      full[is_proj & is.finite(loss_ci_lo_boot), loss_ci_lo := loss_ci_lo_boot]
+      full[is_proj & is.finite(loss_ci_hi_boot), loss_ci_hi := loss_ci_hi_boot]
+    }
+    drop_boot <- c("loss_proj_boot", "loss_param_se_boot",
+                    "loss_proc_se_boot", "loss_total_se_boot",
+                    "loss_total_cv_boot")
+    if (has_ci) drop_boot <- c(drop_boot, "loss_ci_lo_boot", "loss_ci_hi_boot")
+    full[, (drop_boot) := NULL]
   }
 
   # 16) incremental projections (loss + prem) ----------------------

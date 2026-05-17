@@ -12,8 +12,7 @@
   aggregate substantively -- the `as_*` name reflects that the
   returned object is *the* canonical lossratio shape derived from
   the raw experience data, not just a thin type cast. The PascalCase
-  classes (`Triangle`, `Calendar`, `Total`, `Link`) remain unchanged
-  and do not collide with ChainLadder's lowercase `triangle` class.
+  classes (`Triangle`, `Calendar`, `Total`, `Link`) remain unchanged.
 
 * **BREAKING** — `plot_triangle.Triangle()` argument `type` renamed to
   `view` for parity with `plot_triangle.CLFit()`, `plot_triangle.LRFit()`,

@@ -178,6 +178,15 @@ fit_lr <- function(x,
                    B              = 999,
                    seed           = NULL) {
 
+  # data.table NSE bindings for R CMD check
+  loss_proj <- prem_proj <- loss_total_se <- prem_total_se <- NULL
+  lr_proj <- lr_se <- is_observed <- NULL
+  loss_param_se <- loss_proc_se <- loss_total_cv <- NULL
+  loss_ci_lo <- loss_ci_hi <- NULL
+  loss_proj_boot <- loss_param_se_boot <- loss_proc_se_boot <- NULL
+  loss_total_se_boot <- loss_total_cv_boot <- NULL
+  loss_ci_lo_boot <- loss_ci_hi_boot <- NULL
+
   .assert_triangle_input(x, "fit_lr()")
   sigma_method   <- match.arg(sigma_method)
   method         <- match.arg(method)
@@ -302,55 +311,66 @@ fit_lr <- function(x,
   ci_type <- "analytical"
 
   # 7) bootstrap CI (optional, overwrites analytical CI columns) -------
-  # Phase 2d new pipeline: bootstrap the loss triangle once via the
-  # shared `bootstrap()` worker, refit the method-specific recursion
-  # per replicate, then update `loss_total_se` / `loss_ci_lo` /
-  # `loss_ci_hi` from the aggregated bootstrap output. `lr_se` is
-  # recomputed via `.compute_lr_se()` so it picks up the new
-  # `loss_total_se` (and -- under `se_method = "delta"` -- combines
-  # with `prem_total_se` from the inner `fit_premium()` plus `rho`).
+  # Wrap-only path: bootstrap() already produces a precomputed
+  # cohort × dev `$summary` with full Pythagorean SE decomposition
+  # (`mean_proj`, `param_se`, `proc_se`, `total_se`, `total_cv` plus
+  # `ci_lo` / `ci_hi` when quantile_ci = TRUE). The fit just maps
+  # those columns into its own `$full` schema and recomputes `lr_se`
+  # from the bootstrap-derived `loss_total_se`. No per-replicate refit
+  # loop here — that work was done once inside bootstrap()'s C kernel.
   boots <- .resolve_bootstrap(
     bootstrap, x,
-    B       = B,
-    seed    = seed,
-    type    = "parametric",
-    process = "normal",
-    target  = "loss",
-    alpha   = loss_alpha
+    B           = B,
+    seed        = seed,
+    type        = "parametric",
+    process     = "normal",
+    target      = "loss",
+    alpha       = loss_alpha,
+    quantile_ci = TRUE,
+    keep_pseudo = FALSE   # fit_lr only reads $summary — long-format
+                          # pseudo_triangles is unused under the wrap-only
+                          # path, so skip its build for the speed +
+                          # memory win.
   )
 
   if (!is.null(boots)) {
-    refit <- .boot_refit(
-      x, boots,
-      method   = method,
-      alpha    = loss_alpha,
-      maturity = if (identical(method, "sa")) maturity else NULL
+    bsum <- data.table::copy(boots$summary)
+    # Rename to the fit_lr column convention so the merge / override
+    # below uses the same names as the analytical path.
+    data.table::setnames(
+      bsum,
+      c("mean_proj", "param_se", "proc_se", "total_se", "total_cv"),
+      c("loss_proj_boot", "loss_param_se_boot", "loss_proc_se_boot",
+        "loss_total_se_boot", "loss_total_cv_boot")
     )
-    # `.boot_refit()` now returns chain-propagated cell_real directly;
-    # the legacy `.boot_add_process_noise()` per-cell pass-through is
-    # no longer needed.
-    se <- .boot_summarize_se(refit, grp = grp)
+    has_ci <- all(c("ci_lo", "ci_hi") %in% names(bsum))
+    if (has_ci) {
+      data.table::setnames(bsum, c("ci_lo", "ci_hi"),
+                                  c("loss_ci_lo_boot", "loss_ci_hi_boot"))
+    }
 
-    data.table::setnames(se,
-      c("target_total_se", "target_total_cv",
-        "target_ci_lo",    "target_ci_hi"),
-      c("loss_total_se_boot", "loss_total_cv_boot",
-        "loss_ci_lo_boot",    "loss_ci_hi_boot"))
-    se[, c("target_proj", "target_proc_se", "target_param_se") := NULL]
-
-    full <- merge(full, se,
+    full <- merge(full, bsum,
                   by = c(grp, "cohort", "dev"),
                   all.x = TRUE, sort = FALSE)
-    # Only override SE/CI for non-observed cells. Observed cells keep
-    # their analytical SE = 0; under residual bootstrap, alt observed
-    # cells would otherwise produce a spurious nonzero SE.
+
+    # Only override projection columns on non-observed cells. Observed
+    # cells keep their analytical SE = 0 — the bootstrap perturbation
+    # of the upper triangle is a tool for parameter uncertainty, not a
+    # claim about observed cell variability.
     is_proj <- full$is_observed == FALSE
+    full[is_proj & is.finite(loss_param_se_boot), loss_param_se := loss_param_se_boot]
+    full[is_proj & is.finite(loss_proc_se_boot),  loss_proc_se  := loss_proc_se_boot]
     full[is_proj & is.finite(loss_total_se_boot), loss_total_se := loss_total_se_boot]
     full[is_proj & is.finite(loss_total_cv_boot), loss_total_cv := loss_total_cv_boot]
-    full[is_proj & is.finite(loss_ci_lo_boot),    loss_ci_lo    := loss_ci_lo_boot]
-    full[is_proj & is.finite(loss_ci_hi_boot),    loss_ci_hi    := loss_ci_hi_boot]
-    full[, c("loss_total_se_boot", "loss_total_cv_boot",
-             "loss_ci_lo_boot",    "loss_ci_hi_boot") := NULL]
+    if (has_ci) {
+      full[is_proj & is.finite(loss_ci_lo_boot), loss_ci_lo := loss_ci_lo_boot]
+      full[is_proj & is.finite(loss_ci_hi_boot), loss_ci_hi := loss_ci_hi_boot]
+    }
+    drop_boot <- c("loss_proj_boot", "loss_param_se_boot",
+                    "loss_proc_se_boot", "loss_total_se_boot",
+                    "loss_total_cv_boot")
+    if (has_ci) drop_boot <- c(drop_boot, "loss_ci_lo_boot", "loss_ci_hi_boot")
+    full[, (drop_boot) := NULL]
 
     # Recompute lr_se from bootstrap-derived loss_total_se. Under
     # `se_method = "delta"`, this combines with `prem_total_se` (analytic
@@ -615,117 +635,6 @@ summary.LRFit <- function(object, ...) {
          prem <= 0
   se[bad] <- NA_real_
   se
-}
-
-
-# LR bootstrap composition --------------------------------------------------
-
-#' LR-level bootstrap CI / SE composition for one cohort
-#'
-#' @description
-#' Internal helper for [fit_lr()] bootstrap mode. Composes per-dev
-#' bootstrap CI / SE for both *cumulative loss* and *loss ratio* from a
-#' single simulation of the loss path. Premium is treated as known
-#' (fixed `prem_proj`), so LR uncertainty inherits from loss uncertainty
-#' divided by the fixed premium projection -- the `se_method = "fixed"`
-#' analytical analogue.
-#'
-#' Dispatches to one of the single-role per-cohort simulators based on
-#' `method`:
-#' \describe{
-#'   \item{`"sa"`}{[.sa_bootstrap] -- ED before maturity, CL after.}
-#'   \item{`"ed"`}{[.ed_bootstrap] -- additive ED throughout.}
-#'   \item{`"cl"`}{[.cl_bootstrap] -- multiplicative CL throughout.}
-#' }
-#'
-#' @return A list of six numeric vectors aligned with the input cohort
-#'   rows: `lr_ci_lo`, `lr_ci_hi`, `lr_se`, `loss_ci_lo`, `loss_ci_hi`,
-#'   `loss_total_se`.
-#'
-#' @keywords internal
-.lr_bootstrap_cohort <- function(loss_obs,
-                                 loss_proj,
-                                 prem_proj,
-                                 g_sel,
-                                 f_sel,
-                                 g_sigma2,
-                                 f_sigma2,
-                                 g_var,
-                                 f_var,
-                                 last_obs,
-                                 maturity_from,
-                                 B,
-                                 loss_alpha,
-                                 method,
-                                 probs,
-                                 process = "normal") {
-
-  sim <- switch(method,
-    sa = .sa_bootstrap(
-      target_obs    = loss_obs,
-      target_proj   = loss_proj,
-      exposure_proj = prem_proj,
-      g_sel         = g_sel,
-      f_sel         = f_sel,
-      g_sigma2      = g_sigma2,
-      f_sigma2      = f_sigma2,
-      g_var         = g_var,
-      f_var         = f_var,
-      last_obs      = last_obs,
-      maturity_from = maturity_from,
-      B             = B,
-      alpha         = loss_alpha,
-      process       = process
-    ),
-    ed = .ed_bootstrap(
-      target_obs    = loss_obs,
-      target_proj   = loss_proj,
-      exposure_proj = prem_proj,
-      g_sel         = g_sel,
-      g_sigma2      = g_sigma2,
-      g_var         = g_var,
-      last_obs      = last_obs,
-      B             = B,
-      alpha         = loss_alpha,
-      process       = process
-    ),
-    cl = .cl_bootstrap(
-      target_obs    = loss_obs,
-      target_proj   = loss_proj,
-      f_sel         = f_sel,
-      f_sigma2      = f_sigma2,
-      f_var         = f_var,
-      last_obs      = last_obs,
-      B             = B,
-      alpha         = loss_alpha,
-      process       = process
-    ),
-    stop("Unknown method: ", method, call. = FALSE)
-  )
-
-  loss <- .bootstrap_summary(sim, last_obs, probs)
-
-  # LR sim: divide each row by the (fixed) premium projection at that dev
-  # Rows where prem_proj is non-finite or <= 0 produce NA across all reps.
-  lr_sim <- sim
-  for (i in seq_len(nrow(sim))) {
-    e_i <- prem_proj[i]
-    lr_sim[i, ] <- if (is.finite(e_i) && e_i > 0) {
-      sim[i, ] / e_i
-    } else {
-      NA_real_
-    }
-  }
-  lr <- .bootstrap_summary(lr_sim, last_obs, probs)
-
-  list(
-    lr_ci_lo      = lr$ci_lo,
-    lr_ci_hi      = lr$ci_hi,
-    lr_se         = lr$se,
-    loss_ci_lo    = loss$ci_lo,
-    loss_ci_hi    = loss$ci_hi,
-    loss_total_se = loss$se
-  )
 }
 
 

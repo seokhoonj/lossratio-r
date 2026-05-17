@@ -20,6 +20,7 @@ where \code{prem} represents risk premium, not written prem.
 Useful links:
 \itemize{
   \item \url{https://seokhoonj.github.io/lossratio}
+  \item \url{https://seokhoonj.github.io/lossratio/ko}
   \item \url{https://github.com/seokhoonj/lossratio}
   \item Report bugs at \url{https://github.com/seokhoonj/lossratio/issues}
 }
