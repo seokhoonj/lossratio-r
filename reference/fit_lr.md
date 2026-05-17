@@ -56,8 +56,8 @@ fit_lr(
   se_method = c("fixed", "delta"),
   rho = 0.95,
   conf_level = 0.95,
-  bootstrap = FALSE,
-  B = 1000,
+  bootstrap = NULL,
+  B = 999,
   seed = NULL
 )
 ```
@@ -212,14 +212,49 @@ fit_lr(
 
 - bootstrap:
 
-  Logical; if `TRUE`, parameter and process variance are derived via
-  residual bootstrap rather than the analytical delta method. Default is
-  `FALSE`.
+  Bootstrap configuration. Five forms accepted:
+
+  `NULL` (default)
+
+  :   Auto-resolved by `method`: bootstrap for `"sa"`/`"ed"`, analytical
+      for `"cl"`. Matches legacy behavior.
+
+  `TRUE` / `FALSE`
+
+  :   Back-compat with the legacy logical arg. `TRUE` triggers `"auto"`;
+      `FALSE` disables.
+
+  `"auto"`
+
+  :   Internal
+      [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
+      call on the loss triangle with defaults
+      `(type = "parametric", process = "normal", target = "loss")`.
+
+  `BootstrapTriangle`
+
+  :   Pre-built object from
+      [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md).
+      Must have `meta$target == "loss"`.
+
+  Function `function(tri) -> BootstrapTriangle`
+
+  :   Lazy spec invoked on the input Triangle (leakage-safe for
+      [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)).
+
+  Premium is held at observed values during the bootstrap (loss-only
+  convention). `lr_se` is recomputed from the bootstrap-derived
+  `loss_total_se` via
+  [`.compute_lr_se()`](https://seokhoonj.github.io/lossratio/reference/dot-compute_lr_se.md),
+  combined with the premium-side SE per `se_method` (`"fixed"` ignores
+  premium SE; `"delta"` uses `prem_total_se` from the inner
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+  plus `rho` correlation).
 
 - B:
 
-  Integer number of bootstrap replications. Used only when
-  `bootstrap = TRUE`. Default is `1000`.
+  Integer number of bootstrap replications. Used only when `bootstrap`
+  resolves to `"auto"`. Default is `999`.
 
 - seed:
 
@@ -245,7 +280,7 @@ An object of class `"LRFit"`.
 if (FALSE) { # \dontrun{
 data(experience)
 tri <- as_triangle(
-  experience[coverage == "SUR"],
+  experience[coverage == "surgery"],
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",

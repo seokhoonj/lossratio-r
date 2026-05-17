@@ -118,6 +118,7 @@ flag over-projection. Aggregated by development period
     <li><a class="dropdown-item" href="../articles/regime-change-filter.html">Regime change filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/convergence.html">Convergence</a></li>
+    <li><a class="dropdown-item" href="../articles/bootstrap-se-decomposition.html">Bootstrap SE decomposition</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/chain-ladder-reserving.html">(Reference) Chain ladder reserving</a></li>
   </ul></li>
@@ -176,8 +177,8 @@ flag over-projection. Aggregated by development period
 <span>  se_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fixed"</span>, <span class="st">"delta"</span><span class="op">)</span>,</span>
 <span>  rho <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  conf_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
-<span>  bootstrap <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  B <span class="op">=</span> <span class="fl">1000</span>,</span>
+<span>  bootstrap <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  B <span class="op">=</span> <span class="fl">999</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
@@ -285,8 +286,17 @@ intervals. Unused for <code>target = "premium"</code>.</p></dd>
 
 
 <dt id="arg-bootstrap-b-seed">bootstrap, B, seed<a class="anchor" aria-label="anchor" href="#arg-bootstrap-b-seed"></a></dt>
-<dd><p>Bootstrap controls for <code><a href="fit_lr.html">fit_lr()</a></code>. Unused
-for <code>target = "loss"</code> / <code>target = "premium"</code>.</p></dd>
+<dd><p>Bootstrap controls forwarded to the
+target-specific fitter (<code><a href="fit_lr.html">fit_lr()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code> / <code><a href="fit_premium.html">fit_premium()</a></code>).
+<code>bootstrap = NULL</code> (default) defers to the fitter's method-dependent
+resolution: bootstrap for SA/ED methods, analytical for pure CL.
+The fitter accepts the full 4-type dispatch (<code>NULL</code> / logical /
+<code>"auto"</code> / <code>BootstrapTriangle</code> / function). For a leakage-safe
+backtest with a custom bootstrap configuration, prefer a function
+<code>function(tri) -&gt; BootstrapTriangle</code> (it is invoked on the <em>masked</em>
+triangle, not the original) over a pre-built <code>BootstrapTriangle</code>
+object (which may have been built on the unmasked data and would
+leak hold-out cells into the residual pool).</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

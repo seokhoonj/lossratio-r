@@ -43,8 +43,8 @@ backtest(
   se_method = c("fixed", "delta"),
   rho = 0.95,
   conf_level = 0.95,
-  bootstrap = FALSE,
-  B = 1000,
+  bootstrap = NULL,
+  B = 999,
   seed = NULL,
   ...
 )
@@ -177,9 +177,21 @@ print(x, ...)
 
 - bootstrap, B, seed:
 
-  Bootstrap controls for
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md).
-  Unused for `target = "loss"` / `target = "premium"`.
+  Bootstrap controls forwarded to the target-specific fitter
+  ([`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  /
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
+  /
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)).
+  `bootstrap = NULL` (default) defers to the fitter's method-dependent
+  resolution: bootstrap for SA/ED methods, analytical for pure CL. The
+  fitter accepts the full 4-type dispatch (`NULL` / logical / `"auto"` /
+  `BootstrapTriangle` / function). For a leakage-safe backtest with a
+  custom bootstrap configuration, prefer a function
+  `function(tri) -> BootstrapTriangle` (it is invoked on the *masked*
+  triangle, not the original) over a pre-built `BootstrapTriangle`
+  object (which may have been built on the unmasked data and would leak
+  hold-out cells into the residual pool).
 
 - ...:
 

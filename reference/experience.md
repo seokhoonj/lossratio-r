@@ -8,8 +8,8 @@ noise CV) were measured once on a real long-term Korean health-insurance
 portfolio and baked in as constants — no real-portfolio data is shipped.
 The runoff shape uses a small dev-1 "waiting-period" dip followed by
 roughly constant incremental loss per dev, so the cumulative LR rises
-monotonically toward the target. The SUR coverage carries a synthetic
-2024-07 cohort regime change (target LR scaled by 0.6) so the
+monotonically toward the target. The surgery coverage carries a
+synthetic 2024-07 cohort regime change (target LR scaled by 0.6) so the
 [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
 example has a clear shift to find.
 
@@ -33,13 +33,13 @@ up-to-36-dev jagged triangle:
     cerebrovascular disease (stroke, cerebral infarction, cerebral
     haemorrhage) and ischemic heart disease (angina, acute myocardial
     infarction). Does **not** include cancer; cancer is the separate
-    `CAN` coverage.
+    `cancer` coverage.
 
-  - `CAN` — cancer.
+  - `cancer` — cancer.
 
-  - `HOS` — hospitalisation per-day fixed benefit.
+  - `inpatient` — hospitalisation per-day fixed benefit.
 
-  - `SUR` — surgery per-event fixed benefit.
+  - `surgery` — surgery per-event fixed benefit.
 
 - uy, uy_h, uy_q, uy_m:
 

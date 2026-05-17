@@ -108,6 +108,7 @@
     <li><a class="dropdown-item" href="articles/regime-change-filter.html">Regime change filter</a></li>
     <li><a class="dropdown-item" href="articles/backtest.html">Backtest</a></li>
     <li><a class="dropdown-item" href="articles/convergence.html">Convergence</a></li>
+    <li><a class="dropdown-item" href="articles/bootstrap-se-decomposition.html">Bootstrap SE decomposition</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="articles/chain-ladder-reserving.html">(Reference) Chain ladder reserving</a></li>
   </ul>
@@ -309,8 +310,8 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Cell selection: maturity (dev axis) + regime (cohort axis)</span></span>
-<span><span class="fu"><a href="reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"surgery"</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"surgery"</span><span class="op">]</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Projection diagnostic: when does the projected ultimate LR stop revising?</span></span>
 <span><span class="fu"><a href="reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span></code></pre></div>

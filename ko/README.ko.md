@@ -50,9 +50,9 @@ library(lossratio)
 data(experience)           # 번들 합성 데이터 (4 coverages)
 
 # 1) Triangle 구축 — long-format 데이터 → 코호트 × dev 구조
-exp_sur <- experience[coverage == "SUR"]
+exp_surgery <- experience[coverage == "surgery"]
 tri <- as_triangle(
-  exp_sur,
+  exp_surgery,
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",

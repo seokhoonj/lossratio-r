@@ -32,6 +32,7 @@
     <li><a class="dropdown-item" href="../articles/regime-change-filter-ko.html">Regime change filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/convergence-ko.html">Convergence</a></li>
+    <li><a class="dropdown-item" href="../articles/bootstrap-se-decomposition-ko.html">부트스트랩 표준오차 분해</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/chain-ladder-reserving-ko.html">(참고) Chain ladder 를 이용한 준비금 산출</a></li>
   </ul></li>
@@ -249,7 +250,23 @@
         </dt>
         <dd>Build a lazy regime detection spec</dd>
       </dl></div><div class="section level2">
-      <h2 id="--6">예측 진단<a class="anchor" aria-label="anchor" href="#--6"></a></h2>
+      <h2 id="--6">부트스트랩<a class="anchor" aria-label="anchor" href="#--6"></a></h2>
+
+      <div class="section-desc"><p>cohort × dev 단위 표준오차 분해를 시뮬레이션으로 산출 (피타고라스 분해 — parameter + process). 반환 객체는 <code>fit_loss</code> / <code>fit_premium</code> / <code>fit_lr</code> 의 <code>bootstrap</code> 인자에 전달되어 분석식 SE / CI 를 경험적 값으로 교체.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="bootstrap.html">bootstrap()</a></code>
+
+        </dt>
+        <dd>Bootstrap a Triangle</dd>
+      </dl></div><div class="section level2">
+      <h2 id="--7">예측 진단<a class="anchor" aria-label="anchor" href="#--7"></a></h2>
 
       <div class="section-desc"><p>적합 결과 <code>LRFit</code> 위에서 동작 (raw Triangle 아님). 예측 손해율의 갱신이 멈추는 valuation 깊이 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math> 를 dual criterion (예측 갱신이 잡음 수준 이하 AND 코호트 간 분산이 작음, M 회 연속) 으로 탐지.</p></div>
 
@@ -281,7 +298,7 @@
         </dt>
         <dd>Backtest a loss / prem / loss-ratio projection on existing data</dd>
       </dl></div><div class="section level2">
-      <h2 id="--7">시각화<a class="anchor" aria-label="anchor" href="#--7"></a></h2>
+      <h2 id="--8">시각화<a class="anchor" aria-label="anchor" href="#--8"></a></h2>
 
       <div class="section-desc"><p><code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> (base generic) 과 <code><a href="../reference/plot_triangle.html">plot_triangle()</a></code> (lossratio generic) 이 객체 클래스에 따라 dispatch.</p></div>
 
@@ -497,6 +514,13 @@
 
         <dt>
 
+          <code><a href="print.BootstrapTriangle.html">print(<i>&lt;BootstrapTriangle&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for BootstrapTriangle</dd>
+
+        <dt>
+
           <code><a href="print.CLFit.html">print(<i>&lt;CLFit&gt;</i>)</a></code>
 
         </dt>
@@ -621,7 +645,7 @@
         </dt>
         <dd>Summarise development statistics (Mean, Median, Weighted)</dd>
       </dl></div><div class="section level2">
-      <h2 id="--8">헬퍼<a class="anchor" aria-label="anchor" href="#--8"></a></h2>
+      <h2 id="--9">헬퍼<a class="anchor" aria-label="anchor" href="#--9"></a></h2>
 
 
 
@@ -631,13 +655,6 @@
 
 
       <dl><dt>
-
-          <code><a href="get_recent_weights.html">get_recent_weights()</a></code>
-
-        </dt>
-        <dd>Recent-diagonal weights for a development triangle</dd>
-
-        <dt>
 
           <code><a href="longer.html">longer()</a></code>
 
@@ -651,7 +668,7 @@
         </dt>
         <dd>Mask the last N calendar diagonals from a Triangle</dd>
       </dl></div><div class="section level2">
-      <h2 id="--9">데이터셋<a class="anchor" aria-label="anchor" href="#--9"></a></h2>
+      <h2 id="--10">데이터셋<a class="anchor" aria-label="anchor" href="#--10"></a></h2>
 
 
 

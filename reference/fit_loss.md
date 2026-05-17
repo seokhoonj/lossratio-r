@@ -39,7 +39,10 @@ fit_loss(
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   maturity = "auto",
-  conf_level = 0.95
+  conf_level = 0.95,
+  bootstrap = NULL,
+  B = 999,
+  seed = NULL
 )
 ```
 
@@ -157,6 +160,52 @@ fit_loss(
   Confidence level for analytical CI on the loss projection
   (`loss_ci_lo`, `loss_ci_hi`). Default `0.95`.
 
+- bootstrap:
+
+  Bootstrap configuration. Five forms accepted:
+
+  `NULL` (default)
+
+  :   Auto-resolved by `method`: bootstrap for `"sa"`/`"ed"`, analytical
+      for `"cl"`. Matches the legacy `bootstrap = NULL` behavior.
+
+  `TRUE` / `FALSE`
+
+  :   Back-compat with the legacy logical arg. `TRUE` triggers `"auto"`;
+      `FALSE` disables.
+
+  `"auto"`
+
+  :   Internal
+      [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
+      call on the loss triangle with defaults
+      `(type = "parametric", process = "normal", target = "loss")`.
+
+  `BootstrapTriangle`
+
+  :   Pre-built object from
+      [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md).
+      Must have `meta$target == "loss"`.
+
+  Function `function(tri) -> BootstrapTriangle`
+
+  :   Lazy spec invoked on the input Triangle (leakage-safe for
+      [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)).
+
+  Premium stays at its observed values during the bootstrap (the
+  loss-only convention); premium-side uncertainty is layered in by
+  [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
+  via its own bootstrap.
+
+- B:
+
+  Integer number of bootstrap replicates. Used only when `bootstrap`
+  resolves to `"auto"`. Default `999`.
+
+- seed:
+
+  Optional integer seed for reproducible bootstrap. Default `NULL`.
+
 ## Value
 
 An object of class `"LossFit"`. List with components: `full`, `proj`,
@@ -184,7 +233,7 @@ them as implementation columns.
 if (FALSE) { # \dontrun{
 data(experience)
 tri <- as_triangle(
-  experience[coverage == "SUR"],
+  experience[coverage == "surgery"],
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",

@@ -55,6 +55,7 @@
     <li><a class="dropdown-item" href="../articles/regime-change-filter-ko.html">Regime change filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/convergence-ko.html">Convergence</a></li>
+    <li><a class="dropdown-item" href="../articles/bootstrap-se-decomposition-ko.html">부트스트랩 표준오차 분해</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/chain-ladder-reserving-ko.html">(참고) Chain ladder 를 이용한 준비금 산출</a></li>
   </ul>
@@ -122,7 +123,7 @@ valuation 시점에서 모형은 무엇이라 말했을까?” 를 모사하기 
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio" class="external-link">lossratio</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span><span class="va">tri_sur</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
-<span>  <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>,</span>
+<span>  <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"surgery"</span><span class="op">]</span>,</span>
 <span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
@@ -187,14 +188,14 @@ dev 까지만 추정값을 만들 수 있으므로, 그 범위를 넘어가는 �
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">bt</span><span class="op">$</span><span class="va">col_summary</span>, <span class="fl">8</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    coverage   dev     n     aeg_mean      aeg_med ae_err_mean  ae_err_med</span></span>
 <span><span class="co">#&gt;      &lt;char&gt; &lt;int&gt; &lt;int&gt;        &lt;num&gt;        &lt;num&gt;       &lt;num&gt;       &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      SUR     2     1 -0.287972089 -0.287972089 -0.36674934 -0.36674934</span></span>
-<span><span class="co">#&gt; 2:      SUR     3     2 -0.105823621 -0.105823621 -0.09011956 -0.09011956</span></span>
-<span><span class="co">#&gt; 3:      SUR     4     3 -0.043897002  0.021766603 -0.02300711  0.04378485</span></span>
-<span><span class="co">#&gt; 4:      SUR     5     4 -0.011055827  0.005435137  0.01186457  0.01235174</span></span>
-<span><span class="co">#&gt; 5:      SUR     6     5 -0.016011400  0.037090206  0.01349876  0.06211287</span></span>
-<span><span class="co">#&gt; 6:      SUR     7     6  0.006639057  0.052051927  0.03540917  0.07574468</span></span>
-<span><span class="co">#&gt; 7:      SUR     8     6  0.038755683  0.046849343  0.05916241  0.07259077</span></span>
-<span><span class="co">#&gt; 8:      SUR     9     6  0.016598376  0.018133964  0.02445333  0.02775188</span></span>
+<span><span class="co">#&gt; 1:  surgery     2     1 -0.287972089 -0.287972089 -0.36674934 -0.36674934</span></span>
+<span><span class="co">#&gt; 2:  surgery     3     2 -0.105823621 -0.105823621 -0.09011956 -0.09011956</span></span>
+<span><span class="co">#&gt; 3:  surgery     4     3 -0.043897002  0.021766603 -0.02300711  0.04378485</span></span>
+<span><span class="co">#&gt; 4:  surgery     5     4 -0.011055827  0.005435137  0.01186457  0.01235174</span></span>
+<span><span class="co">#&gt; 5:  surgery     6     5 -0.016011400  0.037090206  0.01349876  0.06211287</span></span>
+<span><span class="co">#&gt; 6:  surgery     7     6  0.006639057  0.052051927  0.03540917  0.07574468</span></span>
+<span><span class="co">#&gt; 7:  surgery     8     6  0.038755683  0.046849343  0.05916241  0.07259077</span></span>
+<span><span class="co">#&gt; 8:  surgery     9     6  0.016598376  0.018133964  0.02445333  0.02775188</span></span>
 <span><span class="co">#&gt;      ae_err_wt incr_aeg_mean incr_aeg_med incr_ae_err_mean incr_ae_err_med</span></span>
 <span><span class="co">#&gt;          &lt;num&gt;         &lt;num&gt;        &lt;num&gt;            &lt;num&gt;           &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1: -0.36674934   -0.57495418 -0.574954175      -0.42911219    -0.429112189</span></span>
@@ -229,12 +230,12 @@ effect).</strong> 그 외에는 편향이 없는 출력에서 단 하나의 대�
 <code class="sourceCode R"><span><span class="va">bt</span><span class="op">$</span><span class="va">diag_summary</span></span>
 <span><span class="co">#&gt;    coverage cal_idx     n      aeg_mean       aeg_med  ae_err_mean   ae_err_med</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;   &lt;int&gt; &lt;int&gt;         &lt;num&gt;         &lt;num&gt;        &lt;num&gt;        &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      SUR      31    29 -0.0125686252 -0.0056732350 -0.011309410 -0.003699313</span></span>
-<span><span class="co">#&gt; 2:      SUR      32    28 -0.0104717812 -0.0114871218 -0.002794292 -0.009588959</span></span>
-<span><span class="co">#&gt; 3:      SUR      33    27  0.0004718616  0.0050471735  0.007666312  0.006154835</span></span>
-<span><span class="co">#&gt; 4:      SUR      34    26  0.0012851467 -0.0002953897  0.008094503  0.000421251</span></span>
-<span><span class="co">#&gt; 5:      SUR      35    25 -0.0006986581  0.0145835308  0.007408947  0.009455704</span></span>
-<span><span class="co">#&gt; 6:      SUR      36    24 -0.0027175011  0.0105940082  0.005874139  0.009450279</span></span>
+<span><span class="co">#&gt; 1:  surgery      31    29 -0.0125686252 -0.0056732350 -0.011309410 -0.003699313</span></span>
+<span><span class="co">#&gt; 2:  surgery      32    28 -0.0104717812 -0.0114871218 -0.002794292 -0.009588959</span></span>
+<span><span class="co">#&gt; 3:  surgery      33    27  0.0004718616  0.0050471735  0.007666312  0.006154835</span></span>
+<span><span class="co">#&gt; 4:  surgery      34    26  0.0012851467 -0.0002953897  0.008094503  0.000421251</span></span>
+<span><span class="co">#&gt; 5:  surgery      35    25 -0.0006986581  0.0145835308  0.007408947  0.009455704</span></span>
+<span><span class="co">#&gt; 6:  surgery      36    24 -0.0027175011  0.0105940082  0.005874139  0.009450279</span></span>
 <span><span class="co">#&gt;        ae_err_wt incr_aeg_mean incr_aeg_med incr_ae_err_mean incr_ae_err_med</span></span>
 <span><span class="co">#&gt;            &lt;num&gt;         &lt;num&gt;        &lt;num&gt;            &lt;num&gt;           &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1: -0.0107004533   -0.08350070  -0.07460811     -0.036347452     -0.06750071</span></span>
@@ -251,7 +252,7 @@ effect).</strong> 그 외에는 편향이 없는 출력에서 단 하나의 대�
 <span><span class="co">#&gt; 4:     0.01130928</span></span>
 <span><span class="co">#&gt; 5:    -0.02508022</span></span>
 <span><span class="co">#&gt; 6:    -0.05088339</span></span></code></pre></div>
-<p>대각선을 가로지르는 단조로운 표류 (위 SUR 예시처럼
+<p>대각선을 가로지르는 단조로운 표류 (위 surgery 예시처럼
 <code>25, ..., 30</code> 으로 가면서 A/E Error 가 점점 더 양수가 되는
 패턴) 는 보통 가장 최근 대각선의 실적이 이전 코호트의 link factor 가
 함의하는 수준보다 더 높게 진행되고 있음 — 즉 정적 모형이 흡수하지 못한
@@ -260,14 +261,13 @@ regime shift 가 발생했음을 시사한다.</p>
 dev 셀을 진단하려면 <code>bt$ae_err</code> 를 직접 살펴본다.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">bt</span><span class="op">$</span><span class="va">ae_err</span>, <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
 <span><span class="co">#&gt;    coverage     cohort   dev   actual expected          aeg       ae_err</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt; &lt;int&gt;    &lt;num&gt;    &lt;num&gt;        &lt;num&gt;        &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      SUR 2023-02-01    30 1.474656 1.485094 -0.010438112 -0.007028587</span></span>
-<span><span class="co">#&gt; 2:      SUR 2023-03-01    29 1.441826 1.414305  0.027520309  0.019458534</span></span>
-<span><span class="co">#&gt; 3:      SUR 2023-03-01    30 1.441234 1.418776  0.022457560  0.015828823</span></span>
-<span><span class="co">#&gt; 4:      SUR 2023-04-01    28 1.513021 1.510169  0.002851902  0.001888465</span></span>
-<span><span class="co">#&gt; 5:      SUR 2023-04-01    29 1.531922 1.504873  0.027048593  0.017974003</span></span>
+<span><span class="co">#&gt; 1:  surgery 2023-02-01    30 1.474656 1.485094 -0.010438112 -0.007028587</span></span>
+<span><span class="co">#&gt; 2:  surgery 2023-03-01    29 1.441826 1.414305  0.027520309  0.019458534</span></span>
+<span><span class="co">#&gt; 3:  surgery 2023-03-01    30 1.441234 1.418776  0.022457560  0.015828823</span></span>
+<span><span class="co">#&gt; 4:  surgery 2023-04-01    28 1.513021 1.510169  0.002851902  0.001888465</span></span>
+<span><span class="co">#&gt; 5:  surgery 2023-04-01    29 1.531922 1.504873  0.027048593  0.017974003</span></span>
 <span><span class="co">#&gt;    incr_actual incr_expected    incr_aeg incr_ae_err cal_idx</span></span>
 <span><span class="co">#&gt;          &lt;num&gt;         &lt;num&gt;       &lt;num&gt;       &lt;num&gt;   &lt;int&gt;</span></span>
 <span><span class="co">#&gt; 1:    1.311699      1.616053 -0.30435387 -0.18833160      31</span></span>

@@ -31,7 +31,10 @@ fit_premium(
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   tail = FALSE,
-  conf_level = 0.95
+  conf_level = 0.95,
+  bootstrap = NULL,
+  B = 999,
+  seed = NULL
 )
 ```
 
@@ -99,6 +102,51 @@ fit_premium(
   Confidence level for analytical CI on the prem projection
   (`prem_ci_lo`, `prem_ci_hi`). Default `0.95`.
 
+- bootstrap:
+
+  Bootstrap configuration. Five forms accepted:
+
+  `NULL` (default)
+
+  :   Auto-resolved by `method`: bootstrap for `"ed"`, analytical for
+      `"cl"`. Same behavior as the legacy `bootstrap = NULL` shape.
+
+  `TRUE` / `FALSE`
+
+  :   Back-compat with the legacy logical arg. `TRUE` triggers
+      `bootstrap = "auto"`; `FALSE` disables.
+
+  `"auto"`
+
+  :   Internal
+      [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
+      call on the premium triangle with defaults
+      `(type = "parametric", process = "normal", target = "prem")`.
+
+  `BootstrapTriangle`
+
+  :   Pre-built object from
+      [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md).
+      Must have `meta$target == "prem"`.
+
+  Function `function(tri) -> BootstrapTriangle`
+
+  :   Lazy spec invoked on the input Triangle (leakage-safe for
+      [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)).
+
+  Regardless of `method`, the bootstrap path uses CL recursion –
+  premium's self-anchor makes ED and CL algebraically equivalent
+  (`g_k = f_k - 1`, `sigma^2_g = sigma^2_f`).
+
+- B:
+
+  Integer number of bootstrap replicates. Used only when `bootstrap`
+  resolves to `"auto"`. Default `999`.
+
+- seed:
+
+  Optional integer seed for reproducible bootstrap. Default `NULL`.
+
 ## Value
 
 An object of class `"PremiumFit"` (a list with the same structure as
@@ -106,7 +154,10 @@ An object of class `"PremiumFit"` (a list with the same structure as
 `premium_method`. The `$full` data.table uses role-specific column names
 (`prem_obs`, `prem_proj`, `incr_prem_proj`, `prem_proc_se`,
 `prem_param_se`, `prem_total_se`, `prem_proc_cv`, `prem_param_cv`,
-`prem_total_cv`, `prem_ci_lo`, `prem_ci_hi`).
+`prem_total_cv`, `prem_ci_lo`, `prem_ci_hi`). Under `bootstrap = TRUE`,
+`prem_ci_lo` / `prem_ci_hi` are bootstrap quantiles and `prem_total_se`
+/ `prem_total_cv` are derived from the simulation SD; the analytical
+proc/param decomposition is retained as diagnostic.
 
 ## See also
 
@@ -121,7 +172,7 @@ An object of class `"PremiumFit"` (a list with the same structure as
 if (FALSE) { # \dontrun{
 data(experience)
 tri <- as_triangle(
-  experience[coverage == "SUR"],
+  experience[coverage == "surgery"],
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",

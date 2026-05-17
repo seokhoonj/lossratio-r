@@ -23,6 +23,8 @@ Useful links:
 
 - <https://seokhoonj.github.io/lossratio>
 
+- <https://seokhoonj.github.io/lossratio/ko>
+
 - <https://github.com/seokhoonj/lossratio>
 
 - Report bugs at <https://github.com/seokhoonj/lossratio/issues>

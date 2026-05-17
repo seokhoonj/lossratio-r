@@ -8,7 +8,7 @@ health-insurance portfolio and baked in as constants — no
 real-portfolio data is shipped. The runoff shape uses a small dev-1
 "waiting-period" dip followed by roughly constant incremental loss
 per dev, so the cumulative LR rises monotonically toward the target.
-The SUR coverage carries a synthetic 2024-07 cohort regime change
+The surgery coverage carries a synthetic 2024-07 cohort regime change
 (target LR scaled by 0.6) so the detect_regime() example has a
 clear shift to find.'><meta property="og:description" content='Synthetic long-format loss experience data for demonstrating the
 lossratio package workflow. Generated deterministically from
@@ -19,7 +19,7 @@ health-insurance portfolio and baked in as constants — no
 real-portfolio data is shipped. The runoff shape uses a small dev-1
 "waiting-period" dip followed by roughly constant incremental loss
 per dev, so the cumulative LR rises monotonically toward the target.
-The SUR coverage carries a synthetic 2024-07 cohort regime change
+The surgery coverage carries a synthetic 2024-07 cohort regime change
 (target LR scaled by 0.6) so the detect_regime() example has a
 clear shift to find.'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
@@ -54,6 +54,7 @@ clear shift to find.'><meta property="og:image" content="https://seokhoonj.githu
     <li><a class="dropdown-item" href="../articles/regime-change-filter-ko.html">Regime change filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/convergence-ko.html">Convergence</a></li>
+    <li><a class="dropdown-item" href="../articles/bootstrap-se-decomposition-ko.html">부트스트랩 표준오차 분해</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/chain-ladder-reserving-ko.html">(참고) Chain ladder 를 이용한 준비금 산출</a></li>
   </ul></li>
@@ -88,7 +89,7 @@ health-insurance portfolio and baked in as constants — no
 real-portfolio data is shipped. The runoff shape uses a small dev-1
 "waiting-period" dip followed by roughly constant incremental loss
 per dev, so the cumulative LR rises monotonically toward the target.
-The SUR coverage carries a synthetic 2024-07 cohort regime change
+The surgery coverage carries a synthetic 2024-07 cohort regime change
 (target LR scaled by 0.6) so the <code><a href="detect_regime.html">detect_regime()</a></code> example has a
 clear shift to find.</p>
     </div>
@@ -107,10 +108,10 @@ one (coverage, underwriting cohort, calendar period) cell of a
 covering cerebrovascular disease (stroke, cerebral
 infarction, cerebral haemorrhage) and ischemic heart disease
 (angina, acute myocardial infarction). Does <strong>not</strong> include
-cancer; cancer is the separate <code>CAN</code> coverage.</p></li>
-<li><p><code>CAN</code> — cancer.</p></li>
-<li><p><code>HOS</code> — hospitalisation per-day fixed benefit.</p></li>
-<li><p><code>SUR</code> — surgery per-event fixed benefit.</p></li>
+cancer; cancer is the separate <code>cancer</code> coverage.</p></li>
+<li><p><code>cancer</code> — cancer.</p></li>
+<li><p><code>inpatient</code> — hospitalisation per-day fixed benefit.</p></li>
+<li><p><code>surgery</code> — surgery per-event fixed benefit.</p></li>
 </ul></dd>
 
 <dt>uy, uy_h, uy_q, uy_m</dt>

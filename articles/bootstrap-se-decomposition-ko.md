@@ -1,0 +1,225 @@
+# 부트스트랩 표준오차 분해 — 모수 불확실성과 프로세스 불확실성
+
+## 1. 두 종류의 불확실성
+
+체인 래더(chain-ladder) 모형으로 미래 손해를 예측할 때, 미래 셀
+`Y_{i,j}` 의 *표준오차(SE)* 는 본질적으로 *두 개* 의 서로 다른 출처가
+섞인 양이다.
+
+1.  **모수 불확실성(parameter uncertainty)** — 진짜 진전계수 `f_k` 가
+    무엇인지 모른다. 유한한 삼각형 데이터로 `f̂_k` 를 추정한 것일 뿐이고,
+    *조금 다른 과거 데이터 표본* 이었다면 `f̂_k` 도 *조금 달랐을* 것이다.
+    이 추정의 불확실성이 projection 으로 전파된다.
+2.  **프로세스 불확실성(process uncertainty)** — 가령 *진짜* `f_k` 를
+    알았다 하더라도, 다음 셀의 *실현값* 은 결정적(deterministic) 이
+    아니다. 잡음이 있는 stochastic process (ODP / Gamma / Normal 등)
+    에서의 *단 한 번의 실현(realization)* 일 뿐이고, 그 잡음의 분산은
+    *축소 불가능(irreducible)* 한 양이다.
+
+Mack(1993) 의 closed-form **평균제곱예측오차(MSEP)** 는 이 *덧셈 분해*
+를 정확한 식으로 표현한다.
+
+``` math
+\mathrm{MSEP}(Y_{i,j}) \;=\;
+\underbrace{\mathrm{Var}_{\theta}(\hat\theta)}_{\substack{\text{모수} \\ \text{(추정) 오차}}}
+\;+\;
+\underbrace{\mathbb{E}_\theta[\mathrm{Var}(Y_{i,j}\mid\theta)]}_{\substack{\text{프로세스} \\ \text{(불가축) 오차}}}.
+```
+
+부트스트랩은 *동일 분해* 의 *경험적(empirical) 대응* 을 제공한다.
+closed-form 분산 식이 필요하지 않고, 단계 적응형(stage-adaptive, SA)
+모형처럼 Mack 의 분석적 SE 가 작위적인 경우에도 자연스럽게 적용된다.
+
+## 2. 전체 분산의 법칙(Law of total variance) — 수학적 근거
+
+확률변수 `Y` 가 모수 `θ` 에 의해 결정된다고 하자. 전체 분산의 법칙은
+
+``` math
+\mathrm{Var}(Y) \;=\;
+\underbrace{\mathrm{Var}\bigl(\mathbb{E}[Y\mid\theta]\bigr)}_{\text{모수 분산}}
+\;+\;
+\underbrace{\mathbb{E}\bigl[\mathrm{Var}(Y\mid\theta)\bigr]}_{\text{프로세스 분산}}.
+```
+
+두 항은 *직교(orthogonal)* 다. 전체 분산이 두 부분의 *합* 이며
+상호작용이 없다.
+
+부트스트랩의 언어로 표현하면, `b = 1, 2, …, B` 개의 replicate 마다:
+
+| 기호               | 의미                       | 변동 출처       |
+|--------------------|----------------------------|-----------------|
+| `μ_b = E[Y | θ_b]` | draw `b` 의 조건부 평균    | 모수만          |
+| `Y_b = μ_b + ε_b`  | draw `b` 의 한 번의 실현값 | 모수 + 프로세스 |
+
+피타고라스 정의(Pythagorean identity)
+
+``` math
+\mathrm{Var}(Y_b) \;=\; \mathrm{Var}(\mu_b) \;+\; \mathrm{Var}(\varepsilon_b)
+```
+
+가 경험적 추정량(empirical estimator)으로 변환되면
+
+``` math
+\mathrm{se}_{\text{total}}^2
+\;=\;
+\mathrm{se}_{\text{param}}^2
+\;+\;
+\mathrm{se}_{\text{proc}}^2,
+```
+
+즉 **피타고라스 SE 분해** 형식이 된다. 단지 표본 표준편차 두 번 + 빼기:
+
+``` math
+\mathrm{se}_{\text{param}} \;=\; \mathrm{sd}(\mu_b\,;\,b = 1,\dots,B),\qquad
+\mathrm{se}_{\text{total}} \;=\; \mathrm{sd}(Y_b\,;\,b = 1,\dots,B),\qquad
+\mathrm{se}_{\text{proc}} \;=\; \sqrt{\,\mathrm{se}_{\text{total}}^2
+                                       - \mathrm{se}_{\text{param}}^2}.
+```
+
+## 3. `bootstrap()` 이 두 값을 모두 만들어내는 방식
+
+[`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
+은 `B` 개의 대안(alternative) 삼각형을 시뮬레이션한다. 각 replicate `b`
+는 두 단계를 수행한다.
+
+1.  **Stage 1 — 모수 perturbation.** 잔차(residual)를 재추출하거나 (또는
+    parametric 의 경우 `f*_k ~ N(f̂_k, sqrt(Var(f̂_k)))` 를 draw) 다른
+    진전계수 추정 `θ_b` 를 만들어 낸다. 이로부터 forward projection 된
+    평균 `μ_b` 가 산출된다.
+2.  **Stage 2 — 프로세스 잡음.** `μ_b` 위에 선택된 process 분포 (`gamma`
+    / `od_pois` / `normal`)에서 한 번의 noise draw `ε_b` 를 더해 `Y_b`
+    를 만든다.
+
+두 값 모두 cell × replicate 단위로 반환된다.
+
+``` r
+
+library(lossratio)
+
+data(experience)
+tri <- as_triangle(
+  experience[experience$coverage == "surgery", ],
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "incr_loss",
+  premium  = "incr_prem"
+)
+
+set.seed(42)
+bt <- bootstrap(tri,
+                residual = "cell",
+                method   = "sa",
+                pooling  = "tail_pooled", tail = "auto",
+                process  = "gamma",
+                B        = 499)
+head(bt$pseudo_triangles)
+#>    coverage     cohort   dev   rep loss_mean loss_sampled
+#>      <char>     <Date> <int> <int>     <num>        <num>
+#> 1:  surgery 2023-01-01     1     1   1504024      1504024
+#> 2:  surgery 2023-02-01     1     1   4394106      4394106
+#> 3:  surgery 2023-03-01     1     1   6981562      6981562
+#> 4:  surgery 2023-04-01     1     1  13485841     13485841
+#> 5:  surgery 2023-05-01     1     1   4038010      4038010
+#> 6:  surgery 2023-06-01     1     1  10065395     10065395
+```
+
+long-format `pseudo_triangles` 테이블에는 *두 값 컬럼* 이 있다.
+
+- `loss_mean` — Stage 1 평균 예측값 `μ_b` (모수만)
+- `loss_sampled` — Stage 1 + Stage 2 실현값 `Y_b`
+
+상삼각(upper triangle, 관측 영역) 에선 두 컬럼이 일치한다 — 거기서는
+이미 부트스트랩 perturbation 이 데이터 변동성을 흡수했으므로 추가 잡음
+적용이 의미 없다. 하삼각(lower triangle, 예측 영역) 에선 두 값이 정확히
+*Stage 2 process noise draw 만큼* 다르다.
+
+## 4. `$summary` 슬랫
+
+[`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
+은 cohort × dev 별 분해를 *한 번에* 계산하여 미리 저장된 summary 로
+노출한다. 하위 fit 함수가 *per-replicate 표본 분산 루프* 를 다시 돌릴
+필요 없이 컬럼만 매핑하면 된다.
+
+``` r
+
+head(bt$summary)
+#>    coverage     cohort   dev mean_proj param_se proc_se total_se  total_cv
+#>      <char>     <Date> <int>     <num>    <num>   <num>    <num>     <num>
+#> 1:  surgery 2023-01-01     1   2413024  1168569       0  1168569 0.4842756
+#> 2:  surgery 2023-02-01     1   5701565  1891996       0  1891996 0.3318379
+#> 3:  surgery 2023-03-01     1   5914391  1927010       0  1927010 0.3258171
+#> 4:  surgery 2023-04-01     1  12424938  2802696       0  2802696 0.2255702
+#> 5:  surgery 2023-05-01     1   4045507  1583080       0  1583080 0.3913180
+#> 6:  surgery 2023-06-01     1   5386669  1858674       0  1858674 0.3450507
+```
+
+각 컬럼의 의미:
+
+| 컬럼 | 산식 | 해석 |
+|----|----|----|
+| `mean_proj` | `mean(loss_mean across b)` | 점 추정 (Stage 1 평균) |
+| `param_se` | `sd(loss_mean across b)` | 추정 오차(estimation error) |
+| `total_se` | `sd(loss_sampled across b)` | 전체 예측 오차 |
+| `proc_se` | `sqrt(pmax(total² − param², 0))` | 축소 불가능한 process error |
+| `total_cv` | `total_se / mean_proj` | 변동계수(CV) |
+| `ci_lo` / `ci_hi` | `quantile(loss_sampled, 0.025 / 0.975, type = 1)` | 경험적 95% CI |
+
+`proc_se` 의 `pmax(·, 0)` clamp 는 *유한 B noise* 방어다. 드물게
+`param_se > total_se` 인 cell 이 표본 산출 (즉 단순 표본 noise) 때문에
+발생할 수 있는데, 그 경우 `proc_se` 를 음수 분산이 아니라 *0* 으로
+잘라낸다.
+
+## 5. Mack(1993) MSEP 와의 대응
+
+부트스트랩의 분해는 Mack 의 분석적 MSEP 와 *같은 quantity 를 다른
+방식으로 추정* 하는 것이다.
+
+- Mack 의 closed-form 은 명시적 분산 식 (`σ²_k`, `Var(f̂_k)`) 이 필요하고
+  Mack 1993 의 *체인 래더 패러다임* (곱셈 recursion) 에만 적용된다.
+- 부트스트랩 분해는 어떤 forward simulation (체인 래더, 노출 기반, 단계
+  적응형) 에도, 어떤 process 분포 (gamma / over-dispersed Poisson /
+  normal) 에도 *closed-form 분산 유도 없이* 작동한다.
+
+작은 삼각형의 순수 체인 래더 적합에서는 두 방식이 *유한 B 표본 오차
+이내* 로 일치한다. *단계 적응형(SA, ED + CL 혼합)* 에서는 부트스트랩
+분해가 *유일하게 정합적* 인 옵션이다 — 성숙점(maturity) 경계에서 Mack 의
+분석 식이 깔끔하게 합성되지 않기 때문이다.
+
+## 6. `$summary` 의 활용
+
+분해된 `$summary` 슬랫은 하위 `fit_*(bootstrap = bt)` 호출이 분해된
+컬럼을 표준 fit schema (`*_param_se`, `*_proc_se`, `*_total_se`,
+`*_total_cv`, `*_ci_lo`, `*_ci_hi`) 에 *그대로 매핑* 한다. *사용자가
+직접 분해 산식을 짤 필요 없음*.
+
+cell-residual 모드는 각 그룹의 잔차 풀의 평균을 0 으로 보정한 뒤
+재추출한다. Shapland (2010, §4.2 “Negative Incremental Losses”) 는 이
+조정을 *하나의 옵션* 으로 논의하며, 0 이 아닌 잔차 평균을 *데이터의
+특성으로 두고 제거하지 않는* 관점도 함께 언급한다.
+
+## 7. `B` 결정 — Davison & Hinkley 컨벤션
+
+경험적 percentile CI 가 *정확한 sample 위치* 에 떨어지려면 (즉 보간
+없이) `(B + 1) p` 가 정수여야 한다. 패키지 default 가 이를 반영한다.
+
+| `B`  | `(B+1)` | 적합 용도                                             |
+|------|---------|-------------------------------------------------------|
+| 99   | 100     | 빠른 spot-check, 5% / 1% CI                           |
+| 199  | 200     | 가벼운 분석                                           |
+| 499  | 500     | **default — one-sided VaR (75%, 95%, 99%) 모두 정수** |
+| 999  | 1000    | 학술 표준 95% CI                                      |
+| 1999 | 2000    | Solvency II / K-ICS 99.5% TVaR                        |
+
+`B = 499` 가 패키지 default 다. reserving 보고에서 흔히 쓰는 한쪽 VaR
+percentile (75%, 95%, 99%) 이 모두 *정수 순위 index* 에 떨어지므로,
+경험적 CI 가 보간 없이 정확한 sample 위치에 자리한다.
+
+## 8. 함께 보기
+
+- [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/articles/backtest.md)
+  — hold-out 기반 부트스트랩 검증
+- [`vignette("chain-ladder-reserving")`](https://seokhoonj.github.io/lossratio/articles/chain-ladder-reserving.md)
+  — 기초 체인 래더
+- [`?bootstrap`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
+  — 전체 인자 reference

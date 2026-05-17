@@ -60,10 +60,10 @@ output: group columns (if any), `ata_from = change - 1L`, `change`,
 ``` r
 if (FALSE) { # \dontrun{
 # Single-group manual override
-maturity_at(coverage = "SUR", change = 4)
+maturity_at(coverage = "surgery", change = 4)
 
 # Multi-group manual override (e.g. company-standard k*)
-maturity_at(coverage = c("CAN", "CI", "HOS", "SUR"),
+maturity_at(coverage = c("cancer", "ci", "inpatient", "surgery"),
             change   = c(   9,   10,     7,     4))
 
 # Pooled (no group columns)

@@ -16,6 +16,8 @@
   검증](https://seokhoonj.github.io/lossratio/ko/articles/backtest-ko.md):
 - [Convergence: 예측 손해율 수렴 시점
   진단](https://seokhoonj.github.io/lossratio/ko/articles/convergence-ko.md):
+- [부트스트랩 표준오차 분해 — 모수 불확실성과 프로세스
+  불확실성](https://seokhoonj.github.io/lossratio/ko/articles/bootstrap-se-decomposition-ko.md):
 
 ### 참고
 

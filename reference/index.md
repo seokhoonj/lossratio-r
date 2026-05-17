@@ -109,6 +109,17 @@ functions.
 - [`regime_spec()`](https://seokhoonj.github.io/lossratio/reference/regime_spec.md)
   : Build a lazy regime detection spec
 
+## Bootstrap
+
+Cohort × dev standard-error decomposition via simulation (Pythagorean
+split into parameter and process components). Returned object is
+consumed by `fit_loss` / `fit_premium` / `fit_lr` through their
+`bootstrap` argument to replace analytical SE / CI with empirical
+counterparts.
+
+- [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
+  : Bootstrap a Triangle
+
 ## Projection diagnostic
 
 Operates on a fitted `LRFit`, not on the raw triangle. Locates the
@@ -239,6 +250,9 @@ print / summary / longer methods registered on package classes.
 
   Print method for `ATASummary`
 
+- [`print(`*`<BootstrapTriangle>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.BootstrapTriangle.md)
+  : Print method for BootstrapTriangle
+
 - [`print(`*`<CLFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.CLFit.md)
   :
 
@@ -327,8 +341,6 @@ print / summary / longer methods registered on package classes.
 
 ## Helpers
 
-- [`get_recent_weights()`](https://seokhoonj.github.io/lossratio/reference/get_recent_weights.md)
-  : Recent-diagonal weights for a development triangle
 - [`longer()`](https://seokhoonj.github.io/lossratio/reference/longer.md)
   : Reshape an object to long form (S3 generic)
 - [`mask_triangle()`](https://seokhoonj.github.io/lossratio/reference/mask_triangle.md)

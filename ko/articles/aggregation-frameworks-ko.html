@@ -55,6 +55,7 @@
     <li><a class="dropdown-item" href="../articles/regime-change-filter-ko.html">Regime change filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/convergence-ko.html">Convergence</a></li>
+    <li><a class="dropdown-item" href="../articles/bootstrap-se-decomposition-ko.html">부트스트랩 표준오차 분해</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/chain-ladder-reserving-ko.html">(참고) Chain ladder 를 이용한 준비금 산출</a></li>
   </ul>
@@ -172,12 +173,12 @@ aggregation frameworks</a></p>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    coverage n_cohorts     cohort   dev     loss incr_loss      prem incr_prem</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;     &lt;int&gt;     &lt;Date&gt; &lt;int&gt;    &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:       CI        36 2023-01-01     1  1262380   1262380  27993106  27993106</span></span>
-<span><span class="co">#&gt; 2:       CI        35 2023-01-01     2 12518143  11255763  57177037  29183931</span></span>
-<span><span class="co">#&gt; 3:       CI        34 2023-01-01     3 23799452  11281309  86579003  29401966</span></span>
-<span><span class="co">#&gt; 4:       CI        33 2023-01-01     4 57401839  33602387 113149543  26570540</span></span>
-<span><span class="co">#&gt; 5:       CI        32 2023-01-01     5 64554461   7152622 140621429  27471886</span></span>
-<span><span class="co">#&gt; 6:       CI        31 2023-01-01     6 74664986  10110525 167390789  26769360</span></span>
+<span><span class="co">#&gt; 1:       ci        36 2023-01-01     1  1262380   1262380  27993106  27993106</span></span>
+<span><span class="co">#&gt; 2:       ci        35 2023-01-01     2 12518143  11255763  57177037  29183931</span></span>
+<span><span class="co">#&gt; 3:       ci        34 2023-01-01     3 23799452  11281309  86579003  29401966</span></span>
+<span><span class="co">#&gt; 4:       ci        33 2023-01-01     4 57401839  33602387 113149543  26570540</span></span>
+<span><span class="co">#&gt; 5:       ci        32 2023-01-01     5 64554461   7152622 140621429  27471886</span></span>
+<span><span class="co">#&gt; 6:       ci        31 2023-01-01     6 74664986  10110525 167390789  26769360</span></span>
 <span><span class="co">#&gt;           lr   incr_lr   margin incr_margin profit incr_profit loss_share</span></span>
 <span><span class="co">#&gt;        &lt;num&gt;     &lt;num&gt;    &lt;num&gt;       &lt;num&gt; &lt;fctr&gt;      &lt;fctr&gt;      &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1: 0.0450961 0.0450961 26730726    26730726    pos         pos  0.2745858</span></span>
@@ -230,12 +231,12 @@ aggregation frameworks</a></p>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cal</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    coverage   calendar cal_idx n_cohorts      loss incr_loss      prem</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt;   &lt;int&gt;     &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      CAN 2023-01-01       1         1   1327186   1327186  36175141</span></span>
-<span><span class="co">#&gt; 2:      CAN 2023-02-01       2         2  53881242  52554056  89468123</span></span>
-<span><span class="co">#&gt; 3:      CAN 2023-03-01       3         3  86254932  32373690 169732522</span></span>
-<span><span class="co">#&gt; 4:      CAN 2023-04-01       4         4 222577950 136323018 264457245</span></span>
-<span><span class="co">#&gt; 5:      CAN 2023-05-01       5         5 358604651 136026701 373602999</span></span>
-<span><span class="co">#&gt; 6:      CAN 2023-06-01       6         6 439679309  81074658 504742606</span></span>
+<span><span class="co">#&gt; 1:   cancer 2023-01-01       1         1   1327186   1327186  36175141</span></span>
+<span><span class="co">#&gt; 2:   cancer 2023-02-01       2         2  53881242  52554056  89468123</span></span>
+<span><span class="co">#&gt; 3:   cancer 2023-03-01       3         3  86254932  32373690 169732522</span></span>
+<span><span class="co">#&gt; 4:   cancer 2023-04-01       4         4 222577950 136323018 264457245</span></span>
+<span><span class="co">#&gt; 5:   cancer 2023-05-01       5         5 358604651 136026701 373602999</span></span>
+<span><span class="co">#&gt; 6:   cancer 2023-06-01       6         6 439679309  81074658 504742606</span></span>
 <span><span class="co">#&gt;    incr_prem         lr    incr_lr   margin incr_margin profit incr_profit</span></span>
 <span><span class="co">#&gt;        &lt;num&gt;      &lt;num&gt;      &lt;num&gt;    &lt;num&gt;       &lt;num&gt; &lt;fctr&gt;      &lt;fctr&gt;</span></span>
 <span><span class="co">#&gt; 1:  36175141 0.03668779 0.03668779 34847955    34847955    pos         pos</span></span>
@@ -284,12 +285,12 @@ on-leveling 이벤트)</li>
 <span><span class="op">)</span></span>
 <span><span class="va">tot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_total.html">as_total</a></span><span class="op">(</span><span class="va">tri_bounded</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tot</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    coverage n_cohorts sales_start  sales_end        loss       prem        lr</span></span>
-<span><span class="co">#&gt;      &lt;char&gt;     &lt;int&gt;      &lt;Date&gt;     &lt;Date&gt;       &lt;num&gt;      &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:       CI        12  2023-04-01 2024-03-01  8240143118 9760853703 0.8442031</span></span>
-<span><span class="co">#&gt; 2:      CAN        12  2023-04-01 2024-03-01  2801401212 3710915725 0.7549083</span></span>
-<span><span class="co">#&gt; 3:      HOS        12  2023-04-01 2024-03-01   158760703  377104088 0.4209997</span></span>
-<span><span class="co">#&gt; 4:      SUR        12  2023-04-01 2024-03-01 13425719536 9003134239 1.4912273</span></span>
+<span><span class="co">#&gt;     coverage n_cohorts sales_start  sales_end        loss       prem        lr</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;int&gt;      &lt;Date&gt;     &lt;Date&gt;       &lt;num&gt;      &lt;num&gt;     &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:        ci        12  2023-04-01 2024-03-01  8240143118 9760853703 0.8442031</span></span>
+<span><span class="co">#&gt; 2:    cancer        12  2023-04-01 2024-03-01  2801401212 3710915725 0.7549083</span></span>
+<span><span class="co">#&gt; 3: inpatient        12  2023-04-01 2024-03-01   158760703  377104088 0.4209997</span></span>
+<span><span class="co">#&gt; 4:   surgery        12  2023-04-01 2024-03-01 13425719536 9003134239 1.4912273</span></span>
 <span><span class="co">#&gt;     loss_share prem_share</span></span>
 <span><span class="co">#&gt;          &lt;num&gt;      &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1: 0.334611179 0.42713331</span></span>

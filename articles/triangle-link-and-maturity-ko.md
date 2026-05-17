@@ -14,14 +14,14 @@ chain ladder 또는 손해율 모형을 적합하기 전에 기반이 되는 tri
 
 ## 1. Triangle 진단
 
-이 문서는 간결성을 위해 `SUR` 그룹만 사용한다 — 모든 절차는 다중 그룹
-입력에도 그대로 일반화된다.
+이 문서는 간결성을 위해 `surgery` 그룹만 사용한다 — 모든 절차는 다중
+그룹 입력에도 그대로 일반화된다.
 
 ``` r
 
 library(lossratio)
 data(experience)
-exp <- experience[coverage == "SUR"]
+exp <- experience[coverage == "surgery"]
 tri <- as_triangle(
   exp,
   groups   = "coverage",
@@ -94,12 +94,12 @@ head(sm)
 #> Key: <coverage, dev>
 #>    coverage   dev n_cohorts   lr_mean lr_median     lr_wt incr_lr_mean
 #>      <char> <int>     <int>     <num>     <num>     <num>        <num>
-#> 1:      SUR     1        36 0.2522898 0.2393582 0.2525932    0.2522898
-#> 2:      SUR     2        35 0.8030639 0.7859128 0.7890646    1.3572087
-#> 3:      SUR     3        34 0.9258662 0.8997912 0.9204360    1.1519240
-#> 4:      SUR     4        33 0.9856772 0.9716558 0.9778502    1.1797269
-#> 5:      SUR     5        32 1.0336648 1.0502252 1.0447602    1.2268717
-#> 6:      SUR     6        31 1.0945723 1.1832332 1.0892484    1.3676102
+#> 1:  surgery     1        36 0.2522898 0.2393582 0.2525932    0.2522898
+#> 2:  surgery     2        35 0.8030639 0.7859128 0.7890646    1.3572087
+#> 3:  surgery     3        34 0.9258662 0.8997912 0.9204360    1.1519240
+#> 4:  surgery     4        33 0.9856772 0.9716558 0.9778502    1.1797269
+#> 5:  surgery     5        32 1.0336648 1.0502252 1.0447602    1.2268717
+#> 6:  surgery     6        31 1.0945723 1.1832332 1.0892484    1.3676102
 #>    incr_lr_median incr_lr_wt
 #>             <num>      <num>
 #> 1:      0.2393582  0.2525932
@@ -128,12 +128,12 @@ head(sm)
 #> Key: <coverage>
 #>    coverage ata_from ata_to ata_link  mean median    wt    cv     f  f_se   rse
 #>      <char>    <num>  <num>   <fctr> <num>  <num> <num> <num> <num> <num> <num>
-#> 1:      SUR        1      2      1-2 6.595  6.089 6.163 0.427 6.163 0.382 0.062
-#> 2:      SUR        2      3      2-3 1.765  1.768 1.739 0.157 1.739 0.042 0.024
-#> 3:      SUR        3      4      3-4 1.435  1.400 1.418 0.105 1.418 0.027 0.019
-#> 4:      SUR        4      5      4-5 1.324  1.331 1.339 0.068 1.339 0.018 0.014
-#> 5:      SUR        5      6      5-6 1.267  1.246 1.243 0.070 1.243 0.016 0.013
-#> 6:      SUR        6      7      6-7 1.204  1.194 1.205 0.048 1.205 0.011 0.009
+#> 1:  surgery        1      2      1-2 6.595  6.089 6.163 0.427 6.163 0.382 0.062
+#> 2:  surgery        2      3      2-3 1.765  1.768 1.739 0.157 1.739 0.042 0.024
+#> 3:  surgery        3      4      3-4 1.435  1.400 1.418 0.105 1.418 0.027 0.019
+#> 4:  surgery        4      5      4-5 1.324  1.331 1.339 0.068 1.339 0.018 0.014
+#> 5:  surgery        5      6      5-6 1.267  1.246 1.243 0.070 1.243 0.016 0.013
+#> 6:  surgery        6      7      6-7 1.204  1.194 1.205 0.048 1.205 0.011 0.009
 #>       sigma n_cohorts n_valid n_inf n_nan valid_ratio
 #>       <num>     <num>   <num> <num> <num>       <num>
 #> 1: 6207.618        35      35     0     0           1
@@ -234,12 +234,12 @@ head(sm)
 #> Key: <coverage>
 #>    coverage ata_from ata_to ata_link    mean  median      wt      cv       g
 #>      <char>    <num>  <num>   <fctr>   <num>   <num>   <num>   <num>   <num>
-#> 1:      SUR        1      2      1-2 1.34661 1.21766 1.31614 0.47327 1.31614
-#> 2:      SUR        2      3      2-3 0.58109 0.56432 0.58674 0.37381 0.58674
-#> 3:      SUR        3      4      3-4 0.39105 0.36751 0.38178 0.43535 0.38178
-#> 4:      SUR        4      5      4-5 0.31110 0.32321 0.33127 0.35969 0.33127
-#> 5:      SUR        5      6      5-6 0.27543 0.25088 0.25518 0.43531 0.25518
-#> 6:      SUR        6      7      6-7 0.21364 0.20479 0.22393 0.31371 0.22393
+#> 1:  surgery        1      2      1-2 1.34661 1.21766 1.31614 0.47327 1.31614
+#> 2:  surgery        2      3      2-3 0.58109 0.56432 0.58674 0.37381 0.58674
+#> 3:  surgery        3      4      3-4 0.39105 0.36751 0.38178 0.43535 0.38178
+#> 4:  surgery        4      5      4-5 0.31110 0.32321 0.33127 0.35969 0.33127
+#> 5:  surgery        5      6      5-6 0.27543 0.25088 0.25518 0.43531 0.25518
+#> 6:  surgery        6      7      6-7 0.21364 0.20479 0.22393 0.31371 0.22393
 #>       g_se     rse     sigma n_cohorts n_valid n_inf n_nan valid_ratio
 #>      <num>   <num>     <num>     <num>   <num> <num> <num>       <num>
 #> 1: 0.09107 0.06919 2930.7438        35      35     0     0           1
@@ -301,7 +301,7 @@ print(mat)
 #> Key: <coverage>
 #>    coverage ata_from change ata_link     mean   median       wt        cv
 #>      <char>    <num>  <num>   <char>    <num>    <num>    <num>     <num>
-#> 1:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.1053282
+#> 1:  surgery        3      4      3-4 1.434507 1.400098 1.417706 0.1053282
 #>           f       f_se        rse    sigma n_cohorts n_valid n_inf n_nan
 #>       <num>      <num>      <num>    <num>     <num>   <num> <num> <num>
 #> 1: 1.417706 0.02651852 0.01870522 1372.883        33      33     0     0
@@ -390,12 +390,12 @@ tri_all <- as_triangle(
 )
 detect_maturity(tri_all, target = "loss")
 #> Key: <coverage>
-#>    coverage ata_from change ata_link     mean   median       wt         cv
-#>      <char>    <num>  <num>   <char>    <num>    <num>    <num>      <num>
-#> 1:      CAN        8      9      8-9 1.079323 1.060341 1.065354 0.07131509
-#> 2:       CI       11     12    11-12 1.094403 1.070561 1.114066 0.07563394
-#> 3:      HOS        6      7      6-7 1.244842 1.184287 1.205542 0.13563431
-#> 4:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.10532824
+#>     coverage ata_from change ata_link     mean   median       wt         cv
+#>       <char>    <num>  <num>   <char>    <num>    <num>    <num>      <num>
+#> 1:    cancer        8      9      8-9 1.079323 1.060341 1.065354 0.07131509
+#> 2:        ci       11     12    11-12 1.094403 1.070561 1.114066 0.07563394
+#> 3: inpatient        6      7      6-7 1.244842 1.184287 1.205542 0.13563431
+#> 4:   surgery        3      4      3-4 1.434507 1.400098 1.417706 0.10532824
 #>           f       f_se        rse     sigma n_cohorts n_valid n_inf n_nan
 #>       <num>      <num>      <num>     <num>     <num>   <num> <num> <num>
 #> 1: 1.065354 0.01384183 0.01299271  637.2413        28      28     0     0
@@ -477,19 +477,19 @@ fit_cl(tri, target = "loss", recent = 12)
 #> periods     : 36
 fit_lr(tri, recent = 12)
 #> <LRFit>
-#> method         : sa 
-#> loss_alpha     : 1 
-#> premium_alpha  : 1 
-#> se_method      : fixed 
-#> conf_level     : 0.95 
-#> ci_type        : analytical  
-#> sigma_method   : locf 
-#> recent         : 12 
-#> loss_regime    : none
-#> premium_regime : none
-#> maturity[SUR]  : 4 
-#> groups         : coverage 
-#> periods        : 36
+#> method            : sa 
+#> loss_alpha        : 1 
+#> premium_alpha     : 1 
+#> se_method         : fixed 
+#> conf_level        : 0.95 
+#> ci_type           : bootstrap  (B = 999, seed = NULL) 
+#> sigma_method      : locf 
+#> recent            : 12 
+#> loss_regime       : none
+#> premium_regime    : none
+#> maturity[surgery] : 4 
+#> groups            : coverage 
+#> periods           : 36
 ```
 
 `recent = K` 는 calendar 위치 (`rank(cohort) + dev - 1`) 가 그룹 내 최근

@@ -19,7 +19,7 @@ one of four triggers:
 4.  **Underwriting guideline change** — eligibility, declarations, or
     loading rule revisions
 
-The bundled `experience` dataset’s SUR coverage carries a synthetic
+The bundled `experience` dataset’s surgery coverage carries a synthetic
 2024-04 break representing one of these triggers, so the demonstration
 below has a clear shift for
 [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
@@ -47,7 +47,7 @@ library(lossratio)
 
 data(experience)
 tri_sur <- as_triangle(
-  experience[coverage == "SUR"],
+  experience[coverage == "surgery"],
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
@@ -105,39 +105,39 @@ summary(r)
 r$labels
 #>     coverage     cohort      regime regime_id
 #>       <char>     <Date>      <fctr>     <int>
-#>  1:      SUR 2023-01-01 23.01-24.06         1
-#>  2:      SUR 2023-02-01 23.01-24.06         1
-#>  3:      SUR 2023-03-01 23.01-24.06         1
-#>  4:      SUR 2023-04-01 23.01-24.06         1
-#>  5:      SUR 2023-05-01 23.01-24.06         1
-#>  6:      SUR 2023-06-01 23.01-24.06         1
-#>  7:      SUR 2023-07-01 23.01-24.06         1
-#>  8:      SUR 2023-08-01 23.01-24.06         1
-#>  9:      SUR 2023-09-01 23.01-24.06         1
-#> 10:      SUR 2023-10-01 23.01-24.06         1
-#> 11:      SUR 2023-11-01 23.01-24.06         1
-#> 12:      SUR 2023-12-01 23.01-24.06         1
-#> 13:      SUR 2024-01-01 23.01-24.06         1
-#> 14:      SUR 2024-02-01 23.01-24.06         1
-#> 15:      SUR 2024-03-01 23.01-24.06         1
-#> 16:      SUR 2024-04-01 23.01-24.06         1
-#> 17:      SUR 2024-05-01 23.01-24.06         1
-#> 18:      SUR 2024-06-01 23.01-24.06         1
-#> 19:      SUR 2024-07-01 24.07-25.09         2
-#> 20:      SUR 2024-08-01 24.07-25.09         2
-#> 21:      SUR 2024-09-01 24.07-25.09         2
-#> 22:      SUR 2024-10-01 24.07-25.09         2
-#> 23:      SUR 2024-11-01 24.07-25.09         2
-#> 24:      SUR 2024-12-01 24.07-25.09         2
-#> 25:      SUR 2025-01-01 24.07-25.09         2
-#> 26:      SUR 2025-02-01 24.07-25.09         2
-#> 27:      SUR 2025-03-01 24.07-25.09         2
-#> 28:      SUR 2025-04-01 24.07-25.09         2
-#> 29:      SUR 2025-05-01 24.07-25.09         2
-#> 30:      SUR 2025-06-01 24.07-25.09         2
-#> 31:      SUR 2025-07-01 24.07-25.09         2
-#> 32:      SUR 2025-08-01 24.07-25.09         2
-#> 33:      SUR 2025-09-01 24.07-25.09         2
+#>  1:  surgery 2023-01-01 23.01-24.06         1
+#>  2:  surgery 2023-02-01 23.01-24.06         1
+#>  3:  surgery 2023-03-01 23.01-24.06         1
+#>  4:  surgery 2023-04-01 23.01-24.06         1
+#>  5:  surgery 2023-05-01 23.01-24.06         1
+#>  6:  surgery 2023-06-01 23.01-24.06         1
+#>  7:  surgery 2023-07-01 23.01-24.06         1
+#>  8:  surgery 2023-08-01 23.01-24.06         1
+#>  9:  surgery 2023-09-01 23.01-24.06         1
+#> 10:  surgery 2023-10-01 23.01-24.06         1
+#> 11:  surgery 2023-11-01 23.01-24.06         1
+#> 12:  surgery 2023-12-01 23.01-24.06         1
+#> 13:  surgery 2024-01-01 23.01-24.06         1
+#> 14:  surgery 2024-02-01 23.01-24.06         1
+#> 15:  surgery 2024-03-01 23.01-24.06         1
+#> 16:  surgery 2024-04-01 23.01-24.06         1
+#> 17:  surgery 2024-05-01 23.01-24.06         1
+#> 18:  surgery 2024-06-01 23.01-24.06         1
+#> 19:  surgery 2024-07-01 24.07-25.09         2
+#> 20:  surgery 2024-08-01 24.07-25.09         2
+#> 21:  surgery 2024-09-01 24.07-25.09         2
+#> 22:  surgery 2024-10-01 24.07-25.09         2
+#> 23:  surgery 2024-11-01 24.07-25.09         2
+#> 24:  surgery 2024-12-01 24.07-25.09         2
+#> 25:  surgery 2025-01-01 24.07-25.09         2
+#> 26:  surgery 2025-02-01 24.07-25.09         2
+#> 27:  surgery 2025-03-01 24.07-25.09         2
+#> 28:  surgery 2025-04-01 24.07-25.09         2
+#> 29:  surgery 2025-05-01 24.07-25.09         2
+#> 30:  surgery 2025-06-01 24.07-25.09         2
+#> 31:  surgery 2025-07-01 24.07-25.09         2
+#> 32:  surgery 2025-08-01 24.07-25.09         2
+#> 33:  surgery 2025-09-01 24.07-25.09         2
 #>     coverage     cohort      regime regime_id
 #>       <char>     <Date>      <fctr>     <int>
 ```
@@ -232,10 +232,10 @@ shifts and diverge when the signal is weak or driven by book-size growth
   in the other), the shift is structural rather than an artefact of the
   method.
 
-In practice, agreement across all three methods — as in the SUR example
-above, where `"e_divisive"`, `"pelt"`, and `"hclust"` all locate `24.04`
-as the regime boundary — is strong evidence of a real underwriting/rate
-shift.
+In practice, agreement across all three methods — as in the surgery
+example above, where `"e_divisive"`, `"pelt"`, and `"hclust"` all locate
+`24.04` as the regime boundary — is strong evidence of a real
+underwriting/rate shift.
 
 ## Forcing the number of regimes
 
@@ -285,7 +285,7 @@ r_all   <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 r_all$changes
 #>    coverage     change regime_id pre_value post_value magnitude
 #>      <char>     <Date>     <int>     <num>      <num>     <num>
-#> 1:      SUR 2024-07-01         2 0.9065895  0.5479919 0.3585976
+#> 1:  surgery 2024-07-01         2 0.9065895  0.5479919 0.3585976
 ```
 
 In multi-group mode `r_all$changes` is a `data.table` with the group

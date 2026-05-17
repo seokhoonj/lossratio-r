@@ -16,6 +16,8 @@
   projections](https://seokhoonj.github.io/lossratio/articles/backtest.md):
 - [Convergence: detecting when projected loss ratio stops
   revising](https://seokhoonj.github.io/lossratio/articles/convergence.md):
+- [Decomposing bootstrap standard errors: parameter vs process
+  uncertainty](https://seokhoonj.github.io/lossratio/articles/bootstrap-se-decomposition.md):
 
 ### Reference
 

@@ -61,7 +61,7 @@ A `data.table` of class `"CalendarSummary"` with one row per
   Weighted per-period loss ratio (`sum(incr_loss) / sum(incr_prem)`).
 
 The returned object preserves the attributes `groups`, `calendar`, and
-`calendar_type`.
+`grain`.
 
 ## Examples
 

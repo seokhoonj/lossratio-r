@@ -4,6 +4,8 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/aggregation-frameworks.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/backtest-ko.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/backtest.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/bootstrap-se-decomposition-ko.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/bootstrap-se-decomposition.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/chain-ladder-reserving-ko.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/chain-ladder-reserving.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/convergence-ko.html</loc></url>
@@ -27,6 +29,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/as_total.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/backtest.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/derive_grain_columns.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.html</loc></url>
@@ -40,7 +43,6 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-assert_triangle_input.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-assign_segment.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-auto_divisor.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-bootstrap_cohort.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-capture_chr.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-capture_names.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-check_col_spec.html</loc></url>
@@ -95,6 +97,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-pretty_var_label.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-rebucket_triangle_groups.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-remove_class.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_bootstrap.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_maturity.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_regime.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_regime_change_date.html</loc></url>
@@ -108,6 +111,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-summarize_link_ed.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-switch_theme.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-update_class.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-validate_bootstrap_args.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-validate_calendar_consistency_impl.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/experience.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.html</loc></url>
@@ -117,7 +121,6 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/get_recent_weights.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/index.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/longer.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/lossratio-package.html</loc></url>
@@ -150,6 +153,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.ATAFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.ATASummary.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.BootstrapTriangle.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.CLFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.EDFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.EDSummary.html</loc></url>

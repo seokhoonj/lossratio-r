@@ -1,13 +1,10 @@
 # Filter a long-format table to recent calendar diagonals
 
-Internal long-format analogue of
-[`get_recent_weights()`](https://seokhoonj.github.io/lossratio/reference/get_recent_weights.md).
 Returns a subset of the input `data.table` containing only rows whose
 calendar position falls within the last `recent` calendar diagonals of
 its group.
 
-The matrix-form condition `row + col >= m - recent + 2` is translated to
-the group-wise long-form condition
+The group-wise long-form condition is
 `rank(cohort) + dev - 1 > max(rank(cohort) + dev - 1) - recent`.
 
 ## Usage

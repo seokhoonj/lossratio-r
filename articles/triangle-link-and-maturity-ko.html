@@ -105,6 +105,7 @@
     <li><a class="dropdown-item" href="../articles/regime-change-filter.html">Regime change filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/convergence.html">Convergence</a></li>
+    <li><a class="dropdown-item" href="../articles/bootstrap-se-decomposition.html">Bootstrap SE decomposition</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/chain-ladder-reserving.html">(Reference) Chain ladder reserving</a></li>
   </ul>
@@ -152,12 +153,12 @@ data structures and factor diagnostics</a></p>
 <div class="section level2">
 <h2 id="triangle-진단">1. Triangle 진단<a class="anchor" aria-label="anchor" href="#triangle-%EC%A7%84%EB%8B%A8"></a>
 </h2>
-<p>이 문서는 간결성을 위해 <code>SUR</code> 그룹만 사용한다 — 모든
+<p>이 문서는 간결성을 위해 <code>surgery</code> 그룹만 사용한다 — 모든
 절차는 다중 그룹 입력에도 그대로 일반화된다.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio">lossratio</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
-<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span></span>
+<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"surgery"</span><span class="op">]</span></span>
 <span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">exp</span>,</span>
 <span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
@@ -207,12 +208,12 @@ lr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗�
 <span><span class="co">#&gt; Key: &lt;coverage, dev&gt;</span></span>
 <span><span class="co">#&gt;    coverage   dev n_cohorts   lr_mean lr_median     lr_wt incr_lr_mean</span></span>
 <span><span class="co">#&gt;      &lt;char&gt; &lt;int&gt;     &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;        &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      SUR     1        36 0.2522898 0.2393582 0.2525932    0.2522898</span></span>
-<span><span class="co">#&gt; 2:      SUR     2        35 0.8030639 0.7859128 0.7890646    1.3572087</span></span>
-<span><span class="co">#&gt; 3:      SUR     3        34 0.9258662 0.8997912 0.9204360    1.1519240</span></span>
-<span><span class="co">#&gt; 4:      SUR     4        33 0.9856772 0.9716558 0.9778502    1.1797269</span></span>
-<span><span class="co">#&gt; 5:      SUR     5        32 1.0336648 1.0502252 1.0447602    1.2268717</span></span>
-<span><span class="co">#&gt; 6:      SUR     6        31 1.0945723 1.1832332 1.0892484    1.3676102</span></span>
+<span><span class="co">#&gt; 1:  surgery     1        36 0.2522898 0.2393582 0.2525932    0.2522898</span></span>
+<span><span class="co">#&gt; 2:  surgery     2        35 0.8030639 0.7859128 0.7890646    1.3572087</span></span>
+<span><span class="co">#&gt; 3:  surgery     3        34 0.9258662 0.8997912 0.9204360    1.1519240</span></span>
+<span><span class="co">#&gt; 4:  surgery     4        33 0.9856772 0.9716558 0.9778502    1.1797269</span></span>
+<span><span class="co">#&gt; 5:  surgery     5        32 1.0336648 1.0502252 1.0447602    1.2268717</span></span>
+<span><span class="co">#&gt; 6:  surgery     6        31 1.0945723 1.1832332 1.0892484    1.3676102</span></span>
 <span><span class="co">#&gt;    incr_lr_median incr_lr_wt</span></span>
 <span><span class="co">#&gt;             &lt;num&gt;      &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:      0.2393582  0.2525932</span></span>
@@ -241,12 +242,12 @@ lr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗�
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
 <span><span class="co">#&gt;    coverage ata_from ata_to ata_link  mean median    wt    cv     f  f_se   rse</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;fctr&gt; &lt;num&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      SUR        1      2      1-2 6.595  6.089 6.163 0.427 6.163 0.382 0.062</span></span>
-<span><span class="co">#&gt; 2:      SUR        2      3      2-3 1.765  1.768 1.739 0.157 1.739 0.042 0.024</span></span>
-<span><span class="co">#&gt; 3:      SUR        3      4      3-4 1.435  1.400 1.418 0.105 1.418 0.027 0.019</span></span>
-<span><span class="co">#&gt; 4:      SUR        4      5      4-5 1.324  1.331 1.339 0.068 1.339 0.018 0.014</span></span>
-<span><span class="co">#&gt; 5:      SUR        5      6      5-6 1.267  1.246 1.243 0.070 1.243 0.016 0.013</span></span>
-<span><span class="co">#&gt; 6:      SUR        6      7      6-7 1.204  1.194 1.205 0.048 1.205 0.011 0.009</span></span>
+<span><span class="co">#&gt; 1:  surgery        1      2      1-2 6.595  6.089 6.163 0.427 6.163 0.382 0.062</span></span>
+<span><span class="co">#&gt; 2:  surgery        2      3      2-3 1.765  1.768 1.739 0.157 1.739 0.042 0.024</span></span>
+<span><span class="co">#&gt; 3:  surgery        3      4      3-4 1.435  1.400 1.418 0.105 1.418 0.027 0.019</span></span>
+<span><span class="co">#&gt; 4:  surgery        4      5      4-5 1.324  1.331 1.339 0.068 1.339 0.018 0.014</span></span>
+<span><span class="co">#&gt; 5:  surgery        5      6      5-6 1.267  1.246 1.243 0.070 1.243 0.016 0.013</span></span>
+<span><span class="co">#&gt; 6:  surgery        6      7      6-7 1.204  1.194 1.205 0.048 1.205 0.011 0.009</span></span>
 <span><span class="co">#&gt;       sigma n_cohorts n_valid n_inf n_nan valid_ratio</span></span>
 <span><span class="co">#&gt;       &lt;num&gt;     &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;       &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1: 6207.618        35      35     0     0           1</span></span>
@@ -326,12 +327,12 @@ lr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗�
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
 <span><span class="co">#&gt;    coverage ata_from ata_to ata_link    mean  median      wt      cv       g</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;fctr&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      SUR        1      2      1-2 1.34661 1.21766 1.31614 0.47327 1.31614</span></span>
-<span><span class="co">#&gt; 2:      SUR        2      3      2-3 0.58109 0.56432 0.58674 0.37381 0.58674</span></span>
-<span><span class="co">#&gt; 3:      SUR        3      4      3-4 0.39105 0.36751 0.38178 0.43535 0.38178</span></span>
-<span><span class="co">#&gt; 4:      SUR        4      5      4-5 0.31110 0.32321 0.33127 0.35969 0.33127</span></span>
-<span><span class="co">#&gt; 5:      SUR        5      6      5-6 0.27543 0.25088 0.25518 0.43531 0.25518</span></span>
-<span><span class="co">#&gt; 6:      SUR        6      7      6-7 0.21364 0.20479 0.22393 0.31371 0.22393</span></span>
+<span><span class="co">#&gt; 1:  surgery        1      2      1-2 1.34661 1.21766 1.31614 0.47327 1.31614</span></span>
+<span><span class="co">#&gt; 2:  surgery        2      3      2-3 0.58109 0.56432 0.58674 0.37381 0.58674</span></span>
+<span><span class="co">#&gt; 3:  surgery        3      4      3-4 0.39105 0.36751 0.38178 0.43535 0.38178</span></span>
+<span><span class="co">#&gt; 4:  surgery        4      5      4-5 0.31110 0.32321 0.33127 0.35969 0.33127</span></span>
+<span><span class="co">#&gt; 5:  surgery        5      6      5-6 0.27543 0.25088 0.25518 0.43531 0.25518</span></span>
+<span><span class="co">#&gt; 6:  surgery        6      7      6-7 0.21364 0.20479 0.22393 0.31371 0.22393</span></span>
 <span><span class="co">#&gt;       g_se     rse     sigma n_cohorts n_valid n_inf n_nan valid_ratio</span></span>
 <span><span class="co">#&gt;      &lt;num&gt;   &lt;num&gt;     &lt;num&gt;     &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;       &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1: 0.09107 0.06919 2930.7438        35      35     0     0           1</span></span>
@@ -383,7 +384,7 @@ factor) 가 chain ladder 추정에 신뢰할 만큼 안정화되는 경과 기�
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
 <span><span class="co">#&gt;    coverage ata_from change ata_link     mean   median       wt        cv</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.1053282</span></span>
+<span><span class="co">#&gt; 1:  surgery        3      4      3-4 1.434507 1.400098 1.417706 0.1053282</span></span>
 <span><span class="co">#&gt;           f       f_se        rse    sigma n_cohorts n_valid n_inf n_nan</span></span>
 <span><span class="co">#&gt;       &lt;num&gt;      &lt;num&gt;      &lt;num&gt;    &lt;num&gt;     &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1: 1.417706 0.02651852 0.01870522 1372.883        33      33     0     0</span></span>
@@ -464,12 +465,12 @@ dev) 에서 CL (이후 dev) 로 전환되는 dev 를 결정한다.</p>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri_all</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
-<span><span class="co">#&gt;    coverage ata_from change ata_link     mean   median       wt         cv</span></span>
-<span><span class="co">#&gt;      &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;      &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      CAN        8      9      8-9 1.079323 1.060341 1.065354 0.07131509</span></span>
-<span><span class="co">#&gt; 2:       CI       11     12    11-12 1.094403 1.070561 1.114066 0.07563394</span></span>
-<span><span class="co">#&gt; 3:      HOS        6      7      6-7 1.244842 1.184287 1.205542 0.13563431</span></span>
-<span><span class="co">#&gt; 4:      SUR        3      4      3-4 1.434507 1.400098 1.417706 0.10532824</span></span>
+<span><span class="co">#&gt;     coverage ata_from change ata_link     mean   median       wt         cv</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;      &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:    cancer        8      9      8-9 1.079323 1.060341 1.065354 0.07131509</span></span>
+<span><span class="co">#&gt; 2:        ci       11     12    11-12 1.094403 1.070561 1.114066 0.07563394</span></span>
+<span><span class="co">#&gt; 3: inpatient        6      7      6-7 1.244842 1.184287 1.205542 0.13563431</span></span>
+<span><span class="co">#&gt; 4:   surgery        3      4      3-4 1.434507 1.400098 1.417706 0.10532824</span></span>
 <span><span class="co">#&gt;           f       f_se        rse     sigma n_cohorts n_valid n_inf n_nan</span></span>
 <span><span class="co">#&gt;       &lt;num&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;     &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1: 1.065354 0.01384183 0.01299271  637.2413        28      28     0     0</span></span>
@@ -544,19 +545,19 @@ triangle 이 깨끗하다는 뜻이다.</p>
 <span><span class="co">#&gt; periods     : 36</span></span>
 <span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, recent <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;LRFit&gt;</span></span>
-<span><span class="co">#&gt; method         : sa </span></span>
-<span><span class="co">#&gt; loss_alpha     : 1 </span></span>
-<span><span class="co">#&gt; premium_alpha  : 1 </span></span>
-<span><span class="co">#&gt; se_method      : fixed </span></span>
-<span><span class="co">#&gt; conf_level     : 0.95 </span></span>
-<span><span class="co">#&gt; ci_type        : analytical  </span></span>
-<span><span class="co">#&gt; sigma_method   : locf </span></span>
-<span><span class="co">#&gt; recent         : 12 </span></span>
-<span><span class="co">#&gt; loss_regime    : none</span></span>
-<span><span class="co">#&gt; premium_regime : none</span></span>
-<span><span class="co">#&gt; maturity[SUR]  : 4 </span></span>
-<span><span class="co">#&gt; groups         : coverage </span></span>
-<span><span class="co">#&gt; periods        : 36</span></span></code></pre></div>
+<span><span class="co">#&gt; method            : sa </span></span>
+<span><span class="co">#&gt; loss_alpha        : 1 </span></span>
+<span><span class="co">#&gt; premium_alpha     : 1 </span></span>
+<span><span class="co">#&gt; se_method         : fixed </span></span>
+<span><span class="co">#&gt; conf_level        : 0.95 </span></span>
+<span><span class="co">#&gt; ci_type           : bootstrap  (B = 999, seed = NULL) </span></span>
+<span><span class="co">#&gt; sigma_method      : locf </span></span>
+<span><span class="co">#&gt; recent            : 12 </span></span>
+<span><span class="co">#&gt; loss_regime       : none</span></span>
+<span><span class="co">#&gt; premium_regime    : none</span></span>
+<span><span class="co">#&gt; maturity[surgery] : 4 </span></span>
+<span><span class="co">#&gt; groups            : coverage </span></span>
+<span><span class="co">#&gt; periods           : 36</span></span></code></pre></div>
 <p><code>recent = K</code> 는 calendar 위치
 (<code>rank(cohort) + dev - 1</code>) 가 그룹 내 최근 <code>K</code>
 개에 속하는 행만 남긴다.</p>

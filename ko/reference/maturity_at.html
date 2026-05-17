@@ -60,6 +60,7 @@ treated as group columns.'><meta property="og:image" content="https://seokhoonj.
     <li><a class="dropdown-item" href="../articles/regime-change-filter-ko.html">Regime change filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/convergence-ko.html">Convergence</a></li>
+    <li><a class="dropdown-item" href="../articles/bootstrap-se-decomposition-ko.html">부트스트랩 표준오차 분해</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/chain-ladder-reserving-ko.html">(참고) Chain ladder 를 이용한 준비금 산출</a></li>
   </ul></li>
@@ -139,10 +140,10 @@ group column names (possibly <code>character(0)</code>).</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co"># Single-group manual override</span></span></span>
-<span class="r-in"><span><span class="fu">maturity_at</span><span class="op">(</span>coverage <span class="op">=</span> <span class="st">"SUR"</span>, change <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">maturity_at</span><span class="op">(</span>coverage <span class="op">=</span> <span class="st">"surgery"</span>, change <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Multi-group manual override (e.g. company-standard k*)</span></span></span>
-<span class="r-in"><span><span class="fu">maturity_at</span><span class="op">(</span>coverage <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CAN"</span>, <span class="st">"CI"</span>, <span class="st">"HOS"</span>, <span class="st">"SUR"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span><span class="fu">maturity_at</span><span class="op">(</span>coverage <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cancer"</span>, <span class="st">"ci"</span>, <span class="st">"inpatient"</span>, <span class="st">"surgery"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>            change   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>   <span class="fl">9</span>,   <span class="fl">10</span>,     <span class="fl">7</span>,     <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Pooled (no group columns)</span></span></span>

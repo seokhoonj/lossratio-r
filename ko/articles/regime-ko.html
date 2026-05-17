@@ -55,6 +55,7 @@
     <li><a class="dropdown-item" href="../articles/regime-change-filter-ko.html">Regime change filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/convergence-ko.html">Convergence</a></li>
+    <li><a class="dropdown-item" href="../articles/bootstrap-se-decomposition-ko.html">부트스트랩 표준오차 분해</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/chain-ladder-reserving-ko.html">(참고) Chain ladder 를 이용한 준비금 산출</a></li>
   </ul>
@@ -121,10 +122,10 @@ shifts across underwriting cohorts</a></p>
 <strong>Underwriting 가이드라인 변경</strong> — 인수 자격·고지
 항목·할증 기준의 개정</li>
 </ol>
-<p>번들로 제공되는 <code>experience</code> 데이터셋의 SUR 종목에는 위
-트리거 중 하나가 2024-04 시점에 발생했다고 가정한 합성 break 가 심어져
-있다. 따라서 아래 시연에서 <code><a href="../reference/detect_regime.html">detect_regime()</a></code> 이 잡아낼 명확한
-변화점이 존재한다.</p>
+<p>번들로 제공되는 <code>experience</code> 데이터셋의 surgery 종목에는
+위 트리거 중 하나가 2024-04 시점에 발생했다고 가정한 합성 break 가
+심어져 있다. 따라서 아래 시연에서 <code><a href="../reference/detect_regime.html">detect_regime()</a></code> 이 잡아낼
+명확한 변화점이 존재한다.</p>
 <p><code>plot(tri_sur)</code> 의 시각적 점검만으로도 최근 코호트의 초기
 손해율이 과거보다 낮아 보일 수 있지만, 코호트별로 관측 창의 길이가 다른
 상황에서 궤적 다발을 눈대중으로 살피는 것은 구조적 변화의 위치를
@@ -144,7 +145,7 @@ shifts across underwriting cohorts</a></p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span><span class="va">tri_sur</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
-<span>  <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"SUR"</span><span class="op">]</span>,</span>
+<span>  <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"surgery"</span><span class="op">]</span>,</span>
 <span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
@@ -197,39 +198,39 @@ shifts across underwriting cohorts</a></p>
 <span><span class="va">r</span><span class="op">$</span><span class="va">labels</span></span>
 <span><span class="co">#&gt;     coverage     cohort      regime regime_id</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;fctr&gt;     &lt;int&gt;</span></span>
-<span><span class="co">#&gt;  1:      SUR 2023-01-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt;  2:      SUR 2023-02-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt;  3:      SUR 2023-03-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt;  4:      SUR 2023-04-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt;  5:      SUR 2023-05-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt;  6:      SUR 2023-06-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt;  7:      SUR 2023-07-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt;  8:      SUR 2023-08-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt;  9:      SUR 2023-09-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 10:      SUR 2023-10-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 11:      SUR 2023-11-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 12:      SUR 2023-12-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 13:      SUR 2024-01-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 14:      SUR 2024-02-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 15:      SUR 2024-03-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 16:      SUR 2024-04-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 17:      SUR 2024-05-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 18:      SUR 2024-06-01 23.01-24.06         1</span></span>
-<span><span class="co">#&gt; 19:      SUR 2024-07-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 20:      SUR 2024-08-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 21:      SUR 2024-09-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 22:      SUR 2024-10-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 23:      SUR 2024-11-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 24:      SUR 2024-12-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 25:      SUR 2025-01-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 26:      SUR 2025-02-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 27:      SUR 2025-03-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 28:      SUR 2025-04-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 29:      SUR 2025-05-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 30:      SUR 2025-06-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 31:      SUR 2025-07-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 32:      SUR 2025-08-01 24.07-25.09         2</span></span>
-<span><span class="co">#&gt; 33:      SUR 2025-09-01 24.07-25.09         2</span></span>
+<span><span class="co">#&gt;  1:  surgery 2023-01-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt;  2:  surgery 2023-02-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt;  3:  surgery 2023-03-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt;  4:  surgery 2023-04-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt;  5:  surgery 2023-05-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt;  6:  surgery 2023-06-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt;  7:  surgery 2023-07-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt;  8:  surgery 2023-08-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt;  9:  surgery 2023-09-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 10:  surgery 2023-10-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 11:  surgery 2023-11-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 12:  surgery 2023-12-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 13:  surgery 2024-01-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 14:  surgery 2024-02-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 15:  surgery 2024-03-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 16:  surgery 2024-04-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 17:  surgery 2024-05-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 18:  surgery 2024-06-01 23.01-24.06         1</span></span>
+<span><span class="co">#&gt; 19:  surgery 2024-07-01 24.07-25.09         2</span></span>
+<span><span class="co">#&gt; 20:  surgery 2024-08-01 24.07-25.09         2</span></span>
+<span><span class="co">#&gt; 21:  surgery 2024-09-01 24.07-25.09         2</span></span>
+<span><span class="co">#&gt; 22:  surgery 2024-10-01 24.07-25.09         2</span></span>
+<span><span class="co">#&gt; 23:  surgery 2024-11-01 24.07-25.09         2</span></span>
+<span><span class="co">#&gt; 24:  surgery 2024-12-01 24.07-25.09         2</span></span>
+<span><span class="co">#&gt; 25:  surgery 2025-01-01 24.07-25.09         2</span></span>
+<span><span class="co">#&gt; 26:  surgery 2025-02-01 24.07-25.09         2</span></span>
+<span><span class="co">#&gt; 27:  surgery 2025-03-01 24.07-25.09         2</span></span>
+<span><span class="co">#&gt; 28:  surgery 2025-04-01 24.07-25.09         2</span></span>
+<span><span class="co">#&gt; 29:  surgery 2025-05-01 24.07-25.09         2</span></span>
+<span><span class="co">#&gt; 30:  surgery 2025-06-01 24.07-25.09         2</span></span>
+<span><span class="co">#&gt; 31:  surgery 2025-07-01 24.07-25.09         2</span></span>
+<span><span class="co">#&gt; 32:  surgery 2025-08-01 24.07-25.09         2</span></span>
+<span><span class="co">#&gt; 33:  surgery 2025-09-01 24.07-25.09         2</span></span>
 <span><span class="co">#&gt;     coverage     cohort      regime regime_id</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;fctr&gt;     &lt;int&gt;</span></span></code></pre></div>
 </div>
@@ -377,7 +378,7 @@ Ward 계층 클러스터링을 적용하고 <code>n_regimes</code> 개 (default:
 클러스터) 을 만들어 낸다면, 이 변화는 방법론적 인공물이 아닌 구조적
 변화이다.</p></li>
 </ul>
-<p>실무에서는 세 방법이 모두 일치하는 경우 — 위 SUR 예시처럼
+<p>실무에서는 세 방법이 모두 일치하는 경우 — 위 surgery 예시처럼
 <code>"e_divisive"</code>, <code>"pelt"</code>, <code>"hclust"</code> 가
 모두 <code>24.04</code> 를 regime 경계로 지목하는 경우 — 실제 인수/요율
 변경의 강력한 증거가 된다.</p>
@@ -427,7 +428,7 @@ Ward 계층 클러스터링을 적용하고 <code>n_regimes</code> 개 (default:
 <span><span class="va">r_all</span><span class="op">$</span><span class="va">changes</span></span>
 <span><span class="co">#&gt;    coverage     change regime_id pre_value post_value magnitude</span></span>
 <span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt;     &lt;int&gt;     &lt;num&gt;      &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      SUR 2024-07-01         2 0.9065895  0.5479919 0.3585976</span></span></code></pre></div>
+<span><span class="co">#&gt; 1:  surgery 2024-07-01         2 0.9065895  0.5479919 0.3585976</span></span></code></pre></div>
 <p>다중 그룹 모드에서 <code>r_all$changes</code> 는 그룹 컬럼과
 <code>change</code> Date 컬럼을 가진 <code>data.table</code> 이고,
 <code>r_all$labels</code> 에도 그룹 컬럼이 추가된다.

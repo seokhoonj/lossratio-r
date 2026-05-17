@@ -93,7 +93,7 @@ MAD$`\to\sigma`$ 보정. 이 스케일링으로 $`\hat{D}_k`$ 는 증분 LR 의 
 library(lossratio)
 data(experience)
 tri <- as_triangle(
-  experience[coverage == "SUR"],
+  experience[coverage == "surgery"],
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",

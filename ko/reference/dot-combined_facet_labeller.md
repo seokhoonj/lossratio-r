@@ -8,7 +8,7 @@ via
 
 With one variable, labels are returned as-is (formatted). With multiple
 variables, labels are combined as `"first (rest1, rest2, ...)"` — e.g.
-`"SUR (23.01)"`.
+`"surgery (23.01)"`.
 
 ## Usage
 

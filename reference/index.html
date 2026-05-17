@@ -82,6 +82,7 @@
     <li><a class="dropdown-item" href="../articles/regime-change-filter.html">Regime change filter</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
     <li><a class="dropdown-item" href="../articles/convergence.html">Convergence</a></li>
+    <li><a class="dropdown-item" href="../articles/bootstrap-se-decomposition.html">Bootstrap SE decomposition</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/chain-ladder-reserving.html">(Reference) Chain ladder reserving</a></li>
   </ul></li>
@@ -295,6 +296,22 @@
 
         </dt>
         <dd>Build a lazy regime detection spec</dd>
+      </dl></div><div class="section level2">
+      <h2 id="bootstrap">Bootstrap<a class="anchor" aria-label="anchor" href="#bootstrap"></a></h2>
+
+      <div class="section-desc"><p>Cohort × dev standard-error decomposition via simulation (Pythagorean split into parameter and process components). Returned object is consumed by <code>fit_loss</code> / <code>fit_premium</code> / <code>fit_lr</code> through their <code>bootstrap</code> argument to replace analytical SE / CI with empirical counterparts.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="bootstrap.html">bootstrap()</a></code>
+
+        </dt>
+        <dd>Bootstrap a Triangle</dd>
       </dl></div><div class="section level2">
       <h2 id="projection-diagnostic">Projection diagnostic<a class="anchor" aria-label="anchor" href="#projection-diagnostic"></a></h2>
 
@@ -544,6 +561,13 @@
 
         <dt>
 
+          <code><a href="print.BootstrapTriangle.html">print(<i>&lt;BootstrapTriangle&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for BootstrapTriangle</dd>
+
+        <dt>
+
           <code><a href="print.CLFit.html">print(<i>&lt;CLFit&gt;</i>)</a></code>
 
         </dt>
@@ -678,13 +702,6 @@
 
 
       <dl><dt>
-
-          <code><a href="get_recent_weights.html">get_recent_weights()</a></code>
-
-        </dt>
-        <dd>Recent-diagonal weights for a development triangle</dd>
-
-        <dt>
 
           <code><a href="longer.html">longer()</a></code>
 
