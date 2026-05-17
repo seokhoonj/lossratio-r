@@ -24,7 +24,7 @@ bootstrap(x, ...)
   seed = NULL,
   alpha = 1,
   quantile_ci = FALSE,
-  keep_pseudo = TRUE,
+  keep_pseudo = FALSE,
   ...
 )
 }
@@ -121,13 +121,16 @@ the SE decomposition (per-cell qsort dominated by Stage 1 work),
 so the marginal cost over \code{FALSE} is small.}
 
 \item{keep_pseudo}{Logical. Whether to materialise the per-replicate
-long-format \code{pseudo_triangles} slot. Default \code{TRUE}. \code{FALSE} skips
-the long-format build, keeping only the precomputed \verb{$summary} --
-for large portfolios this saves a multi-million-row data.table
-(~200 MB on a typical 4-group experience triangle at \code{B = 999})
-at the cost of being unable to extract individual replicate
-values. \code{fit_lr()} / \code{fit_loss()} / \code{fit_premium()} already pass
-\code{keep_pseudo = FALSE} internally because they only read \verb{$summary}.}
+long-format \code{pseudo_triangles} slot. Default \code{FALSE} (changed from
+\code{TRUE} in v0.x for performance). \code{TRUE} builds the long-format
+data.table for diagnostic inspection (e.g. raw replicate
+trajectories, custom quantile work). On a typical 4-group monthly
+triangle at \code{B = 999} the reshape costs ~250-300 ms and ~200 MB on
+top of \verb{$summary}; users who only consume \verb{$summary} (the common
+case) should leave this \code{FALSE}. \code{fit_lr()} / \code{fit_loss()} /
+\code{fit_premium()} always pass \code{FALSE} internally because they only
+read \verb{$summary}. Set \code{TRUE} explicitly if you want to inspect
+\verb{$pseudo_triangles} directly.}
 }
 \value{
 An object of class \code{BootstrapTriangle} (a list) with elements:

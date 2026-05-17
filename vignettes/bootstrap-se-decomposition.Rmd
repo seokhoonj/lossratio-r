@@ -135,11 +135,12 @@ tri <- as_triangle(
 
 set.seed(42)
 bt <- bootstrap(tri,
-                residual = "cell",
-                method   = "sa",
-                pooling  = "tail_pooled", tail = "auto",
-                process  = "gamma",
-                B        = 499)
+                residual    = "cell",
+                method      = "sa",
+                pooling     = "tail_pooled", tail = "auto",
+                process     = "gamma",
+                B           = 499,
+                keep_pseudo = TRUE)   # opt in to long-format $pseudo_triangles
 head(bt$pseudo_triangles)
 ```
 

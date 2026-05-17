@@ -209,13 +209,16 @@
 #'   the SE decomposition (per-cell qsort dominated by Stage 1 work),
 #'   so the marginal cost over `FALSE` is small.
 #' @param keep_pseudo Logical. Whether to materialise the per-replicate
-#'   long-format `pseudo_triangles` slot. Default `TRUE`. `FALSE` skips
-#'   the long-format build, keeping only the precomputed `$summary` --
-#'   for large portfolios this saves a multi-million-row data.table
-#'   (~200 MB on a typical 4-group experience triangle at `B = 999`)
-#'   at the cost of being unable to extract individual replicate
-#'   values. `fit_lr()` / `fit_loss()` / `fit_premium()` already pass
-#'   `keep_pseudo = FALSE` internally because they only read `$summary`.
+#'   long-format `pseudo_triangles` slot. Default `FALSE` (changed from
+#'   `TRUE` in v0.x for performance). `TRUE` builds the long-format
+#'   data.table for diagnostic inspection (e.g. raw replicate
+#'   trajectories, custom quantile work). On a typical 4-group monthly
+#'   triangle at `B = 999` the reshape costs ~250-300 ms and ~200 MB on
+#'   top of `$summary`; users who only consume `$summary` (the common
+#'   case) should leave this `FALSE`. `fit_lr()` / `fit_loss()` /
+#'   `fit_premium()` always pass `FALSE` internally because they only
+#'   read `$summary`. Set `TRUE` explicitly if you want to inspect
+#'   `$pseudo_triangles` directly.
 #' @param ... Reserved for future use.
 #'
 #' @return An object of class `BootstrapTriangle` (a list) with elements:
@@ -296,7 +299,7 @@ bootstrap.Triangle <- function(x,
                                 seed        = NULL,
                                 alpha       = 1,
                                 quantile_ci = FALSE,
-                                keep_pseudo = TRUE,
+                                keep_pseudo = FALSE,
                                 ...) {
 
   .assert_class(x, "Triangle")
@@ -414,30 +417,31 @@ bootstrap.Triangle <- function(x,
     phi_dt <- NULL
   }
 
-  # 5) Stage 1 + 2 -- B pseudo triangles (loss_mean + loss_sampled) ------------
-  # When keep_pseudo = FALSE, `.boot_stage1()` returns the raw 3D arrays
-  # (no long-format build) and `summary_dt` is computed straight from
-  # those -- bypassing the ~250 ms long-format reshape on top of the
-  # ~200 MB allocation it would otherwise produce.
+  # 5) Stage 1 + 2 -- B pseudo triangles (raw 3D arrays only) ----------------
+  # `.boot_stage1()` returns the raw C-side 3D arrays + per-group
+  # metadata. The long-format pseudo_triangles DT (~5M rows on a typical
+  # 4-group monthly triangle) is built lazily by .boot_build_pseudo_long
+  # only when the user reads `$pseudo_triangles`.
   stage1_out <- .boot_stage1(
     triangle = x, link = link, anchor = anchor, pool = pool,
     phi_dt = phi_dt,
     grp = grp, is_residual_mode = is_residual_mode, residual = residual,
-    process = process, B = B, alpha = alpha, target = target,
-    keep_pseudo = keep_pseudo
+    process = process, B = B, alpha = alpha, target = target
   )
 
-  # `$summary` is always computed straight from the 3D arrays via the
-  # C kernel; `pseudo_triangles` is a user-visible long-format DT exposed
-  # only when keep_pseudo = TRUE (not used by the summary path).
-  pseudo_triangles <- if (isTRUE(keep_pseudo)) stage1_out$pseudo_long else NULL
   summary_dt <- .boot_summary_from_arrays(stage1_out, grp = grp,
                                           target = target,
                                           quantile_ci = quantile_ci)
 
   # 6) Assemble -------------------------------------------------------------
-  # pseudo_triangles is already NULL when keep_pseudo = FALSE (set above when
-  # branching the summary path); no extra drop needed here.
+  # When keep_pseudo = TRUE (opt-in; default is FALSE), eagerly build the
+  # long-format pseudo_triangles DT for user inspection. This pays the
+  # ~250-300 ms reshape cost up front so subsequent reads are O(1) and
+  # the object has no hidden mutation behaviour.
+  pseudo_triangles <- if (isTRUE(keep_pseudo))
+    .boot_build_pseudo_long(stage1_out, target = target, grp = grp)
+  else NULL
+
   structure(
     list(
       pseudo_triangles = pseudo_triangles,
@@ -1048,8 +1052,7 @@ bootstrap.Triangle <- function(x,
 
 .boot_stage1 <- function(triangle, link, anchor, pool, phi_dt,
                           grp, is_residual_mode, residual, process,
-                          B, alpha, target = "loss",
-                          keep_pseudo = TRUE) {
+                          B, alpha, target = "loss") {
 
   # Per-group iteration
   if (length(grp) > 0L) {
@@ -1065,8 +1068,7 @@ bootstrap.Triangle <- function(x,
         phi_dt = phi_g,
         is_residual_mode = is_residual_mode, residual = residual,
         process = process, B = B, alpha = alpha,
-        grp_vals = grp_vals[1L], target = target,
-        keep_pseudo = keep_pseudo
+        grp_vals = grp_vals[1L], target = target
       ))
     }
     out_list <- vector("list", nrow(grp_vals))
@@ -1085,15 +1087,10 @@ bootstrap.Triangle <- function(x,
         phi_dt = phi_g,
         is_residual_mode = is_residual_mode, residual = residual,
         process = process, B = B, alpha = alpha,
-        grp_vals = gkey, target = target,
-        keep_pseudo = keep_pseudo
+        grp_vals = gkey, target = target
       )
     }
-    # Worker always returns per-group list of arrays + metadata. When
-    # keep_pseudo = TRUE the list also carries a `pseudo_long` DT which
-    # we rbindlist here for user inspection; the arrays still drive the
-    # summary path either way.
-    out <- list(
+    list(
       cum_mean    = lapply(out_list, `[[`, "cum_mean"),
       cum_sampled = lapply(out_list, `[[`, "cum_sampled"),
       cohorts     = out_list[[1L]]$cohorts,
@@ -1102,38 +1099,30 @@ bootstrap.Triangle <- function(x,
       grp_vals    = grp_vals,
       n_groups    = nrow(grp_vals)
     )
-    if (isTRUE(keep_pseudo)) {
-      out$pseudo_long <- data.table::rbindlist(
-        lapply(out_list, `[[`, "pseudo_long"), use.names = TRUE)
-    }
-    out
   } else {
     .boot_stage1_one(
       triangle = triangle, link = link, anchor = anchor, pool = pool,
       phi_dt = phi_dt,
       is_residual_mode = is_residual_mode, residual = residual,
       process = process, B = B, alpha = alpha,
-      grp_vals = NULL, target = target,
-      keep_pseudo = keep_pseudo
+      grp_vals = NULL, target = target
     )
   }
 }
 
 
-# Per-group worker for Stage 1. Always returns the raw C-side 3D arrays
-# (cum_mean, cum_sampled) plus per-group metadata. When `keep_pseudo =
-# TRUE` (default), additionally builds the long-format pseudo_triangles
-# data.table and emits it on the `pseudo_long` slot for user inspection;
-# the caller (`bootstrap.Triangle`) still computes `$summary` straight
-# from the 3D arrays via `.boot_summary_from_arrays`, so the long-format
-# DT never re-enters the summary path. When `keep_pseudo = FALSE`,
-# `pseudo_long` is absent and only the arrays + metadata are returned.
+# Per-group worker for Stage 1. Returns the raw C-side 3D arrays
+# (cum_mean, cum_sampled) plus per-group metadata. The caller
+# (`bootstrap.Triangle`) always drives `$summary` straight from these
+# arrays via `.boot_summary_from_arrays`; the long-format
+# pseudo_triangles data.table is built lazily on first access to
+# `$pseudo_triangles` via `.boot_build_pseudo_long()` (and only when
+# `keep_pseudo = TRUE` flagged the result for that build).
 .boot_stage1_one <- function(triangle, link, anchor, pool, phi_dt = NULL,
                               is_residual_mode, residual = "link",
                               process = "gamma",
                               B, alpha, grp_vals,
-                              target = "loss",
-                              keep_pseudo = TRUE) {
+                              target = "loss") {
 
   cohort <- dev <- NULL  # NSE
 
@@ -1343,71 +1332,15 @@ bootstrap.Triangle <- function(x,
     out_arr_sampled <- kernel_out$cum_sampled
   }
 
-  # ----- keep_pseudo = FALSE -- skip the long-format reshape ---------------
-  # When the caller doesn't need raw per-replicate values, return only
-  # the raw C-side 3D arrays + per-group metadata so bootstrap.Triangle()
-  # can drive the summary kernel directly. Saves the long-format build
-  # (rep.int / setDT) and the resulting ~200 MB data.table for typical
-  # 4-group experience triangles.
-  if (!isTRUE(keep_pseudo)) {
-    return(list(
-      cum_mean    = out_arr_mean,
-      cum_sampled = out_arr_sampled,
-      cohorts     = cohorts,
-      devs        = devs,
-      B           = B,
-      grp_vals    = grp_vals
-    ))
-  }
-
-  # ----- keep_pseudo = TRUE -- reshape 3D arrays -> long data.table -------
-  # Both the arrays and the long-format DT are returned so that the
-  # caller can:
-  #   - use the arrays for `.boot_summary_from_arrays` (fast C path), and
-  #   - expose the long-format DT as `$pseudo_triangles` for diagnostic
-  #     inspection.
-  # The long-format DT is now strictly a user-visible artifact; it no
-  # longer drives the summary computation.
-  # Long data.table has TWO value columns:
-  #   <target>_mean    = Stage 1 only       (out_arr_mean)
-  #   <target>_sampled = Stage 1 + Stage 2  (out_arr_sampled)
-  # as.numeric() flattens column-major: cohort fastest, then dev, then rep.
-  # Build as plain list + setDT() once (no per-column copy).
-  # For Date cohorts we unclass to integer before rep() so the repeat goes
-  # through fast int routines, then restore the class once at the end.
-  cohort_cls  <- oldClass(cohorts)
-  cohort_int  <- unclass(cohorts)
-  cohort_col  <- rep.int(rep.int(cohort_int, n_dev), B)
-  if (!is.null(cohort_cls)) oldClass(cohort_col) <- cohort_cls
-  dev_col       <- rep.int(rep(devs, each = n_coh), B)
-  rep_col       <- rep(seq_len(B), each = n_coh * n_dev)
-  val_col_mean    <- as.numeric(out_arr_mean)
-  val_col_sampled <- as.numeric(out_arr_sampled)
-
-  n_long <- length(val_col_mean)
-  col_mean    <- paste0(target, "_mean")
-  col_sampled <- paste0(target, "_sampled")
-  if (is.null(grp_vals)) {
-    cols <- list(cohort = cohort_col, dev = dev_col, rep = rep_col)
-    cols[[col_mean]]    <- val_col_mean
-    cols[[col_sampled]] <- val_col_sampled
-  } else {
-    cols <- list()
-    for (col in names(grp_vals)) {
-      v <- grp_vals[[col]]
-      cols[[col]] <- if (length(v) == n_long) v else rep_len(v, n_long)
-    }
-    cols$cohort <- cohort_col
-    cols$dev    <- dev_col
-    cols$rep    <- rep_col
-    cols[[col_mean]]    <- val_col_mean
-    cols[[col_sampled]] <- val_col_sampled
-  }
-  data.table::setDT(cols)
+  # Return raw C-side 3D arrays + per-group metadata. The long-format
+  # pseudo_triangles DT is built lazily by .boot_build_pseudo_long() in
+  # bootstrap.Triangle's $pseudo_triangles accessor, only when the user
+  # actually reads that slot. This avoids the ~250 ms rep.int / setDT
+  # cost on a 5M-row pseudo_triangles for users who only consume
+  # $summary.
   list(
     cum_mean    = out_arr_mean,
     cum_sampled = out_arr_sampled,
-    pseudo_long = cols[],
     cohorts     = cohorts,
     devs        = devs,
     B           = B,
@@ -1494,6 +1427,74 @@ bootstrap.Triangle <- function(x,
   if (isTRUE(quantile_ci)) out_cols <- c(out_cols, "ci_lo", "ci_hi")
   data.table::setcolorder(dt, out_cols)
   dt[]
+}
+
+
+# Build the long-format pseudo_triangles DT from stage1_out array form
+# (single- or multi-group). Used by $.BootstrapTriangle on first access
+# to $pseudo_triangles; never called during the summary path. ~250 ms
+# on a 4-group, 36 x 36, B=999 triangle, so we pay it only when the
+# user actually reads the slot.
+.boot_build_pseudo_long <- function(stage1_out, target = "loss", grp = character()) {
+  is_multi <- !is.null(stage1_out$grp_vals) &&
+              !is.null(stage1_out$n_groups) &&
+              stage1_out$n_groups > 0L
+  col_mean    <- paste0(target, "_mean")
+  col_sampled <- paste0(target, "_sampled")
+
+  build_one <- function(arr_mean, arr_sampled, gkey, cohorts, devs, B) {
+    n_coh <- length(cohorts)
+    n_dev <- length(devs)
+    cohort_cls <- oldClass(cohorts)
+    cohort_int <- unclass(cohorts)
+    cohort_col <- rep.int(rep.int(cohort_int, n_dev), B)
+    if (!is.null(cohort_cls)) oldClass(cohort_col) <- cohort_cls
+    dev_col <- rep.int(rep(devs, each = n_coh), B)
+    rep_col <- rep(seq_len(B), each = n_coh * n_dev)
+    val_mean    <- as.numeric(arr_mean)
+    val_sampled <- as.numeric(arr_sampled)
+    n_long <- length(val_mean)
+    if (is.null(gkey)) {
+      cols <- list(cohort = cohort_col, dev = dev_col, rep = rep_col)
+    } else {
+      cols <- list()
+      for (col in names(gkey)) {
+        v <- gkey[[col]]
+        cols[[col]] <- if (length(v) == n_long) v else rep_len(v, n_long)
+      }
+      cols$cohort <- cohort_col
+      cols$dev    <- dev_col
+      cols$rep    <- rep_col
+    }
+    cols[[col_mean]]    <- val_mean
+    cols[[col_sampled]] <- val_sampled
+    data.table::setDT(cols)
+    cols[]
+  }
+
+  if (is_multi) {
+    parts <- vector("list", stage1_out$n_groups)
+    for (gi in seq_len(stage1_out$n_groups)) {
+      parts[[gi]] <- build_one(
+        stage1_out$cum_mean[[gi]],
+        stage1_out$cum_sampled[[gi]],
+        stage1_out$grp_vals[gi],
+        stage1_out$cohorts,
+        stage1_out$devs,
+        stage1_out$B
+      )
+    }
+    data.table::rbindlist(parts, use.names = TRUE)
+  } else {
+    build_one(
+      stage1_out$cum_mean,
+      stage1_out$cum_sampled,
+      stage1_out$grp_vals,
+      stage1_out$cohorts,
+      stage1_out$devs,
+      stage1_out$B
+    )
+  }
 }
 
 
