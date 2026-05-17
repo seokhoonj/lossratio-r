@@ -102,7 +102,7 @@ static void bootstrap_refit_fstar(
 }
 
 
-/* bootstrap_project_and_clip
+/* bootstrap_fwd_proj_and_clip
  *
  *   Fill lower-triangle cells of `cum` [n_coh, n_dev, B] dev by dev,
  *   then clip finite negatives to 0. For each dev j (2..n_dev), cohorts
@@ -113,7 +113,7 @@ static void bootstrap_refit_fstar(
  *   Caller is responsible for populating `f_star` (refit for cell/link,
  *   direct random draw for parametric).
  */
-static void bootstrap_project_and_clip(
+static void bootstrap_fwd_proj_and_clip(
     double *cum, const double *f_star,
     const int *last_obs_idx, const int *k_idx_by_j,
     int n_coh, int n_dev, int B, int n_links) {
@@ -150,7 +150,7 @@ static void bootstrap_project_and_clip(
 }
 
 
-/* bootstrap_forward_sim_cell
+/* bootstrap_fwd_sim_cell
  *
  *   Produces `cum_sampled` by noisy forward simulation on the lower
  *   triangle of `cum_mean` (cell / ODP paradigm). For each cohort i and
@@ -193,7 +193,7 @@ static void bootstrap_project_and_clip(
  *
  *   `cum_mean` and `cum_sampled` are both column-major [n_coh, n_dev, B].
  */
-static void bootstrap_forward_sim_cell(
+static void bootstrap_fwd_sim_cell(
     const double *cum_mean,
     const int *last_obs_idx,
     int n_coh, int n_dev, int B,
@@ -263,7 +263,7 @@ static void bootstrap_forward_sim_cell(
 }
 
 
-/* bootstrap_forward_sim_link
+/* bootstrap_fwd_sim_link
  *
  *   Mack-paradigm forward simulation: per-link cumulative recursion
  *
@@ -280,14 +280,14 @@ static void bootstrap_forward_sim_cell(
  *   sigma2_vec[k] : per-link Mack sigma^2 (anchored from original data,
  *                   NOT refit per replicate — Phase 5 design).
  *   f_star[k, b]  : per-replicate refit factors (same as caller's f_star
- *                   used by bootstrap_project_and_clip).
+ *                   used by bootstrap_fwd_proj_and_clip).
  *   alpha         : variance exponent.
  *   process_code  : 1 gamma / 2 od_pois (Gamma moment-matched) / 3 normal.
  *
  *   For pathological cases (non-finite f, non-positive prev, NA), the
  *   noisy step degenerates to the deterministic recursion.
  */
-static void bootstrap_forward_sim_link(
+static void bootstrap_fwd_sim_link(
     const double *cum_mean,
     const int *last_obs_idx,
     const int *k_idx_by_j,
@@ -505,9 +505,9 @@ static void bootstrap_summary_decompose(
  *   (b) Cumulative sum along the dev axis (per cohort × replicate).
  *   (c) Mask lower triangle to NA_real_.
  *   (d) Refit f*_k per link  -> bootstrap_refit_fstar.
- *   (e) Forward-project + clip negatives -> bootstrap_project_and_clip.
+ *   (e) Forward-project + clip negatives -> bootstrap_fwd_proj_and_clip.
  *   (f) Apply Stage 2 process noise on lower triangle ->
- *       bootstrap_forward_sim_cell. Produces `cum_sampled` alongside the
+ *       bootstrap_fwd_sim_cell. Produces `cum_sampled` alongside the
  *       Stage 1 `cum_mean`; the two arrays are returned as a named list.
  *
  * Returns:
@@ -769,7 +769,7 @@ SEXP bootstrap_kernel_cell(
                         n_coh, n_dev, B, n_links, f_star);
 
   /* ----- (e) Forward-project + clip ---------------------------------- */
-  bootstrap_project_and_clip(cum, f_star, last_obs_idx, k_idx_by_j,
+  bootstrap_fwd_proj_and_clip(cum, f_star, last_obs_idx, k_idx_by_j,
                               n_coh, n_dev, B, n_links);
 
   /* ----- (f) Stage 2 process noise -> cum_sampled -------------------- */
@@ -785,7 +785,7 @@ SEXP bootstrap_kernel_cell(
   Rf_setAttrib(cum_sampled_sxp, R_DimSymbol, dims_s);
   UNPROTECT(1); /* dims_s held via setAttrib */
 
-  bootstrap_forward_sim_cell(cum, last_obs_idx, n_coh, n_dev, B,
+  bootstrap_fwd_sim_cell(cum, last_obs_idx, n_coh, n_dev, B,
                               phi, alpha, process_code,
                               REAL(cum_sampled_sxp));
 
@@ -817,7 +817,7 @@ SEXP bootstrap_kernel_cell(
  *   (c) Pre-refit clip: zero finite negatives in the upper triangle.
  *   (d) Refit f*_k per link -> bootstrap_refit_fstar.
  *   (e) Forward-project lower triangle + final clip ->
- *       bootstrap_project_and_clip.
+ *       bootstrap_fwd_proj_and_clip.
  *
  * RNG draw order matches R `sample(pool, n_alt, replace=TRUE)` semantics
  * (per-cohort `unif_rand() * pool_size` floored) so the outer loop order
@@ -949,7 +949,7 @@ SEXP bootstrap_kernel_link(
                         n_coh, n_dev, B, n_links, f_star);
 
   /* ----- (e) Forward-project + final clip ----------------------------- */
-  bootstrap_project_and_clip(cum, f_star, last_obs_idx, k_idx_by_j,
+  bootstrap_fwd_proj_and_clip(cum, f_star, last_obs_idx, k_idx_by_j,
                               n_coh, n_dev, B, n_links);
 
   /* ----- (f) Stage 2 process noise -> cum_sampled (Mack paradigm) ----- */
@@ -964,7 +964,7 @@ SEXP bootstrap_kernel_link(
   Rf_setAttrib(cum_sampled_sxp, R_DimSymbol, dims_s);
   UNPROTECT(1);
 
-  bootstrap_forward_sim_link(cum, last_obs_idx, k_idx_by_j,
+  bootstrap_fwd_sim_link(cum, last_obs_idx, k_idx_by_j,
                              f_star, sigma2_vec,
                              n_coh, n_dev, B, n_links,
                              alpha, process_code,
@@ -993,7 +993,7 @@ SEXP bootstrap_kernel_link(
  *   (b) Draw f*_k ~ N(f_hat_k, sqrt(f_var_k)) per replicate, per link.
  *       Drawn only when f_var_k is finite and > 0 (else f*_k = f_hat_k).
  *   (c) Forward-project lower triangle + final clip ->
- *       bootstrap_project_and_clip.
+ *       bootstrap_fwd_proj_and_clip.
  *
  * RNG draw order matches R `rnorm(1, mu, sigma)` semantics: one
  * `norm_rand()` per (b, k) iff f_var_k > 0 (regardless of f_hat_k
@@ -1076,7 +1076,7 @@ SEXP bootstrap_kernel_parametric(
   PutRNGstate();
 
   /* ----- (c) Forward-project + final clip ----------------------------- */
-  bootstrap_project_and_clip(cum, f_star, last_obs_idx, k_idx_by_j,
+  bootstrap_fwd_proj_and_clip(cum, f_star, last_obs_idx, k_idx_by_j,
                               n_coh, n_dev, B, n_links);
 
   /* ----- (d) Stage 2 process noise -> cum_sampled (Mack paradigm) ----- */
@@ -1091,7 +1091,7 @@ SEXP bootstrap_kernel_parametric(
   Rf_setAttrib(cum_sampled_sxp, R_DimSymbol, dims_s);
   UNPROTECT(1);
 
-  bootstrap_forward_sim_link(cum, last_obs_idx, k_idx_by_j,
+  bootstrap_fwd_sim_link(cum, last_obs_idx, k_idx_by_j,
                              f_star, sigma2_vec,
                              n_coh, n_dev, B, n_links,
                              alpha, process_code,

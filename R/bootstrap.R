@@ -1227,7 +1227,7 @@ bootstrap.Triangle <- function(x,
   # Each kernel returns the full [n_coh x n_dev x B] cumulative array
   # (residual resample / parametric draw + per-replicate f* + forward
   # project + clip). Branches share the bootstrap_refit_fstar and
-  # bootstrap_project_and_clip C helpers; see src/bootstrap.c.
+  # bootstrap_fwd_proj_and_clip C helpers; see src/bootstrap.c.
   if (is_residual_mode && identical(residual, "cell")) {
     # Active cell index (upper triangle cap finite mu_hat)
     upper_full <- matrix(FALSE, n_coh, n_dev)
