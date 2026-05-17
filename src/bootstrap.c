@@ -45,7 +45,7 @@
  */
 
 /* Ascending comparator for qsort of doubles. */
-static int cmp_double_asc(const void *a, const void *b) {
+static int cmp_dbl_asc(const void *a, const void *b) {
   double da = *(const double *)a, db = *(const double *)b;
   return (da > db) - (da < db);
 }
@@ -479,7 +479,7 @@ static void bootstrap_summary_decompose(
           out_ci_lo[cell_off] = NA_REAL;
           out_ci_hi[cell_off] = NA_REAL;
         } else {
-          qsort(scratch, (size_t)n_fin, sizeof(double), cmp_double_asc);
+          qsort(scratch, (size_t)n_fin, sizeof(double), cmp_dbl_asc);
           /* type = 1 ordinal: idx0 = ceil(p * n) - 1 (0-indexed). */
           for (int q = 0; q < n_probs; q++) {
             double p_q = probs[q];
