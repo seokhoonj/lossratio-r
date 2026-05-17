@@ -57,19 +57,32 @@ It provides:
 
 ## Expected input
 
-A long-format `data.frame` / `data.table` with at minimum:
+A long-format `data.frame` / `data.table`. Column names are
+configurable -- pass them via `as_triangle()` arguments and the
+function standardises internally.
 
-| Column           | Meaning                                                       | Example            |
-|------------------|---------------------------------------------------------------|--------------------|
-| cohort           | Underwriting / accident period (any granularity)              | `uy_m`, `uy`     |
-| dev              | Development period since cohort start                         | `dev_m`, `dev_y`   |
-| `incr_loss`      | Per-period claim amount in the cell                           | numeric            |
-| `incr_prem`      | Per-period premium in the cell (risk premium for long-term health) | numeric        |
-| group            | Optional — product, coverage, age, gender, sum insured, etc.  | character / factor |
+| `as_triangle()` argument        | Meaning                                            | Example column   |
+|---------------------------------|----------------------------------------------------|------------------|
+| `cohort`                        | Underwriting / accident period (Date)              | `uy_m`, `uy`     |
+| `calendar` *or* `development`   | Calendar period (Date) *or* dev period (integer)   | `cy_m` / `dev_m` |
+| `loss`                          | Per-period *or* cumulative claim amount            | `incr_loss`      |
+| `premium`                       | Per-period *or* cumulative premium                 | `incr_prem`      |
+| `groups` *(optional)*           | Grouping column(s): product, coverage, age, ...    | `coverage`       |
 
-`as_triangle()` validates the schema, coerces date columns, and
-aggregates to the canonical cohort × dev structure with cumulative
-columns and derived ratios.
+Two more arguments govern interpretation:
+
+- **`cell_type`** -- `"incremental"` (default) or `"cumulative"`. Raw
+  experience is typically incremental; if your data is pre-summed
+  cumulative, pass `cell_type = "cumulative"` and `as_triangle()`
+  derives the incremental form via per-cohort diff.
+- **`grain`** -- `"auto"` (default, inferred from `cohort` dates) or
+  `"M"` / `"Q"` / `"H"` / `"Y"`. Aggregates to monthly / quarterly /
+  half-yearly / yearly granularity.
+
+`as_triangle()` validates the schema, coerces date columns, derives
+the missing axis when one of `calendar` / `development` is supplied,
+bins to `grain`, and emits cumulative + incremental cell values plus
+the derived `lr`, `margin`, `profit` columns.
 
 ### Column convention
 

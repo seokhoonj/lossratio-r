@@ -87,15 +87,29 @@ plot_triangle(bt)
 
 ## 입력 형식
 
-| 컬럼              | 의미                                         |
-|-------------------|----------------------------------------------|
-| `uy_m`            | 인수 시점 (Date) — 자동 grain 감지 (M/Q/H/Y) |
-| `cy_m`            | 달력 시점 (Date)                             |
-| `incr_loss`       | 셀 기간별 손해                               |
-| `incr_prem`       | 셀 기간별 보험료 (장기 health 는 위험보험료) |
-| `groups` *(선택)* | 상품 / 담보 / 연령 / 성별 / 가입금액         |
+long-format `data.frame` / `data.table`. 컬럼명은 자유 — `as_triangle()`
+인자로 어떤 이름이든 넘기면 함수가 표준화함.
 
-`as_triangle()` 가 스키마 검증 + 날짜 코어션 + 코호트 × dev 집계 + 누적 컬럼 (`loss`, `premium`, `lr`) 까지 한 번에. 사용자는 raw 데이터만 넘기면 됨.
+| `as_triangle()` 인자                | 의미                                            | 예시 컬럼명      |
+|-------------------------------------|-------------------------------------------------|------------------|
+| `cohort`                            | 인수 / 사고 시점 (Date)                          | `uy_m`, `uy`     |
+| `calendar` *또는* `development`     | 달력 시점 (Date) *또는* 경과 기간 (int)           | `cy_m` / `dev_m` |
+| `loss`                              | 기간별 *또는* 누적 손해                           | `incr_loss`      |
+| `premium`                           | 기간별 *또는* 누적 보험료 (장기 health 는 위험보험료) | `incr_prem`      |
+| `groups` *(선택)*                   | 그룹 컬럼: 상품 / 담보 / 연령 / 성별 / 가입금액   | `coverage`       |
+
+해석을 정하는 두 인자:
+
+- **`cell_type`** — `"incremental"` (default) 또는 `"cumulative"`. 일반적
+  raw experience 는 incremental; 이미 누적 합산된 데이터라면
+  `cell_type = "cumulative"` 로 넘기면 함수가 per-cohort diff 로
+  incremental 도 derive.
+- **`grain`** — `"auto"` (default, `cohort` 날짜로부터 자동 감지) 또는
+  `"M"` / `"Q"` / `"H"` / `"Y"`. 월별 / 분기별 / 반기별 / 연간 집계로 bin.
+
+`as_triangle()` 가 스키마 검증 + 날짜 coerce + (`calendar` / `development`
+중 하나만 줬을 때) 나머지 축 derive + grain bin + cumulative / incremental
+컬럼 + `lr` / `margin` / `profit` 까지 한 번에 생성.
 
 ## 시각화
 
