@@ -184,7 +184,7 @@ distribution to use.</p></li>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  quantile_ci <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  keep_pseudo <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  keep_pseudo <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -320,13 +320,16 @@ so the marginal cost over <code>FALSE</code> is small.</p></dd>
 
 <dt id="arg-keep-pseudo">keep_pseudo<a class="anchor" aria-label="anchor" href="#arg-keep-pseudo"></a></dt>
 <dd><p>Logical. Whether to materialise the per-replicate
-long-format <code>pseudo_triangles</code> slot. Default <code>TRUE</code>. <code>FALSE</code> skips
-the long-format build, keeping only the precomputed <code>$summary</code> –
-for large portfolios this saves a multi-million-row data.table
-(~200 MB on a typical 4-group experience triangle at <code>B = 999</code>)
-at the cost of being unable to extract individual replicate
-values. <code><a href="fit_lr.html">fit_lr()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code> / <code><a href="fit_premium.html">fit_premium()</a></code> already pass
-<code>keep_pseudo = FALSE</code> internally because they only read <code>$summary</code>.</p></dd>
+long-format <code>pseudo_triangles</code> slot. Default <code>FALSE</code> (changed from
+<code>TRUE</code> in v0.x for performance). <code>TRUE</code> builds the long-format
+data.table for diagnostic inspection (e.g. raw replicate
+trajectories, custom quantile work). On a typical 4-group monthly
+triangle at <code>B = 999</code> the reshape costs ~250-300 ms and ~200 MB on
+top of <code>$summary</code>; users who only consume <code>$summary</code> (the common
+case) should leave this <code>FALSE</code>. <code><a href="fit_lr.html">fit_lr()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code> /
+<code><a href="fit_premium.html">fit_premium()</a></code> always pass <code>FALSE</code> internally because they only
+read <code>$summary</code>. Set <code>TRUE</code> explicitly if you want to inspect
+<code>$pseudo_triangles</code> directly.</p></dd>
 
 </dl></div>
     <div class="section level2">

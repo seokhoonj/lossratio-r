@@ -105,7 +105,8 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="lossratio-development-version">lossratio (development version)<a class="anchor" aria-label="anchor" href="#lossratio-development-version"></a></h2>
-<ul><li>
+<ul><li><p><strong>Default flip</strong> — <code><a href="../reference/bootstrap.html">bootstrap()</a></code>’s <code>keep_pseudo</code> default changes from <code>TRUE</code> to <code>FALSE</code>. The long-format <code>$pseudo_triangles</code> long-format data.table is no longer built on every call; the precomputed <code>$summary</code> (Pythagorean SE decomposition + optional percentile CI) is still always present. Skipping the long-format reshape saves roughly 250-300 ms and ~200 MB on a typical 4-group monthly triangle at <code>B = 999</code>. Users who inspect <code>$pseudo_triangles</code> directly should pass <code>keep_pseudo = TRUE</code> explicitly; the argument is unchanged.</p></li>
+<li>
 <p><strong>BREAKING</strong> — the four constructor functions are renamed from <code>build_*</code> to <code>as_*</code> to align with the tidyverse coercion idiom and the Python sibling’s <code>lr.Triangle(df)</code> mental model:</p>
 <ul><li>
 <code>build_triangle()</code> -&gt; <code><a href="../reference/as_triangle.html">as_triangle()</a></code>

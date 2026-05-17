@@ -108,11 +108,12 @@ tri <- as_triangle(
 
 set.seed(42)
 bt <- bootstrap(tri,
-                residual = "cell",
-                method   = "sa",
-                pooling  = "tail_pooled", tail = "auto",
-                process  = "gamma",
-                B        = 499)
+                residual    = "cell",
+                method      = "sa",
+                pooling     = "tail_pooled", tail = "auto",
+                process     = "gamma",
+                B           = 499,
+                keep_pseudo = TRUE)   # long-format $pseudo_triangles opt-in
 head(bt$pseudo_triangles)
 #>    coverage     cohort   dev   rep loss_mean loss_sampled
 #>      <char>     <Date> <int> <int>     <num>        <num>

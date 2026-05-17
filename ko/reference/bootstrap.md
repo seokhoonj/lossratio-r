@@ -46,7 +46,7 @@ bootstrap(
   seed = NULL,
   alpha = 1,
   quantile_ci = FALSE,
-  keep_pseudo = TRUE,
+  keep_pseudo = FALSE,
   ...
 )
 ```
@@ -182,18 +182,19 @@ bootstrap(
 - keep_pseudo:
 
   Logical. Whether to materialise the per-replicate long-format
-  `pseudo_triangles` slot. Default `TRUE`. `FALSE` skips the long-format
-  build, keeping only the precomputed `$summary` – for large portfolios
-  this saves a multi-million-row data.table (~200 MB on a typical
-  4-group experience triangle at `B = 999`) at the cost of being unable
-  to extract individual replicate values.
+  `pseudo_triangles` slot. Default `FALSE` (changed from `TRUE` in v0.x
+  for performance). `TRUE` builds the long-format data.table for
+  diagnostic inspection (e.g. raw replicate trajectories, custom
+  quantile work). On a typical 4-group monthly triangle at `B = 999` the
+  reshape costs ~250-300 ms and ~200 MB on top of `$summary`; users who
+  only consume `$summary` (the common case) should leave this `FALSE`.
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
   /
   [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
-  already pass `keep_pseudo = FALSE` internally because they only read
-  `$summary`.
+  always pass `FALSE` internally because they only read `$summary`. Set
+  `TRUE` explicitly if you want to inspect `$pseudo_triangles` directly.
 
 ## Value
 

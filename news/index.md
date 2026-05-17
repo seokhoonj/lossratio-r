@@ -2,6 +2,17 @@
 
 ## lossratio (development version)
 
+- **Default flip** —
+  [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)’s
+  `keep_pseudo` default changes from `TRUE` to `FALSE`. The long-format
+  `$pseudo_triangles` long-format data.table is no longer built on every
+  call; the precomputed `$summary` (Pythagorean SE decomposition +
+  optional percentile CI) is still always present. Skipping the
+  long-format reshape saves roughly 250-300 ms and ~200 MB on a typical
+  4-group monthly triangle at `B = 999`. Users who inspect
+  `$pseudo_triangles` directly should pass `keep_pseudo = TRUE`
+  explicitly; the argument is unchanged.
+
 - **BREAKING** — the four constructor functions are renamed from
   `build_*` to `as_*` to align with the tidyverse coercion idiom and the
   Python sibling’s `lr.Triangle(df)` mental model:
