@@ -2,6 +2,50 @@
 
 ## lossratio (development version)
 
+- **BREAKING: identifier rename `premium` -\> `prem`, `development` -\>
+  `dev`.** Code-level identifiers (argument names, function names, enum
+  values, slot names, attribute keys) are renamed to the short form
+  already used by the column / attribute convention (`prem`, `dev`).
+  Prose documentation (“premium-side projection”, “development period”)
+  is unchanged.
+
+  Migration (find-and-replace at call sites):
+
+  - `as_triangle(..., premium = "incr_prem")` -\>
+    `as_triangle(..., prem = "incr_prem")`
+  - `as_triangle(..., development = "dev_m")` -\>
+    `as_triangle(..., dev = "dev_m")`
+  - `validate_triangle(..., development = "dev_m")` -\>
+    `validate_triangle(..., dev = "dev_m")`
+  - `fit_premium(...)` -\> `fit_prem(...)`
+  - `fit_loss(..., premium_method = ..., premium_alpha = ..., premium_fit = ...)`
+    -\>
+    `fit_loss(..., prem_method = ..., prem_alpha = ..., prem_fit = ...)`
+  - `fit_lr(..., premium_method = ..., premium_alpha = ..., premium_regime = ...)`
+    -\>
+    `fit_lr(..., prem_method = ..., prem_alpha = ..., prem_regime = ...)`
+  - `backtest(..., target = "premium", premium_method = ..., premium_alpha = ..., premium_regime = ...)`
+    -\>
+    `backtest(..., target = "prem", prem_method = ..., prem_alpha = ..., prem_regime = ...)`
+  - `bootstrap(tri, target = "premium")` -\>
+    `bootstrap(tri, target = "prem")`
+  - `LRFit$premium_alpha`, `LRFit$premium_regime` -\> `$prem_alpha`,
+    `$prem_regime`
+  - `LossFit$premium_fit` -\> `$prem_fit`
+  - S3 class `"PremiumFit"` -\> `"PremFit"` (incl. `print.PremiumFit()`
+    / `summary.PremiumFit()` -\>
+    [`print.PremFit()`](https://seokhoonj.github.io/lossratio/reference/print.PremFit.md)
+    /
+    [`summary.PremFit()`](https://seokhoonj.github.io/lossratio/reference/summary.PremFit.md);
+    `inherits(x, "PremiumFit")` -\> `inherits(x, "PremFit")`)
+  - `attr(PremiumFit_obj, "premium_method")` -\>
+    `attr(PremFit_obj, "prem_method")`
+
+  The Triangle / Calendar / Total / fit-output *column* names already
+  use the short form (`prem`, `incr_prem`, `prem_proj`, …) from the
+  earlier prefix sweep; this release closes the loop by aligning the
+  *argument / slot* surface with that convention.
+
 - **Default flip** —
   [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)’s
   `keep_pseudo` default changes from `TRUE` to `FALSE`. The long-format
@@ -81,7 +125,7 @@
   accordingly.
 
 - [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md),
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md),
+  `fit_premium()`,
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md),
   and
   [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)

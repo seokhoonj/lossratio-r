@@ -120,7 +120,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_intensity.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/index.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/longer.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/lossratio-package.html</loc></url>
@@ -160,7 +160,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.IntensityFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.LRFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.LossFit.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.PremiumFit.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.PremFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/regime_at.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/regime_spec.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.ATAFit.html</loc></url>
@@ -171,7 +171,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.LRFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.LossFit.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.PremiumFit.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.PremFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.Total.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.Triangle.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/validate_triangle.html</loc></url>

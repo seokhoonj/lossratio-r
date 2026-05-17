@@ -105,7 +105,46 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="lossratio-development-version">lossratio (development version)<a class="anchor" aria-label="anchor" href="#lossratio-development-version"></a></h2>
-<ul><li><p><strong>Default flip</strong> — <code><a href="../reference/bootstrap.html">bootstrap()</a></code>’s <code>keep_pseudo</code> default changes from <code>TRUE</code> to <code>FALSE</code>. The long-format <code>$pseudo_triangles</code> long-format data.table is no longer built on every call; the precomputed <code>$summary</code> (Pythagorean SE decomposition + optional percentile CI) is still always present. Skipping the long-format reshape saves roughly 250-300 ms and ~200 MB on a typical 4-group monthly triangle at <code>B = 999</code>. Users who inspect <code>$pseudo_triangles</code> directly should pass <code>keep_pseudo = TRUE</code> explicitly; the argument is unchanged.</p></li>
+<ul><li>
+<p><strong>BREAKING: identifier rename <code>premium</code> -&gt; <code>prem</code>, <code>development</code> -&gt; <code>dev</code>.</strong> Code-level identifiers (argument names, function names, enum values, slot names, attribute keys) are renamed to the short form already used by the column / attribute convention (<code>prem</code>, <code>dev</code>). Prose documentation (“premium-side projection”, “development period”) is unchanged.</p>
+<p>Migration (find-and-replace at call sites):</p>
+<ul><li>
+<code>as_triangle(..., premium = "incr_prem")</code> -&gt; <code>as_triangle(..., prem = "incr_prem")</code>
+</li>
+<li>
+<code>as_triangle(..., development = "dev_m")</code> -&gt; <code>as_triangle(..., dev = "dev_m")</code>
+</li>
+<li>
+<code>validate_triangle(..., development = "dev_m")</code> -&gt; <code>validate_triangle(..., dev = "dev_m")</code>
+</li>
+<li>
+<code>fit_premium(...)</code> -&gt; <code>fit_prem(...)</code>
+</li>
+<li>
+<code>fit_loss(..., premium_method = ..., premium_alpha = ..., premium_fit = ...)</code> -&gt; <code>fit_loss(..., prem_method = ..., prem_alpha = ..., prem_fit = ...)</code>
+</li>
+<li>
+<code>fit_lr(..., premium_method = ..., premium_alpha = ..., premium_regime = ...)</code> -&gt; <code>fit_lr(..., prem_method = ..., prem_alpha = ..., prem_regime = ...)</code>
+</li>
+<li>
+<code>backtest(..., target = "premium", premium_method = ..., premium_alpha = ..., premium_regime = ...)</code> -&gt; <code>backtest(..., target = "prem", prem_method = ..., prem_alpha = ..., prem_regime = ...)</code>
+</li>
+<li>
+<code>bootstrap(tri, target = "premium")</code> -&gt; <code>bootstrap(tri, target = "prem")</code>
+</li>
+<li>
+<code>LRFit$premium_alpha</code>, <code>LRFit$premium_regime</code> -&gt; <code>$prem_alpha</code>, <code>$prem_regime</code>
+</li>
+<li>
+<code>LossFit$premium_fit</code> -&gt; <code>$prem_fit</code>
+</li>
+<li>S3 class <code>"PremiumFit"</code> -&gt; <code>"PremFit"</code> (incl. <code>print.PremiumFit()</code> / <code>summary.PremiumFit()</code> -&gt; <code><a href="../reference/print.PremFit.html">print.PremFit()</a></code> / <code><a href="../reference/summary.PremFit.html">summary.PremFit()</a></code>; <code>inherits(x, "PremiumFit")</code> -&gt; <code>inherits(x, "PremFit")</code>)</li>
+<li>
+<code>attr(PremiumFit_obj, "premium_method")</code> -&gt; <code>attr(PremFit_obj, "prem_method")</code>
+</li>
+</ul><p>The Triangle / Calendar / Total / fit-output <em>column</em> names already use the short form (<code>prem</code>, <code>incr_prem</code>, <code>prem_proj</code>, …) from the earlier prefix sweep; this release closes the loop by aligning the <em>argument / slot</em> surface with that convention.</p>
+</li>
+<li><p><strong>Default flip</strong> — <code><a href="../reference/bootstrap.html">bootstrap()</a></code>’s <code>keep_pseudo</code> default changes from <code>TRUE</code> to <code>FALSE</code>. The long-format <code>$pseudo_triangles</code> long-format data.table is no longer built on every call; the precomputed <code>$summary</code> (Pythagorean SE decomposition + optional percentile CI) is still always present. Skipping the long-format reshape saves roughly 250-300 ms and ~200 MB on a typical 4-group monthly triangle at <code>B = 999</code>. Users who inspect <code>$pseudo_triangles</code> directly should pass <code>keep_pseudo = TRUE</code> explicitly; the argument is unchanged.</p></li>
 <li>
 <p><strong>BREAKING</strong> — the four constructor functions are renamed from <code>build_*</code> to <code>as_*</code> to align with the tidyverse coercion idiom and the Python sibling’s <code>lr.Triangle(df)</code> mental model:</p>
 <ul><li>
@@ -124,7 +163,7 @@
 <li><p><strong>Known limitation (future work) — segment_wise mini-triangle gap-fill</strong>. Under <code>treatment = "segment_wise"</code>, <code>fit_*</code> produces a mini-triangle per regime segment using only that segment’s cohorts; cells that fall outside every mini-triangle (typically old cohorts at late development periods that cannot be reached from any single segment) are currently left unprojected. A follow-up phase should add a fallback (e.g. <code>latest-segment factor</code>, <code>previous-segment factor</code>, smoothing across segments) controlled by a <code>Regime$fallback</code> knob, plus a warning when <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math> exceeds the <em>change-to-now</em> horizon of the latest segment (which would also cause the mini-triangle to be truncated). Today the cells render as <code>unused</code> in <code>plot_triangle(view = "usage")</code> rather than being filled in by an inferred projection.</p></li>
 <li><p><strong>BREAKING</strong> — <code><a href="../reference/backtest.html">backtest()</a></code> cell-level columns renamed from <code>target_actual</code> / <code>target_proj</code> (and <code>_incr</code> siblings) to <code>actual</code> / <code>expected</code> (and <code>actual_incr</code> / <code>expected_incr</code>). The new names match the actuarial A/E convention (<code>aeg = actual - expected</code>, <code>ae_err = actual / expected - 1</code>) and self-document the role of each column. Worker-layer column names (<code>target_proj</code> etc. on <code>CLFit$full</code> / <code>EDFit$full</code>) are unchanged – the rename is scoped to <code>backtest$ae_err</code>. Migration: replace <code>bt$ae_err$target_actual</code> with <code>bt$ae_err$actual</code>, <code>bt$ae_err$target_proj</code> with <code>bt$ae_err$expected</code>.</p></li>
 <li><p><code><a href="../reference/backtest.html">backtest()</a></code> result slot <code>fit_fn_name</code> renamed to <code>dispatcher</code> for clarity (the value is still the dispatcher name — <code>fit_lr</code> / <code>fit_loss</code> / <code>fit_premium</code> — selected by <code>target=</code>). <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> / <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> labels updated accordingly.</p></li>
-<li><p><code><a href="../reference/fit_loss.html">fit_loss()</a></code>, <code><a href="../reference/fit_premium.html">fit_premium()</a></code>, <code><a href="../reference/fit_lr.html">fit_lr()</a></code>, and <code><a href="../reference/backtest.html">backtest()</a></code> now attach a <code>$usage</code> <code>data.table</code> to the result: one row per <code>(group, cohort, dev)</code> cell of the <em>pre-filter</em> triangle with a <code>status</code> factor (<code>used</code> / <code>unused</code> / <code>holdout</code> / <code>future</code>). <code>plot_triangle(fit, view = "usage")</code> reads this directly instead of re-deriving the filter logic at plot time, so the heatmap always matches the cells the fit actually saw. New internal helper <code>.build_usage()</code> packages the 2-pass maturity detection plus <code><a href="../reference/dot-compute_triangle_usage.html">.compute_triangle_usage()</a></code> and attaches filter metadata (<code>regime</code> / <code>recent</code> / <code>holdout</code> / <code>m_k</code> / <code>m_k_dt</code>) as <code>data.table</code> attributes for the renderer.</p></li>
+<li><p><code><a href="../reference/fit_loss.html">fit_loss()</a></code>, <code>fit_premium()</code>, <code><a href="../reference/fit_lr.html">fit_lr()</a></code>, and <code><a href="../reference/backtest.html">backtest()</a></code> now attach a <code>$usage</code> <code>data.table</code> to the result: one row per <code>(group, cohort, dev)</code> cell of the <em>pre-filter</em> triangle with a <code>status</code> factor (<code>used</code> / <code>unused</code> / <code>holdout</code> / <code>future</code>). <code>plot_triangle(fit, view = "usage")</code> reads this directly instead of re-deriving the filter logic at plot time, so the heatmap always matches the cells the fit actually saw. New internal helper <code>.build_usage()</code> packages the 2-pass maturity detection plus <code><a href="../reference/dot-compute_triangle_usage.html">.compute_triangle_usage()</a></code> and attaches filter metadata (<code>regime</code> / <code>recent</code> / <code>holdout</code> / <code>m_k</code> / <code>m_k_dt</code>) as <code>data.table</code> attributes for the renderer.</p></li>
 <li><p><strong>BREAKING</strong> — <code>build_triangle()</code>, <code>build_total()</code>, and <code><a href="../reference/validate_triangle.html">validate_triangle()</a></code> rename their <code>dev =</code> argument to <code>development =</code>. The new name is more explicit about the development-period axis (matching the <code>coh &lt;- cohort</code> symmetry inside the function bodies). Migration: replace <code>build_triangle(..., dev = "dev_m")</code> with <code>build_triangle(..., development = "dev_m")</code>.</p></li>
 <li><p><strong>BREAKING</strong> — <code><a href="../reference/backtest.html">backtest()</a></code> result columns renamed from <code>value_proj</code> / <code>value_actual</code> (and <code>_incr</code> variants) to <code>target_proj</code> / <code>target_actual</code> (and <code>_incr</code> variants), matching the worker-layer <code>target_*</code> generic convention.</p></li>
 <li>

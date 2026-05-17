@@ -100,7 +100,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
 res <- detect_convergence(tri)
@@ -276,7 +276,7 @@ calls and inherits their constraints:
   which internally composes
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
   (default `method = "sa"` — stage-adaptive) and
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md).
+  [`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md).
   Choices made inside that composition (loss method, regime filter,
   maturity argument) feed through to `conv_k`; review the underlying
   `fit_lr` settings when interpreting the result. Pass `loss_method =`,

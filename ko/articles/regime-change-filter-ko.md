@@ -24,8 +24,8 @@
   (post-change 코호트만 사용).
 - 성숙점 이후의 CL 영역: 대각선 단위 컷 (`recent`).
 
-`loss_regime` (와 premium-side 짝 `premium_regime`) 인자가 이 직관을
-그대로 구현한다.
+`loss_regime` (와 premium-side 짝 `prem_regime`) 인자가 이 직관을 그대로
+구현한다.
 
 ## 2. 두 축의 비대칭성
 
@@ -67,14 +67,14 @@ detect_regime(tri, treatment = "segment_wise")
 ## 3. API
 
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
-은 role 별 두 인자 — `loss_regime` (loss-side 필터) 와 `premium_regime`
+은 role 별 두 인자 — `loss_regime` (loss-side 필터) 와 `prem_regime`
 (premium-side 필터; default 는 `loss_regime` 와 동일) 을 받는다.
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
 /
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
+[`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md)
 은 단일 `regime` 인자.
 [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
-는 `fit_lr` 와 동일하게 `loss_regime` / `premium_regime` . 네 함수 모두
+는 `fit_lr` 와 동일하게 `loss_regime` / `prem_regime` . 네 함수 모두
 다음 입력 타입을 공유한다.
 
 | 입력 | 동작 |
@@ -98,7 +98,7 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
 # 수동 change 날짜 — regime_at() 으로 literal 날짜를 Regime 으로 감싼다
@@ -188,7 +188,7 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 reg     <- detect_regime(tri_sur)
 
@@ -244,7 +244,7 @@ fits <- lapply(groups, function(g) {
     cohort   = "uy_m",
     calendar = "cy_m",
     loss     = "incr_loss",
-    premium  = "incr_prem"
+    prem     = "incr_prem"
   )
   reg_g <- detect_regime(tri_g)
   fit_lr(tri_g, method = "sa", recent = 18L,
@@ -269,7 +269,7 @@ post-change window 가 너무 짧으면 (`n_post` 가 작으면) ED 강도 $`g_k
 - 향후 도입 예정인 credibility weighting 으로 pre-change 코호트의 link
   factor 에 부분 가중을 부여한다 (TODO).
 
-또한 `loss_regime` / `premium_regime` 는 link factor 추정 단계에서만
+또한 `loss_regime` / `prem_regime` 는 link factor 추정 단계에서만
 작동하며, 추정이 끝난 뒤에는 모든 코호트가 같은 link factor 를 공유한다.
 change 이전 코호트의 ultimate 추정도 post-change 데이터로 전이되므로,
 사용자는 이 점을 인지하고 결과를 해석할 필요가 있다.

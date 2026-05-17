@@ -117,7 +117,7 @@ every step generalises to multi-group input.</p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="cohort-trajectories">Cohort trajectories<a class="anchor" aria-label="anchor" href="#cohort-trajectories"></a>
@@ -147,7 +147,7 @@ for spotting cohorts that deviate from the central tendency.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># detail labels (ratio + loss/premium amounts) are 2-line — use quarterly cells</span></span>
-<span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span><span class="va">exp</span>, groups <span class="op">=</span> <span class="st">"coverage"</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>, calendar <span class="op">=</span> <span class="st">"cy_m"</span>, loss <span class="op">=</span> <span class="st">"incr_loss"</span>, premium <span class="op">=</span> <span class="st">"incr_prem"</span>, grain <span class="op">=</span> <span class="st">"Q"</span><span class="op">)</span></span>
+<span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span><span class="va">exp</span>, groups <span class="op">=</span> <span class="st">"coverage"</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>, calendar <span class="op">=</span> <span class="st">"cy_m"</span>, loss <span class="op">=</span> <span class="st">"incr_loss"</span>, prem <span class="op">=</span> <span class="st">"incr_prem"</span>, grain <span class="op">=</span> <span class="st">"Q"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span> <span class="co"># ratio + (loss / premium)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-3.png" class="r-plt" alt="" width="100%"></p>
 </div>
@@ -421,7 +421,7 @@ row per group, each detected independently with the same thresholds:</p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri_all</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
@@ -457,7 +457,7 @@ CV first drops below <code>max_cv</code>:</p>
 <p>If gaps in the development sequence are suspected, inspect them
 before <code><a href="../reference/as_triangle.html">as_triangle()</a></code>:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gaps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate_triangle.html">validate_triangle</a></span><span class="op">(</span><span class="va">exp</span>, groups <span class="op">=</span> <span class="st">"coverage"</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>, development <span class="op">=</span> <span class="st">"dev_m"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">gaps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate_triangle.html">validate_triangle</a></span><span class="op">(</span><span class="va">exp</span>, groups <span class="op">=</span> <span class="st">"coverage"</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>, dev <span class="op">=</span> <span class="st">"dev_m"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">gaps</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;TriangleValidation&gt;</span></span>
 <span><span class="co">#&gt; Cohort dev-sequence gaps : none</span></span></code></pre></div>
@@ -507,14 +507,14 @@ diagonals:</p>
 <span><span class="co">#&gt; &lt;LRFit&gt;</span></span>
 <span><span class="co">#&gt; method            : sa </span></span>
 <span><span class="co">#&gt; loss_alpha        : 1 </span></span>
-<span><span class="co">#&gt; premium_alpha     : 1 </span></span>
+<span><span class="co">#&gt; prem_alpha        : 1 </span></span>
 <span><span class="co">#&gt; se_method         : fixed </span></span>
 <span><span class="co">#&gt; conf_level        : 0.95 </span></span>
 <span><span class="co">#&gt; ci_type           : bootstrap  (B = 999, seed = NULL) </span></span>
 <span><span class="co">#&gt; sigma_method      : locf </span></span>
 <span><span class="co">#&gt; recent            : 12 </span></span>
 <span><span class="co">#&gt; loss_regime       : none</span></span>
-<span><span class="co">#&gt; premium_regime    : none</span></span>
+<span><span class="co">#&gt; prem_regime       : none</span></span>
 <span><span class="co">#&gt; maturity[surgery] : 4 </span></span>
 <span><span class="co">#&gt; groups            : coverage </span></span>
 <span><span class="co">#&gt; periods           : 36</span></span></code></pre></div>

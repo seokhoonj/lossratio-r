@@ -29,7 +29,7 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
 bt <- backtest(tri_sur, holdout = 6L)
@@ -50,7 +50,7 @@ The returned object is a `"Backtest"` list with these key slots:
 - `masked` — the triangle the fit was trained on (latest diagonals
   removed).
 - `fit` — the fit object returned by the target-specific dispatcher
-  (`fit_lr` / `fit_loss` / `fit_premium`) chosen by `target=`.
+  (`fit_lr` / `fit_loss` / `fit_prem`) chosen by `target=`.
 
 `summary(bt)` prints the two summary tables alongside the call metadata.
 
@@ -254,14 +254,14 @@ triangle.
 |----|----|----|----|
 | `"lr"` | [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md) | `loss_method` | `lr_proj` |
 | `"loss"` | [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md) | `loss_method` | `loss_proj` |
-| `"premium"` | [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md) | `premium_method` | `premium_proj` |
+| `"prem"` | [`fit_prem()`](https://seokhoonj.github.io/lossratio/reference/fit_prem.md) | `prem_method` | `prem_proj` |
 
 The `loss_method` argument selects the underlying loss / loss-ratio
 projection strategy: `"sa"` (stage-adaptive, the default) blends
 exposure-driven projections before the maturity point with chain ladder
 afterwards; `"ed"` is purely exposure-driven; `"cl"` is the classical
-chain ladder. The `premium_method` argument selects the premium
-projection strategy when `target = "premium"`.
+chain ladder. The `prem_method` argument selects the premium projection
+strategy when `target = "prem"`.
 
 ``` r
 
@@ -272,7 +272,7 @@ bt_cl       <- backtest(tri_sur, holdout = 6L, loss_method = "cl")
 bt_loss     <- backtest(tri_sur, holdout = 6L,
                         target = "loss", loss_method = "cl")
 bt_premium  <- backtest(tri_sur, holdout = 6L,
-                        target = "premium", premium_method = "cl")
+                        target = "prem", prem_method = "cl")
 
 print(bt_sa)
 #> <Backtest>
@@ -283,7 +283,7 @@ print(bt_sa)
 ```
 
 For monetary impact (loss or premium) backtesting, set `target = "loss"`
-or `target = "premium"` to score the corresponding projection lane
+or `target = "prem"` to score the corresponding projection lane
 directly.
 
 ## See also

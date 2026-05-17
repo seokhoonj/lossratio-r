@@ -29,8 +29,8 @@ Equivalent to classical Mack model.
 In all cases, exposure is projected forward using chain ladder:
 $$\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}$$
 This function is the composition layer over fit_loss() and
-fit_premium(): it delegates loss projection to fit_loss(),
-retrieves the embedded PremiumFit, and composes the loss-ratio
+fit_prem(): it delegates loss projection to fit_loss(),
+retrieves the embedded PremFit, and composes the loss-ratio
 point + variance via the delta method (se_method = &quot;fixed&quot; or
 &quot;delta&quot;). See ARCHITECTURE.md for the layered design."><meta property="og:description" content="Unified interface for loss ratio projection from a &quot;Triangle&quot; object.
 Three projection methods are available:
@@ -62,8 +62,8 @@ Equivalent to classical Mack model.
 In all cases, exposure is projected forward using chain ladder:
 $$\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}$$
 This function is the composition layer over fit_loss() and
-fit_premium(): it delegates loss projection to fit_loss(),
-retrieves the embedded PremiumFit, and composes the loss-ratio
+fit_prem(): it delegates loss projection to fit_loss(),
+retrieves the embedded PremFit, and composes the loss-ratio
 point + variance via the delta method (se_method = &quot;fixed&quot; or
 &quot;delta&quot;). See ARCHITECTURE.md for the layered design."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Browser-language redirect: send Korean visitors to /ko/ on the
      landing page only. Deep links remain untouched. We use string
@@ -197,8 +197,8 @@ Equivalent to classical Mack model.</p></dd>
 </dl><p>In all cases, exposure is projected forward using chain ladder:
 $$\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}$$</p>
 <p>This function is the <em>composition</em> layer over <code><a href="fit_loss.html">fit_loss()</a></code> and
-<code><a href="fit_premium.html">fit_premium()</a></code>: it delegates loss projection to <code><a href="fit_loss.html">fit_loss()</a></code>,
-retrieves the embedded <code>PremiumFit</code>, and composes the loss-ratio
+<code><a href="fit_prem.html">fit_prem()</a></code>: it delegates loss projection to <code><a href="fit_loss.html">fit_loss()</a></code>,
+retrieves the embedded <code>PremFit</code>, and composes the loss-ratio
 point + variance via the delta method (<code>se_method = "fixed"</code> or
 <code>"delta"</code>). See <code>ARCHITECTURE.md</code> for the layered design.</p>
     </div>
@@ -210,9 +210,9 @@ point + variance via the delta method (<code>se_method = "fixed"</code> or
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sa"</span>, <span class="st">"ed"</span>, <span class="st">"cl"</span><span class="op">)</span>,</span>
 <span>  loss_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  loss_regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  premium_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cl"</span>, <span class="st">"ed"</span><span class="op">)</span>,</span>
-<span>  premium_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  premium_regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  prem_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cl"</span>, <span class="st">"ed"</span><span class="op">)</span>,</span>
+<span>  prem_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  prem_regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maturity <span class="op">=</span> <span class="st">"auto"</span>,</span>
@@ -276,17 +276,17 @@ the change date are excluded from estimation.</p></dd>
 </dl></dd>
 
 
-<dt id="arg-premium-method">premium_method<a class="anchor" aria-label="anchor" href="#arg-premium-method"></a></dt>
+<dt id="arg-prem-method">prem_method<a class="anchor" aria-label="anchor" href="#arg-prem-method"></a></dt>
 <dd><p>One of <code>"cl"</code> (default) or <code>"ed"</code>. Forwarded to
-<code><a href="fit_premium.html">fit_premium()</a></code> when constructing the prem projection.</p></dd>
+<code><a href="fit_prem.html">fit_prem()</a></code> when constructing the prem projection.</p></dd>
 
 
-<dt id="arg-premium-alpha">premium_alpha<a class="anchor" aria-label="anchor" href="#arg-premium-alpha"></a></dt>
+<dt id="arg-prem-alpha">prem_alpha<a class="anchor" aria-label="anchor" href="#arg-prem-alpha"></a></dt>
 <dd><p>Numeric scalar for prem chain ladder. Default
 is <code>1</code>.</p></dd>
 
 
-<dt id="arg-premium-regime">premium_regime<a class="anchor" aria-label="anchor" href="#arg-premium-regime"></a></dt>
+<dt id="arg-prem-regime">prem_regime<a class="anchor" aria-label="anchor" href="#arg-prem-regime"></a></dt>
 <dd><p>Premium-side regime specification. Same four
 input types as <code>loss_regime</code> (<code>NULL</code> / <code>Regime</code> / <code>"auto"</code> / function).
 Default <code>NULL</code> – prem is fit on the full triangle independently
@@ -385,7 +385,7 @@ invoked on the input Triangle (leakage-safe for <code><a href="backtest.html">ba
 convention). <code>lr_se</code> is recomputed from the bootstrap-derived
 <code>loss_total_se</code> via <code><a href="dot-compute_lr_se.html">.compute_lr_se()</a></code>, combined with the
 premium-side SE per <code>se_method</code> (<code>"fixed"</code> ignores premium SE;
-<code>"delta"</code> uses <code>prem_total_se</code> from the inner <code><a href="fit_premium.html">fit_premium()</a></code> plus
+<code>"delta"</code> uses <code>prem_total_se</code> from the inner <code><a href="fit_prem.html">fit_prem()</a></code> plus
 <code>rho</code> correlation).</p></dd>
 
 
@@ -405,7 +405,7 @@ Default is <code>NULL</code>.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="fit_loss.html">fit_loss()</a></code>, <code><a href="fit_premium.html">fit_premium()</a></code>, <code><a href="as_triangle.html">as_triangle()</a></code>,
+    <div class="dont-index"><p><code><a href="fit_loss.html">fit_loss()</a></code>, <code><a href="fit_prem.html">fit_prem()</a></code>, <code><a href="as_triangle.html">as_triangle()</a></code>,
 <code><a href="as_link.html">as_link()</a></code>, <code><a href="fit_ata.html">fit_ata()</a></code>, <code><a href="fit_ed.html">fit_ed()</a></code>, <code><a href="detect_maturity.html">detect_maturity()</a></code></p></div>
     </div>
 
@@ -419,7 +419,7 @@ Default is <code>NULL</code>.</p></dd>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
+<span class="r-in"><span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Stage-adaptive (default): ED before maturity, CL after</span></span></span>

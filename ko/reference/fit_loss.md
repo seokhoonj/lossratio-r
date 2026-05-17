@@ -17,11 +17,11 @@ methods are supported via `method`:
   Pure Mack chain ladder (multiplicative).
 
 This function is the *loss-side* counterpart to
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
+[`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md)
 in the role-specific dispatcher layer (see `ARCHITECTURE.md`). It owns
 loss projection only – prem projection is delegated to
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
-(called internally when `premium_fit = NULL`), and the loss-ratio
+[`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md)
+(called internally when `prem_fit = NULL`), and the loss-ratio
 composition with delta method is handled by
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md).
 
@@ -33,9 +33,9 @@ fit_loss(
   method = c("sa", "ed", "cl"),
   alpha = 1,
   regime = NULL,
-  premium_fit = NULL,
-  premium_method = c("cl", "ed"),
-  premium_alpha = 1,
+  prem_fit = NULL,
+  prem_method = c("cl", "ed"),
+  prem_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   maturity = "auto",
@@ -93,28 +93,28 @@ fit_loss(
   cut for the ED phase, calendar-diagonal wedge for the CL phase); ED/CL
   use a simple cohort cut. The same resolved `Regime` is applied to the
   internal
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
+  [`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md)
   call – callers needing an asymmetric loss/prem split should use
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
   instead.
 
-- premium_fit:
+- prem_fit:
 
-  Optional pre-built `PremiumFit` (from
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md))
+  Optional pre-built `PremFit` (from
+  [`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md))
   supplying the prem projection. When `NULL`, `fit_loss()` calls
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
-  internally using `premium_method`, `premium_alpha`, and the resolved
+  [`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md)
+  internally using `prem_method`, `prem_alpha`, and the resolved
   `regime`.
 
-- premium_method:
+- prem_method:
 
-  One of `"cl"` (default) or `"ed"`. Used only when
-  `premium_fit = NULL`. The default matches the historical
+  One of `"cl"` (default) or `"ed"`. Used only when `prem_fit = NULL`.
+  The default matches the historical
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
   prem choice.
 
-- premium_alpha:
+- prem_alpha:
 
   Variance-structure exponent for the prem fit. Default `1`.
 
@@ -209,8 +209,8 @@ fit_loss(
 ## Value
 
 An object of class `"LossFit"`. List with components: `full`, `proj`,
-`maturity`, `loss_ata_fit`, `prem_ata_fit`, `premium_fit`, `ed`,
-`factor`, `selected`, plus metadata.
+`maturity`, `loss_ata_fit`, `prem_ata_fit`, `prem_fit`, `ed`, `factor`,
+`selected`, plus metadata.
 
 ## Internal columns
 
@@ -222,7 +222,7 @@ them as implementation columns.
 
 ## See also
 
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md),
+[`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md),
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md),
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md).
@@ -238,7 +238,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
 lf    <- fit_loss(tri)                    # SA (default)

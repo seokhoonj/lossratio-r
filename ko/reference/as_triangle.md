@@ -78,9 +78,9 @@ as_triangle(
   groups = NULL,
   cohort,
   calendar = NULL,
-  development = NULL,
+  dev = NULL,
   loss,
-  premium,
+  prem,
   grain = "auto",
   cell_type = c("incremental", "cumulative"),
   fill_gaps = FALSE
@@ -109,17 +109,16 @@ as_triangle(
 
   Single column (raw name) defining the calendar period of the
   observation (e.g., `"cy_m"`). Optional – supply either `calendar` or
-  `development` (or both). When `calendar` is given, `dev` is derived
-  internally via `count_periods(cohort, calendar, grain)`.
+  `dev` (or both). When `calendar` is given, `dev` is derived internally
+  via `count_periods(cohort, calendar, grain)`.
 
-- development:
+- dev:
 
   Single column (raw name) holding pre-computed development periods
-  (e.g., `"dev_m"`). Optional – supply either `calendar` or
-  `development` (or both). When only `development` is given, the
-  calendar axis is omitted from the attribute (downstream
-  calendar-diagonal logic uses cohort + dev). When both are given,
-  `development` is cross-checked against
+  (e.g., `"dev_m"`). Optional – supply either `calendar` or `dev` (or
+  both). When only `dev` is given, the calendar axis is omitted from the
+  attribute (downstream calendar-diagonal logic uses cohort + dev). When
+  both are given, `dev` is cross-checked against
   `count_periods(cohort, calendar, grain)`.
 
 - loss:
@@ -127,7 +126,7 @@ as_triangle(
   Single character; per-period loss column in `df` (raw name, e.g.,
   `"incr_loss"`).
 
-- premium:
+- prem:
 
   Single character; per-period prem column in `df` (raw name, e.g.,
   `"incr_prem"`). Premium measure used as denominator for loss ratio
@@ -170,7 +169,7 @@ columns:
 
   Cumulative and per-period loss
 
-- premium, incr_prem:
+- prem, incr_prem:
 
   Cumulative and per-period prem
 
@@ -220,7 +219,7 @@ res_m <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
 # explicit quarterly view (re-bins monthly input to quarterly)
@@ -230,7 +229,7 @@ res_q <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem",
+  prem     = "incr_prem",
   grain    = "Q"
 )
 

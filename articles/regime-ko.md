@@ -50,7 +50,7 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 ```
 
@@ -269,7 +269,7 @@ tri_all <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 r_all   <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 r_all$changes

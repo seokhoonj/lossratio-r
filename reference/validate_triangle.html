@@ -169,7 +169,7 @@ dev sequences.</p></li>
 <span>  groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">cohort</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  development <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  dev <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  grain <span class="op">=</span> <span class="st">"auto"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -195,17 +195,17 @@ dev sequences.</p></li>
 consistency check. When supplied, rows where <code>calendar &lt; cohort</code> are flagged as invalid. Default <code>NULL</code> (skip this check).</p></dd>
 
 
-<dt id="arg-development">development<a class="anchor" aria-label="anchor" href="#arg-development"></a></dt>
-<dd><p>A single development-period variable (raw column
-name). Optional when <code>calendar</code> is supplied – <code>dev</code> is then
-derived from <code>(cohort, calendar)</code> at the resolved <code>grain</code> (same
-dispatch as <code><a href="as_triangle.html">as_triangle()</a></code>).</p></dd>
+<dt id="arg-dev">dev<a class="anchor" aria-label="anchor" href="#arg-dev"></a></dt>
+<dd><p>A single development-period variable (raw column name).
+Optional when <code>calendar</code> is supplied – <code>dev</code> is then derived from
+<code>(cohort, calendar)</code> at the resolved <code>grain</code> (same dispatch as
+<code><a href="as_triangle.html">as_triangle()</a></code>).</p></dd>
 
 
 <dt id="arg-grain">grain<a class="anchor" aria-label="anchor" href="#arg-grain"></a></dt>
 <dd><p>Grain string (<code>"M"</code> / <code>"Q"</code> / <code>"H"</code> / <code>"Y"</code>) or
-<code>"auto"</code> (default) – used only when <code>development</code> is derived from
-<code>(cohort, calendar)</code>. Ignored when <code>development</code> is supplied.</p></dd>
+<code>"auto"</code> (default) – used only when <code>dev</code> is derived from
+<code>(cohort, calendar)</code>. Ignored when <code>dev</code> is supplied.</p></dd>
 
 </dl></div>
     <div class="section level2">

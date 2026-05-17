@@ -138,14 +138,14 @@
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
-<p><code>lossratio</code> is a loss ratio analytics toolkit for <strong>long-term health insurance</strong>, covering cohort development analysis, stage-adaptive projection, regime detection, and backtest validation. Input is long-format experience data — each row (cohort × dev × demographic) maps to one Triangle cell, with loss and premium columns (<code>loss</code>, <code>premium</code>).</p>
+<p><code>lossratio</code> is a loss ratio analytics toolkit for <strong>long-term health insurance</strong>, covering cohort development analysis, stage-adaptive projection, regime detection, and backtest validation. Input is long-format experience data — each row (cohort × dev × demographic) maps to one Triangle cell, with loss and premium columns (<code>loss</code>, <code>prem</code>).</p>
 <p>In long-term health insurance, new claims and premium are generated and earned continuously within each cohort, so cumulative loss and exposure grow together. Age-to-age (ATA) factors tend to show high variability in early development, and exposure (≈ risk premium) becomes a more stable and reliable anchor. Product redesigns, underwriting changes, or regulatory actions can also produce structural breaks that accumulate across cohorts.</p>
 <p>In this setting, lossratio provides stage-adaptive (SA) loss-ratio projection, supported by maturity point and regime detection. SA uses an exposure-driven (ED) model before the maturity point and chain ladder (CL) after it. Regime detection identifies homogeneous groups of cohorts (regimes) that share similar loss dynamics, separating structural break points and determining which cells to use for estimation.</p>
 <p>It provides:</p>
 <ul>
 <li>Three aggregation frameworks of the experience data: cohort × dev (<code>Triangle</code>), calendar period (<code>Calendar</code>), and portfolio total (<code>Total</code>)</li>
 <li>Age-to-age (<code>ATA</code>) and exposure-driven (<code>ED</code>) development modeling via the worker layer (<code>fit_cl</code>, <code>fit_ed</code>, <code>fit_ata</code>, <code>fit_intensity</code>)</li>
-<li>Role-specific dispatchers (<code>fit_loss</code>, <code>fit_premium</code>) that project a single side with standard errors and confidence intervals</li>
+<li>Role-specific dispatchers (<code>fit_loss</code>, <code>fit_prem</code>) that project a single side with standard errors and confidence intervals</li>
 <li>Loss ratio projection (<code>fit_lr</code>) composes loss and premium fits with three methods:
 <ul>
 <li>
@@ -179,9 +179,9 @@
 <p>A long-format <code>data.frame</code> / <code>data.table</code>. Column names are configurable – pass them via <code><a href="reference/as_triangle.html">as_triangle()</a></code> arguments and the function standardises internally.</p>
 <table class="table">
 <colgroup>
-<col width="27%">
-<col width="43%">
-<col width="28%">
+<col width="23%">
+<col width="45%">
+<col width="30%">
 </colgroup>
 <thead><tr>
 <th>
@@ -199,7 +199,7 @@
 </tr>
 <tr>
 <td>
-<code>calendar</code> <em>or</em> <code>development</code>
+<code>calendar</code> <em>or</em> <code>dev</code>
 </td>
 <td>Calendar period (Date) <em>or</em> dev period (integer)</td>
 <td>
@@ -214,7 +214,7 @@
 </td>
 </tr>
 <tr>
-<td><code>premium</code></td>
+<td><code>prem</code></td>
 <td>Per-period <em>or</em> cumulative premium</td>
 <td>
 <code>"incr_prem"</code> / <code>"prem"</code>
@@ -231,7 +231,7 @@
 <td>
 <code>cell_type</code> <em>(default)</em>
 </td>
-<td>Interpretation of <code>loss</code> / <code>premium</code> values</td>
+<td>Interpretation of <code>loss</code> / <code>prem</code> values</td>
 <td>
 <code>"incremental"</code> / <code>"cumulative"</code>
 </td>
@@ -245,7 +245,7 @@
 <li>
 <strong><code>grain</code></strong> – <code>"auto"</code> (default, inferred from <code>cohort</code> dates) or <code>"M"</code> / <code>"Q"</code> / <code>"H"</code> / <code>"Y"</code>. Aggregates to monthly / quarterly / half-yearly / yearly granularity.</li>
 </ul>
-<p><code><a href="reference/as_triangle.html">as_triangle()</a></code> validates the schema, coerces date columns, derives the missing axis when one of <code>calendar</code> / <code>development</code> is supplied, bins to <code>grain</code>, and emits cumulative + incremental cell values plus the derived <code>lr</code>, <code>margin</code>, <code>profit</code> columns.</p>
+<p><code><a href="reference/as_triangle.html">as_triangle()</a></code> validates the schema, coerces date columns, derives the missing axis when one of <code>calendar</code> / <code>dev</code> is supplied, bins to <code>grain</code>, and emits cumulative + incremental cell values plus the derived <code>lr</code>, <code>margin</code>, <code>profit</code> columns.</p>
 <div class="section level3">
 <h3 id="column-convention">Column convention<a class="anchor" aria-label="anchor" href="#column-convention"></a>
 </h3>
@@ -284,7 +284,7 @@
 </tr>
 </tbody>
 </table>
-<p>Raw <code>experience</code> input is per-period only (<code>incr_loss</code>, <code>incr_prem</code>); <code><a href="reference/as_triangle.html">as_triangle()</a></code> produces both forms in the output. Worker fit functions (<code>fit_cl</code>, <code>fit_ed</code>, <code>fit_ata</code>, <code>fit_intensity</code>) take generic <code>target</code> / <code>exposure</code> / <code>weight</code> arguments; dispatcher functions (<code>fit_loss</code>, <code>fit_premium</code>) and the composition <code>fit_lr</code> use role-specific <code>loss_*</code> / <code>premium_*</code> argument names. Cumulative slots (<code>"loss"</code>, <code>"premium"</code>) are the defaults.</p>
+<p>Raw <code>experience</code> input is per-period only (<code>incr_loss</code>, <code>incr_prem</code>); <code><a href="reference/as_triangle.html">as_triangle()</a></code> produces both forms in the output. Worker fit functions (<code>fit_cl</code>, <code>fit_ed</code>, <code>fit_ata</code>, <code>fit_intensity</code>) take generic <code>target</code> / <code>exposure</code> / <code>weight</code> arguments; dispatcher functions (<code>fit_loss</code>, <code>fit_prem</code>) and the composition <code>fit_lr</code> use role-specific <code>loss_*</code> / <code>prem_*</code> argument names. Cumulative slots (<code>"loss"</code>, <code>"prem"</code>) are the defaults.</p>
 </div>
 </div>
 <div class="section level2">
@@ -316,7 +316,7 @@
 <span>  cohort    <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar  <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss      <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  premium   <span class="op">=</span> <span class="st">"incr_prem"</span>,</span>
+<span>  prem      <span class="op">=</span> <span class="st">"incr_prem"</span>,</span>
 <span>  cell_type <span class="op">=</span> <span class="st">"incremental"</span>   <span class="co"># default; use "cumulative" for pre-summed cells</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -324,7 +324,7 @@
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>     <span class="co"># cell heatmap</span></span>
 <span></span>
 <span><span class="co"># Exposure-driven fit (additive ED intensity)</span></span>
-<span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, exposure <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
+<span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, exposure <span class="op">=</span> <span class="st">"prem"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Chain ladder fit (multiplicative ATA factors)</span></span>
 <span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>

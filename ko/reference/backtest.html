@@ -7,8 +7,8 @@ The target is selected with target:
 target = "lr" – score the loss-ratio projection from
 fit_lr().
 target = "loss" – score the loss projection from fit_loss().
-target = "premium" – score the prem projection from
-fit_premium().
+target = "prem" – score the prem projection from
+fit_prem().
 
 
 The A/E Error (ae_err) follows the standard actuarial A/E
@@ -25,8 +25,8 @@ The target is selected with target:
 target = "lr" – score the loss-ratio projection from
 fit_lr().
 target = "loss" – score the loss projection from fit_loss().
-target = "premium" – score the prem projection from
-fit_premium().
+target = "prem" – score the prem projection from
+fit_prem().
 
 
 The A/E Error (ae_err) follows the standard actuarial A/E
@@ -101,8 +101,8 @@ to the actual values that were withheld.</p>
 <p>The target is selected with <code>target</code>:</p><ul><li><p><code>target = "lr"</code> – score the loss-ratio projection from
 <code><a href="fit_lr.html">fit_lr()</a></code>.</p></li>
 <li><p><code>target = "loss"</code> – score the loss projection from <code><a href="fit_loss.html">fit_loss()</a></code>.</p></li>
-<li><p><code>target = "premium"</code> – score the prem projection from
-<code><a href="fit_premium.html">fit_premium()</a></code>.</p></li>
+<li><p><code>target = "prem"</code> – score the prem projection from
+<code><a href="fit_prem.html">fit_prem()</a></code>.</p></li>
 </ul><p>The A/E Error (<code>ae_err</code>) follows the standard actuarial A/E
 convention and is computed cell-wise as
 $$ae\_err = \frac{value_{actual}}{value_{proj}} - 1$$
@@ -117,15 +117,15 @@ flag over-projection. Aggregated by development period
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">backtest</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  holdout <span class="op">=</span> <span class="fl">6L</span>,</span>
-<span>  target <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lr"</span>, <span class="st">"loss"</span>, <span class="st">"premium"</span><span class="op">)</span>,</span>
+<span>  target <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lr"</span>, <span class="st">"loss"</span>, <span class="st">"prem"</span><span class="op">)</span>,</span>
 <span>  loss_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sa"</span>, <span class="st">"ed"</span>, <span class="st">"cl"</span><span class="op">)</span>,</span>
-<span>  premium_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cl"</span>, <span class="st">"ed"</span><span class="op">)</span>,</span>
+<span>  prem_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cl"</span>, <span class="st">"ed"</span><span class="op">)</span>,</span>
 <span>  loss_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  premium_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  prem_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  loss_regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  premium_regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  prem_regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maturity <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  se_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fixed"</span>, <span class="st">"delta"</span><span class="op">)</span>,</span>
 <span>  rho <span class="op">=</span> <span class="fl">0.95</span>,</span>
@@ -162,7 +162,7 @@ before refitting. Default <code>6L</code>.</p></dd>
 
 <dt id="arg-target">target<a class="anchor" aria-label="anchor" href="#arg-target"></a></dt>
 <dd><p>Character scalar. Which projection to backtest. One
-of <code>"lr"</code> (default), <code>"loss"</code>, <code>"premium"</code>. Determines which
+of <code>"lr"</code> (default), <code>"loss"</code>, <code>"prem"</code>. Determines which
 fitter is called on the masked triangle and which column on <code>x</code>
 is treated as the held-out actual.</p></dd>
 
@@ -170,16 +170,16 @@ is treated as the held-out actual.</p></dd>
 <dt id="arg-loss-method">loss_method<a class="anchor" aria-label="anchor" href="#arg-loss-method"></a></dt>
 <dd><p>Method for the loss-side projection. Passed to
 <code><a href="fit_lr.html">fit_lr()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code> as their <code>method</code> argument. One of
-<code>"sa"</code>, <code>"ed"</code>, <code>"cl"</code>. Unused for <code>target = "premium"</code>.</p></dd>
+<code>"sa"</code>, <code>"ed"</code>, <code>"cl"</code>. Unused for <code>target = "prem"</code>.</p></dd>
 
 
-<dt id="arg-premium-method">premium_method<a class="anchor" aria-label="anchor" href="#arg-premium-method"></a></dt>
+<dt id="arg-prem-method">prem_method<a class="anchor" aria-label="anchor" href="#arg-prem-method"></a></dt>
 <dd><p>Method for the prem-side projection.
-Passed to <code><a href="fit_lr.html">fit_lr()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code> / <code><a href="fit_premium.html">fit_premium()</a></code>. One of
+Passed to <code><a href="fit_lr.html">fit_lr()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code> / <code><a href="fit_prem.html">fit_prem()</a></code>. One of
 <code>"cl"</code>, <code>"ed"</code>.</p></dd>
 
 
-<dt id="arg-loss-alpha-premium-alpha">loss_alpha, premium_alpha<a class="anchor" aria-label="anchor" href="#arg-loss-alpha-premium-alpha"></a></dt>
+<dt id="arg-loss-alpha-prem-alpha">loss_alpha, prem_alpha<a class="anchor" aria-label="anchor" href="#arg-loss-alpha-prem-alpha"></a></dt>
 <dd><p>Mack alpha for loss-side / prem-side
 chain-ladder estimation.</p></dd>
 
@@ -194,7 +194,7 @@ the underlying fitter.</p></dd>
 fitter.</p></dd>
 
 
-<dt id="arg-loss-regime-premium-regime">loss_regime, premium_regime<a class="anchor" aria-label="anchor" href="#arg-loss-regime-premium-regime"></a></dt>
+<dt id="arg-loss-regime-prem-regime">loss_regime, prem_regime<a class="anchor" aria-label="anchor" href="#arg-loss-regime-prem-regime"></a></dt>
 <dd><p>Regime spec for the loss / prem
 side. Each accepts one of four input types, dispatched by
 <code><a href="dot-resolve_regime.html">.resolve_regime()</a></code>:</p><ul><li><p><code>NULL</code> (default) – no regime filter.</p></li>
@@ -204,7 +204,7 @@ side. Each accepts one of four input types, dispatched by
 the simulated backtest cutoff).</p></li>
 <li><p>A function <code>function(tri) -&gt; Regime</code> – called on the
 masked triangle for the same leakage-safe reason.</p></li>
-</ul><p><code>premium_regime</code> is resolved independently from <code>loss_regime</code>.</p></dd>
+</ul><p><code>prem_regime</code> is resolved independently from <code>loss_regime</code>.</p></dd>
 
 
 <dt id="arg-maturity">maturity<a class="anchor" aria-label="anchor" href="#arg-maturity"></a></dt>
@@ -225,22 +225,22 @@ same leakage-safe reason.</p></li>
 
 <dt id="arg-se-method">se_method<a class="anchor" aria-label="anchor" href="#arg-se-method"></a></dt>
 <dd><p>Standard-error composition for <code><a href="fit_lr.html">fit_lr()</a></code>. Unused
-for <code>target = "loss"</code> / <code>target = "premium"</code>.</p></dd>
+for <code>target = "loss"</code> / <code>target = "prem"</code>.</p></dd>
 
 
 <dt id="arg-rho">rho<a class="anchor" aria-label="anchor" href="#arg-rho"></a></dt>
 <dd><p>Loss-prem correlation used by <code><a href="fit_lr.html">fit_lr()</a></code> delta
-method. Unused for <code>target = "loss"</code> / <code>target = "premium"</code>.</p></dd>
+method. Unused for <code>target = "loss"</code> / <code>target = "prem"</code>.</p></dd>
 
 
 <dt id="arg-conf-level">conf_level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
 <dd><p>Confidence level for <code><a href="fit_lr.html">fit_lr()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code>
-intervals. Unused for <code>target = "premium"</code>.</p></dd>
+intervals. Unused for <code>target = "prem"</code>.</p></dd>
 
 
 <dt id="arg-bootstrap-b-seed">bootstrap, B, seed<a class="anchor" aria-label="anchor" href="#arg-bootstrap-b-seed"></a></dt>
 <dd><p>Bootstrap controls forwarded to the
-target-specific fitter (<code><a href="fit_lr.html">fit_lr()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code> / <code><a href="fit_premium.html">fit_premium()</a></code>).
+target-specific fitter (<code><a href="fit_lr.html">fit_lr()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code> / <code><a href="fit_prem.html">fit_prem()</a></code>).
 <code>bootstrap = NULL</code> (default) defers to the fitter's method-dependent
 resolution: bootstrap for SA/ED methods, analytical for pure CL.
 The fitter accepts the full 4-type dispatch (<code>NULL</code> / logical /
@@ -303,7 +303,7 @@ from <code>x</code>.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="fit_lr.html">fit_lr()</a></code>, <code><a href="fit_loss.html">fit_loss()</a></code>, <code><a href="fit_premium.html">fit_premium()</a></code>, <code><a href="plot.Backtest.html">plot.Backtest()</a></code></p></div>
+    <div class="dont-index"><p><code><a href="fit_lr.html">fit_lr()</a></code>, <code><a href="fit_loss.html">fit_loss()</a></code>, <code><a href="fit_prem.html">fit_prem()</a></code>, <code><a href="plot.Backtest.html">plot.Backtest()</a></code></p></div>
     </div>
 
     <div class="section level2">
@@ -316,12 +316,12 @@ from <code>x</code>.</p></dd>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
+<span class="r-in"><span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">bt_lr</span>      <span class="op">&lt;-</span> <span class="fu">backtest</span><span class="op">(</span><span class="va">tri</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, target <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">bt_loss</span>    <span class="op">&lt;-</span> <span class="fu">backtest</span><span class="op">(</span><span class="va">tri</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">bt_prem</span> <span class="op">&lt;-</span> <span class="fu">backtest</span><span class="op">(</span><span class="va">tri</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, target <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">bt_lr</span>   <span class="op">&lt;-</span> <span class="fu">backtest</span><span class="op">(</span><span class="va">tri</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, target <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">bt_loss</span> <span class="op">&lt;-</span> <span class="fu">backtest</span><span class="op">(</span><span class="va">tri</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">bt_prem</span> <span class="op">&lt;-</span> <span class="fu">backtest</span><span class="op">(</span><span class="va">tri</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, target <span class="op">=</span> <span class="st">"prem"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt_lr</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">bt_lr</span><span class="op">)</span></span></span>

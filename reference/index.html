@@ -181,7 +181,7 @@
       </dl></div><div class="section level2">
       <h2 id="estimation">Estimation<a class="anchor" aria-label="anchor" href="#estimation"></a></h2>
 
-      <div class="section-desc"><p>Models that produce full projections on a Triangle. Base algorithms: <code>fit_cl</code> (chain ladder / multiplicative), <code>fit_ed</code> (exposure-driven / additive). Role dispatchers: <code>fit_loss</code> (loss-side sa/ed/cl), <code>fit_premium</code> (premium-side ed/cl). Composition: <code>fit_lr</code> (loss-ratio umbrella with delta-method SE). All return an object carrying a <code>$full</code> projection table.</p></div>
+      <div class="section-desc"><p>Models that produce full projections on a Triangle. Base algorithms: <code>fit_cl</code> (chain ladder / multiplicative), <code>fit_ed</code> (exposure-driven / additive). Role dispatchers: <code>fit_loss</code> (loss-side sa/ed/cl), <code>fit_prem</code> (premium-side ed/cl). Composition: <code>fit_lr</code> (loss-ratio umbrella with delta-method SE). All return an object carrying a <code>$full</code> projection table.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -211,7 +211,7 @@
 
         <dt>
 
-          <code><a href="fit_premium.html">fit_premium()</a></code>
+          <code><a href="fit_prem.html">fit_prem()</a></code>
 
         </dt>
         <dd>Fit a chain ladder projection on the prem (exposure) triangle</dd>
@@ -248,7 +248,7 @@
       </dl></div><div class="section level2">
       <h2 id="cell-selection-diagnostics">Cell-selection diagnostics<a class="anchor" aria-label="anchor" href="#cell-selection-diagnostics"></a></h2>
 
-      <div class="section-desc"><p>Decide which cells of the triangle to use for estimation. <code>detect_maturity</code> works along the dev axis (link beyond which ATA factors are stable); <code>detect_regime</code> works along the cohort axis (structural break across underwriting cohorts). The <code>*_at()</code> / <code>*_spec()</code> helpers build manual / lazy-detect input objects for the <code>maturity</code> / <code>loss_regime</code> / <code>premium_regime</code> arguments of the fit functions.</p></div>
+      <div class="section-desc"><p>Decide which cells of the triangle to use for estimation. <code>detect_maturity</code> works along the dev axis (link beyond which ATA factors are stable); <code>detect_regime</code> works along the cohort axis (structural break across underwriting cohorts). The <code>*_at()</code> / <code>*_spec()</code> helpers build manual / lazy-detect input objects for the <code>maturity</code> / <code>loss_regime</code> / <code>prem_regime</code> arguments of the fit functions.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -299,7 +299,7 @@
       </dl></div><div class="section level2">
       <h2 id="bootstrap">Bootstrap<a class="anchor" aria-label="anchor" href="#bootstrap"></a></h2>
 
-      <div class="section-desc"><p>Cohort × dev standard-error decomposition via simulation (Pythagorean split into parameter and process components). Returned object is consumed by <code>fit_loss</code> / <code>fit_premium</code> / <code>fit_lr</code> through their <code>bootstrap</code> argument to replace analytical SE / CI with empirical counterparts.</p></div>
+      <div class="section-desc"><p>Cohort × dev standard-error decomposition via simulation (Pythagorean split into parameter and process components). Returned object is consumed by <code>fit_loss</code> / <code>fit_prem</code> / <code>fit_lr</code> through their <code>bootstrap</code> argument to replace analytical SE / CI with empirical counterparts.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -610,10 +610,10 @@
 
         <dt>
 
-          <code><a href="print.PremiumFit.html">print(<i>&lt;PremiumFit&gt;</i>)</a></code>
+          <code><a href="print.PremFit.html">print(<i>&lt;PremFit&gt;</i>)</a></code>
 
         </dt>
-        <dd>Print method for <code>PremiumFit</code></dd>
+        <dd>Print method for <code>PremFit</code></dd>
 
         <dt>
 
@@ -673,10 +673,10 @@
 
         <dt>
 
-          <code><a href="summary.PremiumFit.html">summary(<i>&lt;PremiumFit&gt;</i>)</a></code>
+          <code><a href="summary.PremFit.html">summary(<i>&lt;PremFit&gt;</i>)</a></code>
 
         </dt>
-        <dd>Summary method for <code>PremiumFit</code></dd>
+        <dd>Summary method for <code>PremFit</code></dd>
 
         <dt>
 

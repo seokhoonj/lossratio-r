@@ -13,8 +13,8 @@ The target is selected with `target`:
 - `target = "loss"` – score the loss projection from
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md).
 
-- `target = "premium"` – score the prem projection from
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md).
+- `target = "prem"` – score the prem projection from
+  [`fit_prem()`](https://seokhoonj.github.io/lossratio/reference/fit_prem.md).
 
 The A/E Error (`ae_err`) follows the standard actuarial A/E convention
 and is computed cell-wise as \$\$ae\\err =
@@ -30,15 +30,15 @@ development period (`col_summary`) and by calendar diagonal
 backtest(
   x,
   holdout = 6L,
-  target = c("lr", "loss", "premium"),
+  target = c("lr", "loss", "prem"),
   loss_method = c("sa", "ed", "cl"),
-  premium_method = c("cl", "ed"),
+  prem_method = c("cl", "ed"),
   loss_alpha = 1,
-  premium_alpha = 1,
+  prem_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   loss_regime = NULL,
-  premium_regime = NULL,
+  prem_regime = NULL,
   maturity = "auto",
   se_method = c("fixed", "delta"),
   rho = 0.95,
@@ -74,7 +74,7 @@ print(x, ...)
 - target:
 
   Character scalar. Which projection to backtest. One of `"lr"`
-  (default), `"loss"`, `"premium"`. Determines which fitter is called on
+  (default), `"loss"`, `"prem"`. Determines which fitter is called on
   the masked triangle and which column on `x` is treated as the held-out
   actual.
 
@@ -85,19 +85,19 @@ print(x, ...)
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
   as their `method` argument. One of `"sa"`, `"ed"`, `"cl"`. Unused for
-  `target = "premium"`.
+  `target = "prem"`.
 
-- premium_method:
+- prem_method:
 
   Method for the prem-side projection. Passed to
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
   /
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md).
+  [`fit_prem()`](https://seokhoonj.github.io/lossratio/reference/fit_prem.md).
   One of `"cl"`, `"ed"`.
 
-- loss_alpha, premium_alpha:
+- loss_alpha, prem_alpha:
 
   Mack alpha for loss-side / prem-side chain-ladder estimation.
 
@@ -109,7 +109,7 @@ print(x, ...)
 
   Calendar-diagonal recency filter forwarded to the fitter.
 
-- loss_regime, premium_regime:
+- loss_regime, prem_regime:
 
   Regime spec for the loss / prem side. Each accepts one of four input
   types, dispatched by
@@ -129,7 +129,7 @@ print(x, ...)
   - A function `function(tri) -> Regime` – called on the masked triangle
     for the same leakage-safe reason.
 
-  `premium_regime` is resolved independently from `loss_regime`.
+  `prem_regime` is resolved independently from `loss_regime`.
 
 - maturity:
 
@@ -159,13 +159,13 @@ print(x, ...)
 
   Standard-error composition for
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md).
-  Unused for `target = "loss"` / `target = "premium"`.
+  Unused for `target = "loss"` / `target = "prem"`.
 
 - rho:
 
   Loss-prem correlation used by
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
-  delta method. Unused for `target = "loss"` / `target = "premium"`.
+  delta method. Unused for `target = "loss"` / `target = "prem"`.
 
 - conf_level:
 
@@ -173,7 +173,7 @@ print(x, ...)
   [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
-  intervals. Unused for `target = "premium"`.
+  intervals. Unused for `target = "prem"`.
 
 - bootstrap, B, seed:
 
@@ -182,7 +182,7 @@ print(x, ...)
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
   /
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)).
+  [`fit_prem()`](https://seokhoonj.github.io/lossratio/reference/fit_prem.md)).
   `bootstrap = NULL` (default) defers to the fitter's method-dependent
   resolution: bootstrap for SA/ED methods, analytical for pure CL. The
   fitter accepts the full 4-type dispatch (`NULL` / logical / `"auto"` /
@@ -252,7 +252,7 @@ An object of class `"Backtest"` with components:
 
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md),
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md),
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md),
+[`fit_prem()`](https://seokhoonj.github.io/lossratio/reference/fit_prem.md),
 [`plot.Backtest()`](https://seokhoonj.github.io/lossratio/reference/plot.Backtest.md)
 
 ## Examples
@@ -266,12 +266,12 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
-bt_lr      <- backtest(tri, holdout = 6L, target = "lr")
-bt_loss    <- backtest(tri, holdout = 6L, target = "loss")
-bt_prem <- backtest(tri, holdout = 6L, target = "premium")
+bt_lr   <- backtest(tri, holdout = 6L, target = "lr")
+bt_loss <- backtest(tri, holdout = 6L, target = "loss")
+bt_prem <- backtest(tri, holdout = 6L, target = "prem")
 
 print(bt_lr)
 summary(bt_lr)

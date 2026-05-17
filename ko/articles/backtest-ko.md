@@ -31,7 +31,7 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
 bt <- backtest(tri_sur, holdout = 6L)
@@ -52,8 +52,8 @@ print(bt)
 - `col_summary` — `dev` 별로 집계된 A/E Error.
 - `diag_summary` — 대각선별로 집계된 A/E Error.
 - `masked` — 적합에 사용된 triangle (최근 대각선이 제거됨).
-- `fit` — 내부 적합 객체 (`LRFit`, `LossFit`, 또는 `PremiumFit`,
-  `target` 에 따라 결정).
+- `fit` — 내부 적합 객체 (`LRFit`, `LossFit`, 또는 `PremFit`, `target`
+  에 따라 결정).
 
 `summary(bt)` 는 호출 메타데이터와 함께 두 요약 표를 출력한다.
 
@@ -253,7 +253,7 @@ plot_triangle(bt)         # hold-out 영역에 대한 발산형 팔레트 히트
 |----|----|----|----|
 | `"lr"` | [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md) | `loss_method` | `lr_proj` |
 | `"loss"` | [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md) | `loss_method` | `loss_proj` |
-| `"premium"` | [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md) | `premium_method` | `premium_proj` |
+| `"prem"` | [`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md) | `prem_method` | `prem_proj` |
 
 ``` r
 
@@ -277,7 +277,7 @@ print(bt_sa_lr)
 의미를 가진다. 반면 `loss` 를 백테스팅하면 결과가 hold-out 대각선에서
 가장 큰 코호트 쪽으로 가중된다.
 
-`premium` 백테스트는 `target = "premium"` 으로 직접 수행한다.
+`premium` 백테스트는 `target = "prem"` 으로 직접 수행한다.
 
 ## 8. 함께 보기
 

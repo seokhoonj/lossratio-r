@@ -19,7 +19,7 @@ The natural fix is asymmetric:
 - **Post-maturity (CL region):** diagonal cut — keep only the recent `N`
   calendar diagonals.
 
-`loss_regime` (and its premium-side sibling `premium_regime`) implements
+`loss_regime` (and its premium-side sibling `prem_regime`) implements
 that split.
 
 ## Two-axis asymmetry
@@ -65,15 +65,15 @@ detect_regime(tri, treatment = "segment_wise")
 
 [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
 takes two role-specific regime arguments — `loss_regime` (loss-side
-filter) and `premium_regime` (premium-side filter; defaults to
+filter) and `prem_regime` (premium-side filter; defaults to
 `loss_regime`).
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
 /
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
+[`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md)
 take a single `regime` argument.
 [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
-mirrors `fit_lr` with `loss_regime` / `premium_regime`. All four accept
-the same input types:
+mirrors `fit_lr` with `loss_regime` / `prem_regime`. All four accept the
+same input types:
 
 | Input | Behaviour |
 |----|----|
@@ -96,7 +96,7 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
 # Manual change date via regime_at() — wrap a literal date in a Regime
@@ -221,7 +221,7 @@ fits <- lapply(unique(exp$coverage), function(g) {
     cohort   = "uy_m",
     calendar = "cy_m",
     loss     = "incr_loss",
-    premium  = "incr_prem"
+    prem     = "incr_prem"
   )
   reg_g <- detect_regime(tri_g)
   fit_lr(tri_g, method = "sa", recent = 18L,
@@ -241,7 +241,7 @@ threshold is `n_post ≳ 6`. Below that, prefer `recent` alone, or wait
 for credibility-weighted blending of pre- and post-change factors
 (planned).
 
-Note also that `loss_regime` / `premium_regime` only filter the data
+Note also that `loss_regime` / `prem_regime` only filter the data
 feeding link factor estimation. Once the factors are fixed, all cohorts
 share them, so pre-change ultimates inherit the post-change dynamics.
 

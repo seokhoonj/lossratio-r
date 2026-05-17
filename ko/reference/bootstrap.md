@@ -192,7 +192,7 @@ bootstrap(
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
   /
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
+  [`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md)
   always pass `FALSE` internally because they only read `$summary`. Set
   `TRUE` explicitly if you want to inspect `$pseudo_triangles` directly.
 
@@ -243,7 +243,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
 # Cell-residual bootstrap (default)

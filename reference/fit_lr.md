@@ -32,10 +32,10 @@ In all cases, exposure is projected forward using chain ladder:
 This function is the *composition* layer over
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
 and
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md):
+[`fit_prem()`](https://seokhoonj.github.io/lossratio/reference/fit_prem.md):
 it delegates loss projection to
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md),
-retrieves the embedded `PremiumFit`, and composes the loss-ratio point +
+retrieves the embedded `PremFit`, and composes the loss-ratio point +
 variance via the delta method (`se_method = "fixed"` or `"delta"`). See
 `ARCHITECTURE.md` for the layered design.
 
@@ -47,9 +47,9 @@ fit_lr(
   method = c("sa", "ed", "cl"),
   loss_alpha = 1,
   loss_regime = NULL,
-  premium_method = c("cl", "ed"),
-  premium_alpha = 1,
-  premium_regime = NULL,
+  prem_method = c("cl", "ed"),
+  prem_alpha = 1,
+  prem_regime = NULL,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   maturity = "auto",
@@ -121,17 +121,17 @@ fit_lr(
   :   Simple cohort cut: all cohorts strictly before the change date are
       excluded from estimation.
 
-- premium_method:
+- prem_method:
 
   One of `"cl"` (default) or `"ed"`. Forwarded to
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+  [`fit_prem()`](https://seokhoonj.github.io/lossratio/reference/fit_prem.md)
   when constructing the prem projection.
 
-- premium_alpha:
+- prem_alpha:
 
   Numeric scalar for prem chain ladder. Default is `1`.
 
-- premium_regime:
+- prem_regime:
 
   Premium-side regime specification. Same four input types as
   `loss_regime` (`NULL` / `Regime` / `"auto"` / function). Default
@@ -248,7 +248,7 @@ fit_lr(
   [`.compute_lr_se()`](https://seokhoonj.github.io/lossratio/reference/dot-compute_lr_se.md),
   combined with the premium-side SE per `se_method` (`"fixed"` ignores
   premium SE; `"delta"` uses `prem_total_se` from the inner
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+  [`fit_prem()`](https://seokhoonj.github.io/lossratio/reference/fit_prem.md)
   plus `rho` correlation).
 
 - B:
@@ -267,7 +267,7 @@ An object of class `"LRFit"`.
 ## See also
 
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md),
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md),
+[`fit_prem()`](https://seokhoonj.github.io/lossratio/reference/fit_prem.md),
 [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md),
 [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md),
 [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md),
@@ -285,7 +285,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
 # Stage-adaptive (default): ED before maturity, CL after

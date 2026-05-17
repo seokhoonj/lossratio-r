@@ -98,7 +98,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
 res <- detect_convergence(tri)
@@ -271,7 +271,7 @@ claim 노이즈 때문에 실 portfolio 에서 보기 어렵고, $`0.20`$ 이상
   이 내부적으로
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
   (default `method = "sa"` — 단계 적응형) 와
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+  [`fit_prem()`](https://seokhoonj.github.io/lossratio/reference/fit_prem.md)
   을 합성하므로, 그 안의 선택 (loss method, regime 필터, maturity 인자)
   이 `conv_k` 로 흘러간다. 결과 해석 시 `fit_lr` 설정을 같이 확인할 것.
   `...` 으로 `loss_method =`, `loss_regime =` 등 override 가능.

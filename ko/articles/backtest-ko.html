@@ -128,7 +128,7 @@ valuation 시점에서 모형은 무엇이라 말했을까?” 를 모사하기 
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">bt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span></span>
@@ -156,8 +156,8 @@ Error.</li>
 제거됨).</li>
 <li>
 <code>fit</code> — 내부 적합 객체 (<code>LRFit</code>,
-<code>LossFit</code>, 또는 <code>PremiumFit</code>, <code>target</code>
-에 따라 결정).</li>
+<code>LossFit</code>, 또는 <code>PremFit</code>, <code>target</code> 에
+따라 결정).</li>
 </ul>
 <p><code>summary(bt)</code> 는 호출 메타데이터와 함께 두 요약 표를
 출력한다.</p>
@@ -331,12 +331,6 @@ dev 셀을 진단하려면 <code>bt$ae_err</code> 를 직접 살펴본다.</p>
 에서 대응되는 추정 컬럼을 비교 대상으로 사용한다.</p>
 </blockquote>
 <table class="table">
-<colgroup>
-<col width="18%">
-<col width="30%">
-<col width="27%">
-<col width="24%">
-</colgroup>
 <thead><tr class="header">
 <th><code>target</code></th>
 <th>내부 적합 함수</th>
@@ -357,10 +351,10 @@ dev 셀을 진단하려면 <code>bt$ae_err</code> 를 직접 살펴본다.</p>
 <td><code>loss_proj</code></td>
 </tr>
 <tr class="odd">
-<td><code>"premium"</code></td>
-<td><code><a href="../reference/fit_premium.html">fit_premium()</a></code></td>
-<td><code>premium_method</code></td>
-<td><code>premium_proj</code></td>
+<td><code>"prem"</code></td>
+<td><code><a href="../reference/fit_prem.html">fit_prem()</a></code></td>
+<td><code>prem_method</code></td>
+<td><code>prem_proj</code></td>
 </tr>
 </tbody>
 </table>
@@ -383,7 +377,7 @@ dev 셀을 진단하려면 <code>bt$ae_err</code> 를 직접 살펴본다.</p>
 triangle 전체에서 일관된 의미를 가진다. 반면 <code>loss</code> 를
 백테스팅하면 결과가 hold-out 대각선에서 가장 큰 코호트 쪽으로
 가중된다.</p>
-<p><code>premium</code> 백테스트는 <code>target = "premium"</code> 으로
+<p><code>premium</code> 백테스트는 <code>target = "prem"</code> 으로
 직접 수행한다.</p>
 </div>
 <div class="section level2">

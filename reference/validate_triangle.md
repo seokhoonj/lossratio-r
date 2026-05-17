@@ -32,7 +32,7 @@ validate_triangle(
   groups = NULL,
   cohort,
   calendar = NULL,
-  development = NULL,
+  dev = NULL,
   grain = "auto"
 )
 ```
@@ -57,7 +57,7 @@ validate_triangle(
   When supplied, rows where `calendar < cohort` are flagged as invalid.
   Default `NULL` (skip this check).
 
-- development:
+- dev:
 
   A single development-period variable (raw column name). Optional when
   `calendar` is supplied – `dev` is then derived from
@@ -67,8 +67,8 @@ validate_triangle(
 - grain:
 
   Grain string (`"M"` / `"Q"` / `"H"` / `"Y"`) or `"auto"` (default) –
-  used only when `development` is derived from `(cohort, calendar)`.
-  Ignored when `development` is supplied.
+  used only when `dev` is derived from `(cohort, calendar)`. Ignored
+  when `dev` is supplied.
 
 ## Value
 

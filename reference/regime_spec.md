@@ -14,7 +14,7 @@ caller decides to expose:
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
   /
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md),
+  [`fit_prem()`](https://seokhoonj.github.io/lossratio/reference/fit_prem.md),
   the spec is invoked on the *full* triangle the user passed in.
 
 - In

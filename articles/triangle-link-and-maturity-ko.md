@@ -28,7 +28,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 ```
 
@@ -79,7 +79,7 @@ plot_triangle(tri, metric = "incr_lr")     # 증분 lr
 
 
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly 로 다시 빌드
-tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem", grain = "Q")
+tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem", grain = "Q")
 plot_triangle(tri_q, label_style = "detail")  # 비율 + (loss / premium)
 ```
 
@@ -386,7 +386,7 @@ tri_all <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 detect_maturity(tri_all, target = "loss")
 #> Key: <coverage>
@@ -428,7 +428,7 @@ plot(as_link(tri_all, target = "loss"), type = "cv")
 
 ``` r
 
-gaps <- validate_triangle(exp, groups = "coverage", cohort = "uy_m", development = "dev_m")
+gaps <- validate_triangle(exp, groups = "coverage", cohort = "uy_m", dev = "dev_m")
 head(gaps)
 #> <TriangleValidation>
 #> Cohort dev-sequence gaps : none
@@ -479,14 +479,14 @@ fit_lr(tri, recent = 12)
 #> <LRFit>
 #> method            : sa 
 #> loss_alpha        : 1 
-#> premium_alpha     : 1 
+#> prem_alpha        : 1 
 #> se_method         : fixed 
 #> conf_level        : 0.95 
 #> ci_type           : bootstrap  (B = 999, seed = NULL) 
 #> sigma_method      : locf 
 #> recent            : 12 
 #> loss_regime       : none
-#> premium_regime    : none
+#> prem_regime       : none
 #> maturity[surgery] : 4 
 #> groups            : coverage 
 #> periods           : 36

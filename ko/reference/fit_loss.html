@@ -16,10 +16,10 @@ Pure Mack chain ladder (multiplicative).
 
 
 
-This function is the loss-side counterpart to fit_premium() in
+This function is the loss-side counterpart to fit_prem() in
 the role-specific dispatcher layer (see ARCHITECTURE.md). It owns
 loss projection only – prem projection is delegated to
-fit_premium() (called internally when premium_fit = NULL), and
+fit_prem() (called internally when prem_fit = NULL), and
 the loss-ratio composition with delta method is handled by fit_lr().'><meta property="og:description" content='Project cumulative loss across the cohort x development grid. Three
 methods are supported via method:
 
@@ -37,10 +37,10 @@ Pure Mack chain ladder (multiplicative).
 
 
 
-This function is the loss-side counterpart to fit_premium() in
+This function is the loss-side counterpart to fit_prem() in
 the role-specific dispatcher layer (see ARCHITECTURE.md). It owns
 loss projection only – prem projection is delegated to
-fit_premium() (called internally when premium_fit = NULL), and
+fit_prem() (called internally when prem_fit = NULL), and
 the loss-ratio composition with delta method is handled by fit_lr().'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -114,10 +114,10 @@ periods.</p></dd>
 <dd><p>Pure Mack chain ladder (multiplicative).</p></dd>
 
 
-</dl><p>This function is the <em>loss-side</em> counterpart to <code><a href="fit_premium.html">fit_premium()</a></code> in
+</dl><p>This function is the <em>loss-side</em> counterpart to <code><a href="fit_prem.html">fit_prem()</a></code> in
 the role-specific dispatcher layer (see <code>ARCHITECTURE.md</code>). It owns
 loss projection only – prem projection is delegated to
-<code><a href="fit_premium.html">fit_premium()</a></code> (called internally when <code>premium_fit = NULL</code>), and
+<code><a href="fit_prem.html">fit_prem()</a></code> (called internally when <code>prem_fit = NULL</code>), and
 the loss-ratio composition with delta method is handled by <code><a href="fit_lr.html">fit_lr()</a></code>.</p>
     </div>
 
@@ -128,9 +128,9 @@ the loss-ratio composition with delta method is handled by <code><a href="fit_lr
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sa"</span>, <span class="st">"ed"</span>, <span class="st">"cl"</span><span class="op">)</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  premium_fit <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  premium_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cl"</span>, <span class="st">"ed"</span><span class="op">)</span>,</span>
-<span>  premium_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  prem_fit <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  prem_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cl"</span>, <span class="st">"ed"</span><span class="op">)</span>,</span>
+<span>  prem_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maturity <span class="op">=</span> <span class="st">"auto"</span>,</span>
@@ -179,24 +179,24 @@ triangle and returning a <code>Regime</code> object (or <code>NULL</code>).</p><
 </dl><p>Behavior depends on <code>method</code>: SA uses a hybrid 2-pass filter (cohort
 cut for the ED phase, calendar-diagonal wedge for the CL phase);
 ED/CL use a simple cohort cut. The same resolved <code>Regime</code> is applied
-to the internal <code><a href="fit_premium.html">fit_premium()</a></code> call – callers needing an
+to the internal <code><a href="fit_prem.html">fit_prem()</a></code> call – callers needing an
 asymmetric loss/prem split should use <code><a href="fit_lr.html">fit_lr()</a></code> instead.</p></dd>
 
 
-<dt id="arg-premium-fit">premium_fit<a class="anchor" aria-label="anchor" href="#arg-premium-fit"></a></dt>
-<dd><p>Optional pre-built <code>PremiumFit</code> (from
-<code><a href="fit_premium.html">fit_premium()</a></code>) supplying the prem projection. When <code>NULL</code>,
-<code>fit_loss()</code> calls <code><a href="fit_premium.html">fit_premium()</a></code> internally using
-<code>premium_method</code>, <code>premium_alpha</code>, and the resolved <code>regime</code>.</p></dd>
+<dt id="arg-prem-fit">prem_fit<a class="anchor" aria-label="anchor" href="#arg-prem-fit"></a></dt>
+<dd><p>Optional pre-built <code>PremFit</code> (from
+<code><a href="fit_prem.html">fit_prem()</a></code>) supplying the prem projection. When <code>NULL</code>,
+<code>fit_loss()</code> calls <code><a href="fit_prem.html">fit_prem()</a></code> internally using
+<code>prem_method</code>, <code>prem_alpha</code>, and the resolved <code>regime</code>.</p></dd>
 
 
-<dt id="arg-premium-method">premium_method<a class="anchor" aria-label="anchor" href="#arg-premium-method"></a></dt>
+<dt id="arg-prem-method">prem_method<a class="anchor" aria-label="anchor" href="#arg-prem-method"></a></dt>
 <dd><p>One of <code>"cl"</code> (default) or <code>"ed"</code>. Used only
-when <code>premium_fit = NULL</code>. The default matches the historical
+when <code>prem_fit = NULL</code>. The default matches the historical
 <code><a href="fit_lr.html">fit_lr()</a></code> prem choice.</p></dd>
 
 
-<dt id="arg-premium-alpha">premium_alpha<a class="anchor" aria-label="anchor" href="#arg-premium-alpha"></a></dt>
+<dt id="arg-prem-alpha">prem_alpha<a class="anchor" aria-label="anchor" href="#arg-prem-alpha"></a></dt>
 <dd><p>Variance-structure exponent for the prem fit.
 Default <code>1</code>.</p></dd>
 
@@ -280,7 +280,7 @@ loss-only convention); premium-side uncertainty is layered in by
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An object of class <code>"LossFit"</code>. List with components:
 <code>full</code>, <code>proj</code>, <code>maturity</code>, <code>loss_ata_fit</code>, <code>prem_ata_fit</code>,
-<code>premium_fit</code>, <code>ed</code>, <code>factor</code>, <code>selected</code>, plus metadata.</p>
+<code>prem_fit</code>, <code>ed</code>, <code>factor</code>, <code>selected</code>, plus metadata.</p>
     </div>
     <div class="section level2">
     <h2 id="internal-columns">Internal columns<a class="anchor" aria-label="anchor" href="#internal-columns"></a></h2>
@@ -293,7 +293,7 @@ callers see them as implementation columns.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="fit_premium.html">fit_premium()</a></code>, <code><a href="fit_lr.html">fit_lr()</a></code>, <code><a href="fit_cl.html">fit_cl()</a></code>, <code><a href="fit_ed.html">fit_ed()</a></code>.</p></div>
+    <div class="dont-index"><p><code><a href="fit_prem.html">fit_prem()</a></code>, <code><a href="fit_lr.html">fit_lr()</a></code>, <code><a href="fit_cl.html">fit_cl()</a></code>, <code><a href="fit_ed.html">fit_ed()</a></code>.</p></div>
     </div>
 
     <div class="section level2">
@@ -306,7 +306,7 @@ callers see them as implementation columns.</p>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
+<span class="r-in"><span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">lf</span>    <span class="op">&lt;-</span> <span class="fu">fit_loss</span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>                    <span class="co"># SA (default)</span></span></span>

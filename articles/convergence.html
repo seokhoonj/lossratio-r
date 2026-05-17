@@ -381,7 +381,7 @@ incremental LR.</p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
@@ -642,7 +642,7 @@ every method.</li>
 <strong>Model conditioning</strong>: the projected LR is computed by
 <code><a href="../reference/fit_lr.html">fit_lr()</a></code>, which internally composes <code><a href="../reference/fit_loss.html">fit_loss()</a></code>
 (default <code>method = "sa"</code> — stage-adaptive) and
-<code><a href="../reference/fit_premium.html">fit_premium()</a></code>. Choices made inside that composition (loss
+<code><a href="../reference/fit_prem.html">fit_prem()</a></code>. Choices made inside that composition (loss
 method, regime filter, maturity argument) feed through to
 <code>conv_k</code>; review the underlying <code>fit_lr</code> settings
 when interpreting the result. Pass <code>loss_method =</code>,

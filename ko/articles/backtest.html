@@ -124,7 +124,7 @@ actual exceeded expected) and negative values flag over-projection.</p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">bt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span></span>
@@ -153,7 +153,7 @@ diagonals removed).</li>
 <li>
 <code>fit</code> — the fit object returned by the target-specific
 dispatcher (<code>fit_lr</code> / <code>fit_loss</code> /
-<code>fit_premium</code>) chosen by <code>target=</code>.</li>
+<code>fit_prem</code>) chosen by <code>target=</code>.</li>
 </ul>
 <p><code>summary(bt)</code> prints the two summary tables alongside the
 call metadata.</p>
@@ -334,12 +334,6 @@ column on the fit’s <code>$full</code> table is compared against the
 held-out actuals:</p>
 </blockquote>
 <table class="table">
-<colgroup>
-<col width="18%">
-<col width="31%">
-<col width="25%">
-<col width="24%">
-</colgroup>
 <thead><tr class="header">
 <th><code>target</code></th>
 <th>Internal fitter</th>
@@ -360,10 +354,10 @@ held-out actuals:</p>
 <td><code>loss_proj</code></td>
 </tr>
 <tr class="odd">
-<td><code>"premium"</code></td>
-<td><code><a href="../reference/fit_premium.html">fit_premium()</a></code></td>
-<td><code>premium_method</code></td>
-<td><code>premium_proj</code></td>
+<td><code>"prem"</code></td>
+<td><code><a href="../reference/fit_prem.html">fit_prem()</a></code></td>
+<td><code>prem_method</code></td>
+<td><code>prem_proj</code></td>
 </tr>
 </tbody>
 </table>
@@ -372,8 +366,8 @@ loss-ratio projection strategy: <code>"sa"</code> (stage-adaptive, the
 default) blends exposure-driven projections before the maturity point
 with chain ladder afterwards; <code>"ed"</code> is purely
 exposure-driven; <code>"cl"</code> is the classical chain ladder. The
-<code>premium_method</code> argument selects the premium projection
-strategy when <code>target = "premium"</code>.</p>
+<code>prem_method</code> argument selects the premium projection
+strategy when <code>target = "prem"</code>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bt_sa</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span>  <span class="co"># default</span></span>
 <span><span class="va">bt_ed</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span></span>
@@ -382,7 +376,7 @@ strategy when <code>target = "premium"</code>.</p>
 <span><span class="va">bt_loss</span>     <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>,</span>
 <span>                        target <span class="op">=</span> <span class="st">"loss"</span>, loss_method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
 <span><span class="va">bt_premium</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>,</span>
-<span>                        target <span class="op">=</span> <span class="st">"premium"</span>, premium_method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
+<span>                        target <span class="op">=</span> <span class="st">"prem"</span>, prem_method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt_sa</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Backtest&gt;</span></span>
@@ -391,7 +385,7 @@ strategy when <code>target = "premium"</code>.</p>
 <span><span class="co">#&gt;   holdout   : 6 diagonals (159 cells)</span></span>
 <span><span class="co">#&gt;   A/E Error : mean 0.21% / median -0.00%</span></span></code></pre></div>
 <p>For monetary impact (loss or premium) backtesting, set
-<code>target = "loss"</code> or <code>target = "premium"</code> to score
+<code>target = "loss"</code> or <code>target = "prem"</code> to score
 the corresponding projection lane directly.</p>
 </div>
 <div class="section level2">

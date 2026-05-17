@@ -280,7 +280,7 @@ trajectories, custom quantile work). On a typical 4-group monthly
 triangle at <code>B = 999</code> the reshape costs ~250-300 ms and ~200 MB on
 top of <code>$summary</code>; users who only consume <code>$summary</code> (the common
 case) should leave this <code>FALSE</code>. <code><a href="fit_lr.html">fit_lr()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code> /
-<code><a href="fit_premium.html">fit_premium()</a></code> always pass <code>FALSE</code> internally because they only
+<code><a href="fit_prem.html">fit_prem()</a></code> always pass <code>FALSE</code> internally because they only
 read <code>$summary</code>. Set <code>TRUE</code> explicitly if you want to inspect
 <code>$pseudo_triangles</code> directly.</p></dd>
 
@@ -327,7 +327,7 @@ residual mode: <code>[groups, cohort, ata_from, ata_to, residual, pool_id]</code
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
+<span class="r-in"><span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Cell-residual bootstrap (default)</span></span></span>

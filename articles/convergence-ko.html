@@ -382,7 +382,7 @@ MAD<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
@@ -643,9 +643,9 @@ reserving 주의사항을 적용.</li>
 <strong>모형 조건부</strong>: 예측 LR 은 <code><a href="../reference/fit_lr.html">fit_lr()</a></code> 로
 산출. <code><a href="../reference/fit_lr.html">fit_lr()</a></code> 이 내부적으로 <code><a href="../reference/fit_loss.html">fit_loss()</a></code>
 (default <code>method = "sa"</code> — 단계 적응형) 와
-<code><a href="../reference/fit_premium.html">fit_premium()</a></code> 을 합성하므로, 그 안의 선택 (loss method,
-regime 필터, maturity 인자) 이 <code>conv_k</code> 로 흘러간다. 결과
-해석 시 <code>fit_lr</code> 설정을 같이 확인할 것. <code>...</code> 으로
+<code><a href="../reference/fit_prem.html">fit_prem()</a></code> 을 합성하므로, 그 안의 선택 (loss method, regime
+필터, maturity 인자) 이 <code>conv_k</code> 로 흘러간다. 결과 해석 시
+<code>fit_lr</code> 설정을 같이 확인할 것. <code>...</code> 으로
 <code>loss_method =</code>, <code>loss_regime =</code> 등 override
 가능.</li>
 <li>

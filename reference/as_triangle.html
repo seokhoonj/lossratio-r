@@ -259,9 +259,9 @@ each development cell across products or other grouping variables.</p>
 <span>  groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">cohort</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  development <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  dev <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">loss</span>,</span>
-<span>  <span class="va">premium</span>,</span>
+<span>  <span class="va">prem</span>,</span>
 <span>  grain <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  cell_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"incremental"</span>, <span class="st">"cumulative"</span><span class="op">)</span>,</span>
 <span>  fill_gaps <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -291,17 +291,17 @@ exposure period start (e.g., <code>"uy_m"</code>).</p></dd>
 <dt id="arg-calendar">calendar<a class="anchor" aria-label="anchor" href="#arg-calendar"></a></dt>
 <dd><p>Single column (raw name) defining the calendar period of
 the observation (e.g., <code>"cy_m"</code>). Optional – supply either <code>calendar</code>
-or <code>development</code> (or both). When <code>calendar</code> is given, <code>dev</code> is
-derived internally via <code>count_periods(cohort, calendar, grain)</code>.</p></dd>
+or <code>dev</code> (or both). When <code>calendar</code> is given, <code>dev</code> is derived
+internally via <code>count_periods(cohort, calendar, grain)</code>.</p></dd>
 
 
-<dt id="arg-development">development<a class="anchor" aria-label="anchor" href="#arg-development"></a></dt>
+<dt id="arg-dev">dev<a class="anchor" aria-label="anchor" href="#arg-dev"></a></dt>
 <dd><p>Single column (raw name) holding pre-computed
 development periods (e.g., <code>"dev_m"</code>). Optional – supply either
-<code>calendar</code> or <code>development</code> (or both). When only <code>development</code> is
+<code>calendar</code> or <code>dev</code> (or both). When only <code>dev</code> is
 given, the calendar axis is omitted from the attribute (downstream
 calendar-diagonal logic uses cohort + dev). When both are given,
-<code>development</code> is cross-checked against
+<code>dev</code> is cross-checked against
 <code>count_periods(cohort, calendar, grain)</code>.</p></dd>
 
 
@@ -310,7 +310,7 @@ calendar-diagonal logic uses cohort + dev). When both are given,
 (raw name, e.g., <code>"incr_loss"</code>).</p></dd>
 
 
-<dt id="arg-premium">premium<a class="anchor" aria-label="anchor" href="#arg-premium"></a></dt>
+<dt id="arg-prem">prem<a class="anchor" aria-label="anchor" href="#arg-prem"></a></dt>
 <dd><p>Single character; per-period prem column in <code>df</code>
 (raw name, e.g., <code>"incr_prem"</code>). Premium measure used as
 denominator for loss ratio calculations. For long-term health
@@ -349,7 +349,7 @@ derived columns:</p><dl><dt>n_cohorts</dt>
 <dt>loss, incr_loss</dt>
 <dd><p>Cumulative and per-period loss</p></dd>
 
-<dt>premium, incr_prem</dt>
+<dt>prem, incr_prem</dt>
 <dd><p>Cumulative and per-period prem</p></dd>
 
 <dt>lr, incr_lr</dt>
@@ -395,7 +395,7 @@ proportions of prem within each <code>(cohort, dev)</code> cell</p></dd>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
+<span class="r-in"><span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># explicit quarterly view (re-bins monthly input to quarterly)</span></span></span>
@@ -405,7 +405,7 @@ proportions of prem within each <code>(cohort, dev)</code> cell</p></dd>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_prem"</span>,</span></span>
+<span class="r-in"><span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span>,</span></span>
 <span class="r-in"><span>  grain    <span class="op">=</span> <span class="st">"Q"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>

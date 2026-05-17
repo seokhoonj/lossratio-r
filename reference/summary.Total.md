@@ -40,11 +40,11 @@ A `data.table` of class `"TotalSummary"` with the same rows as the input
 if (FALSE) { # \dontrun{
 tot <- as_total(
   df,
-  groups  = "coverage",
-  cohort  = "uy_m",
-  dev     = "dev_m",
-  loss    = "incr_loss",
-  premium = "incr_prem"
+  groups = "coverage",
+  cohort = "uy_m",
+  dev    = "dev_m",
+  loss   = "incr_loss",
+  prem   = "incr_prem"
 )
 summary(tot)
 } # }

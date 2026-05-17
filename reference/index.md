@@ -45,10 +45,10 @@ exposure-driven (ED) workflows. Built once, summarised differently via
 
 Models that produce full projections on a Triangle. Base algorithms:
 `fit_cl` (chain ladder / multiplicative), `fit_ed` (exposure-driven /
-additive). Role dispatchers: `fit_loss` (loss-side sa/ed/cl),
-`fit_premium` (premium-side ed/cl). Composition: `fit_lr` (loss-ratio
-umbrella with delta-method SE). All return an object carrying a `$full`
-projection table.
+additive). Role dispatchers: `fit_loss` (loss-side sa/ed/cl), `fit_prem`
+(premium-side ed/cl). Composition: `fit_lr` (loss-ratio umbrella with
+delta-method SE). All return an object carrying a `$full` projection
+table.
 
 - [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
   :
@@ -61,7 +61,7 @@ projection table.
 - [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
   : Fit a loss projection on a Triangle
 
-- [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+- [`fit_prem()`](https://seokhoonj.github.io/lossratio/reference/fit_prem.md)
   : Fit a chain ladder projection on the prem (exposure) triangle
 
 - [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
@@ -90,7 +90,7 @@ Decide which cells of the triangle to use for estimation.
 factors are stable); `detect_regime` works along the cohort axis
 (structural break across underwriting cohorts). The `*_at()` /
 `*_spec()` helpers build manual / lazy-detect input objects for the
-`maturity` / `loss_regime` / `premium_regime` arguments of the fit
+`maturity` / `loss_regime` / `prem_regime` arguments of the fit
 functions.
 
 - [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
@@ -113,9 +113,8 @@ functions.
 
 Cohort × dev standard-error decomposition via simulation (Pythagorean
 split into parameter and process components). Returned object is
-consumed by `fit_loss` / `fit_premium` / `fit_lr` through their
-`bootstrap` argument to replace analytical SE / CI with empirical
-counterparts.
+consumed by `fit_loss` / `fit_prem` / `fit_lr` through their `bootstrap`
+argument to replace analytical SE / CI with empirical counterparts.
 
 - [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
   : Bootstrap a Triangle
@@ -283,10 +282,10 @@ print / summary / longer methods registered on package classes.
 
   Print method for `LossFit`
 
-- [`print(`*`<PremiumFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.PremiumFit.md)
+- [`print(`*`<PremFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.PremFit.md)
   :
 
-  Print method for `PremiumFit`
+  Print method for `PremFit`
 
 - [`summary(`*`<ATAFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.ATAFit.md)
   :
@@ -326,10 +325,10 @@ print / summary / longer methods registered on package classes.
 
   Summary method for `LossFit`
 
-- [`summary(`*`<PremiumFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.PremiumFit.md)
+- [`summary(`*`<PremFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.PremFit.md)
   :
 
-  Summary method for `PremiumFit`
+  Summary method for `PremFit`
 
 - [`summary(`*`<Total>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.Total.md)
   :

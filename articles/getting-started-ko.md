@@ -50,7 +50,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 class(tri)
 #> [1] "Triangle"   "data.table" "data.frame"
@@ -555,7 +555,7 @@ sub <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 detect_regime(sub, method = "e_divisive")
 #> <Regime>
