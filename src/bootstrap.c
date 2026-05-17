@@ -44,14 +44,6 @@
  * =============================================================================
  */
 
-/* Process-distribution codes. Must match the R-side switch() mapping in
- * R/bootstrap.R (gamma = 1L, od_pois = 2L, normal = 3L). */
-enum proc_code {
-  PROC_GAMMA   = 1,
-  PROC_ODPOIS  = 2,
-  PROC_NORMAL  = 3
-};
-
 /* Ascending comparator for qsort of doubles. */
 static int cmp_dbl_asc(const void *a, const void *b) {
   double da = *(const double *)a, db = *(const double *)b;
@@ -244,14 +236,14 @@ static void bootstrap_fwd_sim_cell(
         double inc_sampled;
         if (R_FINITE(inc_mean) && inc_mean > 0.0) {
           switch (process_code) {
-            case PROC_GAMMA:
-            case PROC_ODPOIS: {
+            case 1:   /* gamma */
+            case 2: { /* od_pois (Gamma moment-matched) */
               double shape = inc_mean / phi;
               double scale = phi;
               inc_sampled = Rf_rgamma(shape, scale);
               break;
             }
-            case PROC_NORMAL: {
+            case 3: { /* normal */
               double sd = sqrt(phi * pow(fabs(inc_mean), alpha));
               inc_sampled = inc_mean + norm_rand() * sd;
               break;
@@ -342,14 +334,14 @@ static void bootstrap_fwd_sim_link(
           double var = s2_k * pow(fabs(prev_sampled), alpha);
           if (R_FINITE(var) && var > 0.0 && R_FINITE(mu_step) && mu_step > 0.0) {
             switch (process_code) {
-              case PROC_GAMMA:
-              case PROC_ODPOIS: {
+              case 1:   /* gamma */
+              case 2: { /* od_pois */
                 double shape = mu_step * mu_step / var;
                 double scale = var / mu_step;
                 new_sampled = Rf_rgamma(shape, scale);
                 break;
               }
-              case PROC_NORMAL: {
+              case 3: { /* normal */
                 new_sampled = mu_step + norm_rand() * sqrt(var);
                 break;
               }
