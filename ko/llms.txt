@@ -56,8 +56,8 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 plot(tri)
 
@@ -96,8 +96,8 @@ plot_triangle(bt)
 |-------------------|----------------------------------------------|
 | `uy_m`            | 인수 시점 (Date) — 자동 grain 감지 (M/Q/H/Y) |
 | `cy_m`            | 달력 시점 (Date)                             |
-| `loss_incr`       | 셀 기간별 손해                               |
-| `premium_incr`    | 셀 기간별 보험료 (장기 health 는 위험보험료) |
+| `incr_loss`       | 셀 기간별 손해                               |
+| `incr_prem`       | 셀 기간별 보험료 (장기 health 는 위험보험료) |
 | `groups` *(선택)* | 상품 / 담보 / 연령 / 성별 / 가입금액         |
 
 [`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
