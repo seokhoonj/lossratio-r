@@ -243,21 +243,15 @@ static void bootstrap_fwd_sim_cell(
         double inc_mean = cum_curr - cum_prev;
         double inc_sampled;
         if (R_FINITE(inc_mean) && inc_mean > 0.0) {
-          switch (process_code) {
-            case PROC_GAMMA:
-            case PROC_ODPOIS: {
-              double shape = inc_mean / phi;
-              double scale = phi;
-              inc_sampled = Rf_rgamma(shape, scale);
-              break;
-            }
-            case PROC_NORMAL: {
-              double sd = sqrt(phi * pow(fabs(inc_mean), alpha));
-              inc_sampled = inc_mean + norm_rand() * sd;
-              break;
-            }
-            default:
-              inc_sampled = inc_mean;
+          if (process_code == PROC_GAMMA || process_code == PROC_ODPOIS) {
+            double shape = inc_mean / phi;
+            double scale = phi;
+            inc_sampled = Rf_rgamma(shape, scale);
+          } else if (process_code == PROC_NORMAL) {
+            double sd = sqrt(phi * pow(fabs(inc_mean), alpha));
+            inc_sampled = inc_mean + norm_rand() * sd;
+          } else {
+            inc_sampled = inc_mean;
           }
         } else {
           inc_sampled = inc_mean;  /* deterministic for non-positive mean */
@@ -341,20 +335,14 @@ static void bootstrap_fwd_sim_link(
             R_FINITE(prev_sampled) && prev_sampled > 0.0) {
           double var = s2_k * pow(fabs(prev_sampled), alpha);
           if (R_FINITE(var) && var > 0.0 && R_FINITE(mu_step) && mu_step > 0.0) {
-            switch (process_code) {
-              case PROC_GAMMA:
-              case PROC_ODPOIS: {
-                double shape = mu_step * mu_step / var;
-                double scale = var / mu_step;
-                new_sampled = Rf_rgamma(shape, scale);
-                break;
-              }
-              case PROC_NORMAL: {
-                new_sampled = mu_step + norm_rand() * sqrt(var);
-                break;
-              }
-              default:
-                new_sampled = mu_step;
+            if (process_code == PROC_GAMMA || process_code == PROC_ODPOIS) {
+              double shape = mu_step * mu_step / var;
+              double scale = var / mu_step;
+              new_sampled = Rf_rgamma(shape, scale);
+            } else if (process_code == PROC_NORMAL) {
+              new_sampled = mu_step + norm_rand() * sqrt(var);
+            } else {
+              new_sampled = mu_step;
             }
           } else {
             new_sampled = mu_step;
