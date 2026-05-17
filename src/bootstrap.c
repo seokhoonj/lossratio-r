@@ -523,8 +523,8 @@ static void bootstrap_summary_decompose(
  *   flat length n_coh x n_dev REALSXPs: mean_proj, param_se, proc_se,
  *   total_se, total_cv -- plus ci_lo, ci_hi when `quantile_ci_sxp` is
  *   TRUE. Wraps the file-local bootstrap_summary_decompose helper so
- *   R-side .boot_summary_from_arrays() / .boot_summary_decompose() can
- *   produce the $summary slot in C -- bypassing data.table's R-level
+ *   R-side .boot_summary_from_arrays() can produce the $summary slot
+ *   in C -- bypassing data.table's R-level
  *   group-wise aggregation (which costs ~1.2s on typical experience
  *   triangles because quantile bypasses gforce; mean/sd also incur
  *   thousands of group-dispatch hits).

@@ -427,17 +427,13 @@ bootstrap.Triangle <- function(x,
     keep_pseudo = keep_pseudo
   )
 
-  if (isTRUE(keep_pseudo)) {
-    pseudo_triangles <- stage1_out
-    summary_dt    <- .boot_summary_decompose(pseudo_triangles, grp = grp,
-                                              target = target,
-                                              quantile_ci = quantile_ci)
-  } else {
-    pseudo_triangles <- NULL
-    summary_dt    <- .boot_summary_from_arrays(stage1_out, grp = grp,
-                                                target = target,
-                                                quantile_ci = quantile_ci)
-  }
+  # `$summary` is always computed straight from the 3D arrays via the
+  # C kernel; `pseudo_triangles` is a user-visible long-format DT exposed
+  # only when keep_pseudo = TRUE (not used by the summary path).
+  pseudo_triangles <- if (isTRUE(keep_pseudo)) stage1_out$pseudo_long else NULL
+  summary_dt <- .boot_summary_from_arrays(stage1_out, grp = grp,
+                                          target = target,
+                                          quantile_ci = quantile_ci)
 
   # 6) Assemble -------------------------------------------------------------
   # pseudo_triangles is already NULL when keep_pseudo = FALSE (set above when
@@ -1093,23 +1089,24 @@ bootstrap.Triangle <- function(x,
         keep_pseudo = keep_pseudo
       )
     }
-    # keep_pseudo = TRUE  -> per-group DTs, rbindlist into the long-format DT
-    # keep_pseudo = FALSE -> per-group lists, combine into one parent list with
-    #                      named slots `cum_mean` / `cum_sampled` (named by
-    #                      group key) plus shared cohorts/devs/B/grp_vals.
+    # Worker always returns per-group list of arrays + metadata. When
+    # keep_pseudo = TRUE the list also carries a `pseudo_long` DT which
+    # we rbindlist here for user inspection; the arrays still drive the
+    # summary path either way.
+    out <- list(
+      cum_mean    = lapply(out_list, `[[`, "cum_mean"),
+      cum_sampled = lapply(out_list, `[[`, "cum_sampled"),
+      cohorts     = out_list[[1L]]$cohorts,
+      devs        = out_list[[1L]]$devs,
+      B           = out_list[[1L]]$B,
+      grp_vals    = grp_vals,
+      n_groups    = nrow(grp_vals)
+    )
     if (isTRUE(keep_pseudo)) {
-      data.table::rbindlist(out_list, use.names = TRUE)
-    } else {
-      list(
-        cum_mean    = lapply(out_list, `[[`, "cum_mean"),
-        cum_sampled = lapply(out_list, `[[`, "cum_sampled"),
-        cohorts     = out_list[[1L]]$cohorts,
-        devs        = out_list[[1L]]$devs,
-        B           = out_list[[1L]]$B,
-        grp_vals    = grp_vals,
-        n_groups    = nrow(grp_vals)
-      )
+      out$pseudo_long <- data.table::rbindlist(
+        lapply(out_list, `[[`, "pseudo_long"), use.names = TRUE)
     }
+    out
   } else {
     .boot_stage1_one(
       triangle = triangle, link = link, anchor = anchor, pool = pool,
@@ -1123,12 +1120,14 @@ bootstrap.Triangle <- function(x,
 }
 
 
-# Per-group worker for Stage 1. Returns long-format with `rep` column
-# when `keep_pseudo = TRUE` (default). When `keep_pseudo = FALSE`, returns a
-# list(cum_mean, cum_sampled, cohorts, devs, B, grp_vals) of the raw
-# C-side arrays -- the caller (`bootstrap.Triangle`) can hand those
-# straight to the summary kernel without paying the long-format build
-# cost (~250 ms on a 5M-row 4-group triangle).
+# Per-group worker for Stage 1. Always returns the raw C-side 3D arrays
+# (cum_mean, cum_sampled) plus per-group metadata. When `keep_pseudo =
+# TRUE` (default), additionally builds the long-format pseudo_triangles
+# data.table and emits it on the `pseudo_long` slot for user inspection;
+# the caller (`bootstrap.Triangle`) still computes `$summary` straight
+# from the 3D arrays via `.boot_summary_from_arrays`, so the long-format
+# DT never re-enters the summary path. When `keep_pseudo = FALSE`,
+# `pseudo_long` is absent and only the arrays + metadata are returned.
 .boot_stage1_one <- function(triangle, link, anchor, pool, phi_dt = NULL,
                               is_residual_mode, residual = "link",
                               process = "gamma",
@@ -1345,8 +1344,8 @@ bootstrap.Triangle <- function(x,
   }
 
   # ----- keep_pseudo = FALSE -- skip the long-format reshape ---------------
-  # When the caller doesn't need raw per-replicate values, return the
-  # raw C-side 3D arrays + per-group metadata so bootstrap.Triangle()
+  # When the caller doesn't need raw per-replicate values, return only
+  # the raw C-side 3D arrays + per-group metadata so bootstrap.Triangle()
   # can drive the summary kernel directly. Saves the long-format build
   # (rep.int / setDT) and the resulting ~200 MB data.table for typical
   # 4-group experience triangles.
@@ -1361,7 +1360,15 @@ bootstrap.Triangle <- function(x,
     ))
   }
 
-  # Reshape 3D arrays -> long data.table with TWO value columns:
+  # ----- keep_pseudo = TRUE -- reshape 3D arrays -> long data.table -------
+  # Both the arrays and the long-format DT are returned so that the
+  # caller can:
+  #   - use the arrays for `.boot_summary_from_arrays` (fast C path), and
+  #   - expose the long-format DT as `$pseudo_triangles` for diagnostic
+  #     inspection.
+  # The long-format DT is now strictly a user-visible artifact; it no
+  # longer drives the summary computation.
+  # Long data.table has TWO value columns:
   #   <target>_mean    = Stage 1 only       (out_arr_mean)
   #   <target>_sampled = Stage 1 + Stage 2  (out_arr_sampled)
   # as.numeric() flattens column-major: cohort fastest, then dev, then rep.
@@ -1397,7 +1404,15 @@ bootstrap.Triangle <- function(x,
     cols[[col_sampled]] <- val_col_sampled
   }
   data.table::setDT(cols)
-  cols[]
+  list(
+    cum_mean    = out_arr_mean,
+    cum_sampled = out_arr_sampled,
+    pseudo_long = cols[],
+    cohorts     = cohorts,
+    devs        = devs,
+    B           = B,
+    grp_vals    = grp_vals
+  )
 }
 
 
@@ -1411,9 +1426,11 @@ bootstrap.Triangle <- function(x,
 # CI uses type = 1 (Davison-Hinkley `(B+1) p in Z` convention) so the
 # 0.025/0.975 quantiles land on integer ordinal indices for B = 999, 1999.
 # Build $summary directly from the raw 3D arrays produced by
-# .boot_stage1(keep_pseudo = FALSE) -- skips the long-format reshape and
-# its ~200 MB intermediate. Mirrors .boot_summary_decompose's column
-# schema so downstream consumers see the same shape regardless of path.
+# .boot_stage1() -- both keep_pseudo paths now drive `$summary` through
+# this single array-based helper. The keep_pseudo = TRUE path
+# additionally exposes the long-format pseudo_triangles DT on
+# `stage1_out$pseudo_long` for user inspection, but it never re-enters
+# the summary computation.
 .boot_summary_from_arrays <- function(stage1_out, grp, target = "loss",
                                       quantile_ci = FALSE) {
   is_multi <- !is.null(stage1_out$grp_vals) &&
@@ -1478,90 +1495,6 @@ bootstrap.Triangle <- function(x,
   data.table::setcolorder(dt, out_cols)
   dt[]
 }
-
-
-.boot_summary_decompose <- function(pseudo_long, grp, target = "loss",
-                                     quantile_ci = FALSE) {
-  param_se <- proc_se <- total_se <- mean_proj <- NULL  # NSE
-  ci_lo <- ci_hi <- NULL  # NSE
-  col_mean    <- paste0(target, "_mean")
-  col_sampled <- paste0(target, "_sampled")
-  by_cols <- c(grp, "cohort", "dev")
-
-  # ----- Single-call C summary (all groups in one pass) ----------------
-  # `.boot_stage1()` emits the long-format pseudo_triangles as group-major:
-  # each group's chunk is a contiguous block of (cohort-fastest, dev,
-  # rep) rows. The C summary kernel takes that layout directly and
-  # loops over groups internally -- no per-group R-level filter / copy
-  # / .Call. With four groups this trims ~200-400 ms of R-side
-  # dispatch on a 5M-row pseudo_triangles.
-  cohorts <- sort(unique(pseudo_long$cohort))
-  devs    <- sort(unique(pseudo_long$dev))
-  n_coh   <- length(cohorts)
-  n_dev   <- length(devs)
-  if (length(grp) > 0L) {
-    # Preserve the rbindlist() emission order so the C side's block-major
-    # offsets line up with the group keys we attach below.
-    grp_vals <- unique(pseudo_long[, .SD, .SDcols = grp])
-  } else {
-    grp_vals <- NULL
-  }
-  n_groups <- if (is.null(grp_vals)) 1L else nrow(grp_vals)
-
-  res <- .Call(C_bootstrap_summary_kernel,
-               as.numeric(pseudo_long[[col_mean]]),
-               as.numeric(pseudo_long[[col_sampled]]),
-               n_coh, n_dev, n_groups,
-               as.logical(quantile_ci), c(0.025, 0.975))
-
-  # Build the data.table from the five flat output vectors. Group block
-  # is outermost; within each group block, cohort is fastest then dev.
-  if (n_groups == 1L) {
-    dt <- data.table::data.table(
-      cohort    = rep.int(cohorts, n_dev),
-      dev       = rep(devs, each = n_coh),
-      mean_proj = res$mean_proj,
-      param_se  = res$param_se,
-      proc_se   = res$proc_se,
-      total_se  = res$total_se,
-      total_cv  = res$total_cv
-    )
-    if (!is.null(grp_vals)) {
-      for (col in names(grp_vals)) dt[, (col) := grp_vals[[col]]]
-    }
-  } else {
-    # Multi-group: per-block cohort/dev grid, group columns recycled to
-    # full length (each group contributes n_coh * n_dev rows).
-    cell_n <- n_coh * n_dev
-    dt <- data.table::data.table(
-      cohort    = rep.int(rep.int(cohorts, n_dev), n_groups),
-      dev       = rep.int(rep(devs, each = n_coh), n_groups),
-      mean_proj = res$mean_proj,
-      param_se  = res$param_se,
-      proc_se   = res$proc_se,
-      total_se  = res$total_se,
-      total_cv  = res$total_cv
-    )
-    for (col in grp) {
-      dt[, (col) := rep(grp_vals[[col]], each = cell_n)]
-    }
-  }
-
-  # Attach C-computed CI columns -- bootstrap_summary_kernel emits ci_lo /
-  # ci_hi in the same single .Call above when quantile_ci = TRUE (mirrors
-  # the keep_pseudo = FALSE hot path in .boot_summary_from_arrays).
-  if (isTRUE(quantile_ci)) {
-    dt[, ci_lo := res$ci_lo]
-    dt[, ci_hi := res$ci_hi]
-  }
-
-  out_cols <- c(by_cols, "mean_proj",
-                "param_se", "proc_se", "total_se", "total_cv")
-  if (isTRUE(quantile_ci)) out_cols <- c(out_cols, "ci_lo", "ci_hi")
-  data.table::setcolorder(dt, out_cols)
-  dt[]
-}
-
 
 
 # Section 5 -- BootstrapTriangle S3 methods (print) ===========================

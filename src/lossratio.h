@@ -93,7 +93,7 @@ SEXP bootstrap_kernel_parametric(
 
 /* Pythagorean SE decomposition over the two [n_coh, n_dev, B] cumulative
  * arrays — replaces the R-level data.table group-wise aggregation in
- * .boot_summary_from_arrays() / .boot_summary_decompose(). Returns a
+ * .boot_summary_from_arrays(). Returns a
  * named list of five flat length n_coh × n_dev REALSXPs: mean_proj,
  * param_se, proc_se, total_se, total_cv. When `quantile_ci_sxp` is
  * TRUE, the returned list additionally carries `ci_lo` and `ci_hi`
