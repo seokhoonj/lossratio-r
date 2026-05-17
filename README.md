@@ -63,8 +63,8 @@ A long-format `data.frame` / `data.table` with at minimum:
 |------------------|---------------------------------------------------------------|--------------------|
 | cohort           | Underwriting / accident period (any granularity)              | `uy_m`, `uy`     |
 | dev              | Development period since cohort start                         | `dev_m`, `dev_y`   |
-| `loss_incr`      | Per-period claim amount in the cell                           | numeric            |
-| `premium_incr`   | Per-period premium in the cell (risk premium for long-term health) | numeric        |
+| `incr_loss`      | Per-period claim amount in the cell                           | numeric            |
+| `incr_prem`      | Per-period premium in the cell (risk premium for long-term health) | numeric        |
 | group            | Optional — product, coverage, age, gender, sum insured, etc.  | character / factor |
 
 `as_triangle()` validates the schema, coerces date columns, and
@@ -74,18 +74,18 @@ columns and derived ratios.
 ### Column convention
 
 Throughout the package, cumulative is the unmarked default and
-per-period values carry an `_incr` (incremental) suffix:
+per-period values carry an `incr_` (incremental) prefix:
 
-| Metric         | Cumulative (default) | Per-period (`_incr`) |
+| Metric         | Cumulative (default) | Per-period (`incr_`) |
 |----------------|----------------------|----------------------|
-| Loss           | `loss`               | `loss_incr`          |
-| Premium        | `premium`            | `premium_incr`       |
-| Loss ratio     | `lr`                 | `lr_incr`            |
-| Margin         | `margin`             | `margin_incr`        |
-| Profit         | `profit`             | `profit_incr`        |
+| Loss           | `loss`               | `incr_loss`          |
+| Premium        | `prem`               | `incr_prem`          |
+| Loss ratio     | `lr`                 | `incr_lr`            |
+| Margin         | `margin`             | `incr_margin`        |
+| Profit         | `profit`             | `incr_profit`        |
 
-Raw `experience` input is per-period only (`loss_incr`,
-`premium_incr`); `as_triangle()` produces both forms in the
+Raw `experience` input is per-period only (`incr_loss`,
+`incr_prem`); `as_triangle()` produces both forms in the
 output. Worker fit functions (`fit_cl`, `fit_ed`, `fit_ata`,
 `fit_intensity`) take generic `target` / `exposure` / `weight`
 arguments; dispatcher functions (`fit_loss`, `fit_premium`) and
@@ -123,8 +123,8 @@ tri <- as_triangle(
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
-  loss     = "loss_incr",
-  premium  = "premium_incr"
+  loss     = "incr_loss",
+  premium  = "incr_prem"
 )
 
 plot(tri)              # cohort trajectories

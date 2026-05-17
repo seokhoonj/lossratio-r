@@ -248,8 +248,8 @@
 #'   groups   = "coverage",
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
-#'   loss     = "loss_incr",
-#'   premium  = "premium_incr"
+#'   loss     = "incr_loss",
+#'   premium  = "incr_prem"
 #' )
 #'
 #' # Cell-residual bootstrap (default)
