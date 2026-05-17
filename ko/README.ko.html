@@ -168,21 +168,40 @@
 </tr></tbody></table></div>
 <div class="section level2">
 <h2 id="입력-형식">입력 형식<a class="anchor" aria-label="anchor" href="#%EC%9E%85%EB%A0%A5-%ED%98%95%EC%8B%9D"></a></h2>
-<table class="table"><thead><tr><th>컬럼</th>
+<p>long-format <code>data.frame</code> / <code>data.table</code>. 컬럼명은 자유 — <code><a href="reference/as_triangle.html">as_triangle()</a></code> 인자로 어떤 이름이든 넘기면 함수가 표준화함.</p>
+<table class="table"><colgroup><col width="35%"><col width="47%"><col width="17%"></colgroup><thead><tr><th>
+<code><a href="reference/as_triangle.html">as_triangle()</a></code> 인자</th>
 <th>의미</th>
-</tr></thead><tbody><tr><td><code>uy_m</code></td>
-<td>인수 시점 (Date) — 자동 grain 감지 (M/Q/H/Y)</td>
-</tr><tr><td><code>cy_m</code></td>
-<td>달력 시점 (Date)</td>
-</tr><tr><td><code>incr_loss</code></td>
-<td>셀 기간별 손해</td>
-</tr><tr><td><code>incr_prem</code></td>
-<td>셀 기간별 보험료 (장기 health 는 위험보험료)</td>
+<th>예시 컬럼명</th>
+</tr></thead><tbody><tr><td><code>cohort</code></td>
+<td>인수 / 사고 시점 (Date)</td>
+<td>
+<code>uy_m</code>, <code>uy</code>
+</td>
+</tr><tr><td>
+<code>calendar</code> <em>또는</em> <code>development</code>
+</td>
+<td>달력 시점 (Date) <em>또는</em> 경과 기간 (int)</td>
+<td>
+<code>cy_m</code> / <code>dev_m</code>
+</td>
+</tr><tr><td><code>loss</code></td>
+<td>기간별 <em>또는</em> 누적 손해</td>
+<td><code>incr_loss</code></td>
+</tr><tr><td><code>premium</code></td>
+<td>기간별 <em>또는</em> 누적 보험료 (장기 health 는 위험보험료)</td>
+<td><code>incr_prem</code></td>
 </tr><tr><td>
 <code>groups</code> <em>(선택)</em>
 </td>
-<td>상품 / 담보 / 연령 / 성별 / 가입금액</td>
-</tr></tbody></table><p><code><a href="reference/as_triangle.html">as_triangle()</a></code> 가 스키마 검증 + 날짜 코어션 + 코호트 × dev 집계 + 누적 컬럼 (<code>loss</code>, <code>premium</code>, <code>lr</code>) 까지 한 번에. 사용자는 raw 데이터만 넘기면 됨.</p>
+<td>그룹 컬럼: 상품 / 담보 / 연령 / 성별 / 가입금액</td>
+<td><code>coverage</code></td>
+</tr></tbody></table><p>해석을 정하는 두 인자:</p>
+<ul><li>
+<strong><code>cell_type</code></strong> — <code>"incremental"</code> (default) 또는 <code>"cumulative"</code>. 일반적 raw experience 는 incremental; 이미 누적 합산된 데이터라면 <code>cell_type = "cumulative"</code> 로 넘기면 함수가 per-cohort diff 로 incremental 도 derive.</li>
+<li>
+<strong><code>grain</code></strong> — <code>"auto"</code> (default, <code>cohort</code> 날짜로부터 자동 감지) 또는 <code>"M"</code> / <code>"Q"</code> / <code>"H"</code> / <code>"Y"</code>. 월별 / 분기별 / 반기별 / 연간 집계로 bin.</li>
+</ul><p><code><a href="reference/as_triangle.html">as_triangle()</a></code> 가 스키마 검증 + 날짜 coerce + (<code>calendar</code> / <code>development</code> 중 하나만 줬을 때) 나머지 축 derive + grain bin + cumulative / incremental 컬럼 + <code>lr</code> / <code>margin</code> / <code>profit</code> 까지 한 번에 생성.</p>
 </div>
 <div class="section level2">
 <h2 id="시각화">시각화<a class="anchor" aria-label="anchor" href="#%EC%8B%9C%EA%B0%81%ED%99%94"></a></h2>

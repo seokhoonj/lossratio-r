@@ -176,51 +176,63 @@
 <div class="section level2">
 <h2 id="expected-input">Expected input<a class="anchor" aria-label="anchor" href="#expected-input"></a>
 </h2>
-<p>A long-format <code>data.frame</code> / <code>data.table</code> with at minimum:</p>
+<p>A long-format <code>data.frame</code> / <code>data.table</code>. Column names are configurable – pass them via <code><a href="reference/as_triangle.html">as_triangle()</a></code> arguments and the function standardises internally.</p>
 <table class="table">
 <colgroup>
+<col width="32%">
+<col width="50%">
 <col width="17%">
-<col width="62%">
-<col width="19%">
 </colgroup>
 <thead><tr>
-<th>Column</th>
+<th>
+<code><a href="reference/as_triangle.html">as_triangle()</a></code> argument</th>
 <th>Meaning</th>
-<th>Example</th>
+<th>Example column</th>
 </tr></thead>
 <tbody>
 <tr>
-<td>cohort</td>
-<td>Underwriting / accident period (any granularity)</td>
+<td><code>cohort</code></td>
+<td>Underwriting / accident period (Date)</td>
 <td>
 <code>uy_m</code>, <code>uy</code>
 </td>
 </tr>
 <tr>
-<td>dev</td>
-<td>Development period since cohort start</td>
 <td>
-<code>dev_m</code>, <code>dev_y</code>
+<code>calendar</code> <em>or</em> <code>development</code>
+</td>
+<td>Calendar period (Date) <em>or</em> dev period (integer)</td>
+<td>
+<code>cy_m</code> / <code>dev_m</code>
 </td>
 </tr>
 <tr>
+<td><code>loss</code></td>
+<td>Per-period <em>or</em> cumulative claim amount</td>
 <td><code>incr_loss</code></td>
-<td>Per-period claim amount in the cell</td>
-<td>numeric</td>
 </tr>
 <tr>
+<td><code>premium</code></td>
+<td>Per-period <em>or</em> cumulative premium</td>
 <td><code>incr_prem</code></td>
-<td>Per-period premium in the cell (risk premium for long-term health)</td>
-<td>numeric</td>
 </tr>
 <tr>
-<td>group</td>
-<td>Optional — product, coverage, age, gender, sum insured, etc.</td>
-<td>character / factor</td>
+<td>
+<code>groups</code> <em>(optional)</em>
+</td>
+<td>Grouping column(s): product, coverage, age, …</td>
+<td><code>coverage</code></td>
 </tr>
 </tbody>
 </table>
-<p><code><a href="reference/as_triangle.html">as_triangle()</a></code> validates the schema, coerces date columns, and aggregates to the canonical cohort × dev structure with cumulative columns and derived ratios.</p>
+<p>Two more arguments govern interpretation:</p>
+<ul>
+<li>
+<strong><code>cell_type</code></strong> – <code>"incremental"</code> (default) or <code>"cumulative"</code>. Raw experience is typically incremental; if your data is pre-summed cumulative, pass <code>cell_type = "cumulative"</code> and <code><a href="reference/as_triangle.html">as_triangle()</a></code> derives the incremental form via per-cohort diff.</li>
+<li>
+<strong><code>grain</code></strong> – <code>"auto"</code> (default, inferred from <code>cohort</code> dates) or <code>"M"</code> / <code>"Q"</code> / <code>"H"</code> / <code>"Y"</code>. Aggregates to monthly / quarterly / half-yearly / yearly granularity.</li>
+</ul>
+<p><code><a href="reference/as_triangle.html">as_triangle()</a></code> validates the schema, coerces date columns, derives the missing axis when one of <code>calendar</code> / <code>development</code> is supplied, bins to <code>grain</code>, and emits cumulative + incremental cell values plus the derived <code>lr</code>, <code>margin</code>, <code>profit</code> columns.</p>
 <div class="section level3">
 <h3 id="column-convention">Column convention<a class="anchor" aria-label="anchor" href="#column-convention"></a>
 </h3>
