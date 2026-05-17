@@ -62,10 +62,10 @@ test_that("TriangleSummary / TriangleLonger / TriangleSummaryLonger classes set"
 
 test_that("CalendarLonger and validation classes set", {
   exp <- make_exp()
-  cal <- as_calendar(as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem"))
+  cal <- as_calendar(as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem"))
   expect_s3_class(attr(cal, "longer"), "CalendarLonger")
 
-  val_tri <- validate_triangle(exp, groups = "coverage", cohort = "uy_m", development = "dev_m")
+  val_tri <- validate_triangle(exp, groups = "coverage", cohort = "uy_m", dev = "dev_m")
   expect_s3_class(val_tri, "TriangleValidation")
 })
 
@@ -124,14 +124,14 @@ test_that("Triangle attribute names preserved (raw / standard split)", {
 })
 
 test_that("Calendar attributes use calendar", {
-  cal <- as_calendar(as_triangle(make_exp(), groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem"))
+  cal <- as_calendar(as_triangle(make_exp(), groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem"))
   expect_identical(attr(cal, "calendar"), "cy_m")
   expect_identical(attr(cal, "groups"),    "coverage")
 })
 
 test_that("Forbidden legacy attribute names not present", {
   tri <- make_tri()
-  cal <- as_calendar(as_triangle(make_exp(), groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem"))
+  cal <- as_calendar(as_triangle(make_exp(), groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem"))
   for (a in c("period_var", "duration_var", "duration_type",
               "elapsed_var", "elp_var", "elp_type", "dur_var", "dur_type")) {
     expect_null(attr(tri, a, exact = TRUE), info = paste("tri attr", a))

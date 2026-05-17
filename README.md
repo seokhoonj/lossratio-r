@@ -11,7 +11,7 @@ insurance**, covering cohort development analysis, stage-adaptive
 projection, regime detection, and backtest validation. Input is
 long-format experience data — each row (cohort × dev × demographic)
 maps to one Triangle cell, with loss and premium columns (`loss`,
-`premium`).
+`prem`).
 
 In long-term health insurance, new claims and premium are generated
 and earned continuously within each cohort, so cumulative loss and
@@ -36,7 +36,7 @@ It provides:
     total (`Total`)
 -   Age-to-age (`ATA`) and exposure-driven (`ED`) development modeling
     via the worker layer (`fit_cl`, `fit_ed`, `fit_ata`, `fit_intensity`)
--   Role-specific dispatchers (`fit_loss`, `fit_premium`) that project a
+-   Role-specific dispatchers (`fit_loss`, `fit_prem`) that project a
     single side with standard errors and confidence intervals
 -   Loss ratio projection (`fit_lr`) composes loss and premium fits with
     three methods:
@@ -61,14 +61,14 @@ A long-format `data.frame` / `data.table`. Column names are
 configurable -- pass them via `as_triangle()` arguments and the
 function standardises internally.
 
-| `as_triangle()` argument        | Meaning                                            | Example                          |
-|---------------------------------|----------------------------------------------------|----------------------------------|
-| `cohort`                        | Underwriting / accident period (Date)              | `"uy_m"`, `"uy"`                 |
-| `calendar` *or* `development`   | Calendar period (Date) *or* dev period (integer)   | `"cy_m"` / `"dev_m"`             |
-| `loss`                          | Per-period *or* cumulative claim amount            | `"incr_loss"` / `"loss"`         |
-| `premium`                       | Per-period *or* cumulative premium                 | `"incr_prem"` / `"prem"`         |
-| `groups` *(optional)*           | Grouping column(s): product, coverage, age, ...    | `"coverage"`                     |
-| `cell_type` *(default)*         | Interpretation of `loss` / `premium` values        | `"incremental"` / `"cumulative"` |
+| `as_triangle()` argument | Meaning                                          | Example                          |
+|--------------------------|--------------------------------------------------|----------------------------------|
+| `cohort`                 | Underwriting / accident period (Date)            | `"uy_m"`, `"uy"`                 |
+| `calendar` *or* `dev`    | Calendar period (Date) *or* dev period (integer) | `"cy_m"` / `"dev_m"`             |
+| `loss`                   | Per-period *or* cumulative claim amount          | `"incr_loss"` / `"loss"`         |
+| `prem`                   | Per-period *or* cumulative premium               | `"incr_prem"` / `"prem"`         |
+| `groups` *(optional)*    | Grouping column(s): product, coverage, age, ...  | `"coverage"`                     |
+| `cell_type` *(default)*  | Interpretation of `loss` / `prem` values         | `"incremental"` / `"cumulative"` |
 
 Two more arguments govern interpretation:
 
@@ -81,7 +81,7 @@ Two more arguments govern interpretation:
   half-yearly / yearly granularity.
 
 `as_triangle()` validates the schema, coerces date columns, derives
-the missing axis when one of `calendar` / `development` is supplied,
+the missing axis when one of `calendar` / `dev` is supplied,
 bins to `grain`, and emits cumulative + incremental cell values plus
 the derived `lr`, `margin`, `profit` columns.
 
@@ -102,9 +102,9 @@ Raw `experience` input is per-period only (`incr_loss`,
 `incr_prem`); `as_triangle()` produces both forms in the
 output. Worker fit functions (`fit_cl`, `fit_ed`, `fit_ata`,
 `fit_intensity`) take generic `target` / `exposure` / `weight`
-arguments; dispatcher functions (`fit_loss`, `fit_premium`) and
-the composition `fit_lr` use role-specific `loss_*` / `premium_*`
-argument names. Cumulative slots (`"loss"`, `"premium"`) are the
+arguments; dispatcher functions (`fit_loss`, `fit_prem`) and
+the composition `fit_lr` use role-specific `loss_*` / `prem_*`
+argument names. Cumulative slots (`"loss"`, `"prem"`) are the
 defaults.
 
 ## Installation
@@ -138,7 +138,7 @@ tri <- as_triangle(
   cohort    = "uy_m",
   calendar  = "cy_m",
   loss      = "incr_loss",
-  premium   = "incr_prem",
+  prem      = "incr_prem",
   cell_type = "incremental"   # default; use "cumulative" for pre-summed cells
 )
 
@@ -146,7 +146,7 @@ plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
 
 # Exposure-driven fit (additive ED intensity)
-ed <- fit_ed(tri, target = "loss", exposure = "premium")
+ed <- fit_ed(tri, target = "loss", exposure = "prem")
 
 # Chain ladder fit (multiplicative ATA factors)
 cl <- fit_cl(tri, target = "loss")

@@ -426,7 +426,7 @@ plot_triangle.LRFit <- function(x,
     dt[, ("is_observed") := TRUE]
 
   # 2) compute .value for (metric, cell_type). The `data` region (raw
-  # Triangle) has bare column names (lr, incr_loss, premium, ...). The
+  # Triangle) has bare column names (lr, incr_loss, prem, ...). The
   # `proj` / `full` regions have the `_proj` suffix on the same base.
   if (region == "data") {
     if (!(col_key %in% names(dt)))

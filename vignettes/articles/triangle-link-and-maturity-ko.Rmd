@@ -43,7 +43,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 ```
 
@@ -65,7 +65,7 @@ plot_triangle(tri, metric = "lr")          # 누적 lr
 plot_triangle(tri, metric = "incr_lr")     # 증분 lr
 
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly 로 다시 빌드
-tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem", grain = "Q")
+tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem", grain = "Q")
 plot_triangle(tri_q, label_style = "detail")  # 비율 + (loss / premium)
 ```
 
@@ -229,7 +229,7 @@ tri_all <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 detect_maturity(tri_all, target = "loss")
 ```
@@ -247,7 +247,7 @@ plot(as_link(tri_all, target = "loss"), type = "cv")
 경과 기간 시퀀스에 결손이 의심되면 `as_triangle()` 호출 전에 점검한다.
 
 ```{r}
-gaps <- validate_triangle(exp, groups = "coverage", cohort = "uy_m", development = "dev_m")
+gaps <- validate_triangle(exp, groups = "coverage", cohort = "uy_m", dev = "dev_m")
 head(gaps)
 ```
 

@@ -14,14 +14,14 @@ make_exp <- function() {
 make_tri <- function(group = "coverage", ...) {
   as_triangle(make_exp(), groups = group,
                  cohort = "uy_m", calendar = "cy_m",
-                 loss = "incr_loss", premium = "incr_prem", ...)
+                 loss = "incr_loss", prem = "incr_prem", ...)
 }
 
 make_sub_tri <- function(cv = "surgery") {
   exp <- make_exp()
   as_triangle(exp[coverage == cv], groups = "coverage",
                  cohort = "uy_m", calendar = "cy_m",
-                 loss = "incr_loss", premium = "incr_prem")
+                 loss = "incr_loss", prem = "incr_prem")
 }
 
 make_link_set <- function() {

@@ -20,7 +20,7 @@ within its group, not a true development period (\code{cym - uym}).
 Useful for aligning groups with different starting periods on a
 common index scale.}
 \item{loss, incr_loss}{Cumulative and per-period loss}
-\item{premium, incr_prem}{Cumulative and per-period prem}
+\item{prem, incr_prem}{Cumulative and per-period prem}
 \item{lr, incr_lr}{Cumulative and per-period loss ratio}
 \item{margin, incr_margin}{Cumulative and per-period margin}
 \item{profit, incr_profit}{Profit indicator}
@@ -81,7 +81,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
 cal <- as_calendar(tri)

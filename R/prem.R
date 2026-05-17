@@ -67,9 +67,9 @@
 #' @param seed Optional integer seed for reproducible bootstrap. Default
 #'   `NULL`.
 #'
-#' @return An object of class `"PremiumFit"` (a list with the same
+#' @return An object of class `"PremFit"` (a list with the same
 #'   structure as `CLFit`). Components: `selected`, `full`, `data`,
-#'   plus attribute `premium_method`. The `$full` data.table uses
+#'   plus attribute `prem_method`. The `$full` data.table uses
 #'   role-specific column names (`prem_obs`, `prem_proj`,
 #'   `incr_prem_proj`, `prem_proc_se`, `prem_param_se`,
 #'   `prem_total_se`, `prem_proc_cv`, `prem_param_cv`,
@@ -90,19 +90,19 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   premium  = "incr_prem"
+#'   prem     = "incr_prem"
 #' )
 #'
 #' # ED-additive recursion (default; robust on long projections)
-#' pf <- fit_premium(tri)
+#' pf <- fit_prem(tri)
 #' summary(pf)
 #'
 #' # CL-multiplicative recursion (Mack)
-#' pf_cl <- fit_premium(tri, method = "cl")
+#' pf_cl <- fit_prem(tri, method = "cl")
 #' }
 #'
 #' @export
-fit_premium <- function(x,
+fit_prem <- function(x,
                         method       = c("ed", "cl"),
                         alpha        = 1,
                         regime       = NULL,
@@ -120,7 +120,7 @@ fit_premium <- function(x,
   prem_total_se_boot <- prem_total_cv_boot <- NULL
   prem_ci_lo_boot <- prem_ci_hi_boot <- NULL
 
-  .assert_triangle_input(x, "fit_premium()")
+  .assert_triangle_input(x, "fit_prem()")
   method       <- match.arg(method)
   sigma_method <- match.arg(sigma_method)
 
@@ -240,10 +240,10 @@ fit_premium <- function(x,
   data.table::setattr(prem_usage, "m_k_dt",  NULL)
   cl_fit$usage <- prem_usage
 
-  cl_fit$regime                  <- regime
-  attr(cl_fit, "premium_method") <- method
-  attr(cl_fit, "conf_level")     <- conf_level
-  class(cl_fit) <- c("PremiumFit", class(cl_fit))
+  cl_fit$regime               <- regime
+  attr(cl_fit, "prem_method") <- method
+  attr(cl_fit, "conf_level")  <- conf_level
+  class(cl_fit) <- c("PremFit", class(cl_fit))
   cl_fit
 }
 
@@ -411,21 +411,21 @@ fit_premium <- function(x,
 }
 
 
-#' Print method for `PremiumFit`
-#' @param x A `PremiumFit` object.
+#' Print method for `PremFit`
+#' @param x A `PremFit` object.
 #' @param ... Unused.
 #' @export
-print.PremiumFit <- function(x, ...) {
+print.PremFit <- function(x, ...) {
   grp    <- x$groups
   if (is.null(grp)) grp <- character(0)
-  method <- attr(x, "premium_method")
+  method <- attr(x, "prem_method")
 
   static_labels <- c("method", "alpha", "sigma_method", "recent", "regime",
                      "ci_type", "groups", "n_cohorts", "n_links")
   lw  <- max(nchar(static_labels))
   pad <- function(label) formatC(label, width = lw, flag = "-")
 
-  cat("<PremiumFit>\n")
+  cat("<PremFit>\n")
   cat(pad("method"),       ":", method,         "\n")
   cat(pad("alpha"),        ":", x$alpha,        "\n")
   cat(pad("sigma_method"), ":", x$sigma_method, "\n")
@@ -461,11 +461,11 @@ print.PremiumFit <- function(x, ...) {
 }
 
 
-#' Summary method for `PremiumFit`
-#' @param object A `PremiumFit` object.
+#' Summary method for `PremFit`
+#' @param object A `PremFit` object.
 #' @param ... Unused.
 #' @export
-summary.PremiumFit <- function(object, ...) {
+summary.PremFit <- function(object, ...) {
   grp <- object$groups
   if (is.null(grp)) grp <- character(0)
 

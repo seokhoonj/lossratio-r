@@ -9,9 +9,9 @@ as_triangle(
   groups = NULL,
   cohort,
   calendar = NULL,
-  development = NULL,
+  dev = NULL,
   loss,
-  premium,
+  prem,
   grain = "auto",
   cell_type = c("incremental", "cumulative"),
   fill_gaps = FALSE
@@ -30,21 +30,21 @@ exposure period start (e.g., \code{"uy_m"}).}
 
 \item{calendar}{Single column (raw name) defining the calendar period of
 the observation (e.g., \code{"cy_m"}). Optional -- supply either \code{calendar}
-or \code{development} (or both). When \code{calendar} is given, \code{dev} is
-derived internally via \code{count_periods(cohort, calendar, grain)}.}
+or \code{dev} (or both). When \code{calendar} is given, \code{dev} is derived
+internally via \code{count_periods(cohort, calendar, grain)}.}
 
-\item{development}{Single column (raw name) holding pre-computed
+\item{dev}{Single column (raw name) holding pre-computed
 development periods (e.g., \code{"dev_m"}). Optional -- supply either
-\code{calendar} or \code{development} (or both). When only \code{development} is
+\code{calendar} or \code{dev} (or both). When only \code{dev} is
 given, the calendar axis is omitted from the attribute (downstream
 calendar-diagonal logic uses cohort + dev). When both are given,
-\code{development} is cross-checked against
+\code{dev} is cross-checked against
 \code{count_periods(cohort, calendar, grain)}.}
 
 \item{loss}{Single character; per-period loss column in \code{df}
 (raw name, e.g., \code{"incr_loss"}).}
 
-\item{premium}{Single character; per-period prem column in \code{df}
+\item{prem}{Single character; per-period prem column in \code{df}
 (raw name, e.g., \code{"incr_prem"}). Premium measure used as
 denominator for loss ratio calculations. For long-term health
 insurance applications, risk premium is commonly used.}
@@ -72,7 +72,7 @@ derived columns:
 \describe{
 \item{n_cohorts}{Number of distinct cohorts observed}
 \item{loss, incr_loss}{Cumulative and per-period loss}
-\item{premium, incr_prem}{Cumulative and per-period prem}
+\item{prem, incr_prem}{Cumulative and per-period prem}
 \item{lr, incr_lr}{Cumulative and per-period loss ratio}
 \item{margin, incr_margin}{Cumulative and per-period margin
 (\code{prem - loss})}
@@ -167,7 +167,7 @@ res_m <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
 # explicit quarterly view (re-bins monthly input to quarterly)
@@ -177,7 +177,7 @@ res_q <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem",
+  prem     = "incr_prem",
   grain    = "Q"
 )
 

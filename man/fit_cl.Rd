@@ -117,7 +117,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
 # Mack chain ladder with process / parameter standard errors

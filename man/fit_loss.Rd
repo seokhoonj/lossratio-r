@@ -9,9 +9,9 @@ fit_loss(
   method = c("sa", "ed", "cl"),
   alpha = 1,
   regime = NULL,
-  premium_fit = NULL,
-  premium_method = c("cl", "ed"),
-  premium_alpha = 1,
+  prem_fit = NULL,
+  prem_method = c("cl", "ed"),
+  prem_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   maturity = "auto",
@@ -43,19 +43,19 @@ triangle and returning a \code{Regime} object (or \code{NULL}).}
 Behavior depends on \code{method}: SA uses a hybrid 2-pass filter (cohort
 cut for the ED phase, calendar-diagonal wedge for the CL phase);
 ED/CL use a simple cohort cut. The same resolved \code{Regime} is applied
-to the internal \code{fit_premium()} call -- callers needing an
+to the internal \code{fit_prem()} call -- callers needing an
 asymmetric loss/prem split should use \code{\link[=fit_lr]{fit_lr()}} instead.}
 
-\item{premium_fit}{Optional pre-built \code{PremiumFit} (from
-\code{\link[=fit_premium]{fit_premium()}}) supplying the prem projection. When \code{NULL},
-\code{fit_loss()} calls \code{fit_premium()} internally using
-\code{premium_method}, \code{premium_alpha}, and the resolved \code{regime}.}
+\item{prem_fit}{Optional pre-built \code{PremFit} (from
+\code{\link[=fit_prem]{fit_prem()}}) supplying the prem projection. When \code{NULL},
+\code{fit_loss()} calls \code{fit_prem()} internally using
+\code{prem_method}, \code{prem_alpha}, and the resolved \code{regime}.}
 
-\item{premium_method}{One of \code{"cl"} (default) or \code{"ed"}. Used only
-when \code{premium_fit = NULL}. The default matches the historical
+\item{prem_method}{One of \code{"cl"} (default) or \code{"ed"}. Used only
+when \code{prem_fit = NULL}. The default matches the historical
 \code{fit_lr()} prem choice.}
 
-\item{premium_alpha}{Variance-structure exponent for the prem fit.
+\item{prem_alpha}{Variance-structure exponent for the prem fit.
 Default \code{1}.}
 
 \item{sigma_method}{Sigma extrapolation. One of \code{"locf"} (default),
@@ -107,7 +107,7 @@ loss-only convention); premium-side uncertainty is layered in by
 \value{
 An object of class \code{"LossFit"}. List with components:
 \code{full}, \code{proj}, \code{maturity}, \code{loss_ata_fit}, \code{prem_ata_fit},
-\code{premium_fit}, \code{ed}, \code{factor}, \code{selected}, plus metadata.
+\code{prem_fit}, \code{ed}, \code{factor}, \code{selected}, plus metadata.
 }
 \description{
 Project cumulative loss across the cohort x development grid. Three
@@ -121,10 +121,10 @@ periods.}
 \item{\code{"cl"}}{Pure Mack chain ladder (multiplicative).}
 }
 
-This function is the \emph{loss-side} counterpart to \code{\link[=fit_premium]{fit_premium()}} in
+This function is the \emph{loss-side} counterpart to \code{\link[=fit_prem]{fit_prem()}} in
 the role-specific dispatcher layer (see \code{ARCHITECTURE.md}). It owns
 loss projection only -- prem projection is delegated to
-\code{\link[=fit_premium]{fit_premium()}} (called internally when \code{premium_fit = NULL}), and
+\code{\link[=fit_prem]{fit_prem()}} (called internally when \code{prem_fit = NULL}), and
 the loss-ratio composition with delta method is handled by \code{\link[=fit_lr]{fit_lr()}}.
 }
 \section{Internal columns}{
@@ -144,7 +144,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
 lf    <- fit_loss(tri)                    # SA (default)
@@ -154,5 +154,5 @@ lf_cl <- fit_loss(tri, method = "cl")
 
 }
 \seealso{
-\code{\link[=fit_premium]{fit_premium()}}, \code{\link[=fit_lr]{fit_lr()}}, \code{\link[=fit_cl]{fit_cl()}}, \code{\link[=fit_ed]{fit_ed()}}.
+\code{\link[=fit_prem]{fit_prem()}}, \code{\link[=fit_lr]{fit_lr()}}, \code{\link[=fit_cl]{fit_cl()}}, \code{\link[=fit_ed]{fit_ed()}}.
 }

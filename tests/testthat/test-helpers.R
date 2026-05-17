@@ -6,7 +6,7 @@
 data(experience)
 sub <- as_triangle(experience[coverage == "surgery"],
                    groups = "coverage", cohort = "uy_m", calendar = "cy_m",
-                   loss = "incr_loss", premium = "incr_prem")
+                   loss = "incr_loss", prem = "incr_prem")
 
 # maturity_at ---------------------------------------------------------------
 

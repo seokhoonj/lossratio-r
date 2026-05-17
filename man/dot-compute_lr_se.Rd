@@ -6,7 +6,7 @@
 \usage{
 .compute_lr_se(
   loss,
-  premium,
+  prem,
   loss_se,
   prem_se = NULL,
   method = c("fixed", "delta"),
@@ -16,7 +16,7 @@
 \arguments{
 \item{loss}{Ultimate loss vector (\code{L}).}
 
-\item{premium}{Ultimate prem vector (\code{E}).}
+\item{prem}{Ultimate prem vector (\code{E}).}
 
 \item{loss_se}{\code{SE(L)}.}
 

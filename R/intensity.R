@@ -85,7 +85,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   premium  = "incr_prem"
+#'   prem     = "incr_prem"
 #' )
 #' intensity_fit <- fit_intensity(tri, target = "loss", exposure = "prem")
 #' summary(intensity_fit)

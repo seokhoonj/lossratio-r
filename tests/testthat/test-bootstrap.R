@@ -530,7 +530,7 @@ test_that(".resolve_bootstrap rejects bad input", {
 # Legacy .boot_refit / .boot_summarize_se tests removed — fit_* now read
 # bt$summary directly (wrap-only), so those helpers and the tests that
 # exercised them in isolation are obsolete. Bootstrap behaviour is now
-# verified through the public fit_lr / fit_loss / fit_premium interface
+# verified through the public fit_lr / fit_loss / fit_prem interface
 # and the bt$summary structure tests above.
 
 
@@ -561,55 +561,55 @@ test_that(".resolve_bootstrap target mismatch is rejected", {
 
 
 # ---------------------------------------------------------------------------
-# Phase 2b: fit_premium migration to new bootstrap pipeline
+# Phase 2b: fit_prem migration to new bootstrap pipeline
 # ---------------------------------------------------------------------------
 
-test_that("fit_premium default (method=ed) uses bootstrap", {
+test_that("fit_prem default (method=ed) uses bootstrap", {
   tri <- make_sub_tri("surgery")
-  pf <- fit_premium(tri, seed = 1, B = 50)
+  pf <- fit_prem(tri, seed = 1, B = 50)
   expect_identical(pf$ci_type, "bootstrap")
   expect_true(!is.null(pf$bootstrap))
 })
 
-test_that("fit_premium method=cl bootstrap=FALSE uses analytical", {
+test_that("fit_prem method=cl bootstrap=FALSE uses analytical", {
   tri <- make_sub_tri("surgery")
-  pf <- fit_premium(tri, method = "cl", bootstrap = FALSE)
+  pf <- fit_prem(tri, method = "cl", bootstrap = FALSE)
   expect_identical(pf$ci_type, "analytical")
   expect_null(pf$bootstrap)
 })
 
-test_that("fit_premium method=cl bootstrap=TRUE uses bootstrap", {
+test_that("fit_prem method=cl bootstrap=TRUE uses bootstrap", {
   tri <- make_sub_tri("surgery")
-  pf <- fit_premium(tri, method = "cl", bootstrap = TRUE, seed = 1, B = 50)
+  pf <- fit_prem(tri, method = "cl", bootstrap = TRUE, seed = 1, B = 50)
   expect_identical(pf$ci_type, "bootstrap")
 })
 
-test_that("fit_premium accepts a pre-built BootstrapTriangle", {
+test_that("fit_prem accepts a pre-built BootstrapTriangle", {
   tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, keep_pseudo = TRUE, target = "prem", B = 50, seed = 1)
-  pf <- fit_premium(tri, method = "ed", bootstrap = b)
+  pf <- fit_prem(tri, method = "ed", bootstrap = b)
   expect_identical(pf$ci_type, "bootstrap")
   expect_identical(pf$bootstrap$B, 50L)
 })
 
-test_that("fit_premium accepts a bootstrap function (lazy spec)", {
+test_that("fit_prem accepts a bootstrap function (lazy spec)", {
   tri <- make_sub_tri("surgery")
   fn <- function(t) bootstrap(t, target = "prem", B = 30, seed = 1)
-  pf <- fit_premium(tri, bootstrap = fn)
+  pf <- fit_prem(tri, bootstrap = fn)
   expect_identical(pf$ci_type, "bootstrap")
   expect_identical(pf$bootstrap$B, 30L)
 })
 
-test_that("fit_premium rejects a BootstrapTriangle built on the wrong target", {
+test_that("fit_prem rejects a BootstrapTriangle built on the wrong target", {
   tri <- make_sub_tri("surgery")
   b_loss <- bootstrap(tri, keep_pseudo = TRUE, target = "loss", B = 30, seed = 1)
-  expect_error(fit_premium(tri, bootstrap = b_loss),
+  expect_error(fit_prem(tri, bootstrap = b_loss),
                "expects target")
 })
 
-test_that("fit_premium projected cells have finite SE/CI under bootstrap", {
+test_that("fit_prem projected cells have finite SE/CI under bootstrap", {
   tri <- make_sub_tri("surgery")
-  pf <- fit_premium(tri, seed = 1, B = 100)
+  pf <- fit_prem(tri, seed = 1, B = 100)
   proj <- pf$full[is_observed == FALSE]
   expect_true(all(is.finite(proj$prem_proj)))
   expect_true(all(is.finite(proj$prem_total_se)))
@@ -785,9 +785,9 @@ test_that("backtest target='loss' bootstrap=FALSE uses analytical", {
   expect_null(bt$fit$bootstrap)
 })
 
-test_that("backtest target='premium' bootstrap=TRUE uses bootstrap", {
+test_that("backtest target='prem' bootstrap=TRUE uses bootstrap", {
   tri <- make_sub_tri("surgery")
-  bt <- backtest(tri, holdout = 6L, target = "premium",
+  bt <- backtest(tri, holdout = 6L, target = "prem",
                   bootstrap = TRUE, seed = 1, B = 50)
   expect_identical(bt$fit$ci_type, "bootstrap")
 })

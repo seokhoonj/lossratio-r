@@ -115,7 +115,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
 res <- detect_convergence(tri)
@@ -281,7 +281,7 @@ calls and inherits their constraints:
   return `NA` for every method.
 - **Model conditioning**: the projected LR is computed by `fit_lr()`,
   which internally composes `fit_loss()` (default `method = "sa"`
-  — stage-adaptive) and `fit_premium()`. Choices made inside that
+  — stage-adaptive) and `fit_prem()`. Choices made inside that
   composition (loss method, regime filter, maturity argument) feed
   through to `conv_k`; review the underlying `fit_lr` settings when
   interpreting the result. Pass `loss_method =`, `loss_regime =`,

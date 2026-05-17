@@ -75,7 +75,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   premium  = "incr_prem"
+#'   prem     = "incr_prem"
 #' )
 #'
 #' # Single-variable: cumulative-loss link factors (ATA workflow)

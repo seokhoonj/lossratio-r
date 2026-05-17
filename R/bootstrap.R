@@ -216,7 +216,7 @@
 #'   triangle at `B = 999` the reshape costs ~250-300 ms and ~200 MB on
 #'   top of `$summary`; users who only consume `$summary` (the common
 #'   case) should leave this `FALSE`. `fit_lr()` / `fit_loss()` /
-#'   `fit_premium()` always pass `FALSE` internally because they only
+#'   `fit_prem()` always pass `FALSE` internally because they only
 #'   read `$summary`. Set `TRUE` explicitly if you want to inspect
 #'   `$pseudo_triangles` directly.
 #' @param ... Reserved for future use.
@@ -252,7 +252,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   premium  = "incr_prem"
+#'   prem     = "incr_prem"
 #' )
 #'
 #' # Cell-residual bootstrap (default)
@@ -1563,7 +1563,7 @@ print.BootstrapTriangle <- function(x, ...) {
 
 # Section 6 -- Bootstrap argument resolver ====================================
 #
-# fit_lr / fit_loss / fit_premium / backtest pass the user-supplied
+# fit_lr / fit_loss / fit_prem / backtest pass the user-supplied
 # `bootstrap` argument through this single resolver. Output is either
 # `NULL` (analytical path) or a `BootstrapTriangle`. The fit functions
 # then read `bt$summary` directly -- the SE decomposition + CI columns
@@ -1633,7 +1633,7 @@ print.BootstrapTriangle <- function(x, ...) {
     # Pass only the args that apply to the chosen `type`. Parametric path
     # has no residual pool, so omitting residual/hat_adj/pooling/tail/
     # min_pool/maturity prevents the validator from triggering "ignored"
-    # warnings inside fit_loss / fit_premium / fit_lr (which always
+    # warnings inside fit_loss / fit_prem / fit_lr (which always
     # forward `type = "parametric"` for their internal default).
     args <- list(tri,
                  type        = type,

@@ -49,11 +49,11 @@ scale and labelled using \code{amount_divisor}.
 \dontrun{
 tot <- as_total(
   df,
-  groups  = "coverage",
-  cohort  = "uy_m",
-  dev     = "dev_m",
-  loss    = "incr_loss",
-  premium = "incr_prem"
+  groups = "coverage",
+  cohort = "uy_m",
+  dev    = "dev_m",
+  loss   = "incr_loss",
+  prem   = "incr_prem"
 )
 plot(tot)
 plot(tot, metric = "loss")

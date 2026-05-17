@@ -320,7 +320,7 @@ plot.Triangle <- function(x,
 #'   groups   = "coverage",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   premium  = "incr_prem"
+#'   prem     = "incr_prem"
 #' )
 #'
 #' plot(x)
@@ -567,7 +567,7 @@ plot_triangle <- function(x, ...) {
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   premium  = "incr_prem"
+#'   prem     = "incr_prem"
 #' )
 #'
 #' plot_triangle(d)
@@ -816,11 +816,11 @@ plot_triangle.Triangle <- function(x,
 #' \dontrun{
 #' tot <- as_total(
 #'   df,
-#'   groups  = "coverage",
-#'   cohort  = "uy_m",
-#'   dev     = "dev_m",
-#'   loss    = "incr_loss",
-#'   premium = "incr_prem"
+#'   groups = "coverage",
+#'   cohort = "uy_m",
+#'   dev    = "dev_m",
+#'   loss   = "incr_loss",
+#'   prem   = "incr_prem"
 #' )
 #' plot(tot)
 #' plot(tot, metric = "loss")
@@ -1241,7 +1241,7 @@ plot.Total <- function(x,
 # when `regime` is set, (2) `.compute_triangle_usage()` to assign each
 # cell one of `used` / `unused` / `holdout` / `future`.
 #
-# Called once at *fit time* (by `fit_loss`, `fit_premium`, `fit_lr`,
+# Called once at *fit time* (by `fit_loss`, `fit_prem`, `fit_lr`,
 # `backtest`) so the resulting `data.table` can be attached as
 # `fit$usage`; downstream `plot_triangle(fit, view = "usage")` then
 # renders without re-deriving anything. Also reused directly by

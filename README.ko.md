@@ -23,7 +23,7 @@
 | 도전 과제                         | `lossratio` 의 응답                                                                          |
 |-----------------------------------|----------------------------------------------------------------------------------------------|
 | 초기 dev 의 ATA 인자가 너무 Noisy | **`fit_lr(method = "sa")`** — maturity 이전엔 exposure-driven (ED), 이후엔 chain ladder (CL) |
-| 인수 기준 변경 등 구조적 변화     | **`detect_regime()`** + `loss_regime` / `premium_regime` 인자 — 변화 이전 코호트를 자동으로 분리 |
+| 인수 기준 변경 등 구조적 변화     | **`detect_regime()`** + `loss_regime` / `prem_regime` 인자 — 변화 이전 코호트를 자동으로 분리 |
 | "이 fit 이 얼마나 맞나?" 검증     | **`backtest()`** — 최근 N 대각선을 빼고 적합한 뒤 actual 과 비교                             |
 
 세 component 가 **한 figure 에서 동시에** 작동하는 것을 위 그림이 보여준다.
@@ -52,7 +52,7 @@ tri <- as_triangle(
   cohort    = "uy_m",
   calendar  = "cy_m",
   loss      = "incr_loss",
-  premium   = "incr_prem",
+  prem      = "incr_prem",
   cell_type = "incremental"   # default; "cumulative" 면 누적 입력
 )
 plot(tri)
@@ -66,7 +66,7 @@ plot_triangle(lr)
 detect_regime(tri, by = "coverage", method = "e_divisive")
 
 # 4) backtest — 최근 6 대각선을 빼고 fit + actual 비교
-bt <- backtest(tri, holdout = 6L, target = "lr")
+bt <- backtest(tri, holdout = 6L, target = "lr")  # target = "lr" / "loss" / "prem"
 plot(bt)
 plot_triangle(bt)
 ```
@@ -77,13 +77,13 @@ plot_triangle(bt)
 |---------------------------------------|----------------------------------------------------------|
 | `as_triangle()`                    | long-format 데이터 → `Triangle` (코호트 × dev)           |
 | `fit_lr(method = "sa" / "ed" / "cl")` | 손해율 적합 — *통합 인터페이스* (loss + premium 합성)    |
-| `fit_loss()` / `fit_premium()`        | 역할별 디스패처 — 단일 측 (SE / CI 포함)                 |
+| `fit_loss()` / `fit_prem()`           | 역할별 디스패처 — 단일 측 (SE / CI 포함)                 |
 | `fit_cl()` / `fit_ed()`               | 단일 stage (chain ladder / exposure-driven)              |
 | `fit_ata()` / `fit_intensity()`       | link 단계 진단 — 곱셈형 / 덧셈형                         |
 | `detect_maturity()`                   | ATA 인자가 수렴하는 dev 위치                             |
 | `detect_regime()`                     | 코호트 축 구조적 변화 탐지                               |
 | `detect_convergence()`                | 예측 손해율이 갱신을 멈추는 시점                         |
-| `backtest()`                          | 대각선 hold-out 으로 fit 검증 (target = lr/loss/premium) |
+| `backtest()`                          | 대각선 hold-out 으로 fit 검증 (target = lr/loss/prem)    |
 | `plot()` / `plot_triangle()`          | S3 generic — 객체 클래스로 dispatch                      |
 
 ## 입력 형식
@@ -91,14 +91,14 @@ plot_triangle(bt)
 long-format `data.frame` / `data.table`. 컬럼명은 자유 — `as_triangle()`
 인자로 어떤 이름이든 넘기면 함수가 표준화함.
 
-| `as_triangle()` 인자                | 의미                                            | 예시                              |
-|-------------------------------------|-------------------------------------------------|-----------------------------------|
-| `cohort`                            | 인수 / 사고 시점 (Date)                          | `"uy_m"`, `"uy"`                  |
-| `calendar` *또는* `development`     | 달력 시점 (Date) *또는* 경과 기간 (int)           | `"cy_m"` / `"dev_m"`              |
-| `loss`                              | 기간별 *또는* 누적 손해                           | `"incr_loss"` / `"loss"`          |
-| `premium`                           | 기간별 *또는* 누적 보험료 (장기 health 는 위험보험료) | `"incr_prem"` / `"prem"`     |
-| `groups` *(선택)*                   | 그룹 컬럼: 상품 / 담보 / 연령 / 성별 / 가입금액   | `"coverage"`                      |
-| `cell_type` *(default)*             | `loss` / `premium` 값의 해석                     | `"incremental"` / `"cumulative"`  |
+| `as_triangle()` 인자    | 의미                                                  | 예시                             |
+|-------------------------|-------------------------------------------------------|----------------------------------|
+| `cohort`                | 인수 / 사고 시점 (Date)                               | `"uy_m"`, `"uy"`                 |
+| `calendar` *또는* `dev` | 달력 시점 (Date) *또는* 경과 기간 (int)               | `"cy_m"` / `"dev_m"`             |
+| `loss`                  | 기간별 *또는* 누적 손해                               | `"incr_loss"` / `"loss"`         |
+| `prem`                  | 기간별 *또는* 누적 보험료 (장기 health 는 위험보험료) | `"incr_prem"` / `"prem"`         |
+| `groups` *(선택)*       | 그룹 컬럼: 상품 / 담보 / 연령 / 성별 / 가입금액       | `"coverage"`                     |
+| `cell_type` *(default)* | `loss` / `prem` 값의 해석                             | `"incremental"` / `"cumulative"` |
 
 해석을 정하는 두 인자:
 
@@ -109,7 +109,7 @@ long-format `data.frame` / `data.table`. 컬럼명은 자유 — `as_triangle()`
 - **`grain`** — `"auto"` (default, `cohort` 날짜로부터 자동 감지) 또는
   `"M"` / `"Q"` / `"H"` / `"Y"`. 월별 / 분기별 / 반기별 / 연간 집계로 bin.
 
-`as_triangle()` 가 스키마 검증 + 날짜 coerce + (`calendar` / `development`
+`as_triangle()` 가 스키마 검증 + 날짜 coerce + (`calendar` / `dev`
 중 하나만 줬을 때) 나머지 축 derive + grain bin + cumulative / incremental
 컬럼 + `lr` / `margin` / `profit` 까지 한 번에 생성.
 

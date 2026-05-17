@@ -128,7 +128,7 @@ trajectories, custom quantile work). On a typical 4-group monthly
 triangle at \code{B = 999} the reshape costs ~250-300 ms and ~200 MB on
 top of \verb{$summary}; users who only consume \verb{$summary} (the common
 case) should leave this \code{FALSE}. \code{fit_lr()} / \code{fit_loss()} /
-\code{fit_premium()} always pass \code{FALSE} internally because they only
+\code{fit_prem()} always pass \code{FALSE} internally because they only
 read \verb{$summary}. Set \code{TRUE} explicitly if you want to inspect
 \verb{$pseudo_triangles} directly.}
 }
@@ -183,7 +183,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
 # Cell-residual bootstrap (default)

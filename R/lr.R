@@ -27,8 +27,8 @@
 #' \deqn{\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}}
 #'
 #' This function is the *composition* layer over [fit_loss()] and
-#' [fit_premium()]: it delegates loss projection to `fit_loss()`,
-#' retrieves the embedded `PremiumFit`, and composes the loss-ratio
+#' [fit_prem()]: it delegates loss projection to `fit_loss()`,
+#' retrieves the embedded `PremFit`, and composes the loss-ratio
 #' point + variance via the delta method (`se_method = "fixed"` or
 #' `"delta"`). See `ARCHITECTURE.md` for the layered design.
 #'
@@ -58,11 +58,11 @@
 #'     \item{`"ed"`, `"cl"`}{Simple cohort cut: all cohorts strictly before
 #'       the change date are excluded from estimation.}
 #'   }
-#' @param premium_method One of `"cl"` (default) or `"ed"`. Forwarded to
-#'   [fit_premium()] when constructing the prem projection.
-#' @param premium_alpha Numeric scalar for prem chain ladder. Default
+#' @param prem_method One of `"cl"` (default) or `"ed"`. Forwarded to
+#'   [fit_prem()] when constructing the prem projection.
+#' @param prem_alpha Numeric scalar for prem chain ladder. Default
 #'   is `1`.
-#' @param premium_regime Premium-side regime specification. Same four
+#' @param prem_regime Premium-side regime specification. Same four
 #'   input types as `loss_regime` (`NULL` / `Regime` / `"auto"` / function).
 #'   Default `NULL` -- prem is fit on the full triangle independently
 #'   of `loss_regime` (no lazy default). Set explicitly when the regime
@@ -124,7 +124,7 @@
 #'   convention). `lr_se` is recomputed from the bootstrap-derived
 #'   `loss_total_se` via `.compute_lr_se()`, combined with the
 #'   premium-side SE per `se_method` (`"fixed"` ignores premium SE;
-#'   `"delta"` uses `prem_total_se` from the inner `fit_premium()` plus
+#'   `"delta"` uses `prem_total_se` from the inner `fit_prem()` plus
 #'   `rho` correlation).
 #' @param B Integer number of bootstrap replications. Used only when
 #'   `bootstrap` resolves to `"auto"`. Default is `999`.
@@ -133,7 +133,7 @@
 #'
 #' @return An object of class `"LRFit"`.
 #'
-#' @seealso [fit_loss()], [fit_premium()], [as_triangle()],
+#' @seealso [fit_loss()], [fit_prem()], [as_triangle()],
 #'   [as_link()], [fit_ata()], [fit_ed()], [detect_maturity()]
 #'
 #' @examples
@@ -145,7 +145,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   premium  = "incr_prem"
+#'   prem     = "incr_prem"
 #' )
 #'
 #' # Stage-adaptive (default): ED before maturity, CL after
@@ -162,21 +162,21 @@
 #'
 #' @export
 fit_lr <- function(x,
-                   method         = c("sa", "ed", "cl"),
-                   loss_alpha     = 1,
-                   loss_regime    = NULL,
-                   premium_method = c("cl", "ed"),
-                   premium_alpha  = 1,
-                   premium_regime = NULL,
-                   sigma_method   = c("locf", "min_last2", "loglinear"),
-                   recent         = NULL,
-                   maturity       = "auto",
-                   se_method      = c("fixed", "delta"),
-                   rho            = 0.95,
-                   conf_level     = 0.95,
-                   bootstrap      = NULL,
-                   B              = 999,
-                   seed           = NULL) {
+                   method       = c("sa", "ed", "cl"),
+                   loss_alpha   = 1,
+                   loss_regime  = NULL,
+                   prem_method  = c("cl", "ed"),
+                   prem_alpha   = 1,
+                   prem_regime  = NULL,
+                   sigma_method = c("locf", "min_last2", "loglinear"),
+                   recent       = NULL,
+                   maturity     = "auto",
+                   se_method    = c("fixed", "delta"),
+                   rho          = 0.95,
+                   conf_level   = 0.95,
+                   bootstrap    = NULL,
+                   B            = 999,
+                   seed         = NULL) {
 
   # data.table NSE bindings for R CMD check
   loss_proj <- prem_proj <- loss_total_se <- prem_total_se <- NULL
@@ -188,15 +188,15 @@ fit_lr <- function(x,
   loss_ci_lo_boot <- loss_ci_hi_boot <- NULL
 
   .assert_triangle_input(x, "fit_lr()")
-  sigma_method   <- match.arg(sigma_method)
-  method         <- match.arg(method)
-  se_method      <- match.arg(se_method)
-  premium_method <- match.arg(premium_method)
+  sigma_method <- match.arg(sigma_method)
+  method       <- match.arg(method)
+  se_method    <- match.arg(se_method)
+  prem_method  <- match.arg(prem_method)
 
   # Resolve 4-type regime inputs (NULL / Regime / "auto" / function).
   # Independent NULL defaults -- no lazy chaining between loss and prem.
-  loss_regime    <- .resolve_regime(loss_regime,    x)
-  premium_regime <- .resolve_regime(premium_regime, x)
+  loss_regime <- .resolve_regime(loss_regime, x)
+  prem_regime <- .resolve_regime(prem_regime, x)
 
   # Resolve 4-type maturity input (NULL / Maturity / "auto" / function).
   maturity <- .resolve_maturity(maturity, x)
@@ -220,55 +220,55 @@ fit_lr <- function(x,
     stop("`conf_level` must be a single numeric value in (0, 1).",
          call. = FALSE)
 
-  # 1) build premium_fit independently with `premium_regime` -------------
+  # 1) build prem_fit independently with `prem_regime` -------------------
   # fit_lr is the composition layer where loss-side and prem-side may
-  # carry distinct regimes. We construct the premium_fit here using
-  # `premium_regime`, then hand it to fit_loss via `premium_fit = ...`
+  # carry distinct regimes. We construct the prem_fit here using
+  # `prem_regime`, then hand it to fit_loss via `prem_fit = ...`
   # so fit_loss's own (single-role) `regime` does not override the
   # prem-side cut.
   # Explicit bootstrap = FALSE: fit_lr drives its own loss/LR bootstrap
-  # composition; the inner premium_fit is treated as a fixed projection
+  # composition; the inner prem_fit is treated as a fixed projection
   # (premium uncertainty is not propagated unless `se_method = "delta"`).
-  premium_fit <- fit_premium(
+  prem_fit <- fit_prem(
     x,
-    method       = premium_method,
-    alpha        = premium_alpha,
+    method       = prem_method,
+    alpha        = prem_alpha,
     sigma_method = sigma_method,
-    regime       = premium_regime,
+    regime       = prem_regime,
     bootstrap    = FALSE
   )
 
   # 2) delegate loss-side projection to fit_loss() -----------------------
-  # Pass the pre-built premium_fit so fit_loss reuses it; `regime` is
+  # Pass the pre-built prem_fit so fit_loss reuses it; `regime` is
   # the loss-side filter (SA hybrid + factor estimation).
   loss_fit <- fit_loss(
-    x              = x,
-    method         = method,
-    alpha          = loss_alpha,
-    regime         = loss_regime,
-    premium_fit    = premium_fit,
-    premium_method = premium_method,
-    premium_alpha  = premium_alpha,
-    sigma_method   = sigma_method,
-    recent         = recent,
-    maturity       = maturity,
-    conf_level     = conf_level,
-    bootstrap      = FALSE
+    x            = x,
+    method       = method,
+    alpha        = loss_alpha,
+    regime       = loss_regime,
+    prem_fit     = prem_fit,
+    prem_method  = prem_method,
+    prem_alpha   = prem_alpha,
+    sigma_method = sigma_method,
+    recent       = recent,
+    maturity     = maturity,
+    conf_level   = conf_level,
+    bootstrap    = FALSE
   )
 
   grp <- loss_fit$groups
   coh <- loss_fit$cohort
   dev <- loss_fit$dev
-  # premium_fit already constructed above; reuse it directly.
+  # prem_fit already constructed above; reuse it directly.
   prem_ata_fit <- loss_fit$prem_ata_fit
 
   full <- data.table::copy(loss_fit$full)
 
-  # 3) exposure variance join from premium_fit$full (se_method = "delta") -
+  # 3) exposure variance join from prem_fit$full (se_method = "delta") ---
   # Take the role-specific prem_* columns directly from the dispatcher
   # output -- no `exp_*` intermediary aliasing.
   if (se_method == "delta") {
-    pf_full <- .copy_dt(premium_fit$full)
+    pf_full <- .copy_dt(prem_fit$full)
     pf_keep_keys <- intersect(c(grp, "cohort", "dev"), names(pf_full))
     pf_cols <- c(pf_keep_keys, "prem_total_se", "prem_total_cv")
     pf_cols <- intersect(pf_cols, names(pf_full))
@@ -287,12 +287,12 @@ fit_lr <- function(x,
 
   # 5) lr_se via delta method ------------------------------------------
   full[, ("lr_se") := .compute_lr_se(
-    loss       = loss_proj,
-    premium    = prem_proj,
-    loss_se    = loss_total_se,
-    prem_se    = if (se_method == "delta") prem_total_se else NULL,
-    method     = se_method,
-    rho        = rho
+    loss    = loss_proj,
+    prem    = prem_proj,
+    loss_se = loss_total_se,
+    prem_se = if (se_method == "delta") prem_total_se else NULL,
+    method  = se_method,
+    rho     = rho
   )]
 
   full[, ("lr_cv") := data.table::fifelse(
@@ -374,16 +374,16 @@ fit_lr <- function(x,
 
     # Recompute lr_se from bootstrap-derived loss_total_se. Under
     # `se_method = "delta"`, this combines with `prem_total_se` (analytic
-    # from the inner fit_premium) and `rho` to capture the full LR
+    # from the inner fit_prem) and `rho` to capture the full LR
     # variance. Under `"fixed"`, premium is treated as known and
     # lr_se = loss_total_se / prem_proj.
     full[, ("lr_se") := .compute_lr_se(
-      loss       = loss_proj,
-      premium    = prem_proj,
-      loss_se    = loss_total_se,
-      prem_se    = if (se_method == "delta") prem_total_se else NULL,
-      method     = se_method,
-      rho        = rho
+      loss    = loss_proj,
+      prem    = prem_proj,
+      loss_se = loss_total_se,
+      prem_se = if (se_method == "delta") prem_total_se else NULL,
+      method  = se_method,
+      rho     = rho
     )]
     full[, ("lr_cv") := data.table::fifelse(
       is.finite(lr_proj) & lr_proj != 0,
@@ -449,14 +449,14 @@ fit_lr <- function(x,
                         list(B = boots$meta$B, seed = boots$meta$seed)
                       else NULL,
     loss_alpha      = loss_alpha,
-    premium_alpha   = premium_alpha,
+    prem_alpha      = prem_alpha,
     se_method       = se_method,
     rho             = rho,
     conf_level      = conf_level,
     sigma_method    = sigma_method,
     recent          = loss_fit$recent,
     loss_regime     = loss_fit$regime,
-    premium_regime  = premium_regime,
+    prem_regime     = prem_regime,
     usage           = loss_fit$usage
   )
 
@@ -493,34 +493,34 @@ print.LRFit <- function(x, ...) {
     }
   }
 
-  static_labels <- c("method", "loss_alpha", "premium_alpha", "se_method",
+  static_labels <- c("method", "loss_alpha", "prem_alpha", "se_method",
                      "rho", "conf_level", "ci_type", "sigma_method",
-                     "recent", "loss_regime", "premium_regime",
+                     "recent", "loss_regime", "prem_regime",
                      "groups", "periods")
   lw  <- max(nchar(c(static_labels, mat_labels)))
   pad <- function(label) formatC(label, width = lw, flag = "-")
 
   cat("<LRFit>\n")
-  cat(pad("method"),        ":", x$method,        "\n")
-  cat(pad("loss_alpha"),    ":", x$loss_alpha,    "\n")
-  cat(pad("premium_alpha"), ":", x$premium_alpha, "\n")
-  cat(pad("se_method"),     ":", x$se_method,     "\n")
+  cat(pad("method"),     ":", x$method,     "\n")
+  cat(pad("loss_alpha"), ":", x$loss_alpha, "\n")
+  cat(pad("prem_alpha"), ":", x$prem_alpha, "\n")
+  cat(pad("se_method"),  ":", x$se_method,  "\n")
   if (identical(x$se_method, "delta")) {
-    cat(pad("rho"),         ":", x$rho,           "\n")
+    cat(pad("rho"),      ":", x$rho,        "\n")
   }
-  cat(pad("conf_level"),    ":", x$conf_level,    "\n")
+  cat(pad("conf_level"), ":", x$conf_level, "\n")
   if (!is.null(x$ci_type)) {
-    cat(pad("ci_type"),     ":", x$ci_type,
+    cat(pad("ci_type"),  ":", x$ci_type,
         if (!is.null(x$bootstrap))
           sprintf(" (B = %d, seed = %s)", x$bootstrap$B,
                   if (is.null(x$bootstrap$seed)) "NULL" else x$bootstrap$seed)
         else "",
         "\n")
   }
-  cat(pad("sigma_method"),  ":", x$sigma_method,  "\n")
-  cat(pad("recent"),        ":",
+  cat(pad("sigma_method"), ":", x$sigma_method, "\n")
+  cat(pad("recent"),       ":",
       if (!is.null(x$recent)) x$recent else "all", "\n")
-  cat(pad("loss_regime"),   ":")
+  cat(pad("loss_regime"),  ":")
   if (is.null(x$loss_regime)) {
     cat(" none\n")
   } else if (inherits(x$loss_regime, "Regime")) {
@@ -528,13 +528,13 @@ print.LRFit <- function(x, ...) {
   } else {
     cat(" ", format(x$loss_regime), "\n", sep = "")
   }
-  cat(pad("premium_regime"), ":")
-  if (is.null(x$premium_regime)) {
+  cat(pad("prem_regime"),  ":")
+  if (is.null(x$prem_regime)) {
     cat(" none\n")
-  } else if (inherits(x$premium_regime, "Regime")) {
-    cat("\n"); print(x$premium_regime)
+  } else if (inherits(x$prem_regime, "Regime")) {
+    cat("\n"); print(x$prem_regime)
   } else {
-    cat(" ", format(x$premium_regime), "\n", sep = "")
+    cat(" ", format(x$prem_regime), "\n", sep = "")
   }
 
   if (length(mat_labels)) {
@@ -595,7 +595,7 @@ summary.LRFit <- function(object, ...) {
 #' so this helper is *not* a generic ratio-SE utility.
 #'
 #' @param loss Ultimate loss vector (`L`).
-#' @param premium Ultimate prem vector (`E`).
+#' @param prem Ultimate prem vector (`E`).
 #' @param loss_se `SE(L)`.
 #' @param prem_se `SE(P)`. Unused for `"fixed"`; may be `NULL`.
 #' @param method One of `"fixed"` (default) or `"delta"`.
@@ -606,17 +606,13 @@ summary.LRFit <- function(object, ...) {
 #'
 #' @keywords internal
 .compute_lr_se <- function(loss,
-                           premium,
+                           prem,
                            loss_se,
-                           prem_se    = NULL,
-                           method     = c("fixed", "delta"),
-                           rho        = 0.95) {
+                           prem_se = NULL,
+                           method  = c("fixed", "delta"),
+                           rho     = 0.95) {
 
   method <- match.arg(method)
-
-  # Capture full-word arg into short internal var (CLAUDE.md naming
-  # convention: input boundary is full English, internal vars are short).
-  prem <- premium
 
   if (method == "fixed") {
     return(data.table::fifelse(

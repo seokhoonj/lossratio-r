@@ -1,7 +1,7 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
 
 test_that("fit_lr default (method = 'sa') returns class 'LRFit'", {
   lr <- fit_lr(tri, bootstrap = FALSE)
@@ -15,7 +15,7 @@ test_that("LRFit has expected list elements", {
                "full", "proj", "summary",
                "ed", "loss_ata_fit", "prem_ata_fit", "maturity",
                "se_method", "rho", "conf_level",
-               "loss_regime", "premium_regime")) {
+               "loss_regime", "prem_regime")) {
     expect_true(nm %in% names(lr), info = paste("missing", nm))
   }
 })
@@ -95,7 +95,7 @@ test_that("fit_lr with loss_regime + method=sa applies hybrid filter", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
   reg <- regime_at(change = "2025-07-01")
   fit_full <- fit_lr(tri, method = "sa", bootstrap = FALSE)
   fit_brk  <- fit_lr(tri, method = "sa", loss_regime = reg,
@@ -110,7 +110,7 @@ test_that("fit_lr with loss_regime + method=ed drops pre-break cohorts", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
   reg <- regime_at(change = "2025-07-01")
   fit_full <- fit_lr(tri, method = "ed", bootstrap = FALSE)
   fit_brk  <- fit_lr(tri, method = "ed", loss_regime = reg, bootstrap = FALSE)
@@ -121,7 +121,7 @@ test_that("fit_lr with NULL loss_regime is unchanged", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
   a <- fit_lr(tri, method = "sa", bootstrap = FALSE)
   b <- fit_lr(tri, method = "sa", loss_regime = NULL, bootstrap = FALSE)
   expect_identical(a$full$lr_proj, b$full$lr_proj)
@@ -131,7 +131,7 @@ test_that("fit_lr with Regime preserves the Regime object", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
   reg <- detect_regime(tri)
   fit_reg <- fit_lr(tri, method = "sa", loss_regime = reg, recent = 18L, bootstrap = FALSE)
   expect_s3_class(fit_reg$loss_regime, "Regime")

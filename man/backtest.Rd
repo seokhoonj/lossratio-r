@@ -10,15 +10,15 @@
 backtest(
   x,
   holdout = 6L,
-  target = c("lr", "loss", "premium"),
+  target = c("lr", "loss", "prem"),
   loss_method = c("sa", "ed", "cl"),
-  premium_method = c("cl", "ed"),
+  prem_method = c("cl", "ed"),
   loss_alpha = 1,
-  premium_alpha = 1,
+  prem_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   loss_regime = NULL,
-  premium_regime = NULL,
+  prem_regime = NULL,
   maturity = "auto",
   se_method = c("fixed", "delta"),
   rho = 0.95,
@@ -43,19 +43,19 @@ backtest(
 before refitting. Default \code{6L}.}
 
 \item{target}{Character scalar. Which projection to backtest. One
-of \code{"lr"} (default), \code{"loss"}, \code{"premium"}. Determines which
+of \code{"lr"} (default), \code{"loss"}, \code{"prem"}. Determines which
 fitter is called on the masked triangle and which column on \code{x}
 is treated as the held-out actual.}
 
 \item{loss_method}{Method for the loss-side projection. Passed to
 \code{fit_lr()} / \code{fit_loss()} as their \code{method} argument. One of
-\code{"sa"}, \code{"ed"}, \code{"cl"}. Unused for \code{target = "premium"}.}
+\code{"sa"}, \code{"ed"}, \code{"cl"}. Unused for \code{target = "prem"}.}
 
-\item{premium_method}{Method for the prem-side projection.
-Passed to \code{fit_lr()} / \code{fit_loss()} / \code{fit_premium()}. One of
+\item{prem_method}{Method for the prem-side projection.
+Passed to \code{fit_lr()} / \code{fit_loss()} / \code{fit_prem()}. One of
 \code{"cl"}, \code{"ed"}.}
 
-\item{loss_alpha, premium_alpha}{Mack alpha for loss-side / prem-side
+\item{loss_alpha, prem_alpha}{Mack alpha for loss-side / prem-side
 chain-ladder estimation.}
 
 \item{sigma_method}{Tail sigma extrapolation method. Forwarded to
@@ -64,7 +64,7 @@ the underlying fitter.}
 \item{recent}{Calendar-diagonal recency filter forwarded to the
 fitter.}
 
-\item{loss_regime, premium_regime}{Regime spec for the loss / prem
+\item{loss_regime, prem_regime}{Regime spec for the loss / prem
 side. Each accepts one of four input types, dispatched by
 \code{\link[=.resolve_regime]{.resolve_regime()}}:
 \itemize{
@@ -76,7 +76,7 @@ the simulated backtest cutoff).
 \item A function \verb{function(tri) -> Regime} -- called on the
 masked triangle for the same leakage-safe reason.
 }
-\code{premium_regime} is resolved independently from \code{loss_regime}.}
+\code{prem_regime} is resolved independently from \code{loss_regime}.}
 
 \item{maturity}{Maturity input. Used only for \code{target = "lr"} and
 \code{target = "loss"} (stage-adaptive). Accepts one of four input
@@ -95,16 +95,16 @@ same leakage-safe reason.
 }}
 
 \item{se_method}{Standard-error composition for \code{fit_lr()}. Unused
-for \code{target = "loss"} / \code{target = "premium"}.}
+for \code{target = "loss"} / \code{target = "prem"}.}
 
 \item{rho}{Loss-prem correlation used by \code{fit_lr()} delta
-method. Unused for \code{target = "loss"} / \code{target = "premium"}.}
+method. Unused for \code{target = "loss"} / \code{target = "prem"}.}
 
 \item{conf_level}{Confidence level for \code{fit_lr()} / \code{fit_loss()}
-intervals. Unused for \code{target = "premium"}.}
+intervals. Unused for \code{target = "prem"}.}
 
 \item{bootstrap, B, seed}{Bootstrap controls forwarded to the
-target-specific fitter (\code{fit_lr()} / \code{fit_loss()} / \code{fit_premium()}).
+target-specific fitter (\code{fit_lr()} / \code{fit_loss()} / \code{fit_prem()}).
 \code{bootstrap = NULL} (default) defers to the fitter's method-dependent
 resolution: bootstrap for SA/ED methods, analytical for pure CL.
 The fitter accepts the full 4-type dispatch (\code{NULL} / logical /
@@ -154,8 +154,8 @@ The target is selected with \code{target}:
 \item \code{target = "lr"} -- score the loss-ratio projection from
 \code{fit_lr()}.
 \item \code{target = "loss"} -- score the loss projection from \code{fit_loss()}.
-\item \code{target = "premium"} -- score the prem projection from
-\code{fit_premium()}.
+\item \code{target = "prem"} -- score the prem projection from
+\code{fit_prem()}.
 }
 
 The A/E Error (\code{ae_err}) follows the standard actuarial A/E
@@ -175,12 +175,12 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  prem     = "incr_prem"
 )
 
-bt_lr      <- backtest(tri, holdout = 6L, target = "lr")
-bt_loss    <- backtest(tri, holdout = 6L, target = "loss")
-bt_prem <- backtest(tri, holdout = 6L, target = "premium")
+bt_lr   <- backtest(tri, holdout = 6L, target = "lr")
+bt_loss <- backtest(tri, holdout = 6L, target = "loss")
+bt_prem <- backtest(tri, holdout = 6L, target = "prem")
 
 print(bt_lr)
 summary(bt_lr)
@@ -189,5 +189,5 @@ plot(bt_lr)
 
 }
 \seealso{
-\code{\link[=fit_lr]{fit_lr()}}, \code{\link[=fit_loss]{fit_loss()}}, \code{\link[=fit_premium]{fit_premium()}}, \code{\link[=plot.Backtest]{plot.Backtest()}}
+\code{\link[=fit_lr]{fit_lr()}}, \code{\link[=fit_loss]{fit_loss()}}, \code{\link[=fit_prem]{fit_prem()}}, \code{\link[=plot.Backtest]{plot.Backtest()}}
 }

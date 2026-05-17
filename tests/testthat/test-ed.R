@@ -1,7 +1,7 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
 ed  <- as_link(tri, target = "loss", exposure = "prem")
 
 test_that("as_link (ED mode) returns class 'Link' with expected columns", {
@@ -89,7 +89,7 @@ test_that("fit_ed with regime drops pre-break cohorts", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
   ed <- as_link(tri, target = "loss", exposure = "prem")
   fit_full <- fit_ed(tri, target = "loss", exposure = "prem")
   fit_brk  <- fit_ed(tri, target = "loss", exposure = "prem",
@@ -103,7 +103,7 @@ test_that("fit_ed with NULL regime is unchanged", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
   ed <- as_link(tri, target = "loss", exposure = "prem")
   fit_default <- fit_ed(tri, target = "loss", exposure = "prem")
   fit_null    <- fit_ed(tri, target = "loss", exposure = "prem", regime = NULL)
@@ -115,7 +115,7 @@ test_that("fit_ed with Regime input preserves the Regime object", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
   reg <- detect_regime(tri)
   ed <- as_link(tri, target = "loss", exposure = "prem")
   fit_reg <- fit_ed(tri, target = "loss", exposure = "prem", regime = reg)
@@ -129,7 +129,7 @@ test_that("fit_ed returns $full with projection columns", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
   ef <- fit_ed(tri, target = "loss", exposure = "prem")
   expect_true("full" %in% names(ef))
   expect_s3_class(ef$full, "data.table")
@@ -149,7 +149,7 @@ test_that("fit_ed target projection matches fit_lr method = 'ed'", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_prem")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
   ef <- fit_ed(tri, target = "loss", exposure = "prem")
   lr <- fit_lr(tri, method = "ed", bootstrap = FALSE)
 
