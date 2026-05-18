@@ -85,20 +85,25 @@ static void bootstrap_refit_ed_gstar(
     int to_col   = to_col_1 - 1;
     R_xlen_t off_from_base = (R_xlen_t)from_col * n_coh;
     R_xlen_t off_to_base   = (R_xlen_t)to_col   * n_coh;
-    /* exposure denominator: sum over cohorts of P[i, from] (replicate-invariant). */
-    double den = 0.0;
-    for (int i = 0; i < n_coh; i++) {
-      double p_v = exposure_proj[off_from_base + i];
-      if (R_FINITE(p_v) && p_v > 0.0) den += p_v;
-    }
+    /* g_star coverage must match analytical g_hat: only cohorts with
+     * observed (finite) cum at both `from` and `to` contribute to the
+     * numerator, and the denominator sums P[i, from] over the SAME cohort
+     * set. The earlier optimisation summed exposure_proj over all finite
+     * cohorts -- but exposure_proj is CL-extended to every cell, so that
+     * sum included cohorts whose loss is not yet observed at this link,
+     * inflating the denominator and systematically depressing g_star
+     * (agent #21 finding, 23-37% under-projection on 4 cv synthetic). */
     for (int b = 0; b < B; b++) {
       R_xlen_t b_off = (R_xlen_t)b * slab;
-      double num = 0.0;
+      double num = 0.0, den = 0.0;
       for (int i = 0; i < n_coh; i++) {
         double from_v = cum[off_from_base + b_off + i];
         double to_v   = cum[off_to_base   + b_off + i];
-        if (R_FINITE(from_v) && R_FINITE(to_v)) {
+        double p_v    = exposure_proj[off_from_base + i];
+        if (R_FINITE(from_v) && R_FINITE(to_v) &&
+            R_FINITE(p_v) && p_v > 0.0) {
           num += (to_v - from_v);
+          den += p_v;
         }
       }
       g_star[k + (R_xlen_t)b * n_links] =

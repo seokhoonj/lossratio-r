@@ -1125,17 +1125,14 @@ test_that("ED bootstrap point estimate lands in the right order of magnitude", {
   m <- merge(boot_ult, ana_ult, by = "cohort", all = FALSE)
   m <- m[is.finite(boot_mean) & is.finite(ana) & ana > 0]
   expect_gt(nrow(m), 0L)
-  # Bootstrap and analytical anchor at different upper-triangle
-  # representations (analytical: observed cum at last_obs;
-  # bootstrap: fitted cum from cumulative incrementals via g_hat * P).
-  # The two coincide only when g_hat * P matches incr_loss cell by cell,
-  # which is generally false. Use a loose order-of-magnitude check to
-  # guard against paradigm bugs (e.g., multiplicative projection on the
-  # ED forward path) without false-failing on legitimate fitted-vs-
-  # observed anchor drift.
+  # With `.boot_fitted_grid_ed` chain-anchoring AND the fixed
+  # `bootstrap_refit_ed_gstar` denominator coverage (same FINITE mask on
+  # cum and exposure_proj together, matching analytical g_hat coverage),
+  # the bootstrap aggregate ultimate matches the analytical aggregate
+  # within ~0.5 percent on the 4 cv synthetic data. Tight 5% threshold.
   ratio <- sum(m$boot_mean) / sum(m$ana)
-  expect_gt(ratio, 0.5)
-  expect_lt(ratio, 2.0)
+  expect_gt(ratio, 0.95)
+  expect_lt(ratio, 1.05)
 })
 
 test_that("ED and CL bootstraps both run on the same triangle and give different SEs", {
