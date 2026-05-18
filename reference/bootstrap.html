@@ -174,7 +174,7 @@ distribution to use.</p></li>
 <span>  hat_adj <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  demean <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  process <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gamma"</span>, <span class="st">"od_pois"</span>, <span class="st">"normal"</span>, <span class="st">"lognormal"</span><span class="op">)</span>,</span>
-<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sa"</span>, <span class="st">"cl"</span>, <span class="st">"ed"</span><span class="op">)</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ed"</span>, <span class="st">"cl"</span>, <span class="st">"sa"</span><span class="op">)</span>,</span>
 <span>  pooling <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pooled"</span>, <span class="st">"separated"</span>, <span class="st">"tail_pooled"</span><span class="op">)</span>,</span>
 <span>  tail <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"maturity"</span><span class="op">)</span>,</span>
 <span>  min_pool <span class="op">=</span> <span class="fl">5L</span>,</span>
@@ -248,12 +248,15 @@ Phase 5b.3 and currently errors.</p></dd>
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>Fit-model paradigm whose lower-triangle forward projection
-the bootstrap should produce. One of <code>"sa"</code> (stage-adaptive – ED before
-maturity, CL after; default), <code>"cl"</code> (chain-ladder multiplicative
-recursion across all dev), <code>"ed"</code> (exposure-driven additive recursion
-across all dev). Mirrors the <code>loss_method</code> argument of <code><a href="fit_ratio.html">fit_ratio()</a></code>; the
-resulting <code>BootstrapTriangle</code> is consumed by the corresponding
-<code>fit_*(..., bootstrap = bt)</code> branch.</p></dd>
+the bootstrap should produce. One of <code>"ed"</code> (default – exposure-driven
+additive recursion across all dev; Phase 1 keeps exposure fixed,
+projected once via CL), <code>"cl"</code> (chain-ladder multiplicative recursion
+across all dev), <code>"sa"</code> (stage-adaptive – ED before maturity, CL after;
+currently routes through the CL kernel pending Phase 4 SA bootstrap).
+Mirrors the <code>method</code> argument of <code><a href="fit_loss.html">fit_loss()</a></code>; the resulting
+<code>BootstrapTriangle</code> is consumed by the corresponding
+<code>fit_*(..., bootstrap = bt)</code> branch. <code>"ed"</code> requires
+<code>residual = "cell"</code>; ED + <code>residual = "link"</code> is not implemented.</p></dd>
 
 
 <dt id="arg-pooling">pooling<a class="anchor" aria-label="anchor" href="#arg-pooling"></a></dt>

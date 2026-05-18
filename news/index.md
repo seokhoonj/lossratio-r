@@ -2,6 +2,28 @@
 
 ## lossratio (development version)
 
+- **ED bootstrap (Phase 1, fixed exposure).**
+  [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
+  now supports `method = "ed"` for `residual = "cell"`: per-replicate
+  `g*_k` refit and additive forward projection
+  (`Delta loss = g_k * P_{from} + noise`) instead of the multiplicative
+  chain ladder. Exposure stays fixed across replicates (projected once
+  via CL on the exposure column). New native helpers
+  `bootstrap_refit_gstar` / `bootstrap_fwd_proj_ed_and_clip` /
+  `bootstrap_fwd_sim_ed_cell` parallel the CL kernel triple; the C entry
+  point is `C_bootstrap_kernel_ed_cell` (17 args). Phase 2 / 3 (joint
+  loss + exposure bootstrap) deferred. `method = "ed"` requires
+  `residual = "cell"`; ED + link residuals is not implemented.
+
+- **[`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
+  method-enum reorder — `c("sa", "cl", "ed")` -\>
+  `c("ed", "cl", "sa")`.** Matches the
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+  /
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+  default flip. Default is now `"ed"`. Users relying on `"sa"` as the
+  bootstrap method must pass it explicitly.
+
 - **BREAKING: method default flip — `"sa"` -\> `"ed"`.**
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md),
   [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md),

@@ -36,7 +36,7 @@ bootstrap(
   hat_adj = TRUE,
   demean = TRUE,
   process = c("gamma", "od_pois", "normal", "lognormal"),
-  method = c("sa", "cl", "ed"),
+  method = c("ed", "cl", "sa"),
   pooling = c("pooled", "separated", "tail_pooled"),
   tail = c("auto", "maturity"),
   min_pool = 5L,
@@ -106,13 +106,16 @@ bootstrap(
 - method:
 
   Fit-model paradigm whose lower-triangle forward projection the
-  bootstrap should produce. One of `"sa"` (stage-adaptive – ED before
-  maturity, CL after; default), `"cl"` (chain-ladder multiplicative
-  recursion across all dev), `"ed"` (exposure-driven additive recursion
-  across all dev). Mirrors the `loss_method` argument of
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md);
+  bootstrap should produce. One of `"ed"` (default – exposure-driven
+  additive recursion across all dev; Phase 1 keeps exposure fixed,
+  projected once via CL), `"cl"` (chain-ladder multiplicative recursion
+  across all dev), `"sa"` (stage-adaptive – ED before maturity, CL
+  after; currently routes through the CL kernel pending Phase 4 SA
+  bootstrap). Mirrors the `method` argument of
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md);
   the resulting `BootstrapTriangle` is consumed by the corresponding
-  `fit_*(..., bootstrap = bt)` branch.
+  `fit_*(..., bootstrap = bt)` branch. `"ed"` requires
+  `residual = "cell"`; ED + `residual = "link"` is not implemented.
 
 - pooling:
 
