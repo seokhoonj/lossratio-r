@@ -332,8 +332,9 @@ paradigm 의 한계</em> 다.</p>
 <tr class="even">
 <td>(f)</td>
 <td>
-<strong>Sherman tail (예정)</strong> — chain ladder 외에 <em>어떤
-dev-decay series</em> 에도 적용 가능한 <em>generic tail 처리</em>
+<strong>Tail 외삽</strong> — Sherman 1984 log-linear tail 이
+<code>fit_cl(tail = TRUE)</code> 로 기본 구현. 추가 확장은 <em>추후
+검토</em>
 </td>
 <td>진짜 ultimate 까지의 외삽</td>
 </tr>
@@ -604,26 +605,12 @@ misspecification 신호</em>. 평소 <em>sanity check</em> 으로 <em>둘 다
 산출 후 비교</em> 가 권장.</p>
 </div>
 <div class="section level2">
-<h2 id="tail-외삽-예정">10. Tail 외삽 (예정)<a class="anchor" aria-label="anchor" href="#tail-%EC%99%B8%EC%82%BD-%EC%98%88%EC%A0%95"></a>
+<h2 id="tail-외삽">10. Tail 외삽<a class="anchor" aria-label="anchor" href="#tail-%EC%99%B8%EC%82%BD"></a>
 </h2>
-<p><code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> 의
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
-이후, observed dev range 의 <em>끝</em> 에서 <em>진짜 ultimate</em>
-까지는 <em>외삽</em> 이 필요. <code>fit_tail()</code> 함수 family 도입
-예정 — <em>Sherman 1984</em> 의 log-linear curve (exponential / inverse
-power / Weibull) 와 <em>Clark 2003</em> 의 parametric growth curve
-(loglogistic / Weibull MLE) 가 <em>하나의 진입점에서 method 인자로
-선택</em>:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">fit_tail</span><span class="op">(</span><span class="va">f_vec</span>, <span class="va">devs</span>, K_ultimate <span class="op">=</span> <span class="fl">360</span>,</span>
-<span>         method        <span class="op">=</span> <span class="st">"exponential"</span>,     <span class="co"># 또는 "inverse_power",</span></span>
-<span>                                            <span class="co"># "weibull", "loglogistic_mle"</span></span>
-<span>         fit_dev_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="va">max_observed_dev</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>장기건강보험은 <em>진짜 ult</em> 가 <em>수십 년</em> 이후이므로 tail
-외삽이 <em>결과의 critical fraction</em> 을 좌우한다. 도메인 expert 의
-<em>sensitivity analysis</em> 가 필수 — Sherman descriptive fit 과 Clark
-MLE 를 <em>같은 series 에 동시 실행</em> 후 비교가 자연스러운
-cross-check.</p>
+<p>Sherman 1984 의 <em>log-linear (exponential form) tail</em> 은 이미
+<code>fit_cl(tail = TRUE)</code> 로 사용 가능. 추가 curve form /
+standalone 진입 / 진단 surface 등 <em>tail 추정 관련 아이디어</em> 는
+<em>추후 확장 예정</em>.</p>
 </div>
 <div class="section level2">
 <h2 id="roadmap">11. Roadmap<a class="anchor" aria-label="anchor" href="#roadmap"></a>
@@ -647,7 +634,7 @@ critical.</li>
 <em>전 life cycle</em> 손해율 궤적 분석. 현재 framework 의 자연
 확장.</li>
 <li>
-<strong>Sherman / Clark tail</strong> — section 10 참조.</li>
+<strong>Tail 외삽 확장</strong> — section 10 참조.</li>
 <li>
 <strong>Python sibling 동기화</strong> — <code>lossratio-py</code>
 의 동일 명명 / API 정렬.</li>

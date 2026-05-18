@@ -89,7 +89,7 @@ Each paradigm is incomplete on its own.
 | \(c\) | **Stage-adaptive (SA) hybrid** — substitute exposure-driven (ED) for chain ladder in the early-dev unstable region; switch to chain ladder after maturity | Early-dev ATA volatility |
 | \(d\) | **Regime detection** — automatic detection of structural break points on the cohort axis, with filter | Rate / underwriting changes |
 | \(e\) | **Paradigm-matched bootstrap** — beyond Mack’s analytical SE, provide bootstrap tools matched to the paradigm (cell / link / parametric) | Robustness of variance estimation |
-| \(f\) | **Sherman tail (planned)** — generic tail handling that applies to any dev-decay series, not chain ladder specifically | Extrapolation to true ultimate |
+| \(f\) | **Tail extrapolation** — Sherman 1984 log-linear tail already wired into `fit_cl(tail = TRUE)`; further extensions planned | Extrapolation to true ultimate |
 
 Each adaptation is a *targeted reuse* of a P&C method for a specific
 long-term health issue — not a new paradigm built from scratch, but an
@@ -188,30 +188,12 @@ Two paths for SE estimation:
 Large divergence between the two paths is a model-misspecification
 signal; routinely computing both serves as a sanity check.
 
-## Tail extrapolation (planned)
+## Tail extrapolation
 
-After
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)’s
-$`k^*`$, the observed dev range ends short of the true ultimate. Tail
-extrapolation is needed. The planned `fit_tail()` family covers two
-paradigms: Sherman (1984)’s log-linear curve fit (exponential /
-inverse-power / Weibull forms — descriptive), and Clark (2003)’s
-parametric growth curve (loglogistic / Weibull MLE — stochastic). Both
-reachable through one entry:
-
-``` r
-
-fit_tail(f_vec, devs, K_ultimate = 360,
-         method        = "exponential",     # or "inverse_power",
-                                            # "weibull", "loglogistic_mle"
-         fit_dev_range = c(10, max_observed_dev))
-```
-
-For long-term health, the true ultimate is decades away, so the tail
-extrapolation can account for a critical fraction of the reserve. Domain
-expertise and sensitivity analysis are essential — running both the
-Sherman descriptive fit and the Clark MLE form on the same series is a
-natural cross-check.
+A basic Sherman (1984) log-linear tail is already available via
+`fit_cl(tail = TRUE)`. Broader tail ideas (additional curve forms,
+standalone entry, diagnostic surface) are under consideration and will
+be added later.
 
 ## Roadmap
 
@@ -227,7 +209,7 @@ several adjacent areas:
   framework works through slot reinterpretation alone.
 - **Lifetime / cohort analysis** — full life-cycle loss-ratio tracking
   per issue-year cohort. A natural extension of the existing framework.
-- **Sherman / Clark tail** — see *Tail extrapolation* above.
+- **Tail extrapolation extensions** — see *Tail extrapolation* above.
 - **Python sibling** — `lossratio-py` will be aligned to the same naming
   and API.
 
