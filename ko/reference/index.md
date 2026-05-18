@@ -42,11 +42,9 @@ Chain ladder (ATA) 와 노출 기반 (ED) 의 공통 long-format intermediate.
 
 Triangle 위에서 projection 을 산출하는 모형. 기본 알고리즘: `fit_cl`
 (chain ladder / multiplicative), `fit_ed` (exposure-driven / additive).
-ELR 기반: `fit_bf` (Bornhuetter-Ferguson, scalar a priori) 와
-`fit_capecod` (Stanard 1985 의 pooled ELR). Role dispatcher: `fit_loss`
-(loss 측 sa/ed/cl), `fit_exposure` (exposure 측 ed/cl). 합성:
-`fit_ratio` (손해율 통합 인터페이스, delta-method SE). 모두 결과 객체에
-`$full` projection table 을 보유.
+Role dispatcher: `fit_loss` (loss 측 sa/ed/cl), `fit_exposure` (exposure
+측 ed/cl). 합성: `fit_ratio` (손해율 통합 인터페이스, delta-method SE).
+모두 결과 객체에 `$full` projection table 을 보유.
 
 - [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
   :
@@ -55,12 +53,6 @@ ELR 기반: `fit_bf` (Bornhuetter-Ferguson, scalar a priori) 와
 
 - [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md)
   : Fit ED intensity factors
-
-- [`fit_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.md)
-  : Bornhuetter-Ferguson projection
-
-- [`fit_capecod()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_capecod.md)
-  : Cape Cod projection (Stanard 1985)
 
 - [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
   : Fit a loss projection on a Triangle

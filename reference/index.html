@@ -181,7 +181,7 @@
       </dl></div><div class="section level2">
       <h2 id="estimation">Estimation<a class="anchor" aria-label="anchor" href="#estimation"></a></h2>
 
-      <div class="section-desc"><p>Models that produce full projections on a Triangle. Base algorithms: <code>fit_cl</code> (chain ladder / multiplicative), <code>fit_ed</code> (exposure-driven / additive). ELR-based: <code>fit_bf</code> (Bornhuetter-Ferguson with scalar a priori) and <code>fit_capecod</code> (Stanard 1985 pooled ELR). Role dispatchers: <code>fit_loss</code> (loss-side sa/ed/cl), <code>fit_exposure</code> (exposure-side ed/cl). Composition: <code>fit_ratio</code> (loss-ratio umbrella with delta-method SE). All return an object carrying a <code>$full</code> projection table.</p></div>
+      <div class="section-desc"><p>Models that produce full projections on a Triangle. Base algorithms: <code>fit_cl</code> (chain ladder / multiplicative), <code>fit_ed</code> (exposure-driven / additive). Role dispatchers: <code>fit_loss</code> (loss-side sa/ed/cl), <code>fit_exposure</code> (exposure-side ed/cl). Composition: <code>fit_ratio</code> (loss-ratio umbrella with delta-method SE). All return an object carrying a <code>$full</code> projection table.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -201,20 +201,6 @@
 
         </dt>
         <dd>Fit ED intensity factors</dd>
-
-        <dt>
-
-          <code><a href="fit_bf.html">fit_bf()</a></code>
-
-        </dt>
-        <dd>Bornhuetter-Ferguson projection</dd>
-
-        <dt>
-
-          <code><a href="fit_capecod.html">fit_capecod()</a></code>
-
-        </dt>
-        <dd>Cape Cod projection (Stanard 1985)</dd>
 
         <dt>
 

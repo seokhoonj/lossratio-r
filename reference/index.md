@@ -45,11 +45,10 @@ exposure-driven (ED) workflows. Built once, summarised differently via
 
 Models that produce full projections on a Triangle. Base algorithms:
 `fit_cl` (chain ladder / multiplicative), `fit_ed` (exposure-driven /
-additive). ELR-based: `fit_bf` (Bornhuetter-Ferguson with scalar a
-priori) and `fit_capecod` (Stanard 1985 pooled ELR). Role dispatchers:
-`fit_loss` (loss-side sa/ed/cl), `fit_exposure` (exposure-side ed/cl).
-Composition: `fit_ratio` (loss-ratio umbrella with delta-method SE). All
-return an object carrying a `$full` projection table.
+additive). Role dispatchers: `fit_loss` (loss-side sa/ed/cl),
+`fit_exposure` (exposure-side ed/cl). Composition: `fit_ratio`
+(loss-ratio umbrella with delta-method SE). All return an object
+carrying a `$full` projection table.
 
 - [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
   :
@@ -58,12 +57,6 @@ return an object carrying a `$full` projection table.
 
 - [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md)
   : Fit ED intensity factors
-
-- [`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md)
-  : Bornhuetter-Ferguson projection
-
-- [`fit_capecod()`](https://seokhoonj.github.io/lossratio/reference/fit_capecod.md)
-  : Cape Cod projection (Stanard 1985)
 
 - [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
   : Fit a loss projection on a Triangle
