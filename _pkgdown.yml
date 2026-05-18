@@ -145,13 +145,17 @@ reference:
   desc: >
     Models that produce full projections on a Triangle. Base algorithms:
     `fit_cl` (chain ladder / multiplicative), `fit_ed`
-    (exposure-driven / additive). Role dispatchers:
-    `fit_loss` (loss-side sa/ed/cl), `fit_exposure` (exposure-side ed/cl).
+    (exposure-driven / additive). ELR-based: `fit_bf`
+    (Bornhuetter-Ferguson with scalar a priori) and `fit_capecod`
+    (Stanard 1985 pooled ELR). Role dispatchers: `fit_loss`
+    (loss-side sa/ed/cl), `fit_exposure` (exposure-side ed/cl).
     Composition: `fit_ratio` (loss-ratio umbrella with delta-method SE).
     All return an object carrying a `$full` projection table.
   contents:
   - fit_cl
   - fit_ed
+  - fit_bf
+  - fit_capecod
   - fit_loss
   - fit_exposure
   - fit_ratio
