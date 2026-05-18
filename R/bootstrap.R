@@ -35,7 +35,8 @@
                                      tail, min_pool, hat_adj, demean, maturity,
                                      residual_set, process_set,
                                      pooling_set, tail_set, hat_adj_set,
-                                     demean_set, min_pool_set) {
+                                     demean_set, min_pool_set,
+                                     method_set) {
 
   # `min_pool` must be a single positive integer regardless of type/pooling.
   if (!is.numeric(min_pool) || length(min_pool) != 1L ||
@@ -86,6 +87,13 @@
            "requires a positivity-preserving process distribution. ",
            "Use process = 'gamma' (default) or 'od_pois'; ",
            "'normal' violates the ODP positivity assumption.",
+           call. = FALSE)
+    if (identical(method, "ed") && identical(residual, "link") && method_set)
+      stop("method = 'ed' (ED-paradigm additive recursion) requires ",
+           "residual = 'cell' (Pearson residuals on incremental cells). ",
+           "ED + link residuals is not implemented; the ED math assumes ",
+           "an additive cell-level Pearson decomposition. ",
+           "Use residual = 'cell' (default) or switch to method = 'cl'.",
            call. = FALSE)
     if (identical(process, "lognormal"))
       stop("process = 'lognormal' not yet implemented (Phase 5b.3). ",
@@ -167,12 +175,15 @@
 #'   non-negative right-skewed loss data. `"lognormal"` is reserved for
 #'   Phase 5b.3 and currently errors.
 #' @param method Fit-model paradigm whose lower-triangle forward projection
-#'   the bootstrap should produce. One of `"sa"` (stage-adaptive -- ED before
-#'   maturity, CL after; default), `"cl"` (chain-ladder multiplicative
-#'   recursion across all dev), `"ed"` (exposure-driven additive recursion
-#'   across all dev). Mirrors the `loss_method` argument of `fit_ratio()`; the
-#'   resulting `BootstrapTriangle` is consumed by the corresponding
-#'   `fit_*(..., bootstrap = bt)` branch.
+#'   the bootstrap should produce. One of `"ed"` (default -- exposure-driven
+#'   additive recursion across all dev; Phase 1 keeps exposure fixed,
+#'   projected once via CL), `"cl"` (chain-ladder multiplicative recursion
+#'   across all dev), `"sa"` (stage-adaptive -- ED before maturity, CL after;
+#'   currently routes through the CL kernel pending Phase 4 SA bootstrap).
+#'   Mirrors the `method` argument of `fit_loss()`; the resulting
+#'   `BootstrapTriangle` is consumed by the corresponding
+#'   `fit_*(..., bootstrap = bt)` branch. `"ed"` requires
+#'   `residual = "cell"`; ED + `residual = "link"` is not implemented.
 #' @param pooling Residual-pool grouping. One of `"pooled"`, `"separated"`,
 #'   `"tail_pooled"`. `"pooled"` shares residuals across all links;
 #'   `"separated"` keeps each development link independent (Mack-faithful);
@@ -288,7 +299,7 @@ bootstrap.Triangle <- function(x,
                                 demean      = TRUE,
                                 process     = c("gamma", "od_pois", "normal",
                                                 "lognormal"),
-                                method      = c("sa", "cl", "ed"),
+                                method      = c("ed", "cl", "sa"),
                                 pooling     = c("pooled", "separated",
                                                 "tail_pooled"),
                                 tail        = c("auto", "maturity"),
@@ -315,6 +326,7 @@ bootstrap.Triangle <- function(x,
   hat_adj_set  <- "hat_adj"  %in% names(mc)
   demean_set   <- "demean"   %in% names(mc)
   min_pool_set <- "min_pool" %in% names(mc)
+  method_set   <- "method"   %in% names(mc)
 
   type     <- match.arg(type)
   residual <- match.arg(residual)
@@ -323,6 +335,14 @@ bootstrap.Triangle <- function(x,
   pooling  <- match.arg(pooling)
   tail     <- match.arg(tail)
   target   <- match.arg(target)
+
+  # Auto-coerce method to "cl" when user picked link residuals without
+  # explicitly setting method. ED + link is mathematically incoherent;
+  # the new method default of "ed" would otherwise silently fail validation
+  # for legacy `residual = "link"` callers.
+  if (!method_set && identical(residual, "link") && identical(method, "ed")) {
+    method <- "cl"
+  }
 
   if (!is.numeric(B) || length(B) != 1L || is.na(B) || B < 1L)
     stop("`B` must be a single positive integer.", call. = FALSE)
@@ -346,7 +366,8 @@ bootstrap.Triangle <- function(x,
     residual_set = residual_set, process_set = process_set,
     pooling_set = pooling_set, tail_set = tail_set,
     hat_adj_set = hat_adj_set, demean_set = demean_set,
-    min_pool_set = min_pool_set
+    min_pool_set = min_pool_set,
+    method_set = method_set
   )
 
   min_pool <- as.integer(min_pool)
@@ -377,11 +398,19 @@ bootstrap.Triangle <- function(x,
   is_residual_mode <- identical(type, "nonparametric")
 
   if (is_residual_mode) {
-    # 1) Build Link on the chosen target (always -- anchor + cell-mode fitted
-    #    means both depend on volume-weighted f_hat per link)
-    link <- as_link(x, loss = target, drop_invalid = TRUE)
+    # 1) Build Link on the chosen target. ED + cell needs the dual-variable
+    #    Link (loss + exposure) so we can read `exposure_from`; the other
+    #    branches only need the single-variable Link (chain ladder anchor).
+    if (identical(residual, "cell") && identical(method, "ed")) {
+      link <- as_link(x, loss = target, exposure = "exposure",
+                      drop_invalid = TRUE)
+    } else {
+      link <- as_link(x, loss = target, drop_invalid = TRUE)
+    }
 
-    # 2) Compute Mack anchor per (group, ata_to)
+    # 2) Compute Mack anchor per (group, ata_to). Used by all branches
+    #    for the `f_anchor` / `sigma2_anchor` slots; ED additionally
+    #    computes its own `g_hat` per link further below.
     anchor <- .boot_anchor(link, grp = grp, alpha = alpha)
 
     if (identical(residual, "link")) {
@@ -390,6 +419,19 @@ bootstrap.Triangle <- function(x,
       pool <- .boot_build_pool(link, anchor = anchor, grp = grp,
                                 pooling = pooling, tail = tail,
                                 min_pool = min_pool, maturity = maturity)
+    } else if (identical(method, "ed")) {
+      # ED-paradigm cell residual (Phase 1, fixed exposure). Pearson
+      # residuals follow the additive form:
+      #   r_{i, k} = (loss_delta - g_k * exposure_from)
+      #              / sqrt(g_k * exposure_from)
+      # Pool keyed by (cohort, dev = ata_to) for compatibility with the
+      # cell-mode pool builder.
+      cell_resid <- .boot_cell_residuals_ed(link, grp = grp)
+      phi_dt <- attr(cell_resid, "phi_dt")
+      pool <- .boot_build_pool_cell(cell_resid, grp = grp,
+                                     pooling = pooling, tail = tail,
+                                     min_pool = min_pool, maturity = maturity,
+                                     demean = demean)
     } else {
       # E-V 1999/2002: Pearson residuals on incremental cells, optionally
       # leverage-corrected (hat_adj). Pool keyed by (cohort, dev).
@@ -426,7 +468,8 @@ bootstrap.Triangle <- function(x,
     triangle = x, link = link, anchor = anchor, pool = pool,
     phi_dt = phi_dt,
     grp = grp, is_residual_mode = is_residual_mode, residual = residual,
-    process = process, B = B, alpha = alpha, target = target
+    process = process, method = method, B = B, alpha = alpha,
+    target = target
   )
 
   summary_dt <- .boot_summary_from_arrays(stage1_out, grp = grp,
@@ -907,7 +950,7 @@ bootstrap.Triangle <- function(x,
 
   # ODP single dispersion phi = sum r_raw^2 / (n_obs - p). Computed from RAW
   # residuals (pre-adjustment) -- invariant across hat/DF choices. Used by
-  # the cell paradigm consumer (C kernel `bootstrap_kernel_cell`) as the
+  # the cell paradigm consumer (C kernel `bootstrap_kernel_cl_cell`) as the
   # process noise scale for forward simulation (England-Verrall 1999).
   n_obs_phi <- sum(is.finite(r_raw))
   p_phi     <- n_coh + n_dev - 1L
@@ -938,6 +981,204 @@ bootstrap.Triangle <- function(x,
   attr(out, "n_obs") <- n_obs_phi
   attr(out, "p")     <- p_phi
   out
+}
+
+
+# Internal: ED-paradigm Pearson cell residuals (Phase 1) ------------------
+#
+# For each link cell (cohort, ata_to) of the dual-variable Link table:
+#   mu_ed   = g_k * exposure_from
+#   r_raw   = (loss_delta - mu_ed) / sqrt(mu_ed)
+# where g_k is the volume-weighted per-link intensity anchor
+# (sum(loss_delta) / sum(exposure_from) over observed link rows). Cells
+# with non-positive mu_ed or non-finite endpoints are excluded.
+#
+# The pool builder (`.boot_build_pool_cell`) consumes a (cohort, dev,
+# residual, mu_hat) schema, so we publish `dev = ata_to` (the link's
+# destination dev = the cell's own dev for the increment to be perturbed)
+# and `mu_hat = mu_ed` (kept under the same column name for the shared
+# downstream code path).
+#
+# Hat-matrix / DF adjustment is not applied in Phase 1 -- the ED design
+# matrix differs from the ODP GLM and the hat-diagonal formula would need
+# its own derivation. The raw Pearson residual is used directly.
+#
+# `phi` (cell-mode dispersion used for Stage 2 process noise) is computed
+# as `sum(r_raw^2) / (n_obs - p)` with `p = n_links` (one parameter per
+# link factor `g_k`), matching the ED-paradigm degrees-of-freedom.
+.boot_cell_residuals_ed <- function(link, grp) {
+  # NSE
+  loss_delta <- exposure_from <- ata_to <- residual <- g_hat <- mu_ed <-
+    n_obs <- sum_r2 <- n_links_used <- NULL
+
+  by_cols <- c(grp, "ata_to")
+
+  dt <- data.table::copy(link)
+
+  # Per-link g_hat anchor (volume-weighted) on observed link rows.
+  link_anchor <- dt[is.finite(loss_delta) & is.finite(exposure_from) &
+                     exposure_from > 0,
+                   list(g_hat = sum(loss_delta) / sum(exposure_from)),
+                   by = by_cols]
+
+  dt <- merge(dt, link_anchor, by = by_cols, all.x = TRUE, sort = FALSE)
+
+  dt[, ("mu_ed") := g_hat * exposure_from]
+  dt[, ("residual") := data.table::fifelse(
+    is.finite(loss_delta) & is.finite(mu_ed) & mu_ed > 0,
+    (loss_delta - mu_ed) / sqrt(mu_ed),
+    NA_real_
+  )]
+
+  # Per-group phi: ODP-style single dispersion using ED Pearson residuals.
+  # Degrees of freedom = n_obs - n_links (one parameter g_k per link).
+  if (length(grp) > 0L) {
+    by_grp <- grp
+  } else {
+    by_grp <- NULL
+  }
+  phi_dt <- dt[is.finite(residual),
+               list(
+                 n_obs        = .N,
+                 sum_r2       = sum(residual^2),
+                 n_links_used = data.table::uniqueN(ata_to)
+               ),
+               by = by_grp]
+  phi_dt[, ("phi") := data.table::fifelse(
+    is.finite(n_obs) & is.finite(n_links_used) & n_obs > n_links_used,
+    sum_r2 / (n_obs - n_links_used),
+    NA_real_
+  )]
+  phi_keep <- c(grp, "phi")
+  phi_dt <- phi_dt[, .SD, .SDcols = phi_keep]
+
+  # Reshape to the (cohort, dev, residual, mu_hat) schema expected by
+  # `.boot_build_pool_cell` -- dev = ata_to.
+  out_keep <- c(grp, "cohort", "ata_to", "residual", "mu_ed")
+  out <- dt[, .SD, .SDcols = out_keep]
+  data.table::setnames(out, c("ata_to", "mu_ed"), c("dev", "mu_hat"))
+  data.table::setattr(out, "phi_dt", phi_dt)
+  out
+}
+
+
+# Internal: cumulative exposure observed matrix [n_coh, n_dev] ------------
+.ensure_exposure_obs_mat <- function(triangle, cohorts, devs, n_coh, n_dev) {
+  mat <- matrix(NA_real_, nrow = n_coh, ncol = n_dev,
+                dimnames = list(as.character(cohorts), as.character(devs)))
+  ci_vec <- match(triangle$cohort, cohorts)
+  di_vec <- match(triangle$dev,    devs)
+  ok <- !is.na(ci_vec) & !is.na(di_vec)
+  if (any(ok)) {
+    mat[cbind(ci_vec[ok], di_vec[ok])] <- triangle[["exposure"]][ok]
+  }
+  mat
+}
+
+
+# Internal: per-link f_hat anchor on the exposure column ------------------
+#
+# Standard CL volume-weighted ATA factor on cumulative exposure:
+#   f_p_k = sum_i exposure[i, k+1] / sum_i exposure[i, k]
+# Returns a list with `f_by_to` (length n_dev; NA for dev = 1) so the
+# projector can look up the factor by `to-dev` index.
+.boot_exposure_f_anchor <- function(exp_obs_mat, last_obs_idx,
+                                    n_coh, n_dev, devs) {
+  f_by_to <- rep(NA_real_, n_dev)
+  if (n_dev < 2L) return(list(f_by_to = f_by_to))
+  for (j in seq(2L, n_dev)) {
+    num <- 0; den <- 0
+    for (i in seq_len(n_coh)) {
+      lj <- last_obs_idx[i]
+      if (is.na(lj) || lj < j) next
+      a <- exp_obs_mat[i, j - 1L]
+      b <- exp_obs_mat[i, j]
+      if (is.finite(a) && is.finite(b) && a > 0) {
+        num <- num + b
+        den <- den + a
+      }
+    }
+    if (den > 0) f_by_to[j] <- num / den
+  }
+  list(f_by_to = f_by_to)
+}
+
+
+# Internal: project exposure forward via CL on the exposure column --------
+#
+# Phase 1 assumption: exposure is treated as known (a single deterministic
+# projection across all B replicates). For each cohort `i`, starting at
+# its last observed dev, roll forward with the per-link `f_by_to`. The
+# upper-triangle (observed) entries are preserved from `exp_obs_mat`.
+.boot_project_exposure_cl <- function(exp_obs_mat, last_obs_idx,
+                                      f_by_to, n_coh, n_dev) {
+  out <- exp_obs_mat
+  for (i in seq_len(n_coh)) {
+    lj <- last_obs_idx[i]
+    if (is.na(lj) || lj >= n_dev) next
+    base <- out[i, lj]
+    if (!is.finite(base)) next
+    cur <- base
+    for (j in seq(lj + 1L, n_dev)) {
+      f_k <- f_by_to[j]
+      if (is.finite(f_k)) cur <- f_k * cur
+      out[i, j] <- cur
+    }
+  }
+  out
+}
+
+
+# Internal: per-link g_hat anchor (intensity, ED) -------------------------
+#
+# `link` is a dual-variable Link table (built with `as_link(..., exposure)`)
+# whose `intensity` column already encodes `loss_delta / exposure_from`.
+# The volume-weighted per-link intensity is
+#   g_k = sum_i loss_delta_{i, k} / sum_i exposure_from_{i, k}
+# Returned vector aligns with `anchor` row order
+# (i.e., `g_hat_vec[k]` matches `anchor$ata_to[k]` and `link_to_idx[k]`).
+.boot_g_anchor <- function(anchor, link, n_links) {
+  # NSE
+  loss_delta <- exposure_from <- NULL
+
+  g_dt <- link[is.finite(loss_delta) & is.finite(exposure_from) &
+                 exposure_from > 0,
+               list(g_hat = sum(loss_delta) / sum(exposure_from)),
+               by = "ata_to"]
+  # Lookup g_hat for each anchor row by `ata_to` (anchor row order is the
+  # canonical link order in `.boot_stage1_one`).
+  idx <- match(anchor$ata_to, g_dt$ata_to)
+  out <- g_dt$g_hat[idx]
+  out[!is.finite(out)] <- 0
+  if (length(out) != n_links)
+    out <- rep_len(out, n_links)
+  out
+}
+
+
+# Internal: ED mu grid [n_coh, n_dev] -------------------------------------
+#
+# First column = observed cumulative loss (== incr loss at dev = 1; no
+# preceding link to perturb). Subsequent columns:
+#   mu_ed[i, j] = g_hat[k_j] * exposure_obs[i, j-1]
+# where k_j is the link with ata_to = j. Non-finite endpoints propagate
+# to NA so the active-cell mask excludes them.
+.boot_mu_ed_grid <- function(exp_obs_mat, mat_obs, g_hat_vec,
+                              link_to_idx, n_coh, n_dev) {
+  g_by_to <- rep(NA_real_, n_dev)
+  g_by_to[link_to_idx] <- g_hat_vec
+
+  mu <- matrix(NA_real_, nrow = n_coh, ncol = n_dev)
+  # j = 1: observed first-period cumulative loss (= incr loss at j = 1).
+  mu[, 1L] <- mat_obs[, 1L]
+  if (n_dev >= 2L) {
+    for (j in seq(2L, n_dev)) {
+      gk <- g_by_to[j]
+      if (!is.finite(gk)) next
+      mu[, j] <- gk * exp_obs_mat[, j - 1L]
+    }
+  }
+  mu
 }
 
 
@@ -1052,6 +1293,7 @@ bootstrap.Triangle <- function(x,
 
 .boot_stage1 <- function(triangle, link, anchor, pool, phi_dt,
                           grp, is_residual_mode, residual, process,
+                          method = "ed",
                           B, alpha, target = "loss") {
 
   # Per-group iteration
@@ -1067,7 +1309,7 @@ bootstrap.Triangle <- function(x,
         triangle = triangle, link = link, anchor = anchor, pool = pool,
         phi_dt = phi_g,
         is_residual_mode = is_residual_mode, residual = residual,
-        process = process, B = B, alpha = alpha,
+        process = process, method = method, B = B, alpha = alpha,
         grp_vals = grp_vals[1L], target = target
       ))
     }
@@ -1086,7 +1328,7 @@ bootstrap.Triangle <- function(x,
         triangle = tri_g, link = link_g, anchor = anchor_g, pool = pool_g,
         phi_dt = phi_g,
         is_residual_mode = is_residual_mode, residual = residual,
-        process = process, B = B, alpha = alpha,
+        process = process, method = method, B = B, alpha = alpha,
         grp_vals = gkey, target = target
       )
     }
@@ -1104,7 +1346,7 @@ bootstrap.Triangle <- function(x,
       triangle = triangle, link = link, anchor = anchor, pool = pool,
       phi_dt = phi_dt,
       is_residual_mode = is_residual_mode, residual = residual,
-      process = process, B = B, alpha = alpha,
+      process = process, method = method, B = B, alpha = alpha,
       grp_vals = NULL, target = target
     )
   }
@@ -1121,6 +1363,7 @@ bootstrap.Triangle <- function(x,
 .boot_stage1_one <- function(triangle, link, anchor, pool, phi_dt = NULL,
                               is_residual_mode, residual = "link",
                               process = "gamma",
+                              method = "ed",
                               B, alpha, grp_vals,
                               target = "loss") {
 
@@ -1180,8 +1423,10 @@ bootstrap.Triangle <- function(x,
 
   # Cell mode: precompute fitted incremental means mu_hat_{ij} (full grid).
   # Reused across replicates -- these are the original-data fits, not
-  # per-replicate refits.
-  if (is_residual_mode && identical(residual, "cell")) {
+  # per-replicate refits. ED-paradigm cell mode builds its own
+  # `mu_ed_grid` below from `g_hat * exposure_from`, so it skips this.
+  if (is_residual_mode && identical(residual, "cell") &&
+      !identical(method, "ed")) {
     mu_hat_grid <- .boot_fitted_grid(mat_obs, last_obs_idx, f_hat_vec,
                                       link_to_idx, n_coh, n_dev)
   }
@@ -1223,55 +1468,139 @@ bootstrap.Triangle <- function(x,
       lj <- last_obs_idx[i]
       if (!is.na(lj) && lj >= 1L) upper_full[i, seq_len(lj)] <- TRUE
     }
-    upper_mask       <- upper_full & is.finite(mu_hat_grid)
-    cell_active_lin  <- which(upper_mask)
-    n_active         <- length(cell_active_lin)
-    active_j         <- ((cell_active_lin - 1L) %/% n_coh) + 1L
-    cell_active_mu   <- mu_hat_grid[cell_active_lin]
-    cell_active_sqrt <- sqrt(abs(cell_active_mu))
 
-    if (length(pool_names) > 0L) {
-      cell_pool_idx <- pool_pos[pid_by_dev[active_j]]
-      cell_pool_idx[is.na(cell_pool_idx)] <- 0L
-      cell_pool_idx <- as.integer(cell_pool_idx)
+    if (identical(method, "ed")) {
+      # ----- ED-paradigm cell residual (Phase 1: fixed exposure) -------
+      # mu_ed[i, j] for j >= 2 = g_{j-1 -> j} * exposure_from[i, j-1]
+      # mu_ed[i, 1]            = observed incr_loss[i, 1] (= cum loss[i, 1])
+      # Residuals on link cells (j >= 2) come from the ED Pearson form
+      # (Delta loss - g_k * P_{k-1}) / sqrt(g_k * P_{k-1}); first-period
+      # cells have no link and pass through unperturbed.
+
+      # 1) Observed cumulative exposure matrix + CL forward projection
+      #    on the exposure column (projection lives in the lower
+      #    triangle; the upper triangle keeps the observed values).
+      exp_obs_mat <- .ensure_exposure_obs_mat(triangle, cohorts, devs,
+                                              n_coh, n_dev)
+      exp_anchor  <- .boot_exposure_f_anchor(exp_obs_mat, last_obs_idx,
+                                              n_coh, n_dev, devs)
+      exposure_proj_mat <- .boot_project_exposure_cl(exp_obs_mat,
+                                                     last_obs_idx,
+                                                     exp_anchor$f_by_to,
+                                                     n_coh, n_dev)
+
+      # 2) Per-link g_hat anchor on the original triangle (intensity
+      #    weighted): g_k = sum_i (loss_delta_{i, k}) /
+      #                      sum_i (exposure_from_{i, k}). Indexed by
+      #    ata_to (one entry per link, aligned with link_to_idx).
+      g_hat_vec <- .boot_g_anchor(anchor, link, n_links)
+
+      # 3) Build mu_ed_grid (full I x J grid; only upper triangle used
+      #    for the Stage 1 perturbation, but the j-1 column is read for
+      #    every j >= 2 cell so non-finite entries propagate correctly).
+      mu_ed_grid <- .boot_mu_ed_grid(exp_obs_mat, mat_obs, g_hat_vec,
+                                      link_to_idx, n_coh, n_dev)
+
+      upper_mask       <- upper_full & is.finite(mu_ed_grid)
+      cell_active_lin  <- which(upper_mask)
+      n_active         <- length(cell_active_lin)
+      active_j         <- ((cell_active_lin - 1L) %/% n_coh) + 1L
+      cell_active_mu   <- mu_ed_grid[cell_active_lin]
+      cell_active_sqrt <- sqrt(abs(cell_active_mu))
+
+      if (length(pool_names) > 0L) {
+        cell_pool_idx <- pool_pos[pid_by_dev[active_j]]
+        cell_pool_idx[is.na(cell_pool_idx)] <- 0L
+        cell_pool_idx <- as.integer(cell_pool_idx)
+      } else {
+        cell_pool_idx <- integer(n_active)
+      }
+
+      phi <- if (!is.null(phi_dt) && nrow(phi_dt) > 0L) {
+        phi_dt$phi[1L]
+      } else {
+        NA_real_
+      }
+      process_code <- switch(process,
+                             gamma   = 1L,
+                             od_pois = 2L,
+                             normal  = 3L,
+                             1L)
+
+      kernel_out <- .Call(
+        C_bootstrap_kernel_ed_cell,
+        B,
+        as.numeric(cell_active_mu),
+        as.numeric(cell_active_sqrt),
+        as.integer(cell_active_lin),
+        cell_pool_idx,
+        pool_residuals,
+        pool_starts,
+        as.integer(last_obs_idx),
+        as.integer(link_to_idx),
+        as.integer(k_idx_by_j),
+        as.numeric(g_hat_vec),
+        as.numeric(exposure_proj_mat),
+        as.numeric(phi),
+        as.numeric(alpha),
+        process_code,
+        n_coh, n_dev
+      )
+      out_arr_mean    <- kernel_out$cum_mean
+      out_arr_sampled <- kernel_out$cum_sampled
+
     } else {
-      cell_pool_idx <- integer(n_active)
-    }
+      # ----- CL-paradigm cell residual (method = "cl" or "sa") ---------
+      upper_mask       <- upper_full & is.finite(mu_hat_grid)
+      cell_active_lin  <- which(upper_mask)
+      n_active         <- length(cell_active_lin)
+      active_j         <- ((cell_active_lin - 1L) %/% n_coh) + 1L
+      cell_active_mu   <- mu_hat_grid[cell_active_lin]
+      cell_active_sqrt <- sqrt(abs(cell_active_mu))
 
-    # Extract scalar phi for current group (cell ODP dispersion).
-    # phi_dt is per-group; .boot_stage1 already subset it to grp_vals.
-    phi <- if (!is.null(phi_dt) && nrow(phi_dt) > 0L) {
-      phi_dt$phi[1L]
-    } else {
-      NA_real_
-    }
-    process_code <- switch(process,
-                           gamma   = 1L,
-                           od_pois = 2L,
-                           normal  = 3L,
-                           1L)
+      if (length(pool_names) > 0L) {
+        cell_pool_idx <- pool_pos[pid_by_dev[active_j]]
+        cell_pool_idx[is.na(cell_pool_idx)] <- 0L
+        cell_pool_idx <- as.integer(cell_pool_idx)
+      } else {
+        cell_pool_idx <- integer(n_active)
+      }
 
-    kernel_out <- .Call(
-      C_bootstrap_kernel_cell,
-      B,
-      as.numeric(cell_active_mu),
-      as.numeric(cell_active_sqrt),
-      as.integer(cell_active_lin),
-      cell_pool_idx,
-      pool_residuals,
-      pool_starts,
-      as.integer(last_obs_idx),
-      as.integer(link_to_idx),
-      as.integer(k_idx_by_j),
-      as.numeric(f_hat_vec),
-      as.numeric(phi),
-      as.numeric(alpha),
-      process_code,
-      n_coh, n_dev
-    )
-    # Dual-output: list(cum_mean, cum_sampled).
-    out_arr_mean    <- kernel_out$cum_mean
-    out_arr_sampled <- kernel_out$cum_sampled
+      # Extract scalar phi for current group (cell ODP dispersion).
+      # phi_dt is per-group; .boot_stage1 already subset it to grp_vals.
+      phi <- if (!is.null(phi_dt) && nrow(phi_dt) > 0L) {
+        phi_dt$phi[1L]
+      } else {
+        NA_real_
+      }
+      process_code <- switch(process,
+                             gamma   = 1L,
+                             od_pois = 2L,
+                             normal  = 3L,
+                             1L)
+
+      kernel_out <- .Call(
+        C_bootstrap_kernel_cl_cell,
+        B,
+        as.numeric(cell_active_mu),
+        as.numeric(cell_active_sqrt),
+        as.integer(cell_active_lin),
+        cell_pool_idx,
+        pool_residuals,
+        pool_starts,
+        as.integer(last_obs_idx),
+        as.integer(link_to_idx),
+        as.integer(k_idx_by_j),
+        as.numeric(f_hat_vec),
+        as.numeric(phi),
+        as.numeric(alpha),
+        process_code,
+        n_coh, n_dev
+      )
+      # Dual-output: list(cum_mean, cum_sampled).
+      out_arr_mean    <- kernel_out$cum_mean
+      out_arr_sampled <- kernel_out$cum_sampled
+    }
 
   } else if (is_residual_mode && identical(residual, "link")) {
 
@@ -1289,7 +1618,7 @@ bootstrap.Triangle <- function(x,
                            normal  = 3L,
                            3L)
     kernel_out <- .Call(
-      C_bootstrap_kernel_link,
+      C_bootstrap_kernel_cl_link,
       B,
       as.numeric(mat_obs),
       as.integer(last_obs_idx),
@@ -1316,7 +1645,7 @@ bootstrap.Triangle <- function(x,
                            normal  = 3L,
                            3L)
     kernel_out <- .Call(
-      C_bootstrap_kernel_parametric,
+      C_bootstrap_kernel_cl_parametric,
       B,
       as.numeric(mat_obs),
       as.integer(last_obs_idx),

@@ -32,9 +32,9 @@
  * link / parametric).
  *
  * Three residual / type modes, one kernel each:
- *   - bootstrap_kernel_cell        : residual = "cell"   (England-Verrall ODP)
- *   - bootstrap_kernel_link        : residual = "link"   (Mack / Pinheiro)
- *   - bootstrap_kernel_parametric  : type     = "parametric" (Mack closed form)
+ *   - bootstrap_kernel_cl_cell     : residual = "cell"   (England-Verrall ODP)
+ *   - bootstrap_kernel_cl_link     : residual = "link"   (Mack / Pinheiro)
+ *   - bootstrap_kernel_cl_parametric  : type     = "parametric" (Mack closed form)
  *
  * Process distribution: encoded as integer code in `process_code_sxp`:
  *   1 = gamma     (positivity-preserving, ODP-compatible)
@@ -44,7 +44,7 @@
  * See the file header of src/bootstrap.c for the R <-> C contract
  * (array layout, index conventions, RNG state handling, pool CSR layout).
  */
-SEXP bootstrap_kernel_cell(
+SEXP bootstrap_kernel_cl_cell(
     SEXP B_sxp,
     SEXP mu_active_sxp,
     SEXP sqrt_active_sxp,
@@ -62,7 +62,45 @@ SEXP bootstrap_kernel_cell(
     SEXP n_coh_sxp,
     SEXP n_dev_sxp);
 
-SEXP bootstrap_kernel_link(
+/* ED-paradigm cell kernel (Phase 1: fixed exposure).
+ *
+ * Mirrors bootstrap_kernel_cl_cell but uses the additive exposure-driven
+ * recursion `Delta loss = g_k * exposure_{from} + noise` instead of the
+ * multiplicative chain ladder. Stage 1 phases (a)-(c) are identical
+ * because mu_active and sqrt_active are pre-computed in R; phases (d)-(f)
+ * call ED-specific helpers (bootstrap_refit_gstar /
+ * bootstrap_fwd_proj_ed_and_clip / bootstrap_fwd_sim_ed_cell).
+ *
+ * `g_hat_vec[k]` is the original per-link intensity anchor
+ * (sum(loss_delta) / sum(exposure_from) over observed link cells);
+ * `exposure_proj` is the [n_coh, n_dev] projected exposure (CL-projected
+ * once in R on the exposure column) which stays fixed across all B
+ * replicates in Phase 1. Phase 2/3 will release this assumption by
+ * jointly bootstrapping the exposure column.
+ *
+ * Returns the same list(cum_mean, cum_sampled) named pair as the CL
+ * cell kernel so downstream summary / pseudo_triangles code is unchanged.
+ */
+SEXP bootstrap_kernel_ed_cell(
+    SEXP B_sxp,
+    SEXP mu_active_sxp,
+    SEXP sqrt_active_sxp,
+    SEXP active_lin_sxp,
+    SEXP cell_pool_idx_sxp,
+    SEXP pool_residuals_sxp,
+    SEXP pool_starts_sxp,
+    SEXP last_obs_idx_sxp,
+    SEXP link_to_idx_sxp,
+    SEXP k_idx_by_j_sxp,
+    SEXP g_hat_vec_sxp,
+    SEXP exposure_proj_sxp,
+    SEXP phi_sxp,             /* scalar dispersion phi (cell mode) */
+    SEXP alpha_sxp,           /* variance exponent */
+    SEXP process_code_sxp,    /* 1 gamma / 2 od_pois / 3 normal */
+    SEXP n_coh_sxp,
+    SEXP n_dev_sxp);
+
+SEXP bootstrap_kernel_cl_link(
     SEXP B_sxp,
     SEXP mat_obs_sxp,
     SEXP last_obs_idx_sxp,
@@ -78,7 +116,7 @@ SEXP bootstrap_kernel_link(
     SEXP n_coh_sxp,
     SEXP n_dev_sxp);
 
-SEXP bootstrap_kernel_parametric(
+SEXP bootstrap_kernel_cl_parametric(
     SEXP B_sxp,
     SEXP mat_obs_sxp,
     SEXP last_obs_idx_sxp,

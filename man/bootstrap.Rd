@@ -14,7 +14,7 @@ bootstrap(x, ...)
   hat_adj = TRUE,
   demean = TRUE,
   process = c("gamma", "od_pois", "normal", "lognormal"),
-  method = c("sa", "cl", "ed"),
+  method = c("ed", "cl", "sa"),
   pooling = c("pooled", "separated", "tail_pooled"),
   tail = c("auto", "maturity"),
   min_pool = 5L,
@@ -69,12 +69,15 @@ non-negative right-skewed loss data. \code{"lognormal"} is reserved for
 Phase 5b.3 and currently errors.}
 
 \item{method}{Fit-model paradigm whose lower-triangle forward projection
-the bootstrap should produce. One of \code{"sa"} (stage-adaptive -- ED before
-maturity, CL after; default), \code{"cl"} (chain-ladder multiplicative
-recursion across all dev), \code{"ed"} (exposure-driven additive recursion
-across all dev). Mirrors the \code{loss_method} argument of \code{fit_ratio()}; the
-resulting \code{BootstrapTriangle} is consumed by the corresponding
-\verb{fit_*(..., bootstrap = bt)} branch.}
+the bootstrap should produce. One of \code{"ed"} (default -- exposure-driven
+additive recursion across all dev; Phase 1 keeps exposure fixed,
+projected once via CL), \code{"cl"} (chain-ladder multiplicative recursion
+across all dev), \code{"sa"} (stage-adaptive -- ED before maturity, CL after;
+currently routes through the CL kernel pending Phase 4 SA bootstrap).
+Mirrors the \code{method} argument of \code{fit_loss()}; the resulting
+\code{BootstrapTriangle} is consumed by the corresponding
+\verb{fit_*(..., bootstrap = bt)} branch. \code{"ed"} requires
+\code{residual = "cell"}; ED + \code{residual = "link"} is not implemented.}
 
 \item{pooling}{Residual-pool grouping. One of \code{"pooled"}, \code{"separated"},
 \code{"tail_pooled"}. \code{"pooled"} shares residuals across all links;

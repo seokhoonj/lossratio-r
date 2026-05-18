@@ -416,9 +416,14 @@ test_that("cell residual with hat_adj = FALSE applies DF correction", {
 
 test_that("cell residual + hat_adj = TRUE produces different residual magnitudes", {
   tri <- make_sub_tri("surgery")
+  # hat_adj is a CL-paradigm leverage correction (England-Verrall 2002
+  # Addendum); ED residuals use a different design matrix and skip
+  # hat_adj. Pin method = "cl" to keep this an apples-to-apples CL test.
   b_hat <- bootstrap(tri, keep_pseudo = TRUE, type = "nonparametric", residual = "cell",
+                     method = "cl",
                      hat_adj = TRUE, process = "gamma", B = 5, seed = 1)
   b_nohat <- bootstrap(tri, keep_pseudo = TRUE, type = "nonparametric", residual = "cell",
+                       method = "cl",
                        hat_adj = FALSE, process = "gamma", B = 5, seed = 1)
   # Both pools drop zero residuals (latest-observed diagonal cells). The
   # observable difference between hat=T / hat=F is in residual magnitudes:
@@ -1027,4 +1032,140 @@ test_that("keep_pseudo = FALSE $summary matches keep_pseudo = TRUE summary numer
                         keep_pseudo = FALSE)
   # Same RNG state -> identical summary
   expect_equal(bt_full$summary, bt_lean$summary)
+})
+
+
+# ---------------------------------------------------------------------------
+# ED bootstrap (Phase 1 -- fixed exposure, additive forward projection)
+# ---------------------------------------------------------------------------
+
+test_that("ED bootstrap (method = 'ed') returns expected BootstrapTriangle shape", {
+  tri <- make_sub_tri("surgery")
+  bt <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                  method = "ed", process = "gamma",
+                  B = 30, seed = 1, keep_pseudo = TRUE)
+  expect_s3_class(bt, "BootstrapTriangle")
+  expect_identical(bt$meta$method,   "ed")
+  expect_identical(bt$meta$residual, "cell")
+  # Pseudo triangles have the canonical [cohort x dev x B] shape.
+  n_coh <- length(unique(tri$cohort))
+  n_dev <- length(unique(tri$dev))
+  expect_equal(nrow(bt$pseudo_triangles), n_coh * n_dev * 30L)
+  expect_true(all(c("coverage", "cohort", "dev", "rep",
+                     "loss_mean", "loss_sampled") %in%
+                    names(bt$pseudo_triangles)))
+})
+
+test_that("ED bootstrap requires residual = 'cell'", {
+  tri <- make_sub_tri("surgery")
+  expect_error(
+    bootstrap(tri, type = "nonparametric", residual = "link",
+              method = "ed", B = 5, seed = 1),
+    "method = 'ed'.*residual = 'cell'"
+  )
+})
+
+test_that("ED bootstrap default method is 'ed'", {
+  tri <- make_sub_tri("surgery")
+  bt <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                  process = "gamma", B = 5, seed = 1)
+  expect_identical(bt$meta$method, "ed")
+})
+
+test_that("ED bootstrap same seed reproduces identical $summary", {
+  tri <- make_sub_tri("surgery")
+  a <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                 method = "ed", process = "gamma",
+                 B = 30, seed = 7, keep_pseudo = TRUE)$pseudo_triangles$loss_mean
+  b <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                 method = "ed", process = "gamma",
+                 B = 30, seed = 7, keep_pseudo = TRUE)$pseudo_triangles$loss_mean
+  expect_identical(a, b)
+})
+
+test_that("ED bootstrap induces variability in projected cells", {
+  tri <- make_sub_tri("surgery")
+  bt <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                  method = "ed", process = "gamma",
+                  B = 200, seed = 1, keep_pseudo = TRUE)
+  alt <- bt$pseudo_triangles
+  by_cell <- alt[, list(sd_v = stats::sd(loss_mean)),
+                   by = c("cohort", "dev")]
+  expect_gt(max(by_cell$sd_v, na.rm = TRUE), 0)
+})
+
+test_that("ED bootstrap $summary slot has cell-level SE decomposition columns", {
+  tri <- make_sub_tri("surgery")
+  bt <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                  method = "ed", process = "gamma",
+                  B = 50, seed = 1)
+  expect_true(all(c("cohort", "dev", "mean_proj",
+                     "param_se", "proc_se", "total_se", "total_cv") %in%
+                    names(bt$summary)))
+  # Projected cells should have finite, non-negative SE entries.
+  ult <- bt$summary[dev == max(bt$summary$dev)]
+  expect_true(any(is.finite(ult$total_se)))
+  expect_true(all(ult$total_se[is.finite(ult$total_se)] >= 0))
+})
+
+test_that("ED bootstrap point estimate lands in the right order of magnitude", {
+  tri <- make_sub_tri("surgery")
+  bt <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                  method = "ed", process = "gamma",
+                  B = 200, seed = 1)
+  # Analytical ED on the same triangle (intensity-weighted refit).
+  ed_fit <- fit_ed(tri, loss = "loss", exposure = "exposure")
+  # Compare ultimate per cohort between bootstrap mean and analytical
+  # projection.
+  ult_dev <- max(bt$summary$dev)
+  boot_ult <- bt$summary[dev == ult_dev,
+                          .(cohort, boot_mean = mean_proj)]
+  ana_ult  <- ed_fit$full[dev == ult_dev,
+                           .(cohort, ana = loss_proj)]
+  m <- merge(boot_ult, ana_ult, by = "cohort", all = FALSE)
+  m <- m[is.finite(boot_mean) & is.finite(ana) & ana > 0]
+  expect_gt(nrow(m), 0L)
+  # Bootstrap and analytical anchor at different upper-triangle
+  # representations (analytical: observed cum at last_obs;
+  # bootstrap: fitted cum from cumulative incrementals via g_hat * P).
+  # The two coincide only when g_hat * P matches incr_loss cell by cell,
+  # which is generally false. Use a loose order-of-magnitude check to
+  # guard against paradigm bugs (e.g., multiplicative projection on the
+  # ED forward path) without false-failing on legitimate fitted-vs-
+  # observed anchor drift.
+  ratio <- sum(m$boot_mean) / sum(m$ana)
+  expect_gt(ratio, 0.5)
+  expect_lt(ratio, 2.0)
+})
+
+test_that("ED and CL bootstraps both run on the same triangle and give different SEs", {
+  tri <- make_sub_tri("surgery")
+  bt_ed <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                     method = "ed", process = "gamma",
+                     B = 100, seed = 1)
+  bt_cl <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                     method = "cl", process = "gamma",
+                     B = 100, seed = 1)
+  # Both should produce a finite $summary with the same row count.
+  expect_identical(nrow(bt_ed$summary), nrow(bt_cl$summary))
+  # SEs should differ on at least some projected cells (different
+  # paradigms produce different stochastic structures).
+  cmp <- merge(
+    bt_ed$summary[, .SD, .SDcols = c("cohort", "dev", "total_se")],
+    bt_cl$summary[, .SD, .SDcols = c("cohort", "dev", "total_se")],
+    by = c("cohort", "dev"),
+    suffixes = c("_ed", "_cl")
+  )
+  cmp <- cmp[is.finite(total_se_ed) & is.finite(total_se_cl)]
+  if (nrow(cmp) > 0L) {
+    expect_true(any(abs(cmp$total_se_ed - cmp$total_se_cl) > 1e-6))
+  }
+})
+
+test_that("ED bootstrap respects method enum order c('ed', 'cl', 'sa')", {
+  tri <- make_sub_tri("surgery")
+  # Default with no method should resolve to 'ed' (first in enum).
+  bt <- bootstrap(tri, type = "nonparametric", residual = "cell",
+                  process = "gamma", B = 5, seed = 1)
+  expect_identical(bt$meta$method, "ed")
 })

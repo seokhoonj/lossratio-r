@@ -6,7 +6,7 @@
  *   2. Implementing it in its own src/<name>.c file.
  *   3. Adding a row to CallEntries below.
  *
- * R-side references the symbols by the `C_*` name (e.g. .Call(C_bootstrap_kernel_cell, ...))
+ * R-side references the symbols by the `C_*` name (e.g. .Call(C_bootstrap_kernel_cl_cell, ...))
  * — that mapping is established by `R_registerRoutines` + the
  * `useDynLib(lossratio, .registration = TRUE)` directive in NAMESPACE.
  */
@@ -15,9 +15,10 @@
 
 static const R_CallMethodDef CallEntries[] = {
   /* name (.Call symbol)                function pointer                       #args */
-  {"C_bootstrap_kernel_cell",           (DL_FUNC) &bootstrap_kernel_cell,           16},
-  {"C_bootstrap_kernel_link",           (DL_FUNC) &bootstrap_kernel_link,           14},
-  {"C_bootstrap_kernel_parametric",     (DL_FUNC) &bootstrap_kernel_parametric,     11},
+  {"C_bootstrap_kernel_cl_cell",           (DL_FUNC) &bootstrap_kernel_cl_cell,           16},
+  {"C_bootstrap_kernel_ed_cell",        (DL_FUNC) &bootstrap_kernel_ed_cell,        17},
+  {"C_bootstrap_kernel_cl_link",           (DL_FUNC) &bootstrap_kernel_cl_link,           14},
+  {"C_bootstrap_kernel_cl_parametric",     (DL_FUNC) &bootstrap_kernel_cl_parametric,     11},
   {"C_bootstrap_summary_kernel",        (DL_FUNC) &bootstrap_summary_kernel,         7},
   {NULL, NULL, 0}
 };

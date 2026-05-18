@@ -21,7 +21,8 @@
   tail_set,
   hat_adj_set,
   demean_set,
-  min_pool_set
+  min_pool_set,
+  method_set
 )
 }
 \arguments{
