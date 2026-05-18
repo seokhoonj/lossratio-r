@@ -35,11 +35,90 @@ For cohort $i$ at dev $k$:
 - maturity point $m_g$ — dev at which $f_k$ stabilises
   for group $g$ (detected from CV / RSE thresholds)
 
-## Method 1: Stage-Adaptive (`"sa"`, default)
+## Method 1: Exposure-Driven (`"ed"`, default)
 
-The default method exploits the fact that $f_k$ is volatile early
-and stable late, while $g_k$ behaves the opposite way. SA switches
-estimators at the maturity point:
+All future increments use exposure (risk premium) as the
+denominator:
+
+$$
+\hat{C}^L_{i,k+1} = \hat{C}^L_{i,k} + g_k \cdot C^P_{i,k}
+$$
+
+ED is the default because it is an *unconditional safe baseline*
+-- no maturity or regime detection is required, and the projection
+is robust under early-dev age-to-age volatility.
+
+Behaviour:
+
+- Stable when premium volume is informative across full development.
+- The pooled intensity $g_k$ assumes cohorts are reasonably
+  homogeneous in loss-per-exposure level. Under cohort-level drift
+  the projection biases toward the pooled mean and may over-project
+  post-change cohorts -- see the `regime` argument for explicit
+  filtering.
+
+When to use:
+
+- As a baseline projection where cohort homogeneity is plausible.
+- Short-tail products where chain ladder offers no advantage.
+- Sparse data where age-to-age factors are unreliable across all
+  links.
+
+```{r}
+library(lossratio)
+data(experience)
+tri <- as_triangle(
+  experience[coverage == "surgery"],
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "incr_loss",
+  exposure = "incr_exposure"
+)
+
+ratio_ed <- fit_ratio(tri, method = "ed")        # default
+plot(ratio_ed, metric = "ratio")
+summary(ratio_ed)
+```
+
+## Method 2: Classical Chain Ladder (`"cl"`)
+
+Classical Mack (1993) model:
+
+$$
+\hat{C}^L_{i,k+1} = f_k \cdot \hat{C}^L_{i,k}
+$$
+
+The cohort's own cum_loss acts as the anchor, so cohort-level drift
+propagates naturally without explicit regime detection.
+
+Behaviour:
+
+- Standard reserving practice. Equivalent to `fit_cl(tri, loss = "loss")`
+  for the loss projection, but `fit_ratio()` additionally projects
+  exposure forward via CL on `exposure` and computes the loss-ratio
+  uncertainty via the delta method.
+- Volatile when early $f_k$ are noisy -- small denominators amplify
+  link errors.
+
+When to use:
+
+- Once age-to-age factors stabilise.
+- Cohort-level drift scenarios where the cohort's observed
+  trajectory should anchor the projection.
+- Reserving exercises where regulators expect the classical Mack
+  form for documentation.
+
+```{r}
+ratio_cl <- fit_ratio(tri, method = "cl")
+plot(ratio_cl, metric = "ratio")
+```
+
+## Method 3: Stage-Adaptive (`"sa"`)
+
+SA composes ED before the maturity point with CL after, exploiting
+the fact that $f_k$ is volatile early and stable late, while $g_k$
+behaves the opposite way:
 
 $$
 \hat{C}^L_{i,k+1} \;=\;
@@ -60,96 +139,40 @@ Behaviour:
 
 When to use:
 
-- Long-tail products where development extends across many years.
+- Long-tail portfolios where early dev is volatile (ED phase) and
+  cohort-level drift needs cohort-anchored projection in later dev
+  (CL phase).
 - Recent cohorts (immature data) mixed with older cohorts (matured).
 - Health insurance cohorts with structural pre-/post-maturity
   difference (e.g. waiting period transitions).
 
 ```{r}
-library(lossratio)
-data(experience)
-tri <- as_triangle(
-  experience[coverage == "surgery"],
-  groups   = "coverage",
-  cohort   = "uy_m",
-  calendar = "cy_m",
-  loss     = "incr_loss",
-  exposure = "incr_exposure"
-)
-
-ratio_sa <- fit_ratio(tri, method = "sa")        # default
+ratio_sa <- fit_ratio(tri, method = "sa")
 plot(ratio_sa, metric = "ratio")
 summary(ratio_sa)
 ```
 
-## Method 2: Exposure-Driven (`"ed"`)
+## Method summary
 
-All future increments use ED:
-
-$$
-\hat{C}^L_{i,k+1} = \hat{C}^L_{i,k} + g_k \cdot C^P_{i,k}
-$$
-
-Behaviour:
-
-- Stable when premium volume is informative across full development.
-- Loses the cohort-specific level signal — cohorts with higher
-  observed loss converge toward the group-level $g_k$.
-
-When to use:
-
-- Short-tail products where chain ladder offers no advantage.
-- Sparse data where age-to-age factors are unreliable across all
-  links.
-- Comparing against SA / CL for sanity check.
-
-```{r}
-ratio_ed <- fit_ratio(tri, method = "ed")
-plot(ratio_ed, metric = "ratio")
-```
-
-## Method 3: Classical Chain Ladder (`"cl"`)
-
-Classical Mack (1993) model:
-
-$$
-\hat{C}^L_{i,k+1} = f_k \cdot \hat{C}^L_{i,k}
-$$
-
-Behaviour:
-
-- Standard reserving practice. Equivalent to `fit_cl(tri, loss = "loss")`
-  for the loss projection, but `fit_ratio()` additionally projects
-  exposure forward via CL on `exposure` and computes the loss-ratio
-  uncertainty via the delta method.
-- Volatile when early $f_k$ are noisy — small denominators amplify
-  link errors.
-
-When to use:
-
-- Mature, stable portfolios where age-to-age factors are
-  well-behaved across the full development.
-- Reserving exercises where regulators expect the classical Mack
-  form for documentation.
-
-```{r}
-ratio_cl <- fit_ratio(tri, method = "cl")
-plot(ratio_cl, metric = "ratio")
-```
+| method | mechanism                       | when to use                                                         |
+|--------|---------------------------------|---------------------------------------------------------------------|
+| ED     | pooled $g_k$ x cohort exposure  | default baseline; assumes cohort homogeneity                        |
+| CL     | pooled $f_k$ x cohort cum_loss  | cohort-level drift; cohort-anchored                                 |
+| SA     | ED early + CL late              | long-tail with both volatile early dev and cohort-level late drift  |
 
 ## Comparison
 
 ```{r}
 ratios <- list(
-  sa = fit_ratio(tri, method = "sa"),
   ed = fit_ratio(tri, method = "ed"),
-  cl = fit_ratio(tri, method = "cl")
+  cl = fit_ratio(tri, method = "cl"),
+  sa = fit_ratio(tri, method = "sa")
 )
 
 # Cohort-level summary
-summary(ratios$sa)$loss_ult
 summary(ratios$ed)$loss_ult
 summary(ratios$cl)$loss_ult
+summary(ratios$sa)$loss_ult
 ```
 
 ## Variance and confidence intervals
@@ -171,31 +194,33 @@ $$
 Bootstrap intervals are also available:
 
 ```{r}
-ratio_boot <- fit_ratio(tri, method = "sa", bootstrap = TRUE, B = 1000, seed = 1)
+ratio_boot <- fit_ratio(tri, method = "ed", bootstrap = TRUE, B = 1000, seed = 1)
 summary(ratio_boot)
 ```
 
 ## Choosing a method
 
-SA combines ED before the maturity point with CL after, so `"sa"` is
-the natural default. `"cl"` and `"ed"` are special cases that apply
-only when one of SA's two regions becomes redundant.
+ED is the default because it is the *unconditional safe baseline*:
+no maturity or regime detection is required, and it is conservative
+under early-dev volatility. CL and SA are warranted when the
+default's homogeneity assumption is unrealistic.
 
 ```
-Default is "sa" — ED before maturity, CL after.
+Default is "ed" -- pooled g_k x cohort exposure, no maturity dependency.
 
-Pick "cl" or "ed" only as special cases:
-  ├── All cohorts are already past maturity
-  │     → "cl"  (no ED region, so SA reduces to CL)
-  └── Loss development is unstable across all dev and exposure is
-      the more reliable signal
-        → "ed"  (CL region is better served by exposure)
+Move to "cl" or "sa" when ED's assumptions become limiting:
+  |-- Cohort-level drift (regime change, underwriting / coverage shift)
+  |     -> "cl"  (cohort's own cum_loss anchors the drift)
+  |-- Long-tail portfolio with BOTH volatile early dev AND cohort drift late
+  |     -> "sa"  (ED before maturity, CL after)
+  |-- All cohorts already past maturity, no early-dev volatility
+        -> "cl"  (no ED region needed)
 ```
 
-In practice: **start with `"sa"`** (the default), then run `"cl"`
-and `"ed"` for sensitivity. If all three agree, the projection is
-robust. If they diverge, inspect maturity detection and the
-underlying ATA factors.
+In practice: **start with `"ed"`** (the default), then run `"cl"`
+and `"sa"` for sensitivity. If all three agree, the projection is
+robust. If they diverge, inspect maturity detection, regime filters,
+and the underlying ATA factors.
 
 ## Maturity input
 

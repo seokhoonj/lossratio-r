@@ -156,7 +156,7 @@ triangle has at least 24–30 diagonals of history.
 
 ## Choosing the projection target
 
-The default is `target = "ratio"` with `loss_method = "sa"`. The loss
+The default is `target = "ratio"` with `loss_method = "ed"`. The loss
 ratio is unitless and dimension-free across cohorts of very different
 volume, so `ae_err_mean` and `ae_err_med` carry a consistent meaning
 across the triangle.
@@ -174,23 +174,25 @@ across the triangle.
 | `"exposure"` | `fit_exposure()`  | `exposure_method` | `exposure_proj`   |
 
 The `loss_method` argument selects the underlying loss / loss-ratio
-projection strategy: `"sa"` (stage-adaptive, the default) blends
-exposure-driven projections before the maturity point with chain
-ladder afterwards; `"ed"` is purely exposure-driven; `"cl"` is the
-classical chain ladder. The `exposure_method` argument selects the
-premium projection strategy when `target = "exposure"`.
+projection strategy: `"ed"` (exposure-driven, the default) is the
+unconditional safe baseline -- no maturity or regime detection
+needed; `"cl"` is the classical chain ladder, which lets the
+cohort's own cum_loss anchor cohort-level drift; `"sa"`
+(stage-adaptive) blends ED before the maturity point with CL
+afterwards. The `exposure_method` argument selects the premium
+projection strategy when `target = "exposure"`.
 
 ```{r}
-bt_sa       <- backtest(tri_sur, holdout = 6L, loss_method = "sa")  # default
-bt_ed       <- backtest(tri_sur, holdout = 6L, loss_method = "ed")
+bt_ed       <- backtest(tri_sur, holdout = 6L, loss_method = "ed")  # default
 bt_cl       <- backtest(tri_sur, holdout = 6L, loss_method = "cl")
+bt_sa       <- backtest(tri_sur, holdout = 6L, loss_method = "sa")
 
 bt_loss     <- backtest(tri_sur, holdout = 6L,
                         target = "loss", loss_method = "cl")
 bt_premium  <- backtest(tri_sur, holdout = 6L,
                         target = "exposure", exposure_method = "cl")
 
-print(bt_sa)
+print(bt_ed)
 ```
 
 For monetary impact (loss or premium) backtesting, set

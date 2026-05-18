@@ -115,13 +115,14 @@ summary(ed)
 ```
 
 `fit_ratio()` is the unified loss-ratio interface. The default
-`method = "sa"` (stage-adaptive) uses exposure-driven before the
-maturity point and chain ladder after, switching at the per-group
-maturity detected from the ATA factors. `method = "ed"` or `"cl"`
-applies a single stage throughout.
+`method = "ed"` (exposure-driven) is the unconditional safe
+baseline -- no maturity or regime detection needed. Use
+`method = "cl"` for cohort-anchored projection under cohort-level
+drift, or `method = "sa"` (stage-adaptive) for long-tail
+portfolios where both volatile early dev and cohort drift coexist.
 
 ```{r}
-ratio <- fit_ratio(tri, method = "sa")
+ratio <- fit_ratio(tri)
 plot(ratio, metric = "ratio")
 summary(ratio)
 ```

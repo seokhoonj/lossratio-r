@@ -168,7 +168,7 @@ attr(cal, "calendar")   # "cy_m"
 attr(cal, "grain")      # "M"
 ```
 
-Granularity (`"month"` / `"quarter"` / `"semi-annual"` / `"annual"`)
+Granularity (`"month"` / `"quarter"` / `"half"` / `"year"`)
 is derived on demand from the raw column name via
 `lossratio:::.get_period_type()`, so no `_type` cache attributes are
 stored.

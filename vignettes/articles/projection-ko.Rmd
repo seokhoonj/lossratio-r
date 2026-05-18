@@ -1,8 +1,8 @@
 ---
-title: "Projection: 손해율 예측 (SA, ED, CL)"
+title: "Projection: 손해율 예측 (ED, CL, SA)"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Projection: 손해율 예측 (SA, ED, CL)}
+  %\VignetteIndexEntry{Projection: 손해율 예측 (ED, CL, SA)}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-> 영어 원본 보기: [Loss-ratio projection methods: SA, ED, CL](../loss-ratio-methods.html)
+> 영어 원본 보기: [Loss-ratio projection methods: ED, CL, SA](../loss-ratio-methods.html)
 
 `fit_ratio()` 은 `Triangle` 객체로부터 코호트별 누적 손해율을
 추정한다. 세 가지 방법이 제공되며, 본 문서는 각 방법의
@@ -37,11 +37,79 @@ knitr::opts_chunk$set(
 - 성숙점(maturity point) $m_g$ — 그룹 $g$ 에서 $f_k$ 가 안정화되는
   dev (CV / RSE 임계값으로 탐지)
 
-## 방법 1: 단계 적응형(stage-adaptive, SA) (`"sa"`, default)
+## 1. 노출 기반(exposure-driven, ED) (`"ed"`, default)
 
-기본 방법은 $f_k$ 가 초반에는 변동성이 크고 후반에는 안정적이라는
-사실, 그리고 $g_k$ 는 그 반대로 움직인다는 사실을 활용한다. SA 는
-성숙점에서 추정량을 전환한다:
+모든 미래 증분에 ED 를 적용한다:
+
+$$
+\hat{C}^L_{i,k+1} = \hat{C}^L_{i,k} + g_k \cdot C^P_{i,k}
+$$
+
+특성:
+
+- 무조건적 안전한 baseline — 성숙점 / regime 검출에 의존하지 않는다.
+- 익스포저(위험보험료)가 분모이므로 초기 dev 의 ATA 인자 변동에 강건하다.
+- 코호트 고유의 수준 신호를 잃는다 — 관측 손해가 더 높은
+  코호트도 그룹 단위 $g_k$ 로 수렴한다.
+
+언제 사용:
+
+- baseline 으로. pooled intensity $g_k$ 는 코호트들이 단위 노출 당 손해
+  수준에서 대체로 동질적이라 가정한다.
+- 코호트-레벨 drift(약관 / 인수 정책 변경) 시 pooled 평균으로 편향되어
+  post-change 코호트를 over-project 가능 — 명시적 필터는 `regime` 인자.
+
+```{r}
+library(lossratio)
+data(experience)
+tri <- as_triangle(
+  experience[coverage == "surgery"],
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "incr_loss",
+  exposure = "incr_exposure"
+)
+
+ratio_ed <- fit_ratio(tri, method = "ed")        # default
+plot(ratio_ed, metric = "ratio")
+summary(ratio_ed)
+```
+
+## 2. 체인 래더(chain ladder, CL) (`"cl"`)
+
+고전적 Mack (1993) 모형:
+
+$$
+\hat{C}^L_{i,k+1} = f_k \cdot \hat{C}^L_{i,k}
+$$
+
+특성:
+
+- 코호트 자기 cum_loss 가 anchor 역할이므로 *코호트-레벨 drift 가
+  자연스럽게 propagation* — 명시적 regime 검출 불필요.
+- 손해 예측에 한해서는 `fit_cl(tri, loss = "loss")` 과 동등하지만,
+  `fit_ratio()` 은 추가로 `exposure` 에 대한 CL 로 익스포저를 전방
+  추정하고 delta method 로 손해율 불확실성을 계산한다.
+- 초기 $f_k$ 에 노이즈가 있을 때 변동성이 크다 — 작은 분모가 link 오차를
+  증폭한다.
+
+언제 사용:
+
+- ATA 인자가 안정된 후. 특히 코호트-레벨 drift 시나리오에서 코호트의
+  관측 경로가 자동 anchor.
+- 규제 당국이 문서화 목적으로 고전적 Mack 형식을 요구하는 적립 작업.
+
+```{r}
+ratio_cl <- fit_ratio(tri, method = "cl")
+plot(ratio_cl, metric = "ratio")
+```
+
+## 3. 단계 적응형(stage-adaptive, SA) (`"sa"`)
+
+두 방법의 합성. $f_k$ 가 초반에는 변동성이 크고 후반에는 안정적이라는
+사실, 그리고 $g_k$ 는 그 반대로 움직인다는 사실을 활용해 성숙점에서
+추정량을 전환한다:
 
 $$
 \hat{C}^L_{i,k+1} \;=\;
@@ -58,97 +126,42 @@ $$
 - **성숙점 이후**: 코호트 자체의 관측 수준을 보존한다. ED 방법이
   꼬리에서 모든 코호트를 평균으로 끌어당기는 문제를 회피한다.
 
-사용 시점:
+언제 사용:
 
-- 발달이 여러 해에 걸치는 long-tail 상품.
+- 장기-tail 포트폴리오 — 초기 dev 의 변동성(ED phase) + 후기 dev 의
+  코호트-레벨 drift(CL phase) 둘 다 처리.
 - 최근 코호트(미성숙 데이터)와 오래된 코호트(성숙 데이터)가 혼재하는 경우.
 - 성숙점 이전·이후의 구조적 차이가 있는 건강보험 코호트
   (예: 면책기간 전환).
 
 ```{r}
-library(lossratio)
-data(experience)
-tri <- as_triangle(
-  experience[coverage == "surgery"],
-  groups   = "coverage",
-  cohort   = "uy_m",
-  calendar = "cy_m",
-  loss     = "incr_loss",
-  exposure = "incr_exposure"
-)
-
-ratio_sa <- fit_ratio(tri, method = "sa")        # default
+ratio_sa <- fit_ratio(tri, method = "sa")
 plot(ratio_sa, metric = "ratio")
 summary(ratio_sa)
 ```
 
-## 방법 2: 노출 기반(exposure-driven, ED) (`"ed"`)
+## 4. 비교
 
-모든 미래 증분에 ED 를 적용한다:
-
-$$
-\hat{C}^L_{i,k+1} = \hat{C}^L_{i,k} + g_k \cdot C^P_{i,k}
-$$
-
-특성:
-
-- 보험료 규모가 전체 발달 구간에서 신뢰할 만한 신호일 때 안정적이다.
-- 코호트 고유의 수준 신호를 잃는다 — 관측 손해가 더 높은
-  코호트도 그룹 단위 $g_k$ 로 수렴한다.
-
-사용 시점:
-
-- chain ladder 의 이점이 없는 short-tail 상품.
-- 모든 link 에서 ATA 계수가 신뢰할 수 없는 희소 데이터.
-- SA / CL 과 비교하여 확인 차 점검 용도.
-
-```{r}
-ratio_ed <- fit_ratio(tri, method = "ed")
-plot(ratio_ed, metric = "ratio")
-```
-
-## 방법 3: 고전적 chain ladder (`"cl"`)
-
-고전적 Mack (1993) 모형:
-
-$$
-\hat{C}^L_{i,k+1} = f_k \cdot \hat{C}^L_{i,k}
-$$
-
-특성:
-
-- 표준적인 적립 실무. 손해 예측에 한해서는 `fit_cl(tri, loss = "loss")`
-  과 동등하지만, `fit_ratio()` 은 추가로 `exposure` 에 대한 CL 로 익스포저를
-  전방 추정하고 delta method 로 손해율 불확실성을 계산한다.
-- 초기 $f_k$ 에 노이즈가 있을 때 변동성이 크다 — 작은 분모가 link 오차를
-  증폭한다.
-
-사용 시점:
-
-- ATA 계수가 전체 발달 구간에서 안정적인 성숙 포트폴리오.
-- 규제 당국이 문서화 목적으로 고전적 Mack 형식을 요구하는 적립 작업.
-
-```{r}
-ratio_cl <- fit_ratio(tri, method = "cl")
-plot(ratio_cl, metric = "ratio")
-```
-
-## 비교
+| 방법 | mechanism | 언제 사용 |
+|---|---|---|
+| ED (default) | pooled $g_k$ x 코호트 익스포저 | baseline; 코호트 동질성 가정 |
+| CL | pooled $f_k$ x 코호트 cum_loss | 코호트 drift; 코호트-anchored |
+| SA | ED 초기 + CL 후기 | 초기 변동 + 후기 drift 둘 다 |
 
 ```{r}
 ratios <- list(
-  sa = fit_ratio(tri, method = "sa"),
   ed = fit_ratio(tri, method = "ed"),
-  cl = fit_ratio(tri, method = "cl")
+  cl = fit_ratio(tri, method = "cl"),
+  sa = fit_ratio(tri, method = "sa")
 )
 
 # 코호트 단위 요약
-summary(ratios$sa)$loss_ult
 summary(ratios$ed)$loss_ult
 summary(ratios$cl)$loss_ult
+summary(ratios$sa)$loss_ult
 ```
 
-## 분산과 신뢰구간
+## 5. 분산과 신뢰구간
 
 `fit_ratio()` 은 `L/P` 의 표준오차를 두 가지 방식으로 산출한다:
 
@@ -171,27 +184,28 @@ ratio_boot <- fit_ratio(tri, method = "sa", bootstrap = TRUE, B = 1000, seed = 1
 summary(ratio_boot)
 ```
 
-## 방법 선택
+## 6. 방법 선택
 
-SA 는 성숙점 이전엔 ED, 이후엔 CL 로 자연 전환하는 결합이다.
-따라서 일반적으로 `"sa"` 가 기본값이고, `"cl"` 과 `"ed"` 는 SA 의
-한쪽 영역이 무의미해지는 특수 케이스일 때만 선택한다.
+ED 가 기본값으로, 성숙점이나 regime 검출 없이도 안전하게 동작하는
+unconditional safe baseline 이다. 코호트-레벨 drift 가 의심되거나
+ATA 인자가 안정된 포트폴리오에서는 `"cl"` 로 전환, 초기 변동과 후기
+drift 가 모두 존재하는 long-tail 에서는 `"sa"` 로 합성한다.
 
 ```
-기본은 "sa" — 성숙점 이전엔 ED, 이후엔 CL 로 자연 전환.
+기본은 "ed" — pooled g_k 기반 baseline. 성숙점 / regime 의존 없음.
 
-특수 케이스로만 "cl" 또는 "ed":
-  ├── 모든 코호트가 이미 성숙점 이후
-  │     → "cl"  (ED 영역이 비어있어 SA = CL)
-  └── 손해 전개가 전 기간 불안정하고 익스포저(exposure) 가 더 신뢰할 만한 신호
-        → "ed"  (CL 영역도 노출 기반이 적절)
+선택지:
+  ├── 코호트-레벨 drift 가 의심 / ATA 인자가 안정된 포트폴리오
+  │     → "cl"  (코호트 자기 cum_loss 가 anchor)
+  └── 장기-tail 에서 초기 변동 + 후기 drift 둘 다
+        → "sa"  (성숙점 이전 ED, 이후 CL 합성)
 ```
 
-실무: **`"sa"` 로 시작한다** (default). 이후 민감도 점검을 위해
-`"cl"` 과 `"ed"` 를 함께 실행한다. 셋이 모두 일치하면 추정은
-견고하다. 결과가 갈라지면 성숙점 탐지와 기저 ATA 계수를 점검한다.
+실무: **`"ed"` 로 시작한다** (default). 이후 민감도 점검을 위해
+`"cl"` 과 `"sa"` 를 함께 실행한다. 셋이 모두 일치하면 추정은
+견고하다. 결과가 갈라지면 성숙점 탐지와 기저 ATA 인자를 점검한다.
 
-## 성숙점 입력 방식
+## 7. 성숙점 입력 방식
 
 `method = "sa"` 에서는 성숙점 $m_g$ 가 ED → CL 전환 지점이 된다.
 `fit_ratio()` / `fit_loss()` 의 default 는 `maturity = "auto"` 로,

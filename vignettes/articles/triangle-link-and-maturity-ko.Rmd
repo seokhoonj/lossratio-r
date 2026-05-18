@@ -195,7 +195,8 @@ attribute 로도 저장된다.
 `detect_maturity()` 는 `fit_ata()` 와 `fit_cl()` 내부에서도 `maturity`
 인자를 통해 호출된다. 사용자 임계값을 넘기려면 `maturity_spec()` 으로
 감싸 전달하고, default 값으로 자동 탐지하려면 `"auto"` 를 쓴다
-(`fit_ratio(method = "sa")` / `fit_loss()` 는 default 가 `"auto"`).
+(SA path 의 `maturity` 인자는 default 가 `"auto"`; ED / CL path 에서는
+maturity 의미 없음).
 
 ```{r, eval = FALSE}
 fit_ata(tri, loss = "loss",

@@ -280,12 +280,13 @@ calls and inherits their constraints:
   mat_k >= window` (or 2 for tail / slope). Short observation windows
   return `NA` for every method.
 - **Model conditioning**: the projected LR is computed by `fit_ratio()`,
-  which internally composes `fit_loss()` (default `method = "sa"`
-  — stage-adaptive) and `fit_exposure()`. Choices made inside that
-  composition (loss method, regime filter, maturity argument) feed
-  through to `conv_k`; review the underlying `fit_ratio` settings when
-  interpreting the result. Pass `loss_method =`, `loss_regime =`,
-  etc. through `...` to override.
+  which internally composes `fit_loss()` (default `method = "ed"`
+  -- exposure-driven; optionally `"cl"` / `"sa"` for cohort-anchored)
+  and `fit_exposure()`. Choices made inside that composition (loss
+  method, regime filter, maturity argument) feed through to `conv_k`;
+  review the underlying `fit_ratio` settings when interpreting the
+  result. Pass `loss_method =`, `loss_regime =`, etc. through `...`
+  to override.
 - **Portfolio aggregation**: the portfolio LR aggregates per-group
   ultimates via exposure weighting (`sum(loss_ult) /
   sum(exposure_ult)`). Calendar-year shocks (regulatory changes, cost

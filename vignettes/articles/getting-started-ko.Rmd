@@ -109,14 +109,16 @@ ed <- fit_ed(tri, loss = "loss", exposure = "exposure")
 summary(ed)
 ```
 
-`fit_ratio()` 은 손해율 통합 인터페이스이다. default 인 단계 적응형(stage-adaptive,
-SA) 방식 (`method = "sa"`) 은 성숙점(maturity point) 이전에는 노출 기반,
-성숙점 이후에는 chain ladder 를 적용한다. 전환 지점은 ATA 인자로부터
-그룹별로 탐지된 성숙점이다. `method = "ed"` 또는 `"cl"` 로 단일
-스테이지만 적용할 수도 있다.
+`fit_ratio()` 은 손해율 통합 인터페이스이다. default 는 `method = "ed"`
+(노출 기반(exposure-driven, ED) baseline) 으로, 성숙점이나 regime 검출에
+의존하지 않는 안전한 baseline 이다. 코호트-anchored projection 이 필요할
+때는 `method = "cl"` (체인 래더(chain ladder, CL)), 초기 변동과 후기
+drift 가 모두 존재할 때는 `method = "sa"` (단계 적응형(stage-adaptive,
+SA)) 로 전환한다. SA 는 성숙점(maturity point) 이전에는 노출 기반,
+이후에는 체인 래더를 적용하는 합성이다.
 
 ```{r}
-ratio <- fit_ratio(tri, method = "sa")
+ratio <- fit_ratio(tri)        # default: method = "ed"
 plot(ratio, metric = "ratio")
 summary(ratio)
 ```
