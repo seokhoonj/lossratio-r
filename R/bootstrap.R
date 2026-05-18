@@ -527,12 +527,15 @@ bootstrap.Triangle <- function(x,
 
 # Section 3 -- Anchor + residual pool builders ================================
 #   .boot_empty_pool             (parametric path placeholder)
+#   .boot_volume_weighted_ratio  (sum(num)/sum(den) safety kernel, shared)
 #   .boot_anchor_cl              (per-link f_hat, sigma2, f_var)
 #   .boot_fill_sigma2            (Mack tail-rule fill)
 #   .boot_attach_residuals_cl    (link mode: per-link Mack residuals)
 #   .boot_build_pool_cl          (link mode: per-link pool assembly)
-#   .boot_fitted_grid_cl         (cell mode: chain-anchored fitted incrementals)
-#   .boot_fitted_grid_ed         (cell mode: ED additive mirror of fitted_grid_cl)
+#   .boot_fitted_grid            (cell mode: chain-anchored fitted incrementals
+#                                 backbone -- takes per-step closures)
+#   .boot_steps_cl               (multiplicative fwd/bwd closures for CL)
+#   .boot_steps_ed               (additive fwd/bwd closures for ED)
 #   .boot_hat_diag_cl            (cell mode: GLM hat matrix leverage)
 #   .boot_cell_residuals_cl(_one) (cell mode: Pearson residuals per cell)
 #   .boot_build_pool_cell_cl     (cell mode: pool assembly with zero-drop + centering)
@@ -548,6 +551,19 @@ bootstrap.Triangle <- function(x,
                    else character(0)]
   }
   out
+}
+
+
+# Internal: volume-weighted ratio sum(num) / sum(den) with the standard
+# finiteness/positivity gate. Returns NA_real_ when no row passes the
+# gate. Shared kernel for the loss CL, ED intensity, and exposure CL
+# anchors.
+.boot_volume_weighted_ratio <- function(num, den) {
+  ok <- is.finite(num) & is.finite(den) & den > 0
+  if (!any(ok)) return(NA_real_)
+  s_den <- sum(den[ok])
+  if (s_den <= 0) return(NA_real_)
+  sum(num[ok]) / s_den
 }
 
 
@@ -569,7 +585,7 @@ bootstrap.Triangle <- function(x,
 
   anchor <- link[is.finite(loss_from) & is.finite(loss_to) & loss_from > 0,
                  {
-                   f       <- sum(loss_to) / sum(loss_from)
+                   f       <- .boot_volume_weighted_ratio(loss_to, loss_from)
                    n       <- .N
                    if (n >= 2L) {
                      resid_sq <- (loss_to - f * loss_from)^2 / loss_from
@@ -735,54 +751,44 @@ bootstrap.Triangle <- function(x,
 
 # Internal: fitted incremental means mu_hat_{ij} on the full I x J grid --------
 #
-# Renshaw-Verrall (1998) ODP MLE equivalence: chain-ladder factors define
-# fitted incrementals via back-from-ultimate:
-#   1. Project ultimates U_hat_i = C_{i, last_obs_i} * prod_{k=last_obs_i}^{J-1} f_k
-#   2. Back-fill cumulative grid: C_hat_{iJ} = U_hat_i; C_hat_{ij} = C_hat_{i,j+1} / f_j
-#   3. Differentiate row-wise: mu_hat_{i1} = C_hat_{i1}; mu_hat_{ij} = C_hat_{ij} - C_hat_{i,j-1}
+# Chain-anchored fitted incrementals shared backbone for CL (multiplicative)
+# and ED (additive) paradigms. Renshaw-Verrall (1998) ODP MLE equivalence on
+# the CL side; additive mirror on the ED side. For each cohort i with
+# `last_j = last_obs_idx[i]`:
+#   1. Anchor at observed cumulative: c_hat[i, last_j] = mat_obs[i, last_j]
+#   2. Forward (j > last_j): cur <- step_fwd(cur, i, j)
+#   3. Backward (j < last_j): cur <- step_bwd(cur, i, j)
+#   4. mu_hat = row-wise diff of c_hat. By construction the upper-triangle
+#      partial sums match the observed cumulative at `last_j` exactly.
 #
-# Returns an n_coh x n_dev matrix of fitted incrementals (full grid;
-# upper triangle is fit, lower triangle is projection).
-.boot_fitted_grid_cl <- function(mat_obs, last_obs_idx, f_hat_vec, link_to_idx,
-                              n_coh, n_dev) {
-  # Step 1+2: build fitted cumulative grid C_hat
+# `step_fwd` / `step_bwd` are paradigm-specific closures built by
+# `.boot_steps_cl` (multiplicative) or `.boot_steps_ed` (additive). Returns
+# an n_coh x n_dev matrix of fitted incrementals (full grid; upper triangle
+# is fit, lower triangle is projection).
+.boot_fitted_grid <- function(mat_obs, last_obs_idx, n_coh, n_dev,
+                              step_fwd, step_bwd) {
   c_hat <- matrix(NA_real_, nrow = n_coh, ncol = n_dev)
-
-  # Per-cohort: anchor at last observed cumulative, project forward with
-  # f_hat (lower triangle), then back-fill earlier devs by dividing by f_hat
-  # (using sequential ata_from -> ata_to mapping).
-  f_by_to <- rep(NA_real_, n_dev)  # f_hat indexed by ata_to (dev index)
-  f_by_to[link_to_idx] <- f_hat_vec
-
   for (i in seq_len(n_coh)) {
     last_j <- last_obs_idx[i]
     if (is.na(last_j)) next
     base <- mat_obs[i, last_j]
     if (!is.finite(base)) next
     c_hat[i, last_j] <- base
-    # Forward (lower triangle)
     if (last_j < n_dev) {
       cur <- base
       for (j in seq(last_j + 1L, n_dev)) {
-        f_k <- f_by_to[j]
-        if (is.finite(f_k)) cur <- f_k * cur
+        cur <- step_fwd(cur, i, j)
         c_hat[i, j] <- cur
       }
     }
-    # Backward (earlier devs along upper triangle)
     if (last_j > 1L) {
       cur <- base
       for (j in seq(last_j - 1L, 1L)) {
-        f_k <- f_by_to[j + 1L]  # f mapping (j) -> (j+1)
-        if (is.finite(f_k) && f_k > 0) {
-          cur <- cur / f_k
-        }
+        cur <- step_bwd(cur, i, j)
         c_hat[i, j] <- cur
       }
     }
   }
-
-  # Step 3: incremental = row-wise diff
   mu_hat <- matrix(NA_real_, nrow = n_coh, ncol = n_dev)
   mu_hat[, 1L] <- c_hat[, 1L]
   if (n_dev >= 2L) {
@@ -794,67 +800,39 @@ bootstrap.Triangle <- function(x,
 }
 
 
-# Internal: ED-paradigm chain-anchored fitted incrementals -----------------
-#
-# Additive mirror of `.boot_fitted_grid_cl` (CL paradigm) for the ED model.
-# For each cohort i with `last_j = last_obs_idx[i]`:
-#   1. Anchor at observed cumulative: c_hat[i, last_j] = mat_obs[i, last_j]
-#   2. Forward (j > last_j): c_hat[i, j] = c_hat[i, j - 1] + g_hat[k] * exposure[i, j - 1]
-#      where k is the link (j - 1 -> j) and exposure[i, j - 1] is the
-#      cumulative exposure at the FROM side of that link.
-#   3. Backward (j < last_j): c_hat[i, j - 1] = c_hat[i, j] - g_hat[j] * exposure[i, j - 1]
-#      (reverses the forward additive step using the link with ata_to = j).
-#   4. mu_hat = row-wise diff of c_hat. By construction the upper-triangle
-#      partial sums match the observed cumulative at `last_j` exactly.
-#
-# Returns an n_coh x n_dev matrix of fitted incrementals (full grid;
-# upper triangle is fit, lower triangle is projection).
-.boot_fitted_grid_ed <- function(mat_obs, exposure_obs_mat, last_obs_idx,
-                                 g_hat_vec, link_to_idx, n_coh, n_dev) {
-  c_hat <- matrix(NA_real_, nrow = n_coh, ncol = n_dev)
-
-  # g_hat indexed by ata_to (dev index). For link (j - 1 -> j), the
-  # intensity entry sits at g_by_to[j] and uses exposure_obs_mat[i, j - 1].
-  g_by_to <- rep(NA_real_, n_dev)
-  g_by_to[link_to_idx] <- g_hat_vec
-
-  for (i in seq_len(n_coh)) {
-    last_j <- last_obs_idx[i]
-    if (is.na(last_j)) next
-    base <- mat_obs[i, last_j]
-    if (!is.finite(base)) next
-    c_hat[i, last_j] <- base
-    # Forward (lower triangle): additive increments g_k * exposure_from
-    if (last_j < n_dev) {
-      cur <- base
-      for (j in seq(last_j + 1L, n_dev)) {
-        g_k <- g_by_to[j]
-        e_from <- exposure_obs_mat[i, j - 1L]
-        if (is.finite(g_k) && is.finite(e_from)) cur <- cur + g_k * e_from
-        c_hat[i, j] <- cur
-      }
+# Internal: multiplicative CL step closures for `.boot_fitted_grid`.
+# `f_by_to[j]` is the chain-ladder factor applied at link (j-1 -> j).
+.boot_steps_cl <- function(f_by_to) {
+  list(
+    fwd = function(cur, i, j) {
+      f_k <- f_by_to[j]
+      if (is.finite(f_k)) f_k * cur else cur
+    },
+    bwd = function(cur, i, j) {
+      f_k <- f_by_to[j + 1L]
+      if (is.finite(f_k) && f_k > 0) cur / f_k else cur
     }
-    # Backward (earlier devs along upper triangle): reverse the additive step
-    if (last_j > 1L) {
-      cur <- base
-      for (j in seq(last_j - 1L, 1L)) {
-        g_k <- g_by_to[j + 1L]  # link (j) -> (j + 1)
-        e_from <- exposure_obs_mat[i, j]
-        if (is.finite(g_k) && is.finite(e_from)) cur <- cur - g_k * e_from
-        c_hat[i, j] <- cur
-      }
-    }
-  }
+  )
+}
 
-  # Step 4: incremental = row-wise diff
-  mu_hat <- matrix(NA_real_, nrow = n_coh, ncol = n_dev)
-  mu_hat[, 1L] <- c_hat[, 1L]
-  if (n_dev >= 2L) {
-    for (j in seq(2L, n_dev)) {
-      mu_hat[, j] <- c_hat[, j] - c_hat[, j - 1L]
+
+# Internal: additive ED step closures for `.boot_fitted_grid`.
+# `g_by_to[j]` is the per-link intensity applied at link (j-1 -> j);
+# `exposure_obs_mat[i, j-1]` is the FROM-side cumulative exposure for that
+# link.
+.boot_steps_ed <- function(g_by_to, exposure_obs_mat) {
+  list(
+    fwd = function(cur, i, j) {
+      g_k    <- g_by_to[j]
+      e_from <- exposure_obs_mat[i, j - 1L]
+      if (is.finite(g_k) && is.finite(e_from)) cur + g_k * e_from else cur
+    },
+    bwd = function(cur, i, j) {
+      g_k    <- g_by_to[j + 1L]
+      e_from <- exposure_obs_mat[i, j]
+      if (is.finite(g_k) && is.finite(e_from)) cur - g_k * e_from else cur
     }
-  }
-  mu_hat
+  )
 }
 
 
@@ -978,8 +956,11 @@ bootstrap.Triangle <- function(x,
   link_to_idx <- match(anchor$ata_to, devs)
   f_hat_vec   <- anchor$f_hat
 
-  mu_hat_grid <- .boot_fitted_grid_cl(mat_obs, last_obs_idx, f_hat_vec,
-                                    link_to_idx, n_coh, n_dev)
+  f_by_to <- rep(NA_real_, n_dev)
+  f_by_to[link_to_idx] <- f_hat_vec
+  steps <- .boot_steps_cl(f_by_to)
+  mu_hat_grid <- .boot_fitted_grid(mat_obs, last_obs_idx, n_coh, n_dev,
+                                   steps$fwd, steps$bwd)
 
   # Observed incrementals: X_ij = C_ij - C_{i,j-1}; X_i1 = C_i1
   x_inc <- matrix(NA_real_, nrow = n_coh, ncol = n_dev)
@@ -1152,18 +1133,13 @@ bootstrap.Triangle <- function(x,
   f_by_to <- rep(NA_real_, n_dev)
   if (n_dev < 2L) return(list(f_by_to = f_by_to))
   for (j in seq(2L, n_dev)) {
-    num <- 0; den <- 0
-    for (i in seq_len(n_coh)) {
-      lj <- last_obs_idx[i]
-      if (is.na(lj) || lj < j) next
-      a <- exp_obs_mat[i, j - 1L]
-      b <- exp_obs_mat[i, j]
-      if (is.finite(a) && is.finite(b) && a > 0) {
-        num <- num + b
-        den <- den + a
-      }
+    active <- which(!is.na(last_obs_idx) & last_obs_idx >= j)
+    if (length(active) > 0L) {
+      f_by_to[j] <- .boot_volume_weighted_ratio(
+        exp_obs_mat[active, j],
+        exp_obs_mat[active, j - 1L]
+      )
     }
-    if (den > 0) f_by_to[j] <- num / den
   }
   list(f_by_to = f_by_to)
 }
@@ -1208,7 +1184,8 @@ bootstrap.Triangle <- function(x,
 
   g_dt <- link[is.finite(loss_delta) & is.finite(exposure_from) &
                  exposure_from > 0,
-               list(g_hat = sum(loss_delta) / sum(exposure_from)),
+               list(g_hat = .boot_volume_weighted_ratio(loss_delta,
+                                                       exposure_from)),
                by = "ata_to"]
   # Lookup g_hat for each anchor row by `ata_to` (anchor row order is the
   # canonical link order in `.boot_stage1_one`).
@@ -1466,8 +1443,11 @@ bootstrap.Triangle <- function(x,
   # `mu_ed_grid` below from `g_hat * exposure_from`, so it skips this.
   if (is_residual_mode && identical(residual, "cell") &&
       !identical(method, "ed")) {
-    mu_hat_grid <- .boot_fitted_grid_cl(mat_obs, last_obs_idx, f_hat_vec,
-                                      link_to_idx, n_coh, n_dev)
+    f_by_to <- rep(NA_real_, n_dev)
+    f_by_to[link_to_idx] <- f_hat_vec
+    steps <- .boot_steps_cl(f_by_to)
+    mu_hat_grid <- .boot_fitted_grid(mat_obs, last_obs_idx, n_coh, n_dev,
+                                     steps$fwd, steps$bwd)
   }
 
   # Hoisted lookups used by every branch (kernel-internal vectors require
@@ -1510,10 +1490,11 @@ bootstrap.Triangle <- function(x,
 
     if (identical(method, "ed")) {
       # ----- ED-paradigm cell residual (Phase 1: fixed exposure) -------
-      # mu_ed is built by `.boot_fitted_grid_ed` -- the chain-anchored
-      # additive mirror of `.boot_fitted_grid_cl`. Each cohort anchors at
-      # its observed cumulative loss at `last_obs_idx`, then back-fills
-      # earlier devs and projects later devs by additive increments
+      # mu_ed is built by `.boot_fitted_grid` with additive ED step
+      # closures (`.boot_steps_ed`) -- the additive mirror of the CL
+      # multiplicative recursion. Each cohort anchors at its observed
+      # cumulative loss at `last_obs_idx`, then back-fills earlier devs
+      # and projects later devs by additive increments
       # g_k * exposure_from. The upper-triangle partial sums match the
       # observed cumulative exactly (no anchor drift).
       # Residuals on link cells (j >= 2) come from the ED Pearson form
@@ -1539,18 +1520,20 @@ bootstrap.Triangle <- function(x,
       g_hat_vec <- .boot_anchor_ed(anchor, link, n_links)
 
       # 3) Build mu_ed_grid via chain-anchored ED fit (additive mirror of
-      #    `.boot_fitted_grid_cl`). Each cohort is anchored at its observed
-      #    cumulative loss at `last_obs_idx`; the upper triangle is
-      #    back-filled and the lower triangle projected by additive
-      #    increments g_k * exposure_from. By construction the sum of
-      #    `mu_ed_grid[i, 1:last_j]` matches the observed cumulative at
-      #    `last_j` exactly (no anchor drift). The exposure argument is
-      #    `exposure_proj_mat` (upper triangle = observed, lower triangle
-      #    = CL-projected) so lower-triangle additive steps have a finite
-      #    exposure_from to multiply by.
-      mu_ed_grid <- .boot_fitted_grid_ed(mat_obs, exposure_proj_mat,
-                                          last_obs_idx, g_hat_vec,
-                                          link_to_idx, n_coh, n_dev)
+      #    the CL multiplicative recursion). Each cohort is anchored at
+      #    its observed cumulative loss at `last_obs_idx`; the upper
+      #    triangle is back-filled and the lower triangle projected by
+      #    additive increments g_k * exposure_from. By construction the
+      #    sum of `mu_ed_grid[i, 1:last_j]` matches the observed
+      #    cumulative at `last_j` exactly (no anchor drift). The
+      #    exposure argument is `exposure_proj_mat` (upper triangle =
+      #    observed, lower triangle = CL-projected) so lower-triangle
+      #    additive steps have a finite exposure_from to multiply by.
+      g_by_to <- rep(NA_real_, n_dev)
+      g_by_to[link_to_idx] <- g_hat_vec
+      steps      <- .boot_steps_ed(g_by_to, exposure_proj_mat)
+      mu_ed_grid <- .boot_fitted_grid(mat_obs, last_obs_idx, n_coh, n_dev,
+                                      steps$fwd, steps$bwd)
 
       upper_mask       <- upper_full & is.finite(mu_ed_grid)
       cell_active_lin  <- which(upper_mask)

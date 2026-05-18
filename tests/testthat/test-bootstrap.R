@@ -1125,8 +1125,8 @@ test_that("ED bootstrap point estimate lands in the right order of magnitude", {
   m <- merge(boot_ult, ana_ult, by = "cohort", all = FALSE)
   m <- m[is.finite(boot_mean) & is.finite(ana) & ana > 0]
   expect_gt(nrow(m), 0L)
-  # With `.boot_fitted_grid_ed` chain-anchoring AND the fixed
-  # `bootstrap_refit_ed_gstar` denominator coverage (same FINITE mask on
+  # With `.boot_fitted_grid` + `.boot_steps_ed` chain-anchoring AND the
+  # fixed `bootstrap_refit_ed_gstar` denominator coverage (same FINITE mask on
   # cum and exposure_proj together, matching analytical g_hat coverage),
   # the bootstrap aggregate ultimate matches the analytical aggregate
   # within ~0.5 percent on the 4 cv synthetic data. Tight 5% threshold.
