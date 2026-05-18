@@ -201,17 +201,30 @@ safe baseline* 을 요구한다.
 ## 10. Tail 외삽 (예정)
 
 `detect_maturity()` 의 $k^*$ 이후, observed dev range 의 *끝* 에서 *진짜
-ultimate* 까지는 *외삽* 이 필요. `fit_tail()` 함수 family 도입 예정 —
-*Sherman 1984* 의 log-linear curve (exponential / inverse power /
-Weibull) 와 *Clark 2003* 의 parametric growth curve (loglogistic /
-Weibull MLE) 가 *하나의 진입점에서 method 인자로 선택*:
+ultimate* 까지는 *외삽* 이 필요.
+
+Sherman 1984 의 *log-linear (exponential form) tail* 은 이미 패키지에
+있다 — `fit_cl(tail = TRUE)` 가 selected factor 위에서
+`log(f_k - 1) ~ k` 적합 + 100 future link 외삽. 한계: *exponential form
+만* / *fit_cl 내부 캡슐화* / *진단·SE surface 없음* / *horizon 하드코드* /
+*silent fallback*.
+
+`fit_tail()` 은 이를 *일반화*:
 
 ``` r
-fit_tail(f_vec, devs, K_ultimate = 360,
+fit_tail(series, devs, K_ultimate = 360,
          method        = "exponential",     # 또는 "inverse_power",
                                             # "weibull", "loglogistic_mle"
          fit_dev_range = c(10, max_observed_dev))
 ```
+
+기존 embedded Sherman exp 대비 *세 가지 확장*:
+
+-   추가 Sherman curve (inverse_power, Weibull) + Clark 2003 의
+    parametric growth curve family (loglogistic / Weibull MLE).
+-   *Standalone 진입* — *어떤 dev-decay series* 든 받음 (f, g,
+    ratio path 등). fit_cl 한정 아님.
+-   *진단 surface* — 계수·잔차·`fit_dev_range` 민감도·tail factor SE.
 
 장기건강보험은 *진짜 ult* 가 *수십 년* 이후이므로 tail 외삽이 *결과의
 critical fraction* 을 좌우한다. 도메인 expert 의 *sensitivity analysis*

@@ -205,24 +205,37 @@ signal; routinely computing both serves as a sanity check.
 ## Tail extrapolation (planned)
 
 After `detect_maturity()`'s \(k^*\), the observed dev range ends short
-of the true ultimate. Tail extrapolation is needed. The planned
-`fit_tail()` family covers two paradigms: Sherman (1984)'s log-linear
-curve fit (exponential / inverse-power / Weibull forms — descriptive),
-and Clark (2003)'s parametric growth curve (loglogistic / Weibull MLE —
-stochastic). Both reachable through one entry:
+of the true ultimate. Tail extrapolation is needed.
+
+A basic Sherman (1984) log-linear (exponential-form) tail is already in
+the package: `fit_cl(tail = TRUE)` fits `log(f_k - 1) ~ k` on selected
+factors and extrapolates 100 future links. Limitations: only the
+exponential form, only inside `fit_cl()`, no diagnostic / SE surface,
+hard-coded horizon, and silent fallback when the fit looks degenerate.
+
+The planned `fit_tail()` generalises this:
 
 ```r
-fit_tail(f_vec, devs, K_ultimate = 360,
+fit_tail(series, devs, K_ultimate = 360,
          method        = "exponential",     # or "inverse_power",
                                             # "weibull", "loglogistic_mle"
          fit_dev_range = c(10, max_observed_dev))
 ```
 
+Three extensions over the embedded Sherman exp form:
+
+- Additional Sherman curves (inverse_power, Weibull) plus Clark (2003)'s
+  parametric growth curve family (loglogistic / Weibull MLE).
+- Standalone entry — accepts any dev-decay series (f-factors, g-
+  intensities, ratio path), not just f.
+- Diagnostic surface — coefficients, residuals, sensitivity vs
+  fit_dev_range, SE on the cumulative tail factor.
+
 For long-term health, the true ultimate is decades away, so the tail
 extrapolation can account for a critical fraction of the reserve.
-Domain expertise and sensitivity analysis are essential — running both
-the Sherman descriptive fit and the Clark MLE form on the same series
-is a natural cross-check.
+Domain expertise and sensitivity analysis are essential — running the
+Sherman descriptive fit and the Clark MLE form on the same series is a
+natural cross-check.
 
 ## Roadmap
 
