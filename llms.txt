@@ -308,10 +308,11 @@ exposure-driven (ED) workflows. Built once, summarised differently via
 
 Models that produce full projections on a Triangle. Base algorithms:
 `fit_cl` (chain ladder / multiplicative), `fit_ed` (exposure-driven /
-additive). Role dispatchers: `fit_loss` (loss-side sa/ed/cl),
-`fit_exposure` (exposure-side ed/cl). Composition: `fit_ratio`
-(loss-ratio umbrella with delta-method SE). All return an object
-carrying a `$full` projection table.
+additive). ELR-based: `fit_bf` (Bornhuetter-Ferguson with scalar a
+priori) and `fit_capecod` (Stanard 1985 pooled ELR). Role dispatchers:
+`fit_loss` (loss-side sa/ed/cl), `fit_exposure` (exposure-side ed/cl).
+Composition: `fit_ratio` (loss-ratio umbrella with delta-method SE). All
+return an object carrying a `$full` projection table.
 
 - [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
   :
@@ -320,6 +321,12 @@ carrying a `$full` projection table.
 
 - [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md)
   : Fit ED intensity factors
+
+- [`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md)
+  : Bornhuetter-Ferguson projection
+
+- [`fit_capecod()`](https://seokhoonj.github.io/lossratio/reference/fit_capecod.md)
+  : Cape Cod projection (Stanard 1985)
 
 - [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
   : Fit a loss projection on a Triangle
@@ -513,6 +520,11 @@ print / summary / longer methods registered on package classes.
 
   Print method for `ATASummary`
 
+- [`print(`*`<BFFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.BFFit.md)
+  :
+
+  Print method for `BFFit`
+
 - [`print(`*`<BootstrapTriangle>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.BootstrapTriangle.md)
   : Print method for BootstrapTriangle
 
@@ -520,6 +532,11 @@ print / summary / longer methods registered on package classes.
   :
 
   Print a `CLFit` object
+
+- [`print(`*`<CapeCodFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.CapeCodFit.md)
+  :
+
+  Print method for `CapeCodFit`
 
 - [`print(`*`<EDFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.EDFit.md)
   :
@@ -556,6 +573,11 @@ print / summary / longer methods registered on package classes.
 
   Summary method for `ATAFit`
 
+- [`summary(`*`<BFFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.BFFit.md)
+  :
+
+  Summary method for `BFFit`
+
 - [`summary(`*`<CLFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.CLFit.md)
   :
 
@@ -563,6 +585,11 @@ print / summary / longer methods registered on package classes.
 
 - [`summary(`*`<Calendar>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.Calendar.md)
   : Summarise calendar-development statistics (Mean, Median, Weighted)
+
+- [`summary(`*`<CapeCodFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.CapeCodFit.md)
+  :
+
+  Summary method for `CapeCodFit`
 
 - [`summary(`*`<EDFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.EDFit.md)
   :

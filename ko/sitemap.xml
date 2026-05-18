@@ -100,6 +100,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-ratio_summary.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-rebucket_triangle_groups.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-remove_class.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_bf_prior.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_bootstrap.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_maturity.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_regime.html</loc></url>
@@ -118,6 +119,8 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-validate_calendar_consistency_impl.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/experience.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_capecod.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.html</loc></url>
@@ -156,8 +159,10 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.ATAFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.ATASummary.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.BFFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.BootstrapTriangle.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.CLFit.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.CapeCodFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.EDFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.EDSummary.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.ExposureFit.html</loc></url>
@@ -167,8 +172,10 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/regime_at.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/regime_spec.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.ATAFit.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.BFFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.CLFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.Calendar.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.CapeCodFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.EDFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.ExposureFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.IntensityFit.html</loc></url>
