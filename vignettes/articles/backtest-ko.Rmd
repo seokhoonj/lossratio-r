@@ -46,14 +46,14 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 bt <- backtest(tri_sur, holdout = 6L)
 print(bt)
 ```
 
-기본 추정 대상은 누적 손해율 (`target = "lr"`) 이며, 손해 측 method 는
+기본 추정 대상은 누적 손해율 (`target = "ratio"`) 이며, 손해 측 method 는
 단계 적응형(stage-adaptive, SA, `loss_method = "sa"`) 이다. 반환되는 객체는
 `"Backtest"` 리스트이며, 주요 슬롯은 다음과 같다.
 
@@ -61,7 +61,7 @@ print(bt)
 - `col_summary` — `dev` 별로 집계된 A/E Error.
 - `diag_summary` — 대각선별로 집계된 A/E Error.
 - `masked` — 적합에 사용된 triangle (최근 대각선이 제거됨).
-- `fit` — 내부 적합 객체 (`LRFit`, `LossFit`, 또는 `PremFit`,
+- `fit` — 내부 적합 객체 (`RatioFit`, `LossFit`, 또는 `ExposureFit`,
   `target` 에 따라 결정).
 
 `summary(bt)` 는 호출 메타데이터와 함께 두 요약 표를 출력한다.
@@ -151,7 +151,7 @@ plot_triangle(bt)         # hold-out 영역에 대한 발산형 팔레트 히트
 
 ## 7. 추정 대상 선택
 
-기본값인 `target = "lr"` (`loss_method = "sa"`) 은 손해율 관점의 진단을
+기본값인 `target = "ratio"` (`loss_method = "sa"`) 은 손해율 관점의 진단을
 직접 제공한다. `target` 과 method 인자를 바꾸면 다양한 변형을 백테스트할
 수 있다.
 
@@ -161,33 +161,33 @@ plot_triangle(bt)         # hold-out 영역에 대한 발산형 팔레트 히트
 > 를 호출하고, 해당 적합 객체의 `$full` 에서 대응되는 추정 컬럼을 비교
 > 대상으로 사용한다.
 
-| `target` | 내부 적합 함수 | method 인자   | 비교 컬럼   |
-|----------|----------------|---------------|-------------|
-| `"lr"`   | `fit_lr()`     | `loss_method` | `lr_proj`   |
-| `"loss"` | `fit_loss()`   | `loss_method` | `loss_proj` |
-| `"prem"` | `fit_prem()`   | `prem_method` | `prem_proj` |
+| `target`     | 내부 적합 함수      | method 인자          | 비교 컬럼        |
+|--------------|---------------------|----------------------|------------------|
+| `"ratio"`    | `fit_ratio()`       | `loss_method`        | `ratio_proj`     |
+| `"loss"`     | `fit_loss()`        | `loss_method`        | `loss_proj`      |
+| `"exposure"` | `fit_exposure()`    | `exposure_method`    | `exposure_proj`  |
 
 ```{r}
-bt_sa_lr    <- backtest(tri_sur, holdout = 6L)                       # default
-bt_cl_loss  <- backtest(tri_sur, holdout = 6L,
-                        target = "loss", loss_method = "cl")
-bt_ed_lr    <- backtest(tri_sur, holdout = 6L, loss_method = "ed")
-bt_cl_lr    <- backtest(tri_sur, holdout = 6L, loss_method = "cl")
+bt_sa_ratio   <- backtest(tri_sur, holdout = 6L)                       # default
+bt_cl_loss    <- backtest(tri_sur, holdout = 6L,
+                          target = "loss", loss_method = "cl")
+bt_ed_ratio   <- backtest(tri_sur, holdout = 6L, loss_method = "ed")
+bt_cl_ratio   <- backtest(tri_sur, holdout = 6L, loss_method = "cl")
 
-print(bt_sa_lr)
+print(bt_sa_ratio)
 ```
 
-`lr` 을 백테스팅하는 것이 보통 더 유익한 진단이 된다. 손해율은 단위가
+`ratio` 을 백테스팅하는 것이 보통 더 유익한 진단이 된다. 손해율은 단위가
 없고 차원이 없어 규모가 크게 다른 코호트 간에도 일관되게 비교 가능하므로,
 `ae_err_mean` 과 `ae_err_med` 가 triangle 전체에서 일관된 의미를 가진다. 반면
 `loss` 를 백테스팅하면 결과가 hold-out 대각선에서 가장 큰 코호트 쪽으로
 가중된다.
 
-`premium` 백테스트는 `target = "prem"` 으로 직접 수행한다.
+보험료 백테스트는 `target = "exposure"` 으로 직접 수행한다.
 
 ## 8. 함께 보기
 
 - `vignette("chain-ladder-reserving")` — `fit_cl()` 참고.
-- `vignette("projection")` — `fit_lr()` 및 `"sa"`, `"ed"`, `"cl"`
+- `vignette("projection")` — `fit_ratio()` 및 `"sa"`, `"ed"`, `"cl"`
   방법.
 - `?backtest`, `?plot.Backtest`, `?plot_triangle.Backtest`.

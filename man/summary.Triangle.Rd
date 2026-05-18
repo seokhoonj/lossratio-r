@@ -15,13 +15,13 @@
 A \code{data.table} grouped by \code{groups} and \code{dev}, containing:
 \describe{
 \item{n_cohorts}{Number of observations in the cell}
-\item{lr_mean}{Mean of cumulative loss ratios}
-\item{lr_median}{Median of cumulative loss ratios}
-\item{lr_wt}{Weighted cumulative loss ratio (\code{sum(loss) / sum(prem)})}
-\item{incr_lr_mean}{Mean of per-period loss ratios}
-\item{incr_lr_median}{Median of per-period loss ratios}
-\item{incr_lr_wt}{Weighted per-period loss ratio
-(\code{sum(incr_loss) / sum(incr_prem)})}
+\item{ratio_mean}{Mean of cumulative loss ratios}
+\item{ratio_median}{Median of cumulative loss ratios}
+\item{ratio_wt}{Weighted cumulative loss ratio (\code{sum(loss) / sum(exposure)})}
+\item{incr_ratio_mean}{Mean of per-period loss ratios}
+\item{incr_ratio_median}{Median of per-period loss ratios}
+\item{incr_ratio_wt}{Weighted per-period loss ratio
+(\code{sum(incr_loss) / sum(incr_exposure)})}
 }
 
 The returned object keeps the attributes \code{groups} and \code{dev},
@@ -29,8 +29,8 @@ and its class is updated to \code{"TriangleSummary"}.
 }
 \description{
 S3 method for \code{summary()} on \code{Triangle} objects. Computes group-wise summary
-statistics for cumulative loss ratios (\code{lr}) and per-period loss ratios
-(\code{incr_lr}).
+statistics for cumulative loss ratios (\code{ratio}) and per-period loss ratios
+(\code{incr_ratio}).
 
 The function aggregates data by the grouping variables stored in
 \code{attr(x, "groups")} and the development variable stored in
@@ -46,11 +46,11 @@ The following statistics are computed:
 \details{
 The weighted mean is computed as:
 \itemize{
-\item \code{lr_wt      = sum(loss)      / sum(prem)}
-\item \code{incr_lr_wt = sum(incr_loss) / sum(incr_prem)}
+\item \code{ratio_wt      = sum(loss)      / sum(exposure)}
+\item \code{incr_ratio_wt = sum(incr_loss) / sum(incr_exposure)}
 }
 
-These correspond to portfolio-level loss ratios based on prem and
+These correspond to portfolio-level loss ratios based on exposure and
 are typically more stable than simple averages when exposure sizes differ
 across cohorts.
 
@@ -64,7 +64,7 @@ d <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 smr <- summary(d)
 head(smr)

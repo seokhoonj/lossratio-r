@@ -17,17 +17,16 @@
 #   4. Aggregation counts & reserved data.table value names
 #
 # Internal temp columns (`.col`) are handled at function scope via local
-# `NULL` declarations, not registered here. See e.g. `plot.LRFit`.
+# `NULL` declarations, not registered here. See e.g. `plot.RatioFit`.
 
 utils::globalVariables(c(
 
   # 1. data.table system idioms ----------------------------------------
   ".",
   "i.is_observed", "i.loss_param_se", "i.loss_proc_se", "i.loss_proj",
-  "i.loss_total_se", "i.lr_ci_lo", "i.lr_ci_hi", "i.lr_cv",
-  "i.lr_proj", "i.lr_se", "i.n_cohorts", "i.prem_proj",
-  "i.prem_total_cv", "i.prem_total_se", "i.target_param_se",
-  "i.target_proc_se", "i.target_proj", "i.target_total_se",
+  "i.loss_total_se", "i.ratio_ci_lo", "i.ratio_ci_hi", "i.ratio_cv",
+  "i.ratio_proj", "i.ratio_se", "i.n_cohorts", "i.exposure_proj",
+  "i.exposure_total_cv", "i.exposure_total_se",
   "x.change_date", "x.dev_split", "x.m_k",
 
   # 2. Triangle / Link / fit output schema -----------------------------
@@ -41,29 +40,27 @@ utils::globalVariables(c(
   "intensity",
   "is_excluded", "is_fit_data", "is_held_out", "is_observed",
   "label", "last_obs", "lower", "upper",
-  "loss", "incr_loss", "incr_loss_proj", "incr_loss_share", "loss_obs",
-  "loss_proj", "loss_share",
-  "lr", "incr_lr", "lr_proj", "lr_se", "lr_var",
+  "loss", "incr_loss", "incr_loss_proj", "incr_loss_share",
+  "loss_delta", "loss_from", "loss_obs", "loss_proj", "loss_share",
+  "loss_to",
+  "ratio", "incr_ratio", "ratio_proj", "ratio_se", "ratio_var",
   "magnitude_mean", "mat_x", "maturity_from",
-  "prem", "incr_prem", "incr_prem_proj", "prem_obs",
-  "prem_proj", "prem_share",
+  "exposure", "incr_exposure", "incr_exposure_proj", "exposure_obs",
+  "exposure_share",
   "regime", "regime_id", "reserve", "selected",
   "actual", "incr_actual", "expected", "incr_expected",
-  "target_delta", "target_from",
-  "target_obs", "target_proj", "target_to",
   "value",  # default melt() value column when value.name not set
 
   # 3. Fit SE / variance / CV / tail-factor schema ---------------------
   "cv", "metric", "rse", "sigma2", "type",
-  "loss_param_se2", "loss_proc_se2", "loss_total_se", "loss_total_se2",
-  "prem_total_cv", "prem_total_se",
-  "target_param_se", "target_param_se2", "target_param_se_tail",
-  "target_param_se2_tail",
-  "target_proc_cv", "target_proc_se", "target_proc_se2",
-  "target_proc_se_tail", "target_proc_se2_tail",
-  "target_tail",
-  "target_total_cv", "target_total_se", "target_total_se2",
-  "target_total_se_tail", "target_total_se2_tail",
+  "loss_param_se",  "loss_param_se2", "loss_param_se_tail",
+  "loss_param_se2_tail",
+  "loss_proc_cv",   "loss_proc_se",   "loss_proc_se2",
+  "loss_proc_se_tail",  "loss_proc_se2_tail",
+  "loss_tail",
+  "loss_total_cv",  "loss_total_se",  "loss_total_se2",
+  "loss_total_se_tail", "loss_total_se2_tail",
+  "exposure_total_cv", "exposure_total_se",
 
   # 4. Aggregation counts & plot coordinate vars -----------------------
   "N", "n", "n_expected", "n_cohorts", "n_dev", "n_valid",

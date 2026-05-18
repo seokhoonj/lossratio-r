@@ -16,7 +16,7 @@ numeric columns. Default \code{4L}. Pass \code{NULL} to skip rounding.}
 }
 \value{
 A \code{data.table} of class \code{"TotalSummary"} with the same rows
-as the input \code{Total} (one per group), ordered by descending \code{lr}.
+as the input \code{Total} (one per group), ordered by descending \code{ratio}.
 Preserves the \code{groups} attribute.
 }
 \description{
@@ -29,11 +29,11 @@ numeric columns for display.
 \dontrun{
 tot <- as_total(
   df,
-  groups = "coverage",
-  cohort = "uy_m",
-  dev    = "dev_m",
-  loss   = "incr_loss",
-  prem   = "incr_prem"
+  groups   = "coverage",
+  cohort   = "uy_m",
+  dev      = "dev_m",
+  loss     = "incr_loss",
+  exposure = "incr_exposure"
 )
 summary(tot)
 }

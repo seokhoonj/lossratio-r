@@ -44,7 +44,7 @@ for e-divisive segment width); here it controls \emph{only} the drift
 metric, not the e-divisive algorithm.}
 
 \item{mat_k}{Pre-computed maturity point. When \code{NULL}, computed via
-\code{\link[=detect_maturity]{detect_maturity()}} applied to an lr-based ATA.}
+\code{\link[=detect_maturity]{detect_maturity()}} applied to a ratio-based ATA.}
 
 \item{holdout_max}{Maximum holdout depth used for the rolling
 backtest. When \code{NULL}, set to
@@ -54,15 +54,15 @@ backtest. When \code{NULL}, set to
 \eqn{\hat{D}_v}. Default \code{5L}.}
 
 \item{...}{Additional arguments forwarded to \code{backtest()} (and thence
-to \code{fit_lr()}), e.g. \code{loss_method}, \code{recent}, \code{loss_regime}.}
+to \code{fit_ratio()}), e.g. \code{loss_method}, \code{recent}, \code{loss_regime}.}
 }
 \value{
 An object of class \code{Convergence} (named list). Includes the
 slots tabulated in the notation mapping above
-(\code{dev_max}, \code{dev_cand}, \code{lr}, \code{revision}, \code{drift_window},
+(\code{dev_max}, \code{dev_cand}, \code{ratio}, \code{revision}, \code{drift_window},
 \code{drift_tail}, \code{slope}, \code{dispersion}), per-method pass vectors
 (\code{pass_window}, \code{pass_tail}, \code{pass_slope}, \code{pass}), the threshold
-parameters, and metadata attributes (\code{groups}, \code{target},
+parameters, and metadata attributes (\code{groups}, \code{loss},
 \code{dispatcher}).
 }
 \description{
@@ -83,7 +83,7 @@ index in Section 11; we unify on \eqn{k} for consistency.
 \tabular{lll}{
 \code{dev_max}  \tab \eqn{K_{\max}}                \tab Maximum observable dev (a scalar) \cr
 \code{dev_cand} \tab \eqn{k \in [k^*, K_{\max}-2]} \tab Integer vector of candidate dev points \cr
-\code{lr[i]}    \tab \eqn{LR_k}                    \tab Portfolio LR projection at dev = \code{dev_cand[i]} \cr
+\code{ratio[i]} \tab \eqn{LR_k}                    \tab Portfolio LR projection at dev = \code{dev_cand[i]} \cr
 \code{revision[i]} \tab \eqn{R_k = |LR_k - LR_{k-1}|} \tab Adjacent-step revision (diagnostic) \cr
 \code{drift_window[i]} \tab \eqn{\max - \min} of \eqn{LR} over \eqn{[k, k+W-1]}     \tab Local window range \cr
 \code{drift_tail[i]}   \tab \eqn{\max - \min} of \eqn{LR} over \eqn{[k, K_{\max}]}  \tab Tail range \cr
@@ -127,9 +127,9 @@ guarantee that the projection will not drift past
 what we observe is stable", not as a guarantee of future
 stability. For reserving applications, prefer \code{method = "tail"} or
 \code{"all"} over \code{"window"}, attach an IBNR margin via
-\code{fit_lr$summary} SE/CI columns, and weigh the \emph{evidence span}
+\code{fit_ratio$summary} SE/CI columns, and weigh the \emph{evidence span}
 (\code{dev_max - conv_k}): a \code{conv_k} near \code{dev_max} has thin evidence.
 }
 \seealso{
-\code{\link[=detect_maturity]{detect_maturity()}}, \code{\link[=backtest]{backtest()}}, \code{\link[=fit_lr]{fit_lr()}}
+\code{\link[=detect_maturity]{detect_maturity()}}, \code{\link[=backtest]{backtest()}}, \code{\link[=fit_ratio]{fit_ratio()}}
 }

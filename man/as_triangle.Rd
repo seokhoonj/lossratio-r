@@ -11,7 +11,7 @@ as_triangle(
   calendar = NULL,
   dev = NULL,
   loss,
-  prem,
+  exposure,
   grain = "auto",
   cell_type = c("incremental", "cumulative"),
   fill_gaps = FALSE
@@ -19,7 +19,7 @@ as_triangle(
 }
 \arguments{
 \item{df}{A data.frame containing experience data with per-period loss and
-prem columns plus \code{cohort} and \code{calendar} Date columns
+exposure columns plus \code{cohort} and \code{calendar} Date columns
 (or any input that the internal Date coercion accepts: Date, POSIXt,
 integer \code{yyyy} / \code{yyyymm} / \code{yyyymmdd}, ISO string).}
 
@@ -44,8 +44,8 @@ calendar-diagonal logic uses cohort + dev). When both are given,
 \item{loss}{Single character; per-period loss column in \code{df}
 (raw name, e.g., \code{"incr_loss"}).}
 
-\item{prem}{Single character; per-period prem column in \code{df}
-(raw name, e.g., \code{"incr_prem"}). Premium measure used as
+\item{exposure}{Single character; per-period exposure column in \code{df}
+(raw name, e.g., \code{"incr_exposure"}). Exposure measure used as
 denominator for loss ratio calculations. For long-term health
 insurance applications, risk premium is commonly used.}
 
@@ -55,7 +55,7 @@ Explicit values must be at least as coarse as the input grain;
 the input is binned (floored) to that grain before aggregation.}
 
 \item{cell_type}{One of \code{"incremental"} (default) or \code{"cumulative"}.
-Whether \code{loss} and \code{prem} in \code{df} already hold per-period
+Whether \code{loss} and \code{exposure} in \code{df} already hold per-period
 (incremental) values or cumulative-within-cohort values. The
 internal triangle is always built on the incremental representation;
 \code{"cumulative"} inputs are differenced first.}
@@ -72,24 +72,24 @@ derived columns:
 \describe{
 \item{n_cohorts}{Number of distinct cohorts observed}
 \item{loss, incr_loss}{Cumulative and per-period loss}
-\item{prem, incr_prem}{Cumulative and per-period prem}
-\item{lr, incr_lr}{Cumulative and per-period loss ratio}
+\item{exposure, incr_exposure}{Cumulative and per-period exposure}
+\item{ratio, incr_ratio}{Cumulative and per-period loss ratio}
 \item{margin, incr_margin}{Cumulative and per-period margin
-(\code{prem - loss})}
+(\code{exposure - loss})}
 \item{profit, incr_profit}{Profit indicator (factor \code{"pos"} / \code{"neg"})}
 \item{loss_share, incr_loss_share}{Cumulative and per-period proportions
 of loss within each \verb{(cohort, dev)} cell}
-\item{prem_share, incr_prem_share}{Cumulative and per-period
-proportions of prem within each \verb{(cohort, dev)} cell}
+\item{exposure_share, incr_exposure_share}{Cumulative and per-period
+proportions of exposure within each \verb{(cohort, dev)} cell}
 }
 
 Attributes set on the returned object: \code{groups}, \code{cohort},
 \code{calendar}, \code{grain}, \code{dev} (= \code{"dev_<lower(grain)>"}, e.g.
-\code{"dev_m"}), \code{loss}, \code{prem}, \code{longer}.
+\code{"dev_m"}), \code{loss}, \code{exposure}, \code{longer}.
 }
 \description{
 Validate raw experience data, aggregate it onto a \verb{(group, cohort, dev)} grid, and assign the \code{Triangle} S3 class so the downstream
-methods (\code{fit_lr()}, \code{fit_loss()}, \code{backtest()}, \code{plot()},
+methods (\code{fit_ratio()}, \code{fit_loss()}, \code{backtest()}, \code{plot()},
 \code{plot_triangle()}, \code{detect_maturity()}, \code{detect_regime()},
 \code{detect_convergence()}, ...) can dispatch on the result.
 
@@ -100,7 +100,7 @@ Three steps happen inside this single call:
 cleanly, the grain is consistent. Hard errors on schema issues
 so downstream code never receives malformed input.
 \item \strong{Standardise + aggregate} -- rename to package-canonical
-column names (\code{cohort}, \code{calendar}, \code{dev}, \code{loss}, \code{prem},
+column names (\code{cohort}, \code{calendar}, \code{dev}, \code{loss}, \code{exposure},
 ...), auto-detect grain (\code{M} / \code{Q} / \code{H} / \code{Y}) from \code{cohort}
 spacing, derive \code{dev} from \verb{(cohort, calendar)}, aggregate to
 \verb{(group, cohort, dev)}, and enrich with cumulative / share /
@@ -127,22 +127,22 @@ The result contains:
 \item per-period and cumulative proportions,
 \item per-period and cumulative margin,
 \item profit indicators,
-\item per-period loss ratio (\code{incr_lr = incr_loss / incr_prem}) and
-cumulative loss ratio (\code{lr = loss / prem}).
+\item per-period loss ratio (\code{incr_ratio = incr_loss / incr_exposure}) and
+cumulative loss ratio (\code{ratio = loss / exposure}).
 }
 
 The cumulative loss ratio is defined as:
-\deqn{lr = loss / prem}
+\deqn{ratio = loss / exposure}
 
 For long-term health insurance applications, risk premium is commonly
-used as the \code{prem} measure.
+used as the \code{exposure} measure.
 
 Proportion variables are computed within each \verb{(cohort, dev)} cell:
 \itemize{
-\item \code{incr_loss_share    = incr_loss    / sum(incr_loss)}
-\item \code{incr_prem_share = incr_prem / sum(incr_prem)}
-\item \code{loss_share         = loss         / sum(loss)}
-\item \code{prem_share      = prem      / sum(prem)}
+\item \code{incr_loss_share     = incr_loss     / sum(incr_loss)}
+\item \code{incr_exposure_share = incr_exposure / sum(incr_exposure)}
+\item \code{loss_share          = loss          / sum(loss)}
+\item \code{exposure_share      = exposure      / sum(exposure)}
 }
 
 Therefore, for a fixed \verb{(cohort, dev)} cell, the proportions
@@ -152,12 +152,12 @@ each development cell across products or other grouping variables.
 \examples{
 \dontrun{
 df <- data.frame(
-  pd_cd        = rep(c("P001", "P002"), each = 6),
-  pd_nm        = rep(c("cancer", "health"), each = 6),
-  uy_m         = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
-  cy_m         = rep(as.Date(c("2023-01-01", "2023-02-01")), 6),
-  incr_loss    = runif(12, 80, 120),
-  incr_prem = runif(12, 90, 110)
+  pd_cd         = rep(c("P001", "P002"), each = 6),
+  pd_nm         = rep(c("cancer", "health"), each = 6),
+  uy_m          = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
+  cy_m          = rep(as.Date(c("2023-01-01", "2023-02-01")), 6),
+  incr_loss     = runif(12, 80, 120),
+  incr_exposure = runif(12, 90, 110)
 )
 
 # auto-detected monthly grain
@@ -167,7 +167,7 @@ res_m <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 # explicit quarterly view (re-bins monthly input to quarterly)
@@ -177,7 +177,7 @@ res_q <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem",
+  exposure = "incr_exposure",
   grain    = "Q"
 )
 

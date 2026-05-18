@@ -7,7 +7,7 @@
 fit_cl(
   x,
   method = c("mack"),
-  target = "loss",
+  loss = "loss",
   weight = NULL,
   alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
@@ -23,11 +23,11 @@ fit_cl(
 \item{method}{One of \code{"mack"}. Default is \code{"mack"}. The argument is
 retained for future extensibility.}
 
-\item{target}{A single cumulative target variable (column to project).
-Typical choices are \code{"loss"}, \code{"prem"}, or \code{"lr"}.}
+\item{loss}{A single cumulative loss variable (column to project).
+Typical choices are \code{"loss"}, \code{"exposure"}, or \code{"ratio"}.}
 
 \item{weight}{An optional column name passed to \code{\link[=as_link]{as_link()}} as
-the WLS weight variable. Typically \code{"prem"} when \code{target = "lr"}.
+the WLS weight variable. Typically \code{"exposure"} when \code{loss = "ratio"}.
 Default is \code{NULL}.}
 
 \item{alpha}{Numeric scalar controlling the variance structure in
@@ -41,9 +41,9 @@ recent \code{recent} periods are used for factor estimation. Default is
 \code{NULL} (use all periods).}
 
 \item{regime}{Optional regime specification for cohort cutoff. Accepts:
-\code{NULL} (default — no filter), a \code{Regime} object (from \code{\link[=detect_regime]{detect_regime()}}
+\code{NULL} (default -- no filter), a \code{Regime} object (from \code{\link[=detect_regime]{detect_regime()}}
 or \code{regime_at()}), the string \code{"auto"} (internal
-\code{detect_regime(tri, target = "lr")} call), or a function
+\code{detect_regime(tri, loss = "ratio")} call), or a function
 \verb{function(tri) -> Regime} for deferred custom-config detection. When
 supplied, cohorts strictly before the resolved change date are excluded
 from factor estimation.}
@@ -55,7 +55,7 @@ forms:
 \item{\code{Maturity} object}{Pre-built (e.g. from \code{\link[=detect_maturity]{detect_maturity()}}
 or \code{\link[=maturity_at]{maturity_at()}}) — used as-is.}
 \item{\code{"auto"}}{Internal \code{\link[=detect_maturity]{detect_maturity()}} call with defaults
-(target inferred from \code{target}).}
+(loss inferred from \code{loss}).}
 \item{function \verb{function(tri) -> Maturity}}{Lazy spec, typically
 built with \code{\link[=maturity_spec]{maturity_spec()}}, invoked on the triangle at fit
 time (leakage-safe for \code{\link[=backtest]{backtest()}}).}
@@ -74,7 +74,7 @@ An object of class \code{"CLFit"} containing:
 \item{\code{groups}}{Character vector of grouping variable names.}
 \item{\code{cohort}}{Character scalar of period variable name.}
 \item{\code{dev}}{Character scalar of development variable name.}
-\item{\code{target}}{Character scalar of target variable name.}
+\item{\code{loss}}{Character scalar of loss column name.}
 \item{\code{full}}{\code{data.table} with observed and projected values,
 including process/parameter SE and CV columns.}
 \item{\code{proj}}{\code{data.table} identical to \code{full} with observed cells
@@ -105,7 +105,7 @@ through \code{\link[=as_link]{as_link()}} and \code{\link[=fit_ata]{fit_ata()}},
 point forecast follows the standard recursion, and prediction
 uncertainty is decomposed into process variance and parameter variance.
 
-When \code{weight} is supplied (e.g. \code{"prem"}), age-to-age factors and
+When \code{weight} is supplied (e.g. \code{"exposure"}), age-to-age factors and
 their variance are estimated using the supplied WLS weights.
 }
 \examples{
@@ -117,19 +117,19 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 # Mack chain ladder with process / parameter standard errors
-cl_mack <- fit_cl(tri, target = "loss", method = "mack")
+cl_mack <- fit_cl(tri, loss = "loss", method = "mack")
 summary(cl_mack)
 plot(cl_mack)
 
-# WLS factors for lr (loss ratio) using prem as the weight
-cl_clr <- fit_cl(tri, target = "lr", weight = "prem")
+# WLS factors for ratio (loss ratio) using exposure as the weight
+cl_ratio <- fit_cl(tri, loss = "ratio", weight = "exposure")
 }
 
 }
 \seealso{
-\code{\link[=fit_ata]{fit_ata()}}, \code{\link[=fit_lr]{fit_lr()}}
+\code{\link[=fit_ata]{fit_ata()}}, \code{\link[=fit_ratio]{fit_ratio()}}
 }

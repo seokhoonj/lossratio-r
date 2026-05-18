@@ -6,7 +6,7 @@
 \usage{
 detect_maturity(
   x,
-  target = "loss",
+  loss = "loss",
   groups = NULL,
   weight = NULL,
   alpha = 1,
@@ -20,7 +20,7 @@ detect_maturity(
 \arguments{
 \item{x}{A \code{Triangle} object.}
 
-\item{target}{Cumulative metric for the link factor. Default
+\item{loss}{Cumulative metric for the link factor. Default
 \code{"loss"} (chain-ladder convention; see Description). Forwarded to
 \code{\link[=as_link]{as_link()}}.}
 
@@ -35,7 +35,7 @@ current Triangle grouping (fully backward compatible).
 maturity row. Any non-\code{NULL}, non-empty value must be a subset of
 \code{attr(x, "groups")}; column order is irrelevant. When the requested
 \code{groups} is coarser than the Triangle grouping, the underlying
-\code{loss} / \code{prem} / \code{lr} columns are re-aggregated to the coarser
+\code{loss} / \code{exposure} / \code{ratio} columns are re-aggregated to the coarser
 partition before computing ata links.}
 
 \item{weight}{Optional WLS weight variable. Forwarded to
@@ -89,12 +89,12 @@ the raw variability of observed ata factors across cohorts, while \code{rse}
 reflects the precision of the WLS-estimated factor. Using both criteria
 together provides a more robust maturity assessment than either alone.
 
-Default \code{target = "loss"} (cumulative loss). Maturity in chain
+Default \code{loss = "loss"} (cumulative loss). Maturity in chain
 ladder is methodologically a property of \emph{loss} development:
 the ATA factors of cumulative loss stabilize when chain ladder
 becomes reliable, which in turn makes downstream LR projection
-reliable. ATA factors of \code{lr} itself (a ratio of two cumulative
+reliable. ATA factors of \code{ratio} itself (a ratio of two cumulative
 quantities) carry additional noise and tend to give less precise
-maturity decisions. Override \code{target} only when you specifically
-want maturity of prem development or another cumulative metric.
+maturity decisions. Override \code{loss} only when you specifically
+want maturity of exposure development or another cumulative metric.
 }

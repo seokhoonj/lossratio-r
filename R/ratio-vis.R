@@ -1,33 +1,33 @@
 
 
-# LR Fit Plot --------------------------------------------------------------
+# Ratio Fit Plot -----------------------------------------------------------
 
 #' Plot a loss ratio fit
 #'
 #' @description
-#' Visualise an object of class `"LRFit"`.
+#' Visualise an object of class `"RatioFit"`.
 #'
 #' The plotted metric is the cross-product of `metric` and `cell_type`:
 #' \itemize{
-#'   \item `metric = "lr"`, `cell_type = "cumulative"`: cumulative loss
+#'   \item `metric = "ratio"`, `cell_type = "cumulative"`: cumulative loss
 #'     ratio (default).
-#'   \item `metric = "incr_lr"` (i.e., `cell_type = "incremental"`):
+#'   \item `metric = "incr_ratio"` (i.e., `cell_type = "incremental"`):
 #'     per-period loss ratio.
-#'   \item `metric = "loss"` / `"prem"`: same split — cumulative or
+#'   \item `metric = "loss"` / `"exposure"`: same split -- cumulative or
 #'     per-period amounts.
 #' }
 #' Confidence bands are drawn only for cumulative metrics
 #' (`cell_type = "cumulative"`), since the fit output does not carry SE
 #' columns for incremental projections.
 #'
-#' @param x An object of class `"LRFit"`.
-#' @param metric Metric to plot. One of `"lr"` (default), `"loss"`,
-#'   `"prem"`.
+#' @param x An object of class `"RatioFit"`.
+#' @param metric Metric to plot. One of `"ratio"` (default), `"loss"`,
+#'   `"exposure"`.
 #' @param cell_type Aggregation. One of `"cumulative"` (default) or
 #'   `"incremental"`.
 #' @param per_group Logical or `NULL`. When `TRUE` (auto for multi-group
 #'   fits), produce one ggplot per group and print them sequentially
-#'   with [devAskNewPage()] — mirrors base R's `plot.lm()` pattern of
+#'   with [devAskNewPage()] -- mirrors base R's `plot.lm()` pattern of
 #'   stepping through related diagnostic plots. Returns the list of
 #'   plots invisibly. When `FALSE` (auto for single-group fits), facets
 #'   every (group, cohort) combination in a single ggplot.
@@ -43,24 +43,24 @@
 #'
 #' @return A `ggplot` object.
 #'
-#' @method plot LRFit
+#' @method plot RatioFit
 #' @export
-plot.LRFit <- function(x,
-                        metric         = c("lr", "loss", "prem"),
-                        cell_type      = c("cumulative", "incremental"),
-                        per_group      = NULL,
-                        ask            = grDevices::dev.interactive(),
-                        conf_level     = 0.95,
-                        show_interval  = TRUE,
-                        amount_divisor = "auto",
-                        scales         = c("fixed", "free_y",
-                                           "free_x", "free"),
-                        theme = c("view", "save", "shiny"),
-                        nrow  = NULL,
-                        ncol  = NULL,
-                        ...) {
+plot.RatioFit <- function(x,
+                          metric         = c("ratio", "loss", "exposure"),
+                          cell_type      = c("cumulative", "incremental"),
+                          per_group      = NULL,
+                          ask            = grDevices::dev.interactive(),
+                          conf_level     = 0.95,
+                          show_interval  = TRUE,
+                          amount_divisor = "auto",
+                          scales         = c("fixed", "free_y",
+                                             "free_x", "free"),
+                          theme = c("view", "save", "shiny"),
+                          nrow  = NULL,
+                          ncol  = NULL,
+                          ...) {
 
-  .assert_class(x, "LRFit")
+  .assert_class(x, "RatioFit")
 
   # Suppress R CMD check NOTEs for `data.table` temp columns referenced
   # bare inside `j` expressions later in this function.
@@ -83,26 +83,26 @@ plot.LRFit <- function(x,
 
   if (identical(amount_divisor, "auto"))
     amount_divisor <- .auto_divisor(
-      if (metric == "lr") numeric(0) else full[[paste0(metric, "_proj")]]
+      if (metric == "ratio") numeric(0) else full[[paste0(metric, "_proj")]]
     )
 
   ci_type <- if (!is.null(x$ci_type)) x$ci_type else "analytical"
 
   is_incr  <- cell_type == "incremental"
-  is_ratio <- metric == "lr"
+  is_ratio <- metric == "ratio"
 
-  # column key combines metric + cell_type — e.g., "lr" + "incremental" = "incr_lr_proj"
+  # column key combines metric + cell_type -- e.g., "ratio" + "incremental" = "incr_ratio_proj"
   col_key <- if (is_incr) paste0("incr_", metric) else metric
   val_col <- paste0(col_key, "_proj")
 
   # Only cumulative metrics have CI columns; incremental projections
   # don't carry SE / CI columns in the fit output.
   if (!is_incr && is_ratio) {
-    ci_lo_col <- "lr_ci_lo";   ci_hi_col <- "lr_ci_hi"
+    ci_lo_col <- "ratio_ci_lo";   ci_hi_col <- "ratio_ci_hi"
   } else if (!is_incr && metric == "loss") {
     ci_lo_col <- "loss_ci_lo"; ci_hi_col <- "loss_ci_hi"
-  } else if (!is_incr && metric == "prem") {
-    ci_lo_col <- "prem_ci_lo"; ci_hi_col <- "prem_ci_hi"
+  } else if (!is_incr && metric == "exposure") {
+    ci_lo_col <- "exposure_ci_lo"; ci_hi_col <- "exposure_ci_hi"
   } else {
     ci_lo_col <- NA_character_;   ci_hi_col <- NA_character_
   }
@@ -110,9 +110,9 @@ plot.LRFit <- function(x,
   cum_word <- if (is_incr) "Per-Period" else "Cumulative"
   base_lab <- switch(
     metric,
-    lr      = "Loss Ratio",
-    loss    = "Loss",
-    prem    = "Premium"
+    ratio    = "Loss Ratio",
+    loss     = "Loss",
+    exposure = "Premium"
   )
   y_lab <- if (is_ratio) col_key else attr(x$data, metric)
   title <- paste0("Projected ", cum_word, " ", base_lab,
@@ -126,20 +126,20 @@ plot.LRFit <- function(x,
   proj <- full[is_observed == FALSE & is.finite(full[[val_col]])]
 
   # Observed-cell value:
-  #   * Cumulative loss / prem read the raw `_obs` column.
-  #   * Cumulative lr is derived as loss_obs / prem_obs.
+  #   * Cumulative loss / exposure read the raw `_obs` column.
+  #   * Cumulative ratio is derived as loss_obs / exposure_obs.
   #   * Incremental metrics reuse `<metric>_incr_proj` since
-  #     loss/prem_proj equals their `_obs` counterparts on observed rows.
+  #     loss/exposure_proj equals their `_obs` counterparts on observed rows.
   if (is_incr) {
     obs[, (".y") := .SD[[1L]], .SDcols = val_col]
   } else if (metric == "loss") {
     obs[, (".y") := loss_obs]
-  } else if (metric == "prem") {
-    obs[, (".y") := prem_obs]
-  } else {  # cumulative lr
+  } else if (metric == "exposure") {
+    obs[, (".y") := exposure_obs]
+  } else {  # cumulative ratio
     obs[, (".y") := data.table::fifelse(
-      is.finite(prem_obs) & prem_obs != 0,
-      loss_obs / prem_obs, NA_real_
+      is.finite(exposure_obs) & exposure_obs != 0,
+      loss_obs / exposure_obs, NA_real_
     )]
   }
 
@@ -312,43 +312,43 @@ plot.LRFit <- function(x,
 }
 
 
-# LR Fit Triangle Plot ----------------------------------------------------
+# Ratio Fit Triangle Plot --------------------------------------------------
 
 #' Plot loss ratio projection as a triangle heatmap
 #'
 #' @description
-#' Visualise an `"LRFit"` object as a triangle-style heatmap of
+#' Visualise an `"RatioFit"` object as a triangle-style heatmap of
 #' cumulative loss ratios. Observed and projected cells are
 #' distinguished by border style.
 #'
-#' @param x An object of class `"LRFit"`.
-#' @param metric Metric shown in the heatmap cells. One of `"lr"`
-#'   (default), `"loss"`, `"prem"`.
+#' @param x An object of class `"RatioFit"`.
+#' @param metric Metric shown in the heatmap cells. One of `"ratio"`
+#'   (default), `"loss"`, `"exposure"`.
 #' @param cell_type Aggregation. One of `"cumulative"` (default) or
 #'   `"incremental"`. Combined with `metric` to select the column
-#'   (e.g., `metric = "lr"`, `cell_type = "incremental"` → `incr_lr`).
+#'   (e.g., `metric = "ratio"`, `cell_type = "incremental"` -> `incr_ratio`).
 #' @param region Cell region to plot (only used when `view = "value"`).
 #'   One of `"proj"` (projected cells only, observed cells masked),
 #'   `"full"` (observed + projected), or `"data"` (observed cumulative
-#'   loss / prem / lr from `x$data` — the raw Triangle, no
+#'   loss / exposure / ratio from `x$data` -- the raw Triangle, no
 #'   projection). Default is `"proj"`.
 #' @param view Plot mode. One of:
 #'   \describe{
-#'     \item{"value" (default)}{Per-cell `lr` heatmap with column-wise
+#'     \item{"value" (default)}{Per-cell `ratio` heatmap with column-wise
 #'       relative fill. `region` selects which cells to display.}
 #'     \item{"usage"}{Cell-status heatmap (`used` / `holdout` /
 #'       `unused` / `future`) driven by the fit's own metadata
 #'       (`x$recent`, `x$loss_regime`, `x$maturity`). `region` is
 #'       ignored.}
 #'   }
-#' @param label_style One of `"value"` (lr only) or `"detail"`
-#'   (lr with loss/prem amounts). Default is `"value"`.
+#' @param label_style One of `"value"` (ratio only) or `"detail"`
+#'   (ratio with loss/exposure amounts). Default is `"value"`.
 #' @param label_size Numeric label text size forwarded to
 #'   [ggshort::ggtable()]. Defaults to `3` for `label_style = "value"`
 #'   and `2.5` for `label_style = "detail"` (two-line labels).
 #' @param show_maturity Logical; if `TRUE`, show maturity line.
 #'   Default is `TRUE`.
-#' @param digits Number of decimal places for lr display.
+#' @param digits Number of decimal places for ratio display.
 #'   Default is `0`.
 #' @param amount_divisor Numeric divisor for amount display in
 #'   `"detail"` mode. Default is `1e8`.
@@ -358,24 +358,24 @@ plot.LRFit <- function(x,
 #'
 #' @return A `ggplot` object.
 #'
-#' @method plot_triangle LRFit
+#' @method plot_triangle RatioFit
 #' @export
-plot_triangle.LRFit <- function(x,
-                                 metric         = c("lr", "loss", "prem"),
-                                 cell_type      = c("cumulative", "incremental"),
-                                 region         = c("proj", "full", "data"),
-                                 view           = c("value", "usage"),
-                                 label_style    = c("value", "detail"),
-                                 label_size     = NULL,
-                                 show_maturity  = TRUE,
-                                 digits         = 0,
-                                 amount_divisor = "auto",
-                                 theme          = c("view", "save", "shiny"),
-                                 nrow           = NULL,
-                                 ncol           = NULL,
-                                 ...) {
+plot_triangle.RatioFit <- function(x,
+                                   metric         = c("ratio", "loss", "exposure"),
+                                   cell_type      = c("cumulative", "incremental"),
+                                   region         = c("proj", "full", "data"),
+                                   view           = c("value", "usage"),
+                                   label_style    = c("value", "detail"),
+                                   label_size     = NULL,
+                                   show_maturity  = TRUE,
+                                   digits         = 0,
+                                   amount_divisor = "auto",
+                                   theme          = c("view", "save", "shiny"),
+                                   nrow           = NULL,
+                                   ncol           = NULL,
+                                   ...) {
 
-  .assert_class(x, "LRFit")
+  .assert_class(x, "RatioFit")
 
   # Suppress R CMD check NOTEs for `data.table` temp columns referenced
   # bare inside `j` expressions later in this function.
@@ -389,7 +389,7 @@ plot_triangle.LRFit <- function(x,
   theme       <- match.arg(theme)
 
   is_incr  <- cell_type == "incremental"
-  is_ratio <- metric == "lr"
+  is_ratio <- metric == "ratio"
   col_key  <- if (is_incr) paste0("incr_", metric) else metric
 
   # view = "usage": cell-status heatmap (used / holdout / unused /
@@ -426,8 +426,8 @@ plot_triangle.LRFit <- function(x,
     dt[, ("is_observed") := TRUE]
 
   # 2) compute .value for (metric, cell_type). The `data` region (raw
-  # Triangle) has bare column names (lr, incr_loss, prem, ...). The
-  # `proj` / `full` regions have the `_proj` suffix on the same base.
+  # Triangle) has bare column names (ratio, incr_loss, exposure, ...).
+  # The `proj` / `full` regions have the `_proj` suffix on the same base.
   if (region == "data") {
     if (!(col_key %in% names(dt)))
       stop(sprintf("column '%s' not found in `x$data`.", col_key),
@@ -465,10 +465,10 @@ plot_triangle.LRFit <- function(x,
   # 5) build cell labels
   fmt <- paste0("%.", digits, "f")
 
-  # Ratio metrics (lr / incr_lr) render as %. Amount metrics
-  # (loss / incr_loss / prem / incr_prem) render scaled by
-  # `amount_divisor`. `detail` label_style adds the loss/prem
-  # breakdown only for ratio metrics — meaningless for amounts.
+  # Ratio metrics (ratio / incr_ratio) render as %. Amount metrics
+  # (loss / incr_loss / exposure / incr_exposure) render scaled by
+  # `amount_divisor`. `detail` label_style adds the loss/exposure
+  # breakdown only for ratio metrics -- meaningless for amounts.
   if (label_style == "value" || !is_ratio) {
     if (is_ratio) {
       dt[, ("label") := data.table::fifelse(
@@ -487,11 +487,11 @@ plot_triangle.LRFit <- function(x,
               col_key, .get_amount_unit(amount_divisor))
     }
   } else {
-    # ratio + detail: show loss/prem breakdown beneath the lr value
-    loss_base <- if (is_incr) "incr_loss"    else "loss"
-    prem_base <- if (is_incr) "incr_prem" else "prem"
-    loss_col  <- if (region == "data") loss_base else paste0(loss_base, "_proj")
-    prem_col  <- if (region == "data") prem_base else paste0(prem_base, "_proj")
+    # ratio + detail: show loss/exposure breakdown beneath the ratio value
+    loss_base     <- if (is_incr) "incr_loss"     else "loss"
+    exposure_base <- if (is_incr) "incr_exposure" else "exposure"
+    loss_col      <- if (region == "data") loss_base     else paste0(loss_base, "_proj")
+    exposure_col  <- if (region == "data") exposure_base else paste0(exposure_base, "_proj")
     dt[, ("label") := data.table::fifelse(
       is.finite(.value),
       sprintf(
@@ -501,7 +501,7 @@ plot_triangle.LRFit <- function(x,
         .SD[[2L]] / amount_divisor
       ),
       ""
-    ), .SDcols = c(loss_col, prem_col)]
+    ), .SDcols = c(loss_col, exposure_col)]
     caption_txt <- sprintf(
       "Unit: %s %% (%s, column-wise relative fill)",
       col_key, .get_amount_unit(amount_divisor)
@@ -632,9 +632,9 @@ plot_triangle.LRFit <- function(x,
   # 12) labs
   cum_word   <- if (is_incr) "Per-Period" else "Cumulative"
   base_word  <- switch(metric,
-                       lr      = "Loss Ratio",
-                       loss    = "Loss",
-                       prem    = "Premium")
+                       ratio    = "Loss Ratio",
+                       loss     = "Loss",
+                       exposure = "Premium")
   p <- p + ggplot2::labs(
     title   = paste0(cum_word, " ", base_word, " Triangle",
                      " (method: ", x$method, ")"),

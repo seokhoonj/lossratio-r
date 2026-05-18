@@ -12,8 +12,23 @@ Internal helper computing:
 \deqn{\mathrm{Var}(\hat{f}_k) = \frac{\sigma^2_k}{W_k}}
 
 where \eqn{W_k = \sum_i w_{i,k} \cdot C_{i,k}^\alpha}. This is consistent
-with the WLS weight \eqn{w_{i,k} / C_{i,k}^{2-\alpha}} used in \code{.lm_ata()}.
+with the WLS weight \eqn{w_{i,k} / C_{i,k}^{2-\alpha}} used in \code{.lm_ata()}
+and follows Mack (1993)'s distribution-free standard-error derivation
+for the chain ladder reserve estimator.
 
-Also used by \code{\link[=fit_lr]{fit_lr()}} for the CL component.
+Paradigm pairing: the package keeps two natural analytical variance
+helpers, one per paradigm-target pair: \code{.mack_f_var()} (CL / Mack 1993
+applied to f-factor) and \code{\link[=.ed_g_var]{.ed_g_var()}} (ED / Buehlmann-Straub 1970
+applied to g-intensity). They share the underlying volume-weighted
+variance idea (\eqn{\sigma^2_g = \sigma^2_f} via \eqn{g_k = f_k - 1}),
+but operate on different \code{Link} columns (f reads \code{loss_to}/\code{loss_from};
+g reads \code{loss_delta}/\code{exposure_from}) and produce differently-named
+output columns (\code{f_var} / \code{g_var}), so are kept as separate helpers.
+
+Also used by \code{\link[=fit_ratio]{fit_ratio()}} for the CL component.
+}
+\references{
+Mack, T. (1993). Distribution-free calculation of the standard error
+of chain ladder reserve estimates. \emph{ASTIN Bulletin}, 23(2), 213-225.
 }
 \keyword{internal}

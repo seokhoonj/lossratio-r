@@ -17,10 +17,10 @@
 A \code{ggplot} object.
 }
 \description{
-Four-panel diagnostic showing the LR backtest path and each
+Four-panel diagnostic showing the loss ratio backtest path and each
 stability metric vs. its threshold:
 \itemize{
-\item Top: \code{lr} (the portfolio LR projection at each valuation).
+\item Top: \code{ratio} (the portfolio LR projection at each valuation).
 \item Then for each of \code{drift_window}, \code{drift_tail}, \verb{|slope|},
 \code{dispersion}: the metric over \code{v} with a dashed horizontal
 line at the threshold (\code{max_drift}, \code{max_slope}, or \code{max_dispersion}).

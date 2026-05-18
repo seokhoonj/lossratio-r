@@ -99,15 +99,15 @@ reference:
     Triangle 위에서 projection 을 산출하는 모형. 기본 알고리즘:
     `fit_cl` (chain ladder / multiplicative), `fit_ed`
     (exposure-driven / additive). Role dispatcher: `fit_loss`
-    (loss 측 sa/ed/cl), `fit_prem` (premium 측 ed/cl). 합성:
-    `fit_lr` (손해율 통합 인터페이스, delta-method SE). 모두 결과
+    (loss 측 sa/ed/cl), `fit_exposure` (exposure 측 ed/cl). 합성:
+    `fit_ratio` (손해율 통합 인터페이스, delta-method SE). 모두 결과
     객체에 `$full` projection table 을 보유.
   contents:
   - fit_cl
   - fit_ed
   - fit_loss
-  - fit_prem
-  - fit_lr
+  - fit_exposure
+  - fit_ratio
 
 - title: 인자 진단
   desc: >
@@ -115,7 +115,7 @@ reference:
     인자 `f_k`) 와 `fit_intensity` (ED 의 additive intensity `g_k`)
     가 짝. 두 함수 모두 projection 은 산출하지 않고 인자·SE·진단
     stat 만 반환. `fit_ata` 는 `fit_cl`, `detect_maturity()`,
-    `fit_lr(method = "sa")` 의 stage transition 에서 사용되고,
+    `fit_ratio(method = "sa")` 의 stage transition 에서 사용되고,
     `fit_intensity` 는 `fit_ed` 의 짝 diagnostic.
   contents:
   - fit_ata
@@ -126,7 +126,7 @@ reference:
     Triangle 의 어떤 셀을 추정에 쓸지 결정. `detect_maturity` 는
     dev 축 (ATA 인자가 안정화되는 링크 이후), `detect_regime` 은
     cohort 축 (인수 코호트 간 구조적 변화). `*_at()` / `*_spec()`
-    헬퍼는 fit 함수의 `maturity` / `loss_regime` / `prem_regime`
+    헬퍼는 fit 함수의 `maturity` / `loss_regime` / `exposure_regime`
     인자에 들어갈 수동 (`_at()`) 혹은 lazy-detect (`_spec()`) 입력
     객체를 만든다.
   contents:
@@ -140,15 +140,15 @@ reference:
 - title: 부트스트랩
   desc: >
     cohort × dev 단위 표준오차 분해를 시뮬레이션으로 산출 (피타고라스
-    분해 — parameter + process). 반환 객체는 `fit_loss` / `fit_prem` /
-    `fit_lr` 의 `bootstrap` 인자에 전달되어 분석식 SE / CI 를 경험적
+    분해 — parameter + process). 반환 객체는 `fit_loss` / `fit_exposure` /
+    `fit_ratio` 의 `bootstrap` 인자에 전달되어 분석식 SE / CI 를 경험적
     값으로 교체.
   contents:
   - bootstrap
 
 - title: 예측 진단
   desc: >
-    적합 결과 `LRFit` 위에서 동작 (raw Triangle 아님). 예측 손해율의
+    적합 결과 `RatioFit` 위에서 동작 (raw Triangle 아님). 예측 손해율의
     갱신이 멈추는 valuation 깊이 $v$ 를 dual criterion (예측 갱신이
     잡음 수준 이하 AND 코호트 간 분산이 작음, M 회 연속) 으로 탐지.
   contents:

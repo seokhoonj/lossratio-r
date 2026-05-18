@@ -1,7 +1,7 @@
 # Setup — use a single-group subset to keep test fast
 data(experience)
 exp <- experience
-sub <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
+sub <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
 
 test_that("detect_regime returns class 'Regime' (e_divisive default)", {
   r <- detect_regime(sub, window = 12, method = "e_divisive")
@@ -12,7 +12,7 @@ test_that("detect_regime returns class 'Regime' (e_divisive default)", {
 
 test_that("Regime has expected list elements", {
   r <- detect_regime(sub, window = 12, method = "e_divisive")
-  for (nm in c("method", "target", "window", "cohort", "dev",
+  for (nm in c("method", "loss", "window", "cohort", "dev",
                "groups", "labels", "changes", "n_regimes",
                "trajectory", "pca", "treatment")) {
     expect_true(nm %in% names(r), info = paste("missing", nm))
@@ -71,8 +71,8 @@ test_that("hclust with n_regimes = 3 runs", {
   expect_true(r$n_regimes >= 1L)
 })
 
-test_that("target = 'lr' runs", {
-  expect_s3_class(detect_regime(sub, window = 12, method = "e_divisive", target = "lr"),
+test_that("loss = 'ratio' runs", {
+  expect_s3_class(detect_regime(sub, window = 12, method = "e_divisive", loss = "ratio"),
                   "Regime")
 })
 
@@ -90,7 +90,7 @@ test_that("print methods don't error", {
 
 # Multi-group regime detection --------------------------------------------
 
-tri_all <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
+tri_all <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
 
 test_that("multi-group detect_regime returns class 'Regime'", {
   r <- detect_regime(tri_all, by = "coverage", window = 12, method = "e_divisive")
@@ -185,7 +185,7 @@ test_that("detect_regime warns and skips groups that fail individually", {
   # others remain valid. Drop most of one coverage's cohorts.
   big_K <- 12L
   exp_part <- experience[!(coverage == "ci" & uy_m > as.Date("2023-03-01"))]
-  tri_part <- as_triangle(exp_part, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
+  tri_part <- as_triangle(exp_part, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
   expect_warning(
     r_part <- detect_regime(tri_part, by = "coverage", window = big_K,
                             method = "e_divisive"),
@@ -214,7 +214,7 @@ test_that("by = character(0) forces pooled detection on multi-group Triangle", {
   tri_one <- as_triangle(experience[coverage == "surgery"],
                             groups = "coverage",
                             cohort = "uy_m", calendar = "cy_m",
-                            loss = "incr_loss", prem = "incr_prem")
+                            loss = "incr_loss", exposure = "incr_exposure")
   r_pooled <- detect_regime(tri_one, by = character(0) , window = 6L,
                             method = "e_divisive")
   expect_s3_class(r_pooled, "Regime")
@@ -227,23 +227,23 @@ test_that("by = character(0) forces pooled detection on multi-group Triangle", {
 test_that("multi-group Regime drives per-group fit_ata filtering", {
   r <- detect_regime(tri_all, by = "coverage", window = 6L,
                      method = "e_divisive")
-  fit <- fit_ata(tri_all, target = "loss", regime = r)
+  fit <- fit_ata(tri_all, loss = "loss", regime = r)
   expect_s3_class(fit, "ATAFit")
 
   # Groups without a detected change keep all their link rows; groups
   # with a change get filtered. So the row count is _>=_ the count from
   # a uniform max-date scalar change.
   bd_max <- max(r$changes$change)
-  fit_scalar <- fit_ata(tri_all, target = "loss",
+  fit_scalar <- fit_ata(tri_all, loss = "loss",
                         regime = regime_at(change = bd_max))
   expect_gte(nrow(fit$link), nrow(fit_scalar$link))
 })
 
-test_that("multi-group Regime flows through fit_lr -> dispatcher -> worker", {
+test_that("multi-group Regime flows through fit_ratio -> dispatcher -> worker", {
   r <- detect_regime(tri_all, by = "coverage", window = 6L,
                      method = "e_divisive")
-  fit <- fit_lr(tri_all, loss_regime = r, bootstrap = FALSE)
-  expect_s3_class(fit, "LRFit")
+  fit <- fit_ratio(tri_all, loss_regime = r, bootstrap = FALSE)
+  expect_s3_class(fit, "RatioFit")
   expect_true(nrow(fit$full) > 0L)
   # loss_regime preserves the original Regime object (multi-group
   # dispatch happens internally via .resolve_regime_change_date(by = grp))
@@ -254,8 +254,8 @@ test_that("multi-group Regime flows through fit_lr -> dispatcher -> worker", {
 test_that("backtest passes multi-group Regime through to dispatcher", {
   r <- detect_regime(tri_all, by = "coverage", window = 6L,
                      method = "e_divisive")
-  bt <- backtest(tri_all, holdout = 6L, target = "lr",
-                loss_method = "sa", prem_method = "ed",
+  bt <- backtest(tri_all, holdout = 6L, target = "ratio",
+                loss_method = "sa", exposure_method = "ed",
                 loss_regime = r, bootstrap = FALSE)
   expect_s3_class(bt, "Backtest")
   expect_true(nrow(bt$ae_err) > 0L)

@@ -530,7 +530,7 @@ test_that(".resolve_bootstrap rejects bad input", {
 # Legacy .boot_refit / .boot_summarize_se tests removed — fit_* now read
 # bt$summary directly (wrap-only), so those helpers and the tests that
 # exercised them in isolation are obsolete. Bootstrap behaviour is now
-# verified through the public fit_lr / fit_loss / fit_prem interface
+# verified through the public fit_ratio / fit_loss / fit_exposure interface
 # and the bt$summary structure tests above.
 
 
@@ -538,84 +538,84 @@ test_that(".resolve_bootstrap rejects bad input", {
 # bootstrap.Triangle target arg
 # ---------------------------------------------------------------------------
 
-test_that("bootstrap.Triangle accepts target = 'prem'", {
+test_that("bootstrap.Triangle accepts target = 'exposure'", {
   tri <- make_sub_tri("surgery")
-  b <- bootstrap(tri, keep_pseudo = TRUE, target = "prem", B = 10, seed = 1)
-  expect_identical(b$meta$target, "prem")
-  expect_true("prem_mean"    %in% names(b$pseudo_triangles))
-  expect_true("prem_sampled" %in% names(b$pseudo_triangles))
+  b <- bootstrap(tri, keep_pseudo = TRUE, target = "exposure", B = 10, seed = 1)
+  expect_identical(b$meta$target, "exposure")
+  expect_true("exposure_mean"    %in% names(b$pseudo_triangles))
+  expect_true("exposure_sampled" %in% names(b$pseudo_triangles))
   expect_false("loss_mean" %in% names(b$pseudo_triangles))
 })
 
 test_that(".resolve_bootstrap target mismatch is rejected", {
   tri <- make_sub_tri("surgery")
   b_loss <- bootstrap(tri, keep_pseudo = TRUE, target = "loss", B = 5, seed = 1)
-  b_prem <- bootstrap(tri, keep_pseudo = TRUE, target = "prem", B = 5, seed = 1)
+  b_exposure <- bootstrap(tri, keep_pseudo = TRUE, target = "exposure", B = 5, seed = 1)
 
-  expect_error(.resolve_bootstrap(b_loss, tri, target = "prem"),
+  expect_error(.resolve_bootstrap(b_loss, tri, target = "exposure"),
                "expects target")
-  expect_error(.resolve_bootstrap(b_prem, tri, target = "loss"),
+  expect_error(.resolve_bootstrap(b_exposure, tri, target = "loss"),
                "expects target")
-  expect_identical(.resolve_bootstrap(b_prem, tri, target = "prem"), b_prem)
+  expect_identical(.resolve_bootstrap(b_exposure, tri, target = "exposure"), b_exposure)
 })
 
 
 # ---------------------------------------------------------------------------
-# Phase 2b: fit_prem migration to new bootstrap pipeline
+# Phase 2b: fit_exposure migration to new bootstrap pipeline
 # ---------------------------------------------------------------------------
 
-test_that("fit_prem default (method=ed) uses bootstrap", {
+test_that("fit_exposure default (method=ed) uses bootstrap", {
   tri <- make_sub_tri("surgery")
-  pf <- fit_prem(tri, seed = 1, B = 50)
+  pf <- fit_exposure(tri, seed = 1, B = 50)
   expect_identical(pf$ci_type, "bootstrap")
   expect_true(!is.null(pf$bootstrap))
 })
 
-test_that("fit_prem method=cl bootstrap=FALSE uses analytical", {
+test_that("fit_exposure method=cl bootstrap=FALSE uses analytical", {
   tri <- make_sub_tri("surgery")
-  pf <- fit_prem(tri, method = "cl", bootstrap = FALSE)
+  pf <- fit_exposure(tri, method = "cl", bootstrap = FALSE)
   expect_identical(pf$ci_type, "analytical")
   expect_null(pf$bootstrap)
 })
 
-test_that("fit_prem method=cl bootstrap=TRUE uses bootstrap", {
+test_that("fit_exposure method=cl bootstrap=TRUE uses bootstrap", {
   tri <- make_sub_tri("surgery")
-  pf <- fit_prem(tri, method = "cl", bootstrap = TRUE, seed = 1, B = 50)
+  pf <- fit_exposure(tri, method = "cl", bootstrap = TRUE, seed = 1, B = 50)
   expect_identical(pf$ci_type, "bootstrap")
 })
 
-test_that("fit_prem accepts a pre-built BootstrapTriangle", {
+test_that("fit_exposure accepts a pre-built BootstrapTriangle", {
   tri <- make_sub_tri("surgery")
-  b <- bootstrap(tri, keep_pseudo = TRUE, target = "prem", B = 50, seed = 1)
-  pf <- fit_prem(tri, method = "ed", bootstrap = b)
+  b <- bootstrap(tri, keep_pseudo = TRUE, target = "exposure", B = 50, seed = 1)
+  pf <- fit_exposure(tri, method = "ed", bootstrap = b)
   expect_identical(pf$ci_type, "bootstrap")
   expect_identical(pf$bootstrap$B, 50L)
 })
 
-test_that("fit_prem accepts a bootstrap function (lazy spec)", {
+test_that("fit_exposure accepts a bootstrap function (lazy spec)", {
   tri <- make_sub_tri("surgery")
-  fn <- function(t) bootstrap(t, target = "prem", B = 30, seed = 1)
-  pf <- fit_prem(tri, bootstrap = fn)
+  fn <- function(t) bootstrap(t, target = "exposure", B = 30, seed = 1)
+  pf <- fit_exposure(tri, bootstrap = fn)
   expect_identical(pf$ci_type, "bootstrap")
   expect_identical(pf$bootstrap$B, 30L)
 })
 
-test_that("fit_prem rejects a BootstrapTriangle built on the wrong target", {
+test_that("fit_exposure rejects a BootstrapTriangle built on the wrong target", {
   tri <- make_sub_tri("surgery")
   b_loss <- bootstrap(tri, keep_pseudo = TRUE, target = "loss", B = 30, seed = 1)
-  expect_error(fit_prem(tri, bootstrap = b_loss),
+  expect_error(fit_exposure(tri, bootstrap = b_loss),
                "expects target")
 })
 
-test_that("fit_prem projected cells have finite SE/CI under bootstrap", {
+test_that("fit_exposure projected cells have finite SE/CI under bootstrap", {
   tri <- make_sub_tri("surgery")
-  pf <- fit_prem(tri, seed = 1, B = 100)
+  pf <- fit_exposure(tri, seed = 1, B = 100)
   proj <- pf$full[is_observed == FALSE]
-  expect_true(all(is.finite(proj$prem_proj)))
-  expect_true(all(is.finite(proj$prem_total_se)))
-  expect_true(all(is.finite(proj$prem_ci_lo)))
-  expect_true(all(is.finite(proj$prem_ci_hi)))
-  expect_true(all(proj$prem_ci_lo <= proj$prem_ci_hi))
+  expect_true(all(is.finite(proj$exposure_proj)))
+  expect_true(all(is.finite(proj$exposure_total_se)))
+  expect_true(all(is.finite(proj$exposure_ci_lo)))
+  expect_true(all(is.finite(proj$exposure_ci_hi)))
+  expect_true(all(proj$exposure_ci_lo <= proj$exposure_ci_hi))
 })
 
 
@@ -667,8 +667,8 @@ test_that("fit_loss accepts a bootstrap function (lazy spec)", {
 
 test_that("fit_loss rejects a BootstrapTriangle on the wrong target", {
   tri <- make_sub_tri("surgery")
-  b_prem <- bootstrap(tri, keep_pseudo = TRUE, target = "prem", B = 30, seed = 1)
-  expect_error(fit_loss(tri, bootstrap = b_prem),
+  b_exposure <- bootstrap(tri, keep_pseudo = TRUE, target = "exposure", B = 30, seed = 1)
+  expect_error(fit_loss(tri, bootstrap = b_exposure),
                "expects target")
 })
 
@@ -690,78 +690,78 @@ test_that("fit_loss projected cells have finite SE/CI where loss_proj is defined
 
 
 # ---------------------------------------------------------------------------
-# Phase 2d: fit_lr migration to new bootstrap pipeline
+# Phase 2d: fit_ratio migration to new bootstrap pipeline
 # ---------------------------------------------------------------------------
 
-test_that("fit_lr default (method=sa) uses bootstrap", {
+test_that("fit_ratio default (method=sa) uses bootstrap", {
   tri <- make_sub_tri("surgery")
-  lf <- fit_lr(tri, seed = 1, B = 50)
+  lf <- fit_ratio(tri, seed = 1, B = 50)
   expect_identical(lf$ci_type, "bootstrap")
   expect_true(!is.null(lf$bootstrap))
 })
 
-test_that("fit_lr method=cl bootstrap=FALSE uses analytical", {
+test_that("fit_ratio method=cl bootstrap=FALSE uses analytical", {
   tri <- make_sub_tri("surgery")
-  lf <- fit_lr(tri, method = "cl", bootstrap = FALSE)
+  lf <- fit_ratio(tri, method = "cl", bootstrap = FALSE)
   expect_identical(lf$ci_type, "analytical")
   expect_null(lf$bootstrap)
 })
 
-test_that("fit_lr method=cl bootstrap=TRUE uses bootstrap", {
+test_that("fit_ratio method=cl bootstrap=TRUE uses bootstrap", {
   tri <- make_sub_tri("surgery")
-  lf <- fit_lr(tri, method = "cl", bootstrap = TRUE, seed = 1, B = 50)
+  lf <- fit_ratio(tri, method = "cl", bootstrap = TRUE, seed = 1, B = 50)
   expect_identical(lf$ci_type, "bootstrap")
 })
 
-test_that("fit_lr accepts a pre-built BootstrapTriangle", {
+test_that("fit_ratio accepts a pre-built BootstrapTriangle", {
   tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, keep_pseudo = TRUE, target = "loss", B = 50, seed = 1)
-  lf <- fit_lr(tri, method = "sa", bootstrap = b)
+  lf <- fit_ratio(tri, method = "sa", bootstrap = b)
   expect_identical(lf$ci_type, "bootstrap")
   expect_identical(lf$bootstrap$B, 50L)
 })
 
-test_that("fit_lr accepts a bootstrap function (lazy spec)", {
+test_that("fit_ratio accepts a bootstrap function (lazy spec)", {
   tri <- make_sub_tri("surgery")
   fn <- function(t) bootstrap(t, target = "loss", B = 30, seed = 1)
-  lf <- fit_lr(tri, method = "ed", bootstrap = fn)
+  lf <- fit_ratio(tri, method = "ed", bootstrap = fn)
   expect_identical(lf$ci_type, "bootstrap")
   expect_identical(lf$bootstrap$B, 30L)
 })
 
-test_that("fit_lr rejects a BootstrapTriangle on the wrong target", {
+test_that("fit_ratio rejects a BootstrapTriangle on the wrong target", {
   tri <- make_sub_tri("surgery")
-  b_prem <- bootstrap(tri, keep_pseudo = TRUE, target = "prem", B = 30, seed = 1)
-  expect_error(fit_lr(tri, bootstrap = b_prem),
+  b_exposure <- bootstrap(tri, keep_pseudo = TRUE, target = "exposure", B = 30, seed = 1)
+  expect_error(fit_ratio(tri, bootstrap = b_exposure),
                "expects target")
 })
 
-test_that("fit_lr se_method='delta' incorporates premium SE", {
+test_that("fit_ratio se_method='delta' incorporates exposure SE", {
   tri <- make_sub_tri("surgery")
-  lf_fixed <- fit_lr(tri, method = "sa", se_method = "fixed",
+  lf_fixed <- fit_ratio(tri, method = "sa", se_method = "fixed",
                      seed = 1, B = 50)
-  lf_delta <- fit_lr(tri, method = "sa", se_method = "delta",
+  lf_delta <- fit_ratio(tri, method = "sa", se_method = "delta",
                      seed = 1, B = 50)
-  # `delta` typically gives smaller lr_se than `fixed` because rho > 0
-  # cancels part of the loss/premium variance (the strong positive
-  # correlation between cumulative loss and premium projection).
-  proj_fixed <- lf_fixed$full[is_observed == FALSE & is.finite(lr_proj)]
-  proj_delta <- lf_delta$full[is_observed == FALSE & is.finite(lr_proj)]
-  expect_true(all(is.finite(proj_delta$lr_se)))
-  expect_true(all(is.finite(proj_delta$prem_total_se)))
-  expect_true(mean(proj_delta$lr_se) < mean(proj_fixed$lr_se))
+  # `delta` typically gives smaller ratio_se than `fixed` because rho > 0
+  # cancels part of the loss/exposure variance (the strong positive
+  # correlation between cumulative loss and exposure projection).
+  proj_fixed <- lf_fixed$full[is_observed == FALSE & is.finite(ratio_proj)]
+  proj_delta <- lf_delta$full[is_observed == FALSE & is.finite(ratio_proj)]
+  expect_true(all(is.finite(proj_delta$ratio_se)))
+  expect_true(all(is.finite(proj_delta$exposure_total_se)))
+  expect_true(mean(proj_delta$ratio_se) < mean(proj_fixed$ratio_se))
 })
 
-test_that("fit_lr bootstrap projected cells have finite LR SE/CI", {
+test_that("fit_ratio bootstrap projected cells have finite ratio SE/CI", {
   tri <- make_sub_tri("surgery")
   for (method in c("sa", "ed", "cl")) {
-    lf <- fit_lr(tri, method = method, bootstrap = TRUE,
+    lf <- fit_ratio(tri, method = method, bootstrap = TRUE,
                  seed = 1, B = 50)
-    proj <- lf$full[is_observed == FALSE & is.finite(lr_proj)]
-    expect_true(all(is.finite(proj$lr_se)),    info = method)
-    expect_true(all(is.finite(proj$lr_ci_lo)), info = method)
-    expect_true(all(is.finite(proj$lr_ci_hi)), info = method)
-    expect_true(all(proj$lr_ci_lo <= proj$lr_ci_hi), info = method)
+    proj <- lf$full[is_observed == FALSE & is.finite(ratio_proj)]
+    expect_true(all(is.finite(proj$ratio_se)),    info = method)
+    expect_true(all(is.finite(proj$ratio_ci_lo)), info = method)
+    expect_true(all(is.finite(proj$ratio_ci_hi)), info = method)
+    expect_true(all(proj$ratio_ci_lo <= proj$ratio_ci_hi), info = method)
   }
 })
 
@@ -770,9 +770,9 @@ test_that("fit_lr bootstrap projected cells have finite LR SE/CI", {
 # Phase 2e: backtest pass-through of new bootstrap arg
 # ---------------------------------------------------------------------------
 
-test_that("backtest target='lr' default uses bootstrap (SA -> bootstrap)", {
+test_that("backtest target='ratio' default uses bootstrap (SA -> bootstrap)", {
   tri <- make_sub_tri("surgery")
-  bt <- backtest(tri, holdout = 6L, target = "lr", seed = 1, B = 50)
+  bt <- backtest(tri, holdout = 6L, target = "ratio", seed = 1, B = 50)
   expect_identical(bt$fit$ci_type, "bootstrap")
   expect_true(!is.null(bt$fit$bootstrap))
 })
@@ -785,9 +785,9 @@ test_that("backtest target='loss' bootstrap=FALSE uses analytical", {
   expect_null(bt$fit$bootstrap)
 })
 
-test_that("backtest target='prem' bootstrap=TRUE uses bootstrap", {
+test_that("backtest target='exposure' bootstrap=TRUE uses bootstrap", {
   tri <- make_sub_tri("surgery")
-  bt <- backtest(tri, holdout = 6L, target = "prem",
+  bt <- backtest(tri, holdout = 6L, target = "exposure",
                   bootstrap = TRUE, seed = 1, B = 50)
   expect_identical(bt$fit$ci_type, "bootstrap")
 })
@@ -795,7 +795,7 @@ test_that("backtest target='prem' bootstrap=TRUE uses bootstrap", {
 test_that("backtest accepts function-based bootstrap (leakage-safe path)", {
   tri <- make_sub_tri("surgery")
   fn <- function(t) bootstrap(t, target = "loss", B = 30, seed = 1)
-  bt <- backtest(tri, holdout = 6L, target = "lr", bootstrap = fn)
+  bt <- backtest(tri, holdout = 6L, target = "ratio", bootstrap = fn)
   expect_identical(bt$fit$ci_type, "bootstrap")
   expect_identical(bt$fit$bootstrap$B, 30L)
 })
@@ -810,7 +810,7 @@ test_that("backtest function-based bootstrap targets the masked triangle", {
     seen_rows <<- c(seen_rows, nrow(t))
     bootstrap(t, target = "loss", B = 5, seed = 1)
   }
-  invisible(backtest(tri, holdout = 6L, target = "lr", bootstrap = probe))
+  invisible(backtest(tri, holdout = 6L, target = "ratio", bootstrap = probe))
   expect_true(length(seen_rows) > 0L)
   # The masked triangle has fewer rows than the unmasked one (held-out
   # cells removed for the upper-triangle structure).
@@ -819,9 +819,9 @@ test_that("backtest function-based bootstrap targets the masked triangle", {
 
 test_that("backtest rejects a BootstrapTriangle on the wrong target", {
   tri <- make_sub_tri("surgery")
-  b_prem <- bootstrap(tri, keep_pseudo = TRUE, target = "prem", B = 30, seed = 1)
+  b_exposure <- bootstrap(tri, keep_pseudo = TRUE, target = "exposure", B = 30, seed = 1)
   expect_error(
-    backtest(tri, holdout = 6L, target = "loss", bootstrap = b_prem),
+    backtest(tri, holdout = 6L, target = "loss", bootstrap = b_exposure),
     "expects target"
   )
 })

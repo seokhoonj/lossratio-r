@@ -10,7 +10,7 @@
 \item{metric}{A single metric name.}
 }
 \value{
-\code{TRUE} for \code{lr} / \code{incr_lr} and any \verb{_share} variant,
+\code{TRUE} for \code{ratio} / \code{incr_ratio} and any \verb{_share} variant,
 \code{FALSE} otherwise.
 }
 \description{

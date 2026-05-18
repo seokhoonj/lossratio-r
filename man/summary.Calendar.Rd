@@ -16,14 +16,14 @@ A \code{data.table} of class \code{"CalendarSummary"} with one row per
 \verb{(groups, calendar)} combination, containing:
 \describe{
 \item{n_cohorts}{Number of observations in the cell.}
-\item{lr_mean}{Mean of cumulative loss ratios.}
-\item{lr_median}{Median of cumulative loss ratios.}
-\item{lr_wt}{Weighted cumulative loss ratio
-(\code{sum(loss) / sum(prem)}).}
-\item{incr_lr_mean}{Mean of per-period loss ratios.}
-\item{incr_lr_median}{Median of per-period loss ratios.}
-\item{incr_lr_wt}{Weighted per-period loss ratio
-(\code{sum(incr_loss) / sum(incr_prem)}).}
+\item{ratio_mean}{Mean of cumulative loss ratios.}
+\item{ratio_median}{Median of cumulative loss ratios.}
+\item{ratio_wt}{Weighted cumulative loss ratio
+(\code{sum(loss) / sum(exposure)}).}
+\item{incr_ratio_mean}{Mean of per-period loss ratios.}
+\item{incr_ratio_median}{Median of per-period loss ratios.}
+\item{incr_ratio_wt}{Weighted per-period loss ratio
+(\code{sum(incr_loss) / sum(incr_exposure)}).}
 }
 
 The returned object preserves the attributes \code{groups},
@@ -31,8 +31,8 @@ The returned object preserves the attributes \code{groups},
 }
 \description{
 S3 method for \code{summary()} on \code{Calendar} objects. Computes
-calendar-period summary statistics for cumulative loss ratios (\code{lr})
-and per-period loss ratios (\code{incr_lr}).
+calendar-period summary statistics for cumulative loss ratios (\code{ratio})
+and per-period loss ratios (\code{incr_ratio}).
 
 Where \code{\link[=summary.Triangle]{summary.Triangle()}} aggregates by \verb{(groups, dev)} (cohort
 x development), this method aggregates by \verb{(groups, calendar)}
@@ -46,7 +46,7 @@ cal <- as_calendar(
   groups   = "coverage",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 smr  <- summary(cal)
 head(smr)

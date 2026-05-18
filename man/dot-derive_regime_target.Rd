@@ -2,20 +2,20 @@
 % Please edit documentation in R/regime.R
 \name{.derive_regime_target}
 \alias{.derive_regime_target}
-\title{Derive a non-native regime detection target}
+\title{Derive a non-native regime detection metric}
 \usage{
-.derive_regime_target(d, target, grp = character(0))
+.derive_regime_target(d, loss, grp = character(0))
 }
 \description{
-Computes diagnostic / experimental detection targets that are not stored
+Computes diagnostic / experimental detection metrics that are not stored
 directly on the Triangle:
 \describe{
-\item{\code{loss_ata}}{Loss age-to-age factor — \code{loss[k+1] / loss[k]} per
+\item{\code{loss_ata}}{Loss age-to-age factor -- \code{loss[k+1] / loss[k]} per
 (group, cohort). Captures \emph{multiplicative} development speed.}
-\item{\code{prem_ata}}{Premium age-to-age factor — same form on prem.
-Captures prem \emph{recognition speed}.}
-\item{\code{loss_ed}}{Loss intensity (ED model's $g_k$) —
-\code{(loss[k] - loss[k-1]) / prem[k-1]} per (group, cohort).
+\item{\code{exposure_ata}}{Exposure age-to-age factor -- same form on exposure.
+Captures exposure \emph{recognition speed}.}
+\item{\code{loss_ed}}{Loss intensity (ED model's $g_k$) --
+\code{(loss[k] - loss[k-1]) / exposure[k-1]} per (group, cohort).
 \emph{Additive}, exposure-anchored.}
 }
 

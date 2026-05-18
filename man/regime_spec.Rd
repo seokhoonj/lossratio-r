@@ -8,7 +8,7 @@ regime_spec(...)
 }
 \arguments{
 \item{...}{kwargs passed verbatim to \code{\link[=detect_regime]{detect_regime()}} when the spec
-is invoked (e.g. \code{target}, \code{by}, \code{min_run}, \code{method}).}
+is invoked (e.g. \code{loss}, \code{by}, \code{min_run}, \code{method}).}
 }
 \value{
 A function of one argument (a \code{"Triangle"}) returning a
@@ -23,7 +23,7 @@ on its own \emph{internal} triangle. The point is \strong{conditional /
 deferred} detection -- the change points depend on which cells the
 caller decides to expose:
 \itemize{
-\item In \code{fit_lr()} / \code{fit_loss()} / \code{fit_prem()}, the spec is invoked
+\item In \code{fit_ratio()} / \code{fit_loss()} / \code{fit_exposure()}, the spec is invoked
 on the \emph{full} triangle the user passed in.
 \item In \code{\link[=backtest]{backtest()}}, \strong{the spec is invoked on the masked triangle of
 each holdout fold}, \emph{never} on the full triangle. Held-out
@@ -44,16 +44,16 @@ this fold, what regime structure would I have picked?" Use
 \examples{
 \dontrun{
 # Capture detection arguments, defer execution until fit time.
-spec <- regime_spec(target = "loss_ata")
+spec <- regime_spec(loss = "loss_ata")
 
-# In fit_lr(): closure is invoked on the user's `tri`.
-fit <- fit_lr(tri, loss_regime = regime_spec(target = "loss_ata"))
+# In fit_ratio(): closure is invoked on the user's `tri`.
+fit <- fit_ratio(tri, loss_regime = regime_spec(loss = "loss_ata"))
 
 # In backtest(): closure is invoked on the *masked* triangle of
 # each holdout fold, so detected change points never peek at
 # held-out cells.
 bt <- backtest(tri, holdout = 6L,
-               loss_regime = regime_spec(target = "loss_ata"))
+               loss_regime = regime_spec(loss = "loss_ata"))
 }
 
 }

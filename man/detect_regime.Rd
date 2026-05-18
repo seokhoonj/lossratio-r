@@ -9,7 +9,7 @@
 \usage{
 detect_regime(
   x,
-  target = "lr",
+  loss = "ratio",
   by = NULL,
   window = "auto",
   method = c("e_divisive", "pelt", "hclust"),
@@ -31,29 +31,29 @@ detect_regime(
 groups (per-group detection runs independently).
 Also used by S3 \code{print()} method on \code{Regime} objects.}
 
-\item{target}{Trajectory variable. Default is \code{"lr"} (cumulative loss
-ratio). Accepts any column on the \code{Triangle} (e.g. \code{"lr"},
-\code{"loss"}, \code{"prem"}, \code{"incr_loss"}, \code{"incr_prem"}), plus three
-\emph{diagnostic} derived targets computed inline per (group, cohort):
+\item{loss}{Trajectory variable. Default is \code{"ratio"} (cumulative loss
+ratio). Accepts any column on the \code{Triangle} (e.g. \code{"ratio"},
+\code{"loss"}, \code{"exposure"}, \code{"incr_loss"}, \code{"incr_exposure"}), plus three
+\emph{diagnostic} derived metrics computed inline per (group, cohort):
 \describe{
 \item{\code{"loss_ata"}}{Loss age-to-age factor
-\code{loss[k+1] / loss[k]} — multiplicative loss development speed
+\code{loss[k+1] / loss[k]} -- multiplicative loss development speed
 (CL $f_k$).}
-\item{\code{"prem_ata"}}{Premium age-to-age factor — same form on
-prem.}
+\item{\code{"exposure_ata"}}{Exposure age-to-age factor -- same form on
+exposure.}
 \item{\code{"loss_ed"}}{Loss intensity
-\code{(loss[k] - loss[k-1]) / prem[k-1]} — additive,
+\code{(loss[k] - loss[k-1]) / exposure[k-1]} -- additive,
 exposure-anchored (ED model's $g_k$).}
-\item{\code{"prem_ed"}}{Alias of \code{"prem_ata"} — the two differ
-only by a constant \code{(prem_ata - 1)}, and the PCA
+\item{\code{"exposure_ed"}}{Alias of \code{"exposure_ata"} -- the two differ
+only by a constant \code{(exposure_ata - 1)}, and the PCA
 standardization in detection removes that shift, so they yield
 identical regime changes. Provided for API symmetry with the
 \code{loss_ata} / \code{loss_ed} pair.}
 }
-Derived targets drop the first dev row per cohort (no predecessor),
+Derived metrics drop the first dev row per cohort (no predecessor),
 then re-index \code{dev} so detection sees a contiguous sequence. See the
-\code{vignette("regime")} "Choice of target" section for guidance on
-which target matches which suspected event.}
+\code{vignette("regime")} "Choice of loss" section for guidance on
+which loss metric matches which suspected event.}
 
 \item{by}{Grouping column(s) for per-combination detection. \code{NULL}
 (default) reuses the Triangle's \code{attr(x, "groups")} when non-empty —
@@ -104,7 +104,7 @@ An object of class \code{"Regime"}. For single-group input:
 \describe{
 \item{\code{call}}{Matched call.}
 \item{\code{method}}{Detection method used.}
-\item{\code{target}}{Trajectory variable used for detection.}
+\item{\code{loss}}{Trajectory variable used for detection.}
 \item{\code{window}}{Trajectory window per combo. Scalar integer when a
 single combo was analysed; integer vector (one per surviving
 combo, in the order of \verb{$labels} / \verb{$changes} group rows)
@@ -119,7 +119,7 @@ when \code{by} resolves to a non-empty vector.}
 columns \verb{[by..., change, regime_id, pre_value, post_value, magnitude]}. \code{regime_id} = id of the regime that STARTS at this
 change (the pre-change regime is \code{regime_id - 1}); matches
 \verb{$labels$regime_id}. \code{pre_value} / \code{post_value} are the mean
-\code{target} over the cohort × dev trajectory windows in the pre- /
+\code{loss} over the cohort × dev trajectory windows in the pre- /
 post-change regimes; \verb{magnitude = |post_value - pre_value|}.
 Empty (zero rows) when no change is detected.}
 \item{\code{n_regimes}}{Number of regimes detected. Scalar integer for
@@ -145,7 +145,7 @@ cohorts, single pooled factor) or estimate per-segment factors.}
 Detect structural change points in the sequence of cohort-level
 development trajectories. Each underwriting cohort (indexed by the
 \code{cohort} of a \code{"Triangle"} object) is treated as a feature vector
-whose entries are the selected \code{target} metric observed at development
+whose entries are the selected \code{loss} metric observed at development
 periods \verb{1, ..., window}. Cohorts are then ordered by underwriting
 period and tested for structural shifts in the multivariate
 sequence.
@@ -183,7 +183,7 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 # Hierarchical clustering (no extra package dependency)
@@ -203,7 +203,7 @@ tri_all <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 r_all <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 print(r_all$changes)

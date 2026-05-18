@@ -134,8 +134,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  tgt <- attr(x, "target")
-  meta <- .get_plot_meta(tgt)
+  loss <- attr(x, "loss")
+  meta <- .get_plot_meta(loss)
 
   # 1) compute summary --------------------------------------------------
   smr <- summary(x, model = "ata", alpha = alpha)
@@ -629,7 +629,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   dt  <- .copy_dt(x)
   grp <- attr(x, "groups")
   coh <- attr(x, "cohort")
-  tgt <- attr(x, "target")
+  loss <- attr(x, "loss")
 
   if (is.null(grp) || is.null(coh))
     stop("`x` must contain `groups` and `cohort` attributes.",
@@ -654,7 +654,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   # 3) build cell labels and caption ------------------------------------
   if (identical(amount_divisor, "auto"))
     amount_divisor <- .auto_divisor(
-      if (label_style == "value") numeric(0) else dt[["target_to"]]
+      if (label_style == "value") numeric(0) else dt[["loss_to"]]
     )
   unit_txt <- .get_amount_unit(amount_divisor)
 
@@ -665,8 +665,8 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     dt[, ("label") := data.table::fifelse(
       is.finite(ata),
       sprintf("%.2f\n(%.1f->%.1f)", ata,
-              target_from / amount_divisor,
-              target_to   / amount_divisor),
+              loss_from / amount_divisor,
+              loss_to   / amount_divisor),
       ""
     )]
     caption_txt <- sprintf(
@@ -681,10 +681,10 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   dt[!is.finite(.ata_fill), (".ata_fill") := NA_real_]
 
   # 5) build title ------------------------------------------------------
-  title_txt <- switch(tgt,
-                      loss = "ATA Factor for Cumulative Loss",
-                      prem = "ATA Factor for Cumulative Premium",
-                      lr   = "ATA Factor for Cumulative Loss Ratio",
+  title_txt <- switch(loss,
+                      loss     = "ATA Factor for Cumulative Loss",
+                      exposure = "ATA Factor for Cumulative Premium",
+                      ratio    = "ATA Factor for Cumulative Loss Ratio",
                       "ATA Factor"
   )
 
@@ -845,7 +845,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
     dt[, ("label") := data.table::fifelse(
       is.finite(intensity),
       sprintf("%.3f\n(%.1f/%.1f)", intensity,
-              target_delta / amount_divisor,
+              loss_delta / amount_divisor,
               exposure_from / amount_divisor),
       ""
     )]

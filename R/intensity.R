@@ -13,7 +13,7 @@
 #' workflow, parallel to [fit_ata()] for the multiplicative (chain
 #' ladder) side. Both operate at the *factor level* without
 #' producing a full projection. For full ED projection (cumulative
-#' loss / prem / lr), use [fit_ed()] which accepts either a
+#' loss / exposure / ratio), use [fit_ed()] which accepts either a
 #' `Triangle` or an `IntensityFit` (skipping a rebuild of the link
 #' table when factors are already computed).
 #'
@@ -26,10 +26,10 @@
 #' `IntensityFit` input with an informative error.
 #'
 #' @param x A `Triangle` object.
-#' @param target A single cumulative metric used as the link
+#' @param loss A single cumulative metric used as the link
 #'   numerator. Default `"loss"`.
 #' @param exposure A single cumulative metric used as the
-#'   exposure anchor. Default `"prem"`.
+#'   exposure anchor. Default `"exposure"`.
 #' @param alpha WLS weight exponent. Default `1`.
 #' @param na_method NA fill method for the selected intensity series
 #'   used downstream by [fit_ed()]. One of `"locf"` (default —
@@ -44,9 +44,9 @@
 #'   estimation to rows within the last `recent` calendar diagonals
 #'   (calendar-diagonal wedge filter; see [.apply_recent_filter()]).
 #' @param regime Optional regime specification for cohort cutoff. Accepts:
-#'   `NULL` (default — no filter), a `"Regime"` object (from
+#'   `NULL` (default -- no filter), a `"Regime"` object (from
 #'   [detect_regime()]), the string `"auto"` (internal
-#'   `detect_regime(tri, target = "lr")` call), or a function
+#'   `detect_regime(tri, loss = "ratio")` call), or a function
 #'   `function(tri) -> Regime`. Resolved internally via
 #'   [.resolve_regime()]. When supplied, cohorts strictly before the
 #'   change are dropped before estimation.
@@ -57,7 +57,7 @@
 #'   \item{`call`}{The matched call.}
 #'   \item{`data`}{The (possibly filtered) `Link` object used for
 #'     estimation.}
-#'   \item{`groups`, `cohort`, `dev`, `target`,
+#'   \item{`groups`, `cohort`, `dev`, `loss`,
 #'     `exposure`}{Variable name relays from the input `Triangle`.}
 #'   \item{`link`}{Alias of `data` for parallelism with
 #'     [fit_ata()].}
@@ -85,16 +85,16 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem     = "incr_prem"
+#'   exposure = "incr_exposure"
 #' )
-#' intensity_fit <- fit_intensity(tri, target = "loss", exposure = "prem")
+#' intensity_fit <- fit_intensity(tri, loss = "loss", exposure = "exposure")
 #' summary(intensity_fit)
 #' }
 #'
 #' @export
 fit_intensity <- function(x,
-                          target       = "loss",
-                          exposure     = "prem",
+                          loss         = "loss",
+                          exposure     = "exposure",
                           alpha        = 1,
                           na_method    = c("locf", "zero", "none"),
                           sigma_method = c("locf", "min_last2", "loglinear"),
@@ -106,7 +106,7 @@ fit_intensity <- function(x,
 
   regime <- .resolve_regime(regime, x)
 
-  link <- as_link(x, target = target, exposure = exposure)
+  link <- as_link(x, loss = loss, exposure = exposure)
 
   na_method    <- match.arg(na_method)
   sigma_method <- match.arg(sigma_method)
@@ -154,7 +154,7 @@ fit_intensity <- function(x,
     groups       = grp,
     cohort       = attr(link, "cohort"),
     dev          = attr(link, "dev"),
-    target       = attr(link, "target"),
+    loss         = attr(link, "loss"),
     exposure     = attr(link, "exposure"),
     link         = link,
     factor       = ed_summary,

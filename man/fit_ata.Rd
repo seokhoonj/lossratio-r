@@ -6,7 +6,7 @@
 \usage{
 fit_ata(
   x,
-  target = "loss",
+  loss = "loss",
   weight = NULL,
   alpha = 1,
   na_method = c("locf", "none"),
@@ -21,7 +21,7 @@ fit_ata(
 \item{x}{An object of class \code{"Link"}, typically produced by
 \code{\link[=as_link]{as_link()}}.}
 
-\item{target}{Cumulative metric for the link factor. Default
+\item{loss}{Cumulative metric for the link factor. Default
 \code{"loss"}. Forwarded to \code{\link[=as_link]{as_link()}}.}
 
 \item{weight}{Optional WLS weight variable. Forwarded to
@@ -43,9 +43,9 @@ estimation. Applied before maturity filtering. Default is \code{NULL}
 (use all periods).}
 
 \item{regime}{Optional regime specification for cohort cutoff. Accepts:
-\code{NULL} (default — no filter), a \code{Regime} object (from \code{\link[=detect_regime]{detect_regime()}}
+\code{NULL} (default -- no filter), a \code{Regime} object (from \code{\link[=detect_regime]{detect_regime()}}
 or \code{regime_at()}), the string \code{"auto"} (internal
-\code{detect_regime(tri, target = "lr")} call), or a function
+\code{detect_regime(tri, loss = "ratio")} call), or a function
 \verb{function(tri) -> Regime} for deferred custom-config detection. When
 supplied, cohorts strictly before the resolved change date are excluded
 from estimation.}

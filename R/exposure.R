@@ -1,49 +1,49 @@
-#' Fit a chain ladder projection on the prem (exposure) triangle
+#' Fit a chain ladder projection on the exposure triangle
 #'
 #' @description
-#' Project cumulative prem across the cohort x development grid with
+#' Project cumulative exposure across the cohort x development grid with
 #' a chain ladder estimator. Two variance recursions are supported:
 #'
 #' \describe{
 #'   \item{`"ed"` (default)}{Additive recursion. Empirically more robust
-#'     on long-projection prem triangles -- the multiplicative
+#'     on long-projection exposure triangles -- the multiplicative
 #'     scaling of the classical CL recursion can blow up under cohort-wise
 #'     heterogeneity (regime changes in premium, channel changes,
-#'     amendments). See `dev/prem_projection.qmd`.}
+#'     amendments). See `dev/exposure_projection.qmd`.}
 #'   \item{`"cl"`}{Mack (1993) multiplicative recursion. Point projection
 #'     identical to ED; only the SE accumulation differs.}
 #' }
 #'
 #' Both methods share the same point estimate -- self-weighted ED on
-#' prem is mathematically equivalent to chain ladder on the same
+#' exposure is mathematically equivalent to chain ladder on the same
 #' column (`f_k = 1 + g_k`). The only operational difference is how
 #' cumulative variance is propagated forward.
 #'
-#' @param x A `"Triangle"` object. The standardized `"prem"` column
-#'   is used as the projection target.
+#' @param x A `"Triangle"` object. The standardized `"exposure"` column
+#'   is used as the projection metric.
 #' @param method One of `"ed"` (default) or `"cl"`.
 #' @param alpha Numeric scalar controlling the variance structure passed
 #'   through to [fit_ata()]. Default `1`.
 #' @param sigma_method Sigma extrapolation method. One of `"locf"`
 #'   (default), `"min_last2"`, or `"loglinear"`.
-#' @param regime Optional regime specification (prem side). Accepts
+#' @param regime Optional regime specification (exposure side). Accepts
 #'   four input types:
 #'   \describe{
 #'     \item{`NULL` (default)}{No regime filter.}
 #'     \item{`Regime` object}{Use as-is. Typically built via
 #'       [detect_regime()] or [regime_at()].}
 #'     \item{`"auto"`}{Detect regime internally via
-#'       `detect_regime(x, target = "lr")` on the input triangle.}
+#'       `detect_regime(x, loss = "ratio")` on the input triangle.}
 #'     \item{Function / closure}{A user-supplied
 #'       `function(tri) -> Regime` for deferred custom-config detection.}
 #'   }
 #'   Pre-change cohorts (cohorts before the resolved `Regime`'s change
-#'   date) are excluded from prem factor estimation.
+#'   date) are excluded from exposure factor estimation.
 #' @param recent Optional positive integer; recent calendar-diagonal
 #'   filter for the underlying ATA fit. Default `NULL`.
 #' @param tail Logical; whether to apply a tail factor. Default `FALSE`.
-#' @param conf_level Confidence level for analytical CI on the prem
-#'   projection (`prem_ci_lo`, `prem_ci_hi`). Default `0.95`.
+#' @param conf_level Confidence level for analytical CI on the exposure
+#'   projection (`exposure_ci_lo`, `exposure_ci_hi`). Default `0.95`.
 #' @param bootstrap Bootstrap configuration. Five forms accepted:
 #'   \describe{
 #'     \item{`NULL` (default)}{Auto-resolved by `method`: bootstrap for
@@ -51,35 +51,35 @@
 #'       `bootstrap = NULL` shape.}
 #'     \item{`TRUE` / `FALSE`}{Back-compat with the legacy logical arg.
 #'       `TRUE` triggers `bootstrap = "auto"`; `FALSE` disables.}
-#'     \item{`"auto"`}{Internal `bootstrap()` call on the premium triangle
+#'     \item{`"auto"`}{Internal `bootstrap()` call on the exposure triangle
 #'       with defaults `(type = "parametric", process = "normal",
-#'       target = "prem")`.}
+#'       target = "exposure")`.}
 #'     \item{`BootstrapTriangle`}{Pre-built object from `bootstrap()`.
-#'       Must have `meta$target == "prem"`.}
+#'       Must have `meta$target == "exposure"`.}
 #'     \item{Function `function(tri) -> BootstrapTriangle`}{Lazy spec
 #'       invoked on the input Triangle (leakage-safe for `backtest()`).}
 #'   }
 #'   Regardless of `method`, the bootstrap path uses CL recursion --
-#'   premium's self-anchor makes ED and CL algebraically equivalent
+#'   exposure's self-anchor makes ED and CL algebraically equivalent
 #'   (`g_k = f_k - 1`, `sigma^2_g = sigma^2_f`).
 #' @param B Integer number of bootstrap replicates. Used only when
 #'   `bootstrap` resolves to `"auto"`. Default `999`.
 #' @param seed Optional integer seed for reproducible bootstrap. Default
 #'   `NULL`.
 #'
-#' @return An object of class `"PremFit"` (a list with the same
+#' @return An object of class `"ExposureFit"` (a list with the same
 #'   structure as `CLFit`). Components: `selected`, `full`, `data`,
-#'   plus attribute `prem_method`. The `$full` data.table uses
-#'   role-specific column names (`prem_obs`, `prem_proj`,
-#'   `incr_prem_proj`, `prem_proc_se`, `prem_param_se`,
-#'   `prem_total_se`, `prem_proc_cv`, `prem_param_cv`,
-#'   `prem_total_cv`, `prem_ci_lo`, `prem_ci_hi`). Under
-#'   `bootstrap = TRUE`, `prem_ci_lo` / `prem_ci_hi` are bootstrap
-#'   quantiles and `prem_total_se` / `prem_total_cv` are derived from
-#'   the simulation SD; the analytical proc/param decomposition is
+#'   plus attribute `exposure_method`. The `$full` data.table uses
+#'   role-specific column names (`exposure_obs`, `exposure_proj`,
+#'   `incr_exposure_proj`, `exposure_proc_se`, `exposure_param_se`,
+#'   `exposure_total_se`, `exposure_proc_cv`, `exposure_param_cv`,
+#'   `exposure_total_cv`, `exposure_ci_lo`, `exposure_ci_hi`). Under
+#'   `bootstrap = TRUE`, `exposure_ci_lo` / `exposure_ci_hi` are bootstrap
+#'   quantiles and `exposure_total_se` / `exposure_total_cv` are derived
+#'   from the simulation SD; the analytical proc/param decomposition is
 #'   retained as diagnostic.
 #'
-#' @seealso [fit_cl()], [fit_ed()], [fit_lr()], [as_triangle()].
+#' @seealso [fit_cl()], [fit_ed()], [fit_ratio()], [as_triangle()].
 #'
 #' @examples
 #' \dontrun{
@@ -90,37 +90,37 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem     = "incr_prem"
+#'   exposure = "incr_exposure"
 #' )
 #'
 #' # ED-additive recursion (default; robust on long projections)
-#' pf <- fit_prem(tri)
+#' pf <- fit_exposure(tri)
 #' summary(pf)
 #'
 #' # CL-multiplicative recursion (Mack)
-#' pf_cl <- fit_prem(tri, method = "cl")
+#' pf_cl <- fit_exposure(tri, method = "cl")
 #' }
 #'
 #' @export
-fit_prem <- function(x,
-                        method       = c("ed", "cl"),
-                        alpha        = 1,
-                        regime       = NULL,
-                        sigma_method = c("locf", "min_last2", "loglinear"),
-                        recent       = NULL,
-                        tail         = FALSE,
-                        conf_level   = 0.95,
-                        bootstrap    = NULL,
-                        B            = 999,
-                        seed         = NULL) {
+fit_exposure <- function(x,
+                         method       = c("ed", "cl"),
+                         alpha        = 1,
+                         regime       = NULL,
+                         sigma_method = c("locf", "min_last2", "loglinear"),
+                         recent       = NULL,
+                         tail         = FALSE,
+                         conf_level   = 0.95,
+                         bootstrap    = NULL,
+                         B            = 999,
+                         seed         = NULL) {
 
   # data.table NSE bindings for R CMD check
-  prem_total_se <- prem_total_cv <- prem_ci_lo <- prem_ci_hi <- NULL
-  prem_proj_boot <- prem_param_se_boot <- prem_proc_se_boot <- NULL
-  prem_total_se_boot <- prem_total_cv_boot <- NULL
-  prem_ci_lo_boot <- prem_ci_hi_boot <- NULL
+  exposure_total_se <- exposure_total_cv <- exposure_ci_lo <- exposure_ci_hi <- NULL
+  exposure_proj_boot <- exposure_param_se_boot <- exposure_proc_se_boot <- NULL
+  exposure_total_se_boot <- exposure_total_cv_boot <- NULL
+  exposure_ci_lo_boot <- exposure_ci_hi_boot <- NULL
 
-  .assert_triangle_input(x, "fit_prem()")
+  .assert_triangle_input(x, "fit_exposure()")
   method       <- match.arg(method)
   sigma_method <- match.arg(sigma_method)
 
@@ -144,11 +144,11 @@ fit_prem <- function(x,
 
   # Run chain ladder underneath (Mack-style SE). Point estimate is
   # identical for both methods; ED only differs in SE accumulation.
-  # Uses the standardized `"prem"` column on the Triangle.
+  # Uses the standardized `"exposure"` column on the Triangle.
   cl_fit <- fit_cl(
     x,
     method       = "mack",
-    target       = "prem",
+    loss         = "exposure",
     alpha        = alpha,
     sigma_method = sigma_method,
     recent       = recent,
@@ -160,26 +160,26 @@ fit_prem <- function(x,
     cl_fit$full <- .ed_replace_se(cl_fit$full, cl_fit$selected, x)
   }
 
-  # Rename target_* columns to role-specific prem_* names on $full.
+  # Rename loss_* columns to role-specific exposure_* names on $full.
   grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  cl_fit$full <- .prem_rename_full(cl_fit$full, grp, conf_level)
+  cl_fit$full <- .exposure_rename_full(cl_fit$full, grp, conf_level)
 
-  # Bootstrap path (Phase 2 — new pipeline). Overwrites prem_ci_lo /
-  # prem_ci_hi / prem_total_se / prem_total_cv from the Triangle-level
-  # bootstrap + per-replicate CL refit + Stage 2 process noise. The
-  # analytical proc/param decomposition (prem_proc_se / prem_param_se)
-  # is preserved as a diagnostic and not overwritten.
-  # Wrap-only path: read the precomputed cohort × dev summary directly
-  # from boots$summary, map to prem_* role-specific column names.
+  # Bootstrap path (Phase 2 -- new pipeline). Overwrites exposure_ci_lo /
+  # exposure_ci_hi / exposure_total_se / exposure_total_cv from the
+  # Triangle-level bootstrap + per-replicate CL refit + Stage 2 process
+  # noise. The analytical proc/param decomposition (exposure_proc_se /
+  # exposure_param_se) is preserved as a diagnostic and not overwritten.
+  # Wrap-only path: read the precomputed cohort x dev summary directly
+  # from boots$summary, map to exposure_* role-specific column names.
   boots <- .resolve_bootstrap(
     bootstrap, x,
     B           = B,
     seed        = seed,
     type        = "parametric",
     process     = "normal",
-    target      = "prem",
+    target      = "exposure",
     alpha       = alpha,
     quantile_ci = TRUE,
     keep_pseudo = FALSE
@@ -190,13 +190,13 @@ fit_prem <- function(x,
     data.table::setnames(
       bsum,
       c("mean_proj", "param_se", "proc_se", "total_se", "total_cv"),
-      c("prem_proj_boot", "prem_param_se_boot", "prem_proc_se_boot",
-        "prem_total_se_boot", "prem_total_cv_boot")
+      c("exposure_proj_boot", "exposure_param_se_boot", "exposure_proc_se_boot",
+        "exposure_total_se_boot", "exposure_total_cv_boot")
     )
     has_ci <- all(c("ci_lo", "ci_hi") %in% names(bsum))
     if (has_ci) {
       data.table::setnames(bsum, c("ci_lo", "ci_hi"),
-                                  c("prem_ci_lo_boot", "prem_ci_hi_boot"))
+                                  c("exposure_ci_lo_boot", "exposure_ci_hi_boot"))
     }
 
     cl_fit$full <- merge(cl_fit$full, bsum,
@@ -207,16 +207,16 @@ fit_prem <- function(x,
     # SE = 0 (the value is known); under residual bootstrap, pseudo observed
     # cells would otherwise produce a spurious nonzero SE.
     is_proj <- cl_fit$full$is_observed == FALSE
-    cl_fit$full[is_proj & is.finite(prem_total_se_boot), prem_total_se := prem_total_se_boot]
-    cl_fit$full[is_proj & is.finite(prem_total_cv_boot), prem_total_cv := prem_total_cv_boot]
+    cl_fit$full[is_proj & is.finite(exposure_total_se_boot), exposure_total_se := exposure_total_se_boot]
+    cl_fit$full[is_proj & is.finite(exposure_total_cv_boot), exposure_total_cv := exposure_total_cv_boot]
     if (has_ci) {
-      cl_fit$full[is_proj & is.finite(prem_ci_lo_boot), prem_ci_lo := prem_ci_lo_boot]
-      cl_fit$full[is_proj & is.finite(prem_ci_hi_boot), prem_ci_hi := prem_ci_hi_boot]
+      cl_fit$full[is_proj & is.finite(exposure_ci_lo_boot), exposure_ci_lo := exposure_ci_lo_boot]
+      cl_fit$full[is_proj & is.finite(exposure_ci_hi_boot), exposure_ci_hi := exposure_ci_hi_boot]
     }
-    drop_boot <- c("prem_proj_boot", "prem_param_se_boot",
-                    "prem_proc_se_boot", "prem_total_se_boot",
-                    "prem_total_cv_boot")
-    if (has_ci) drop_boot <- c(drop_boot, "prem_ci_lo_boot", "prem_ci_hi_boot")
+    drop_boot <- c("exposure_proj_boot", "exposure_param_se_boot",
+                    "exposure_proc_se_boot", "exposure_total_se_boot",
+                    "exposure_total_cv_boot")
+    if (has_ci) drop_boot <- c(drop_boot, "exposure_ci_lo_boot", "exposure_ci_hi_boot")
     cl_fit$full[, (drop_boot) := NULL]
   }
 
@@ -224,56 +224,56 @@ fit_prem <- function(x,
   cl_fit$bootstrap <- if (!is.null(boots))
                        list(B = boots$meta$B, seed = boots$meta$seed) else NULL
 
-  # Usage map. Premium has no maturity concept (g_k -> 0), so we
+  # Usage map. Exposure has no maturity concept (g_k -> 0), so we
   # bypass `.build_usage()`'s 2-pass detection and call
   # `.compute_triangle_usage()` directly with the pre-filter triangle.
-  prem_usage <- .compute_triangle_usage(
+  exposure_usage <- .compute_triangle_usage(
     x,
     recent  = recent,
     regime  = regime,
     holdout = NULL
   )
-  data.table::setattr(prem_usage, "regime",  regime)
-  data.table::setattr(prem_usage, "recent",  recent)
-  data.table::setattr(prem_usage, "holdout", NULL)
-  data.table::setattr(prem_usage, "m_k",     NULL)
-  data.table::setattr(prem_usage, "m_k_dt",  NULL)
-  cl_fit$usage <- prem_usage
+  data.table::setattr(exposure_usage, "regime",  regime)
+  data.table::setattr(exposure_usage, "recent",  recent)
+  data.table::setattr(exposure_usage, "holdout", NULL)
+  data.table::setattr(exposure_usage, "m_k",     NULL)
+  data.table::setattr(exposure_usage, "m_k_dt",  NULL)
+  cl_fit$usage <- exposure_usage
 
-  cl_fit$regime               <- regime
-  attr(cl_fit, "prem_method") <- method
-  attr(cl_fit, "conf_level")  <- conf_level
-  class(cl_fit) <- c("PremFit", class(cl_fit))
+  cl_fit$regime                   <- regime
+  attr(cl_fit, "exposure_method") <- method
+  attr(cl_fit, "conf_level")      <- conf_level
+  class(cl_fit) <- c("ExposureFit", class(cl_fit))
   cl_fit
 }
 
 
-#' Rename target_* columns to prem_* and add incr/CI columns
+#' Rename loss_* columns to exposure_* and add incr/CI columns
 #'
 #' @description
-#' Translates the worker (`fit_cl`) output's `target_*` columns to the
-#' dispatcher's role-specific `prem_*` names. Also derives
-#' `incr_prem_proj` (per-cohort first difference of `prem_proj`) and
-#' analytical CI bounds (`prem_ci_lo`, `prem_ci_hi`) from
-#' `prem_proj` +/- z * `prem_total_se`.
+#' Translates the worker (`fit_cl`) output's `loss_*` columns to the
+#' dispatcher's role-specific `exposure_*` names. Also derives
+#' `incr_exposure_proj` (per-cohort first difference of `exposure_proj`)
+#' and analytical CI bounds (`exposure_ci_lo`, `exposure_ci_hi`) from
+#' `exposure_proj` +/- z * `exposure_total_se`.
 #'
 #' @keywords internal
-.prem_rename_full <- function(full, grp, conf_level) {
+.exposure_rename_full <- function(full, grp, conf_level) {
   full <- data.table::copy(.copy_dt(full))
 
   rename_map <- c(
-    target_obs       = "prem_obs",
-    target_proj      = "prem_proj",
-    incr_target_proj = "incr_prem_proj",
-    target_proc_se2  = "prem_proc_se2",
-    target_param_se2 = "prem_param_se2",
-    target_total_se2 = "prem_total_se2",
-    target_proc_se   = "prem_proc_se",
-    target_param_se  = "prem_param_se",
-    target_total_se  = "prem_total_se",
-    target_proc_cv   = "prem_proc_cv",
-    target_param_cv  = "prem_param_cv",
-    target_total_cv  = "prem_total_cv"
+    loss_obs       = "exposure_obs",
+    loss_proj      = "exposure_proj",
+    incr_loss_proj = "incr_exposure_proj",
+    loss_proc_se2  = "exposure_proc_se2",
+    loss_param_se2 = "exposure_param_se2",
+    loss_total_se2 = "exposure_total_se2",
+    loss_proc_se   = "exposure_proc_se",
+    loss_param_se  = "exposure_param_se",
+    loss_total_se  = "exposure_total_se",
+    loss_proc_cv   = "exposure_proc_cv",
+    loss_param_cv  = "exposure_param_cv",
+    loss_total_cv  = "exposure_total_cv"
   )
   present <- intersect(names(rename_map), names(full))
   if (length(present)) {
@@ -281,18 +281,18 @@ fit_prem <- function(x,
   }
 
   # Derive incremental projection if not already present.
-  if (!"incr_prem_proj" %in% names(full)) {
+  if (!"incr_exposure_proj" %in% names(full)) {
     by_cols <- c(grp, "cohort")
-    full[, ("incr_prem_proj") := prem_proj -
-           data.table::shift(prem_proj, 1L, fill = 0),
+    full[, ("incr_exposure_proj") := exposure_proj -
+           data.table::shift(exposure_proj, 1L, fill = 0),
          by = by_cols]
   }
 
-  # Analytical CI: prem_proj +/- z * prem_total_se (lower clipped at 0).
+  # Analytical CI: exposure_proj +/- z * exposure_total_se (lower clipped at 0).
   z_alpha <- stats::qnorm((1 + conf_level) / 2)
   full[, `:=`(
-    prem_ci_lo = pmax(0, prem_proj - z_alpha * prem_total_se),
-    prem_ci_hi = prem_proj + z_alpha * prem_total_se
+    exposure_ci_lo = pmax(0, exposure_proj - z_alpha * exposure_total_se),
+    exposure_ci_hi = exposure_proj + z_alpha * exposure_total_se
   )]
 
   full[]
@@ -302,7 +302,7 @@ fit_prem <- function(x,
 #' Replace CL multiplicative SE with ED additive SE on a CLFit's `$full`
 #'
 #' @description
-#' Point projection (`target_proj`) is preserved -- it is identical under
+#' Point projection (`loss_proj`) is preserved -- it is identical under
 #' both CL and self-weighted ED. Only the variance accumulation differs:
 #'
 #' \itemize{
@@ -317,17 +317,17 @@ fit_prem <- function(x,
 #' estimates. The recursion is per (group, cohort).
 #'
 #' @param full The `$full` data.table from a `CLFit` (must contain
-#'   `cohort`, `dev`, `target_obs`, `target_proj`).
+#'   `cohort`, `dev`, `loss_obs`, `loss_proj`).
 #' @param selected The `$selected` data.table (must contain `f_sel`,
 #'   `sigma2`, `f_var`).
 #' @param triangle The original `Triangle` (for `groups` attribute).
 #'
-#' @return Updated `full` data.table with `target_proc_se2`,
-#'   `target_param_se2`, `target_total_se2`, `target_proc_se`,
-#'   `target_param_se`, `target_total_se`, `target_proc_cv`,
-#'   `target_param_cv`, `target_total_cv` columns rebuilt under the ED
+#' @return Updated `full` data.table with `loss_proc_se2`,
+#'   `loss_param_se2`, `loss_total_se2`, `loss_proc_se`,
+#'   `loss_param_se`, `loss_total_se`, `loss_proc_cv`,
+#'   `loss_param_cv`, `loss_total_cv` columns rebuilt under the ED
 #'   recursion (column names match the upstream `fit_cl` worker
-#'   convention; the dispatcher renames them to `prem_*` afterwards).
+#'   convention; the dispatcher renames them to `exposure_*` afterwards).
 #'
 #' @keywords internal
 .ed_replace_se <- function(full, selected, triangle) {
@@ -346,7 +346,7 @@ fit_prem <- function(x,
   fv <- selected$f_var
 
   data.table::setorder(full, cohort, dev)
-  full[, (".is_obs") := !is.na(target_obs)]
+  full[, (".is_obs") := !is.na(loss_obs)]
 
   ed_one_cohort <- function(.dev, .obs, .vp) {
     K     <- length(.dev)
@@ -380,30 +380,30 @@ fit_prem <- function(x,
   }
 
   by_cols <- c(grp, "cohort")
-  full[, c("target_proc_se2", "target_param_se2") := {
-    r <- ed_one_cohort(dev, .is_obs, target_proj)
+  full[, c("loss_proc_se2", "loss_param_se2") := {
+    r <- ed_one_cohort(dev, .is_obs, loss_proj)
     list(r$proc, r$par)
   }, by = by_cols]
 
-  full[, ("target_total_se2") := target_proc_se2 + target_param_se2]
-  full[, ("target_proc_se")   := sqrt(pmax(target_proc_se2, 0))]
-  full[, ("target_param_se")  := sqrt(pmax(target_param_se2, 0))]
-  full[, ("target_total_se")  := sqrt(pmax(target_total_se2, 0))]
-  full[, ("target_proc_cv")   := data.table::fifelse(
-    is.finite(target_proj) & target_proj != 0,
-    target_proc_se / target_proj, NA_real_)]
-  full[, ("target_param_cv") := data.table::fifelse(
-    is.finite(target_proj) & target_proj != 0,
-    target_param_se / target_proj, NA_real_)]
-  full[, ("target_total_cv") := data.table::fifelse(
-    is.finite(target_proj) & target_proj != 0,
-    target_total_se / target_proj, NA_real_)]
+  full[, ("loss_total_se2") := loss_proc_se2 + loss_param_se2]
+  full[, ("loss_proc_se")   := sqrt(pmax(loss_proc_se2, 0))]
+  full[, ("loss_param_se")  := sqrt(pmax(loss_param_se2, 0))]
+  full[, ("loss_total_se")  := sqrt(pmax(loss_total_se2, 0))]
+  full[, ("loss_proc_cv")   := data.table::fifelse(
+    is.finite(loss_proj) & loss_proj != 0,
+    loss_proc_se / loss_proj, NA_real_)]
+  full[, ("loss_param_cv") := data.table::fifelse(
+    is.finite(loss_proj) & loss_proj != 0,
+    loss_param_se / loss_proj, NA_real_)]
+  full[, ("loss_total_cv") := data.table::fifelse(
+    is.finite(loss_proj) & loss_proj != 0,
+    loss_total_se / loss_proj, NA_real_)]
 
   # Mask observed cells
   full[.is_obs == TRUE,
-       c("target_proc_se2", "target_param_se2", "target_total_se2",
-         "target_proc_se",  "target_param_se",  "target_total_se",
-         "target_proc_cv",  "target_param_cv",  "target_total_cv") :=
+       c("loss_proc_se2", "loss_param_se2", "loss_total_se2",
+         "loss_proc_se",  "loss_param_se",  "loss_total_se",
+         "loss_proc_cv",  "loss_param_cv",  "loss_total_cv") :=
        rep(list(NA_real_), 9L)]
 
   full[, (".is_obs") := NULL]
@@ -411,21 +411,21 @@ fit_prem <- function(x,
 }
 
 
-#' Print method for `PremFit`
-#' @param x A `PremFit` object.
+#' Print method for `ExposureFit`
+#' @param x An `ExposureFit` object.
 #' @param ... Unused.
 #' @export
-print.PremFit <- function(x, ...) {
+print.ExposureFit <- function(x, ...) {
   grp    <- x$groups
   if (is.null(grp)) grp <- character(0)
-  method <- attr(x, "prem_method")
+  method <- attr(x, "exposure_method")
 
   static_labels <- c("method", "alpha", "sigma_method", "recent", "regime",
                      "ci_type", "groups", "n_cohorts", "n_links")
   lw  <- max(nchar(static_labels))
   pad <- function(label) formatC(label, width = lw, flag = "-")
 
-  cat("<PremFit>\n")
+  cat("<ExposureFit>\n")
   cat(pad("method"),       ":", method,         "\n")
   cat(pad("alpha"),        ":", x$alpha,        "\n")
   cat(pad("sigma_method"), ":", x$sigma_method, "\n")
@@ -461,19 +461,19 @@ print.PremFit <- function(x, ...) {
 }
 
 
-#' Summary method for `PremFit`
-#' @param object A `PremFit` object.
+#' Summary method for `ExposureFit`
+#' @param object An `ExposureFit` object.
 #' @param ... Unused.
 #' @export
-summary.PremFit <- function(object, ...) {
+summary.ExposureFit <- function(object, ...) {
   grp <- object$groups
   if (is.null(grp)) grp <- character(0)
 
   full <- .copy_dt(object$full)
   by_cols <- c(grp, "cohort")
   out <- full[, .SD[which.max(dev)], by = by_cols]
-  keep <- c(by_cols, "prem_proj", "prem_total_se", "prem_total_cv")
+  keep <- c(by_cols, "exposure_proj", "exposure_total_se", "exposure_total_cv")
   out <- out[, .SD, .SDcols = keep]
-  data.table::setnames(out, "prem_proj", "prem_ult")
+  data.table::setnames(out, "exposure_proj", "exposure_ult")
   out[]
 }

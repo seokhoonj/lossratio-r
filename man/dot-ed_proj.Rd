@@ -4,9 +4,9 @@
 \alias{.ed_proj}
 \title{ED point projection for a single cohort}
 \usage{
-.ed_proj(target_obs, exposure_proj, g_sel)
+.ed_proj(loss_obs, exposure_proj, g_sel)
 }
 \description{
-Cumulative target recursion: \verb{target_\{k+1\} = target_k + g_k * exposure_k}.
+Cumulative loss recursion: \verb{loss_\{k+1\} = loss_k + g_k * exposure_k}.
 }
 \keyword{internal}

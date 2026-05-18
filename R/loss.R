@@ -5,25 +5,27 @@
 #' methods are supported via `method`:
 #'
 #' \describe{
-#'   \item{`"sa"` (default)}{Stage-adaptive. Exposure-driven (ED) before
-#'     the maturity point, chain ladder (CL) after.}
-#'   \item{`"ed"`}{Pure exposure-driven (additive) across all dev
-#'     periods.}
-#'   \item{`"cl"`}{Pure Mack chain ladder (multiplicative).}
+#'   \item{`"ed"` (default)}{Pure exposure-driven (additive) across all
+#'     dev periods. Unconditional safe baseline — no maturity dependency.}
+#'   \item{`"cl"`}{Pure Mack chain ladder (multiplicative). Classical
+#'     reference.}
+#'   \item{`"sa"`}{Stage-adaptive. ED before the maturity point, CL after
+#'     — composition of ED + CL, requires maturity detection (2-pass).}
 #' }
 #'
-#' This function is the *loss-side* counterpart to [fit_prem()] in
+#' This function is the *loss-side* counterpart to [fit_exposure()] in
 #' the role-specific dispatcher layer (see `ARCHITECTURE.md`). It owns
-#' loss projection only -- prem projection is delegated to
-#' [fit_prem()] (called internally when `prem_fit = NULL`), and
-#' the loss-ratio composition with delta method is handled by [fit_lr()].
+#' loss projection only -- exposure projection is delegated to
+#' [fit_exposure()] (called internally when `exposure_fit = NULL`), and
+#' the loss-ratio composition with delta method is handled by
+#' [fit_ratio()].
 #'
 #' @param x A `"Triangle"` object. The standardized `"loss"` and
-#'   `"prem"` columns are used (`as_triangle()` produces these).
-#' @param method One of `"sa"` (default), `"ed"`, or `"cl"`.
+#'   `"exposure"` columns are used (`as_triangle()` produces these).
+#' @param method One of `"ed"` (default), `"cl"`, or `"sa"`.
 #' @param alpha Variance-structure exponent for the loss fit. Default `1`.
 #' @param regime Optional regime specification applied to both loss-side
-#'   and prem-side estimation. Accepts four input types:
+#'   and exposure-side estimation. Accepts four input types:
 #'   \describe{
 #'     \item{`NULL` (default)}{No regime filter.}
 #'     \item{`Regime` object}{Use as-is. Typically built via
@@ -36,16 +38,16 @@
 #'   Behavior depends on `method`: SA uses a hybrid 2-pass filter (cohort
 #'   cut for the ED phase, calendar-diagonal wedge for the CL phase);
 #'   ED/CL use a simple cohort cut. The same resolved `Regime` is applied
-#'   to the internal `fit_prem()` call -- callers needing an
-#'   asymmetric loss/prem split should use [fit_lr()] instead.
-#' @param prem_fit Optional pre-built `PremFit` (from
-#'   [fit_prem()]) supplying the prem projection. When `NULL`,
-#'   `fit_loss()` calls `fit_prem()` internally using
-#'   `prem_method`, `prem_alpha`, and the resolved `regime`.
-#' @param prem_method One of `"cl"` (default) or `"ed"`. Used only
-#'   when `prem_fit = NULL`. The default matches the historical
-#'   `fit_lr()` prem choice.
-#' @param prem_alpha Variance-structure exponent for the prem fit.
+#'   to the internal `fit_exposure()` call -- callers needing an
+#'   asymmetric loss/exposure split should use [fit_ratio()] instead.
+#' @param exposure_fit Optional pre-built `ExposureFit` (from
+#'   [fit_exposure()]) supplying the exposure projection. When `NULL`,
+#'   `fit_loss()` calls `fit_exposure()` internally using
+#'   `exposure_method`, `exposure_alpha`, and the resolved `regime`.
+#' @param exposure_method One of `"cl"` (default) or `"ed"`. Used only
+#'   when `exposure_fit = NULL`. The default matches the historical
+#'   `fit_ratio()` exposure choice.
+#' @param exposure_alpha Variance-structure exponent for the exposure fit.
 #'   Default `1`.
 #' @param sigma_method Sigma extrapolation. One of `"locf"` (default),
 #'   `"min_last2"`, `"loglinear"`.
@@ -81,24 +83,24 @@
 #'       invoked on the input Triangle (leakage-safe for `backtest()`).}
 #'   }
 #'   Premium stays at its observed values during the bootstrap (the
-#'   loss-only convention); premium-side uncertainty is layered in by
-#'   `fit_lr()` via its own bootstrap.
+#'   loss-only convention); exposure-side uncertainty is layered in by
+#'   `fit_ratio()` via its own bootstrap.
 #' @param B Integer number of bootstrap replicates. Used only when
 #'   `bootstrap` resolves to `"auto"`. Default `999`.
 #' @param seed Optional integer seed for reproducible bootstrap. Default
 #'   `NULL`.
 #'
 #' @return An object of class `"LossFit"`. List with components:
-#'   `full`, `proj`, `maturity`, `loss_ata_fit`, `prem_ata_fit`,
-#'   `prem_fit`, `ed`, `factor`, `selected`, plus metadata.
+#'   `full`, `proj`, `maturity`, `loss_ata_fit`, `exposure_ata_fit`,
+#'   `exposure_fit`, `ed`, `factor`, `selected`, plus metadata.
 #'
 #' @section Internal columns:
 #' `$full` retains internal parameter columns (`g_sel`, `g_sigma2`,
 #' `g_var`, `f_sel`, `f_sigma2`, `f_var`, `last_obs`) so that
-#' [fit_lr()] can run bootstrap CI on top without re-fitting. Standalone
-#' callers see them as implementation columns.
+#' [fit_ratio()] can run bootstrap CI on top without re-fitting.
+#' Standalone callers see them as implementation columns.
 #'
-#' @seealso [fit_prem()], [fit_lr()], [fit_cl()], [fit_ed()].
+#' @seealso [fit_exposure()], [fit_ratio()], [fit_cl()], [fit_ed()].
 #'
 #' @examples
 #' \dontrun{
@@ -109,7 +111,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem     = "incr_prem"
+#'   exposure = "incr_exposure"
 #' )
 #'
 #' lf    <- fit_loss(tri)                    # SA (default)
@@ -119,19 +121,19 @@
 #'
 #' @export
 fit_loss <- function(x,
-                     method       = c("sa", "ed", "cl"),
-                     alpha        = 1,
-                     regime       = NULL,
-                     prem_fit     = NULL,
-                     prem_method  = c("cl", "ed"),
-                     prem_alpha   = 1,
-                     sigma_method = c("locf", "min_last2", "loglinear"),
-                     recent       = NULL,
-                     maturity     = "auto",
-                     conf_level   = 0.95,
-                     bootstrap    = NULL,
-                     B            = 999,
-                     seed         = NULL) {
+                     method          = c("ed", "cl", "sa"),
+                     alpha           = 1,
+                     regime          = NULL,
+                     exposure_fit    = NULL,
+                     exposure_method = c("cl", "ed"),
+                     exposure_alpha  = 1,
+                     sigma_method    = c("locf", "min_last2", "loglinear"),
+                     recent          = NULL,
+                     maturity        = "auto",
+                     conf_level      = 0.95,
+                     bootstrap       = NULL,
+                     B               = 999,
+                     seed            = NULL) {
 
   # data.table NSE bindings for R CMD check
   loss_param_se <- loss_proc_se <- loss_total_se <- loss_total_cv <- NULL
@@ -141,20 +143,20 @@ fit_loss <- function(x,
   loss_ci_lo_boot <- loss_ci_hi_boot <- NULL
 
   .assert_triangle_input(x, "fit_loss()")
-  method       <- match.arg(method)
-  sigma_method <- match.arg(sigma_method)
-  prem_method  <- match.arg(prem_method)
+  method          <- match.arg(method)
+  sigma_method    <- match.arg(sigma_method)
+  exposure_method <- match.arg(exposure_method)
 
-  if (!is.null(prem_fit) && !inherits(prem_fit, "PremFit"))
-    stop("`prem_fit` must be a PremFit object or NULL.",
+  if (!is.null(exposure_fit) && !inherits(exposure_fit, "ExposureFit"))
+    stop("`exposure_fit` must be an ExposureFit object or NULL.",
          call. = FALSE)
 
   if (!is.numeric(alpha) || length(alpha) != 1L ||
       is.na(alpha) || !is.finite(alpha))
     stop("`alpha` must be a single finite numeric value.", call. = FALSE)
-  if (!is.numeric(prem_alpha) || length(prem_alpha) != 1L ||
-      is.na(prem_alpha) || !is.finite(prem_alpha))
-    stop("`prem_alpha` must be a single finite numeric value.",
+  if (!is.numeric(exposure_alpha) || length(exposure_alpha) != 1L ||
+      is.na(exposure_alpha) || !is.finite(exposure_alpha))
+    stop("`exposure_alpha` must be a single finite numeric value.",
          call. = FALSE)
 
   if (!is.numeric(conf_level) || length(conf_level) != 1L ||
@@ -198,7 +200,7 @@ fit_loss <- function(x,
     }
   }
 
-  # Triangle is guaranteed to carry standardized `loss` / `prem`
+  # Triangle is guaranteed to carry standardized `loss` / `exposure`
   # columns (as_triangle convention).
   grp <- attr(x, "groups")
   coh <- attr(x, "cohort")
@@ -213,7 +215,7 @@ fit_loss <- function(x,
 
   # preserve pre-filter triangle for downstream `$usage` annotation
   x_full      <- data.table::copy(x)
-  # preserve original user input — nullified below for SA hybrid path
+  # preserve original user input -- nullified below for SA hybrid path
   regime_user <- regime
   recent_user <- recent
 
@@ -224,7 +226,7 @@ fit_loss <- function(x,
     if (!is.null(cd) && method == "sa") {
       pre_loss_fit <- fit_ata(
         x,
-        target       = "loss",
+        loss         = "loss",
         alpha        = alpha,
         sigma_method = sigma_method,
         maturity     = maturity
@@ -282,29 +284,29 @@ fit_loss <- function(x,
     # method = "ed"/"cl": leave regime for fit_ata/fit_intensity
   }
 
-  # 3) resolve prem_fit --------------------------------------------------
+  # 3) resolve exposure_fit --------------------------------------------
   # fit_loss is single-role -- the same regime applies to the internal
-  # prem fit. Asymmetric loss/prem splits live at fit_lr().
-  if (is.null(prem_fit)) {
-    # bootstrap = FALSE: fit_loss treats premium as a fixed projection
-    # (no premium-side simulation in fit_loss's loss-only bootstrap).
-    prem_fit <- fit_prem(
+  # exposure fit. Asymmetric loss/exposure splits live at fit_ratio().
+  if (is.null(exposure_fit)) {
+    # bootstrap = FALSE: fit_loss treats exposure as a fixed projection
+    # (no exposure-side simulation in fit_loss's loss-only bootstrap).
+    exposure_fit <- fit_exposure(
       x,
-      method       = prem_method,
-      alpha        = prem_alpha,
+      method       = exposure_method,
+      alpha        = exposure_alpha,
       sigma_method = sigma_method,
       regime       = regime_user,
       bootstrap    = FALSE
     )
   }
   # Wrap as ATAFit-shaped object for downstream .expand_grid / join paths.
-  prem_ata_fit <- structure(
+  exposure_ata_fit <- structure(
     list(
-      selected     = prem_fit$selected,
-      link         = prem_fit$link,
-      data         = prem_fit$data,
+      selected     = exposure_fit$selected,
+      link         = exposure_fit$link,
+      data         = exposure_fit$data,
       method       = "mack",
-      alpha        = prem_alpha,
+      alpha        = exposure_alpha,
       sigma_method = sigma_method,
       maturity     = NULL
     ),
@@ -314,7 +316,7 @@ fit_loss <- function(x,
   # 4) loss ATA + Mack f_var ---------------------------------------------
   loss_ata_fit <- fit_ata(
     x,
-    target       = "loss",
+    loss         = "loss",
     alpha        = alpha,
     sigma_method = sigma_method,
     recent       = recent,
@@ -329,8 +331,8 @@ fit_loss <- function(x,
   # 5) ED intensities g_k + Mack g_var -----------------------------------
   intensity_fit <- fit_intensity(
     x,
-    target       = "loss",
-    exposure     = "prem",
+    loss         = "loss",
+    exposure     = "exposure",
     alpha        = alpha,
     sigma_method = sigma_method,
     recent       = recent,
@@ -347,18 +349,18 @@ fit_loss <- function(x,
     regime       = regime
   )
   class(ed_fit) <- "EDFit"
-  ed_fit$selected <- .mack_g_var(ed_fit = ed_fit, alpha = alpha)
+  ed_fit$selected <- .ed_g_var(ed_fit = ed_fit, alpha = alpha)
 
   # 6) maturity point per group ------------------------------------------
   maturity <- loss_ata_fit$maturity
 
   # 7) expand triangle to full projection grid --------------------------
   full <- .expand_grid(
-    triangle     = x,
-    ed_fit       = ed_fit,
-    prem_ata_fit = prem_ata_fit,
-    target       = "loss",
-    exposure     = "prem"
+    triangle         = x,
+    ed_fit           = ed_fit,
+    exposure_ata_fit = exposure_ata_fit,
+    loss             = "loss",
+    exposure         = "exposure"
   )
 
   # Detect whether either side carries segment_id (segment_wise treatment);
@@ -415,7 +417,7 @@ fit_loss <- function(x,
   # 12) loss point projection -------------------------------------------
   full[, ("loss_proj") := .sa_proj(
     loss_obs      = loss_obs,
-    prem_proj     = prem_proj,
+    exposure_proj = exposure_proj,
     g_sel         = g_sel,
     f_sel         = f_sel,
     maturity_from = maturity_from[1L],
@@ -426,7 +428,7 @@ fit_loss <- function(x,
   full[, `:=`(
     loss_proc_se2  = .sa_proc_var(
       loss_proj     = loss_proj,
-      prem_proj     = prem_proj,
+      exposure_proj = exposure_proj,
       g_sigma2      = g_sigma2,
       f_sigma2      = f_sigma2,
       f_sel         = f_sel,
@@ -437,7 +439,7 @@ fit_loss <- function(x,
     ),
     loss_param_se2 = .sa_param_var(
       loss_proj     = loss_proj,
-      prem_proj     = prem_proj,
+      exposure_proj = exposure_proj,
       g_var         = g_var,
       f_var         = f_var,
       f_sel         = f_sel,
@@ -469,12 +471,12 @@ fit_loss <- function(x,
   )]
 
   # 15b) bootstrap overwrite of CI + total SE -------------------------
-  # Wrap-only path: bootstrap() already produces the cohort × dev
+  # Wrap-only path: bootstrap() already produces the cohort x dev
   # `$summary` with the Pythagorean SE decomposition (param_se /
   # proc_se / total_se / total_cv + opt. ci_lo / ci_hi). fit_loss
   # just maps those columns into its own `$full` schema. Premium stays
-  # at observed values (loss-only bootstrap — premium uncertainty is
-  # layered in by fit_lr).
+  # at observed values (loss-only bootstrap -- exposure uncertainty is
+  # layered in by fit_ratio).
   boots <- .resolve_bootstrap(
     bootstrap, x_full,
     B           = B,
@@ -525,17 +527,17 @@ fit_loss <- function(x,
     full[, (drop_boot) := NULL]
   }
 
-  # 16) incremental projections (loss + prem) ----------------------
+  # 16) incremental projections (loss + exposure) ------------------
   full[, ("incr_loss_proj") := loss_proj - data.table::shift(loss_proj, 1L, fill = 0),
        by = c(grp, "cohort")]
-  full[, ("incr_prem_proj") := prem_proj - data.table::shift(prem_proj, 1L, fill = 0),
+  full[, ("incr_exposure_proj") := exposure_proj - data.table::shift(exposure_proj, 1L, fill = 0),
        by = c(grp, "cohort")]
 
   # 17) $proj: NA-mask observed cells (loss-side columns only) --------
   proj    <- data.table::copy(full)
   na_cols <- c(
-    "loss_proj", "prem_proj",
-    "incr_loss_proj", "incr_prem_proj",
+    "loss_proj", "exposure_proj",
+    "incr_loss_proj", "incr_exposure_proj",
     "loss_proc_se2", "loss_param_se2", "loss_total_se2",
     "loss_proc_se",  "loss_param_se",  "loss_total_se",
     "loss_total_cv",
@@ -558,34 +560,34 @@ fit_loss <- function(x,
 
   # 19) assemble LossFit ----------------------------------------------
   # NOTE: $full retains internal columns (g_sel, g_sigma2, g_var,
-  # f_sel, f_sigma2, f_var, last_obs) so that fit_lr can run
-  # bootstrap CI without re-fitting. fit_lr drops them after bootstrap.
+  # f_sel, f_sigma2, f_var, last_obs) so that fit_ratio can run
+  # bootstrap CI without re-fitting. fit_ratio drops them after bootstrap.
   out <- list(
-    call            = match.call(),
-    data            = x,
-    groups          = grp,
-    cohort          = coh,
-    dev             = dev,
-    full            = full,
-    proj            = proj,
-    maturity        = maturity,
-    loss_ata_fit    = loss_ata_fit,
-    prem_ata_fit    = prem_ata_fit,
-    prem_fit        = prem_fit,
-    ed              = ed_fit$link,
-    factor          = ed_fit$factor,
-    selected        = ed_fit$selected,
-    method          = method,
-    alpha           = alpha,
-    sigma_method    = sigma_method,
-    recent          = recent_user,
-    regime          = regime_user,
-    conf_level      = conf_level,
-    ci_type         = if (!is.null(boots)) "bootstrap" else "analytical",
-    bootstrap       = if (!is.null(boots))
-                        list(B = boots$meta$B, seed = boots$meta$seed)
-                      else NULL,
-    usage           = usage
+    call             = match.call(),
+    data             = x,
+    groups           = grp,
+    cohort           = coh,
+    dev              = dev,
+    full             = full,
+    proj             = proj,
+    maturity         = maturity,
+    loss_ata_fit     = loss_ata_fit,
+    exposure_ata_fit = exposure_ata_fit,
+    exposure_fit     = exposure_fit,
+    ed               = ed_fit$link,
+    factor           = ed_fit$factor,
+    selected         = ed_fit$selected,
+    method           = method,
+    alpha            = alpha,
+    sigma_method     = sigma_method,
+    recent           = recent_user,
+    regime           = regime_user,
+    conf_level       = conf_level,
+    ci_type          = if (!is.null(boots)) "bootstrap" else "analytical",
+    bootstrap        = if (!is.null(boots))
+                         list(B = boots$meta$B, seed = boots$meta$seed)
+                       else NULL,
+    usage            = usage
   )
 
   class(out) <- "LossFit"
@@ -699,17 +701,17 @@ summary.LossFit <- function(object, ...) {
 #' }
 #'
 #' @param loss_obs Numeric vector of observed cumulative loss.
-#' @param prem_proj Numeric vector of projected cumulative exposure.
+#' @param exposure_proj Numeric vector of projected cumulative exposure.
 #' @param g_sel Numeric vector of ED intensities.
 #' @param f_sel Numeric vector of CL factors.
 #' @param maturity_from Numeric scalar; switch point. `NA` = no switch.
-#' @param method One of `"sa"`, `"ed"`, or `"cl"`.
+#' @param method One of `"ed"`, `"cl"`, or `"sa"`.
 #'
 #' @return A numeric vector with projected cumulative loss.
 #'
 #' @keywords internal
 .sa_proj <- function(loss_obs,
-                     prem_proj,
+                     exposure_proj,
                      g_sel,
                      f_sel,
                      maturity_from,
@@ -740,7 +742,7 @@ summary.LossFit <- function(object, ...) {
     if (k < mat) {
       # ED phase: additive, exposure-driven
       g_now <- g_sel[k]
-      e_now <- prem_proj[k]
+      e_now <- exposure_proj[k]
 
       if (is.finite(g_now) && is.finite(e_now)) {
         v[i] <- v_prev + g_now * e_now
@@ -775,7 +777,7 @@ summary.LossFit <- function(object, ...) {
 #'
 #' @keywords internal
 .sa_proc_var <- function(loss_proj,
-                         prem_proj,
+                         exposure_proj,
                          g_sigma2,
                          f_sigma2,
                          f_sel,
@@ -803,7 +805,7 @@ summary.LossFit <- function(object, ...) {
     if (k < mat) {
       # ED phase: additive variance
       s2  <- g_sigma2[k]
-      e_k <- prem_proj[k]
+      e_k <- exposure_proj[k]
 
       proc[i] <- proc[i - 1L]
       if (is.finite(s2) && is.finite(e_k) && e_k > 0) {
@@ -844,7 +846,7 @@ summary.LossFit <- function(object, ...) {
 #'
 #' @keywords internal
 .sa_param_var <- function(loss_proj,
-                          prem_proj,
+                          exposure_proj,
                           g_var,
                           f_var,
                           f_sel,
@@ -871,7 +873,7 @@ summary.LossFit <- function(object, ...) {
     if (k < mat) {
       # ED phase: additive
       gv  <- g_var[k]
-      e_k <- prem_proj[k]
+      e_k <- exposure_proj[k]
 
       param[i] <- param[i - 1L]
       if (is.finite(gv) && is.finite(e_k)) {
@@ -901,8 +903,8 @@ summary.LossFit <- function(object, ...) {
 #' @keywords internal
 .expand_grid <- function(triangle,
                          ed_fit,
-                         prem_ata_fit,
-                         target,
+                         exposure_ata_fit,
+                         loss,
                          exposure) {
 
   grp <- attr(triangle, "groups")
@@ -911,14 +913,16 @@ summary.LossFit <- function(object, ...) {
 
   raw <- .copy_dt(triangle)
 
+  loss_col <- loss    # rebind, was target
+  exp_col  <- exposure
   obs <- raw[, .(
-    loss_obs = .SD[[target]],
-    prem_obs = .SD[[exposure]]
+    loss_obs     = get(loss_col),
+    exposure_obs = get(exp_col)
   ), by = c(grp, "cohort", "dev")]
 
-  max_dev_ed   <- max(ed_fit$selected$ata_to, na.rm = TRUE)
-  max_dev_prem <- max(prem_ata_fit$selected$ata_to, na.rm = TRUE)
-  max_dev      <- max(max_dev_ed, max_dev_prem)
+  max_dev_ed       <- max(ed_fit$selected$ata_to, na.rm = TRUE)
+  max_dev_exposure <- max(exposure_ata_fit$selected$ata_to, na.rm = TRUE)
+  max_dev          <- max(max_dev_ed, max_dev_exposure)
 
   full <- unique(obs[, .SD, .SDcols = c(grp, "cohort")])
   full <- full[, .(dev = seq_len(max_dev)), by = c(grp, "cohort")]
@@ -929,30 +933,30 @@ summary.LossFit <- function(object, ...) {
   full[, ("is_observed") := is.finite(loss_obs)]
 
   # Attach segment_id when either side of the projection was fitted
-  # segment_wise. ED loss-side regime is on ed_fit; prem-side regime
-  # is on prem_ata_fit. If both are segment_wise they share the same
+  # segment_wise. ED loss-side regime is on ed_fit; exposure-side regime
+  # is on exposure_ata_fit. If both are segment_wise they share the same
   # Regime in practice (fit_ed passes its regime down to fit_cl), so
   # one assignment is sufficient.
-  has_seg_ed   <- "segment_id" %in% names(ed_fit$selected)
-  has_seg_prem <- "segment_id" %in% names(prem_ata_fit$selected)
-  if (has_seg_ed || has_seg_prem) {
-    reg <- if (has_seg_ed) ed_fit$regime else prem_ata_fit$regime
+  has_seg_ed       <- "segment_id" %in% names(ed_fit$selected)
+  has_seg_exposure <- "segment_id" %in% names(exposure_ata_fit$selected)
+  if (has_seg_ed || has_seg_exposure) {
+    reg <- if (has_seg_ed) ed_fit$regime else exposure_ata_fit$regime
     grp_dt <- if (length(grp)) full[, grp, with = FALSE] else NULL
     full[, ("segment_id") := .assign_segment(cohort, reg, grp_dt)]
   }
 
-  prem_cols <- c(grp, "ata_from",
-                 if (has_seg_prem) "segment_id",
-                 "f_sel")
-  prem_sel <- prem_ata_fit$selected[, .SD, .SDcols = prem_cols]
-  data.table::setnames(prem_sel, c("ata_from", "f_sel"),
+  exposure_cols <- c(grp, "ata_from",
+                     if (has_seg_exposure) "segment_id",
+                     "f_sel")
+  exposure_sel <- exposure_ata_fit$selected[, .SD, .SDcols = exposure_cols]
+  data.table::setnames(exposure_sel, c("ata_from", "f_sel"),
                        c("dev", "f_exposure"))
-  full <- prem_sel[full,
-                   on = c(grp, "dev", if (has_seg_prem) "segment_id")]
+  full <- exposure_sel[full,
+                       on = c(grp, "dev", if (has_seg_exposure) "segment_id")]
 
-  full[, ("prem_proj") := .cl_proj(
-    target_obs = prem_obs,
-    f_sel      = f_exposure
+  full[, ("exposure_proj") := .cl_proj(
+    loss_obs = exposure_obs,
+    f_sel    = f_exposure
   ), by = c(grp, "cohort")]
 
   full[, ("f_exposure") := NULL]

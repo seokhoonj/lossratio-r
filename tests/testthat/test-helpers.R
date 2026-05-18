@@ -6,7 +6,7 @@
 data(experience)
 sub <- as_triangle(experience[coverage == "surgery"],
                    groups = "coverage", cohort = "uy_m", calendar = "cy_m",
-                   loss = "incr_loss", prem = "incr_prem")
+                   loss = "incr_loss", exposure = "incr_exposure")
 
 # maturity_at ---------------------------------------------------------------
 
@@ -41,10 +41,10 @@ test_that("maturity_at rejects unnamed / empty / mismatched args", {
                regexp = "length >= 1")
 })
 
-test_that("maturity_at output passes through fit_lr's maturity dispatch", {
+test_that("maturity_at output passes through fit_ratio's maturity dispatch", {
   m <- maturity_at(coverage = "surgery", change = 4)
-  fit <- fit_lr(sub, maturity = m, bootstrap = FALSE)
-  expect_s3_class(fit, "LRFit")
+  fit <- fit_ratio(sub, maturity = m, bootstrap = FALSE)
+  expect_s3_class(fit, "RatioFit")
   # The dispatched object survives end-to-end
   expect_s3_class(fit$maturity, "Maturity")
   expect_equal(fit$maturity$change, 4)
@@ -65,9 +65,9 @@ test_that("maturity_spec captures kwargs and applies on triangle", {
   expect_s3_class(m, "Maturity")
 })
 
-test_that("maturity_spec plugs into fit_lr (closure form)", {
-  fit <- fit_lr(sub, maturity = maturity_spec(min_run = 2), bootstrap = FALSE)
-  expect_s3_class(fit, "LRFit")
+test_that("maturity_spec plugs into fit_ratio (closure form)", {
+  fit <- fit_ratio(sub, maturity = maturity_spec(min_run = 2), bootstrap = FALSE)
+  expect_s3_class(fit, "RatioFit")
   expect_s3_class(fit$maturity, "Maturity")
 })
 
@@ -85,53 +85,53 @@ test_that("regime_spec captures kwargs and applies on triangle", {
   expect_s3_class(r, "Regime")
 })
 
-test_that("regime_spec plugs into fit_lr (closure form)", {
-  fit <- fit_lr(sub, loss_regime = regime_spec(window = 12L), bootstrap = FALSE)
-  expect_s3_class(fit, "LRFit")
+test_that("regime_spec plugs into fit_ratio (closure form)", {
+  fit <- fit_ratio(sub, loss_regime = regime_spec(window = 12L), bootstrap = FALSE)
+  expect_s3_class(fit, "RatioFit")
   # The resolved Regime is attached to the fit
   expect_s3_class(fit$loss_regime, "Regime")
 })
 
 # 4-type dispatch coverage --------------------------------------------------
 
-test_that("fit_lr maturity arg accepts all 4 input types", {
+test_that("fit_ratio maturity arg accepts all 4 input types", {
   # 1. NULL — no maturity filter (allowed for non-SA methods)
-  fit_null <- fit_lr(sub, method = "cl", maturity = NULL, bootstrap = FALSE)
-  expect_s3_class(fit_null, "LRFit")
+  fit_null <- fit_ratio(sub, method = "cl", maturity = NULL, bootstrap = FALSE)
+  expect_s3_class(fit_null, "RatioFit")
   expect_null(fit_null$maturity)
 
   # 2. Maturity object (from maturity_at)
-  fit_obj <- fit_lr(sub, maturity = maturity_at(coverage = "surgery", change = 4),
+  fit_obj <- fit_ratio(sub, maturity = maturity_at(coverage = "surgery", change = 4),
                     bootstrap = FALSE)
   expect_s3_class(fit_obj$maturity, "Maturity")
 
   # 3. "auto" sentinel
-  fit_auto <- fit_lr(sub, maturity = "auto", bootstrap = FALSE)
+  fit_auto <- fit_ratio(sub, maturity = "auto", bootstrap = FALSE)
   expect_s3_class(fit_auto$maturity, "Maturity")
 
   # 4. Function (from maturity_spec)
-  fit_fn <- fit_lr(sub, maturity = maturity_spec(min_run = 2), bootstrap = FALSE)
+  fit_fn <- fit_ratio(sub, maturity = maturity_spec(min_run = 2), bootstrap = FALSE)
   expect_s3_class(fit_fn$maturity, "Maturity")
 })
 
-test_that("fit_lr loss_regime arg accepts all 4 input types", {
+test_that("fit_ratio loss_regime arg accepts all 4 input types", {
   # 1. NULL
-  fit_null <- fit_lr(sub, loss_regime = NULL, bootstrap = FALSE)
-  expect_s3_class(fit_null, "LRFit")
+  fit_null <- fit_ratio(sub, loss_regime = NULL, bootstrap = FALSE)
+  expect_s3_class(fit_null, "RatioFit")
   expect_null(fit_null$loss_regime)
 
   # 2. Regime object (from regime_at)
-  fit_obj <- fit_lr(sub,
+  fit_obj <- fit_ratio(sub,
                     loss_regime = regime_at(change = "2024-04-01"),
                     bootstrap = FALSE)
   expect_s3_class(fit_obj$loss_regime, "Regime")
 
   # 3. "auto" sentinel
-  fit_auto <- fit_lr(sub, loss_regime = "auto", bootstrap = FALSE)
+  fit_auto <- fit_ratio(sub, loss_regime = "auto", bootstrap = FALSE)
   expect_s3_class(fit_auto$loss_regime, "Regime")
 
   # 4. Function (from regime_spec)
-  fit_fn <- fit_lr(sub, loss_regime = regime_spec(window = 12L), bootstrap = FALSE)
+  fit_fn <- fit_ratio(sub, loss_regime = regime_spec(window = 12L), bootstrap = FALSE)
   expect_s3_class(fit_fn$loss_regime, "Regime")
 })
 

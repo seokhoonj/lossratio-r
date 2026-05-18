@@ -1,20 +1,20 @@
 # Setup
 data(experience)
 exp <- experience
-sub <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
-tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
+sub <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
 
 test_that("detect_convergence returns class 'Convergence' with required fields", {
   res <- detect_convergence(sub)
   expect_s3_class(res, "Convergence")
   for (nm in c("conv_k", "method", "dev_max", "dev_cand",
-               "lr", "revision",
+               "ratio", "revision",
                "drift_window", "drift_tail", "slope", "dispersion",
                "pass_window", "pass_tail", "pass_slope", "pass",
                "mat_k", "max_drift", "max_slope", "max_dispersion", "window")) {
     expect_true(nm %in% names(res), info = paste("missing", nm))
   }
-  for (a in c("groups", "target", "dispatcher")) {
+  for (a in c("groups", "loss", "dispatcher")) {
     expect_false(is.null(attr(res, a)), info = paste("missing attr", a))
   }
 })
@@ -31,7 +31,7 @@ test_that("conv_k is >= mat_k when non-NA", {
 test_that("insufficient history yields conv_k == NA", {
   mat_k_guess <- 6L
   short_exp <- exp[coverage == "surgery" & dev_m <= mat_k_guess + 2L]
-  short_tri <- as_triangle(short_exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
+  short_tri <- as_triangle(short_exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
   res <- detect_convergence(short_tri, mat_k = mat_k_guess)
   expect_true(is.na(res$conv_k))
 })
@@ -72,12 +72,12 @@ test_that("explicit mat_k overrides detect_maturity()", {
   }
 })
 
-test_that("dispatcher attribute is fixed to 'fit_lr'", {
-  # detect_convergence() always backtests the LR projection from
-  # fit_lr; the dispatcher is recorded on the result for metadata.
+test_that("dispatcher attribute is fixed to 'fit_ratio'", {
+  # detect_convergence() always backtests the ratio projection from
+  # fit_ratio; the dispatcher is recorded on the result for metadata.
   res <- detect_convergence(sub)
   expect_s3_class(res, "Convergence")
-  expect_equal(attr(res, "dispatcher"), "fit_lr")
+  expect_equal(attr(res, "dispatcher"), "fit_ratio")
 })
 
 test_that("method = 'tail' gives later (or equal) conv_k than 'window'", {
@@ -159,7 +159,7 @@ test_that("print and summary methods execute and return non-NULL", {
   expect_true(length(out) > 0L)
   s <- summary(res)
   expect_false(is.null(s))
-  for (nm in c("dev", "lr", "revision", "drift_window", "drift_tail",
+  for (nm in c("dev", "ratio", "revision", "drift_window", "drift_tail",
                "slope", "dispersion", "pass"))
     expect_true(nm %in% names(s), info = paste("summary missing", nm))
 })
@@ -170,7 +170,7 @@ test_that("no-candidate dev sequence emits warning and returns conv_k = NA", {
   tiny_exp <- exp[coverage == "surgery" & dev_m <= 4L]
   tiny_tri <- as_triangle(tiny_exp, groups = "coverage", cohort = "uy_m",
                           calendar = "cy_m", loss = "incr_loss",
-                          prem = "incr_prem")
+                          exposure = "incr_exposure")
   expect_warning(
     res <- detect_convergence(tiny_tri, mat_k = 4L),
     regexp = "No candidate dev"
@@ -185,7 +185,7 @@ test_that("auto mat_k failure error explains the cause + how to override", {
   tri <- tryCatch(
     as_triangle(one_coh, groups = "coverage", cohort = "uy_m",
                 calendar = "cy_m", loss = "incr_loss",
-                prem = "incr_prem"),
+                exposure = "incr_exposure"),
     error = function(e) NULL
   )
   if (!is.null(tri)) {

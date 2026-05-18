@@ -8,16 +8,16 @@
 #' point forecast follows the standard recursion, and prediction
 #' uncertainty is decomposed into process variance and parameter variance.
 #'
-#' When `weight` is supplied (e.g. `"prem"`), age-to-age factors and
+#' When `weight` is supplied (e.g. `"exposure"`), age-to-age factors and
 #' their variance are estimated using the supplied WLS weights.
 #'
 #' @param x An object of class `"Triangle"`.
 #' @param method One of `"mack"`. Default is `"mack"`. The argument is
 #'   retained for future extensibility.
-#' @param target A single cumulative target variable (column to project).
-#'   Typical choices are `"loss"`, `"prem"`, or `"lr"`.
+#' @param loss A single cumulative loss variable (column to project).
+#'   Typical choices are `"loss"`, `"exposure"`, or `"ratio"`.
 #' @param weight An optional column name passed to [as_link()] as
-#'   the WLS weight variable. Typically `"prem"` when `target = "lr"`.
+#'   the WLS weight variable. Typically `"exposure"` when `loss = "ratio"`.
 #'   Default is `NULL`.
 #' @param alpha Numeric scalar controlling the variance structure in
 #'   [fit_ata()]. Default is `1`.
@@ -27,9 +27,9 @@
 #'   recent `recent` periods are used for factor estimation. Default is
 #'   `NULL` (use all periods).
 #' @param regime Optional regime specification for cohort cutoff. Accepts:
-#'   `NULL` (default — no filter), a `Regime` object (from [detect_regime()]
+#'   `NULL` (default -- no filter), a `Regime` object (from [detect_regime()]
 #'   or `regime_at()`), the string `"auto"` (internal
-#'   `detect_regime(tri, target = "lr")` call), or a function
+#'   `detect_regime(tri, loss = "ratio")` call), or a function
 #'   `function(tri) -> Regime` for deferred custom-config detection. When
 #'   supplied, cohorts strictly before the resolved change date are excluded
 #'   from factor estimation.
@@ -40,7 +40,7 @@
 #'     \item{`Maturity` object}{Pre-built (e.g. from [detect_maturity()]
 #'       or [maturity_at()]) — used as-is.}
 #'     \item{`"auto"`}{Internal [detect_maturity()] call with defaults
-#'       (target inferred from `target`).}
+#'       (loss inferred from `loss`).}
 #'     \item{function `function(tri) -> Maturity`}{Lazy spec, typically
 #'       built with [maturity_spec()], invoked on the triangle at fit
 #'       time (leakage-safe for [backtest()]).}
@@ -57,7 +57,7 @@
 #'     \item{`groups`}{Character vector of grouping variable names.}
 #'     \item{`cohort`}{Character scalar of period variable name.}
 #'     \item{`dev`}{Character scalar of development variable name.}
-#'     \item{`target`}{Character scalar of target variable name.}
+#'     \item{`loss`}{Character scalar of loss column name.}
 #'     \item{`full`}{`data.table` with observed and projected values,
 #'       including process/parameter SE and CV columns.}
 #'     \item{`proj`}{`data.table` identical to `full` with observed cells
@@ -80,7 +80,7 @@
 #'     \item{`tail_factor`}{Numeric tail factor applied.}
 #'   }
 #'
-#' @seealso [fit_ata()], [fit_lr()]
+#' @seealso [fit_ata()], [fit_ratio()]
 #'
 #' @examples
 #' \dontrun{
@@ -91,22 +91,22 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem     = "incr_prem"
+#'   exposure = "incr_exposure"
 #' )
 #'
 #' # Mack chain ladder with process / parameter standard errors
-#' cl_mack <- fit_cl(tri, target = "loss", method = "mack")
+#' cl_mack <- fit_cl(tri, loss = "loss", method = "mack")
 #' summary(cl_mack)
 #' plot(cl_mack)
 #'
-#' # WLS factors for lr (loss ratio) using prem as the weight
-#' cl_clr <- fit_cl(tri, target = "lr", weight = "prem")
+#' # WLS factors for ratio (loss ratio) using exposure as the weight
+#' cl_ratio <- fit_cl(tri, loss = "ratio", weight = "exposure")
 #' }
 #'
 #' @export
 fit_cl <- function(x,
                    method       = c("mack"),
-                   target       = "loss",
+                   loss         = "loss",
                    weight       = NULL,
                    alpha        = 1,
                    sigma_method = c("locf", "min_last2", "loglinear"),
@@ -128,13 +128,13 @@ fit_cl <- function(x,
   regime <- .resolve_regime(regime, x)
 
   # 1) resolve variable names -------------------------------------------
-  if (!is.character(target) || length(target) != 1L)
-    stop("`target` must be a single column name (character).",
+  if (!is.character(loss) || length(loss) != 1L)
+    stop("`loss` must be a single column name (character).",
          call. = FALSE)
-  if (!(target %in% names(x)))
-    stop(sprintf("`target` column '%s' not found in `x`.", target),
+  if (!(loss %in% names(x)))
+    stop(sprintf("`loss` column '%s' not found in `x`.", loss),
          call. = FALSE)
-  tgt <- target
+  loss_col <- loss
 
   grp <- attr(x, "groups")
   coh <- attr(x, "cohort")
@@ -158,14 +158,14 @@ fit_cl <- function(x,
       stop(sprintf("`weight` column '%s' not found in `x`.", weight),
            call. = FALSE)
     wt <- weight
-    if (wt == tgt)
-      stop("`weight` must differ from `target`.", call. = FALSE)
+    if (wt == loss_col)
+      stop("`weight` must differ from `loss`.", call. = FALSE)
   }
 
   # 3) estimate ata factors (fit_ata builds the Link internally) -------
   ata_fit <- fit_ata(
     x,
-    target       = tgt,
+    loss         = loss_col,
     weight       = if (use_external_weight) wt else NULL,
     alpha        = alpha,
     sigma_method = sigma_method,
@@ -187,7 +187,7 @@ fit_cl <- function(x,
   full <- .expand_triangle_grid(
     triangle = x,
     ata_fit  = ata_fit,
-    target   = tgt
+    loss     = loss_col
   )
 
   # 7) join factor columns onto full grid -------------------------------
@@ -204,7 +204,7 @@ fit_cl <- function(x,
   if (use_external_weight) {
     raw <- .copy_dt(x)
     wt_obs <- raw[
-      , .(wt_obs = .SD[[wt]]),
+      , .(wt_obs = get(wt)),
       by = c(grp, "cohort", "dev")
     ]
     full <- wt_obs[full, on = c(grp, "cohort", "dev")]
@@ -214,59 +214,59 @@ fit_cl <- function(x,
 
   # compute last observed index per cohort
   full[, ("last_obs") := {
-    idx <- which(is.finite(target_obs))
+    idx <- which(is.finite(loss_obs))
     if (length(idx)) max(idx) else 0L
   }, by = c(grp, "cohort")]
 
   # 9) point projection -------------------------------------------------
-  full[, ("target_proj") := .cl_proj(
-    target_obs = target_obs,
-    f_sel      = f_sel
+  full[, ("loss_proj") := .cl_proj(
+    loss_obs = loss_obs,
+    f_sel    = f_sel
   ), by = c(grp, "cohort")]
 
-  # 10) incremental target projection -----------------------------------
-  full[, ("incr_target_proj") := target_proj -
-         data.table::shift(target_proj, 1L, fill = 0),
+  # 10) incremental loss projection -------------------------------------
+  full[, ("incr_loss_proj") := loss_proj -
+         data.table::shift(loss_proj, 1L, fill = 0),
        by = c(grp, "cohort")]
 
   # 11) variance --------------------------------------------------------
   full[, `:=`(
-    target_proc_se2  = .mack_proc_var(
-      target_proj = target_proj,
-      f_sel       = f_sel,
-      sigma2      = sigma2,
-      last_obs    = last_obs[1L],
-      alpha       = alpha,
-      scale       = if (use_external_weight) wt_obs[last_obs[1L]] else NULL
+    loss_proc_se2  = .mack_proc_var(
+      loss_proj = loss_proj,
+      f_sel     = f_sel,
+      sigma2    = sigma2,
+      last_obs  = last_obs[1L],
+      alpha     = alpha,
+      scale     = if (use_external_weight) wt_obs[last_obs[1L]] else NULL
     ),
-    target_param_se2 = .mack_param_var(
-      target_proj = target_proj,
-      f_sel       = f_sel,
-      f_var       = f_var,
-      last_obs    = last_obs[1L]
+    loss_param_se2 = .mack_param_var(
+      loss_proj = loss_proj,
+      f_sel     = f_sel,
+      f_var     = f_var,
+      last_obs  = last_obs[1L]
     )
   ), by = c(grp, "cohort")]
 
-  full[, ("target_total_se2") := target_proc_se2 + target_param_se2]
+  full[, ("loss_total_se2") := loss_proc_se2 + loss_param_se2]
 
   full[, `:=`(
-    target_proc_se  = sqrt(target_proc_se2),
-    target_param_se = sqrt(target_param_se2),
-    target_total_se = sqrt(target_total_se2)
+    loss_proc_se  = sqrt(loss_proc_se2),
+    loss_param_se = sqrt(loss_param_se2),
+    loss_total_se = sqrt(loss_total_se2)
   )]
 
   full[, `:=`(
-    target_proc_cv  = data.table::fifelse(
-      is.finite(target_proj) & target_proj != 0,
-      target_proc_se / target_proj, NA_real_
+    loss_proc_cv  = data.table::fifelse(
+      is.finite(loss_proj) & loss_proj != 0,
+      loss_proc_se / loss_proj, NA_real_
     ),
-    target_param_cv = data.table::fifelse(
-      is.finite(target_proj) & target_proj != 0,
-      target_param_se / target_proj, NA_real_
+    loss_param_cv = data.table::fifelse(
+      is.finite(loss_proj) & loss_proj != 0,
+      loss_param_se / loss_proj, NA_real_
     ),
-    target_total_cv = data.table::fifelse(
-      is.finite(target_proj) & target_proj != 0,
-      target_total_se / target_proj, NA_real_
+    loss_total_cv = data.table::fifelse(
+      is.finite(loss_proj) & loss_proj != 0,
+      loss_total_se / loss_proj, NA_real_
     )
   )]
 
@@ -282,10 +282,10 @@ fit_cl <- function(x,
   # 13) proj: NA out observed cells -------------------------------------
   proj <- data.table::copy(full)
   na_cols <- c(
-    "target_proj", "incr_target_proj",
-    "target_proc_se2", "target_param_se2", "target_total_se2",
-    "target_proc_se",  "target_param_se",  "target_total_se",
-    "target_proc_cv",  "target_param_cv",  "target_total_cv"
+    "loss_proj", "incr_loss_proj",
+    "loss_proc_se2", "loss_param_se2", "loss_total_se2",
+    "loss_proc_se",  "loss_param_se",  "loss_total_se",
+    "loss_proc_cv",  "loss_param_cv",  "loss_total_cv"
   )
   proj[is_observed == TRUE, (na_cols) := NA_real_]
 
@@ -297,7 +297,7 @@ fit_cl <- function(x,
     groups       = grp,
     cohort       = coh,
     dev          = dev,
-    target       = tgt,
+    loss         = loss_col,
     full         = full,
     proj         = proj,
     link         = ata_fit$link,
@@ -343,7 +343,7 @@ print.CLFit <- function(x, ...) {
 
   cat("<CLFit>\n")
   cat("method      :", x$method, "\n")
-  cat("target      :", x$target, "\n")
+  cat("loss        :", x$loss, "\n")
   cat("weight      :",
       if (!is.null(x$weight)) x$weight else "none", "\n")
   cat("alpha       :", x$alpha, "\n")
@@ -393,22 +393,22 @@ print.CLFit <- function(x, ...) {
 #' Only cells beyond the last observed value are projected. Observed cells
 #' are returned unchanged.
 #'
-#' @param target_obs Numeric vector of cumulative observed values for a
+#' @param loss_obs Numeric vector of cumulative observed values for a
 #'   single cohort, ordered by development period.
 #' @param f_sel Numeric vector of selected development factors.
 #'
-#' @return A numeric vector of the same length as `target_obs` with
+#' @return A numeric vector of the same length as `loss_obs` with
 #'   unobserved cells filled by recursive chain ladder projection.
 #'
 #' @keywords internal
-.cl_proj <- function(target_obs, f_sel) {
+.cl_proj <- function(loss_obs, f_sel) {
 
-  n        <- length(target_obs)
-  last_obs <- max(which(is.finite(target_obs)), 0L)
+  n        <- length(loss_obs)
+  last_obs <- max(which(is.finite(loss_obs)), 0L)
 
-  if (last_obs == 0L || last_obs == n) return(target_obs)
+  if (last_obs == 0L || last_obs == n) return(loss_obs)
 
-  v <- target_obs
+  v <- loss_obs
 
   for (i in seq(last_obs + 1L, n)) {
     f_now <- f_sel[i - 1L]
@@ -428,7 +428,7 @@ print.CLFit <- function(x, ...) {
 #' from an object of class `"Triangle"`, analogous to [base::expand.grid()].
 #'
 #' @keywords internal
-.expand_triangle_grid <- function(triangle, ata_fit, target) {
+.expand_triangle_grid <- function(triangle, ata_fit, loss) {
 
   grp <- attr(triangle, "groups")
 
@@ -436,8 +436,9 @@ print.CLFit <- function(x, ...) {
 
   raw <- .copy_dt(triangle)
 
+  loss_col <- loss  # rebind to avoid NSE clash with column named `loss`
   obs <- raw[
-    , .(target_obs = .SD[[target]]),
+    , .(loss_obs = get(loss_col)),
     by = c(grp, "cohort", "dev")
   ]
 
@@ -449,7 +450,7 @@ print.CLFit <- function(x, ...) {
   full <- obs[full, on = c(grp, "cohort", "dev")]
   data.table::setorderv(full, c(grp, "cohort", "dev"))
 
-  full[, ("is_observed") := is.finite(target_obs)]
+  full[, ("is_observed") := is.finite(loss_obs)]
 
   # When ata_fit was fitted with segment_wise treatment, attach
   # segment_id to each grid row so factor join keys by segment.
@@ -506,9 +507,24 @@ print.CLFit <- function(x, ...) {
 #' \deqn{\mathrm{Var}(\hat{f}_k) = \frac{\sigma^2_k}{W_k}}
 #'
 #' where \eqn{W_k = \sum_i w_{i,k} \cdot C_{i,k}^\alpha}. This is consistent
-#' with the WLS weight \eqn{w_{i,k} / C_{i,k}^{2-\alpha}} used in `.lm_ata()`.
+#' with the WLS weight \eqn{w_{i,k} / C_{i,k}^{2-\alpha}} used in `.lm_ata()`
+#' and follows Mack (1993)'s distribution-free standard-error derivation
+#' for the chain ladder reserve estimator.
 #'
-#' Also used by [fit_lr()] for the CL component.
+#' Paradigm pairing: the package keeps two natural analytical variance
+#' helpers, one per paradigm-target pair: `.mack_f_var()` (CL / Mack 1993
+#' applied to f-factor) and [.ed_g_var()] (ED / Buehlmann-Straub 1970
+#' applied to g-intensity). They share the underlying volume-weighted
+#' variance idea (\eqn{\sigma^2_g = \sigma^2_f} via \eqn{g_k = f_k - 1}),
+#' but operate on different `Link` columns (f reads `loss_to`/`loss_from`;
+#' g reads `loss_delta`/`exposure_from`) and produce differently-named
+#' output columns (`f_var` / `g_var`), so are kept as separate helpers.
+#'
+#' Also used by [fit_ratio()] for the CL component.
+#'
+#' @references
+#' Mack, T. (1993). Distribution-free calculation of the standard error
+#' of chain ladder reserve estimates. *ASTIN Bulletin*, 23(2), 213-225.
 #'
 #' @keywords internal
 .mack_f_var <- function(ata_fit, alpha = 1) {
@@ -538,14 +554,14 @@ print.CLFit <- function(x, ...) {
     link_long[, (".wt") := 1]
   }
 
-  link_long <- link_long[is.finite(.wt) & is.finite(target_to) & target_from > 0]
+  link_long <- link_long[is.finite(.wt) & is.finite(loss_to) & loss_from > 0]
 
   has_seg <- "segment_id" %in% names(link_long) &&
              "segment_id" %in% names(sel)
   by_cols <- c(grp, "ata_from", if (has_seg) "segment_id")
 
   link_weights <- link_long[,
-                       .(.denom = sum(.wt * target_from^alpha, na.rm = TRUE)),
+                       .(.denom = sum(.wt * loss_from^alpha, na.rm = TRUE)),
                        by = by_cols
   ]
 
@@ -577,14 +593,14 @@ print.CLFit <- function(x, ...) {
 #' When `scale` is supplied, the increment is divided by `scale`.
 #'
 #' @keywords internal
-.mack_proc_var <- function(target_proj,
+.mack_proc_var <- function(loss_proj,
                            f_sel,
                            sigma2,
                            last_obs,
                            alpha = 1,
                            scale = NULL) {
 
-  n    <- length(target_proj)
+  n    <- length(loss_proj)
   proc <- numeric(n)
 
   if (last_obs == n) return(proc)
@@ -594,7 +610,7 @@ print.CLFit <- function(x, ...) {
   for (i in seq(last_obs + 1L, n)) {
     f_now      <- f_sel[i - 1L]
     sigma2_now <- sigma2[i - 1L]
-    v_prev     <- target_proj[i - 1L]
+    v_prev     <- loss_proj[i - 1L]
 
     if (!is.finite(f_now) || !is.finite(v_prev)) next
 
@@ -628,12 +644,12 @@ print.CLFit <- function(x, ...) {
 #' }
 #'
 #' @keywords internal
-.mack_param_var <- function(target_proj,
+.mack_param_var <- function(loss_proj,
                             f_sel,
                             f_var,
                             last_obs) {
 
-  n     <- length(target_proj)
+  n     <- length(loss_proj)
   param <- numeric(n)
 
   if (last_obs == n) return(param)
@@ -641,7 +657,7 @@ print.CLFit <- function(x, ...) {
   for (i in seq(last_obs + 1L, n)) {
     f_now     <- f_sel[i - 1L]
     f_var_now <- f_var[i - 1L]
-    v_prev    <- target_proj[i - 1L]
+    v_prev    <- loss_proj[i - 1L]
 
     if (!is.finite(f_now) || !is.finite(v_prev)) next
 
@@ -679,30 +695,30 @@ print.CLFit <- function(x, ...) {
   latest <- full[, .SD[.N], by = c(grp, "cohort")]
 
   latest[, `:=`(
-    target_tail           = target_proj         * tail_factor,
-    target_proc_se2_tail  = target_proc_se2     * tail_factor^2,
-    target_param_se2_tail = target_param_se2    * tail_factor^2,
-    target_total_se2_tail = target_total_se2    * tail_factor^2
+    loss_tail           = loss_proj         * tail_factor,
+    loss_proc_se2_tail  = loss_proc_se2     * tail_factor^2,
+    loss_param_se2_tail = loss_param_se2    * tail_factor^2,
+    loss_total_se2_tail = loss_total_se2    * tail_factor^2
   )]
 
   latest[, `:=`(
-    target_proc_se_tail  = sqrt(target_proc_se2_tail),
-    target_param_se_tail = sqrt(target_param_se2_tail),
-    target_total_se_tail = sqrt(target_total_se2_tail)
+    loss_proc_se_tail  = sqrt(loss_proc_se2_tail),
+    loss_param_se_tail = sqrt(loss_param_se2_tail),
+    loss_total_se_tail = sqrt(loss_total_se2_tail)
   )]
 
   latest[, `:=`(
-    target_proc_cv_tail  = data.table::fifelse(
-      is.finite(target_tail) & target_tail != 0,
-      target_proc_se_tail / target_tail, NA_real_
+    loss_proc_cv_tail  = data.table::fifelse(
+      is.finite(loss_tail) & loss_tail != 0,
+      loss_proc_se_tail / loss_tail, NA_real_
     ),
-    target_param_cv_tail = data.table::fifelse(
-      is.finite(target_tail) & target_tail != 0,
-      target_param_se_tail / target_tail, NA_real_
+    loss_param_cv_tail = data.table::fifelse(
+      is.finite(loss_tail) & loss_tail != 0,
+      loss_param_se_tail / loss_tail, NA_real_
     ),
-    target_total_cv_tail = data.table::fifelse(
-      is.finite(target_tail) & target_tail != 0,
-      target_total_se_tail / target_tail, NA_real_
+    loss_total_cv_tail = data.table::fifelse(
+      is.finite(loss_tail) & loss_tail != 0,
+      loss_total_se_tail / loss_tail, NA_real_
     )
   )]
 
@@ -727,34 +743,34 @@ print.CLFit <- function(x, ...) {
 
   grp  <- x$groups
   coh  <- x$cohort
-  tgt  <- x$target
+  loss_col <- x$loss
   full     <- x$full
-  is_ratio <- tgt == "lr"
+  is_ratio <- loss_col == "ratio"
 
   latest_obs <- full[is_observed == TRUE, .SD[.N], by = c(grp, "cohort")]
   ult        <- full[, .SD[.N],           by = c(grp, "cohort")]
   agg <- latest_obs[ult, on = c(grp, "cohort")]
 
-  ult_col <- paste0(tgt, "_ult")
+  ult_col <- paste0(loss_col, "_ult")
   agg[, `:=`(
-    latest  = target_proj,
-    reserve = if (is_ratio) NA_real_ else i.target_proj - target_proj
+    latest  = loss_proj,
+    reserve = if (is_ratio) NA_real_ else i.loss_proj - loss_proj
   )]
-  agg[, (ult_col) := i.target_proj]
+  agg[, (ult_col) := i.loss_proj]
 
   agg[, `:=`(
-    target_proc_se  = i.target_proc_se,
-    target_param_se = i.target_param_se,
-    target_total_se = i.target_total_se,
-    target_total_cv = data.table::fifelse(
-      is.finite(i.target_proj) & i.target_proj != 0,
-      i.target_total_se / i.target_proj, NA_real_
+    loss_proc_se  = i.loss_proc_se,
+    loss_param_se = i.loss_param_se,
+    loss_total_se = i.loss_total_se,
+    loss_total_cv = data.table::fifelse(
+      is.finite(i.loss_proj) & i.loss_proj != 0,
+      i.loss_total_se / i.loss_proj, NA_real_
     )
   )]
   out_cols <- c(grp, "cohort",
                 "latest", ult_col, "reserve",
-                "target_proc_se", "target_param_se",
-                "target_total_se", "target_total_cv")
+                "loss_proc_se", "loss_param_se",
+                "loss_total_se", "loss_total_cv")
 
   x$summary <- agg[, .SD, .SDcols = out_cols]
   x

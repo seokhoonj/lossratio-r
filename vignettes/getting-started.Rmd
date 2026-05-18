@@ -30,7 +30,7 @@ loss-ratio projection.
 (cohort × dev × group) cell. The bundled dataset
 `experience` is a 2,664-row table with calendar / underwriting
 period columns at multiple granularities, a `coverage` group
-column, and per-period amounts (`incr_loss`, `incr_prem`).
+column, and per-period amounts (`incr_loss`, `incr_exposure`).
 
 ```{r}
 library(lossratio)
@@ -48,7 +48,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 class(tri)
 names(tri)
@@ -57,24 +57,24 @@ names(tri)
 `as_triangle()`:
 
 - validates required columns (`cy_m`, `uy_m`, `incr_loss`,
-  `incr_prem`) and coerces them to the expected types,
+  `incr_exposure`) and coerces them to the expected types,
 - aggregates demographic dimensions away (here: `age_band`, `gender`),
 - standardises raw input names to the per-period slots `incr_loss`
-  and `incr_prem`,
-- adds cumulative companions (`loss`, `premium`) — cumulative is the
+  and `incr_exposure`,
+- adds cumulative companions (`loss`, `exposure`) — cumulative is the
   unmarked default; per-period carries the `_incr` suffix,
-- adds derived metrics (`margin` / `incr_margin`, `lr` / `incr_lr`,
+- adds derived metrics (`margin` / `incr_margin`, `ratio` / `incr_ratio`,
   proportions),
 - standardises the cohort / development columns to the names `cohort`
   and `dev`,
 - preserves original column names as attributes (`cohort`,
-  `dev`, `loss`, `premium`) for downstream plot labels.
+  `dev`, `loss`, `exposure`) for downstream plot labels.
 
 ## Step 2 — Diagnostics
 
 ```{r}
-plot(tri)              # cohort trajectories of lr
-plot_triangle(tri)     # heatmap of lr cells
+plot(tri)              # cohort trajectories of ratio
+plot_triangle(tri)     # heatmap of ratio cells
 summary(tri)           # group-wise statistics by dev
 ```
 
@@ -86,10 +86,10 @@ not produce projections (`$full`).
 
 ```{r}
 # Age-to-age factors — multiplicative, input to chain ladder
-fit_ata(tri, target = "loss")
+fit_ata(tri, loss = "loss")
 
 # Exposure-driven intensities — additive, input to ED
-fit_intensity(tri, target = "loss", exposure = "prem")
+fit_intensity(tri, loss = "loss", exposure = "exposure")
 ```
 
 `fit_ata()` returns selected ATA factors $f_k$ per development link.
@@ -100,30 +100,30 @@ the maturity point.
 ## Step 4 — Projection
 
 The projection-level estimators come as a pair of siblings,
-`fit_cl()` and `fit_ed()`, plus `fit_lr()` as the unified interface
+`fit_cl()` and `fit_ed()`, plus `fit_ratio()` as the unified interface
 that combines them.
 
 ```{r}
 # Chain ladder (multiplicative projection)
-cl <- fit_cl(tri, target = "loss", method = "mack")
+cl <- fit_cl(tri, loss = "loss", method = "mack")
 plot(cl, type = "projection")
 summary(cl)
 
 # Exposure-driven (additive projection)
-ed <- fit_ed(tri, target = "loss", exposure = "prem")
+ed <- fit_ed(tri, loss = "loss", exposure = "exposure")
 summary(ed)
 ```
 
-`fit_lr()` is the unified loss-ratio interface. The default
+`fit_ratio()` is the unified loss-ratio interface. The default
 `method = "sa"` (stage-adaptive) uses exposure-driven before the
 maturity point and chain ladder after, switching at the per-group
 maturity detected from the ATA factors. `method = "ed"` or `"cl"`
 applies a single stage throughout.
 
 ```{r}
-lr <- fit_lr(tri, method = "sa")
-plot(lr, metric = "lr")
-summary(lr)
+ratio <- fit_ratio(tri, method = "sa")
+plot(ratio, metric = "ratio")
+summary(ratio)
 ```
 
 ## Step 5 — Structural change diagnostics
@@ -139,7 +139,7 @@ sub <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 detect_regime(sub, method = "e_divisive")
 ```
@@ -151,7 +151,7 @@ See `vignette("regime")` for the dedicated walkthrough.
 - `vignette("aggregation-frameworks")` — when to use `as_triangle`
   vs `as_calendar` vs `as_total`.
 - `vignette("projection")` — choosing among `"sa"` / `"ed"` /
-  `"cl"` in `fit_lr()`.
+  `"cl"` in `fit_ratio()`.
 - `vignette("chain-ladder-reserving")` — `fit_cl()` deep dive (Mack variance,
   tail factor).
 - `vignette("triangle-link-and-maturity")` — `summary()`,
@@ -159,4 +159,4 @@ See `vignette("regime")` for the dedicated walkthrough.
 - `vignette("regime")` — `detect_regime()` for
   structural-change diagnosis across cohorts.
 - `vignette("backtest")` — calendar-diagonal hold-out validation with
-  `fit_cl` or `fit_lr`.
+  `fit_cl` or `fit_ratio`.

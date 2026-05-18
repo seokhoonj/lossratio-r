@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{Calendar}(
   x,
-  metric = "lr",
+  metric = "ratio",
   amount_divisor = "auto",
   show_label = FALSE,
   label_size = 2.8,
@@ -18,9 +18,9 @@
 \item{x}{An object of class \code{Calendar}.}
 
 \item{metric}{A single metric to plot. Must be one of:
-\code{"lr"}, \code{"incr_lr"},
-\code{"loss"}, \code{"incr_loss"}, \code{"prem"}, \code{"incr_prem"}, \code{"margin"}, \code{"incr_margin"},
-\code{"loss_share"}, \code{"incr_loss_share"}, \code{"prem_share"}, or \code{"incr_prem_share"}.}
+\code{"ratio"}, \code{"incr_ratio"},
+\code{"loss"}, \code{"incr_loss"}, \code{"exposure"}, \code{"incr_exposure"}, \code{"margin"}, \code{"incr_margin"},
+\code{"loss_share"}, \code{"incr_loss_share"}, \code{"exposure_share"}, or \code{"incr_exposure_share"}.}
 
 \item{amount_divisor}{Numeric scaling factor used only for y-axis labels of
 amount variables. Default \code{"auto"} (picks the divisor that produces
@@ -28,7 +28,7 @@ the shortest formatted label; pass an explicit numeric to fix it).}
 
 \item{show_label}{Logical; if \code{TRUE}, overlay the metric value as a
 text label at each (calendar, group) point. Ratio metrics
-(\code{"lr"}, \code{"incr_lr"}, share variants) are formatted as percent
+(\code{"ratio"}, \code{"incr_ratio"}, share variants) are formatted as percent
 (one decimal). Amount metrics are scaled by \code{amount_divisor} and
 formatted with one decimal. Default \code{FALSE}.}
 
@@ -48,12 +48,12 @@ Visualise an object of class \code{Calendar} as a time-series plot.
 The selected metric is plotted over the calendar-style \code{calendar},
 or over the calendar development variable stored in \code{attr(x, "dev")}.
 
-Ratio metrics (\code{lr}, \code{incr_lr}) and proportion metrics
-(\code{loss_share}, \code{incr_loss_share}, \code{prem_share}, \code{incr_prem_share}) are plotted on the
-original scale and displayed as percentages via y-axis labels.
-Amount metrics (\code{loss}, \code{incr_loss}, \code{prem}, \code{incr_prem}, \code{margin}, \code{incr_margin}) are
-plotted on the original scale and displayed using y-axis labels scaled by
-\code{amount_divisor}.
+Ratio metrics (\code{ratio}, \code{incr_ratio}) and proportion metrics
+(\code{loss_share}, \code{incr_loss_share}, \code{exposure_share}, \code{incr_exposure_share}) are
+plotted on the original scale and displayed as percentages via y-axis labels.
+Amount metrics (\code{loss}, \code{incr_loss}, \code{exposure}, \code{incr_exposure}, \code{margin},
+\code{incr_margin}) are plotted on the original scale and displayed using y-axis
+labels scaled by \code{amount_divisor}.
 
 If grouping variables are present, lines are drawn separately by group.
 }
@@ -62,9 +62,9 @@ The x-axis is the calendar variable stored in \code{attr(x, "calendar")}
 (a Date, formatted per the triangle's \code{grain}).
 
 The loss ratio is defined as:
-\deqn{lr = loss / prem}
+\deqn{ratio = loss / exposure}
 
-where \code{prem} denotes risk premium rather than written prem.
+where \code{exposure} denotes risk premium rather than written premium.
 }
 \examples{
 \dontrun{
@@ -73,11 +73,11 @@ x <- as_calendar(
   groups   = "coverage",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 plot(x)
-plot(x, metric = "lr")
+plot(x, metric = "ratio")
 }
 
 }

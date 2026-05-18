@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-`fit_lr()` projects cumulative loss ratio per cohort from a
+`fit_ratio()` projects cumulative loss ratio per cohort from a
 `Triangle` object. Three methods are available; this vignette
 explains the trade-offs.
 
@@ -74,12 +74,12 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
-lr_sa <- fit_lr(tri, method = "sa")        # default
-plot(lr_sa, metric = "lr")
-summary(lr_sa)
+ratio_sa <- fit_ratio(tri, method = "sa")        # default
+plot(ratio_sa, metric = "ratio")
+summary(ratio_sa)
 ```
 
 ## Method 2: Exposure-Driven (`"ed"`)
@@ -104,8 +104,8 @@ When to use:
 - Comparing against SA / CL for sanity check.
 
 ```{r}
-lr_ed <- fit_lr(tri, method = "ed")
-plot(lr_ed, metric = "lr")
+ratio_ed <- fit_ratio(tri, method = "ed")
+plot(ratio_ed, metric = "ratio")
 ```
 
 ## Method 3: Classical Chain Ladder (`"cl"`)
@@ -118,9 +118,9 @@ $$
 
 Behaviour:
 
-- Standard reserving practice. Equivalent to `fit_cl(tri, target = "loss")`
-  for the loss projection, but `fit_lr()` additionally projects
-  exposure forward via CL on `premium` and computes the loss-ratio
+- Standard reserving practice. Equivalent to `fit_cl(tri, loss = "loss")`
+  for the loss projection, but `fit_ratio()` additionally projects
+  exposure forward via CL on `exposure` and computes the loss-ratio
   uncertainty via the delta method.
 - Volatile when early $f_k$ are noisy — small denominators amplify
   link errors.
@@ -133,28 +133,28 @@ When to use:
   form for documentation.
 
 ```{r}
-lr_cl <- fit_lr(tri, method = "cl")
-plot(lr_cl, metric = "lr")
+ratio_cl <- fit_ratio(tri, method = "cl")
+plot(ratio_cl, metric = "ratio")
 ```
 
 ## Comparison
 
 ```{r}
-lrs <- list(
-  sa = fit_lr(tri, method = "sa"),
-  ed = fit_lr(tri, method = "ed"),
-  cl = fit_lr(tri, method = "cl")
+ratios <- list(
+  sa = fit_ratio(tri, method = "sa"),
+  ed = fit_ratio(tri, method = "ed"),
+  cl = fit_ratio(tri, method = "cl")
 )
 
 # Cohort-level summary
-summary(lrs$sa)$loss_ult
-summary(lrs$ed)$loss_ult
-summary(lrs$cl)$loss_ult
+summary(ratios$sa)$loss_ult
+summary(ratios$ed)$loss_ult
+summary(ratios$cl)$loss_ult
 ```
 
 ## Variance and confidence intervals
 
-`fit_lr()` reports analytical standard errors for `L/P`. Two variants:
+`fit_ratio()` reports analytical standard errors for `L/P`. Two variants:
 
 - `se_method = "fixed"` (default) — premium treated as fixed,
   $\mathrm{SE}(L/P) \approx \mathrm{SE}(L)/P$. Strictly the delta method
@@ -171,8 +171,8 @@ $$
 Bootstrap intervals are also available:
 
 ```{r}
-lr_boot <- fit_lr(tri, method = "sa", bootstrap = TRUE, B = 1000, seed = 1)
-summary(lr_boot)
+ratio_boot <- fit_ratio(tri, method = "sa", bootstrap = TRUE, B = 1000, seed = 1)
+summary(ratio_boot)
 ```
 
 ## Choosing a method
@@ -187,7 +187,7 @@ Default is "sa" — ED before maturity, CL after.
 Pick "cl" or "ed" only as special cases:
   ├── All cohorts are already past maturity
   │     → "cl"  (no ED region, so SA reduces to CL)
-  └── Loss development is unstable across all dev and exposure (rp) is
+  └── Loss development is unstable across all dev and exposure is
       the more reliable signal
         → "ed"  (CL region is better served by exposure)
 ```
@@ -200,7 +200,7 @@ underlying ATA factors.
 ## Maturity input
 
 For `method = "sa"` the maturity point $m_g$ determines where the
-projection switches from ED to CL. By default `fit_lr()` /
+projection switches from ED to CL. By default `fit_ratio()` /
 `fit_loss()` use `maturity = "auto"`, which calls
 `detect_maturity()` internally with default thresholds. Other forms:
 

@@ -23,56 +23,57 @@
 .compute_dispersion <- function(triangle, min_n_cohorts = 5L) {
 
   # data.table NSE NULL bindings for bare column refs in `j` below.
-  lr <- lr_median <- lr_mad <- n_cohorts <- flag <- NULL
+  ratio <- ratio_median <- ratio_mad <- n_cohorts <- flag <- NULL
 
   .assert_class(triangle, "Triangle")
   grp <- attr(triangle, "groups")
   near_zero_floor <- 1e-8
 
   dt <- .copy_dt(triangle)
-  dt <- dt[!is.na(dt[["lr"]])]
+  dt <- dt[!is.na(dt[["ratio"]])]
 
   by_cols <- c(grp, "dev")
 
   out <- dt[, list(
-    n_cohorts = .N,
-    lr_median = stats::median(lr),
-    lr_mad    = stats::mad(lr, constant = 1.4826)
+    n_cohorts    = .N,
+    ratio_median = stats::median(ratio),
+    ratio_mad    = stats::mad(ratio, constant = 1.4826)
   ), by = by_cols]
 
   out[, ("flag") := data.table::fifelse(
     n_cohorts < min_n_cohorts, "sparse",
-    data.table::fifelse(abs(lr_median) < near_zero_floor,
+    data.table::fifelse(abs(ratio_median) < near_zero_floor,
                         "near_zero_median", "ok")
   )]
 
-  .denom <- pmax(abs(out$lr_median), near_zero_floor)
+  .denom <- pmax(abs(out$ratio_median), near_zero_floor)
   out[, ("dispersion") := data.table::fifelse(
-    flag == "sparse", NA_real_, lr_mad / .denom)]
+    flag == "sparse", NA_real_, ratio_mad / .denom)]
 
-  data.table::setcolorder(out, c(by_cols, "n_cohorts", "lr_median",
-                                 "lr_mad", "dispersion", "flag"))
+  data.table::setcolorder(out, c(by_cols, "n_cohorts", "ratio_median",
+                                 "ratio_mad", "dispersion", "flag"))
   out[]
 }
 
 
 #' Extract portfolio-level projected loss ratio from a Backtest fit object
 #'
-#' Aggregates per-cohort projected ultimate to a single portfolio LR via
-#' exposure-weighting: \eqn{\sum_i loss_{ult,i} / \sum_i prem_{ult,i}}.
+#' Aggregates per-cohort projected ultimate to a single portfolio loss ratio
+#' via exposure-weighting:
+#' \eqn{\sum_i loss_{ult,i} / \sum_i exposure_{ult,i}}.
 #'
 #' @param bt A `Backtest` object (result of `backtest()`).
 #'
 #' @return Numeric scalar. `NA_real_` when fields missing.
 #' @keywords internal
-.extract_portfolio_lr <- function(bt) {
+.extract_portfolio_ratio <- function(bt) {
   if (is.null(bt) || is.null(bt$fit) || is.null(bt$fit$summary))
     return(NA_real_)
   s <- data.table::as.data.table(bt$fit$summary)
-  needed <- c("loss_ult", "prem_ult")
+  needed <- c("loss_ult", "exposure_ult")
   if (!all(needed %in% names(s))) return(NA_real_)
-  total_loss <- sum(s$loss_ult,    na.rm = TRUE)
-  total_exp  <- sum(s$prem_ult, na.rm = TRUE)
+  total_loss <- sum(s$loss_ult,     na.rm = TRUE)
+  total_exp  <- sum(s$exposure_ult, na.rm = TRUE)
   if (!is.finite(total_exp) || total_exp <= 0) return(NA_real_)
   total_loss / total_exp
 }
@@ -98,7 +99,7 @@
 #' \tabular{lll}{
 #'   `dev_max`  \tab \eqn{K_{\max}}                \tab Maximum observable dev (a scalar) \cr
 #'   `dev_cand` \tab \eqn{k \in [k^*, K_{\max}-2]} \tab Integer vector of candidate dev points \cr
-#'   `lr[i]`    \tab \eqn{LR_k}                    \tab Portfolio LR projection at dev = `dev_cand[i]` \cr
+#'   `ratio[i]` \tab \eqn{LR_k}                    \tab Portfolio LR projection at dev = `dev_cand[i]` \cr
 #'   `revision[i]` \tab \eqn{R_k = |LR_k - LR_{k-1}|} \tab Adjacent-step revision (diagnostic) \cr
 #'   `drift_window[i]` \tab \eqn{\max - \min} of \eqn{LR} over \eqn{[k, k+W-1]}     \tab Local window range \cr
 #'   `drift_tail[i]`   \tab \eqn{\max - \min} of \eqn{LR} over \eqn{[k, K_{\max}]}  \tab Tail range \cr
@@ -142,7 +143,7 @@
 #' what we observe is stable", not as a guarantee of future
 #' stability. For reserving applications, prefer `method = "tail"` or
 #' `"all"` over `"window"`, attach an IBNR margin via
-#' `fit_lr$summary` SE/CI columns, and weigh the *evidence span*
+#' `fit_ratio$summary` SE/CI columns, and weigh the *evidence span*
 #' (`dev_max - conv_k`): a `conv_k` near `dev_max` has thin evidence.
 #'
 #' @param triangle A `Triangle` object (typically from [as_triangle()]).
@@ -165,24 +166,24 @@
 #'   for e-divisive segment width); here it controls *only* the drift
 #'   metric, not the e-divisive algorithm.
 #' @param mat_k Pre-computed maturity point. When `NULL`, computed via
-#'   [detect_maturity()] applied to an lr-based ATA.
+#'   [detect_maturity()] applied to a ratio-based ATA.
 #' @param holdout_max Maximum holdout depth used for the rolling
 #'   backtest. When `NULL`, set to
 #'   `max(window, floor((dev_max - mat_k) / 2))`.
 #' @param min_n_cohorts Minimum number of cohorts required to compute
 #'   \eqn{\hat{D}_v}. Default `5L`.
 #' @param ... Additional arguments forwarded to `backtest()` (and thence
-#'   to `fit_lr()`), e.g. `loss_method`, `recent`, `loss_regime`.
+#'   to `fit_ratio()`), e.g. `loss_method`, `recent`, `loss_regime`.
 #'
 #' @return An object of class `Convergence` (named list). Includes the
 #'   slots tabulated in the notation mapping above
-#'   (`dev_max`, `dev_cand`, `lr`, `revision`, `drift_window`,
+#'   (`dev_max`, `dev_cand`, `ratio`, `revision`, `drift_window`,
 #'   `drift_tail`, `slope`, `dispersion`), per-method pass vectors
 #'   (`pass_window`, `pass_tail`, `pass_slope`, `pass`), the threshold
-#'   parameters, and metadata attributes (`groups`, `target`,
+#'   parameters, and metadata attributes (`groups`, `loss`,
 #'   `dispatcher`).
 #'
-#' @seealso [detect_maturity()], [backtest()], [fit_lr()]
+#' @seealso [detect_maturity()], [backtest()], [fit_ratio()]
 #'
 #' @export
 detect_convergence <- function(triangle,
@@ -197,9 +198,9 @@ detect_convergence <- function(triangle,
                                min_n_cohorts  = 5L,
                                ...) {
 
-  # LR convergence detection always backtests the LR projection from
-  # fit_lr; the dispatcher is fixed (no `target=` dispatch).
-  dispatcher <- "fit_lr"
+  # Ratio convergence detection always backtests the ratio projection from
+  # fit_ratio; the dispatcher is fixed (no `target=` dispatch).
+  dispatcher <- "fit_ratio"
 
   # 1) validate inputs -------------------------------------------------
   .assert_class(triangle, "Triangle")
@@ -228,10 +229,10 @@ detect_convergence <- function(triangle,
 
   # 2) resolve mat_k --------------------------------------------------
   if (is.null(mat_k)) {
-    mat    <- detect_maturity(triangle, target = "lr", weight = "prem")
+    mat    <- detect_maturity(triangle, loss = "ratio", weight = "exposure")
     mat_k  <- suppressWarnings(min(mat$change, na.rm = TRUE))
     if (!is.finite(mat_k))
-      stop("`detect_maturity(target = \"lr\")` returned no mature link ",
+      stop("`detect_maturity(loss = \"ratio\")` returned no mature link ",
            "for this triangle, so `mat_k` cannot be auto-resolved. ",
            "Possible causes: too few cohorts, ATA factors that fail the ",
            "`max_cv` / `max_rse` thresholds, or a triangle with too few ",
@@ -261,61 +262,61 @@ detect_convergence <- function(triangle,
       "Returning `conv_k = NA`.",
       call. = FALSE)
 
-  # 4) compute `lr` at each candidate dev via cached backtest ----------
-  # `lr[i]` is the portfolio-level projected ultimate LR when fitting
-  # with data through dev = dev_cand[i] (i.e. holdout = dev_max -
+  # 4) compute `ratio` at each candidate dev via cached backtest -------
+  # `ratio[i]` is the portfolio-level projected ultimate loss ratio when
+  # fitting with data through dev = dev_cand[i] (i.e. holdout = dev_max -
   # dev_cand[i]). The backtest call is cached per holdout depth so we
   # don't redo work.
-  lr <- rep(NA_real_, length(dev_cand))
+  ratio <- rep(NA_real_, length(dev_cand))
 
-  lr_cache <- numeric(0)
+  ratio_cache   <- numeric(0)
   cache_holdout <- integer(0)
 
-  .get_lr <- function(h) {
+  .get_ratio <- function(h) {
     idx <- match(h, cache_holdout)
-    if (!is.na(idx)) return(lr_cache[idx])
+    if (!is.na(idx)) return(ratio_cache[idx])
     bt <- tryCatch(
-      backtest(triangle, holdout = h, target = "lr", ...),
+      backtest(triangle, holdout = h, target = "ratio", ...),
       error = function(e) NULL
     )
-    val <- .extract_portfolio_lr(bt)
+    val <- .extract_portfolio_ratio(bt)
     cache_holdout <<- c(cache_holdout, h)
-    lr_cache      <<- c(lr_cache,      val)
+    ratio_cache   <<- c(ratio_cache,   val)
     val
   }
 
   for (i in seq_along(dev_cand)) {
     h <- dev_max - dev_cand[i]
     if (h < 1L || h > holdout_max) next
-    lr[i] <- .get_lr(h)
+    ratio[i] <- .get_ratio(h)
   }
 
   # 5) adjacent-step revision (diagnostic only) ------------------------
-  revision <- c(NA_real_, abs(diff(lr)))
+  revision <- c(NA_real_, abs(diff(ratio)))
 
-  # 6) window drift -- range of `lr` over [i, i + window - 1] ----------
+  # 6) window drift -- range of `ratio` over [i, i + window - 1] -------
   drift_window <- rep(NA_real_, length(dev_cand))
   for (i in seq_along(dev_cand)) {
     j <- i + window - 1L
     if (j > length(dev_cand)) break
-    w <- lr[i:j]
+    w <- ratio[i:j]
     if (all(is.finite(w)))
       drift_window[i] <- max(w) - min(w)
   }
 
-  # 7) tail drift -- range of `lr` over [i, end] -----------------------
+  # 7) tail drift -- range of `ratio` over [i, end] --------------------
   drift_tail <- rep(NA_real_, length(dev_cand))
   for (i in seq_along(dev_cand)) {
-    w <- lr[i:length(dev_cand)]
+    w <- ratio[i:length(dev_cand)]
     w <- w[is.finite(w)]
     if (length(w) >= 2L)
       drift_tail[i] <- max(w) - min(w)
   }
 
-  # 8) slope -- OLS slope of `lr ~ dev` on [i, end] --------------------
+  # 8) slope -- OLS slope of `ratio ~ dev` on [i, end] -----------------
   slope <- rep(NA_real_, length(dev_cand))
   for (i in seq_along(dev_cand)) {
-    y <- lr[i:length(dev_cand)]
+    y <- ratio[i:length(dev_cand)]
     x <- dev_cand[i:length(dev_cand)]
     ok <- is.finite(y)
     if (sum(ok) >= 2L) {
@@ -364,7 +365,7 @@ detect_convergence <- function(triangle,
     mat_k          = mat_k,
     dev_max        = dev_max,
     dev_cand       = dev_cand,
-    lr             = lr,
+    ratio          = ratio,
     revision       = revision,
     drift_window   = drift_window,
     drift_tail     = drift_tail,
@@ -383,7 +384,7 @@ detect_convergence <- function(triangle,
   )
 
   data.table::setattr(out, "groups",     grp)
-  data.table::setattr(out, "target",     "lr")
+  data.table::setattr(out, "loss",       "ratio")
   data.table::setattr(out, "dispatcher", dispatcher)
   data.table::setattr(out, "dev",        dev)
   class(out) <- "Convergence"
@@ -441,7 +442,7 @@ print.Convergence <- function(x, ...) {
 summary.Convergence <- function(object, ...) {
   data.table::data.table(
     dev          = object$dev_cand,
-    lr           = object$lr,
+    ratio        = object$ratio,
     revision     = object$revision,
     drift_window = object$drift_window,
     drift_tail   = object$drift_tail,
@@ -457,10 +458,10 @@ summary.Convergence <- function(object, ...) {
 #' Plot the Convergence diagnostic
 #'
 #' @description
-#' Four-panel diagnostic showing the LR backtest path and each
+#' Four-panel diagnostic showing the loss ratio backtest path and each
 #' stability metric vs. its threshold:
 #' \itemize{
-#'   \item Top: `lr` (the portfolio LR projection at each valuation).
+#'   \item Top: `ratio` (the portfolio LR projection at each valuation).
 #'   \item Then for each of `drift_window`, `drift_tail`, `|slope|`,
 #'     `dispersion`: the metric over `v` with a dashed horizontal
 #'     line at the threshold (`max_drift`, `max_slope`, or `max_dispersion`).
@@ -483,10 +484,10 @@ plot.Convergence <- function(x,
   .assert_class(x, "Convergence")
   theme <- match.arg(theme)
 
-  panels <- c("lr", "drift_window", "drift_tail", "|slope|", "dispersion")
+  panels <- c("ratio", "drift_window", "drift_tail", "|slope|", "dispersion")
   long <- data.table::rbindlist(list(
-    data.table::data.table(dev = x$dev_cand, metric = "lr",
-                           value = x$lr,           threshold = NA_real_),
+    data.table::data.table(dev = x$dev_cand, metric = "ratio",
+                           value = x$ratio,        threshold = NA_real_),
     data.table::data.table(dev = x$dev_cand, metric = "drift_window",
                            value = x$drift_window, threshold = x$max_drift),
     data.table::data.table(dev = x$dev_cand, metric = "drift_tail",
@@ -526,7 +527,7 @@ plot.Convergence <- function(x,
       ncol = 1, scales = "free_y"
     ) +
     ggplot2::labs(
-      title    = "LR stability diagnostic",
+      title    = "Loss ratio stability diagnostic",
       subtitle = sprintf(
         "method = %s   mat_k = %s   conv_k = %s   (max_drift = %s, max_slope = %s, max_dispersion = %s, window = %d)",
         x$method,

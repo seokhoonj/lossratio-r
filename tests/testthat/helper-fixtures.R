@@ -14,31 +14,31 @@ make_exp <- function() {
 make_tri <- function(group = "coverage", ...) {
   as_triangle(make_exp(), groups = group,
                  cohort = "uy_m", calendar = "cy_m",
-                 loss = "incr_loss", prem = "incr_prem", ...)
+                 loss = "incr_loss", exposure = "incr_exposure", ...)
 }
 
 make_sub_tri <- function(cv = "surgery") {
   exp <- make_exp()
   as_triangle(exp[coverage == cv], groups = "coverage",
                  cohort = "uy_m", calendar = "cy_m",
-                 loss = "incr_loss", prem = "incr_prem")
+                 loss = "incr_loss", exposure = "incr_exposure")
 }
 
 make_link_set <- function() {
   tri <- make_tri()
-  ata <- as_link(tri, target = "loss")
-  ed  <- as_link(tri, target = "loss", exposure = "prem")
+  ata <- as_link(tri, loss = "loss")
+  ed  <- as_link(tri, loss = "loss", exposure = "exposure")
   list(
     exp     = make_exp(),
     tri     = tri,
     ata     = ata,
-    ata_fit = fit_ata(tri, target = "loss"),
+    ata_fit = fit_ata(tri, loss = "loss"),
     ata_sm  = summary(ata),
     ed      = ed,
-    ed_fit  = fit_ed(tri, target = "loss", exposure = "prem"),
+    ed_fit  = fit_ed(tri, loss = "loss", exposure = "exposure"),
     ed_sm   = summary(ed),
-    cl      = fit_cl(tri, target = "loss", method = "mack"),
-    lr      = fit_lr(tri, method = "sa", bootstrap = FALSE),
+    cl      = fit_cl(tri, loss = "loss", method = "mack"),
+    ratio   = fit_ratio(tri, method = "sa", bootstrap = FALSE),
     cal     = as_calendar(tri),
     tot     = as_total(tri)
   )

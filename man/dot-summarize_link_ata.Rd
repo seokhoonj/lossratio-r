@@ -31,7 +31,7 @@ per ata link:
 (\eqn{SD / mean}). Used by \code{\link[=detect_maturity]{detect_maturity()}} to assess
 stability.}
 \item{\code{f}}{WLS-estimated factor. Equals \code{wt} when \code{alpha = 2}
-and no zero \code{target_from} rows are present.}
+and no zero \code{loss_from} rows are present.}
 \item{\code{f_se}}{Standard error of the WLS-estimated factor.}
 \item{\code{rse}}{Relative standard error of the WLS-estimated factor
 (\eqn{f\_se / f}).}
@@ -70,19 +70,19 @@ are included:
 \describe{
 \item{\code{wt}}{Volume-weighted mean:
 \eqn{wt = \sum C_{i,k+1} / \sum C_{i,k}}.
-Computed from all rows where \code{target_from} and \code{target_to} are
+Computed from all rows where \code{loss_from} and \code{loss_to} are
 finite, including rows where either value is zero.
 Independent of \code{alpha}.}
-\item{\code{f}}{WLS-estimated factor. Only rows where \code{target_from > 0}
-are used, since \code{target_from = 0} causes numerical issues in the
+\item{\code{f}}{WLS-estimated factor. Only rows where \code{loss_from > 0}
+are used, since \code{loss_from = 0} causes numerical issues in the
 WLS weights (\eqn{w = value\_from^{\alpha}}). When \code{alpha = 2},
 \code{f} and \code{wt} are numerically equivalent (assuming no zero
-\code{target_from} rows). When \verb{alpha \\ne 2}, they diverge.}
+\code{loss_from} rows). When \verb{alpha \\ne 2}, they diverge.}
 }
 
 Therefore \code{wt} and \code{f} can differ for two reasons:
 \enumerate{
-\item \strong{Zero exclusion}: rows with \code{target_from = 0} are
+\item \strong{Zero exclusion}: rows with \code{loss_from = 0} are
 included in \code{wt} but excluded from \code{f}. This typically affects
 early development periods where some cohorts have not yet accumulated
 any claims.
@@ -97,9 +97,9 @@ choice of \code{alpha} materially affects the estimated factor.
 
 When the input \code{"Link"} object contains a \code{weight} column (added by
 \code{\link[=as_link]{as_link()}} when \code{weight} is supplied), that column is
-automatically used as the WLS weight in place of \code{target_from}. This
-is useful when \code{target = "lr"}, where \code{target_from} carries no
-exposure information and an external exposure variable such as \code{prem}
+automatically used as the WLS weight in place of \code{loss_from}. This
+is useful when \code{loss = "ratio"}, where \code{loss_from} carries no
+exposure information and an external exposure variable such as \code{exposure}
 should be used instead.
 }
 

@@ -42,7 +42,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 ```
 
@@ -50,23 +50,23 @@ tri <- as_triangle(
 
 ```{r}
 plot(tri)                              # cumulative loss-ratio trajectories per cohort
-plot(tri, metric = "incr_lr")       # incremental loss ratio instead of cumulative
+plot(tri, metric = "incr_ratio")       # incremental loss ratio instead of cumulative
 plot(tri, summary = TRUE)              # raw + overlay (mean / median / weighted)
 ```
 
 The `summary = TRUE` overlay computes mean, median, and weighted
-lr at each dev and overlays them on the cohort lines.
+ratio at each dev and overlays them on the cohort lines.
 Useful for spotting cohorts that deviate from the central tendency.
 
 ### Cell heatmap
 
 ```{r}
-plot_triangle(tri, metric = "lr")          # cumulative lr
-plot_triangle(tri, metric = "incr_lr")     # incremental lr
+plot_triangle(tri, metric = "ratio")          # cumulative ratio
+plot_triangle(tri, metric = "incr_ratio")     # incremental ratio
 
-# detail labels (ratio + loss/premium amounts) are 2-line — use quarterly cells
-tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem", grain = "Q")
-plot_triangle(tri_q, label_style = "detail") # ratio + (loss / premium)
+# detail labels (ratio + loss/exposure amounts) are 2-line — use quarterly cells
+tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure", grain = "Q")
+plot_triangle(tri_q, label_style = "detail") # ratio + (loss / exposure)
 ```
 
 ### Group statistics by dev
@@ -87,7 +87,7 @@ ATA factors; with `exposure` it carries the ED-style intensities
 $g_k = \Delta C^L_k / C^P_k$.
 
 ```{r}
-ata <- as_link(tri, target = "loss")
+ata <- as_link(tri, loss = "loss")
 sm  <- summary(ata, model = "ata", alpha = 1)
 head(sm)
 ```
@@ -123,10 +123,10 @@ plot_triangle(ata, label_size = 2.5)              # heatmap of observed factors
 plot_triangle(ata, label_size = 2.5, show_maturity = TRUE)   # overlay maturity line
 
 # detail labels are two lines and overlap on monthly cells — rebuild on
-# the quarterly triangle so the two-line "factor (loss / premium)" text
+# the quarterly triangle so the two-line "factor (loss / exposure)" text
 # has room (label_size auto-shrinks to 2.2 in detail mode).
-ata_q <- as_link(tri_q, target = "loss")
-plot_triangle(ata_q, label_style = "detail")      # factor + (loss / premium)
+ata_q <- as_link(tri_q, loss = "loss")
+plot_triangle(ata_q, label_style = "detail")      # factor + (loss / exposure)
 ```
 
 The heatmap colours each cell by `log(ata / median(ata))` within its
@@ -136,7 +136,7 @@ the link's median.
 ### ED diagnostics
 
 ```{r}
-ed <- as_link(tri, target = "loss", exposure = "prem")
+ed <- as_link(tri, loss = "loss", exposure = "exposure")
 sm <- summary(ed, model = "ed", alpha = 1)
 head(sm)
 
@@ -153,7 +153,7 @@ intensity $g_k = \Delta C^L_k / C^P_k$.
 
 The maturity point is the development link beyond which age-to-age
 factors are stable enough to trust for chain-ladder projection. Used
-internally by `fit_lr(method = "sa")` to switch from ED to CL.
+internally by `fit_ratio(method = "sa")` to switch from ED to CL.
 
 ### Detecting maturity
 
@@ -163,7 +163,7 @@ single-variable `Link` and its WLS summary are built internally:
 ```{r}
 mat <- detect_maturity(
   tri,
-  target          = "loss",
+  loss            = "loss",
   max_cv          = 0.15,    # CV must be below this
   max_rse         = 0.05,    # RSE must be below this
   min_valid_ratio = 0.5,     # at least 50% finite cohorts at the link
@@ -204,17 +204,17 @@ push it earlier.
 `detect_maturity()` is also called internally by `fit_ata()` and
 `fit_cl()` via the `maturity` argument. Pass `maturity_spec()` to
 forward custom detection thresholds, or `"auto"` for defaults
-(`fit_lr(method = "sa")` and `fit_loss()` use `"auto"` by default):
+(`fit_ratio(method = "sa")` and `fit_loss()` use `"auto"` by default):
 
 ```{r, eval = FALSE}
-fit_ata(tri, target = "loss",
+fit_ata(tri, loss = "loss",
         maturity = maturity_spec(max_cv = 0.08, min_run = 2L))
 
-fit_cl(tri, target = "loss",
+fit_cl(tri, loss = "loss",
        maturity = maturity_spec(max_cv = 0.08))
 
-fit_lr(tri, method = "sa",
-       maturity = maturity_spec(max_cv = 0.08))
+fit_ratio(tri, method = "sa",
+          maturity = maturity_spec(max_cv = 0.08))
 ```
 
 The `maturity` argument accepts four forms: `NULL` (no detection),
@@ -224,7 +224,7 @@ a pre-built `Maturity` object (e.g. from `detect_maturity()` or
 triangle argument returning a `Maturity` (typically built with
 `maturity_spec()`).
 
-For `fit_lr(method = "sa")` the detected maturity point determines
+For `fit_ratio(method = "sa")` the detected maturity point determines
 the dev at which the projection switches from ED (early dev) to CL
 (later dev).
 
@@ -240,9 +240,9 @@ tri_all <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
-detect_maturity(tri_all, target = "loss")
+detect_maturity(tri_all, loss = "loss")
 ```
 
 The link diagnostic plot makes the result easier to read — each cv
@@ -250,7 +250,7 @@ gets its own panel and the vertical line marks the maturity point
 where CV first drops below `max_cv`:
 
 ```{r}
-plot(as_link(tri_all, target = "loss"), type = "cv")
+plot(as_link(tri_all, loss = "loss"), type = "cv")
 ```
 
 ## Validation before building
@@ -281,9 +281,9 @@ reserving regime shift), restrict estimation to the recent calendar
 diagonals:
 
 ```{r}
-fit_ata(tri, target = "loss", alpha = 1, recent = 12)  # last 12 calendar diagonals
-fit_cl(tri, target = "loss", recent = 12)
-fit_lr(tri, recent = 12)
+fit_ata(tri, loss = "loss", alpha = 1, recent = 12)  # last 12 calendar diagonals
+fit_cl(tri, loss = "loss", recent = 12)
+fit_ratio(tri, recent = 12)
 ```
 
 `recent = K` keeps only rows whose calendar position
@@ -302,7 +302,7 @@ Before fitting:
    sensible point per group.
 7. `detect_regime()` (optional) — structural change diagnosis.
 
-Then fit `fit_lr()` / `fit_cl()` with confidence in the input data.
+Then fit `fit_ratio()` / `fit_cl()` with confidence in the input data.
 
 ## See also
 

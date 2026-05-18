@@ -6,7 +6,7 @@
 #' Detect structural change points in the sequence of cohort-level
 #' development trajectories. Each underwriting cohort (indexed by the
 #' `cohort` of a `"Triangle"` object) is treated as a feature vector
-#' whose entries are the selected `target` metric observed at development
+#' whose entries are the selected `loss` metric observed at development
 #' periods `1, ..., window`. Cohorts are then ordered by underwriting
 #' period and tested for structural shifts in the multivariate
 #' sequence.
@@ -40,29 +40,29 @@
 #'   Also used by S3 `print()` method on `Regime` objects.
 #' @param object An object of class `"Regime"`. Used by the S3
 #'   `summary()` method.
-#' @param target Trajectory variable. Default is `"lr"` (cumulative loss
-#'   ratio). Accepts any column on the `Triangle` (e.g. `"lr"`,
-#'   `"loss"`, `"prem"`, `"incr_loss"`, `"incr_prem"`), plus three
-#'   *diagnostic* derived targets computed inline per (group, cohort):
+#' @param loss Trajectory variable. Default is `"ratio"` (cumulative loss
+#'   ratio). Accepts any column on the `Triangle` (e.g. `"ratio"`,
+#'   `"loss"`, `"exposure"`, `"incr_loss"`, `"incr_exposure"`), plus three
+#'   *diagnostic* derived metrics computed inline per (group, cohort):
 #'   \describe{
 #'     \item{`"loss_ata"`}{Loss age-to-age factor
-#'       `loss[k+1] / loss[k]` — multiplicative loss development speed
+#'       `loss[k+1] / loss[k]` -- multiplicative loss development speed
 #'       (CL $f_k$).}
-#'     \item{`"prem_ata"`}{Premium age-to-age factor — same form on
-#'       prem.}
+#'     \item{`"exposure_ata"`}{Exposure age-to-age factor -- same form on
+#'       exposure.}
 #'     \item{`"loss_ed"`}{Loss intensity
-#'       `(loss[k] - loss[k-1]) / prem[k-1]` — additive,
+#'       `(loss[k] - loss[k-1]) / exposure[k-1]` -- additive,
 #'       exposure-anchored (ED model's $g_k$).}
-#'     \item{`"prem_ed"`}{Alias of `"prem_ata"` — the two differ
-#'       only by a constant `(prem_ata - 1)`, and the PCA
+#'     \item{`"exposure_ed"`}{Alias of `"exposure_ata"` -- the two differ
+#'       only by a constant `(exposure_ata - 1)`, and the PCA
 #'       standardization in detection removes that shift, so they yield
 #'       identical regime changes. Provided for API symmetry with the
 #'       `loss_ata` / `loss_ed` pair.}
 #'   }
-#'   Derived targets drop the first dev row per cohort (no predecessor),
+#'   Derived metrics drop the first dev row per cohort (no predecessor),
 #'   then re-index `dev` so detection sees a contiguous sequence. See the
-#'   `vignette("regime")` "Choice of target" section for guidance on
-#'   which target matches which suspected event.
+#'   `vignette("regime")` "Choice of loss" section for guidance on
+#'   which loss metric matches which suspected event.
 #' @param by Grouping column(s) for per-combination detection. `NULL`
 #'   (default) reuses the Triangle's `attr(x, "groups")` when non-empty —
 #'   so `detect_regime(tri)` dispatches per group automatically — and
@@ -101,7 +101,7 @@
 #'   \describe{
 #'     \item{`call`}{Matched call.}
 #'     \item{`method`}{Detection method used.}
-#'     \item{`target`}{Trajectory variable used for detection.}
+#'     \item{`loss`}{Trajectory variable used for detection.}
 #'     \item{`window`}{Trajectory window per combo. Scalar integer when a
 #'       single combo was analysed; integer vector (one per surviving
 #'       combo, in the order of `$labels` / `$changes` group rows)
@@ -117,7 +117,7 @@
 #'       magnitude]`. `regime_id` = id of the regime that STARTS at this
 #'       change (the pre-change regime is `regime_id - 1`); matches
 #'       `$labels$regime_id`. `pre_value` / `post_value` are the mean
-#'       `target` over the cohort × dev trajectory windows in the pre- /
+#'       `loss` over the cohort × dev trajectory windows in the pre- /
 #'       post-change regimes; `magnitude = |post_value - pre_value|`.
 #'       Empty (zero rows) when no change is detected.}
 #'     \item{`n_regimes`}{Number of regimes detected. Scalar integer for
@@ -150,7 +150,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem     = "incr_prem"
+#'   exposure = "incr_exposure"
 #' )
 #'
 #' # Hierarchical clustering (no extra package dependency)
@@ -170,7 +170,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem     = "incr_prem"
+#'   exposure = "incr_exposure"
 #' )
 #' r_all <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 #' print(r_all$changes)
@@ -178,7 +178,7 @@
 #'
 #' @export
 detect_regime <- function(x,
-                          target    = "lr",
+                          loss      = "ratio",
                           by        = NULL,
                           window    = "auto",
                           method    = c("e_divisive", "pelt", "hclust"),
@@ -226,23 +226,23 @@ detect_regime <- function(x,
 
   d <- .copy_dt(x)
 
-  # `prem_ed` is mathematically equivalent to `prem_ata - 1`
-  # (Δprem / cum_prem_prev vs cum_prem / cum_prem_prev), and
-  # the PCA standardization (`center=TRUE, scale=TRUE`) removes the
-  # constant shift — so detection produces identical changes. Treat
+  # `exposure_ed` is mathematically equivalent to `exposure_ata - 1`
+  # (delta exposure / cum_exposure_prev vs cum_exposure / cum_exposure_prev),
+  # and the PCA standardization (`center=TRUE, scale=TRUE`) removes the
+  # constant shift -- so detection produces identical changes. Treat
   # as alias.
-  if (target == "prem_ed") target <- "prem_ata"
+  if (loss == "exposure_ed") loss <- "exposure_ata"
 
-  # Derived targets (not native Triangle columns) — compute inline per
+  # Derived metrics (not native Triangle columns) -- compute inline per
   # (group, cohort) before detection. These are diagnostic/experimental;
   # see `?detect_regime` for the recommended use case of each.
-  derived <- c("loss_ata", "prem_ata", "loss_ed")
-  if (target %in% derived) {
+  derived <- c("loss_ata", "exposure_ata", "loss_ed")
+  if (loss %in% derived) {
     grp_for_derive <- attr(x, "groups")
     if (is.null(grp_for_derive)) grp_for_derive <- character(0)
-    d <- .derive_regime_target(d, target, grp = grp_for_derive)
-  } else if (!(target %in% names(d))) {
-    stop(sprintf("`target` = '%s' not found in `x`.", target),
+    d <- .derive_regime_target(d, loss, grp = grp_for_derive)
+  } else if (!(loss %in% names(d))) {
+    stop(sprintf("`loss` = '%s' not found in `x`.", loss),
          call. = FALSE)
   }
 
@@ -272,17 +272,17 @@ detect_regime <- function(x,
   # combo (pooled detection, NA maturity, or by-columns mismatching the
   # Triangle's `attr("groups")`).
   window_per_combo <- if (window_is_auto) {
-    # detect_maturity supports cumulative targets only — map _incr to its
-    # cumulative counterpart, fall back to "lr" otherwise.
-    mat_target <- switch(target,
-      "lr" = , "loss" = , "prem" = target,
-      "incr_lr"      = "lr",
-      "incr_loss"    = "loss",
-      "incr_prem" = "prem",
-      "lr"
+    # detect_maturity supports cumulative metrics only -- map _incr to its
+    # cumulative counterpart, fall back to "ratio" otherwise.
+    mat_loss <- switch(loss,
+      "ratio" = , "loss" = , "exposure" = loss,
+      "incr_ratio"    = "ratio",
+      "incr_loss"     = "loss",
+      "incr_exposure" = "exposure",
+      "ratio"
     )
     m_dt <- tryCatch(
-      detect_maturity(x, target = mat_target),
+      detect_maturity(x, loss = mat_loss),
       error = function(e) NULL
     )
     if (!is.null(m_dt) && length(grp) > 0L &&
@@ -317,7 +317,7 @@ detect_regime <- function(x,
     res_i <- tryCatch(
       .detect_regime_single(
         d         = di,
-        target    = target,
+        loss      = loss,
         window    = window_per_combo[i],
         method    = method,
         n_regimes = n_regimes,
@@ -418,7 +418,7 @@ detect_regime <- function(x,
   out <- list(
     call        = call_obj,
     method      = method,
-    target      = target,
+    loss        = loss,
     window      = window_out,
     window_mode = if (window_is_auto) "auto" else "manual",
     cohort      = coh,
@@ -440,18 +440,18 @@ detect_regime <- function(x,
 
 # Internal helpers --------------------------------------------------------
 
-#' Derive a non-native regime detection target
+#' Derive a non-native regime detection metric
 #'
 #' @description
-#' Computes diagnostic / experimental detection targets that are not stored
+#' Computes diagnostic / experimental detection metrics that are not stored
 #' directly on the Triangle:
 #' \describe{
-#'   \item{`loss_ata`}{Loss age-to-age factor — `loss[k+1] / loss[k]` per
+#'   \item{`loss_ata`}{Loss age-to-age factor -- `loss[k+1] / loss[k]` per
 #'     (group, cohort). Captures *multiplicative* development speed.}
-#'   \item{`prem_ata`}{Premium age-to-age factor — same form on prem.
-#'     Captures prem *recognition speed*.}
-#'   \item{`loss_ed`}{Loss intensity (ED model's $g_k$) —
-#'     `(loss[k] - loss[k-1]) / prem[k-1]` per (group, cohort).
+#'   \item{`exposure_ata`}{Exposure age-to-age factor -- same form on exposure.
+#'     Captures exposure *recognition speed*.}
+#'   \item{`loss_ed`}{Loss intensity (ED model's $g_k$) --
+#'     `(loss[k] - loss[k-1]) / exposure[k-1]` per (group, cohort).
 #'     *Additive*, exposure-anchored.}
 #' }
 #'
@@ -459,32 +459,36 @@ detect_regime <- function(x,
 #' `.detect_regime_single` handles NA-tolerant aggregation.
 #'
 #' @keywords internal
-.derive_regime_target <- function(d, target, grp = character(0)) {
-  # data.table NSE NULL bindings for bare column refs in `j` below.
-  loss <- prem <- dev <- NULL
+.derive_regime_target <- function(d, loss, grp = character(0)) {
+  # The function arg `loss` is the trajectory-metric name string
+  # (e.g. "loss_ata"); rebind to `metric` so the bare `loss` inside j
+  # below unambiguously refers to the Triangle's `loss` column.
+  metric <- loss
+  loss   <- NULL  # suppress R CMD check NOTE for bare column ref in j
+  exposure <- dev <- NULL
 
   by_cols <- c(grp, "cohort")
   d <- .copy_dt(d)
 
-  if (target == "loss_ata") {
+  if (metric == "loss_ata") {
     d[, ("loss_ata") := loss / data.table::shift(loss, 1L, type = "lag"),
       by = by_cols]
-  } else if (target == "prem_ata") {
-    d[, ("prem_ata") := prem / data.table::shift(prem, 1L, type = "lag"),
+  } else if (metric == "exposure_ata") {
+    d[, ("exposure_ata") := exposure / data.table::shift(exposure, 1L, type = "lag"),
       by = by_cols]
-  } else if (target == "loss_ed") {
+  } else if (metric == "loss_ed") {
     d[, ("loss_ed") := (loss - data.table::shift(loss, 1L, type = "lag")) /
-                   data.table::shift(prem, 1L, type = "lag"),
+                   data.table::shift(exposure, 1L, type = "lag"),
       by = by_cols]
   } else {
-    stop(sprintf("Unknown derived target: '%s'.", target), call. = FALSE)
+    stop(sprintf("Unknown derived metric: '%s'.", metric), call. = FALSE)
   }
 
   # Drop the first dev row per cohort (NA from shift), then re-index dev
   # so the first valid observation becomes dev=1. This lets downstream
   # `.detect_regime_single` apply the same `dev <= window` and
   # `n >= window` filters without manual adjustment for the lost dev=1.
-  d <- d[is.finite(d[[target]])]
+  d <- d[is.finite(d[[metric]])]
   d[, ("dev") := dev - 1L]
   d
 }
@@ -498,7 +502,7 @@ detect_regime <- function(x,
 #' [detect_regime()] itself.
 #'
 #' @keywords internal
-.detect_regime_single <- function(d, target, window, method,
+.detect_regime_single <- function(d, loss, window, method,
                                   n_regimes, sig_level, min_size,
                                   coh, dev) {
 
@@ -514,7 +518,7 @@ detect_regime <- function(x,
 
   w <- data.table::dcast(
     d, stats::reformulate("dev", response = "cohort"),
-    value.var     = target,
+    value.var     = loss,
     fun.aggregate = function(v) mean(v, na.rm = TRUE)
   )
   data.table::setorderv(w, "cohort")
@@ -686,7 +690,7 @@ detect_regime <- function(x,
 print.Regime <- function(x, ...) {
   cat("<Regime>\n")
   cat(sprintf("  method    : %s\n", x$method))
-  cat(sprintf("  target    : %s\n", x$target))
+  cat(sprintf("  loss      : %s\n", x$loss))
   if (!is.null(x$treatment))
     cat(sprintf("  treatment : %s\n", x$treatment))
 
@@ -801,7 +805,7 @@ summary.Regime <- function(object, ...) {
 
     out <- list(
       method      = object$method,
-      target      = object$target,
+      loss        = object$loss,
       dev         = object$dev,
       window      = object$window,
       groups      = grp,
@@ -825,7 +829,7 @@ summary.Regime <- function(object, ...) {
 
     out <- list(
       method      = object$method,
-      target      = object$target,
+      loss        = object$loss,
       dev         = object$dev,
       window      = object$window,
       groups      = object$groups,
@@ -849,7 +853,7 @@ summary.Regime <- function(object, ...) {
 print.summary.Regime <- function(x, ...) {
   cat("Cohort regime detection summary\n")
   cat(sprintf("  method    : %s\n", x$method))
-  cat(sprintf("  target    : %s\n", x$target))
+  cat(sprintf("  loss      : %s\n", x$loss))
   if (!is.null(x$treatment))
     cat(sprintf("  treatment : %s\n", x$treatment))
   cat(sprintf("  window    : %s 1-%d\n", x$dev, x$window))
@@ -914,9 +918,9 @@ print.summary.Regime <- function(x, ...) {
 #' @description
 #' User-facing helper for hand-specifying a regime change (or a set of
 #' per-group changes) without running [detect_regime()]. The returned
-#' `"Regime"` object plugs into any function that consumes a Regime —
-#' `fit_lr()`, `fit_loss()`, `fit_prem()`, [backtest()], and the
-#' regime-change resolver — by carrying the same `$changes` schema as
+#' `"Regime"` object plugs into any function that consumes a Regime --
+#' `fit_ratio()`, `fit_loss()`, `fit_exposure()`, [backtest()], and the
+#' regime-change resolver -- by carrying the same `$changes` schema as
 #' [detect_regime()] output.
 #'
 #' Argument syntax mirrors `data.frame()` / `data.table()`: named
@@ -939,7 +943,7 @@ print.summary.Regime <- function(x, ...) {
 #'   by downstream consumers:
 #'   \describe{
 #'     \item{`method`}{`"manual"`.}
-#'     \item{`target`}{`NA_character_` (no detection target).}
+#'     \item{`loss`}{`NA_character_` (no detection metric).}
 #'     \item{`changes`}{`data.table` with columns
 #'       `[<group cols>..., change, regime_id, pre_value, post_value,
 #'       magnitude]`. `regime_id` is `2L` (post-change regime) for each
@@ -1040,7 +1044,7 @@ regime_at <- function(..., treatment = c("latest_only", "segment_wise")) {
   out <- list(
     call        = match.call(),
     method      = "manual",
-    target      = NA_character_,
+    loss        = NA_character_,
     window      = NA_integer_,
     window_mode = "manual",
     cohort      = NA_character_,
@@ -1071,7 +1075,7 @@ regime_at <- function(..., treatment = c("latest_only", "segment_wise")) {
 #' deferred** detection -- the change points depend on which cells the
 #' caller decides to expose:
 #'
-#' * In `fit_lr()` / `fit_loss()` / `fit_prem()`, the spec is invoked
+#' * In `fit_ratio()` / `fit_loss()` / `fit_exposure()`, the spec is invoked
 #'   on the *full* triangle the user passed in.
 #'
 #' * In [backtest()], **the spec is invoked on the masked triangle of
@@ -1090,7 +1094,7 @@ regime_at <- function(..., treatment = c("latest_only", "segment_wise")) {
 #' [regime_at()] when you want a fixed regime tested across folds.
 #'
 #' @param ... kwargs passed verbatim to [detect_regime()] when the spec
-#'   is invoked (e.g. `target`, `by`, `min_run`, `method`).
+#'   is invoked (e.g. `loss`, `by`, `min_run`, `method`).
 #'
 #' @return A function of one argument (a `"Triangle"`) returning a
 #'   `"Regime"` object. The caller decides which triangle to pass (full
@@ -1102,16 +1106,16 @@ regime_at <- function(..., treatment = c("latest_only", "segment_wise")) {
 #' @examples
 #' \dontrun{
 #' # Capture detection arguments, defer execution until fit time.
-#' spec <- regime_spec(target = "loss_ata")
+#' spec <- regime_spec(loss = "loss_ata")
 #'
-#' # In fit_lr(): closure is invoked on the user's `tri`.
-#' fit <- fit_lr(tri, loss_regime = regime_spec(target = "loss_ata"))
+#' # In fit_ratio(): closure is invoked on the user's `tri`.
+#' fit <- fit_ratio(tri, loss_regime = regime_spec(loss = "loss_ata"))
 #'
 #' # In backtest(): closure is invoked on the *masked* triangle of
 #' # each holdout fold, so detected change points never peek at
 #' # held-out cells.
 #' bt <- backtest(tri, holdout = 6L,
-#'                loss_regime = regime_spec(target = "loss_ata"))
+#'                loss_regime = regime_spec(loss = "loss_ata"))
 #' }
 #'
 #' @export
@@ -1126,19 +1130,19 @@ regime_spec <- function(...) {
 #' Resolve a regime input to a Regime object (or NULL)
 #'
 #' @description
-#' Internal 4-type dispatcher used by `fit_lr()`, `fit_loss()`,
-#' `fit_prem()`, and [backtest()] to normalize the `regime`
+#' Internal 4-type dispatcher used by `fit_ratio()`, `fit_loss()`,
+#' `fit_exposure()`, and [backtest()] to normalize the `regime`
 #' input (or split-axis variants such as `loss_regime`) into a
 #' single representation: either `NULL` (no filter) or a `"Regime"`
 #' object.
 #'
 #' The four accepted input types are:
 #' \describe{
-#'   \item{`NULL`}{Returns `NULL` — no filter is applied.}
+#'   \item{`NULL`}{Returns `NULL` -- no filter is applied.}
 #'   \item{`"Regime"` object}{Returned as-is.}
 #'   \item{`"auto"`}{Runs [detect_regime()] on `masked_tri` if supplied,
-#'     otherwise on `tri`, with `target = "lr"`. The `masked_tri`
-#'     fallback is the leakage-safe path used by [backtest()] — fit
+#'     otherwise on `tri`, with `loss = "ratio"`. The `masked_tri`
+#'     fallback is the leakage-safe path used by [backtest()] -- fit
 #'     functions pass only `tri`, while [backtest()] passes both so
 #'     detection sees only the masked (training) data.}
 #'   \item{`function(tri) -> Regime`}{Closure invoked with
@@ -1164,7 +1168,7 @@ regime_spec <- function(...) {
   detect_tri <- if (is.null(masked_tri)) tri else masked_tri
 
   if (identical(arg, "auto")) {
-    return(detect_regime(detect_tri, target = "lr"))
+    return(detect_regime(detect_tri, loss = "ratio"))
   }
 
   if (is.function(arg)) {
@@ -1185,7 +1189,7 @@ regime_spec <- function(...) {
 #' Resolve a maturity input to a Maturity object (or NULL)
 #'
 #' @description
-#' Internal 4-type dispatcher used by `fit_lr()`, `fit_loss()`, and
+#' Internal 4-type dispatcher used by `fit_ratio()`, `fit_loss()`, and
 #' [backtest()] to normalize the `maturity` input into a single
 #' representation: either `NULL` (no maturity override) or a
 #' `"Maturity"` object.

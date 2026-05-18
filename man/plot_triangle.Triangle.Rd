@@ -7,7 +7,7 @@
 \method{plot_triangle}{Triangle}(
   x,
   view = c("value", "usage"),
-  metric = "lr",
+  metric = "ratio",
   label_style = c("value", "detail"),
   label_size = NULL,
   amount_divisor = "auto",
@@ -30,15 +30,15 @@ via \code{...}. See \code{vignette("regime-change-filter")} for details.}
 }}
 
 \item{metric}{A single metric to plot. Must be one of:
-\code{"lr"}, \code{"incr_lr"},
-\code{"loss"}, \code{"incr_loss"}, \code{"prem"}, \code{"incr_prem"}, \code{"margin"}, \code{"incr_margin"},
-\code{"loss_share"}, \code{"incr_loss_share"}, \code{"prem_share"}, or \code{"incr_prem_share"}.}
+\code{"ratio"}, \code{"incr_ratio"},
+\code{"loss"}, \code{"incr_loss"}, \code{"exposure"}, \code{"incr_exposure"}, \code{"margin"}, \code{"incr_margin"},
+\code{"loss_share"}, \code{"incr_loss_share"}, \code{"exposure_share"}, or \code{"incr_exposure_share"}.}
 
 \item{label_style}{Label display style. One of:
 \describe{
 \item{"value"}{Show only the selected metric.}
-\item{"detail"}{For \code{lr} / \code{incr_lr}, show the ratio in percent and, on the
-next line, the associated loss / prem amounts. For amount and
+\item{"detail"}{For \code{ratio} / \code{incr_ratio}, show the ratio in percent and, on the
+next line, the associated loss / exposure amounts. For amount and
 proportion metrics, this falls back to \code{"value"}.}
 }}
 
@@ -49,7 +49,7 @@ smaller size to fit). Other label appearance fields (family,
 color, hjust, ...) fall back to ggshort defaults.}
 
 \item{amount_divisor}{Numeric scaling factor applied to amount variables
-(e.g., \code{loss}, \code{incr_loss}, \code{prem}, \code{incr_prem}, \code{margin}, \code{incr_margin}) before plotting.
+(e.g., \code{loss}, \code{incr_loss}, \code{exposure}, \code{incr_exposure}, \code{margin}, \code{incr_margin}) before plotting.
 Default \code{"auto"} picks the largest divisor in
 \verb{\{1, 1e3, 1e6, 1e7, 1e8, 1e9\}} such that the median displayed
 value is still at least \code{1}, minimising label digit count.}
@@ -68,19 +68,19 @@ A ggplot object.
 Visualise a \code{Triangle} object as a triangle-style table. Cells are arranged by
 period and dev dimensions, and each cell displays the selected metric.
 
-For ratio metrics (\code{lr}, \code{incr_lr}), labels can show either the ratio alone or
+For ratio metrics (\code{ratio}, \code{incr_ratio}), labels can show either the ratio alone or
 the ratio together with the associated loss / risk premium amounts.
 
-For amount metrics (\code{loss}, \code{incr_loss}, \code{prem}, \code{incr_prem}, \code{margin}, \code{incr_margin}),
+For amount metrics (\code{loss}, \code{incr_loss}, \code{exposure}, \code{incr_exposure}, \code{margin}, \code{incr_margin}),
 labels show the selected amount only.
 
-For proportion metrics (\code{loss_share}, \code{incr_loss_share}, \code{prem_share}, \code{incr_prem_share}),
+For proportion metrics (\code{loss_share}, \code{incr_loss_share}, \code{exposure_share}, \code{incr_exposure_share}),
 labels are displayed as percentages.
 
 The loss ratio is defined as:
-\deqn{lr = loss / prem}
+\deqn{ratio = loss / exposure}
 
-where \code{prem} denotes risk premium rather than written prem.
+where \code{exposure} denotes risk premium rather than written premium.
 }
 \details{
 The x-axis uses the development variable stored in \code{attr(x, "dev")}, and
@@ -102,15 +102,15 @@ d <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 plot_triangle(d)
-plot_triangle(d, metric = "lr")
+plot_triangle(d, metric = "ratio")
 plot_triangle(d, metric = "loss")
-plot_triangle(d, metric = "prem")
+plot_triangle(d, metric = "exposure")
 plot_triangle(d, metric = "loss_share")
-plot_triangle(d, metric = "prem_share")
+plot_triangle(d, metric = "exposure_share")
 plot_triangle(d, label_style = "value")
 plot_triangle(d, label_style = "detail")
 }

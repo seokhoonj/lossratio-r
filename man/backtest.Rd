@@ -5,20 +5,20 @@
 \alias{print.Backtest}
 \alias{summary.Backtest}
 \alias{print.summary.Backtest}
-\title{Backtest a loss / prem / loss-ratio projection on existing data}
+\title{Backtest a loss / exposure / loss-ratio projection on existing data}
 \usage{
 backtest(
   x,
   holdout = 6L,
-  target = c("lr", "loss", "prem"),
-  loss_method = c("sa", "ed", "cl"),
-  prem_method = c("cl", "ed"),
+  target = c("ratio", "loss", "exposure"),
+  loss_method = c("ed", "cl", "sa"),
+  exposure_method = c("cl", "ed"),
   loss_alpha = 1,
-  prem_alpha = 1,
+  exposure_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   loss_regime = NULL,
-  prem_regime = NULL,
+  exposure_regime = NULL,
   maturity = "auto",
   se_method = c("fixed", "delta"),
   rho = 0.95,
@@ -43,19 +43,19 @@ backtest(
 before refitting. Default \code{6L}.}
 
 \item{target}{Character scalar. Which projection to backtest. One
-of \code{"lr"} (default), \code{"loss"}, \code{"prem"}. Determines which
+of \code{"ratio"} (default), \code{"loss"}, \code{"exposure"}. Determines which
 fitter is called on the masked triangle and which column on \code{x}
 is treated as the held-out actual.}
 
 \item{loss_method}{Method for the loss-side projection. Passed to
-\code{fit_lr()} / \code{fit_loss()} as their \code{method} argument. One of
-\code{"sa"}, \code{"ed"}, \code{"cl"}. Unused for \code{target = "prem"}.}
+\code{fit_ratio()} / \code{fit_loss()} as their \code{method} argument. One of
+\code{"sa"}, \code{"ed"}, \code{"cl"}. Unused for \code{target = "exposure"}.}
 
-\item{prem_method}{Method for the prem-side projection.
-Passed to \code{fit_lr()} / \code{fit_loss()} / \code{fit_prem()}. One of
+\item{exposure_method}{Method for the exposure-side projection.
+Passed to \code{fit_ratio()} / \code{fit_loss()} / \code{fit_exposure()}. One of
 \code{"cl"}, \code{"ed"}.}
 
-\item{loss_alpha, prem_alpha}{Mack alpha for loss-side / prem-side
+\item{loss_alpha, exposure_alpha}{Mack alpha for loss-side / exposure-side
 chain-ladder estimation.}
 
 \item{sigma_method}{Tail sigma extrapolation method. Forwarded to
@@ -64,7 +64,7 @@ the underlying fitter.}
 \item{recent}{Calendar-diagonal recency filter forwarded to the
 fitter.}
 
-\item{loss_regime, prem_regime}{Regime spec for the loss / prem
+\item{loss_regime, exposure_regime}{Regime spec for the loss / exposure
 side. Each accepts one of four input types, dispatched by
 \code{\link[=.resolve_regime]{.resolve_regime()}}:
 \itemize{
@@ -76,9 +76,9 @@ the simulated backtest cutoff).
 \item A function \verb{function(tri) -> Regime} -- called on the
 masked triangle for the same leakage-safe reason.
 }
-\code{prem_regime} is resolved independently from \code{loss_regime}.}
+\code{exposure_regime} is resolved independently from \code{loss_regime}.}
 
-\item{maturity}{Maturity input. Used only for \code{target = "lr"} and
+\item{maturity}{Maturity input. Used only for \code{target = "ratio"} and
 \code{target = "loss"} (stage-adaptive). Accepts one of four input
 types, dispatched by \code{\link[=.resolve_maturity]{.resolve_maturity()}}:
 \itemize{
@@ -94,26 +94,26 @@ removed), avoiding look-ahead leakage.
 same leakage-safe reason.
 }}
 
-\item{se_method}{Standard-error composition for \code{fit_lr()}. Unused
-for \code{target = "loss"} / \code{target = "prem"}.}
+\item{se_method}{Standard-error composition for \code{fit_ratio()}. Unused
+for \code{target = "loss"} / \code{target = "exposure"}.}
 
-\item{rho}{Loss-prem correlation used by \code{fit_lr()} delta
-method. Unused for \code{target = "loss"} / \code{target = "prem"}.}
+\item{rho}{Loss-exposure correlation used by \code{fit_ratio()} delta
+method. Unused for \code{target = "loss"} / \code{target = "exposure"}.}
 
-\item{conf_level}{Confidence level for \code{fit_lr()} / \code{fit_loss()}
-intervals. Unused for \code{target = "prem"}.}
+\item{conf_level}{Confidence level for \code{fit_ratio()} / \code{fit_loss()}
+intervals. Unused for \code{target = "exposure"}.}
 
 \item{bootstrap, B, seed}{Bootstrap controls forwarded to the
-target-specific fitter (\code{fit_lr()} / \code{fit_loss()} / \code{fit_prem()}).
-\code{bootstrap = NULL} (default) defers to the fitter's method-dependent
-resolution: bootstrap for SA/ED methods, analytical for pure CL.
-The fitter accepts the full 4-type dispatch (\code{NULL} / logical /
-\code{"auto"} / \code{BootstrapTriangle} / function). For a leakage-safe
-backtest with a custom bootstrap configuration, prefer a function
-\verb{function(tri) -> BootstrapTriangle} (it is invoked on the \emph{masked}
-triangle, not the original) over a pre-built \code{BootstrapTriangle}
-object (which may have been built on the unmasked data and would
-leak hold-out cells into the residual pool).}
+target-specific fitter (\code{fit_ratio()} / \code{fit_loss()} /
+\code{fit_exposure()}). \code{bootstrap = NULL} (default) defers to the
+fitter's method-dependent resolution: bootstrap for SA/ED methods,
+analytical for pure CL. The fitter accepts the full 4-type dispatch
+(\code{NULL} / logical / \code{"auto"} / \code{BootstrapTriangle} / function). For
+a leakage-safe backtest with a custom bootstrap configuration, prefer
+a function \verb{function(tri) -> BootstrapTriangle} (it is invoked on
+the \emph{masked} triangle, not the original) over a pre-built
+\code{BootstrapTriangle} object (which may have been built on the unmasked
+data and would leak hold-out cells into the residual pool).}
 
 \item{...}{Additional arguments passed to the underlying fitter.}
 
@@ -151,11 +151,11 @@ to the actual values that were withheld.
 
 The target is selected with \code{target}:
 \itemize{
-\item \code{target = "lr"} -- score the loss-ratio projection from
-\code{fit_lr()}.
+\item \code{target = "ratio"} -- score the loss-ratio projection from
+\code{fit_ratio()}.
 \item \code{target = "loss"} -- score the loss projection from \code{fit_loss()}.
-\item \code{target = "prem"} -- score the prem projection from
-\code{fit_prem()}.
+\item \code{target = "exposure"} -- score the exposure projection from
+\code{fit_exposure()}.
 }
 
 The A/E Error (\code{ae_err}) follows the standard actuarial A/E
@@ -175,19 +175,19 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
-bt_lr   <- backtest(tri, holdout = 6L, target = "lr")
-bt_loss <- backtest(tri, holdout = 6L, target = "loss")
-bt_prem <- backtest(tri, holdout = 6L, target = "prem")
+bt_ratio    <- backtest(tri, holdout = 6L, target = "ratio")
+bt_loss     <- backtest(tri, holdout = 6L, target = "loss")
+bt_exposure <- backtest(tri, holdout = 6L, target = "exposure")
 
-print(bt_lr)
-summary(bt_lr)
-plot(bt_lr)
+print(bt_ratio)
+summary(bt_ratio)
+plot(bt_ratio)
 }
 
 }
 \seealso{
-\code{\link[=fit_lr]{fit_lr()}}, \code{\link[=fit_loss]{fit_loss()}}, \code{\link[=fit_prem]{fit_prem()}}, \code{\link[=plot.Backtest]{plot.Backtest()}}
+\code{\link[=fit_ratio]{fit_ratio()}}, \code{\link[=fit_loss]{fit_loss()}}, \code{\link[=fit_exposure]{fit_exposure()}}, \code{\link[=plot.Backtest]{plot.Backtest()}}
 }

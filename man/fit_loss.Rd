@@ -6,12 +6,12 @@
 \usage{
 fit_loss(
   x,
-  method = c("sa", "ed", "cl"),
+  method = c("ed", "cl", "sa"),
   alpha = 1,
   regime = NULL,
-  prem_fit = NULL,
-  prem_method = c("cl", "ed"),
-  prem_alpha = 1,
+  exposure_fit = NULL,
+  exposure_method = c("cl", "ed"),
+  exposure_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   maturity = "auto",
@@ -23,14 +23,14 @@ fit_loss(
 }
 \arguments{
 \item{x}{A \code{"Triangle"} object. The standardized \code{"loss"} and
-\code{"prem"} columns are used (\code{as_triangle()} produces these).}
+\code{"exposure"} columns are used (\code{as_triangle()} produces these).}
 
-\item{method}{One of \code{"sa"} (default), \code{"ed"}, or \code{"cl"}.}
+\item{method}{One of \code{"ed"} (default), \code{"cl"}, or \code{"sa"}.}
 
 \item{alpha}{Variance-structure exponent for the loss fit. Default \code{1}.}
 
 \item{regime}{Optional regime specification applied to both loss-side
-and prem-side estimation. Accepts four input types:
+and exposure-side estimation. Accepts four input types:
 \describe{
 \item{\code{NULL} (default)}{No regime filter.}
 \item{\code{Regime} object}{Use as-is. Typically built via
@@ -43,19 +43,19 @@ triangle and returning a \code{Regime} object (or \code{NULL}).}
 Behavior depends on \code{method}: SA uses a hybrid 2-pass filter (cohort
 cut for the ED phase, calendar-diagonal wedge for the CL phase);
 ED/CL use a simple cohort cut. The same resolved \code{Regime} is applied
-to the internal \code{fit_prem()} call -- callers needing an
-asymmetric loss/prem split should use \code{\link[=fit_lr]{fit_lr()}} instead.}
+to the internal \code{fit_exposure()} call -- callers needing an
+asymmetric loss/exposure split should use \code{\link[=fit_ratio]{fit_ratio()}} instead.}
 
-\item{prem_fit}{Optional pre-built \code{PremFit} (from
-\code{\link[=fit_prem]{fit_prem()}}) supplying the prem projection. When \code{NULL},
-\code{fit_loss()} calls \code{fit_prem()} internally using
-\code{prem_method}, \code{prem_alpha}, and the resolved \code{regime}.}
+\item{exposure_fit}{Optional pre-built \code{ExposureFit} (from
+\code{\link[=fit_exposure]{fit_exposure()}}) supplying the exposure projection. When \code{NULL},
+\code{fit_loss()} calls \code{fit_exposure()} internally using
+\code{exposure_method}, \code{exposure_alpha}, and the resolved \code{regime}.}
 
-\item{prem_method}{One of \code{"cl"} (default) or \code{"ed"}. Used only
-when \code{prem_fit = NULL}. The default matches the historical
-\code{fit_lr()} prem choice.}
+\item{exposure_method}{One of \code{"cl"} (default) or \code{"ed"}. Used only
+when \code{exposure_fit = NULL}. The default matches the historical
+\code{fit_ratio()} exposure choice.}
 
-\item{prem_alpha}{Variance-structure exponent for the prem fit.
+\item{exposure_alpha}{Variance-structure exponent for the exposure fit.
 Default \code{1}.}
 
 \item{sigma_method}{Sigma extrapolation. One of \code{"locf"} (default),
@@ -95,8 +95,8 @@ Must have \code{meta$target == "loss"}.}
 invoked on the input Triangle (leakage-safe for \code{backtest()}).}
 }
 Premium stays at its observed values during the bootstrap (the
-loss-only convention); premium-side uncertainty is layered in by
-\code{fit_lr()} via its own bootstrap.}
+loss-only convention); exposure-side uncertainty is layered in by
+\code{fit_ratio()} via its own bootstrap.}
 
 \item{B}{Integer number of bootstrap replicates. Used only when
 \code{bootstrap} resolves to \code{"auto"}. Default \code{999}.}
@@ -106,33 +106,35 @@ loss-only convention); premium-side uncertainty is layered in by
 }
 \value{
 An object of class \code{"LossFit"}. List with components:
-\code{full}, \code{proj}, \code{maturity}, \code{loss_ata_fit}, \code{prem_ata_fit},
-\code{prem_fit}, \code{ed}, \code{factor}, \code{selected}, plus metadata.
+\code{full}, \code{proj}, \code{maturity}, \code{loss_ata_fit}, \code{exposure_ata_fit},
+\code{exposure_fit}, \code{ed}, \code{factor}, \code{selected}, plus metadata.
 }
 \description{
 Project cumulative loss across the cohort x development grid. Three
 methods are supported via \code{method}:
 
 \describe{
-\item{\code{"sa"} (default)}{Stage-adaptive. Exposure-driven (ED) before
-the maturity point, chain ladder (CL) after.}
-\item{\code{"ed"}}{Pure exposure-driven (additive) across all dev
-periods.}
-\item{\code{"cl"}}{Pure Mack chain ladder (multiplicative).}
+\item{\code{"ed"} (default)}{Pure exposure-driven (additive) across all
+dev periods. Unconditional safe baseline — no maturity dependency.}
+\item{\code{"cl"}}{Pure Mack chain ladder (multiplicative). Classical
+reference.}
+\item{\code{"sa"}}{Stage-adaptive. ED before the maturity point, CL after
+— composition of ED + CL, requires maturity detection (2-pass).}
 }
 
-This function is the \emph{loss-side} counterpart to \code{\link[=fit_prem]{fit_prem()}} in
+This function is the \emph{loss-side} counterpart to \code{\link[=fit_exposure]{fit_exposure()}} in
 the role-specific dispatcher layer (see \code{ARCHITECTURE.md}). It owns
-loss projection only -- prem projection is delegated to
-\code{\link[=fit_prem]{fit_prem()}} (called internally when \code{prem_fit = NULL}), and
-the loss-ratio composition with delta method is handled by \code{\link[=fit_lr]{fit_lr()}}.
+loss projection only -- exposure projection is delegated to
+\code{\link[=fit_exposure]{fit_exposure()}} (called internally when \code{exposure_fit = NULL}), and
+the loss-ratio composition with delta method is handled by
+\code{\link[=fit_ratio]{fit_ratio()}}.
 }
 \section{Internal columns}{
 
 \verb{$full} retains internal parameter columns (\code{g_sel}, \code{g_sigma2},
 \code{g_var}, \code{f_sel}, \code{f_sigma2}, \code{f_var}, \code{last_obs}) so that
-\code{\link[=fit_lr]{fit_lr()}} can run bootstrap CI on top without re-fitting. Standalone
-callers see them as implementation columns.
+\code{\link[=fit_ratio]{fit_ratio()}} can run bootstrap CI on top without re-fitting.
+Standalone callers see them as implementation columns.
 }
 
 \examples{
@@ -144,7 +146,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 lf    <- fit_loss(tri)                    # SA (default)
@@ -154,5 +156,5 @@ lf_cl <- fit_loss(tri, method = "cl")
 
 }
 \seealso{
-\code{\link[=fit_prem]{fit_prem()}}, \code{\link[=fit_lr]{fit_lr()}}, \code{\link[=fit_cl]{fit_cl()}}, \code{\link[=fit_ed]{fit_ed()}}.
+\code{\link[=fit_exposure]{fit_exposure()}}, \code{\link[=fit_ratio]{fit_ratio()}}, \code{\link[=fit_cl]{fit_cl()}}, \code{\link[=fit_ed]{fit_ed()}}.
 }

@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{Total}(
   x,
-  metric = "lr",
+  metric = "ratio",
   amount_divisor = "auto",
   theme = c("view", "save", "shiny"),
   ...
@@ -16,8 +16,8 @@
 \item{x}{An object of class \code{Total}.}
 
 \item{metric}{A single metric to plot. Must be one of the columns
-carried by a \code{Total}: \code{"lr"}, \code{"loss"}, \code{"prem"}, \code{"loss_share"}, or
-\code{"prem_share"}. Default \code{"lr"}.}
+carried by a \code{Total}: \code{"ratio"}, \code{"loss"}, \code{"exposure"}, \code{"loss_share"}, or
+\code{"exposure_share"}. Default \code{"ratio"}.}
 
 \item{amount_divisor}{Numeric scaling factor used only for y-axis
 labels of amount variables. Default \code{1e8}.}
@@ -49,11 +49,11 @@ scale and labelled using \code{amount_divisor}.
 \dontrun{
 tot <- as_total(
   df,
-  groups = "coverage",
-  cohort = "uy_m",
-  dev    = "dev_m",
-  loss   = "incr_loss",
-  prem   = "incr_prem"
+  groups   = "coverage",
+  cohort   = "uy_m",
+  dev      = "dev_m",
+  loss     = "incr_loss",
+  exposure = "incr_exposure"
 )
 plot(tot)
 plot(tot, metric = "loss")

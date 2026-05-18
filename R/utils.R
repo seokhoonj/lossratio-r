@@ -142,14 +142,14 @@
 #'
 #' @param metric A single metric name.
 #'
-#' @return `TRUE` for `lr` / `incr_lr` and any `_share` variant,
+#' @return `TRUE` for `ratio` / `incr_ratio` and any `_share` variant,
 #'   `FALSE` otherwise.
 #'
 #' @keywords internal
 .is_ratio_metric <- function(metric) {
-  metric %in% c("lr", "incr_lr",
+  metric %in% c("ratio", "incr_ratio",
                 "loss_share", "incr_loss_share",
-                "prem_share", "incr_prem_share")
+                "exposure_share", "incr_exposure_share")
 }
 
 
@@ -248,19 +248,19 @@
 #' @keywords internal
 .get_plot_meta <- function(metric, amount_divisor = 1e8) {
 
-  ratio_vars  <- c("lr", "incr_lr")
+  ratio_vars  <- c("ratio", "incr_ratio")
   amount_vars <- c("loss", "incr_loss",
-                   "prem", "incr_prem",
+                   "exposure", "incr_exposure",
                    "margin", "incr_margin")
   prop_vars   <- c("loss_share", "incr_loss_share",
-                   "prem_share", "incr_prem_share")
+                   "exposure_share", "incr_exposure_share")
 
   if (metric %in% ratio_vars) {
     list(
       type  = "ratio",
       title = switch(metric,
-                       lr      = "Cumulative Loss Ratio",
-                       incr_lr = "Per-Period Loss Ratio"
+                       ratio      = "Cumulative Loss Ratio",
+                       incr_ratio = "Per-Period Loss Ratio"
       ),
       caption = "Unit: %",
       hline   = 1
@@ -271,12 +271,12 @@
     list(
       type  = "amount",
       title = switch(metric,
-                       loss        = "Cumulative Loss",
-                       incr_loss   = "Per-Period Loss",
-                       prem        = "Cumulative Premium",
-                       incr_prem   = "Per-Period Premium",
-                       margin      = "Cumulative Margin",
-                       incr_margin = "Per-Period Margin"
+                       loss          = "Cumulative Loss",
+                       incr_loss     = "Per-Period Loss",
+                       exposure      = "Cumulative Premium",
+                       incr_exposure = "Per-Period Premium",
+                       margin        = "Cumulative Margin",
+                       incr_margin   = "Per-Period Margin"
       ),
       caption = if (nzchar(unit_txt)) paste("Unit:", unit_txt) else NULL,
       hline   = 0
@@ -286,10 +286,10 @@
     list(
       type  = "prop",
       title = switch(metric,
-                       loss_share      = "Cumulative Loss Proportion",
-                       incr_loss_share = "Per-Period Loss Proportion",
-                       prem_share      = "Cumulative Premium Proportion",
-                       incr_prem_share = "Per-Period Premium Proportion"
+                       loss_share          = "Cumulative Loss Proportion",
+                       incr_loss_share     = "Per-Period Loss Proportion",
+                       exposure_share      = "Cumulative Premium Proportion",
+                       incr_exposure_share = "Per-Period Premium Proportion"
       ),
       caption = "Unit: %",
       hline   = NULL
@@ -1044,7 +1044,7 @@
   if (inherits(x, "Link")) {
     fn_bare <- sub("\\(\\)$", "", called_from)
     stop(sprintf(
-      "`%s` expects a Triangle, not a Link.\n  Link is built internally; pass the Triangle directly:\n    %s(tri, target = \"loss\", ...)",
+      "`%s` expects a Triangle, not a Link.\n  Link is built internally; pass the Triangle directly:\n    %s(tri, loss = \"loss\", ...)",
       called_from, fn_bare
     ), call. = FALSE)
   }

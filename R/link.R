@@ -20,31 +20,30 @@
 #' \describe{
 #'   \item{Single-variable mode (`exposure = NULL`)}{The age-to-age
 #'     factor is \eqn{ata = value_{to} / value_{from}}, where
-#'     \eqn{value} is the column named by `target`.}
+#'     \eqn{value} is the column named by `loss`.}
 #'   \item{Dual-variable mode (`exposure` supplied)}{In addition to
 #'     the loss-side ATA, the exposure-driven intensity
-#'     \eqn{g = \Delta loss / prem_{from}} is computed and stored in
-#'     the `intensity` column. Premium measure used as denominator for
+#'     \eqn{g = \Delta loss / exposure_{from}} is computed and stored in
+#'     the `intensity` column. Exposure measure used as denominator for
 #'     loss ratio calculations; for long-term health insurance
 #'     applications, risk premium is commonly used.}
 #' }
 #'
 #' @param x A `Triangle` object.
-#' @param target A single cumulative metric used as the link
-#'   numerator. Must be one of `"loss"`, `"prem"`, or `"lr"`. Default
-#'   `"loss"`. Generic worker name; for loss-side ATA this is the
-#'   cumulative loss column, but any cumulative metric on the Triangle
-#'   may be supplied.
+#' @param loss A single cumulative metric used as the link
+#'   numerator. Must be one of `"loss"`, `"exposure"`, or `"ratio"`. Default
+#'   `"loss"`. For loss-side ATA this is the cumulative loss column, but
+#'   any cumulative metric on the Triangle may be supplied.
 #' @param exposure Optional second cumulative metric, treated as the
 #'   exposure anchor for the ED workflow. Must be one of `"loss"`,
-#'   `"prem"`, `"lr"`, and must differ from `target`. When `NULL`
+#'   `"exposure"`, `"ratio"`, and must differ from `loss`. When `NULL`
 #'   (default), only the single-variable columns are produced.
 #' @param weight Optional cumulative metric used as WLS weight in
 #'   downstream `summary` / `fit_ata` calls. Must differ from
-#'   `target`. Cannot be combined with `exposure` (the dual
+#'   `loss`. Cannot be combined with `exposure` (the dual
 #'   workflow has its own anchor).
 #' @param min_denom Minimum denominator required to compute `ata`
-#'   and `intensity`. If `target_from <= min_denom`, `ata` becomes `NA`;
+#'   and `intensity`. If `loss_from <= min_denom`, `ata` becomes `NA`;
 #'   if `exposure_from <= min_denom`, `intensity` becomes `NA`. Default
 #'   `0`.
 #' @param drop_invalid Logical; if `TRUE`, rows with non-finite `ata`
@@ -55,13 +54,13 @@
 #' @return A `data.table` of class `"Link"` with columns:
 #'
 #'   * Always: `[group]`, `cohort`, `ata_from`, `ata_to`, `ata_link`,
-#'     `target_from`, `target_to`, `target_delta`, `ata`.
+#'     `loss_from`, `loss_to`, `loss_delta`, `ata`.
 #'   * If `exposure` is set: also `exposure_from`, `exposure_to`,
 #'     `exposure_delta`, `intensity`.
 #'   * If `weight` is set: also `weight`.
 #'
 #'   The returned object carries attributes `groups`, `cohort`,
-#'   `dev`, `target`, `exposure` (or `NULL`), `weight`
+#'   `dev`, `loss`, `exposure` (or `NULL`), `weight`
 #'   (or `NULL`).
 #'
 #' @seealso [as_triangle()], [summary.Link()], [plot.Link()],
@@ -75,20 +74,20 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem     = "incr_prem"
+#'   exposure = "incr_exposure"
 #' )
 #'
 #' # Single-variable: cumulative-loss link factors (ATA workflow)
-#' link_loss <- as_link(tri, target = "loss")
+#' link_loss <- as_link(tri, loss = "loss")
 #'
-#' # Dual-variable: ED-ready link table (loss + prem)
-#' link_ed <- as_link(tri, target = "loss", exposure = "prem")
+#' # Dual-variable: ED-ready link table (loss + exposure)
+#' link_ed <- as_link(tri, loss = "loss", exposure = "exposure")
 #' head(link_ed)
 #' }
 #'
 #' @export
 as_link <- function(x,
-                       target       = "loss",
+                       loss         = "loss",
                        exposure     = NULL,
                        weight       = NULL,
                        min_denom    = 0,
@@ -117,13 +116,13 @@ as_link <- function(x,
   if (length(dev) != 1L)
     stop("`x` must contain exactly one `dev`.", call. = FALSE)
 
-  valid_vars <- c("loss", "prem", "lr")
+  valid_vars <- c("loss", "exposure", "ratio")
 
-  if (!is.character(target) || length(target) != 1L ||
-      !(target %in% valid_vars))
-    stop("`target` must be one of 'loss', 'prem', or 'lr'.",
+  if (!is.character(loss) || length(loss) != 1L ||
+      !(loss %in% valid_vars))
+    stop("`loss` must be one of 'loss', 'exposure', or 'ratio'.",
          call. = FALSE)
-  tgt <- target
+  loss_col <- loss
 
   use_exposure <- !is.null(exposure)
   use_weight   <- !is.null(weight)
@@ -131,12 +130,12 @@ as_link <- function(x,
   if (use_exposure) {
     if (!is.character(exposure) || length(exposure) != 1L ||
         !(exposure %in% valid_vars))
-      stop("`exposure` must be one of 'loss', 'prem', or 'lr'.",
+      stop("`exposure` must be one of 'loss', 'exposure', or 'ratio'.",
            call. = FALSE)
     exp <- exposure
-    if (exp == tgt)
+    if (exp == loss_col)
       warning(
-        "`exposure` equals `target` (\"", tgt, "\") -- self-anchored ",
+        "`exposure` equals `loss` (\"", loss_col, "\") -- self-anchored ",
         "fit. Mathematically equivalent to chain ladder on the same column ",
         "(f_k = 1 + g_k); use only when intentional.",
         call. = FALSE
@@ -152,11 +151,11 @@ as_link <- function(x,
            call. = FALSE)
     if (!is.character(weight) || length(weight) != 1L ||
         !(weight %in% valid_vars))
-      stop("`weight` must be one of 'loss', 'prem', or 'lr'.",
+      stop("`weight` must be one of 'loss', 'exposure', or 'ratio'.",
            call. = FALSE)
     wt <- weight
-    if (wt == tgt)
-      stop("`weight` must differ from `target`.", call. = FALSE)
+    if (wt == loss_col)
+      stop("`weight` must differ from `loss`.", call. = FALSE)
   } else {
     wt <- NULL
   }
@@ -172,15 +171,15 @@ as_link <- function(x,
     by = grp_coh]
   z[, ("ata_link") := sprintf("%s-%s", ata_from, ata_to)]
 
-  # 2) target_from / target_to / target_delta / ata -----------------------
-  z[, ("target_from") := .SD[[tgt]], .SDcols = tgt]
-  z[, target_to   := data.table::shift(.SD[[1L]], type = "lead"),
+  # 2) loss_from / loss_to / loss_delta / ata -----------------------------
+  z[, ("loss_from") := .SD[[loss_col]], .SDcols = loss_col]
+  z[, loss_to   := data.table::shift(.SD[[1L]], type = "lead"),
     by      = grp_coh,
-    .SDcols = tgt]
-  z[, ("target_delta") := target_to - target_from]
+    .SDcols = loss_col]
+  z[, ("loss_delta") := loss_to - loss_from]
   z[, ("ata") := data.table::fifelse(
-    target_from > min_denom,
-    target_to / target_from,
+    loss_from > min_denom,
+    loss_to / loss_from,
     NA_real_
   )]
 
@@ -193,7 +192,7 @@ as_link <- function(x,
     z[, ("exposure_delta") := exposure_to - exposure_from]
     z[, ("intensity") := data.table::fifelse(
       exposure_from > min_denom,
-      target_delta / exposure_from,
+      loss_delta / exposure_from,
       NA_real_
     )]
   }
@@ -215,7 +214,7 @@ as_link <- function(x,
   keep <- c(
     grp, "cohort",
     "ata_from", "ata_to", "ata_link",
-    "target_from", "target_to", "target_delta", "ata",
+    "loss_from", "loss_to", "loss_delta", "ata",
     if (use_exposure)
       c("exposure_from", "exposure_to", "exposure_delta", "intensity"),
     if (use_weight) "weight"
@@ -226,7 +225,7 @@ as_link <- function(x,
   data.table::setattr(z, "groups" , grp)
   data.table::setattr(z, "cohort", coh)
   data.table::setattr(z, "dev"   , dev)
-  data.table::setattr(z, "target"    , tgt)
+  data.table::setattr(z, "loss"      , loss_col)
   data.table::setattr(z, "exposure"  , exp)
   data.table::setattr(z, "weight"    , wt)
 
@@ -299,7 +298,7 @@ summary.Link <- function(object,
 #' \eqn{\mathrm{Var}(C_{i,k+1} \mid C_{i,k}) \propto C_{i,k}^{\alpha}}.
 #'
 #' When only one observation is available for a link, the factor is computed
-#' directly as `target_to / target_from` and standard errors are set to `NA`.
+#' directly as `loss_to / loss_from` and standard errors are set to `NA`.
 #'
 #' Near-zero values of `f_se` and `sigma` (below `tol`) are set to zero to
 #' avoid numerical noise from essentially perfect fits.
@@ -311,8 +310,8 @@ summary.Link <- function(object,
 #' @param alpha Numeric scalar controlling the variance structure. Default
 #'   is `1`.
 #' @param na_rm Logical; if `TRUE` (default), rows with non-finite or
-#'   non-positive `target_from` are dropped before fitting. Note that
-#'   `target_to = 0` is permitted, as zero cumulative values are valid
+#'   non-positive `loss_from` are dropped before fitting. Note that
+#'   `loss_to = 0` is permitted, as zero cumulative values are valid
 #'   observations (e.g. no claims yet developed in early development periods).
 #' @param tol Non-negative numeric scalar. Values below `tol` are set to
 #'   zero. Default is `1e-12`.
@@ -352,7 +351,7 @@ summary.Link <- function(object,
 
   # 1) drop invalid rows ------------------------------------------------
   if (na_rm) {
-    dt <- dt[is.finite(target_from) & is.finite(target_to) & target_from > 0]
+    dt <- dt[is.finite(loss_from) & is.finite(loss_to) & loss_from > 0]
   }
 
   # 2) attach weight column ---------------------------------------------
@@ -369,11 +368,11 @@ summary.Link <- function(object,
     dt[, ("w") := weights]
   }
 
-  # regression weight: w / target_from^(2 - alpha)
+  # regression weight: w / loss_from^(2 - alpha)
   # this corresponds to Mack's variance assumption:
   # Var(C_{i,k+1} | C_{i,k}) proportional to C_{i,k}^alpha / w_{i,k}
   delta <- 2 - alpha
-  dt[, (".reg_w") := w / target_from^delta]
+  dt[, (".reg_w") := w / loss_from^delta]
   dt[, ("ata_link") := sprintf("%s-%s", ata_from, ata_to)]
 
   # segment_wise treatment annotates rows with segment_id upstream; when
@@ -387,14 +386,14 @@ summary.Link <- function(object,
   res <- dt[, {
     if (.N == 1L) {
       data.table::data.table(
-        f         = target_to[1L] / target_from[1L],
+        f         = loss_to[1L] / loss_from[1L],
         f_se      = NA_real_,
         sigma     = NA_real_,
         n_cohorts = 1L
       )
     } else {
       fit <- tryCatch(
-        stats::lm(target_to ~ target_from + 0, weights = .reg_w),
+        stats::lm(loss_to ~ loss_from + 0, weights = .reg_w),
         error = function(e) NULL
       )
 

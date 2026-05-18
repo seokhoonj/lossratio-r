@@ -7,7 +7,7 @@
 #' \itemize{
 #'   \item `"projection"`: observed and projected cumulative values by cohort
 #'     over development periods. Optional confidence bands are drawn using
-#'     `target_total_se`.
+#'     `loss_total_se`.
 #'   \item `"reserve"`: reserve summary by cohort with optional error bars.
 #' }
 #'
@@ -66,12 +66,12 @@ plot.CLFit <- function(x,
   grp     <- x$groups
   coh     <- x$cohort
   dev <- x$dev
-  metric <- x$target
+  metric <- x$loss
 
   if (is.null(grp)) grp <- character(0)
 
   if (identical(amount_divisor, "auto"))
-    amount_divisor <- .auto_divisor(x$full[["target_proj"]])
+    amount_divisor <- .auto_divisor(x$full[["loss_proj"]])
   meta         <- .get_plot_meta(metric, amount_divisor)
   z_alpha      <- stats::qnorm((1 + conf_level) / 2)
   caption_base <- meta$caption
@@ -81,31 +81,31 @@ plot.CLFit <- function(x,
 
     full <- .copy_dt(x$full)
 
-    obs  <- full[is_observed == TRUE  & is.finite(target_obs)]
-    proj <- full[is_observed == FALSE & is.finite(target_proj)]
+    obs  <- full[is_observed == TRUE  & is.finite(loss_obs)]
+    proj <- full[is_observed == FALSE & is.finite(loss_proj)]
 
     latest_obs  <- obs[, .SD[.N],  by = c(grp, "cohort")]
     latest_proj <- full[
-      is.finite(target_proj), .SD[.N], by = c(grp, "cohort")
+      is.finite(loss_proj), .SD[.N], by = c(grp, "cohort")
     ]
 
     first_proj <- proj[, .SD[1L], by = c(grp, "cohort")]
 
     bridge <- latest_obs[
-      , .SD, .SDcols = c(grp, "cohort", "dev", "target_obs")
+      , .SD, .SDcols = c(grp, "cohort", "dev", "loss_obs")
     ]
     data.table::setnames(
       bridge,
-      c("dev", "target_obs"),
+      c("dev", "loss_obs"),
       c("x_start", "y_start")
     )
 
     first_proj2 <- first_proj[
-      , .SD, .SDcols = c(grp, "cohort", "dev", "target_proj")
+      , .SD, .SDcols = c(grp, "cohort", "dev", "loss_proj")
     ]
     data.table::setnames(
       first_proj2,
-      c("dev", "target_proj"),
+      c("dev", "loss_proj"),
       c("x_end", "y_end")
     )
     bridge <- first_proj2[bridge, on = c(grp, "cohort")]
@@ -114,8 +114,8 @@ plot.CLFit <- function(x,
 
     if (show_interval && nrow(proj)) {
       proj[, `:=`(
-        lower = pmax(0, target_proj - z_alpha * target_total_se),
-        upper = target_proj + z_alpha * target_total_se
+        lower = pmax(0, loss_proj - z_alpha * loss_total_se),
+        upper = loss_proj + z_alpha * loss_total_se
       )]
     }
 
@@ -140,7 +140,7 @@ plot.CLFit <- function(x,
         data    = obs,
         mapping = ggplot2::aes(
           x     = .data[["dev"]],
-          y     = .data$target_obs,
+          y     = .data$loss_obs,
           group = .data[["cohort"]]
         ),
         linewidth = 0.8
@@ -159,7 +159,7 @@ plot.CLFit <- function(x,
         data    = proj,
         mapping = ggplot2::aes(
           x     = .data[["dev"]],
-          y     = .data$target_proj,
+          y     = .data$loss_proj,
           group = .data[["cohort"]]
         ),
         linewidth = 0.8,
@@ -169,7 +169,7 @@ plot.CLFit <- function(x,
         data    = latest_obs,
         mapping = ggplot2::aes(
           x = .data[["dev"]],
-          y = .data$target_obs
+          y = .data$loss_obs
         ),
         size = 1.8
       ) +
@@ -177,7 +177,7 @@ plot.CLFit <- function(x,
         data    = latest_proj,
         mapping = ggplot2::aes(
           x = .data[["dev"]],
-          y = .data$target_proj
+          y = .data$loss_proj
         ),
         size  = 1.8,
         shape = 1
@@ -240,8 +240,8 @@ plot.CLFit <- function(x,
 
   if (show_interval) {
     smr[, `:=`(
-      lower = pmax(0, reserve - z_alpha * target_total_se),
-      upper = reserve + z_alpha * target_total_se
+      lower = pmax(0, reserve - z_alpha * loss_total_se),
+      upper = reserve + z_alpha * loss_total_se
     )]
   }
 
@@ -405,7 +405,7 @@ plot_triangle.CLFit <- function(x,
   grp     <- x$groups
   coh     <- x$cohort
   dev <- x$dev
-  metric <- x$target
+  metric <- x$loss
 
   if (is.null(grp)) grp <- character(0)
 
@@ -414,25 +414,25 @@ plot_triangle.CLFit <- function(x,
   if (length(dev) != 1L)
     stop("`x` must contain exactly one `dev`.", call. = FALSE)
 
-  ratio_vars <- c("lr", "incr_lr")
+  ratio_vars <- c("ratio", "incr_ratio")
   prop_vars  <- c("loss_share", "incr_loss_share",
-                  "prem_share", "incr_prem_share")
+                  "exposure_share", "incr_exposure_share")
   is_ratio   <- metric %in% c(ratio_vars, prop_vars)
 
   base_title <- switch(
     metric,
-    lr                 = "Cumulative Loss Ratio",
-    incr_lr            = "Per-Period Loss Ratio",
-    loss               = "Cumulative Loss",
-    incr_loss          = "Per-Period Loss",
-    prem               = "Cumulative Premium",
-    incr_prem          = "Per-Period Premium",
-    margin             = "Cumulative Margin",
-    incr_margin        = "Per-Period Margin",
-    loss_share         = "Cumulative Loss Proportion",
-    incr_loss_share    = "Per-Period Loss Proportion",
-    prem_share         = "Cumulative Premium Proportion",
-    incr_prem_share    = "Per-Period Premium Proportion",
+    ratio               = "Cumulative Loss Ratio",
+    incr_ratio          = "Per-Period Loss Ratio",
+    loss                = "Cumulative Loss",
+    incr_loss           = "Per-Period Loss",
+    exposure            = "Cumulative Premium",
+    incr_exposure       = "Per-Period Premium",
+    margin              = "Cumulative Margin",
+    incr_margin         = "Per-Period Margin",
+    loss_share          = "Cumulative Loss Proportion",
+    incr_loss_share     = "Per-Period Loss Proportion",
+    exposure_share      = "Cumulative Premium Proportion",
+    incr_exposure_share = "Per-Period Premium Proportion",
     metric
   )
 
@@ -450,7 +450,7 @@ plot_triangle.CLFit <- function(x,
   if (region == "data") {
     dt[, (".value") := .SD[[metric]], .SDcols = metric]
   } else {
-    dt[, (".value") := target_proj]
+    dt[, (".value") := loss_proj]
   }
 
   if (identical(amount_divisor, "auto"))
@@ -488,32 +488,32 @@ plot_triangle.CLFit <- function(x,
     dt[, ("label") := ""]
 
     if (label_style == "cv") {
-      dt[is_observed == FALSE & is.finite(target_total_cv),
-         ("label") := sprintf("%.0f", target_total_cv * 100)]
+      dt[is_observed == FALSE & is.finite(loss_total_cv),
+         ("label") := sprintf("%.0f", loss_total_cv * 100)]
 
     } else if (label_style == "se") {
       if (is_ratio) {
-        dt[is_observed == FALSE & is.finite(target_total_se),
-           ("label") := sprintf("%.3f", target_total_se)]
+        dt[is_observed == FALSE & is.finite(loss_total_se),
+           ("label") := sprintf("%.3f", loss_total_se)]
       } else {
-        dt[is_observed == FALSE & is.finite(target_total_se),
-           ("label") := sprintf("%.1f", target_total_se / amount_divisor)]
+        dt[is_observed == FALSE & is.finite(loss_total_se),
+           ("label") := sprintf("%.1f", loss_total_se / amount_divisor)]
       }
 
     } else if (label_style == "ci") {
       if (is_ratio) {
-        dt[is_observed == FALSE & is.finite(target_total_se),
+        dt[is_observed == FALSE & is.finite(loss_total_se),
            ("label") := sprintf(
              "[%.0f, %.0f]",
-             pmax(0, .value - z_alpha * target_total_se) * 100,
-             (.value + z_alpha * target_total_se) * 100
+             pmax(0, .value - z_alpha * loss_total_se) * 100,
+             (.value + z_alpha * loss_total_se) * 100
            )]
       } else {
-        dt[is_observed == FALSE & is.finite(target_total_se),
+        dt[is_observed == FALSE & is.finite(loss_total_se),
            ("label") := sprintf(
              "[%.1f, %.1f]",
-             pmax(0, .value - z_alpha * target_total_se) / amount_divisor,
-             (.value + z_alpha * target_total_se) / amount_divisor
+             pmax(0, .value - z_alpha * loss_total_se) / amount_divisor,
+             (.value + z_alpha * loss_total_se) / amount_divisor
            )]
       }
     }

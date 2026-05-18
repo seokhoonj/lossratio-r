@@ -6,8 +6,8 @@
 \usage{
 fit_intensity(
   x,
-  target = "loss",
-  exposure = "prem",
+  loss = "loss",
+  exposure = "exposure",
   alpha = 1,
   na_method = c("locf", "zero", "none"),
   sigma_method = c("locf", "min_last2", "loglinear"),
@@ -19,11 +19,11 @@ fit_intensity(
 \arguments{
 \item{x}{A \code{Triangle} object.}
 
-\item{target}{A single cumulative metric used as the link
+\item{loss}{A single cumulative metric used as the link
 numerator. Default \code{"loss"}.}
 
 \item{exposure}{A single cumulative metric used as the
-exposure anchor. Default \code{"prem"}.}
+exposure anchor. Default \code{"exposure"}.}
 
 \item{alpha}{WLS weight exponent. Default \code{1}.}
 
@@ -43,9 +43,9 @@ estimation to rows within the last \code{recent} calendar diagonals
 (calendar-diagonal wedge filter; see \code{\link[=.apply_recent_filter]{.apply_recent_filter()}}).}
 
 \item{regime}{Optional regime specification for cohort cutoff. Accepts:
-\code{NULL} (default — no filter), a \code{"Regime"} object (from
+\code{NULL} (default -- no filter), a \code{"Regime"} object (from
 \code{\link[=detect_regime]{detect_regime()}}), the string \code{"auto"} (internal
-\code{detect_regime(tri, target = "lr")} call), or a function
+\code{detect_regime(tri, loss = "ratio")} call), or a function
 \verb{function(tri) -> Regime}. Resolved internally via
 \code{\link[=.resolve_regime]{.resolve_regime()}}. When supplied, cohorts strictly before the
 change are dropped before estimation.}
@@ -58,7 +58,7 @@ A list of class \code{"IntensityFit"} with components:
 \item{\code{call}}{The matched call.}
 \item{\code{data}}{The (possibly filtered) \code{Link} object used for
 estimation.}
-\item{\code{groups}, \code{cohort}, \code{dev}, \code{target},
+\item{\code{groups}, \code{cohort}, \code{dev}, \code{loss},
 \code{exposure}}{Variable name relays from the input \code{Triangle}.}
 \item{\code{link}}{Alias of \code{data} for parallelism with
 \code{\link[=fit_ata]{fit_ata()}}.}
@@ -86,7 +86,7 @@ This is the factor-level diagnostic for the exposure-driven (ED)
 workflow, parallel to \code{\link[=fit_ata]{fit_ata()}} for the multiplicative (chain
 ladder) side. Both operate at the \emph{factor level} without
 producing a full projection. For full ED projection (cumulative
-loss / prem / lr), use \code{\link[=fit_ed]{fit_ed()}} which accepts either a
+loss / exposure / ratio), use \code{\link[=fit_ed]{fit_ed()}} which accepts either a
 \code{Triangle} or an \code{IntensityFit} (skipping a rebuild of the link
 table when factors are already computed).
 }
@@ -108,9 +108,9 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
-intensity_fit <- fit_intensity(tri, target = "loss", exposure = "prem")
+intensity_fit <- fit_intensity(tri, loss = "loss", exposure = "exposure")
 summary(intensity_fit)
 }
 

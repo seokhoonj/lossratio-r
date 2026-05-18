@@ -1,7 +1,7 @@
 # PascalCase class-name regression and lowercase-class negative assertions.
 #
 # CLAUDE.md mandates Style A PascalCase for every S3 class (acronyms in
-# full caps: `ATA`, `ED`, `CLFit`, `LRFit`, ...). The legacy lowercase
+# full caps: `ATA`, `ED`, `CLFit`, `RatioFit`, ...). The legacy lowercase
 # names (`triangle`, `ata`, `cl_fit`, ...) were swept out and must never
 # be reintroduced. These tests lock in both directions.
 
@@ -31,10 +31,10 @@ test_that("ED family carries PascalCase classes", {
   expect_s3_class(fits$ed_sm,  "EDSummary")
 })
 
-test_that("CLFit / LRFit carry PascalCase classes", {
+test_that("CLFit / RatioFit carry PascalCase classes", {
   fits <- make_fit_set()
   expect_s3_class(fits$cl, "CLFit")
-  expect_s3_class(fits$lr, "LRFit")
+  expect_s3_class(fits$ratio, "RatioFit")
 })
 
 test_that("Regime and Backtest carry PascalCase classes", {
@@ -62,7 +62,7 @@ test_that("TriangleSummary / TriangleLonger / TriangleSummaryLonger classes set"
 
 test_that("CalendarLonger and validation classes set", {
   exp <- make_exp()
-  cal <- as_calendar(as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem"))
+  cal <- as_calendar(as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure"))
   expect_s3_class(attr(cal, "longer"), "CalendarLonger")
 
   val_tri <- validate_triangle(exp, groups = "coverage", cohort = "uy_m", dev = "dev_m")
@@ -94,15 +94,15 @@ test_that("lowercase class names not introduced (ATA / ED family)", {
   }
 })
 
-test_that("lowercase class names not introduced (CL / LR / regime / backtest)", {
+test_that("lowercase class names not introduced (CL / Ratio / regime / backtest)", {
   fits <- make_fit_set()
   sub  <- make_sub_tri("surgery")
   reg  <- detect_regime(sub, window = 12, method = "e_divisive")
   bt   <- backtest(sub, holdout = 6L, target = "loss", loss_method = "cl")
 
-  for (nm in c("cl_fit", "lr_fit", "cohort_regime", "backtest")) {
+  for (nm in c("cl_fit", "lr_fit", "ratio_fit", "cohort_regime", "backtest")) {
     expect_false(inherits(fits$cl, nm), info = paste("cl inherits", nm))
-    expect_false(inherits(fits$lr, nm), info = paste("lr inherits", nm))
+    expect_false(inherits(fits$ratio, nm), info = paste("ratio inherits", nm))
     expect_false(inherits(reg, nm), info = paste("reg inherits", nm))
     expect_false(inherits(bt,  nm), info = paste("bt inherits",  nm))
   }
@@ -124,14 +124,14 @@ test_that("Triangle attribute names preserved (raw / standard split)", {
 })
 
 test_that("Calendar attributes use calendar", {
-  cal <- as_calendar(as_triangle(make_exp(), groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem"))
+  cal <- as_calendar(as_triangle(make_exp(), groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure"))
   expect_identical(attr(cal, "calendar"), "cy_m")
   expect_identical(attr(cal, "groups"),    "coverage")
 })
 
 test_that("Forbidden legacy attribute names not present", {
   tri <- make_tri()
-  cal <- as_calendar(as_triangle(make_exp(), groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem"))
+  cal <- as_calendar(as_triangle(make_exp(), groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure"))
   for (a in c("period_var", "duration_var", "duration_type",
               "elapsed_var", "elp_var", "elp_type", "dur_var", "dur_type")) {
     expect_null(attr(tri, a, exact = TRUE), info = paste("tri attr", a))

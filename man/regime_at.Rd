@@ -25,7 +25,7 @@ An object of class \code{"Regime"} with the minimal schema needed
 by downstream consumers:
 \describe{
 \item{\code{method}}{\code{"manual"}.}
-\item{\code{target}}{\code{NA_character_} (no detection target).}
+\item{\code{loss}}{\code{NA_character_} (no detection metric).}
 \item{\code{changes}}{\code{data.table} with columns
 \verb{[<group cols>..., change, regime_id, pre_value, post_value, magnitude]}. \code{regime_id} is \code{2L} (post-change regime) for each
 row; the stats columns are \code{NA_real_}.}
@@ -42,9 +42,9 @@ distinguishable from a detected Regime.
 \description{
 User-facing helper for hand-specifying a regime change (or a set of
 per-group changes) without running \code{\link[=detect_regime]{detect_regime()}}. The returned
-\code{"Regime"} object plugs into any function that consumes a Regime —
-\code{fit_lr()}, \code{fit_loss()}, \code{fit_prem()}, \code{\link[=backtest]{backtest()}}, and the
-regime-change resolver — by carrying the same \verb{$changes} schema as
+\code{"Regime"} object plugs into any function that consumes a Regime --
+\code{fit_ratio()}, \code{fit_loss()}, \code{fit_exposure()}, \code{\link[=backtest]{backtest()}}, and the
+regime-change resolver -- by carrying the same \verb{$changes} schema as
 \code{\link[=detect_regime]{detect_regime()}} output.
 
 Argument syntax mirrors \code{data.frame()} / \code{data.table()}: named

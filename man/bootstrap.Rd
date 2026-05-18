@@ -19,7 +19,7 @@ bootstrap(x, ...)
   tail = c("auto", "maturity"),
   min_pool = 5L,
   maturity = NULL,
-  target = c("loss", "prem"),
+  target = c("loss", "exposure"),
   B = 499L,
   seed = NULL,
   alpha = 1,
@@ -72,7 +72,7 @@ Phase 5b.3 and currently errors.}
 the bootstrap should produce. One of \code{"sa"} (stage-adaptive -- ED before
 maturity, CL after; default), \code{"cl"} (chain-ladder multiplicative
 recursion across all dev), \code{"ed"} (exposure-driven additive recursion
-across all dev). Mirrors the \code{loss_method} argument of \code{fit_lr()}; the
+across all dev). Mirrors the \code{loss_method} argument of \code{fit_ratio()}; the
 resulting \code{BootstrapTriangle} is consumed by the corresponding
 \verb{fit_*(..., bootstrap = bt)} branch.}
 
@@ -94,7 +94,7 @@ point).}
 the string \code{"auto"}, or a function \verb{function(tri) -> Maturity}.}
 
 \item{target}{Cumulative metric to perturb. One of \code{"loss"} (default) or
-\code{"prem"}. The value column in \verb{$pseudo_triangles} is named after this
+\code{"exposure"}. The value column in \verb{$pseudo_triangles} is named after this
 target so downstream refit helpers know which column to read.}
 
 \item{B}{Number of bootstrap replicates. Default \code{499} -- the Davison &
@@ -127,8 +127,8 @@ data.table for diagnostic inspection (e.g. raw replicate
 trajectories, custom quantile work). On a typical 4-group monthly
 triangle at \code{B = 999} the reshape costs ~250-300 ms and ~200 MB on
 top of \verb{$summary}; users who only consume \verb{$summary} (the common
-case) should leave this \code{FALSE}. \code{fit_lr()} / \code{fit_loss()} /
-\code{fit_prem()} always pass \code{FALSE} internally because they only
+case) should leave this \code{FALSE}. \code{fit_ratio()} / \code{fit_loss()} /
+\code{fit_exposure()} always pass \code{FALSE} internally because they only
 read \verb{$summary}. Set \code{TRUE} explicitly if you want to inspect
 \verb{$pseudo_triangles} directly.}
 }
@@ -154,7 +154,7 @@ residual mode: \verb{[groups, cohort, ata_from, ata_to, residual, pool_id]} for 
 Generate \code{B} alternative realizations of a \code{Triangle} via nonparametric
 (England-Verrall residual) or parametric (Mack normal closed-form) Stage 1
 perturbation. The output is a model-agnostic \code{BootstrapTriangle} object
-that downstream fit functions (\code{fit_cl} / \code{fit_ed} / \code{fit_lr}) consume to
+that downstream fit functions (\code{fit_cl} / \code{fit_ed} / \code{fit_ratio}) consume to
 recover parameter and process risk decomposition.
 
 This entry point sits at the Triangle level -- it knows nothing about CL,
@@ -183,7 +183,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 # Cell-residual bootstrap (default)

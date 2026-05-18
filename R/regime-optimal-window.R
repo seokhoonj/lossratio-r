@@ -17,7 +17,7 @@
 #' @param window_seq Integer vector of trajectory windows to sweep. Default
 #'   `2:24` — typical actuarial range. Each `window` becomes one
 #'   `detect_regime()` call.
-#' @param target Trajectory variable. Passed to [detect_regime()].
+#' @param loss Trajectory variable. Passed to [detect_regime()].
 #' @param method Elbow-detection method. Currently only `"elbow"` is
 #'   supported (Kneedle algorithm on `change_count` vs `window`). Reserved
 #'   for future extensions (Jaccard stability, BIC, etc.).
@@ -46,7 +46,7 @@ detect_regime_optimal_window <- function(x,
                                          by         = NULL,
                                          window_seq = 2:24,
                                          method     = c("elbow"),
-                                         target     = "lr",
+                                         loss       = "ratio",
                                          sig_level  = 0.05,
                                          min_size   = 3L) {
 
@@ -70,7 +70,7 @@ detect_regime_optimal_window <- function(x,
     res <- tryCatch(
       suppressWarnings(detect_regime(
         x,
-        target    = target,
+        loss      = loss,
         by        = by,
         window    = k,
         method    = "e_divisive",

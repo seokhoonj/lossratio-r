@@ -32,7 +32,7 @@ knitr::opts_chunk$set(
 (코호트 × 경과 기간 × 그룹) 셀 하나에 대응한다. 내장 데이터셋
 `experience` 는 2,664 행 테이블로, 여러 집계 주기의 calendar / underwriting
 기간 컬럼, `coverage` 그룹 컬럼, 기간별 금액 컬럼
-(`incr_loss`, `incr_prem`) 을 포함한다.
+(`incr_loss`, `incr_exposure`) 을 포함한다.
 
 ```{r}
 library(lossratio)
@@ -50,7 +50,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 class(tri)
 names(tri)
@@ -58,11 +58,11 @@ names(tri)
 
 `as_triangle()` 의 동작:
 
-- 필수 컬럼 (`cy_m`, `uy_m`, `incr_loss`, `incr_prem`) 의 존재를
+- 필수 컬럼 (`cy_m`, `uy_m`, `incr_loss`, `incr_exposure`) 의 존재를
   확인하고 expected type 으로 코어션한다,
 - 인구통계 차원을 집계하여 제거한다 (여기서는 `age_band`, `gender`),
-- 누적 컬럼 (`loss`, `premium`) 을 추가한다,
-- 파생 지표 (`margin`, `lr`, `loss_share`, `premium_share`) 를 추가한다,
+- 누적 컬럼 (`loss`, `exposure`) 을 추가한다,
+- 파생 지표 (`margin`, `ratio`, `loss_share`, `exposure_share`) 를 추가한다,
 - 코호트 / 경과 기간 컬럼을 표준명 `cohort` 와 `dev` 로 rename 한다,
 - 원본 컬럼명은 attribute (`cohort`, `dev`) 로 보존하여
   이후 plot 라벨에서 활용 가능하게 한다.
@@ -70,8 +70,8 @@ names(tri)
 ## 2단계 — 진단
 
 ```{r}
-plot(tri)              # 코호트별 lr 궤적
-plot_triangle(tri)     # lr 셀의 heatmap
+plot(tri)              # 코호트별 ratio 궤적
+plot_triangle(tri)     # ratio 셀의 heatmap
 summary(tri)           # 경과 기간별 그룹 통계량
 ```
 
@@ -83,10 +83,10 @@ summary(tri)           # 경과 기간별 그룹 통계량
 
 ```{r}
 # ATA 인자(age-to-age factor) — 곱셈형, chain ladder 의 입력
-fit_ata(tri, target = "loss")
+fit_ata(tri, loss = "loss")
 
 # 노출 기반(exposure-driven) 강도 인자 — 덧셈형, ED 의 입력
-fit_intensity(tri, target = "loss", exposure = "prem")
+fit_intensity(tri, loss = "loss", exposure = "exposure")
 ```
 
 `fit_ata()` 는 링크별 ATA 인자 $f_k$ 를, `fit_intensity()` 는 강도 인자
@@ -96,29 +96,29 @@ $g_k = \Delta C^L_k / C^P_k$ 를 반환한다. 두 출력 모두 *factor 레벨*
 ## 4단계 — 예측
 
 예측 레벨 추정량은 세 가지로, `fit_cl()` 과 `fit_ed()` 가 한 쌍의
-sibling, `fit_lr()` 은 둘을 결합하는 통합 인터페이스이다.
+sibling, `fit_ratio()` 은 둘을 결합하는 통합 인터페이스이다.
 
 ```{r}
 # Chain ladder (곱셈형 예측)
-cl <- fit_cl(tri, target = "loss", method = "mack")
+cl <- fit_cl(tri, loss = "loss", method = "mack")
 plot(cl, type = "projection")
 summary(cl)
 
 # Exposure-driven (덧셈형 예측)
-ed <- fit_ed(tri, target = "loss", exposure = "prem")
+ed <- fit_ed(tri, loss = "loss", exposure = "exposure")
 summary(ed)
 ```
 
-`fit_lr()` 은 손해율 통합 인터페이스이다. default 인 단계 적응형(stage-adaptive,
+`fit_ratio()` 은 손해율 통합 인터페이스이다. default 인 단계 적응형(stage-adaptive,
 SA) 방식 (`method = "sa"`) 은 성숙점(maturity point) 이전에는 노출 기반,
 성숙점 이후에는 chain ladder 를 적용한다. 전환 지점은 ATA 인자로부터
 그룹별로 탐지된 성숙점이다. `method = "ed"` 또는 `"cl"` 로 단일
 스테이지만 적용할 수도 있다.
 
 ```{r}
-lr <- fit_lr(tri, method = "sa")
-plot(lr, metric = "lr")
-summary(lr)
+ratio <- fit_ratio(tri, method = "sa")
+plot(ratio, metric = "ratio")
+summary(ratio)
 ```
 
 ## 5단계 — 구조 변화 진단
@@ -134,7 +134,7 @@ sub <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 detect_regime(sub, method = "e_divisive")
 ```
@@ -145,12 +145,12 @@ detect_regime(sub, method = "e_divisive")
 
 - `vignette("aggregation-frameworks")` — `as_triangle`, `as_calendar`,
   `as_total` 의 사용 시점 비교.
-- `vignette("projection")` — `fit_lr()` 에서 `"sa"` / `"ed"` /
+- `vignette("projection")` — `fit_ratio()` 에서 `"sa"` / `"ed"` /
   `"cl"` 중 선택 기준.
 - `vignette("chain-ladder-reserving")` — `fit_cl()` 심층 해설 (Mack 분산, tail factor).
 - `vignette("triangle-link-and-maturity")` — `summary()`,
   `detect_maturity()`, triangle 형식의 시각화.
 - `vignette("regime")` — `detect_regime()` 을 통한 코호트
   간 구조 변화 진단.
-- `vignette("backtest")` — `fit_cl` 또는 `fit_lr` 을 사용한 대각선
+- `vignette("backtest")` — `fit_cl` 또는 `fit_ratio` 을 사용한 대각선
   hold-out 검증.

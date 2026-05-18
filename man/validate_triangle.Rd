@@ -55,7 +55,7 @@ Check that each \verb{(groups, cohort)} cohort has a consecutive
 cohorts produce non-consecutive age-to-age links downstream (e.g.,
 \code{14 -> 17} instead of \code{14 -> 15}), which breaks
 \code{\link[=summary.Link]{summary.Link()}} key uniqueness and causes cartesian joins in
-\code{\link[=fit_lr]{fit_lr()}}.
+\code{\link[=fit_ratio]{fit_ratio()}}.
 
 This function inspects the raw data without modifying it. Use it
 before \code{\link[=as_triangle]{as_triangle()}} to decide whether to fix the data source, drop

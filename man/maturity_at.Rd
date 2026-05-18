@@ -27,7 +27,7 @@ group column names (possibly \code{character(0)}).
 User-facing helper for hand-specifying a maturity point (or a set of
 per-group maturity points) without running \code{\link[=detect_maturity]{detect_maturity()}}. The
 returned \code{"Maturity"} object plugs into any function that consumes a
-Maturity result -- \code{fit_lr()}, \code{fit_loss()}, \code{\link[=backtest]{backtest()}}, and the
+Maturity result -- \code{fit_ratio()}, \code{fit_loss()}, \code{\link[=backtest]{backtest()}}, and the
 maturity input dispatcher -- by carrying the same row schema as
 \code{\link[=detect_maturity]{detect_maturity()}} output (group columns plus \code{ata_from}, \code{change},
 \code{ata_link}).

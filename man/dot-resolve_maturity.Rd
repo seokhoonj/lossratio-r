@@ -21,7 +21,7 @@ inputs operate on this triangle instead of \code{tri}.}
 \code{NULL} or a \code{"Maturity"} object.
 }
 \description{
-Internal 4-type dispatcher used by \code{fit_lr()}, \code{fit_loss()}, and
+Internal 4-type dispatcher used by \code{fit_ratio()}, \code{fit_loss()}, and
 \code{\link[=backtest]{backtest()}} to normalize the \code{maturity} input into a single
 representation: either \code{NULL} (no maturity override) or a
 \code{"Maturity"} object.

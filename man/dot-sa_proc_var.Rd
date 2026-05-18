@@ -6,7 +6,7 @@
 \usage{
 .sa_proc_var(
   loss_proj,
-  prem_proj,
+  exposure_proj,
   g_sigma2,
   f_sigma2,
   f_sel,

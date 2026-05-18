@@ -1,8 +1,8 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
-sub <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+sub <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
 
 
 test_that("fit_intensity returns class 'IntensityFit'", {
@@ -13,7 +13,7 @@ test_that("fit_intensity returns class 'IntensityFit'", {
 test_that("fit_intensity bundles expected components", {
   intensity_fit <- fit_intensity(sub)
   for (nm in c("call", "data", "groups", "cohort", "dev",
-               "target", "exposure", "link", "factor", "selected",
+               "loss", "exposure", "link", "factor", "selected",
                "alpha", "na_method", "sigma_method", "recent",
                "regime")) {
     expect_true(nm %in% names(intensity_fit), info = paste("missing", nm))
@@ -63,16 +63,16 @@ test_that("print.IntensityFit does not error", {
 })
 
 test_that("Link (ED mode) carries `intensity` column (not `g`)", {
-  link_ed <- as_link(sub, target = "loss", exposure = "prem")
+  link_ed <- as_link(sub, loss = "loss", exposure = "exposure")
   expect_true("intensity" %in% names(link_ed))
   expect_false("g" %in% names(link_ed))
 })
 
-test_that("intensity == target_delta / exposure_from when exposure_from > 0", {
-  link_ed <- as_link(sub, target = "loss", exposure = "prem")
+test_that("intensity == loss_delta / exposure_from when exposure_from > 0", {
+  link_ed <- as_link(sub, loss = "loss", exposure = "exposure")
   ok <- is.finite(link_ed$intensity) & link_ed$exposure_from > 0
   expect_equal(link_ed$intensity[ok],
-               link_ed$target_delta[ok] / link_ed$exposure_from[ok],
+               link_ed$loss_delta[ok] / link_ed$exposure_from[ok],
                tolerance = 1e-6)
 })
 

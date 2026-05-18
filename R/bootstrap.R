@@ -116,7 +116,7 @@
 #' Generate `B` alternative realizations of a `Triangle` via nonparametric
 #' (England-Verrall residual) or parametric (Mack normal closed-form) Stage 1
 #' perturbation. The output is a model-agnostic `BootstrapTriangle` object
-#' that downstream fit functions (`fit_cl` / `fit_ed` / `fit_lr`) consume to
+#' that downstream fit functions (`fit_cl` / `fit_ed` / `fit_ratio`) consume to
 #' recover parameter and process risk decomposition.
 #'
 #' This entry point sits at the Triangle level -- it knows nothing about CL,
@@ -170,7 +170,7 @@
 #'   the bootstrap should produce. One of `"sa"` (stage-adaptive -- ED before
 #'   maturity, CL after; default), `"cl"` (chain-ladder multiplicative
 #'   recursion across all dev), `"ed"` (exposure-driven additive recursion
-#'   across all dev). Mirrors the `loss_method` argument of `fit_lr()`; the
+#'   across all dev). Mirrors the `loss_method` argument of `fit_ratio()`; the
 #'   resulting `BootstrapTriangle` is consumed by the corresponding
 #'   `fit_*(..., bootstrap = bt)` branch.
 #' @param pooling Residual-pool grouping. One of `"pooled"`, `"separated"`,
@@ -215,8 +215,8 @@
 #'   trajectories, custom quantile work). On a typical 4-group monthly
 #'   triangle at `B = 999` the reshape costs ~250-300 ms and ~200 MB on
 #'   top of `$summary`; users who only consume `$summary` (the common
-#'   case) should leave this `FALSE`. `fit_lr()` / `fit_loss()` /
-#'   `fit_prem()` always pass `FALSE` internally because they only
+#'   case) should leave this `FALSE`. `fit_ratio()` / `fit_loss()` /
+#'   `fit_exposure()` always pass `FALSE` internally because they only
 #'   read `$summary`. Set `TRUE` explicitly if you want to inspect
 #'   `$pseudo_triangles` directly.
 #' @param ... Reserved for future use.
@@ -252,7 +252,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   prem     = "incr_prem"
+#'   exposure = "incr_exposure"
 #' )
 #'
 #' # Cell-residual bootstrap (default)
@@ -278,7 +278,7 @@ bootstrap <- function(x, ...) {
 
 #' @rdname bootstrap
 #' @param target Cumulative metric to perturb. One of `"loss"` (default) or
-#'   `"prem"`. The value column in `$pseudo_triangles` is named after this
+#'   `"exposure"`. The value column in `$pseudo_triangles` is named after this
 #'   target so downstream refit helpers know which column to read.
 #' @export
 bootstrap.Triangle <- function(x,
@@ -294,7 +294,7 @@ bootstrap.Triangle <- function(x,
                                 tail        = c("auto", "maturity"),
                                 min_pool    = 5L,
                                 maturity    = NULL,
-                                target      = c("loss", "prem"),
+                                target      = c("loss", "exposure"),
                                 B           = 499L,
                                 seed        = NULL,
                                 alpha       = 1,
@@ -379,7 +379,7 @@ bootstrap.Triangle <- function(x,
   if (is_residual_mode) {
     # 1) Build Link on the chosen target (always -- anchor + cell-mode fitted
     #    means both depend on volume-weighted f_hat per link)
-    link <- as_link(x, target = target, drop_invalid = TRUE)
+    link <- as_link(x, loss = target, drop_invalid = TRUE)
 
     # 2) Compute Mack anchor per (group, ata_to)
     anchor <- .boot_anchor(link, grp = grp, alpha = alpha)
@@ -407,7 +407,7 @@ bootstrap.Triangle <- function(x,
     # parametric path: closed-form simulation, no residual pool needed.
     # We still compute the anchor (f_hat, sigma2, f_var) -- those drive
     # the N(f_hat, sqrt(Var(f_hat))) draws inside .boot_stage1_one.
-    link   <- as_link(x, target = target, drop_invalid = TRUE)
+    link   <- as_link(x, loss = target, drop_invalid = TRUE)
     anchor <- .boot_anchor(link, grp = grp, alpha = alpha)
     pool   <- .boot_empty_pool(grp)
   }
@@ -509,26 +509,26 @@ bootstrap.Triangle <- function(x,
 
 # Internal: per-link Mack anchor (f_hat, sigma2, f_var, n) -----------------
 #
-# Volume-weighted f_hat = sum(target_to) / sum(target_from).
+# Volume-weighted f_hat = sum(loss_to) / sum(loss_from).
 # Mack sigma^2_k     = (1/(n-1)) * sum(C_{k-1} * (f_ik - f_hat)^2)
-#                     = (1/(n-1)) * sum((target_to - f_hat*target_from)^2 / target_from)
-# Var(f_hat)         = sigma^2_k / sum(target_from)
+#                     = (1/(n-1)) * sum((loss_to - f_hat*loss_from)^2 / loss_from)
+# Var(f_hat)         = sigma^2_k / sum(loss_from)
 #
 # When n=1 for the last link, use Mack tail rule:
 #   sigma^2_K = min(sigma^2_{K-1}^2 / sigma^2_{K-2}, sigma^2_{K-2}, sigma^2_{K-1})
 # Simpler fallback when K < 3: sigma^2_K = sigma^2_{K-1}.
 .boot_anchor <- function(link, grp, alpha = 1) {
   # data.table NSE
-  target_from <- target_to <- f_hat <- sigma2 <- f_var <- sum_from <- NULL
+  loss_from <- loss_to <- f_hat <- sigma2 <- f_var <- sum_from <- NULL
 
   by_cols <- c(grp, "ata_from", "ata_to")
 
-  anchor <- link[is.finite(target_from) & is.finite(target_to) & target_from > 0,
+  anchor <- link[is.finite(loss_from) & is.finite(loss_to) & loss_from > 0,
                  {
-                   f       <- sum(target_to) / sum(target_from)
+                   f       <- sum(loss_to) / sum(loss_from)
                    n       <- .N
                    if (n >= 2L) {
-                     resid_sq <- (target_to - f * target_from)^2 / target_from
+                     resid_sq <- (loss_to - f * loss_from)^2 / loss_from
                      s2 <- sum(resid_sq) / (n - 1L)
                    } else {
                      s2 <- NA_real_
@@ -537,7 +537,7 @@ bootstrap.Triangle <- function(x,
                      f_hat     = f,
                      sigma2    = s2,
                      n_cohorts = n,
-                     sum_from  = sum(target_from)
+                     sum_from  = sum(loss_from)
                    )
                  },
                  by = by_cols]
@@ -585,13 +585,13 @@ bootstrap.Triangle <- function(x,
 
 # Internal: standardized Pearson residuals on the Link rows ---------------
 #
-# r_ik = (target_to - f_hat_k * target_from) / sqrt(sigma2_k * target_from)
+# r_ik = (loss_to - f_hat_k * loss_from) / sqrt(sigma2_k * loss_from)
 #
 # Returns the Link with two new columns: `residual` and `pool_id`. The
 # `pool_id` is filled later by .boot_build_pool() (mode-dependent).
 .boot_attach_residuals <- function(link, anchor, grp) {
   # NSE
-  target_from <- target_to <- f_hat <- sigma2 <- residual <- NULL
+  loss_from <- loss_to <- f_hat <- sigma2 <- residual <- NULL
 
   by_cols <- c(grp, "ata_from", "ata_to")
 
@@ -601,10 +601,10 @@ bootstrap.Triangle <- function(x,
               by = by_cols, all.x = TRUE, sort = FALSE)
 
   dt[, residual := data.table::fifelse(
-    is.finite(target_from) & target_from > 0 &
+    is.finite(loss_from) & loss_from > 0 &
       is.finite(sigma2) & sigma2 > 0 &
-      is.finite(target_to) & is.finite(f_hat),
-    (target_to - f_hat * target_from) / sqrt(sigma2 * target_from),
+      is.finite(loss_to) & is.finite(f_hat),
+    (loss_to - f_hat * loss_from) / sqrt(sigma2 * loss_from),
     NA_real_
   )]
 
@@ -1563,7 +1563,7 @@ print.BootstrapTriangle <- function(x, ...) {
 
 # Section 6 -- Bootstrap argument resolver ====================================
 #
-# fit_lr / fit_loss / fit_prem / backtest pass the user-supplied
+# fit_ratio / fit_loss / fit_exposure / backtest pass the user-supplied
 # `bootstrap` argument through this single resolver. Output is either
 # `NULL` (analytical path) or a `BootstrapTriangle`. The fit functions
 # then read `bt$summary` directly -- the SE decomposition + CI columns
@@ -1633,7 +1633,7 @@ print.BootstrapTriangle <- function(x, ...) {
     # Pass only the args that apply to the chosen `type`. Parametric path
     # has no residual pool, so omitting residual/hat_adj/pooling/tail/
     # min_pool/maturity prevents the validator from triggering "ignored"
-    # warnings inside fit_loss / fit_prem / fit_lr (which always
+    # warnings inside fit_loss / fit_exposure / fit_ratio (which always
     # forward `type = "parametric"` for their internal default).
     args <- list(tri,
                  type        = type,

@@ -23,17 +23,17 @@
 #' reflects the precision of the WLS-estimated factor. Using both criteria
 #' together provides a more robust maturity assessment than either alone.
 #'
-#' Default `target = "loss"` (cumulative loss). Maturity in chain
+#' Default `loss = "loss"` (cumulative loss). Maturity in chain
 #' ladder is methodologically a property of *loss* development:
 #' the ATA factors of cumulative loss stabilize when chain ladder
 #' becomes reliable, which in turn makes downstream LR projection
-#' reliable. ATA factors of `lr` itself (a ratio of two cumulative
+#' reliable. ATA factors of `ratio` itself (a ratio of two cumulative
 #' quantities) carry additional noise and tend to give less precise
-#' maturity decisions. Override `target` only when you specifically
-#' want maturity of prem development or another cumulative metric.
+#' maturity decisions. Override `loss` only when you specifically
+#' want maturity of exposure development or another cumulative metric.
 #'
 #' @param x A `Triangle` object.
-#' @param target Cumulative metric for the link factor. Default
+#' @param loss Cumulative metric for the link factor. Default
 #'   `"loss"` (chain-ladder convention; see Description). Forwarded to
 #'   [as_link()].
 #' @param groups Optional `character` subset of `attr(x, "groups")`
@@ -47,7 +47,7 @@
 #'   maturity row. Any non-`NULL`, non-empty value must be a subset of
 #'   `attr(x, "groups")`; column order is irrelevant. When the requested
 #'   `groups` is coarser than the Triangle grouping, the underlying
-#'   `loss` / `prem` / `lr` columns are re-aggregated to the coarser
+#'   `loss` / `exposure` / `ratio` columns are re-aggregated to the coarser
 #'   partition before computing ata links.
 #' @param weight Optional WLS weight variable. Forwarded to
 #'   [as_link()].
@@ -74,7 +74,7 @@
 #'
 #' @export
 detect_maturity <- function(x,
-                            target          = "loss",
+                            loss            = "loss",
                             groups          = NULL,
                             weight          = NULL,
                             alpha           = 1,
@@ -88,7 +88,7 @@ detect_maturity <- function(x,
 
   x <- .rebucket_triangle_groups(x, groups)
 
-  link <- as_link(x, target = target, weight = weight)
+  link <- as_link(x, loss = loss, weight = weight)
   ata_summary <- summary(link, model = "ata", alpha = alpha)
 
   .detect_maturity(
@@ -241,7 +241,7 @@ detect_maturity <- function(x,
   data.table::setattr(z, "min_n_valid",     min_n_valid)
   data.table::setattr(z, "min_run",         min_run)
   data.table::setattr(z, "groups",       grp)
-  data.table::setattr(z, "target",          attr(x, "target"))
+  data.table::setattr(z, "loss",            attr(x, "loss"))
   data.table::setattr(z, "weight",          attr(x, "weight"))
 
   .prepend_class(z, "Maturity")
@@ -250,8 +250,8 @@ detect_maturity <- function(x,
 
 #' Internal: rebucket a `Triangle` to a coarser `groups` partition
 #'
-#' Re-aggregates `loss` / `prem` / `incr_loss` / `incr_prem` over
-#' the dropped grouping columns and recomputes `lr` / `incr_lr` as
+#' Re-aggregates `loss` / `exposure` / `incr_loss` / `incr_exposure` over
+#' the dropped grouping columns and recomputes `ratio` / `incr_ratio` as
 #' ratios of the aggregated totals. Other cell-level columns
 #' (`margin`, `profit`, `loss_share`, ...) are not regenerated -- the
 #' rebucketed object is intended for `as_link()` consumption only.
@@ -261,7 +261,7 @@ detect_maturity <- function(x,
 #'   `attr(x, "groups")`. `NULL` returns `x` unchanged.
 #'
 #' @return A `Triangle` with `attr(., "groups")` set to the requested
-#'   value and `loss` / `prem` / `lr` aggregated to the requested
+#'   value and `loss` / `exposure` / `ratio` aggregated to the requested
 #'   partition.
 #'
 #' @keywords internal
@@ -297,16 +297,16 @@ detect_maturity <- function(x,
     data.table::setattr(z, "grain"   , attr(x, "grain"))
     data.table::setattr(z, "dev"     , attr(x, "dev"))
     data.table::setattr(z, "loss"    , attr(x, "loss"))
-    data.table::setattr(z, "prem" , attr(x, "prem"))
+    data.table::setattr(z, "exposure", attr(x, "exposure"))
     return(.prepend_class(z, "Triangle"))
   }
 
   dt <- .copy_dt(x)
 
-  # Columns we re-aggregate. Only sum-additive primitives; ratios (lr) are
-  # recomputed from the aggregated totals.
+  # Columns we re-aggregate. Only sum-additive primitives; ratios (ratio)
+  # are recomputed from the aggregated totals.
   sum_cols <- intersect(
-    c("loss", "incr_loss", "prem", "incr_prem", "n_cohorts"),
+    c("loss", "incr_loss", "exposure", "incr_exposure", "n_cohorts"),
     names(dt)
   )
   by_cols <- c(groups, "cohort", "dev")
@@ -315,10 +315,10 @@ detect_maturity <- function(x,
             by      = by_cols,
             .SDcols = sum_cols]
 
-  if (all(c("loss", "prem") %in% names(agg)))
-    agg[, ("lr") := loss / prem]
-  if (all(c("incr_loss", "incr_prem") %in% names(agg)))
-    agg[, ("incr_lr") := incr_loss / incr_prem]
+  if (all(c("loss", "exposure") %in% names(agg)))
+    agg[, ("ratio") := loss / exposure]
+  if (all(c("incr_loss", "incr_exposure") %in% names(agg)))
+    agg[, ("incr_ratio") := incr_loss / incr_exposure]
 
   data.table::setorderv(agg, by_cols)
 
@@ -328,7 +328,7 @@ detect_maturity <- function(x,
   data.table::setattr(agg, "grain"   , attr(x, "grain"))
   data.table::setattr(agg, "dev"     , attr(x, "dev"))
   data.table::setattr(agg, "loss"    , attr(x, "loss"))
-  data.table::setattr(agg, "prem" , attr(x, "prem"))
+  data.table::setattr(agg, "exposure", attr(x, "exposure"))
 
   .prepend_class(agg, "Triangle")
 }
@@ -342,7 +342,7 @@ detect_maturity <- function(x,
 #' User-facing helper for hand-specifying a maturity point (or a set of
 #' per-group maturity points) without running [detect_maturity()]. The
 #' returned `"Maturity"` object plugs into any function that consumes a
-#' Maturity result -- `fit_lr()`, `fit_loss()`, [backtest()], and the
+#' Maturity result -- `fit_ratio()`, `fit_loss()`, [backtest()], and the
 #' maturity input dispatcher -- by carrying the same row schema as
 #' [detect_maturity()] output (group columns plus `ata_from`, `change`,
 #' `ata_link`).
@@ -450,7 +450,7 @@ maturity_at <- function(...) {
   }
 
   data.table::setattr(out, "groups", grp)
-  data.table::setattr(out, "target", NA_character_)
+  data.table::setattr(out, "loss",   NA_character_)
   data.table::setattr(out, "weight", NA_character_)
 
   class(out) <- c("Maturity", "data.table", "data.frame")
@@ -469,7 +469,7 @@ maturity_at <- function(...) {
 #' deferred** detection -- the value of $k^*$ depends on which cells the
 #' caller decides to expose:
 #'
-#' * In `fit_lr()` / `fit_loss()`, the spec is invoked on the *full*
+#' * In `fit_ratio()` / `fit_loss()`, the spec is invoked on the *full*
 #'   triangle the user passed in.
 #'
 #' * In [backtest()], **the spec is invoked on the masked triangle of
@@ -488,7 +488,7 @@ maturity_at <- function(...) {
 #' fixed value tested across folds.
 #'
 #' @param ... kwargs passed verbatim to [detect_maturity()] when the
-#'   spec is invoked (e.g. `target`, `groups`, `min_run`, `max_cv`,
+#'   spec is invoked (e.g. `loss`, `groups`, `min_run`, `max_cv`,
 #'   `max_rse`, `min_valid_ratio`, `min_n_valid`).
 #'
 #' @return A function of one argument (a `"Triangle"`) returning a
@@ -503,8 +503,8 @@ maturity_at <- function(...) {
 #' # Capture detection arguments, defer execution until fit time.
 #' spec <- maturity_spec(min_run = 2, max_cv = 0.04)
 #'
-#' # In fit_lr(): closure is invoked on the user's `tri`.
-#' fit <- fit_lr(tri, maturity = maturity_spec(min_run = 2))
+#' # In fit_ratio(): closure is invoked on the user's `tri`.
+#' fit <- fit_ratio(tri, maturity = maturity_spec(min_run = 2))
 #'
 #' # In backtest(): closure is invoked on the *masked* triangle of
 #' # each holdout fold, so detected k* never peeks at held-out cells.

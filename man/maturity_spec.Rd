@@ -8,7 +8,7 @@ maturity_spec(...)
 }
 \arguments{
 \item{...}{kwargs passed verbatim to \code{\link[=detect_maturity]{detect_maturity()}} when the
-spec is invoked (e.g. \code{target}, \code{groups}, \code{min_run}, \code{max_cv},
+spec is invoked (e.g. \code{loss}, \code{groups}, \code{min_run}, \code{max_cv},
 \code{max_rse}, \code{min_valid_ratio}, \code{min_n_valid}).}
 }
 \value{
@@ -24,7 +24,7 @@ on its own \emph{internal} triangle. The point is \strong{conditional /
 deferred} detection -- the value of $k^*$ depends on which cells the
 caller decides to expose:
 \itemize{
-\item In \code{fit_lr()} / \code{fit_loss()}, the spec is invoked on the \emph{full}
+\item In \code{fit_ratio()} / \code{fit_loss()}, the spec is invoked on the \emph{full}
 triangle the user passed in.
 \item In \code{\link[=backtest]{backtest()}}, \strong{the spec is invoked on the masked triangle of
 each holdout fold}, \emph{never} on the full triangle. Held-out
@@ -47,8 +47,8 @@ fixed value tested across folds.
 # Capture detection arguments, defer execution until fit time.
 spec <- maturity_spec(min_run = 2, max_cv = 0.04)
 
-# In fit_lr(): closure is invoked on the user's `tri`.
-fit <- fit_lr(tri, maturity = maturity_spec(min_run = 2))
+# In fit_ratio(): closure is invoked on the user's `tri`.
+fit <- fit_ratio(tri, maturity = maturity_spec(min_run = 2))
 
 # In backtest(): closure is invoked on the *masked* triangle of
 # each holdout fold, so detected k* never peeks at held-out cells.

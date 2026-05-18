@@ -6,8 +6,8 @@
 \usage{
 fit_ed(
   x,
-  target = "loss",
-  exposure = "prem",
+  loss = "loss",
+  exposure = "exposure",
   method = c("mack"),
   alpha = 1,
   na_method = c("locf", "zero", "none"),
@@ -20,10 +20,10 @@ fit_ed(
 \arguments{
 \item{x}{A \code{"Triangle"} object.}
 
-\item{target}{Cumulative loss variable. Default \code{"loss"}.
+\item{loss}{Cumulative loss variable. Default \code{"loss"}.
 Forwarded to \code{\link[=as_link]{as_link()}} and to downstream workers.}
 
-\item{exposure}{Cumulative exposure variable. Default \code{"prem"}.
+\item{exposure}{Cumulative exposure variable. Default \code{"exposure"}.
 Forwarded to \code{\link[=as_link]{as_link()}} and to downstream workers.}
 
 \item{method}{Estimation method. Currently only \code{"mack"} is supported.}
@@ -42,9 +42,9 @@ or \code{"locf"} or \code{"none"}.}
 recent \code{recent} periods are used for estimation. Default is \code{NULL}.}
 
 \item{regime}{Optional regime specification for cohort cutoff. Accepts:
-\code{NULL} (default — no filter), a \code{"Regime"} object (from
+\code{NULL} (default -- no filter), a \code{"Regime"} object (from
 \code{\link[=detect_regime]{detect_regime()}}), the string \code{"auto"} (internal
-\code{detect_regime(tri, target = "lr")} call), or a function
+\code{detect_regime(tri, loss = "ratio")} call), or a function
 \verb{function(tri) -> Regime}. Resolved internally via
 \code{\link[=.resolve_regime]{.resolve_regime()}}. When supplied, cohorts with
 \code{cohort < change_date} are excluded from estimation. Default is \code{NULL}.}
@@ -57,12 +57,12 @@ An object of class \code{"EDFit"} (a named list) with components:
 \item{\code{factor}}{\code{EDSummary} of fitted intensities per development link.}
 \item{\code{selected}}{\code{data.table} of selected \code{g_sel}, \code{sigma2},
 and \code{g_var}.}
-\item{\code{full}}{\code{data.table} of per-cell cumulative target / exposure
+\item{\code{full}}{\code{data.table} of per-cell cumulative loss / exposure
 projection plus role-prefixed SE / CV columns
-(\code{target_proj}, \code{incr_target_proj}, \code{exposure_proj},
-\code{exposure_incr_proj}, \code{target_proc_se2}, \code{target_param_se2},
-\code{target_total_se2}, \code{target_proc_se}, \code{target_param_se},
-\code{target_total_se}, \code{target_total_cv}). Available cells include
+(\code{loss_proj}, \code{incr_loss_proj}, \code{exposure_proj},
+\code{exposure_incr_proj}, \code{loss_proc_se2}, \code{loss_param_se2},
+\code{loss_total_se2}, \code{loss_proc_se}, \code{loss_param_se},
+\code{loss_total_se}, \code{loss_total_cv}). Available cells include
 both observed and projected; \code{is_observed} flags observed cells.}
 \item{\code{link}}{\code{Link} object used for factor estimation.}
 }
@@ -80,8 +80,8 @@ The \verb{$full} projection table holds cumulative loss / exposure
 projections and their standard errors, computed directly from the
 Mack-style ED recursion (see \code{.ed_proj}, \code{.ed_proc_var},
 \code{.ed_param_var}). To validate an ED projection via \code{\link[=backtest]{backtest()}},
-call \code{backtest(tri, target = "lr", loss_method = "ed")}.
+call \code{backtest(tri, target = "ratio", loss_method = "ed")}.
 }
 \seealso{
-\code{\link[=as_link]{as_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=fit_lr]{fit_lr()}}, \code{\link[=backtest]{backtest()}}
+\code{\link[=as_link]{as_link()}}, \code{\link[=summary.Link]{summary.Link()}}, \code{\link[=fit_ratio]{fit_ratio()}}, \code{\link[=backtest]{backtest()}}
 }

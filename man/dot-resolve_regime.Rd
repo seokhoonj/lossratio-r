@@ -21,19 +21,19 @@ inputs operate on this triangle instead of \code{tri}.}
 \code{NULL} or a \code{"Regime"} object.
 }
 \description{
-Internal 4-type dispatcher used by \code{fit_lr()}, \code{fit_loss()},
-\code{fit_prem()}, and \code{\link[=backtest]{backtest()}} to normalize the \code{regime}
+Internal 4-type dispatcher used by \code{fit_ratio()}, \code{fit_loss()},
+\code{fit_exposure()}, and \code{\link[=backtest]{backtest()}} to normalize the \code{regime}
 input (or split-axis variants such as \code{loss_regime}) into a
 single representation: either \code{NULL} (no filter) or a \code{"Regime"}
 object.
 
 The four accepted input types are:
 \describe{
-\item{\code{NULL}}{Returns \code{NULL} — no filter is applied.}
+\item{\code{NULL}}{Returns \code{NULL} -- no filter is applied.}
 \item{\code{"Regime"} object}{Returned as-is.}
 \item{\code{"auto"}}{Runs \code{\link[=detect_regime]{detect_regime()}} on \code{masked_tri} if supplied,
-otherwise on \code{tri}, with \code{target = "lr"}. The \code{masked_tri}
-fallback is the leakage-safe path used by \code{\link[=backtest]{backtest()}} — fit
+otherwise on \code{tri}, with \code{loss = "ratio"}. The \code{masked_tri}
+fallback is the leakage-safe path used by \code{\link[=backtest]{backtest()}} -- fit
 functions pass only \code{tri}, while \code{\link[=backtest]{backtest()}} passes both so
 detection sees only the masked (training) data.}
 \item{\verb{function(tri) -> Regime}}{Closure invoked with
