@@ -104,7 +104,7 @@ Bühlmann-Straub 1970 credibility, Sherman 1984 의 tail 외삽 — 을 *위
 | (c) | **stage-adaptive (SA) hybrid** — chain ladder 의 *초기 변동* 영역을 *exposure-driven (ED)* 로 대체, 안정화 후 chain ladder 사용 | 초기 dev ATA 변동성               |
 | (d) | **regime detection** — 코호트 축 *구조적 변화점* 자동 검출 + 필터                                                               | 약관·요율·인수 정책 변경          |
 | (e) | **paradigm-matched bootstrap** — Mack analytical SE 외에 *paradigm 별* bootstrap (cell / link / parametric) 도구 제공           | 변동성 추정의 강건성              |
-| (f) | **Sherman tail (예정)** — chain ladder 외에 *어떤 dev-decay series* 에도 적용 가능한 *generic tail 처리*                        | 진짜 ultimate 까지의 외삽         |
+| (f) | **Tail 외삽** — Sherman 1984 log-linear tail 이 `fit_cl(tail = TRUE)` 로 기본 구현. 추가 확장은 *추후 검토*                       | 진짜 ultimate 까지의 외삽         |
 
 각 적응은 *P&C 의 한 가지 방법* 을 *장기건강보험 도메인의 한 가지 issue
 에 맞춰* 재구성한 것이다. *새로운 paradigm 을 처음부터 만든 것이 아니다*
@@ -198,38 +198,11 @@ safe baseline* 을 요구한다.
 두 path 의 SE 가 *현저히 다를 경우* → *모델 misspecification 신호*. 평소
 *sanity check* 으로 *둘 다 산출 후 비교* 가 권장.
 
-## 10. Tail 외삽 (예정)
+## 10. Tail 외삽
 
-`detect_maturity()` 의 $k^*$ 이후, observed dev range 의 *끝* 에서 *진짜
-ultimate* 까지는 *외삽* 이 필요.
-
-Sherman 1984 의 *log-linear (exponential form) tail* 은 이미 패키지에
-있다 — `fit_cl(tail = TRUE)` 가 selected factor 위에서
-`log(f_k - 1) ~ k` 적합 + 100 future link 외삽. 한계: *exponential form
-만* / *fit_cl 내부 캡슐화* / *진단·SE surface 없음* / *horizon 하드코드* /
-*silent fallback*.
-
-`fit_tail()` 은 이를 *일반화*:
-
-``` r
-fit_tail(series, devs, K_ultimate = 360,
-         method        = "exponential",     # 또는 "inverse_power",
-                                            # "weibull", "loglogistic_mle"
-         fit_dev_range = c(10, max_observed_dev))
-```
-
-기존 embedded Sherman exp 대비 *세 가지 확장*:
-
--   추가 Sherman curve (inverse_power, Weibull) + Clark 2003 의
-    parametric growth curve family (loglogistic / Weibull MLE).
--   *Standalone 진입* — *어떤 dev-decay series* 든 받음 (f, g,
-    ratio path 등). fit_cl 한정 아님.
--   *진단 surface* — 계수·잔차·`fit_dev_range` 민감도·tail factor SE.
-
-장기건강보험은 *진짜 ult* 가 *수십 년* 이후이므로 tail 외삽이 *결과의
-critical fraction* 을 좌우한다. 도메인 expert 의 *sensitivity analysis*
-가 필수 — Sherman descriptive fit 과 Clark MLE 를 *같은 series 에 동시
-실행* 후 비교가 자연스러운 cross-check.
+Sherman 1984 의 *log-linear (exponential form) tail* 은 이미
+`fit_cl(tail = TRUE)` 로 사용 가능. 추가 curve form / standalone 진입 /
+진단 surface 등 *tail 추정 관련 아이디어* 는 *추후 확장 예정*.
 
 ## 11. Roadmap
 
@@ -246,7 +219,7 @@ critical fraction* 을 좌우한다. 도메인 expert 의 *sensitivity analysis*
     추정. slot 재해석 만으로 framework 작동.
 -   **lifetime / cohort 분석** — 가입연도별 cohort 의 *전 life cycle*
     손해율 궤적 분석. 현재 framework 의 자연 확장.
--   **Sherman / Clark tail** — section 10 참조.
+-   **Tail 외삽 확장** — section 10 참조.
 -   **Python sibling 동기화** — `lossratio-py` 의 동일 명명 / API 정렬.
 
 ## 12. 함께 보기
