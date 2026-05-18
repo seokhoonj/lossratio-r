@@ -193,21 +193,25 @@ signal; routinely computing both serves as a sanity check.
 After
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)’s
 $`k^*`$, the observed dev range ends short of the true ultimate. Tail
-extrapolation is needed. Sherman (1984)’s log-linear curve fit
-(exponential or inverse-power form) is the planned default:
+extrapolation is needed. The planned `fit_tail()` family covers two
+paradigms: Sherman (1984)’s log-linear curve fit (exponential /
+inverse-power / Weibull forms — descriptive), and Clark (2003)’s
+parametric growth curve (loglogistic / Weibull MLE — stochastic). Both
+reachable through one entry:
 
 ``` r
 
-sherman_tail(f_vec, devs, K_ultimate = 360,
-             method = "exponential",
-             fit_dev_range = c(10, max_observed_dev))
+fit_tail(f_vec, devs, K_ultimate = 360,
+         method        = "exponential",     # or "inverse_power",
+                                            # "weibull", "loglogistic_mle"
+         fit_dev_range = c(10, max_observed_dev))
 ```
 
 For long-term health, the true ultimate is decades away, so the tail
 extrapolation can account for a critical fraction of the reserve. Domain
-expertise and sensitivity analysis are essential. Clark (2003)’s
-parametric growth curve (loglogistic / Weibull MLE) is a candidate
-advanced option.
+expertise and sensitivity analysis are essential — running both the
+Sherman descriptive fit and the Clark MLE form on the same series is a
+natural cross-check.
 
 ## Roadmap
 

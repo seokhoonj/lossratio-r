@@ -19,9 +19,8 @@
 
 - **분모효과(denominator effect)와 관성(inertia)** — 누적 손해율 자체가
   *기간이 누적될수록* 분모가 자동으로 자라면서 신호가 감쇠된다.
-- **다회성 보험금** — 입원·1~5종 수술·통원 등은 한 피보험자가 *여러
-  차례* 보험금을 받는다. 한 cohort 의 ultimate frequency 가 1 을 초과
-  가능.
+- **다회성 보험금** — 입원·수술·통원 등은 한 피보험자가 *여러 차례*
+  보험금을 받는다. 한 cohort 의 ultimate frequency 가 1 을 초과 가능.
 - **위험보험료 분리** — 한국의 장기보험료는 *위험보험료 + 저축보험료 +
   부가보험료* 의 합이다. 손해율의 진짜 분모는 *위험보험료* 만이다.
 - **평탄화 보험료** — 비갱신형 상품은 가입 시 평균값으로 산출된 *level
@@ -48,7 +47,6 @@ Bühlmann-Straub 1970 credibility, Sherman 1984 의 tail 외삽 — 을 *위
     1972  Bornhuetter-Ferguson           -- prior + observed loss 결합
     1984  Sherman                        -- chain ladder tail factor 외삽
     1985  Stanard (Cape Cod)             -- Bühlmann-Straub 의 reserving 응용
-                                           (workshop 발표 장소에서 작명)
     1993  Mack                           -- chain ladder 의 distribution-free MSE
 
 장기건강보험에 의미 있는 *핵심 idea* 두 가지:
@@ -81,11 +79,11 @@ Bühlmann-Straub 1970 credibility, Sherman 1984 의 tail 외삽 — 을 *위
 | \# | 적응 | 어떤 도메인 issue 를 푸는가 |
 |----|----|----|
 | \(a\) | **2D exposure triangle** — Cape Cod 의 *single π* 를 *cohort × dev triangle* 로 확장 | 발전하는 위험보험료 |
-| \(b\) | **per-link $`g_k`$** — Cape Cod 의 *cohort-level ELR* 을 *link 단위* 로 정밀화 | 분모효과·관성 (link 별 변동 추적) |
+| \(b\) | **per-link** $`g_k`$ — Cape Cod 의 *cohort-level ELR* 을 *link 단위* 로 정밀화 | 분모효과·관성 (link 별 변동 추적) |
 | \(c\) | **stage-adaptive (SA) hybrid** — chain ladder 의 *초기 변동* 영역을 *exposure-driven (ED)* 로 대체, 안정화 후 chain ladder 사용 | 초기 dev ATA 변동성 |
 | \(d\) | **regime detection** — 코호트 축 *구조적 변화점* 자동 검출 + 필터 | 약관·요율·인수 정책 변경 |
 | \(e\) | **paradigm-matched bootstrap** — Mack analytical SE 외에 *paradigm 별* bootstrap (cell / link / parametric) 도구 제공 | 변동성 추정의 강건성 |
-| \(f\) | **Sherman tail (예정)** — chain ladder 외에 *어떤 dev-decay series* 에도 적용 가능한 *generic tail 처리* | 진짜 ult 까지의 외삽 |
+| \(f\) | **Sherman tail (예정)** — chain ladder 외에 *어떤 dev-decay series* 에도 적용 가능한 *generic tail 처리* | 진짜 ultimate 까지의 외삽 |
 
 각 적응은 *P&C 의 한 가지 방법* 을 *장기건강보험 도메인의 한 가지 issue
 에 맞춰* 재구성한 것이다. *새로운 paradigm 을 처음부터 만든 것이 아니다*
@@ -98,7 +96,7 @@ lossratio 의 *모든 추정* 은 다음 *세 양* 위에서 이루어진다.
 | 양 | 의미 | 컬럼 이름 (Triangle) |
 |----|----|----|
 | **loss** | 발생 손해의 누적량 | `loss`, `incr_loss` |
-| **exposure** | 위험 노출량 (장기 health 는 *위험보험료*) | `exposure`, `incr_exposure` |
+| **exposure** | 위험 노출량 (장기 health 는 *누적 위험보험료*) | `exposure`, `incr_exposure` |
 | **ratio** | 손해율 (cumulative loss / cumulative exposure) | `ratio`, `incr_ratio` |
 
 *세 양 모두 cohort × dev grid 위에서 발전하는 관측치 (stochastic
@@ -129,7 +127,7 @@ observable)*. *exposure* 는 *고정된 underwriting volume* 이 아니라
 
 세 *aggregation 축* 의 의미:
 
-- **ED** = *link 별 $`g_k`$* — dev-granular, cohort-uniform per link
+- **ED** = *link 별* $`g_k`$ — dev-granular, cohort-uniform per link
 - **CC** = *cohort 단위 single ELR* — cohort-uniform, dev-aggregated
 - **BF** = *외부 prior* — 데이터 추정 회피, ELR 명시 입력
 
@@ -173,7 +171,8 @@ safe baseline* 을 요구한다.
   [`.mack_f_var()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-mack_f_var.md)
   (Mack 1993) +
   [`.ed_g_var()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-ed_g_var.md)
-  (B-S 1970) 로 *closed-form* 표준오차. 빠르고 *분포 가정 free*.
+  (B-S
+  1970. 로 *closed-form* 표준오차. 빠르고 *분포 가정 free*.
 - **Bootstrap** — 잔차 paradigm (`cell` / `link` / `parametric`) 별
   *forward simulation*. 분포 형태까지 추정 + *paradigm matching*
   (residual 종류가 process variance 와 forward sim 모델을 함께 결정)
@@ -185,21 +184,24 @@ safe baseline* 을 요구한다.
 ## 10. Tail 외삽 (예정)
 
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
-의 $`k^*`$ 이후, observed dev range 의 *끝* 에서 *진짜 ult* 까지는
-*외삽* 이 필요. Sherman 1984 의 *log-linear curve fit* (exponential 또는
-inverse power 형태) 도입 예정.
+의 $`k^*`$ 이후, observed dev range 의 *끝* 에서 *진짜 ultimate* 까지는
+*외삽* 이 필요. `fit_tail()` 함수 family 도입 예정 — *Sherman 1984* 의
+log-linear curve (exponential / inverse power / Weibull) 와 *Clark 2003*
+의 parametric growth curve (loglogistic / Weibull MLE) 가 *하나의
+진입점에서 method 인자로 선택*:
 
 ``` r
 
-sherman_tail(f_vec, devs, K_ultimate = 360,
-             method = "exponential",
-             fit_dev_range = c(10, max_observed_dev))
+fit_tail(f_vec, devs, K_ultimate = 360,
+         method        = "exponential",     # 또는 "inverse_power",
+                                            # "weibull", "loglogistic_mle"
+         fit_dev_range = c(10, max_observed_dev))
 ```
 
 장기건강보험은 *진짜 ult* 가 *수십 년* 이후이므로 tail 외삽이 *결과의
 critical fraction* 을 좌우한다. 도메인 expert 의 *sensitivity analysis*
-가 필수. 향후 Clark 2003 의 *parametric growth curve* (loglogistic /
-Weibull) 도 *advanced 옵션* 으로 검토.
+가 필수 — Sherman descriptive fit 과 Clark MLE 를 *같은 series 에 동시
+실행* 후 비교가 자연스러운 cross-check.
 
 ## 11. Roadmap
 

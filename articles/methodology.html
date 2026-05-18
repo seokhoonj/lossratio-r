@@ -602,17 +602,21 @@ signal; routinely computing both serves as a sanity check.</p>
 <p>After <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code>’s
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>,
 the observed dev range ends short of the true ultimate. Tail
-extrapolation is needed. Sherman (1984)’s log-linear curve fit
-(exponential or inverse-power form) is the planned default:</p>
+extrapolation is needed. The planned <code>fit_tail()</code> family
+covers two paradigms: Sherman (1984)’s log-linear curve fit (exponential
+/ inverse-power / Weibull forms — descriptive), and Clark (2003)’s
+parametric growth curve (loglogistic / Weibull MLE — stochastic). Both
+reachable through one entry:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">sherman_tail</span><span class="op">(</span><span class="va">f_vec</span>, <span class="va">devs</span>, K_ultimate <span class="op">=</span> <span class="fl">360</span>,</span>
-<span>             method <span class="op">=</span> <span class="st">"exponential"</span>,</span>
-<span>             fit_dev_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="va">max_observed_dev</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">fit_tail</span><span class="op">(</span><span class="va">f_vec</span>, <span class="va">devs</span>, K_ultimate <span class="op">=</span> <span class="fl">360</span>,</span>
+<span>         method        <span class="op">=</span> <span class="st">"exponential"</span>,     <span class="co"># or "inverse_power",</span></span>
+<span>                                            <span class="co"># "weibull", "loglogistic_mle"</span></span>
+<span>         fit_dev_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="va">max_observed_dev</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>For long-term health, the true ultimate is decades away, so the tail
 extrapolation can account for a critical fraction of the reserve. Domain
-expertise and sensitivity analysis are essential. Clark (2003)’s
-parametric growth curve (loglogistic / Weibull MLE) is a candidate
-advanced option.</p>
+expertise and sensitivity analysis are essential — running both the
+Sherman descriptive fit and the Clark MLE form on the same series is a
+natural cross-check.</p>
 </div>
 <div class="section level2">
 <h2 id="roadmap">Roadmap<a class="anchor" aria-label="anchor" href="#roadmap"></a>

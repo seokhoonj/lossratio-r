@@ -165,9 +165,9 @@ reserving 도구의 <em>방법론적 기반</em> 은 대부분 <em>손해보험
 손해율 자체가 <em>기간이 누적될수록</em> 분모가 자동으로 자라면서 신호가
 감쇠된다.</li>
 <li>
-<strong>다회성 보험금</strong> — 입원·1~5종 수술·통원 등은 한
-피보험자가 <em>여러 차례</em> 보험금을 받는다. 한 cohort 의 ultimate
-frequency 가 1 을 초과 가능.</li>
+<strong>다회성 보험금</strong> — 입원·수술·통원 등은 한 피보험자가
+<em>여러 차례</em> 보험금을 받는다. 한 cohort 의 ultimate frequency 가 1
+을 초과 가능.</li>
 <li>
 <strong>위험보험료 분리</strong> — 한국의 장기보험료는
 <em>위험보험료 + 저축보험료 + 부가보험료</em> 의 합이다. 손해율의 진짜
@@ -201,7 +201,6 @@ lineage 를 존중하되, <em>장기건강보험의 실무 use case 에서 바�
 1972  Bornhuetter-Ferguson           -- prior + observed loss 결합
 1984  Sherman                        -- chain ladder tail factor 외삽
 1985  Stanard (Cape Cod)             -- Bühlmann-Straub 의 reserving 응용
-                                       (workshop 발표 장소에서 작명)
 1993  Mack                           -- chain ladder 의 distribution-free MSE</code></pre>
 <p>장기건강보험에 의미 있는 <em>핵심 idea</em> 두 가지:</p>
 <ul>
@@ -301,8 +300,8 @@ paradigm 의 한계</em> 다.</p>
 <tr class="even">
 <td>(b)</td>
 <td>
-<strong>per-link
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>g</mi><mi>k</mi></msub><annotation encoding="application/x-tex">g_k</annotation></semantics></math></strong>
+<strong>per-link</strong>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>g</mi><mi>k</mi></msub><annotation encoding="application/x-tex">g_k</annotation></semantics></math>
 — Cape Cod 의 <em>cohort-level ELR</em> 을 <em>link 단위</em> 로
 정밀화</td>
 <td>분모효과·관성 (link 별 변동 추적)</td>
@@ -336,7 +335,7 @@ paradigm 의 한계</em> 다.</p>
 <strong>Sherman tail (예정)</strong> — chain ladder 외에 <em>어떤
 dev-decay series</em> 에도 적용 가능한 <em>generic tail 처리</em>
 </td>
-<td>진짜 ult 까지의 외삽</td>
+<td>진짜 ultimate 까지의 외삽</td>
 </tr>
 </tbody>
 </table>
@@ -371,7 +370,7 @@ dev-decay series</em> 에도 적용 가능한 <em>generic tail 처리</em>
 </tr>
 <tr class="even">
 <td><strong>exposure</strong></td>
-<td>위험 노출량 (장기 health 는 <em>위험보험료</em>)</td>
+<td>위험 노출량 (장기 health 는 <em>누적 위험보험료</em>)</td>
 <td>
 <code>exposure</code>, <code>incr_exposure</code>
 </td>
@@ -485,8 +484,8 @@ target</em> 가 있을 때 (Stanard 1985, Cape Cod)</td>
 <p>세 <em>aggregation 축</em> 의 의미:</p>
 <ul>
 <li>
-<strong>ED</strong> = <em>link 별
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>g</mi><mi>k</mi></msub><annotation encoding="application/x-tex">g_k</annotation></semantics></math></em>
+<strong>ED</strong> = <em>link 별</em>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>g</mi><mi>k</mi></msub><annotation encoding="application/x-tex">g_k</annotation></semantics></math>
 — dev-granular, cohort-uniform per link</li>
 <li>
 <strong>CC</strong> = <em>cohort 단위 single ELR</em> —
@@ -587,8 +586,12 @@ diagonal</em><a class="anchor" aria-label="anchor" href="#%EC%A7%84%EB%8B%A8-%EB
 <ul>
 <li>
 <strong>Analytical</strong> — <code><a href="../reference/dot-mack_f_var.html">.mack_f_var()</a></code> (Mack 1993)
-+ <code><a href="../reference/dot-ed_g_var.html">.ed_g_var()</a></code> (B-S 1970) 로 <em>closed-form</em> 표준오차.
-빠르고 <em>분포 가정 free</em>.</li>
++ <code><a href="../reference/dot-ed_g_var.html">.ed_g_var()</a></code> (B-S
+<ol start="1970" style="list-style-type: decimal">
+<li>로 <em>closed-form</em> 표준오차. 빠르고 <em>분포 가정
+free</em>.</li>
+</ol>
+</li>
 <li>
 <strong>Bootstrap</strong> — 잔차 paradigm (<code>cell</code> /
 <code>link</code> / <code>parametric</code>) 별 <em>forward
@@ -605,18 +608,22 @@ misspecification 신호</em>. 평소 <em>sanity check</em> 으로 <em>둘 다
 </h2>
 <p><code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> 의
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
-이후, observed dev range 의 <em>끝</em> 에서 <em>진짜 ult</em> 까지는
-<em>외삽</em> 이 필요. Sherman 1984 의 <em>log-linear curve fit</em>
-(exponential 또는 inverse power 형태) 도입 예정.</p>
+이후, observed dev range 의 <em>끝</em> 에서 <em>진짜 ultimate</em>
+까지는 <em>외삽</em> 이 필요. <code>fit_tail()</code> 함수 family 도입
+예정 — <em>Sherman 1984</em> 의 log-linear curve (exponential / inverse
+power / Weibull) 와 <em>Clark 2003</em> 의 parametric growth curve
+(loglogistic / Weibull MLE) 가 <em>하나의 진입점에서 method 인자로
+선택</em>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">sherman_tail</span><span class="op">(</span><span class="va">f_vec</span>, <span class="va">devs</span>, K_ultimate <span class="op">=</span> <span class="fl">360</span>,</span>
-<span>             method <span class="op">=</span> <span class="st">"exponential"</span>,</span>
-<span>             fit_dev_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="va">max_observed_dev</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">fit_tail</span><span class="op">(</span><span class="va">f_vec</span>, <span class="va">devs</span>, K_ultimate <span class="op">=</span> <span class="fl">360</span>,</span>
+<span>         method        <span class="op">=</span> <span class="st">"exponential"</span>,     <span class="co"># 또는 "inverse_power",</span></span>
+<span>                                            <span class="co"># "weibull", "loglogistic_mle"</span></span>
+<span>         fit_dev_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="va">max_observed_dev</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>장기건강보험은 <em>진짜 ult</em> 가 <em>수십 년</em> 이후이므로 tail
 외삽이 <em>결과의 critical fraction</em> 을 좌우한다. 도메인 expert 의
-<em>sensitivity analysis</em> 가 필수. 향후 Clark 2003 의 <em>parametric
-growth curve</em> (loglogistic / Weibull) 도 <em>advanced 옵션</em> 으로
-검토.</p>
+<em>sensitivity analysis</em> 가 필수 — Sherman descriptive fit 과 Clark
+MLE 를 <em>같은 series 에 동시 실행</em> 후 비교가 자연스러운
+cross-check.</p>
 </div>
 <div class="section level2">
 <h2 id="roadmap">11. Roadmap<a class="anchor" aria-label="anchor" href="#roadmap"></a>
@@ -631,9 +638,9 @@ method (section 6 참조). BF 는 <em>외부 prior ELR</em>, Cape Cod 는
 critical.</li>
 <li>
 <strong>frequency-severity 분해</strong> —
-<code>fit_ed(loss = "claim_count", exposure = "insureds")</code> 로
+<code>fit_ed(loss = "claim_count", exposure =   "insureds")</code> 로
 <em>frequency</em> 추정,
-<code>fit_ed(loss = "loss", exposure = "claim_count")</code> 로
+<code>fit_ed(loss = "loss", exposure =   "claim_count")</code> 로
 <em>severity</em> 추정. slot 재해석 만으로 framework 작동.</li>
 <li>
 <strong>lifetime / cohort 분석</strong> — 가입연도별 cohort 의
