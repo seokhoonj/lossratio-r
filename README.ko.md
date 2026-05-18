@@ -99,7 +99,7 @@ long-format `data.frame` / `data.table`. 컬럼명은 자유 —
 
 | [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md) 인자 | 의미 | 예시 |
 |----|----|----|
-| `cohort` | 인수 / 사고 시점 (Date) | `"uy_m"`, `"uy"` |
+| `cohort` | 코호트 시점 (장기 health 는 보통 인수 시점 UY) (Date) | `"uy_m"`, `"uy"` |
 | `calendar` *또는* `dev` | 달력 시점 (Date) *또는* 경과 기간 (int) | `"cy_m"` / `"dev_m"` |
 | `loss` | 기간별 *또는* 누적 손해 | `"incr_loss"` / `"loss"` |
 | `exposure` | 기간별 *또는* 누적 익스포저 (장기 health 는 위험보험료) | `"incr_exposure"` / `"exposure"` |

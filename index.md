@@ -65,7 +65,7 @@ arguments and the function standardises internally.
 
 | [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md) argument | Meaning | Example |
 |----|----|----|
-| `cohort` | Underwriting / accident period (Date) | `"uy_m"`, `"uy"` |
+| `cohort` | Cohort period (typically UY for long-term health) (Date) | `"uy_m"`, `"uy"` |
 | `calendar` *or* `dev` | Calendar period (Date) *or* `dev` period (integer) | `"cy_m"` / `"dev_m"` |
 | `loss` | Per-period *or* cumulative claim amount | `"incr_loss"` / `"loss"` |
 | `exposure` | Per-period *or* cumulative exposure (risk premium) | `"incr_exposure"` / `"exposure"` |
