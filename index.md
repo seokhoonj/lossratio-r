@@ -10,7 +10,8 @@ backtest validation.
 insurance**, covering cohort development analysis, stage-adaptive
 projection, regime detection, and backtest validation. Input is
 long-format experience data — each row (cohort × dev × demographic) maps
-to one Triangle cell, with loss and premium columns (`loss`, `prem`).
+to one Triangle cell, with loss and exposure columns (`loss`,
+`exposure`).
 
 In long-term health insurance, new claims and premium are generated and
 earned continuously within each cohort, so cumulative loss and exposure
@@ -34,24 +35,25 @@ It provides:
   (`Total`)
 - Age-to-age (`ATA`) and exposure-driven (`ED`) development modeling via
   the worker layer (`fit_cl`, `fit_ed`, `fit_ata`, `fit_intensity`)
-- Role-specific dispatchers (`fit_loss`, `fit_prem`) that project a
+- Role-specific dispatchers (`fit_loss`, `fit_exposure`) that project a
   single side with standard errors and confidence intervals
-- Loss ratio projection (`fit_lr`) composes loss and premium fits with
-  three methods:
-  - `"sa"` — **stage-adaptive** (default): exposure-driven before
-    maturity, chain ladder after
-  - `"ed"` — exposure-driven for all development periods
-  - `"cl"` — classical chain ladder (Mack model) Standard errors via
-    `se_method = "fixed"` (premium treated as known) or `"delta"` (delta
-    method on `L / P`); CIs via `conf_level`; bootstrap option for
-    empirical CIs.
+- Loss ratio projection (`fit_ratio`) composes loss and premium fits
+  with three methods:
+  - `"ed"` — **exposure-driven** (default): additive recursion across
+    all dev — unconditional safe baseline
+  - `"cl"` — classical chain ladder (Mack model)
+  - `"sa"` — stage-adaptive: ED before maturity, CL after — a
+    composition of the above two (requires maturity detection) Standard
+    errors via `se_method = "fixed"` (premium treated as known) or
+    `"delta"` (delta method on `L / P`); CIs via `conf_level`; bootstrap
+    option for empirical CIs.
 - Cell-selection diagnostics — which cells to use for estimation:
   - `detect_maturity` — dev axis: link beyond which ATA factors are
     stable
   - `detect_regime` — cohort axis: structural breaks across underwriting
 - Projection diagnostic:
   - `detect_convergence` — valuation $`v`$ at which the projected
-    ultimate loss ratio stops revising (operates on a fitted `LRFit`)
+    ultimate loss ratio stops revising (operates on a fitted `RatioFit`)
 - Backtest and triangle visualisations
 
 ## Expected input
@@ -64,11 +66,11 @@ arguments and the function standardises internally.
 | [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md) argument | Meaning | Example |
 |----|----|----|
 | `cohort` | Underwriting / accident period (Date) | `"uy_m"`, `"uy"` |
-| `calendar` *or* `dev` | Calendar period (Date) *or* dev period (integer) | `"cy_m"` / `"dev_m"` |
+| `calendar` *or* `dev` | Calendar period (Date) *or* `dev` period (integer) | `"cy_m"` / `"dev_m"` |
 | `loss` | Per-period *or* cumulative claim amount | `"incr_loss"` / `"loss"` |
-| `prem` | Per-period *or* cumulative premium | `"incr_prem"` / `"prem"` |
+| `exposure` | Per-period *or* cumulative exposure (risk premium) | `"incr_exposure"` / `"exposure"` |
+| `cell_type` *(default)* | Interpretation of `loss` / `exposure` values | `"incremental"` / `"cumulative"` |
 | `groups` *(optional)* | Grouping column(s): product, coverage, age, … | `"coverage"` |
-| `cell_type` *(default)* | Interpretation of `loss` / `prem` values | `"incremental"` / `"cumulative"` |
 
 Two more arguments govern interpretation:
 
@@ -84,7 +86,7 @@ Two more arguments govern interpretation:
 [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
 validates the schema, coerces date columns, derives the missing axis
 when one of `calendar` / `dev` is supplied, bins to `grain`, and emits
-cumulative + incremental cell values plus the derived `lr`, `margin`,
+cumulative + incremental cell values plus the derived `ratio`, `margin`,
 `profit` columns.
 
 ### Column convention
@@ -92,21 +94,23 @@ cumulative + incremental cell values plus the derived `lr`, `margin`,
 Throughout the package, cumulative is the unmarked default and
 per-period values carry an `incr_` (incremental) prefix:
 
-| Metric     | Cumulative (default) | Per-period (`incr_`) |
-|------------|----------------------|----------------------|
-| Loss       | `loss`               | `incr_loss`          |
-| Premium    | `prem`               | `incr_prem`          |
-| Loss ratio | `lr`                 | `incr_lr`            |
-| Margin     | `margin`             | `incr_margin`        |
-| Profit     | `profit`             | `incr_profit`        |
+| Metric   | Cumulative (default) | Per-period (`incr_`) |
+|----------|----------------------|----------------------|
+| Loss     | `loss`               | `incr_loss`          |
+| Exposure | `exposure`           | `incr_exposure`      |
+| Ratio    | `ratio`              | `incr_ratio`         |
+| Margin   | `margin`             | `incr_margin`        |
+| Profit   | `profit`             | `incr_profit`        |
 
-Raw `experience` input is per-period only (`incr_loss`, `incr_prem`);
+Raw `experience` input is per-period only (`incr_loss`,
+`incr_exposure`);
 [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
 produces both forms in the output. Worker fit functions (`fit_cl`,
-`fit_ed`, `fit_ata`, `fit_intensity`) take generic `target` / `exposure`
-/ `weight` arguments; dispatcher functions (`fit_loss`, `fit_prem`) and
-the composition `fit_lr` use role-specific `loss_*` / `prem_*` argument
-names. Cumulative slots (`"loss"`, `"prem"`) are the defaults.
+`fit_ed`, `fit_ata`, `fit_intensity`) take `loss` / `exposure` /
+`weight` arguments; dispatcher functions (`fit_loss`, `fit_exposure`)
+and the composition `fit_ratio` use role-specific `loss_*` /
+`exposure_*` argument names. Cumulative slots (`"loss"`, `"exposure"`)
+are the defaults.
 
 ## Installation
 
@@ -141,7 +145,7 @@ tri <- as_triangle(
   cohort    = "uy_m",
   calendar  = "cy_m",
   loss      = "incr_loss",
-  prem      = "incr_prem",
+  exposure  = "incr_exposure",
   cell_type = "incremental"   # default; use "cumulative" for pre-summed cells
 )
 
@@ -149,23 +153,23 @@ plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
 
 # Exposure-driven fit (additive ED intensity)
-ed <- fit_ed(tri, target = "loss", exposure = "prem")
+ed <- fit_ed(tri, loss = "loss", exposure = "exposure")
 
 # Chain ladder fit (multiplicative ATA factors)
-cl <- fit_cl(tri, target = "loss")
+cl <- fit_cl(tri, loss = "loss")
 plot(cl, type = "projection")
 
-# Loss ratio fit (stage-adaptive by default — ED before maturity, CL after)
-lr <- fit_lr(tri, method = "sa")
-plot(lr, metric = "lr", cell_type = "cumulative")
-summary(lr)
+# Ratio fit (stage-adaptive by default — ED before maturity, CL after)
+ratio <- fit_ratio(tri, method = "sa")
+plot(ratio, metric = "ratio", cell_type = "cumulative")
+summary(ratio)
 
 # Cell selection: maturity (dev axis) + regime (cohort axis)
 detect_maturity(tri[coverage == "surgery"])
 detect_regime(tri[coverage == "surgery"], method = "e_divisive")
 
 # Projection diagnostic: when does the projected ultimate LR stop revising?
-detect_convergence(lr)
+detect_convergence(ratio)
 ```
 
 ## Aggregation Frameworks
@@ -185,30 +189,33 @@ Original column names are preserved as attributes (`cohort`, `calendar`,
 
 ## Methods
 
+### Exposure-Driven (default)
+
+`fit_ratio(method = "ed")` (default) or
+[`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md).
+All loss increments use exposure (risk premium) as the denominator:
+$`\Delta C^L = g_k \cdot C^P_k`$. Unconditional safe baseline — no
+maturity dependency, robust under early-dev age-to-age volatility.
+
+### Chain Ladder
+
+`fit_ratio(method = "cl")` or
+[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md).
+Classical Mack (1993) chain ladder $`C^L_{k+1} = f_k \cdot C^L_k`$ with
+analytic standard errors. Suitable once age-to-age factors stabilise.
+
 ### Stage-Adaptive
 
-`fit_lr(method = "sa")` (default). Hybrid of exposure-driven and chain
-ladder, switching at the maturity point per group:
+`fit_ratio(method = "sa")`. Composition of the two: ED before maturity,
+CL after. Requires maturity detection (2-pass) and recovers the cohort’s
+observed level once factors stabilise while remaining robust early on.
 
 - Before maturity: exposure-driven projection
-  $`\Delta C^L = g_k \cdot C^P_k`$ — anchors the estimate to premium
+  $`\Delta C^L = g_k \cdot C^P_k`$ — anchors the estimate to exposure
   volume while age-to-age factors are volatile.
 - After maturity: chain ladder projection
   $`C^L_{k+1} = f_k \cdot C^L_k`$ — preserves the cohort’s observed
   level once age-to-age factors stabilise.
-
-### Exposure-Driven
-
-`fit_lr(method = "ed")`. All future loss increments use exposure (risk
-premium) as the denominator. Suitable when age-to-age factors are
-uninformative or unstable across the full development.
-
-### Chain Ladder
-
-`fit_lr(method = "cl")` or
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md).
-Classical Mack chain ladder with optional log-linear tail factor and
-analytic Mack standard errors.
 
 ## Visualisation
 
@@ -223,14 +230,14 @@ plot_triangle(x)     # lossratio generic — cell heatmap layout
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) and
 [`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
 work uniformly across `Triangle`, `Calendar`, `Link`, `ATAFit`, `EDFit`,
-`CLFit`, `LRFit`, `Maturity`, `Convergence`, and `Regime` objects.
+`CLFit`, `RatioFit`, `Maturity`, `Convergence`, and `Regime` objects.
 
 ## Documentation
 
 ``` r
 
 ?as_triangle
-?fit_lr
+?fit_ratio
 ?detect_regime
 vignette("regime-detection", package = "lossratio")
 ```

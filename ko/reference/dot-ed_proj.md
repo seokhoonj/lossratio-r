@@ -1,10 +1,9 @@
 # ED point projection for a single cohort
 
-Cumulative target recursion:
-`target_{k+1} = target_k + g_k * exposure_k`.
+Cumulative loss recursion: `loss_{k+1} = loss_k + g_k * exposure_k`.
 
 ## Usage
 
 ``` r
-.ed_proj(target_obs, exposure_proj, g_sel)
+.ed_proj(loss_obs, exposure_proj, g_sel)
 ```

@@ -75,14 +75,14 @@ are returned unchanged.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.cl_proj</span><span class="op">(</span><span class="va">target_obs</span>, <span class="va">f_sel</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.cl_proj</span><span class="op">(</span><span class="va">loss_obs</span>, <span class="va">f_sel</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-target-obs">target_obs<a class="anchor" aria-label="anchor" href="#arg-target-obs"></a></dt>
+<dl><dt id="arg-loss-obs">loss_obs<a class="anchor" aria-label="anchor" href="#arg-loss-obs"></a></dt>
 <dd><p>Numeric vector of cumulative observed values for a
 single cohort, ordered by development period.</p></dd>
 
@@ -93,7 +93,7 @@ single cohort, ordered by development period.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A numeric vector of the same length as <code>target_obs</code> with
+    <p>A numeric vector of the same length as <code>loss_obs</code> with
 unobserved cells filled by recursive chain ladder projection.</p>
     </div>
 

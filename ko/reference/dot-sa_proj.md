@@ -11,7 +11,7 @@ Internal helper that projects cumulative loss:
 ## Usage
 
 ``` r
-.sa_proj(loss_obs, prem_proj, g_sel, f_sel, maturity_from, method = "sa")
+.sa_proj(loss_obs, exposure_proj, g_sel, f_sel, maturity_from, method = "sa")
 ```
 
 ## Arguments
@@ -20,7 +20,7 @@ Internal helper that projects cumulative loss:
 
   Numeric vector of observed cumulative loss.
 
-- prem_proj:
+- exposure_proj:
 
   Numeric vector of projected cumulative exposure.
 
@@ -38,7 +38,7 @@ Internal helper that projects cumulative loss:
 
 - method:
 
-  One of `"sa"`, `"ed"`, or `"cl"`.
+  One of `"ed"`, `"cl"`, or `"sa"`.
 
 ## Value
 

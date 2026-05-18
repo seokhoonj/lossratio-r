@@ -20,31 +20,31 @@ The result is a long-format `data.table` with class
 premium, incremental and cumulative LR, margin, profit, and share
 columns within each `calendar` cell.
 
-The cumulative loss ratio is defined as: \$\$lr = loss / prem\$\$
+The cumulative loss ratio is defined as: \$\$ratio = loss / exposure\$\$
 
 For long-term health insurance applications, risk premium is commonly
-used as the `prem` measure.
+used as the `exposure` measure.
 
 Proportion variables are computed within each `calendar` cell:
 
 - `incr_loss_share = incr_loss / sum(incr_loss)`
 
-- `incr_prem_share = incr_prem / sum(incr_prem)`
+- `incr_exposure_share = incr_exposure / sum(incr_exposure)`
 
 - `loss_share = loss / sum(loss)`
 
-- `prem_share = prem / sum(prem)`
+- `exposure_share = exposure / sum(exposure)`
 
 Therefore, for a fixed `calendar` cell, the proportions sum to 1 across
 groups. These are useful for examining the composition of each calendar
 period across products or other grouping variables.
 
 Calendar derives `calendar = cohort + (dev - 1)` using the Triangle's
-`grain` attribute and aggregates the incremental `loss` / `prem` columns
-by `(groups, calendar)`. This works for Triangles built in either mode
-(with or without an original `calendar` column in the raw experience),
-since `cohort + dev` is always sufficient to reconstruct the calendar
-axis at the Triangle's grain.
+`grain` attribute and aggregates the incremental `loss` / `exposure`
+columns by `(groups, calendar)`. This works for Triangles built in
+either mode (with or without an original `calendar` column in the raw
+experience), since `cohort + dev` is always sufficient to reconstruct
+the calendar axis at the Triangle's grain.
 
 ## Usage
 
@@ -76,11 +76,11 @@ columns:
 
   Cumulative and per-period loss
 
-- prem, incr_prem:
+- exposure, incr_exposure:
 
-  Cumulative and per-period prem
+  Cumulative and per-period exposure
 
-- lr, incr_lr:
+- ratio, incr_ratio:
 
   Cumulative and per-period loss ratio
 
@@ -92,7 +92,7 @@ columns:
 
   Profit indicator
 
-- loss_share, incr_loss_share, prem_share, incr_prem_share:
+- loss_share, incr_loss_share, exposure_share, incr_exposure_share:
 
   Proportions within each `calendar` cell
 
@@ -109,7 +109,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 cal <- as_calendar(tri)

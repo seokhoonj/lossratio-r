@@ -146,7 +146,7 @@ link factor
 <code>dev_cand</code>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>∈</mo><mo stretchy="false" form="prefix">[</mo><msup><mi>k</mi><mo>*</mo></msup><mo>,</mo><msub><mi>K</mi><mi mathvariant="normal">max</mi></msub><mo>−</mo><mn>2</mn><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">\in [k^*, K_{\max}-2]</annotation></semantics></math>
 위에서 rolling <code><a href="../reference/backtest.html">backtest()</a></code> 를 돌려 각 시점의 예측 손해율
-경로 <code>lr</code> 을 만들고, 그 경로 위에서 네 가지 안정성 지표를
+경로 <code>ratio</code> 을 만들고, 그 경로 위에서 네 가지 안정성 지표를
 평가한다. <code>method =</code> 가 어떤 지표가 <code>conv_k</code> 를
 결정할지 선택한다. 네 지표 모두 항상 결과 객체에 반환되므로 사용자는
 다른 기준도 동시에 확인 가능.</p>
@@ -166,7 +166,7 @@ link factor
 <tbody>
 <tr class="odd">
 <td><code>"window"</code></td>
-<td>다음 <code>window</code> 시점 동안 <code>lr</code> 의 범위 (max -
+<td>다음 <code>window</code> 시점 동안 <code>ratio</code> 의 범위 (max -
 min)</td>
 <td>국소 안정 (zig-zag 없음)</td>
 <td>window 당 <code>max_drift</code> 이하로 떨어지는 <em>느린 단조
@@ -177,7 +177,7 @@ drift</em>
 <td>
 <code>"tail"</code> (default)</td>
 <td>
-<code>[k, K_{\max}]</code> 동안 <code>lr</code> 의 범위</td>
+<code>[k, K_{\max}]</code> 동안 <code>ratio</code> 의 범위</td>
 <td>전역 안정. 단조 drift 잡음</td>
 <td>tail 길이
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≥</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">\ge 2</annotation></semantics></math>
@@ -187,7 +187,7 @@ drift</em>
 <td><code>"slope"</code></td>
 <td>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="postfix">∥</mo><msub><mover><mi>β</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><mo stretchy="false" form="postfix">∥</mo></mrow><annotation encoding="application/x-tex">\|\hat\beta_k\|</annotation></semantics></math>,
-<code>lr ~ k</code> 의 <code>[k, K_{\max}]</code> 위 OLS 회귀
+<code>ratio ~ k</code> 의 <code>[k, K_{\max}]</code> 위 OLS 회귀
 기울기</td>
 <td>체계적 trend (방향성 있음)</td>
 <td>평균이 0 인 oscillation 통과시킴</td>
@@ -266,7 +266,7 @@ LR 단위) 가 있어, 비율
 <td>후보 dev 정수 벡터</td>
 </tr>
 <tr class="odd">
-<td><code>lr[i]</code></td>
+<td><code>ratio[i]</code></td>
 <td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><msub><mi>R</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">LR_k</annotation></semantics></math></td>
 <td>dev = <code>dev_cand[i]</code> 에서의 portfolio LR 예측</td>
 </tr>
@@ -337,7 +337,7 @@ MAD<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
@@ -359,7 +359,7 @@ per-method pass flag 컬럼이 있는 <code>data.table</code> 을
 반환한다:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span>, <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;      dev    lr   revision  drift_window  drift_tail   slope  dispersion</span></span>
+<pre><code><span><span class="co">#&gt;      dev ratio   revision  drift_window  drift_tail   slope  dispersion</span></span>
 <span><span class="co">#&gt;    &lt;int&gt; &lt;num&gt;      &lt;num&gt;         &lt;num&gt;       &lt;num&gt;   &lt;num&gt;       &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:     4 0.62          NA          0.07        0.07   0.001        0.47</span></span>
 <span><span class="co">#&gt; 2:     5 0.63        0.01          0.06        0.06   0.001        0.47</span></span>
@@ -397,9 +397,9 @@ reserve 에 해로운 silent-revision 패턴.</li>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>&lt;</mo><mn>5</mn></mrow><annotation encoding="application/x-tex">&lt; 5</annotation></semantics></math>)
 면 tail point 가 매우 적어 결정된 거라 실제로는 약한 증거; 한 diagonal
 만 추가돼도 unconverge 가능.</li>
-<li>예측 손해율의 점추정과 표준오차는 <code>fit_lr()$summary</code> 에서
-직접 읽기. <code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> 는 <em>진단 도구</em> 이지
-추정기 자체가 아니다. reserve 의 점추정과 불확실성은 fit 객체에서
+<li>예측 손해율의 점추정과 표준오차는 <code>fit_ratio()$summary</code>
+에서 직접 읽기. <code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> 는 <em>진단 도구</em>
+이지 추정기 자체가 아니다. reserve 의 점추정과 불확실성은 fit 객체에서
 나온다.</li>
 </ul>
 </div>
@@ -415,7 +415,7 @@ reserve 에 해로운 silent-revision 패턴.</li>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>∈</mo><mo stretchy="false" form="prefix">{</mo><mn>4</mn><mo>,</mo><mn>5</mn><mo>,</mo><mi>…</mi><mo>,</mo><mn>28</mn><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">k \in \{4, 5, \dots, 28\}</annotation></semantics></math>
 (총 25개) 지만 <code>holdout = dev_max - k &lt;= holdout_max</code> 인
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
-만 finite <code>lr[i]</code> 값을 받고, 나머지는 <code>NA</code> 로
+만 finite <code>ratio[i]</code> 값을 받고, 나머지는 <code>NA</code> 로
 마스킹.</p>
 <p><code>holdout_max</code> 기본값은
 <code>max(window, floor((dev_max - mat_k) / 2))</code>. 키우면 더 이른
@@ -429,7 +429,7 @@ reserve 에 해로운 silent-revision 패턴.</li>
 <p>dev 축을 공유하는 5개 패널:</p>
 <ol style="list-style-type: decimal">
 <li>
-<strong><code>lr</code></strong> — metric 들이 계산되는 LR
+<strong><code>ratio</code></strong> — metric 들이 계산되는 LR
 궤적.</li>
 <li>
 <strong><code>drift_window</code></strong> — 국소 윈도우 metric,
@@ -576,7 +576,7 @@ valuation. 부제목에 활성 <code>method</code> 표기. <em>어느 절이 bin
 <li>
 <code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> 로
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><mo>≥</mo><msup><mi>k</mi><mo>*</mo></msup></mrow><annotation encoding="application/x-tex">k^{**} \ge k^*</annotation></semantics></math>
-검출. 예측 손해율은 <code>fit_lr()$summary</code> 에서 읽고 위의
+검출. 예측 손해율은 <code>fit_ratio()$summary</code> 에서 읽고 위의
 reserving 주의사항을 적용.</li>
 </ol>
 <p>이 순서는 <em>코호트 동질성</em>, <em>link 재현성</em>, <em>level
@@ -595,19 +595,19 @@ reserving 주의사항을 적용.</li>
 일 때만 선언 가능. 관측 기간이 짧으면 모든 method 가 <code>NA</code>
 반환.</li>
 <li>
-<strong>모형 조건부</strong>: 예측 LR 은 <code><a href="../reference/fit_lr.html">fit_lr()</a></code> 로
-산출. <code><a href="../reference/fit_lr.html">fit_lr()</a></code> 이 내부적으로 <code><a href="../reference/fit_loss.html">fit_loss()</a></code>
+<strong>모형 조건부</strong>: 예측 LR 은 <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> 로
+산출. <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> 이 내부적으로 <code><a href="../reference/fit_loss.html">fit_loss()</a></code>
 (default <code>method = "sa"</code> — 단계 적응형) 와
-<code><a href="../reference/fit_prem.html">fit_prem()</a></code> 을 합성하므로, 그 안의 선택 (loss method, regime
-필터, maturity 인자) 이 <code>conv_k</code> 로 흘러간다. 결과 해석 시
-<code>fit_lr</code> 설정을 같이 확인할 것. <code>...</code> 으로
-<code>loss_method =</code>, <code>loss_regime =</code> 등 override
+<code><a href="../reference/fit_exposure.html">fit_exposure()</a></code> 을 합성하므로, 그 안의 선택 (loss method,
+regime 필터, maturity 인자) 이 <code>conv_k</code> 로 흘러간다. 결과
+해석 시 <code>fit_ratio</code> 설정을 같이 확인할 것. <code>...</code>
+으로 <code>loss_method =</code>, <code>loss_regime =</code> 등 override
 가능.</li>
 <li>
 <strong>포트폴리오 집계</strong>: portfolio LR 은 그룹별 ultimate 의
-익스포저 가중 (<code>sum(loss_ult) / sum(premium_ult)</code>). 달력 연도
-충격 (요율 개정, 의료비 인플레) 은 모든 그룹을 동시에 움직일 수 있고,
-drift metric 들은 이를 진짜 수렴과 구별하지 못한다.</li>
+익스포저 가중 (<code>sum(loss_ult) / sum(exposure_ult)</code>). 달력
+연도 충격 (요율 개정, 의료비 인플레) 은 모든 그룹을 동시에 움직일 수
+있고, drift metric 들은 이를 진짜 수렴과 구별하지 못한다.</li>
 <li>
 <strong>다중 그룹 triangle</strong>: 현재 구현은
 <code>dispersion</code> 을 그룹 간 median 으로 collapse. 그룹이 다르게
@@ -626,7 +626,7 @@ drift metric 들은 이를 진짜 수렴과 구별하지 못한다.</li>
 <li>
 <code><a href="../reference/detect_convergence.html">?detect_convergence</a></code>, <code><a href="../reference/detect_maturity.html">?detect_maturity</a></code>,
 <code><a href="../reference/backtest.html">?backtest</a></code>, <code><a href="../reference/detect_regime.html">?detect_regime</a></code>,
-<code><a href="../reference/fit_lr.html">?fit_lr</a></code>.</li>
+<code><a href="../reference/fit_ratio.html">?fit_ratio</a></code>.</li>
 <li>
 <code>vignette("regime-detection")</code> — 위 워크플로 1단계의
 코호트 동질성 진단.</li>

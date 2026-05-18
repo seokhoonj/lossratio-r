@@ -33,16 +33,16 @@
 최대 dev `dev_max` ($`K_{\max}`$) 까지에 한해 *관찰* 만 가능. 검출기는
 후보 시점 시퀀스 `dev_cand` $`\in [k^*, K_{\max}-2]`$ 위에서 rolling
 [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
-를 돌려 각 시점의 예측 손해율 경로 `lr` 을 만들고, 그 경로 위에서 네
+를 돌려 각 시점의 예측 손해율 경로 `ratio` 을 만들고, 그 경로 위에서 네
 가지 안정성 지표를 평가한다. `method =` 가 어떤 지표가 `conv_k` 를
 결정할지 선택한다. 네 지표 모두 항상 결과 객체에 반환되므로 사용자는
 다른 기준도 동시에 확인 가능.
 
 | Method | 지표 | 잡는 것 | 놓치는 것 |
 |----|----|----|----|
-| `"window"` | 다음 `window` 시점 동안 `lr` 의 범위 (max - min) | 국소 안정 (zig-zag 없음) | window 당 `max_drift` 이하로 떨어지는 *느린 단조 drift* |
-| `"tail"` (default) | `[k, K_{\max}]` 동안 `lr` 의 범위 | 전역 안정. 단조 drift 잡음 | tail 길이 $`\ge 2`$ 필요. 가장 빠른 통과 시점이 `"window"` 보다 늦음 |
-| `"slope"` | $`\|\hat\beta_k\|`$, `lr ~ k` 의 `[k, K_{\max}]` 위 OLS 회귀 기울기 | 체계적 trend (방향성 있음) | 평균이 0 인 oscillation 통과시킴 |
+| `"window"` | 다음 `window` 시점 동안 `ratio` 의 범위 (max - min) | 국소 안정 (zig-zag 없음) | window 당 `max_drift` 이하로 떨어지는 *느린 단조 drift* |
+| `"tail"` (default) | `[k, K_{\max}]` 동안 `ratio` 의 범위 | 전역 안정. 단조 drift 잡음 | tail 길이 $`\ge 2`$ 필요. 가장 빠른 통과 시점이 `"window"` 보다 늦음 |
+| `"slope"` | $`\|\hat\beta_k\|`$, `ratio ~ k` 의 `[k, K_{\max}]` 위 OLS 회귀 기울기 | 체계적 trend (방향성 있음) | 평균이 0 인 oscillation 통과시킴 |
 | `"all"` | `"window"` + `"tail"` + `"slope"` 모두 통과 | 위 셋 다 잡음 | (가장 strict) |
 
 모든 method 에서 추가로 코호트 간 분산 조건
@@ -73,7 +73,7 @@ $`1/\sqrt{n}`$ 으로 줄어드는 반면 $`R_k`$ 는 numerical noise floor
 |----|----|----|
 | `dev_max` | $`K_{\max}`$ | 관측 가능한 최대 dev (스칼라) |
 | `dev_cand` | $`k \in [k^*, K_{\max}-2]`$ | 후보 dev 정수 벡터 |
-| `lr[i]` | $`LR_k`$ | dev = `dev_cand[i]` 에서의 portfolio LR 예측 |
+| `ratio[i]` | $`LR_k`$ | dev = `dev_cand[i]` 에서의 portfolio LR 예측 |
 | `revision[i]` | $`R_k = \|LR_k - LR_{k-1}\|`$ | 인접 step 갱신 (진단용) |
 | `drift_window[i]` | $`[k, k+W-1]`$ 위 $`\max - \min`$ | 국소 윈도우 범위 |
 | `drift_tail[i]` | $`[k, K_{\max}]`$ 위 $`\max - \min`$ | tail 범위 (전역 안정) |
@@ -98,7 +98,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 res <- detect_convergence(tri)
@@ -127,7 +127,7 @@ print(res)
 head(summary(res), 6)
 ```
 
-    #>      dev    lr   revision  drift_window  drift_tail   slope  dispersion
+    #>      dev ratio   revision  drift_window  drift_tail   slope  dispersion
     #>    <int> <num>      <num>         <num>       <num>   <num>       <num>
     #> 1:     4 0.62          NA          0.07        0.07   0.001        0.47
     #> 2:     5 0.63        0.01          0.06        0.06   0.001        0.47
@@ -156,7 +156,8 @@ Reserving 응용 시:
 - **evidence span** `dev_max - conv_k` 도 같이 확인. `conv_k` 가
   `dev_max` 근처 (span $`< 5`$) 면 tail point 가 매우 적어 결정된 거라
   실제로는 약한 증거; 한 diagonal 만 추가돼도 unconverge 가능.
-- 예측 손해율의 점추정과 표준오차는 `fit_lr()$summary` 에서 직접 읽기.
+- 예측 손해율의 점추정과 표준오차는 `fit_ratio()$summary` 에서 직접
+  읽기.
   [`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md)
   는 *진단 도구* 이지 추정기 자체가 아니다. reserve 의 점추정과
   불확실성은 fit 객체에서 나온다.
@@ -170,8 +171,8 @@ Reserving 응용 시:
 
 예시: `dev_max = 30`, `mat_k = 4`, `holdout_max = 13` 일 때 — 후보는
 $`k \in \{4, 5, \dots, 28\}`$ (총 25개) 지만
-`holdout = dev_max - k <= holdout_max` 인 $`k`$ 만 finite `lr[i]` 값을
-받고, 나머지는 `NA` 로 마스킹.
+`holdout = dev_max - k <= holdout_max` 인 $`k`$ 만 finite `ratio[i]`
+값을 받고, 나머지는 `NA` 로 마스킹.
 
 `holdout_max` 기본값은 `max(window, floor((dev_max - mat_k) / 2))`.
 키우면 더 이른 시점까지 진단 가능 — 다만 refit 자료가 줄어들어 신뢰도가
@@ -186,7 +187,7 @@ plot(res)
 
 dev 축을 공유하는 5개 패널:
 
-1.  **`lr`** — metric 들이 계산되는 LR 궤적.
+1.  **`ratio`** — metric 들이 계산되는 LR 궤적.
 2.  **`drift_window`** — 국소 윈도우 metric, 가로 점선 `max_drift`.
 3.  **`drift_tail`** — tail metric, 동일 점선.
 4.  **`|slope|`** — 가로 점선 `max_slope`.
@@ -247,7 +248,7 @@ claim 노이즈 때문에 실 portfolio 에서 보기 어렵고, $`0.20`$ 이상
     [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
     로 $`k^*`$ 산출.
 3.  [`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md)
-    로 $`k^{**} \ge k^*`$ 검출. 예측 손해율은 `fit_lr()$summary` 에서
+    로 $`k^{**} \ge k^*`$ 검출. 예측 손해율은 `fit_ratio()$summary` 에서
     읽고 위의 reserving 주의사항을 적용.
 
 이 순서는 *코호트 동질성*, *link 재현성*, *level 수렴* 세 속성의 분리를
@@ -265,18 +266,18 @@ claim 노이즈 때문에 실 portfolio 에서 보기 어렵고, $`0.20`$ 이상
   slope 의 경우 2) 일 때만 선언 가능. 관측 기간이 짧으면 모든 method 가
   `NA` 반환.
 - **모형 조건부**: 예측 LR 은
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
   로 산출.
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
   이 내부적으로
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
   (default `method = "sa"` — 단계 적응형) 와
-  [`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md)
+  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
   을 합성하므로, 그 안의 선택 (loss method, regime 필터, maturity 인자)
-  이 `conv_k` 로 흘러간다. 결과 해석 시 `fit_lr` 설정을 같이 확인할 것.
-  `...` 으로 `loss_method =`, `loss_regime =` 등 override 가능.
+  이 `conv_k` 로 흘러간다. 결과 해석 시 `fit_ratio` 설정을 같이 확인할
+  것. `...` 으로 `loss_method =`, `loss_regime =` 등 override 가능.
 - **포트폴리오 집계**: portfolio LR 은 그룹별 ultimate 의 익스포저 가중
-  (`sum(loss_ult) / sum(premium_ult)`). 달력 연도 충격 (요율 개정,
+  (`sum(loss_ult) / sum(exposure_ult)`). 달력 연도 충격 (요율 개정,
   의료비 인플레) 은 모든 그룹을 동시에 움직일 수 있고, drift metric 들은
   이를 진짜 수렴과 구별하지 못한다.
 - **다중 그룹 triangle**: 현재 구현은 `dispersion` 을 그룹 간 median
@@ -291,7 +292,7 @@ claim 노이즈 때문에 실 portfolio 에서 보기 어렵고, $`0.20`$ 이상
   [`?detect_maturity`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md),
   [`?backtest`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md),
   [`?detect_regime`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md),
-  [`?fit_lr`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md).
+  [`?fit_ratio`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md).
 - `vignette("regime-detection")` — 위 워크플로 1단계의 코호트 동질성
   진단.
 - [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/ko/articles/backtest.md)

@@ -52,7 +52,7 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 ```
 
@@ -68,7 +68,7 @@ r <- detect_regime(tri_sur, method = "e_divisive")
 r
 #> <Regime>
 #>   method    : e_divisive
-#>   target    : lr
+#>   loss      : ratio
 #>   treatment : latest_only
 #>   window (window) : dev_m 1-4
 #>   cohorts    : 33 analysed (3 dropped)
@@ -91,7 +91,7 @@ sweep picks the largest window that retains enough cohorts.
 summary(r)
 #> Cohort regime detection summary
 #>   method    : e_divisive
-#>   target    : lr
+#>   loss      : ratio
 #>   treatment : latest_only
 #>   window    : dev_m 1-4
 #>   cohorts   : 33 analysed (3 dropped)
@@ -159,40 +159,40 @@ Arrows indicate the loadings of each development-period feature on the
 PC axes — useful for reading *how* the regimes differ (e.g. whether the
 shift primarily affects early or late development).
 
-## Choice of target
+## Choice of loss
 
-The `target` argument controls *which signal* the change-point algorithm
-operates on. Different targets surface different kinds of regime change,
-and each has its own failure mode. Pick the target that matches the
+The `loss` argument controls *which signal* the change-point algorithm
+operates on. Different metrics surface different kinds of regime change,
+and each has its own failure mode. Pick the metric that matches the
 event you suspect — and always cross-check with domain knowledge.
 
 Order:
-`c("lr", "loss_ata", "premium_ata", "loss_ed", "premium_ed", "loss", "premium")`
+`c("ratio", "loss_ata", "exposure_ata", "loss_ed", "exposure_ed", "loss", "exposure")`
 — cleanest to riskiest.
 
-| Scenario to detect | Recommended `target` | Caveat |
+| Scenario to detect | Recommended `loss` | Caveat |
 |----|----|----|
-| General LR projection accuracy (default) | `"lr"` | Differential growth (loss vs premium scaling unevenly) can produce smooth drift that |
+| General LR projection accuracy (default) | `"ratio"` | Differential growth (loss vs premium scaling unevenly) can produce smooth drift that |
 |  |  | is mis-labelled as a sharp break. |
 | Loss development *speed* change (CL `f`) | `"loss_ata"` *(diagnostic)* | Loses dev = 1 row + complete-row requirement → sample size shrinks; over-sensitive on |
 |  |  | low-CV factors. |
-| Premium recognition *speed* change | `"premium_ata"` *(diagnostic)* | Same caveats as `"loss_ata"`. |
+| Premium recognition *speed* change | `"exposure_ata"` *(diagnostic)* | Same caveats as `"loss_ata"`. |
 | Loss *intensity* per unit exposure (ED `g`) | `"loss_ed"` *(diagnostic)* | Cross-normalised by premium; harder to interpret in isolation. |
-| Same as `premium_ata` (API symmetry) | `"premium_ed"` *(alias)* | Equivalent to `premium_ata` after PCA standardization — same changes. |
+| Same as `exposure_ata` (API symmetry) | `"exposure_ed"` *(alias)* | Equivalent to `exposure_ata` after PCA standardization — same changes. |
 | Loss *level* shift (claim handling, coverage) | `"loss"` | Raw cumulative — book-size growth dominates; false positives common. |
-| Premium *level* shift (rate, channel) | `"premium"` | Same caveat as `"loss"`. |
+| Premium *level* shift (rate, channel) | `"exposure"` | Same caveat as `"loss"`. |
 
 Notes:
 
-- `"lr"` is the default because the loss ratio is the package’s
-  projection target and is naturally scale-invariant (immune to
+- `"ratio"` is the default because the loss ratio is the package’s
+  projection metric and is naturally scale-invariant (immune to
   book-size growth).
-- `"loss"` / `"premium"` use the raw cumulative columns and are most
+- `"loss"` / `"exposure"` use the raw cumulative columns and are most
   useful when the suspected event is a sudden *absolute level shift*
   (e.g. a channel termination dropping premium volume). Smooth book
   growth will frequently produce false positives — read every result
   alongside a known timeline of underwriting / claims-handling events.
-- `"loss_ata"`, `"premium_ata"`, `"loss_ed"` are diagnostic targets
+- `"loss_ata"`, `"exposure_ata"`, `"loss_ed"` are diagnostic metrics
   derived inline (not stored on the `Triangle`). They map directly to
   the CL `f`-factor / ED `g`-factor used during fitting, so a change
   detected here corresponds to a violation of the model’s stationarity
@@ -201,13 +201,13 @@ Notes:
 
 ``` r
 
-# Try several targets and compare the changes they surface
-detect_regime(tri_sur, target = "lr")
-detect_regime(tri_sur, target = "loss")
-detect_regime(tri_sur, target = "loss_ata")
+# Try several metrics and compare the changes they surface
+detect_regime(tri_sur, loss = "ratio")
+detect_regime(tri_sur, loss = "loss")
+detect_regime(tri_sur, loss = "loss_ata")
 ```
 
-The changes across targets are usually similar for strong, real regime
+The changes across metrics are usually similar for strong, real regime
 shifts and diverge when the signal is weak or driven by book-size growth
 — both useful diagnostics.
 
@@ -248,7 +248,7 @@ r2 <- detect_regime(tri_sur, method = "e_divisive", n_regimes = 3)
 summary(r2)
 #> Cohort regime detection summary
 #>   method    : e_divisive
-#>   target    : lr
+#>   loss      : ratio
 #>   treatment : latest_only
 #>   window    : dev_m 1-4
 #>   cohorts   : 33 analysed (3 dropped)
@@ -279,7 +279,7 @@ tri_all <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 r_all   <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 r_all$changes
@@ -302,16 +302,16 @@ errors out.
 `plot(r_all)` returns a named list of per-group `ggplot` panels (keyed
 by group value).
 
-## Relation to `fit_lr()`
+## Relation to `fit_ratio()`
 
 [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
 is a *preprocessing diagnostic*, not a modification of the
-[`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
 framework. Its output is useful in two ways:
 
 1.  **Stratified fitting**: if two clearly distinct regimes are
     detected, fitting
-    [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+    [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
     separately on each regime subset often yields sharper stable-CLR
     estimates than a pooled fit.
 

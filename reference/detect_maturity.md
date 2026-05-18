@@ -24,21 +24,21 @@ raw variability of observed ata factors across cohorts, while `rse`
 reflects the precision of the WLS-estimated factor. Using both criteria
 together provides a more robust maturity assessment than either alone.
 
-Default `target = "loss"` (cumulative loss). Maturity in chain ladder is
+Default `loss = "loss"` (cumulative loss). Maturity in chain ladder is
 methodologically a property of *loss* development: the ATA factors of
 cumulative loss stabilize when chain ladder becomes reliable, which in
-turn makes downstream LR projection reliable. ATA factors of `lr` itself
-(a ratio of two cumulative quantities) carry additional noise and tend
-to give less precise maturity decisions. Override `target` only when you
-specifically want maturity of prem development or another cumulative
-metric.
+turn makes downstream LR projection reliable. ATA factors of `ratio`
+itself (a ratio of two cumulative quantities) carry additional noise and
+tend to give less precise maturity decisions. Override `loss` only when
+you specifically want maturity of exposure development or another
+cumulative metric.
 
 ## Usage
 
 ``` r
 detect_maturity(
   x,
-  target = "loss",
+  loss = "loss",
   groups = NULL,
   weight = NULL,
   alpha = 1,
@@ -56,7 +56,7 @@ detect_maturity(
 
   A `Triangle` object.
 
-- target:
+- loss:
 
   Cumulative metric for the link factor. Default `"loss"` (chain-ladder
   convention; see Description). Forwarded to
@@ -74,8 +74,9 @@ detect_maturity(
   groups and returns a single global maturity row. Any non-`NULL`,
   non-empty value must be a subset of `attr(x, "groups")`; column order
   is irrelevant. When the requested `groups` is coarser than the
-  Triangle grouping, the underlying `loss` / `prem` / `lr` columns are
-  re-aggregated to the coarser partition before computing ata links.
+  Triangle grouping, the underlying `loss` / `exposure` / `ratio`
+  columns are re-aggregated to the coarser partition before computing
+  ata links.
 
 - weight:
 

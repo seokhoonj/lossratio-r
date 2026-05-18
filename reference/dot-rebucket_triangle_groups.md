@@ -1,10 +1,10 @@
 # Internal: rebucket a `Triangle` to a coarser `groups` partition
 
-Re-aggregates `loss` / `prem` / `incr_loss` / `incr_prem` over the
-dropped grouping columns and recomputes `lr` / `incr_lr` as ratios of
-the aggregated totals. Other cell-level columns (`margin`, `profit`,
-`loss_share`, ...) are not regenerated – the rebucketed object is
-intended for
+Re-aggregates `loss` / `exposure` / `incr_loss` / `incr_exposure` over
+the dropped grouping columns and recomputes `ratio` / `incr_ratio` as
+ratios of the aggregated totals. Other cell-level columns (`margin`,
+`profit`, `loss_share`, ...) are not regenerated – the rebucketed object
+is intended for
 [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md)
 consumption only.
 
@@ -28,4 +28,4 @@ consumption only.
 ## Value
 
 A `Triangle` with `attr(., "groups")` set to the requested value and
-`loss` / `prem` / `lr` aggregated to the requested partition.
+`loss` / `exposure` / `ratio` aggregated to the requested partition.

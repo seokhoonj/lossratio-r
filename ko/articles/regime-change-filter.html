@@ -116,8 +116,8 @@ only post-change cohorts.</li>
 <strong>Post-maturity (CL region):</strong> diagonal cut — keep only
 the recent <code>N</code> calendar diagonals.</li>
 </ul>
-<p><code>loss_regime</code> (and its premium-side sibling
-<code>prem_regime</code>) implements that split.</p>
+<p><code>loss_regime</code> (and its exposure-side sibling
+<code>exposure_regime</code>) implements that split.</p>
 </div>
 <div class="section level2">
 <h2 id="two-axis-asymmetry">Two-axis asymmetry<a class="anchor" aria-label="anchor" href="#two-axis-asymmetry"></a>
@@ -181,13 +181,14 @@ hasn’t yet observed late-dev development.</li>
 <div class="section level2">
 <h2 id="api">API<a class="anchor" aria-label="anchor" href="#api"></a>
 </h2>
-<p><code><a href="../reference/fit_lr.html">fit_lr()</a></code> takes two role-specific regime arguments —
-<code>loss_regime</code> (loss-side filter) and <code>prem_regime</code>
-(premium-side filter; defaults to <code>loss_regime</code>).
-<code><a href="../reference/fit_loss.html">fit_loss()</a></code> / <code><a href="../reference/fit_prem.html">fit_prem()</a></code> take a single
-<code>regime</code> argument. <code><a href="../reference/backtest.html">backtest()</a></code> mirrors
-<code>fit_lr</code> with <code>loss_regime</code> /
-<code>prem_regime</code>. All four accept the same input types:</p>
+<p><code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> takes two role-specific regime arguments —
+<code>loss_regime</code> (loss-side filter) and
+<code>exposure_regime</code> (exposure-side filter; defaults to
+<code>loss_regime</code>). <code><a href="../reference/fit_loss.html">fit_loss()</a></code> /
+<code><a href="../reference/fit_exposure.html">fit_exposure()</a></code> take a single <code>regime</code> argument.
+<code><a href="../reference/backtest.html">backtest()</a></code> mirrors <code>fit_ratio</code> with
+<code>loss_regime</code> / <code>exposure_regime</code>. All four accept
+the same input types:</p>
 <table class="table">
 <colgroup>
 <col width="37%">
@@ -233,36 +234,37 @@ explicit:</p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Manual change date via regime_at() — wrap a literal date in a Regime</span></span>
-<span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
-<span>       loss_regime <span class="op">=</span> <span class="fu"><a href="../reference/regime_at.html">regime_at</a></span><span class="op">(</span>change <span class="op">=</span> <span class="st">"2024-07-01"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
+<span>          loss_regime <span class="op">=</span> <span class="fu"><a href="../reference/regime_at.html">regime_at</a></span><span class="op">(</span>change <span class="op">=</span> <span class="st">"2024-07-01"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Regime object from detect_regime() directly</span></span>
 <span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>, loss_regime <span class="op">=</span> <span class="va">reg</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>, loss_regime <span class="op">=</span> <span class="va">reg</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># "auto" sentinel — detect_regime() is run internally</span></span>
-<span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>, loss_regime <span class="op">=</span> <span class="st">"auto"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>, loss_regime <span class="op">=</span> <span class="st">"auto"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Closure — defers detection until the fit sees the (filtered) triangle</span></span>
-<span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
-<span>       loss_regime <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">tri</span><span class="op">)</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>In simple modes (<code>fit_lr(method ∈ {"ed","cl"})</code>) the same
-argument acts as a plain cohort cut. The workers (<code>fit_ata</code>,
-<code>fit_ed</code>, <code>fit_cl</code>, <code>fit_intensity</code>)
-expose the same 4-type <code>regime</code> argument (<code>NULL</code> /
-<code>Regime</code> / <code>"auto"</code> / closure). Wrap a
-domain-knowledge date with <code>regime_at(change = "2024-07-01")</code>
-to construct a <code>Regime</code> without running detection.</p>
+<span><span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
+<span>          loss_regime <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">tri</span><span class="op">)</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>In simple modes (<code>fit_ratio(method ∈ {"ed","cl"})</code>) the
+same argument acts as a plain cohort cut. The workers
+(<code>fit_ata</code>, <code>fit_ed</code>, <code>fit_cl</code>,
+<code>fit_intensity</code>) expose the same 4-type <code>regime</code>
+argument (<code>NULL</code> / <code>Regime</code> / <code>"auto"</code>
+/ closure). Wrap a domain-knowledge date with
+<code>regime_at(change = "2024-07-01")</code> to construct a
+<code>Regime</code> without running detection.</p>
 </div>
 <div class="section level2">
 <h2 id="sa-mode-hybrid-behaviour">SA-mode hybrid behaviour<a class="anchor" aria-label="anchor" href="#sa-mode-hybrid-behaviour"></a>
 </h2>
 <p>The hybrid split activates only for
-<code>fit_lr(method = "sa")</code> with both <code>loss_regime</code>
+<code>fit_ratio(method = "sa")</code> with both <code>loss_regime</code>
 and <code>recent</code>:</p>
 <ul>
 <li>dev ≤
@@ -281,7 +283,7 @@ raw triangle (so noisy post-change windows do not destabilise
 then the hybrid filter is applied to the actual fit using the fixed
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>.</p>
 <p><code>plot_triangle(view = "usage")</code> visualises which cells
-each filter configuration feeds to <code>fit_lr</code>:</p>
+each filter configuration feeds to <code>fit_ratio</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, view <span class="op">=</span> <span class="st">"usage"</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>                            <span class="co"># full</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_sur</span>, view <span class="op">=</span> <span class="st">"usage"</span>, recent <span class="op">=</span> <span class="fl">12L</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span>              <span class="co"># recent</span></span>
@@ -380,11 +382,11 @@ group:</p>
 <span>    cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>    calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>    loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>    prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>    exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
 <span>  <span class="op">)</span></span>
 <span>  <span class="va">reg_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_g</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri_g</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
-<span>         loss_regime <span class="op">=</span> <span class="va">reg_g</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri_g</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
+<span>            loss_regime <span class="op">=</span> <span class="va">reg_g</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>A future extension may accept
 <code>loss_regime = list(surgery = regime_at(...), cancer = regime_at(...))</code>.
@@ -402,18 +404,19 @@ and link factors
 become noisy. A practical threshold is <code>n_post ≳ 6</code>. Below
 that, prefer <code>recent</code> alone, or wait for credibility-weighted
 blending of pre- and post-change factors (planned).</p>
-<p>Note also that <code>loss_regime</code> / <code>prem_regime</code>
-only filter the data feeding link factor estimation. Once the factors
-are fixed, all cohorts share them, so pre-change ultimates inherit the
-post-change dynamics.</p>
+<p>Note also that <code>loss_regime</code> /
+<code>exposure_regime</code> only filter the data feeding link factor
+estimation. Once the factors are fixed, all cohorts share them, so
+pre-change ultimates inherit the post-change dynamics.</p>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>
 </h2>
 <ul>
 <li>
-<code><a href="../articles/projection.html">vignette("projection")</a></code> — <code><a href="../reference/fit_lr.html">fit_lr()</a></code> and the
-<code>"sa"</code>, <code>"ed"</code>, <code>"cl"</code> methods.</li>
+<code><a href="../articles/projection.html">vignette("projection")</a></code> — <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> and
+the <code>"sa"</code>, <code>"ed"</code>, <code>"cl"</code>
+methods.</li>
 <li>
 <code><a href="../articles/backtest.html">vignette("backtest")</a></code> — diagnosing the impact of
 <code>recent</code> and <code>loss_regime</code>.</li>
@@ -421,8 +424,9 @@ post-change dynamics.</p>
 <code><a href="../articles/regime.html">vignette("regime")</a></code> — <code><a href="../reference/detect_regime.html">detect_regime()</a></code>
 reference.</li>
 <li>
-<code><a href="../reference/fit_lr.html">?fit_lr</a></code>, <code><a href="../reference/fit_ata.html">?fit_ata</a></code>, <code><a href="../reference/fit_ed.html">?fit_ed</a></code>,
-<code><a href="../reference/detect_regime.html">?detect_regime</a></code>, <code><a href="../reference/regime_at.html">?regime_at</a></code>.</li>
+<code><a href="../reference/fit_ratio.html">?fit_ratio</a></code>, <code><a href="../reference/fit_ata.html">?fit_ata</a></code>,
+<code><a href="../reference/fit_ed.html">?fit_ed</a></code>, <code><a href="../reference/detect_regime.html">?detect_regime</a></code>,
+<code><a href="../reference/regime_at.html">?regime_at</a></code>.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -6,7 +6,7 @@ non-consecutive age-to-age links downstream (e.g., `14 -> 17` instead of
 `14 -> 15`), which breaks
 [`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md)
 key uniqueness and causes cartesian joins in
-[`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md).
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md).
 
 This function inspects the raw data without modifying it. Use it before
 [`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)

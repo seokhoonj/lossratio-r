@@ -9,7 +9,7 @@ The $full projection table holds cumulative loss / exposure
 projections and their standard errors, computed directly from the
 Mack-style ED recursion (see .ed_proj, .ed_proc_var,
 .ed_param_var). To validate an ED projection via backtest(),
-call backtest(tri, target = "lr", loss_method = "ed").'><meta property="og:description" content='Estimate incremental loss intensities \(g_k\) from a "Triangle"
+call backtest(tri, target = "ratio", loss_method = "ed").'><meta property="og:description" content='Estimate incremental loss intensities \(g_k\) from a "Triangle"
 object and return an "EDFit" object that bundles factor summaries,
 selected intensities, and a cell-level projection of cumulative loss
 and exposure ($full).
@@ -19,7 +19,7 @@ The $full projection table holds cumulative loss / exposure
 projections and their standard errors, computed directly from the
 Mack-style ED recursion (see .ed_proj, .ed_proc_var,
 .ed_param_var). To validate an ED projection via backtest(),
-call backtest(tri, target = "lr", loss_method = "ed").'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Browser-language redirect: send Korean visitors to /ko/ on the
+call backtest(tri, target = "ratio", loss_method = "ed").'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Browser-language redirect: send Korean visitors to /ko/ on the
      landing page only. Deep links remain untouched. We use string
      slicing rather than a regex with end-anchor, because pandoc
      treats the dollar sign as a template variable delimiter. --><script>
@@ -135,15 +135,15 @@ and exposure (<code>$full</code>).</p>
 projections and their standard errors, computed directly from the
 Mack-style ED recursion (see <code>.ed_proj</code>, <code>.ed_proc_var</code>,
 <code>.ed_param_var</code>). To validate an ED projection via <code><a href="backtest.html">backtest()</a></code>,
-call <code>backtest(tri, target = "lr", loss_method = "ed")</code>.</p>
+call <code>backtest(tri, target = "ratio", loss_method = "ed")</code>.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fit_ed</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  target <span class="op">=</span> <span class="st">"loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"prem"</span>,</span>
+<span>  loss <span class="op">=</span> <span class="st">"loss"</span>,</span>
+<span>  exposure <span class="op">=</span> <span class="st">"exposure"</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mack"</span><span class="op">)</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  na_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"zero"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
@@ -162,13 +162,13 @@ call <code>backtest(tri, target = "lr", loss_method = "ed")</code>.</p>
 <dd><p>A <code>"Triangle"</code> object.</p></dd>
 
 
-<dt id="arg-target">target<a class="anchor" aria-label="anchor" href="#arg-target"></a></dt>
+<dt id="arg-loss">loss<a class="anchor" aria-label="anchor" href="#arg-loss"></a></dt>
 <dd><p>Cumulative loss variable. Default <code>"loss"</code>.
 Forwarded to <code><a href="as_link.html">as_link()</a></code> and to downstream workers.</p></dd>
 
 
 <dt id="arg-exposure">exposure<a class="anchor" aria-label="anchor" href="#arg-exposure"></a></dt>
-<dd><p>Cumulative exposure variable. Default <code>"prem"</code>.
+<dd><p>Cumulative exposure variable. Default <code>"exposure"</code>.
 Forwarded to <code><a href="as_link.html">as_link()</a></code> and to downstream workers.</p></dd>
 
 
@@ -199,9 +199,9 @@ recent <code>recent</code> periods are used for estimation. Default is <code>NUL
 
 <dt id="arg-regime">regime<a class="anchor" aria-label="anchor" href="#arg-regime"></a></dt>
 <dd><p>Optional regime specification for cohort cutoff. Accepts:
-<code>NULL</code> (default — no filter), a <code>"Regime"</code> object (from
+<code>NULL</code> (default – no filter), a <code>"Regime"</code> object (from
 <code><a href="detect_regime.html">detect_regime()</a></code>), the string <code>"auto"</code> (internal
-<code>detect_regime(tri, target = "lr")</code> call), or a function
+<code>detect_regime(tri, loss = "ratio")</code> call), or a function
 <code>function(tri) -&gt; Regime</code>. Resolved internally via
 <code><a href="dot-resolve_regime.html">.resolve_regime()</a></code>. When supplied, cohorts with
 <code>cohort &lt; change_date</code> are excluded from estimation. Default is <code>NULL</code>.</p></dd>
@@ -221,12 +221,12 @@ recent <code>recent</code> periods are used for estimation. Default is <code>NUL
 and <code>g_var</code>.</p></dd>
 
 <dt><code>full</code></dt>
-<dd><p><code>data.table</code> of per-cell cumulative target / exposure
+<dd><p><code>data.table</code> of per-cell cumulative loss / exposure
 projection plus role-prefixed SE / CV columns
-(<code>target_proj</code>, <code>incr_target_proj</code>, <code>exposure_proj</code>,
-<code>exposure_incr_proj</code>, <code>target_proc_se2</code>, <code>target_param_se2</code>,
-<code>target_total_se2</code>, <code>target_proc_se</code>, <code>target_param_se</code>,
-<code>target_total_se</code>, <code>target_total_cv</code>). Available cells include
+(<code>loss_proj</code>, <code>incr_loss_proj</code>, <code>exposure_proj</code>,
+<code>exposure_incr_proj</code>, <code>loss_proc_se2</code>, <code>loss_param_se2</code>,
+<code>loss_total_se2</code>, <code>loss_proc_se</code>, <code>loss_param_se</code>,
+<code>loss_total_se</code>, <code>loss_total_cv</code>). Available cells include
 both observed and projected; <code>is_observed</code> flags observed cells.</p></dd>
 
 <dt><code>link</code></dt>
@@ -236,7 +236,7 @@ both observed and projected; <code>is_observed</code> flags observed cells.</p><
 </dl></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="as_link.html">as_link()</a></code>, <code><a href="summary.Link.html">summary.Link()</a></code>, <code><a href="fit_lr.html">fit_lr()</a></code>, <code><a href="backtest.html">backtest()</a></code></p></div>
+    <div class="dont-index"><p><code><a href="as_link.html">as_link()</a></code>, <code><a href="summary.Link.html">summary.Link()</a></code>, <code><a href="fit_ratio.html">fit_ratio()</a></code>, <code><a href="backtest.html">backtest()</a></code></p></div>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -5,5 +5,5 @@ Expand a `Triangle` object to a full projection grid
 ## Usage
 
 ``` r
-.expand_grid(triangle, ed_fit, prem_ata_fit, target, exposure)
+.expand_grid(triangle, ed_fit, exposure_ata_fit, loss, exposure)
 ```

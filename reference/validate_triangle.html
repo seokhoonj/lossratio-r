@@ -4,7 +4,7 @@ dev sequence within its observed range. Non-consecutive
 cohorts produce non-consecutive age-to-age links downstream (e.g.,
 14 -&amp;gt; 17 instead of 14 -&amp;gt; 15), which breaks
 summary.Link() key uniqueness and causes cartesian joins in
-fit_lr().
+fit_ratio().
 This function inspects the raw data without modifying it. Use it
 before as_triangle() to decide whether to fix the data source, drop
 offending cohorts, or pass fill_gaps = TRUE to as_triangle().
@@ -23,7 +23,7 @@ dev sequence within its observed range. Non-consecutive
 cohorts produce non-consecutive age-to-age links downstream (e.g.,
 14 -&amp;gt; 17 instead of 14 -&amp;gt; 15), which breaks
 summary.Link() key uniqueness and causes cartesian joins in
-fit_lr().
+fit_ratio().
 This function inspects the raw data without modifying it. Use it
 before as_triangle() to decide whether to fix the data source, drop
 offending cohorts, or pass fill_gaps = TRUE to as_triangle().
@@ -148,7 +148,7 @@ dev sequences.
 cohorts produce non-consecutive age-to-age links downstream (e.g.,
 <code>14 -&gt; 17</code> instead of <code>14 -&gt; 15</code>), which breaks
 <code><a href="summary.Link.html">summary.Link()</a></code> key uniqueness and causes cartesian joins in
-<code><a href="fit_lr.html">fit_lr()</a></code>.</p>
+<code><a href="fit_ratio.html">fit_ratio()</a></code>.</p>
 <p>This function inspects the raw data without modifying it. Use it
 before <code><a href="as_triangle.html">as_triangle()</a></code> to decide whether to fix the data source, drop
 offending cohorts, or pass <code>fill_gaps = TRUE</code> to <code><a href="as_triangle.html">as_triangle()</a></code>.</p>

@@ -84,10 +84,10 @@
 <code>lossratio</code> 의 응답</th>
 </tr></thead><tbody><tr><td>초기 dev 의 ATA 인자가 너무 Noisy</td>
 <td>
-<strong><code>fit_lr(method = "sa")</code></strong> — maturity 이전엔 exposure-driven (ED), 이후엔 chain ladder (CL)</td>
+<strong><code>fit_ratio(method = "sa")</code></strong> — maturity 이전엔 exposure-driven (ED), 이후엔 chain ladder (CL)</td>
 </tr><tr><td>인수 기준 변경 등 구조적 변화</td>
 <td>
-<strong><code><a href="reference/detect_regime.html">detect_regime()</a></code></strong> + <code>loss_regime</code> / <code>prem_regime</code> 인자 — 변화 이전 코호트를 자동으로 분리</td>
+<strong><code><a href="reference/detect_regime.html">detect_regime()</a></code></strong> + <code>loss_regime</code> / <code>exposure_regime</code> 인자 — 변화 이전 코호트를 자동으로 분리</td>
 </tr><tr><td>“이 fit 이 얼마나 맞나?” 검증</td>
 <td>
 <strong><code><a href="reference/backtest.html">backtest()</a></code></strong> — 최근 N 대각선을 빼고 적합한 뒤 actual 과 비교</td>
@@ -116,21 +116,21 @@
 <span>  cohort    <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar  <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss      <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  prem      <span class="op">=</span> <span class="st">"incr_prem"</span>,</span>
+<span>  exposure  <span class="op">=</span> <span class="st">"incr_exposure"</span>,</span>
 <span>  cell_type <span class="op">=</span> <span class="st">"incremental"</span>   <span class="co"># default; "cumulative" 면 누적 입력</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 2) 단계 적응형 손해율 적합 (default)</span></span>
-<span><span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span>
+<span><span class="va">ratio</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratio</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ratio</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 3) 환경변화 (regime shift) 자동 탐지 — 인수 정책 변경 시점</span></span>
 <span><span class="fu"><a href="reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri</span>, by <span class="op">=</span> <span class="st">"coverage"</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 4) backtest — 최근 6 대각선을 빼고 fit + actual 비교</span></span>
-<span><span class="va">bt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, target <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span>  <span class="co"># target = "lr" / "loss" / "prem"</span></span>
+<span><span class="va">bt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, target <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span>  <span class="co"># target = "ratio" / "loss" / "exposure"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -140,10 +140,10 @@
 <th>역할</th>
 </tr></thead><tbody><tr><td><code><a href="reference/as_triangle.html">as_triangle()</a></code></td>
 <td>long-format 데이터 → <code>Triangle</code> (코호트 × dev)</td>
-</tr><tr><td><code>fit_lr(method = "sa" / "ed" / "cl")</code></td>
+</tr><tr><td><code>fit_ratio(method = "sa" / "ed" / "cl")</code></td>
 <td>손해율 적합 — <em>통합 인터페이스</em> (loss + premium 합성)</td>
 </tr><tr><td>
-<code><a href="reference/fit_loss.html">fit_loss()</a></code> / <code><a href="reference/fit_prem.html">fit_prem()</a></code>
+<code><a href="reference/fit_loss.html">fit_loss()</a></code> / <code><a href="reference/fit_exposure.html">fit_exposure()</a></code>
 </td>
 <td>역할별 디스패처 — 단일 측 (SE / CI 포함)</td>
 </tr><tr><td>
@@ -161,7 +161,7 @@
 </tr><tr><td><code><a href="reference/detect_convergence.html">detect_convergence()</a></code></td>
 <td>예측 손해율이 갱신을 멈추는 시점</td>
 </tr><tr><td><code><a href="reference/backtest.html">backtest()</a></code></td>
-<td>대각선 hold-out 으로 fit 검증 (target = lr/loss/prem)</td>
+<td>대각선 hold-out 으로 fit 검증 (target = ratio/loss/exposure)</td>
 </tr><tr><td>
 <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> / <code><a href="reference/plot_triangle.html">plot_triangle()</a></code>
 </td>
@@ -191,10 +191,10 @@
 <td>
 <code>"incr_loss"</code> / <code>"loss"</code>
 </td>
-</tr><tr><td><code>prem</code></td>
-<td>기간별 <em>또는</em> 누적 보험료 (장기 health 는 위험보험료)</td>
+</tr><tr><td><code>exposure</code></td>
+<td>기간별 <em>또는</em> 누적 익스포저 (장기 health 는 위험보험료)</td>
 <td>
-<code>"incr_prem"</code> / <code>"prem"</code>
+<code>"incr_exposure"</code> / <code>"exposure"</code>
 </td>
 </tr><tr><td>
 <code>groups</code> <em>(선택)</em>
@@ -205,7 +205,7 @@
 <code>cell_type</code> <em>(default)</em>
 </td>
 <td>
-<code>loss</code> / <code>prem</code> 값의 해석</td>
+<code>loss</code> / <code>exposure</code> 값의 해석</td>
 <td>
 <code>"incremental"</code> / <code>"cumulative"</code>
 </td>
@@ -214,15 +214,15 @@
 <strong><code>cell_type</code></strong> — <code>"incremental"</code> (default) 또는 <code>"cumulative"</code>. 일반적 raw experience 는 incremental; 이미 누적 합산된 데이터라면 <code>cell_type = "cumulative"</code> 로 넘기면 함수가 per-cohort diff 로 incremental 도 derive.</li>
 <li>
 <strong><code>grain</code></strong> — <code>"auto"</code> (default, <code>cohort</code> 날짜로부터 자동 감지) 또는 <code>"M"</code> / <code>"Q"</code> / <code>"H"</code> / <code>"Y"</code>. 월별 / 분기별 / 반기별 / 연간 집계로 bin.</li>
-</ul><p><code><a href="reference/as_triangle.html">as_triangle()</a></code> 가 스키마 검증 + 날짜 coerce + (<code>calendar</code> / <code>dev</code> 중 하나만 줬을 때) 나머지 축 derive + grain bin + cumulative / incremental 컬럼 + <code>lr</code> / <code>margin</code> / <code>profit</code> 까지 한 번에 생성.</p>
+</ul><p><code><a href="reference/as_triangle.html">as_triangle()</a></code> 가 스키마 검증 + 날짜 coerce + (<code>calendar</code> / <code>dev</code> 중 하나만 줬을 때) 나머지 축 derive + grain bin + cumulative / incremental 컬럼 + <code>ratio</code> / <code>margin</code> / <code>profit</code> 까지 한 번에 생성.</p>
 </div>
 <div class="section level2">
 <h2 id="시각화">시각화<a class="anchor" aria-label="anchor" href="#%EC%8B%9C%EA%B0%81%ED%99%94"></a></h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>                                                  <span class="co"># 코호트 궤적</span></span>
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>                                         <span class="co"># cell heatmap</span></span>
-<span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">lr</span>, view <span class="op">=</span> <span class="st">"value"</span>, region <span class="op">=</span> <span class="st">"proj"</span><span class="op">)</span>         <span class="co"># 예측 영역 LR</span></span>
-<span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">lr</span>, view <span class="op">=</span> <span class="st">"usage"</span><span class="op">)</span>                          <span class="co"># 맨 위 이미지와 동일 모드</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ratio</span>, view <span class="op">=</span> <span class="st">"value"</span>, region <span class="op">=</span> <span class="st">"proj"</span><span class="op">)</span>      <span class="co"># 예측 영역 손해율</span></span>
+<span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ratio</span>, view <span class="op">=</span> <span class="st">"usage"</span><span class="op">)</span>                       <span class="co"># 맨 위 이미지와 동일 모드</span></span></code></pre></div>
 <p><code><a href="reference/plot_triangle.html">plot_triangle()</a></code> 의 두 인자가 직교:</p>
 <ul><li>
 <strong><code>region</code></strong> — 어느 영역? <code>"proj"</code> / <code>"full"</code> / <code>"data"</code>
@@ -237,7 +237,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"regime-change-filter"</span>,   package <span class="op">=</span> <span class="st">"lossratio"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"backtest"</span>,               package <span class="op">=</span> <span class="st">"lossratio"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"triangle-link-and-maturity"</span>, package <span class="op">=</span> <span class="st">"lossratio"</span><span class="op">)</span></span>
-<span><span class="op">?</span><span class="va">fit_lr</span></span>
+<span><span class="op">?</span><span class="va">fit_ratio</span></span>
 <span><span class="op">?</span><span class="va">detect_regime</span></span></code></pre></div>
 <p>또는 <a href="https://seokhoonj.github.io/lossratio/ko/">패키지 사이트</a>.</p>
 </div>

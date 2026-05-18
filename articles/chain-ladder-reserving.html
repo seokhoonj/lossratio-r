@@ -146,13 +146,13 @@ covers chain ladder <em>reserving</em> — projecting ultimate paid /
 incurred loss for an open accident year — which is a Property &amp;
 Casualty (P&amp;C, 손해보험) use case. The lossratio package’s primary
 focus is long-term health insurance loss ratio projection
-(<code>fit_lr</code>), where the reserving framing applies only loosely.
-We include this article so practitioners coming from a P&amp;C
+(<code>fit_ratio</code>), where the reserving framing applies only
+loosely. We include this article so practitioners coming from a P&amp;C
 background see how <code>fit_cl</code> maps to the classical Mack chain
 ladder workflow they’re already familiar with.</p>
 </blockquote>
 <p><code><a href="../reference/fit_cl.html">fit_cl()</a></code> is the dedicated chain ladder fit for a single
-value column. Unlike <code><a href="../reference/fit_lr.html">fit_lr()</a></code> (which projects loss /
+value column. Unlike <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> (which projects loss /
 exposure jointly to get loss ratio), <code><a href="../reference/fit_cl.html">fit_cl()</a></code> projects one
 cumulative metric forward and computes Mack-style standard errors per
 cohort.</p>
@@ -170,14 +170,14 @@ every step generalises to multi-group input.</p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;CLFit&gt;</span></span>
 <span><span class="co">#&gt; method      : mack </span></span>
-<span><span class="co">#&gt; target      : loss </span></span>
+<span><span class="co">#&gt; loss        : loss </span></span>
 <span><span class="co">#&gt; weight      : none </span></span>
 <span><span class="co">#&gt; alpha       : 1 </span></span>
 <span><span class="co">#&gt; sigma_method: locf </span></span>
@@ -187,9 +187,9 @@ every step generalises to multi-group input.</p>
 <span><span class="co">#&gt; tail_factor : 1 </span></span>
 <span><span class="co">#&gt; groups      : coverage </span></span>
 <span><span class="co">#&gt; periods     : 36</span></span></code></pre></div>
-<p><code>target</code> selects the cumulative column to project —
+<p><code>loss</code> selects the cumulative column to project —
 typically <code>"loss"</code> (cumulative loss) for reserving, or
-<code>"premium"</code> (cumulative risk premium) for exposure
+<code>"exposure"</code> (cumulative risk premium) for exposure
 projection.</p>
 </div>
 <div class="section level2">
@@ -203,26 +203,26 @@ ultimate. On top of the point projection, Mack’s formulae decompose the
 prediction variance into process and parameter components, yielding
 per-cell standard errors and confidence intervals.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cl_mack</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">cl_mack</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># $full and $summary carry both the projection and its variance</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cl_mack</span><span class="op">$</span><span class="va">summary</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    coverage     cohort     latest   loss_ult   reserve target_proc_se</span></span>
-<span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;          &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:  surgery 2023-01-01  410248522  410248522         0              0</span></span>
-<span><span class="co">#&gt; 2:  surgery 2023-02-01  976330445 1001441303  25110858        2751819</span></span>
-<span><span class="co">#&gt; 3:  surgery 2023-03-01  978486045 1026151243  47665198        3967869</span></span>
-<span><span class="co">#&gt; 4:  surgery 2023-04-01 2029909919 2186771221 156861302        6942937</span></span>
-<span><span class="co">#&gt; 5:  surgery 2023-05-01  624219436  697669301  73449865        4455636</span></span>
-<span><span class="co">#&gt; 6:  surgery 2023-06-01  802880717  931393934 128513217       17869565</span></span>
-<span><span class="co">#&gt;    target_param_se target_total_se target_total_cv</span></span>
-<span><span class="co">#&gt;              &lt;num&gt;           &lt;num&gt;           &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:               0               0     0.000000000</span></span>
-<span><span class="co">#&gt; 2:         4299412         5104650     0.005097304</span></span>
-<span><span class="co">#&gt; 3:         5021196         6399718     0.006236623</span></span>
-<span><span class="co">#&gt; 4:        11297887        13260717     0.006064062</span></span>
-<span><span class="co">#&gt; 5:         3696918         5789637     0.008298541</span></span>
-<span><span class="co">#&gt; 6:         8694892        19872657     0.021336469</span></span></code></pre></div>
+<span><span class="co">#&gt;    coverage     cohort     latest   loss_ult   reserve loss_proc_se</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:  surgery 2023-01-01  410248522  410248522         0            0</span></span>
+<span><span class="co">#&gt; 2:  surgery 2023-02-01  976330445 1001441303  25110858      2751819</span></span>
+<span><span class="co">#&gt; 3:  surgery 2023-03-01  978486045 1026151243  47665198      3967869</span></span>
+<span><span class="co">#&gt; 4:  surgery 2023-04-01 2029909919 2186771221 156861302      6942937</span></span>
+<span><span class="co">#&gt; 5:  surgery 2023-05-01  624219436  697669301  73449865      4455636</span></span>
+<span><span class="co">#&gt; 6:  surgery 2023-06-01  802880717  931393934 128513217     17869565</span></span>
+<span><span class="co">#&gt;    loss_param_se loss_total_se loss_total_cv</span></span>
+<span><span class="co">#&gt;            &lt;num&gt;         &lt;num&gt;         &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:             0             0   0.000000000</span></span>
+<span><span class="co">#&gt; 2:       4299412       5104650   0.005097304</span></span>
+<span><span class="co">#&gt; 3:       5021196       6399718   0.006236623</span></span>
+<span><span class="co">#&gt; 4:      11297887      13260717   0.006064062</span></span>
+<span><span class="co">#&gt; 5:       3696918       5789637   0.008298541</span></span>
+<span><span class="co">#&gt; 6:       8694892      19872657   0.021336469</span></span></code></pre></div>
 <p>The projection plot’s confidence bands
 (<code>show_interval = TRUE</code>) use those variance estimates:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -236,10 +236,10 @@ per-cell standard errors and confidence intervals.</p>
 developing, an extrapolated tail factor estimates ultimate:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Log-linear extrapolation from the selected ATA factors</span></span>
-<span><span class="va">cl_tail</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, tail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">cl_tail</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, tail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Or supply a literal tail factor</span></span>
-<span><span class="va">cl_tail</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, tail <span class="op">=</span> <span class="fl">1.025</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">cl_tail</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, tail <span class="op">=</span> <span class="fl">1.025</span><span class="op">)</span></span></code></pre></div>
 <p>The extrapolation fits
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>f</mi><mi>k</mi></msub><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo>∼</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">\log(f_k - 1) \sim k</annotation></semantics></math>
 to projected factors and extends the projection by the cumulative
@@ -255,7 +255,7 @@ mature region only:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cl_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span></span>
 <span>  <span class="va">tri</span>,</span>
-<span>  target   <span class="op">=</span> <span class="st">"loss"</span>,</span>
+<span>  loss     <span class="op">=</span> <span class="st">"loss"</span>,</span>
 <span>  method   <span class="op">=</span> <span class="st">"mack"</span>,</span>
 <span>  maturity <span class="op">=</span> <span class="fu"><a href="../reference/maturity_spec.html">maturity_spec</a></span><span class="op">(</span>max_cv <span class="op">=</span> <span class="fl">0.10</span>, max_rse <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
@@ -285,102 +285,102 @@ override, or <code>maturity_at(...)</code> for a manual per-group
 variance into:</p>
 <ul>
 <li>
-<code>target_proc_se</code> — process variance, from
+<code>loss_proc_se</code> — process variance, from
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>σ</mi><mi>k</mi><mn>2</mn></msubsup><annotation encoding="application/x-tex">\sigma^2_k</annotation></semantics></math>
 (residual link variance per development period).</li>
 <li>
-<code>target_param_se</code> — parameter variance, from the
+<code>loss_param_se</code> — parameter variance, from the
 uncertainty of the selected age-to-age factors
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>f</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><annotation encoding="application/x-tex">\hat{f}_k</annotation></semantics></math>.</li>
 <li>
-<code>target_total_se</code> — total standard error,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msqrt><mrow><msup><mrow><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">g</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">s</mi><mi mathvariant="normal">e</mi></mrow><mn>2</mn></msup><mo>+</mo><msup><mrow><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">g</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">s</mi><mi mathvariant="normal">e</mi></mrow><mn>2</mn></msup></mrow></msqrt><annotation encoding="application/x-tex">\sqrt{\mathrm{target\_proc\_se}^2 + \mathrm{target\_param\_se}^2}</annotation></semantics></math>.</li>
+<code>loss_total_se</code> — total standard error,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msqrt><mrow><msup><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">s</mi><mi mathvariant="normal">s</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">p</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">s</mi><mi mathvariant="normal">e</mi></mrow><mn>2</mn></msup><mo>+</mo><msup><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">s</mi><mi mathvariant="normal">s</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">p</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">s</mi><mi mathvariant="normal">e</mi></mrow><mn>2</mn></msup></mrow></msqrt><annotation encoding="application/x-tex">\sqrt{\mathrm{loss\_proc\_se}^2 + \mathrm{loss\_param\_se}^2}</annotation></semantics></math>.</li>
 <li>
-<code>target_total_cv</code> — coefficient of variation,
-<code>target_total_se / target_proj</code>.</li>
+<code>loss_total_cv</code> — coefficient of variation,
+<code>loss_total_se / loss_proj</code>.</li>
 </ul>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cl_mack</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve target_proc_se</span></span>
-<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;          &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:  surgery 2023-01-01  410248522  410248522          0              0</span></span>
-<span><span class="co">#&gt;  2:  surgery 2023-02-01  976330445 1001441303   25110858        2751819</span></span>
-<span><span class="co">#&gt;  3:  surgery 2023-03-01  978486045 1026151243   47665198        3967869</span></span>
-<span><span class="co">#&gt;  4:  surgery 2023-04-01 2029909919 2186771221  156861302        6942937</span></span>
-<span><span class="co">#&gt;  5:  surgery 2023-05-01  624219436  697669301   73449865        4455636</span></span>
-<span><span class="co">#&gt;  6:  surgery 2023-06-01  802880717  931393934  128513217       17869565</span></span>
-<span><span class="co">#&gt;  7:  surgery 2023-07-01 2539141549 3050990158  511848609       35918003</span></span>
-<span><span class="co">#&gt;  8:  surgery 2023-08-01  393678329  488218204   94539875       15583801</span></span>
-<span><span class="co">#&gt;  9:  surgery 2023-09-01 1364052542 1751869308  387816766       38001618</span></span>
-<span><span class="co">#&gt; 10:  surgery 2023-10-01  979266043 1311793843  332527800       38496097</span></span>
-<span><span class="co">#&gt; 11:  surgery 2023-11-01  604685679  848103123  243417444       35719579</span></span>
-<span><span class="co">#&gt; 12:  surgery 2023-12-01 1026345366 1497869029  471523663       51405333</span></span>
-<span><span class="co">#&gt; 13:  surgery 2024-01-01 1912177598 2901492851  989315253       75674312</span></span>
-<span><span class="co">#&gt; 14:  surgery 2024-02-01  733902485 1160045952  426143467       51719398</span></span>
-<span><span class="co">#&gt; 15:  surgery 2024-03-01  415459873  686574148  271114275       41313266</span></span>
-<span><span class="co">#&gt; 16:  surgery 2024-04-01 3286053526 5687484014 2401430488      122770258</span></span>
-<span><span class="co">#&gt; 17:  surgery 2024-05-01 1451731153 2645801838 1194070685       93024106</span></span>
-<span><span class="co">#&gt; 18:  surgery 2024-06-01  629668308 1209024555  579356247       65346187</span></span>
-<span><span class="co">#&gt; 19:  surgery 2024-07-01 1250954693 2542927190 1291972497      103136528</span></span>
-<span><span class="co">#&gt; 20:  surgery 2024-08-01  425346694  918120582  492773888       65317866</span></span>
-<span><span class="co">#&gt; 21:  surgery 2024-09-01  278156543  635470028  357313485       56737053</span></span>
-<span><span class="co">#&gt; 22:  surgery 2024-10-01  352070323  856446521  504376198       68091257</span></span>
-<span><span class="co">#&gt; 23:  surgery 2024-11-01   99050501  260916096  161865595       41787166</span></span>
-<span><span class="co">#&gt; 24:  surgery 2024-12-01  103194013  295637296  192443283       49617195</span></span>
-<span><span class="co">#&gt; 25:  surgery 2025-01-01  227089025  710560093  483471068       83635489</span></span>
-<span><span class="co">#&gt; 26:  surgery 2025-02-01  939163074 3276849152 2337686078      192418633</span></span>
-<span><span class="co">#&gt; 27:  surgery 2025-03-01  112828845  434950057  322121212       72345359</span></span>
-<span><span class="co">#&gt; 28:  surgery 2025-04-01   82472453  356301148  273828695       68974257</span></span>
-<span><span class="co">#&gt; 29:  surgery 2025-05-01  141214851  697290587  556075736      119238986</span></span>
-<span><span class="co">#&gt; 30:  surgery 2025-06-01  136406102  789468799  653062697      136628652</span></span>
-<span><span class="co">#&gt; 31:  surgery 2025-07-01  149144024 1040451732  891307708      167039609</span></span>
-<span><span class="co">#&gt; 32:  surgery 2025-08-01  116327076 1008356733  892029657      183653360</span></span>
-<span><span class="co">#&gt; 33:  surgery 2025-09-01   67465470  783000257  715534787      179947037</span></span>
-<span><span class="co">#&gt; 34:  surgery 2025-10-01  121626173 2001214863 1879588690      337103186</span></span>
-<span><span class="co">#&gt; 35:  surgery 2025-11-01   15716444  449653406  433936962      194100658</span></span>
-<span><span class="co">#&gt; 36:  surgery 2025-12-01    4825085  850839118  846014033      472741759</span></span>
-<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve target_proc_se</span></span>
-<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;          &lt;num&gt;</span></span>
-<span><span class="co">#&gt;     target_param_se target_total_se target_total_cv</span></span>
-<span><span class="co">#&gt;               &lt;num&gt;           &lt;num&gt;           &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:               0               0     0.000000000</span></span>
-<span><span class="co">#&gt;  2:         4299412         5104650     0.005097304</span></span>
-<span><span class="co">#&gt;  3:         5021196         6399718     0.006236623</span></span>
-<span><span class="co">#&gt;  4:        11297887        13260717     0.006064062</span></span>
-<span><span class="co">#&gt;  5:         3696918         5789637     0.008298541</span></span>
-<span><span class="co">#&gt;  6:         8694892        19872657     0.021336469</span></span>
-<span><span class="co">#&gt;  7:        30501066        47121311     0.015444596</span></span>
-<span><span class="co">#&gt;  8:         5072721        16388635     0.033568259</span></span>
-<span><span class="co">#&gt;  9:        20827314        43334744     0.024736288</span></span>
-<span><span class="co">#&gt; 10:        16992221        42079509     0.032077837</span></span>
-<span><span class="co">#&gt; 11:        11901733        37650227     0.044393454</span></span>
-<span><span class="co">#&gt; 12:        22008504        55918535     0.037332059</span></span>
-<span><span class="co">#&gt; 13:        43971810        87522121     0.030164514</span></span>
-<span><span class="co">#&gt; 14:        18269127        54851227     0.047283667</span></span>
-<span><span class="co">#&gt; 15:        11014493        42756344     0.062274911</span></span>
-<span><span class="co">#&gt; 16:        92689755       153830838     0.027047256</span></span>
-<span><span class="co">#&gt; 17:        45040851       103354548     0.039063601</span></span>
-<span><span class="co">#&gt; 18:        20907249        68609309     0.056747655</span></span>
-<span><span class="co">#&gt; 19:        45568404       112754702     0.044340515</span></span>
-<span><span class="co">#&gt; 20:        16819267        67448584     0.073463753</span></span>
-<span><span class="co">#&gt; 21:        11859688        57963310     0.091213288</span></span>
-<span><span class="co">#&gt; 22:        16219631        69996398     0.081728860</span></span>
-<span><span class="co">#&gt; 23:         5190764        42108328     0.161386470</span></span>
-<span><span class="co">#&gt; 24:         6221683        50005754     0.169145620</span></span>
-<span><span class="co">#&gt; 25:        15668260        85090478     0.119751276</span></span>
-<span><span class="co">#&gt; 26:        75222224       206599403     0.063048188</span></span>
-<span><span class="co">#&gt; 27:        10161412        73055495     0.167962950</span></span>
-<span><span class="co">#&gt; 28:         8575343        69505285     0.195074548</span></span>
-<span><span class="co">#&gt; 29:        19174475       120770842     0.173200161</span></span>
-<span><span class="co">#&gt; 30:        22834478       138523651     0.175464377</span></span>
-<span><span class="co">#&gt; 31:        31445935       169973756     0.163365345</span></span>
-<span><span class="co">#&gt; 32:        32987225       186592373     0.185045993</span></span>
-<span><span class="co">#&gt; 33:        27713231       182068556     0.232526816</span></span>
-<span><span class="co">#&gt; 34:        80113491       346492034     0.173140846</span></span>
-<span><span class="co">#&gt; 35:        21034520       195237078     0.434194593</span></span>
-<span><span class="co">#&gt; 36:        66075497       477337136     0.561019265</span></span>
-<span><span class="co">#&gt;     target_param_se target_total_se target_total_cv</span></span>
-<span><span class="co">#&gt;               &lt;num&gt;           &lt;num&gt;           &lt;num&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve loss_proc_se</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:  surgery 2023-01-01  410248522  410248522          0            0</span></span>
+<span><span class="co">#&gt;  2:  surgery 2023-02-01  976330445 1001441303   25110858      2751819</span></span>
+<span><span class="co">#&gt;  3:  surgery 2023-03-01  978486045 1026151243   47665198      3967869</span></span>
+<span><span class="co">#&gt;  4:  surgery 2023-04-01 2029909919 2186771221  156861302      6942937</span></span>
+<span><span class="co">#&gt;  5:  surgery 2023-05-01  624219436  697669301   73449865      4455636</span></span>
+<span><span class="co">#&gt;  6:  surgery 2023-06-01  802880717  931393934  128513217     17869565</span></span>
+<span><span class="co">#&gt;  7:  surgery 2023-07-01 2539141549 3050990158  511848609     35918003</span></span>
+<span><span class="co">#&gt;  8:  surgery 2023-08-01  393678329  488218204   94539875     15583801</span></span>
+<span><span class="co">#&gt;  9:  surgery 2023-09-01 1364052542 1751869308  387816766     38001618</span></span>
+<span><span class="co">#&gt; 10:  surgery 2023-10-01  979266043 1311793843  332527800     38496097</span></span>
+<span><span class="co">#&gt; 11:  surgery 2023-11-01  604685679  848103123  243417444     35719579</span></span>
+<span><span class="co">#&gt; 12:  surgery 2023-12-01 1026345366 1497869029  471523663     51405333</span></span>
+<span><span class="co">#&gt; 13:  surgery 2024-01-01 1912177598 2901492851  989315253     75674312</span></span>
+<span><span class="co">#&gt; 14:  surgery 2024-02-01  733902485 1160045952  426143467     51719398</span></span>
+<span><span class="co">#&gt; 15:  surgery 2024-03-01  415459873  686574148  271114275     41313266</span></span>
+<span><span class="co">#&gt; 16:  surgery 2024-04-01 3286053526 5687484014 2401430488    122770258</span></span>
+<span><span class="co">#&gt; 17:  surgery 2024-05-01 1451731153 2645801838 1194070685     93024106</span></span>
+<span><span class="co">#&gt; 18:  surgery 2024-06-01  629668308 1209024555  579356247     65346187</span></span>
+<span><span class="co">#&gt; 19:  surgery 2024-07-01 1250954693 2542927190 1291972497    103136528</span></span>
+<span><span class="co">#&gt; 20:  surgery 2024-08-01  425346694  918120582  492773888     65317866</span></span>
+<span><span class="co">#&gt; 21:  surgery 2024-09-01  278156543  635470028  357313485     56737053</span></span>
+<span><span class="co">#&gt; 22:  surgery 2024-10-01  352070323  856446521  504376198     68091257</span></span>
+<span><span class="co">#&gt; 23:  surgery 2024-11-01   99050501  260916096  161865595     41787166</span></span>
+<span><span class="co">#&gt; 24:  surgery 2024-12-01  103194013  295637296  192443283     49617195</span></span>
+<span><span class="co">#&gt; 25:  surgery 2025-01-01  227089025  710560093  483471068     83635489</span></span>
+<span><span class="co">#&gt; 26:  surgery 2025-02-01  939163074 3276849152 2337686078    192418633</span></span>
+<span><span class="co">#&gt; 27:  surgery 2025-03-01  112828845  434950057  322121212     72345359</span></span>
+<span><span class="co">#&gt; 28:  surgery 2025-04-01   82472453  356301148  273828695     68974257</span></span>
+<span><span class="co">#&gt; 29:  surgery 2025-05-01  141214851  697290587  556075736    119238986</span></span>
+<span><span class="co">#&gt; 30:  surgery 2025-06-01  136406102  789468799  653062697    136628652</span></span>
+<span><span class="co">#&gt; 31:  surgery 2025-07-01  149144024 1040451732  891307708    167039609</span></span>
+<span><span class="co">#&gt; 32:  surgery 2025-08-01  116327076 1008356733  892029657    183653360</span></span>
+<span><span class="co">#&gt; 33:  surgery 2025-09-01   67465470  783000257  715534787    179947037</span></span>
+<span><span class="co">#&gt; 34:  surgery 2025-10-01  121626173 2001214863 1879588690    337103186</span></span>
+<span><span class="co">#&gt; 35:  surgery 2025-11-01   15716444  449653406  433936962    194100658</span></span>
+<span><span class="co">#&gt; 36:  surgery 2025-12-01    4825085  850839118  846014033    472741759</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve loss_proc_se</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt;     loss_param_se loss_total_se loss_total_cv</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;         &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:             0             0   0.000000000</span></span>
+<span><span class="co">#&gt;  2:       4299412       5104650   0.005097304</span></span>
+<span><span class="co">#&gt;  3:       5021196       6399718   0.006236623</span></span>
+<span><span class="co">#&gt;  4:      11297887      13260717   0.006064062</span></span>
+<span><span class="co">#&gt;  5:       3696918       5789637   0.008298541</span></span>
+<span><span class="co">#&gt;  6:       8694892      19872657   0.021336469</span></span>
+<span><span class="co">#&gt;  7:      30501066      47121311   0.015444596</span></span>
+<span><span class="co">#&gt;  8:       5072721      16388635   0.033568259</span></span>
+<span><span class="co">#&gt;  9:      20827314      43334744   0.024736288</span></span>
+<span><span class="co">#&gt; 10:      16992221      42079509   0.032077837</span></span>
+<span><span class="co">#&gt; 11:      11901733      37650227   0.044393454</span></span>
+<span><span class="co">#&gt; 12:      22008504      55918535   0.037332059</span></span>
+<span><span class="co">#&gt; 13:      43971810      87522121   0.030164514</span></span>
+<span><span class="co">#&gt; 14:      18269127      54851227   0.047283667</span></span>
+<span><span class="co">#&gt; 15:      11014493      42756344   0.062274911</span></span>
+<span><span class="co">#&gt; 16:      92689755     153830838   0.027047256</span></span>
+<span><span class="co">#&gt; 17:      45040851     103354548   0.039063601</span></span>
+<span><span class="co">#&gt; 18:      20907249      68609309   0.056747655</span></span>
+<span><span class="co">#&gt; 19:      45568404     112754702   0.044340515</span></span>
+<span><span class="co">#&gt; 20:      16819267      67448584   0.073463753</span></span>
+<span><span class="co">#&gt; 21:      11859688      57963310   0.091213288</span></span>
+<span><span class="co">#&gt; 22:      16219631      69996398   0.081728860</span></span>
+<span><span class="co">#&gt; 23:       5190764      42108328   0.161386470</span></span>
+<span><span class="co">#&gt; 24:       6221683      50005754   0.169145620</span></span>
+<span><span class="co">#&gt; 25:      15668260      85090478   0.119751276</span></span>
+<span><span class="co">#&gt; 26:      75222224     206599403   0.063048188</span></span>
+<span><span class="co">#&gt; 27:      10161412      73055495   0.167962950</span></span>
+<span><span class="co">#&gt; 28:       8575343      69505285   0.195074548</span></span>
+<span><span class="co">#&gt; 29:      19174475     120770842   0.173200161</span></span>
+<span><span class="co">#&gt; 30:      22834478     138523651   0.175464377</span></span>
+<span><span class="co">#&gt; 31:      31445935     169973756   0.163365345</span></span>
+<span><span class="co">#&gt; 32:      32987225     186592373   0.185045993</span></span>
+<span><span class="co">#&gt; 33:      27713231     182068556   0.232526816</span></span>
+<span><span class="co">#&gt; 34:      80113491     346492034   0.173140846</span></span>
+<span><span class="co">#&gt; 35:      21034520     195237078   0.434194593</span></span>
+<span><span class="co">#&gt; 36:      66075497     477337136   0.561019265</span></span>
+<span><span class="co">#&gt;     loss_param_se loss_total_se loss_total_cv</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;         &lt;num&gt;</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="reserve-plot">Reserve plot<a class="anchor" aria-label="anchor" href="#reserve-plot"></a>
@@ -454,10 +454,10 @@ sequence</td>
 </tbody>
 </table>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, sigma_method <span class="op">=</span> <span class="st">"loglinear"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, sigma_method <span class="op">=</span> <span class="st">"loglinear"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;CLFit&gt;</span></span>
 <span><span class="co">#&gt; method      : mack </span></span>
-<span><span class="co">#&gt; target      : loss </span></span>
+<span><span class="co">#&gt; loss        : loss </span></span>
 <span><span class="co">#&gt; weight      : none </span></span>
 <span><span class="co">#&gt; alpha       : 1 </span></span>
 <span><span class="co">#&gt; sigma_method: loglinear </span></span>
@@ -474,7 +474,7 @@ sequence</td>
 <ul>
 <li>
 <code><a href="../articles/projection.html">vignette("projection")</a></code> — when to use
-<code><a href="../reference/fit_lr.html">fit_lr()</a></code> instead.</li>
+<code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> instead.</li>
 <li>
 <code><a href="../articles/triangle-link-and-maturity.html">vignette("triangle-link-and-maturity")</a></code> —
 <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>, <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code>, ata diagnostic

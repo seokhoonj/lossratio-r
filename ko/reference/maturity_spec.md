@@ -10,7 +10,7 @@ deferred** detection – the value of \$k^\*\$ depends on which cells the
 caller decides to expose:
 
 - In
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
   the spec is invoked on the *full* triangle the user passed in.
@@ -47,8 +47,8 @@ maturity_spec(...)
 
   kwargs passed verbatim to
   [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
-  when the spec is invoked (e.g. `target`, `groups`, `min_run`,
-  `max_cv`, `max_rse`, `min_valid_ratio`, `min_n_valid`).
+  when the spec is invoked (e.g. `loss`, `groups`, `min_run`, `max_cv`,
+  `max_rse`, `min_valid_ratio`, `min_n_valid`).
 
 ## Value
 
@@ -71,8 +71,8 @@ if (FALSE) { # \dontrun{
 # Capture detection arguments, defer execution until fit time.
 spec <- maturity_spec(min_run = 2, max_cv = 0.04)
 
-# In fit_lr(): closure is invoked on the user's `tri`.
-fit <- fit_lr(tri, maturity = maturity_spec(min_run = 2))
+# In fit_ratio(): closure is invoked on the user's `tri`.
+fit <- fit_ratio(tri, maturity = maturity_spec(min_run = 2))
 
 # In backtest(): closure is invoked on the *masked* triangle of
 # each holdout fold, so detected k* never peeks at held-out cells.

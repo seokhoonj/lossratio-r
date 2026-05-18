@@ -24,8 +24,8 @@ configuration](articles/articles/figs/triangle_usage_panels.png)
 
 | 도전 과제 | `lossratio` 의 응답 |
 |----|----|
-| 초기 dev 의 ATA 인자가 너무 Noisy | **`fit_lr(method = "sa")`** — maturity 이전엔 exposure-driven (ED), 이후엔 chain ladder (CL) |
-| 인수 기준 변경 등 구조적 변화 | **[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)** + `loss_regime` / `prem_regime` 인자 — 변화 이전 코호트를 자동으로 분리 |
+| 초기 dev 의 ATA 인자가 너무 Noisy | **`fit_ratio(method = "sa")`** — maturity 이전엔 exposure-driven (ED), 이후엔 chain ladder (CL) |
+| 인수 기준 변경 등 구조적 변화 | **[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)** + `loss_regime` / `exposure_regime` 인자 — 변화 이전 코호트를 자동으로 분리 |
 | “이 fit 이 얼마나 맞나?” 검증 | **[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)** — 최근 N 대각선을 빼고 적합한 뒤 actual 과 비교 |
 
 세 component 가 **한 figure 에서 동시에** 작동하는 것을 위 그림이
@@ -57,21 +57,21 @@ tri <- as_triangle(
   cohort    = "uy_m",
   calendar  = "cy_m",
   loss      = "incr_loss",
-  prem      = "incr_prem",
+  exposure  = "incr_exposure",
   cell_type = "incremental"   # default; "cumulative" 면 누적 입력
 )
 plot(tri)
 
 # 2) 단계 적응형 손해율 적합 (default)
-lr <- fit_lr(tri, method = "sa")
-summary(lr)
-plot_triangle(lr)
+ratio <- fit_ratio(tri, method = "sa")
+summary(ratio)
+plot_triangle(ratio)
 
 # 3) 환경변화 (regime shift) 자동 탐지 — 인수 정책 변경 시점
 detect_regime(tri, by = "coverage", method = "e_divisive")
 
 # 4) backtest — 최근 6 대각선을 빼고 fit + actual 비교
-bt <- backtest(tri, holdout = 6L, target = "lr")  # target = "lr" / "loss" / "prem"
+bt <- backtest(tri, holdout = 6L, target = "ratio")  # target = "ratio" / "loss" / "exposure"
 plot(bt)
 plot_triangle(bt)
 ```
@@ -81,14 +81,14 @@ plot_triangle(bt)
 | 함수 | 역할 |
 |----|----|
 | [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md) | long-format 데이터 → `Triangle` (코호트 × dev) |
-| `fit_lr(method = "sa" / "ed" / "cl")` | 손해율 적합 — *통합 인터페이스* (loss + premium 합성) |
-| [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md) / [`fit_prem()`](https://seokhoonj.github.io/lossratio/reference/fit_prem.md) | 역할별 디스패처 — 단일 측 (SE / CI 포함) |
+| `fit_ratio(method = "sa" / "ed" / "cl")` | 손해율 적합 — *통합 인터페이스* (loss + premium 합성) |
+| [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md) / [`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md) | 역할별 디스패처 — 단일 측 (SE / CI 포함) |
 | [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md) / [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md) | 단일 stage (chain ladder / exposure-driven) |
 | [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md) / [`fit_intensity()`](https://seokhoonj.github.io/lossratio/reference/fit_intensity.md) | link 단계 진단 — 곱셈형 / 덧셈형 |
 | [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md) | ATA 인자가 수렴하는 dev 위치 |
 | [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md) | 코호트 축 구조적 변화 탐지 |
 | [`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md) | 예측 손해율이 갱신을 멈추는 시점 |
-| [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md) | 대각선 hold-out 으로 fit 검증 (target = lr/loss/prem) |
+| [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md) | 대각선 hold-out 으로 fit 검증 (target = ratio/loss/exposure) |
 | [`plot()`](https://rdrr.io/r/graphics/plot.default.html) / [`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md) | S3 generic — 객체 클래스로 dispatch |
 
 ## 입력 형식
@@ -102,9 +102,9 @@ long-format `data.frame` / `data.table`. 컬럼명은 자유 —
 | `cohort` | 인수 / 사고 시점 (Date) | `"uy_m"`, `"uy"` |
 | `calendar` *또는* `dev` | 달력 시점 (Date) *또는* 경과 기간 (int) | `"cy_m"` / `"dev_m"` |
 | `loss` | 기간별 *또는* 누적 손해 | `"incr_loss"` / `"loss"` |
-| `prem` | 기간별 *또는* 누적 보험료 (장기 health 는 위험보험료) | `"incr_prem"` / `"prem"` |
+| `exposure` | 기간별 *또는* 누적 익스포저 (장기 health 는 위험보험료) | `"incr_exposure"` / `"exposure"` |
 | `groups` *(선택)* | 그룹 컬럼: 상품 / 담보 / 연령 / 성별 / 가입금액 | `"coverage"` |
-| `cell_type` *(default)* | `loss` / `prem` 값의 해석 | `"incremental"` / `"cumulative"` |
+| `cell_type` *(default)* | `loss` / `exposure` 값의 해석 | `"incremental"` / `"cumulative"` |
 
 해석을 정하는 두 인자:
 
@@ -118,7 +118,7 @@ long-format `data.frame` / `data.table`. 컬럼명은 자유 —
 
 [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
 가 스키마 검증 + 날짜 coerce + (`calendar` / `dev` 중 하나만 줬을 때)
-나머지 축 derive + grain bin + cumulative / incremental 컬럼 + `lr` /
+나머지 축 derive + grain bin + cumulative / incremental 컬럼 + `ratio` /
 `margin` / `profit` 까지 한 번에 생성.
 
 ## 시각화
@@ -127,8 +127,8 @@ long-format `data.frame` / `data.table`. 컬럼명은 자유 —
 
 plot(tri)                                                  # 코호트 궤적
 plot_triangle(tri)                                         # cell heatmap
-plot_triangle(lr, view = "value", region = "proj")         # 예측 영역 LR
-plot_triangle(lr, view = "usage")                          # 맨 위 이미지와 동일 모드
+plot_triangle(ratio, view = "value", region = "proj")      # 예측 영역 손해율
+plot_triangle(ratio, view = "usage")                       # 맨 위 이미지와 동일 모드
 ```
 
 [`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
@@ -146,7 +146,7 @@ vignette("getting-started",        package = "lossratio")
 vignette("regime-change-filter",   package = "lossratio")
 vignette("backtest",               package = "lossratio")
 vignette("triangle-link-and-maturity", package = "lossratio")
-?fit_lr
+?fit_ratio
 ?detect_regime
 ```
 

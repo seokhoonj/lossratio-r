@@ -3,7 +3,7 @@
 Detect structural change points in the sequence of cohort-level
 development trajectories. Each underwriting cohort (indexed by the
 `cohort` of a `"Triangle"` object) is treated as a feature vector whose
-entries are the selected `target` metric observed at development periods
+entries are the selected `loss` metric observed at development periods
 `1, ..., window`. Cohorts are then ordered by underwriting period and
 tested for structural shifts in the multivariate sequence.
 
@@ -42,7 +42,7 @@ Three detection strategies are supported:
 ``` r
 detect_regime(
   x,
-  target = "lr",
+  loss = "ratio",
   by = NULL,
   window = "auto",
   method = c("e_divisive", "pelt", "hclust"),
@@ -72,39 +72,39 @@ print(x, ...)
   [`print()`](https://rdrr.io/r/base/print.html) method on `Regime`
   objects.
 
-- target:
+- loss:
 
-  Trajectory variable. Default is `"lr"` (cumulative loss ratio).
-  Accepts any column on the `Triangle` (e.g. `"lr"`, `"loss"`, `"prem"`,
-  `"incr_loss"`, `"incr_prem"`), plus three *diagnostic* derived targets
-  computed inline per (group, cohort):
+  Trajectory variable. Default is `"ratio"` (cumulative loss ratio).
+  Accepts any column on the `Triangle` (e.g. `"ratio"`, `"loss"`,
+  `"exposure"`, `"incr_loss"`, `"incr_exposure"`), plus three
+  *diagnostic* derived metrics computed inline per (group, cohort):
 
   `"loss_ata"`
 
-  :   Loss age-to-age factor `loss[k+1] / loss[k]` — multiplicative loss
+  :   Loss age-to-age factor `loss[k+1] / loss[k]` – multiplicative loss
       development speed (CL \$f_k\$).
 
-  `"prem_ata"`
+  `"exposure_ata"`
 
-  :   Premium age-to-age factor — same form on prem.
+  :   Exposure age-to-age factor – same form on exposure.
 
   `"loss_ed"`
 
-  :   Loss intensity `(loss[k] - loss[k-1]) / prem[k-1]` — additive,
+  :   Loss intensity `(loss[k] - loss[k-1]) / exposure[k-1]` – additive,
       exposure-anchored (ED model's \$g_k\$).
 
-  `"prem_ed"`
+  `"exposure_ed"`
 
-  :   Alias of `"prem_ata"` — the two differ only by a constant
-      `(prem_ata - 1)`, and the PCA standardization in detection removes
-      that shift, so they yield identical regime changes. Provided for
-      API symmetry with the `loss_ata` / `loss_ed` pair.
+  :   Alias of `"exposure_ata"` – the two differ only by a constant
+      `(exposure_ata - 1)`, and the PCA standardization in detection
+      removes that shift, so they yield identical regime changes.
+      Provided for API symmetry with the `loss_ata` / `loss_ed` pair.
 
-  Derived targets drop the first dev row per cohort (no predecessor),
+  Derived metrics drop the first dev row per cohort (no predecessor),
   then re-index `dev` so detection sees a contiguous sequence. See the
   [`vignette("regime")`](https://seokhoonj.github.io/lossratio/articles/regime.md)
-  "Choice of target" section for guidance on which target matches which
-  suspected event.
+  "Choice of loss" section for guidance on which loss metric matches
+  which suspected event.
 
 - by:
 
@@ -183,7 +183,7 @@ An object of class `"Regime"`. For single-group input:
 
   Detection method used.
 
-- `target`:
+- `loss`:
 
   Trajectory variable used for detection.
 
@@ -215,7 +215,7 @@ An object of class `"Regime"`. For single-group input:
   `[by..., change, regime_id, pre_value, post_value, magnitude]`.
   `regime_id` = id of the regime that STARTS at this change (the
   pre-change regime is `regime_id - 1`); matches `$labels$regime_id`.
-  `pre_value` / `post_value` are the mean `target` over the cohort × dev
+  `pre_value` / `post_value` are the mean `loss` over the cohort × dev
   trajectory windows in the pre- / post-change regimes;
   `magnitude = |post_value - pre_value|`. Empty (zero rows) when no
   change is detected.
@@ -271,7 +271,7 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 # Hierarchical clustering (no extra package dependency)
@@ -291,7 +291,7 @@ tri_all <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 r_all <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 print(r_all$changes)

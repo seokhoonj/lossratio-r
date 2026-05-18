@@ -29,16 +29,16 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 bt <- backtest(tri_sur, holdout = 6L)
 print(bt)
 #> <Backtest>
-#>   dispatcher: fit_lr
-#>   target    : lr
+#>   dispatcher: fit_ratio
+#>   target    : ratio
 #>   holdout   : 6 diagonals (159 cells)
-#>   A/E Error : mean 0.21% / median -0.00%
+#>   A/E Error : mean -9.38% / median -4.39%
 ```
 
 The returned object is a `"Backtest"` list with these key slots:
@@ -50,7 +50,7 @@ The returned object is a `"Backtest"` list with these key slots:
 - `masked` — the triangle the fit was trained on (latest diagonals
   removed).
 - `fit` — the fit object returned by the target-specific dispatcher
-  (`fit_lr` / `fit_loss` / `fit_prem`) chosen by `target=`.
+  (`fit_ratio` / `fit_loss` / `fit_exposure`) chosen by `target=`.
 
 `summary(bt)` prints the two summary tables alongside the call metadata.
 
@@ -80,36 +80,26 @@ miscalibration.
 ``` r
 
 head(bt$col_summary, 8)
-#>    coverage   dev     n     aeg_mean      aeg_med ae_err_mean  ae_err_med
-#>      <char> <int> <int>        <num>        <num>       <num>       <num>
-#> 1:  surgery     2     1 -0.287972089 -0.287972089 -0.36674934 -0.36674934
-#> 2:  surgery     3     2 -0.105823621 -0.105823621 -0.09011956 -0.09011956
-#> 3:  surgery     4     3 -0.043897002  0.021766603 -0.02300711  0.04378485
-#> 4:  surgery     5     4 -0.011055827  0.005435137  0.01186457  0.01235174
-#> 5:  surgery     6     5 -0.016011400  0.037090206  0.01349876  0.06211287
-#> 6:  surgery     7     6  0.006639057  0.052051927  0.03540917  0.07574468
-#> 7:  surgery     8     6  0.038755683  0.046849343  0.05916241  0.07259077
-#> 8:  surgery     9     6  0.016598376  0.018133964  0.02445333  0.02775188
-#>      ae_err_wt incr_aeg_mean incr_aeg_med incr_ae_err_mean incr_ae_err_med
-#>          <num>         <num>        <num>            <num>           <num>
-#> 1: -0.36674934   -0.57495418 -0.574954175      -0.42911219    -0.429112189
-#> 2: -0.15446352   -0.03295105 -0.032951048       0.03104206     0.031042058
-#> 3: -0.06566221    0.03896663 -0.060404427       0.07170889    -0.051312889
-#> 4: -0.01626478    0.07049188  0.081146126       0.09271533     0.101566115
-#> 5: -0.02203521   -0.04049602  0.091444980       0.04486252     0.130130156
-#> 6:  0.00886328    0.12761981  0.080299453       0.16250805     0.136743653
-#> 7:  0.05508567    0.02069969  0.007197477       0.01564729     0.008088929
-#> 8:  0.02238914   -0.10613396 -0.136121764      -0.13147267    -0.163940480
-#>    incr_ae_err_wt
-#>             <num>
-#> 1:    -0.42911219
-#> 2:    -0.03788330
-#> 3:     0.04819216
-#> 4:     0.08262484
-#> 5:    -0.04711615
-#> 6:     0.14894131
-#> 7:     0.02505782
-#> 8:    -0.12387084
+#>    coverage   dev     n   aeg_mean    aeg_med ae_err_mean ae_err_med  ae_err_wt
+#>      <char> <int> <int>      <num>      <num>       <num>      <num>      <num>
+#> 1:  surgery     2     1 -0.2879721 -0.2879721  -0.3667493 -0.3667493 -0.3667493
+#> 2:  surgery     3     2 -0.2108693 -0.2108693  -0.2609106 -0.2609106 -0.2668725
+#> 3:  surgery     4     3 -0.1980716 -0.2262460  -0.2360836 -0.2278978 -0.2407573
+#> 4:  surgery     5     4 -0.2070832 -0.1696142  -0.2373172 -0.2037644 -0.2364591
+#> 5:  surgery     6     5 -0.2350791 -0.2220419  -0.2444979 -0.2435615 -0.2485779
+#> 6:  surgery     7     6 -0.2261834 -0.2456246  -0.2251483 -0.2400164 -0.2303588
+#> 7:  surgery     8     6 -0.2375787 -0.2195124  -0.2337115 -0.2298462 -0.2424551
+#> 8:  surgery     9     6 -0.2210369 -0.1791352  -0.2188077 -0.1763073 -0.2257798
+#>    incr_aeg_mean incr_aeg_med incr_ae_err_mean incr_ae_err_med incr_ae_err_wt
+#>            <num>        <num>            <num>           <num>          <num>
+#> 1:    -0.5749542   -0.5749542       -0.4291122      -0.4291122     -0.4291122
+#> 2:    -0.3489404   -0.3489404       -0.2942675      -0.2942675     -0.2942675
+#> 3:    -0.3738322   -0.3334336       -0.3060770      -0.2730004     -0.3060770
+#> 4:    -0.4433586   -0.4866788       -0.3243281      -0.3560179     -0.3243281
+#> 5:    -0.5667766   -0.5767098       -0.4089965      -0.4161644     -0.4089965
+#> 6:    -0.4048255   -0.5050649       -0.2913899      -0.3635413     -0.2913899
+#> 7:    -0.6238985   -0.6021573       -0.4242259      -0.4094427     -0.4242259
+#> 8:    -0.7336689   -0.7388122       -0.4942706      -0.4977357     -0.4942706
 ```
 
 `ae_err_mean` averages cell-level A/E Error, `ae_err_med` is the median,
@@ -126,30 +116,30 @@ by construction.
 ``` r
 
 bt$diag_summary
-#>    coverage cal_idx     n      aeg_mean       aeg_med  ae_err_mean   ae_err_med
-#>      <char>   <int> <int>         <num>         <num>        <num>        <num>
-#> 1:  surgery      31    29 -0.0125686252 -0.0056732350 -0.011309410 -0.003699313
-#> 2:  surgery      32    28 -0.0104717812 -0.0114871218 -0.002794292 -0.009588959
-#> 3:  surgery      33    27  0.0004718616  0.0050471735  0.007666312  0.006154835
-#> 4:  surgery      34    26  0.0012851467 -0.0002953897  0.008094503  0.000421251
-#> 5:  surgery      35    25 -0.0006986581  0.0145835308  0.007408947  0.009455704
-#> 6:  surgery      36    24 -0.0027175011  0.0105940082  0.005874139  0.009450279
-#>        ae_err_wt incr_aeg_mean incr_aeg_med incr_ae_err_mean incr_ae_err_med
-#>            <num>         <num>        <num>            <num>           <num>
-#> 1: -0.0107004533   -0.08350070  -0.07460811     -0.036347452     -0.06750071
-#> 2: -0.0089044278   -0.07573837  -0.07440057     -0.003857981     -0.07262916
-#> 3:  0.0004012161    0.18105966   0.09849605      0.147072061      0.12954698
-#> 4:  0.0010973317    0.01407124  -0.02312661      0.017058138     -0.02473897
-#> 5: -0.0005997009   -0.03104560  -0.09210258     -0.008476082     -0.07819464
-#> 6: -0.0023535415   -0.06224227  -0.09299902     -0.016968983     -0.09358995
+#>    coverage cal_idx     n    aeg_mean     aeg_med ae_err_mean  ae_err_med
+#>      <char>   <int> <int>       <num>       <num>       <num>       <num>
+#> 1:  surgery      31    29 -0.04575359 -0.03198719 -0.05658328 -0.02153108
+#> 2:  surgery      32    28 -0.07040314 -0.05170431 -0.07561194 -0.03549370
+#> 3:  surgery      33    27 -0.08297822 -0.05675816 -0.08611363 -0.03865162
+#> 4:  surgery      34    26 -0.10380725 -0.06595414 -0.10216462 -0.04456169
+#> 5:  surgery      35    25 -0.12608316 -0.08752566 -0.11863390 -0.05863248
+#> 6:  surgery      36    24 -0.14828046 -0.14817761 -0.13376449 -0.12050537
+#>      ae_err_wt incr_aeg_mean incr_aeg_med incr_ae_err_mean incr_ae_err_med
+#>          <num>         <num>        <num>            <num>           <num>
+#> 1: -0.03788261   -0.30136185   -0.4459253      -0.19728502      -0.3160730
+#> 2: -0.05696273   -0.31278712   -0.3376753      -0.20366014      -0.2455593
+#> 3: -0.06588038   -0.07618026   -0.2335583      -0.04127158      -0.1580403
+#> 4: -0.08133780   -0.26063771   -0.4114195      -0.16056535      -0.2755793
+#> 5: -0.09770892   -0.31819948   -0.3999726      -0.21990402      -0.2615089
+#> 6: -0.11404379   -0.36981575   -0.3068424      -0.23186701      -0.1978691
 #>    incr_ae_err_wt
 #>             <num>
-#> 1:    -0.06558617
-#> 2:    -0.06014060
-#> 3:     0.14477037
-#> 4:     0.01130928
-#> 5:    -0.02508022
-#> 6:    -0.05088339
+#> 1:     -0.2021198
+#> 2:     -0.2090259
+#> 3:     -0.0505205
+#> 4:     -0.1715931
+#> 5:     -0.2086546
+#> 6:     -0.2415822
 ```
 
 A monotone drift across calendar diagonals (as in the surgery example
@@ -164,20 +154,20 @@ cells, inspect `bt$ae_err` directly:
 ``` r
 
 head(bt$ae_err, 5)
-#>    coverage     cohort   dev   actual expected          aeg       ae_err
-#>      <char>     <Date> <int>    <num>    <num>        <num>        <num>
-#> 1:  surgery 2023-02-01    30 1.474656 1.485094 -0.010438112 -0.007028587
-#> 2:  surgery 2023-03-01    29 1.441826 1.414305  0.027520309  0.019458534
-#> 3:  surgery 2023-03-01    30 1.441234 1.418776  0.022457560  0.015828823
-#> 4:  surgery 2023-04-01    28 1.513021 1.510169  0.002851902  0.001888465
-#> 5:  surgery 2023-04-01    29 1.531922 1.504873  0.027048593  0.017974003
-#>    incr_actual incr_expected    incr_aeg incr_ae_err cal_idx
-#>          <num>         <num>       <num>       <num>   <int>
-#> 1:    1.311699      1.616053 -0.30435387 -0.18833160      31
-#> 2:    2.057141      1.271304  0.78583659  0.61813407      31
-#> 3:    1.425549      1.543888 -0.11833820 -0.07664950      32
-#> 4:    1.573801      1.498421  0.07537995  0.05030625      31
-#> 5:    2.055572      1.352715  0.70285727  0.51959013      32
+#>    coverage     cohort   dev   actual expected         aeg       ae_err
+#>      <char>     <Date> <int>    <num>    <num>       <num>        <num>
+#> 1:  surgery 2023-02-01    30 1.474656 1.485769 -0.01111280 -0.007479494
+#> 2:  surgery 2023-03-01    29 1.441826 1.416462  0.02536395  0.017906553
+#> 3:  surgery 2023-03-01    30 1.441234 1.424023  0.01721096  0.012086155
+#> 4:  surgery 2023-04-01    28 1.513021 1.508373  0.00464845  0.003081765
+#> 5:  surgery 2023-04-01    29 1.531922 1.502555  0.02936662  0.019544454
+#>    incr_actual incr_expected   incr_aeg incr_ae_err cal_idx
+#>          <num>         <num>      <num>       <num>   <int>
+#> 1:    1.311699      1.635607 -0.3239081 -0.19803535      31
+#> 2:    2.057141      1.335414  0.7217266  0.54045140      31
+#> 3:    1.425549      1.635607 -0.2100580 -0.12842811      32
+#> 4:    1.573801      1.449050  0.1247511  0.08609165      31
+#> 5:    2.055572      1.335414  0.7201577  0.53927654      32
 ```
 
 ## Plot demos
@@ -238,10 +228,10 @@ has at least 24–30 diagonals of history.
 
 ## Choosing the projection target
 
-The default is `target = "lr"` with `loss_method = "sa"`. The loss ratio
-is unitless and dimension-free across cohorts of very different volume,
-so `ae_err_mean` and `ae_err_med` carry a consistent meaning across the
-triangle.
+The default is `target = "ratio"` with `loss_method = "sa"`. The loss
+ratio is unitless and dimension-free across cohorts of very different
+volume, so `ae_err_mean` and `ae_err_med` carry a consistent meaning
+across the triangle.
 
 > **A note on `target`.** `target` is the **score column** — the column
 > on which actual vs. predicted are compared cell-by-cell. It selects
@@ -252,16 +242,16 @@ triangle.
 
 | `target` | Internal fitter | Method arg | Compared column |
 |----|----|----|----|
-| `"lr"` | [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md) | `loss_method` | `lr_proj` |
+| `"ratio"` | [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md) | `loss_method` | `ratio_proj` |
 | `"loss"` | [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md) | `loss_method` | `loss_proj` |
-| `"prem"` | [`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md) | `prem_method` | `prem_proj` |
+| `"exposure"` | [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md) | `exposure_method` | `exposure_proj` |
 
 The `loss_method` argument selects the underlying loss / loss-ratio
 projection strategy: `"sa"` (stage-adaptive, the default) blends
 exposure-driven projections before the maturity point with chain ladder
 afterwards; `"ed"` is purely exposure-driven; `"cl"` is the classical
-chain ladder. The `prem_method` argument selects the premium projection
-strategy when `target = "prem"`.
+chain ladder. The `exposure_method` argument selects the premium
+projection strategy when `target = "exposure"`.
 
 ``` r
 
@@ -272,18 +262,18 @@ bt_cl       <- backtest(tri_sur, holdout = 6L, loss_method = "cl")
 bt_loss     <- backtest(tri_sur, holdout = 6L,
                         target = "loss", loss_method = "cl")
 bt_premium  <- backtest(tri_sur, holdout = 6L,
-                        target = "prem", prem_method = "cl")
+                        target = "exposure", exposure_method = "cl")
 
 print(bt_sa)
 #> <Backtest>
-#>   dispatcher: fit_lr
-#>   target    : lr
+#>   dispatcher: fit_ratio
+#>   target    : ratio
 #>   holdout   : 6 diagonals (159 cells)
 #>   A/E Error : mean 0.21% / median -0.00%
 ```
 
 For monetary impact (loss or premium) backtesting, set `target = "loss"`
-or `target = "prem"` to score the corresponding projection lane
+or `target = "exposure"` to score the corresponding projection lane
 directly.
 
 ## See also
@@ -294,7 +284,7 @@ directly.
   reference.
 - [`vignette("projection")`](https://seokhoonj.github.io/lossratio/ko/articles/projection.md)
   —
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
   and the `"sa"`, `"ed"`, `"cl"` methods.
 - [`?backtest`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md),
   [`?plot.Backtest`](https://seokhoonj.github.io/lossratio/ko/reference/plot.Backtest.md),

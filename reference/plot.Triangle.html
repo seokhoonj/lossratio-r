@@ -148,7 +148,7 @@ in grey and overlays three summary statistics:</p><ul><li><p>Mean</p></li>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'Triangle'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  metric <span class="op">=</span> <span class="st">"lr"</span>,</span>
+<span>  metric <span class="op">=</span> <span class="st">"ratio"</span>,</span>
 <span>  summary <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  summary_min_n <span class="op">=</span> <span class="fl">5L</span>,</span>
 <span>  amount_divisor <span class="op">=</span> <span class="st">"auto"</span>,</span>
@@ -168,18 +168,19 @@ in grey and overlays three summary statistics:</p><ul><li><p>Mean</p></li>
 
 <dt id="arg-metric">metric<a class="anchor" aria-label="anchor" href="#arg-metric"></a></dt>
 <dd><p>A single metric to plot. Must be one of:
-<code>"lr"</code>, <code>"incr_lr"</code>,
-<code>"loss"</code>, <code>"incr_loss"</code>, <code>"prem"</code>, <code>"incr_prem"</code>,
+<code>"ratio"</code>, <code>"incr_ratio"</code>,
+<code>"loss"</code>, <code>"incr_loss"</code>, <code>"exposure"</code>, <code>"incr_exposure"</code>,
 <code>"margin"</code>, <code>"incr_margin"</code>,
-<code>"loss_share"</code>, <code>"incr_loss_share"</code>, <code>"prem_share"</code>, or <code>"incr_prem_share"</code>.</p></dd>
+<code>"loss_share"</code>, <code>"incr_loss_share"</code>, <code>"exposure_share"</code>, or <code>"incr_exposure_share"</code>.</p></dd>
 
 
 <dt id="arg-summary">summary<a class="anchor" aria-label="anchor" href="#arg-summary"></a></dt>
 <dd><p>Logical. If <code>FALSE</code> (default), shows raw cohort trajectories.
 If <code>TRUE</code>, shows grey cohort trajectories with overlaid summary lines
 (mean, median, weighted mean). Summary overlay is supported only for
-<code>"lr"</code> and <code>"incr_lr"</code>, and only when the x-axis variable is a development-period
-variable (for example, <code>dev_m</code>, <code>dev_q</code>, <code>dev_h</code>, <code>dev_y</code>).</p></dd>
+<code>"ratio"</code> and <code>"incr_ratio"</code>, and only when the x-axis variable is a
+development-period variable (for example, <code>dev_m</code>, <code>dev_q</code>, <code>dev_h</code>,
+<code>dev_y</code>).</p></dd>
 
 
 <dt id="arg-summary-min-n">summary_min_n<a class="anchor" aria-label="anchor" href="#arg-summary-min-n"></a></dt>
@@ -220,11 +221,11 @@ Cohort lines are grouped by the period variable stored in
 <code>attr(x, "cohort")</code>, and facets are created from
 <code>attr(x, "groups")</code>.</p>
 <p>The cumulative loss ratio is defined here as:
-$$lr = loss / prem$$</p>
+$$ratio = loss / exposure$$</p>
 <p>For long-term health insurance applications, risk premium is commonly
-used as the <code>prem</code> measure.</p>
-<p>The weighted mean is defined as:</p><ul><li><p><code>lr_wt      = sum(loss)      / sum(prem)</code></p></li>
-<li><p><code>incr_lr_wt = sum(incr_loss) / sum(incr_prem)</code></p></li>
+used as the <code>exposure</code> measure.</p>
+<p>The weighted mean is defined as:</p><ul><li><p><code>ratio_wt      = sum(loss)      / sum(exposure)</code></p></li>
+<li><p><code>incr_ratio_wt = sum(incr_loss) / sum(incr_exposure)</code></p></li>
 </ul><p>Ratio and proportion metrics are plotted on the original scale and displayed
 as percentages via y-axis labels. Amount metrics are plotted on the original
 scale and displayed using y-axis labels scaled by <code>amount_divisor</code>.</p>

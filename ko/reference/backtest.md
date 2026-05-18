@@ -1,4 +1,4 @@
-# Backtest a loss / prem / loss-ratio projection on existing data
+# Backtest a loss / exposure / loss-ratio projection on existing data
 
 Hold out the latest `holdout` calendar diagonals from the input
 `Triangle`, refit a target-specific projection on the earlier portion,
@@ -7,14 +7,14 @@ values that were withheld.
 
 The target is selected with `target`:
 
-- `target = "lr"` – score the loss-ratio projection from
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md).
+- `target = "ratio"` – score the loss-ratio projection from
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md).
 
 - `target = "loss"` – score the loss projection from
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md).
 
-- `target = "prem"` – score the prem projection from
-  [`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md).
+- `target = "exposure"` – score the exposure projection from
+  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md).
 
 The A/E Error (`ae_err`) follows the standard actuarial A/E convention
 and is computed cell-wise as \$\$ae\\err =
@@ -30,15 +30,15 @@ development period (`col_summary`) and by calendar diagonal
 backtest(
   x,
   holdout = 6L,
-  target = c("lr", "loss", "prem"),
-  loss_method = c("sa", "ed", "cl"),
-  prem_method = c("cl", "ed"),
+  target = c("ratio", "loss", "exposure"),
+  loss_method = c("ed", "cl", "sa"),
+  exposure_method = c("cl", "ed"),
   loss_alpha = 1,
-  prem_alpha = 1,
+  exposure_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   loss_regime = NULL,
-  prem_regime = NULL,
+  exposure_regime = NULL,
   maturity = "auto",
   se_method = c("fixed", "delta"),
   rho = 0.95,
@@ -73,33 +73,33 @@ print(x, ...)
 
 - target:
 
-  Character scalar. Which projection to backtest. One of `"lr"`
-  (default), `"loss"`, `"prem"`. Determines which fitter is called on
-  the masked triangle and which column on `x` is treated as the held-out
-  actual.
+  Character scalar. Which projection to backtest. One of `"ratio"`
+  (default), `"loss"`, `"exposure"`. Determines which fitter is called
+  on the masked triangle and which column on `x` is treated as the
+  held-out actual.
 
 - loss_method:
 
   Method for the loss-side projection. Passed to
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
   as their `method` argument. One of `"sa"`, `"ed"`, `"cl"`. Unused for
-  `target = "prem"`.
+  `target = "exposure"`.
 
-- prem_method:
+- exposure_method:
 
-  Method for the prem-side projection. Passed to
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  Method for the exposure-side projection. Passed to
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
   /
-  [`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md).
+  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md).
   One of `"cl"`, `"ed"`.
 
-- loss_alpha, prem_alpha:
+- loss_alpha, exposure_alpha:
 
-  Mack alpha for loss-side / prem-side chain-ladder estimation.
+  Mack alpha for loss-side / exposure-side chain-ladder estimation.
 
 - sigma_method:
 
@@ -109,10 +109,10 @@ print(x, ...)
 
   Calendar-diagonal recency filter forwarded to the fitter.
 
-- loss_regime, prem_regime:
+- loss_regime, exposure_regime:
 
-  Regime spec for the loss / prem side. Each accepts one of four input
-  types, dispatched by
+  Regime spec for the loss / exposure side. Each accepts one of four
+  input types, dispatched by
   [`.resolve_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_regime.md):
 
   - `NULL` (default) – no regime filter.
@@ -129,11 +129,11 @@ print(x, ...)
   - A function `function(tri) -> Regime` – called on the masked triangle
     for the same leakage-safe reason.
 
-  `prem_regime` is resolved independently from `loss_regime`.
+  `exposure_regime` is resolved independently from `loss_regime`.
 
 - maturity:
 
-  Maturity input. Used only for `target = "lr"` and `target = "loss"`
+  Maturity input. Used only for `target = "ratio"` and `target = "loss"`
   (stage-adaptive). Accepts one of four input types, dispatched by
   [`.resolve_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_maturity.md):
 
@@ -158,31 +158,31 @@ print(x, ...)
 - se_method:
 
   Standard-error composition for
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md).
-  Unused for `target = "loss"` / `target = "prem"`.
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md).
+  Unused for `target = "loss"` / `target = "exposure"`.
 
 - rho:
 
-  Loss-prem correlation used by
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
-  delta method. Unused for `target = "loss"` / `target = "prem"`.
+  Loss-exposure correlation used by
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
+  delta method. Unused for `target = "loss"` / `target = "exposure"`.
 
 - conf_level:
 
   Confidence level for
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
-  intervals. Unused for `target = "prem"`.
+  intervals. Unused for `target = "exposure"`.
 
 - bootstrap, B, seed:
 
   Bootstrap controls forwarded to the target-specific fitter
-  ([`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  ([`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
   /
-  [`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md)).
+  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)).
   `bootstrap = NULL` (default) defers to the fitter's method-dependent
   resolution: bootstrap for SA/ED methods, analytical for pure CL. The
   fitter accepts the full 4-type dispatch (`NULL` / logical / `"auto"` /
@@ -250,9 +250,9 @@ An object of class `"Backtest"` with components:
 
 ## See also
 
-[`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md),
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
-[`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md),
+[`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md),
 [`plot.Backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/plot.Backtest.md)
 
 ## Examples
@@ -266,15 +266,15 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
-bt_lr   <- backtest(tri, holdout = 6L, target = "lr")
-bt_loss <- backtest(tri, holdout = 6L, target = "loss")
-bt_prem <- backtest(tri, holdout = 6L, target = "prem")
+bt_ratio    <- backtest(tri, holdout = 6L, target = "ratio")
+bt_loss     <- backtest(tri, holdout = 6L, target = "loss")
+bt_exposure <- backtest(tri, holdout = 6L, target = "exposure")
 
-print(bt_lr)
-summary(bt_lr)
-plot(bt_lr)
+print(bt_ratio)
+summary(bt_ratio)
+plot(bt_ratio)
 } # }
 ```

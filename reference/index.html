@@ -181,7 +181,7 @@
       </dl></div><div class="section level2">
       <h2 id="estimation">Estimation<a class="anchor" aria-label="anchor" href="#estimation"></a></h2>
 
-      <div class="section-desc"><p>Models that produce full projections on a Triangle. Base algorithms: <code>fit_cl</code> (chain ladder / multiplicative), <code>fit_ed</code> (exposure-driven / additive). Role dispatchers: <code>fit_loss</code> (loss-side sa/ed/cl), <code>fit_prem</code> (premium-side ed/cl). Composition: <code>fit_lr</code> (loss-ratio umbrella with delta-method SE). All return an object carrying a <code>$full</code> projection table.</p></div>
+      <div class="section-desc"><p>Models that produce full projections on a Triangle. Base algorithms: <code>fit_cl</code> (chain ladder / multiplicative), <code>fit_ed</code> (exposure-driven / additive). Role dispatchers: <code>fit_loss</code> (loss-side sa/ed/cl), <code>fit_exposure</code> (exposure-side ed/cl). Composition: <code>fit_ratio</code> (loss-ratio umbrella with delta-method SE). All return an object carrying a <code>$full</code> projection table.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -211,21 +211,21 @@
 
         <dt>
 
-          <code><a href="fit_prem.html">fit_prem()</a></code>
+          <code><a href="fit_exposure.html">fit_exposure()</a></code>
 
         </dt>
-        <dd>Fit a chain ladder projection on the prem (exposure) triangle</dd>
+        <dd>Fit a chain ladder projection on the exposure triangle</dd>
 
         <dt>
 
-          <code><a href="fit_lr.html">fit_lr()</a></code>
+          <code><a href="fit_ratio.html">fit_ratio()</a></code>
 
         </dt>
         <dd>Fit loss ratio projection model</dd>
       </dl></div><div class="section level2">
       <h2 id="factor-diagnostics">Factor diagnostics<a class="anchor" aria-label="anchor" href="#factor-diagnostics"></a></h2>
 
-      <div class="section-desc"><p>Per-link factor estimation at the <em>factor level</em>. Both <code>fit_ata</code> (multiplicative ATA factors <code>f_k</code>) and <code>fit_intensity</code> (ED-style additive intensities <code>g_k</code>) return per-link factors with standard errors and diagnostic stats — without producing a full projection. <code>fit_ata</code> feeds into <code>fit_cl</code>, <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code>, and the SA stage transition in <code>fit_lr</code>; <code>fit_intensity</code> feeds into <code>fit_ed</code> and is the ED counterpart diagnostic.</p></div>
+      <div class="section-desc"><p>Per-link factor estimation at the <em>factor level</em>. Both <code>fit_ata</code> (multiplicative ATA factors <code>f_k</code>) and <code>fit_intensity</code> (ED-style additive intensities <code>g_k</code>) return per-link factors with standard errors and diagnostic stats — without producing a full projection. <code>fit_ata</code> feeds into <code>fit_cl</code>, <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code>, and the SA stage transition in <code>fit_ratio</code>; <code>fit_intensity</code> feeds into <code>fit_ed</code> and is the ED counterpart diagnostic.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -248,7 +248,7 @@
       </dl></div><div class="section level2">
       <h2 id="cell-selection-diagnostics">Cell-selection diagnostics<a class="anchor" aria-label="anchor" href="#cell-selection-diagnostics"></a></h2>
 
-      <div class="section-desc"><p>Decide which cells of the triangle to use for estimation. <code>detect_maturity</code> works along the dev axis (link beyond which ATA factors are stable); <code>detect_regime</code> works along the cohort axis (structural break across underwriting cohorts). The <code>*_at()</code> / <code>*_spec()</code> helpers build manual / lazy-detect input objects for the <code>maturity</code> / <code>loss_regime</code> / <code>prem_regime</code> arguments of the fit functions.</p></div>
+      <div class="section-desc"><p>Decide which cells of the triangle to use for estimation. <code>detect_maturity</code> works along the dev axis (link beyond which ATA factors are stable); <code>detect_regime</code> works along the cohort axis (structural break across underwriting cohorts). The <code>*_at()</code> / <code>*_spec()</code> helpers build manual / lazy-detect input objects for the <code>maturity</code> / <code>loss_regime</code> / <code>exposure_regime</code> arguments of the fit functions.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -299,7 +299,7 @@
       </dl></div><div class="section level2">
       <h2 id="bootstrap">Bootstrap<a class="anchor" aria-label="anchor" href="#bootstrap"></a></h2>
 
-      <div class="section-desc"><p>Cohort × dev standard-error decomposition via simulation (Pythagorean split into parameter and process components). Returned object is consumed by <code>fit_loss</code> / <code>fit_prem</code> / <code>fit_lr</code> through their <code>bootstrap</code> argument to replace analytical SE / CI with empirical counterparts.</p></div>
+      <div class="section-desc"><p>Cohort × dev standard-error decomposition via simulation (Pythagorean split into parameter and process components). Returned object is consumed by <code>fit_loss</code> / <code>fit_exposure</code> / <code>fit_ratio</code> through their <code>bootstrap</code> argument to replace analytical SE / CI with empirical counterparts.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -315,7 +315,7 @@
       </dl></div><div class="section level2">
       <h2 id="projection-diagnostic">Projection diagnostic<a class="anchor" aria-label="anchor" href="#projection-diagnostic"></a></h2>
 
-      <div class="section-desc"><p>Operates on a fitted <code>LRFit</code>, not on the raw triangle. Locates the valuation depth <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math> at which the projected ultimate loss ratio stops revising under a dual criterion (predictive revision below noise threshold AND cross-cohort dispersion small, sustained over M consecutive valuations).</p></div>
+      <div class="section-desc"><p>Operates on a fitted <code>RatioFit</code>, not on the raw triangle. Locates the valuation depth <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math> at which the projected ultimate loss ratio stops revising under a dual criterion (predictive revision below noise threshold AND cross-cohort dispersion small, sustained over M consecutive valuations).</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -343,7 +343,7 @@
           <code><a href="backtest.html">backtest()</a></code> <code><a href="backtest.html">print(<i>&lt;Backtest&gt;</i>)</a></code> <code><a href="backtest.html">summary(<i>&lt;Backtest&gt;</i>)</a></code> <code><a href="backtest.html">print(<i>&lt;summary.Backtest&gt;</i>)</a></code>
 
         </dt>
-        <dd>Backtest a loss / prem / loss-ratio projection on existing data</dd>
+        <dd>Backtest a loss / exposure / loss-ratio projection on existing data</dd>
       </dl></div><div class="section level2">
       <h2 id="visualisation">Visualisation<a class="anchor" aria-label="anchor" href="#visualisation"></a></h2>
 
@@ -412,17 +412,17 @@
 
         <dt>
 
-          <code><a href="plot.LRFit.html">plot(<i>&lt;LRFit&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot a loss ratio fit</dd>
-
-        <dt>
-
           <code><a href="plot.Link.html">plot(<i>&lt;Link&gt;</i>)</a></code>
 
         </dt>
         <dd>Plot link-factor diagnostics</dd>
+
+        <dt>
+
+          <code><a href="plot.RatioFit.html">plot(<i>&lt;RatioFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot a loss ratio fit</dd>
 
         <dt>
 
@@ -496,17 +496,17 @@
 
         <dt>
 
-          <code><a href="plot_triangle.LRFit.html">plot_triangle(<i>&lt;LRFit&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot loss ratio projection as a triangle heatmap</dd>
-
-        <dt>
-
           <code><a href="plot_triangle.Link.html">plot_triangle(<i>&lt;Link&gt;</i>)</a></code>
 
         </dt>
         <dd>Plot a Link object as a triangle heatmap</dd>
+
+        <dt>
+
+          <code><a href="plot_triangle.RatioFit.html">plot_triangle(<i>&lt;RatioFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot loss ratio projection as a triangle heatmap</dd>
 
         <dt>
 
@@ -536,7 +536,7 @@
           <code><a href="backtest.html">backtest()</a></code> <code><a href="backtest.html">print(<i>&lt;Backtest&gt;</i>)</a></code> <code><a href="backtest.html">summary(<i>&lt;Backtest&gt;</i>)</a></code> <code><a href="backtest.html">print(<i>&lt;summary.Backtest&gt;</i>)</a></code>
 
         </dt>
-        <dd>Backtest a loss / prem / loss-ratio projection on existing data</dd>
+        <dd>Backtest a loss / exposure / loss-ratio projection on existing data</dd>
 
         <dt>
 
@@ -589,17 +589,17 @@
 
         <dt>
 
+          <code><a href="print.ExposureFit.html">print(<i>&lt;ExposureFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for <code>ExposureFit</code></dd>
+
+        <dt>
+
           <code><a href="print.IntensityFit.html">print(<i>&lt;IntensityFit&gt;</i>)</a></code>
 
         </dt>
         <dd>Print method for <code>IntensityFit</code></dd>
-
-        <dt>
-
-          <code><a href="print.LRFit.html">print(<i>&lt;LRFit&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print an <code>LRFit</code> object</dd>
 
         <dt>
 
@@ -610,10 +610,10 @@
 
         <dt>
 
-          <code><a href="print.PremFit.html">print(<i>&lt;PremFit&gt;</i>)</a></code>
+          <code><a href="print.RatioFit.html">print(<i>&lt;RatioFit&gt;</i>)</a></code>
 
         </dt>
-        <dd>Print method for <code>PremFit</code></dd>
+        <dd>Print an <code>RatioFit</code> object</dd>
 
         <dt>
 
@@ -645,17 +645,17 @@
 
         <dt>
 
+          <code><a href="summary.ExposureFit.html">summary(<i>&lt;ExposureFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Summary method for <code>ExposureFit</code></dd>
+
+        <dt>
+
           <code><a href="summary.IntensityFit.html">summary(<i>&lt;IntensityFit&gt;</i>)</a></code>
 
         </dt>
         <dd>Summary method for <code>IntensityFit</code></dd>
-
-        <dt>
-
-          <code><a href="summary.LRFit.html">summary(<i>&lt;LRFit&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summary method for <code>LRFit</code></dd>
 
         <dt>
 
@@ -673,10 +673,10 @@
 
         <dt>
 
-          <code><a href="summary.PremFit.html">summary(<i>&lt;PremFit&gt;</i>)</a></code>
+          <code><a href="summary.RatioFit.html">summary(<i>&lt;RatioFit&gt;</i>)</a></code>
 
         </dt>
-        <dd>Summary method for <code>PremFit</code></dd>
+        <dd>Summary method for <code>RatioFit</code></dd>
 
         <dt>
 

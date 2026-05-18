@@ -196,7 +196,7 @@ clustering method to the resulting multivariate sequence.</p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -210,7 +210,7 @@ regimes from the data:</p>
 <span><span class="va">r</span></span>
 <span><span class="co">#&gt; &lt;Regime&gt;</span></span>
 <span><span class="co">#&gt;   method    : e_divisive</span></span>
-<span><span class="co">#&gt;   target    : lr</span></span>
+<span><span class="co">#&gt;   loss      : ratio</span></span>
 <span><span class="co">#&gt;   treatment : latest_only</span></span>
 <span><span class="co">#&gt;   window (window) : dev_m 1-4</span></span>
 <span><span class="co">#&gt;   cohorts    : 33 analysed (3 dropped)</span></span>
@@ -232,7 +232,7 @@ window that retains enough cohorts.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Cohort regime detection summary</span></span>
 <span><span class="co">#&gt;   method    : e_divisive</span></span>
-<span><span class="co">#&gt;   target    : lr</span></span>
+<span><span class="co">#&gt;   loss      : ratio</span></span>
 <span><span class="co">#&gt;   treatment : latest_only</span></span>
 <span><span class="co">#&gt;   window    : dev_m 1-4</span></span>
 <span><span class="co">#&gt;   cohorts   : 33 analysed (3 dropped)</span></span>
@@ -297,32 +297,32 @@ the PC axes — useful for reading <em>how</em> the regimes differ
 development).</p>
 </div>
 <div class="section level2">
-<h2 id="choice-of-target">Choice of target<a class="anchor" aria-label="anchor" href="#choice-of-target"></a>
+<h2 id="choice-of-loss">Choice of loss<a class="anchor" aria-label="anchor" href="#choice-of-loss"></a>
 </h2>
-<p>The <code>target</code> argument controls <em>which signal</em> the
-change-point algorithm operates on. Different targets surface different
+<p>The <code>loss</code> argument controls <em>which signal</em> the
+change-point algorithm operates on. Different metrics surface different
 kinds of regime change, and each has its own failure mode. Pick the
-target that matches the event you suspect — and always cross-check with
+metric that matches the event you suspect — and always cross-check with
 domain knowledge.</p>
 <p>Order:
-<code>c("lr", "loss_ata", "premium_ata", "loss_ed", "premium_ed", "loss", "premium")</code>
+<code>c("ratio", "loss_ata", "exposure_ata", "loss_ed", "exposure_ed", "loss", "exposure")</code>
 — cleanest to riskiest.</p>
 <table class="table">
 <colgroup>
 <col width="29%">
-<col width="16%">
-<col width="53%">
+<col width="18%">
+<col width="52%">
 </colgroup>
 <thead><tr class="header">
 <th>Scenario to detect</th>
-<th>Recommended <code>target</code>
+<th>Recommended <code>loss</code>
 </th>
 <th>Caveat</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
 <td>General LR projection accuracy (default)</td>
-<td><code>"lr"</code></td>
+<td><code>"ratio"</code></td>
 <td>Differential growth (loss vs premium scaling unevenly) can produce
 smooth drift that</td>
 </tr>
@@ -347,7 +347,7 @@ over-sensitive on</td>
 <tr class="odd">
 <td>Premium recognition <em>speed</em> change</td>
 <td>
-<code>"premium_ata"</code> <em>(diagnostic)</em>
+<code>"exposure_ata"</code> <em>(diagnostic)</em>
 </td>
 <td>Same caveats as <code>"loss_ata"</code>.</td>
 </tr>
@@ -359,11 +359,11 @@ over-sensitive on</td>
 <td>Cross-normalised by premium; harder to interpret in isolation.</td>
 </tr>
 <tr class="odd">
-<td>Same as <code>premium_ata</code> (API symmetry)</td>
+<td>Same as <code>exposure_ata</code> (API symmetry)</td>
 <td>
-<code>"premium_ed"</code> <em>(alias)</em>
+<code>"exposure_ed"</code> <em>(alias)</em>
 </td>
-<td>Equivalent to <code>premium_ata</code> after PCA standardization —
+<td>Equivalent to <code>exposure_ata</code> after PCA standardization —
 same changes.</td>
 </tr>
 <tr class="even">
@@ -374,7 +374,7 @@ common.</td>
 </tr>
 <tr class="odd">
 <td>Premium <em>level</em> shift (rate, channel)</td>
-<td><code>"premium"</code></td>
+<td><code>"exposure"</code></td>
 <td>Same caveat as <code>"loss"</code>.</td>
 </tr>
 </tbody>
@@ -382,19 +382,19 @@ common.</td>
 <p>Notes:</p>
 <ul>
 <li>
-<code>"lr"</code> is the default because the loss ratio is the
-package’s projection target and is naturally scale-invariant (immune to
+<code>"ratio"</code> is the default because the loss ratio is the
+package’s projection metric and is naturally scale-invariant (immune to
 book-size growth).</li>
 <li>
-<code>"loss"</code> / <code>"premium"</code> use the raw cumulative
+<code>"loss"</code> / <code>"exposure"</code> use the raw cumulative
 columns and are most useful when the suspected event is a sudden
 <em>absolute level shift</em> (e.g. a channel termination dropping
 premium volume). Smooth book growth will frequently produce false
 positives — read every result alongside a known timeline of underwriting
 / claims-handling events.</li>
 <li>
-<code>"loss_ata"</code>, <code>"premium_ata"</code>,
-<code>"loss_ed"</code> are diagnostic targets derived inline (not stored
+<code>"loss_ata"</code>, <code>"exposure_ata"</code>,
+<code>"loss_ed"</code> are diagnostic metrics derived inline (not stored
 on the <code>Triangle</code>). They map directly to the CL
 <code>f</code>-factor / ED <code>g</code>-factor used during fitting, so
 a change detected here corresponds to a violation of the model’s
@@ -402,11 +402,11 @@ stationarity assumption. Use them when you want to attribute a regime
 change to a specific structural mechanism.</li>
 </ul>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Try several targets and compare the changes they surface</span></span>
-<span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, target <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, target <span class="op">=</span> <span class="st">"loss_ata"</span><span class="op">)</span></span></code></pre></div>
-<p>The changes across targets are usually similar for strong, real
+<code class="sourceCode R"><span><span class="co"># Try several metrics and compare the changes they surface</span></span>
+<span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, loss <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, loss <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, loss <span class="op">=</span> <span class="st">"loss_ata"</span><span class="op">)</span></span></code></pre></div>
+<p>The changes across metrics are usually similar for strong, real
 regime shifts and diverge when the signal is weak or driven by book-size
 growth — both useful diagnostics.</p>
 </div>
@@ -448,7 +448,7 @@ two-vs-three regime hypotheses — pass <code>n_regimes</code>:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">r2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Cohort regime detection summary</span></span>
 <span><span class="co">#&gt;   method    : e_divisive</span></span>
-<span><span class="co">#&gt;   target    : lr</span></span>
+<span><span class="co">#&gt;   loss      : ratio</span></span>
 <span><span class="co">#&gt;   treatment : latest_only</span></span>
 <span><span class="co">#&gt;   window    : dev_m 1-4</span></span>
 <span><span class="co">#&gt;   cohorts   : 33 analysed (3 dropped)</span></span>
@@ -477,7 +477,7 @@ gathered into a single <code>Regime</code> object.</p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">r_all</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_all</span>, by <span class="op">=</span> <span class="st">"coverage"</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
 <span><span class="va">r_all</span><span class="op">$</span><span class="va">changes</span></span>
@@ -497,16 +497,16 @@ groups fail, <code><a href="../reference/detect_regime.html">detect_regime()</a>
 <code>ggplot</code> panels (keyed by group value).</p>
 </div>
 <div class="section level2">
-<h2 id="relation-to-fit_lr">Relation to <code>fit_lr()</code><a class="anchor" aria-label="anchor" href="#relation-to-fit_lr"></a>
+<h2 id="relation-to-fit_ratio">Relation to <code>fit_ratio()</code><a class="anchor" aria-label="anchor" href="#relation-to-fit_ratio"></a>
 </h2>
 <p><code><a href="../reference/detect_regime.html">detect_regime()</a></code> is a <em>preprocessing diagnostic</em>,
-not a modification of the <code><a href="../reference/fit_lr.html">fit_lr()</a></code> framework. Its output is
-useful in two ways:</p>
+not a modification of the <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> framework. Its output
+is useful in two ways:</p>
 <ol style="list-style-type: decimal">
 <li><p><strong>Stratified fitting</strong>: if two clearly distinct
-regimes are detected, fitting <code><a href="../reference/fit_lr.html">fit_lr()</a></code> separately on each
-regime subset often yields sharper stable-CLR estimates than a pooled
-fit.</p></li>
+regimes are detected, fitting <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> separately on
+each regime subset often yields sharper stable-CLR estimates than a
+pooled fit.</p></li>
 <li><p><strong>Rate-change documentation</strong>: a detected change
 provides a data-driven anchor for the preprocessing recommendations
 outlined in the <em>Limitations</em> section of the companion paper

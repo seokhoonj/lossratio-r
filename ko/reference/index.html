@@ -134,7 +134,7 @@
       </dl></div><div class="section level2">
       <h2 id="--3">추정<a class="anchor" aria-label="anchor" href="#--3"></a></h2>
 
-      <div class="section-desc"><p>Triangle 위에서 projection 을 산출하는 모형. 기본 알고리즘: <code>fit_cl</code> (chain ladder / multiplicative), <code>fit_ed</code> (exposure-driven / additive). Role dispatcher: <code>fit_loss</code> (loss 측 sa/ed/cl), <code>fit_prem</code> (premium 측 ed/cl). 합성: <code>fit_lr</code> (손해율 통합 인터페이스, delta-method SE). 모두 결과 객체에 <code>$full</code> projection table 을 보유.</p></div>
+      <div class="section-desc"><p>Triangle 위에서 projection 을 산출하는 모형. 기본 알고리즘: <code>fit_cl</code> (chain ladder / multiplicative), <code>fit_ed</code> (exposure-driven / additive). Role dispatcher: <code>fit_loss</code> (loss 측 sa/ed/cl), <code>fit_exposure</code> (exposure 측 ed/cl). 합성: <code>fit_ratio</code> (손해율 통합 인터페이스, delta-method SE). 모두 결과 객체에 <code>$full</code> projection table 을 보유.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -164,21 +164,21 @@
 
         <dt>
 
-          <code><a href="fit_prem.html">fit_prem()</a></code>
+          <code><a href="fit_exposure.html">fit_exposure()</a></code>
 
         </dt>
-        <dd>Fit a chain ladder projection on the prem (exposure) triangle</dd>
+        <dd>Fit a chain ladder projection on the exposure triangle</dd>
 
         <dt>
 
-          <code><a href="fit_lr.html">fit_lr()</a></code>
+          <code><a href="fit_ratio.html">fit_ratio()</a></code>
 
         </dt>
         <dd>Fit loss ratio projection model</dd>
       </dl></div><div class="section level2">
       <h2 id="--4">인자 진단<a class="anchor" aria-label="anchor" href="#--4"></a></h2>
 
-      <div class="section-desc"><p>Factor level 의 링크별 인자 추정. <code>fit_ata</code> (multiplicative ATA 인자 <code>f_k</code>) 와 <code>fit_intensity</code> (ED 의 additive intensity <code>g_k</code>) 가 짝. 두 함수 모두 projection 은 산출하지 않고 인자·SE·진단 stat 만 반환. <code>fit_ata</code> 는 <code>fit_cl</code>, <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code>, <code>fit_lr(method = "sa")</code> 의 stage transition 에서 사용되고, <code>fit_intensity</code> 는 <code>fit_ed</code> 의 짝 diagnostic.</p></div>
+      <div class="section-desc"><p>Factor level 의 링크별 인자 추정. <code>fit_ata</code> (multiplicative ATA 인자 <code>f_k</code>) 와 <code>fit_intensity</code> (ED 의 additive intensity <code>g_k</code>) 가 짝. 두 함수 모두 projection 은 산출하지 않고 인자·SE·진단 stat 만 반환. <code>fit_ata</code> 는 <code>fit_cl</code>, <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code>, <code>fit_ratio(method = "sa")</code> 의 stage transition 에서 사용되고, <code>fit_intensity</code> 는 <code>fit_ed</code> 의 짝 diagnostic.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -201,7 +201,7 @@
       </dl></div><div class="section level2">
       <h2 id="--5">추정 셀 선택 진단<a class="anchor" aria-label="anchor" href="#--5"></a></h2>
 
-      <div class="section-desc"><p>Triangle 의 어떤 셀을 추정에 쓸지 결정. <code>detect_maturity</code> 는 dev 축 (ATA 인자가 안정화되는 링크 이후), <code>detect_regime</code> 은 cohort 축 (인수 코호트 간 구조적 변화). <code>*_at()</code> / <code>*_spec()</code> 헬퍼는 fit 함수의 <code>maturity</code> / <code>loss_regime</code> / <code>prem_regime</code> 인자에 들어갈 수동 (<code>_at()</code>) 혹은 lazy-detect (<code>_spec()</code>) 입력 객체를 만든다.</p></div>
+      <div class="section-desc"><p>Triangle 의 어떤 셀을 추정에 쓸지 결정. <code>detect_maturity</code> 는 dev 축 (ATA 인자가 안정화되는 링크 이후), <code>detect_regime</code> 은 cohort 축 (인수 코호트 간 구조적 변화). <code>*_at()</code> / <code>*_spec()</code> 헬퍼는 fit 함수의 <code>maturity</code> / <code>loss_regime</code> / <code>exposure_regime</code> 인자에 들어갈 수동 (<code>_at()</code>) 혹은 lazy-detect (<code>_spec()</code>) 입력 객체를 만든다.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -252,7 +252,7 @@
       </dl></div><div class="section level2">
       <h2 id="--6">부트스트랩<a class="anchor" aria-label="anchor" href="#--6"></a></h2>
 
-      <div class="section-desc"><p>cohort × dev 단위 표준오차 분해를 시뮬레이션으로 산출 (피타고라스 분해 — parameter + process). 반환 객체는 <code>fit_loss</code> / <code>fit_prem</code> / <code>fit_lr</code> 의 <code>bootstrap</code> 인자에 전달되어 분석식 SE / CI 를 경험적 값으로 교체.</p></div>
+      <div class="section-desc"><p>cohort × dev 단위 표준오차 분해를 시뮬레이션으로 산출 (피타고라스 분해 — parameter + process). 반환 객체는 <code>fit_loss</code> / <code>fit_exposure</code> / <code>fit_ratio</code> 의 <code>bootstrap</code> 인자에 전달되어 분석식 SE / CI 를 경험적 값으로 교체.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -268,7 +268,7 @@
       </dl></div><div class="section level2">
       <h2 id="--7">예측 진단<a class="anchor" aria-label="anchor" href="#--7"></a></h2>
 
-      <div class="section-desc"><p>적합 결과 <code>LRFit</code> 위에서 동작 (raw Triangle 아님). 예측 손해율의 갱신이 멈추는 valuation 깊이 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math> 를 dual criterion (예측 갱신이 잡음 수준 이하 AND 코호트 간 분산이 작음, M 회 연속) 으로 탐지.</p></div>
+      <div class="section-desc"><p>적합 결과 <code>RatioFit</code> 위에서 동작 (raw Triangle 아님). 예측 손해율의 갱신이 멈추는 valuation 깊이 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math> 를 dual criterion (예측 갱신이 잡음 수준 이하 AND 코호트 간 분산이 작음, M 회 연속) 으로 탐지.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -296,7 +296,7 @@
           <code><a href="backtest.html">backtest()</a></code> <code><a href="backtest.html">print(<i>&lt;Backtest&gt;</i>)</a></code> <code><a href="backtest.html">summary(<i>&lt;Backtest&gt;</i>)</a></code> <code><a href="backtest.html">print(<i>&lt;summary.Backtest&gt;</i>)</a></code>
 
         </dt>
-        <dd>Backtest a loss / prem / loss-ratio projection on existing data</dd>
+        <dd>Backtest a loss / exposure / loss-ratio projection on existing data</dd>
       </dl></div><div class="section level2">
       <h2 id="--8">시각화<a class="anchor" aria-label="anchor" href="#--8"></a></h2>
 
@@ -365,17 +365,17 @@
 
         <dt>
 
-          <code><a href="plot.LRFit.html">plot(<i>&lt;LRFit&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot a loss ratio fit</dd>
-
-        <dt>
-
           <code><a href="plot.Link.html">plot(<i>&lt;Link&gt;</i>)</a></code>
 
         </dt>
         <dd>Plot link-factor diagnostics</dd>
+
+        <dt>
+
+          <code><a href="plot.RatioFit.html">plot(<i>&lt;RatioFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot a loss ratio fit</dd>
 
         <dt>
 
@@ -449,17 +449,17 @@
 
         <dt>
 
-          <code><a href="plot_triangle.LRFit.html">plot_triangle(<i>&lt;LRFit&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot loss ratio projection as a triangle heatmap</dd>
-
-        <dt>
-
           <code><a href="plot_triangle.Link.html">plot_triangle(<i>&lt;Link&gt;</i>)</a></code>
 
         </dt>
         <dd>Plot a Link object as a triangle heatmap</dd>
+
+        <dt>
+
+          <code><a href="plot_triangle.RatioFit.html">plot_triangle(<i>&lt;RatioFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot loss ratio projection as a triangle heatmap</dd>
 
         <dt>
 
@@ -489,7 +489,7 @@
           <code><a href="backtest.html">backtest()</a></code> <code><a href="backtest.html">print(<i>&lt;Backtest&gt;</i>)</a></code> <code><a href="backtest.html">summary(<i>&lt;Backtest&gt;</i>)</a></code> <code><a href="backtest.html">print(<i>&lt;summary.Backtest&gt;</i>)</a></code>
 
         </dt>
-        <dd>Backtest a loss / prem / loss-ratio projection on existing data</dd>
+        <dd>Backtest a loss / exposure / loss-ratio projection on existing data</dd>
 
         <dt>
 
@@ -542,17 +542,17 @@
 
         <dt>
 
+          <code><a href="print.ExposureFit.html">print(<i>&lt;ExposureFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for <code>ExposureFit</code></dd>
+
+        <dt>
+
           <code><a href="print.IntensityFit.html">print(<i>&lt;IntensityFit&gt;</i>)</a></code>
 
         </dt>
         <dd>Print method for <code>IntensityFit</code></dd>
-
-        <dt>
-
-          <code><a href="print.LRFit.html">print(<i>&lt;LRFit&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print an <code>LRFit</code> object</dd>
 
         <dt>
 
@@ -563,10 +563,10 @@
 
         <dt>
 
-          <code><a href="print.PremFit.html">print(<i>&lt;PremFit&gt;</i>)</a></code>
+          <code><a href="print.RatioFit.html">print(<i>&lt;RatioFit&gt;</i>)</a></code>
 
         </dt>
-        <dd>Print method for <code>PremFit</code></dd>
+        <dd>Print an <code>RatioFit</code> object</dd>
 
         <dt>
 
@@ -598,17 +598,17 @@
 
         <dt>
 
+          <code><a href="summary.ExposureFit.html">summary(<i>&lt;ExposureFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Summary method for <code>ExposureFit</code></dd>
+
+        <dt>
+
           <code><a href="summary.IntensityFit.html">summary(<i>&lt;IntensityFit&gt;</i>)</a></code>
 
         </dt>
         <dd>Summary method for <code>IntensityFit</code></dd>
-
-        <dt>
-
-          <code><a href="summary.LRFit.html">summary(<i>&lt;LRFit&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summary method for <code>LRFit</code></dd>
 
         <dt>
 
@@ -626,10 +626,10 @@
 
         <dt>
 
-          <code><a href="summary.PremFit.html">summary(<i>&lt;PremFit&gt;</i>)</a></code>
+          <code><a href="summary.RatioFit.html">summary(<i>&lt;RatioFit&gt;</i>)</a></code>
 
         </dt>
-        <dd>Summary method for <code>PremFit</code></dd>
+        <dd>Summary method for <code>RatioFit</code></dd>
 
         <dt>
 

@@ -13,7 +13,7 @@ index in Section 11; we unify on \(k\) for consistency.
 
 dev_max\(K_{\max}\)Maximum observable dev (a scalar)
 dev_cand\(k \in [k^*, K_{\max}-2]\)Integer vector of candidate dev points
-lr[i]\(LR_k\)Portfolio LR projection at dev = dev_cand[i]
+ratio[i]\(LR_k\)Portfolio LR projection at dev = dev_cand[i]
 revision[i]\(R_k = |LR_k - LR_{k-1}|\)Adjacent-step revision (diagnostic)
 drift_window[i]\(\max - \min\) of \(LR\) over \([k, k+W-1]\)Local window range
 drift_tail[i]\(\max - \min\) of \(LR\) over \([k, K_{\max}]\)Tail range
@@ -63,7 +63,7 @@ guarantee that the projection will not drift past
 what we observe is stable&quot;, not as a guarantee of future
 stability. For reserving applications, prefer method = &quot;tail&quot; or
 &quot;all&quot; over &quot;window&quot;, attach an IBNR margin via
-fit_lr$summary SE/CI columns, and weigh the evidence span
+fit_ratio$summary SE/CI columns, and weigh the evidence span
 (dev_max - conv_k): a conv_k near dev_max has thin evidence."><meta property="og:description" content="Identify the first dev \(k^{**}\) from which the projected
 portfolio loss ratio is observed to be stable up to the maximum
 available development period \(V\). Three complementary stability
@@ -78,7 +78,7 @@ index in Section 11; we unify on \(k\) for consistency.
 
 dev_max\(K_{\max}\)Maximum observable dev (a scalar)
 dev_cand\(k \in [k^*, K_{\max}-2]\)Integer vector of candidate dev points
-lr[i]\(LR_k\)Portfolio LR projection at dev = dev_cand[i]
+ratio[i]\(LR_k\)Portfolio LR projection at dev = dev_cand[i]
 revision[i]\(R_k = |LR_k - LR_{k-1}|\)Adjacent-step revision (diagnostic)
 drift_window[i]\(\max - \min\) of \(LR\) over \([k, k+W-1]\)Local window range
 drift_tail[i]\(\max - \min\) of \(LR\) over \([k, K_{\max}]\)Tail range
@@ -128,7 +128,7 @@ guarantee that the projection will not drift past
 what we observe is stable&quot;, not as a guarantee of future
 stability. For reserving applications, prefer method = &quot;tail&quot; or
 &quot;all&quot; over &quot;window&quot;, attach an IBNR margin via
-fit_lr$summary SE/CI columns, and weigh the evidence span
+fit_ratio$summary SE/CI columns, and weigh the evidence span
 (dev_max - conv_k): a conv_k near dev_max has thin evidence."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Browser-language redirect: send Korean visitors to /ko/ on the
      landing page only. Deep links remain untouched. We use string
      slicing rather than a regex with end-anchor, because pandoc
@@ -246,7 +246,7 @@ period), \(k\) indexes development period. The maturity point
 \(k^*\) and convergence point \(k^{**}\) live on the \(k\)
 axis. Earlier paper drafts used \(v\) (valuation) for the same
 index in Section 11; we unify on \(k\) for consistency.</p>
-<table class="table table"><tr><td><code>dev_max</code></td><td>\(K_{\max}\)</td><td>Maximum observable dev (a scalar)</td></tr><tr><td><code>dev_cand</code></td><td>\(k \in [k^*, K_{\max}-2]\)</td><td>Integer vector of candidate dev points</td></tr><tr><td><code>lr[i]</code></td><td>\(LR_k\)</td><td>Portfolio LR projection at dev = <code>dev_cand[i]</code></td></tr><tr><td><code>revision[i]</code></td><td>\(R_k = |LR_k - LR_{k-1}|\)</td><td>Adjacent-step revision (diagnostic)</td></tr><tr><td><code>drift_window[i]</code></td><td>\(\max - \min\) of \(LR\) over \([k, k+W-1]\)</td><td>Local window range</td></tr><tr><td><code>drift_tail[i]</code></td><td>\(\max - \min\) of \(LR\) over \([k, K_{\max}]\)</td><td>Tail range</td></tr><tr><td><code>slope[i]</code></td><td>\(\hat\beta_k\), OLS slope of \(LR \sim k\) on \([k, K_{\max}]\)</td><td>Trend test</td></tr><tr><td><code>dispersion[i]</code></td><td>\(\hat{D}_k\)</td><td>Robust cross-cohort spread of incremental LR</td></tr></table><p>Stability methods (which sequence drives <code>pass</code>):</p>
+<table class="table table"><tr><td><code>dev_max</code></td><td>\(K_{\max}\)</td><td>Maximum observable dev (a scalar)</td></tr><tr><td><code>dev_cand</code></td><td>\(k \in [k^*, K_{\max}-2]\)</td><td>Integer vector of candidate dev points</td></tr><tr><td><code>ratio[i]</code></td><td>\(LR_k\)</td><td>Portfolio LR projection at dev = <code>dev_cand[i]</code></td></tr><tr><td><code>revision[i]</code></td><td>\(R_k = |LR_k - LR_{k-1}|\)</td><td>Adjacent-step revision (diagnostic)</td></tr><tr><td><code>drift_window[i]</code></td><td>\(\max - \min\) of \(LR\) over \([k, k+W-1]\)</td><td>Local window range</td></tr><tr><td><code>drift_tail[i]</code></td><td>\(\max - \min\) of \(LR\) over \([k, K_{\max}]\)</td><td>Tail range</td></tr><tr><td><code>slope[i]</code></td><td>\(\hat\beta_k\), OLS slope of \(LR \sim k\) on \([k, K_{\max}]\)</td><td>Trend test</td></tr><tr><td><code>dispersion[i]</code></td><td>\(\hat{D}_k\)</td><td>Robust cross-cohort spread of incremental LR</td></tr></table><p>Stability methods (which sequence drives <code>pass</code>):</p>
 <dl><dt><code>"window"</code></dt>
 <dd><p>Local stability:
 <code>drift_window[i] &lt; max_drift</code>. Fast, but misses a slow
@@ -284,7 +284,7 @@ guarantee that the projection will not drift past
 what we observe is stable", not as a guarantee of future
 stability. For reserving applications, prefer <code>method = "tail"</code> or
 <code>"all"</code> over <code>"window"</code>, attach an IBNR margin via
-<code>fit_lr$summary</code> SE/CI columns, and weigh the <em>evidence span</em>
+<code>fit_ratio$summary</code> SE/CI columns, and weigh the <em>evidence span</em>
 (<code>dev_max - conv_k</code>): a <code>conv_k</code> near <code>dev_max</code> has thin evidence.</p>
     </div>
 
@@ -347,7 +347,7 @@ metric, not the e-divisive algorithm.</p></dd>
 
 <dt id="arg-mat-k">mat_k<a class="anchor" aria-label="anchor" href="#arg-mat-k"></a></dt>
 <dd><p>Pre-computed maturity point. When <code>NULL</code>, computed via
-<code><a href="detect_maturity.html">detect_maturity()</a></code> applied to an lr-based ATA.</p></dd>
+<code><a href="detect_maturity.html">detect_maturity()</a></code> applied to a ratio-based ATA.</p></dd>
 
 
 <dt id="arg-holdout-max">holdout_max<a class="anchor" aria-label="anchor" href="#arg-holdout-max"></a></dt>
@@ -363,22 +363,22 @@ backtest. When <code>NULL</code>, set to
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional arguments forwarded to <code><a href="backtest.html">backtest()</a></code> (and thence
-to <code><a href="fit_lr.html">fit_lr()</a></code>), e.g. <code>loss_method</code>, <code>recent</code>, <code>loss_regime</code>.</p></dd>
+to <code><a href="fit_ratio.html">fit_ratio()</a></code>), e.g. <code>loss_method</code>, <code>recent</code>, <code>loss_regime</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An object of class <code>Convergence</code> (named list). Includes the
 slots tabulated in the notation mapping above
-(<code>dev_max</code>, <code>dev_cand</code>, <code>lr</code>, <code>revision</code>, <code>drift_window</code>,
+(<code>dev_max</code>, <code>dev_cand</code>, <code>ratio</code>, <code>revision</code>, <code>drift_window</code>,
 <code>drift_tail</code>, <code>slope</code>, <code>dispersion</code>), per-method pass vectors
 (<code>pass_window</code>, <code>pass_tail</code>, <code>pass_slope</code>, <code>pass</code>), the threshold
-parameters, and metadata attributes (<code>groups</code>, <code>target</code>,
+parameters, and metadata attributes (<code>groups</code>, <code>loss</code>,
 <code>dispatcher</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="detect_maturity.html">detect_maturity()</a></code>, <code><a href="backtest.html">backtest()</a></code>, <code><a href="fit_lr.html">fit_lr()</a></code></p></div>
+    <div class="dont-index"><p><code><a href="detect_maturity.html">detect_maturity()</a></code>, <code><a href="backtest.html">backtest()</a></code>, <code><a href="fit_ratio.html">fit_ratio()</a></code></p></div>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

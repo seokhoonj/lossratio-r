@@ -1,7 +1,7 @@
 # Resolve a maturity input to a Maturity object (or NULL)
 
 Internal 4-type dispatcher used by
-[`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md),
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
 and
 [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)

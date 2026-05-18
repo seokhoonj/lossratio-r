@@ -13,15 +13,15 @@ projections and their standard errors, computed directly from the
 Mack-style ED recursion (see `.ed_proj`, `.ed_proc_var`,
 `.ed_param_var`). To validate an ED projection via
 [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md),
-call `backtest(tri, target = "lr", loss_method = "ed")`.
+call `backtest(tri, target = "ratio", loss_method = "ed")`.
 
 ## Usage
 
 ``` r
 fit_ed(
   x,
-  target = "loss",
-  exposure = "prem",
+  loss = "loss",
+  exposure = "exposure",
   method = c("mack"),
   alpha = 1,
   na_method = c("locf", "zero", "none"),
@@ -38,7 +38,7 @@ fit_ed(
 
   A `"Triangle"` object.
 
-- target:
+- loss:
 
   Cumulative loss variable. Default `"loss"`. Forwarded to
   [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md)
@@ -46,7 +46,7 @@ fit_ed(
 
 - exposure:
 
-  Cumulative exposure variable. Default `"prem"`. Forwarded to
+  Cumulative exposure variable. Default `"exposure"`. Forwarded to
   [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md)
   and to downstream workers.
 
@@ -76,9 +76,9 @@ fit_ed(
 - regime:
 
   Optional regime specification for cohort cutoff. Accepts: `NULL`
-  (default — no filter), a `"Regime"` object (from
+  (default – no filter), a `"Regime"` object (from
   [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)),
-  the string `"auto"` (internal `detect_regime(tri, target = "lr")`
+  the string `"auto"` (internal `detect_regime(tri, loss = "ratio")`
   call), or a function `function(tri) -> Regime`. Resolved internally
   via
   [`.resolve_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_regime.md).
@@ -104,13 +104,12 @@ An object of class `"EDFit"` (a named list) with components:
 
 - `full`:
 
-  `data.table` of per-cell cumulative target / exposure projection plus
-  role-prefixed SE / CV columns (`target_proj`, `incr_target_proj`,
-  `exposure_proj`, `exposure_incr_proj`, `target_proc_se2`,
-  `target_param_se2`, `target_total_se2`, `target_proc_se`,
-  `target_param_se`, `target_total_se`, `target_total_cv`). Available
-  cells include both observed and projected; `is_observed` flags
-  observed cells.
+  `data.table` of per-cell cumulative loss / exposure projection plus
+  role-prefixed SE / CV columns (`loss_proj`, `incr_loss_proj`,
+  `exposure_proj`, `exposure_incr_proj`, `loss_proc_se2`,
+  `loss_param_se2`, `loss_total_se2`, `loss_proc_se`, `loss_param_se`,
+  `loss_total_se`, `loss_total_cv`). Available cells include both
+  observed and projected; `is_observed` flags observed cells.
 
 - `link`:
 
@@ -120,5 +119,5 @@ An object of class `"EDFit"` (a named list) with components:
 
 [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md),
 [`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md),
-[`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md),
 [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)

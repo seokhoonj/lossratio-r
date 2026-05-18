@@ -2,49 +2,136 @@
 
 ## lossratio (development version)
 
-- **BREAKING: identifier rename `premium` -\> `prem`, `development` -\>
-  `dev`.** Code-level identifiers (argument names, function names, enum
-  values, slot names, attribute keys) are renamed to the short form
-  already used by the column / attribute convention (`prem`, `dev`).
-  Prose documentation (“premium-side projection”, “development period”)
-  is unchanged.
+- **BREAKING: method default flip — `"sa"` -\> `"ed"`.**
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md),
+  and
+  [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+  (via `loss_method`) now default to `method = "ed"` (exposure-driven)
+  instead of `"sa"` (stage-adaptive). Method-enum order is
+  `c("ed", "cl", "sa")` — *simple -\> classical -\> composition*.
+  Rationale: ED is the unconditional safe baseline (additive, no
+  maturity-detection dependency, robust under early-dev age-to-age
+  volatility); CL is the classical Mack 1993 alternative; SA is the
+  composition of ED + CL requiring 2-pass maturity detection. Users
+  relying on stage-adaptive behaviour must now pass `method = "sa"`
+  explicitly. Migration:
+
+  - `fit_loss(tri)` -\> still works (now defaults to ED)
+  - `fit_loss(tri, method = "sa")` -\> explicit (no change)
+  - Want previous SA default behaviour back? -\> add `method = "sa"`
+
+- **Variance helper rename — `.mack_g_var` -\> `.ed_g_var`.** Internal
+  factor-level variance helper renamed for paradigm clarity. `.mack_*`
+  is reserved for the CL/Mack 1993 paradigm (f-factor variance); ED
+  intensity variance follows the Buehlmann-Straub 1970 lineage and now
+  lives at
+  [`.ed_g_var()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-ed_g_var.md).
+  The two natural analytical variance helpers in the package are now:
+  [`.mack_f_var()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-mack_f_var.md)
+  (CL paradigm, f) and
+  [`.ed_g_var()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-ed_g_var.md)
+  (ED paradigm, g). Cross-paradigm pairs are not provided as separate
+  functions — they are algebraically derivable via `g_k = f_k - 1`. Both
+  helpers now carry [@references](https://github.com/references) blocks
+  citing Mack (1993) and Buehlmann-Straub (1970) respectively.
+
+- **BREAKING: worker-arg rename `target` -\> `loss`.** Worker-layer
+  functions (`fit_cl`, `fit_ed`, `fit_ata`, `fit_intensity`,
+  `detect_maturity`, `detect_regime`) and
+  [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md)
+  now take a `loss` argument in place of `target`. Worker-output columns
+  rename accordingly (`target_obs` -\> `loss_obs`, `target_proj` -\>
+  `loss_proj`, `target_*_se` -\> `loss_*_se`, `target_from` /
+  `target_to` / `target_delta` -\> `loss_from` / `loss_to` /
+  `loss_delta`). Fit-object attribute key `attr(., "target")` becomes
+  `attr(., "loss")` on Link, ATAFit, EDFit, CLFit, IntensityFit,
+  Maturity, Regime, and Convergence objects. The `target` arg on
+  [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+  (a dispatcher enum selecting `"ratio"` / `"loss"` / `"exposure"`) is
+  **unchanged** — that is a different semantic (which metric to
+  backtest) and stays as-is. Bootstrap’s
+  `target = c("loss", "exposure")` enum is also unchanged.
+
+  Migration:
+
+  - `fit_cl(tri, target = "loss")` -\> `fit_cl(tri, loss = "loss")`
+  - `fit_ed(tri, target = "loss", exposure = ...)` -\>
+    `fit_ed(tri, loss = "loss", exposure = ...)`
+  - `as_link(tri, target = "loss")` -\> `as_link(tri, loss = "loss")`
+  - `detect_maturity(tri, target = "loss")` -\>
+    `detect_maturity(tri, loss = "loss")`
+  - `detect_regime(tri, target = "ratio")` -\>
+    `detect_regime(tri, loss = "ratio")`
+  - Reading `cl_fit$full$target_proj` -\> `cl_fit$full$loss_proj`
+  - Reading `attr(link, "target")` -\> `attr(link, "loss")`
+
+- **BREAKING: identifier rename `prem` -\> `exposure`, `lr` -\>
+  `ratio`.** Framework-generic naming for the denominator slot
+  (`exposure`) and the derived ratio column / fit family (`ratio`). The
+  previous in-progress sweep `premium` -\> `prem` (still unreleased) is
+  superseded — final target is `exposure`, the framework-generic word
+  that covers loss reserving (risk premium = exposure), frequency
+  (insureds = exposure), and severity (claim count = Bühlmann natural
+  weight = exposure) uniformly. Prose noun phrases (“loss ratio”,
+  “premium”, “risk premium”, “exposure measure”) are unchanged.
 
   Migration (find-and-replace at call sites):
 
-  - `as_triangle(..., premium = "incr_prem")` -\>
-    `as_triangle(..., prem = "incr_prem")`
+  - `as_triangle(..., premium = "incr_prem")` /
+    `as_triangle(..., prem = "incr_prem")` -\>
+    `as_triangle(..., exposure = "incr_exposure")`
   - `as_triangle(..., development = "dev_m")` -\>
     `as_triangle(..., dev = "dev_m")`
   - `validate_triangle(..., development = "dev_m")` -\>
     `validate_triangle(..., dev = "dev_m")`
-  - `fit_premium(...)` -\> `fit_prem(...)`
-  - `fit_loss(..., premium_method = ..., premium_alpha = ..., premium_fit = ...)`
+  - `fit_premium(...)` / `fit_prem(...)` -\> `fit_exposure(...)`
+  - `fit_lr(...)` -\> `fit_ratio(...)`
+  - `fit_loss(..., prem_method = ..., prem_alpha = ..., prem_fit = ...)`
     -\>
-    `fit_loss(..., prem_method = ..., prem_alpha = ..., prem_fit = ...)`
-  - `fit_lr(..., premium_method = ..., premium_alpha = ..., premium_regime = ...)`
+    `fit_loss(..., exposure_method = ..., exposure_alpha = ..., exposure_fit = ...)`
+  - `fit_lr(..., prem_method = ..., prem_alpha = ..., prem_regime = ...)`
     -\>
-    `fit_lr(..., prem_method = ..., prem_alpha = ..., prem_regime = ...)`
-  - `backtest(..., target = "premium", premium_method = ..., premium_alpha = ..., premium_regime = ...)`
+    `fit_ratio(..., exposure_method = ..., exposure_alpha = ..., exposure_regime = ...)`
+  - `backtest(..., target = "lr", prem_method = ..., prem_alpha = ...)`
     -\>
-    `backtest(..., target = "prem", prem_method = ..., prem_alpha = ..., prem_regime = ...)`
-  - `bootstrap(tri, target = "premium")` -\>
-    `bootstrap(tri, target = "prem")`
-  - `LRFit$premium_alpha`, `LRFit$premium_regime` -\> `$prem_alpha`,
-    `$prem_regime`
-  - `LossFit$premium_fit` -\> `$prem_fit`
-  - S3 class `"PremiumFit"` -\> `"PremFit"` (incl. `print.PremiumFit()`
-    / `summary.PremiumFit()` -\>
-    [`print.PremFit()`](https://seokhoonj.github.io/lossratio/ko/reference/print.PremFit.md)
+    `backtest(..., target = "ratio", exposure_method = ..., exposure_alpha = ...)`
+  - `backtest(..., target = "prem")` -\>
+    `backtest(..., target = "exposure")`
+  - `bootstrap(tri, target = "prem")` -\>
+    `bootstrap(tri, target = "exposure")`
+  - `LRFit$prem_alpha`, `LRFit$prem_regime` -\>
+    `RatioFit$exposure_alpha`, `$exposure_regime`
+  - `LossFit$prem_fit` -\> `$exposure_fit`
+  - S3 class `"PremFit"` -\> `"ExposureFit"` (incl. `print.PremFit()` /
+    `summary.PremFit()` -\>
+    [`print.ExposureFit()`](https://seokhoonj.github.io/lossratio/ko/reference/print.ExposureFit.md)
     /
-    [`summary.PremFit()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.PremFit.md);
-    `inherits(x, "PremiumFit")` -\> `inherits(x, "PremFit")`)
-  - `attr(PremiumFit_obj, "premium_method")` -\>
-    `attr(PremFit_obj, "prem_method")`
+    [`summary.ExposureFit()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.ExposureFit.md))
+  - S3 class `"LRFit"` -\> `"RatioFit"` (incl. `print.LRFit()` /
+    `summary.LRFit()` / `plot.LRFit()` / `plot_triangle.LRFit()` -\>
+    `*.RatioFit()`)
+  - `attr(PremFit_obj, "prem_method")` -\>
+    `attr(ExposureFit_obj, "exposure_method")`
+  - Triangle / Calendar / Total columns: `prem`, `incr_prem`,
+    `prem_share`, `incr_prem_share`, `lr`, `incr_lr` -\> `exposure`,
+    `incr_exposure`, `exposure_share`, `incr_exposure_share`, `ratio`,
+    `incr_ratio`
+  - Fit output columns: `prem_proj`, `prem_obs`, `prem_proc_se`,
+    `prem_param_se`, `prem_total_se`, `prem_total_cv`, `prem_ci_lo`,
+    `prem_ci_hi`, `incr_prem_proj` -\> `exposure_*`; `lr_proj`, `lr_se`,
+    `lr_cv`, `lr_ci_lo`, `lr_ci_hi`, `lr_ult`, `lr_latest`,
+    `incr_lr_proj` -\> `ratio_*`
+  - R source files: `R/prem.R`, `R/lr.R`, `R/lr-vis.R` -\>
+    `R/exposure.R`, `R/ratio.R`, `R/ratio-vis.R`
+  - Raw dataset (`data/experience.rda`): column `incr_prem` -\>
+    `incr_exposure` (regenerated)
 
-  The Triangle / Calendar / Total / fit-output *column* names already
-  use the short form (`prem`, `incr_prem`, `prem_proj`, …) from the
-  earlier prefix sweep; this release closes the loop by aligning the
-  *argument / slot* surface with that convention.
+  The package name `lossratio` is unchanged; this sweep is purely a
+  code-identifier refactor. The conceptual “loss ratio” framework is
+  preserved — `ratio` is the column / fit name for the loss-to-exposure
+  ratio, and the package continues to specialise in long-term health
+  insurance reserving on developing exposure (risk premium) triangles.
 
 - **Default flip** —
   [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)’s
@@ -80,8 +167,7 @@
   [`plot_triangle.Triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.Triangle.md)
   argument `type` renamed to `view` for parity with
   [`plot_triangle.CLFit()`](https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.CLFit.md),
-  [`plot_triangle.LRFit()`](https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.LRFit.md),
-  and
+  `plot_triangle.LRFit()`, and
   [`plot_triangle.Backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.Backtest.md),
   which already used `view = c("value", "usage")`. The `type =` slot is
   left free for plot-method-specific semantics
@@ -118,15 +204,15 @@
 
 - [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
   result slot `fit_fn_name` renamed to `dispatcher` for clarity (the
-  value is still the dispatcher name — `fit_lr` / `fit_loss` /
-  `fit_premium` — selected by `target=`).
+  value is still the dispatcher name — `fit_ratio` / `fit_loss` /
+  `fit_exposure` — selected by `target=`).
   [`print()`](https://rdrr.io/r/base/print.html) /
   [`summary()`](https://rdrr.io/r/base/summary.html) labels updated
   accordingly.
 
 - [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
-  `fit_premium()`,
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
+  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md),
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md),
   and
   [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
   now attach a `$usage` `data.table` to the result: one row per
@@ -231,10 +317,8 @@
   (per-link factors only);
   [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md),
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md),
-  and
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
-  (factors + projection). `fit_lr` supports three methods — `"sa"`
-  (default), `"ed"`, `"cl"`.
+  and `fit_lr()` (factors + projection). `fit_lr` supports three methods
+  — `"sa"` (default), `"ed"`, `"cl"`.
 - Cell-selection diagnostics:
   [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
   (dev axis — link beyond which ATA factors are stable),

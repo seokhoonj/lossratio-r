@@ -5,7 +5,7 @@ per-group maturity points) without running
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md).
 The returned `"Maturity"` object plugs into any function that consumes a
 Maturity result –
-[`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md),
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
 [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md),
 and the maturity input dispatcher – by carrying the same row schema as

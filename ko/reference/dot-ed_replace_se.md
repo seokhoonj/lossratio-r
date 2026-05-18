@@ -1,7 +1,7 @@
 # Replace CL multiplicative SE with ED additive SE on a CLFit's `$full`
 
-Point projection (`target_proj`) is preserved – it is identical under
-both CL and self-weighted ED. Only the variance accumulation differs:
+Point projection (`loss_proj`) is preserved – it is identical under both
+CL and self-weighted ED. Only the variance accumulation differs:
 
 - CL recursion: `proc_{k+1} = f^2 * proc_k + sigma^2 * C_k`
   (multiplicative scaling – prior variance amplified by f^2 each step).
@@ -23,7 +23,7 @@ estimates. The recursion is per (group, cohort).
 - full:
 
   The `$full` data.table from a `CLFit` (must contain `cohort`, `dev`,
-  `target_obs`, `target_proj`).
+  `loss_obs`, `loss_proj`).
 
 - selected:
 
@@ -35,9 +35,8 @@ estimates. The recursion is per (group, cohort).
 
 ## Value
 
-Updated `full` data.table with `target_proc_se2`, `target_param_se2`,
-`target_total_se2`, `target_proc_se`, `target_param_se`,
-`target_total_se`, `target_proc_cv`, `target_param_cv`,
-`target_total_cv` columns rebuilt under the ED recursion (column names
-match the upstream `fit_cl` worker convention; the dispatcher renames
-them to `prem_*` afterwards).
+Updated `full` data.table with `loss_proc_se2`, `loss_param_se2`,
+`loss_total_se2`, `loss_proc_se`, `loss_param_se`, `loss_total_se`,
+`loss_proc_cv`, `loss_param_cv`, `loss_total_cv` columns rebuilt under
+the ED recursion (column names match the upstream `fit_cl` worker
+convention; the dispatcher renames them to `exposure_*` afterwards).

@@ -50,7 +50,7 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 ```
 
@@ -65,7 +65,7 @@ r <- detect_regime(tri_sur, method = "e_divisive")
 r
 #> <Regime>
 #>   method    : e_divisive
-#>   target    : lr
+#>   loss      : ratio
 #>   treatment : latest_only
 #>   window (window) : dev_m 1-4
 #>   cohorts    : 33 analysed (3 dropped)
@@ -87,7 +87,7 @@ r
 summary(r)
 #> Cohort regime detection summary
 #>   method    : e_divisive
-#>   target    : lr
+#>   loss      : ratio
 #>   treatment : latest_only
 #>   window    : dev_m 1-4
 #>   cohorts   : 33 analysed (3 dropped)
@@ -155,53 +155,53 @@ plot(r)
 들이 *어떻게* 다른지 (예: 변화가 주로 초기 경과에 영향을 주는지, 후기
 경과에 영향을 주는지) 읽어내는 데 유용하다.
 
-## 6. target 선택
+## 6. loss 지표 선택
 
-`target` 인자는 변화점 알고리즘이 *어떤 신호 위에서* 작동할지 결정한다.
-target 마다 검출하는 regime 종류가 다르고, 각자 고유한 *false positive
-모드* 가 있다. 의심되는 사건의 성격에 맞춰 target 을 고르고, 결과는 항상
+`loss` 인자는 변화점 알고리즘이 *어떤 신호 위에서* 작동할지 결정한다.
+지표마다 검출하는 regime 종류가 다르고, 각자 고유한 *false positive
+모드* 가 있다. 의심되는 사건의 성격에 맞춰 지표를 고르고, 결과는 항상
 도메인 지식과 대조해야 한다.
 
 순서:
-`c("lr", "loss_ata", "premium_ata", "loss_ed", "premium_ed", "loss", "premium")`
+`c("ratio", "loss_ata", "exposure_ata", "loss_ed", "exposure_ed", "loss", "exposure")`
 — cleanest 에서 riskiest 까지.
 
-| 감지하려는 시나리오 | 권장 `target` | 주의사항 |
+| 감지하려는 시나리오 | 권장 `loss` | 주의사항 |
 |----|----|----|
-| 일반적 LR 예측 정확도 (default) | `"lr"` | 차등 성장 (loss/premium 성장률 비대칭) 으로 인한 *smooth drift* 를 sharp break |
+| 일반적 LR 예측 정확도 (default) | `"ratio"` | 차등 성장 (loss/premium 성장률 비대칭) 으로 인한 *smooth drift* 를 sharp break |
 |  |  | 로 오인할 수 있음. |
 | Loss 발전 *속도* 변화 (CL `f`) | `"loss_ata"` *(진단용)* | dev=1 손실 + complete-row 요구 → sample 줄어듦; CV 가 낮아 작은 변동도 잡힘. |
-| Premium 인식 *속도* 변화 | `"premium_ata"` *(진단용)* | `"loss_ata"` 와 같은 주의사항. |
+| Premium 인식 *속도* 변화 | `"exposure_ata"` *(진단용)* | `"loss_ata"` 와 같은 주의사항. |
 | 노출 단위당 loss *세기* 변화 (ED `g`) | `"loss_ed"` *(진단용)* | premium 으로 cross-normalize — 단독 해석이 까다로움. |
-| `premium_ata` 와 동일 (API 대칭) | `"premium_ed"` *(alias)* | PCA 표준화 후 `premium_ata` 와 동일한 change — alias. |
+| `exposure_ata` 와 동일 (API 대칭) | `"exposure_ed"` *(alias)* | PCA 표준화 후 `exposure_ata` 와 동일한 change — alias. |
 | Loss *level* 변화 (claims handling, 보장 변경) | `"loss"` | raw cumulative — book size 성장이 도미넌트, false positive 빈번. |
-| Premium *level* 변화 (요율, 채널 변경) | `"premium"` | `"loss"` 와 같은 주의사항. |
+| Premium *level* 변화 (요율, 채널 변경) | `"exposure"` | `"loss"` 와 같은 주의사항. |
 
 참고:
 
-- `"lr"` 이 default 인 이유 — 손해율이 패키지의 *예측 target* 이고,
+- `"ratio"` 이 default 인 이유 — 손해율이 패키지의 *예측 지표* 이고,
   비율이라 *book size 성장에 자동 면역*.
-- `"loss"` / `"premium"` 은 raw cumulative 컬럼이라 *갑작스러운 absolute
-  level shift* 의심 시 (예: 채널 종료로 보험료 거치액 급감) 유용. smooth
-  book growth 는 false positive 빈번 — 결과를 *알려진 언더라이팅·claims
-  사건 타임라인* 과 대조 필수.
-- `"loss_ata"`, `"premium_ata"`, `"loss_ed"` 는 *진단용* target.
-  Triangle 에 저장된 컬럼이 아니라 inline 으로 derive 된다. CL 의 `f` /
-  ED 의 `g` 인자와 직접 대응하므로 여기서 검출된 change 는 모델의
-  stationarity 가정 위반에 해당. *구조적 메커니즘* 으로 regime 을
-  귀속시키고 싶을 때 사용.
+- `"loss"` / `"exposure"` 은 raw cumulative 컬럼이라 *갑작스러운
+  absolute level shift* 의심 시 (예: 채널 종료로 보험료 거치액 급감)
+  유용. smooth book growth 는 false positive 빈번 — 결과를 *알려진
+  언더라이팅·claims 사건 타임라인* 과 대조 필수.
+- `"loss_ata"`, `"exposure_ata"`, `"loss_ed"` 는 *진단용* 지표. Triangle
+  에 저장된 컬럼이 아니라 inline 으로 derive 된다. CL 의 `f` / ED 의 `g`
+  인자와 직접 대응하므로 여기서 검출된 change 는 모델의 stationarity
+  가정 위반에 해당. *구조적 메커니즘* 으로 regime 을 귀속시키고 싶을 때
+  사용.
 
 ``` r
 
-# 여러 target 을 비교 — 어떤 change 가 일관되게 나오는지 확인
-detect_regime(tri_sur, target = "lr")
-detect_regime(tri_sur, target = "loss")
-detect_regime(tri_sur, target = "loss_ata")
+# 여러 지표를 비교 — 어떤 change 가 일관되게 나오는지 확인
+detect_regime(tri_sur, loss = "ratio")
+detect_regime(tri_sur, loss = "loss")
+detect_regime(tri_sur, loss = "loss_ata")
 ```
 
-진짜 강한 regime shift 는 여러 target 에서 비슷한 change 를 보인다.
-신호가 약하거나 book size 성장이 도미넌트일 때 target 간 결과가 갈라진다
-— 둘 다 유용한 진단 신호.
+진짜 강한 regime shift 는 여러 지표에서 비슷한 change 를 보인다. 신호가
+약하거나 book size 성장이 도미넌트일 때 지표 간 결과가 갈라진다 — 둘 다
+유용한 진단 신호.
 
 ## 7. 방법 선택
 
@@ -237,7 +237,7 @@ r2 <- detect_regime(tri_sur, method = "e_divisive", n_regimes = 3)
 summary(r2)
 #> Cohort regime detection summary
 #>   method    : e_divisive
-#>   target    : lr
+#>   loss      : ratio
 #>   treatment : latest_only
 #>   window    : dev_m 1-4
 #>   cohorts   : 33 analysed (3 dropped)
@@ -269,7 +269,7 @@ tri_all <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 r_all   <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 r_all$changes
@@ -291,17 +291,17 @@ r_all$changes
 `plot(r_all)` 은 그룹별 패널 ggplot 객체의 named list 를 반환한다
 (그룹값을 key 로).
 
-## 10. `fit_lr()` 과의 관계
+## 10. `fit_ratio()` 과의 관계
 
 [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
 은
-[`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
 프레임워크의 수정이 아니라 *전처리 진단* 이다. 그 출력은 두 가지로
 활용된다.
 
 1.  **층화 적합**: 명확히 구분되는 두 regime 이 탐지된 경우, 각 regime
     부분집합에 대해
-    [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
+    [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
     을 따로 적합하면 풀링 적합보다 더 또렷한 수렴 영역의 손해율 추정값을
     얻는 경우가 많다.
 

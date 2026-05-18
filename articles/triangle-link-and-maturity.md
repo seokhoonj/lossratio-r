@@ -24,7 +24,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 ```
 
@@ -39,7 +39,7 @@ plot(tri)                              # cumulative loss-ratio trajectories per 
 
 ``` r
 
-plot(tri, metric = "incr_lr")       # incremental loss ratio instead of cumulative
+plot(tri, metric = "incr_ratio")       # incremental loss ratio instead of cumulative
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-2-2.png)
@@ -51,22 +51,22 @@ plot(tri, summary = TRUE)              # raw + overlay (mean / median / weighted
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-2-3.png)
 
-The `summary = TRUE` overlay computes mean, median, and weighted lr at
-each dev and overlays them on the cohort lines. Useful for spotting
+The `summary = TRUE` overlay computes mean, median, and weighted ratio
+at each dev and overlays them on the cohort lines. Useful for spotting
 cohorts that deviate from the central tendency.
 
 ### Cell heatmap
 
 ``` r
 
-plot_triangle(tri, metric = "lr")          # cumulative lr
+plot_triangle(tri, metric = "ratio")          # cumulative ratio
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-1.png)
 
 ``` r
 
-plot_triangle(tri, metric = "incr_lr")     # incremental lr
+plot_triangle(tri, metric = "incr_ratio")     # incremental ratio
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-2.png)
@@ -74,9 +74,9 @@ plot_triangle(tri, metric = "incr_lr")     # incremental lr
 ``` r
 
 
-# detail labels (ratio + loss/premium amounts) are 2-line — use quarterly cells
-tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem", grain = "Q")
-plot_triangle(tri_q, label_style = "detail") # ratio + (loss / premium)
+# detail labels (ratio + loss/exposure amounts) are 2-line — use quarterly cells
+tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure", grain = "Q")
+plot_triangle(tri_q, label_style = "detail") # ratio + (loss / exposure)
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-3.png)
@@ -88,22 +88,22 @@ plot_triangle(tri_q, label_style = "detail") # ratio + (loss / premium)
 sm <- summary(tri)
 head(sm)
 #> Key: <coverage, dev>
-#>    coverage   dev n_cohorts   lr_mean lr_median     lr_wt incr_lr_mean
-#>      <char> <int>     <int>     <num>     <num>     <num>        <num>
-#> 1:  surgery     1        36 0.2522898 0.2393582 0.2525932    0.2522898
-#> 2:  surgery     2        35 0.8030639 0.7859128 0.7890646    1.3572087
-#> 3:  surgery     3        34 0.9258662 0.8997912 0.9204360    1.1519240
-#> 4:  surgery     4        33 0.9856772 0.9716558 0.9778502    1.1797269
-#> 5:  surgery     5        32 1.0336648 1.0502252 1.0447602    1.2268717
-#> 6:  surgery     6        31 1.0945723 1.1832332 1.0892484    1.3676102
-#>    incr_lr_median incr_lr_wt
-#>             <num>      <num>
-#> 1:      0.2393582  0.2525932
-#> 2:      1.2618216  1.3280769
-#> 3:      1.1517980  1.1728982
-#> 4:      1.1167740  1.1742272
-#> 5:      1.2663383  1.3110155
-#> 6:      1.2676379  1.2752751
+#>    coverage   dev n_cohorts ratio_mean ratio_median  ratio_wt incr_ratio_mean
+#>      <char> <int>     <int>      <num>        <num>     <num>           <num>
+#> 1:  surgery     1        36  0.2522898    0.2393582 0.2525932       0.2522898
+#> 2:  surgery     2        35  0.8030639    0.7859128 0.7890646       1.3572087
+#> 3:  surgery     3        34  0.9258662    0.8997912 0.9204360       1.1519240
+#> 4:  surgery     4        33  0.9856772    0.9716558 0.9778502       1.1797269
+#> 5:  surgery     5        32  1.0336648    1.0502252 1.0447602       1.2268717
+#> 6:  surgery     6        31  1.0945723    1.1832332 1.0892484       1.3676102
+#>    incr_ratio_median incr_ratio_wt
+#>                <num>         <num>
+#> 1:         0.2393582     0.2525932
+#> 2:         1.2618216     1.3280769
+#> 3:         1.1517980     1.1728982
+#> 4:         1.1167740     1.1742272
+#> 5:         1.2663383     1.3110155
+#> 6:         1.2676379     1.2752751
 ```
 
 Returns a `TriangleSummary` object with mean / median / weighted loss
@@ -118,7 +118,7 @@ $`g_k = \Delta C^L_k / C^P_k`$.
 
 ``` r
 
-ata <- as_link(tri, target = "loss")
+ata <- as_link(tri, loss = "loss")
 sm  <- summary(ata, model = "ata", alpha = 1)
 head(sm)
 #> Key: <coverage>
@@ -211,10 +211,10 @@ plot_triangle(ata, label_size = 2.5, show_maturity = TRUE)   # overlay maturity 
 
 
 # detail labels are two lines and overlap on monthly cells — rebuild on
-# the quarterly triangle so the two-line "factor (loss / premium)" text
+# the quarterly triangle so the two-line "factor (loss / exposure)" text
 # has room (label_size auto-shrinks to 2.2 in detail mode).
-ata_q <- as_link(tri_q, target = "loss")
-plot_triangle(ata_q, label_style = "detail")      # factor + (loss / premium)
+ata_q <- as_link(tri_q, loss = "loss")
+plot_triangle(ata_q, label_style = "detail")      # factor + (loss / exposure)
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-7-3.png)
@@ -227,7 +227,7 @@ link’s median.
 
 ``` r
 
-ed <- as_link(tri, target = "loss", exposure = "prem")
+ed <- as_link(tri, loss = "loss", exposure = "exposure")
 sm <- summary(ed, model = "ed", alpha = 1)
 head(sm)
 #> Key: <coverage>
@@ -276,7 +276,7 @@ $`g_k = \Delta C^L_k / C^P_k`$.
 
 The maturity point is the development link beyond which age-to-age
 factors are stable enough to trust for chain-ladder projection. Used
-internally by `fit_lr(method = "sa")` to switch from ED to CL.
+internally by `fit_ratio(method = "sa")` to switch from ED to CL.
 
 ### Detecting maturity
 
@@ -288,7 +288,7 @@ its WLS summary are built internally:
 
 mat <- detect_maturity(
   tri,
-  target          = "loss",
+  loss            = "loss",
   max_cv          = 0.15,    # CV must be below this
   max_rse         = 0.05,    # RSE must be below this
   min_valid_ratio = 0.5,     # at least 50% finite cohorts at the link
@@ -342,20 +342,20 @@ and
 via the `maturity` argument. Pass
 [`maturity_spec()`](https://seokhoonj.github.io/lossratio/reference/maturity_spec.md)
 to forward custom detection thresholds, or `"auto"` for defaults
-(`fit_lr(method = "sa")` and
+(`fit_ratio(method = "sa")` and
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
 use `"auto"` by default):
 
 ``` r
 
-fit_ata(tri, target = "loss",
+fit_ata(tri, loss = "loss",
         maturity = maturity_spec(max_cv = 0.08, min_run = 2L))
 
-fit_cl(tri, target = "loss",
+fit_cl(tri, loss = "loss",
        maturity = maturity_spec(max_cv = 0.08))
 
-fit_lr(tri, method = "sa",
-       maturity = maturity_spec(max_cv = 0.08))
+fit_ratio(tri, method = "sa",
+          maturity = maturity_spec(max_cv = 0.08))
 ```
 
 The `maturity` argument accepts four forms: `NULL` (no detection), a
@@ -369,9 +369,9 @@ with defaults), or a function of one triangle argument returning a
 `Maturity` (typically built with
 [`maturity_spec()`](https://seokhoonj.github.io/lossratio/reference/maturity_spec.md)).
 
-For `fit_lr(method = "sa")` the detected maturity point determines the
-dev at which the projection switches from ED (early dev) to CL (later
-dev).
+For `fit_ratio(method = "sa")` the detected maturity point determines
+the dev at which the projection switches from ED (early dev) to CL
+(later dev).
 
 ### Group-wise output
 
@@ -388,9 +388,9 @@ tri_all <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
-detect_maturity(tri_all, target = "loss")
+detect_maturity(tri_all, loss = "loss")
 #> Key: <coverage>
 #>     coverage ata_from change ata_link     mean   median       wt         cv
 #>       <char>    <num>  <num>   <char>    <num>    <num>    <num>      <num>
@@ -418,7 +418,7 @@ first drops below `max_cv`:
 
 ``` r
 
-plot(as_link(tri_all, target = "loss"), type = "cv")
+plot(as_link(tri_all, loss = "loss"), type = "cv")
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-12-1.png)
@@ -455,7 +455,7 @@ regime shift), restrict estimation to the recent calendar diagonals:
 
 ``` r
 
-fit_ata(tri, target = "loss", alpha = 1, recent = 12)  # last 12 calendar diagonals
+fit_ata(tri, loss = "loss", alpha = 1, recent = 12)  # last 12 calendar diagonals
 #> <ATAFit>
 #> alpha       : 1 
 #> sigma_method: locf 
@@ -465,10 +465,10 @@ fit_ata(tri, target = "loss", alpha = 1, recent = 12)  # last 12 calendar diagon
 #> groups      : coverage 
 #> n_groups    : 1 
 #> ata links   : 35
-fit_cl(tri, target = "loss", recent = 12)
+fit_cl(tri, loss = "loss", recent = 12)
 #> <CLFit>
 #> method      : mack 
-#> target      : loss 
+#> loss        : loss 
 #> weight      : none 
 #> alpha       : 1 
 #> sigma_method: locf 
@@ -478,18 +478,18 @@ fit_cl(tri, target = "loss", recent = 12)
 #> tail_factor : 1 
 #> groups      : coverage 
 #> periods     : 36
-fit_lr(tri, recent = 12)
-#> <LRFit>
-#> method            : sa 
+fit_ratio(tri, recent = 12)
+#> <RatioFit>
+#> method            : ed 
 #> loss_alpha        : 1 
-#> prem_alpha        : 1 
+#> exposure_alpha    : 1 
 #> se_method         : fixed 
 #> conf_level        : 0.95 
 #> ci_type           : bootstrap  (B = 999, seed = NULL) 
 #> sigma_method      : locf 
 #> recent            : 12 
 #> loss_regime       : none
-#> prem_regime       : none
+#> exposure_regime   : none
 #> maturity[surgery] : 4 
 #> groups            : coverage 
 #> periods           : 36
@@ -516,7 +516,7 @@ Before fitting:
     (optional) — structural change diagnosis.
 
 Then fit
-[`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
 /
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
 with confidence in the input data.

@@ -106,10 +106,43 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="lossratio-development-version">lossratio (development version)<a class="anchor" aria-label="anchor" href="#lossratio-development-version"></a></h2>
 <ul><li>
-<p><strong>BREAKING: identifier rename <code>premium</code> -&gt; <code>prem</code>, <code>development</code> -&gt; <code>dev</code>.</strong> Code-level identifiers (argument names, function names, enum values, slot names, attribute keys) are renamed to the short form already used by the column / attribute convention (<code>prem</code>, <code>dev</code>). Prose documentation (“premium-side projection”, “development period”) is unchanged.</p>
+<p><strong>BREAKING: method default flip — <code>"sa"</code> -&gt; <code>"ed"</code>.</strong> <code><a href="../reference/fit_loss.html">fit_loss()</a></code>, <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code>, and <code><a href="../reference/backtest.html">backtest()</a></code> (via <code>loss_method</code>) now default to <code>method = "ed"</code> (exposure-driven) instead of <code>"sa"</code> (stage-adaptive). Method-enum order is <code>c("ed", "cl", "sa")</code> — <em>simple -&gt; classical -&gt; composition</em>. Rationale: ED is the unconditional safe baseline (additive, no maturity-detection dependency, robust under early-dev age-to-age volatility); CL is the classical Mack 1993 alternative; SA is the composition of ED + CL requiring 2-pass maturity detection. Users relying on stage-adaptive behaviour must now pass <code>method = "sa"</code> explicitly. Migration:</p>
+<ul><li>
+<code>fit_loss(tri)</code> -&gt; still works (now defaults to ED)</li>
+<li>
+<code>fit_loss(tri, method = "sa")</code> -&gt; explicit (no change)</li>
+<li>Want previous SA default behaviour back? -&gt; add <code>method = "sa"</code>
+</li>
+</ul></li>
+<li><p><strong>Variance helper rename — <code>.mack_g_var</code> -&gt; <code>.ed_g_var</code>.</strong> Internal factor-level variance helper renamed for paradigm clarity. <code>.mack_*</code> is reserved for the CL/Mack 1993 paradigm (f-factor variance); ED intensity variance follows the Buehlmann-Straub 1970 lineage and now lives at <code><a href="../reference/dot-ed_g_var.html">.ed_g_var()</a></code>. The two natural analytical variance helpers in the package are now: <code><a href="../reference/dot-mack_f_var.html">.mack_f_var()</a></code> (CL paradigm, f) and <code><a href="../reference/dot-ed_g_var.html">.ed_g_var()</a></code> (ED paradigm, g). Cross-paradigm pairs are not provided as separate functions — they are algebraically derivable via <code>g_k = f_k - 1</code>. Both helpers now carry <a href="https://github.com/references" class="external-link">@references</a> blocks citing Mack (1993) and Buehlmann-Straub (1970) respectively.</p></li>
+<li>
+<p><strong>BREAKING: worker-arg rename <code>target</code> -&gt; <code>loss</code>.</strong> Worker-layer functions (<code>fit_cl</code>, <code>fit_ed</code>, <code>fit_ata</code>, <code>fit_intensity</code>, <code>detect_maturity</code>, <code>detect_regime</code>) and <code><a href="../reference/as_link.html">as_link()</a></code> now take a <code>loss</code> argument in place of <code>target</code>. Worker-output columns rename accordingly (<code>target_obs</code> -&gt; <code>loss_obs</code>, <code>target_proj</code> -&gt; <code>loss_proj</code>, <code>target_*_se</code> -&gt; <code>loss_*_se</code>, <code>target_from</code> / <code>target_to</code> / <code>target_delta</code> -&gt; <code>loss_from</code> / <code>loss_to</code> / <code>loss_delta</code>). Fit-object attribute key <code>attr(., "target")</code> becomes <code>attr(., "loss")</code> on Link, ATAFit, EDFit, CLFit, IntensityFit, Maturity, Regime, and Convergence objects. The <code>target</code> arg on <code><a href="../reference/backtest.html">backtest()</a></code> (a dispatcher enum selecting <code>"ratio"</code> / <code>"loss"</code> / <code>"exposure"</code>) is <strong>unchanged</strong> — that is a different semantic (which metric to backtest) and stays as-is. Bootstrap’s <code>target = c("loss", "exposure")</code> enum is also unchanged.</p>
+<p>Migration:</p>
+<ul><li>
+<code>fit_cl(tri, target = "loss")</code> -&gt; <code>fit_cl(tri, loss = "loss")</code>
+</li>
+<li>
+<code>fit_ed(tri, target = "loss", exposure = ...)</code> -&gt; <code>fit_ed(tri, loss = "loss", exposure = ...)</code>
+</li>
+<li>
+<code>as_link(tri, target = "loss")</code> -&gt; <code>as_link(tri, loss = "loss")</code>
+</li>
+<li>
+<code>detect_maturity(tri, target = "loss")</code> -&gt; <code>detect_maturity(tri, loss = "loss")</code>
+</li>
+<li>
+<code>detect_regime(tri, target = "ratio")</code> -&gt; <code>detect_regime(tri, loss = "ratio")</code>
+</li>
+<li>Reading <code>cl_fit$full$target_proj</code> -&gt; <code>cl_fit$full$loss_proj</code>
+</li>
+<li>Reading <code>attr(link, "target")</code> -&gt; <code>attr(link, "loss")</code>
+</li>
+</ul></li>
+<li>
+<p><strong>BREAKING: identifier rename <code>prem</code> -&gt; <code>exposure</code>, <code>lr</code> -&gt; <code>ratio</code>.</strong> Framework-generic naming for the denominator slot (<code>exposure</code>) and the derived ratio column / fit family (<code>ratio</code>). The previous in-progress sweep <code>premium</code> -&gt; <code>prem</code> (still unreleased) is superseded — final target is <code>exposure</code>, the framework-generic word that covers loss reserving (risk premium = exposure), frequency (insureds = exposure), and severity (claim count = Bühlmann natural weight = exposure) uniformly. Prose noun phrases (“loss ratio”, “premium”, “risk premium”, “exposure measure”) are unchanged.</p>
 <p>Migration (find-and-replace at call sites):</p>
 <ul><li>
-<code>as_triangle(..., premium = "incr_prem")</code> -&gt; <code>as_triangle(..., prem = "incr_prem")</code>
+<code>as_triangle(..., premium = "incr_prem")</code> / <code>as_triangle(..., prem = "incr_prem")</code> -&gt; <code>as_triangle(..., exposure = "incr_exposure")</code>
 </li>
 <li>
 <code>as_triangle(..., development = "dev_m")</code> -&gt; <code>as_triangle(..., dev = "dev_m")</code>
@@ -118,31 +151,45 @@
 <code>validate_triangle(..., development = "dev_m")</code> -&gt; <code>validate_triangle(..., dev = "dev_m")</code>
 </li>
 <li>
-<code>fit_premium(...)</code> -&gt; <code>fit_prem(...)</code>
+<code>fit_premium(...)</code> / <code>fit_prem(...)</code> -&gt; <code>fit_exposure(...)</code>
 </li>
 <li>
-<code>fit_loss(..., premium_method = ..., premium_alpha = ..., premium_fit = ...)</code> -&gt; <code>fit_loss(..., prem_method = ..., prem_alpha = ..., prem_fit = ...)</code>
+<code>fit_lr(...)</code> -&gt; <code>fit_ratio(...)</code>
 </li>
 <li>
-<code>fit_lr(..., premium_method = ..., premium_alpha = ..., premium_regime = ...)</code> -&gt; <code>fit_lr(..., prem_method = ..., prem_alpha = ..., prem_regime = ...)</code>
+<code>fit_loss(..., prem_method = ..., prem_alpha = ..., prem_fit = ...)</code> -&gt; <code>fit_loss(..., exposure_method = ..., exposure_alpha = ..., exposure_fit = ...)</code>
 </li>
 <li>
-<code>backtest(..., target = "premium", premium_method = ..., premium_alpha = ..., premium_regime = ...)</code> -&gt; <code>backtest(..., target = "prem", prem_method = ..., prem_alpha = ..., prem_regime = ...)</code>
+<code>fit_lr(..., prem_method = ..., prem_alpha = ..., prem_regime = ...)</code> -&gt; <code>fit_ratio(..., exposure_method = ..., exposure_alpha = ..., exposure_regime = ...)</code>
 </li>
 <li>
-<code>bootstrap(tri, target = "premium")</code> -&gt; <code>bootstrap(tri, target = "prem")</code>
+<code>backtest(..., target = "lr", prem_method = ..., prem_alpha = ...)</code> -&gt; <code>backtest(..., target = "ratio", exposure_method = ..., exposure_alpha = ...)</code>
 </li>
 <li>
-<code>LRFit$premium_alpha</code>, <code>LRFit$premium_regime</code> -&gt; <code>$prem_alpha</code>, <code>$prem_regime</code>
+<code>backtest(..., target = "prem")</code> -&gt; <code>backtest(..., target = "exposure")</code>
 </li>
 <li>
-<code>LossFit$premium_fit</code> -&gt; <code>$prem_fit</code>
+<code>bootstrap(tri, target = "prem")</code> -&gt; <code>bootstrap(tri, target = "exposure")</code>
 </li>
-<li>S3 class <code>"PremiumFit"</code> -&gt; <code>"PremFit"</code> (incl. <code>print.PremiumFit()</code> / <code>summary.PremiumFit()</code> -&gt; <code><a href="../reference/print.PremFit.html">print.PremFit()</a></code> / <code><a href="../reference/summary.PremFit.html">summary.PremFit()</a></code>; <code>inherits(x, "PremiumFit")</code> -&gt; <code>inherits(x, "PremFit")</code>)</li>
 <li>
-<code>attr(PremiumFit_obj, "premium_method")</code> -&gt; <code>attr(PremFit_obj, "prem_method")</code>
+<code>LRFit$prem_alpha</code>, <code>LRFit$prem_regime</code> -&gt; <code>RatioFit$exposure_alpha</code>, <code>$exposure_regime</code>
 </li>
-</ul><p>The Triangle / Calendar / Total / fit-output <em>column</em> names already use the short form (<code>prem</code>, <code>incr_prem</code>, <code>prem_proj</code>, …) from the earlier prefix sweep; this release closes the loop by aligning the <em>argument / slot</em> surface with that convention.</p>
+<li>
+<code>LossFit$prem_fit</code> -&gt; <code>$exposure_fit</code>
+</li>
+<li>S3 class <code>"PremFit"</code> -&gt; <code>"ExposureFit"</code> (incl. <code>print.PremFit()</code> / <code>summary.PremFit()</code> -&gt; <code><a href="../reference/print.ExposureFit.html">print.ExposureFit()</a></code> / <code><a href="../reference/summary.ExposureFit.html">summary.ExposureFit()</a></code>)</li>
+<li>S3 class <code>"LRFit"</code> -&gt; <code>"RatioFit"</code> (incl. <code>print.LRFit()</code> / <code>summary.LRFit()</code> / <code>plot.LRFit()</code> / <code>plot_triangle.LRFit()</code> -&gt; <code>*.RatioFit()</code>)</li>
+<li>
+<code>attr(PremFit_obj, "prem_method")</code> -&gt; <code>attr(ExposureFit_obj, "exposure_method")</code>
+</li>
+<li>Triangle / Calendar / Total columns: <code>prem</code>, <code>incr_prem</code>, <code>prem_share</code>, <code>incr_prem_share</code>, <code>lr</code>, <code>incr_lr</code> -&gt; <code>exposure</code>, <code>incr_exposure</code>, <code>exposure_share</code>, <code>incr_exposure_share</code>, <code>ratio</code>, <code>incr_ratio</code>
+</li>
+<li>Fit output columns: <code>prem_proj</code>, <code>prem_obs</code>, <code>prem_proc_se</code>, <code>prem_param_se</code>, <code>prem_total_se</code>, <code>prem_total_cv</code>, <code>prem_ci_lo</code>, <code>prem_ci_hi</code>, <code>incr_prem_proj</code> -&gt; <code>exposure_*</code>; <code>lr_proj</code>, <code>lr_se</code>, <code>lr_cv</code>, <code>lr_ci_lo</code>, <code>lr_ci_hi</code>, <code>lr_ult</code>, <code>lr_latest</code>, <code>incr_lr_proj</code> -&gt; <code>ratio_*</code>
+</li>
+<li>R source files: <code>R/prem.R</code>, <code>R/lr.R</code>, <code>R/lr-vis.R</code> -&gt; <code>R/exposure.R</code>, <code>R/ratio.R</code>, <code>R/ratio-vis.R</code>
+</li>
+<li>Raw dataset (<code>data/experience.rda</code>): column <code>incr_prem</code> -&gt; <code>incr_exposure</code> (regenerated)</li>
+</ul><p>The package name <code>lossratio</code> is unchanged; this sweep is purely a code-identifier refactor. The conceptual “loss ratio” framework is preserved — <code>ratio</code> is the column / fit name for the loss-to-exposure ratio, and the package continues to specialise in long-term health insurance reserving on developing exposure (risk premium) triangles.</p>
 </li>
 <li><p><strong>Default flip</strong> — <code><a href="../reference/bootstrap.html">bootstrap()</a></code>’s <code>keep_pseudo</code> default changes from <code>TRUE</code> to <code>FALSE</code>. The long-format <code>$pseudo_triangles</code> long-format data.table is no longer built on every call; the precomputed <code>$summary</code> (Pythagorean SE decomposition + optional percentile CI) is still always present. Skipping the long-format reshape saves roughly 250-300 ms and ~200 MB on a typical 4-group monthly triangle at <code>B = 999</code>. Users who inspect <code>$pseudo_triangles</code> directly should pass <code>keep_pseudo = TRUE</code> explicitly; the argument is unchanged.</p></li>
 <li>
@@ -159,11 +206,11 @@
 <li>
 <code>build_link()</code> -&gt; <code><a href="../reference/as_link.html">as_link()</a></code> No signature change, only the verb. Migration is a global find-and-replace. The functions still validate, coerce, and aggregate substantively – the <code>as_*</code> name reflects that the returned object is <em>the</em> canonical lossratio shape derived from the raw experience data, not just a thin type cast. The PascalCase classes (<code>Triangle</code>, <code>Calendar</code>, <code>Total</code>, <code>Link</code>) remain unchanged.</li>
 </ul></li>
-<li><p><strong>BREAKING</strong> — <code><a href="../reference/plot_triangle.Triangle.html">plot_triangle.Triangle()</a></code> argument <code>type</code> renamed to <code>view</code> for parity with <code><a href="../reference/plot_triangle.CLFit.html">plot_triangle.CLFit()</a></code>, <code><a href="../reference/plot_triangle.LRFit.html">plot_triangle.LRFit()</a></code>, and <code><a href="../reference/plot_triangle.Backtest.html">plot_triangle.Backtest()</a></code>, which already used <code>view = c("value", "usage")</code>. The <code>type =</code> slot is left free for plot-method-specific semantics (<code>plot.Backtest(type = "col"/"diag"/"cell")</code>, <code>plot.CLFit(type = "projection"/"reserve")</code>, etc.). Migration: <code>plot_triangle(tri, type = "usage")</code> -&gt; <code>plot_triangle(tri, view = "usage")</code>.</p></li>
+<li><p><strong>BREAKING</strong> — <code><a href="../reference/plot_triangle.Triangle.html">plot_triangle.Triangle()</a></code> argument <code>type</code> renamed to <code>view</code> for parity with <code><a href="../reference/plot_triangle.CLFit.html">plot_triangle.CLFit()</a></code>, <code>plot_triangle.LRFit()</code>, and <code><a href="../reference/plot_triangle.Backtest.html">plot_triangle.Backtest()</a></code>, which already used <code>view = c("value", "usage")</code>. The <code>type =</code> slot is left free for plot-method-specific semantics (<code>plot.Backtest(type = "col"/"diag"/"cell")</code>, <code>plot.CLFit(type = "projection"/"reserve")</code>, etc.). Migration: <code>plot_triangle(tri, type = "usage")</code> -&gt; <code>plot_triangle(tri, view = "usage")</code>.</p></li>
 <li><p><strong>Known limitation (future work) — segment_wise mini-triangle gap-fill</strong>. Under <code>treatment = "segment_wise"</code>, <code>fit_*</code> produces a mini-triangle per regime segment using only that segment’s cohorts; cells that fall outside every mini-triangle (typically old cohorts at late development periods that cannot be reached from any single segment) are currently left unprojected. A follow-up phase should add a fallback (e.g. <code>latest-segment factor</code>, <code>previous-segment factor</code>, smoothing across segments) controlled by a <code>Regime$fallback</code> knob, plus a warning when <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math> exceeds the <em>change-to-now</em> horizon of the latest segment (which would also cause the mini-triangle to be truncated). Today the cells render as <code>unused</code> in <code>plot_triangle(view = "usage")</code> rather than being filled in by an inferred projection.</p></li>
 <li><p><strong>BREAKING</strong> — <code><a href="../reference/backtest.html">backtest()</a></code> cell-level columns renamed from <code>target_actual</code> / <code>target_proj</code> (and <code>_incr</code> siblings) to <code>actual</code> / <code>expected</code> (and <code>actual_incr</code> / <code>expected_incr</code>). The new names match the actuarial A/E convention (<code>aeg = actual - expected</code>, <code>ae_err = actual / expected - 1</code>) and self-document the role of each column. Worker-layer column names (<code>target_proj</code> etc. on <code>CLFit$full</code> / <code>EDFit$full</code>) are unchanged – the rename is scoped to <code>backtest$ae_err</code>. Migration: replace <code>bt$ae_err$target_actual</code> with <code>bt$ae_err$actual</code>, <code>bt$ae_err$target_proj</code> with <code>bt$ae_err$expected</code>.</p></li>
-<li><p><code><a href="../reference/backtest.html">backtest()</a></code> result slot <code>fit_fn_name</code> renamed to <code>dispatcher</code> for clarity (the value is still the dispatcher name — <code>fit_lr</code> / <code>fit_loss</code> / <code>fit_premium</code> — selected by <code>target=</code>). <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> / <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> labels updated accordingly.</p></li>
-<li><p><code><a href="../reference/fit_loss.html">fit_loss()</a></code>, <code>fit_premium()</code>, <code><a href="../reference/fit_lr.html">fit_lr()</a></code>, and <code><a href="../reference/backtest.html">backtest()</a></code> now attach a <code>$usage</code> <code>data.table</code> to the result: one row per <code>(group, cohort, dev)</code> cell of the <em>pre-filter</em> triangle with a <code>status</code> factor (<code>used</code> / <code>unused</code> / <code>holdout</code> / <code>future</code>). <code>plot_triangle(fit, view = "usage")</code> reads this directly instead of re-deriving the filter logic at plot time, so the heatmap always matches the cells the fit actually saw. New internal helper <code>.build_usage()</code> packages the 2-pass maturity detection plus <code><a href="../reference/dot-compute_triangle_usage.html">.compute_triangle_usage()</a></code> and attaches filter metadata (<code>regime</code> / <code>recent</code> / <code>holdout</code> / <code>m_k</code> / <code>m_k_dt</code>) as <code>data.table</code> attributes for the renderer.</p></li>
+<li><p><code><a href="../reference/backtest.html">backtest()</a></code> result slot <code>fit_fn_name</code> renamed to <code>dispatcher</code> for clarity (the value is still the dispatcher name — <code>fit_ratio</code> / <code>fit_loss</code> / <code>fit_exposure</code> — selected by <code>target=</code>). <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> / <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> labels updated accordingly.</p></li>
+<li><p><code><a href="../reference/fit_loss.html">fit_loss()</a></code>, <code><a href="../reference/fit_exposure.html">fit_exposure()</a></code>, <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code>, and <code><a href="../reference/backtest.html">backtest()</a></code> now attach a <code>$usage</code> <code>data.table</code> to the result: one row per <code>(group, cohort, dev)</code> cell of the <em>pre-filter</em> triangle with a <code>status</code> factor (<code>used</code> / <code>unused</code> / <code>holdout</code> / <code>future</code>). <code>plot_triangle(fit, view = "usage")</code> reads this directly instead of re-deriving the filter logic at plot time, so the heatmap always matches the cells the fit actually saw. New internal helper <code>.build_usage()</code> packages the 2-pass maturity detection plus <code><a href="../reference/dot-compute_triangle_usage.html">.compute_triangle_usage()</a></code> and attaches filter metadata (<code>regime</code> / <code>recent</code> / <code>holdout</code> / <code>m_k</code> / <code>m_k_dt</code>) as <code>data.table</code> attributes for the renderer.</p></li>
 <li><p><strong>BREAKING</strong> — <code>build_triangle()</code>, <code>build_total()</code>, and <code><a href="../reference/validate_triangle.html">validate_triangle()</a></code> rename their <code>dev =</code> argument to <code>development =</code>. The new name is more explicit about the development-period axis (matching the <code>coh &lt;- cohort</code> symmetry inside the function bodies). Migration: replace <code>build_triangle(..., dev = "dev_m")</code> with <code>build_triangle(..., development = "dev_m")</code>.</p></li>
 <li><p><strong>BREAKING</strong> — <code><a href="../reference/backtest.html">backtest()</a></code> result columns renamed from <code>value_proj</code> / <code>value_actual</code> (and <code>_incr</code> variants) to <code>target_proj</code> / <code>target_actual</code> (and <code>_incr</code> variants), matching the worker-layer <code>target_*</code> generic convention.</p></li>
 <li>
@@ -190,7 +237,7 @@
 <h3 id="core-api-0-0-0-9000">Core API<a class="anchor" aria-label="anchor" href="#core-api-0-0-0-9000"></a></h3>
 <ul><li>Aggregation: <code>build_triangle()</code> (cohort × dev), <code>build_calendar()</code> (calendar period), <code>build_total()</code> (portfolio total). <code>build_triangle()</code> validates schema and coerces required columns inline.</li>
 <li>Link table: <code>build_link()</code> returns a <code>Link</code> object covering both single-variable (ATA-style) and dual-variable (ED-style) workflows. <code>summary.Link(model = "ata"|"ed")</code> dispatches to the matching diagnostic.</li>
-<li>Estimation: <code><a href="../reference/fit_ata.html">fit_ata()</a></code> (per-link factors only); <code><a href="../reference/fit_ed.html">fit_ed()</a></code>, <code><a href="../reference/fit_cl.html">fit_cl()</a></code>, and <code><a href="../reference/fit_lr.html">fit_lr()</a></code> (factors + projection). <code>fit_lr</code> supports three methods — <code>"sa"</code> (default), <code>"ed"</code>, <code>"cl"</code>.</li>
+<li>Estimation: <code><a href="../reference/fit_ata.html">fit_ata()</a></code> (per-link factors only); <code><a href="../reference/fit_ed.html">fit_ed()</a></code>, <code><a href="../reference/fit_cl.html">fit_cl()</a></code>, and <code>fit_lr()</code> (factors + projection). <code>fit_lr</code> supports three methods — <code>"sa"</code> (default), <code>"ed"</code>, <code>"cl"</code>.</li>
 <li>Cell-selection diagnostics: <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> (dev axis — link beyond which ATA factors are stable), <code><a href="../reference/detect_regime.html">detect_regime()</a></code> (cohort axis — structural breaks across underwriting cohorts).</li>
 <li>Projection diagnostic: <code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> (operates on a fitted <code>LRFit</code>; valuation depth at which projected ultimate loss ratio stops revising).</li>
 <li>Backtest: <code><a href="../reference/backtest.html">backtest()</a></code> (calendar-diagonal hold-out, supports <code>fit_cl</code>, <code>fit_ed</code>, and <code>fit_lr</code>).</li>

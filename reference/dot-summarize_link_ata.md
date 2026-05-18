@@ -76,7 +76,7 @@ link:
 - `f`:
 
   WLS-estimated factor. Equals `wt` when `alpha = 2` and no zero
-  `target_from` rows are present.
+  `loss_from` rows are present.
 
 - `f_se`:
 
@@ -120,20 +120,20 @@ included:
 - `wt`:
 
   Volume-weighted mean: \\wt = \sum C\_{i,k+1} / \sum C\_{i,k}\\.
-  Computed from all rows where `target_from` and `target_to` are finite,
+  Computed from all rows where `loss_from` and `loss_to` are finite,
   including rows where either value is zero. Independent of `alpha`.
 
 - `f`:
 
-  WLS-estimated factor. Only rows where `target_from > 0` are used,
-  since `target_from = 0` causes numerical issues in the WLS weights
-  (\\w = value\\from^{\alpha}\\). When `alpha = 2`, `f` and `wt` are
-  numerically equivalent (assuming no zero `target_from` rows). When
+  WLS-estimated factor. Only rows where `loss_from > 0` are used, since
+  `loss_from = 0` causes numerical issues in the WLS weights (\\w =
+  value\\from^{\alpha}\\). When `alpha = 2`, `f` and `wt` are
+  numerically equivalent (assuming no zero `loss_from` rows). When
   `alpha \ne 2`, they diverge.
 
 Therefore `wt` and `f` can differ for two reasons:
 
-1.  **Zero exclusion**: rows with `target_from = 0` are included in `wt`
+1.  **Zero exclusion**: rows with `loss_from = 0` are included in `wt`
     but excluded from `f`. This typically affects early development
     periods where some cohorts have not yet accumulated any claims.
 
@@ -147,9 +147,9 @@ Therefore `wt` and `f` can differ for two reasons:
 When the input `"Link"` object contains a `weight` column (added by
 [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md)
 when `weight` is supplied), that column is automatically used as the WLS
-weight in place of `target_from`. This is useful when `target = "lr"`,
-where `target_from` carries no exposure information and an external
-exposure variable such as `prem` should be used instead.
+weight in place of `loss_from`. This is useful when `loss = "ratio"`,
+where `loss_from` carries no exposure information and an external
+exposure variable such as `exposure` should be used instead.
 
 ## Coefficient of variation (`cv`)
 

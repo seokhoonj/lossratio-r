@@ -3,7 +3,7 @@
 Generate `B` alternative realizations of a `Triangle` via nonparametric
 (England-Verrall residual) or parametric (Mack normal closed-form) Stage
 1 perturbation. The output is a model-agnostic `BootstrapTriangle`
-object that downstream fit functions (`fit_cl` / `fit_ed` / `fit_lr`)
+object that downstream fit functions (`fit_cl` / `fit_ed` / `fit_ratio`)
 consume to recover parameter and process risk decomposition.
 
 This entry point sits at the Triangle level – it knows nothing about CL,
@@ -41,7 +41,7 @@ bootstrap(
   tail = c("auto", "maturity"),
   min_pool = 5L,
   maturity = NULL,
-  target = c("loss", "prem"),
+  target = c("loss", "exposure"),
   B = 499L,
   seed = NULL,
   alpha = 1,
@@ -110,7 +110,7 @@ bootstrap(
   maturity, CL after; default), `"cl"` (chain-ladder multiplicative
   recursion across all dev), `"ed"` (exposure-driven additive recursion
   across all dev). Mirrors the `loss_method` argument of
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md);
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md);
   the resulting `BootstrapTriangle` is consumed by the corresponding
   `fit_*(..., bootstrap = bt)` branch.
 
@@ -141,9 +141,9 @@ bootstrap(
 
 - target:
 
-  Cumulative metric to perturb. One of `"loss"` (default) or `"prem"`.
-  The value column in `$pseudo_triangles` is named after this target so
-  downstream refit helpers know which column to read.
+  Cumulative metric to perturb. One of `"loss"` (default) or
+  `"exposure"`. The value column in `$pseudo_triangles` is named after
+  this target so downstream refit helpers know which column to read.
 
 - B:
 
@@ -188,11 +188,11 @@ bootstrap(
   quantile work). On a typical 4-group monthly triangle at `B = 999` the
   reshape costs ~250-300 ms and ~200 MB on top of `$summary`; users who
   only consume `$summary` (the common case) should leave this `FALSE`.
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
   /
-  [`fit_prem()`](https://seokhoonj.github.io/lossratio/reference/fit_prem.md)
+  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md)
   always pass `FALSE` internally because they only read `$summary`. Set
   `TRUE` explicitly if you want to inspect `$pseudo_triangles` directly.
 
@@ -243,7 +243,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 # Cell-residual bootstrap (default)

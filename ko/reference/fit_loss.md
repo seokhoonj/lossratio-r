@@ -3,39 +3,40 @@
 Project cumulative loss across the cohort x development grid. Three
 methods are supported via `method`:
 
-- `"sa"` (default):
+- `"ed"` (default):
 
-  Stage-adaptive. Exposure-driven (ED) before the maturity point, chain
-  ladder (CL) after.
-
-- `"ed"`:
-
-  Pure exposure-driven (additive) across all dev periods.
+  Pure exposure-driven (additive) across all dev periods. Unconditional
+  safe baseline — no maturity dependency.
 
 - `"cl"`:
 
-  Pure Mack chain ladder (multiplicative).
+  Pure Mack chain ladder (multiplicative). Classical reference.
+
+- `"sa"`:
+
+  Stage-adaptive. ED before the maturity point, CL after — composition
+  of ED + CL, requires maturity detection (2-pass).
 
 This function is the *loss-side* counterpart to
-[`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md)
+[`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
 in the role-specific dispatcher layer (see `ARCHITECTURE.md`). It owns
-loss projection only – prem projection is delegated to
-[`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md)
-(called internally when `prem_fit = NULL`), and the loss-ratio
+loss projection only – exposure projection is delegated to
+[`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
+(called internally when `exposure_fit = NULL`), and the loss-ratio
 composition with delta method is handled by
-[`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md).
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md).
 
 ## Usage
 
 ``` r
 fit_loss(
   x,
-  method = c("sa", "ed", "cl"),
+  method = c("ed", "cl", "sa"),
   alpha = 1,
   regime = NULL,
-  prem_fit = NULL,
-  prem_method = c("cl", "ed"),
-  prem_alpha = 1,
+  exposure_fit = NULL,
+  exposure_method = c("cl", "ed"),
+  exposure_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
   recent = NULL,
   maturity = "auto",
@@ -50,14 +51,14 @@ fit_loss(
 
 - x:
 
-  A `"Triangle"` object. The standardized `"loss"` and `"prem"` columns
-  are used
+  A `"Triangle"` object. The standardized `"loss"` and `"exposure"`
+  columns are used
   ([`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
   produces these).
 
 - method:
 
-  One of `"sa"` (default), `"ed"`, or `"cl"`.
+  One of `"ed"` (default), `"cl"`, or `"sa"`.
 
 - alpha:
 
@@ -65,8 +66,8 @@ fit_loss(
 
 - regime:
 
-  Optional regime specification applied to both loss-side and prem-side
-  estimation. Accepts four input types:
+  Optional regime specification applied to both loss-side and
+  exposure-side estimation. Accepts four input types:
 
   `NULL` (default)
 
@@ -93,30 +94,30 @@ fit_loss(
   cut for the ED phase, calendar-diagonal wedge for the CL phase); ED/CL
   use a simple cohort cut. The same resolved `Regime` is applied to the
   internal
-  [`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md)
-  call – callers needing an asymmetric loss/prem split should use
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
+  call – callers needing an asymmetric loss/exposure split should use
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
   instead.
 
-- prem_fit:
+- exposure_fit:
 
-  Optional pre-built `PremFit` (from
-  [`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md))
-  supplying the prem projection. When `NULL`, `fit_loss()` calls
-  [`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md)
-  internally using `prem_method`, `prem_alpha`, and the resolved
+  Optional pre-built `ExposureFit` (from
+  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md))
+  supplying the exposure projection. When `NULL`, `fit_loss()` calls
+  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
+  internally using `exposure_method`, `exposure_alpha`, and the resolved
   `regime`.
 
-- prem_method:
+- exposure_method:
 
-  One of `"cl"` (default) or `"ed"`. Used only when `prem_fit = NULL`.
-  The default matches the historical
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
-  prem choice.
+  One of `"cl"` (default) or `"ed"`. Used only when
+  `exposure_fit = NULL`. The default matches the historical
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
+  exposure choice.
 
-- prem_alpha:
+- exposure_alpha:
 
-  Variance-structure exponent for the prem fit. Default `1`.
+  Variance-structure exponent for the exposure fit. Default `1`.
 
 - sigma_method:
 
@@ -193,8 +194,8 @@ fit_loss(
       [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)).
 
   Premium stays at its observed values during the bootstrap (the
-  loss-only convention); premium-side uncertainty is layered in by
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  loss-only convention); exposure-side uncertainty is layered in by
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
   via its own bootstrap.
 
 - B:
@@ -209,21 +210,21 @@ fit_loss(
 ## Value
 
 An object of class `"LossFit"`. List with components: `full`, `proj`,
-`maturity`, `loss_ata_fit`, `prem_ata_fit`, `prem_fit`, `ed`, `factor`,
-`selected`, plus metadata.
+`maturity`, `loss_ata_fit`, `exposure_ata_fit`, `exposure_fit`, `ed`,
+`factor`, `selected`, plus metadata.
 
 ## Internal columns
 
 `$full` retains internal parameter columns (`g_sel`, `g_sigma2`,
 `g_var`, `f_sel`, `f_sigma2`, `f_var`, `last_obs`) so that
-[`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
 can run bootstrap CI on top without re-fitting. Standalone callers see
 them as implementation columns.
 
 ## See also
 
-[`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md),
-[`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
+[`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md),
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md),
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md).
 
@@ -238,7 +239,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 lf    <- fit_loss(tri)                    # SA (default)

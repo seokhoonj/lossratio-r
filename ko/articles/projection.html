@@ -95,8 +95,8 @@
 
     
     
-<p><code><a href="../reference/fit_lr.html">fit_lr()</a></code> projects cumulative loss ratio per cohort from
-a <code>Triangle</code> object. Three methods are available; this
+<p><code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> projects cumulative loss ratio per cohort
+from a <code>Triangle</code> object. Three methods are available; this
 vignette explains the trade-offs.</p>
 <div class="section level2">
 <h2 id="notation">Notation<a class="anchor" aria-label="anchor" href="#notation"></a>
@@ -173,134 +173,134 @@ difference (e.g. waiting period transitions).</li>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">lr_sa</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span>        <span class="co"># default</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lr_sa</span>, metric <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">ratio_sa</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span>        <span class="co"># default</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ratio_sa</span>, metric <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="projection_files/figure-html/unnamed-chunk-1-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lr_sa</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve   prem_ult lr_latest</span></span>
-<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:  surgery 2023-01-01  410248522  410248522          0  274192564 1.4962059</span></span>
-<span><span class="co">#&gt;  2:  surgery 2023-02-01  976330445 1001441303   25110858  665667720 1.5107824</span></span>
-<span><span class="co">#&gt;  3:  surgery 2023-03-01  978486045 1026151243   47665198  702047332 1.4771448</span></span>
-<span><span class="co">#&gt;  4:  surgery 2023-04-01 2029909919 2186771221  156861302 1464399410 1.5139132</span></span>
-<span><span class="co">#&gt;  5:  surgery 2023-05-01  624219436  697669301   73449865  483147255 1.4543748</span></span>
-<span><span class="co">#&gt;  6:  surgery 2023-06-01  802880717  931393934  128513217  591568799 1.5796369</span></span>
-<span><span class="co">#&gt;  7:  surgery 2023-07-01 2539141549 3050990158  511848609 1958263736 1.5597190</span></span>
-<span><span class="co">#&gt;  8:  surgery 2023-08-01  393678329  488218204   94539875  327535560 1.4945957</span></span>
-<span><span class="co">#&gt;  9:  surgery 2023-09-01 1364052542 1751869308  387816766 1091733892 1.6079808</span></span>
-<span><span class="co">#&gt; 10:  surgery 2023-10-01  979266043 1311793843  332527800  864204933 1.5129472</span></span>
-<span><span class="co">#&gt; 11:  surgery 2023-11-01  604685679  848103123  243417444  630311110 1.3298743</span></span>
-<span><span class="co">#&gt; 12:  surgery 2023-12-01 1026345366 1497869029  471523663 1057060867 1.3981081</span></span>
-<span><span class="co">#&gt; 13:  surgery 2024-01-01 1912177598 2901492851  989315253 2009045340 1.4274951</span></span>
-<span><span class="co">#&gt; 14:  surgery 2024-02-01  733902485 1160045952  426143467  832229795 1.3793745</span></span>
-<span><span class="co">#&gt; 15:  surgery 2024-03-01  415459873  686574148  271114275  454345985 1.4969280</span></span>
-<span><span class="co">#&gt; 16:  surgery 2024-04-01 3286053526 5687484014 2401430488 3372494516 1.6712898</span></span>
-<span><span class="co">#&gt; 17:  surgery 2024-05-01 1451731153 2645801838 1194070685 1899849125 1.3770835</span></span>
-<span><span class="co">#&gt; 18:  surgery 2024-06-01  629668308 1209024555  579356247  750125230 1.5918247</span></span>
-<span><span class="co">#&gt; 19:  surgery 2024-07-01 1250954693 2542927190 1291972497 2891548085 0.8658750</span></span>
-<span><span class="co">#&gt; 20:  surgery 2024-08-01  425346694  918120582  492773888  976935246 0.9236050</span></span>
-<span><span class="co">#&gt; 21:  surgery 2024-09-01  278156543  635470028  357313485  703906575 0.8920448</span></span>
-<span><span class="co">#&gt; 22:  surgery 2024-10-01  352070323  856446521  504376198  984833529 0.8596968</span></span>
-<span><span class="co">#&gt; 23:  surgery 2024-11-01   99050501  260916096  161865595  324081360 0.7871749</span></span>
-<span><span class="co">#&gt; 24:  surgery 2024-12-01  103194013  295637296  192443283  366444614 0.7813438</span></span>
-<span><span class="co">#&gt; 25:  surgery 2025-01-01  227089025  710560093  483471068  833732378 0.8188282</span></span>
-<span><span class="co">#&gt; 26:  surgery 2025-02-01  939163074 3276849152 2337686078 3286151352 0.9377837</span></span>
-<span><span class="co">#&gt; 27:  surgery 2025-03-01  112828845  434950057  322121212  566316398 0.7193486</span></span>
-<span><span class="co">#&gt; 28:  surgery 2025-04-01   82472453  356301148  273828695  476819833 0.6947510</span></span>
-<span><span class="co">#&gt; 29:  surgery 2025-05-01  141214851  697290587  556075736 1027051048 0.6203897</span></span>
-<span><span class="co">#&gt; 30:  surgery 2025-06-01  136406102  789468799  653062697  783037474 0.8981587</span></span>
-<span><span class="co">#&gt; 31:  surgery 2025-07-01  149144024 1040451732  891307708  859730812 1.0440457</span></span>
-<span><span class="co">#&gt; 32:  surgery 2025-08-01  116327076 1008356733  892029657 1037192185 0.8100543</span></span>
-<span><span class="co">#&gt; 33:  surgery 2025-09-01   67465470  783000257  715534787  611257142 0.9985960</span></span>
-<span><span class="co">#&gt; 34:  surgery 2025-10-01  121626173 2001214863 1879588690 1338462726 1.0894657</span></span>
-<span><span class="co">#&gt; 35:  surgery 2025-11-01   15716444  576954661  561238217  593147593 0.4765917</span></span>
-<span><span class="co">#&gt; 36:  surgery 2025-12-01    4825085 1246569307 1241744222 1022559927 0.1689836</span></span>
-<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve   prem_ult lr_latest</span></span>
-<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt;        lr_ult maturity_from loss_proc_se loss_param_se loss_total_se</span></span>
-<span><span class="co">#&gt;         &lt;num&gt;         &lt;num&gt;        &lt;num&gt;         &lt;num&gt;         &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1: 1.4962059             3            0             0             0</span></span>
-<span><span class="co">#&gt;  2: 1.5044162             3      2934231       4309793       5213830</span></span>
-<span><span class="co">#&gt;  3: 1.4616554             3      3982661       5158162       6516765</span></span>
-<span><span class="co">#&gt;  4: 1.4932888             3      6546789      11609585      13328275</span></span>
-<span><span class="co">#&gt;  5: 1.4440097             3      4547580       3813039       5934623</span></span>
-<span><span class="co">#&gt;  6: 1.5744474             3     17628088       8903464      19748953</span></span>
-<span><span class="co">#&gt;  7: 1.5580078             3     35686361      31442590      47562095</span></span>
-<span><span class="co">#&gt;  8: 1.4905808             3     16152143       5121110      16944542</span></span>
-<span><span class="co">#&gt;  9: 1.6046670             3     37357117      20421919      42574746</span></span>
-<span><span class="co">#&gt; 10: 1.5179199             3     37573001      17215247      41329107</span></span>
-<span><span class="co">#&gt; 11: 1.3455310             3     35161608      12015326      37157863</span></span>
-<span><span class="co">#&gt; 12: 1.4170130             3     53162531      22167720      57599154</span></span>
-<span><span class="co">#&gt; 13: 1.4442147             3     76259904      44384184      88235644</span></span>
-<span><span class="co">#&gt; 14: 1.3939010             3     51529679      18632983      54795036</span></span>
-<span><span class="co">#&gt; 15: 1.5111263             3     41482939      11326747      43001505</span></span>
-<span><span class="co">#&gt; 16: 1.6864324             3    120195326      95592928     153573839</span></span>
-<span><span class="co">#&gt; 17: 1.3926379             3     88447102      46270702      99819176</span></span>
-<span><span class="co">#&gt; 18: 1.6117636             3     66834389      21472291      70198966</span></span>
-<span><span class="co">#&gt; 19: 0.8794345             3    104028932      46251465     113847340</span></span>
-<span><span class="co">#&gt; 20: 0.9397968             3     62896850      16977280      65147845</span></span>
-<span><span class="co">#&gt; 21: 0.9027761             3     56583751      11941938      57830189</span></span>
-<span><span class="co">#&gt; 22: 0.8696358             3     71133708      16328611      72983751</span></span>
-<span><span class="co">#&gt; 23: 0.8050944             3     41388948       5266012      41722607</span></span>
-<span><span class="co">#&gt; 24: 0.8067721             3     48660596       6215769      49055982</span></span>
-<span><span class="co">#&gt; 25: 0.8522640             3     82549103      15683804      84025806</span></span>
-<span><span class="co">#&gt; 26: 0.9971693             3    193613125      74852479     207578746</span></span>
-<span><span class="co">#&gt; 27: 0.7680337             3     71295313      10069046      72002829</span></span>
-<span><span class="co">#&gt; 28: 0.7472448             3     68826316       8438639      69341707</span></span>
-<span><span class="co">#&gt; 29: 0.6789250             3    116537796      18989499     118074803</span></span>
-<span><span class="co">#&gt; 30: 1.0082133             3    137078933      22543675     138920305</span></span>
-<span><span class="co">#&gt; 31: 1.2102064             3    166193829      31402939     169134660</span></span>
-<span><span class="co">#&gt; 32: 0.9721985             3    184425493      33103273     187372862</span></span>
-<span><span class="co">#&gt; 33: 1.2809670             3    180452022      27168526     182485783</span></span>
-<span><span class="co">#&gt; 34: 1.4951592             3    331672128      79057462     340964049</span></span>
-<span><span class="co">#&gt; 35: 0.9727000             3    190733674      20867271     191871774</span></span>
-<span><span class="co">#&gt; 36: 1.2190672             3    464027946      65288155     468598419</span></span>
-<span><span class="co">#&gt;        lr_ult maturity_from loss_proc_se loss_param_se loss_total_se</span></span>
-<span><span class="co">#&gt;         &lt;num&gt;         &lt;num&gt;        &lt;num&gt;         &lt;num&gt;         &lt;num&gt;</span></span>
-<span><span class="co">#&gt;     loss_total_cv       lr_se       lr_cv  lr_ci_lo  lr_ci_hi</span></span>
-<span><span class="co">#&gt;             &lt;num&gt;       &lt;num&gt;       &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:   0.000000000 0.000000000 0.000000000 1.4962059 1.4962059</span></span>
-<span><span class="co">#&gt;  2:   0.005206326 0.007832482 0.005206326 1.4890648 1.5197676</span></span>
-<span><span class="co">#&gt;  3:   0.006350686 0.009282515 0.006350686 1.4434620 1.4798487</span></span>
-<span><span class="co">#&gt;  4:   0.006094956 0.009101530 0.006094956 1.4754501 1.5111275</span></span>
-<span><span class="co">#&gt;  5:   0.008506356 0.012283260 0.008506356 1.4199349 1.4680844</span></span>
-<span><span class="co">#&gt;  6:   0.021203652 0.033384034 0.021203652 1.5090159 1.6398789</span></span>
-<span><span class="co">#&gt;  7:   0.015589069 0.024287890 0.015589069 1.5104044 1.6056112</span></span>
-<span><span class="co">#&gt;  8:   0.034706903 0.051733442 0.034706903 1.3891851 1.5919764</span></span>
-<span><span class="co">#&gt;  9:   0.024302467 0.038997366 0.024302467 1.5282335 1.6811004</span></span>
-<span><span class="co">#&gt; 10:   0.031505794 0.047823272 0.031505794 1.4241880 1.6116518</span></span>
-<span><span class="co">#&gt; 11:   0.043812906 0.058951622 0.043812906 1.2299879 1.4610740</span></span>
-<span><span class="co">#&gt; 12:   0.038454066 0.054489912 0.038454066 1.3102148 1.5238113</span></span>
-<span><span class="co">#&gt; 13:   0.030410429 0.043919190 0.030410429 1.3581347 1.5302947</span></span>
-<span><span class="co">#&gt; 14:   0.047235229 0.065841233 0.047235229 1.2648546 1.5229475</span></span>
-<span><span class="co">#&gt; 15:   0.062631989 0.094644843 0.062631989 1.3256258 1.6966267</span></span>
-<span><span class="co">#&gt; 16:   0.027002070 0.045537165 0.027002070 1.5971812 1.7756836</span></span>
-<span><span class="co">#&gt; 17:   0.037727382 0.052540580 0.037727382 1.2896602 1.4956155</span></span>
-<span><span class="co">#&gt; 18:   0.058062482 0.093582996 0.058062482 1.4283443 1.7951829</span></span>
-<span><span class="co">#&gt; 19:   0.044770192 0.039372453 0.044770192 0.8022659 0.9566031</span></span>
-<span><span class="co">#&gt; 20:   0.070957831 0.066685940 0.070957831 0.8090947 1.0704988</span></span>
-<span><span class="co">#&gt; 21:   0.091003803 0.082156058 0.091003803 0.7417532 1.0637990</span></span>
-<span><span class="co">#&gt; 22:   0.085216939 0.074107704 0.085216939 0.7243874 1.0148843</span></span>
-<span><span class="co">#&gt; 23:   0.159908138 0.128741150 0.159908138 0.5527664 1.0574224</span></span>
-<span><span class="co">#&gt; 24:   0.165932996 0.133870114 0.165932996 0.5443915 1.0691527</span></span>
-<span><span class="co">#&gt; 25:   0.118252920 0.100782707 0.118252920 0.6547335 1.0497945</span></span>
-<span><span class="co">#&gt; 26:   0.063347056 0.063167737 0.063347056 0.8733628 1.1209758</span></span>
-<span><span class="co">#&gt; 27:   0.165542751 0.127142405 0.165542751 0.5188391 1.0172282</span></span>
-<span><span class="co">#&gt; 28:   0.194615447 0.145425384 0.194615447 0.4622163 1.0322733</span></span>
-<span><span class="co">#&gt; 29:   0.169333711 0.114964882 0.169333711 0.4535979 0.9042520</span></span>
-<span><span class="co">#&gt; 30:   0.175966808 0.177412077 0.175966808 0.6604920 1.3559346</span></span>
-<span><span class="co">#&gt; 31:   0.162558873 0.196729788 0.162558873 0.8246231 1.5957897</span></span>
-<span><span class="co">#&gt; 32:   0.185820014 0.180653947 0.185820014 0.6181233 1.3262738</span></span>
-<span><span class="co">#&gt; 33:   0.233059672 0.298541761 0.233059672 0.6958359 1.8660981</span></span>
-<span><span class="co">#&gt; 34:   0.170378531 0.254743029 0.170378531 0.9958720 1.9944464</span></span>
-<span><span class="co">#&gt; 35:   0.332559535 0.323480658 0.332559535 0.3386896 1.6067104</span></span>
-<span><span class="co">#&gt; 36:   0.375910442 0.458260104 0.375910442 0.3208939 2.1172405</span></span>
-<span><span class="co">#&gt;     loss_total_cv       lr_se       lr_cv  lr_ci_lo  lr_ci_hi</span></span>
-<span><span class="co">#&gt;             &lt;num&gt;       &lt;num&gt;       &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratio_sa</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve exposure_ult</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:  surgery 2023-01-01  410248522  410248522          0    274192564</span></span>
+<span><span class="co">#&gt;  2:  surgery 2023-02-01  976330445 1001441303   25110858    665667720</span></span>
+<span><span class="co">#&gt;  3:  surgery 2023-03-01  978486045 1026151243   47665198    702047332</span></span>
+<span><span class="co">#&gt;  4:  surgery 2023-04-01 2029909919 2186771221  156861302   1464399410</span></span>
+<span><span class="co">#&gt;  5:  surgery 2023-05-01  624219436  697669301   73449865    483147255</span></span>
+<span><span class="co">#&gt;  6:  surgery 2023-06-01  802880717  931393934  128513217    591568799</span></span>
+<span><span class="co">#&gt;  7:  surgery 2023-07-01 2539141549 3050990158  511848609   1958263736</span></span>
+<span><span class="co">#&gt;  8:  surgery 2023-08-01  393678329  488218204   94539875    327535560</span></span>
+<span><span class="co">#&gt;  9:  surgery 2023-09-01 1364052542 1751869308  387816766   1091733892</span></span>
+<span><span class="co">#&gt; 10:  surgery 2023-10-01  979266043 1311793843  332527800    864204933</span></span>
+<span><span class="co">#&gt; 11:  surgery 2023-11-01  604685679  848103123  243417444    630311110</span></span>
+<span><span class="co">#&gt; 12:  surgery 2023-12-01 1026345366 1497869029  471523663   1057060867</span></span>
+<span><span class="co">#&gt; 13:  surgery 2024-01-01 1912177598 2901492851  989315253   2009045340</span></span>
+<span><span class="co">#&gt; 14:  surgery 2024-02-01  733902485 1160045952  426143467    832229795</span></span>
+<span><span class="co">#&gt; 15:  surgery 2024-03-01  415459873  686574148  271114275    454345985</span></span>
+<span><span class="co">#&gt; 16:  surgery 2024-04-01 3286053526 5687484014 2401430488   3372494516</span></span>
+<span><span class="co">#&gt; 17:  surgery 2024-05-01 1451731153 2645801838 1194070685   1899849125</span></span>
+<span><span class="co">#&gt; 18:  surgery 2024-06-01  629668308 1209024555  579356247    750125230</span></span>
+<span><span class="co">#&gt; 19:  surgery 2024-07-01 1250954693 2542927190 1291972497   2891548085</span></span>
+<span><span class="co">#&gt; 20:  surgery 2024-08-01  425346694  918120582  492773888    976935246</span></span>
+<span><span class="co">#&gt; 21:  surgery 2024-09-01  278156543  635470028  357313485    703906575</span></span>
+<span><span class="co">#&gt; 22:  surgery 2024-10-01  352070323  856446521  504376198    984833529</span></span>
+<span><span class="co">#&gt; 23:  surgery 2024-11-01   99050501  260916096  161865595    324081360</span></span>
+<span><span class="co">#&gt; 24:  surgery 2024-12-01  103194013  295637296  192443283    366444614</span></span>
+<span><span class="co">#&gt; 25:  surgery 2025-01-01  227089025  710560093  483471068    833732378</span></span>
+<span><span class="co">#&gt; 26:  surgery 2025-02-01  939163074 3276849152 2337686078   3286151352</span></span>
+<span><span class="co">#&gt; 27:  surgery 2025-03-01  112828845  434950057  322121212    566316398</span></span>
+<span><span class="co">#&gt; 28:  surgery 2025-04-01   82472453  356301148  273828695    476819833</span></span>
+<span><span class="co">#&gt; 29:  surgery 2025-05-01  141214851  697290587  556075736   1027051048</span></span>
+<span><span class="co">#&gt; 30:  surgery 2025-06-01  136406102  789468799  653062697    783037474</span></span>
+<span><span class="co">#&gt; 31:  surgery 2025-07-01  149144024 1040451732  891307708    859730812</span></span>
+<span><span class="co">#&gt; 32:  surgery 2025-08-01  116327076 1008356733  892029657   1037192185</span></span>
+<span><span class="co">#&gt; 33:  surgery 2025-09-01   67465470  783000257  715534787    611257142</span></span>
+<span><span class="co">#&gt; 34:  surgery 2025-10-01  121626173 2001214863 1879588690   1338462726</span></span>
+<span><span class="co">#&gt; 35:  surgery 2025-11-01   15716444  576954661  561238217    593147593</span></span>
+<span><span class="co">#&gt; 36:  surgery 2025-12-01    4825085 1246569307 1241744222   1022559927</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve exposure_ult</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt;     ratio_latest ratio_ult maturity_from loss_proc_se loss_param_se</span></span>
+<span><span class="co">#&gt;            &lt;num&gt;     &lt;num&gt;         &lt;num&gt;        &lt;num&gt;         &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:    1.4962059 1.4962059             3            0             0</span></span>
+<span><span class="co">#&gt;  2:    1.5107824 1.5044162             3      2934231       4309793</span></span>
+<span><span class="co">#&gt;  3:    1.4771448 1.4616554             3      3982661       5158162</span></span>
+<span><span class="co">#&gt;  4:    1.5139132 1.4932888             3      6546789      11609585</span></span>
+<span><span class="co">#&gt;  5:    1.4543748 1.4440097             3      4547580       3813039</span></span>
+<span><span class="co">#&gt;  6:    1.5796369 1.5744474             3     17628088       8903464</span></span>
+<span><span class="co">#&gt;  7:    1.5597190 1.5580078             3     35686361      31442590</span></span>
+<span><span class="co">#&gt;  8:    1.4945957 1.4905808             3     16152143       5121110</span></span>
+<span><span class="co">#&gt;  9:    1.6079808 1.6046670             3     37357117      20421919</span></span>
+<span><span class="co">#&gt; 10:    1.5129472 1.5179199             3     37573001      17215247</span></span>
+<span><span class="co">#&gt; 11:    1.3298743 1.3455310             3     35161608      12015326</span></span>
+<span><span class="co">#&gt; 12:    1.3981081 1.4170130             3     53162531      22167720</span></span>
+<span><span class="co">#&gt; 13:    1.4274951 1.4442147             3     76259904      44384184</span></span>
+<span><span class="co">#&gt; 14:    1.3793745 1.3939010             3     51529679      18632983</span></span>
+<span><span class="co">#&gt; 15:    1.4969280 1.5111263             3     41482939      11326747</span></span>
+<span><span class="co">#&gt; 16:    1.6712898 1.6864324             3    120195326      95592928</span></span>
+<span><span class="co">#&gt; 17:    1.3770835 1.3926379             3     88447102      46270702</span></span>
+<span><span class="co">#&gt; 18:    1.5918247 1.6117636             3     66834389      21472291</span></span>
+<span><span class="co">#&gt; 19:    0.8658750 0.8794345             3    104028932      46251465</span></span>
+<span><span class="co">#&gt; 20:    0.9236050 0.9397968             3     62896850      16977280</span></span>
+<span><span class="co">#&gt; 21:    0.8920448 0.9027761             3     56583751      11941938</span></span>
+<span><span class="co">#&gt; 22:    0.8596968 0.8696358             3     71133708      16328611</span></span>
+<span><span class="co">#&gt; 23:    0.7871749 0.8050944             3     41388948       5266012</span></span>
+<span><span class="co">#&gt; 24:    0.7813438 0.8067721             3     48660596       6215769</span></span>
+<span><span class="co">#&gt; 25:    0.8188282 0.8522640             3     82549103      15683804</span></span>
+<span><span class="co">#&gt; 26:    0.9377837 0.9971693             3    193613125      74852479</span></span>
+<span><span class="co">#&gt; 27:    0.7193486 0.7680337             3     71295313      10069046</span></span>
+<span><span class="co">#&gt; 28:    0.6947510 0.7472448             3     68826316       8438639</span></span>
+<span><span class="co">#&gt; 29:    0.6203897 0.6789250             3    116537796      18989499</span></span>
+<span><span class="co">#&gt; 30:    0.8981587 1.0082133             3    137078933      22543675</span></span>
+<span><span class="co">#&gt; 31:    1.0440457 1.2102064             3    166193829      31402939</span></span>
+<span><span class="co">#&gt; 32:    0.8100543 0.9721985             3    184425493      33103273</span></span>
+<span><span class="co">#&gt; 33:    0.9985960 1.2809670             3    180452022      27168526</span></span>
+<span><span class="co">#&gt; 34:    1.0894657 1.4951592             3    331672128      79057462</span></span>
+<span><span class="co">#&gt; 35:    0.4765917 0.9727000             3    190733674      20867271</span></span>
+<span><span class="co">#&gt; 36:    0.1689836 1.2190672             3    464027946      65288155</span></span>
+<span><span class="co">#&gt;     ratio_latest ratio_ult maturity_from loss_proc_se loss_param_se</span></span>
+<span><span class="co">#&gt;            &lt;num&gt;     &lt;num&gt;         &lt;num&gt;        &lt;num&gt;         &lt;num&gt;</span></span>
+<span><span class="co">#&gt;     loss_total_se loss_total_cv    ratio_se    ratio_cv ratio_ci_lo ratio_ci_hi</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:             0   0.000000000 0.000000000 0.000000000   1.4962059   1.4962059</span></span>
+<span><span class="co">#&gt;  2:       5213830   0.005206326 0.007832482 0.005206326   1.4890648   1.5197676</span></span>
+<span><span class="co">#&gt;  3:       6516765   0.006350686 0.009282515 0.006350686   1.4434620   1.4798487</span></span>
+<span><span class="co">#&gt;  4:      13328275   0.006094956 0.009101530 0.006094956   1.4754501   1.5111275</span></span>
+<span><span class="co">#&gt;  5:       5934623   0.008506356 0.012283260 0.008506356   1.4199349   1.4680844</span></span>
+<span><span class="co">#&gt;  6:      19748953   0.021203652 0.033384034 0.021203652   1.5090159   1.6398789</span></span>
+<span><span class="co">#&gt;  7:      47562095   0.015589069 0.024287890 0.015589069   1.5104044   1.6056112</span></span>
+<span><span class="co">#&gt;  8:      16944542   0.034706903 0.051733442 0.034706903   1.3891851   1.5919764</span></span>
+<span><span class="co">#&gt;  9:      42574746   0.024302467 0.038997366 0.024302467   1.5282335   1.6811004</span></span>
+<span><span class="co">#&gt; 10:      41329107   0.031505794 0.047823272 0.031505794   1.4241880   1.6116518</span></span>
+<span><span class="co">#&gt; 11:      37157863   0.043812906 0.058951622 0.043812906   1.2299879   1.4610740</span></span>
+<span><span class="co">#&gt; 12:      57599154   0.038454066 0.054489912 0.038454066   1.3102148   1.5238113</span></span>
+<span><span class="co">#&gt; 13:      88235644   0.030410429 0.043919190 0.030410429   1.3581347   1.5302947</span></span>
+<span><span class="co">#&gt; 14:      54795036   0.047235229 0.065841233 0.047235229   1.2648546   1.5229475</span></span>
+<span><span class="co">#&gt; 15:      43001505   0.062631989 0.094644843 0.062631989   1.3256258   1.6966267</span></span>
+<span><span class="co">#&gt; 16:     153573839   0.027002070 0.045537165 0.027002070   1.5971812   1.7756836</span></span>
+<span><span class="co">#&gt; 17:      99819176   0.037727382 0.052540580 0.037727382   1.2896602   1.4956155</span></span>
+<span><span class="co">#&gt; 18:      70198966   0.058062482 0.093582996 0.058062482   1.4283443   1.7951829</span></span>
+<span><span class="co">#&gt; 19:     113847340   0.044770192 0.039372453 0.044770192   0.8022659   0.9566031</span></span>
+<span><span class="co">#&gt; 20:      65147845   0.070957831 0.066685940 0.070957831   0.8090947   1.0704988</span></span>
+<span><span class="co">#&gt; 21:      57830189   0.091003803 0.082156058 0.091003803   0.7417532   1.0637990</span></span>
+<span><span class="co">#&gt; 22:      72983751   0.085216939 0.074107704 0.085216939   0.7243874   1.0148843</span></span>
+<span><span class="co">#&gt; 23:      41722607   0.159908138 0.128741150 0.159908138   0.5527664   1.0574224</span></span>
+<span><span class="co">#&gt; 24:      49055982   0.165932996 0.133870114 0.165932996   0.5443915   1.0691527</span></span>
+<span><span class="co">#&gt; 25:      84025806   0.118252920 0.100782707 0.118252920   0.6547335   1.0497945</span></span>
+<span><span class="co">#&gt; 26:     207578746   0.063347056 0.063167737 0.063347056   0.8733628   1.1209758</span></span>
+<span><span class="co">#&gt; 27:      72002829   0.165542751 0.127142405 0.165542751   0.5188391   1.0172282</span></span>
+<span><span class="co">#&gt; 28:      69341707   0.194615447 0.145425384 0.194615447   0.4622163   1.0322733</span></span>
+<span><span class="co">#&gt; 29:     118074803   0.169333711 0.114964882 0.169333711   0.4535979   0.9042520</span></span>
+<span><span class="co">#&gt; 30:     138920305   0.175966808 0.177412077 0.175966808   0.6604920   1.3559346</span></span>
+<span><span class="co">#&gt; 31:     169134660   0.162558873 0.196729788 0.162558873   0.8246231   1.5957897</span></span>
+<span><span class="co">#&gt; 32:     187372862   0.185820014 0.180653947 0.185820014   0.6181233   1.3262738</span></span>
+<span><span class="co">#&gt; 33:     182485783   0.233059672 0.298541761 0.233059672   0.6958359   1.8660981</span></span>
+<span><span class="co">#&gt; 34:     340964049   0.170378531 0.254743029 0.170378531   0.9958720   1.9944464</span></span>
+<span><span class="co">#&gt; 35:     191871774   0.332559535 0.323480658 0.332559535   0.3386896   1.6067104</span></span>
+<span><span class="co">#&gt; 36:     468598419   0.375910442 0.458260104 0.375910442   0.3208939   2.1172405</span></span>
+<span><span class="co">#&gt;     loss_total_se loss_total_cv    ratio_se    ratio_cv ratio_ci_lo ratio_ci_hi</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="method-2-exposure-driven-ed">Method 2: Exposure-Driven (<code>"ed"</code>)<a class="anchor" aria-label="anchor" href="#method-2-exposure-driven-ed"></a>
@@ -325,8 +325,8 @@ links.</li>
 <li>Comparing against SA / CL for sanity check.</li>
 </ul>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">lr_ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lr_ed</span>, metric <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">ratio_ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ratio_ed</span>, metric <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="projection_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level2">
@@ -339,9 +339,9 @@ links.</li>
 <p>Behaviour:</p>
 <ul>
 <li>Standard reserving practice. Equivalent to
-<code>fit_cl(tri, target = "loss")</code> for the loss projection, but
-<code><a href="../reference/fit_lr.html">fit_lr()</a></code> additionally projects exposure forward via CL on
-<code>premium</code> and computes the loss-ratio uncertainty via the
+<code>fit_cl(tri, loss = "loss")</code> for the loss projection, but
+<code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> additionally projects exposure forward via CL
+on <code>exposure</code> and computes the loss-ratio uncertainty via the
 delta method.</li>
 <li>Volatile when early
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
@@ -355,36 +355,36 @@ across the full development.</li>
 for documentation.</li>
 </ul>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">lr_cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lr_cl</span>, metric <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">ratio_cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ratio_cl</span>, metric <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="projection_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level2">
 <h2 id="comparison">Comparison<a class="anchor" aria-label="anchor" href="#comparison"></a>
 </h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">lrs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  sa <span class="op">=</span> <span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span>,</span>
-<span>  ed <span class="op">=</span> <span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span>,</span>
-<span>  cl <span class="op">=</span> <span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">ratios</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  sa <span class="op">=</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span>,</span>
+<span>  ed <span class="op">=</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span>,</span>
+<span>  cl <span class="op">=</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Cohort-level summary</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lrs</span><span class="op">$</span><span class="va">sa</span><span class="op">)</span><span class="op">$</span><span class="va">loss_ult</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratios</span><span class="op">$</span><span class="va">sa</span><span class="op">)</span><span class="op">$</span><span class="va">loss_ult</span></span>
 <span><span class="co">#&gt;  [1]  410248522 1001441303 1026151243 2186771221  697669301  931393934</span></span>
 <span><span class="co">#&gt;  [7] 3050990158  488218204 1751869308 1311793843  848103123 1497869029</span></span>
 <span><span class="co">#&gt; [13] 2901492851 1160045952  686574148 5687484014 2645801838 1209024555</span></span>
 <span><span class="co">#&gt; [19] 2542927190  918120582  635470028  856446521  260916096  295637296</span></span>
 <span><span class="co">#&gt; [25]  710560093 3276849152  434950057  356301148  697290587  789468799</span></span>
 <span><span class="co">#&gt; [31] 1040451732 1008356733  783000257 2001214863  576954661 1246569307</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lrs</span><span class="op">$</span><span class="va">ed</span><span class="op">)</span><span class="op">$</span><span class="va">loss_ult</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratios</span><span class="op">$</span><span class="va">ed</span><span class="op">)</span><span class="op">$</span><span class="va">loss_ult</span></span>
 <span><span class="co">#&gt;  [1]  410248522 1001304261 1027365215 2186835972  700124202  924502357</span></span>
 <span><span class="co">#&gt;  [7] 3028986426  488454953 1725804921 1308019740  876716310 1527010394</span></span>
 <span><span class="co">#&gt; [13] 2942802614 1193629493  685046660 5424401591 2740753232 1170293302</span></span>
 <span><span class="co">#&gt; [19] 3461664518 1212435170  870725770 1217843289  398006955  456590846</span></span>
 <span><span class="co">#&gt; [25] 1064623873 4386331021  727050149  616924302 1330756277 1072907077</span></span>
 <span><span class="co">#&gt; [31] 1209357471 1432029264  865239645 1911124852  828091909 1442904476</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lrs</span><span class="op">$</span><span class="va">cl</span><span class="op">)</span><span class="op">$</span><span class="va">loss_ult</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratios</span><span class="op">$</span><span class="va">cl</span><span class="op">)</span><span class="op">$</span><span class="va">loss_ult</span></span>
 <span><span class="co">#&gt;  [1]  410248522 1001441303 1026151243 2186771221  697669301  931393934</span></span>
 <span><span class="co">#&gt;  [7] 3050990158  488218204 1751869308 1311793843  848103123 1497869029</span></span>
 <span><span class="co">#&gt; [13] 2901492851 1160045952  686574148 5687484014 2645801838 1209024555</span></span>
@@ -395,7 +395,7 @@ for documentation.</li>
 <div class="section level2">
 <h2 id="variance-and-confidence-intervals">Variance and confidence intervals<a class="anchor" aria-label="anchor" href="#variance-and-confidence-intervals"></a>
 </h2>
-<p><code><a href="../reference/fit_lr.html">fit_lr()</a></code> reports analytical standard errors for
+<p><code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> reports analytical standard errors for
 <code>L/P</code>. Two variants:</p>
 <ul>
 <li>
@@ -415,128 +415,128 @@ premium uncertainty and loss-premium correlation <code>rho</code>:</li>
 </annotation></semantics></math></p>
 <p>Bootstrap intervals are also available:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">lr_boot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span>, bootstrap <span class="op">=</span> <span class="cn">TRUE</span>, B <span class="op">=</span> <span class="fl">1000</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lr_boot</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve   prem_ult lr_latest</span></span>
-<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:  surgery 2023-01-01  410248522  410248522          0  274192564 1.4962059</span></span>
-<span><span class="co">#&gt;  2:  surgery 2023-02-01  976330445 1001441303   25110858  665667720 1.5107824</span></span>
-<span><span class="co">#&gt;  3:  surgery 2023-03-01  978486045 1026151243   47665198  702047332 1.4771448</span></span>
-<span><span class="co">#&gt;  4:  surgery 2023-04-01 2029909919 2186771221  156861302 1464399410 1.5139132</span></span>
-<span><span class="co">#&gt;  5:  surgery 2023-05-01  624219436  697669301   73449865  483147255 1.4543748</span></span>
-<span><span class="co">#&gt;  6:  surgery 2023-06-01  802880717  931393934  128513217  591568799 1.5796369</span></span>
-<span><span class="co">#&gt;  7:  surgery 2023-07-01 2539141549 3050990158  511848609 1958263736 1.5597190</span></span>
-<span><span class="co">#&gt;  8:  surgery 2023-08-01  393678329  488218204   94539875  327535560 1.4945957</span></span>
-<span><span class="co">#&gt;  9:  surgery 2023-09-01 1364052542 1751869308  387816766 1091733892 1.6079808</span></span>
-<span><span class="co">#&gt; 10:  surgery 2023-10-01  979266043 1311793843  332527800  864204933 1.5129472</span></span>
-<span><span class="co">#&gt; 11:  surgery 2023-11-01  604685679  848103123  243417444  630311110 1.3298743</span></span>
-<span><span class="co">#&gt; 12:  surgery 2023-12-01 1026345366 1497869029  471523663 1057060867 1.3981081</span></span>
-<span><span class="co">#&gt; 13:  surgery 2024-01-01 1912177598 2901492851  989315253 2009045340 1.4274951</span></span>
-<span><span class="co">#&gt; 14:  surgery 2024-02-01  733902485 1160045952  426143467  832229795 1.3793745</span></span>
-<span><span class="co">#&gt; 15:  surgery 2024-03-01  415459873  686574148  271114275  454345985 1.4969280</span></span>
-<span><span class="co">#&gt; 16:  surgery 2024-04-01 3286053526 5687484014 2401430488 3372494516 1.6712898</span></span>
-<span><span class="co">#&gt; 17:  surgery 2024-05-01 1451731153 2645801838 1194070685 1899849125 1.3770835</span></span>
-<span><span class="co">#&gt; 18:  surgery 2024-06-01  629668308 1209024555  579356247  750125230 1.5918247</span></span>
-<span><span class="co">#&gt; 19:  surgery 2024-07-01 1250954693 2542927190 1291972497 2891548085 0.8658750</span></span>
-<span><span class="co">#&gt; 20:  surgery 2024-08-01  425346694  918120582  492773888  976935246 0.9236050</span></span>
-<span><span class="co">#&gt; 21:  surgery 2024-09-01  278156543  635470028  357313485  703906575 0.8920448</span></span>
-<span><span class="co">#&gt; 22:  surgery 2024-10-01  352070323  856446521  504376198  984833529 0.8596968</span></span>
-<span><span class="co">#&gt; 23:  surgery 2024-11-01   99050501  260916096  161865595  324081360 0.7871749</span></span>
-<span><span class="co">#&gt; 24:  surgery 2024-12-01  103194013  295637296  192443283  366444614 0.7813438</span></span>
-<span><span class="co">#&gt; 25:  surgery 2025-01-01  227089025  710560093  483471068  833732378 0.8188282</span></span>
-<span><span class="co">#&gt; 26:  surgery 2025-02-01  939163074 3276849152 2337686078 3286151352 0.9377837</span></span>
-<span><span class="co">#&gt; 27:  surgery 2025-03-01  112828845  434950057  322121212  566316398 0.7193486</span></span>
-<span><span class="co">#&gt; 28:  surgery 2025-04-01   82472453  356301148  273828695  476819833 0.6947510</span></span>
-<span><span class="co">#&gt; 29:  surgery 2025-05-01  141214851  697290587  556075736 1027051048 0.6203897</span></span>
-<span><span class="co">#&gt; 30:  surgery 2025-06-01  136406102  789468799  653062697  783037474 0.8981587</span></span>
-<span><span class="co">#&gt; 31:  surgery 2025-07-01  149144024 1040451732  891307708  859730812 1.0440457</span></span>
-<span><span class="co">#&gt; 32:  surgery 2025-08-01  116327076 1008356733  892029657 1037192185 0.8100543</span></span>
-<span><span class="co">#&gt; 33:  surgery 2025-09-01   67465470  783000257  715534787  611257142 0.9985960</span></span>
-<span><span class="co">#&gt; 34:  surgery 2025-10-01  121626173 2001214863 1879588690 1338462726 1.0894657</span></span>
-<span><span class="co">#&gt; 35:  surgery 2025-11-01   15716444  576954661  561238217  593147593 0.4765917</span></span>
-<span><span class="co">#&gt; 36:  surgery 2025-12-01    4825085 1246569307 1241744222 1022559927 0.1689836</span></span>
-<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve   prem_ult lr_latest</span></span>
-<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt;        lr_ult maturity_from loss_proc_se loss_param_se loss_total_se</span></span>
-<span><span class="co">#&gt;         &lt;num&gt;         &lt;num&gt;        &lt;num&gt;         &lt;num&gt;         &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1: 1.4962059             3            0             0             0</span></span>
-<span><span class="co">#&gt;  2: 1.5044162             3      2727872       4252490       5052223</span></span>
-<span><span class="co">#&gt;  3: 1.4616554             3      3857656       4937453       6265776</span></span>
-<span><span class="co">#&gt;  4: 1.4932888             3      6464023      11046456      12798742</span></span>
-<span><span class="co">#&gt;  5: 1.4440097             3      4414172       3642331       5722892</span></span>
-<span><span class="co">#&gt;  6: 1.5744474             3     18256950       8719253      20232192</span></span>
-<span><span class="co">#&gt;  7: 1.5580078             3     36356039      30599176      47519166</span></span>
-<span><span class="co">#&gt;  8: 1.4905808             3     15446049       5099721      16266148</span></span>
-<span><span class="co">#&gt;  9: 1.6046670             3     37907786      20976255      43324399</span></span>
-<span><span class="co">#&gt; 10: 1.5179199             3     39296776      17261695      42920889</span></span>
-<span><span class="co">#&gt; 11: 1.3455310             3     35909652      12014126      37866111</span></span>
-<span><span class="co">#&gt; 12: 1.4170130             3     51167052      22190005      55771530</span></span>
-<span><span class="co">#&gt; 13: 1.4442147             3     73031711      44428929      85484271</span></span>
-<span><span class="co">#&gt; 14: 1.3939010             3     52947591      18568184      56109044</span></span>
-<span><span class="co">#&gt; 15: 1.5111263             3     41658227      11179304      43132177</span></span>
-<span><span class="co">#&gt; 16: 1.6864324             3    125695833      92684211     156172357</span></span>
-<span><span class="co">#&gt; 17: 1.3926379             3     97706383      44982439     107563735</span></span>
-<span><span class="co">#&gt; 18: 1.6117636             3     65035795      20970332      68333077</span></span>
-<span><span class="co">#&gt; 19: 0.8794345             3    106858449      45060454     115970568</span></span>
-<span><span class="co">#&gt; 20: 0.9397968             3     66935131      16625328      68968930</span></span>
-<span><span class="co">#&gt; 21: 0.9027761             3     55505776      11742732      56734319</span></span>
-<span><span class="co">#&gt; 22: 0.8696358             3     67082777      15817555      68922376</span></span>
-<span><span class="co">#&gt; 23: 0.8050944             3     39061897       5053759      39387464</span></span>
-<span><span class="co">#&gt; 24: 0.8067721             3     49219392       6010050      49584970</span></span>
-<span><span class="co">#&gt; 25: 0.8522640             3     84168707      15344194      85555920</span></span>
-<span><span class="co">#&gt; 26: 0.9971693             3    180111087      73529151     194541871</span></span>
-<span><span class="co">#&gt; 27: 0.7680337             3     72550954       9888792      73221781</span></span>
-<span><span class="co">#&gt; 28: 0.7472448             3     66584376       8314150      67101447</span></span>
-<span><span class="co">#&gt; 29: 0.6789250             3    117591452      18442708     119028917</span></span>
-<span><span class="co">#&gt; 30: 1.0082133             3    137403273      22106226     139170200</span></span>
-<span><span class="co">#&gt; 31: 1.2102064             3    171955351      30424127     174626087</span></span>
-<span><span class="co">#&gt; 32: 0.9721985             3    193891884      31690043     196464555</span></span>
-<span><span class="co">#&gt; 33: 1.2809670             3    184974432      26734919     186896485</span></span>
-<span><span class="co">#&gt; 34: 1.4951592             3    322907580      79529875     332557223</span></span>
-<span><span class="co">#&gt; 35: 0.9727000             3    189748454      20768911     190881700</span></span>
-<span><span class="co">#&gt; 36: 1.2190672             3    457843613      67190912     462747656</span></span>
-<span><span class="co">#&gt;        lr_ult maturity_from loss_proc_se loss_param_se loss_total_se</span></span>
-<span><span class="co">#&gt;         &lt;num&gt;         &lt;num&gt;        &lt;num&gt;         &lt;num&gt;         &lt;num&gt;</span></span>
-<span><span class="co">#&gt;     loss_total_cv       lr_se       lr_cv  lr_ci_lo  lr_ci_hi</span></span>
-<span><span class="co">#&gt;             &lt;num&gt;       &lt;num&gt;       &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:   0.000000000 0.000000000 0.000000000 1.4962059 1.4962059</span></span>
-<span><span class="co">#&gt;  2:   0.005044951 0.007589706 0.005044951 1.4895407 1.5192918</span></span>
-<span><span class="co">#&gt;  3:   0.006106094 0.008925005 0.006106094 1.4441627 1.4791480</span></span>
-<span><span class="co">#&gt;  4:   0.005852803 0.008739925 0.005852803 1.4761589 1.5104187</span></span>
-<span><span class="co">#&gt;  5:   0.008202872 0.011845026 0.008202872 1.4207938 1.4672255</span></span>
-<span><span class="co">#&gt;  6:   0.021722486 0.034200911 0.021722486 1.5074148 1.6414799</span></span>
-<span><span class="co">#&gt;  7:   0.015574998 0.024265968 0.015574998 1.5104474 1.6055682</span></span>
-<span><span class="co">#&gt;  8:   0.033317373 0.049662235 0.033317373 1.3932446 1.5879170</span></span>
-<span><span class="co">#&gt;  9:   0.024730383 0.039684029 0.024730383 1.5268877 1.6824462</span></span>
-<span><span class="co">#&gt; 10:   0.032719233 0.049665174 0.032719233 1.4205779 1.6152618</span></span>
-<span><span class="co">#&gt; 11:   0.044648003 0.060075271 0.044648003 1.2277856 1.4632763</span></span>
-<span><span class="co">#&gt; 12:   0.037233916 0.052760944 0.037233916 1.3136035 1.5204226</span></span>
-<span><span class="co">#&gt; 13:   0.029462168 0.042549697 0.029462168 1.3608188 1.5276106</span></span>
-<span><span class="co">#&gt; 14:   0.048367950 0.067420134 0.048367950 1.2617600 1.5260420</span></span>
-<span><span class="co">#&gt; 15:   0.062822315 0.094932449 0.062822315 1.3250621 1.6971904</span></span>
-<span><span class="co">#&gt; 16:   0.027458953 0.046307668 0.027458953 1.5956710 1.7771938</span></span>
-<span><span class="co">#&gt; 17:   0.040654494 0.056616988 0.040654494 1.2816706 1.5036051</span></span>
-<span><span class="co">#&gt; 18:   0.056519181 0.091095559 0.056519181 1.4332196 1.7903076</span></span>
-<span><span class="co">#&gt; 19:   0.045605147 0.040106740 0.045605147 0.8008267 0.9580423</span></span>
-<span><span class="co">#&gt; 20:   0.075119686 0.070597238 0.075119686 0.8014287 1.0781648</span></span>
-<span><span class="co">#&gt; 21:   0.089279300 0.080599218 0.089279300 0.7448045 1.0607477</span></span>
-<span><span class="co">#&gt; 22:   0.080474816 0.069983783 0.080474816 0.7324701 1.0068015</span></span>
-<span><span class="co">#&gt; 23:   0.150958352 0.121535728 0.150958352 0.5668888 1.0433001</span></span>
-<span><span class="co">#&gt; 24:   0.167722310 0.135313682 0.167722310 0.5415622 1.0719821</span></span>
-<span><span class="co">#&gt; 25:   0.120406312 0.102617966 0.120406312 0.6511365 1.0533915</span></span>
-<span><span class="co">#&gt; 26:   0.059368577 0.059200521 0.059368577 0.8811384 1.1132002</span></span>
-<span><span class="co">#&gt; 27:   0.168345261 0.129294827 0.168345261 0.5146205 1.0214469</span></span>
-<span><span class="co">#&gt; 28:   0.188327901 0.140727047 0.188327901 0.4714249 1.0230648</span></span>
-<span><span class="co">#&gt; 29:   0.170702028 0.115893867 0.170702028 0.4517772 0.9060728</span></span>
-<span><span class="co">#&gt; 30:   0.176283345 0.177731213 0.176283345 0.6598665 1.3565601</span></span>
-<span><span class="co">#&gt; 31:   0.167836797 0.203117167 0.167836797 0.8121041 1.6083087</span></span>
-<span><span class="co">#&gt; 32:   0.194836360 0.189419626 0.194836360 0.6009429 1.3434542</span></span>
-<span><span class="co">#&gt; 33:   0.238692751 0.305757549 0.238692751 0.6816933 1.8802408</span></span>
-<span><span class="co">#&gt; 34:   0.166177670 0.248462072 0.166177670 1.0081825 1.9821359</span></span>
-<span><span class="co">#&gt; 35:   0.330843502 0.321811473 0.330843502 0.3419611 1.6034389</span></span>
-<span><span class="co">#&gt; 36:   0.371216950 0.452538422 0.371216950 0.3321082 2.1060262</span></span>
-<span><span class="co">#&gt;     loss_total_cv       lr_se       lr_cv  lr_ci_lo  lr_ci_hi</span></span>
-<span><span class="co">#&gt;             &lt;num&gt;       &lt;num&gt;       &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">ratio_boot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span>, bootstrap <span class="op">=</span> <span class="cn">TRUE</span>, B <span class="op">=</span> <span class="fl">1000</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratio_boot</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve exposure_ult</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:  surgery 2023-01-01  410248522  410248522          0    274192564</span></span>
+<span><span class="co">#&gt;  2:  surgery 2023-02-01  976330445 1001441303   25110858    665667720</span></span>
+<span><span class="co">#&gt;  3:  surgery 2023-03-01  978486045 1026151243   47665198    702047332</span></span>
+<span><span class="co">#&gt;  4:  surgery 2023-04-01 2029909919 2186771221  156861302   1464399410</span></span>
+<span><span class="co">#&gt;  5:  surgery 2023-05-01  624219436  697669301   73449865    483147255</span></span>
+<span><span class="co">#&gt;  6:  surgery 2023-06-01  802880717  931393934  128513217    591568799</span></span>
+<span><span class="co">#&gt;  7:  surgery 2023-07-01 2539141549 3050990158  511848609   1958263736</span></span>
+<span><span class="co">#&gt;  8:  surgery 2023-08-01  393678329  488218204   94539875    327535560</span></span>
+<span><span class="co">#&gt;  9:  surgery 2023-09-01 1364052542 1751869308  387816766   1091733892</span></span>
+<span><span class="co">#&gt; 10:  surgery 2023-10-01  979266043 1311793843  332527800    864204933</span></span>
+<span><span class="co">#&gt; 11:  surgery 2023-11-01  604685679  848103123  243417444    630311110</span></span>
+<span><span class="co">#&gt; 12:  surgery 2023-12-01 1026345366 1497869029  471523663   1057060867</span></span>
+<span><span class="co">#&gt; 13:  surgery 2024-01-01 1912177598 2901492851  989315253   2009045340</span></span>
+<span><span class="co">#&gt; 14:  surgery 2024-02-01  733902485 1160045952  426143467    832229795</span></span>
+<span><span class="co">#&gt; 15:  surgery 2024-03-01  415459873  686574148  271114275    454345985</span></span>
+<span><span class="co">#&gt; 16:  surgery 2024-04-01 3286053526 5687484014 2401430488   3372494516</span></span>
+<span><span class="co">#&gt; 17:  surgery 2024-05-01 1451731153 2645801838 1194070685   1899849125</span></span>
+<span><span class="co">#&gt; 18:  surgery 2024-06-01  629668308 1209024555  579356247    750125230</span></span>
+<span><span class="co">#&gt; 19:  surgery 2024-07-01 1250954693 2542927190 1291972497   2891548085</span></span>
+<span><span class="co">#&gt; 20:  surgery 2024-08-01  425346694  918120582  492773888    976935246</span></span>
+<span><span class="co">#&gt; 21:  surgery 2024-09-01  278156543  635470028  357313485    703906575</span></span>
+<span><span class="co">#&gt; 22:  surgery 2024-10-01  352070323  856446521  504376198    984833529</span></span>
+<span><span class="co">#&gt; 23:  surgery 2024-11-01   99050501  260916096  161865595    324081360</span></span>
+<span><span class="co">#&gt; 24:  surgery 2024-12-01  103194013  295637296  192443283    366444614</span></span>
+<span><span class="co">#&gt; 25:  surgery 2025-01-01  227089025  710560093  483471068    833732378</span></span>
+<span><span class="co">#&gt; 26:  surgery 2025-02-01  939163074 3276849152 2337686078   3286151352</span></span>
+<span><span class="co">#&gt; 27:  surgery 2025-03-01  112828845  434950057  322121212    566316398</span></span>
+<span><span class="co">#&gt; 28:  surgery 2025-04-01   82472453  356301148  273828695    476819833</span></span>
+<span><span class="co">#&gt; 29:  surgery 2025-05-01  141214851  697290587  556075736   1027051048</span></span>
+<span><span class="co">#&gt; 30:  surgery 2025-06-01  136406102  789468799  653062697    783037474</span></span>
+<span><span class="co">#&gt; 31:  surgery 2025-07-01  149144024 1040451732  891307708    859730812</span></span>
+<span><span class="co">#&gt; 32:  surgery 2025-08-01  116327076 1008356733  892029657   1037192185</span></span>
+<span><span class="co">#&gt; 33:  surgery 2025-09-01   67465470  783000257  715534787    611257142</span></span>
+<span><span class="co">#&gt; 34:  surgery 2025-10-01  121626173 2001214863 1879588690   1338462726</span></span>
+<span><span class="co">#&gt; 35:  surgery 2025-11-01   15716444  576954661  561238217    593147593</span></span>
+<span><span class="co">#&gt; 36:  surgery 2025-12-01    4825085 1246569307 1241744222   1022559927</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve exposure_ult</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt;     ratio_latest ratio_ult maturity_from loss_proc_se loss_param_se</span></span>
+<span><span class="co">#&gt;            &lt;num&gt;     &lt;num&gt;         &lt;num&gt;        &lt;num&gt;         &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:    1.4962059 1.4962059             3            0             0</span></span>
+<span><span class="co">#&gt;  2:    1.5107824 1.5044162             3      2727872       4252490</span></span>
+<span><span class="co">#&gt;  3:    1.4771448 1.4616554             3      3857656       4937453</span></span>
+<span><span class="co">#&gt;  4:    1.5139132 1.4932888             3      6464023      11046456</span></span>
+<span><span class="co">#&gt;  5:    1.4543748 1.4440097             3      4414172       3642331</span></span>
+<span><span class="co">#&gt;  6:    1.5796369 1.5744474             3     18256950       8719253</span></span>
+<span><span class="co">#&gt;  7:    1.5597190 1.5580078             3     36356039      30599176</span></span>
+<span><span class="co">#&gt;  8:    1.4945957 1.4905808             3     15446049       5099721</span></span>
+<span><span class="co">#&gt;  9:    1.6079808 1.6046670             3     37907786      20976255</span></span>
+<span><span class="co">#&gt; 10:    1.5129472 1.5179199             3     39296776      17261695</span></span>
+<span><span class="co">#&gt; 11:    1.3298743 1.3455310             3     35909652      12014126</span></span>
+<span><span class="co">#&gt; 12:    1.3981081 1.4170130             3     51167052      22190005</span></span>
+<span><span class="co">#&gt; 13:    1.4274951 1.4442147             3     73031711      44428929</span></span>
+<span><span class="co">#&gt; 14:    1.3793745 1.3939010             3     52947591      18568184</span></span>
+<span><span class="co">#&gt; 15:    1.4969280 1.5111263             3     41658227      11179304</span></span>
+<span><span class="co">#&gt; 16:    1.6712898 1.6864324             3    125695833      92684211</span></span>
+<span><span class="co">#&gt; 17:    1.3770835 1.3926379             3     97706383      44982439</span></span>
+<span><span class="co">#&gt; 18:    1.5918247 1.6117636             3     65035795      20970332</span></span>
+<span><span class="co">#&gt; 19:    0.8658750 0.8794345             3    106858449      45060454</span></span>
+<span><span class="co">#&gt; 20:    0.9236050 0.9397968             3     66935131      16625328</span></span>
+<span><span class="co">#&gt; 21:    0.8920448 0.9027761             3     55505776      11742732</span></span>
+<span><span class="co">#&gt; 22:    0.8596968 0.8696358             3     67082777      15817555</span></span>
+<span><span class="co">#&gt; 23:    0.7871749 0.8050944             3     39061897       5053759</span></span>
+<span><span class="co">#&gt; 24:    0.7813438 0.8067721             3     49219392       6010050</span></span>
+<span><span class="co">#&gt; 25:    0.8188282 0.8522640             3     84168707      15344194</span></span>
+<span><span class="co">#&gt; 26:    0.9377837 0.9971693             3    180111087      73529151</span></span>
+<span><span class="co">#&gt; 27:    0.7193486 0.7680337             3     72550954       9888792</span></span>
+<span><span class="co">#&gt; 28:    0.6947510 0.7472448             3     66584376       8314150</span></span>
+<span><span class="co">#&gt; 29:    0.6203897 0.6789250             3    117591452      18442708</span></span>
+<span><span class="co">#&gt; 30:    0.8981587 1.0082133             3    137403273      22106226</span></span>
+<span><span class="co">#&gt; 31:    1.0440457 1.2102064             3    171955351      30424127</span></span>
+<span><span class="co">#&gt; 32:    0.8100543 0.9721985             3    193891884      31690043</span></span>
+<span><span class="co">#&gt; 33:    0.9985960 1.2809670             3    184974432      26734919</span></span>
+<span><span class="co">#&gt; 34:    1.0894657 1.4951592             3    322907580      79529875</span></span>
+<span><span class="co">#&gt; 35:    0.4765917 0.9727000             3    189748454      20768911</span></span>
+<span><span class="co">#&gt; 36:    0.1689836 1.2190672             3    457843613      67190912</span></span>
+<span><span class="co">#&gt;     ratio_latest ratio_ult maturity_from loss_proc_se loss_param_se</span></span>
+<span><span class="co">#&gt;            &lt;num&gt;     &lt;num&gt;         &lt;num&gt;        &lt;num&gt;         &lt;num&gt;</span></span>
+<span><span class="co">#&gt;     loss_total_se loss_total_cv    ratio_se    ratio_cv ratio_ci_lo ratio_ci_hi</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:             0   0.000000000 0.000000000 0.000000000   1.4962059   1.4962059</span></span>
+<span><span class="co">#&gt;  2:       5052223   0.005044951 0.007589706 0.005044951   1.4895407   1.5192918</span></span>
+<span><span class="co">#&gt;  3:       6265776   0.006106094 0.008925005 0.006106094   1.4441627   1.4791480</span></span>
+<span><span class="co">#&gt;  4:      12798742   0.005852803 0.008739925 0.005852803   1.4761589   1.5104187</span></span>
+<span><span class="co">#&gt;  5:       5722892   0.008202872 0.011845026 0.008202872   1.4207938   1.4672255</span></span>
+<span><span class="co">#&gt;  6:      20232192   0.021722486 0.034200911 0.021722486   1.5074148   1.6414799</span></span>
+<span><span class="co">#&gt;  7:      47519166   0.015574998 0.024265968 0.015574998   1.5104474   1.6055682</span></span>
+<span><span class="co">#&gt;  8:      16266148   0.033317373 0.049662235 0.033317373   1.3932446   1.5879170</span></span>
+<span><span class="co">#&gt;  9:      43324399   0.024730383 0.039684029 0.024730383   1.5268877   1.6824462</span></span>
+<span><span class="co">#&gt; 10:      42920889   0.032719233 0.049665174 0.032719233   1.4205779   1.6152618</span></span>
+<span><span class="co">#&gt; 11:      37866111   0.044648003 0.060075271 0.044648003   1.2277856   1.4632763</span></span>
+<span><span class="co">#&gt; 12:      55771530   0.037233916 0.052760944 0.037233916   1.3136035   1.5204226</span></span>
+<span><span class="co">#&gt; 13:      85484271   0.029462168 0.042549697 0.029462168   1.3608188   1.5276106</span></span>
+<span><span class="co">#&gt; 14:      56109044   0.048367950 0.067420134 0.048367950   1.2617600   1.5260420</span></span>
+<span><span class="co">#&gt; 15:      43132177   0.062822315 0.094932449 0.062822315   1.3250621   1.6971904</span></span>
+<span><span class="co">#&gt; 16:     156172357   0.027458953 0.046307668 0.027458953   1.5956710   1.7771938</span></span>
+<span><span class="co">#&gt; 17:     107563735   0.040654494 0.056616988 0.040654494   1.2816706   1.5036051</span></span>
+<span><span class="co">#&gt; 18:      68333077   0.056519181 0.091095559 0.056519181   1.4332196   1.7903076</span></span>
+<span><span class="co">#&gt; 19:     115970568   0.045605147 0.040106740 0.045605147   0.8008267   0.9580423</span></span>
+<span><span class="co">#&gt; 20:      68968930   0.075119686 0.070597238 0.075119686   0.8014287   1.0781648</span></span>
+<span><span class="co">#&gt; 21:      56734319   0.089279300 0.080599218 0.089279300   0.7448045   1.0607477</span></span>
+<span><span class="co">#&gt; 22:      68922376   0.080474816 0.069983783 0.080474816   0.7324701   1.0068015</span></span>
+<span><span class="co">#&gt; 23:      39387464   0.150958352 0.121535728 0.150958352   0.5668888   1.0433001</span></span>
+<span><span class="co">#&gt; 24:      49584970   0.167722310 0.135313682 0.167722310   0.5415622   1.0719821</span></span>
+<span><span class="co">#&gt; 25:      85555920   0.120406312 0.102617966 0.120406312   0.6511365   1.0533915</span></span>
+<span><span class="co">#&gt; 26:     194541871   0.059368577 0.059200521 0.059368577   0.8811384   1.1132002</span></span>
+<span><span class="co">#&gt; 27:      73221781   0.168345261 0.129294827 0.168345261   0.5146205   1.0214469</span></span>
+<span><span class="co">#&gt; 28:      67101447   0.188327901 0.140727047 0.188327901   0.4714249   1.0230648</span></span>
+<span><span class="co">#&gt; 29:     119028917   0.170702028 0.115893867 0.170702028   0.4517772   0.9060728</span></span>
+<span><span class="co">#&gt; 30:     139170200   0.176283345 0.177731213 0.176283345   0.6598665   1.3565601</span></span>
+<span><span class="co">#&gt; 31:     174626087   0.167836797 0.203117167 0.167836797   0.8121041   1.6083087</span></span>
+<span><span class="co">#&gt; 32:     196464555   0.194836360 0.189419626 0.194836360   0.6009429   1.3434542</span></span>
+<span><span class="co">#&gt; 33:     186896485   0.238692751 0.305757549 0.238692751   0.6816933   1.8802408</span></span>
+<span><span class="co">#&gt; 34:     332557223   0.166177670 0.248462072 0.166177670   1.0081825   1.9821359</span></span>
+<span><span class="co">#&gt; 35:     190881700   0.330843502 0.321811473 0.330843502   0.3419611   1.6034389</span></span>
+<span><span class="co">#&gt; 36:     462747656   0.371216950 0.452538422 0.371216950   0.3321082   2.1060262</span></span>
+<span><span class="co">#&gt;     loss_total_se loss_total_cv    ratio_se    ratio_cv ratio_ci_lo ratio_ci_hi</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="choosing-a-method">Choosing a method<a class="anchor" aria-label="anchor" href="#choosing-a-method"></a>
@@ -550,7 +550,7 @@ regions becomes redundant.</p>
 Pick "cl" or "ed" only as special cases:
   ├── All cohorts are already past maturity
   │     → "cl"  (no ED region, so SA reduces to CL)
-  └── Loss development is unstable across all dev and exposure (rp) is
+  └── Loss development is unstable across all dev and exposure is
       the more reliable signal
         → "ed"  (CL region is better served by exposure)</code></pre>
 <p>In practice: <strong>start with <code>"sa"</code></strong> (the
@@ -564,7 +564,7 @@ diverge, inspect maturity detection and the underlying ATA factors.</p>
 <p>For <code>method = "sa"</code> the maturity point
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>m</mi><mi>g</mi></msub><annotation encoding="application/x-tex">m_g</annotation></semantics></math>
 determines where the projection switches from ED to CL. By default
-<code><a href="../reference/fit_lr.html">fit_lr()</a></code> / <code><a href="../reference/fit_loss.html">fit_loss()</a></code> use
+<code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> / <code><a href="../reference/fit_loss.html">fit_loss()</a></code> use
 <code>maturity = "auto"</code>, which calls
 <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> internally with default thresholds. Other
 forms:</p>

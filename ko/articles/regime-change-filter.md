@@ -19,8 +19,8 @@ The natural fix is asymmetric:
 - **Post-maturity (CL region):** diagonal cut — keep only the recent `N`
   calendar diagonals.
 
-`loss_regime` (and its premium-side sibling `prem_regime`) implements
-that split.
+`loss_regime` (and its exposure-side sibling `exposure_regime`)
+implements that split.
 
 ## Two-axis asymmetry
 
@@ -63,17 +63,17 @@ detect_regime(tri, treatment = "segment_wise")
 
 ## API
 
-[`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
 takes two role-specific regime arguments — `loss_regime` (loss-side
-filter) and `prem_regime` (premium-side filter; defaults to
+filter) and `exposure_regime` (exposure-side filter; defaults to
 `loss_regime`).
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
 /
-[`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md)
+[`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
 take a single `regime` argument.
 [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
-mirrors `fit_lr` with `loss_regime` / `prem_regime`. All four accept the
-same input types:
+mirrors `fit_ratio` with `loss_regime` / `exposure_regime`. All four
+accept the same input types:
 
 | Input | Behaviour |
 |----|----|
@@ -96,27 +96,27 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 # Manual change date via regime_at() — wrap a literal date in a Regime
-fit_lr(tri_sur, method = "sa", recent = 18L,
-       loss_regime = regime_at(change = "2024-07-01"))
+fit_ratio(tri_sur, method = "sa", recent = 18L,
+          loss_regime = regime_at(change = "2024-07-01"))
 
 # Regime object from detect_regime() directly
 reg <- detect_regime(tri_sur)
-fit_lr(tri_sur, method = "sa", recent = 18L, loss_regime = reg)
+fit_ratio(tri_sur, method = "sa", recent = 18L, loss_regime = reg)
 
 # "auto" sentinel — detect_regime() is run internally
-fit_lr(tri_sur, method = "sa", recent = 18L, loss_regime = "auto")
+fit_ratio(tri_sur, method = "sa", recent = 18L, loss_regime = "auto")
 
 # Closure — defers detection until the fit sees the (filtered) triangle
-fit_lr(tri_sur, method = "sa", recent = 18L,
-       loss_regime = function(tri) detect_regime(tri))
+fit_ratio(tri_sur, method = "sa", recent = 18L,
+          loss_regime = function(tri) detect_regime(tri))
 ```
 
-In simple modes (`fit_lr(method ∈ {"ed","cl"})`) the same argument acts
-as a plain cohort cut. The workers (`fit_ata`, `fit_ed`, `fit_cl`,
+In simple modes (`fit_ratio(method ∈ {"ed","cl"})`) the same argument
+acts as a plain cohort cut. The workers (`fit_ata`, `fit_ed`, `fit_cl`,
 `fit_intensity`) expose the same 4-type `regime` argument (`NULL` /
 `Regime` / `"auto"` / closure). Wrap a domain-knowledge date with
 `regime_at(change = "2024-07-01")` to construct a `Regime` without
@@ -124,7 +124,7 @@ running detection.
 
 ## SA-mode hybrid behaviour
 
-The hybrid split activates only for `fit_lr(method = "sa")` with both
+The hybrid split activates only for `fit_ratio(method = "sa")` with both
 `loss_regime` and `recent`:
 
 - dev ≤ $`k^*`$ — ED region: post-change cohorts only.
@@ -137,7 +137,7 @@ destabilise $`k^*`$), then the hybrid filter is applied to the actual
 fit using the fixed $`k^*`$.
 
 `plot_triangle(view = "usage")` visualises which cells each filter
-configuration feeds to `fit_lr`:
+configuration feeds to `fit_ratio`:
 
 ``` r
 
@@ -221,11 +221,11 @@ fits <- lapply(unique(exp$coverage), function(g) {
     cohort   = "uy_m",
     calendar = "cy_m",
     loss     = "incr_loss",
-    prem     = "incr_prem"
+    exposure = "incr_exposure"
   )
   reg_g <- detect_regime(tri_g)
-  fit_lr(tri_g, method = "sa", recent = 18L,
-         loss_regime = reg_g)
+  fit_ratio(tri_g, method = "sa", recent = 18L,
+            loss_regime = reg_g)
 })
 ```
 
@@ -241,7 +241,7 @@ threshold is `n_post ≳ 6`. Below that, prefer `recent` alone, or wait
 for credibility-weighted blending of pre- and post-change factors
 (planned).
 
-Note also that `loss_regime` / `prem_regime` only filter the data
+Note also that `loss_regime` / `exposure_regime` only filter the data
 feeding link factor estimation. Once the factors are fixed, all cohorts
 share them, so pre-change ultimates inherit the post-change dynamics.
 
@@ -249,7 +249,7 @@ share them, so pre-change ultimates inherit the post-change dynamics.
 
 - [`vignette("projection")`](https://seokhoonj.github.io/lossratio/ko/articles/projection.md)
   —
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
   and the `"sa"`, `"ed"`, `"cl"` methods.
 - [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/ko/articles/backtest.md)
   — diagnosing the impact of `recent` and `loss_regime`.
@@ -257,7 +257,7 @@ share them, so pre-change ultimates inherit the post-change dynamics.
   —
   [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
   reference.
-- [`?fit_lr`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
+- [`?fit_ratio`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md),
   [`?fit_ata`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
   [`?fit_ed`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md),
   [`?detect_regime`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md),

@@ -14,6 +14,8 @@ articles:
   convergence: convergence.html
   articles/getting-started-ko: getting-started-ko.html
   getting-started: getting-started.html
+  articles/methodology-ko: methodology-ko.html
+  methodology: methodology.html
   articles/projection-ko: projection-ko.html
   projection: projection.html
   articles/regime-change-filter-ko: regime-change-filter-ko.html
@@ -22,7 +24,7 @@ articles:
   regime: regime.html
   articles/triangle-link-and-maturity-ko: triangle-link-and-maturity-ko.html
   triangle-link-and-maturity: triangle-link-and-maturity.html
-last_built: 2026-05-17T12:22Z
+last_built: 2026-05-18T08:51Z
 urls:
   reference: https://seokhoonj.github.io/lossratio/ko/reference
   article: https://seokhoonj.github.io/lossratio/ko/articles

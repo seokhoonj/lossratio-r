@@ -4,19 +4,20 @@ Visualise a `Triangle` object as a triangle-style table. Cells are
 arranged by period and dev dimensions, and each cell displays the
 selected metric.
 
-For ratio metrics (`lr`, `incr_lr`), labels can show either the ratio
-alone or the ratio together with the associated loss / risk premium
-amounts.
+For ratio metrics (`ratio`, `incr_ratio`), labels can show either the
+ratio alone or the ratio together with the associated loss / risk
+premium amounts.
 
-For amount metrics (`loss`, `incr_loss`, `prem`, `incr_prem`, `margin`,
-`incr_margin`), labels show the selected amount only.
+For amount metrics (`loss`, `incr_loss`, `exposure`, `incr_exposure`,
+`margin`, `incr_margin`), labels show the selected amount only.
 
-For proportion metrics (`loss_share`, `incr_loss_share`, `prem_share`,
-`incr_prem_share`), labels are displayed as percentages.
+For proportion metrics (`loss_share`, `incr_loss_share`,
+`exposure_share`, `incr_exposure_share`), labels are displayed as
+percentages.
 
-The loss ratio is defined as: \$\$lr = loss / prem\$\$
+The loss ratio is defined as: \$\$ratio = loss / exposure\$\$
 
-where `prem` denotes risk premium rather than written prem.
+where `exposure` denotes risk premium rather than written premium.
 
 ## Usage
 
@@ -25,7 +26,7 @@ where `prem` denotes risk premium rather than written prem.
 plot_triangle(
   x,
   view = c("value", "usage"),
-  metric = "lr",
+  metric = "ratio",
   label_style = c("value", "detail"),
   label_size = NULL,
   amount_divisor = "auto",
@@ -60,10 +61,10 @@ plot_triangle(
 
 - metric:
 
-  A single metric to plot. Must be one of: `"lr"`, `"incr_lr"`,
-  `"loss"`, `"incr_loss"`, `"prem"`, `"incr_prem"`, `"margin"`,
-  `"incr_margin"`, `"loss_share"`, `"incr_loss_share"`, `"prem_share"`,
-  or `"incr_prem_share"`.
+  A single metric to plot. Must be one of: `"ratio"`, `"incr_ratio"`,
+  `"loss"`, `"incr_loss"`, `"exposure"`, `"incr_exposure"`, `"margin"`,
+  `"incr_margin"`, `"loss_share"`, `"incr_loss_share"`,
+  `"exposure_share"`, or `"incr_exposure_share"`.
 
 - label_style:
 
@@ -75,8 +76,8 @@ plot_triangle(
 
   "detail"
 
-  :   For `lr` / `incr_lr`, show the ratio in percent and, on the next
-      line, the associated loss / prem amounts. For amount and
+  :   For `ratio` / `incr_ratio`, show the ratio in percent and, on the
+      next line, the associated loss / exposure amounts. For amount and
       proportion metrics, this falls back to `"value"`.
 
 - label_size:
@@ -91,8 +92,8 @@ plot_triangle(
 - amount_divisor:
 
   Numeric scaling factor applied to amount variables (e.g., `loss`,
-  `incr_loss`, `prem`, `incr_prem`, `margin`, `incr_margin`) before
-  plotting. Default `"auto"` picks the largest divisor in
+  `incr_loss`, `exposure`, `incr_exposure`, `margin`, `incr_margin`)
+  before plotting. Default `"auto"` picks the largest divisor in
   `{1, 1e3, 1e6, 1e7, 1e8, 1e9}` such that the median displayed value is
   still at least `1`, minimising label digit count.
 
@@ -139,15 +140,15 @@ d <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 plot_triangle(d)
-plot_triangle(d, metric = "lr")
+plot_triangle(d, metric = "ratio")
 plot_triangle(d, metric = "loss")
-plot_triangle(d, metric = "prem")
+plot_triangle(d, metric = "exposure")
 plot_triangle(d, metric = "loss_share")
-plot_triangle(d, metric = "prem_share")
+plot_triangle(d, metric = "exposure_share")
 plot_triangle(d, label_style = "value")
 plot_triangle(d, label_style = "detail")
 } # }

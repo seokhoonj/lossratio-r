@@ -1,9 +1,9 @@
 # Plot the Convergence diagnostic
 
-Four-panel diagnostic showing the LR backtest path and each stability
-metric vs. its threshold:
+Four-panel diagnostic showing the loss ratio backtest path and each
+stability metric vs. its threshold:
 
-- Top: `lr` (the portfolio LR projection at each valuation).
+- Top: `ratio` (the portfolio LR projection at each valuation).
 
 - Then for each of `drift_window`, `drift_tail`, `|slope|`,
   `dispersion`: the metric over `v` with a dashed horizontal line at the

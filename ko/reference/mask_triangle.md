@@ -39,7 +39,7 @@ if (FALSE) { # \dontrun{
 data(experience)
 tri <- as_triangle(experience, groups = "coverage",
                       cohort = "uy_m", calendar = "cy_m",
-                      loss = "incr_loss", prem = "incr_prem")
+                      loss = "incr_loss", exposure = "incr_exposure")
 
 # Inspect what the analyst at a 6-month historical cutoff would see
 tri_masked <- mask_triangle(tri, holdout = 6L)
@@ -47,6 +47,6 @@ plot_triangle(tri_masked)
 
 # Use same masked tri to detect regime + fit
 r   <- detect_regime(tri_masked)
-fit <- fit_lr(tri_masked, loss_regime = r)
+fit <- fit_ratio(tri_masked, loss_regime = r)
 } # }
 ```

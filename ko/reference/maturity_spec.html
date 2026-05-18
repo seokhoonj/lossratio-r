@@ -4,7 +4,7 @@ Returns a closure that the consumer (fit_* or backtest()) invokes
 on its own internal triangle. The point is conditional /
 deferred detection – the value of $k^*$ depends on which cells the
 caller decides to expose:
-In fit_lr() / fit_loss(), the spec is invoked on the full
+In fit_ratio() / fit_loss(), the spec is invoked on the full
 triangle the user passed in.
 In backtest(), the spec is invoked on the masked triangle of
 each holdout fold, never on the full triangle. Held-out
@@ -24,7 +24,7 @@ Returns a closure that the consumer (fit_* or backtest()) invokes
 on its own internal triangle. The point is conditional /
 deferred detection – the value of $k^*$ depends on which cells the
 caller decides to expose:
-In fit_lr() / fit_loss(), the spec is invoked on the full
+In fit_ratio() / fit_loss(), the spec is invoked on the full
 triangle the user passed in.
 In backtest(), the spec is invoked on the masked triangle of
 each holdout fold, never on the full triangle. Held-out
@@ -102,7 +102,7 @@ fixed value tested across folds."><meta property="og:image" content="https://seo
 Returns a closure that the consumer (fit_* or <code><a href="backtest.html">backtest()</a></code>) invokes
 on its own <em>internal</em> triangle. The point is <strong>conditional /
 deferred</strong> detection – the value of $k^*$ depends on which cells the
-caller decides to expose:</p><ul><li><p>In <code><a href="fit_lr.html">fit_lr()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code>, the spec is invoked on the <em>full</em>
+caller decides to expose:</p><ul><li><p>In <code><a href="fit_ratio.html">fit_ratio()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code>, the spec is invoked on the <em>full</em>
 triangle the user passed in.</p></li>
 <li><p>In <code><a href="backtest.html">backtest()</a></code>, <strong>the spec is invoked on the masked triangle of
 each holdout fold</strong>, <em>never</em> on the full triangle. Held-out
@@ -129,7 +129,7 @@ fixed value tested across folds.</p>
 
 <dl><dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>kwargs passed verbatim to <code><a href="detect_maturity.html">detect_maturity()</a></code> when the
-spec is invoked (e.g. <code>target</code>, <code>groups</code>, <code>min_run</code>, <code>max_cv</code>,
+spec is invoked (e.g. <code>loss</code>, <code>groups</code>, <code>min_run</code>, <code>max_cv</code>,
 <code>max_rse</code>, <code>min_valid_ratio</code>, <code>min_n_valid</code>).</p></dd>
 
 </dl></div>
@@ -151,8 +151,8 @@ training triangle.</p>
 <span class="r-in"><span><span class="co"># Capture detection arguments, defer execution until fit time.</span></span></span>
 <span class="r-in"><span><span class="va">spec</span> <span class="op">&lt;-</span> <span class="fu">maturity_spec</span><span class="op">(</span>min_run <span class="op">=</span> <span class="fl">2</span>, max_cv <span class="op">=</span> <span class="fl">0.04</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># In fit_lr(): closure is invoked on the user's `tri`.</span></span></span>
-<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, maturity <span class="op">=</span> <span class="fu">maturity_spec</span><span class="op">(</span>min_run <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># In fit_ratio(): closure is invoked on the user's `tri`.</span></span></span>
+<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, maturity <span class="op">=</span> <span class="fu">maturity_spec</span><span class="op">(</span>min_run <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># In backtest(): closure is invoked on the *masked* triangle of</span></span></span>
 <span class="r-in"><span><span class="co"># each holdout fold, so detected k* never peeks at held-out cells.</span></span></span>

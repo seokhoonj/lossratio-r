@@ -26,7 +26,7 @@ Summary statistics are computed from
 # S3 method for class 'Triangle'
 plot(
   x,
-  metric = "lr",
+  metric = "ratio",
   summary = FALSE,
   summary_min_n = 5L,
   amount_divisor = "auto",
@@ -44,17 +44,17 @@ plot(
 
 - metric:
 
-  A single metric to plot. Must be one of: `"lr"`, `"incr_lr"`,
-  `"loss"`, `"incr_loss"`, `"prem"`, `"incr_prem"`, `"margin"`,
-  `"incr_margin"`, `"loss_share"`, `"incr_loss_share"`, `"prem_share"`,
-  or `"incr_prem_share"`.
+  A single metric to plot. Must be one of: `"ratio"`, `"incr_ratio"`,
+  `"loss"`, `"incr_loss"`, `"exposure"`, `"incr_exposure"`, `"margin"`,
+  `"incr_margin"`, `"loss_share"`, `"incr_loss_share"`,
+  `"exposure_share"`, or `"incr_exposure_share"`.
 
 - summary:
 
   Logical. If `FALSE` (default), shows raw cohort trajectories. If
   `TRUE`, shows grey cohort trajectories with overlaid summary lines
   (mean, median, weighted mean). Summary overlay is supported only for
-  `"lr"` and `"incr_lr"`, and only when the x-axis variable is a
+  `"ratio"` and `"incr_ratio"`, and only when the x-axis variable is a
   development-period variable (for example, `dev_m`, `dev_q`, `dev_h`,
   `dev_y`).
 
@@ -97,16 +97,17 @@ The x-axis uses the development variable stored in `attr(x, "dev")`.
 Cohort lines are grouped by the period variable stored in
 `attr(x, "cohort")`, and facets are created from `attr(x, "groups")`.
 
-The cumulative loss ratio is defined here as: \$\$lr = loss / prem\$\$
+The cumulative loss ratio is defined here as: \$\$ratio = loss /
+exposure\$\$
 
 For long-term health insurance applications, risk premium is commonly
-used as the `prem` measure.
+used as the `exposure` measure.
 
 The weighted mean is defined as:
 
-- `lr_wt = sum(loss) / sum(prem)`
+- `ratio_wt = sum(loss) / sum(exposure)`
 
-- `incr_lr_wt = sum(incr_loss) / sum(incr_prem)`
+- `incr_ratio_wt = sum(incr_loss) / sum(incr_exposure)`
 
 Ratio and proportion metrics are plotted on the original scale and
 displayed as percentages via y-axis labels. Amount metrics are plotted

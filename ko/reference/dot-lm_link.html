@@ -7,7 +7,7 @@ Weights are proportional to \(w_{i,k} / C_{i,k}^{2 - \alpha}\), where
 This corresponds to Mack's variance assumption
 \(\mathrm{Var}(C_{i,k+1} \mid C_{i,k}) \propto C_{i,k}^{\alpha}\).
 When only one observation is available for a link, the factor is computed
-directly as target_to / target_from and standard errors are set to NA.
+directly as loss_to / loss_from and standard errors are set to NA.
 Near-zero values of f_se and sigma (below tol) are set to zero to
 avoid numerical noise from essentially perfect fits."><meta property="og:description" content="Internal helper that fits one no-intercept weighted linear model per
 age-to-age link:
@@ -17,7 +17,7 @@ Weights are proportional to \(w_{i,k} / C_{i,k}^{2 - \alpha}\), where
 This corresponds to Mack's variance assumption
 \(\mathrm{Var}(C_{i,k+1} \mid C_{i,k}) \propto C_{i,k}^{\alpha}\).
 When only one observation is available for a link, the factor is computed
-directly as target_to / target_from and standard errors are set to NA.
+directly as loss_to / loss_from and standard errors are set to NA.
 Near-zero values of f_se and sigma (below tol) are set to zero to
 avoid numerical noise from essentially perfect fits."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
@@ -86,7 +86,7 @@ age-to-age link:</p>
 This corresponds to Mack's variance assumption
 \(\mathrm{Var}(C_{i,k+1} \mid C_{i,k}) \propto C_{i,k}^{\alpha}\).</p>
 <p>When only one observation is available for a link, the factor is computed
-directly as <code>target_to / target_from</code> and standard errors are set to <code>NA</code>.</p>
+directly as <code>loss_to / loss_from</code> and standard errors are set to <code>NA</code>.</p>
 <p>Near-zero values of <code>f_se</code> and <code>sigma</code> (below <code>tol</code>) are set to zero to
 avoid numerical noise from essentially perfect fits.</p>
     </div>
@@ -117,8 +117,8 @@ is <code>1</code>.</p></dd>
 
 <dt id="arg-na-rm">na_rm<a class="anchor" aria-label="anchor" href="#arg-na-rm"></a></dt>
 <dd><p>Logical; if <code>TRUE</code> (default), rows with non-finite or
-non-positive <code>target_from</code> are dropped before fitting. Note that
-<code>target_to = 0</code> is permitted, as zero cumulative values are valid
+non-positive <code>loss_from</code> are dropped before fitting. Note that
+<code>loss_to = 0</code> is permitted, as zero cumulative values are valid
 observations (e.g. no claims yet developed in early development periods).</p></dd>
 
 

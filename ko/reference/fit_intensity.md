@@ -10,7 +10,7 @@ workflow, parallel to
 [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md)
 for the multiplicative (chain ladder) side. Both operate at the *factor
 level* without producing a full projection. For full ED projection
-(cumulative loss / prem / lr), use
+(cumulative loss / exposure / ratio), use
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md)
 which accepts either a `Triangle` or an `IntensityFit` (skipping a
 rebuild of the link table when factors are already computed).
@@ -20,8 +20,8 @@ rebuild of the link table when factors are already computed).
 ``` r
 fit_intensity(
   x,
-  target = "loss",
-  exposure = "prem",
+  loss = "loss",
+  exposure = "exposure",
   alpha = 1,
   na_method = c("locf", "zero", "none"),
   sigma_method = c("locf", "min_last2", "loglinear"),
@@ -37,7 +37,7 @@ fit_intensity(
 
   A `Triangle` object.
 
-- target:
+- loss:
 
   A single cumulative metric used as the link numerator. Default
   `"loss"`.
@@ -45,7 +45,7 @@ fit_intensity(
 - exposure:
 
   A single cumulative metric used as the exposure anchor. Default
-  `"prem"`.
+  `"exposure"`.
 
 - alpha:
 
@@ -75,9 +75,9 @@ fit_intensity(
 - regime:
 
   Optional regime specification for cohort cutoff. Accepts: `NULL`
-  (default — no filter), a `"Regime"` object (from
+  (default – no filter), a `"Regime"` object (from
   [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)),
-  the string `"auto"` (internal `detect_regime(tri, target = "lr")`
+  the string `"auto"` (internal `detect_regime(tri, loss = "ratio")`
   call), or a function `function(tri) -> Regime`. Resolved internally
   via
   [`.resolve_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_regime.md).
@@ -102,7 +102,7 @@ A list of class `"IntensityFit"` with components:
 
   The (possibly filtered) `Link` object used for estimation.
 
-- `groups`, `cohort`, `dev`, `target`, `exposure`:
+- `groups`, `cohort`, `dev`, `loss`, `exposure`:
 
   Variable name relays from the input `Triangle`.
 
@@ -159,9 +159,9 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
-intensity_fit <- fit_intensity(tri, target = "loss", exposure = "prem")
+intensity_fit <- fit_intensity(tri, loss = "loss", exposure = "exposure")
 summary(intensity_fit)
 } # }
 ```

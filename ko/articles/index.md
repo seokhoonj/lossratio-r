@@ -2,6 +2,8 @@
 
 ### 글
 
+- [방법론과 설계
+  근거](https://seokhoonj.github.io/lossratio/ko/articles/methodology-ko.md):
 - [Aggregation frameworks: 집계 프레임워크 (Triangle, Calendar,
   Total)](https://seokhoonj.github.io/lossratio/ko/articles/aggregation-frameworks-ko.md):
 - [Triangle, Link and Maturity: 데이터 구조와 factor

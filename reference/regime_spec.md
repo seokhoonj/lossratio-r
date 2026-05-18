@@ -10,11 +10,11 @@ deferred** detection – the change points depend on which cells the
 caller decides to expose:
 
 - In
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
   /
-  [`fit_prem()`](https://seokhoonj.github.io/lossratio/reference/fit_prem.md),
+  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md),
   the spec is invoked on the *full* triangle the user passed in.
 
 - In
@@ -49,7 +49,7 @@ regime_spec(...)
 
   kwargs passed verbatim to
   [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
-  when the spec is invoked (e.g. `target`, `by`, `min_run`, `method`).
+  when the spec is invoked (e.g. `loss`, `by`, `min_run`, `method`).
 
 ## Value
 
@@ -70,15 +70,15 @@ this is always the masked training triangle.
 ``` r
 if (FALSE) { # \dontrun{
 # Capture detection arguments, defer execution until fit time.
-spec <- regime_spec(target = "loss_ata")
+spec <- regime_spec(loss = "loss_ata")
 
-# In fit_lr(): closure is invoked on the user's `tri`.
-fit <- fit_lr(tri, loss_regime = regime_spec(target = "loss_ata"))
+# In fit_ratio(): closure is invoked on the user's `tri`.
+fit <- fit_ratio(tri, loss_regime = regime_spec(loss = "loss_ata"))
 
 # In backtest(): closure is invoked on the *masked* triangle of
 # each holdout fold, so detected change points never peek at
 # held-out cells.
 bt <- backtest(tri, holdout = 6L,
-               loss_regime = regime_spec(target = "loss_ata"))
+               loss_regime = regime_spec(loss = "loss_ata"))
 } # }
 ```

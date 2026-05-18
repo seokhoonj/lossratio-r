@@ -2,6 +2,8 @@
 
 ### Articles
 
+- [Methodology and design
+  rationale](https://seokhoonj.github.io/lossratio/articles/methodology.md):
 - [Aggregation frameworks: Triangle, Calendar,
   Total](https://seokhoonj.github.io/lossratio/articles/aggregation-frameworks.md):
 - [Triangle, Link and Maturity: data structures and factor

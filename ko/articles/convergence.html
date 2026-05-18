@@ -145,10 +145,11 @@ early yet remain far from
 The detector runs a rolling <code><a href="../reference/backtest.html">backtest()</a></code> over a sequence of
 candidate dev points <code>dev_cand</code>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>∈</mo><mo stretchy="false" form="prefix">[</mo><msup><mi>k</mi><mo>*</mo></msup><mo>,</mo><msub><mi>K</mi><mi mathvariant="normal">max</mi></msub><mo>−</mo><mn>2</mn><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">\in [k^*, K_{\max}-2]</annotation></semantics></math>,
-builds the projected ultimate LR path <code>lr</code> at each one, then
-evaluates four stability metrics on that path. The <code>method =</code>
-argument selects which metric defines <code>conv_k</code>; all four are
-returned for inspection regardless of the choice.</p>
+builds the projected ultimate LR path <code>ratio</code> at each one,
+then evaluates four stability metrics on that path. The
+<code>method =</code> argument selects which metric defines
+<code>conv_k</code>; all four are returned for inspection regardless of
+the choice.</p>
 <table class="table">
 <colgroup>
 <col width="25%">
@@ -165,7 +166,7 @@ returned for inspection regardless of the choice.</p>
 <tbody>
 <tr class="odd">
 <td><code>"window"</code></td>
-<td>range of <code>lr</code> over the next <code>window</code>
+<td>range of <code>ratio</code> over the next <code>window</code>
 valuations</td>
 <td>local stability (no zig-zag)</td>
 <td>slow monotone drift below <code>max_drift</code> per window</td>
@@ -173,7 +174,7 @@ valuations</td>
 <tr class="even">
 <td>
 <code>"tail"</code> (default)</td>
-<td>range of <code>lr</code> over <code>[k, K_{\max}]</code>
+<td>range of <code>ratio</code> over <code>[k, K_{\max}]</code>
 </td>
 <td>global stability up to <code>dev_max</code>; catches monotone
 drift</td>
@@ -186,7 +187,7 @@ tail points; first-pass is conservative (later than
 <td><code>"slope"</code></td>
 <td>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="postfix">∥</mo><msub><mover><mi>β</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><mo stretchy="false" form="postfix">∥</mo></mrow><annotation encoding="application/x-tex">\|\hat\beta_k\|</annotation></semantics></math>,
-OLS slope of <code>lr ~ k</code> on <code>[k, K_{\max}]</code>
+OLS slope of <code>ratio ~ k</code> on <code>[k, K_{\max}]</code>
 </td>
 <td>systematic trend (signed direction)</td>
 <td>oscillation that averages out to zero slope</td>
@@ -263,7 +264,7 @@ axis.</p>
 <td>Integer vector of candidate dev points</td>
 </tr>
 <tr class="odd">
-<td><code>lr[i]</code></td>
+<td><code>ratio[i]</code></td>
 <td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><msub><mi>R</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">LR_k</annotation></semantics></math></td>
 <td>Portfolio LR projection at dev = <code>dev_cand[i]</code>
 </td>
@@ -336,7 +337,7 @@ incremental LR.</p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
@@ -357,7 +358,7 @@ incremental LR.</p>
 with every metric and per-method pass flag:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span>, <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;      dev    lr   revision  drift_window  drift_tail   slope  dispersion</span></span>
+<pre><code><span><span class="co">#&gt;      dev ratio   revision  drift_window  drift_tail   slope  dispersion</span></span>
 <span><span class="co">#&gt;    &lt;int&gt; &lt;num&gt;      &lt;num&gt;         &lt;num&gt;       &lt;num&gt;   &lt;num&gt;       &lt;num&gt;</span></span>
 <span><span class="co">#&gt; 1:     4 0.62          NA          0.07        0.07   0.001        0.47</span></span>
 <span><span class="co">#&gt; 2:     5 0.63        0.01          0.06        0.06   0.001        0.47</span></span>
@@ -395,7 +396,7 @@ that hurts reserves.</li>
 was confirmed by very few tail points; the same data might unconverge
 with one more diagonal.</li>
 <li>Read the projected ultimate LR and its standard error from
-<code>fit_lr()$summary</code> directly.
+<code>fit_ratio()$summary</code> directly.
 <code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> is a diagnostic, not an estimator; the
 reserve point estimate and uncertainty come from the fit object.</li>
 </ul>
@@ -413,11 +414,11 @@ don’t redo work between adjacent candidates.</p>
 (25 in total), but only
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
 with <code>holdout = dev_max - k &lt;= holdout_max</code> get a finite
-<code>lr[i]</code>. The rest are masked to <code>NA</code>.</p>
+<code>ratio[i]</code>. The rest are masked to <code>NA</code>.</p>
 <p><code>holdout_max</code> defaults to
 <code>max(window, floor((dev_max - mat_k) / 2))</code>. Raising it
 widens the diagnostic window — at the cost of less data behind each
-refit and hence noisier <code>lr</code> near the lower edge.</p>
+refit and hence noisier <code>ratio</code> near the lower edge.</p>
 </div>
 <div class="section level2">
 <h2 id="plot">Plot<a class="anchor" aria-label="anchor" href="#plot"></a>
@@ -427,8 +428,8 @@ refit and hence noisier <code>lr</code> near the lower edge.</p>
 <p>Five stacked panels share the dev axis:</p>
 <ol style="list-style-type: decimal">
 <li>
-<strong><code>lr</code></strong> — the LR trajectory the metrics are
-computed from.</li>
+<strong><code>ratio</code></strong> — the LR trajectory the metrics
+are computed from.</li>
 <li>
 <strong><code>drift_window</code></strong> — the local-window
 metric, with horizontal guide at <code>max_drift</code>.</li>
@@ -575,7 +576,8 @@ via <code><a href="../reference/detect_maturity.html">detect_maturity()</a></cod
 <li>Run <code><a href="../reference/detect_convergence.html">detect_convergence()</a></code> to obtain
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>k</mi><mrow><mi>*</mi><mo>*</mo></mrow></msup><mo>≥</mo><msup><mi>k</mi><mo>*</mo></msup></mrow><annotation encoding="application/x-tex">k^{**} \ge k^*</annotation></semantics></math>.
 Read the projected ultimate loss ratio from
-<code>fit_lr()$summary</code> and apply the reserving caveat above.</li>
+<code>fit_ratio()$summary</code> and apply the reserving caveat
+above.</li>
 </ol>
 <p>The sequence separates <em>cohort homogeneity</em>, <em>link
 reproducibility</em>, and <em>level convergence</em> — three properties
@@ -595,18 +597,18 @@ tail / slope). Short observation windows return <code>NA</code> for
 every method.</li>
 <li>
 <strong>Model conditioning</strong>: the projected LR is computed by
-<code><a href="../reference/fit_lr.html">fit_lr()</a></code>, which internally composes <code><a href="../reference/fit_loss.html">fit_loss()</a></code>
-(default <code>method = "sa"</code> — stage-adaptive) and
-<code><a href="../reference/fit_prem.html">fit_prem()</a></code>. Choices made inside that composition (loss
-method, regime filter, maturity argument) feed through to
-<code>conv_k</code>; review the underlying <code>fit_lr</code> settings
-when interpreting the result. Pass <code>loss_method =</code>,
-<code>loss_regime =</code>, etc. through <code>...</code> to
-override.</li>
+<code><a href="../reference/fit_ratio.html">fit_ratio()</a></code>, which internally composes
+<code><a href="../reference/fit_loss.html">fit_loss()</a></code> (default <code>method = "sa"</code> —
+stage-adaptive) and <code><a href="../reference/fit_exposure.html">fit_exposure()</a></code>. Choices made inside
+that composition (loss method, regime filter, maturity argument) feed
+through to <code>conv_k</code>; review the underlying
+<code>fit_ratio</code> settings when interpreting the result. Pass
+<code>loss_method =</code>, <code>loss_regime =</code>, etc. through
+<code>...</code> to override.</li>
 <li>
 <strong>Portfolio aggregation</strong>: the portfolio LR aggregates
 per-group ultimates via exposure weighting
-(<code>sum(loss_ult) / sum(premium_ult)</code>). Calendar-year shocks
+(<code>sum(loss_ult) / sum(exposure_ult)</code>). Calendar-year shocks
 (regulatory changes, cost trend) can move every group together; the
 drift metrics will not separate that from genuine convergence.</li>
 <li>
@@ -627,7 +629,7 @@ from these tools alone.</li>
 <li>
 <code><a href="../reference/detect_convergence.html">?detect_convergence</a></code>, <code><a href="../reference/detect_maturity.html">?detect_maturity</a></code>,
 <code><a href="../reference/backtest.html">?backtest</a></code>, <code><a href="../reference/detect_regime.html">?detect_regime</a></code>,
-<code><a href="../reference/fit_lr.html">?fit_lr</a></code>.</li>
+<code><a href="../reference/fit_ratio.html">?fit_ratio</a></code>.</li>
 <li>
 <code>vignette("regime-detection")</code> — cohort homogeneity
 diagnostics that feed step 1 of the workflow above.</li>

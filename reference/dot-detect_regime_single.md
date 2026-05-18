@@ -12,7 +12,7 @@ itself.
 ``` r
 .detect_regime_single(
   d,
-  target,
+  loss,
   window,
   method,
   n_regimes,

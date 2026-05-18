@@ -11,7 +11,7 @@ etc.) rather than a trajectory.
 # S3 method for class 'Total'
 plot(
   x,
-  metric = "lr",
+  metric = "ratio",
   amount_divisor = "auto",
   theme = c("view", "save", "shiny"),
   ...
@@ -27,8 +27,8 @@ plot(
 - metric:
 
   A single metric to plot. Must be one of the columns carried by a
-  `Total`: `"lr"`, `"loss"`, `"prem"`, `"loss_share"`, or
-  `"prem_share"`. Default `"lr"`.
+  `Total`: `"ratio"`, `"loss"`, `"exposure"`, `"loss_share"`, or
+  `"exposure_share"`. Default `"ratio"`.
 
 - amount_divisor:
 
@@ -66,11 +66,11 @@ scale and labelled using `amount_divisor`.
 if (FALSE) { # \dontrun{
 tot <- as_total(
   df,
-  groups = "coverage",
-  cohort = "uy_m",
-  dev    = "dev_m",
-  loss   = "incr_loss",
-  prem   = "incr_prem"
+  groups   = "coverage",
+  cohort   = "uy_m",
+  dev      = "dev_m",
+  loss     = "incr_loss",
+  exposure = "incr_exposure"
 )
 plot(tot)
 plot(tot, metric = "loss")

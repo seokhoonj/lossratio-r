@@ -13,9 +13,9 @@ sample per cell.
 
 ## Details
 
-The core loss ratio is defined as: \$\$lr = loss / prem\$\$
+The core loss ratio is defined as: \$\$ratio = loss / exposure\$\$
 
-where `prem` represents risk premium, not written prem.
+where `exposure` represents risk premium, not written premium.
 
 ## See also
 

@@ -120,7 +120,7 @@ data structures and factor diagnostics</a></p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="코호트-궤적">코호트 궤적<a class="anchor" aria-label="anchor" href="#%EC%BD%94%ED%98%B8%ED%8A%B8-%EA%B6%A4%EC%A0%81"></a>
@@ -129,29 +129,29 @@ data structures and factor diagnostics</a></p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>                              <span class="co"># 코호트별 누적 손해율 궤적</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span>, metric <span class="op">=</span> <span class="st">"incr_lr"</span><span class="op">)</span>       <span class="co"># 누적 대신 증분 손해율</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span>, metric <span class="op">=</span> <span class="st">"incr_ratio"</span><span class="op">)</span>       <span class="co"># 누적 대신 증분 손해율</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-2-2.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span>, summary <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>              <span class="co"># 코호트 선 + overlay (평균 / 중앙값 / 가중)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-2-3.png" class="r-plt" alt="" width="100%"></p>
 <p><code>summary = TRUE</code> overlay 는 각 dev 에서 평균, 중앙값, 가중
-lr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗어나는 코호트를
-포착하는 데 유용하다.</p>
+ratio 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗어나는
+코호트를 포착하는 데 유용하다.</p>
 </div>
 <div class="section level3">
 <h3 id="셀-히트맵">셀 히트맵<a class="anchor" aria-label="anchor" href="#%EC%85%80-%ED%9E%88%ED%8A%B8%EB%A7%B5"></a>
 </h3>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span>, metric <span class="op">=</span> <span class="st">"lr"</span><span class="op">)</span>          <span class="co"># 누적 lr</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span>, metric <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span>          <span class="co"># 누적 ratio</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span>, metric <span class="op">=</span> <span class="st">"incr_lr"</span><span class="op">)</span>     <span class="co"># 증분 lr</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span>, metric <span class="op">=</span> <span class="st">"incr_ratio"</span><span class="op">)</span>     <span class="co"># 증분 ratio</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-3-2.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly 로 다시 빌드</span></span>
-<span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span><span class="va">exp</span>, groups <span class="op">=</span> <span class="st">"coverage"</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>, calendar <span class="op">=</span> <span class="st">"cy_m"</span>, loss <span class="op">=</span> <span class="st">"incr_loss"</span>, prem <span class="op">=</span> <span class="st">"incr_prem"</span>, grain <span class="op">=</span> <span class="st">"Q"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span>  <span class="co"># 비율 + (loss / premium)</span></span></code></pre></div>
+<span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span><span class="va">exp</span>, groups <span class="op">=</span> <span class="st">"coverage"</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>, calendar <span class="op">=</span> <span class="st">"cy_m"</span>, loss <span class="op">=</span> <span class="st">"incr_loss"</span>, exposure <span class="op">=</span> <span class="st">"incr_exposure"</span>, grain <span class="op">=</span> <span class="st">"Q"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span>  <span class="co"># 비율 + (loss / exposure)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-3-3.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level3">
@@ -161,22 +161,22 @@ lr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗�
 <code class="sourceCode R"><span><span class="va">sm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sm</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage, dev&gt;</span></span>
-<span><span class="co">#&gt;    coverage   dev n_cohorts   lr_mean lr_median     lr_wt incr_lr_mean</span></span>
-<span><span class="co">#&gt;      &lt;char&gt; &lt;int&gt;     &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;        &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:  surgery     1        36 0.2522898 0.2393582 0.2525932    0.2522898</span></span>
-<span><span class="co">#&gt; 2:  surgery     2        35 0.8030639 0.7859128 0.7890646    1.3572087</span></span>
-<span><span class="co">#&gt; 3:  surgery     3        34 0.9258662 0.8997912 0.9204360    1.1519240</span></span>
-<span><span class="co">#&gt; 4:  surgery     4        33 0.9856772 0.9716558 0.9778502    1.1797269</span></span>
-<span><span class="co">#&gt; 5:  surgery     5        32 1.0336648 1.0502252 1.0447602    1.2268717</span></span>
-<span><span class="co">#&gt; 6:  surgery     6        31 1.0945723 1.1832332 1.0892484    1.3676102</span></span>
-<span><span class="co">#&gt;    incr_lr_median incr_lr_wt</span></span>
-<span><span class="co">#&gt;             &lt;num&gt;      &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      0.2393582  0.2525932</span></span>
-<span><span class="co">#&gt; 2:      1.2618216  1.3280769</span></span>
-<span><span class="co">#&gt; 3:      1.1517980  1.1728982</span></span>
-<span><span class="co">#&gt; 4:      1.1167740  1.1742272</span></span>
-<span><span class="co">#&gt; 5:      1.2663383  1.3110155</span></span>
-<span><span class="co">#&gt; 6:      1.2676379  1.2752751</span></span></code></pre></div>
+<span><span class="co">#&gt;    coverage   dev n_cohorts ratio_mean ratio_median  ratio_wt incr_ratio_mean</span></span>
+<span><span class="co">#&gt;      &lt;char&gt; &lt;int&gt;     &lt;int&gt;      &lt;num&gt;        &lt;num&gt;     &lt;num&gt;           &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:  surgery     1        36  0.2522898    0.2393582 0.2525932       0.2522898</span></span>
+<span><span class="co">#&gt; 2:  surgery     2        35  0.8030639    0.7859128 0.7890646       1.3572087</span></span>
+<span><span class="co">#&gt; 3:  surgery     3        34  0.9258662    0.8997912 0.9204360       1.1519240</span></span>
+<span><span class="co">#&gt; 4:  surgery     4        33  0.9856772    0.9716558 0.9778502       1.1797269</span></span>
+<span><span class="co">#&gt; 5:  surgery     5        32  1.0336648    1.0502252 1.0447602       1.2268717</span></span>
+<span><span class="co">#&gt; 6:  surgery     6        31  1.0945723    1.1832332 1.0892484       1.3676102</span></span>
+<span><span class="co">#&gt;    incr_ratio_median incr_ratio_wt</span></span>
+<span><span class="co">#&gt;                &lt;num&gt;         &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:         0.2393582     0.2525932</span></span>
+<span><span class="co">#&gt; 2:         1.2618216     1.3280769</span></span>
+<span><span class="co">#&gt; 3:         1.1517980     1.1728982</span></span>
+<span><span class="co">#&gt; 4:         1.1167740     1.1742272</span></span>
+<span><span class="co">#&gt; 5:         1.2663383     1.3110155</span></span>
+<span><span class="co">#&gt; 6:         1.2676379     1.2752751</span></span></code></pre></div>
 <p>(group, dev) 셀별 평균 / 중앙값 / 가중 손해율을 담은
 <code>TriangleSummary</code> 객체를 반환한다.</p>
 </div>
@@ -191,7 +191,7 @@ lr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗�
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>g</mi><mi>k</mi></msub><mo>=</mo><mi mathvariant="normal">Δ</mi><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup><mi>/</mi><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">g_k = \Delta C^L_k / C^P_k</annotation></semantics></math>
 를 담는다.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ata</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_link.html">as_link</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">ata</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_link.html">as_link</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="va">sm</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ata</span>, model <span class="op">=</span> <span class="st">"ata"</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sm</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
@@ -265,8 +265,8 @@ lr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗�
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly Link 로 다시 빌드</span></span>
-<span><span class="va">ata_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_link.html">as_link</a></span><span class="op">(</span><span class="va">tri_q</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span>      <span class="co"># 인자 + (loss / premium)</span></span></code></pre></div>
+<span><span class="va">ata_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_link.html">as_link</a></span><span class="op">(</span><span class="va">tri_q</span>, loss <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ata_q</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span>      <span class="co"># 인자 + (loss / exposure)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-7-3.png" class="r-plt" alt="" width="100%"></p>
 <p>이 히트맵은 각 셀을 자기 링크 내에서
 <code>log(ata / median(ata))</code> 로 색칠하므로, 열 방향 색상은 해당
@@ -276,7 +276,7 @@ lr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗�
 <h3 id="ed-진단">ED 진단<a class="anchor" aria-label="anchor" href="#ed-%EC%A7%84%EB%8B%A8"></a>
 </h3>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_link.html">as_link</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, exposure <span class="op">=</span> <span class="st">"prem"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_link.html">as_link</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, exposure <span class="op">=</span> <span class="st">"exposure"</span><span class="op">)</span></span>
 <span><span class="va">sm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ed</span>, model <span class="op">=</span> <span class="st">"ed"</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sm</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
@@ -316,8 +316,8 @@ lr 을 계산해 코호트 선 위에 겹쳐 그린다. 중심 경향에서 벗�
 </h2>
 <p>성숙점(maturity point) 은 <strong>ATA 인자</strong>(age-to-age
 factor) 가 chain ladder 추정에 신뢰할 만큼 안정화되는 경과 기간
-링크이다. <code>fit_lr(method = "sa")</code> 가 ED 에서 CL 로 전환할 때
-내부적으로 사용한다.</p>
+링크이다. <code>fit_ratio(method = "sa")</code> 가 ED 에서 CL 로 전환할
+때 내부적으로 사용한다.</p>
 <div class="section level3">
 <h3 id="탐지">탐지<a class="anchor" aria-label="anchor" href="#%ED%83%90%EC%A7%80"></a>
 </h3>
@@ -327,7 +327,7 @@ factor) 가 chain ladder 추정에 신뢰할 만큼 안정화되는 경과 기�
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span></span>
 <span>  <span class="va">tri</span>,</span>
-<span>  target          <span class="op">=</span> <span class="st">"loss"</span>,</span>
+<span>  loss            <span class="op">=</span> <span class="st">"loss"</span>,</span>
 <span>  max_cv          <span class="op">=</span> <span class="fl">0.15</span>,    <span class="co"># CV 가 이 값보다 작아야 함</span></span>
 <span>  max_rse         <span class="op">=</span> <span class="fl">0.05</span>,    <span class="co"># RSE 가 이 값보다 작아야 함</span></span>
 <span>  min_valid_ratio <span class="op">=</span> <span class="fl">0.5</span>,     <span class="co"># 해당 링크에서 유한 코호트가 50% 이상</span></span>
@@ -382,17 +382,17 @@ factor) 가 chain ladder 추정에 신뢰할 만큼 안정화되는 경과 기�
 <code><a href="../reference/fit_cl.html">fit_cl()</a></code> 내부에서도 <code>maturity</code> 인자를 통해
 호출된다. 사용자 임계값을 넘기려면 <code><a href="../reference/maturity_spec.html">maturity_spec()</a></code> 으로
 감싸 전달하고, default 값으로 자동 탐지하려면 <code>"auto"</code> 를
-쓴다 (<code>fit_lr(method = "sa")</code> / <code><a href="../reference/fit_loss.html">fit_loss()</a></code> 는
+쓴다 (<code>fit_ratio(method = "sa")</code> / <code><a href="../reference/fit_loss.html">fit_loss()</a></code> 는
 default 가 <code>"auto"</code>).</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>,</span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>,</span>
 <span>        maturity <span class="op">=</span> <span class="fu"><a href="../reference/maturity_spec.html">maturity_spec</a></span><span class="op">(</span>max_cv <span class="op">=</span> <span class="fl">0.08</span>, min_run <span class="op">=</span> <span class="fl">2L</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>,</span>
+<span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>,</span>
 <span>       maturity <span class="op">=</span> <span class="fu"><a href="../reference/maturity_spec.html">maturity_spec</a></span><span class="op">(</span>max_cv <span class="op">=</span> <span class="fl">0.08</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span>,</span>
-<span>       maturity <span class="op">=</span> <span class="fu"><a href="../reference/maturity_spec.html">maturity_spec</a></span><span class="op">(</span>max_cv <span class="op">=</span> <span class="fl">0.08</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span>,</span>
+<span>          maturity <span class="op">=</span> <span class="fu"><a href="../reference/maturity_spec.html">maturity_spec</a></span><span class="op">(</span>max_cv <span class="op">=</span> <span class="fl">0.08</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><code>maturity</code> 인자는 네 가지 형태를 받는다: <code>NULL</code>
 (탐지 안 함), 이미 산출된 <code>Maturity</code> 객체
 (<code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> 결과 또는 수동 override 용
@@ -400,7 +400,7 @@ default 가 <code>"auto"</code>).</p>
 임계값으로 내부 탐지), 또는 triangle 한 개를 인자로 받아
 <code>Maturity</code> 를 반환하는 함수 (보통
 <code><a href="../reference/maturity_spec.html">maturity_spec()</a></code> 로 작성).</p>
-<p><code>fit_lr(method = "sa")</code> 에서는 탐지된 성숙점이 ED (초기
+<p><code>fit_ratio(method = "sa")</code> 에서는 탐지된 성숙점이 ED (초기
 dev) 에서 CL (이후 dev) 로 전환되는 dev 를 결정한다.</p>
 </div>
 <div class="section level3">
@@ -416,9 +416,9 @@ dev) 에서 CL (이후 dev) 로 전환되는 dev 를 결정한다.</p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  prem     <span class="op">=</span> <span class="st">"incr_prem"</span></span>
+<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri_all</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri_all</span>, loss <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
 <span><span class="co">#&gt;     coverage ata_from change ata_link     mean   median       wt         cv</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;      &lt;num&gt;</span></span>
@@ -442,7 +442,7 @@ dev) 에서 CL (이후 dev) 로 전환되는 dev 를 결정한다.</p>
 나뉘고, 수직선이 CV 가 <code>max_cv</code> 아래로 처음 떨어지는 성숙점을
 표시한다.</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/as_link.html">as_link</a></span><span class="op">(</span><span class="va">tri_all</span>, target <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"cv"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/as_link.html">as_link</a></span><span class="op">(</span><span class="va">tri_all</span>, loss <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"cv"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="100%"></p>
 </div>
 </div>
@@ -475,7 +475,7 @@ triangle 이 깨끗하다는 뜻이다.</p>
 <p>오래된 코호트가 더 이상 대표성이 없을 때 (요율 변경, 인수 가이드라인
 변경 등) 추정을 최근 대각선으로 제한한다.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, alpha <span class="op">=</span> <span class="fl">1</span>, recent <span class="op">=</span> <span class="fl">12</span><span class="op">)</span>  <span class="co"># 최근 12개 대각선</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, alpha <span class="op">=</span> <span class="fl">1</span>, recent <span class="op">=</span> <span class="fl">12</span><span class="op">)</span>  <span class="co"># 최근 12개 대각선</span></span>
 <span><span class="co">#&gt; &lt;ATAFit&gt;</span></span>
 <span><span class="co">#&gt; alpha       : 1 </span></span>
 <span><span class="co">#&gt; sigma_method: locf </span></span>
@@ -485,10 +485,10 @@ triangle 이 깨끗하다는 뜻이다.</p>
 <span><span class="co">#&gt; groups      : coverage </span></span>
 <span><span class="co">#&gt; n_groups    : 1 </span></span>
 <span><span class="co">#&gt; ata links   : 35</span></span>
-<span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, target <span class="op">=</span> <span class="st">"loss"</span>, recent <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, recent <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;CLFit&gt;</span></span>
 <span><span class="co">#&gt; method      : mack </span></span>
-<span><span class="co">#&gt; target      : loss </span></span>
+<span><span class="co">#&gt; loss        : loss </span></span>
 <span><span class="co">#&gt; weight      : none </span></span>
 <span><span class="co">#&gt; alpha       : 1 </span></span>
 <span><span class="co">#&gt; sigma_method: locf </span></span>
@@ -498,18 +498,18 @@ triangle 이 깨끗하다는 뜻이다.</p>
 <span><span class="co">#&gt; tail_factor : 1 </span></span>
 <span><span class="co">#&gt; groups      : coverage </span></span>
 <span><span class="co">#&gt; periods     : 36</span></span>
-<span><span class="fu"><a href="../reference/fit_lr.html">fit_lr</a></span><span class="op">(</span><span class="va">tri</span>, recent <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;LRFit&gt;</span></span>
-<span><span class="co">#&gt; method            : sa </span></span>
+<span><span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, recent <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;RatioFit&gt;</span></span>
+<span><span class="co">#&gt; method            : ed </span></span>
 <span><span class="co">#&gt; loss_alpha        : 1 </span></span>
-<span><span class="co">#&gt; prem_alpha        : 1 </span></span>
+<span><span class="co">#&gt; exposure_alpha    : 1 </span></span>
 <span><span class="co">#&gt; se_method         : fixed </span></span>
 <span><span class="co">#&gt; conf_level        : 0.95 </span></span>
 <span><span class="co">#&gt; ci_type           : bootstrap  (B = 999, seed = NULL) </span></span>
 <span><span class="co">#&gt; sigma_method      : locf </span></span>
 <span><span class="co">#&gt; recent            : 12 </span></span>
 <span><span class="co">#&gt; loss_regime       : none</span></span>
-<span><span class="co">#&gt; prem_regime       : none</span></span>
+<span><span class="co">#&gt; exposure_regime   : none</span></span>
 <span><span class="co">#&gt; maturity[surgery] : 4 </span></span>
 <span><span class="co">#&gt; groups            : coverage </span></span>
 <span><span class="co">#&gt; periods           : 36</span></span></code></pre></div>
@@ -540,7 +540,7 @@ triangle 이 깨끗하다는 뜻이다.</p>
 <li>
 <code><a href="../reference/detect_regime.html">detect_regime()</a></code> (선택) — 구조적 변화 진단.</li>
 </ol>
-<p>이후 신뢰할 수 있는 입력 데이터로 <code><a href="../reference/fit_lr.html">fit_lr()</a></code> /
+<p>이후 신뢰할 수 있는 입력 데이터로 <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> /
 <code><a href="../reference/fit_cl.html">fit_cl()</a></code> 을 적합한다.</p>
 </div>
 <div class="section level2">

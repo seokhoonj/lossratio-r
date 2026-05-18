@@ -18,7 +18,7 @@ on \\k\\ for consistency.
 |----|----|----|
 | `dev_max` | \\K\_{\max}\\ | Maximum observable dev (a scalar) |
 | `dev_cand` | \\k \in \[k^\*, K\_{\max}-2\]\\ | Integer vector of candidate dev points |
-| `lr[i]` | \\LR_k\\ | Portfolio LR projection at dev = `dev_cand[i]` |
+| `ratio[i]` | \\LR_k\\ | Portfolio LR projection at dev = `dev_cand[i]` |
 | `revision[i]` | \\R_k = \|LR_k - LR\_{k-1}\|\\ | Adjacent-step revision (diagnostic) |
 | `drift_window[i]` | \\\max - \min\\ of \\LR\\ over \\\[k, k+W-1\]\\ | Local window range |
 | `drift_tail[i]` | \\\max - \min\\ of \\LR\\ over \\\[k, K\_{\max}\]\\ | Tail range |
@@ -67,7 +67,7 @@ that the projection will not drift past \\K\_{\max}\\. Treat `conv_k` as
 a diagnostic for "from here on, what we observe is stable", not as a
 guarantee of future stability. For reserving applications, prefer
 `method = "tail"` or `"all"` over `"window"`, attach an IBNR margin via
-`fit_lr$summary` SE/CI columns, and weigh the *evidence span*
+`fit_ratio$summary` SE/CI columns, and weigh the *evidence span*
 (`dev_max - conv_k`): a `conv_k` near `dev_max` has thin evidence.
 
 ## Usage
@@ -130,7 +130,7 @@ detect_convergence(
 
   Pre-computed maturity point. When `NULL`, computed via
   [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
-  applied to an lr-based ATA.
+  applied to a ratio-based ATA.
 
 - holdout_max:
 
@@ -147,20 +147,20 @@ detect_convergence(
   Additional arguments forwarded to
   [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
   (and thence to
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)),
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)),
   e.g. `loss_method`, `recent`, `loss_regime`.
 
 ## Value
 
 An object of class `Convergence` (named list). Includes the slots
-tabulated in the notation mapping above (`dev_max`, `dev_cand`, `lr`,
+tabulated in the notation mapping above (`dev_max`, `dev_cand`, `ratio`,
 `revision`, `drift_window`, `drift_tail`, `slope`, `dispersion`),
 per-method pass vectors (`pass_window`, `pass_tail`, `pass_slope`,
 `pass`), the threshold parameters, and metadata attributes (`groups`,
-`target`, `dispatcher`).
+`loss`, `dispatcher`).
 
 ## See also
 
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md),
 [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md),
-[`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)

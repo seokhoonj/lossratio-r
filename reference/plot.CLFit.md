@@ -6,7 +6,7 @@ Two plot types are supported:
 
 - `"projection"`: observed and projected cumulative values by cohort
   over development periods. Optional confidence bands are drawn using
-  `target_total_se`.
+  `loss_total_se`.
 
 - `"reserve"`: reserve summary by cohort with optional error bars.
 

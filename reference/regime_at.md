@@ -4,12 +4,12 @@ User-facing helper for hand-specifying a regime change (or a set of
 per-group changes) without running
 [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md).
 The returned `"Regime"` object plugs into any function that consumes a
-Regime —
-[`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md),
+Regime –
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md),
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md),
-[`fit_prem()`](https://seokhoonj.github.io/lossratio/reference/fit_prem.md),
+[`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md),
 [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md),
-and the regime-change resolver — by carrying the same `$changes` schema
+and the regime-change resolver – by carrying the same `$changes` schema
 as
 [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
 output.
@@ -55,9 +55,9 @@ downstream consumers:
 
   `"manual"`.
 
-- `target`:
+- `loss`:
 
-  `NA_character_` (no detection target).
+  `NA_character_` (no detection metric).
 
 - `changes`:
 

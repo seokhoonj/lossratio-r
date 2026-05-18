@@ -34,16 +34,16 @@ Convergence cannot be measured asymptotically from finite data, only
 detector runs a rolling
 [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
 over a sequence of candidate dev points `dev_cand`
-$`\in [k^*, K_{\max}-2]`$, builds the projected ultimate LR path `lr` at
-each one, then evaluates four stability metrics on that path. The
+$`\in [k^*, K_{\max}-2]`$, builds the projected ultimate LR path `ratio`
+at each one, then evaluates four stability metrics on that path. The
 `method =` argument selects which metric defines `conv_k`; all four are
 returned for inspection regardless of the choice.
 
 | Method | Metric | Captures | Misses |
 |----|----|----|----|
-| `"window"` | range of `lr` over the next `window` valuations | local stability (no zig-zag) | slow monotone drift below `max_drift` per window |
-| `"tail"` (default) | range of `lr` over `[k, K_{\max}]` | global stability up to `dev_max`; catches monotone drift | needs $`\ge 2`$ tail points; first-pass is conservative (later than `"window"`) |
-| `"slope"` | $`\|\hat\beta_k\|`$, OLS slope of `lr ~ k` on `[k, K_{\max}]` | systematic trend (signed direction) | oscillation that averages out to zero slope |
+| `"window"` | range of `ratio` over the next `window` valuations | local stability (no zig-zag) | slow monotone drift below `max_drift` per window |
+| `"tail"` (default) | range of `ratio` over `[k, K_{\max}]` | global stability up to `dev_max`; catches monotone drift | needs $`\ge 2`$ tail points; first-pass is conservative (later than `"window"`) |
+| `"slope"` | $`\|\hat\beta_k\|`$, OLS slope of `ratio ~ k` on `[k, K_{\max}]` | systematic trend (signed direction) | oscillation that averages out to zero slope |
 | `"all"` | intersection of `"window"` + `"tail"` + `"slope"` | every shape above | (strictest) |
 
 Across all methods a cross-cohort dispersion clause
@@ -74,7 +74,7 @@ returns $`k^{**}`$ — both live on the same $`k`$ axis.
 |----|----|----|
 | `dev_max` | $`K_{\max}`$ | Maximum observable dev (a scalar) |
 | `dev_cand` | $`k \in [k^*, K_{\max}-2]`$ | Integer vector of candidate dev points |
-| `lr[i]` | $`LR_k`$ | Portfolio LR projection at dev = `dev_cand[i]` |
+| `ratio[i]` | $`LR_k`$ | Portfolio LR projection at dev = `dev_cand[i]` |
 | `revision[i]` | $`R_k = \|LR_k - LR_{k-1}\|`$ | Adjacent-step revision (diagnostic only) |
 | `drift_window[i]` | $`\max - \min`$ over $`[k, k+W-1]`$ | Local window range |
 | `drift_tail[i]` | $`\max - \min`$ over $`[k, K_{\max}]`$ | Tail range (global stability) |
@@ -100,7 +100,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 res <- detect_convergence(tri)
@@ -129,7 +129,7 @@ and per-method pass flag:
 head(summary(res), 6)
 ```
 
-    #>      dev    lr   revision  drift_window  drift_tail   slope  dispersion
+    #>      dev ratio   revision  drift_window  drift_tail   slope  dispersion
     #>    <int> <num>      <num>         <num>       <num>   <num>       <num>
     #> 1:     4 0.62          NA          0.07        0.07   0.001        0.47
     #> 2:     5 0.63        0.01          0.06        0.06   0.001        0.47
@@ -161,7 +161,7 @@ For reserving applications:
   `dev_max` (say, span $`< 5`$) was confirmed by very few tail points;
   the same data might unconverge with one more diagonal.
 - Read the projected ultimate LR and its standard error from
-  `fit_lr()$summary` directly.
+  `fit_ratio()$summary` directly.
   [`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md)
   is a diagnostic, not an estimator; the reserve point estimate and
   uncertainty come from the fit object.
@@ -175,12 +175,12 @@ candidates.
 
 Example: with `dev_max = 30`, `mat_k = 4`, `holdout_max = 13` —
 candidates are $`k \in \{4, 5, \dots, 28\}`$ (25 in total), but only
-$`k`$ with `holdout = dev_max - k <= holdout_max` get a finite `lr[i]`.
-The rest are masked to `NA`.
+$`k`$ with `holdout = dev_max - k <= holdout_max` get a finite
+`ratio[i]`. The rest are masked to `NA`.
 
 `holdout_max` defaults to `max(window, floor((dev_max - mat_k) / 2))`.
 Raising it widens the diagnostic window — at the cost of less data
-behind each refit and hence noisier `lr` near the lower edge.
+behind each refit and hence noisier `ratio` near the lower edge.
 
 ## Plot
 
@@ -191,7 +191,7 @@ plot(res)
 
 Five stacked panels share the dev axis:
 
-1.  **`lr`** — the LR trajectory the metrics are computed from.
+1.  **`ratio`** — the LR trajectory the metrics are computed from.
 2.  **`drift_window`** — the local-window metric, with horizontal guide
     at `max_drift`.
 3.  **`drift_tail`** — the tail metric, same guide.
@@ -255,7 +255,7 @@ A defensible workflow:
 3.  Run
     [`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md)
     to obtain $`k^{**} \ge k^*`$. Read the projected ultimate loss ratio
-    from `fit_lr()$summary` and apply the reserving caveat above.
+    from `fit_ratio()$summary` and apply the reserving caveat above.
 
 The sequence separates *cohort homogeneity*, *link reproducibility*, and
 *level convergence* — three properties that coincide in P&C run-off but
@@ -272,20 +272,20 @@ calls and inherits their constraints:
   `dev_max - mat_k >= window` (or 2 for tail / slope). Short observation
   windows return `NA` for every method.
 - **Model conditioning**: the projected LR is computed by
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md),
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md),
   which internally composes
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
   (default `method = "sa"` — stage-adaptive) and
-  [`fit_prem()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_prem.md).
+  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md).
   Choices made inside that composition (loss method, regime filter,
   maturity argument) feed through to `conv_k`; review the underlying
-  `fit_lr` settings when interpreting the result. Pass `loss_method =`,
-  `loss_regime =`, etc. through `...` to override.
+  `fit_ratio` settings when interpreting the result. Pass
+  `loss_method =`, `loss_regime =`, etc. through `...` to override.
 - **Portfolio aggregation**: the portfolio LR aggregates per-group
-  ultimates via exposure weighting (`sum(loss_ult) / sum(premium_ult)`).
-  Calendar-year shocks (regulatory changes, cost trend) can move every
-  group together; the drift metrics will not separate that from genuine
-  convergence.
+  ultimates via exposure weighting
+  (`sum(loss_ult) / sum(exposure_ult)`). Calendar-year shocks
+  (regulatory changes, cost trend) can move every group together; the
+  drift metrics will not separate that from genuine convergence.
 - **Multi-group triangles**: `dispersion` is currently collapsed across
   groups by median. When groups behave differently, running each group
   separately is recommended.
@@ -300,7 +300,7 @@ calls and inherits their constraints:
   [`?detect_maturity`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md),
   [`?backtest`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md),
   [`?detect_regime`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md),
-  [`?fit_lr`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md).
+  [`?fit_ratio`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md).
 - `vignette("regime-detection")` — cohort homogeneity diagnostics that
   feed step 1 of the workflow above.
 - [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/ko/articles/backtest.md)

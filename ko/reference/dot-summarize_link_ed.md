@@ -63,7 +63,7 @@ they differ in how weights are assigned:
 
 - `g`:
 
-  WLS-estimated intensity from `lm(target_delta ~ exposure_from + 0)`.
+  WLS-estimated intensity from `lm(loss_delta ~ exposure_from + 0)`.
   Only rows where `exposure_from > 0` are used. When `alpha = 2`, `g`
   and `wt` are numerically equivalent.
 

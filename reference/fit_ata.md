@@ -18,7 +18,7 @@ Estimate age-to-age (ata) development factors from an object of class
 ``` r
 fit_ata(
   x,
-  target = "loss",
+  loss = "loss",
   weight = NULL,
   alpha = 1,
   na_method = c("locf", "none"),
@@ -37,7 +37,7 @@ fit_ata(
   An object of class `"Link"`, typically produced by
   [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md).
 
-- target:
+- loss:
 
   Cumulative metric for the link factor. Default `"loss"`. Forwarded to
   [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md).
@@ -74,11 +74,11 @@ fit_ata(
 - regime:
 
   Optional regime specification for cohort cutoff. Accepts: `NULL`
-  (default — no filter), a `Regime` object (from
+  (default – no filter), a `Regime` object (from
   [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
   or
   [`regime_at()`](https://seokhoonj.github.io/lossratio/reference/regime_at.md)),
-  the string `"auto"` (internal `detect_regime(tri, target = "lr")`
+  the string `"auto"` (internal `detect_regime(tri, loss = "ratio")`
   call), or a function `function(tri) -> Regime` for deferred
   custom-config detection. When supplied, cohorts strictly before the
   resolved change date are excluded from estimation.

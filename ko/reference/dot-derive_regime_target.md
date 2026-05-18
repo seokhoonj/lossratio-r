@@ -1,23 +1,23 @@
-# Derive a non-native regime detection target
+# Derive a non-native regime detection metric
 
-Computes diagnostic / experimental detection targets that are not stored
+Computes diagnostic / experimental detection metrics that are not stored
 directly on the Triangle:
 
 - `loss_ata`:
 
-  Loss age-to-age factor — `loss[k+1] / loss[k]` per (group, cohort).
+  Loss age-to-age factor – `loss[k+1] / loss[k]` per (group, cohort).
   Captures *multiplicative* development speed.
 
-- `prem_ata`:
+- `exposure_ata`:
 
-  Premium age-to-age factor — same form on prem. Captures prem
+  Exposure age-to-age factor – same form on exposure. Captures exposure
   *recognition speed*.
 
 - `loss_ed`:
 
-  Loss intensity (ED model's \$g_k\$) —
-  `(loss[k] - loss[k-1]) / prem[k-1]` per (group, cohort). *Additive*,
-  exposure-anchored.
+  Loss intensity (ED model's \$g_k\$) –
+  `(loss[k] - loss[k-1]) / exposure[k-1]` per (group, cohort).
+  *Additive*, exposure-anchored.
 
 The first dev row per cohort is NA (no predecessor). Downstream
 `.detect_regime_single` handles NA-tolerant aggregation.
@@ -25,5 +25,5 @@ The first dev row per cohort is NA (no predecessor). Downstream
 ## Usage
 
 ``` r
-.derive_regime_target(d, target, grp = character(0))
+.derive_regime_target(d, loss, grp = character(0))
 ```

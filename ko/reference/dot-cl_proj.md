@@ -11,12 +11,12 @@ are returned unchanged.
 ## Usage
 
 ``` r
-.cl_proj(target_obs, f_sel)
+.cl_proj(loss_obs, f_sel)
 ```
 
 ## Arguments
 
-- target_obs:
+- loss_obs:
 
   Numeric vector of cumulative observed values for a single cohort,
   ordered by development period.
@@ -27,5 +27,5 @@ are returned unchanged.
 
 ## Value
 
-A numeric vector of the same length as `target_obs` with unobserved
-cells filled by recursive chain ladder projection.
+A numeric vector of the same length as `loss_obs` with unobserved cells
+filled by recursive chain ladder projection.

@@ -11,8 +11,8 @@ This corresponds to Mack's variance assumption \\\mathrm{Var}(C\_{i,k+1}
 \mid C\_{i,k}) \propto C\_{i,k}^{\alpha}\\.
 
 When only one observation is available for a link, the factor is
-computed directly as `target_to / target_from` and standard errors are
-set to `NA`.
+computed directly as `loss_to / loss_from` and standard errors are set
+to `NA`.
 
 Near-zero values of `f_se` and `sigma` (below `tol`) are set to zero to
 avoid numerical noise from essentially perfect fits.
@@ -41,7 +41,7 @@ avoid numerical noise from essentially perfect fits.
 - na_rm:
 
   Logical; if `TRUE` (default), rows with non-finite or non-positive
-  `target_from` are dropped before fitting. Note that `target_to = 0` is
+  `loss_from` are dropped before fitting. Note that `loss_to = 0` is
   permitted, as zero cumulative values are valid observations (e.g. no
   claims yet developed in early development periods).
 

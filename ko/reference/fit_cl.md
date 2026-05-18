@@ -11,8 +11,8 @@ then applied recursively. The point forecast follows the standard
 recursion, and prediction uncertainty is decomposed into process
 variance and parameter variance.
 
-When `weight` is supplied (e.g. `"prem"`), age-to-age factors and their
-variance are estimated using the supplied WLS weights.
+When `weight` is supplied (e.g. `"exposure"`), age-to-age factors and
+their variance are estimated using the supplied WLS weights.
 
 ## Usage
 
@@ -20,7 +20,7 @@ variance are estimated using the supplied WLS weights.
 fit_cl(
   x,
   method = c("mack"),
-  target = "loss",
+  loss = "loss",
   weight = NULL,
   alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear"),
@@ -42,17 +42,17 @@ fit_cl(
   One of `"mack"`. Default is `"mack"`. The argument is retained for
   future extensibility.
 
-- target:
+- loss:
 
-  A single cumulative target variable (column to project). Typical
-  choices are `"loss"`, `"prem"`, or `"lr"`.
+  A single cumulative loss variable (column to project). Typical choices
+  are `"loss"`, `"exposure"`, or `"ratio"`.
 
 - weight:
 
   An optional column name passed to
   [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md)
-  as the WLS weight variable. Typically `"prem"` when `target = "lr"`.
-  Default is `NULL`.
+  as the WLS weight variable. Typically `"exposure"` when
+  `loss = "ratio"`. Default is `NULL`.
 
 - alpha:
 
@@ -75,11 +75,11 @@ fit_cl(
 - regime:
 
   Optional regime specification for cohort cutoff. Accepts: `NULL`
-  (default — no filter), a `Regime` object (from
+  (default – no filter), a `Regime` object (from
   [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
   or
   [`regime_at()`](https://seokhoonj.github.io/lossratio/ko/reference/regime_at.md)),
-  the string `"auto"` (internal `detect_regime(tri, target = "lr")`
+  the string `"auto"` (internal `detect_regime(tri, loss = "ratio")`
   call), or a function `function(tri) -> Regime` for deferred
   custom-config detection. When supplied, cohorts strictly before the
   resolved change date are excluded from factor estimation.
@@ -106,7 +106,7 @@ fit_cl(
 
   :   Internal
       [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
-      call with defaults (target inferred from `target`).
+      call with defaults (loss inferred from `loss`).
 
   function `function(tri) -> Maturity`
 
@@ -149,9 +149,9 @@ An object of class `"CLFit"` containing:
 
   Character scalar of development variable name.
 
-- `target`:
+- `loss`:
 
-  Character scalar of target variable name.
+  Character scalar of loss column name.
 
 - `full`:
 
@@ -222,7 +222,7 @@ An object of class `"CLFit"` containing:
 ## See also
 
 [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
-[`fit_lr()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_lr.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
 
 ## Examples
 
@@ -235,15 +235,15 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 
 # Mack chain ladder with process / parameter standard errors
-cl_mack <- fit_cl(tri, target = "loss", method = "mack")
+cl_mack <- fit_cl(tri, loss = "loss", method = "mack")
 summary(cl_mack)
 plot(cl_mack)
 
-# WLS factors for lr (loss ratio) using prem as the weight
-cl_clr <- fit_cl(tri, target = "lr", weight = "prem")
+# WLS factors for ratio (loss ratio) using exposure as the weight
+cl_ratio <- fit_cl(tri, loss = "ratio", weight = "exposure")
 } # }
 ```

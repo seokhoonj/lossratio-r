@@ -2,7 +2,8 @@
 
 S3 method for [`summary()`](https://rdrr.io/r/base/summary.html) on
 `Triangle` objects. Computes group-wise summary statistics for
-cumulative loss ratios (`lr`) and per-period loss ratios (`incr_lr`).
+cumulative loss ratios (`ratio`) and per-period loss ratios
+(`incr_ratio`).
 
 The function aggregates data by the grouping variables stored in
 `attr(x, "groups")` and the development variable stored in
@@ -41,29 +42,29 @@ A `data.table` grouped by `groups` and `dev`, containing:
 
   Number of observations in the cell
 
-- lr_mean:
+- ratio_mean:
 
   Mean of cumulative loss ratios
 
-- lr_median:
+- ratio_median:
 
   Median of cumulative loss ratios
 
-- lr_wt:
+- ratio_wt:
 
-  Weighted cumulative loss ratio (`sum(loss) / sum(prem)`)
+  Weighted cumulative loss ratio (`sum(loss) / sum(exposure)`)
 
-- incr_lr_mean:
+- incr_ratio_mean:
 
   Mean of per-period loss ratios
 
-- incr_lr_median:
+- incr_ratio_median:
 
   Median of per-period loss ratios
 
-- incr_lr_wt:
+- incr_ratio_wt:
 
-  Weighted per-period loss ratio (`sum(incr_loss) / sum(incr_prem)`)
+  Weighted per-period loss ratio (`sum(incr_loss) / sum(incr_exposure)`)
 
 The returned object keeps the attributes `groups` and `dev`, and its
 class is updated to `"TriangleSummary"`.
@@ -72,13 +73,13 @@ class is updated to `"TriangleSummary"`.
 
 The weighted mean is computed as:
 
-- `lr_wt = sum(loss) / sum(prem)`
+- `ratio_wt = sum(loss) / sum(exposure)`
 
-- `incr_lr_wt = sum(incr_loss) / sum(incr_prem)`
+- `incr_ratio_wt = sum(incr_loss) / sum(incr_exposure)`
 
-These correspond to portfolio-level loss ratios based on prem and are
-typically more stable than simple averages when exposure sizes differ
-across cohorts.
+These correspond to portfolio-level loss ratios based on exposure and
+are typically more stable than simple averages when exposure sizes
+differ across cohorts.
 
 It is assumed that the input `Triangle` object does not contain missing
 values.
@@ -93,7 +94,7 @@ d <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 smr <- summary(d)
 head(smr)

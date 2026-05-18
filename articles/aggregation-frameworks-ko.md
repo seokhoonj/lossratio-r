@@ -39,33 +39,33 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  prem     = "incr_prem"
+  exposure = "incr_exposure"
 )
 head(tri)
-#>    coverage n_cohorts     cohort   dev     loss incr_loss      prem incr_prem
-#>      <char>     <int>     <Date> <int>    <num>     <num>     <num>     <num>
-#> 1:       ci        36 2023-01-01     1  1262380   1262380  27993106  27993106
-#> 2:       ci        35 2023-01-01     2 12518143  11255763  57177037  29183931
-#> 3:       ci        34 2023-01-01     3 23799452  11281309  86579003  29401966
-#> 4:       ci        33 2023-01-01     4 57401839  33602387 113149543  26570540
-#> 5:       ci        32 2023-01-01     5 64554461   7152622 140621429  27471886
-#> 6:       ci        31 2023-01-01     6 74664986  10110525 167390789  26769360
-#>           lr   incr_lr   margin incr_margin profit incr_profit loss_share
-#>        <num>     <num>    <num>       <num> <fctr>      <fctr>      <num>
-#> 1: 0.0450961 0.0450961 26730726    26730726    pos         pos  0.2745858
-#> 2: 0.2189365 0.3856836 44658894    17928168    pos         pos  0.1681986
-#> 3: 0.2748871 0.3836923 62779551    18120657    pos         pos  0.2132981
-#> 4: 0.5073095 1.2646483 55747704    -7031847    pos         neg  0.3016874
-#> 5: 0.4590656 0.2603615 76066968    20319264    pos         pos  0.2007284
-#> 6: 0.4460519 0.3776902 92725803    16658835    pos         pos  0.2065480
-#>    incr_loss_share prem_share incr_prem_share
-#>              <num>      <num>           <num>
-#> 1:      0.27458581  0.3811712       0.3811712
-#> 2:      0.16119409  0.3803460       0.3795578
-#> 3:      0.30364017  0.3873522       0.4017435
-#> 4:      0.42701715  0.3795353       0.3561180
-#> 5:      0.05446224  0.3776462       0.3700598
-#> 6:      0.25346879  0.3774003       0.3761137
+#>    coverage n_cohorts     cohort   dev     loss incr_loss  exposure
+#>      <char>     <int>     <Date> <int>    <num>     <num>     <num>
+#> 1:       ci        36 2023-01-01     1  1262380   1262380  27993106
+#> 2:       ci        35 2023-01-01     2 12518143  11255763  57177037
+#> 3:       ci        34 2023-01-01     3 23799452  11281309  86579003
+#> 4:       ci        33 2023-01-01     4 57401839  33602387 113149543
+#> 5:       ci        32 2023-01-01     5 64554461   7152622 140621429
+#> 6:       ci        31 2023-01-01     6 74664986  10110525 167390789
+#>    incr_exposure     ratio incr_ratio   margin incr_margin profit incr_profit
+#>            <num>     <num>      <num>    <num>       <num> <fctr>      <fctr>
+#> 1:      27993106 0.0450961  0.0450961 26730726    26730726    pos         pos
+#> 2:      29183931 0.2189365  0.3856836 44658894    17928168    pos         pos
+#> 3:      29401966 0.2748871  0.3836923 62779551    18120657    pos         pos
+#> 4:      26570540 0.5073095  1.2646483 55747704    -7031847    pos         neg
+#> 5:      27471886 0.4590656  0.2603615 76066968    20319264    pos         pos
+#> 6:      26769360 0.4460519  0.3776902 92725803    16658835    pos         pos
+#>    loss_share incr_loss_share exposure_share incr_exposure_share
+#>         <num>           <num>          <num>               <num>
+#> 1:  0.2745858      0.27458581      0.3811712           0.3811712
+#> 2:  0.1681986      0.16119409      0.3803460           0.3795578
+#> 3:  0.2132981      0.30364017      0.3873522           0.4017435
+#> 4:  0.3016874      0.42701715      0.3795353           0.3561180
+#> 5:  0.2007284      0.05446224      0.3776462           0.3700598
+#> 6:  0.2065480      0.25346879      0.3774003           0.3761137
 ```
 
 각 행은 (코호트, dev) 셀 하나이며 누적 손해액 / 누적 위험보험료 값을
@@ -85,8 +85,8 @@ plot(tri)              # 코호트별 궤적, 그룹별 facet
 # dev 축 모두 분기 단위로 다시 만들어 패널당 ~10 × 10 셀로 줄인다.
 # 문서 표시 크기에 맞춘 처리이며, 실제 분석에서는 플롯을 키우면 월
 # 단위 그대로 볼 수 있다.
-tri_q <- as_triangle(experience, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", prem = "incr_prem", grain = "Q")
-plot_triangle(tri_q)   # 코호트 × dev lr 히트맵
+tri_q <- as_triangle(experience, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure", grain = "Q")
+plot_triangle(tri_q)   # 코호트 × dev ratio 히트맵
 ```
 
 ![](aggregation-frameworks-ko_files/figure-html/unnamed-chunk-2-2.png)
@@ -94,9 +94,9 @@ plot_triangle(tri_q)   # 코호트 × dev lr 히트맵
 `Triangle` 은 다음 함수의 입력으로 사용된다.
 
 - [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md)
-  — 발달 인자 (ATA / ED 는 `target` + 선택적 `exposure` 로 선택)
+  — 발달 인자 (ATA / ED 는 `loss` + 선택적 `exposure` 로 선택)
 - [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
-  [`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
   — 추정
 - [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
   — 구조 변화 탐지
@@ -107,10 +107,10 @@ plot_triangle(tri_q)   # 코호트 × dev lr 히트맵
 
 tri <- as_triangle(experience, groups = "coverage",
                    cohort = "uy_m", calendar = "cy_m",
-                   loss = "incr_loss", prem = "incr_prem")
+                   loss = "incr_loss", exposure = "incr_exposure")
 cal <- as_calendar(tri)
 head(cal)
-#>    coverage   calendar cal_idx n_cohorts      loss incr_loss      prem
+#>    coverage   calendar cal_idx n_cohorts      loss incr_loss  exposure
 #>      <char>     <Date>   <int>     <int>     <num>     <num>     <num>
 #> 1:   cancer 2023-01-01       1         1   1327186   1327186  36175141
 #> 2:   cancer 2023-02-01       2         2  53881242  52554056  89468123
@@ -118,22 +118,22 @@ head(cal)
 #> 4:   cancer 2023-04-01       4         4 222577950 136323018 264457245
 #> 5:   cancer 2023-05-01       5         5 358604651 136026701 373602999
 #> 6:   cancer 2023-06-01       6         6 439679309  81074658 504742606
-#>    incr_prem         lr    incr_lr   margin incr_margin profit incr_profit
-#>        <num>      <num>      <num>    <num>       <num> <fctr>      <fctr>
-#> 1:  36175141 0.03668779 0.03668779 34847955    34847955    pos         pos
-#> 2:  53292982 0.60223955 0.98613465 35586881      738926    pos         pos
-#> 3:  80264399 0.50818153 0.40333810 83477590    47890709    pos         pos
-#> 4:  94724723 0.84164058 1.43914929 41879295   -41598295    pos         neg
-#> 5: 109145754 0.95985485 1.24628486 14998348   -26880947    pos         neg
-#> 6: 131139607 0.87109609 0.61823167 65063297    50064949    pos         pos
-#>    loss_share incr_loss_share prem_share incr_prem_share
-#>         <num>           <num>      <num>           <num>
-#> 1:  0.2886821       0.2886821  0.4925828       0.4925828
-#> 2:  0.6063314       0.6236615  0.4520297       0.4281056
-#> 3:  0.4890990       0.3700256  0.4162566       0.3825138
-#> 4:  0.5008249       0.5085391  0.3892024       0.3486040
-#> 5:  0.4596116       0.4050687  0.3778725       0.3529756
-#> 6:  0.3994334       0.2529446  0.3557249       0.3048260
+#>    incr_exposure      ratio incr_ratio   margin incr_margin profit incr_profit
+#>            <num>      <num>      <num>    <num>       <num> <fctr>      <fctr>
+#> 1:      36175141 0.03668779 0.03668779 34847955    34847955    pos         pos
+#> 2:      53292982 0.60223955 0.98613465 35586881      738926    pos         pos
+#> 3:      80264399 0.50818153 0.40333810 83477590    47890709    pos         pos
+#> 4:      94724723 0.84164058 1.43914929 41879295   -41598295    pos         neg
+#> 5:     109145754 0.95985485 1.24628486 14998348   -26880947    pos         neg
+#> 6:     131139607 0.87109609 0.61823167 65063297    50064949    pos         pos
+#>    loss_share incr_loss_share exposure_share incr_exposure_share
+#>         <num>           <num>          <num>               <num>
+#> 1:  0.2886821       0.2886821      0.4925828           0.4925828
+#> 2:  0.6063314       0.6236615      0.4520297           0.4281056
+#> 3:  0.4890990       0.3700256      0.4162566           0.3825138
+#> 4:  0.5008249       0.5085391      0.3892024           0.3486040
+#> 5:  0.4596116       0.4050687      0.3778725           0.3529756
+#> 6:  0.3994334       0.2529446      0.3557249           0.3048260
 ```
 
 각 행은 그룹별 달력 기간 하나이다. `t` 컬럼은 그룹 내부의 순차 인덱스
@@ -167,22 +167,22 @@ tri_bounded <- as_triangle(
              uy_m <= as.Date("2024-03-01")],
   groups = "coverage", cohort = "uy_m",
   dev = "dev_m",
-  loss = "incr_loss", prem = "incr_prem"
+  loss = "incr_loss", exposure = "incr_exposure"
 )
 tot <- as_total(tri_bounded)
 head(tot)
-#>     coverage n_cohorts sales_start  sales_end        loss       prem        lr
+#>     coverage n_cohorts sales_start  sales_end        loss   exposure     ratio
 #>       <char>     <int>      <Date>     <Date>       <num>      <num>     <num>
 #> 1:        ci        12  2023-04-01 2024-03-01  8240143118 9760853703 0.8442031
 #> 2:    cancer        12  2023-04-01 2024-03-01  2801401212 3710915725 0.7549083
 #> 3: inpatient        12  2023-04-01 2024-03-01   158760703  377104088 0.4209997
 #> 4:   surgery        12  2023-04-01 2024-03-01 13425719536 9003134239 1.4912273
-#>     loss_share prem_share
-#>          <num>      <num>
-#> 1: 0.334611179 0.42713331
-#> 2: 0.113757753 0.16238905
-#> 3: 0.006446867 0.01650201
-#> 4: 0.545184201 0.39397563
+#>     loss_share exposure_share
+#>          <num>          <num>
+#> 1: 0.334611179     0.42713331
+#> 2: 0.113757753     0.16238905
+#> 3: 0.006446867     0.01650201
+#> 4: 0.545184201     0.39397563
 ```
 
 그룹당 한 행이며 해당 기간의 손해액 / 위험보험료 / 손해율을 요약한다.
