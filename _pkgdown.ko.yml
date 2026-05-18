@@ -190,6 +190,7 @@ articles:
 - title: 글
   navbar: ~
   contents:
+  - "articles/methodology-ko"
   - "articles/aggregation-frameworks-ko"
   - "articles/triangle-link-and-maturity-ko"
   - "articles/regime-ko"
@@ -206,6 +207,7 @@ articles:
   contents:
   - "articles/getting-started-ko"
   - getting-started
+  - methodology
   - aggregation-frameworks
   - triangle-link-and-maturity
   - regime

@@ -243,6 +243,7 @@ articles:
 - title: Articles
   navbar: ~
   contents:
+  - methodology
   - aggregation-frameworks
   - triangle-link-and-maturity
   - regime
@@ -259,6 +260,7 @@ articles:
   navbar: ~
   contents:
   - getting-started
+  - "articles/methodology-ko"
   - "articles/getting-started-ko"
   - "articles/aggregation-frameworks-ko"
   - "articles/triangle-link-and-maturity-ko"
