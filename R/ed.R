@@ -259,10 +259,23 @@ fit_ed <- function(x,
   # 2) compose EDFit from IntensityFit + method metadata -------------------
   # Use intensity_fit's resolved regime (a Regime object or NULL), not the
   # user's original input (which may be "auto" / a function / etc.).
+  # Slot layout mirrors CLFit for cross-paradigm symmetry: identical
+  # axis / output / config groups, with ED-specific `exposure` +
+  # `na_method` (versus CL's `weight` + `tail` / `tail_factor` /
+  # `maturity` / `use_maturity`).
   out <- list(
     call         = match.call(),
+    data         = x,
     method       = method,
+    groups       = intensity_fit$groups,
+    cohort       = intensity_fit$cohort,
+    dev          = intensity_fit$dev,
+    loss         = intensity_fit$loss,
+    exposure     = intensity_fit$exposure,
+    full         = NULL,
+    proj         = NULL,
     link         = intensity_fit$link,
+    summary      = NULL,
     factor       = intensity_fit$factor,
     selected     = intensity_fit$selected,
     alpha        = alpha,
@@ -378,6 +391,23 @@ fit_ed <- function(x,
        by = c(grp, "cohort")]
 
   out$full <- full
+
+  # 5) proj: NA out observed cells (mirrors CLFit$proj convention) --------
+  proj <- data.table::copy(full)
+  na_cols <- c(
+    "loss_proj",     "incr_loss_proj",
+    "exposure_proj", "exposure_incr_proj",
+    "loss_proc_se2", "loss_param_se2", "loss_total_se2",
+    "loss_proc_se",  "loss_param_se",  "loss_total_se",
+    "loss_total_cv"
+  )
+  na_cols <- intersect(na_cols, names(proj))
+  proj[is_observed == TRUE, (na_cols) := NA_real_]
+  out$proj <- proj
+
+  # 6) cohort-level reserve summary (mirrors CLFit$summary) ---------------
+  out <- .ed_summary(out)
+
   out
 }
 
@@ -453,6 +483,62 @@ fit_ed <- function(x,
   }
   param
 }
+
+#' Cohort-level reserve summary for an `EDFit`
+#'
+#' @description
+#' Internal helper that derives the per-cohort `latest` / `loss_ult` /
+#' `reserve` / process / parameter / total SE table from `x$full` and
+#' stores it on `x$summary`. Mirrors [.cl_summary()] for cross-paradigm
+#' slot symmetry: both `CLFit$summary` and `EDFit$summary` carry the same
+#' columns, so downstream consumers (`summary.CLFit()`, future
+#' `summary.EDFit()` reserve view, `fit_ratio()` composition, etc.) read
+#' from a uniform layout.
+#'
+#' @param x An object of class `"EDFit"` with a populated `$full` slot.
+#'
+#' @return The input `x` with `$summary` filled.
+#'
+#' @keywords internal
+.ed_summary <- function(x) {
+
+  .assert_class(x, "EDFit")
+
+  grp      <- x$groups
+  if (is.null(grp)) grp <- character(0)
+  loss_col <- x$loss
+  full     <- x$full
+  is_ratio <- isTRUE(loss_col == "ratio")
+
+  latest_obs <- full[is_observed == TRUE, .SD[.N], by = c(grp, "cohort")]
+  ult        <- full[, .SD[.N],           by = c(grp, "cohort")]
+  agg <- latest_obs[ult, on = c(grp, "cohort")]
+
+  ult_col <- paste0(loss_col, "_ult")
+  agg[, `:=`(
+    latest  = loss_proj,
+    reserve = if (is_ratio) NA_real_ else i.loss_proj - loss_proj
+  )]
+  agg[, (ult_col) := i.loss_proj]
+
+  agg[, `:=`(
+    loss_proc_se  = i.loss_proc_se,
+    loss_param_se = i.loss_param_se,
+    loss_total_se = i.loss_total_se,
+    loss_total_cv = data.table::fifelse(
+      is.finite(i.loss_proj) & i.loss_proj != 0,
+      i.loss_total_se / i.loss_proj, NA_real_
+    )
+  )]
+  out_cols <- c(grp, "cohort",
+                "latest", ult_col, "reserve",
+                "loss_proc_se", "loss_param_se",
+                "loss_total_se", "loss_total_cv")
+
+  x$summary <- agg[, .SD, .SDcols = out_cols]
+  x
+}
+
 
 #' Summary method for `EDFit`
 #'
