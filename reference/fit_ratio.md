@@ -6,7 +6,7 @@ Three projection methods are available:
 - `"ed"` (default):
 
   Exposure-driven for all development periods. All future increments are
-  \\g_k \cdot C^P_k\\. Unconditional safe baseline — no maturity
+  \\g_k \cdot C^P_k\\. Unconditional safe baseline – no maturity
   dependency, robust under early-dev ATA volatility.
 
 - `"cl"`:
@@ -52,7 +52,7 @@ fit_ratio(
   exposure_method = c("cl", "ed"),
   exposure_alpha = 1,
   exposure_regime = NULL,
-  sigma_method = c("locf", "min_last2", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   maturity = "auto",
   se_method = c("fixed", "delta"),
@@ -143,8 +143,14 @@ fit_ratio(
 
 - sigma_method:
 
-  Sigma extrapolation method. One of `"locf"` (default), `"min_last2"`,
-  or `"loglinear"`.
+  Method used to extrapolate `sigma` for links where it cannot be
+  estimated. One of `"locf"` (default), `"min_last2"`, `"loglinear"`,
+  `"mack"`, or `"none"`. `"mack"` applies the Mack (1993, Appendix B)
+  tail estimator to the last unestimated link only, falling back to LOCF
+  for any earlier ones with a warning. `"none"` performs no
+  extrapolation; `sigma` stays `NA` and downstream variance terms drop
+  those links via finite-value guards. Passed to
+  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio/reference/dot-extrapolate_sigma_ata.md).
 
 - recent:
 

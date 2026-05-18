@@ -173,8 +173,9 @@
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 2) 단계 적응형 손해율 적합 (default)</span></span>
-<span><span class="va">ratio</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
+<span><span class="co"># 2) 손해율 적합 (default: ED — exposure-driven baseline.</span></span>
+<span><span class="co">#    코호트-anchored projection 원할 시 method = "cl" 또는 "sa")</span></span>
+<span><span class="va">ratio</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratio</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">ratio</span><span class="op">)</span></span>
 <span></span>
@@ -204,7 +205,7 @@
 <td>long-format 데이터 → <code>Triangle</code> (코호트 × dev)</td>
 </tr>
 <tr>
-<td><code>fit_ratio(method = "sa" / "ed" / "cl")</code></td>
+<td><code>fit_ratio(method = "ed" / "cl" / "sa")</code></td>
 <td>손해율 적합 — <em>통합 인터페이스</em> (loss + premium 합성)</td>
 </tr>
 <tr>
@@ -249,6 +250,28 @@
 </tr>
 </tbody>
 </table>
+</div>
+<div class="section level2">
+<h2 id="손해율-적합-방법">손해율 적합 방법<a class="anchor" aria-label="anchor" href="#%EC%86%90%ED%95%B4%EC%9C%A8-%EC%A0%81%ED%95%A9-%EB%B0%A9%EB%B2%95"></a>
+</h2>
+<div class="section level3">
+<h3 id="노출-기반exposure-driven-ed-default">노출 기반(exposure-driven, ED) (default)<a class="anchor" aria-label="anchor" href="#%EB%85%B8%EC%B6%9C-%EA%B8%B0%EB%B0%98exposure-driven-ed-default"></a>
+</h3>
+<p><code>fit_ratio(method = "ed")</code> (default) 또는 <code><a href="reference/fit_ed.html">fit_ed()</a></code>. 모든 손해 증분이 노출(위험보험료)을 분모로 사용: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><msup><mi>C</mi><mi>L</mi></msup><mo>=</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">\Delta C^L = g_k \cdot C^P_k</annotation></semantics></math>. 무조건적 안전한 baseline – 성숙점 / regime 검출 의존 없음, 초기 dev 의 ATA 인자 변동에 강건.</p>
+<p><em>언제 사용</em>: baseline 으로. pooled intensity <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>g</mi><mi>k</mi></msub><annotation encoding="application/x-tex">g_k</annotation></semantics></math> 는 코호트들이 단위 노출 당 손해 수준에서 대체로 동질적이라고 가정 – 코호트-레벨 drift(약관 / 인수 정책 변경) 시 pooled 평균으로 편향, post-change 코호트를 over-project 가능. 명시적 필터는 <code>regime</code> 인자.</p>
+</div>
+<div class="section level3">
+<h3 id="체인-래더chain-ladder-cl">체인 래더(chain ladder, CL)<a class="anchor" aria-label="anchor" href="#%EC%B2%B4%EC%9D%B8-%EB%9E%98%EB%8D%94chain-ladder-cl"></a>
+</h3>
+<p><code>fit_ratio(method = "cl")</code> 또는 <code><a href="reference/fit_cl.html">fit_cl()</a></code>. 고전 Mack (1993) 체인 래더 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mo>=</mo><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup></mrow><annotation encoding="application/x-tex">C^L_{k+1} = f_k \cdot C^L_k</annotation></semantics></math> + 해석적 표준오차. <em>코호트 자기 cum_loss 가 anchor</em> 역할이므로 <em>코호트-레벨 drift 가 자연스럽게 propagation</em> – 명시적 regime 검출 불필요.</p>
+<p><em>언제 사용</em>: ATA 인자가 안정된 후. 특히 코호트-레벨 drift 시나리오에서 <em>코호트의 관측 경로가 자동 anchor</em>.</p>
+</div>
+<div class="section level3">
+<h3 id="단계-적응형stage-adaptive-sa">단계 적응형(stage-adaptive, SA)<a class="anchor" aria-label="anchor" href="#%EB%8B%A8%EA%B3%84-%EC%A0%81%EC%9D%91%ED%98%95stage-adaptive-sa"></a>
+</h3>
+<p><code>fit_ratio(method = "sa")</code>. 두 방법의 합성: 성숙점 이전은 ED, 이후는 CL. ED 의 초기 dev 안정성 + CL 의 후기 dev 코호트 anchoring 결합.</p>
+<p><em>언제 사용</em>: 장기-tail 포트폴리오 – 초기 dev 의 변동성(ED phase) + 후기 dev 의 코호트-레벨 drift(CL phase) 둘 다 처리.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="입력-형식">입력 형식<a class="anchor" aria-label="anchor" href="#%EC%9E%85%EB%A0%A5-%ED%98%95%EC%8B%9D"></a>
@@ -357,7 +380,7 @@
 <div class="section level2">
 <h2 id="python-sibling">Python sibling<a class="anchor" aria-label="anchor" href="#python-sibling"></a>
 </h2>
-<p>Python 구현: <a href="https://github.com/seokhoonj/lossratio-py" class="external-link"><code>lossratio-py</code></a> — sklearn-style estimator (<code>lr.LR().fit(tri)</code>), polars 기반.</p>
+<p>Python 구현: <a href="https://github.com/seokhoonj/lossratio-py" class="external-link"><code>lossratio-py</code></a> — sklearn-style estimator (<code>lr.Ratio().fit(tri)</code>), polars 기반.</p>
 </div>
 <div class="section level2">
 <h2 id="라이선스--저자">라이선스 / 저자<a class="anchor" aria-label="anchor" href="#%EB%9D%BC%EC%9D%B4%EC%84%A0%EC%8A%A4--%EC%A0%80%EC%9E%90"></a>

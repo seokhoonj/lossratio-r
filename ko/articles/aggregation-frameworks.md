@@ -225,10 +225,9 @@ attr(cal, "grain")      # "M"
 #> [1] "M"
 ```
 
-Granularity (`"month"` / `"quarter"` / `"semi-annual"` / `"annual"`) is
-derived on demand from the raw column name via
-`lossratio:::.get_period_type()`, so no `_type` cache attributes are
-stored.
+Granularity (`"month"` / `"quarter"` / `"half"` / `"year"`) is derived
+on demand from the raw column name via `lossratio:::.get_period_type()`,
+so no `_type` cache attributes are stored.
 
 The data columns themselves are standardised to `cohort` / `dev` /
 `calendar`, so downstream code is granularity-agnostic.

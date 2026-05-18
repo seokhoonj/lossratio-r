@@ -60,7 +60,7 @@ after the left-join) are kept unfiltered.
 
 - dev_split:
 
-  Optional numeric scalar — the maturity target dev (= `ata_to`,
+  Optional numeric scalar – the maturity target dev (= `ata_to`,
   equivalently the first CL-region dev). When supplied, the cohort
   filter is only applied to rows where `dev < dev_split` (ED region);
   rows with `dev >= dev_split` (CL region) are kept regardless of

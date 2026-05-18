@@ -232,8 +232,8 @@ which loss metric matches which suspected event.</p></dd>
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
 <dd><p>Grouping column(s) for per-combination detection. <code>NULL</code>
-(default) reuses the Triangle's <code>attr(x, "groups")</code> when non-empty —
-so <code>detect_regime(tri)</code> dispatches per group automatically — and
+(default) reuses the Triangle's <code>attr(x, "groups")</code> when non-empty –
+so <code>detect_regime(tri)</code> dispatches per group automatically – and
 otherwise falls back to pooled detection. Pass <code>by = character(0)</code>
 to force pooled detection on a multi-group Triangle, or a character
 vector (subset of <code>names(x)</code>) to dispatch on an explicit combo,
@@ -242,7 +242,7 @@ e.g. <code>by = "coverage"</code> or <code>by = c("channel", "coverage")</code>.
 
 <dt id="arg-window">window<a class="anchor" aria-label="anchor" href="#arg-window"></a></dt>
 <dd><p>Trajectory window. Integer (e.g., <code>12L</code>) for a fixed window, or
-the string <code>"auto"</code> (default) — resolves to each group's maturity
+the string <code>"auto"</code> (default) – resolves to each group's maturity
 via <code><a href="detect_maturity.html">detect_maturity()</a></code>, falling back to <code>6L</code> when maturity is
 unavailable (NA, pooled mode, or <code>by</code> mismatching the Triangle's
 <code>attr("groups")</code>). Cohorts with fewer than the resolved <code>window</code>
@@ -329,7 +329,7 @@ when <code>by</code> resolves to a non-empty vector.</p></dd>
 columns <code>[by..., change, regime_id, pre_value, post_value, magnitude]</code>. <code>regime_id</code> = id of the regime that STARTS at this
 change (the pre-change regime is <code>regime_id - 1</code>); matches
 <code>$labels$regime_id</code>. <code>pre_value</code> / <code>post_value</code> are the mean
-<code>loss</code> over the cohort × dev trajectory windows in the pre- /
+<code>loss</code> over the cohort x dev trajectory windows in the pre- /
 post-change regimes; <code>magnitude = |post_value - pre_value|</code>.
 Empty (zero rows) when no change is detected.</p></dd>
 
@@ -339,7 +339,7 @@ single-combo detection; named integer vector (keyed by combo) for
 multi-combo.</p></dd>
 
 <dt><code>trajectory</code></dt>
-<dd><p>Cohort × dev feature matrix used for detection.
+<dd><p>Cohort x dev feature matrix used for detection.
 Single matrix when single combo; named list of matrices for
 multi-combo.</p></dd>
 
@@ -356,7 +356,7 @@ constraint. Vector (single) / named list (multi).</p></dd>
 multiple group combos.</p></dd>
 
 <dt><code>treatment</code></dt>
-<dd><p>Either <code>"latest_only"</code> or <code>"segment_wise"</code> — the
+<dd><p>Either <code>"latest_only"</code> or <code>"segment_wise"</code> – the
 value supplied via the <code>treatment</code> argument. Read by downstream
 fits (<code><a href="fit_ata.html">fit_ata()</a></code>, <code><a href="fit_intensity.html">fit_intensity()</a></code>, <code><a href="fit_cl.html">fit_cl()</a></code>, <code><a href="fit_ed.html">fit_ed()</a></code>) to
 decide whether to collapse to the latest change (drop pre-change

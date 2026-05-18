@@ -24,7 +24,7 @@ fit_intensity(
   exposure = "exposure",
   alpha = 1,
   na_method = c("locf", "zero", "none"),
-  sigma_method = c("locf", "min_last2", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   regime = NULL,
   ...
@@ -55,15 +55,21 @@ fit_intensity(
 
   NA fill method for the selected intensity series used downstream by
   [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md).
-  One of `"locf"` (default — carries the last observed intensity
+  One of `"locf"` (default – carries the last observed intensity
   forward, appropriate for long-term health where ageing keeps \\g_k\\
   elevated rather than decaying to 0), `"zero"` (sets late-dev NAs to 0;
   suits short-tail lines where claims fully settle), or `"none"`.
 
 - sigma_method:
 
-  Method for extrapolating missing or non-positive `sigma` values across
-  links. One of `"min_last2"` (default), `"locf"`, `"loglinear"`.
+  Method used to extrapolate `sigma` for links where it cannot be
+  estimated. One of `"locf"` (default), `"min_last2"`, `"loglinear"`,
+  `"mack"`, or `"none"`. `"mack"` applies the Mack (1993, Appendix B)
+  tail estimator to the last unestimated link only, falling back to LOCF
+  for any earlier ones with a warning. `"none"` performs no
+  extrapolation; `sigma` stays `NA` and downstream variance terms drop
+  those links via finite-value guards. Passed to
+  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-extrapolate_sigma_ata.md).
 
 - recent:
 
@@ -115,7 +121,7 @@ A list of class `"IntensityFit"` with components:
 
   The `EDSummary` returned by
   [`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md)
-  — one row per link with WLS-estimated `g`, `g_se`, `rse`, `sigma`,
+  – one row per link with WLS-estimated `g`, `g_se`, `rse`, `sigma`,
   plus descriptive statistics.
 
 - `selected`:
@@ -135,7 +141,7 @@ A list of class `"IntensityFit"` with components:
 
 Unlike ATA factors, where CV / RSE drive a
 [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
-threshold, ED intensities behave differently — as \\g_k \to 0\\ in late
+threshold, ED intensities behave differently – as \\g_k \to 0\\ in late
 development the CV / RSE blow up by construction, not by instability.
 `fit_intensity()` therefore deliberately omits a `maturity` parameter,
 and

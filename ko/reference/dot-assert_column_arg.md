@@ -4,12 +4,12 @@ Internal helper used by entry-point functions (`as_triangle`, `as_link`,
 `fit_cl`, ...) that take column names as plain character arguments (no
 NSE). Performs:
 
-- type check — must be a non-empty character vector
+- type check – must be a non-empty character vector
 
-- optional length-one check — for arguments expected to resolve to a
+- optional length-one check – for arguments expected to resolve to a
   single column (e.g., `cohort`, `loss`)
 
-- presence check — every name must exist in `df`'s columns
+- presence check – every name must exist in `df`'s columns
 
 Produces clear, argument-named error messages.
 

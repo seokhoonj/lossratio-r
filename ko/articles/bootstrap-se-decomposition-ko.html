@@ -103,11 +103,11 @@
 개</em> 의 서로 다른 출처가 섞인 양이다.</p>
 <ol style="list-style-type: decimal">
 <li>
-<strong>모수 불확실성(parameter uncertainty)</strong> — 진짜
-진전계수 <code>f_k</code> 가 무엇인지 모른다. 유한한 삼각형 데이터로
-<code>f̂_k</code> 를 추정한 것일 뿐이고, <em>조금 다른 과거 데이터
-표본</em> 이었다면 <code>f̂_k</code> 도 <em>조금 달랐을</em> 것이다. 이
-추정의 불확실성이 projection 으로 전파된다.</li>
+<strong>모수 불확실성(parameter uncertainty)</strong> — 진짜 ATA
+인자(age-to-age factor) <code>f_k</code> 가 무엇인지 모른다. 유한한
+삼각형 데이터로 <code>f̂_k</code> 를 추정한 것일 뿐이고, <em>조금 다른
+과거 데이터 표본</em> 이었다면 <code>f̂_k</code> 도 <em>조금 달랐을</em>
+것이다. 이 추정의 불확실성이 projection 으로 전파된다.</li>
 <li>
 <strong>프로세스 불확실성(process uncertainty)</strong> — 가령
 <em>진짜</em> <code>f_k</code> 를 알았다 하더라도, 다음 셀의
@@ -194,7 +194,7 @@ replicate 마다:</p>
 <li>
 <strong>Stage 1 — 모수 perturbation.</strong> 잔차(residual)를
 재추출하거나 (또는 parametric 의 경우
-<code>f*_k ~ N(f̂_k, sqrt(Var(f̂_k)))</code> 를 draw) 다른 진전계수 추정
+<code>f*_k ~ N(f̂_k, sqrt(Var(f̂_k)))</code> 를 draw) 다른 ATA 인자 추정
 <code>θ_b</code> 를 만들어 낸다. 이로부터 forward projection 된 평균
 <code>μ_b</code> 가 산출된다.</li>
 <li>

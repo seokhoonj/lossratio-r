@@ -109,8 +109,8 @@ print(x, ...)
 - by:
 
   Grouping column(s) for per-combination detection. `NULL` (default)
-  reuses the Triangle's `attr(x, "groups")` when non-empty — so
-  `detect_regime(tri)` dispatches per group automatically — and
+  reuses the Triangle's `attr(x, "groups")` when non-empty – so
+  `detect_regime(tri)` dispatches per group automatically – and
   otherwise falls back to pooled detection. Pass `by = character(0)` to
   force pooled detection on a multi-group Triangle, or a character
   vector (subset of `names(x)`) to dispatch on an explicit combo, e.g.
@@ -119,7 +119,7 @@ print(x, ...)
 - window:
 
   Trajectory window. Integer (e.g., `12L`) for a fixed window, or the
-  string `"auto"` (default) — resolves to each group's maturity via
+  string `"auto"` (default) – resolves to each group's maturity via
   [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md),
   falling back to `6L` when maturity is unavailable (NA, pooled mode, or
   `by` mismatching the Triangle's `attr("groups")`). Cohorts with fewer
@@ -215,7 +215,7 @@ An object of class `"Regime"`. For single-group input:
   `[by..., change, regime_id, pre_value, post_value, magnitude]`.
   `regime_id` = id of the regime that STARTS at this change (the
   pre-change regime is `regime_id - 1`); matches `$labels$regime_id`.
-  `pre_value` / `post_value` are the mean `loss` over the cohort × dev
+  `pre_value` / `post_value` are the mean `loss` over the cohort x dev
   trajectory windows in the pre- / post-change regimes;
   `magnitude = |post_value - pre_value|`. Empty (zero rows) when no
   change is detected.
@@ -227,7 +227,7 @@ An object of class `"Regime"`. For single-group input:
 
 - `trajectory`:
 
-  Cohort × dev feature matrix used for detection. Single matrix when
+  Cohort x dev feature matrix used for detection. Single matrix when
   single combo; named list of matrices for multi-combo.
 
 - `pca`:
@@ -246,7 +246,7 @@ An object of class `"Regime"`. For single-group input:
 
 - `treatment`:
 
-  Either `"latest_only"` or `"segment_wise"` — the value supplied via
+  Either `"latest_only"` or `"segment_wise"` – the value supplied via
   the `treatment` argument. Read by downstream fits
   ([`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md),
   [`fit_intensity()`](https://seokhoonj.github.io/lossratio/reference/fit_intensity.md),

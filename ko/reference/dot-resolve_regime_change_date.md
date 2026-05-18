@@ -37,6 +37,6 @@ One of:
 
 - `NULL` when no change date is specified.
 
-- A single Date (the latest change) — the scalar path.
+- A single Date (the latest change) – the scalar path.
 
-- A `data.table` `[join_cols..., change_date]` — the per-group path.
+- A `data.table` `[join_cols..., change_date]` – the per-group path.

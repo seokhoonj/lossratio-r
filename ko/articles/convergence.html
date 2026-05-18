@@ -598,8 +598,9 @@ every method.</li>
 <li>
 <strong>Model conditioning</strong>: the projected LR is computed by
 <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code>, which internally composes
-<code><a href="../reference/fit_loss.html">fit_loss()</a></code> (default <code>method = "sa"</code> —
-stage-adaptive) and <code><a href="../reference/fit_exposure.html">fit_exposure()</a></code>. Choices made inside
+<code><a href="../reference/fit_loss.html">fit_loss()</a></code> (default <code>method = "ed"</code> –
+exposure-driven; optionally <code>"cl"</code> / <code>"sa"</code> for
+cohort-anchored) and <code><a href="../reference/fit_exposure.html">fit_exposure()</a></code>. Choices made inside
 that composition (loss method, regime filter, maturity argument) feed
 through to <code>conv_k</code>; review the underlying
 <code>fit_ratio</code> settings when interpreting the result. Pass

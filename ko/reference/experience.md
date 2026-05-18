@@ -5,7 +5,7 @@ lossratio package workflow. Generated deterministically from
 `data-raw/make_experience.R` (set.seed = 20260501). Per-coverage
 calibration scalars (target ultimate LR, cohort exposure volume,
 cell-level noise CV) were measured once on a real long-term Korean
-health-insurance portfolio and baked in as constants — no real-portfolio
+health-insurance portfolio and baked in as constants – no real-portfolio
 data is shipped. The runoff shape uses a small dev-1 "waiting-period"
 dip followed by roughly constant incremental loss per dev, so the
 cumulative LR rises monotonically toward the target. The surgery
@@ -30,17 +30,17 @@ up-to-36-dev jagged triangle:
 
   Coverage code (character). One of:
 
-  - `CI` — the two major non-cancer critical illnesses, covering
+  - `CI` – the two major non-cancer critical illnesses, covering
     cerebrovascular disease (stroke, cerebral infarction, cerebral
     haemorrhage) and ischemic heart disease (angina, acute myocardial
     infarction). Does **not** include cancer; cancer is the separate
     `cancer` coverage.
 
-  - `cancer` — cancer.
+  - `cancer` – cancer.
 
-  - `inpatient` — hospitalisation per-day fixed benefit.
+  - `inpatient` – hospitalisation per-day fixed benefit.
 
-  - `surgery` — surgery per-event fixed benefit.
+  - `surgery` – surgery per-event fixed benefit.
 
 - uy, uy_h, uy_q, uy_m:
 

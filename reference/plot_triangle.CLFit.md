@@ -63,7 +63,7 @@ plot_triangle(
 
   Cell region to plot (only used when `view = "value"`). One of `"proj"`
   (default; projected cells only, observed cells masked), `"full"`
-  (observed + projected), or `"data"` (observed from `x$data` — the raw
+  (observed + projected), or `"data"` (observed from `x$data` – the raw
   Triangle, no projection).
 
 - view:

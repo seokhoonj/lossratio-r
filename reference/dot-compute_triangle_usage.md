@@ -42,7 +42,7 @@ Mask precedence: `holdout` \> `used` \> `unused` \> `future`.
   evaluated against the post-holdout boundary so the recent wedge sits
   *before* the holdout wedge (no overlap), matching
   [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
-  semantics — the internal fitter operates on the masked triangle whose
+  semantics – the internal fitter operates on the masked triangle whose
   own max_cal is `original - holdout`.
 
 - m_k:

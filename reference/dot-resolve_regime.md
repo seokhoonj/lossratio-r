@@ -51,7 +51,7 @@ The four accepted input types are:
 
 - tri:
 
-  A `"Triangle"` object — used as the detection input when `masked_tri`
+  A `"Triangle"` object – used as the detection input when `masked_tri`
   is `NULL`.
 
 - masked_tri:

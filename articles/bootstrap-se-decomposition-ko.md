@@ -6,10 +6,10 @@
 `Y_{i,j}` 의 *표준오차(SE)* 는 본질적으로 *두 개* 의 서로 다른 출처가
 섞인 양이다.
 
-1.  **모수 불확실성(parameter uncertainty)** — 진짜 진전계수 `f_k` 가
-    무엇인지 모른다. 유한한 삼각형 데이터로 `f̂_k` 를 추정한 것일 뿐이고,
-    *조금 다른 과거 데이터 표본* 이었다면 `f̂_k` 도 *조금 달랐을* 것이다.
-    이 추정의 불확실성이 projection 으로 전파된다.
+1.  **모수 불확실성(parameter uncertainty)** — 진짜 ATA 인자(age-to-age
+    factor) `f_k` 가 무엇인지 모른다. 유한한 삼각형 데이터로 `f̂_k` 를
+    추정한 것일 뿐이고, *조금 다른 과거 데이터 표본* 이었다면 `f̂_k` 도
+    *조금 달랐을* 것이다. 이 추정의 불확실성이 projection 으로 전파된다.
 2.  **프로세스 불확실성(process uncertainty)** — 가령 *진짜* `f_k` 를
     알았다 하더라도, 다음 셀의 *실현값* 은 결정적(deterministic) 이
     아니다. 잡음이 있는 stochastic process (ODP / Gamma / Normal 등)
@@ -83,9 +83,9 @@ closed-form 분산 식이 필요하지 않고, 단계 적응형(stage-adaptive, 
 는 두 단계를 수행한다.
 
 1.  **Stage 1 — 모수 perturbation.** 잔차(residual)를 재추출하거나 (또는
-    parametric 의 경우 `f*_k ~ N(f̂_k, sqrt(Var(f̂_k)))` 를 draw) 다른
-    진전계수 추정 `θ_b` 를 만들어 낸다. 이로부터 forward projection 된
-    평균 `μ_b` 가 산출된다.
+    parametric 의 경우 `f*_k ~ N(f̂_k, sqrt(Var(f̂_k)))` 를 draw) 다른 ATA
+    인자 추정 `θ_b` 를 만들어 낸다. 이로부터 forward projection 된 평균
+    `μ_b` 가 산출된다.
 2.  **Stage 2 — 프로세스 잡음.** `μ_b` 위에 선택된 process 분포 (`gamma`
     / `od_pois` / `normal`)에서 한 번의 noise draw `ε_b` 를 더해 `Y_b`
     를 만든다.

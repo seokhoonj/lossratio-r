@@ -15,14 +15,13 @@ f_k - 1\\ (and therefore \\\sigma^2_g = \sigma^2_f\\), so are
 intentionally not provided as separate functions to avoid suggesting
 paradigm mismatch is encouraged in user code.
 
-Conceptually `.ed_g_var()` is a *factor-level* helper (operates on
-per-link `$link` and `$selected` slots) and should pair with
-`"IntensityFit"` (the factor-level diagnostic for ED, sibling of
-`"ATAFit"`). The current implementation takes `"EDFit"`
-(projection-level) for historical reasons; both objects expose the same
-factor-level slots, so the implementation is functionally correct but
-the class assertion is conceptually misaligned. TODO: refactor input to
-`"IntensityFit"` for symmetry with `.mack_f_var(ata_fit: ATAFit)`.
+Conceptually a *factor-level* helper (operates on per-link `$link` and
+`$selected` slots), parallel to `.mack_f_var(ata_fit: ATAFit)`. Accepts
+either `"IntensityFit"` (the factor-level diagnostic for ED, sibling of
+`"ATAFit"`) or `"EDFit"` (projection-level, which exposes the same
+factor-level slots as a superset). The `"IntensityFit"` path is the
+conceptually clean entry point for factor-level callers; `"EDFit"` is
+accepted for projection-level callers that already hold the fit object.
 
 Used by
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md)
@@ -33,14 +32,15 @@ for the ED component.
 ## Usage
 
 ``` r
-.ed_g_var(ed_fit, alpha = 1)
+.ed_g_var(x, alpha = 1)
 ```
 
 ## Arguments
 
-- ed_fit:
+- x:
 
-  An object of class `"EDFit"`.
+  An object of class `"IntensityFit"` or `"EDFit"`. Either exposes the
+  `$link` and `$selected` slots used here.
 
 - alpha:
 

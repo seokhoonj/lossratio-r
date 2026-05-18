@@ -275,7 +275,8 @@ calls and inherits their constraints:
   [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md),
   which internally composes
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
-  (default `method = "sa"` — stage-adaptive) and
+  (default `method = "ed"` – exposure-driven; optionally `"cl"` / `"sa"`
+  for cohort-anchored) and
   [`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md).
   Choices made inside that composition (loss method, regime filter,
   maturity argument) feed through to `conv_k`; review the underlying

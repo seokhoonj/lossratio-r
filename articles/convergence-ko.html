@@ -642,7 +642,7 @@ reserving 주의사항을 적용.</li>
 <li>
 <strong>모형 조건부</strong>: 예측 LR 은 <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> 로
 산출. <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> 이 내부적으로 <code><a href="../reference/fit_loss.html">fit_loss()</a></code>
-(default <code>method = "sa"</code> — 단계 적응형) 와
+(default <code>method = "ed"</code> — 노출 기반) 와
 <code><a href="../reference/fit_exposure.html">fit_exposure()</a></code> 을 합성하므로, 그 안의 선택 (loss method,
 regime 필터, maturity 인자) 이 <code>conv_k</code> 로 흘러간다. 결과
 해석 시 <code>fit_ratio</code> 설정을 같이 확인할 것. <code>...</code>

@@ -7,7 +7,7 @@ via
 [`.format_facet_col()`](https://seokhoonj.github.io/lossratio/reference/dot-format_facet_col.md).
 
 With one variable, labels are returned as-is (formatted). With multiple
-variables, labels are combined as `"first (rest1, rest2, ...)"` — e.g.
+variables, labels are combined as `"first (rest1, rest2, ...)"` – e.g.
 `"surgery (23.01)"`.
 
 ## Usage

@@ -311,7 +311,7 @@ history.</p>
 <h2 id="choosing-the-projection-target">Choosing the projection target<a class="anchor" aria-label="anchor" href="#choosing-the-projection-target"></a>
 </h2>
 <p>The default is <code>target = "ratio"</code> with
-<code>loss_method = "sa"</code>. The loss ratio is unitless and
+<code>loss_method = "ed"</code>. The loss ratio is unitless and
 dimension-free across cohorts of very different volume, so
 <code>ae_err_mean</code> and <code>ae_err_med</code> carry a consistent
 meaning across the triangle.</p>
@@ -358,28 +358,30 @@ held-out actuals:</p>
 </tbody>
 </table>
 <p>The <code>loss_method</code> argument selects the underlying loss /
-loss-ratio projection strategy: <code>"sa"</code> (stage-adaptive, the
-default) blends exposure-driven projections before the maturity point
-with chain ladder afterwards; <code>"ed"</code> is purely
-exposure-driven; <code>"cl"</code> is the classical chain ladder. The
-<code>exposure_method</code> argument selects the premium projection
-strategy when <code>target = "exposure"</code>.</p>
+loss-ratio projection strategy: <code>"ed"</code> (exposure-driven, the
+default) is the unconditional safe baseline – no maturity or regime
+detection needed; <code>"cl"</code> is the classical chain ladder, which
+lets the cohort’s own cum_loss anchor cohort-level drift;
+<code>"sa"</code> (stage-adaptive) blends ED before the maturity point
+with CL afterwards. The <code>exposure_method</code> argument selects
+the premium projection strategy when
+<code>target = "exposure"</code>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">bt_sa</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span>  <span class="co"># default</span></span>
-<span><span class="va">bt_ed</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">bt_ed</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span>  <span class="co"># default</span></span>
 <span><span class="va">bt_cl</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
+<span><span class="va">bt_sa</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">bt_loss</span>     <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>,</span>
 <span>                        target <span class="op">=</span> <span class="st">"loss"</span>, loss_method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
 <span><span class="va">bt_premium</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>,</span>
 <span>                        target <span class="op">=</span> <span class="st">"exposure"</span>, exposure_method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt_sa</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt_ed</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Backtest&gt;</span></span>
 <span><span class="co">#&gt;   dispatcher: fit_ratio</span></span>
 <span><span class="co">#&gt;   target    : ratio</span></span>
 <span><span class="co">#&gt;   holdout   : 6 diagonals (159 cells)</span></span>
-<span><span class="co">#&gt;   A/E Error : mean 0.21% / median -0.00%</span></span></code></pre></div>
+<span><span class="co">#&gt;   A/E Error : mean -9.38% / median -4.39%</span></span></code></pre></div>
 <p>For monetary impact (loss or premium) backtesting, set
 <code>target = "loss"</code> or <code>target = "exposure"</code> to
 score the corresponding projection lane directly.</p>

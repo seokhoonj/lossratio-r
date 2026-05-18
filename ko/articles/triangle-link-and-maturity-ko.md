@@ -342,10 +342,9 @@ attribute 로도 저장된다.
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
 내부에서도 `maturity` 인자를 통해 호출된다. 사용자 임계값을 넘기려면
 [`maturity_spec()`](https://seokhoonj.github.io/lossratio/ko/reference/maturity_spec.md)
-으로 감싸 전달하고, default 값으로 자동 탐지하려면 `"auto"` 를 쓴다
-(`fit_ratio(method = "sa")` /
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
-는 default 가 `"auto"`).
+으로 감싸 전달하고, default 값으로 자동 탐지하려면 `"auto"` 를 쓴다 (SA
+path 의 `maturity` 인자는 default 가 `"auto"`; ED / CL path 에서는
+maturity 의미 없음).
 
 ``` r
 

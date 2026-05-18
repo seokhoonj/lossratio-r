@@ -10,8 +10,8 @@
   진단](https://seokhoonj.github.io/lossratio/ko/articles/triangle-link-and-maturity-ko.md):
 - [Regime: 인수 코호트 간 구조적 변화
   탐지](https://seokhoonj.github.io/lossratio/ko/articles/regime-ko.md):
-- [Projection: 손해율 예측 (SA, ED,
-  CL)](https://seokhoonj.github.io/lossratio/ko/articles/projection-ko.md):
+- [Projection: 손해율 예측 (ED, CL,
+  SA)](https://seokhoonj.github.io/lossratio/ko/articles/projection-ko.md):
 - [Regime change filter: 탐지된 regime 을 fit\_\* 의
   필터로](https://seokhoonj.github.io/lossratio/ko/articles/regime-change-filter-ko.md):
 - [Backtest: hold-out 대각선을 이용한 추정

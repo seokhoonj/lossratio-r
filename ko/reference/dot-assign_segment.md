@@ -7,7 +7,7 @@ earlier than the first change is segment 1; between the k-th and
 K+1.
 
 Returns `rep(1L, length(coh_vals))` when `regime` is `NULL` or carries
-no changes — every cohort is in the single (sole) segment.
+no changes – every cohort is in the single (sole) segment.
 
 Treatment-agnostic: this helper preserves all change points regardless
 of `regime$treatment`. Callers decide whether to use the full partition

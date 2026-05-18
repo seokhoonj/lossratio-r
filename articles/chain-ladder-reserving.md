@@ -321,8 +321,10 @@ the extrapolation:
 | `sigma_method` | Behaviour |
 |----|----|
 | `"locf"` | (default) last observation carried forward |
-| `"min_last2"` | min of the last two estimable $`\sigma`$ values — conservative |
+| `"min_last2"` | min of the last two estimable $`\sigma`$ values – conservative |
 | `"loglinear"` | Log-linear extrapolation from the observed $`\sigma_k`$ sequence |
+| `"mack"` | Mack (1993) Appendix B tail estimator – closed-form for the last link only; LOCF with warning beyond that |
+| `"none"` | no extrapolation; $`\sigma`$ stays `NA` (variance is treated as zero downstream) |
 
 ``` r
 

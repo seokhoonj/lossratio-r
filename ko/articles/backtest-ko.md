@@ -247,13 +247,13 @@ plot_triangle(bt)         # hold-out 영역에 대한 발산형 팔레트 히트
 
 ``` r
 
-bt_sa_ratio   <- backtest(tri_sur, holdout = 6L)                       # default
+bt_ed_ratio   <- backtest(tri_sur, holdout = 6L)                       # default (loss_method = "ed")
 bt_cl_loss    <- backtest(tri_sur, holdout = 6L,
                           target = "loss", loss_method = "cl")
-bt_ed_ratio   <- backtest(tri_sur, holdout = 6L, loss_method = "ed")
 bt_cl_ratio   <- backtest(tri_sur, holdout = 6L, loss_method = "cl")
+bt_sa_ratio   <- backtest(tri_sur, holdout = 6L, loss_method = "sa")
 
-print(bt_sa_ratio)
+print(bt_ed_ratio)
 #> <Backtest>
 #>   dispatcher: fit_ratio
 #>   target    : ratio

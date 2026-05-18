@@ -12,7 +12,7 @@ The four accepted input types are:
 
 - `NULL`:
 
-  Returns `NULL` — caller falls back to its default maturity behavior.
+  Returns `NULL` – caller falls back to its default maturity behavior.
 
 - `"Maturity"` object:
 
@@ -25,7 +25,7 @@ The four accepted input types are:
   on `masked_tri` if supplied, otherwise on `tri`. The `masked_tri`
   fallback is the leakage-safe path used by
   [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
-  — fit functions pass only `tri`, while
+  – fit functions pass only `tri`, while
   [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
   passes both so detection sees only the masked (training) data.
 
@@ -48,7 +48,7 @@ The four accepted input types are:
 
 - tri:
 
-  A `"Triangle"` object — used as the detection input when `masked_tri`
+  A `"Triangle"` object – used as the detection input when `masked_tri`
   is `NULL`.
 
 - masked_tri:

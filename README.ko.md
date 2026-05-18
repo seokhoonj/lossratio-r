@@ -62,8 +62,9 @@ tri <- as_triangle(
 )
 plot(tri)
 
-# 2) 단계 적응형 손해율 적합 (default)
-ratio <- fit_ratio(tri, method = "sa")
+# 2) 손해율 적합 (default: ED — exposure-driven baseline.
+#    코호트-anchored projection 원할 시 method = "cl" 또는 "sa")
+ratio <- fit_ratio(tri)
 summary(ratio)
 plot_triangle(ratio)
 
@@ -81,7 +82,7 @@ plot_triangle(bt)
 | 함수 | 역할 |
 |----|----|
 | [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md) | long-format 데이터 → `Triangle` (코호트 × dev) |
-| `fit_ratio(method = "sa" / "ed" / "cl")` | 손해율 적합 — *통합 인터페이스* (loss + premium 합성) |
+| `fit_ratio(method = "ed" / "cl" / "sa")` | 손해율 적합 — *통합 인터페이스* (loss + premium 합성) |
 | [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md) / [`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md) | 역할별 디스패처 — 단일 측 (SE / CI 포함) |
 | [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md) / [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md) | 단일 stage (chain ladder / exposure-driven) |
 | [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md) / [`fit_intensity()`](https://seokhoonj.github.io/lossratio/reference/fit_intensity.md) | link 단계 진단 — 곱셈형 / 덧셈형 |
@@ -90,6 +91,40 @@ plot_triangle(bt)
 | [`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md) | 예측 손해율이 갱신을 멈추는 시점 |
 | [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md) | 대각선 hold-out 으로 fit 검증 (target = ratio/loss/exposure) |
 | [`plot()`](https://rdrr.io/r/graphics/plot.default.html) / [`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md) | S3 generic — 객체 클래스로 dispatch |
+
+## 손해율 적합 방법
+
+### 노출 기반(exposure-driven, ED) (default)
+
+`fit_ratio(method = "ed")` (default) 또는
+[`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md).
+모든 손해 증분이 노출(위험보험료)을 분모로 사용:
+$`\Delta C^L = g_k \cdot C^P_k`$. 무조건적 안전한 baseline – 성숙점 /
+regime 검출 의존 없음, 초기 dev 의 ATA 인자 변동에 강건.
+
+*언제 사용*: baseline 으로. pooled intensity $`g_k`$ 는 코호트들이 단위
+노출 당 손해 수준에서 대체로 동질적이라고 가정 – 코호트-레벨 drift(약관
+/ 인수 정책 변경) 시 pooled 평균으로 편향, post-change 코호트를
+over-project 가능. 명시적 필터는 `regime` 인자.
+
+### 체인 래더(chain ladder, CL)
+
+`fit_ratio(method = "cl")` 또는
+[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md).
+고전 Mack (1993) 체인 래더 $`C^L_{k+1} = f_k \cdot C^L_k`$ + 해석적
+표준오차. *코호트 자기 cum_loss 가 anchor* 역할이므로 *코호트-레벨 drift
+가 자연스럽게 propagation* – 명시적 regime 검출 불필요.
+
+*언제 사용*: ATA 인자가 안정된 후. 특히 코호트-레벨 drift 시나리오에서
+*코호트의 관측 경로가 자동 anchor*.
+
+### 단계 적응형(stage-adaptive, SA)
+
+`fit_ratio(method = "sa")`. 두 방법의 합성: 성숙점 이전은 ED, 이후는 CL.
+ED 의 초기 dev 안정성 + CL 의 후기 dev 코호트 anchoring 결합.
+
+*언제 사용*: 장기-tail 포트폴리오 – 초기 dev 의 변동성(ED phase) + 후기
+dev 의 코호트-레벨 drift(CL phase) 둘 다 처리.
 
 ## 입력 형식
 
@@ -155,7 +190,7 @@ vignette("triangle-link-and-maturity", package = "lossratio")
 ## Python sibling
 
 Python 구현: [`lossratio-py`](https://github.com/seokhoonj/lossratio-py)
-— sklearn-style estimator (`lr.LR().fit(tri)`), polars 기반.
+— sklearn-style estimator (`lr.Ratio().fit(tri)`), polars 기반.
 
 ## 라이선스 / 저자
 

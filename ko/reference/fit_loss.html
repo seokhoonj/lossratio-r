@@ -4,7 +4,7 @@ methods are supported via method:
 
 "ed" (default)
 Pure exposure-driven (additive) across all
-dev periods. Unconditional safe baseline — no maturity dependency.
+dev periods. Unconditional safe baseline – no maturity dependency.
 
 "cl"
 Pure Mack chain ladder (multiplicative). Classical
@@ -12,7 +12,7 @@ reference.
 
 "sa"
 Stage-adaptive. ED before the maturity point, CL after
-— composition of ED + CL, requires maturity detection (2-pass).
+– composition of ED + CL, requires maturity detection (2-pass).
 
 
 
@@ -27,7 +27,7 @@ methods are supported via method:
 
 "ed" (default)
 Pure exposure-driven (additive) across all
-dev periods. Unconditional safe baseline — no maturity dependency.
+dev periods. Unconditional safe baseline – no maturity dependency.
 
 "cl"
 Pure Mack chain ladder (multiplicative). Classical
@@ -35,7 +35,7 @@ reference.
 
 "sa"
 Stage-adaptive. ED before the maturity point, CL after
-— composition of ED + CL, requires maturity detection (2-pass).
+– composition of ED + CL, requires maturity detection (2-pass).
 
 
 
@@ -108,7 +108,7 @@ fit_ratio().'><meta property="og:image" content="https://seokhoonj.github.io/los
 methods are supported via <code>method</code>:</p>
 <dl><dt><code>"ed"</code> (default)</dt>
 <dd><p>Pure exposure-driven (additive) across all
-dev periods. Unconditional safe baseline — no maturity dependency.</p></dd>
+dev periods. Unconditional safe baseline – no maturity dependency.</p></dd>
 
 <dt><code>"cl"</code></dt>
 <dd><p>Pure Mack chain ladder (multiplicative). Classical
@@ -116,7 +116,7 @@ reference.</p></dd>
 
 <dt><code>"sa"</code></dt>
 <dd><p>Stage-adaptive. ED before the maturity point, CL after
-— composition of ED + CL, requires maturity detection (2-pass).</p></dd>
+– composition of ED + CL, requires maturity detection (2-pass).</p></dd>
 
 
 </dl><p>This function is the <em>loss-side</em> counterpart to <code><a href="fit_exposure.html">fit_exposure()</a></code> in
@@ -137,7 +137,7 @@ the loss-ratio composition with delta method is handled by
 <span>  exposure_fit <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  exposure_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cl"</span>, <span class="st">"ed"</span><span class="op">)</span>,</span>
 <span>  exposure_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
+<span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span>, <span class="st">"mack"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maturity <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  conf_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
@@ -208,8 +208,14 @@ Default <code>1</code>.</p></dd>
 
 
 <dt id="arg-sigma-method">sigma_method<a class="anchor" aria-label="anchor" href="#arg-sigma-method"></a></dt>
-<dd><p>Sigma extrapolation. One of <code>"locf"</code> (default),
-<code>"min_last2"</code>, <code>"loglinear"</code>.</p></dd>
+<dd><p>Method used to extrapolate <code>sigma</code> for links where it
+cannot be estimated. One of <code>"locf"</code> (default), <code>"min_last2"</code>,
+<code>"loglinear"</code>, <code>"mack"</code>, or <code>"none"</code>. <code>"mack"</code> applies the Mack
+(1993, Appendix B) tail estimator to the last unestimated link only,
+falling back to LOCF for any earlier ones with a warning. <code>"none"</code>
+performs no extrapolation; <code>sigma</code> stays <code>NA</code> and downstream variance
+terms drop those links via finite-value guards. Passed to
+<code><a href="dot-extrapolate_sigma_ata.html">.extrapolate_sigma_ata()</a></code>.</p></dd>
 
 
 <dt id="arg-recent">recent<a class="anchor" aria-label="anchor" href="#arg-recent"></a></dt>

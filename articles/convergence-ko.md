@@ -271,7 +271,7 @@ claim 노이즈 때문에 실 portfolio 에서 보기 어렵고, $`0.20`$ 이상
   [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
   이 내부적으로
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
-  (default `method = "sa"` — 단계 적응형) 와
+  (default `method = "ed"` — 노출 기반) 와
   [`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md)
   을 합성하므로, 그 안의 선택 (loss method, regime 필터, maturity 인자)
   이 `conv_k` 로 흘러간다. 결과 해석 시 `fit_ratio` 설정을 같이 확인할

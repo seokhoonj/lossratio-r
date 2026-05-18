@@ -2,10 +2,10 @@
 
 Internal helper that produces a `f_sel` column by applying two steps:
 
-1.  **Filter** — when `use_maturity = TRUE`, development links that
+1.  **Filter** – when `use_maturity = TRUE`, development links that
     precede the maturity point are excluded (`f_sel` set to `NA`).
 
-2.  **Fill** — `NA` values in `f_sel` are forward-filled using LOCF, so
+2.  **Fill** – `NA` values in `f_sel` are forward-filled using LOCF, so
     that every link used in projection has a finite factor.
 
 ## Usage

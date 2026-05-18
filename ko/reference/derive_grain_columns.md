@@ -5,7 +5,7 @@ optionally `dev_m`), derive the coarser-grain siblings (`uy_q` / `uy_h`
 / `uy`, `cy_q` / `cy_h` / `cy`, `dev_q` / `dev_h` / `dev_y`) so the same
 frame can be aggregated at any of the four grains.
 
-This is an *optional* utility —
+This is an *optional* utility –
 [`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
 and
 [`as_calendar()`](https://seokhoonj.github.io/lossratio/ko/reference/as_calendar.md)

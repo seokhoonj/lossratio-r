@@ -382,8 +382,8 @@ estimated directly. <code>sigma_method</code> controls the
 extrapolation:</p>
 <table class="table">
 <colgroup>
-<col width="19%">
-<col width="80%">
+<col width="13%">
+<col width="86%">
 </colgroup>
 <thead><tr class="header">
 <th><code>sigma_method</code></th>
@@ -398,13 +398,24 @@ extrapolation:</p>
 <td><code>"min_last2"</code></td>
 <td>min of the last two estimable
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>σ</mi><annotation encoding="application/x-tex">\sigma</annotation></semantics></math>
-values — conservative</td>
+values – conservative</td>
 </tr>
 <tr class="odd">
 <td><code>"loglinear"</code></td>
 <td>Log-linear extrapolation from the observed
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mi>k</mi></msub><annotation encoding="application/x-tex">\sigma_k</annotation></semantics></math>
 sequence</td>
+</tr>
+<tr class="even">
+<td><code>"mack"</code></td>
+<td>Mack (1993) Appendix B tail estimator – closed-form for the last
+link only; LOCF with warning beyond that</td>
+</tr>
+<tr class="odd">
+<td><code>"none"</code></td>
+<td>no extrapolation;
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>σ</mi><annotation encoding="application/x-tex">\sigma</annotation></semantics></math>
+stays <code>NA</code> (variance is treated as zero downstream)</td>
 </tr>
 </tbody>
 </table>

@@ -330,10 +330,9 @@ formatting):</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">cal</span>, <span class="st">"grain"</span><span class="op">)</span>      <span class="co"># "M"</span></span>
 <span><span class="co">#&gt; [1] "M"</span></span></code></pre></div>
 <p>Granularity (<code>"month"</code> / <code>"quarter"</code> /
-<code>"semi-annual"</code> / <code>"annual"</code>) is derived on demand
-from the raw column name via
-<code>lossratio:::.get_period_type()</code>, so no <code>_type</code>
-cache attributes are stored.</p>
+<code>"half"</code> / <code>"year"</code>) is derived on demand from the
+raw column name via <code>lossratio:::.get_period_type()</code>, so no
+<code>_type</code> cache attributes are stored.</p>
 <p>The data columns themselves are standardised to <code>cohort</code> /
 <code>dev</code> / <code>calendar</code>, so downstream code is
 granularity-agnostic.</p>

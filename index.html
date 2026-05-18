@@ -330,8 +330,9 @@
 <span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cl</span>, type <span class="op">=</span> <span class="st">"projection"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Ratio fit (stage-adaptive by default — ED before maturity, CL after)</span></span>
-<span><span class="va">ratio</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
+<span><span class="co"># Ratio fit (default: ED — exposure-driven baseline.</span></span>
+<span><span class="co"># Switch to method = "cl" or "sa" for cohort-anchored projection.)</span></span>
+<span><span class="va">ratio</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ratio</span>, metric <span class="op">=</span> <span class="st">"ratio"</span>, cell_type <span class="op">=</span> <span class="st">"cumulative"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratio</span><span class="op">)</span></span>
 <span></span>
@@ -388,21 +389,20 @@
 <div class="section level3">
 <h3 id="exposure-driven-default">Exposure-Driven (default)<a class="anchor" aria-label="anchor" href="#exposure-driven-default"></a>
 </h3>
-<p><code>fit_ratio(method = "ed")</code> (default) or <code><a href="reference/fit_ed.html">fit_ed()</a></code>. All loss increments use exposure (risk premium) as the denominator: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><msup><mi>C</mi><mi>L</mi></msup><mo>=</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">\Delta C^L = g_k \cdot C^P_k</annotation></semantics></math>. Unconditional safe baseline — no maturity dependency, robust under early-dev age-to-age volatility.</p>
+<p><code>fit_ratio(method = "ed")</code> (default) or <code><a href="reference/fit_ed.html">fit_ed()</a></code>. All loss increments use exposure (risk premium) as the denominator: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><msup><mi>C</mi><mi>L</mi></msup><mo>=</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">\Delta C^L = g_k \cdot C^P_k</annotation></semantics></math>. Unconditional safe baseline – no maturity dependency, robust under early-dev age-to-age volatility.</p>
+<p><em>When to use</em>: as a baseline. The pooled intensity <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>g</mi><mi>k</mi></msub><annotation encoding="application/x-tex">g_k</annotation></semantics></math> assumes cohorts are reasonably homogeneous in loss-per-exposure level; under cohort-level drift (e.g., underwriting / coverage regime change), the projection biases toward the pooled mean and may over-project post-change cohorts. See the <code>regime</code> argument for explicit filtering.</p>
 </div>
 <div class="section level3">
 <h3 id="chain-ladder">Chain Ladder<a class="anchor" aria-label="anchor" href="#chain-ladder"></a>
 </h3>
-<p><code>fit_ratio(method = "cl")</code> or <code><a href="reference/fit_cl.html">fit_cl()</a></code>. Classical Mack (1993) chain ladder <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mo>=</mo><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup></mrow><annotation encoding="application/x-tex">C^L_{k+1} = f_k \cdot C^L_k</annotation></semantics></math> with analytic standard errors. Suitable once age-to-age factors stabilise.</p>
+<p><code>fit_ratio(method = "cl")</code> or <code><a href="reference/fit_cl.html">fit_cl()</a></code>. Classical Mack (1993) chain ladder <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mo>=</mo><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup></mrow><annotation encoding="application/x-tex">C^L_{k+1} = f_k \cdot C^L_k</annotation></semantics></math> with analytic standard errors. The cohort’s own cum_loss acts as the anchor, so cohort-level drift propagates naturally without explicit regime detection.</p>
+<p><em>When to use</em>: once age-to-age factors stabilise; particularly suited to cohort-level drift scenarios because the cohort’s observed trajectory anchors the projection.</p>
 </div>
 <div class="section level3">
 <h3 id="stage-adaptive">Stage-Adaptive<a class="anchor" aria-label="anchor" href="#stage-adaptive"></a>
 </h3>
-<p><code>fit_ratio(method = "sa")</code>. Composition of the two: ED before maturity, CL after. Requires maturity detection (2-pass) and recovers the cohort’s observed level once factors stabilise while remaining robust early on.</p>
-<ul>
-<li>Before maturity: exposure-driven projection <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><msup><mi>C</mi><mi>L</mi></msup><mo>=</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">\Delta C^L = g_k \cdot C^P_k</annotation></semantics></math> — anchors the estimate to exposure volume while age-to-age factors are volatile.</li>
-<li>After maturity: chain ladder projection <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mo>=</mo><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup></mrow><annotation encoding="application/x-tex">C^L_{k+1} = f_k \cdot C^L_k</annotation></semantics></math> — preserves the cohort’s observed level once age-to-age factors stabilise.</li>
-</ul>
+<p><code>fit_ratio(method = "sa")</code>. Composition of the two: ED before maturity, CL after. Combines ED’s early-dev stability with CL’s cohort-anchored later-dev behaviour.</p>
+<p><em>When to use</em>: long-tail portfolios where early dev is volatile (ED phase) but cohort-level drift needs cohort-anchored projection in later dev (CL phase).</p>
 </div>
 </div>
 <div class="section level2">

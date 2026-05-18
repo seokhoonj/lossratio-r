@@ -159,8 +159,9 @@ ed <- fit_ed(tri, loss = "loss", exposure = "exposure")
 cl <- fit_cl(tri, loss = "loss")
 plot(cl, type = "projection")
 
-# Ratio fit (stage-adaptive by default — ED before maturity, CL after)
-ratio <- fit_ratio(tri, method = "sa")
+# Ratio fit (default: ED — exposure-driven baseline.
+# Switch to method = "cl" or "sa" for cohort-anchored projection.)
+ratio <- fit_ratio(tri)
 plot(ratio, metric = "ratio", cell_type = "cumulative")
 summary(ratio)
 
@@ -194,28 +195,37 @@ Original column names are preserved as attributes (`cohort`, `calendar`,
 `fit_ratio(method = "ed")` (default) or
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md).
 All loss increments use exposure (risk premium) as the denominator:
-$`\Delta C^L = g_k \cdot C^P_k`$. Unconditional safe baseline — no
+$`\Delta C^L = g_k \cdot C^P_k`$. Unconditional safe baseline – no
 maturity dependency, robust under early-dev age-to-age volatility.
+
+*When to use*: as a baseline. The pooled intensity $`g_k`$ assumes
+cohorts are reasonably homogeneous in loss-per-exposure level; under
+cohort-level drift (e.g., underwriting / coverage regime change), the
+projection biases toward the pooled mean and may over-project
+post-change cohorts. See the `regime` argument for explicit filtering.
 
 ### Chain Ladder
 
 `fit_ratio(method = "cl")` or
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md).
 Classical Mack (1993) chain ladder $`C^L_{k+1} = f_k \cdot C^L_k`$ with
-analytic standard errors. Suitable once age-to-age factors stabilise.
+analytic standard errors. The cohort’s own cum_loss acts as the anchor,
+so cohort-level drift propagates naturally without explicit regime
+detection.
+
+*When to use*: once age-to-age factors stabilise; particularly suited to
+cohort-level drift scenarios because the cohort’s observed trajectory
+anchors the projection.
 
 ### Stage-Adaptive
 
 `fit_ratio(method = "sa")`. Composition of the two: ED before maturity,
-CL after. Requires maturity detection (2-pass) and recovers the cohort’s
-observed level once factors stabilise while remaining robust early on.
+CL after. Combines ED’s early-dev stability with CL’s cohort-anchored
+later-dev behaviour.
 
-- Before maturity: exposure-driven projection
-  $`\Delta C^L = g_k \cdot C^P_k`$ — anchors the estimate to exposure
-  volume while age-to-age factors are volatile.
-- After maturity: chain ladder projection
-  $`C^L_{k+1} = f_k \cdot C^L_k`$ — preserves the cohort’s observed
-  level once age-to-age factors stabilise.
+*When to use*: long-tail portfolios where early dev is volatile (ED
+phase) but cohort-level drift needs cohort-anchored projection in later
+dev (CL phase).
 
 ## Visualisation
 

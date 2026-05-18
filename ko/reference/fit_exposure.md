@@ -29,7 +29,7 @@ fit_exposure(
   method = c("ed", "cl"),
   alpha = 1,
   regime = NULL,
-  sigma_method = c("locf", "min_last2", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   tail = FALSE,
   conf_level = 0.95,
@@ -87,8 +87,14 @@ fit_exposure(
 
 - sigma_method:
 
-  Sigma extrapolation method. One of `"locf"` (default), `"min_last2"`,
-  or `"loglinear"`.
+  Method used to extrapolate `sigma` for links where it cannot be
+  estimated. One of `"locf"` (default), `"min_last2"`, `"loglinear"`,
+  `"mack"`, or `"none"`. `"mack"` applies the Mack (1993, Appendix B)
+  tail estimator to the last unestimated link only, falling back to LOCF
+  for any earlier ones with a warning. `"none"` performs no
+  extrapolation; `sigma` stays `NA` and downstream variance terms drop
+  those links via finite-value guards. Passed to
+  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-extrapolate_sigma_ata.md).
 
 - recent:
 

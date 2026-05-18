@@ -382,8 +382,8 @@ dev 의 누적 손해 비
 <code>sigma_method</code> 가 외삽 방식을 결정한다.</p>
 <table class="table">
 <colgroup>
-<col width="19%">
-<col width="80%">
+<col width="15%">
+<col width="84%">
 </colgroup>
 <thead><tr class="header">
 <th><code>sigma_method</code></th>
@@ -392,22 +392,37 @@ dev 의 누적 손해 비
 <tbody>
 <tr class="odd">
 <td><code>"locf"</code></td>
-<td>(default) 마지막 관측값 carried forward</td>
+<td>(default) 마지막 valid
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>σ</mi><annotation encoding="application/x-tex">\sigma</annotation></semantics></math>
+를 그대로 carry forward</td>
 </tr>
 <tr class="even">
 <td><code>"min_last2"</code></td>
-<td>추정 가능한 마지막 두
+<td>마지막 2 개 valid
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>σ</mi><annotation encoding="application/x-tex">\sigma</annotation></semantics></math>
 의 최솟값 — 보수적</td>
 </tr>
 <tr class="odd">
 <td><code>"loglinear"</code></td>
-<td>관측된
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mi>k</mi></msub><annotation encoding="application/x-tex">\sigma_k</annotation></semantics></math>
-시퀀스에 대한 로그 선형 외삽</td>
+<td>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mi>σ</mi><mo stretchy="false" form="postfix">)</mo><mo>∼</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">\log(\sigma) \sim k</annotation></semantics></math>
+선형회귀로 외삽</td>
+</tr>
+<tr class="even">
+<td><code>"mack"</code></td>
+<td>Mack (1993) Appendix B tail estimator — 마지막 link 1 개만
+close-form, 그 외는 LOCF + warning</td>
+</tr>
+<tr class="odd">
+<td><code>"none"</code></td>
+<td>외삽 안 함;
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>σ</mi><annotation encoding="application/x-tex">\sigma</annotation></semantics></math>
+는 NA 유지 (variance 자동 0 처리)</td>
 </tr>
 </tbody>
 </table>
+<p>장기 건강보험 권장: <code>"locf"</code> (default) 또는
+<code>"mack"</code> (학술 보고).</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span>, sigma_method <span class="op">=</span> <span class="st">"loglinear"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;CLFit&gt;</span></span>

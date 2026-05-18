@@ -90,7 +90,7 @@ their variance are estimated using the supplied WLS weights.</p>
 <span>  loss <span class="op">=</span> <span class="st">"loss"</span>,</span>
 <span>  weight <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span><span class="op">)</span>,</span>
+<span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span>, <span class="st">"mack"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maturity <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -128,8 +128,14 @@ Default is <code>NULL</code>.</p></dd>
 
 
 <dt id="arg-sigma-method">sigma_method<a class="anchor" aria-label="anchor" href="#arg-sigma-method"></a></dt>
-<dd><p>Sigma extrapolation method passed to <code><a href="fit_ata.html">fit_ata()</a></code>.
-One of <code>"locf"</code> (default), <code>"min_last2"</code>, or <code>"loglinear"</code>.</p></dd>
+<dd><p>Method used to extrapolate <code>sigma</code> for links where it
+cannot be estimated. One of <code>"locf"</code> (default), <code>"min_last2"</code>,
+<code>"loglinear"</code>, <code>"mack"</code>, or <code>"none"</code>. <code>"mack"</code> applies the Mack
+(1993, Appendix B) tail estimator to the last unestimated link only,
+falling back to LOCF for any earlier ones with a warning. <code>"none"</code>
+performs no extrapolation; <code>sigma</code> stays <code>NA</code> and downstream variance
+terms drop those links via finite-value guards. Passed to
+<code><a href="dot-extrapolate_sigma_ata.html">.extrapolate_sigma_ata()</a></code>.</p></dd>
 
 
 <dt id="arg-recent">recent<a class="anchor" aria-label="anchor" href="#arg-recent"></a></dt>
@@ -155,7 +161,7 @@ forms:</p><dl><dt><code>NULL</code> (default)</dt>
 
 <dt><code>Maturity</code> object</dt>
 <dd><p>Pre-built (e.g. from <code><a href="detect_maturity.html">detect_maturity()</a></code>
-or <code><a href="maturity_at.html">maturity_at()</a></code>) — used as-is.</p></dd>
+or <code><a href="maturity_at.html">maturity_at()</a></code>) – used as-is.</p></dd>
 
 <dt><code>"auto"</code></dt>
 <dd><p>Internal <code><a href="detect_maturity.html">detect_maturity()</a></code> call with defaults

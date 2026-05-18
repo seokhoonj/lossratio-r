@@ -5,7 +5,7 @@ representation: either NULL (no maturity override) or a
 "Maturity" object.
 The four accepted input types are:
 NULL
-Returns NULL — caller falls back to its default
+Returns NULL – caller falls back to its default
 maturity behavior.
 
 "Maturity" object
@@ -14,7 +14,7 @@ Returned as-is.
 "auto"
 Runs detect_maturity() on masked_tri if
 supplied, otherwise on tri. The masked_tri fallback is the
-leakage-safe path used by backtest() — fit functions pass
+leakage-safe path used by backtest() – fit functions pass
 only tri, while backtest() passes both so detection sees
 only the masked (training) data.
 
@@ -31,7 +31,7 @@ representation: either NULL (no maturity override) or a
 "Maturity" object.
 The four accepted input types are:
 NULL
-Returns NULL — caller falls back to its default
+Returns NULL – caller falls back to its default
 maturity behavior.
 
 "Maturity" object
@@ -40,7 +40,7 @@ Returned as-is.
 "auto"
 Runs detect_maturity() on masked_tri if
 supplied, otherwise on tri. The masked_tri fallback is the
-leakage-safe path used by backtest() — fit functions pass
+leakage-safe path used by backtest() – fit functions pass
 only tri, while backtest() passes both so detection sees
 only the masked (training) data.
 
@@ -115,7 +115,7 @@ inherit "Maturity"; an error is raised otherwise.
 representation: either <code>NULL</code> (no maturity override) or a
 <code>"Maturity"</code> object.</p>
 <p>The four accepted input types are:</p><dl><dt><code>NULL</code></dt>
-<dd><p>Returns <code>NULL</code> — caller falls back to its default
+<dd><p>Returns <code>NULL</code> – caller falls back to its default
 maturity behavior.</p></dd>
 
 <dt><code>"Maturity"</code> object</dt>
@@ -124,7 +124,7 @@ maturity behavior.</p></dd>
 <dt><code>"auto"</code></dt>
 <dd><p>Runs <code><a href="detect_maturity.html">detect_maturity()</a></code> on <code>masked_tri</code> if
 supplied, otherwise on <code>tri</code>. The <code>masked_tri</code> fallback is the
-leakage-safe path used by <code><a href="backtest.html">backtest()</a></code> — fit functions pass
+leakage-safe path used by <code><a href="backtest.html">backtest()</a></code> – fit functions pass
 only <code>tri</code>, while <code><a href="backtest.html">backtest()</a></code> passes both so detection sees
 only the masked (training) data.</p></dd>
 
@@ -151,7 +151,7 @@ function).</p></dd>
 
 
 <dt id="arg-tri">tri<a class="anchor" aria-label="anchor" href="#arg-tri"></a></dt>
-<dd><p>A <code>"Triangle"</code> object — used as the detection input when
+<dd><p>A <code>"Triangle"</code> object – used as the detection input when
 <code>masked_tri</code> is <code>NULL</code>.</p></dd>
 
 

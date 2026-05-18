@@ -2,7 +2,7 @@
 
 Mirrors
 [`print.ATAFit()`](https://seokhoonj.github.io/lossratio/reference/print.ATAFit.md)
-— prints call metadata only. Use
+– prints call metadata only. Use
 [`summary.IntensityFit()`](https://seokhoonj.github.io/lossratio/reference/summary.IntensityFit.md)
 (or `x$factor`) to inspect the per-link summary table.
 

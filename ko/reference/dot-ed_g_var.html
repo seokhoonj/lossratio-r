@@ -11,15 +11,14 @@ applied to g-intensity). The cross-paradigm pairs (.mack_g_var,
 (and therefore \(\sigma^2_g = \sigma^2_f\)), so are intentionally
 not provided as separate functions to avoid suggesting paradigm
 mismatch is encouraged in user code.
-Conceptually .ed_g_var() is a factor-level helper (operates on
-per-link $link and $selected slots) and should pair with
-"IntensityFit" (the factor-level diagnostic for ED, sibling of
-"ATAFit"). The current implementation takes "EDFit"
-(projection-level) for historical reasons; both objects expose the
-same factor-level slots, so the implementation is functionally correct
-but the class assertion is conceptually misaligned. TODO: refactor
-input to "IntensityFit" for symmetry with
-.mack_f_var(ata_fit: ATAFit).
+Conceptually a factor-level helper (operates on per-link $link
+and $selected slots), parallel to .mack_f_var(ata_fit: ATAFit).
+Accepts either "IntensityFit" (the factor-level diagnostic for
+ED, sibling of "ATAFit") or "EDFit" (projection-level,
+which exposes the same factor-level slots as a superset). The
+"IntensityFit" path is the conceptually clean entry point for
+factor-level callers; "EDFit" is accepted for projection-level
+callers that already hold the fit object.
 Used by fit_ed() when method = "mack" and by fit_ratio() for the
 ED component.'><meta property="og:description" content='Internal helper computing \(\mathrm{Var}(\hat{g}_k) = \sigma^2_k / W_k\)
 where \(W_k = \sum_i (C^P_{i,k})^{2 - \alpha}\). This is the
@@ -33,15 +32,14 @@ applied to g-intensity). The cross-paradigm pairs (.mack_g_var,
 (and therefore \(\sigma^2_g = \sigma^2_f\)), so are intentionally
 not provided as separate functions to avoid suggesting paradigm
 mismatch is encouraged in user code.
-Conceptually .ed_g_var() is a factor-level helper (operates on
-per-link $link and $selected slots) and should pair with
-"IntensityFit" (the factor-level diagnostic for ED, sibling of
-"ATAFit"). The current implementation takes "EDFit"
-(projection-level) for historical reasons; both objects expose the
-same factor-level slots, so the implementation is functionally correct
-but the class assertion is conceptually misaligned. TODO: refactor
-input to "IntensityFit" for symmetry with
-.mack_f_var(ata_fit: ATAFit).
+Conceptually a factor-level helper (operates on per-link $link
+and $selected slots), parallel to .mack_f_var(ata_fit: ATAFit).
+Accepts either "IntensityFit" (the factor-level diagnostic for
+ED, sibling of "ATAFit") or "EDFit" (projection-level,
+which exposes the same factor-level slots as a superset). The
+"IntensityFit" path is the conceptually clean entry point for
+factor-level callers; "EDFit" is accepted for projection-level
+callers that already hold the fit object.
 Used by fit_ed() when method = "mack" and by fit_ratio() for the
 ED component.'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
@@ -114,30 +112,30 @@ applied to g-intensity). The cross-paradigm pairs (<code>.mack_g_var</code>,
 (and therefore \(\sigma^2_g = \sigma^2_f\)), so are intentionally
 not provided as separate functions to avoid suggesting paradigm
 mismatch is encouraged in user code.</p>
-<p>Conceptually <code>.ed_g_var()</code> is a <em>factor-level</em> helper (operates on
-per-link <code>$link</code> and <code>$selected</code> slots) and should pair with
-<code>"IntensityFit"</code> (the factor-level diagnostic for ED, sibling of
-<code>"ATAFit"</code>). The current implementation takes <code>"EDFit"</code>
-(projection-level) for historical reasons; both objects expose the
-same factor-level slots, so the implementation is functionally correct
-but the class assertion is conceptually misaligned. TODO: refactor
-input to <code>"IntensityFit"</code> for symmetry with
-<code>.mack_f_var(ata_fit: ATAFit)</code>.</p>
+<p>Conceptually a <em>factor-level</em> helper (operates on per-link <code>$link</code>
+and <code>$selected</code> slots), parallel to <code>.mack_f_var(ata_fit: ATAFit)</code>.
+Accepts either <code>"IntensityFit"</code> (the factor-level diagnostic for
+ED, sibling of <code>"ATAFit"</code>) or <code>"EDFit"</code> (projection-level,
+which exposes the same factor-level slots as a superset). The
+<code>"IntensityFit"</code> path is the conceptually clean entry point for
+factor-level callers; <code>"EDFit"</code> is accepted for projection-level
+callers that already hold the fit object.</p>
 <p>Used by <code><a href="fit_ed.html">fit_ed()</a></code> when <code>method = "mack"</code> and by <code><a href="fit_ratio.html">fit_ratio()</a></code> for the
 ED component.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.ed_g_var</span><span class="op">(</span><span class="va">ed_fit</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.ed_g_var</span><span class="op">(</span><span class="va">x</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-ed-fit">ed_fit<a class="anchor" aria-label="anchor" href="#arg-ed-fit"></a></dt>
-<dd><p>An object of class <code>"EDFit"</code>.</p></dd>
+<dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
+<dd><p>An object of class <code>"IntensityFit"</code> or <code>"EDFit"</code>. Either
+exposes the <code>$link</code> and <code>$selected</code> slots used here.</p></dd>
 
 
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
