@@ -99,6 +99,7 @@
 #' bf2 <- fit_bf(tri, prior = prior_tbl)
 #' }
 #'
+#' @keywords internal
 #' @export
 fit_bf <- function(x,
                    loss     = "loss",

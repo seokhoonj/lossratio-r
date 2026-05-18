@@ -110,3 +110,4 @@ Mack, T. (2008). The prediction error of Bornhuetter/Ferguson.
 \code{\link[=fit_capecod]{fit_capecod()}} (pooled ELR variant), \code{\link[=fit_cl]{fit_cl()}},
 \code{\link[=fit_exposure]{fit_exposure()}}
 }
+\keyword{internal}

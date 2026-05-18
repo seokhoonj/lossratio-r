@@ -79,6 +79,7 @@
 #' cc$elr_cc   # pooled ELR per group
 #' }
 #'
+#' @keywords internal
 #' @export
 fit_capecod <- function(x,
                         loss     = "loss",

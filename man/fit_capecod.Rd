@@ -92,3 +92,4 @@ Bornhuetter, R. L. and Ferguson, R. E. (1972). The actuary and IBNR.
 \code{\link[=fit_bf]{fit_bf()}} (Bornhuetter-Ferguson with user-supplied prior),
 \code{\link[=fit_cl]{fit_cl()}}, \code{\link[=fit_exposure]{fit_exposure()}}
 }
+\keyword{internal}
