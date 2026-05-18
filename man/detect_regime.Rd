@@ -56,15 +56,15 @@ then re-index \code{dev} so detection sees a contiguous sequence. See the
 which loss metric matches which suspected event.}
 
 \item{by}{Grouping column(s) for per-combination detection. \code{NULL}
-(default) reuses the Triangle's \code{attr(x, "groups")} when non-empty —
-so \code{detect_regime(tri)} dispatches per group automatically — and
+(default) reuses the Triangle's \code{attr(x, "groups")} when non-empty --
+so \code{detect_regime(tri)} dispatches per group automatically -- and
 otherwise falls back to pooled detection. Pass \code{by = character(0)}
 to force pooled detection on a multi-group Triangle, or a character
 vector (subset of \code{names(x)}) to dispatch on an explicit combo,
 e.g. \code{by = "coverage"} or \code{by = c("channel", "coverage")}.}
 
 \item{window}{Trajectory window. Integer (e.g., \code{12L}) for a fixed window, or
-the string \code{"auto"} (default) — resolves to each group's maturity
+the string \code{"auto"} (default) -- resolves to each group's maturity
 via \code{\link[=detect_maturity]{detect_maturity()}}, falling back to \code{6L} when maturity is
 unavailable (NA, pooled mode, or \code{by} mismatching the Triangle's
 \code{attr("groups")}). Cohorts with fewer than the resolved \code{window}
@@ -119,13 +119,13 @@ when \code{by} resolves to a non-empty vector.}
 columns \verb{[by..., change, regime_id, pre_value, post_value, magnitude]}. \code{regime_id} = id of the regime that STARTS at this
 change (the pre-change regime is \code{regime_id - 1}); matches
 \verb{$labels$regime_id}. \code{pre_value} / \code{post_value} are the mean
-\code{loss} over the cohort × dev trajectory windows in the pre- /
+\code{loss} over the cohort x dev trajectory windows in the pre- /
 post-change regimes; \verb{magnitude = |post_value - pre_value|}.
 Empty (zero rows) when no change is detected.}
 \item{\code{n_regimes}}{Number of regimes detected. Scalar integer for
 single-combo detection; named integer vector (keyed by combo) for
 multi-combo.}
-\item{\code{trajectory}}{Cohort × dev feature matrix used for detection.
+\item{\code{trajectory}}{Cohort x dev feature matrix used for detection.
 Single matrix when single combo; named list of matrices for
 multi-combo.}
 \item{\code{pca}}{\code{prcomp} object (single combo) or named list of
@@ -134,7 +134,7 @@ multi-combo.}
 constraint. Vector (single) / named list (multi).}
 \item{\code{multi_group}}{Logical flag; \code{TRUE} when detection ran over
 multiple group combos.}
-\item{\code{treatment}}{Either \code{"latest_only"} or \code{"segment_wise"} — the
+\item{\code{treatment}}{Either \code{"latest_only"} or \code{"segment_wise"} -- the
 value supplied via the \code{treatment} argument. Read by downstream
 fits (\code{fit_ata()}, \code{fit_intensity()}, \code{fit_cl()}, \code{fit_ed()}) to
 decide whether to collapse to the latest change (drop pre-change

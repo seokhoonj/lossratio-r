@@ -67,9 +67,52 @@ test_that("fit_ata $selected has expected columns", {
 })
 
 test_that("sigma_method variants run", {
-  for (sm in c("min_last2", "locf", "loglinear")) {
-    expect_no_error(fit_ata(tri, loss = "loss", sigma_method = sm))
+  for (sm in c("min_last2", "locf", "loglinear", "mack", "none")) {
+    expect_no_error(suppressWarnings(
+      fit_ata(tri, loss = "loss", sigma_method = sm)))
   }
+})
+
+test_that("sigma_method = 'mack' fills only the last unestimated link", {
+  # synthetic ATAFit-style selected table with a few unestimated tail rows
+  sel <- data.table::data.table(
+    ata_from = 1:6,
+    sigma    = c(2.0, 1.8, 1.6, 1.4, NA_real_, NA_real_))
+  out <- suppressWarnings(
+    lossratio:::.extrapolate_sigma_ata(sel, method = "mack"))
+  expect_true(all(is.finite(out$sigma)))
+  # earlier unestimated row = LOCF (last valid = 1.4)
+  expect_equal(out$sigma[5], 1.4)
+  # last unestimated row = Mack tail estimator
+  s2_last <- 1.4^2; s2_prev <- 1.6^2
+  expect_equal(out$sigma[6]^2, min(s2_last^2 / s2_prev, s2_last, s2_prev))
+})
+
+test_that("sigma_method = 'mack' warns when multiple links are unestimated", {
+  sel <- data.table::data.table(
+    ata_from = 1:6,
+    sigma    = c(2.0, 1.8, 1.6, 1.4, NA_real_, NA_real_))
+  expect_warning(
+    lossratio:::.extrapolate_sigma_ata(sel, method = "mack"),
+    regexp = "Mack tail estimator covers only the last link")
+})
+
+test_that("sigma_method = 'mack' falls back to LOCF when < 3 valid sigmas", {
+  sel <- data.table::data.table(
+    ata_from = 1:4, sigma = c(2.0, 1.8, NA_real_, NA_real_))
+  expect_warning(
+    out <- lossratio:::.extrapolate_sigma_ata(sel, method = "mack"),
+    regexp = "requires >= 3 valid sigma values")
+  expect_equal(out$sigma[3:4], c(1.8, 1.8))
+})
+
+test_that("sigma_method = 'none' leaves NA sigma in place", {
+  sel <- data.table::data.table(
+    ata_from = 1:5,
+    sigma    = c(2.0, 1.8, 1.6, NA_real_, NA_real_))
+  out <- lossratio:::.extrapolate_sigma_ata(sel, method = "none")
+  expect_true(all(is.na(out$sigma[4:5])))
+  expect_true(all(out$sigma_extrapolated[4:5]))
 })
 
 test_that("recent reduces selected rows count", {

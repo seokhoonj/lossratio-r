@@ -12,7 +12,7 @@
 \item{...}{Unused.}
 }
 \description{
-Mirrors \code{\link[=print.ATAFit]{print.ATAFit()}} — prints call metadata only. Use
+Mirrors \code{\link[=print.ATAFit]{print.ATAFit()}} -- prints call metadata only. Use
 \code{\link[=summary.IntensityFit]{summary.IntensityFit()}} (or \code{x$factor}) to inspect the per-link
 summary table.
 }

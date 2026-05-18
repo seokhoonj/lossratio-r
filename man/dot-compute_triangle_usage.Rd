@@ -27,7 +27,7 @@ vector, or \code{Regime}).}
 \code{holdout} calendar diagonals are flagged \code{"holdout"}. The \code{recent}
 filter is then evaluated against the post-holdout boundary so the
 recent wedge sits \emph{before} the holdout wedge (no overlap), matching
-\code{backtest()} semantics — the internal fitter operates on the masked
+\code{backtest()} semantics -- the internal fitter operates on the masked
 triangle whose own max_cal is \code{original - holdout}.}
 
 \item{m_k}{Optional integer. The maturity switch as a \emph{target}

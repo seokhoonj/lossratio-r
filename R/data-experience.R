@@ -6,7 +6,7 @@
 #' `data-raw/make_experience.R` (set.seed = 20260501). Per-coverage
 #' calibration scalars (target ultimate LR, cohort exposure volume,
 #' cell-level noise CV) were measured once on a real long-term Korean
-#' health-insurance portfolio and baked in as constants — no
+#' health-insurance portfolio and baked in as constants -- no
 #' real-portfolio data is shipped. The runoff shape uses a small dev-1
 #' "waiting-period" dip followed by roughly constant incremental loss
 #' per dev, so the cumulative LR rises monotonically toward the target.
@@ -20,14 +20,14 @@
 #' \describe{
 #'   \item{coverage}{Coverage code (character). One of:
 #'     \itemize{
-#'       \item `CI` — the two major non-cancer critical illnesses,
+#'       \item `CI` -- the two major non-cancer critical illnesses,
 #'         covering cerebrovascular disease (stroke, cerebral
 #'         infarction, cerebral haemorrhage) and ischemic heart disease
 #'         (angina, acute myocardial infarction). Does **not** include
 #'         cancer; cancer is the separate `cancer` coverage.
-#'       \item `cancer` — cancer.
-#'       \item `inpatient` — hospitalisation per-day fixed benefit.
-#'       \item `surgery` — surgery per-event fixed benefit.
+#'       \item `cancer` -- cancer.
+#'       \item `inpatient` -- hospitalisation per-day fixed benefit.
+#'       \item `surgery` -- surgery per-event fixed benefit.
 #'     }}
 #'   \item{uy, uy_h, uy_q, uy_m}{Underwriting period (year / half / quarter / month) as `Date`.}
 #'   \item{cy, cy_h, cy_q, cy_m}{Calendar period (year / half / quarter / month) as `Date`.}

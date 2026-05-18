@@ -1,4 +1,4 @@
-# Setup — use a single-group subset to keep test fast
+# Setup -- use a single-group subset to keep test fast
 data(experience)
 exp <- experience
 sub <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")

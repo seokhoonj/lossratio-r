@@ -20,7 +20,7 @@ siblings (\code{uy_q} / \code{uy_h} / \code{uy}, \code{cy_q} / \code{cy_h} / \co
 \code{dev_q} / \code{dev_h} / \code{dev_y}) so the same frame can be aggregated
 at any of the four grains.
 
-This is an \emph{optional} utility — \code{\link[=as_triangle]{as_triangle()}} and
+This is an \emph{optional} utility -- \code{\link[=as_triangle]{as_triangle()}} and
 \code{\link[=as_calendar]{as_calendar()}} already derive the single grain they need
 internally. Use this when you want a single enriched frame that
 can be re-aggregated at multiple grains, or for exploratory plots.

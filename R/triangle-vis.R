@@ -938,7 +938,7 @@ plot.Total <- function(x,
 #'   `holdout` calendar diagonals are flagged `"holdout"`. The `recent`
 #'   filter is then evaluated against the post-holdout boundary so the
 #'   recent wedge sits *before* the holdout wedge (no overlap), matching
-#'   `backtest()` semantics — the internal fitter operates on the masked
+#'   `backtest()` semantics -- the internal fitter operates on the masked
 #'   triangle whose own max_cal is `original - holdout`.
 #' @param m_k Optional integer. The maturity switch as a *target*
 #'   development index (= `change` of the first stable link). When
@@ -1018,7 +1018,7 @@ plot.Total <- function(x,
   expanded[, ("is_observed") := .cal_idx <= .max_cal]
 
   # held-out flag, plus an effective max-cal for fit-data filters that
-  # excludes the held_out region — this matches `backtest()` semantics,
+  # excludes the held_out region -- this matches `backtest()` semantics,
   # where the internal fitter operates on the masked triangle whose own
   # max_cal is `original_max_cal - holdout`.
   if (!is.null(holdout)) {
@@ -1041,7 +1041,7 @@ plot.Total <- function(x,
   is_segment_wise <- inherits(regime, "Regime") &&
                      identical(regime$treatment, "segment_wise")
 
-  # resolve regime change date — scalar (single group / scalar input)
+  # resolve regime change date -- scalar (single group / scalar input)
   # or a per-group `[join_cols..., change_date]` data.table when a
   # multi-group `Regime` matches `grp`. Auto-dispatched inside the helper.
   # Skipped under segment_wise so the cohort filter doesn't kick in
@@ -1409,7 +1409,7 @@ plot.Total <- function(x,
   # so the boundary visually separates ED region (dev < m_k) on the
   # left from CL region (dev >= m_k) on the right.
   #
-  # `m_k_dt` (when present) is a `[grp..., m_k]` data.table — each facet
+  # `m_k_dt` (when present) is a `[grp..., m_k]` data.table -- each facet
   # draws its own k* boundary. Falls back to scalar `m_k` for single
   # group / pooled. Mirrors the regime-change hline dispatch below.
   if (!is.null(m_k_dt)) {

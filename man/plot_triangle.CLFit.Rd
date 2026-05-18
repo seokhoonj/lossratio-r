@@ -24,7 +24,7 @@
 \item{region}{Cell region to plot (only used when \code{view = "value"}).
 One of \code{"proj"} (default; projected cells only, observed cells
 masked), \code{"full"} (observed + projected), or \code{"data"} (observed
-from \code{x$data} — the raw Triangle, no projection).}
+from \code{x$data} -- the raw Triangle, no projection).}
 
 \item{view}{Plot mode. One of:
 \describe{

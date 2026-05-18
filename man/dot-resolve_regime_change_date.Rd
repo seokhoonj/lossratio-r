@@ -21,8 +21,8 @@ Otherwise falls back to scalar.}
 One of:
 \itemize{
 \item \code{NULL} when no change date is specified.
-\item A single Date (the latest change) — the scalar path.
-\item A \code{data.table} \verb{[join_cols..., change_date]} — the per-group path.
+\item A single Date (the latest change) -- the scalar path.
+\item A \code{data.table} \verb{[join_cols..., change_date]} -- the per-group path.
 }
 }
 \description{

@@ -89,3 +89,22 @@ test_that("plot_triangle.IntensityFit returns ggplot", {
   p <- plot_triangle(fit)
   expect_s3_class(p, "ggplot")
 })
+
+# .ed_g_var factor-level symmetry (accepts IntensityFit and EDFit) --------
+
+test_that(".ed_g_var accepts both IntensityFit and EDFit", {
+  ifit <- fit_intensity(sub)
+  efit <- fit_ed(sub, loss = "loss", exposure = "exposure")
+  sel_from_intensity <- lossratio:::.ed_g_var(ifit, alpha = 1)
+  sel_from_ed        <- lossratio:::.ed_g_var(efit, alpha = 1)
+  expect_true("g_var" %in% names(sel_from_intensity))
+  expect_true("g_var" %in% names(sel_from_ed))
+  # both paths use the same factor-level slots, so g_var must match
+  expect_equal(sel_from_intensity$g_var, sel_from_ed$g_var,
+               tolerance = 1e-12)
+})
+
+test_that(".ed_g_var rejects non-fit objects", {
+  expect_error(lossratio:::.ed_g_var(list(), alpha = 1),
+               regexp = "IntensityFit.*EDFit")
+})

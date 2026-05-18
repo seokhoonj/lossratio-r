@@ -11,14 +11,14 @@ one (coverage, underwriting cohort, calendar period) cell of a
 \describe{
 \item{coverage}{Coverage code (character). One of:
 \itemize{
-\item \code{CI} — the two major non-cancer critical illnesses,
+\item \code{CI} -- the two major non-cancer critical illnesses,
 covering cerebrovascular disease (stroke, cerebral
 infarction, cerebral haemorrhage) and ischemic heart disease
 (angina, acute myocardial infarction). Does \strong{not} include
 cancer; cancer is the separate \code{cancer} coverage.
-\item \code{cancer} — cancer.
-\item \code{inpatient} — hospitalisation per-day fixed benefit.
-\item \code{surgery} — surgery per-event fixed benefit.
+\item \code{cancer} -- cancer.
+\item \code{inpatient} -- hospitalisation per-day fixed benefit.
+\item \code{surgery} -- surgery per-event fixed benefit.
 }}
 \item{uy, uy_h, uy_q, uy_m}{Underwriting period (year / half / quarter / month) as \code{Date}.}
 \item{cy, cy_h, cy_q, cy_m}{Calendar period (year / half / quarter / month) as \code{Date}.}
@@ -45,7 +45,7 @@ lossratio package workflow. Generated deterministically from
 \code{data-raw/make_experience.R} (set.seed = 20260501). Per-coverage
 calibration scalars (target ultimate LR, cohort exposure volume,
 cell-level noise CV) were measured once on a real long-term Korean
-health-insurance portfolio and baked in as constants — no
+health-insurance portfolio and baked in as constants -- no
 real-portfolio data is shipped. The runoff shape uses a small dev-1
 "waiting-period" dip followed by roughly constant incremental loss
 per dev, so the cumulative LR rises monotonically toward the target.

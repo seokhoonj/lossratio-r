@@ -105,7 +105,7 @@ test_that("plot.TriangleValidation handles empty and non-empty cases", {
   # No calendar => plot_triangle returns NULL + message
   expect_null(suppressMessages(plot_triangle(res_gaps)))
 
-  # Empty validation → message + invisible(NULL)
+  # Empty validation -> message + invisible(NULL)
   expect_null(suppressMessages(plot_triangle(res_empty)))
 })
 

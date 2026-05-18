@@ -193,8 +193,7 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #' @param na_method Method used to fill `NA` values in `g_sel`. One
 #'   of `"zero"` (default, set `NA` to 0 meaning no further development)
 #'   or `"locf"` or `"none"`.
-#' @param sigma_method Method used to extrapolate `sigma`. One of
-#'   `"locf"` (default), `"min_last2"`, or `"loglinear"`.
+#' @inheritParams fit_ata
 #' @param recent Optional positive integer. When supplied, only the most
 #'   recent `recent` periods are used for estimation. Default is `NULL`.
 #' @param regime Optional regime specification for cohort cutoff. Accepts:
@@ -230,7 +229,8 @@ fit_ed <- function(x,
                    method       = c("mack"),
                    alpha        = 1,
                    na_method    = c("locf", "zero", "none"),
-                   sigma_method = c("locf", "min_last2", "loglinear"),
+                   sigma_method = c("locf", "min_last2", "loglinear",
+                                    "mack", "none"),
                    recent       = NULL,
                    regime       = NULL,
                    ...) {
@@ -273,9 +273,9 @@ fit_ed <- function(x,
   )
   class(out) <- "EDFit"
 
-  # 3) compute factor variance (Mack-style — required by the projection
+  # 3) compute factor variance (Mack-style -- required by the projection
   # in step 4).
-  out$selected <- .ed_g_var(ed_fit = out, alpha = alpha)
+  out$selected <- .ed_g_var(out, alpha = alpha)
 
   # 4) cell-level projection (standalone worker) --------------------------
   # ED rule: Delta loss_k = g_k * cumulative_exposure_k. Factor pair is
@@ -653,20 +653,20 @@ print.EDFit <- function(x, ...) {
 #' not provided as separate functions to avoid suggesting paradigm
 #' mismatch is encouraged in user code.
 #'
-#' Conceptually `.ed_g_var()` is a *factor-level* helper (operates on
-#' per-link `$link` and `$selected` slots) and should pair with
-#' \code{"IntensityFit"} (the factor-level diagnostic for ED, sibling of
-#' \code{"ATAFit"}). The current implementation takes \code{"EDFit"}
-#' (projection-level) for historical reasons; both objects expose the
-#' same factor-level slots, so the implementation is functionally correct
-#' but the class assertion is conceptually misaligned. TODO: refactor
-#' input to \code{"IntensityFit"} for symmetry with
-#' `.mack_f_var(ata_fit: ATAFit)`.
+#' Conceptually a *factor-level* helper (operates on per-link `$link`
+#' and `$selected` slots), parallel to `.mack_f_var(ata_fit: ATAFit)`.
+#' Accepts either \code{"IntensityFit"} (the factor-level diagnostic for
+#' ED, sibling of \code{"ATAFit"}) or \code{"EDFit"} (projection-level,
+#' which exposes the same factor-level slots as a superset). The
+#' \code{"IntensityFit"} path is the conceptually clean entry point for
+#' factor-level callers; \code{"EDFit"} is accepted for projection-level
+#' callers that already hold the fit object.
 #'
 #' Used by [fit_ed()] when `method = "mack"` and by [fit_ratio()] for the
 #' ED component.
 #'
-#' @param ed_fit An object of class `"EDFit"`.
+#' @param x An object of class `"IntensityFit"` or `"EDFit"`. Either
+#'   exposes the `$link` and `$selected` slots used here.
 #' @param alpha Numeric scalar. Default is `1`.
 #'
 #' @return The `$selected` `data.table` with `g_var` column.
@@ -680,22 +680,24 @@ print.EDFit <- function(x, ...) {
 #' of chain ladder reserve estimates. *ASTIN Bulletin*, 23(2), 213-225.
 #'
 #' @keywords internal
-.ed_g_var <- function(ed_fit, alpha = 1) {
+.ed_g_var <- function(x, alpha = 1) {
 
-  .assert_class(ed_fit, "EDFit")
+  if (!inherits(x, c("IntensityFit", "EDFit")))
+    stop("`x` must be an `IntensityFit` or `EDFit` object.",
+         call. = FALSE)
 
   # Suppress R CMD check NOTEs for `data.table` temp columns referenced
   # bare inside `j` expressions later in this function.
   .denom <- NULL
 
-  grp <- attr(ed_fit$link, "groups")
+  grp <- attr(x$link, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  ed_long <- .copy_dt(ed_fit$link)
-  sel     <- data.table::copy(ed_fit$selected)
+  ed_long <- .copy_dt(x$link)
+  sel     <- data.table::copy(x$selected)
 
   if (!"sigma2" %in% names(sel))
-    stop("`ed_fit$selected` must contain a `sigma2` column.",
+    stop("`x$selected` must contain a `sigma2` column.",
          call. = FALSE)
 
   ed_valid <- ed_long[is.finite(exposure_from) &

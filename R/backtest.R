@@ -41,8 +41,7 @@
 #'   `"cl"`, `"ed"`.
 #' @param loss_alpha,exposure_alpha Mack alpha for loss-side / exposure-side
 #'   chain-ladder estimation.
-#' @param sigma_method Tail sigma extrapolation method. Forwarded to
-#'   the underlying fitter.
+#' @inheritParams fit_ata
 #' @param recent Calendar-diagonal recency filter forwarded to the
 #'   fitter.
 #' @param loss_regime,exposure_regime Regime spec for the loss / exposure
@@ -148,7 +147,8 @@ backtest <- function(x,
                      exposure_method = c("cl", "ed"),
                      loss_alpha      = 1,
                      exposure_alpha  = 1,
-                     sigma_method    = c("locf", "min_last2", "loglinear"),
+                     sigma_method    = c("locf", "min_last2", "loglinear",
+                                         "mack", "none"),
                      recent          = NULL,
                      loss_regime     = NULL,
                      exposure_regime = NULL,

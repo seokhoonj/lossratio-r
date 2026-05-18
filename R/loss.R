@@ -6,11 +6,11 @@
 #'
 #' \describe{
 #'   \item{`"ed"` (default)}{Pure exposure-driven (additive) across all
-#'     dev periods. Unconditional safe baseline — no maturity dependency.}
+#'     dev periods. Unconditional safe baseline -- no maturity dependency.}
 #'   \item{`"cl"`}{Pure Mack chain ladder (multiplicative). Classical
 #'     reference.}
 #'   \item{`"sa"`}{Stage-adaptive. ED before the maturity point, CL after
-#'     — composition of ED + CL, requires maturity detection (2-pass).}
+#'     -- composition of ED + CL, requires maturity detection (2-pass).}
 #' }
 #'
 #' This function is the *loss-side* counterpart to [fit_exposure()] in
@@ -49,8 +49,7 @@
 #'   `fit_ratio()` exposure choice.
 #' @param exposure_alpha Variance-structure exponent for the exposure fit.
 #'   Default `1`.
-#' @param sigma_method Sigma extrapolation. One of `"locf"` (default),
-#'   `"min_last2"`, `"loglinear"`.
+#' @inheritParams fit_ata
 #' @param recent Optional positive integer; calendar-diagonal filter.
 #' @param maturity Optional maturity specification. Accepts four input
 #'   types:
@@ -127,7 +126,8 @@ fit_loss <- function(x,
                      exposure_fit    = NULL,
                      exposure_method = c("cl", "ed"),
                      exposure_alpha  = 1,
-                     sigma_method    = c("locf", "min_last2", "loglinear"),
+                     sigma_method    = c("locf", "min_last2", "loglinear",
+                                         "mack", "none"),
                      recent          = NULL,
                      maturity        = "auto",
                      conf_level      = 0.95,
@@ -349,7 +349,7 @@ fit_loss <- function(x,
     regime       = regime
   )
   class(ed_fit) <- "EDFit"
-  ed_fit$selected <- .ed_g_var(ed_fit = ed_fit, alpha = alpha)
+  ed_fit$selected <- .ed_g_var(ed_fit, alpha = alpha)
 
   # 6) maturity point per group ------------------------------------------
   maturity <- loss_ata_fit$maturity

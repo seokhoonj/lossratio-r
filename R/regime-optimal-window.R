@@ -9,13 +9,13 @@
 #' spurious changes), large `window` is under-sensitive (high-dim noise
 #' obscures real shifts). The change count typically drops sharply at
 #' small `window` and plateaus once `window` reaches the genuine information
-#' window — that elbow is a reasonable choice.
+#' window -- that elbow is a reasonable choice.
 #'
 #' @param x A `"Triangle"` object.
 #' @param by Grouping column(s) for per-combination detection, passed
 #'   through to [detect_regime()]. `NULL` (default) pools all cohorts.
 #' @param window_seq Integer vector of trajectory windows to sweep. Default
-#'   `2:24` — typical actuarial range. Each `window` becomes one
+#'   `2:24` -- typical actuarial range. Each `window` becomes one
 #'   `detect_regime()` call.
 #' @param loss Trajectory variable. Passed to [detect_regime()].
 #' @param method Elbow-detection method. Currently only `"elbow"` is
@@ -82,7 +82,7 @@ detect_regime_optimal_window <- function(x,
     details[i] <- list(res)
   }
 
-  # 2) Diagnostics — change_count + magnitude_mean per (combo, window).
+  # 2) Diagnostics -- change_count + magnitude_mean per (combo, window).
   diag_rows <- lapply(seq_along(window_seq), function(i) {
     res <- details[[i]]
     if (is.null(res)) return(NULL)
@@ -115,7 +115,7 @@ detect_regime_optimal_window <- function(x,
   if (!nrow(diagnostics))
     stop("No window in `window_seq` produced a usable detection.", call. = FALSE)
 
-  # 3) Elbow heuristic — Kneedle on (window, change_count). For grouped input,
+  # 3) Elbow heuristic -- Kneedle on (window, change_count). For grouped input,
   # aggregate change_count across combos (sum) so the elbow reflects the
   # whole portfolio response. Users who want per-group elbows can call
   # this function once per group.

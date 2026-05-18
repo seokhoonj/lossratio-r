@@ -10,7 +10,7 @@ fit_intensity(
   exposure = "exposure",
   alpha = 1,
   na_method = c("locf", "zero", "none"),
-  sigma_method = c("locf", "min_last2", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   regime = NULL,
   ...
@@ -28,15 +28,20 @@ exposure anchor. Default \code{"exposure"}.}
 \item{alpha}{WLS weight exponent. Default \code{1}.}
 
 \item{na_method}{NA fill method for the selected intensity series
-used downstream by \code{\link[=fit_ed]{fit_ed()}}. One of \code{"locf"} (default —
+used downstream by \code{\link[=fit_ed]{fit_ed()}}. One of \code{"locf"} (default --
 carries the last observed intensity forward, appropriate for
 long-term health where ageing keeps \eqn{g_k} elevated rather
 than decaying to 0), \code{"zero"} (sets late-dev NAs to 0; suits
 short-tail lines where claims fully settle), or \code{"none"}.}
 
-\item{sigma_method}{Method for extrapolating missing or
-non-positive \code{sigma} values across links. One of \code{"min_last2"}
-(default), \code{"locf"}, \code{"loglinear"}.}
+\item{sigma_method}{Method used to extrapolate \code{sigma} for links where it
+cannot be estimated. One of \code{"locf"} (default), \code{"min_last2"},
+\code{"loglinear"}, \code{"mack"}, or \code{"none"}. \code{"mack"} applies the Mack
+(1993, Appendix B) tail estimator to the last unestimated link only,
+falling back to LOCF for any earlier ones with a warning. \code{"none"}
+performs no extrapolation; \code{sigma} stays \code{NA} and downstream variance
+terms drop those links via finite-value guards. Passed to
+\code{\link[=.extrapolate_sigma_ata]{.extrapolate_sigma_ata()}}.}
 
 \item{recent}{Optional positive integer. When supplied, restricts
 estimation to rows within the last \code{recent} calendar diagonals
@@ -63,7 +68,7 @@ estimation.}
 \item{\code{link}}{Alias of \code{data} for parallelism with
 \code{\link[=fit_ata]{fit_ata()}}.}
 \item{\code{factor}}{The \code{EDSummary} returned by
-\code{\link[=summary.Link]{summary.Link()}} — one row per link with WLS-estimated \code{g},
+\code{\link[=summary.Link]{summary.Link()}} -- one row per link with WLS-estimated \code{g},
 \code{g_se}, \code{rse}, \code{sigma}, plus descriptive statistics.}
 \item{\code{selected}}{\code{data.table} of selected intensities
 per link (\code{g_sel}, \code{sigma}, \code{sigma2},
@@ -93,7 +98,7 @@ table when factors are already computed).
 \section{ED has no maturity concept}{
 
 Unlike ATA factors, where CV / RSE drive a \code{detect_maturity()}
-threshold, ED intensities behave differently — as \eqn{g_k \to 0}
+threshold, ED intensities behave differently -- as \eqn{g_k \to 0}
 in late development the CV / RSE blow up by construction, not by
 instability. \code{fit_intensity()} therefore deliberately omits a
 \code{maturity} parameter, and \code{detect_maturity()} rejects

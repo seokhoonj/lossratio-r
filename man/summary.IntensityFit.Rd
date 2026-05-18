@@ -15,7 +15,7 @@
 An \code{EDSummary} \code{data.table}.
 }
 \description{
-Returns the \code{EDSummary} carried by the fit — one row per link
+Returns the \code{EDSummary} carried by the fit -- one row per link
 with WLS-estimated \code{g}, \code{g_se}, \code{rse}, \code{sigma}, and descriptive
 statistics. Mirrors \code{\link[=summary.ATAFit]{summary.ATAFit()}}.
 }

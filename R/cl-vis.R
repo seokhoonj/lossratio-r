@@ -322,7 +322,7 @@ plot.CLFit <- function(x,
 #' @param region Cell region to plot (only used when `view = "value"`).
 #'   One of `"proj"` (default; projected cells only, observed cells
 #'   masked), `"full"` (observed + projected), or `"data"` (observed
-#'   from `x$data` — the raw Triangle, no projection).
+#'   from `x$data` -- the raw Triangle, no projection).
 #' @param view Plot mode. One of:
 #'   \describe{
 #'     \item{"value" (default)}{Per-cell metric heatmap. `region`

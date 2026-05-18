@@ -222,7 +222,7 @@ NULL
 #' `dev_q` / `dev_h` / `dev_y`) so the same frame can be aggregated
 #' at any of the four grains.
 #'
-#' This is an *optional* utility — [as_triangle()] and
+#' This is an *optional* utility -- [as_triangle()] and
 #' [as_calendar()] already derive the single grain they need
 #' internally. Use this when you want a single enriched frame that
 #' can be re-aggregated at multiple grains, or for exploratory plots.
@@ -298,7 +298,7 @@ derive_grain_columns <- function(df) {
     cy_mo <- data.table::month(dt[["cy_m"]])
   }
 
-  # uy / uy_h / uy_q — first-day-of-grain Date for each row.
+  # uy / uy_h / uy_q -- first-day-of-grain Date for each row.
   # Grain start months: Y = 1; H = 1 (H1) / 7 (H2);
   # Q = 1 (Q1) / 4 (Q2) / 7 (Q3) / 10 (Q4).
   if (has_uy_m) {
@@ -330,7 +330,7 @@ derive_grain_columns <- function(df) {
     has_dev_m <- TRUE
   }
 
-  # dev_y / dev_h / dev_q — calendar-anchored development indices.
+  # dev_y / dev_h / dev_q -- calendar-anchored development indices.
   # dev_h / dev_q align to H / Q boundaries (so Q1, Q2, H1, H2 cohorts
   # are compared on the same cumulative basis), not simple groupings
   # of dev_m.

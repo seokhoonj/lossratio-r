@@ -12,7 +12,7 @@ fit_loss(
   exposure_fit = NULL,
   exposure_method = c("cl", "ed"),
   exposure_alpha = 1,
-  sigma_method = c("locf", "min_last2", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   maturity = "auto",
   conf_level = 0.95,
@@ -58,8 +58,14 @@ when \code{exposure_fit = NULL}. The default matches the historical
 \item{exposure_alpha}{Variance-structure exponent for the exposure fit.
 Default \code{1}.}
 
-\item{sigma_method}{Sigma extrapolation. One of \code{"locf"} (default),
-\code{"min_last2"}, \code{"loglinear"}.}
+\item{sigma_method}{Method used to extrapolate \code{sigma} for links where it
+cannot be estimated. One of \code{"locf"} (default), \code{"min_last2"},
+\code{"loglinear"}, \code{"mack"}, or \code{"none"}. \code{"mack"} applies the Mack
+(1993, Appendix B) tail estimator to the last unestimated link only,
+falling back to LOCF for any earlier ones with a warning. \code{"none"}
+performs no extrapolation; \code{sigma} stays \code{NA} and downstream variance
+terms drop those links via finite-value guards. Passed to
+\code{\link[=.extrapolate_sigma_ata]{.extrapolate_sigma_ata()}}.}
 
 \item{recent}{Optional positive integer; calendar-diagonal filter.}
 
@@ -115,11 +121,11 @@ methods are supported via \code{method}:
 
 \describe{
 \item{\code{"ed"} (default)}{Pure exposure-driven (additive) across all
-dev periods. Unconditional safe baseline — no maturity dependency.}
+dev periods. Unconditional safe baseline -- no maturity dependency.}
 \item{\code{"cl"}}{Pure Mack chain ladder (multiplicative). Classical
 reference.}
 \item{\code{"sa"}}{Stage-adaptive. ED before the maturity point, CL after
-— composition of ED + CL, requires maturity detection (2-pass).}
+-- composition of ED + CL, requires maturity detection (2-pass).}
 }
 
 This function is the \emph{loss-side} counterpart to \code{\link[=fit_exposure]{fit_exposure()}} in

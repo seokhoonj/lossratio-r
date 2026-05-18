@@ -10,7 +10,7 @@ fit_cl(
   loss = "loss",
   weight = NULL,
   alpha = 1,
-  sigma_method = c("locf", "min_last2", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   regime = NULL,
   maturity = NULL,
@@ -33,8 +33,14 @@ Default is \code{NULL}.}
 \item{alpha}{Numeric scalar controlling the variance structure in
 \code{\link[=fit_ata]{fit_ata()}}. Default is \code{1}.}
 
-\item{sigma_method}{Sigma extrapolation method passed to \code{\link[=fit_ata]{fit_ata()}}.
-One of \code{"locf"} (default), \code{"min_last2"}, or \code{"loglinear"}.}
+\item{sigma_method}{Method used to extrapolate \code{sigma} for links where it
+cannot be estimated. One of \code{"locf"} (default), \code{"min_last2"},
+\code{"loglinear"}, \code{"mack"}, or \code{"none"}. \code{"mack"} applies the Mack
+(1993, Appendix B) tail estimator to the last unestimated link only,
+falling back to LOCF for any earlier ones with a warning. \code{"none"}
+performs no extrapolation; \code{sigma} stays \code{NA} and downstream variance
+terms drop those links via finite-value guards. Passed to
+\code{\link[=.extrapolate_sigma_ata]{.extrapolate_sigma_ata()}}.}
 
 \item{recent}{Optional positive integer. When supplied, only the most
 recent \code{recent} periods are used for factor estimation. Default is
@@ -53,7 +59,7 @@ forms:
 \describe{
 \item{\code{NULL} (default)}{No maturity filtering.}
 \item{\code{Maturity} object}{Pre-built (e.g. from \code{\link[=detect_maturity]{detect_maturity()}}
-or \code{\link[=maturity_at]{maturity_at()}}) — used as-is.}
+or \code{\link[=maturity_at]{maturity_at()}}) -- used as-is.}
 \item{\code{"auto"}}{Internal \code{\link[=detect_maturity]{detect_maturity()}} call with defaults
 (loss inferred from \code{loss}).}
 \item{function \verb{function(tri) -> Maturity}}{Lazy spec, typically

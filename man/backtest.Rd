@@ -15,7 +15,7 @@ backtest(
   exposure_method = c("cl", "ed"),
   loss_alpha = 1,
   exposure_alpha = 1,
-  sigma_method = c("locf", "min_last2", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   loss_regime = NULL,
   exposure_regime = NULL,
@@ -58,8 +58,14 @@ Passed to \code{fit_ratio()} / \code{fit_loss()} / \code{fit_exposure()}. One of
 \item{loss_alpha, exposure_alpha}{Mack alpha for loss-side / exposure-side
 chain-ladder estimation.}
 
-\item{sigma_method}{Tail sigma extrapolation method. Forwarded to
-the underlying fitter.}
+\item{sigma_method}{Method used to extrapolate \code{sigma} for links where it
+cannot be estimated. One of \code{"locf"} (default), \code{"min_last2"},
+\code{"loglinear"}, \code{"mack"}, or \code{"none"}. \code{"mack"} applies the Mack
+(1993, Appendix B) tail estimator to the last unestimated link only,
+falling back to LOCF for any earlier ones with a warning. \code{"none"}
+performs no extrapolation; \code{sigma} stays \code{NA} and downstream variance
+terms drop those links via finite-value guards. Passed to
+\code{\link[=.extrapolate_sigma_ata]{.extrapolate_sigma_ata()}}.}
 
 \item{recent}{Calendar-diagonal recency filter forwarded to the
 fitter.}

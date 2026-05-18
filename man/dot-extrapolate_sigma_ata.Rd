@@ -4,14 +4,21 @@
 \alias{.extrapolate_sigma_ata}
 \title{Extrapolate missing sigma values for age-to-age links}
 \usage{
-.extrapolate_sigma_ata(x, method = c("locf", "min_last2", "loglinear"))
+.extrapolate_sigma_ata(
+  x,
+  method = c("locf", "min_last2", "loglinear", "mack", "none")
+)
 }
 \arguments{
 \item{x}{A \code{data.table} with \code{ata_from} and \code{sigma} columns, typically
 the output of \code{\link[=.filter_ata]{.filter_ata()}}.}
 
-\item{method}{One of \code{"locf"} (default), \code{"min_last2"}, or
-\code{"loglinear"}.}
+\item{method}{One of \code{"locf"} (default), \code{"min_last2"}, \code{"loglinear"},
+\code{"mack"}, or \code{"none"}. \code{"mack"} applies Mack (1993) Appendix B tail
+estimator to the last unestimated link only and falls back to LOCF
+for any earlier unestimated links with a warning. \code{"none"} performs
+no extrapolation and leaves \code{sigma} as \code{NA}; downstream variance
+terms then drop those links via finite-value guards.}
 }
 \value{
 A \code{data.table} with missing \code{sigma} values filled and a new
@@ -19,7 +26,7 @@ logical column \code{sigma_extrapolated} flagging imputed rows.
 }
 \description{
 Internal helper that fills \code{NA} or non-positive \code{sigma} values in a
-filtered ata factor table. Three methods are supported: \code{"min_last2"},
-\code{"locf"}, and \code{"loglinear"}. See Details.
+filtered ata factor table. Five methods are supported: \code{"locf"},
+\code{"min_last2"}, \code{"loglinear"}, \code{"mack"}, and \code{"none"}. See Details.
 }
 \keyword{internal}

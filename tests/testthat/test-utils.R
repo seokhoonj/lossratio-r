@@ -237,10 +237,10 @@ test_that(".assign_segment returns 1L for NULL / empty regime", {
 test_that(".assign_segment partitions cohorts by all changes (single group)", {
   coh <- as.Date(c("2022-01-01", "2023-06-01", "2024-06-01", "2025-01-01"))
   reg <- regime_at(change = c("2023-04-01", "2024-04-01"))
-  # 2022-01 < 2023-04         → seg 1
-  # 2023-04 <= 2023-06 < 24-04 → seg 2
-  # 2024-04 <= 2024-06         → seg 3
-  # 2024-04 <= 2025-01         → seg 3
+  # 2022-01 < 2023-04         -> seg 1
+  # 2023-04 <= 2023-06 < 24-04 -> seg 2
+  # 2024-04 <= 2024-06         -> seg 3
+  # 2024-04 <= 2025-01         -> seg 3
   expect_equal(lossratio:::.assign_segment(coh, reg),
                c(1L, 2L, 3L, 3L))
 })
@@ -251,8 +251,8 @@ test_that(".assign_segment dispatches per group on multi-group Regime", {
   grp <- data.table::data.table(coverage = c("A", "A", "B", "B"))
   reg <- regime_at(coverage = c("A", "B"),
                    change   = c("2023-04-01", "2023-08-01"))
-  # A: change at 2023-04 → cohort 01 = seg 1, cohort 06 = seg 2
-  # B: change at 2023-08 → both cohorts pre-change = seg 1
+  # A: change at 2023-04 -> cohort 01 = seg 1, cohort 06 = seg 2
+  # B: change at 2023-08 -> both cohorts pre-change = seg 1
   expect_equal(lossratio:::.assign_segment(coh, reg, grp),
                c(1L, 2L, 1L, 1L))
 })
@@ -262,7 +262,7 @@ test_that(".assign_segment keeps groups absent from regime in segment 1", {
   grp <- data.table::data.table(coverage = c("A", "C"))
   reg <- regime_at(coverage = "A", change = "2023-06-01")
   # A: cohort 01 < 06 = seg 1, cohort 12 >= 06 = seg 2
-  # C: no change → seg 1
+  # C: no change -> seg 1
   # but reg is single-group (one row), so multi_group is FALSE; falls back
   # to scalar path treating all cohorts against max(change). Confirm:
   expect_equal(lossratio:::.assign_segment(coh, reg, grp),

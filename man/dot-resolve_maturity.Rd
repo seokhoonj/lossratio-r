@@ -10,7 +10,7 @@
 \item{arg}{The maturity input (NULL / Maturity / \code{"auto"} /
 function).}
 
-\item{tri}{A \code{"Triangle"} object — used as the detection input when
+\item{tri}{A \code{"Triangle"} object -- used as the detection input when
 \code{masked_tri} is \code{NULL}.}
 
 \item{masked_tri}{Optional masked \code{"Triangle"} (e.g. backtest's
@@ -28,12 +28,12 @@ representation: either \code{NULL} (no maturity override) or a
 
 The four accepted input types are:
 \describe{
-\item{\code{NULL}}{Returns \code{NULL} — caller falls back to its default
+\item{\code{NULL}}{Returns \code{NULL} -- caller falls back to its default
 maturity behavior.}
 \item{\code{"Maturity"} object}{Returned as-is.}
 \item{\code{"auto"}}{Runs \code{\link[=detect_maturity]{detect_maturity()}} on \code{masked_tri} if
 supplied, otherwise on \code{tri}. The \code{masked_tri} fallback is the
-leakage-safe path used by \code{\link[=backtest]{backtest()}} — fit functions pass
+leakage-safe path used by \code{\link[=backtest]{backtest()}} -- fit functions pass
 only \code{tri}, while \code{\link[=backtest]{backtest()}} passes both so detection sees
 only the masked (training) data.}
 \item{\verb{function(tri) -> Maturity}}{Closure invoked with

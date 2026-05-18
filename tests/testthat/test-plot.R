@@ -1,4 +1,4 @@
-# Setup — full pipeline objects for plot dispatch tests
+# Setup -- full pipeline objects for plot dispatch tests
 data(experience)
 exp  <- experience
 tri  <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")

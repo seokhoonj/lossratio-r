@@ -21,8 +21,7 @@
 #'   Default is `NULL`.
 #' @param alpha Numeric scalar controlling the variance structure in
 #'   [fit_ata()]. Default is `1`.
-#' @param sigma_method Sigma extrapolation method passed to [fit_ata()].
-#'   One of `"locf"` (default), `"min_last2"`, or `"loglinear"`.
+#' @inheritParams fit_ata
 #' @param recent Optional positive integer. When supplied, only the most
 #'   recent `recent` periods are used for factor estimation. Default is
 #'   `NULL` (use all periods).
@@ -38,7 +37,7 @@
 #'   \describe{
 #'     \item{`NULL` (default)}{No maturity filtering.}
 #'     \item{`Maturity` object}{Pre-built (e.g. from [detect_maturity()]
-#'       or [maturity_at()]) — used as-is.}
+#'       or [maturity_at()]) -- used as-is.}
 #'     \item{`"auto"`}{Internal [detect_maturity()] call with defaults
 #'       (loss inferred from `loss`).}
 #'     \item{function `function(tri) -> Maturity`}{Lazy spec, typically
@@ -109,7 +108,8 @@ fit_cl <- function(x,
                    loss         = "loss",
                    weight       = NULL,
                    alpha        = 1,
-                   sigma_method = c("locf", "min_last2", "loglinear"),
+                   sigma_method = c("locf", "min_last2", "loglinear",
+                                    "mack", "none"),
                    recent       = NULL,
                    regime       = NULL,
                    maturity     = NULL,

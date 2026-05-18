@@ -451,7 +451,7 @@
 #'
 #' With one variable, labels are returned as-is (formatted).
 #' With multiple variables, labels are combined as
-#' `"first (rest1, rest2, ...)"` — e.g. `"surgery (23.01)"`.
+#' `"first (rest1, rest2, ...)"` -- e.g. `"surgery (23.01)"`.
 #'
 #' @param vars Character vector of facet column names.
 #' @param sep Separator used to join the non-first variables. Default `", "`.
@@ -573,7 +573,7 @@
     keep <- finite_mask & (cal_idx > max_cal - recent)
   } else if (dev_split_is_dt) {
     ds_vals <- dev_split[out, on = ds_join_cols, x.dev_split]
-    # Group with NA dev_split: no SA boundary declared → recent wedge
+    # Group with NA dev_split: no SA boundary declared -> recent wedge
     # applies to all dev (no ED carve-out for that row).
     keep <- finite_mask &
             (cal_idx > max_cal - recent |
@@ -610,8 +610,8 @@
 #'
 #' @return One of:
 #'   * `NULL` when no change date is specified.
-#'   * A single Date (the latest change) — the scalar path.
-#'   * A `data.table` `[join_cols..., change_date]` — the per-group path.
+#'   * A single Date (the latest change) -- the scalar path.
+#'   * A `data.table` `[join_cols..., change_date]` -- the per-group path.
 #'
 #' @keywords internal
 .resolve_regime_change_date <- function(regime, by = NULL) {
@@ -668,7 +668,7 @@
 #' segment K+1.
 #'
 #' Returns `rep(1L, length(coh_vals))` when `regime` is `NULL` or carries
-#' no changes — every cohort is in the single (sole) segment.
+#' no changes -- every cohort is in the single (sole) segment.
 #'
 #' Treatment-agnostic: this helper preserves all change points regardless
 #' of `regime$treatment`. Callers decide whether to use the full
@@ -765,7 +765,7 @@
 #' @param grp Character vector of group columns (may be empty).
 #' @param coh Single column name for the cohort variable.
 #' @param dev Single column name for the development variable.
-#' @param dev_split Optional numeric scalar — the maturity target dev
+#' @param dev_split Optional numeric scalar -- the maturity target dev
 #'   (= `ata_to`, equivalently the first CL-region dev). When supplied,
 #'   the cohort filter is only applied to rows where `dev < dev_split`
 #'   (ED region); rows with `dev >= dev_split` (CL region) are kept
@@ -911,7 +911,7 @@
     } else if (dev_split_is_dt) {
       ds_join_cols <- setdiff(names(dev_split), "dev_split")
       ds_vals <- dev_split[out, on = ds_join_cols, x.dev_split]
-      # Group with NA dev_split: no ED region declared → cohort cut
+      # Group with NA dev_split: no ED region declared -> cohort cut
       # applies to all dev (full filter).
       keep <- !matched | (coh_vals >= cd_vals) |
               (!is.na(ds_vals) & dev_vals >= ds_vals)
@@ -945,10 +945,10 @@
 #' Internal helper used by entry-point functions (`as_triangle`,
 #' `as_link`, `fit_cl`, ...) that take column names as plain
 #' character arguments (no NSE). Performs:
-#'   * type check — must be a non-empty character vector
-#'   * optional length-one check — for arguments expected to resolve to
+#'   * type check -- must be a non-empty character vector
+#'   * optional length-one check -- for arguments expected to resolve to
 #'     a single column (e.g., `cohort`, `loss`)
-#'   * presence check — every name must exist in `df`'s columns
+#'   * presence check -- every name must exist in `df`'s columns
 #'
 #' Produces clear, argument-named error messages.
 #'

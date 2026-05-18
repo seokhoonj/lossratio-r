@@ -91,7 +91,7 @@ for (i in seq_len(nrow(calib))) {
 
       # Real-world exposure / loss are recorded in won (integer);
       # round to match that convention but keep `numeric` (double)
-      # storage — actuarial values may exceed R's int32 ceiling once
+      # storage -- actuarial values may exceed R's int32 ceiling once
       # portfolios scale, and downstream computations (cumulative
       # sums, projections, ratios) produce non-integer values anyway.
       records[[length(records) + 1L]] <- data.table(

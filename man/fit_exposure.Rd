@@ -9,7 +9,7 @@ fit_exposure(
   method = c("ed", "cl"),
   alpha = 1,
   regime = NULL,
-  sigma_method = c("locf", "min_last2", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   tail = FALSE,
   conf_level = 0.95,
@@ -41,8 +41,14 @@ four input types:
 Pre-change cohorts (cohorts before the resolved \code{Regime}'s change
 date) are excluded from exposure factor estimation.}
 
-\item{sigma_method}{Sigma extrapolation method. One of \code{"locf"}
-(default), \code{"min_last2"}, or \code{"loglinear"}.}
+\item{sigma_method}{Method used to extrapolate \code{sigma} for links where it
+cannot be estimated. One of \code{"locf"} (default), \code{"min_last2"},
+\code{"loglinear"}, \code{"mack"}, or \code{"none"}. \code{"mack"} applies the Mack
+(1993, Appendix B) tail estimator to the last unestimated link only,
+falling back to LOCF for any earlier ones with a warning. \code{"none"}
+performs no extrapolation; \code{sigma} stays \code{NA} and downstream variance
+terms drop those links via finite-value guards. Passed to
+\code{\link[=.extrapolate_sigma_ata]{.extrapolate_sigma_ata()}}.}
 
 \item{recent}{Optional positive integer; recent calendar-diagonal
 filter for the underlying ATA fit. Default \code{NULL}.}

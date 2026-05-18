@@ -57,8 +57,9 @@ test_that("fit_ed method = 'mack' works", {
 })
 
 test_that("fit_ed sigma_method variants run", {
-  for (sm in c("min_last2", "locf", "loglinear")) {
-    expect_no_error(fit_ed(tri, loss = "loss", exposure = "exposure", sigma_method = sm))
+  for (sm in c("min_last2", "locf", "loglinear", "mack", "none")) {
+    expect_no_error(suppressWarnings(
+      fit_ed(tri, loss = "loss", exposure = "exposure", sigma_method = sm)))
   }
 })
 

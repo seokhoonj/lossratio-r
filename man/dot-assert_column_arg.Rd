@@ -24,10 +24,10 @@ Internal helper used by entry-point functions (\code{as_triangle},
 \code{as_link}, \code{fit_cl}, ...) that take column names as plain
 character arguments (no NSE). Performs:
 \itemize{
-\item type check — must be a non-empty character vector
-\item optional length-one check — for arguments expected to resolve to
+\item type check -- must be a non-empty character vector
+\item optional length-one check -- for arguments expected to resolve to
 a single column (e.g., \code{cohort}, \code{loss})
-\item presence check — every name must exist in \code{df}'s columns
+\item presence check -- every name must exist in \code{df}'s columns
 }
 
 Produces clear, argument-named error messages.

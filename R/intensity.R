@@ -19,7 +19,7 @@
 #'
 #' @section ED has no maturity concept:
 #' Unlike ATA factors, where CV / RSE drive a `detect_maturity()`
-#' threshold, ED intensities behave differently — as \eqn{g_k \to 0}
+#' threshold, ED intensities behave differently -- as \eqn{g_k \to 0}
 #' in late development the CV / RSE blow up by construction, not by
 #' instability. `fit_intensity()` therefore deliberately omits a
 #' `maturity` parameter, and `detect_maturity()` rejects
@@ -32,14 +32,12 @@
 #'   exposure anchor. Default `"exposure"`.
 #' @param alpha WLS weight exponent. Default `1`.
 #' @param na_method NA fill method for the selected intensity series
-#'   used downstream by [fit_ed()]. One of `"locf"` (default —
+#'   used downstream by [fit_ed()]. One of `"locf"` (default --
 #'   carries the last observed intensity forward, appropriate for
 #'   long-term health where ageing keeps \eqn{g_k} elevated rather
 #'   than decaying to 0), `"zero"` (sets late-dev NAs to 0; suits
 #'   short-tail lines where claims fully settle), or `"none"`.
-#' @param sigma_method Method for extrapolating missing or
-#'   non-positive `sigma` values across links. One of `"min_last2"`
-#'   (default), `"locf"`, `"loglinear"`.
+#' @inheritParams fit_ata
 #' @param recent Optional positive integer. When supplied, restricts
 #'   estimation to rows within the last `recent` calendar diagonals
 #'   (calendar-diagonal wedge filter; see [.apply_recent_filter()]).
@@ -62,7 +60,7 @@
 #'   \item{`link`}{Alias of `data` for parallelism with
 #'     [fit_ata()].}
 #'   \item{`factor`}{The `EDSummary` returned by
-#'     [summary.Link()] — one row per link with WLS-estimated `g`,
+#'     [summary.Link()] -- one row per link with WLS-estimated `g`,
 #'     `g_se`, `rse`, `sigma`, plus descriptive statistics.}
 #'   \item{`selected`}{`data.table` of selected intensities
 #'     per link (`g_sel`, `sigma`, `sigma2`,
@@ -97,7 +95,8 @@ fit_intensity <- function(x,
                           exposure     = "exposure",
                           alpha        = 1,
                           na_method    = c("locf", "zero", "none"),
-                          sigma_method = c("locf", "min_last2", "loglinear"),
+                          sigma_method = c("locf", "min_last2", "loglinear",
+                                           "mack", "none"),
                           recent       = NULL,
                           regime       = NULL,
                           ...) {
@@ -174,7 +173,7 @@ fit_intensity <- function(x,
 #' Summary method for `IntensityFit`
 #'
 #' @description
-#' Returns the `EDSummary` carried by the fit — one row per link
+#' Returns the `EDSummary` carried by the fit -- one row per link
 #' with WLS-estimated `g`, `g_se`, `rse`, `sigma`, and descriptive
 #' statistics. Mirrors [summary.ATAFit()].
 #'
@@ -192,7 +191,7 @@ summary.IntensityFit <- function(object, ...) {
 
 #' Print method for `IntensityFit`
 #'
-#' Mirrors [print.ATAFit()] — prints call metadata only. Use
+#' Mirrors [print.ATAFit()] -- prints call metadata only. Use
 #' [summary.IntensityFit()] (or `x$factor`) to inspect the per-link
 #' summary table.
 #'

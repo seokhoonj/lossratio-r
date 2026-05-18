@@ -4,10 +4,11 @@
 \alias{.ed_g_var}
 \title{Compute ED intensity variance for each development link}
 \usage{
-.ed_g_var(ed_fit, alpha = 1)
+.ed_g_var(x, alpha = 1)
 }
 \arguments{
-\item{ed_fit}{An object of class \code{"EDFit"}.}
+\item{x}{An object of class \code{"IntensityFit"} or \code{"EDFit"}. Either
+exposes the \verb{$link} and \verb{$selected} slots used here.}
 
 \item{alpha}{Numeric scalar. Default is \code{1}.}
 }
@@ -29,15 +30,14 @@ applied to g-intensity). The cross-paradigm pairs (\code{.mack_g_var},
 not provided as separate functions to avoid suggesting paradigm
 mismatch is encouraged in user code.
 
-Conceptually \code{.ed_g_var()} is a \emph{factor-level} helper (operates on
-per-link \verb{$link} and \verb{$selected} slots) and should pair with
-\code{"IntensityFit"} (the factor-level diagnostic for ED, sibling of
-\code{"ATAFit"}). The current implementation takes \code{"EDFit"}
-(projection-level) for historical reasons; both objects expose the
-same factor-level slots, so the implementation is functionally correct
-but the class assertion is conceptually misaligned. TODO: refactor
-input to \code{"IntensityFit"} for symmetry with
-\code{.mack_f_var(ata_fit: ATAFit)}.
+Conceptually a \emph{factor-level} helper (operates on per-link \verb{$link}
+and \verb{$selected} slots), parallel to \code{.mack_f_var(ata_fit: ATAFit)}.
+Accepts either \code{"IntensityFit"} (the factor-level diagnostic for
+ED, sibling of \code{"ATAFit"}) or \code{"EDFit"} (projection-level,
+which exposes the same factor-level slots as a superset). The
+\code{"IntensityFit"} path is the conceptually clean entry point for
+factor-level callers; \code{"EDFit"} is accepted for projection-level
+callers that already hold the fit object.
 
 Used by \code{\link[=fit_ed]{fit_ed()}} when \code{method = "mack"} and by \code{\link[=fit_ratio]{fit_ratio()}} for the
 ED component.

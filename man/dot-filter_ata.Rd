@@ -32,9 +32,9 @@ A \code{data.table} with \code{selected} and \code{f_sel} columns added.
 \description{
 Internal helper that produces a \code{f_sel} column by applying two steps:
 \enumerate{
-\item \strong{Filter} — when \code{use_maturity = TRUE}, development links that precede
+\item \strong{Filter} -- when \code{use_maturity = TRUE}, development links that precede
 the maturity point are excluded (\code{f_sel} set to \code{NA}).
-\item \strong{Fill} — \code{NA} values in \code{f_sel} are forward-filled using LOCF,
+\item \strong{Fill} -- \code{NA} values in \code{f_sel} are forward-filled using LOCF,
 so that every link used in projection has a finite factor.
 }
 }

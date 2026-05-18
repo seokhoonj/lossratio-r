@@ -27,7 +27,7 @@ and (k+1)-th change is segment k+1; on or after the K-th change is
 segment K+1.
 
 Returns \code{rep(1L, length(coh_vals))} when \code{regime} is \code{NULL} or carries
-no changes — every cohort is in the single (sole) segment.
+no changes -- every cohort is in the single (sole) segment.
 
 Treatment-agnostic: this helper preserves all change points regardless
 of \code{regime$treatment}. Callers decide whether to use the full

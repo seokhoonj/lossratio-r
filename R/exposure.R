@@ -24,8 +24,7 @@
 #' @param method One of `"ed"` (default) or `"cl"`.
 #' @param alpha Numeric scalar controlling the variance structure passed
 #'   through to [fit_ata()]. Default `1`.
-#' @param sigma_method Sigma extrapolation method. One of `"locf"`
-#'   (default), `"min_last2"`, or `"loglinear"`.
+#' @inheritParams fit_ata
 #' @param regime Optional regime specification (exposure side). Accepts
 #'   four input types:
 #'   \describe{
@@ -106,7 +105,8 @@ fit_exposure <- function(x,
                          method       = c("ed", "cl"),
                          alpha        = 1,
                          regime       = NULL,
-                         sigma_method = c("locf", "min_last2", "loglinear"),
+                         sigma_method = c("locf", "min_last2", "loglinear",
+                                          "mack", "none"),
                          recent       = NULL,
                          tail         = FALSE,
                          conf_level   = 0.95,

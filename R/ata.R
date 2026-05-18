@@ -252,8 +252,13 @@ print.ATASummary <- function(x, digits = attr(x, "digits"), ...) {
 #' @param na_method Method used to fill `NA` values in `f_sel`. One of
 #'   `"locf"` (default) or `"none"`. Passed to [.filter_ata()].
 #' @param sigma_method Method used to extrapolate `sigma` for links where it
-#'   cannot be estimated. One of `"locf"` (default), `"min_last2"`, or
-#'   `"loglinear"`. Passed to [.extrapolate_sigma_ata()].
+#'   cannot be estimated. One of `"locf"` (default), `"min_last2"`,
+#'   `"loglinear"`, `"mack"`, or `"none"`. `"mack"` applies the Mack
+#'   (1993, Appendix B) tail estimator to the last unestimated link only,
+#'   falling back to LOCF for any earlier ones with a warning. `"none"`
+#'   performs no extrapolation; `sigma` stays `NA` and downstream variance
+#'   terms drop those links via finite-value guards. Passed to
+#'   [.extrapolate_sigma_ata()].
 #' @param recent Optional positive integer. When supplied, only the most
 #'   recent `recent` periods in the `Link` triangle are used for factor
 #'   estimation. Applied before maturity filtering. Default is `NULL`
@@ -313,7 +318,8 @@ fit_ata <- function(x,
                     weight       = NULL,
                     alpha        = 1,
                     na_method    = c("locf", "none"),
-                    sigma_method = c("locf", "min_last2", "loglinear"),
+                    sigma_method = c("locf", "min_last2", "loglinear",
+                                     "mack", "none"),
                     recent       = NULL,
                     regime       = NULL,
                     maturity     = NULL,
@@ -343,7 +349,7 @@ fit_ata <- function(x,
   if (!is.null(maturity)) {
     m_groups <- attr(maturity, "groups")
     if (is.null(m_groups)) {
-      # Infer from column names — non-stats columns are group columns.
+      # Infer from column names -- non-stats columns are group columns.
       stat_cols <- c("change", "ata_from", "ata_link", "mean", "median", "wt",
                      "cv", "f", "f_se", "rse", "sigma", "n_cohorts", "n_valid",
                      "n_inf", "n_nan", "valid_ratio")
@@ -506,10 +512,10 @@ print.ATAFit <- function(x, ...) {
 #' @description
 #' Internal helper that produces a `f_sel` column by applying two steps:
 #'
-#' 1. **Filter** — when `use_maturity = TRUE`, development links that precede
+#' 1. **Filter** -- when `use_maturity = TRUE`, development links that precede
 #'    the maturity point are excluded (`f_sel` set to `NA`).
 #'
-#' 2. **Fill** — `NA` values in `f_sel` are forward-filled using LOCF,
+#' 2. **Fill** -- `NA` values in `f_sel` are forward-filled using LOCF,
 #'    so that every link used in projection has a finite factor.
 #'
 #' @param ata_summary A `data.table` of class `"ATASummary"` from
@@ -590,20 +596,25 @@ print.ATAFit <- function(x, ...) {
 #'
 #' @description
 #' Internal helper that fills `NA` or non-positive `sigma` values in a
-#' filtered ata factor table. Three methods are supported: `"min_last2"`,
-#' `"locf"`, and `"loglinear"`. See Details.
+#' filtered ata factor table. Five methods are supported: `"locf"`,
+#' `"min_last2"`, `"loglinear"`, `"mack"`, and `"none"`. See Details.
 #'
 #' @param x A `data.table` with `ata_from` and `sigma` columns, typically
 #'   the output of [.filter_ata()].
-#' @param method One of `"locf"` (default), `"min_last2"`, or
-#'   `"loglinear"`.
+#' @param method One of `"locf"` (default), `"min_last2"`, `"loglinear"`,
+#'   `"mack"`, or `"none"`. `"mack"` applies Mack (1993) Appendix B tail
+#'   estimator to the last unestimated link only and falls back to LOCF
+#'   for any earlier unestimated links with a warning. `"none"` performs
+#'   no extrapolation and leaves `sigma` as `NA`; downstream variance
+#'   terms then drop those links via finite-value guards.
 #'
 #' @return A `data.table` with missing `sigma` values filled and a new
 #'   logical column `sigma_extrapolated` flagging imputed rows.
 #'
 #' @keywords internal
 .extrapolate_sigma_ata <- function(x,
-                                   method = c("locf", "min_last2", "loglinear")) {
+                                   method = c("locf", "min_last2", "loglinear",
+                                              "mack", "none")) {
 
   method <- match.arg(method)
 
@@ -646,6 +657,28 @@ print.ATAFit <- function(x, ...) {
         fit <- stats::lm(log(sigma) ~ ata_from, data = sub[sub_valid])
         z[sub_idx[sub_pred],
           sigma := exp(stats::predict(fit, newdata = sub[sub_pred]))]
+      } else if (method == "mack") {
+        nv <- length(sub_valid); np <- length(sub_pred)
+        last_valid <- sub$sigma[sub_valid[nv]]
+        if (nv < 3L) {
+          warning(sprintf(
+            "Segment %d: Mack tail estimator requires >= 3 valid sigma values; falling back to LOCF.",
+            sid), call. = FALSE)
+          z[sub_idx[sub_pred], ("sigma") := last_valid]
+        } else {
+          s2_last <- last_valid^2
+          s2_prev <- sub$sigma[sub_valid[nv - 1L]]^2
+          sigma_tail <- sqrt(min(s2_last^2 / s2_prev, s2_last, s2_prev))
+          if (np > 1L) {
+            z[sub_idx[sub_pred[seq_len(np - 1L)]], ("sigma") := last_valid]
+            warning(sprintf(
+              "Segment %d: Mack tail estimator covers only the last link; %d earlier unestimated link(s) filled by LOCF.",
+              sid, np - 1L), call. = FALSE)
+          }
+          z[sub_idx[sub_pred[np]], ("sigma") := sigma_tail]
+        }
+      } else if (method == "none") {
+        # leave sigma as NA; sigma_extrapolated flag remains TRUE
       }
     }
     return(z[])
@@ -670,6 +703,32 @@ print.ATAFit <- function(x, ...) {
     # log-linear regression on valid rows; assumes monotone decrease
     fit <- stats::lm(log(sigma) ~ ata_from, data = z[idx_valid])
     z[idx_pred, ("sigma") := exp(stats::predict(fit, newdata = z[idx_pred]))]
+
+  } else if (method == "mack") {
+    # Mack (1993) Appendix B tail estimator; covers the last unestimated
+    # link only. Earlier unestimated links fall back to LOCF with a
+    # warning. Requires at least three valid sigma values.
+    nv <- length(idx_valid); np <- length(idx_pred)
+    last_valid <- z$sigma[idx_valid[nv]]
+    if (nv < 3L) {
+      warning("Mack tail estimator requires >= 3 valid sigma values; ",
+              "falling back to LOCF.", call. = FALSE)
+      z[idx_pred, ("sigma") := last_valid]
+    } else {
+      s2_last <- last_valid^2
+      s2_prev <- z$sigma[idx_valid[nv - 1L]]^2
+      sigma_tail <- sqrt(min(s2_last^2 / s2_prev, s2_last, s2_prev))
+      if (np > 1L) {
+        z[idx_pred[seq_len(np - 1L)], ("sigma") := last_valid]
+        warning(sprintf(
+          "Mack tail estimator covers only the last link; %d earlier unestimated link(s) filled by LOCF.",
+          np - 1L), call. = FALSE)
+      }
+      z[idx_pred[np], ("sigma") := sigma_tail]
+    }
+
+  } else if (method == "none") {
+    # no extrapolation; sigma stays NA, sigma_extrapolated flag remains TRUE
   }
 
   z[]

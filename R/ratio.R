@@ -7,7 +7,7 @@
 #' \describe{
 #'   \item{`"ed"` (default)}{Exposure-driven for all development periods.
 #'     All future increments are \eqn{g_k \cdot C^P_k}. Unconditional
-#'     safe baseline — no maturity dependency, robust under early-dev
+#'     safe baseline -- no maturity dependency, robust under early-dev
 #'     ATA volatility.}
 #'   \item{`"cl"`}{Chain ladder for all development periods.
 #'     Equivalent to the classical Mack (1993) recursion.}
@@ -70,8 +70,7 @@
 #'   Default `NULL` -- exposure is fit on the full triangle independently
 #'   of `loss_regime` (no lazy default). Set explicitly when the regime
 #'   shift affects exposure accrual too.
-#' @param sigma_method Sigma extrapolation method. One of `"locf"`
-#'   (default), `"min_last2"`, or `"loglinear"`.
+#' @inheritParams fit_ata
 #' @param recent Optional positive integer for estimation window.
 #'   Default is `NULL`.
 #' @param maturity Optional maturity specification. Accepts four input
@@ -171,7 +170,8 @@ fit_ratio <- function(x,
                       exposure_method = c("cl", "ed"),
                       exposure_alpha  = 1,
                       exposure_regime = NULL,
-                      sigma_method    = c("locf", "min_last2", "loglinear"),
+                      sigma_method    = c("locf", "min_last2", "loglinear",
+                                          "mack", "none"),
                       recent          = NULL,
                       maturity        = "auto",
                       se_method       = c("fixed", "delta"),

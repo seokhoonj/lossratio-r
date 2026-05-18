@@ -33,7 +33,7 @@ intersection of \code{Regime$groups} and \code{grp}.
 
 \item{dev}{Single column name for the development variable.}
 
-\item{dev_split}{Optional numeric scalar — the maturity target dev
+\item{dev_split}{Optional numeric scalar -- the maturity target dev
 (= \code{ata_to}, equivalently the first CL-region dev). When supplied,
 the cohort filter is only applied to rows where \code{dev < dev_split}
 (ED region); rows with \code{dev >= dev_split} (CL region) are kept

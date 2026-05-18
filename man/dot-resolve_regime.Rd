@@ -10,7 +10,7 @@
 \item{arg}{The regime-change input (NULL / Regime / \code{"auto"} /
 function).}
 
-\item{tri}{A \code{"Triangle"} object — used as the detection input when
+\item{tri}{A \code{"Triangle"} object -- used as the detection input when
 \code{masked_tri} is \code{NULL}.}
 
 \item{masked_tri}{Optional masked \code{"Triangle"} (e.g. backtest's

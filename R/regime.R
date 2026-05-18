@@ -64,14 +64,14 @@
 #'   `vignette("regime")` "Choice of loss" section for guidance on
 #'   which loss metric matches which suspected event.
 #' @param by Grouping column(s) for per-combination detection. `NULL`
-#'   (default) reuses the Triangle's `attr(x, "groups")` when non-empty —
-#'   so `detect_regime(tri)` dispatches per group automatically — and
+#'   (default) reuses the Triangle's `attr(x, "groups")` when non-empty --
+#'   so `detect_regime(tri)` dispatches per group automatically -- and
 #'   otherwise falls back to pooled detection. Pass `by = character(0)`
 #'   to force pooled detection on a multi-group Triangle, or a character
 #'   vector (subset of `names(x)`) to dispatch on an explicit combo,
 #'   e.g. `by = "coverage"` or `by = c("channel", "coverage")`.
 #' @param window Trajectory window. Integer (e.g., `12L`) for a fixed window, or
-#'   the string `"auto"` (default) — resolves to each group's maturity
+#'   the string `"auto"` (default) -- resolves to each group's maturity
 #'   via [detect_maturity()], falling back to `6L` when maturity is
 #'   unavailable (NA, pooled mode, or `by` mismatching the Triangle's
 #'   `attr("groups")`). Cohorts with fewer than the resolved `window`
@@ -117,13 +117,13 @@
 #'       magnitude]`. `regime_id` = id of the regime that STARTS at this
 #'       change (the pre-change regime is `regime_id - 1`); matches
 #'       `$labels$regime_id`. `pre_value` / `post_value` are the mean
-#'       `loss` over the cohort × dev trajectory windows in the pre- /
+#'       `loss` over the cohort x dev trajectory windows in the pre- /
 #'       post-change regimes; `magnitude = |post_value - pre_value|`.
 #'       Empty (zero rows) when no change is detected.}
 #'     \item{`n_regimes`}{Number of regimes detected. Scalar integer for
 #'       single-combo detection; named integer vector (keyed by combo) for
 #'       multi-combo.}
-#'     \item{`trajectory`}{Cohort × dev feature matrix used for detection.
+#'     \item{`trajectory`}{Cohort x dev feature matrix used for detection.
 #'       Single matrix when single combo; named list of matrices for
 #'       multi-combo.}
 #'     \item{`pca`}{`prcomp` object (single combo) or named list of
@@ -132,7 +132,7 @@
 #'       constraint. Vector (single) / named list (multi).}
 #'     \item{`multi_group`}{Logical flag; `TRUE` when detection ran over
 #'       multiple group combos.}
-#'     \item{`treatment`}{Either `"latest_only"` or `"segment_wise"` — the
+#'     \item{`treatment`}{Either `"latest_only"` or `"segment_wise"` -- the
 #'       value supplied via the `treatment` argument. Read by downstream
 #'       fits (`fit_ata()`, `fit_intensity()`, `fit_cl()`, `fit_ed()`) to
 #'       decide whether to collapse to the latest change (drop pre-change
@@ -197,7 +197,7 @@ detect_regime <- function(x,
 
   # `window = "auto"` falls back to maturity (`detect_maturity()`). The
   # default fallback when no maturity is detected (or pooled mode) is
-  # `WINDOW_AUTO_FALLBACK` — small enough to keep recent cohorts in the
+  # `WINDOW_AUTO_FALLBACK` -- small enough to keep recent cohorts in the
   # window for most coverages.
   WINDOW_AUTO_FALLBACK <- 6L
   window_is_auto <- identical(window, "auto")
@@ -209,9 +209,9 @@ detect_regime <- function(x,
   }
 
   # resolve grouping:
-  #   by = NULL (default) → use `attr(x, "groups")` if non-empty, else pooled
-  #   by = character(0)   → force pooled (single cohort sequence)
-  #   by = character(.)   → explicit grouping columns
+  #   by = NULL (default) -> use `attr(x, "groups")` if non-empty, else pooled
+  #   by = character(0)   -> force pooled (single cohort sequence)
+  #   by = character(.)   -> explicit grouping columns
   grp <- if (is.null(by)) {
     g <- attr(x, "groups")
     if (is.null(g)) character(0) else g
@@ -257,7 +257,7 @@ detect_regime <- function(x,
   multi_group <- length(grp) > 0L &&
                  nrow(unique(d[, grp, with = FALSE])) > 1L
 
-  # Unified dispatch — single combo when `grp` is empty (pooled detection),
+  # Unified dispatch -- single combo when `grp` is empty (pooled detection),
   # otherwise one combo per unique (group cols) row.
   if (length(grp) > 0L) {
     grp_combos <- unique(d[, grp, with = FALSE])
@@ -396,7 +396,7 @@ detect_regime <- function(x,
   pca_lst        <- lapply(per_group[ok], `[[`, "pca")
   dropped_lst    <- lapply(per_group[ok], `[[`, "dropped")
 
-  # Single-combo unwrap — preserves the scalar / matrix / prcomp shapes
+  # Single-combo unwrap -- preserves the scalar / matrix / prcomp shapes
   # that downstream code (and existing tests) expect when only one group
   # combo is detected. `$changes` and `$labels` remain data.tables.
   is_single <- sum(ok) == 1L
@@ -999,7 +999,7 @@ regime_at <- function(..., treatment = c("latest_only", "segment_wise")) {
     stop("`regime_at()` arguments must have length >= 1.", call. = FALSE)
 
   bp_raw <- args[["change"]]
-  # Coerce factor → character first so as.Date() picks the date
+  # Coerce factor -> character first so as.Date() picks the date
   # parser, not the factor-level integer.
   if (is.factor(bp_raw)) bp_raw <- as.character(bp_raw)
   bp <- tryCatch(as.Date(bp_raw),
@@ -1152,7 +1152,7 @@ regime_spec <- function(...) {
 #'
 #' @param arg The regime-change input (NULL / Regime / `"auto"` /
 #'   function).
-#' @param tri A `"Triangle"` object — used as the detection input when
+#' @param tri A `"Triangle"` object -- used as the detection input when
 #'   `masked_tri` is `NULL`.
 #' @param masked_tri Optional masked `"Triangle"` (e.g. backtest's
 #'   training-only triangle). When supplied, `"auto"` and function
@@ -1196,12 +1196,12 @@ regime_spec <- function(...) {
 #'
 #' The four accepted input types are:
 #' \describe{
-#'   \item{`NULL`}{Returns `NULL` — caller falls back to its default
+#'   \item{`NULL`}{Returns `NULL` -- caller falls back to its default
 #'     maturity behavior.}
 #'   \item{`"Maturity"` object}{Returned as-is.}
 #'   \item{`"auto"`}{Runs [detect_maturity()] on `masked_tri` if
 #'     supplied, otherwise on `tri`. The `masked_tri` fallback is the
-#'     leakage-safe path used by [backtest()] — fit functions pass
+#'     leakage-safe path used by [backtest()] -- fit functions pass
 #'     only `tri`, while [backtest()] passes both so detection sees
 #'     only the masked (training) data.}
 #'   \item{`function(tri) -> Maturity`}{Closure invoked with
@@ -1211,7 +1211,7 @@ regime_spec <- function(...) {
 #'
 #' @param arg The maturity input (NULL / Maturity / `"auto"` /
 #'   function).
-#' @param tri A `"Triangle"` object — used as the detection input when
+#' @param tri A `"Triangle"` object -- used as the detection input when
 #'   `masked_tri` is `NULL`.
 #' @param masked_tri Optional masked `"Triangle"` (e.g. backtest's
 #'   training-only triangle). When supplied, `"auto"` and function

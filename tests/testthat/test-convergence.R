@@ -194,6 +194,6 @@ test_that("auto mat_k failure error explains the cause + how to override", {
       regexp = "mat_k.*explicitly"
     )
   } else {
-    succeed()  # build_triangle rejected — that's also fine
+    succeed()  # build_triangle rejected -- that's also fine
   }
 })

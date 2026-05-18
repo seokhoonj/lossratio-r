@@ -95,7 +95,7 @@ test_that("regime_spec plugs into fit_ratio (closure form)", {
 # 4-type dispatch coverage --------------------------------------------------
 
 test_that("fit_ratio maturity arg accepts all 4 input types", {
-  # 1. NULL — no maturity filter (allowed for non-SA methods)
+  # 1. NULL -- no maturity filter (allowed for non-SA methods)
   fit_null <- fit_ratio(sub, method = "cl", maturity = NULL, bootstrap = FALSE)
   expect_s3_class(fit_null, "RatioFit")
   expect_null(fit_null$maturity)
@@ -140,7 +140,7 @@ test_that("fit_ratio loss_regime arg accepts all 4 input types", {
 test_that(".auto_divisor picks the largest divisor that yields a non-zero short label", {
   # The picker prefers the SHORTEST formatted label (e.g. "0.5" > "500.0")
   # so it tends to pick a divisor one order larger than the median.
-  # median in [1, 1e3): "X" / 1 = "X.X" (3-5 chars), / 1e3 = "0.X" (3 chars) → 1e3 wins
+  # median in [1, 1e3): "X" / 1 = "X.X" (3-5 chars), / 1e3 = "0.X" (3 chars) -> 1e3 wins
   expect_equal(lossratio:::.auto_divisor(c(100, 500, 800)), 1e3)
   # median in [1e3, 1e6): / 1e6 wins ("0.X" beats "X.X")
   expect_equal(lossratio:::.auto_divisor(c(5e3, 5e4, 5e5)), 1e6)

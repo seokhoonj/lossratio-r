@@ -10,7 +10,7 @@ fit_ata(
   weight = NULL,
   alpha = 1,
   na_method = c("locf", "none"),
-  sigma_method = c("locf", "min_last2", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   regime = NULL,
   maturity = NULL,
@@ -34,8 +34,13 @@ is \code{1}.}
 \code{"locf"} (default) or \code{"none"}. Passed to \code{\link[=.filter_ata]{.filter_ata()}}.}
 
 \item{sigma_method}{Method used to extrapolate \code{sigma} for links where it
-cannot be estimated. One of \code{"locf"} (default), \code{"min_last2"}, or
-\code{"loglinear"}. Passed to \code{\link[=.extrapolate_sigma_ata]{.extrapolate_sigma_ata()}}.}
+cannot be estimated. One of \code{"locf"} (default), \code{"min_last2"},
+\code{"loglinear"}, \code{"mack"}, or \code{"none"}. \code{"mack"} applies the Mack
+(1993, Appendix B) tail estimator to the last unestimated link only,
+falling back to LOCF for any earlier ones with a warning. \code{"none"}
+performs no extrapolation; \code{sigma} stays \code{NA} and downstream variance
+terms drop those links via finite-value guards. Passed to
+\code{\link[=.extrapolate_sigma_ata]{.extrapolate_sigma_ata()}}.}
 
 \item{recent}{Optional positive integer. When supplied, only the most
 recent \code{recent} periods in the \code{Link} triangle are used for factor

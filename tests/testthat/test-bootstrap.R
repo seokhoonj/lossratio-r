@@ -3,7 +3,7 @@
 # Scope:
 #   - bootstrap() S3 generic + bootstrap.Triangle() method
 #   - print.BootstrapTriangle()
-#   - Per-cohort × dev $summary slot (Pythagorean SE decomposition)
+#   - Per-cohort x dev $summary slot (Pythagorean SE decomposition)
 #   - keep_pseudo toggle (pseudo_triangles long-format build skip)
 #   - .resolve_bootstrap 4-type arg dispatch
 
@@ -45,7 +45,7 @@ test_that("meta records all configured arguments", {
 # pseudo_triangles long-format shape
 # ---------------------------------------------------------------------------
 
-test_that("pseudo_triangles has [cohort × dev × B] rows per group", {
+test_that("pseudo_triangles has [cohort x dev x B] rows per group", {
   tri <- make_sub_tri("surgery")
   n_coh <- length(unique(tri$cohort))
   n_dev <- length(unique(tri$dev))
@@ -107,7 +107,7 @@ test_that("parametric type preserves observed cells across replicates", {
   b <- bootstrap(tri, keep_pseudo = TRUE, type = "parametric", B = 30, seed = 1)
   obs <- tri[1L]
   # Parametric preserves observed cells across replicates (both columns
-  # agree on the upper triangle — loss_mean is the observed value, and
+  # agree on the upper triangle -- loss_mean is the observed value, and
   # loss_sampled has no Stage 2 noise added there).
   matched <- b$pseudo_triangles[
     cohort == obs$cohort & dev == obs$dev, loss_mean
@@ -532,7 +532,7 @@ test_that(".resolve_bootstrap rejects bad input", {
 })
 
 
-# Legacy .boot_refit / .boot_summarize_se tests removed — fit_* now read
+# Legacy .boot_refit / .boot_summarize_se tests removed -- fit_* now read
 # bt$summary directly (wrap-only), so those helpers and the tests that
 # exercised them in isolation are obsolete. Bootstrap behaviour is now
 # verified through the public fit_ratio / fit_loss / fit_exposure interface
@@ -833,7 +833,7 @@ test_that("backtest rejects a BootstrapTriangle on the wrong target", {
 
 
 # ---------------------------------------------------------------------------
-# BootstrapTriangle$summary slot — Pythagorean SE decomposition
+# BootstrapTriangle$summary slot -- Pythagorean SE decomposition
 # ---------------------------------------------------------------------------
 
 test_that("$summary default schema (quantile_ci = FALSE) omits CI columns", {
