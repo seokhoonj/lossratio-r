@@ -31,12 +31,13 @@ mismatch is encouraged in user code.
 
 Conceptually \code{.ed_g_var()} is a \emph{factor-level} helper (operates on
 per-link \verb{$link} and \verb{$selected} slots) and should pair with
-\link{IntensityFit} (the factor-level diagnostic for ED, sibling of
-\link{ATAFit}). The current implementation takes \link{EDFit} (projection-level)
-for historical reasons; both objects expose the same factor-level
-slots, so the implementation is functionally correct but the class
-assertion is conceptually misaligned. TODO: refactor input to
-\link{IntensityFit} for symmetry with \code{.mack_f_var(ata_fit: ATAFit)}.
+\code{"IntensityFit"} (the factor-level diagnostic for ED, sibling of
+\code{"ATAFit"}). The current implementation takes \code{"EDFit"}
+(projection-level) for historical reasons; both objects expose the
+same factor-level slots, so the implementation is functionally correct
+but the class assertion is conceptually misaligned. TODO: refactor
+input to \code{"IntensityFit"} for symmetry with
+\code{.mack_f_var(ata_fit: ATAFit)}.
 
 Used by \code{\link[=fit_ed]{fit_ed()}} when \code{method = "mack"} and by \code{\link[=fit_ratio]{fit_ratio()}} for the
 ED component.

@@ -655,12 +655,13 @@ print.EDFit <- function(x, ...) {
 #'
 #' Conceptually `.ed_g_var()` is a *factor-level* helper (operates on
 #' per-link `$link` and `$selected` slots) and should pair with
-#' [IntensityFit] (the factor-level diagnostic for ED, sibling of
-#' [ATAFit]). The current implementation takes [EDFit] (projection-level)
-#' for historical reasons; both objects expose the same factor-level
-#' slots, so the implementation is functionally correct but the class
-#' assertion is conceptually misaligned. TODO: refactor input to
-#' [IntensityFit] for symmetry with `.mack_f_var(ata_fit: ATAFit)`.
+#' \code{"IntensityFit"} (the factor-level diagnostic for ED, sibling of
+#' \code{"ATAFit"}). The current implementation takes \code{"EDFit"}
+#' (projection-level) for historical reasons; both objects expose the
+#' same factor-level slots, so the implementation is functionally correct
+#' but the class assertion is conceptually misaligned. TODO: refactor
+#' input to \code{"IntensityFit"} for symmetry with
+#' `.mack_f_var(ata_fit: ATAFit)`.
 #'
 #' Used by [fit_ed()] when `method = "mack"` and by [fit_ratio()] for the
 #' ED component.
