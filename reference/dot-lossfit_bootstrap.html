@@ -108,7 +108,7 @@ exposure-side uncertainty is layered by fit_ratio())."><meta property="og:image"
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Apply bootstrap CI to a CL / ED dispatcher fit</h1>
-      <small class="dont-index">Source: <a href="https://github.com/seokhoonj/lossratio/blob/main/R/loss.R" class="external-link"><code>R/loss.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/seokhoonj/lossratio/blob/main/R/bootstrap.R" class="external-link"><code>R/bootstrap.R</code></a></small>
       <div class="d-none name"><code>dot-lossfit_bootstrap.Rd</code></div>
     </div>
 
@@ -122,7 +122,16 @@ exposure-side uncertainty is layered by <code><a href="fit_ratio.html">fit_ratio
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.lossfit_bootstrap</span><span class="op">(</span><span class="va">fit</span>, <span class="va">triangle</span>, <span class="va">bootstrap</span>, <span class="va">B</span>, <span class="va">seed</span>, <span class="va">alpha</span>, <span class="va">conf_level</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.lossfit_bootstrap</span><span class="op">(</span></span>
+<span>  <span class="va">fit</span>,</span>
+<span>  <span class="va">triangle</span>,</span>
+<span>  <span class="va">bootstrap</span>,</span>
+<span>  <span class="va">B</span>,</span>
+<span>  <span class="va">seed</span>,</span>
+<span>  <span class="va">alpha</span>,</span>
+<span>  <span class="va">conf_level</span>,</span>
+<span>  target <span class="op">=</span> <span class="st">"loss"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
 

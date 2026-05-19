@@ -8,7 +8,7 @@ avoid repeating `switch` and `if` blocks for each variable type.
 ## Usage
 
 ``` r
-.get_plot_meta(metric, amount_divisor = 1e+08)
+.get_plot_meta(metric, amount_divisor = 100000000)
 ```
 
 ## Arguments

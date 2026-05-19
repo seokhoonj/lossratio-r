@@ -27,7 +27,11 @@ fit_cl(
   recent = NULL,
   regime = NULL,
   maturity = NULL,
-  tail = FALSE
+  tail = FALSE,
+  bootstrap = NULL,
+  B = 999L,
+  seed = NULL,
+  conf_level = 0.95
 )
 ```
 

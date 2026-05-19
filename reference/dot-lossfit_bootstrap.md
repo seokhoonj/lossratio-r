@@ -13,5 +13,14 @@ uncertainty is layered by
 ## Usage
 
 ``` r
-.lossfit_bootstrap(fit, triangle, bootstrap, B, seed, alpha, conf_level)
+.lossfit_bootstrap(
+  fit,
+  triangle,
+  bootstrap,
+  B,
+  seed,
+  alpha,
+  conf_level,
+  target = "loss"
+)
 ```

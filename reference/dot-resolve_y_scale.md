@@ -15,7 +15,7 @@ it determines how y-axis labels should be formatted:
 ## Usage
 
 ``` r
-.resolve_y_scale(meta, amount_divisor = 1e+08)
+.resolve_y_scale(meta, amount_divisor = 100000000)
 ```
 
 ## Arguments

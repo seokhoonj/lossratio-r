@@ -28,6 +28,10 @@ fit_ed(
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   regime = NULL,
+  bootstrap = NULL,
+  B = 999L,
+  seed = NULL,
+  conf_level = 0.95,
   ...
 )
 ```
