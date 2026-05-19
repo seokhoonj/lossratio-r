@@ -31,7 +31,7 @@ bootstrap(x, ...)
 # S3 method for class 'Triangle'
 bootstrap(
   x,
-  type = c("nonparametric", "analytical", "parametric"),
+  type = c("analytical", "nonparametric", "parametric"),
   residual = c("cell", "link"),
   hat_adj = TRUE,
   demean = TRUE,
@@ -63,14 +63,18 @@ bootstrap(
 
 - type:
 
-  One of `"nonparametric"`, `"analytical"`, or `"parametric"`.
-  `"nonparametric"` resamples standardized residuals and reconstructs
-  the pseudo triangle (England-Verrall / Pinheiro). `"analytical"` draws
-  new link factors from `N(f_hat, sqrt(Var(f_hat)))` (Mack 1993 closed-
-  form propagation; CL only). `"parametric"` (Phase 2b, not yet
-  implemented) draws each incremental cell directly from a fitted
-  distribution and refits on the synthetic triangle (textbook
-  England-Verrall 1999 parametric bootstrap).
+  One of `"analytical"`, `"nonparametric"`, or `"parametric"`.
+  `"analytical"` draws new link factors from
+  `N(f_hat, sqrt(Var(f_hat)))` (Mack 1993 closed-form propagation; CL
+  only). `"nonparametric"` resamples standardized residuals and
+  reconstructs the pseudo triangle (England-Verrall / Pinheiro).
+  `"parametric"` draws each active cell directly from
+  `ProcessDist(mu_hat, phi)` and refits on the synthetic triangle
+  (textbook England-Verrall 1999 parametric bootstrap; supports all
+  three methods cl / ed / sa). When `type` is left unset, the function
+  picks the type that best matches `method`: `cl` defaults to
+  `"analytical"` (fastest), and `ed` / `sa` default to `"parametric"`
+  (cleanest for their additive / stage-adaptive variance decomposition).
 
 - residual:
 

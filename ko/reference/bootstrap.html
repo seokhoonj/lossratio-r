@@ -122,7 +122,7 @@ distribution to use.</p></li>
 <span><span class="co"># S3 method for class 'Triangle'</span></span>
 <span><span class="fu">bootstrap</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"nonparametric"</span>, <span class="st">"analytical"</span>, <span class="st">"parametric"</span><span class="op">)</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"analytical"</span>, <span class="st">"nonparametric"</span>, <span class="st">"parametric"</span><span class="op">)</span>,</span>
 <span>  residual <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cell"</span>, <span class="st">"link"</span><span class="op">)</span>,</span>
 <span>  hat_adj <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  demean <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -155,14 +155,18 @@ distribution to use.</p></li>
 
 
 <dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
-<dd><p>One of <code>"nonparametric"</code>, <code>"analytical"</code>, or <code>"parametric"</code>.
-<code>"nonparametric"</code> resamples standardized residuals and reconstructs
-the pseudo triangle (England-Verrall / Pinheiro). <code>"analytical"</code> draws
-new link factors from <code>N(f_hat, sqrt(Var(f_hat)))</code> (Mack 1993 closed-
-form propagation; CL only). <code>"parametric"</code> (Phase 2b, not yet
-implemented) draws each incremental cell directly from a fitted
-distribution and refits on the synthetic triangle (textbook
-England-Verrall 1999 parametric bootstrap).</p></dd>
+<dd><p>One of <code>"analytical"</code>, <code>"nonparametric"</code>, or <code>"parametric"</code>.
+<code>"analytical"</code> draws new link factors from
+<code>N(f_hat, sqrt(Var(f_hat)))</code> (Mack 1993 closed-form propagation; CL
+only). <code>"nonparametric"</code> resamples standardized residuals and
+reconstructs the pseudo triangle (England-Verrall / Pinheiro).
+<code>"parametric"</code> draws each active cell directly from
+<code>ProcessDist(mu_hat, phi)</code> and refits on the synthetic triangle
+(textbook England-Verrall 1999 parametric bootstrap; supports all
+three methods cl / ed / sa). When <code>type</code> is left unset, the function
+picks the type that best matches <code>method</code>: <code>cl</code> defaults to
+<code>"analytical"</code> (fastest), and <code>ed</code> / <code>sa</code> default to <code>"parametric"</code>
+(cleanest for their additive / stage-adaptive variance decomposition).</p></dd>
 
 
 <dt id="arg-residual">residual<a class="anchor" aria-label="anchor" href="#arg-residual"></a></dt>
