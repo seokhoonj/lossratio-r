@@ -317,6 +317,30 @@ test_that("process = 'lognormal' errors with 'not yet implemented'", {
   )
 })
 
+test_that("type = 'parametric' with method = 'ed' explicit errors", {
+  tri <- make_sub_tri("surgery")
+  expect_error(
+    bootstrap(tri, keep_pseudo = TRUE, type = "parametric", method = "ed",
+              B = 5, seed = 1),
+    "parametric.*method.*not.*yet supported"
+  )
+})
+
+test_that("type = 'parametric' with method = 'sa' explicit errors", {
+  tri <- make_sub_tri("surgery")
+  expect_error(
+    bootstrap(tri, keep_pseudo = TRUE, type = "parametric", method = "sa",
+              B = 5, seed = 1),
+    "parametric.*method.*not.*yet supported"
+  )
+})
+
+test_that("type = 'parametric' with default method silently coerces to 'cl'", {
+  tri <- make_sub_tri("surgery")
+  b <- bootstrap(tri, keep_pseudo = TRUE, type = "parametric", B = 5, seed = 1)
+  expect_identical(b$meta$method, "cl")
+})
+
 test_that("residual = 'link' with hat_adj = TRUE warns and ignores", {
   tri <- make_sub_tri("surgery")
   expect_warning(

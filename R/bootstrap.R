@@ -72,6 +72,15 @@
     if (demean_set)
       warning("'demean' is only defined for residual = 'cell'; ignored.",
               call. = FALSE)
+    if (method_set && !identical(method, "cl"))
+      stop("type = 'parametric' currently implements only the CL ",
+           "closed-form (Mack 1993). method = '", method, "' is not ",
+           "yet supported in parametric mode (ED parametric would need ",
+           "a closed-form variance for the intensity g_k; SA parametric ",
+           "would additionally need a per-cohort stage transition). ",
+           "Use method = 'cl', or switch to type = 'nonparametric' for ",
+           "residual bootstrap.",
+           call. = FALSE)
   } else {
     # type == "nonparametric"
     if (identical(residual, "link") && hat_adj_set && isTRUE(hat_adj))
@@ -341,6 +350,15 @@ bootstrap.Triangle <- function(x,
   # the new method default of "ed" would otherwise silently fail validation
   # for legacy `residual = "link"` callers.
   if (!method_set && identical(residual, "link") && identical(method, "ed")) {
+    method <- "cl"
+  }
+
+  # Auto-coerce method to "cl" when type = "parametric" and the user did
+  # not explicitly set method. Only the CL closed-form (Mack 1993) has a
+  # parametric kernel; ED / SA parametric are deferred. Without this,
+  # the new method default "ed" would silently fall through to the CL
+  # parametric kernel and mis-label the result.
+  if (!method_set && identical(type, "parametric") && !identical(method, "cl")) {
     method <- "cl"
   }
 
@@ -1965,7 +1983,7 @@ print.BootstrapTriangle <- function(x, ...) {
                                 hat_adj     = TRUE,
                                 demean      = TRUE,
                                 process     = "normal",
-                                method      = "sa",
+                                method      = "cl",
                                 pooling     = "pooled",
                                 quantile_ci = FALSE,
                                 keep_pseudo = TRUE,
