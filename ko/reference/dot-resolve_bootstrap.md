@@ -19,7 +19,7 @@ pattern. Accepts:
   hat_adj = TRUE,
   demean = TRUE,
   process = "normal",
-  method = "sa",
+  method = "cl",
   pooling = "pooled",
   quantile_ci = FALSE,
   keep_pseudo = TRUE,
