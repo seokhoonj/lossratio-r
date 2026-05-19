@@ -233,6 +233,10 @@ fit_ed <- function(x,
                                     "mack", "none"),
                    recent       = NULL,
                    regime       = NULL,
+                   bootstrap    = NULL,
+                   B            = 999L,
+                   seed         = NULL,
+                   conf_level   = 0.95,
                    ...) {
 
   .assert_triangle_input(x, "fit_ed()")
@@ -284,7 +288,7 @@ fit_ed <- function(x,
     recent       = recent,
     regime       = intensity_fit$regime
   )
-  class(out) <- "EDFit"
+  class(out) <- c("EDFit", "list")
 
   # 3) compute factor variance (Mack-style -- required by the projection
   # in step 4).
@@ -407,6 +411,36 @@ fit_ed <- function(x,
 
   # 6) cohort-level reserve summary (mirrors CLFit$summary) ---------------
   out <- .ed_summary(out)
+
+  # 7) bootstrap overlay (optional, mirrors fit_cl pattern) ---------------
+  # When bootstrap is non-NULL / non-FALSE, replace projected-cell SE/CI
+  # with bootstrap-derived values. Supports loss = "loss" / "exposure";
+  # custom column names fall back to analytical with a warning.
+  if (!is.null(bootstrap) &&
+      !(is.logical(bootstrap) && length(bootstrap) == 1L &&
+        isFALSE(bootstrap))) {
+    if (loss %in% c("loss", "exposure")) {
+      out <- .lossfit_bootstrap(
+        fit        = out,
+        triangle   = x,
+        bootstrap  = bootstrap,
+        B          = B,
+        seed       = seed,
+        alpha      = alpha,
+        conf_level = conf_level,
+        target     = loss
+      )
+    } else {
+      warning("Bootstrap is supported for loss = 'loss' or 'exposure' only ",
+              "(got '", loss, "'). Falling back to analytical SE.",
+              call. = FALSE)
+      out$ci_type   <- "analytical"
+      out$bootstrap <- NULL
+    }
+  } else {
+    out$ci_type   <- "analytical"
+    out$bootstrap <- NULL
+  }
 
   out
 }

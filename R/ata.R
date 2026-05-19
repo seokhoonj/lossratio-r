@@ -440,7 +440,7 @@ fit_ata <- function(x,
     use_maturity = use_maturity
   )
 
-  class(out) <- "ATAFit"
+  class(out) <- c("ATAFit", "list")
   out
 }
 

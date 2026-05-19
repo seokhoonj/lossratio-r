@@ -469,7 +469,7 @@ fit_ratio <- function(x,
     usage            = loss_fit$usage
   )
 
-  class(out) <- "RatioFit"
+  class(out) <- c("RatioFit", "list")
 
   out <- .ratio_summary(out)
 

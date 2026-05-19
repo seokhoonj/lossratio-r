@@ -113,7 +113,11 @@ fit_cl <- function(x,
                    recent       = NULL,
                    regime       = NULL,
                    maturity     = NULL,
-                   tail         = FALSE) {
+                   tail         = FALSE,
+                   bootstrap    = NULL,
+                   B            = 999L,
+                   seed         = NULL,
+                   conf_level   = 0.95) {
 
   .assert_triangle_input(x, "fit_cl()")
   method       <- match.arg(method)
@@ -315,7 +319,7 @@ fit_cl <- function(x,
     tail_factor  = tail_factor
   )
 
-  class(out) <- "CLFit"
+  class(out) <- c("CLFit", "list")
 
   # 15) apply tail factor (scales SE columns) ---------------------------
   if (is.finite(tail_factor) && tail_factor > 1) {
@@ -324,6 +328,37 @@ fit_cl <- function(x,
 
   # 16) compute cohort-level summary -------------------------------------
   out <- .cl_summary(out)
+
+  # 17) bootstrap overlay (optional) -------------------------------------
+  # When bootstrap is non-NULL / non-FALSE, replace projected-cell SE/CI
+  # with bootstrap-derived values. Supports loss = "loss" / "exposure"
+  # (bootstrap.Triangle target enum); custom column names fall back to
+  # analytical with a warning.
+  if (!is.null(bootstrap) &&
+      !(is.logical(bootstrap) && length(bootstrap) == 1L &&
+        isFALSE(bootstrap))) {
+    if (loss_col %in% c("loss", "exposure")) {
+      out <- .lossfit_bootstrap(
+        fit        = out,
+        triangle   = x,
+        bootstrap  = bootstrap,
+        B          = B,
+        seed       = seed,
+        alpha      = alpha,
+        conf_level = conf_level,
+        target     = loss_col
+      )
+    } else {
+      warning("Bootstrap is supported for loss = 'loss' or 'exposure' only ",
+              "(got '", loss_col, "'). Falling back to analytical SE.",
+              call. = FALSE)
+      out$ci_type   <- "analytical"
+      out$bootstrap <- NULL
+    }
+  } else {
+    out$ci_type   <- "analytical"
+    out$bootstrap <- NULL
+  }
 
   out
 }

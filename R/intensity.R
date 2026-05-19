@@ -165,7 +165,7 @@ fit_intensity <- function(x,
     regime       = regime
   )
 
-  class(out) <- "IntensityFit"
+  class(out) <- c("IntensityFit", "list")
   out
 }
 

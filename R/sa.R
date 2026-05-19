@@ -224,15 +224,32 @@ fit_sa <- function(x,
   }
 
   # Resolve exposure_fit ----------------------------------------------
+  # Worker-layer dispatch: call fit_cl directly on the exposure column
+  # (mirror fit_ed pattern) rather than fit_exposure (a dispatcher) to
+  # avoid the upward worker -> dispatcher dependency. If the caller
+  # supplied a pre-built exposure_fit (ExposureFit class from a
+  # composer-layer caller like fit_ratio), we accept it as-is.
   if (is.null(exposure_fit)) {
-    exposure_fit <- fit_exposure(
+    grp_local <- attr(x, "groups")
+    if (is.null(grp_local)) grp_local <- character(0)
+    exposure_fit <- fit_cl(
       x,
-      method       = exposure_method,
+      method       = "mack",
+      loss         = "exposure",
       alpha        = exposure_alpha,
       sigma_method = sigma_method,
-      regime       = regime_user,
-      bootstrap    = FALSE
+      regime       = regime_user
     )
+    # Apply exposure-side variance overlay when exposure_method = "ed"
+    # (mirror fit_exposure behaviour for variance recursion choice).
+    if (identical(exposure_method, "ed")) {
+      exposure_fit$full <- .apply_ed_variance(exposure_fit$full,
+                                              exposure_fit$selected, x)
+    }
+    exposure_fit$full <- .exposure_rename_full(exposure_fit$full,
+                                               grp_local,
+                                               conf_level = 0.95)
+    class(exposure_fit) <- c("ExposureFit", class(exposure_fit))
   }
   exposure_ata_fit <- structure(
     list(
@@ -282,7 +299,7 @@ fit_sa <- function(x,
     recent       = recent,
     regime       = regime
   )
-  class(ed_fit) <- "EDFit"
+  class(ed_fit) <- c("EDFit", "list")
   ed_fit$selected <- .ed_g_var(ed_fit, alpha = alpha)
 
   # Maturity point per group -------------------------------------------
@@ -505,7 +522,7 @@ fit_sa <- function(x,
     usage            = usage
   )
 
-  class(out) <- "SAFit"
+  class(out) <- c("SAFit", "list")
   out
 }
 

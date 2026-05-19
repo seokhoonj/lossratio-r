@@ -175,11 +175,18 @@ fit_cc <- function(x,
                    sigma_method = sigma_method,
                    recent       = recent,
                    regime       = regime)
-  exposure_fit <- fit_exposure(x, method = "cl", bootstrap = FALSE,
-                               alpha        = alpha,
-                               sigma_method = sigma_method,
-                               recent       = recent,
-                               regime       = regime)
+  # Worker-layer dispatch: call fit_cl directly on the exposure column
+  # (mirror fit_ed pattern) rather than fit_exposure (a dispatcher) to
+  # avoid the upward worker -> dispatcher dependency. Reuse the
+  # exposure-side schema helper for the role-specific column rename.
+  exposure_fit <- fit_cl(x, method = "mack", loss = "exposure",
+                         alpha        = alpha,
+                         sigma_method = sigma_method,
+                         recent       = recent,
+                         regime       = regime)
+  exposure_fit$full <- .exposure_rename_full(exposure_fit$full, grp,
+                                             conf_level = 0.95)
+  class(exposure_fit) <- c("ExposureFit", class(exposure_fit))
 
   # 2) per-cohort q_i + ultimate exposure ---------------------------------
   loss_latest <- cl_fit$full[is_observed == TRUE,
@@ -367,7 +374,7 @@ fit_cc <- function(x,
     recent       = recent,
     regime       = cl_fit$regime
   )
-  class(out) <- "CCFit"
+  class(out) <- c("CCFit", "list")
   out
 }
 

@@ -221,11 +221,19 @@ fit_bf <- function(x,
                    maturity     = maturity)
 
   # 2) CL on exposure for ultimate exposure -------------------------------
-  exposure_fit <- fit_exposure(x, method = "cl", bootstrap = FALSE,
-                               alpha        = alpha,
-                               sigma_method = sigma_method,
-                               recent       = recent,
-                               regime       = regime)
+  # Worker-layer dispatch: call fit_cl directly on the exposure column
+  # (mirror fit_ed pattern) rather than fit_exposure (a dispatcher) to
+  # avoid the upward worker -> dispatcher dependency. Reuse the
+  # exposure-side schema helper for the role-specific column rename so
+  # downstream code reads `exposure_*` columns as before.
+  exposure_fit <- fit_cl(x, method = "mack", loss = "exposure",
+                         alpha        = alpha,
+                         sigma_method = sigma_method,
+                         recent       = recent,
+                         regime       = regime)
+  exposure_fit$full <- .exposure_rename_full(exposure_fit$full, grp,
+                                             conf_level = 0.95)
+  class(exposure_fit) <- c("ExposureFit", class(exposure_fit))
 
   # 3) per-cohort q_i + ultimate exposure ---------------------------------
   by_cols <- c(grp, "cohort")
@@ -385,7 +393,7 @@ fit_bf <- function(x,
     regime       = cl_fit$regime,
     maturity     = cl_fit$maturity
   )
-  class(out) <- "BFFit"
+  class(out) <- c("BFFit", "list")
   out
 }
 

@@ -85,7 +85,7 @@ Bühlmann-Straub 1970 credibility, Sherman 1984 의 tail 외삽 — 을 *위
 ## 3. P&C 방법론의 *cracks* — 장기 건강보험 적용 시
 
 | 도메인 issue          | Chain ladder                                          | Cape Cod                                          |
-|------------------------|------------------------|------------------------|
+|-----------------------|-------------------------------------------------------|---------------------------------------------------|
 | 분모효과 / 관성       | 초기 dev 의 $f_k$ 가 *과대 변동* ($C_k$ 작아서)       | ELR 의 *cohort 별 변동* 무시                      |
 | 평탄화 보험료         | 손해만 사용해 *우회 가능* (하지만 발생률 변화에 약함) | π 가 *flat* 이면 *진짜 exposure 의 dev 변화* 흡수 |
 | 다회성 보험금         | 사용 가능 (frequency × severity 무관)                 | 사용 가능 (volume measure 만 필요)                |
@@ -98,13 +98,13 @@ Bühlmann-Straub 1970 credibility, Sherman 1984 의 tail 외삽 — 을 *위
 ## 4. lossratio 의 *여섯 가지 적응* — 각 ↔ 도메인 issue 매핑
 
 | \#  | 적응                                                                                                                            | 어떤 도메인 issue 를 푸는가       |
-|------------------------|------------------------|------------------------|
+|-----|---------------------------------------------------------------------------------------------------------------------------------|-----------------------------------|
 | (a) | **2D exposure triangle** — Cape Cod 의 *single π* 를 *cohort × dev triangle* 로 확장                                            | 발전하는 위험보험료               |
 | (b) | **per-link** $g_k$ — Cape Cod 의 *cohort-level ELR* 을 *link 단위* 로 정밀화                                                    | 분모효과·관성 (link 별 변동 추적) |
 | (c) | **stage-adaptive (SA) hybrid** — chain ladder 의 *초기 변동* 영역을 *exposure-driven (ED)* 로 대체, 안정화 후 chain ladder 사용 | 초기 dev ATA 변동성               |
 | (d) | **regime detection** — 코호트 축 *구조적 변화점* 자동 검출 + 필터                                                               | 약관·요율·인수 정책 변경          |
 | (e) | **paradigm-matched bootstrap** — Mack analytical SE 외에 *paradigm 별* bootstrap (cell / link / parametric) 도구 제공           | 변동성 추정의 강건성              |
-| (f) | **Tail 외삽** — Sherman 1984 log-linear tail 이 `fit_cl(tail = TRUE)` 로 기본 구현. 추가 확장은 *추후 검토*                       | 진짜 ultimate 까지의 외삽         |
+| (f) | **Tail 외삽** — Sherman 1984 log-linear tail 이 `fit_cl(tail = TRUE)` 로 기본 구현. 추가 확장은 *추후 검토*                     | 진짜 ultimate 까지의 외삽         |
 
 각 적응은 *P&C 의 한 가지 방법* 을 *장기건강보험 도메인의 한 가지 issue
 에 맞춰* 재구성한 것이다. *새로운 paradigm 을 처음부터 만든 것이 아니다*
@@ -115,7 +115,7 @@ Bühlmann-Straub 1970 credibility, Sherman 1984 의 tail 외삽 — 을 *위
 lossratio 의 *모든 추정* 은 다음 *세 양* 위에서 이루어진다.
 
 | 양           | 의미                                           | 컬럼 이름 (Triangle)        |
-|------------------------|------------------------|------------------------|
+|--------------|------------------------------------------------|-----------------------------|
 | **loss**     | 발생 손해의 누적량                             | `loss`, `incr_loss`         |
 | **exposure** | 위험 노출량 (장기 health 는 *누적 위험보험료*) | `exposure`, `incr_exposure` |
 | **ratio**    | 손해율 (cumulative loss / cumulative exposure) | `ratio`, `incr_ratio`       |
@@ -131,7 +131,7 @@ observable)*. *exposure* 는 *고정된 underwriting volume* 이 아니라
 ### 현재 구현 (세 method)
 
 | Method               | 점추정 식                                   | 분산 helper               | 도메인 특성                     |
-|------------------|------------------|------------------|------------------|
+|----------------------|---------------------------------------------|---------------------------|---------------------------------|
 | **`"ed"`** (default) | $\Delta L_{k+1} = g_k \cdot P_k$ (additive) | `.ed_g_var` (B-S 1970)    | 초기 dev 의 ATA 변동성에 robust |
 | **`"cl"`**           | $L_{k+1} = f_k \cdot L_k$ (multiplicative)  | `.mack_f_var` (Mack 1993) | 후기 dev factor 안정화 후 자연  |
 | **`"sa"`**           | maturity $k^*$ 이전 ED, 이후 CL             | 두 helper 의 합성         | ED 와 CL 의 stage-adaptive 합성 |
@@ -142,7 +142,7 @@ observable)*. *exposure* 는 *고정된 underwriting volume* 이 아니라
 ### 도입 예정 (두 method) — *prior-anchored family*
 
 | Method     | 점추정 식                                                                                       | ELR source                                              | 도메인 use case                                                                                                    |
-|------------------|------------------|------------------|------------------|
+|------------|-------------------------------------------------------------------------------------------------|---------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
 | **`"bf"`** | $\text{Ult} = L_{\text{latest}} + (1 - 1/\text{LDF}) \cdot \pi \cdot \text{ELR}_{\text{prior}}$ | 외부 입력 (사용자 지정)                                 | 미성숙 cohort + 요율 변경 직후 cohort — observed 데이터 빈약 시 *외부 prior* 로 anchor (Bornhuetter-Ferguson 1972) |
 | **`"cc"`** | 동일, ELR 만 데이터 추정                                                                        | payout-weighted $\sum L / \sum \pi \cdot \text{payout}$ | *cohort 응집* 추정 — industry/pricing 의 *natural ELR target* 가 있을 때 (Stanard 1985, Cape Cod)                  |
 
@@ -177,7 +177,7 @@ safe baseline* 을 요구한다.
 방법론 적용 *전후* 에 데이터를 *시각·통계적으로 점검* 하는 도구들.
 
 | 도구                   | 진단 대상                                              | 출력                                         |
-|------------------------|------------------------|------------------------|
+|------------------------|--------------------------------------------------------|----------------------------------------------|
 | `detect_maturity()`    | dev 축 — ATA 인자(age-to-age factor) 가 *수렴하는 dev* | `Maturity` 객체 + 코호트 별 $k^*$            |
 | `detect_regime()`      | cohort 축 — *구조적 변화점* (체제 변화)                | `Regime` 객체 + 변화 시점                    |
 | `detect_convergence()` | 예측 손해율 *수렴점* ($k^{**}$)                        | `Convergence` 객체 + holdout 별 적합         |
