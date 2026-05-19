@@ -224,7 +224,7 @@ An object of class `"BFFit"` containing:
 - `full`:
 
   `data.table`
-  `[group, cohort, dev, loss_obs, loss_proj, exposure_obs, exposure_proj, is_observed, incr_loss_proj, exposure_incr_proj]`.
+  `[group, cohort, dev, loss_obs, loss_proj, exposure_obs, exposure_proj, is_observed, incr_loss_proj, incr_exposure_proj]`.
   When `bootstrap` is enabled, additional columns `loss_total_se`,
   `loss_total_cv`, `loss_ci_lo`, `loss_ci_hi` carry per-cell bootstrap
   SE / CI on projected cells (observed cells stay `NA`).

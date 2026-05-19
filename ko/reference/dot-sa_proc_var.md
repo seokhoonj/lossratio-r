@@ -1,12 +1,8 @@
-# Hybrid process variance for a single cohort
+# Stage-adaptive process variance for a single cohort
 
-Internal helper for process variance:
-
-- ED phase (additive): \\\text{proc}\_{k+1} = \text{proc}\_k +
-  g\_{\sigma^2,k} \cdot (C^P_k)^\alpha\\
-
-- CL phase (multiplicative, Mack): \\\text{proc}\_{k+1} = f_k^2 \cdot
-  \text{proc}\_k + f\_{\sigma^2,k} \cdot (C^L_k)^\alpha\\
+ED phase (additive): `proc_{k+1} = proc_k + g_sigma2_k * (C^P_k)^alpha`.
+CL phase (Mack):
+`proc_{k+1} = f_k^2 * proc_k + f_sigma2_k * (C^L_k)^alpha`.
 
 ## Usage
 
@@ -19,7 +15,6 @@ Internal helper for process variance:
   f_sel,
   last_obs,
   maturity_from,
-  alpha = 1,
-  method = "sa"
+  alpha = 1
 )
 ```

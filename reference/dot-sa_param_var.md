@@ -1,12 +1,7 @@
-# Hybrid parameter variance for a single cohort
+# Stage-adaptive parameter variance for a single cohort
 
-Internal helper for parameter variance:
-
-- ED phase: \\\text{param}\_{k+1} = \text{param}\_k + (C^P_k)^2 \cdot
-  \mathrm{Var}(\hat{g}\_k)\\
-
-- CL phase: \\\text{param}\_{k+1} = f_k^2 \cdot \text{param}\_k +
-  (C^L_k)^2 \cdot \mathrm{Var}(\hat{f}\_k)\\
+ED phase: `param_{k+1} = param_k + (C^P_k)^2 * Var(g_k)`. CL phase:
+`param_{k+1} = f_k^2 * param_k + (C^L_k)^2 * Var(f_k)`.
 
 ## Usage
 
@@ -18,7 +13,6 @@ Internal helper for parameter variance:
   f_var,
   f_sel,
   last_obs,
-  maturity_from,
-  method = "sa"
+  maturity_from
 )
 ```

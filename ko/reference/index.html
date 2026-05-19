@@ -134,7 +134,7 @@
       </dl></div><div class="section level2">
       <h2 id="--3">추정<a class="anchor" aria-label="anchor" href="#--3"></a></h2>
 
-      <div class="section-desc"><p>Triangle 위에서 projection 을 산출하는 모형. 기본 알고리즘: <code>fit_cl</code> (chain ladder / multiplicative), <code>fit_ed</code> (exposure-driven / additive). ELR 기반 reserve 모형: <code>fit_bf</code> (외부 prior 를 받는 Bornhuetter-Ferguson), <code>fit_cc</code> (데이터에서 pooled ELR 을 추정하는 Cape Cod). Role dispatcher: <code>fit_loss</code> (loss 측 sa/ed/cl), <code>fit_exposure</code> (exposure 측 ed/cl). 합성: <code>fit_ratio</code> (손해율 통합 인터페이스, delta-method SE). 모두 결과 객체에 <code>$full</code> projection table 을 보유.</p></div>
+      <div class="section-desc"><p>Triangle 위에서 projection 을 산출하는 모형. 기본 알고리즘: <code>fit_cl</code> (chain ladder / multiplicative), <code>fit_ed</code> (exposure-driven / additive), <code>fit_sa</code> (성숙점 기준 ED + CL 합성 — stage-adaptive). ELR 기반 reserve 모형: <code>fit_bf</code> (외부 prior 를 받는 Bornhuetter-Ferguson), <code>fit_cc</code> (데이터에서 pooled ELR 을 추정하는 Cape Cod). Role dispatcher: <code>fit_loss</code> (loss 측 ed/cl/sa/bf/cc), <code>fit_exposure</code> (exposure 측 ed/cl). 합성: <code>fit_ratio</code> (손해율 통합 인터페이스, delta-method SE). 모두 결과 객체에 <code>$full</code> projection table 을 보유.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -154,6 +154,13 @@
 
         </dt>
         <dd>Fit ED intensity factors</dd>
+
+        <dt>
+
+          <code><a href="fit_sa.html">fit_sa()</a></code>
+
+        </dt>
+        <dd>Fit stage-adaptive (SA) loss projection on a Triangle</dd>
 
         <dt>
 
@@ -598,6 +605,13 @@
 
         <dt>
 
+          <code><a href="print.SAFit.html">print(<i>&lt;SAFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for <code>SAFit</code></dd>
+
+        <dt>
+
           <code><a href="summary.ATAFit.html">summary(<i>&lt;ATAFit&gt;</i>)</a></code>
 
         </dt>
@@ -672,6 +686,13 @@
 
         </dt>
         <dd>Summary method for <code>RatioFit</code></dd>
+
+        <dt>
+
+          <code><a href="summary.SAFit.html">summary(<i>&lt;SAFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Summary method for <code>SAFit</code></dd>
 
         <dt>
 

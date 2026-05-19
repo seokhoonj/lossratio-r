@@ -90,6 +90,8 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-kneedle_elbow.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-lm_ed.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-lm_link.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-lossfit_augment.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-lossfit_bootstrap.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-mack_f_var.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-mack_param_var.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-mack_proc_var.html</loc></url>
@@ -129,6 +131,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_intensity.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/fit_sa.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/index.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/longer.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/lossratio-package.html</loc></url>
@@ -171,6 +174,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.IntensityFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.LossFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.RatioFit.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/print.SAFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/regime_at.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/regime_spec.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.ATAFit.html</loc></url>
@@ -184,6 +188,7 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.LossFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.RatioFit.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.SAFit.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.Total.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/summary.Triangle.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/validate_triangle.html</loc></url>

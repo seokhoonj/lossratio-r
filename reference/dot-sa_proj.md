@@ -1,17 +1,16 @@
-# Hybrid point projection for a single cohort
+# Stage-adaptive (SA) point projection for a single cohort
 
-Internal helper that projects cumulative loss:
+Internal helper that projects cumulative loss with the SA rule: ED phase
+before maturity (`k < maturity_from`), CL phase after.
 
-- **sa (stage-adaptive)**: ED before maturity, CL after.
-
-- **ed**: ED for all periods.
-
-- **cl**: CL for all periods.
+Originally lived in `R/loss.R` – moved to `R/sa.R` alongside
+[`fit_sa()`](https://seokhoonj.github.io/lossratio/reference/fit_sa.md)
+in Phase 4a.
 
 ## Usage
 
 ``` r
-.sa_proj(loss_obs, exposure_proj, g_sel, f_sel, maturity_from, method = "sa")
+.sa_proj(loss_obs, exposure_proj, g_sel, f_sel, maturity_from)
 ```
 
 ## Arguments
@@ -34,11 +33,7 @@ Internal helper that projects cumulative loss:
 
 - maturity_from:
 
-  Numeric scalar; switch point. `NA` = no switch.
-
-- method:
-
-  One of `"ed"`, `"cl"`, or `"sa"`.
+  Numeric scalar; switch point. `NA` means ED-only (no switch).
 
 ## Value
 

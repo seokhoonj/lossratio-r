@@ -181,7 +181,7 @@
       </dl></div><div class="section level2">
       <h2 id="estimation">Estimation<a class="anchor" aria-label="anchor" href="#estimation"></a></h2>
 
-      <div class="section-desc"><p>Models that produce full projections on a Triangle. Base algorithms: <code>fit_cl</code> (chain ladder / multiplicative), <code>fit_ed</code> (exposure-driven / additive). ELR-based reserve methods: <code>fit_bf</code> (Bornhuetter-Ferguson with external prior), <code>fit_cc</code> (Cape Cod with data-pooled ELR estimate). Role dispatchers: <code>fit_loss</code> (loss-side sa/ed/cl), <code>fit_exposure</code> (exposure-side ed/cl). Composition: <code>fit_ratio</code> (loss-ratio umbrella with delta-method SE). All return an object carrying a <code>$full</code> projection table.</p></div>
+      <div class="section-desc"><p>Models that produce full projections on a Triangle. Base algorithms: <code>fit_cl</code> (chain ladder / multiplicative), <code>fit_ed</code> (exposure-driven / additive), <code>fit_sa</code> (stage-adaptive composition of ED + CL anchored on a maturity point). ELR-based reserve methods: <code>fit_bf</code> (Bornhuetter-Ferguson with external prior), <code>fit_cc</code> (Cape Cod with data-pooled ELR estimate). Role dispatchers: <code>fit_loss</code> (loss-side ed/cl/sa/bf/cc), <code>fit_exposure</code> (exposure-side ed/cl). Composition: <code>fit_ratio</code> (loss-ratio umbrella with delta-method SE). All return an object carrying a <code>$full</code> projection table.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -201,6 +201,13 @@
 
         </dt>
         <dd>Fit ED intensity factors</dd>
+
+        <dt>
+
+          <code><a href="fit_sa.html">fit_sa()</a></code>
+
+        </dt>
+        <dd>Fit stage-adaptive (SA) loss projection on a Triangle</dd>
 
         <dt>
 
@@ -645,6 +652,13 @@
 
         <dt>
 
+          <code><a href="print.SAFit.html">print(<i>&lt;SAFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for <code>SAFit</code></dd>
+
+        <dt>
+
           <code><a href="summary.ATAFit.html">summary(<i>&lt;ATAFit&gt;</i>)</a></code>
 
         </dt>
@@ -719,6 +733,13 @@
 
         </dt>
         <dd>Summary method for <code>RatioFit</code></dd>
+
+        <dt>
+
+          <code><a href="summary.SAFit.html">summary(<i>&lt;SAFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Summary method for <code>SAFit</code></dd>
 
         <dt>
 

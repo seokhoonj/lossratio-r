@@ -112,7 +112,7 @@ An object of class `"EDFit"` (a named list) with components:
 
   `data.table` of per-cell cumulative loss / exposure projection plus
   role-prefixed SE / CV columns (`loss_proj`, `incr_loss_proj`,
-  `exposure_proj`, `exposure_incr_proj`, `loss_proc_se2`,
+  `exposure_proj`, `incr_exposure_proj`, `loss_proc_se2`,
   `loss_param_se2`, `loss_total_se2`, `loss_proc_se`, `loss_param_se`,
   `loss_total_se`, `loss_total_cv`). Available cells include both
   observed and projected; `is_observed` flags observed cells.

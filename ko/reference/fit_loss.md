@@ -1,37 +1,51 @@
 # Fit a loss projection on a Triangle
 
-Project cumulative loss across the cohort x development grid. Three
-methods are supported via `method`:
+Project cumulative loss across the cohort x development grid.
+`fit_loss()` is the role-specific *dispatcher* on the loss side – it
+forwards to a worker selected by `method`:
 
 - `"ed"` (default):
 
-  Pure exposure-driven (additive) across all dev periods. Unconditional
-  safe baseline – no maturity dependency.
+  [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md)
+  – pure exposure-driven (additive). Unconditional safe baseline; no
+  maturity dependency.
 
 - `"cl"`:
 
-  Pure Mack chain ladder (multiplicative). Classical reference.
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
+  – pure Mack chain ladder (multiplicative). Classical reference.
 
 - `"sa"`:
 
-  Stage-adaptive. ED before the maturity point, CL after – composition
-  of ED + CL, requires maturity detection (2-pass).
+  [`fit_sa()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_sa.md)
+  – stage-adaptive composition: ED before the maturity point, CL after.
 
-This function is the *loss-side* counterpart to
-[`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
-in the role-specific dispatcher layer (see `ARCHITECTURE.md`). It owns
-loss projection only – exposure projection is delegated to
-[`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
-(called internally when `exposure_fit = NULL`), and the loss-ratio
-composition with delta method is handled by
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md).
+- `"bf"`:
+
+  [`fit_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.md)
+  – Bornhuetter-Ferguson; requires a `prior` ELR (scalar or per-cohort
+  table) passed via `...`.
+
+- `"cc"`:
+
+  [`fit_cc()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cc.md)
+  – Cape Cod (BF with a pooled ELR derived from the data).
+
+The dispatcher returns a `LossFit` object whose `$full` schema is
+uniform across methods (`loss_obs`, `loss_proj`, `loss_total_se`,
+`loss_ci_lo`, `loss_ci_hi`, `exposure_obs`, `exposure_proj`,
+`incr_exposure_proj`, plus method-specific extras). Missing slots on
+worker outputs (e.g. `loss_ata_fit` for ED, `ed`/`selected` for
+CL/BF/CC) are synthesized as `NULL` so downstream code such as
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
+can guard uniformly.
 
 ## Usage
 
 ``` r
 fit_loss(
   x,
-  method = c("ed", "cl", "sa"),
+  method = c("ed", "cl", "sa", "bf", "cc"),
   alpha = 1,
   regime = NULL,
   exposure_fit = NULL,
@@ -40,10 +54,13 @@ fit_loss(
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   maturity = "auto",
+  tail = FALSE,
   conf_level = 0.95,
   bootstrap = NULL,
-  B = 999,
-  seed = NULL
+  B = 999L,
+  seed = NULL,
+  type,
+  ...
 )
 ```
 
@@ -58,7 +75,7 @@ fit_loss(
 
 - method:
 
-  One of `"ed"` (default), `"cl"`, or `"sa"`.
+  One of `"ed"` (default), `"cl"`, `"sa"`, `"bf"`, or `"cc"`.
 
 - alpha:
 
@@ -66,54 +83,26 @@ fit_loss(
 
 - regime:
 
-  Optional regime specification applied to both loss-side and
-  exposure-side estimation. Accepts four input types:
-
-  `NULL` (default)
-
-  :   No regime filter.
-
-  `Regime` object
-
-  :   Use as-is. Typically built via
-      [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
-      or
-      [`regime_at()`](https://seokhoonj.github.io/lossratio/ko/reference/regime_at.md).
-
-  `"auto"`
-
-  :   Detect regime internally via `detect_regime(x)` on the input
-      triangle.
-
-  Function / closure
-
-  :   A user-supplied function taking the triangle and returning a
-      `Regime` object (or `NULL`).
-
-  Behavior depends on `method`: SA uses a hybrid 2-pass filter (cohort
-  cut for the ED phase, calendar-diagonal wedge for the CL phase); ED/CL
-  use a simple cohort cut. The same resolved `Regime` is applied to the
-  internal
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
-  call – callers needing an asymmetric loss/exposure split should use
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
-  instead.
+  Optional regime specification (loss-side). Accepts the standard 4-type
+  dispatch (`NULL` / `Regime` / `"auto"` / function). Behavior depends
+  on `method`: SA uses a hybrid 2-pass filter; ED / CL / BF / CC use a
+  simple cohort cut. The same resolved regime is applied to the internal
+  exposure fit – callers needing an asymmetric loss/exposure split
+  should use
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md).
 
 - exposure_fit:
 
-  Optional pre-built `ExposureFit` (from
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md))
-  supplying the exposure projection. When `NULL`, `fit_loss()` calls
+  Optional pre-built `ExposureFit` supplying the exposure projection.
+  Only used by `"ed"` (via `fit_ed`'s internal exposure handling) and
+  `"sa"`. When `NULL`, the worker calls
   [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
-  internally using `exposure_method`, `exposure_alpha`, and the resolved
-  `regime`.
+  internally.
 
 - exposure_method:
 
   One of `"cl"` (default) or `"ed"`. Used only when
-  `exposure_fit = NULL`. The default matches the historical
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
-  exposure choice.
+  `exposure_fit = NULL` for `"sa"`.
 
 - exposure_alpha:
 
@@ -136,31 +125,14 @@ fit_loss(
 
 - maturity:
 
-  Optional maturity specification. Accepts four input types:
+  Optional maturity specification. Accepts the standard 4-type dispatch
+  (`NULL` / `Maturity` / `"auto"` / function). Only used by `"cl"`,
+  `"sa"`, and `"bf"`. Default `"auto"`.
 
-  `NULL`
+- tail:
 
-  :   No maturity filter. SA mode requires a maturity, so this disables
-      only ED / CL modes.
-
-  `Maturity` object
-
-  :   Use as-is. Typically built via
-      [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
-      or
-      [`maturity_at()`](https://seokhoonj.github.io/lossratio/ko/reference/maturity_at.md).
-
-  `"auto"` (default)
-
-  :   Detect maturity internally via `detect_maturity(x)` on the input
-      triangle.
-
-  Function / closure
-
-  :   A user-supplied function taking the triangle and returning a
-      `Maturity` object (e.g. from
-      [`maturity_spec()`](https://seokhoonj.github.io/lossratio/ko/reference/maturity_spec.md))
-      for deferred custom-config detection.
+  Tail factor (logical or numeric). Forwarded to `"cl"` / `"sa"`
+  workers. Default `FALSE`.
 
 - conf_level:
 
@@ -169,49 +141,31 @@ fit_loss(
 
 - bootstrap:
 
-  Bootstrap configuration. Five forms accepted:
-
-  `NULL` (default)
-
-  :   Auto-resolved by `method`: bootstrap for `"sa"`/`"ed"`, analytical
-      for `"cl"`. Matches the legacy `bootstrap = NULL` behavior.
-
-  `TRUE` / `FALSE`
-
-  :   Back-compat with the legacy logical arg. `TRUE` triggers `"auto"`;
-      `FALSE` disables.
-
-  `"auto"`
-
-  :   Internal
-      [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
-      call on the loss triangle with defaults
-      `(type = "analytical", process = "normal", target = "loss")`.
-
-  `BootstrapTriangle`
-
-  :   Pre-built object from
-      [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md).
-      Must have `meta$target == "loss"`.
-
-  Function `function(tri) -> BootstrapTriangle`
-
-  :   Lazy spec invoked on the input Triangle (leakage-safe for
-      [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)).
-
-  Premium stays at its observed values during the bootstrap (the
-  loss-only convention); exposure-side uncertainty is layered in by
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
-  via its own bootstrap.
+  Bootstrap configuration. Five forms accepted (see
+  [`fit_sa()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_sa.md)
+  /
+  [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md)
+  /
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
+  for method-specific defaults).
 
 - B:
 
-  Integer number of bootstrap replicates. Used only when `bootstrap`
-  resolves to `"auto"`. Default `999`.
+  Integer number of bootstrap replicates. Default `999`.
 
 - seed:
 
-  Optional integer seed for reproducible bootstrap. Default `NULL`.
+  Optional integer seed.
+
+- type:
+
+  Bootstrap process type. Forwarded where applicable (`"sa"`, `"bf"`,
+  `"cc"`).
+
+- ...:
+
+  Method-specific arguments forwarded to the chosen worker. For
+  `method = "bf"`, `prior` is required.
 
 ## Value
 
@@ -219,20 +173,15 @@ An object of class `"LossFit"`. List with components: `full`, `proj`,
 `maturity`, `loss_ata_fit`, `exposure_ata_fit`, `exposure_fit`, `ed`,
 `factor`, `selected`, plus metadata.
 
-## Internal columns
-
-`$full` retains internal parameter columns (`g_sel`, `g_sigma2`,
-`g_var`, `f_sel`, `f_sigma2`, `f_var`, `last_obs`) so that
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
-can run bootstrap CI on top without re-fitting. Standalone callers see
-them as implementation columns.
-
 ## See also
 
-[`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md),
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md),
+[`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md),
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md),
-[`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md).
+[`fit_sa()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_sa.md),
+[`fit_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.md),
+[`fit_cc()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cc.md),
+[`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md).
 
 ## Examples
 
@@ -248,8 +197,8 @@ tri <- as_triangle(
   exposure = "incr_exposure"
 )
 
-lf    <- fit_loss(tri)                    # SA (default)
-lf_ed <- fit_loss(tri, method = "ed")
+lf    <- fit_loss(tri)                    # ED (default)
 lf_cl <- fit_loss(tri, method = "cl")
+lf_sa <- fit_loss(tri, method = "sa")
 } # }
 ```
