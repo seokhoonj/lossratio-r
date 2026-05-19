@@ -213,7 +213,7 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'     \item{`full`}{`data.table` of per-cell cumulative loss / exposure
 #'       projection plus role-prefixed SE / CV columns
 #'       (`loss_proj`, `incr_loss_proj`, `exposure_proj`,
-#'       `exposure_incr_proj`, `loss_proc_se2`, `loss_param_se2`,
+#'       `incr_exposure_proj`, `loss_proc_se2`, `loss_param_se2`,
 #'       `loss_total_se2`, `loss_proc_se`, `loss_param_se`,
 #'       `loss_total_se`, `loss_total_cv`). Available cells include
 #'       both observed and projected; `is_observed` flags observed cells.}
@@ -386,7 +386,7 @@ fit_ed <- function(x,
   full[, ("incr_loss_proj") := loss_proj -
          data.table::shift(loss_proj, 1L, fill = 0),
        by = c(grp, "cohort")]
-  full[, ("exposure_incr_proj") := exposure_proj -
+  full[, ("incr_exposure_proj") := exposure_proj -
          data.table::shift(exposure_proj, 1L, fill = 0),
        by = c(grp, "cohort")]
 
@@ -396,7 +396,7 @@ fit_ed <- function(x,
   proj <- data.table::copy(full)
   na_cols <- c(
     "loss_proj",     "incr_loss_proj",
-    "exposure_proj", "exposure_incr_proj",
+    "exposure_proj", "incr_exposure_proj",
     "loss_proc_se2", "loss_param_se2", "loss_total_se2",
     "loss_proc_se",  "loss_param_se",  "loss_total_se",
     "loss_total_cv"

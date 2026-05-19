@@ -96,7 +96,7 @@
 #'     \item{`loss`, `exposure`}{Loss / exposure variable names.}
 #'     \item{`full`}{`data.table` `[group, cohort, dev, loss_obs,
 #'       loss_proj, exposure_obs, exposure_proj, is_observed,
-#'       incr_loss_proj, exposure_incr_proj]`. When `bootstrap` is
+#'       incr_loss_proj, incr_exposure_proj]`. When `bootstrap` is
 #'       enabled, additional columns `loss_total_se`, `loss_total_cv`,
 #'       `loss_ci_lo`, `loss_ci_hi` carry per-cell bootstrap SE / CI on
 #'       projected cells (observed cells stay `NA`).}
@@ -300,7 +300,7 @@ fit_bf <- function(x,
   full[, ("incr_loss_proj") := loss_proj -
          data.table::shift(loss_proj, 1L, fill = 0),
        by = by_cols]
-  full[, ("exposure_incr_proj") := exposure_proj -
+  full[, ("incr_exposure_proj") := exposure_proj -
          data.table::shift(exposure_proj, 1L, fill = 0),
        by = by_cols]
 
@@ -311,7 +311,7 @@ fit_bf <- function(x,
   # 7) proj: NA out observed cells ----------------------------------------
   proj <- data.table::copy(full)
   proj_cols <- c("loss_proj", "incr_loss_proj",
-                 "exposure_proj", "exposure_incr_proj")
+                 "exposure_proj", "incr_exposure_proj")
   proj_cols <- intersect(proj_cols, names(proj))
   proj[is_observed == TRUE, (proj_cols) := NA_real_]
 
@@ -349,7 +349,7 @@ fit_bf <- function(x,
     proj        <- data.table::copy(full)
     proj_cols   <- intersect(
       c("loss_proj", "incr_loss_proj", "exposure_proj",
-        "exposure_incr_proj", "loss_total_se", "loss_total_cv",
+        "incr_exposure_proj", "loss_total_se", "loss_total_cv",
         "loss_ci_lo", "loss_ci_hi"),
       names(proj))
     proj[is_observed == TRUE, (proj_cols) := NA_real_]

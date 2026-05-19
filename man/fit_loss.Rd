@@ -6,7 +6,7 @@
 \usage{
 fit_loss(
   x,
-  method = c("ed", "cl", "sa"),
+  method = c("ed", "cl", "sa", "bf", "cc"),
   alpha = 1,
   regime = NULL,
   exposure_fit = NULL,
@@ -15,45 +15,37 @@ fit_loss(
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   maturity = "auto",
+  tail = FALSE,
   conf_level = 0.95,
   bootstrap = NULL,
-  B = 999,
-  seed = NULL
+  B = 999L,
+  seed = NULL,
+  type,
+  ...
 )
 }
 \arguments{
 \item{x}{A \code{"Triangle"} object. The standardized \code{"loss"} and
 \code{"exposure"} columns are used (\code{as_triangle()} produces these).}
 
-\item{method}{One of \code{"ed"} (default), \code{"cl"}, or \code{"sa"}.}
+\item{method}{One of \code{"ed"} (default), \code{"cl"}, \code{"sa"}, \code{"bf"}, or \code{"cc"}.}
 
 \item{alpha}{Variance-structure exponent for the loss fit. Default \code{1}.}
 
-\item{regime}{Optional regime specification applied to both loss-side
-and exposure-side estimation. Accepts four input types:
-\describe{
-\item{\code{NULL} (default)}{No regime filter.}
-\item{\code{Regime} object}{Use as-is. Typically built via
-\code{\link[=detect_regime]{detect_regime()}} or \code{\link[=regime_at]{regime_at()}}.}
-\item{\code{"auto"}}{Detect regime internally via \code{detect_regime(x)} on
-the input triangle.}
-\item{Function / closure}{A user-supplied function taking the
-triangle and returning a \code{Regime} object (or \code{NULL}).}
-}
-Behavior depends on \code{method}: SA uses a hybrid 2-pass filter (cohort
-cut for the ED phase, calendar-diagonal wedge for the CL phase);
-ED/CL use a simple cohort cut. The same resolved \code{Regime} is applied
-to the internal \code{fit_exposure()} call -- callers needing an
-asymmetric loss/exposure split should use \code{\link[=fit_ratio]{fit_ratio()}} instead.}
+\item{regime}{Optional regime specification (loss-side). Accepts the
+standard 4-type dispatch (\code{NULL} / \code{Regime} / \code{"auto"} / function).
+Behavior depends on \code{method}: SA uses a hybrid 2-pass filter; ED / CL
+/ BF / CC use a simple cohort cut. The same resolved regime is
+applied to the internal exposure fit -- callers needing an asymmetric
+loss/exposure split should use \code{\link[=fit_ratio]{fit_ratio()}}.}
 
-\item{exposure_fit}{Optional pre-built \code{ExposureFit} (from
-\code{\link[=fit_exposure]{fit_exposure()}}) supplying the exposure projection. When \code{NULL},
-\code{fit_loss()} calls \code{fit_exposure()} internally using
-\code{exposure_method}, \code{exposure_alpha}, and the resolved \code{regime}.}
+\item{exposure_fit}{Optional pre-built \code{ExposureFit} supplying the
+exposure projection. Only used by \code{"ed"} (via \code{fit_ed}'s internal
+exposure handling) and \code{"sa"}. When \code{NULL}, the worker calls
+\code{\link[=fit_exposure]{fit_exposure()}} internally.}
 
 \item{exposure_method}{One of \code{"cl"} (default) or \code{"ed"}. Used only
-when \code{exposure_fit = NULL}. The default matches the historical
-\code{fit_ratio()} exposure choice.}
+when \code{exposure_fit = NULL} for \code{"sa"}.}
 
 \item{exposure_alpha}{Variance-structure exponent for the exposure fit.
 Default \code{1}.}
@@ -69,46 +61,28 @@ terms drop those links via finite-value guards. Passed to
 
 \item{recent}{Optional positive integer; calendar-diagonal filter.}
 
-\item{maturity}{Optional maturity specification. Accepts four input
-types:
-\describe{
-\item{\code{NULL}}{No maturity filter. SA mode requires a maturity, so
-this disables only ED / CL modes.}
-\item{\code{Maturity} object}{Use as-is. Typically built via
-\code{\link[=detect_maturity]{detect_maturity()}} or \code{\link[=maturity_at]{maturity_at()}}.}
-\item{\code{"auto"} (default)}{Detect maturity internally via
-\code{detect_maturity(x)} on the input triangle.}
-\item{Function / closure}{A user-supplied function taking the
-triangle and returning a \code{Maturity} object (e.g. from
-\code{\link[=maturity_spec]{maturity_spec()}}) for deferred custom-config detection.}
-}}
+\item{maturity}{Optional maturity specification. Accepts the standard
+4-type dispatch (\code{NULL} / \code{Maturity} / \code{"auto"} / function). Only
+used by \code{"cl"}, \code{"sa"}, and \code{"bf"}. Default \code{"auto"}.}
+
+\item{tail}{Tail factor (logical or numeric). Forwarded to \code{"cl"} /
+\code{"sa"} workers. Default \code{FALSE}.}
 
 \item{conf_level}{Confidence level for analytical CI on the loss
 projection (\code{loss_ci_lo}, \code{loss_ci_hi}). Default \code{0.95}.}
 
-\item{bootstrap}{Bootstrap configuration. Five forms accepted:
-\describe{
-\item{\code{NULL} (default)}{Auto-resolved by \code{method}: bootstrap for
-\code{"sa"}/\code{"ed"}, analytical for \code{"cl"}. Matches the legacy
-\code{bootstrap = NULL} behavior.}
-\item{\code{TRUE} / \code{FALSE}}{Back-compat with the legacy logical arg.
-\code{TRUE} triggers \code{"auto"}; \code{FALSE} disables.}
-\item{\code{"auto"}}{Internal \code{bootstrap()} call on the loss triangle
-with defaults \verb{(type = "analytical", process = "normal", target = "loss")}.}
-\item{\code{BootstrapTriangle}}{Pre-built object from \code{bootstrap()}.
-Must have \code{meta$target == "loss"}.}
-\item{Function \verb{function(tri) -> BootstrapTriangle}}{Lazy spec
-invoked on the input Triangle (leakage-safe for \code{backtest()}).}
-}
-Premium stays at its observed values during the bootstrap (the
-loss-only convention); exposure-side uncertainty is layered in by
-\code{fit_ratio()} via its own bootstrap.}
+\item{bootstrap}{Bootstrap configuration. Five forms accepted (see
+\code{\link[=fit_sa]{fit_sa()}} / \code{\link[=fit_ed]{fit_ed()}} / \code{\link[=fit_cl]{fit_cl()}} for method-specific defaults).}
 
-\item{B}{Integer number of bootstrap replicates. Used only when
-\code{bootstrap} resolves to \code{"auto"}. Default \code{999}.}
+\item{B}{Integer number of bootstrap replicates. Default \code{999}.}
 
-\item{seed}{Optional integer seed for reproducible bootstrap. Default
-\code{NULL}.}
+\item{seed}{Optional integer seed.}
+
+\item{type}{Bootstrap process type. Forwarded where applicable
+(\code{"sa"}, \code{"bf"}, \code{"cc"}).}
+
+\item{...}{Method-specific arguments forwarded to the chosen worker.
+For \code{method = "bf"}, \code{prior} is required.}
 }
 \value{
 An object of class \code{"LossFit"}. List with components:
@@ -116,33 +90,31 @@ An object of class \code{"LossFit"}. List with components:
 \code{exposure_fit}, \code{ed}, \code{factor}, \code{selected}, plus metadata.
 }
 \description{
-Project cumulative loss across the cohort x development grid. Three
-methods are supported via \code{method}:
+Project cumulative loss across the cohort x development grid. \code{fit_loss()}
+is the role-specific \emph{dispatcher} on the loss side -- it forwards to a
+worker selected by \code{method}:
 
 \describe{
-\item{\code{"ed"} (default)}{Pure exposure-driven (additive) across all
-dev periods. Unconditional safe baseline -- no maturity dependency.}
-\item{\code{"cl"}}{Pure Mack chain ladder (multiplicative). Classical
-reference.}
-\item{\code{"sa"}}{Stage-adaptive. ED before the maturity point, CL after
--- composition of ED + CL, requires maturity detection (2-pass).}
+\item{\code{"ed"} (default)}{\code{\link[=fit_ed]{fit_ed()}} -- pure exposure-driven
+(additive). Unconditional safe baseline; no maturity dependency.}
+\item{\code{"cl"}}{\code{\link[=fit_cl]{fit_cl()}} -- pure Mack chain ladder (multiplicative).
+Classical reference.}
+\item{\code{"sa"}}{\code{\link[=fit_sa]{fit_sa()}} -- stage-adaptive composition: ED before
+the maturity point, CL after.}
+\item{\code{"bf"}}{\code{\link[=fit_bf]{fit_bf()}} -- Bornhuetter-Ferguson; requires a \code{prior}
+ELR (scalar or per-cohort table) passed via \code{...}.}
+\item{\code{"cc"}}{\code{\link[=fit_cc]{fit_cc()}} -- Cape Cod (BF with a pooled ELR derived
+from the data).}
 }
 
-This function is the \emph{loss-side} counterpart to \code{\link[=fit_exposure]{fit_exposure()}} in
-the role-specific dispatcher layer (see \code{ARCHITECTURE.md}). It owns
-loss projection only -- exposure projection is delegated to
-\code{\link[=fit_exposure]{fit_exposure()}} (called internally when \code{exposure_fit = NULL}), and
-the loss-ratio composition with delta method is handled by
-\code{\link[=fit_ratio]{fit_ratio()}}.
+The dispatcher returns a \code{LossFit} object whose \verb{$full} schema is
+uniform across methods (\code{loss_obs}, \code{loss_proj}, \code{loss_total_se},
+\code{loss_ci_lo}, \code{loss_ci_hi}, \code{exposure_obs}, \code{exposure_proj},
+\code{incr_exposure_proj}, plus method-specific extras). Missing slots on
+worker outputs (e.g. \code{loss_ata_fit} for ED, \code{ed}/\code{selected} for CL/BF/CC)
+are synthesized as \code{NULL} so downstream code such as \code{\link[=fit_ratio]{fit_ratio()}} can
+guard uniformly.
 }
-\section{Internal columns}{
-
-\verb{$full} retains internal parameter columns (\code{g_sel}, \code{g_sigma2},
-\code{g_var}, \code{f_sel}, \code{f_sigma2}, \code{f_var}, \code{last_obs}) so that
-\code{\link[=fit_ratio]{fit_ratio()}} can run bootstrap CI on top without re-fitting.
-Standalone callers see them as implementation columns.
-}
-
 \examples{
 \dontrun{
 data(experience)
@@ -155,12 +127,13 @@ tri <- as_triangle(
   exposure = "incr_exposure"
 )
 
-lf    <- fit_loss(tri)                    # SA (default)
-lf_ed <- fit_loss(tri, method = "ed")
+lf    <- fit_loss(tri)                    # ED (default)
 lf_cl <- fit_loss(tri, method = "cl")
+lf_sa <- fit_loss(tri, method = "sa")
 }
 
 }
 \seealso{
-\code{\link[=fit_exposure]{fit_exposure()}}, \code{\link[=fit_ratio]{fit_ratio()}}, \code{\link[=fit_cl]{fit_cl()}}, \code{\link[=fit_ed]{fit_ed()}}.
+\code{\link[=fit_ed]{fit_ed()}}, \code{\link[=fit_cl]{fit_cl()}}, \code{\link[=fit_sa]{fit_sa()}}, \code{\link[=fit_bf]{fit_bf()}}, \code{\link[=fit_cc]{fit_cc()}},
+\code{\link[=fit_exposure]{fit_exposure()}}, \code{\link[=fit_ratio]{fit_ratio()}}.
 }

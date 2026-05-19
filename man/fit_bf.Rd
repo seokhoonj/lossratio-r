@@ -105,7 +105,7 @@ An object of class \code{"BFFit"} containing:
 \item{\code{cohort}}{Raw cohort variable name.}
 \item{\code{dev}}{Raw development variable name.}
 \item{\code{loss}, \code{exposure}}{Loss / exposure variable names.}
-\item{\code{full}}{\code{data.table} \verb{[group, cohort, dev, loss_obs, loss_proj, exposure_obs, exposure_proj, is_observed, incr_loss_proj, exposure_incr_proj]}. When \code{bootstrap} is
+\item{\code{full}}{\code{data.table} \verb{[group, cohort, dev, loss_obs, loss_proj, exposure_obs, exposure_proj, is_observed, incr_loss_proj, incr_exposure_proj]}. When \code{bootstrap} is
 enabled, additional columns \code{loss_total_se}, \code{loss_total_cv},
 \code{loss_ci_lo}, \code{loss_ci_hi} carry per-cell bootstrap SE / CI on
 projected cells (observed cells stay \code{NA}).}

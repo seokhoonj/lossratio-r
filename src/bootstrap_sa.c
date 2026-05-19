@@ -31,7 +31,7 @@
  *         v_prev = cum[i, j-1, b]
  *         stage_cl = (j >= mat_k_vec[i])
  *           -- j is 0-indexed to-dev; mat_k_vec stores 1-indexed from-dev;
- *              CL when from_dev_1based >= mat_k (see sa_stage_cl_for_to_dev)
+ *              CL when from_dev_1based >= mat_k (see bootstrap_sa_stage_cl_for_to_dev)
  *         cum[i, j, b] = stage_cl ? f_star[k, b] * v_prev
  *                                : v_prev + g_star[k, b] * exposure_proj[i, j-1]
  *
@@ -65,7 +65,7 @@
 #include <Rmath.h>    /* Rf_rgamma */
 
 
-/* sa_refit_cl_fstar
+/* bootstrap_sa_refit_fstar
  *
  *   File-local mirror of bootstrap_refit_cl_fstar (src/bootstrap_cl.c). The
  *   SA kernel refits BOTH f_star (CL anchor) and g_star (ED anchor) every
@@ -73,7 +73,7 @@
  *   negligible (n_links * B doubles each) and keeps the projection branch
  *   trivial. See bootstrap_cl.c for the math.
  */
-static void sa_refit_cl_fstar(
+static void bootstrap_sa_refit_fstar(
     const double *cum,
     const int *link_to_idx,
     const double *f_hat_vec,
@@ -111,12 +111,12 @@ static void sa_refit_cl_fstar(
 }
 
 
-/* sa_refit_ed_gstar
+/* bootstrap_sa_refit_gstar
  *
  *   File-local mirror of bootstrap_refit_ed_gstar (src/bootstrap_ed.c).
  *   See that file for the math.
  */
-static void sa_refit_ed_gstar(
+static void bootstrap_sa_refit_gstar(
     const double *cum,
     const double *exposure_proj,
     const int *link_to_idx,
@@ -157,7 +157,7 @@ static void sa_refit_ed_gstar(
 }
 
 
-/* sa_stage_cl_for_to_dev
+/* bootstrap_sa_stage_cl_for_to_dev
  *
  *   Given 0-indexed to-dev `j` and per-cohort 1-indexed CL-start
  *   `mat_k_vec[i]`, returns 1 iff the link from -> to is in the CL stage.
@@ -169,21 +169,21 @@ static void sa_refit_ed_gstar(
  *     - stage_cl iff from_dev_1based >= mat_k_vec[i]  <==>  j >= mat_k_vec[i]
  *     - NA_INTEGER or INT_MAX -> all-ED (returns 0 always)
  */
-static inline int sa_stage_cl_for_to_dev(int j, int mat_k_1) {
+static inline int bootstrap_sa_stage_cl_for_to_dev(int j, int mat_k_1) {
   if (mat_k_1 == NA_INTEGER) return 0;
   if (mat_k_1 == INT_MAX)    return 0;
   return (j >= mat_k_1) ? 1 : 0;
 }
 
 
-/* sa_fwd_proj_and_clip
+/* bootstrap_sa_fwd_proj_and_clip
  *
  *   SA-paradigm forward projection. Walks j = 1..n_dev-1; for each cohort
  *   needing projection at dev j, applies the paradigm-appropriate step
  *   using the per-cohort stage from `mat_k_vec`. Clips finite negatives to
  *   0 at the end (same convention as CL / ED projectors).
  */
-static void sa_fwd_proj_and_clip(
+static void bootstrap_sa_fwd_proj_and_clip(
     double *cum,
     const double *f_star,
     const double *g_star,
@@ -206,7 +206,7 @@ static void sa_fwd_proj_and_clip(
       if (lj == NA_INTEGER) continue;
       if (lj >= j + 1) continue;             /* upper triangle: keep */
 
-      int stage_cl = sa_stage_cl_for_to_dev(j, mat_k_vec[i]);
+      int stage_cl = bootstrap_sa_stage_cl_for_to_dev(j, mat_k_vec[i]);
       double p_prev = exposure_proj[off_prev_base + i];
 
       for (int b = 0; b < B; b++) {
@@ -237,7 +237,7 @@ static void sa_fwd_proj_and_clip(
 }
 
 
-/* sa_fwd_sim_cell
+/* bootstrap_sa_fwd_sim_cell
  *
  *   SA-paradigm Stage 2 process noise. Per cohort i, walking dev forward
  *   from last_obs_idx[i]; cell paradigm decided by `mat_k_vec[i]` vs `j`.
@@ -248,7 +248,7 @@ static void sa_fwd_proj_and_clip(
  *   the deterministic mean increment (no noise). When inc_mean <= 0 or
  *   non-finite, the cell also falls back to deterministic propagation.
  */
-static void sa_fwd_sim_cell(
+static void bootstrap_sa_fwd_sim_cell(
     const double *cum_mean,
     const int *last_obs_idx,
     const int *mat_k_vec,
@@ -285,7 +285,7 @@ static void sa_fwd_sim_cell(
           continue;
         }
 
-        int stage_cl = sa_stage_cl_for_to_dev(j, mat_k_vec[i]);
+        int stage_cl = bootstrap_sa_stage_cl_for_to_dev(j, mat_k_vec[i]);
         double phi_use = stage_cl ? phi_cl : phi_ed;
 
         double inc_mean = cum_curr - cum_prev;
@@ -330,13 +330,13 @@ static void sa_fwd_sim_cell(
  *         formulas per cell, so the C kernel just draws and places.
  *     (b) Cumsum along the dev axis (identical to CL / ED).
  *     (c) Mask lower triangle to NA (identical to CL / ED).
- *     (d) Refit BOTH f*_k AND g*_k per link  -> sa_refit_cl_fstar +
- *         sa_refit_ed_gstar. Both are needed because per-cohort stage
+ *     (d) Refit BOTH f*_k AND g*_k per link  -> bootstrap_sa_refit_fstar +
+ *         bootstrap_sa_refit_gstar. Both are needed because per-cohort stage
  *         differs.
  *     (e) Forward-project with per-cohort stage switch + clip
- *         -> sa_fwd_proj_and_clip.
+ *         -> bootstrap_sa_fwd_proj_and_clip.
  *     (f) Stage 2 process noise with per-cohort, per-dev paradigm switch
- *         -> sa_fwd_sim_cell.
+ *         -> bootstrap_sa_fwd_sim_cell.
  *
  *   `mat_k_vec[i]`: per-cohort 1-indexed from-dev at which CL begins.
  *   NA_INTEGER or INT_MAX => cohort stays ED forever (mirror `.sa_proj`
@@ -475,13 +475,13 @@ SEXP bootstrap_kernel_sa_cell(
   /* ----- (d) Refit BOTH f*_k AND g*_k from pseudo cumulative --------- */
   double *f_star = (double *) R_alloc((size_t)n_links * B, sizeof(double));
   double *g_star = (double *) R_alloc((size_t)n_links * B, sizeof(double));
-  sa_refit_cl_fstar(cum, link_to_idx, f_hat_vec,
+  bootstrap_sa_refit_fstar(cum, link_to_idx, f_hat_vec,
                     n_coh, n_dev, B, n_links, f_star);
-  sa_refit_ed_gstar(cum, exposure_proj, link_to_idx, g_hat_vec,
+  bootstrap_sa_refit_gstar(cum, exposure_proj, link_to_idx, g_hat_vec,
                     n_coh, n_dev, B, n_links, g_star);
 
   /* ----- (e) Forward-project with per-cohort stage switch + clip ----- */
-  sa_fwd_proj_and_clip(cum, f_star, g_star, exposure_proj,
+  bootstrap_sa_fwd_proj_and_clip(cum, f_star, g_star, exposure_proj,
                        last_obs_idx, k_idx_by_j, mat_k_vec,
                        n_coh, n_dev, B, n_links);
 
@@ -499,7 +499,7 @@ SEXP bootstrap_kernel_sa_cell(
   Rf_setAttrib(cum_sampled_sxp, R_DimSymbol, dims_s);
   UNPROTECT(1);
 
-  sa_fwd_sim_cell(cum, last_obs_idx, mat_k_vec,
+  bootstrap_sa_fwd_sim_cell(cum, last_obs_idx, mat_k_vec,
                   n_coh, n_dev, B,
                   phi_ed, phi_cl, alpha, process_code,
                   REAL(cum_sampled_sxp));
@@ -527,7 +527,7 @@ SEXP bootstrap_kernel_sa_cell(
  * side builds this via fifelse on the cell paradigm classification).
  * Phases (b)-(f) mirror the SA cell kernel exactly (cumsum -> mask ->
  * refit f* + g* -> per-cohort stage-switch projection -> Stage 2 noise
- * via sa_fwd_sim_cell with scalar phi_ed / phi_cl on a per-cohort stage
+ * via bootstrap_sa_fwd_sim_cell with scalar phi_ed / phi_cl on a per-cohort stage
  * basis).
  */
 SEXP bootstrap_kernel_sa_param(
@@ -674,13 +674,13 @@ SEXP bootstrap_kernel_sa_param(
   /* ----- (d) Refit BOTH f*_k AND g*_k from pseudo cumulative --------- */
   double *f_star = (double *) R_alloc((size_t)n_links * B, sizeof(double));
   double *g_star = (double *) R_alloc((size_t)n_links * B, sizeof(double));
-  sa_refit_cl_fstar(cum, link_to_idx, f_hat_vec,
+  bootstrap_sa_refit_fstar(cum, link_to_idx, f_hat_vec,
                     n_coh, n_dev, B, n_links, f_star);
-  sa_refit_ed_gstar(cum, exposure_proj, link_to_idx, g_hat_vec,
+  bootstrap_sa_refit_gstar(cum, exposure_proj, link_to_idx, g_hat_vec,
                     n_coh, n_dev, B, n_links, g_star);
 
   /* ----- (e) Forward-project with per-cohort stage switch + clip ----- */
-  sa_fwd_proj_and_clip(cum, f_star, g_star, exposure_proj,
+  bootstrap_sa_fwd_proj_and_clip(cum, f_star, g_star, exposure_proj,
                        last_obs_idx, k_idx_by_j, mat_k_vec,
                        n_coh, n_dev, B, n_links);
 
@@ -693,7 +693,7 @@ SEXP bootstrap_kernel_sa_param(
   Rf_setAttrib(cum_sampled_sxp, R_DimSymbol, dims_s);
   UNPROTECT(1);
 
-  sa_fwd_sim_cell(cum, last_obs_idx, mat_k_vec,
+  bootstrap_sa_fwd_sim_cell(cum, last_obs_idx, mat_k_vec,
                   n_coh, n_dev, B,
                   phi_ed, phi_cl, alpha, process_code,
                   REAL(cum_sampled_sxp));

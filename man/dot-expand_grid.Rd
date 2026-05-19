@@ -2,11 +2,18 @@
 % Please edit documentation in R/loss.R
 \name{.expand_grid}
 \alias{.expand_grid}
-\title{Expand a \code{Triangle} object to a full projection grid}
+\title{Expand a \code{Triangle} object to a full projection grid (loss + exposure)}
 \usage{
 .expand_grid(triangle, ed_fit, exposure_ata_fit, loss, exposure)
 }
 \description{
-Expand a \code{Triangle} object to a full projection grid
+Internal helper used by \code{fit_sa()} and \code{fit_ed()}. Builds a complete
+cohort x dev grid plus the projected exposure path (CL projection
+anchored on the supplied \code{exposure_ata_fit}). The ED loss-side projection
+is added downstream by the caller.
+
+Lives here because both \code{fit_sa()} (R/sa.R) and \code{fit_ed()} (R/ed.R)
+need a single source of truth for the grid layout. Future cleanup may
+relocate it to a dedicated helper file.
 }
 \keyword{internal}

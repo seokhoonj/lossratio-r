@@ -402,12 +402,17 @@ fit_ratio <- function(x,
   }
 
   # 8) drop intermediate columns ---------------------------------------
-  drop_cols <- c(
-    "g_sel", "g_sigma2", "g_var",
-    "f_sel", "f_sigma2", "f_var",
-    "last_obs"
+  # Only SA leaves these columns on its $full (so fit_ratio can run
+  # bootstrap CI on top without re-fitting). CL / ED / BF / CC workers
+  # drop them internally -- guard with intersect() so the dispatcher path
+  # for non-SA methods doesn't error.
+  drop_cols <- intersect(
+    c("g_sel", "g_sigma2", "g_var",
+      "f_sel", "f_sigma2", "f_var",
+      "last_obs"),
+    names(full)
   )
-  full[, (drop_cols) := NULL]
+  if (length(drop_cols)) full[, (drop_cols) := NULL]
 
   # 9) ratio incremental projection ------------------------------------
   full[, ("incr_ratio_proj") := data.table::fifelse(

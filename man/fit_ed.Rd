@@ -66,7 +66,7 @@ and \code{g_var}.}
 \item{\code{full}}{\code{data.table} of per-cell cumulative loss / exposure
 projection plus role-prefixed SE / CV columns
 (\code{loss_proj}, \code{incr_loss_proj}, \code{exposure_proj},
-\code{exposure_incr_proj}, \code{loss_proc_se2}, \code{loss_param_se2},
+\code{incr_exposure_proj}, \code{loss_proc_se2}, \code{loss_param_se2},
 \code{loss_total_se2}, \code{loss_proc_se}, \code{loss_param_se},
 \code{loss_total_se}, \code{loss_total_cv}). Available cells include
 both observed and projected; \code{is_observed} flags observed cells.}

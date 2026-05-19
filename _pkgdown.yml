@@ -145,16 +145,18 @@ reference:
   desc: >
     Models that produce full projections on a Triangle. Base algorithms:
     `fit_cl` (chain ladder / multiplicative), `fit_ed`
-    (exposure-driven / additive). ELR-based reserve methods:
+    (exposure-driven / additive), `fit_sa` (stage-adaptive composition
+    of ED + CL anchored on a maturity point). ELR-based reserve methods:
     `fit_bf` (Bornhuetter-Ferguson with external prior),
     `fit_cc` (Cape Cod with data-pooled ELR estimate).
-    Role dispatchers: `fit_loss` (loss-side sa/ed/cl), `fit_exposure`
-    (exposure-side ed/cl). Composition: `fit_ratio` (loss-ratio umbrella
-    with delta-method SE). All return an object carrying a `$full`
-    projection table.
+    Role dispatchers: `fit_loss` (loss-side ed/cl/sa/bf/cc),
+    `fit_exposure` (exposure-side ed/cl). Composition: `fit_ratio`
+    (loss-ratio umbrella with delta-method SE). All return an object
+    carrying a `$full` projection table.
   contents:
   - fit_cl
   - fit_ed
+  - fit_sa
   - fit_bf
   - fit_cc
   - fit_loss

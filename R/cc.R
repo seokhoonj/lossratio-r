@@ -250,7 +250,7 @@ fit_cc <- function(x,
   full[, ("incr_loss_proj") := loss_proj -
          data.table::shift(loss_proj, 1L, fill = 0),
        by = by_cols]
-  full[, ("exposure_incr_proj") := exposure_proj -
+  full[, ("incr_exposure_proj") := exposure_proj -
          data.table::shift(exposure_proj, 1L, fill = 0),
        by = by_cols]
 
@@ -260,7 +260,7 @@ fit_cc <- function(x,
   # 6) proj: NA out observed cells ----------------------------------------
   proj <- data.table::copy(full)
   proj_cols <- c("loss_proj", "incr_loss_proj",
-                 "exposure_proj", "exposure_incr_proj")
+                 "exposure_proj", "incr_exposure_proj")
   proj_cols <- intersect(proj_cols, names(proj))
   proj[is_observed == TRUE, (proj_cols) := NA_real_]
 
@@ -299,7 +299,7 @@ fit_cc <- function(x,
     proj       <- data.table::copy(full)
     proj_cols  <- intersect(
       c("loss_proj", "incr_loss_proj", "exposure_proj",
-        "exposure_incr_proj", "loss_total_se", "loss_total_cv",
+        "incr_exposure_proj", "loss_total_se", "loss_total_cv",
         "loss_ci_lo", "loss_ci_hi"),
       names(proj))
     proj[is_observed == TRUE, (proj_cols) := NA_real_]
