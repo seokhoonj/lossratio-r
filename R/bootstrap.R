@@ -397,6 +397,11 @@ bootstrap.Triangle <- function(x,
   # to something non-normal, the validator already errored above.)
   if (identical(type, "parametric")) process <- "normal"
 
+  # Preserve the user-supplied maturity arg before reassignment -- SA + cell
+  # needs it independently of pooling/tail (mathematical input to the stage
+  # transition, not just a pool-tail policy).
+  user_maturity <- maturity
+
   # Resolve maturity when tail_pooled + maturity. Note: for tail = "auto"
   # we don't need a Maturity object -- the cut is derived from residual
   # counts vs `min_pool`.
@@ -415,11 +420,30 @@ bootstrap.Triangle <- function(x,
 
   is_residual_mode <- identical(type, "nonparametric")
 
+  # SA + cell needs a resolved Maturity object to drive the per-cohort
+  # stage transition (independent of `pooling`/`tail` -- maturity is a
+  # mathematical input to SA, not just a pool-tail policy). Resolution
+  # mirrors `.sa_proj`'s `maturity_from = NA` -> all-ED fallback when no
+  # Maturity can be resolved (silent for symmetry with fit_loss). When
+  # the pool-side resolution above already produced a Maturity object
+  # (tail_pooled + maturity), reuse it.
+  if (is_residual_mode && identical(residual, "cell") &&
+      identical(method, "sa")) {
+    sa_maturity <- if (inherits(maturity, "Maturity")) maturity else
+                     .resolve_maturity(
+                       if (is.null(user_maturity)) "auto" else user_maturity,
+                       x)
+  } else {
+    sa_maturity <- maturity
+  }
+
   if (is_residual_mode) {
-    # 1) Build Link on the chosen target. ED + cell needs the dual-variable
-    #    Link (loss + exposure) so we can read `exposure_from`; the other
-    #    branches only need the single-variable Link (chain ladder anchor).
-    if (identical(residual, "cell") && identical(method, "ed")) {
+    # 1) Build Link on the chosen target. ED + cell and SA + cell both need
+    #    the dual-variable Link (loss + exposure) so we can read
+    #    `exposure_from`; the other branches only need the single-variable
+    #    Link (chain ladder anchor).
+    if (identical(residual, "cell") &&
+        (identical(method, "ed") || identical(method, "sa"))) {
       link <- as_link(x, loss = target, exposure = "exposure",
                       drop_invalid = TRUE)
     } else {
@@ -450,6 +474,46 @@ bootstrap.Triangle <- function(x,
                                      pooling = pooling, tail = tail,
                                      min_pool = min_pool, maturity = maturity,
                                      demean = demean)
+    } else if (identical(method, "sa")) {
+      # SA-paradigm cell residual: dual-pool concat. ED pool covers cells
+      # with from-dev < mat_k (early dev); CL pool covers cells with
+      # from-dev >= mat_k (mature dev). Each pool keeps its own paradigm-
+      # appropriate Pearson scale (sqrt(|g*P|) vs sqrt(|f*C|)), so they
+      # CANNOT be merged into one bucket -- they're concat'd into one
+      # flat residual vector with `pool_id` prefixes "ed|" / "cl|"
+      # ensuring no collision at lookup time. Each ACTIVE cell at Stage 1
+      # picks the right bucket via the paradigm match in .boot_stage1_one.
+      cell_resid_ed <- .boot_cell_residuals_ed(link, grp = grp)
+      cell_resid_cl <- .boot_cell_residuals_cl(x, anchor = anchor, grp = grp,
+                                            target = target, hat_adj = hat_adj)
+      phi_ed_dt <- attr(cell_resid_ed, "phi_dt")
+      phi_cl_dt <- attr(cell_resid_cl, "phi_dt")
+      pool_ed <- .boot_build_pool_cell_cl(cell_resid_ed, grp = grp,
+                                       pooling = pooling, tail = tail,
+                                       min_pool = min_pool, maturity = maturity,
+                                       demean = demean)
+      pool_cl <- .boot_build_pool_cell_cl(cell_resid_cl, grp = grp,
+                                       pooling = pooling, tail = tail,
+                                       min_pool = min_pool, maturity = maturity,
+                                       demean = demean)
+      if (nrow(pool_ed) > 0L)
+        pool_ed[, ("pool_id") := paste0("ed|", pool_ed$pool_id)]
+      if (nrow(pool_cl) > 0L)
+        pool_cl[, ("pool_id") := paste0("cl|", pool_cl$pool_id)]
+      pool <- data.table::rbindlist(list(pool_ed, pool_cl),
+                                    use.names = TRUE, fill = TRUE)
+
+      # Merge phi tables on group keys so .boot_stage1 per-group subset
+      # gets both columns at once.
+      if (length(grp) > 0L) {
+        phi_dt <- merge(phi_ed_dt, phi_cl_dt, by = grp,
+                        suffixes = c("_ed", "_cl"), sort = FALSE)
+      } else {
+        phi_dt <- data.table::data.table(
+          phi_ed = if (nrow(phi_ed_dt) > 0L) phi_ed_dt$phi[1L] else NA_real_,
+          phi_cl = if (nrow(phi_cl_dt) > 0L) phi_cl_dt$phi[1L] else NA_real_
+        )
+      }
     } else {
       # E-V 1999/2002: Pearson residuals on incremental cells, optionally
       # leverage-corrected (hat_adj). Pool keyed by (cohort, dev).
@@ -487,7 +551,7 @@ bootstrap.Triangle <- function(x,
     phi_dt = phi_dt,
     grp = grp, is_residual_mode = is_residual_mode, residual = residual,
     process = process, method = method, B = B, alpha = alpha,
-    target = target
+    target = target, sa_maturity = sa_maturity
   )
 
   summary_dt <- .boot_summary_from_arrays(stage1_out, grp = grp,
@@ -533,7 +597,7 @@ bootstrap.Triangle <- function(x,
         alpha       = alpha,
         target      = target,
         groups      = grp,
-        maturity    = maturity,
+        maturity    = if (!is.null(sa_maturity)) sa_maturity else maturity,
         phi_dt      = phi_dt
       )
     ),
@@ -1328,7 +1392,8 @@ bootstrap.Triangle <- function(x,
 .boot_stage1 <- function(triangle, link, anchor, pool, phi_dt,
                           grp, is_residual_mode, residual, process,
                           method = "ed",
-                          B, alpha, target = "loss") {
+                          B, alpha, target = "loss",
+                          sa_maturity = NULL) {
 
   # Per-group iteration
   if (length(grp) > 0L) {
@@ -1339,12 +1404,14 @@ bootstrap.Triangle <- function(x,
       phi_g <- if (!is.null(phi_dt) && nrow(phi_dt) > 0L)
                  merge(phi_dt, grp_vals[1L], by = grp, sort = FALSE)
                else phi_dt
+      mat_g <- .boot_subset_maturity(sa_maturity, grp_vals[1L], grp)
       return(.boot_stage1_one(
         triangle = triangle, link = link, anchor = anchor, pool = pool,
         phi_dt = phi_g,
         is_residual_mode = is_residual_mode, residual = residual,
         process = process, method = method, B = B, alpha = alpha,
-        grp_vals = grp_vals[1L], target = target
+        grp_vals = grp_vals[1L], target = target,
+        sa_maturity = mat_g
       ))
     }
     out_list <- vector("list", nrow(grp_vals))
@@ -1358,12 +1425,14 @@ bootstrap.Triangle <- function(x,
       phi_g  <- if (!is.null(phi_dt) && nrow(phi_dt) > 0L)
                   merge(phi_dt, gkey, by = grp, sort = FALSE)
                 else phi_dt
+      mat_g  <- .boot_subset_maturity(sa_maturity, gkey, grp)
       out_list[[gi]] <- .boot_stage1_one(
         triangle = tri_g, link = link_g, anchor = anchor_g, pool = pool_g,
         phi_dt = phi_g,
         is_residual_mode = is_residual_mode, residual = residual,
         process = process, method = method, B = B, alpha = alpha,
-        grp_vals = gkey, target = target
+        grp_vals = gkey, target = target,
+        sa_maturity = mat_g
       )
     }
     list(
@@ -1381,9 +1450,22 @@ bootstrap.Triangle <- function(x,
       phi_dt = phi_dt,
       is_residual_mode = is_residual_mode, residual = residual,
       process = process, method = method, B = B, alpha = alpha,
-      grp_vals = NULL, target = target
+      grp_vals = NULL, target = target,
+      sa_maturity = sa_maturity
     )
   }
+}
+
+
+# Internal: per-group Maturity subset (used only when SA + cell). The full
+# Maturity object holds rows for all groups; per-group worker only needs
+# its own row to derive `mat_k_vec`. When `mat` is NULL or has no group
+# columns, return it unchanged (the .boot_stage1_one branch handles NULL).
+.boot_subset_maturity <- function(mat, gkey, grp) {
+  if (is.null(mat) || length(grp) == 0L) return(mat)
+  if (!is.data.frame(mat)) return(mat)
+  if (!all(grp %in% names(mat))) return(mat)
+  merge(data.table::as.data.table(mat), gkey, by = grp, sort = FALSE)
 }
 
 
@@ -1399,9 +1481,10 @@ bootstrap.Triangle <- function(x,
                               process = "gamma",
                               method = "ed",
                               B, alpha, grp_vals,
-                              target = "loss") {
+                              target = "loss",
+                              sa_maturity = NULL) {
 
-  cohort <- dev <- NULL  # NSE
+  cohort <- dev <- pool_id <- paradigm <- NULL  # NSE
 
   # Snapshot cohort x dev cumulative loss matrix
   cohorts <- sort(unique(triangle$cohort))
@@ -1459,6 +1542,8 @@ bootstrap.Triangle <- function(x,
   # Reused across replicates -- these are the original-data fits, not
   # per-replicate refits. ED-paradigm cell mode builds its own
   # `mu_ed_grid` below from `g_hat * exposure_from`, so it skips this.
+  # SA-paradigm cell mode needs BOTH grids (CL grid for late-dev cells,
+  # ED grid for early-dev cells), so it builds both.
   if (is_residual_mode && identical(residual, "cell") &&
       !identical(method, "ed")) {
     f_by_to <- rep(NA_real_, n_dev)
@@ -1601,8 +1686,160 @@ bootstrap.Triangle <- function(x,
       out_arr_mean    <- kernel_out$cum_mean
       out_arr_sampled <- kernel_out$cum_sampled
 
+    } else if (identical(method, "sa")) {
+      # ----- SA-paradigm cell residual (Phase 1 dual-pool concat) ------
+      # Each active cell is classified by its paradigm:
+      #   - ED: from-dev < mat_k_vec[i]  (use mu_ed_grid + ED pool prefix)
+      #   - CL: from-dev >= mat_k_vec[i] (use mu_hat_grid + CL pool prefix)
+      # The link uses dual-variable form (loss + exposure) so we can read
+      # exposure_from in the ED branch.
+
+      # 1) Build per-cohort mat_k_vec (1-indexed from-dev where CL begins).
+      #    NA / no-Maturity -> .Machine$integer.max (all-ED fallback).
+      mat_k_vec <- rep(.Machine$integer.max, n_coh)
+      if (!is.null(sa_maturity)) {
+        mat_dt <- data.table::as.data.table(sa_maturity)
+        if ("ata_from" %in% names(mat_dt) && nrow(mat_dt) > 0L) {
+          # SA + cell is single-cohort-axis within a group: take row 1.
+          mfrom <- mat_dt$ata_from[1L]
+          if (is.finite(mfrom)) {
+            mat_k_vec <- rep(as.integer(mfrom), n_coh)
+          }
+        }
+      }
+
+      # 2) Build the ED-paradigm fitted grid (mirror of .boot_cell_residuals_ed
+      #    structure: per-link g_hat anchor + chain-anchored ED projection)
+      #    using the SAME helpers as the ED-only branch.
+      exp_obs_mat <- .ensure_exposure_obs_mat(triangle, cohorts, devs,
+                                              n_coh, n_dev)
+      exp_anchor  <- .boot_anchor_exposure_cl(exp_obs_mat, last_obs_idx,
+                                              n_coh, n_dev, devs)
+      exposure_proj_mat <- .boot_proj_exposure_cl(exp_obs_mat,
+                                                     last_obs_idx,
+                                                     exp_anchor$f_by_to,
+                                                     n_coh, n_dev)
+      g_hat_vec <- .boot_anchor_ed(anchor, link, n_links)
+      g_by_to   <- rep(NA_real_, n_dev)
+      g_by_to[link_to_idx] <- g_hat_vec
+      ed_steps   <- .boot_steps_ed(g_by_to, exposure_proj_mat)
+      mu_ed_grid <- .boot_fitted_grid(mat_obs, last_obs_idx, n_coh, n_dev,
+                                      ed_steps$fwd, ed_steps$bwd)
+
+      # 3) Per-cell paradigm classification + mu / sqrt selection.
+      #    active_i is 1-indexed cohort row; active_j is 1-indexed dev col.
+      #    Cell paradigm:
+      #      ED  iff active_j_from_1based <  mat_k_vec[active_i]
+      #          where active_j_from_1based = active_j - 1L (1-indexed
+      #          from-dev for the increment landing at cell (i, j)).
+      #          Special case: j == 1 has no "from" link -- treat as ED
+      #          (residual is the first observed cell against its mu).
+      #      CL  otherwise.
+      upper_full_mat <- upper_full
+      ed_grid_finite <- is.finite(mu_ed_grid)
+      cl_grid_finite <- is.finite(mu_hat_grid)
+
+      # Active mask: cell is active for its paradigm iff the relevant mu
+      # grid is finite AND the cell is in the upper triangle.
+      active_lin_all <- which(upper_full_mat)
+      a_i <- ((active_lin_all - 1L) %% n_coh) + 1L
+      a_j <- ((active_lin_all - 1L) %/% n_coh) + 1L
+      # 1-indexed from-dev for the link landing at (i, j): a_j - 1; for j = 1
+      # we set it to 0 (always ED).
+      a_from <- pmax(a_j - 1L, 0L)
+      is_cl_cell <- a_from >= mat_k_vec[a_i] &
+                    mat_k_vec[a_i] != .Machine$integer.max
+      # Choose paradigm-appropriate finiteness check
+      keep <- ifelse(is_cl_cell,
+                     cl_grid_finite[active_lin_all],
+                     ed_grid_finite[active_lin_all])
+      active_lin_all <- active_lin_all[keep]
+      a_i            <- a_i[keep]
+      a_j            <- a_j[keep]
+      is_cl_cell     <- is_cl_cell[keep]
+      n_active       <- length(active_lin_all)
+
+      cell_active_lin  <- active_lin_all
+      cell_active_mu   <- ifelse(is_cl_cell,
+                                 mu_hat_grid[active_lin_all],
+                                 mu_ed_grid[active_lin_all])
+      cell_active_sqrt <- sqrt(abs(cell_active_mu))
+
+      # 4) Pool lookup: paradigm prefix decides which bucket. The pool
+      #    table has `pool_id` already prefixed "ed|" / "cl|". The cached
+      #    `pid_by_dev` lookup collapsed both paradigms onto one slot per
+      #    dev (last-one-wins), so build a fresh per-paradigm lookup
+      #    directly from the pool here, splitting by prefix.
+      if (length(pool_names) > 0L) {
+        pid_dt <- unique(pool[, .SD, .SDcols = c("dev", "pool_id")])
+        pid_dt[, ("paradigm") := data.table::fifelse(
+          startsWith(pool_id, "ed|"), "ed",
+          data.table::fifelse(startsWith(pool_id, "cl|"), "cl", NA_character_)
+        )]
+        ed_lookup <- pid_dt[paradigm == "ed"]
+        cl_lookup <- pid_dt[paradigm == "cl"]
+        ed_by_dev <- if (nrow(ed_lookup) > 0L)
+                       setNames(ed_lookup$pool_id, as.character(ed_lookup$dev))
+                     else character(0)
+        cl_by_dev <- if (nrow(cl_lookup) > 0L)
+                       setNames(cl_lookup$pool_id, as.character(cl_lookup$dev))
+                     else character(0)
+
+        a_j_chr <- as.character(a_j)
+        ed_lookup_full <- if (length(ed_by_dev) > 0L) ed_by_dev[a_j_chr]
+                          else rep(NA_character_, length(a_j_chr))
+        cl_lookup_full <- if (length(cl_by_dev) > 0L) cl_by_dev[a_j_chr]
+                          else rep(NA_character_, length(a_j_chr))
+        full_pid <- ifelse(is_cl_cell, cl_lookup_full, ed_lookup_full)
+        cell_pool_idx <- pool_pos[full_pid]
+        cell_pool_idx[is.na(cell_pool_idx)] <- 0L
+        cell_pool_idx <- as.integer(cell_pool_idx)
+      } else {
+        cell_pool_idx <- integer(n_active)
+      }
+
+      # 5) Per-paradigm phi scalars (from merged phi_dt with phi_ed / phi_cl).
+      phi_ed_val <- if (!is.null(phi_dt) && nrow(phi_dt) > 0L &&
+                        "phi_ed" %in% names(phi_dt)) phi_dt$phi_ed[1L]
+                    else NA_real_
+      phi_cl_val <- if (!is.null(phi_dt) && nrow(phi_dt) > 0L &&
+                        "phi_cl" %in% names(phi_dt)) phi_dt$phi_cl[1L]
+                    else NA_real_
+
+      process_code <- switch(process,
+                             gamma   = 1L,
+                             od_pois = 2L,
+                             normal  = 3L,
+                             1L)
+
+      kernel_out <- .Call(
+        C_bootstrap_kernel_sa_cell,
+        B,
+        as.numeric(cell_active_mu),
+        as.numeric(cell_active_sqrt),
+        as.integer(cell_active_lin),
+        cell_pool_idx,
+        pool_residuals,
+        pool_starts,
+        as.integer(last_obs_idx),
+        as.integer(link_to_idx),
+        as.integer(k_idx_by_j),
+        as.numeric(f_hat_vec),
+        as.numeric(g_hat_vec),
+        as.numeric(exposure_proj_mat),
+        as.integer(mat_k_vec),
+        as.numeric(phi_ed_val),
+        as.numeric(phi_cl_val),
+        as.numeric(alpha),
+        process_code,
+        n_coh, n_dev
+      )
+      out_arr_mean    <- kernel_out$cum_mean
+      out_arr_sampled <- kernel_out$cum_sampled
+
     } else {
-      # ----- CL-paradigm cell residual (method = "cl" or "sa") ---------
+      # ----- CL-paradigm cell residual (method = "cl" only;
+      #       SA now has its own branch above) -----------------
       upper_mask       <- upper_full & is.finite(mu_hat_grid)
       cell_active_lin  <- which(upper_mask)
       n_active         <- length(cell_active_lin)

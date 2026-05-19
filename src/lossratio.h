@@ -100,6 +100,45 @@ SEXP bootstrap_kernel_ed_cell(
     SEXP n_coh_sxp,
     SEXP n_dev_sxp);
 
+/* SA-paradigm cell kernel (Phase 1: fixed exposure, two-pool concat).
+ *
+ * Composes the ED + CL cell kernels via a per-cohort stage transition at
+ * `mat_k_vec[i]` (1-indexed from-dev at which CL begins). Stage 1 phases
+ * (a)-(c) are identical to the CL / ED siblings because `mu_active` and
+ * `sqrt_active` are pre-computed in R using the paradigm appropriate for
+ * each cell. Phases (d)-(f) refit BOTH f_star (CL) AND g_star (ED) per
+ * replicate, then project + Stage-2-noise with per-cohort stage dispatch.
+ *
+ * `pool_residuals` is the concatenation of the ED Pearson pool and the CL
+ * Pearson pool; `cell_pool_idx[a]` points each active cell to the bucket
+ * of its paradigm. Per-cell Stage-2 dispersion uses `phi_ed` (ED stage)
+ * or `phi_cl` (CL stage) scalars. See src/bootstrap_sa.c for the math.
+ *
+ * Returns the same list(cum_mean, cum_sampled) named pair as the CL / ED
+ * cell kernels.
+ */
+SEXP bootstrap_kernel_sa_cell(
+    SEXP B_sxp,
+    SEXP mu_active_sxp,
+    SEXP sqrt_active_sxp,
+    SEXP active_lin_sxp,
+    SEXP cell_pool_idx_sxp,
+    SEXP pool_residuals_sxp,
+    SEXP pool_starts_sxp,
+    SEXP last_obs_idx_sxp,
+    SEXP link_to_idx_sxp,
+    SEXP k_idx_by_j_sxp,
+    SEXP f_hat_vec_sxp,
+    SEXP g_hat_vec_sxp,
+    SEXP exposure_proj_sxp,
+    SEXP mat_k_vec_sxp,      /* per-cohort 1-indexed CL-start; NA / INT_MAX = all-ED */
+    SEXP phi_ed_sxp,         /* scalar ED Stage-2 dispersion */
+    SEXP phi_cl_sxp,         /* scalar CL Stage-2 dispersion */
+    SEXP alpha_sxp,          /* variance exponent */
+    SEXP process_code_sxp,   /* 1 gamma / 2 od_pois / 3 normal */
+    SEXP n_coh_sxp,
+    SEXP n_dev_sxp);
+
 SEXP bootstrap_kernel_cl_link(
     SEXP B_sxp,
     SEXP mat_obs_sxp,

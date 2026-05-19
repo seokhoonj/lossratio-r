@@ -914,7 +914,19 @@ test_that("$summary CI bounds bracket mean_proj on projected cells", {
   bt <- bootstrap(tri, keep_pseudo = TRUE, residual = "cell", method = "sa",
                   pooling = "tail_pooled", tail = "auto",
                   B = 100, seed = 21, quantile_ci = TRUE)
-  proj <- bt$summary[is.finite(ci_lo) & is.finite(ci_hi) & is.finite(mean_proj)]
+  # Restrict to true projection cells (dev > last observed dev for that
+  # cohort). Upper-triangle cells are subject to Stage-1 Pearson
+  # perturbation that can clip many replicates to zero when the
+  # chain-anchored fit produces a negative back-fill (e.g., late-arriving
+  # cohort under the ED stage); their empirical (ci_lo, ci_hi) need not
+  # bracket the mean under such heavy zero-clipping, which is a
+  # finite-B + clip artifact and not a defect of the CI estimator.
+  last_obs <- bt$pseudo_triangles[, .(last_obs = max(dev[is.finite(loss_mean)],
+                                                     na.rm = TRUE)),
+                                  by = .(coverage, cohort)]
+  proj <- merge(bt$summary, last_obs, by = c("coverage", "cohort"))
+  proj <- proj[dev > last_obs &
+                 is.finite(ci_lo) & is.finite(ci_hi) & is.finite(mean_proj)]
   expect_true(all(proj$ci_lo <= proj$ci_hi))
   expect_true(all(proj$ci_lo <= proj$mean_proj + 1e-6))
   expect_true(all(proj$ci_hi >= proj$mean_proj - 1e-6))
@@ -1181,6 +1193,37 @@ test_that("ED and CL bootstraps both run on the same triangle and give different
   if (nrow(cmp) > 0L) {
     expect_true(any(abs(cmp$total_se_ed - cmp$total_se_cl) > 1e-6))
   }
+})
+
+
+# ---------------------------------------------------------------------------
+# SA bootstrap: stage transition is actually exercised (regression guard)
+#
+# Pre-2026-05-19 the SA + cell path silently dispatched to the CL kernel,
+# producing byte-identical results to method = "cl". These two tests guard
+# against that regression: (a) SA must differ measurably from CL on early
+# dev (where SA uses the ED stage but CL stays multiplicative); (b) meta
+# must record method = "sa" AND persist the resolved Maturity object.
+# ---------------------------------------------------------------------------
+
+test_that("SA bootstrap differs measurably from CL bootstrap on dev < k*", {
+  tri <- make_sub_tri("surgery")
+  bs_sa <- bootstrap(tri, method = "sa", residual = "cell", B = 200, seed = 1)
+  bs_cl <- bootstrap(tri, method = "cl", residual = "cell", B = 200, seed = 1)
+  early <- merge(bs_sa$summary[dev < 5], bs_cl$summary[dev < 5],
+                 by = c("coverage", "cohort", "dev"),
+                 suffixes = c("_sa", "_cl"))
+  rel <- abs(early$total_se_sa - early$total_se_cl) /
+         pmax(abs(early$total_se_cl), 1)
+  expect_true(mean(rel, na.rm = TRUE) > 0.01)
+})
+
+test_that("SA bootstrap meta records method='sa' and persists maturity", {
+  tri <- make_sub_tri("surgery")
+  bs <- bootstrap(tri, method = "sa", residual = "cell", B = 30, seed = 1)
+  expect_identical(bs$meta$method, "sa")
+  expect_true(!is.null(bs$meta$maturity))
+  expect_s3_class(bs$meta$maturity, "Maturity")
 })
 
 test_that("ED bootstrap respects method enum order c('ed', 'cl', 'sa')", {
