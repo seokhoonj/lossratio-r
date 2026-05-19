@@ -20,6 +20,9 @@ static const R_CallMethodDef CallEntries[] = {
   {"C_bootstrap_kernel_sa_cell",        (DL_FUNC) &bootstrap_kernel_sa_cell,        20},
   {"C_bootstrap_kernel_cl_link",           (DL_FUNC) &bootstrap_kernel_cl_link,           14},
   {"C_bootstrap_kernel_cl_parametric",     (DL_FUNC) &bootstrap_kernel_cl_parametric,     11},
+  {"C_bootstrap_kernel_cl_param",       (DL_FUNC) &bootstrap_kernel_cl_param,       12},
+  {"C_bootstrap_kernel_ed_param",       (DL_FUNC) &bootstrap_kernel_ed_param,       13},
+  {"C_bootstrap_kernel_sa_param",       (DL_FUNC) &bootstrap_kernel_sa_param,       17},
   {"C_bootstrap_summary_kernel",        (DL_FUNC) &bootstrap_summary_kernel,         7},
   {NULL, NULL, 0}
 };

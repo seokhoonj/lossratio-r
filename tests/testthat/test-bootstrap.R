@@ -317,13 +317,84 @@ test_that("process = 'lognormal' errors with 'not yet implemented'", {
   )
 })
 
-test_that("type = 'parametric' errors with 'not yet implemented' (Phase 2b)", {
+# ---------------------------------------------------------------------------
+# Phase 2b: parametric bootstrap (cell-distribution sampling + refit)
+# ---------------------------------------------------------------------------
+
+test_that("type='parametric', method='cl', process='gamma' returns BootstrapTriangle", {
   tri <- make_sub_tri("surgery")
-  expect_error(
-    bootstrap(tri, keep_pseudo = TRUE, type = "parametric", B = 5, seed = 1),
-    "parametric.*not yet implemented"
-  )
+  b <- bootstrap(tri, type = "parametric", method = "cl", process = "gamma",
+                 B = 50, seed = 1)
+  expect_s3_class(b, "BootstrapTriangle")
+  expect_identical(b$meta$type, "parametric")
+  expect_identical(b$meta$method, "cl")
+  expect_identical(b$meta$process, "gamma")
 })
+
+test_that("type='parametric', method='ed' works", {
+  tri <- make_sub_tri("surgery")
+  b <- bootstrap(tri, type = "parametric", method = "ed", process = "gamma",
+                 B = 50, seed = 1)
+  expect_identical(b$meta$type, "parametric")
+  expect_identical(b$meta$method, "ed")
+  expect_true(all(is.finite(b$summary$total_se[b$summary$mean_proj > 0])))
+})
+
+test_that("type='parametric', method='sa' persists maturity + stage transition", {
+  tri <- make_sub_tri("surgery")
+  b <- bootstrap(tri, type = "parametric", method = "sa", process = "gamma",
+                 B = 50, seed = 1)
+  expect_identical(b$meta$method, "sa")
+  expect_s3_class(b$meta$maturity, "Maturity")
+})
+
+test_that("parametric seed reproducibility (all methods)", {
+  tri <- make_sub_tri("surgery")
+  for (m in c("cl", "ed", "sa")) {
+    a <- bootstrap(tri, type = "parametric", method = m, B = 30, seed = 7,
+                   keep_pseudo = TRUE)$pseudo_triangles$loss_mean
+    b <- bootstrap(tri, type = "parametric", method = m, B = 30, seed = 7,
+                   keep_pseudo = TRUE)$pseudo_triangles$loss_mean
+    expect_identical(a, b, info = m)
+  }
+})
+
+test_that("parametric SA differs from parametric CL on dev < k* (stage transition working)", {
+  tri <- make_sub_tri("surgery")
+  bs_sa <- bootstrap(tri, type = "parametric", method = "sa", B = 200, seed = 1)
+  bs_cl <- bootstrap(tri, type = "parametric", method = "cl", B = 200, seed = 1)
+  early <- merge(bs_sa$summary[dev < 4],
+                 bs_cl$summary[dev < 4],
+                 by = c("coverage", "cohort", "dev"),
+                 suffixes = c("_sa", "_cl"))
+  rel <- abs(early$total_se_sa - early$total_se_cl) /
+         pmax(abs(early$total_se_cl), 1)
+  expect_true(mean(rel, na.rm = TRUE) > 0.01)
+})
+
+test_that("parametric CL SE order-of-magnitude matches nonparametric cell CL", {
+  tri <- make_sub_tri("surgery")
+  bp <- bootstrap(tri, type = "parametric",   method = "cl", B = 200, seed = 1)
+  bn <- bootstrap(tri, type = "nonparametric", method = "cl",
+                  residual = "cell", B = 200, seed = 1)
+  proj_p <- bp$summary[mean_proj > 0]
+  proj_n <- bn$summary[mean_proj > 0]
+  ratio <- median(proj_p$total_se) / median(proj_n$total_se)
+  expect_gt(ratio, 0.5); expect_lt(ratio, 2.0)
+})
+
+test_that("smart default: bootstrap(tri, method='cl') defaults to analytical", {
+  tri <- make_sub_tri("surgery")
+  b <- bootstrap(tri, method = "cl", B = 5, seed = 1)
+  expect_identical(b$meta$type, "analytical")
+})
+
+test_that("smart default: bootstrap(tri, method='sa') defaults to parametric", {
+  tri <- make_sub_tri("surgery")
+  b <- bootstrap(tri, method = "sa", B = 5, seed = 1)
+  expect_identical(b$meta$type, "parametric")
+})
+
 
 test_that("type = 'analytical' with method = 'ed' explicit errors", {
   tri <- make_sub_tri("surgery")

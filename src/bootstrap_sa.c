@@ -516,3 +516,197 @@ SEXP bootstrap_kernel_sa_cell(
   UNPROTECT(4);  /* cum_sxp, cum_sampled_sxp, out, nm */
   return out;
 }
+
+
+/* bootstrap_kernel_sa_param -- SA textbook parametric kernel
+ * (type = "parametric", method = "sa")
+ *
+ * Phase (a) differs from bootstrap_kernel_sa_cell: each active cell value
+ * is drawn directly from ProcessDist(mu_active[a], phi_active[a]) where
+ * phi_active is per-cell (phi_ed for ED cells, phi_cl for CL cells; the R
+ * side builds this via fifelse on the cell paradigm classification).
+ * Phases (b)-(f) mirror the SA cell kernel exactly (cumsum -> mask ->
+ * refit f* + g* -> per-cohort stage-switch projection -> Stage 2 noise
+ * via sa_fwd_sim_cell with scalar phi_ed / phi_cl on a per-cohort stage
+ * basis).
+ */
+SEXP bootstrap_kernel_sa_param(
+    SEXP B_sxp,
+    SEXP mu_active_sxp,
+    SEXP active_lin_sxp,
+    SEXP last_obs_idx_sxp,
+    SEXP link_to_idx_sxp,
+    SEXP k_idx_by_j_sxp,
+    SEXP f_hat_vec_sxp,
+    SEXP g_hat_vec_sxp,
+    SEXP exposure_proj_sxp,
+    SEXP mat_k_vec_sxp,
+    SEXP phi_active_sxp,
+    SEXP phi_ed_sxp,
+    SEXP phi_cl_sxp,
+    SEXP alpha_sxp,
+    SEXP process_code_sxp,
+    SEXP n_coh_sxp,
+    SEXP n_dev_sxp) {
+
+  int B        = Rf_asInteger(B_sxp);
+  int n_coh    = Rf_asInteger(n_coh_sxp);
+  int n_dev    = Rf_asInteger(n_dev_sxp);
+  int n_active = LENGTH(active_lin_sxp);
+  int n_links  = LENGTH(link_to_idx_sxp);
+
+  if (B <= 0 || n_coh <= 0 || n_dev <= 0)
+    Rf_error("B, n_coh, n_dev must all be positive.");
+  if (LENGTH(mu_active_sxp)  != n_active ||
+      LENGTH(phi_active_sxp) != n_active)
+    Rf_error("mu_active / phi_active must each have length n_active.");
+  if (LENGTH(last_obs_idx_sxp) != n_coh)
+    Rf_error("last_obs_idx must have length n_coh.");
+  if (LENGTH(mat_k_vec_sxp) != n_coh)
+    Rf_error("mat_k_vec must have length n_coh.");
+  if (LENGTH(k_idx_by_j_sxp) != n_dev)
+    Rf_error("k_idx_by_j must have length n_dev.");
+  if (LENGTH(f_hat_vec_sxp) != n_links)
+    Rf_error("f_hat_vec must have length n_links.");
+  if (LENGTH(g_hat_vec_sxp) != n_links)
+    Rf_error("g_hat_vec must have length n_links.");
+  if (XLENGTH(exposure_proj_sxp) != (R_xlen_t)n_coh * n_dev)
+    Rf_error("exposure_proj must have length n_coh * n_dev.");
+
+  double *mu_active     = REAL(mu_active_sxp);
+  double *phi_active    = REAL(phi_active_sxp);
+  int *active_lin       = INTEGER(active_lin_sxp);
+  int *last_obs_idx     = INTEGER(last_obs_idx_sxp);
+  int *link_to_idx      = INTEGER(link_to_idx_sxp);
+  int *k_idx_by_j       = INTEGER(k_idx_by_j_sxp);
+  double *f_hat_vec     = REAL(f_hat_vec_sxp);
+  double *g_hat_vec     = REAL(g_hat_vec_sxp);
+  double *exposure_proj = REAL(exposure_proj_sxp);
+  int *mat_k_vec        = INTEGER(mat_k_vec_sxp);
+
+  double phi_ed       = Rf_asReal(phi_ed_sxp);
+  double phi_cl       = Rf_asReal(phi_cl_sxp);
+  double alpha        = Rf_asReal(alpha_sxp);
+  int    process_code = Rf_asInteger(process_code_sxp);
+
+  R_xlen_t slab  = (R_xlen_t)n_coh * n_dev;
+  R_xlen_t total = slab * B;
+
+  /* Allocate cum_mean output [n_coh, n_dev, B]. */
+  SEXP cum_sxp = PROTECT(Rf_allocVector(REALSXP, total));
+  SEXP dims = PROTECT(Rf_allocVector(INTSXP, 3));
+  INTEGER(dims)[0] = n_coh;
+  INTEGER(dims)[1] = n_dev;
+  INTEGER(dims)[2] = B;
+  Rf_setAttrib(cum_sxp, R_DimSymbol, dims);
+  UNPROTECT(1); /* dims held via setAttrib */
+
+  double *cum = REAL(cum_sxp);
+  memset(cum, 0, (size_t)total * sizeof(double));
+
+  /* ----- (a) Parametric draw on each active cell (per-cell phi) ----- */
+  GetRNGstate();
+  for (int b = 0; b < B; b++) {
+    R_xlen_t b_off = (R_xlen_t)b * slab;
+    for (int a = 0; a < n_active; a++) {
+      double mu      = mu_active[a];
+      double phi_use = phi_active[a];
+      R_xlen_t off   = b_off + active_lin[a] - 1;
+      if (!R_FINITE(mu)) {
+        cum[off] = mu;
+        continue;
+      }
+      double draw;
+      switch (process_code) {
+        case 1:   /* gamma */
+        case 2: { /* od_pois */
+          if (mu <= 0.0 || !R_FINITE(phi_use) || phi_use <= 0.0) {
+            draw = mu;
+          } else {
+            double shape = mu / phi_use;
+            double scale = phi_use;
+            draw = Rf_rgamma(shape, scale);
+          }
+          break;
+        }
+        case 3: { /* normal */
+          if (!R_FINITE(phi_use) || phi_use <= 0.0) {
+            draw = mu;
+          } else {
+            double sd = sqrt(phi_use * pow(fabs(mu), alpha));
+            double x_star = mu + norm_rand() * sd;
+            draw = (x_star < 0.0) ? 0.0 : x_star;
+          }
+          break;
+        }
+        default:
+          draw = mu;
+      }
+      cum[off] = draw;
+    }
+  }
+  PutRNGstate();
+
+  /* ----- (b) Cumsum along dev (per cohort x replicate) --------------- */
+  for (int b = 0; b < B; b++) {
+    R_xlen_t b_off = (R_xlen_t)b * slab;
+    for (int j = 1; j < n_dev; j++) {
+      R_xlen_t off_curr = b_off + (R_xlen_t)j * n_coh;
+      R_xlen_t off_prev = off_curr - n_coh;
+      for (int i = 0; i < n_coh; i++) {
+        cum[off_curr + i] += cum[off_prev + i];
+      }
+    }
+  }
+
+  /* ----- (c) Mask lower triangle to NA ------------------------------- */
+  for (int i = 0; i < n_coh; i++) {
+    int L = last_obs_idx[i];
+    int j_start = (L == NA_INTEGER) ? 0 : L;
+    for (int j = j_start; j < n_dev; j++) {
+      R_xlen_t col_base = (R_xlen_t)j * n_coh + i;
+      for (int b = 0; b < B; b++) {
+        cum[col_base + (R_xlen_t)b * slab] = NA_REAL;
+      }
+    }
+  }
+
+  /* ----- (d) Refit BOTH f*_k AND g*_k from pseudo cumulative --------- */
+  double *f_star = (double *) R_alloc((size_t)n_links * B, sizeof(double));
+  double *g_star = (double *) R_alloc((size_t)n_links * B, sizeof(double));
+  sa_refit_cl_fstar(cum, link_to_idx, f_hat_vec,
+                    n_coh, n_dev, B, n_links, f_star);
+  sa_refit_ed_gstar(cum, exposure_proj, link_to_idx, g_hat_vec,
+                    n_coh, n_dev, B, n_links, g_star);
+
+  /* ----- (e) Forward-project with per-cohort stage switch + clip ----- */
+  sa_fwd_proj_and_clip(cum, f_star, g_star, exposure_proj,
+                       last_obs_idx, k_idx_by_j, mat_k_vec,
+                       n_coh, n_dev, B, n_links);
+
+  /* ----- (f) Stage 2 process noise -> cum_sampled -------------------- */
+  SEXP cum_sampled_sxp = PROTECT(Rf_allocVector(REALSXP, total));
+  SEXP dims_s = PROTECT(Rf_allocVector(INTSXP, 3));
+  INTEGER(dims_s)[0] = n_coh;
+  INTEGER(dims_s)[1] = n_dev;
+  INTEGER(dims_s)[2] = B;
+  Rf_setAttrib(cum_sampled_sxp, R_DimSymbol, dims_s);
+  UNPROTECT(1);
+
+  sa_fwd_sim_cell(cum, last_obs_idx, mat_k_vec,
+                  n_coh, n_dev, B,
+                  phi_ed, phi_cl, alpha, process_code,
+                  REAL(cum_sampled_sxp));
+
+  /* ----- Return list(cum_mean, cum_sampled) -------------------------- */
+  SEXP out = PROTECT(Rf_allocVector(VECSXP, 2));
+  SET_VECTOR_ELT(out, 0, cum_sxp);
+  SET_VECTOR_ELT(out, 1, cum_sampled_sxp);
+  SEXP nm = PROTECT(Rf_allocVector(STRSXP, 2));
+  SET_STRING_ELT(nm, 0, Rf_mkChar("cum_mean"));
+  SET_STRING_ELT(nm, 1, Rf_mkChar("cum_sampled"));
+  Rf_setAttrib(out, R_NamesSymbol, nm);
+
+  UNPROTECT(4);
+  return out;
+}

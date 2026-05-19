@@ -83,13 +83,42 @@
            call. = FALSE)
   } else if (identical(type, "parametric")) {
     # Phase 2b: textbook parametric bootstrap (cell-distribution sampling
-    # + refit). Not yet implemented -- reject explicitly so callers don't
-    # silently fall through.
-    stop("type = 'parametric' (textbook cell-distribution sampling + ",
-         "refit, England-Verrall 1999) is not yet implemented (Phase 2b). ",
-         "Use type = 'analytical' for the Mack 1993 closed-form propagation, ",
-         "or type = 'nonparametric' for residual-based bootstrap.",
-         call. = FALSE)
+    # + refit, England-Verrall 1999). All three methods supported (cl, ed,
+    # sa). Process must be positivity-preserving for the additive ED /
+    # composite SA paradigms; normal is OK for cl but not for ed/sa.
+    if (identical(process, "lognormal"))
+      stop("process = 'lognormal' not yet implemented (Phase 5b.3). ",
+           "Use 'gamma', 'od_pois', or 'normal'.",
+           call. = FALSE)
+    if ((identical(method, "ed") || identical(method, "sa")) &&
+        identical(process, "normal"))
+      stop("type = 'parametric' with method = '", method, "' requires a ",
+           "positivity-preserving process distribution. ",
+           "Use process = 'gamma' (default) or 'od_pois'; ",
+           "'normal' violates the additive variance assumption.",
+           call. = FALSE)
+    if (residual_set)
+      warning("type = 'parametric' draws each active cell directly from ",
+              "the process distribution; 'residual' argument is ignored.",
+              call. = FALSE)
+    if (pooling_set)
+      warning("type = 'parametric' has no residual pool; ",
+              "'pooling' argument is ignored.",
+              call. = FALSE)
+    if (tail_set)
+      warning("type = 'parametric' has no residual pool; ",
+              "'tail' argument is ignored.",
+              call. = FALSE)
+    if (min_pool_set)
+      warning("type = 'parametric' has no residual pool; ",
+              "'min_pool' argument is ignored.",
+              call. = FALSE)
+    if (hat_adj_set && isTRUE(hat_adj))
+      warning("'hat_adj' is only defined for residual = 'cell'; ignored.",
+              call. = FALSE)
+    if (demean_set)
+      warning("'demean' is only defined for residual = 'cell'; ignored.",
+              call. = FALSE)
   } else {
     # type == "nonparametric"
     if (identical(residual, "link") && hat_adj_set && isTRUE(hat_adj))
@@ -162,14 +191,18 @@
 #'    distribution to use.
 #'
 #' @param x A `Triangle` object.
-#' @param type One of `"nonparametric"`, `"analytical"`, or `"parametric"`.
-#'   `"nonparametric"` resamples standardized residuals and reconstructs
-#'   the pseudo triangle (England-Verrall / Pinheiro). `"analytical"` draws
-#'   new link factors from `N(f_hat, sqrt(Var(f_hat)))` (Mack 1993 closed-
-#'   form propagation; CL only). `"parametric"` (Phase 2b, not yet
-#'   implemented) draws each incremental cell directly from a fitted
-#'   distribution and refits on the synthetic triangle (textbook
-#'   England-Verrall 1999 parametric bootstrap).
+#' @param type One of `"analytical"`, `"nonparametric"`, or `"parametric"`.
+#'   `"analytical"` draws new link factors from
+#'   `N(f_hat, sqrt(Var(f_hat)))` (Mack 1993 closed-form propagation; CL
+#'   only). `"nonparametric"` resamples standardized residuals and
+#'   reconstructs the pseudo triangle (England-Verrall / Pinheiro).
+#'   `"parametric"` draws each active cell directly from
+#'   `ProcessDist(mu_hat, phi)` and refits on the synthetic triangle
+#'   (textbook England-Verrall 1999 parametric bootstrap; supports all
+#'   three methods cl / ed / sa). When `type` is left unset, the function
+#'   picks the type that best matches `method`: `cl` defaults to
+#'   `"analytical"` (fastest), and `ed` / `sa` default to `"parametric"`
+#'   (cleanest for their additive / stage-adaptive variance decomposition).
 #' @param residual Residual scope for `type = "nonparametric"`. One of
 #'   `"cell"` (default -- England-Verrall 1999/2002, Pearson residuals on
 #'   incremental cells; ODP GLM equivalent via Renshaw-Verrall 1998) or
@@ -315,7 +348,7 @@ bootstrap <- function(x, ...) {
 #'   target so downstream refit helpers know which column to read.
 #' @export
 bootstrap.Triangle <- function(x,
-                                type        = c("nonparametric", "analytical",
+                                type        = c("analytical", "nonparametric",
                                                 "parametric"),
                                 residual    = c("cell", "link"),
                                 hat_adj     = TRUE,
@@ -350,6 +383,7 @@ bootstrap.Triangle <- function(x,
   demean_set   <- "demean"   %in% names(mc)
   min_pool_set <- "min_pool" %in% names(mc)
   method_set   <- "method"   %in% names(mc)
+  type_set     <- "type"     %in% names(mc)
 
   type     <- match.arg(type)
   residual <- match.arg(residual)
@@ -358,6 +392,25 @@ bootstrap.Triangle <- function(x,
   pooling  <- match.arg(pooling)
   tail     <- match.arg(tail)
   target   <- match.arg(target)
+
+  # Smart default: when type was not explicitly set, pick the type that
+  # best matches the chosen method. CL gets analytical (Mack 1993 closed-
+  # form, fastest). ED/SA get parametric (textbook England-Verrall 1999
+  # cell-distribution sampling; cleanest fit for their additive / stage-
+  # adaptive variance decomposition). Explicit residual / pooling / tail /
+  # hat_adj / demean / min_pool args are nonparametric-only -- if any is
+  # set, fall back to nonparametric to honour the user's intent.
+  if (!type_set) {
+    nonparam_signal <- residual_set || pooling_set || tail_set ||
+                       hat_adj_set || demean_set || min_pool_set
+    if (nonparam_signal) {
+      type <- "nonparametric"
+    } else if (identical(method, "cl")) {
+      type <- "analytical"
+    } else {
+      type <- "parametric"
+    }
+  }
 
   # Auto-coerce method to "cl" when user picked link residuals without
   # explicitly setting method. ED + link is mathematically incoherent;
@@ -432,17 +485,22 @@ bootstrap.Triangle <- function(x,
   grp <- attr(x, "groups")
   if (is.null(grp)) grp <- character(0)
 
-  is_residual_mode <- identical(type, "nonparametric")
+  is_residual_mode   <- identical(type, "nonparametric")
+  is_parametric_mode <- identical(type, "parametric")
 
-  # SA + cell needs a resolved Maturity object to drive the per-cohort
-  # stage transition (independent of `pooling`/`tail` -- maturity is a
-  # mathematical input to SA, not just a pool-tail policy). Resolution
-  # mirrors `.sa_proj`'s `maturity_from = NA` -> all-ED fallback when no
-  # Maturity can be resolved (silent for symmetry with fit_loss). When
-  # the pool-side resolution above already produced a Maturity object
-  # (tail_pooled + maturity), reuse it.
-  if (is_residual_mode && identical(residual, "cell") &&
-      identical(method, "sa")) {
+  # SA needs a resolved Maturity object to drive the per-cohort stage
+  # transition (independent of `pooling`/`tail` -- maturity is a
+  # mathematical input to SA, not just a pool-tail policy). Applies to
+  # both nonparametric cell + parametric SA branches. Resolution mirrors
+  # `.sa_proj`'s `maturity_from = NA` -> all-ED fallback when no Maturity
+  # can be resolved (silent for symmetry with fit_loss). When the pool-side
+  # resolution above already produced a Maturity object (tail_pooled +
+  # maturity), reuse it.
+  sa_needs_maturity <-
+    (is_residual_mode && identical(residual, "cell") &&
+       identical(method, "sa")) ||
+    (is_parametric_mode && identical(method, "sa"))
+  if (sa_needs_maturity) {
     sa_maturity <- if (inherits(maturity, "Maturity")) maturity else
                      .resolve_maturity(
                        if (is.null(user_maturity)) "auto" else user_maturity,
@@ -541,8 +599,49 @@ bootstrap.Triangle <- function(x,
                                      min_pool = min_pool, maturity = maturity,
                                      demean = demean)
     }
+  } else if (is_parametric_mode) {
+    # Textbook parametric path (Phase 2b, England-Verrall 1999):
+    #   each active cell is drawn directly from ProcessDist(mu_hat, phi)
+    #   per replicate, then cumsum + refit f* / g* + forward project +
+    #   Stage 2 noise. No residual pool, but the dispersion phi is the
+    #   same ODP / ED / SA-paradigm phi computed from the original-data
+    #   Pearson residuals (just like cell-mode), since it's the natural
+    #   variance scale for ProcessDist.
+    if (identical(method, "ed") || identical(method, "sa")) {
+      link <- as_link(x, loss = target, exposure = "exposure",
+                      drop_invalid = TRUE)
+    } else {
+      link <- as_link(x, loss = target, drop_invalid = TRUE)
+    }
+    anchor <- .boot_anchor_cl(link, grp = grp, alpha = alpha)
+
+    if (identical(method, "ed")) {
+      cell_resid <- .boot_cell_residuals_ed(link, grp = grp)
+      phi_dt <- attr(cell_resid, "phi_dt")
+    } else if (identical(method, "sa")) {
+      cell_resid_ed <- .boot_cell_residuals_ed(link, grp = grp)
+      cell_resid_cl <- .boot_cell_residuals_cl(x, anchor = anchor, grp = grp,
+                                              target = target, hat_adj = hat_adj)
+      phi_ed_dt <- attr(cell_resid_ed, "phi_dt")
+      phi_cl_dt <- attr(cell_resid_cl, "phi_dt")
+      if (length(grp) > 0L) {
+        phi_dt <- merge(phi_ed_dt, phi_cl_dt, by = grp,
+                        suffixes = c("_ed", "_cl"), sort = FALSE)
+      } else {
+        phi_dt <- data.table::data.table(
+          phi_ed = if (nrow(phi_ed_dt) > 0L) phi_ed_dt$phi[1L] else NA_real_,
+          phi_cl = if (nrow(phi_cl_dt) > 0L) phi_cl_dt$phi[1L] else NA_real_
+        )
+      }
+    } else {
+      # method = "cl" parametric: ODP cell dispersion via CL Pearson form.
+      cell_resid <- .boot_cell_residuals_cl(x, anchor = anchor, grp = grp,
+                                            target = target, hat_adj = hat_adj)
+      phi_dt <- attr(cell_resid, "phi_dt")
+    }
+    pool <- .boot_empty_pool(grp)
   } else {
-    # parametric path: closed-form simulation, no residual pool needed.
+    # analytical path: closed-form simulation, no residual pool needed.
     # We still compute the anchor (f_hat, sigma2, f_var) -- those drive
     # the N(f_hat, sqrt(Var(f_hat))) draws inside .boot_stage1_one.
     link   <- as_link(x, loss = target, drop_invalid = TRUE)
@@ -550,8 +649,10 @@ bootstrap.Triangle <- function(x,
     pool   <- .boot_empty_pool(grp)
   }
 
-  # phi_dt: cell mode only; otherwise NULL (Mack paradigm uses sigma2).
-  if (!(is_residual_mode && identical(residual, "cell"))) {
+  # phi_dt: cell-mode + parametric only; otherwise NULL (analytical / Mack
+  # link path use sigma2 from the anchor).
+  if (!(is_residual_mode && identical(residual, "cell")) &&
+      !is_parametric_mode) {
     phi_dt <- NULL
   }
 
@@ -563,7 +664,9 @@ bootstrap.Triangle <- function(x,
   stage1_out <- .boot_stage1(
     triangle = x, link = link, anchor = anchor, pool = pool,
     phi_dt = phi_dt,
-    grp = grp, is_residual_mode = is_residual_mode, residual = residual,
+    grp = grp, is_residual_mode = is_residual_mode,
+    is_parametric_mode = is_parametric_mode,
+    residual = residual,
     process = process, method = method, B = B, alpha = alpha,
     target = target, sa_maturity = sa_maturity
   )
@@ -1405,7 +1508,9 @@ bootstrap.Triangle <- function(x,
 # Returns long-format data.table [grp..., cohort, dev, rep, <target>].
 
 .boot_stage1 <- function(triangle, link, anchor, pool, phi_dt,
-                          grp, is_residual_mode, residual, process,
+                          grp, is_residual_mode,
+                          is_parametric_mode = FALSE,
+                          residual, process,
                           method = "ed",
                           B, alpha, target = "loss",
                           sa_maturity = NULL) {
@@ -1423,7 +1528,9 @@ bootstrap.Triangle <- function(x,
       return(.boot_stage1_one(
         triangle = triangle, link = link, anchor = anchor, pool = pool,
         phi_dt = phi_g,
-        is_residual_mode = is_residual_mode, residual = residual,
+        is_residual_mode = is_residual_mode,
+        is_parametric_mode = is_parametric_mode,
+        residual = residual,
         process = process, method = method, B = B, alpha = alpha,
         grp_vals = grp_vals[1L], target = target,
         sa_maturity = mat_g
@@ -1444,7 +1551,9 @@ bootstrap.Triangle <- function(x,
       out_list[[gi]] <- .boot_stage1_one(
         triangle = tri_g, link = link_g, anchor = anchor_g, pool = pool_g,
         phi_dt = phi_g,
-        is_residual_mode = is_residual_mode, residual = residual,
+        is_residual_mode = is_residual_mode,
+        is_parametric_mode = is_parametric_mode,
+        residual = residual,
         process = process, method = method, B = B, alpha = alpha,
         grp_vals = gkey, target = target,
         sa_maturity = mat_g
@@ -1463,7 +1572,9 @@ bootstrap.Triangle <- function(x,
     .boot_stage1_one(
       triangle = triangle, link = link, anchor = anchor, pool = pool,
       phi_dt = phi_dt,
-      is_residual_mode = is_residual_mode, residual = residual,
+      is_residual_mode = is_residual_mode,
+      is_parametric_mode = is_parametric_mode,
+      residual = residual,
       process = process, method = method, B = B, alpha = alpha,
       grp_vals = NULL, target = target,
       sa_maturity = sa_maturity
@@ -1492,7 +1603,9 @@ bootstrap.Triangle <- function(x,
 # `$pseudo_triangles` via `.boot_build_pseudo_long()` (and only when
 # `keep_pseudo = TRUE` flagged the result for that build).
 .boot_stage1_one <- function(triangle, link, anchor, pool, phi_dt = NULL,
-                              is_residual_mode, residual = "link",
+                              is_residual_mode,
+                              is_parametric_mode = FALSE,
+                              residual = "link",
                               process = "gamma",
                               method = "ed",
                               B, alpha, grp_vals,
@@ -1553,14 +1666,16 @@ bootstrap.Triangle <- function(x,
     if (length(ok) == 0L) NA_integer_ else max(ok)
   })
 
-  # Cell mode: precompute fitted incremental means mu_hat_{ij} (full grid).
-  # Reused across replicates -- these are the original-data fits, not
-  # per-replicate refits. ED-paradigm cell mode builds its own
+  # Cell-style draw modes: precompute fitted incremental means mu_hat_{ij}
+  # (full grid). Reused across replicates -- these are the original-data
+  # fits, not per-replicate refits. ED-paradigm builds its own
   # `mu_ed_grid` below from `g_hat * exposure_from`, so it skips this.
-  # SA-paradigm cell mode needs BOTH grids (CL grid for late-dev cells,
-  # ED grid for early-dev cells), so it builds both.
-  if (is_residual_mode && identical(residual, "cell") &&
-      !identical(method, "ed")) {
+  # SA-paradigm needs BOTH grids (CL grid for late-dev cells, ED grid for
+  # early-dev cells), so it builds both. Same precompute is needed for
+  # the parametric path (cell-distribution sampling needs mu per cell).
+  cell_like <- (is_residual_mode && identical(residual, "cell")) ||
+                is_parametric_mode
+  if (cell_like && !identical(method, "ed")) {
     f_by_to <- rep(NA_real_, n_dev)
     f_by_to[link_to_idx] <- f_hat_vec
     steps <- .boot_steps_cl(f_by_to)
@@ -1940,9 +2055,183 @@ bootstrap.Triangle <- function(x,
     out_arr_mean    <- kernel_out$cum_mean
     out_arr_sampled <- kernel_out$cum_sampled
 
+  } else if (is_parametric_mode) {
+    # Phase 2b: textbook parametric bootstrap. Each active cell drawn
+    # directly from ProcessDist(mu_hat, phi); cumsum -> mask -> refit ->
+    # forward project -> Stage 2 noise. Mirrors the cell-residual
+    # branches except for Phase (a). Three method-dispatched kernels.
+    upper_full <- matrix(FALSE, n_coh, n_dev)
+    for (i in seq_len(n_coh)) {
+      lj <- last_obs_idx[i]
+      if (!is.na(lj) && lj >= 1L) upper_full[i, seq_len(lj)] <- TRUE
+    }
+    process_code <- switch(process,
+                           gamma   = 1L,
+                           od_pois = 2L,
+                           normal  = 3L,
+                           1L)
+
+    if (identical(method, "ed")) {
+      # ED parametric: build mu_ed_grid + g_hat_vec + exposure_proj.
+      exp_obs_mat <- .ensure_exposure_obs_mat(triangle, cohorts, devs,
+                                              n_coh, n_dev)
+      exp_anchor  <- .boot_anchor_exposure_cl(exp_obs_mat, last_obs_idx,
+                                              n_coh, n_dev, devs)
+      exposure_proj_mat <- .boot_proj_exposure_cl(exp_obs_mat,
+                                                     last_obs_idx,
+                                                     exp_anchor$f_by_to,
+                                                     n_coh, n_dev)
+      g_hat_vec <- .boot_anchor_ed(anchor, link, n_links)
+      g_by_to   <- rep(NA_real_, n_dev)
+      g_by_to[link_to_idx] <- g_hat_vec
+      ed_steps   <- .boot_steps_ed(g_by_to, exposure_proj_mat)
+      mu_ed_grid <- .boot_fitted_grid(mat_obs, last_obs_idx, n_coh, n_dev,
+                                      ed_steps$fwd, ed_steps$bwd)
+
+      upper_mask       <- upper_full & is.finite(mu_ed_grid)
+      cell_active_lin  <- which(upper_mask)
+      cell_active_mu   <- mu_ed_grid[cell_active_lin]
+
+      phi <- if (!is.null(phi_dt) && nrow(phi_dt) > 0L) {
+        phi_dt$phi[1L]
+      } else {
+        NA_real_
+      }
+
+      kernel_out <- .Call(
+        C_bootstrap_kernel_ed_param,
+        B,
+        as.numeric(cell_active_mu),
+        as.integer(cell_active_lin),
+        as.integer(last_obs_idx),
+        as.integer(link_to_idx),
+        as.integer(k_idx_by_j),
+        as.numeric(g_hat_vec),
+        as.numeric(exposure_proj_mat),
+        as.numeric(phi),
+        as.numeric(alpha),
+        process_code,
+        n_coh, n_dev
+      )
+      out_arr_mean    <- kernel_out$cum_mean
+      out_arr_sampled <- kernel_out$cum_sampled
+
+    } else if (identical(method, "sa")) {
+      # SA parametric: per-cell phi via stage classification, plus both
+      # f_hat / g_hat / exposure_proj / mat_k_vec for the dual-refit and
+      # stage-switch projection.
+      mat_k_vec <- rep(.Machine$integer.max, n_coh)
+      if (!is.null(sa_maturity)) {
+        mat_dt <- data.table::as.data.table(sa_maturity)
+        if ("ata_from" %in% names(mat_dt) && nrow(mat_dt) > 0L) {
+          mfrom <- mat_dt$ata_from[1L]
+          if (is.finite(mfrom)) {
+            mat_k_vec <- rep(as.integer(mfrom), n_coh)
+          }
+        }
+      }
+
+      exp_obs_mat <- .ensure_exposure_obs_mat(triangle, cohorts, devs,
+                                              n_coh, n_dev)
+      exp_anchor  <- .boot_anchor_exposure_cl(exp_obs_mat, last_obs_idx,
+                                              n_coh, n_dev, devs)
+      exposure_proj_mat <- .boot_proj_exposure_cl(exp_obs_mat,
+                                                     last_obs_idx,
+                                                     exp_anchor$f_by_to,
+                                                     n_coh, n_dev)
+      g_hat_vec <- .boot_anchor_ed(anchor, link, n_links)
+      g_by_to   <- rep(NA_real_, n_dev)
+      g_by_to[link_to_idx] <- g_hat_vec
+      ed_steps   <- .boot_steps_ed(g_by_to, exposure_proj_mat)
+      mu_ed_grid <- .boot_fitted_grid(mat_obs, last_obs_idx, n_coh, n_dev,
+                                      ed_steps$fwd, ed_steps$bwd)
+
+      ed_grid_finite <- is.finite(mu_ed_grid)
+      cl_grid_finite <- is.finite(mu_hat_grid)
+
+      active_lin_all <- which(upper_full)
+      a_i <- ((active_lin_all - 1L) %% n_coh) + 1L
+      a_j <- ((active_lin_all - 1L) %/% n_coh) + 1L
+      a_from <- pmax(a_j - 1L, 0L)
+      is_cl_cell <- a_from >= mat_k_vec[a_i] &
+                    mat_k_vec[a_i] != .Machine$integer.max
+      keep <- ifelse(is_cl_cell,
+                     cl_grid_finite[active_lin_all],
+                     ed_grid_finite[active_lin_all])
+      active_lin_all <- active_lin_all[keep]
+      is_cl_cell     <- is_cl_cell[keep]
+
+      cell_active_lin <- active_lin_all
+      cell_active_mu  <- ifelse(is_cl_cell,
+                                mu_hat_grid[active_lin_all],
+                                mu_ed_grid[active_lin_all])
+
+      phi_ed_val <- if (!is.null(phi_dt) && nrow(phi_dt) > 0L &&
+                        "phi_ed" %in% names(phi_dt)) phi_dt$phi_ed[1L]
+                    else NA_real_
+      phi_cl_val <- if (!is.null(phi_dt) && nrow(phi_dt) > 0L &&
+                        "phi_cl" %in% names(phi_dt)) phi_dt$phi_cl[1L]
+                    else NA_real_
+
+      # Per-cell phi via stage dispatch -- matches the Stage-1 mu paradigm.
+      cell_active_phi <- data.table::fifelse(is_cl_cell, phi_cl_val, phi_ed_val)
+
+      kernel_out <- .Call(
+        C_bootstrap_kernel_sa_param,
+        B,
+        as.numeric(cell_active_mu),
+        as.integer(cell_active_lin),
+        as.integer(last_obs_idx),
+        as.integer(link_to_idx),
+        as.integer(k_idx_by_j),
+        as.numeric(f_hat_vec),
+        as.numeric(g_hat_vec),
+        as.numeric(exposure_proj_mat),
+        as.integer(mat_k_vec),
+        as.numeric(cell_active_phi),
+        as.numeric(phi_ed_val),
+        as.numeric(phi_cl_val),
+        as.numeric(alpha),
+        process_code,
+        n_coh, n_dev
+      )
+      out_arr_mean    <- kernel_out$cum_mean
+      out_arr_sampled <- kernel_out$cum_sampled
+
+    } else {
+      # method = "cl" parametric: simplest path.
+      upper_mask       <- upper_full & is.finite(mu_hat_grid)
+      cell_active_lin  <- which(upper_mask)
+      cell_active_mu   <- mu_hat_grid[cell_active_lin]
+
+      phi <- if (!is.null(phi_dt) && nrow(phi_dt) > 0L) {
+        phi_dt$phi[1L]
+      } else {
+        NA_real_
+      }
+
+      kernel_out <- .Call(
+        C_bootstrap_kernel_cl_param,
+        B,
+        as.numeric(cell_active_mu),
+        as.integer(cell_active_lin),
+        as.integer(last_obs_idx),
+        as.integer(link_to_idx),
+        as.integer(k_idx_by_j),
+        as.numeric(f_hat_vec),
+        as.numeric(phi),
+        as.numeric(alpha),
+        process_code,
+        n_coh, n_dev
+      )
+      out_arr_mean    <- kernel_out$cum_mean
+      out_arr_sampled <- kernel_out$cum_sampled
+    }
+
   } else {
-    # Parametric: observed cells unchanged; per-replicate f* ~ N(f_hat,
-    # sqrt(Var(f_hat))); forward-project + clip; Stage 2 noise via sigma2_k.
+    # Analytical (Mack 1993): observed cells unchanged; per-replicate f* ~
+    # N(f_hat, sqrt(Var(f_hat))); forward-project + clip; Stage 2 noise via
+    # sigma2_k.
     process_code <- switch(process,
                            gamma   = 1L,
                            od_pois = 2L,

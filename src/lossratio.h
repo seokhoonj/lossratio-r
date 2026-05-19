@@ -168,6 +168,70 @@ SEXP bootstrap_kernel_cl_parametric(
     SEXP n_coh_sxp,
     SEXP n_dev_sxp);
 
+/* ----- Textbook parametric kernels (Phase 2b) ----------------------------
+ *
+ * Direct cell-distribution sampling on each active cell (no residual pool),
+ * mirroring the cell-kernel structure for Phases (b)-(f). Only Phase (a)
+ * differs: instead of resampling a Pearson residual from a pool, the cell
+ * value is drawn directly from ProcessDist(mu_active[a], phi).
+ *
+ *   - bootstrap_kernel_cl_param : CL paradigm, gamma scale = phi
+ *   - bootstrap_kernel_ed_param : ED paradigm (additive, exposure-driven)
+ *   - bootstrap_kernel_sa_param : SA paradigm (per-cell phi via stage)
+ *
+ * process_code: 1 gamma (rgamma(mu/phi, phi)) / 2 od_pois (same as gamma) /
+ *               3 normal (mu + rnorm(0, sqrt(phi * |mu|^alpha))).
+ *
+ * Return shape: list(cum_mean, cum_sampled) -- same as cell kernels.
+ */
+SEXP bootstrap_kernel_cl_param(
+    SEXP B_sxp,
+    SEXP mu_active_sxp,
+    SEXP active_lin_sxp,
+    SEXP last_obs_idx_sxp,
+    SEXP link_to_idx_sxp,
+    SEXP k_idx_by_j_sxp,
+    SEXP f_hat_vec_sxp,
+    SEXP phi_sxp,             /* scalar dispersion phi */
+    SEXP alpha_sxp,
+    SEXP process_code_sxp,
+    SEXP n_coh_sxp,
+    SEXP n_dev_sxp);
+
+SEXP bootstrap_kernel_ed_param(
+    SEXP B_sxp,
+    SEXP mu_active_sxp,
+    SEXP active_lin_sxp,
+    SEXP last_obs_idx_sxp,
+    SEXP link_to_idx_sxp,
+    SEXP k_idx_by_j_sxp,
+    SEXP g_hat_vec_sxp,
+    SEXP exposure_proj_sxp,
+    SEXP phi_sxp,             /* scalar dispersion phi */
+    SEXP alpha_sxp,
+    SEXP process_code_sxp,
+    SEXP n_coh_sxp,
+    SEXP n_dev_sxp);
+
+SEXP bootstrap_kernel_sa_param(
+    SEXP B_sxp,
+    SEXP mu_active_sxp,
+    SEXP active_lin_sxp,
+    SEXP last_obs_idx_sxp,
+    SEXP link_to_idx_sxp,
+    SEXP k_idx_by_j_sxp,
+    SEXP f_hat_vec_sxp,
+    SEXP g_hat_vec_sxp,
+    SEXP exposure_proj_sxp,
+    SEXP mat_k_vec_sxp,
+    SEXP phi_active_sxp,      /* [n_active] per-cell phi (ed or cl) */
+    SEXP phi_ed_sxp,          /* scalar ED Stage-2 dispersion */
+    SEXP phi_cl_sxp,          /* scalar CL Stage-2 dispersion */
+    SEXP alpha_sxp,
+    SEXP process_code_sxp,
+    SEXP n_coh_sxp,
+    SEXP n_dev_sxp);
+
 /* Pythagorean SE decomposition over the two [n_coh, n_dev, B] cumulative
  * arrays — replaces the R-level data.table group-wise aggregation in
  * .boot_summary_from_arrays(). Returns a

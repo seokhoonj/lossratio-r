@@ -9,7 +9,7 @@ bootstrap(x, ...)
 
 \method{bootstrap}{Triangle}(
   x,
-  type = c("nonparametric", "analytical", "parametric"),
+  type = c("analytical", "nonparametric", "parametric"),
   residual = c("cell", "link"),
   hat_adj = TRUE,
   demean = TRUE,
@@ -33,14 +33,18 @@ bootstrap(x, ...)
 
 \item{...}{Reserved for future use.}
 
-\item{type}{One of \code{"nonparametric"}, \code{"analytical"}, or \code{"parametric"}.
-\code{"nonparametric"} resamples standardized residuals and reconstructs
-the pseudo triangle (England-Verrall / Pinheiro). \code{"analytical"} draws
-new link factors from \code{N(f_hat, sqrt(Var(f_hat)))} (Mack 1993 closed-
-form propagation; CL only). \code{"parametric"} (Phase 2b, not yet
-implemented) draws each incremental cell directly from a fitted
-distribution and refits on the synthetic triangle (textbook
-England-Verrall 1999 parametric bootstrap).}
+\item{type}{One of \code{"analytical"}, \code{"nonparametric"}, or \code{"parametric"}.
+\code{"analytical"} draws new link factors from
+\code{N(f_hat, sqrt(Var(f_hat)))} (Mack 1993 closed-form propagation; CL
+only). \code{"nonparametric"} resamples standardized residuals and
+reconstructs the pseudo triangle (England-Verrall / Pinheiro).
+\code{"parametric"} draws each active cell directly from
+\code{ProcessDist(mu_hat, phi)} and refits on the synthetic triangle
+(textbook England-Verrall 1999 parametric bootstrap; supports all
+three methods cl / ed / sa). When \code{type} is left unset, the function
+picks the type that best matches \code{method}: \code{cl} defaults to
+\code{"analytical"} (fastest), and \code{ed} / \code{sa} default to \code{"parametric"}
+(cleanest for their additive / stage-adaptive variance decomposition).}
 
 \item{residual}{Residual scope for \code{type = "nonparametric"}. One of
 \code{"cell"} (default -- England-Verrall 1999/2002, Pearson residuals on
