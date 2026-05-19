@@ -142,10 +142,14 @@ fit_exposure <- function(x,
   # Resolve regime input (NULL / Regime / "auto" / function) -> NULL or Regime
   regime <- .resolve_regime(regime, x)
 
-  # Run chain ladder underneath (Mack-style SE). Point estimate is
-  # identical for both methods; ED only differs in SE accumulation.
-  # Uses the standardized `"exposure"` column on the Triangle.
-  cl_fit <- fit_cl(
+  grp <- attr(x, "groups")
+  if (is.null(grp)) grp <- character(0)
+
+  # 1) Worker call. Both CL and ED methods share the same exposure point
+  # estimate (mathematically equivalent: g_k on self-projected exposure
+  # collapses to f_k - 1). The two methods differ only in the variance
+  # accumulation, which `.exposurefit_augment()` overlays for method = "ed".
+  result <- fit_cl(
     x,
     method       = "mack",
     loss         = "exposure",
@@ -156,23 +160,95 @@ fit_exposure <- function(x,
     tail         = tail
   )
 
-  if (method == "ed") {
-    cl_fit$full <- .ed_replace_se(cl_fit$full, cl_fit$selected, x)
+  # 2) Augment $full: variance overlay (method = "ed"), loss_* -> exposure_*
+  # column rename, analytical CI bounds.
+  result <- .exposurefit_augment(result, x, method, grp, conf_level)
+
+  # 3) Bootstrap overlay (when requested). Replaces analytical SE / CI on
+  # projected cells with empirical bootstrap values from the dedicated
+  # exposure-side BootstrapTriangle.
+  result <- .exposurefit_bootstrap(
+    result, x, grp,
+    bootstrap   = bootstrap,
+    B           = B,
+    seed        = seed,
+    alpha       = alpha
+  )
+
+  # 4) Usage map. Exposure has no maturity concept (g_k -> 0), so we
+  # bypass `.build_usage()`'s 2-pass detection and call
+  # `.compute_triangle_usage()` directly with the pre-filter triangle.
+  exposure_usage <- .compute_triangle_usage(
+    x,
+    recent  = recent,
+    regime  = regime,
+    holdout = NULL
+  )
+  data.table::setattr(exposure_usage, "regime",  regime)
+  data.table::setattr(exposure_usage, "recent",  recent)
+  data.table::setattr(exposure_usage, "holdout", NULL)
+  data.table::setattr(exposure_usage, "m_k",     NULL)
+  data.table::setattr(exposure_usage, "m_k_dt",  NULL)
+  result$usage <- exposure_usage
+
+  result$regime                   <- regime
+  attr(result, "exposure_method") <- method
+  attr(result, "conf_level")      <- conf_level
+  class(result) <- c("ExposureFit", class(result))
+  result
+}
+
+
+#' Augment a CL worker result into the ExposureFit `$full` schema
+#'
+#' @description
+#' Applies (1) the ED-variance overlay when `method = "ed"`, (2) the
+#' `loss_*` -> `exposure_*` column rename, and (3) the analytical CI
+#' bounds. Mirrors the `.lossfit_augment()` helper in `R/loss.R`.
+#'
+#' @param result A `CLFit` from `fit_cl(loss = "exposure", ...)`.
+#' @param x The original `Triangle`.
+#' @param method One of `"cl"` / `"ed"`.
+#' @param grp Character vector of group columns.
+#' @param conf_level Confidence level for analytical CI bounds.
+#'
+#' @return The augmented `CLFit` with `$full` carrying `exposure_*` columns.
+#'
+#' @keywords internal
+.exposurefit_augment <- function(result, x, method, grp, conf_level) {
+  if (identical(method, "ed")) {
+    result$full <- .apply_ed_variance(result$full, result$selected, x)
   }
+  result$full <- .exposure_rename_full(result$full, grp, conf_level)
+  result
+}
 
-  # Rename loss_* columns to role-specific exposure_* names on $full.
-  grp <- attr(x, "groups")
-  if (is.null(grp)) grp <- character(0)
 
-  cl_fit$full <- .exposure_rename_full(cl_fit$full, grp, conf_level)
+#' Overlay bootstrap SE / CI onto an ExposureFit `$full`
+#'
+#' @description
+#' Calls `.resolve_bootstrap()` to optionally build a `BootstrapTriangle`
+#' on the exposure target, then maps its summary columns onto the
+#' projected cells of `result$full`. Sets `result$ci_type` and a thin
+#' `result$bootstrap` metadata list. Mirrors `.lossfit_bootstrap()` in
+#' `R/loss.R`.
+#'
+#' @param result An augmented exposure fit (post `.exposurefit_augment()`).
+#' @param x The original `Triangle`.
+#' @param grp Character vector of group columns.
+#' @param bootstrap,B,seed,alpha Forwarded to `.resolve_bootstrap()`.
+#'
+#' @return The updated fit with bootstrap CI overlaid on `$full` and
+#'   `ci_type` / `bootstrap` slots set.
+#'
+#' @keywords internal
+.exposurefit_bootstrap <- function(result, x, grp,
+                                   bootstrap, B, seed, alpha) {
+  exposure_total_se <- exposure_total_cv <- exposure_ci_lo <- exposure_ci_hi <- NULL
+  exposure_proj_boot <- exposure_param_se_boot <- exposure_proc_se_boot <- NULL
+  exposure_total_se_boot <- exposure_total_cv_boot <- NULL
+  exposure_ci_lo_boot <- exposure_ci_hi_boot <- NULL
 
-  # Bootstrap path (Phase 2 -- new pipeline). Overwrites exposure_ci_lo /
-  # exposure_ci_hi / exposure_total_se / exposure_total_cv from the
-  # Triangle-level bootstrap + per-replicate CL refit + Stage 2 process
-  # noise. The analytical proc/param decomposition (exposure_proc_se /
-  # exposure_param_se) is preserved as a diagnostic and not overwritten.
-  # Wrap-only path: read the precomputed cohort x dev summary directly
-  # from boots$summary, map to exposure_* role-specific column names.
   boots <- .resolve_bootstrap(
     bootstrap, x,
     B           = B,
@@ -199,52 +275,28 @@ fit_exposure <- function(x,
                                   c("exposure_ci_lo_boot", "exposure_ci_hi_boot"))
     }
 
-    cl_fit$full <- merge(cl_fit$full, bsum,
+    result$full <- merge(result$full, bsum,
                          by = c(grp, "cohort", "dev"), all.x = TRUE,
                          sort = FALSE)
 
-    # Overwrite SE/CI for projected cells. Observed cells keep analytical
-    # SE = 0 (the value is known); under residual bootstrap, pseudo observed
-    # cells would otherwise produce a spurious nonzero SE.
-    is_proj <- cl_fit$full$is_observed == FALSE
-    cl_fit$full[is_proj & is.finite(exposure_total_se_boot), exposure_total_se := exposure_total_se_boot]
-    cl_fit$full[is_proj & is.finite(exposure_total_cv_boot), exposure_total_cv := exposure_total_cv_boot]
+    is_proj <- result$full$is_observed == FALSE
+    result$full[is_proj & is.finite(exposure_total_se_boot), exposure_total_se := exposure_total_se_boot]
+    result$full[is_proj & is.finite(exposure_total_cv_boot), exposure_total_cv := exposure_total_cv_boot]
     if (has_ci) {
-      cl_fit$full[is_proj & is.finite(exposure_ci_lo_boot), exposure_ci_lo := exposure_ci_lo_boot]
-      cl_fit$full[is_proj & is.finite(exposure_ci_hi_boot), exposure_ci_hi := exposure_ci_hi_boot]
+      result$full[is_proj & is.finite(exposure_ci_lo_boot), exposure_ci_lo := exposure_ci_lo_boot]
+      result$full[is_proj & is.finite(exposure_ci_hi_boot), exposure_ci_hi := exposure_ci_hi_boot]
     }
     drop_boot <- c("exposure_proj_boot", "exposure_param_se_boot",
                     "exposure_proc_se_boot", "exposure_total_se_boot",
                     "exposure_total_cv_boot")
     if (has_ci) drop_boot <- c(drop_boot, "exposure_ci_lo_boot", "exposure_ci_hi_boot")
-    cl_fit$full[, (drop_boot) := NULL]
+    result$full[, (drop_boot) := NULL]
   }
 
-  cl_fit$ci_type   <- if (!is.null(boots)) "bootstrap" else "analytical"
-  cl_fit$bootstrap <- if (!is.null(boots))
+  result$ci_type   <- if (!is.null(boots)) "bootstrap" else "analytical"
+  result$bootstrap <- if (!is.null(boots))
                        list(B = boots$meta$B, seed = boots$meta$seed) else NULL
-
-  # Usage map. Exposure has no maturity concept (g_k -> 0), so we
-  # bypass `.build_usage()`'s 2-pass detection and call
-  # `.compute_triangle_usage()` directly with the pre-filter triangle.
-  exposure_usage <- .compute_triangle_usage(
-    x,
-    recent  = recent,
-    regime  = regime,
-    holdout = NULL
-  )
-  data.table::setattr(exposure_usage, "regime",  regime)
-  data.table::setattr(exposure_usage, "recent",  recent)
-  data.table::setattr(exposure_usage, "holdout", NULL)
-  data.table::setattr(exposure_usage, "m_k",     NULL)
-  data.table::setattr(exposure_usage, "m_k_dt",  NULL)
-  cl_fit$usage <- exposure_usage
-
-  cl_fit$regime                   <- regime
-  attr(cl_fit, "exposure_method") <- method
-  attr(cl_fit, "conf_level")      <- conf_level
-  class(cl_fit) <- c("ExposureFit", class(cl_fit))
-  cl_fit
+  result
 }
 
 
@@ -299,7 +351,7 @@ fit_exposure <- function(x,
 }
 
 
-#' Replace CL multiplicative SE with ED additive SE on a CLFit's `$full`
+#' Apply the ED additive variance recursion to a CL worker's `$full`
 #'
 #' @description
 #' Point projection (`loss_proj`) is preserved -- it is identical under
@@ -330,7 +382,7 @@ fit_exposure <- function(x,
 #'   convention; the dispatcher renames them to `exposure_*` afterwards).
 #'
 #' @keywords internal
-.ed_replace_se <- function(full, selected, triangle) {
+.apply_ed_variance <- function(full, selected, triangle) {
   full <- data.table::copy(.copy_dt(full))
   selected <- .copy_dt(selected)
 
