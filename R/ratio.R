@@ -115,7 +115,7 @@
 #'     \item{`TRUE` / `FALSE`}{Back-compat with the legacy logical arg.
 #'       `TRUE` triggers `"auto"`; `FALSE` disables.}
 #'     \item{`"auto"`}{Internal `bootstrap()` call on the loss triangle
-#'       with defaults `(type = "parametric", process = "normal",
+#'       with defaults `(type = "analytical", process = "normal",
 #'       target = "loss")`.}
 #'     \item{`BootstrapTriangle`}{Pre-built object from `bootstrap()`.
 #'       Must have `meta$target == "loss"`.}
@@ -326,7 +326,7 @@ fit_ratio <- function(x,
     bootstrap, x,
     B           = B,
     seed        = seed,
-    type        = "parametric",
+    type        = "analytical",
     process     = "normal",
     target      = "loss",
     alpha       = loss_alpha,

@@ -51,7 +51,7 @@
 #'     \item{`TRUE` / `FALSE`}{Back-compat with the legacy logical arg.
 #'       `TRUE` triggers `bootstrap = "auto"`; `FALSE` disables.}
 #'     \item{`"auto"`}{Internal `bootstrap()` call on the exposure triangle
-#'       with defaults `(type = "parametric", process = "normal",
+#'       with defaults `(type = "analytical", process = "normal",
 #'       target = "exposure")`.}
 #'     \item{`BootstrapTriangle`}{Pre-built object from `bootstrap()`.
 #'       Must have `meta$target == "exposure"`.}
@@ -177,7 +177,7 @@ fit_exposure <- function(x,
     bootstrap, x,
     B           = B,
     seed        = seed,
-    type        = "parametric",
+    type        = "analytical",
     process     = "normal",
     target      = "exposure",
     alpha       = alpha,

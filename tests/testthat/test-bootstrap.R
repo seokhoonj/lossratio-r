@@ -92,19 +92,19 @@ test_that("different seeds give different draws (nonparametric link)", {
 
 test_that("same seed reproduces identical pseudo_triangles (parametric)", {
   tri <- make_sub_tri("surgery")
-  a <- bootstrap(tri, keep_pseudo = TRUE, type = "parametric", B = 30, seed = 7)$pseudo_triangles$loss_mean
-  b <- bootstrap(tri, keep_pseudo = TRUE, type = "parametric", B = 30, seed = 7)$pseudo_triangles$loss_mean
+  a <- bootstrap(tri, keep_pseudo = TRUE, type = "analytical", B = 30, seed = 7)$pseudo_triangles$loss_mean
+  b <- bootstrap(tri, keep_pseudo = TRUE, type = "analytical", B = 30, seed = 7)$pseudo_triangles$loss_mean
   expect_identical(a, b)
 })
 
 
 # ---------------------------------------------------------------------------
-# type = "parametric" preserves observed cells
+# type = "analytical" preserves observed cells
 # ---------------------------------------------------------------------------
 
 test_that("parametric type preserves observed cells across replicates", {
   tri <- make_sub_tri("surgery")
-  b <- bootstrap(tri, keep_pseudo = TRUE, type = "parametric", B = 30, seed = 1)
+  b <- bootstrap(tri, keep_pseudo = TRUE, type = "analytical", B = 30, seed = 1)
   obs <- tri[1L]
   # Parametric preserves observed cells across replicates (both columns
   # agree on the upper triangle -- loss_mean is the observed value, and
@@ -210,7 +210,7 @@ test_that("residual bootstrap induces variability in projected cells", {
 
 test_that("parametric bootstrap induces variability in projected cells", {
   tri <- make_sub_tri("surgery")
-  b <- bootstrap(tri, keep_pseudo = TRUE, type = "parametric", B = 200, seed = 1)
+  b <- bootstrap(tri, keep_pseudo = TRUE, type = "analytical", B = 200, seed = 1)
   cohorts <- sort(unique(b$pseudo_triangles$cohort))
   last_coh <- cohorts[length(cohorts)]
   devs <- sort(unique(b$pseudo_triangles$dev))
@@ -287,15 +287,15 @@ test_that("invalid type/residual/method/pooling/tail/process raise match.arg err
 # Validator (.validate_bootstrap_args)
 # ---------------------------------------------------------------------------
 
-test_that("type = 'parametric' with non-normal process errors", {
+test_that("type = 'analytical' with non-normal process errors", {
   tri <- make_sub_tri("surgery")
   expect_error(
-    bootstrap(tri, keep_pseudo = TRUE, type = "parametric", process = "gamma", B = 5, seed = 1),
-    "parametric.*requires process"
+    bootstrap(tri, keep_pseudo = TRUE, type = "analytical", process = "gamma", B = 5, seed = 1),
+    "analytical.*requires process"
   )
   expect_error(
-    bootstrap(tri, keep_pseudo = TRUE, type = "parametric", process = "od_pois", B = 5, seed = 1),
-    "parametric.*requires process"
+    bootstrap(tri, keep_pseudo = TRUE, type = "analytical", process = "od_pois", B = 5, seed = 1),
+    "analytical.*requires process"
   )
 })
 
@@ -317,27 +317,35 @@ test_that("process = 'lognormal' errors with 'not yet implemented'", {
   )
 })
 
-test_that("type = 'parametric' with method = 'ed' explicit errors", {
+test_that("type = 'parametric' errors with 'not yet implemented' (Phase 2b)", {
   tri <- make_sub_tri("surgery")
   expect_error(
-    bootstrap(tri, keep_pseudo = TRUE, type = "parametric", method = "ed",
-              B = 5, seed = 1),
-    "parametric.*method.*not.*yet supported"
+    bootstrap(tri, keep_pseudo = TRUE, type = "parametric", B = 5, seed = 1),
+    "parametric.*not yet implemented"
   )
 })
 
-test_that("type = 'parametric' with method = 'sa' explicit errors", {
+test_that("type = 'analytical' with method = 'ed' explicit errors", {
   tri <- make_sub_tri("surgery")
   expect_error(
-    bootstrap(tri, keep_pseudo = TRUE, type = "parametric", method = "sa",
+    bootstrap(tri, keep_pseudo = TRUE, type = "analytical", method = "ed",
               B = 5, seed = 1),
-    "parametric.*method.*not.*yet supported"
+    "analytical.*method.*not.*yet supported"
   )
 })
 
-test_that("type = 'parametric' with default method silently coerces to 'cl'", {
+test_that("type = 'analytical' with method = 'sa' explicit errors", {
   tri <- make_sub_tri("surgery")
-  b <- bootstrap(tri, keep_pseudo = TRUE, type = "parametric", B = 5, seed = 1)
+  expect_error(
+    bootstrap(tri, keep_pseudo = TRUE, type = "analytical", method = "sa",
+              B = 5, seed = 1),
+    "analytical.*method.*not.*yet supported"
+  )
+})
+
+test_that("type = 'analytical' with default method silently coerces to 'cl'", {
+  tri <- make_sub_tri("surgery")
+  b <- bootstrap(tri, keep_pseudo = TRUE, type = "analytical", B = 5, seed = 1)
   expect_identical(b$meta$method, "cl")
 })
 
@@ -350,15 +358,15 @@ test_that("residual = 'link' with hat_adj = TRUE warns and ignores", {
   )
 })
 
-test_that("type = 'parametric' warns when pooling/tail/min_pool explicitly set", {
+test_that("type = 'analytical' warns when pooling/tail/min_pool explicitly set", {
   tri <- make_sub_tri("surgery")
   expect_warning(
-    bootstrap(tri, keep_pseudo = TRUE, type = "parametric", pooling = "separated",
+    bootstrap(tri, keep_pseudo = TRUE, type = "analytical", pooling = "separated",
               B = 5, seed = 1),
     "pooling.*ignored"
   )
   expect_warning(
-    bootstrap(tri, keep_pseudo = TRUE, type = "parametric", min_pool = 10L, B = 5, seed = 1),
+    bootstrap(tri, keep_pseudo = TRUE, type = "analytical", min_pool = 10L, B = 5, seed = 1),
     "min_pool.*ignored"
   )
 })
@@ -1020,10 +1028,10 @@ test_that("demean warns-and-ignores under residual = 'link'", {
   )
 })
 
-test_that("demean warns-and-ignores under type = 'parametric'", {
+test_that("demean warns-and-ignores under type = 'analytical'", {
   tri <- make_sub_tri("surgery")
   expect_warning(
-    bootstrap(tri, keep_pseudo = TRUE, type = "parametric",
+    bootstrap(tri, keep_pseudo = TRUE, type = "analytical",
               demean = FALSE, B = 5, seed = 1),
     "demean.*ignored"
   )

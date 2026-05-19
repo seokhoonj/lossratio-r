@@ -66,7 +66,7 @@ projection (\code{exposure_ci_lo}, \code{exposure_ci_hi}). Default \code{0.95}.}
 \item{\code{TRUE} / \code{FALSE}}{Back-compat with the legacy logical arg.
 \code{TRUE} triggers \code{bootstrap = "auto"}; \code{FALSE} disables.}
 \item{\code{"auto"}}{Internal \code{bootstrap()} call on the exposure triangle
-with defaults \verb{(type = "parametric", process = "normal", target = "exposure")}.}
+with defaults \verb{(type = "analytical", process = "normal", target = "exposure")}.}
 \item{\code{BootstrapTriangle}}{Pre-built object from \code{bootstrap()}.
 Must have \code{meta$target == "exposure"}.}
 \item{Function \verb{function(tri) -> BootstrapTriangle}}{Lazy spec

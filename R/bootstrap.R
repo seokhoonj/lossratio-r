@@ -44,26 +44,26 @@
       !isTRUE(all.equal(min_pool, round(min_pool))))
     stop("`min_pool` must be a single positive integer.", call. = FALSE)
 
-  if (identical(type, "parametric")) {
+  if (identical(type, "analytical")) {
     if (process_set && !identical(process, "normal"))
-      stop("type = 'parametric' (Mack 1993 closed-form) requires ",
-           "process = 'normal'. For other process distributions use ",
-           "type = 'nonparametric'.",
+      stop("type = 'analytical' (Mack 1993 closed-form propagation) ",
+           "requires process = 'normal'. For other process distributions ",
+           "use type = 'nonparametric' or type = 'parametric'.",
            call. = FALSE)
     if (residual_set)
-      warning("type = 'parametric' uses closed-form simulation; ",
+      warning("type = 'analytical' uses closed-form simulation; ",
               "'residual' argument is ignored.",
               call. = FALSE)
     if (pooling_set)
-      warning("type = 'parametric' has no residual pool; ",
+      warning("type = 'analytical' has no residual pool; ",
               "'pooling' argument is ignored.",
               call. = FALSE)
     if (tail_set)
-      warning("type = 'parametric' has no residual pool; ",
+      warning("type = 'analytical' has no residual pool; ",
               "'tail' argument is ignored.",
               call. = FALSE)
     if (min_pool_set)
-      warning("type = 'parametric' has no residual pool; ",
+      warning("type = 'analytical' has no residual pool; ",
               "'min_pool' argument is ignored.",
               call. = FALSE)
     if (hat_adj_set && isTRUE(hat_adj))
@@ -73,14 +73,23 @@
       warning("'demean' is only defined for residual = 'cell'; ignored.",
               call. = FALSE)
     if (method_set && !identical(method, "cl"))
-      stop("type = 'parametric' currently implements only the CL ",
+      stop("type = 'analytical' currently implements only the CL ",
            "closed-form (Mack 1993). method = '", method, "' is not ",
-           "yet supported in parametric mode (ED parametric would need ",
-           "a closed-form variance for the intensity g_k; SA parametric ",
+           "yet supported in analytical mode (ED analytical would need ",
+           "a closed-form variance for the intensity g_k; SA analytical ",
            "would additionally need a per-cohort stage transition). ",
-           "Use method = 'cl', or switch to type = 'nonparametric' for ",
-           "residual bootstrap.",
+           "Use method = 'cl', or switch to type = 'nonparametric' / ",
+           "'parametric' for resample-based bootstrap.",
            call. = FALSE)
+  } else if (identical(type, "parametric")) {
+    # Phase 2b: textbook parametric bootstrap (cell-distribution sampling
+    # + refit). Not yet implemented -- reject explicitly so callers don't
+    # silently fall through.
+    stop("type = 'parametric' (textbook cell-distribution sampling + ",
+         "refit, England-Verrall 1999) is not yet implemented (Phase 2b). ",
+         "Use type = 'analytical' for the Mack 1993 closed-form propagation, ",
+         "or type = 'nonparametric' for residual-based bootstrap.",
+         call. = FALSE)
   } else {
     # type == "nonparametric"
     if (identical(residual, "link") && hat_adj_set && isTRUE(hat_adj))
@@ -153,10 +162,14 @@
 #'    distribution to use.
 #'
 #' @param x A `Triangle` object.
-#' @param type One of `"nonparametric"` or `"parametric"`. `"parametric"`
-#'   draws new link factors from `N(f_hat, sqrt(Var(f_hat)))` (Mack 1993
-#'   closed-form); `"nonparametric"` resamples standardized residuals and
-#'   reconstructs the pseudo triangle (England-Verrall / Pinheiro).
+#' @param type One of `"nonparametric"`, `"analytical"`, or `"parametric"`.
+#'   `"nonparametric"` resamples standardized residuals and reconstructs
+#'   the pseudo triangle (England-Verrall / Pinheiro). `"analytical"` draws
+#'   new link factors from `N(f_hat, sqrt(Var(f_hat)))` (Mack 1993 closed-
+#'   form propagation; CL only). `"parametric"` (Phase 2b, not yet
+#'   implemented) draws each incremental cell directly from a fitted
+#'   distribution and refits on the synthetic triangle (textbook
+#'   England-Verrall 1999 parametric bootstrap).
 #' @param residual Residual scope for `type = "nonparametric"`. One of
 #'   `"cell"` (default -- England-Verrall 1999/2002, Pearson residuals on
 #'   incremental cells; ODP GLM equivalent via Renshaw-Verrall 1998) or
@@ -246,7 +259,7 @@
 #'   \item{`pseudo_triangles`}{Long-format `data.table` with columns
 #'     `[groups]`, `cohort`, `dev`, `rep`, `loss`. `rep` ranges over `1..B`.
 #'     Observed-region cells contain residual-perturbed (or original for
-#'     `"parametric"`) cumulative loss; the missing region contains
+#'     `"analytical"`) cumulative loss; the missing region contains
 #'     Stage 1 forward projection means.}
 #'   \item{`residual_pool`}{`data.table` of the standardized residuals used,
 #'     with the `pool_id` column identifying which pool each residual
@@ -302,7 +315,8 @@ bootstrap <- function(x, ...) {
 #'   target so downstream refit helpers know which column to read.
 #' @export
 bootstrap.Triangle <- function(x,
-                                type        = c("nonparametric", "parametric"),
+                                type        = c("nonparametric", "analytical",
+                                                "parametric"),
                                 residual    = c("cell", "link"),
                                 hat_adj     = TRUE,
                                 demean      = TRUE,
@@ -353,12 +367,12 @@ bootstrap.Triangle <- function(x,
     method <- "cl"
   }
 
-  # Auto-coerce method to "cl" when type = "parametric" and the user did
-  # not explicitly set method. Only the CL closed-form (Mack 1993) has a
-  # parametric kernel; ED / SA parametric are deferred. Without this,
+  # Auto-coerce method to "cl" when type = "analytical" and the user did
+  # not explicitly set method. Only the CL closed-form (Mack 1993) has an
+  # analytical kernel; ED / SA analytical are deferred. Without this,
   # the new method default "ed" would silently fall through to the CL
-  # parametric kernel and mis-label the result.
-  if (!method_set && identical(type, "parametric") && !identical(method, "cl")) {
+  # analytical kernel and mis-label the result.
+  if (!method_set && identical(type, "analytical") && !identical(method, "cl")) {
     method <- "cl"
   }
 
@@ -395,7 +409,7 @@ bootstrap.Triangle <- function(x,
   # process, silently coerce to "normal" so meta$process truthfully
   # records what Stage 1 simulated under. (If the user *did* set process
   # to something non-normal, the validator already errored above.)
-  if (identical(type, "parametric")) process <- "normal"
+  if (identical(type, "analytical")) process <- "normal"
 
   # Preserve the user-supplied maturity arg before reassignment -- SA + cell
   # needs it independently of pooling/tail (mathematical input to the stage
@@ -1383,9 +1397,10 @@ bootstrap.Triangle <- function(x,
 #                       recursion alt[i, k+1] = f_k * alt[i, k] +
 #                       r* * sqrt(sigma_k^2 * alt[i, k]). Per-replicate
 #                       R loop (sequential over k).
-#   type = "parametric": Draw f_k* ~ N(f_hat, sqrt(Var(f_hat))) per
+#   type = "analytical": Draw f_k* ~ N(f_hat, sqrt(Var(f_hat))) per
 #                       replicate; observed cells unchanged; forward
-#                       project lower triangle.
+#                       project lower triangle. Mack 1993 closed-form
+#                       propagation (CL only).
 #
 # Returns long-format data.table [grp..., cohort, dev, rep, <target>].
 
@@ -2125,13 +2140,13 @@ bootstrap.Triangle <- function(x,
 #' @export
 print.BootstrapTriangle <- function(x, ...) {
   m <- x$meta
-  is_param <- identical(m$type, "parametric")
-  is_tail  <- identical(m$pooling, "tail_pooled")
+  is_analytical <- identical(m$type, "analytical")
+  is_tail       <- identical(m$pooling, "tail_pooled")
 
   cat("<BootstrapTriangle>\n")
   cat(sprintf("  type     : %s\n", m$type))
   cat(sprintf("  method   : %s\n", m$method))
-  if (!is_param) {
+  if (!is_analytical) {
     cat(sprintf("  residual : %s\n", m$residual))
     if (identical(m$residual, "cell")) {
       cat(sprintf("  hat_adj  : %s\n", as.character(isTRUE(m$hat_adj))))
@@ -2141,7 +2156,7 @@ print.BootstrapTriangle <- function(x, ...) {
     }
   }
   cat(sprintf("  process  : %s\n", m$process))
-  if (!is_param) {
+  if (!is_analytical) {
     cat(sprintf("  pooling  : %s\n", m$pooling))
     if (is_tail) {
       cat(sprintf("  tail     : %s\n", m$tail))
@@ -2215,7 +2230,7 @@ print.BootstrapTriangle <- function(x, ...) {
 .resolve_bootstrap <- function(arg, tri,
                                 B           = 499L,
                                 seed        = NULL,
-                                type        = "parametric",
+                                type        = "analytical",
                                 residual    = "cell",
                                 hat_adj     = TRUE,
                                 demean      = TRUE,
@@ -2248,11 +2263,11 @@ print.BootstrapTriangle <- function(x, ...) {
   }
 
   if (identical(arg, "auto")) {
-    # Pass only the args that apply to the chosen `type`. Parametric path
+    # Pass only the args that apply to the chosen `type`. Analytical path
     # has no residual pool, so omitting residual/hat_adj/pooling/tail/
     # min_pool/maturity prevents the validator from triggering "ignored"
     # warnings inside fit_loss / fit_exposure / fit_ratio (which always
-    # forward `type = "parametric"` for their internal default).
+    # forward `type = "analytical"` for their internal default).
     args <- list(tri,
                  type        = type,
                  method      = method,

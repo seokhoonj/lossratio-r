@@ -124,7 +124,7 @@ in the cohort summary. Default is \code{0.95}.}
 \item{\code{TRUE} / \code{FALSE}}{Back-compat with the legacy logical arg.
 \code{TRUE} triggers \code{"auto"}; \code{FALSE} disables.}
 \item{\code{"auto"}}{Internal \code{bootstrap()} call on the loss triangle
-with defaults \verb{(type = "parametric", process = "normal", target = "loss")}.}
+with defaults \verb{(type = "analytical", process = "normal", target = "loss")}.}
 \item{\code{BootstrapTriangle}}{Pre-built object from \code{bootstrap()}.
 Must have \code{meta$target == "loss"}.}
 \item{Function \verb{function(tri) -> BootstrapTriangle}}{Lazy spec

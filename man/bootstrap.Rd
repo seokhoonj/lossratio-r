@@ -9,7 +9,7 @@ bootstrap(x, ...)
 
 \method{bootstrap}{Triangle}(
   x,
-  type = c("nonparametric", "parametric"),
+  type = c("nonparametric", "analytical", "parametric"),
   residual = c("cell", "link"),
   hat_adj = TRUE,
   demean = TRUE,
@@ -33,10 +33,14 @@ bootstrap(x, ...)
 
 \item{...}{Reserved for future use.}
 
-\item{type}{One of \code{"nonparametric"} or \code{"parametric"}. \code{"parametric"}
-draws new link factors from \code{N(f_hat, sqrt(Var(f_hat)))} (Mack 1993
-closed-form); \code{"nonparametric"} resamples standardized residuals and
-reconstructs the pseudo triangle (England-Verrall / Pinheiro).}
+\item{type}{One of \code{"nonparametric"}, \code{"analytical"}, or \code{"parametric"}.
+\code{"nonparametric"} resamples standardized residuals and reconstructs
+the pseudo triangle (England-Verrall / Pinheiro). \code{"analytical"} draws
+new link factors from \code{N(f_hat, sqrt(Var(f_hat)))} (Mack 1993 closed-
+form propagation; CL only). \code{"parametric"} (Phase 2b, not yet
+implemented) draws each incremental cell directly from a fitted
+distribution and refits on the synthetic triangle (textbook
+England-Verrall 1999 parametric bootstrap).}
 
 \item{residual}{Residual scope for \code{type = "nonparametric"}. One of
 \code{"cell"} (default -- England-Verrall 1999/2002, Pearson residuals on
@@ -141,7 +145,7 @@ An object of class \code{BootstrapTriangle} (a list) with elements:
 \item{\code{pseudo_triangles}}{Long-format \code{data.table} with columns
 \verb{[groups]}, \code{cohort}, \code{dev}, \code{rep}, \code{loss}. \code{rep} ranges over \verb{1..B}.
 Observed-region cells contain residual-perturbed (or original for
-\code{"parametric"}) cumulative loss; the missing region contains
+\code{"analytical"}) cumulative loss; the missing region contains
 Stage 1 forward projection means.}
 \item{\code{residual_pool}}{\code{data.table} of the standardized residuals used,
 with the \code{pool_id} column identifying which pool each residual
