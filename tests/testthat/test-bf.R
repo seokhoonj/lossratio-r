@@ -80,3 +80,115 @@ test_that("fit_bf with q = 1 cohort produces zero reserve", {
     succeed()  # no q == 1 cohort to test
   }
 })
+
+
+# Phase 3a -- peer worker arg propagation -----------------------------------
+
+test_that("fit_bf forwards alpha to the inner fit_cl", {
+  fit_a1 <- fit_bf(sub, prior = 0.7, alpha = 1)
+  fit_a0 <- fit_bf(sub, prior = 0.7, alpha = 0.5)
+  expect_false(isTRUE(all.equal(fit_a1$cl_fit$selected$f_sel,
+                                fit_a0$cl_fit$selected$f_sel)))
+})
+
+test_that("fit_bf forwards recent to the inner fit_cl", {
+  fit_all    <- fit_bf(sub, prior = 0.7)
+  fit_recent <- fit_bf(sub, prior = 0.7, recent = 6L)
+  # recent narrows the calendar wedge -- some factor rows estimate from
+  # fewer cohorts.
+  any_smaller <- any(fit_recent$cl_fit$selected$n_cohorts <
+                     fit_all$cl_fit$selected$n_cohorts[match(
+                       fit_recent$cl_fit$selected$ata_from,
+                       fit_all$cl_fit$selected$ata_from)],
+                     na.rm = TRUE)
+  expect_true(any_smaller)
+})
+
+test_that("fit_bf forwards regime to the inner fit_cl", {
+  reg <- regime_at(change = as.Date("2024-07-01"))
+  fit <- fit_bf(sub, prior = 0.7, regime = reg)
+  expect_s3_class(fit$regime, "Regime")
+})
+
+test_that("fit_bf maturity = 'auto' is stored on $maturity", {
+  fit <- fit_bf(sub, prior = 0.7, maturity = "auto")
+  expect_true(!is.null(fit$maturity))
+})
+
+test_that("fit_bf $full schema intersects LossFit", {
+  bf <- fit_bf(sub, prior = 0.7)
+  lf <- fit_loss(sub)
+  common <- intersect(names(bf$full), names(lf$full))
+  for (nm in c("cohort", "dev", "loss_obs", "loss_proj", "is_observed"))
+    expect_true(nm %in% common)
+})
+
+test_that("fit_bf supports multi-group $summary", {
+  tri_mg <- as_triangle(experience, groups = "coverage",
+                       cohort = "uy_m", calendar = "cy_m",
+                       loss = "incr_loss", exposure = "incr_exposure")
+  fit <- fit_bf(tri_mg, prior = 0.7)
+  expect_true("coverage" %in% names(fit$summary))
+  expect_gte(length(unique(fit$summary$coverage)), 2L)
+})
+
+
+# Phase 3b -- bootstrap composition ----------------------------------------
+
+test_that("fit_bf bootstrap = TRUE produces ci_type = 'bootstrap'", {
+  fit <- fit_bf(sub, prior = 0.7, bootstrap = TRUE, B = 30, seed = 1)
+  expect_equal(fit$ci_type, "bootstrap")
+  expect_s3_class(fit$bootstrap, "BFBootstrap")
+  expect_equal(fit$bootstrap$B, 30L)
+})
+
+test_that("fit_bf bootstrap populates SE/CI on projected cells", {
+  fit <- fit_bf(sub, prior = 0.7, bootstrap = TRUE, B = 30, seed = 1)
+  for (nm in c("loss_total_se", "loss_total_cv",
+               "loss_ci_lo", "loss_ci_hi"))
+    expect_true(nm %in% names(fit$full), info = nm)
+  proj_cells <- fit$full[is_observed == FALSE]
+  expect_true(any(is.finite(proj_cells$loss_total_se)))
+  expect_true(all(proj_cells$loss_total_se >= 0, na.rm = TRUE))
+})
+
+test_that("fit_bf bootstrap with same seed is reproducible", {
+  f1 <- fit_bf(sub, prior = 0.7, bootstrap = TRUE, B = 30, seed = 42)
+  f2 <- fit_bf(sub, prior = 0.7, bootstrap = TRUE, B = 30, seed = 42)
+  expect_equal(f1$summary$loss_total_se, f2$summary$loss_total_se)
+  expect_equal(f1$summary$loss_ci_lo, f2$summary$loss_ci_lo)
+})
+
+test_that("fit_bf bootstrap type = 'nonparametric' works", {
+  fit <- fit_bf(sub, prior = 0.7, bootstrap = TRUE, B = 30, seed = 1,
+                type = "nonparametric", residual = "cell")
+  expect_equal(fit$ci_type, "bootstrap")
+  expect_true(any(is.finite(fit$summary$loss_total_se)))
+})
+
+test_that("fit_bf bootstrap type = 'analytical' errors", {
+  expect_error(
+    fit_bf(sub, prior = 0.7, bootstrap = TRUE, B = 30,
+           type = "analytical"),
+    regexp = "not yet implemented"
+  )
+})
+
+test_that("fit_bf accepts a pre-built bootstrap pair", {
+  bt_loss <- bootstrap(sub, type = "parametric", method = "cl",
+                       target = "loss", B = 25, seed = 7,
+                       keep_pseudo = TRUE)
+  bt_exp <- bootstrap(sub, type = "parametric", method = "cl",
+                      target = "exposure", B = 25, seed = 7,
+                      keep_pseudo = TRUE)
+  fit <- fit_bf(sub, prior = 0.7,
+                bootstrap = list(loss = bt_loss, exposure = bt_exp))
+  expect_equal(fit$ci_type, "bootstrap")
+  expect_equal(fit$bootstrap$B, 25L)
+  # wrong target rejected
+  expect_error(
+    fit_bf(sub, prior = 0.7,
+           bootstrap = list(loss = bt_exp, exposure = bt_exp)),
+    regexp = "target"
+  )
+})

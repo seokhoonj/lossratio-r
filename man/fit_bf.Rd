@@ -4,7 +4,25 @@
 \alias{fit_bf}
 \title{Bornhuetter-Ferguson projection}
 \usage{
-fit_bf(x, loss = "loss", exposure = "exposure", prior, ...)
+fit_bf(
+  x,
+  loss = "loss",
+  exposure = "exposure",
+  prior,
+  bootstrap = NULL,
+  B = 999L,
+  seed = NULL,
+  type = c("parametric", "nonparametric", "analytical"),
+  residual = c("cell", "link"),
+  process = c("gamma", "od_pois", "normal"),
+  alpha = 1,
+  sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
+  recent = NULL,
+  regime = NULL,
+  maturity = NULL,
+  conf_level = 0.95,
+  ...
+)
 }
 \arguments{
 \item{x}{A \code{Triangle} object.}
@@ -23,6 +41,58 @@ ELR. Must cover every cohort present in \code{x} (extras are
 silently dropped, missing cohorts raise an error).}
 }}
 
+\item{bootstrap}{Bootstrap configuration. Five forms accepted:
+\describe{
+\item{\code{NULL} / \code{FALSE} (default)}{Point estimate only -- no
+bootstrap SE/CI.}
+\item{\code{TRUE} / \code{"auto"}}{Internal \code{bootstrap()} calls (one for
+loss, one for exposure) sharing \code{seed} so replicate indices
+align across the two simulations.}
+\item{Named list \code{list(loss = BootstrapTriangle, exposure = BootstrapTriangle)}}{Pre-built objects from \code{bootstrap()}. Must
+have matching \code{meta$B} / \code{meta$seed} so per-replicate
+composition is well-defined; \code{meta$target} must be \code{"loss"}
+and \code{"exposure"} respectively.}
+\item{Function \verb{function(tri) -> list(loss = ..., exposure = ...)}}{Lazy spec invoked on the input Triangle (leakage-safe
+for \code{backtest()}).}
+}
+Latest observed cumulative loss is \emph{not} perturbed in the BF
+recipe -- it is treated as the cohort anchor, mirroring the
+point-estimate formula.}
+
+\item{B}{Integer number of bootstrap replicates. Used only when
+\code{bootstrap} resolves to \code{"auto"}. Default \code{999}.}
+
+\item{seed}{Optional integer seed for reproducible bootstrap. Default
+\code{NULL}.}
+
+\item{type}{One of \code{"parametric"} (default), \code{"nonparametric"}, or
+\code{"analytical"}. The latter is reserved for Phase 3c (Mack 2008
+closed-form MSEP) and currently errors.}
+
+\item{residual}{Residual scope for \code{type = "nonparametric"}. One of
+\code{"cell"} (default) or \code{"link"}. See \code{\link[=bootstrap]{bootstrap()}}.}
+
+\item{process}{One of \code{"gamma"} (default), \code{"od_pois"}, or \code{"normal"}.
+See \code{\link[=bootstrap]{bootstrap()}}.}
+
+\item{alpha}{Numeric scalar passed through to the inner \code{\link[=fit_cl]{fit_cl()}} and
+\code{\link[=fit_exposure]{fit_exposure()}} calls. Default \code{1}.}
+
+\item{sigma_method}{Sigma extrapolation method forwarded to
+\code{\link[=fit_cl]{fit_cl()}} / \code{\link[=fit_exposure]{fit_exposure()}}. Default \code{"locf"}.}
+
+\item{recent}{Optional positive integer; calendar-diagonal filter
+forwarded to the inner fits. Default \code{NULL}.}
+
+\item{regime}{Optional regime specification forwarded to the inner
+loss and exposure fits. See \code{\link[=fit_cl]{fit_cl()}} for the four-type dispatch.}
+
+\item{maturity}{Optional maturity specification forwarded to the inner
+loss fit. See \code{\link[=fit_cl]{fit_cl()}} for the four-type dispatch.}
+
+\item{conf_level}{Confidence level for the bootstrap quantile CI on
+\code{loss_ult}. Default \code{0.95}.}
+
 \item{...}{Reserved for future extension (currently unused).}
 }
 \value{
@@ -35,16 +105,31 @@ An object of class \code{"BFFit"} containing:
 \item{\code{cohort}}{Raw cohort variable name.}
 \item{\code{dev}}{Raw development variable name.}
 \item{\code{loss}, \code{exposure}}{Loss / exposure variable names.}
-\item{\code{full}}{\code{data.table} \verb{[group, cohort, dev, loss_obs, loss_proj, exposure_obs, exposure_proj, is_observed, incr_loss_proj, exposure_incr_proj]}.}
+\item{\code{full}}{\code{data.table} \verb{[group, cohort, dev, loss_obs, loss_proj, exposure_obs, exposure_proj, is_observed, incr_loss_proj, exposure_incr_proj]}. When \code{bootstrap} is
+enabled, additional columns \code{loss_total_se}, \code{loss_total_cv},
+\code{loss_ci_lo}, \code{loss_ci_hi} carry per-cell bootstrap SE / CI on
+projected cells (observed cells stay \code{NA}).}
 \item{\code{proj}}{Same shape as \code{full}, with observed-cell projection
 columns NA'd out.}
-\item{\code{summary}}{Cohort-level reserve summary: \verb{[group, cohort, latest, loss_ult, reserve, elr, q]}.}
+\item{\code{summary}}{Cohort-level reserve summary: \verb{[group, cohort, latest, loss_ult, reserve, elr, q]}. When \code{bootstrap} is
+enabled, additional columns \code{loss_total_se}, \code{loss_total_cv},
+\code{loss_ci_lo}, \code{loss_ci_hi} carry bootstrap SE / CI on
+\code{loss_ult}.}
 \item{\code{prior}}{Resolved \code{data.table(group..., cohort, elr)}.}
 \item{\code{q}}{\code{data.table(group..., cohort, q)} of expected
 emerged fractions.}
 \item{\code{cl_fit}}{The inner \code{CLFit} used to derive \eqn{q_i}.}
 \item{\code{exposure_fit}}{The inner \code{ExposureFit} used to derive
 \eqn{E_i^{ult}}.}
+\item{\code{bootstrap}}{When \code{bootstrap} is enabled, a
+\code{BFBootstrap} helper holding both Triangle-level
+\code{BootstrapTriangle} objects and the per-replicate ultimate
+replicates; \code{NULL} otherwise.}
+\item{\code{ci_type}}{\code{"bootstrap"} when \code{bootstrap} is enabled,
+\code{"analytical"} (placeholder) otherwise.}
+\item{\code{alpha}, \code{sigma_method}, \code{recent}, \code{regime}, \code{maturity}}{
+Inputs forwarded to the inner \code{\link[=fit_cl]{fit_cl()}} / \code{\link[=fit_exposure]{fit_exposure()}}
+calls.}
 }
 }
 \description{
@@ -70,9 +155,11 @@ ratio for cohort \eqn{i} (\code{prior} argument).
 via chain ladder on the \code{exposure} column.
 }
 
-This is a \emph{standalone} worker -- it does not currently integrate with
-\code{\link[=fit_loss]{fit_loss()}} / \code{\link[=fit_ratio]{fit_ratio()}}. Point projection only; analytical MSEP
-(Mack 2008) is not yet computed.
+This is a peer worker alongside \code{\link[=fit_cl]{fit_cl()}} / \code{\link[=fit_ed]{fit_ed()}} / \code{\link[=fit_loss]{fit_loss()}}.
+Standalone for the BF recipe -- composition with \code{\link[=fit_ratio]{fit_ratio()}} is not
+part of this worker. Point projection is always computed; bootstrap
+SE / CI is opt-in via \code{bootstrap = TRUE} (Phase 3b). Closed-form
+Mack (2008) MSEP is not yet implemented.
 }
 \examples{
 \dontrun{
@@ -107,7 +194,6 @@ Mack, T. (2008). The prediction error of Bornhuetter/Ferguson.
 \emph{ASTIN Bulletin}, 38(1), 87-103. (MSEP -- not yet implemented.)
 }
 \seealso{
-\code{\link[=fit_capecod]{fit_capecod()}} (pooled ELR variant), \code{\link[=fit_cl]{fit_cl()}},
+\code{\link[=fit_cc]{fit_cc()}} (pooled ELR variant), \code{\link[=fit_cl]{fit_cl()}},
 \code{\link[=fit_exposure]{fit_exposure()}}
 }
-\keyword{internal}
