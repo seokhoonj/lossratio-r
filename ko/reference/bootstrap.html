@@ -122,7 +122,7 @@ distribution to use.</p></li>
 <span><span class="co"># S3 method for class 'Triangle'</span></span>
 <span><span class="fu">bootstrap</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"nonparametric"</span>, <span class="st">"parametric"</span><span class="op">)</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"nonparametric"</span>, <span class="st">"analytical"</span>, <span class="st">"parametric"</span><span class="op">)</span>,</span>
 <span>  residual <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cell"</span>, <span class="st">"link"</span><span class="op">)</span>,</span>
 <span>  hat_adj <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  demean <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -155,10 +155,14 @@ distribution to use.</p></li>
 
 
 <dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
-<dd><p>One of <code>"nonparametric"</code> or <code>"parametric"</code>. <code>"parametric"</code>
-draws new link factors from <code>N(f_hat, sqrt(Var(f_hat)))</code> (Mack 1993
-closed-form); <code>"nonparametric"</code> resamples standardized residuals and
-reconstructs the pseudo triangle (England-Verrall / Pinheiro).</p></dd>
+<dd><p>One of <code>"nonparametric"</code>, <code>"analytical"</code>, or <code>"parametric"</code>.
+<code>"nonparametric"</code> resamples standardized residuals and reconstructs
+the pseudo triangle (England-Verrall / Pinheiro). <code>"analytical"</code> draws
+new link factors from <code>N(f_hat, sqrt(Var(f_hat)))</code> (Mack 1993 closed-
+form propagation; CL only). <code>"parametric"</code> (Phase 2b, not yet
+implemented) draws each incremental cell directly from a fitted
+distribution and refits on the synthetic triangle (textbook
+England-Verrall 1999 parametric bootstrap).</p></dd>
 
 
 <dt id="arg-residual">residual<a class="anchor" aria-label="anchor" href="#arg-residual"></a></dt>
@@ -294,7 +298,7 @@ read <code>$summary</code>. Set <code>TRUE</code> explicitly if you want to insp
 <dd><p>Long-format <code>data.table</code> with columns
 <code>[groups]</code>, <code>cohort</code>, <code>dev</code>, <code>rep</code>, <code>loss</code>. <code>rep</code> ranges over <code>1..B</code>.
 Observed-region cells contain residual-perturbed (or original for
-<code>"parametric"</code>) cumulative loss; the missing region contains
+<code>"analytical"</code>) cumulative loss; the missing region contains
 Stage 1 forward projection means.</p></dd>
 
 <dt><code>residual_pool</code></dt>

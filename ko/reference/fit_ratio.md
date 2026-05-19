@@ -237,7 +237,7 @@ fit_ratio(
   :   Internal
       [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
       call on the loss triangle with defaults
-      `(type = "parametric", process = "normal", target = "loss")`.
+      `(type = "analytical", process = "normal", target = "loss")`.
 
   `BootstrapTriangle`
 

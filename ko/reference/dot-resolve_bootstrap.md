@@ -14,7 +14,7 @@ pattern. Accepts:
   tri,
   B = 499L,
   seed = NULL,
-  type = "parametric",
+  type = "analytical",
   residual = "cell",
   hat_adj = TRUE,
   demean = TRUE,

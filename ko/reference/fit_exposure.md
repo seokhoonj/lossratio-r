@@ -129,7 +129,7 @@ fit_exposure(
   :   Internal
       [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
       call on the exposure triangle with defaults
-      `(type = "parametric", process = "normal", target = "exposure")`.
+      `(type = "analytical", process = "normal", target = "exposure")`.
 
   `BootstrapTriangle`
 

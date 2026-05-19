@@ -31,7 +31,7 @@ bootstrap(x, ...)
 # S3 method for class 'Triangle'
 bootstrap(
   x,
-  type = c("nonparametric", "parametric"),
+  type = c("nonparametric", "analytical", "parametric"),
   residual = c("cell", "link"),
   hat_adj = TRUE,
   demean = TRUE,
@@ -63,10 +63,14 @@ bootstrap(
 
 - type:
 
-  One of `"nonparametric"` or `"parametric"`. `"parametric"` draws new
-  link factors from `N(f_hat, sqrt(Var(f_hat)))` (Mack 1993
-  closed-form); `"nonparametric"` resamples standardized residuals and
-  reconstructs the pseudo triangle (England-Verrall / Pinheiro).
+  One of `"nonparametric"`, `"analytical"`, or `"parametric"`.
+  `"nonparametric"` resamples standardized residuals and reconstructs
+  the pseudo triangle (England-Verrall / Pinheiro). `"analytical"` draws
+  new link factors from `N(f_hat, sqrt(Var(f_hat)))` (Mack 1993 closed-
+  form propagation; CL only). `"parametric"` (Phase 2b, not yet
+  implemented) draws each incremental cell directly from a fitted
+  distribution and refits on the synthetic triangle (textbook
+  England-Verrall 1999 parametric bootstrap).
 
 - residual:
 
@@ -207,7 +211,7 @@ An object of class `BootstrapTriangle` (a list) with elements:
 
   Long-format `data.table` with columns `[groups]`, `cohort`, `dev`,
   `rep`, `loss`. `rep` ranges over `1..B`. Observed-region cells contain
-  residual-perturbed (or original for `"parametric"`) cumulative loss;
+  residual-perturbed (or original for `"analytical"`) cumulative loss;
   the missing region contains Stage 1 forward projection means.
 
 - `residual_pool`:
