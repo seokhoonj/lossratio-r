@@ -18,9 +18,11 @@ ratio for cohort \(i\) (prior argument).
 via chain ladder on the exposure column.
 
 
-This is a standalone worker – it does not currently integrate with
-fit_loss() / fit_ratio(). Point projection only; analytical MSEP
-(Mack 2008) is not yet computed."><meta property="og:description" content="Fit a Bornhuetter-Ferguson (1972) projection from a &quot;Triangle&quot;
+This is a peer worker alongside fit_cl() / fit_ed() / fit_loss().
+Standalone for the BF recipe – composition with fit_ratio() is not
+part of this worker. Point projection is always computed; bootstrap
+SE / CI is opt-in via bootstrap = TRUE (Phase 3b). Closed-form
+Mack (2008) MSEP is not yet implemented."><meta property="og:description" content="Fit a Bornhuetter-Ferguson (1972) projection from a &quot;Triangle&quot;
 object. The BF estimator blends the observed cumulative loss for
 each cohort with an a priori expected loss ratio (ELR) applied to
 the cohort's ultimate exposure, weighted by the expected unemerged
@@ -39,9 +41,11 @@ ratio for cohort \(i\) (prior argument).
 via chain ladder on the exposure column.
 
 
-This is a standalone worker – it does not currently integrate with
-fit_loss() / fit_ratio(). Point projection only; analytical MSEP
-(Mack 2008) is not yet computed."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
+This is a peer worker alongside fit_cl() / fit_ed() / fit_loss().
+Standalone for the BF recipe – composition with fit_ratio() is not
+part of this worker. Point projection is always computed; bootstrap
+SE / CI is opt-in via bootstrap = TRUE (Phase 3b). Closed-form
+Mack (2008) MSEP is not yet implemented."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
@@ -116,14 +120,34 @@ loss development factor (LDF) for cohort \(i\).</p></li>
 ratio for cohort \(i\) (<code>prior</code> argument).</p></li>
 <li><p>\(E_i^{ult}\): cohort \(i\)'s ultimate exposure, projected
 via chain ladder on the <code>exposure</code> column.</p></li>
-</ul><p>This is a <em>standalone</em> worker – it does not currently integrate with
-<code><a href="fit_loss.html">fit_loss()</a></code> / <code><a href="fit_ratio.html">fit_ratio()</a></code>. Point projection only; analytical MSEP
-(Mack 2008) is not yet computed.</p>
+</ul><p>This is a peer worker alongside <code><a href="fit_cl.html">fit_cl()</a></code> / <code><a href="fit_ed.html">fit_ed()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code>.
+Standalone for the BF recipe – composition with <code><a href="fit_ratio.html">fit_ratio()</a></code> is not
+part of this worker. Point projection is always computed; bootstrap
+SE / CI is opt-in via <code>bootstrap = TRUE</code> (Phase 3b). Closed-form
+Mack (2008) MSEP is not yet implemented.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fit_bf</span><span class="op">(</span><span class="va">x</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, exposure <span class="op">=</span> <span class="st">"exposure"</span>, <span class="va">prior</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fit_bf</span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  loss <span class="op">=</span> <span class="st">"loss"</span>,</span>
+<span>  exposure <span class="op">=</span> <span class="st">"exposure"</span>,</span>
+<span>  <span class="va">prior</span>,</span>
+<span>  bootstrap <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  B <span class="op">=</span> <span class="fl">999L</span>,</span>
+<span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"parametric"</span>, <span class="st">"nonparametric"</span>, <span class="st">"analytical"</span><span class="op">)</span>,</span>
+<span>  residual <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cell"</span>, <span class="st">"link"</span><span class="op">)</span>,</span>
+<span>  process <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gamma"</span>, <span class="st">"od_pois"</span>, <span class="st">"normal"</span><span class="op">)</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span>, <span class="st">"mack"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
+<span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  maturity <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  conf_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -157,6 +181,88 @@ silently dropped, missing cohorts raise an error).</p></dd>
 </dl></dd>
 
 
+<dt id="arg-bootstrap">bootstrap<a class="anchor" aria-label="anchor" href="#arg-bootstrap"></a></dt>
+<dd><p>Bootstrap configuration. Five forms accepted:</p><dl><dt><code>NULL</code> / <code>FALSE</code> (default)</dt>
+<dd><p>Point estimate only – no
+bootstrap SE/CI.</p></dd>
+
+<dt><code>TRUE</code> / <code>"auto"</code></dt>
+<dd><p>Internal <code><a href="bootstrap.html">bootstrap()</a></code> calls (one for
+loss, one for exposure) sharing <code>seed</code> so replicate indices
+align across the two simulations.</p></dd>
+
+<dt>Named list <code>list(loss = BootstrapTriangle, exposure = BootstrapTriangle)</code></dt>
+<dd><p>Pre-built objects from <code><a href="bootstrap.html">bootstrap()</a></code>. Must
+have matching <code>meta$B</code> / <code>meta$seed</code> so per-replicate
+composition is well-defined; <code>meta$target</code> must be <code>"loss"</code>
+and <code>"exposure"</code> respectively.</p></dd>
+
+<dt>Function <code>function(tri) -&gt; list(loss = ..., exposure = ...)</code></dt>
+<dd><p>Lazy spec invoked on the input Triangle (leakage-safe
+for <code><a href="backtest.html">backtest()</a></code>).</p></dd>
+
+
+</dl><p>Latest observed cumulative loss is <em>not</em> perturbed in the BF
+recipe – it is treated as the cohort anchor, mirroring the
+point-estimate formula.</p></dd>
+
+
+<dt id="arg-b">B<a class="anchor" aria-label="anchor" href="#arg-b"></a></dt>
+<dd><p>Integer number of bootstrap replicates. Used only when
+<code>bootstrap</code> resolves to <code>"auto"</code>. Default <code>999</code>.</p></dd>
+
+
+<dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
+<dd><p>Optional integer seed for reproducible bootstrap. Default
+<code>NULL</code>.</p></dd>
+
+
+<dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
+<dd><p>One of <code>"parametric"</code> (default), <code>"nonparametric"</code>, or
+<code>"analytical"</code>. The latter is reserved for Phase 3c (Mack 2008
+closed-form MSEP) and currently errors.</p></dd>
+
+
+<dt id="arg-residual">residual<a class="anchor" aria-label="anchor" href="#arg-residual"></a></dt>
+<dd><p>Residual scope for <code>type = "nonparametric"</code>. One of
+<code>"cell"</code> (default) or <code>"link"</code>. See <code><a href="bootstrap.html">bootstrap()</a></code>.</p></dd>
+
+
+<dt id="arg-process">process<a class="anchor" aria-label="anchor" href="#arg-process"></a></dt>
+<dd><p>One of <code>"gamma"</code> (default), <code>"od_pois"</code>, or <code>"normal"</code>.
+See <code><a href="bootstrap.html">bootstrap()</a></code>.</p></dd>
+
+
+<dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
+<dd><p>Numeric scalar passed through to the inner <code><a href="fit_cl.html">fit_cl()</a></code> and
+<code><a href="fit_exposure.html">fit_exposure()</a></code> calls. Default <code>1</code>.</p></dd>
+
+
+<dt id="arg-sigma-method">sigma_method<a class="anchor" aria-label="anchor" href="#arg-sigma-method"></a></dt>
+<dd><p>Sigma extrapolation method forwarded to
+<code><a href="fit_cl.html">fit_cl()</a></code> / <code><a href="fit_exposure.html">fit_exposure()</a></code>. Default <code>"locf"</code>.</p></dd>
+
+
+<dt id="arg-recent">recent<a class="anchor" aria-label="anchor" href="#arg-recent"></a></dt>
+<dd><p>Optional positive integer; calendar-diagonal filter
+forwarded to the inner fits. Default <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-regime">regime<a class="anchor" aria-label="anchor" href="#arg-regime"></a></dt>
+<dd><p>Optional regime specification forwarded to the inner
+loss and exposure fits. See <code><a href="fit_cl.html">fit_cl()</a></code> for the four-type dispatch.</p></dd>
+
+
+<dt id="arg-maturity">maturity<a class="anchor" aria-label="anchor" href="#arg-maturity"></a></dt>
+<dd><p>Optional maturity specification forwarded to the inner
+loss fit. See <code><a href="fit_cl.html">fit_cl()</a></code> for the four-type dispatch.</p></dd>
+
+
+<dt id="arg-conf-level">conf_level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
+<dd><p>Confidence level for the bootstrap quantile CI on
+<code>loss_ult</code>. Default <code>0.95</code>.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Reserved for future extension (currently unused).</p></dd>
 
@@ -185,14 +291,20 @@ silently dropped, missing cohorts raise an error).</p></dd>
 <dd><p>Loss / exposure variable names.</p></dd>
 
 <dt><code>full</code></dt>
-<dd><p><code>data.table</code> <code>[group, cohort, dev, loss_obs, loss_proj, exposure_obs, exposure_proj, is_observed, incr_loss_proj, exposure_incr_proj]</code>.</p></dd>
+<dd><p><code>data.table</code> <code>[group, cohort, dev, loss_obs, loss_proj, exposure_obs, exposure_proj, is_observed, incr_loss_proj, exposure_incr_proj]</code>. When <code>bootstrap</code> is
+enabled, additional columns <code>loss_total_se</code>, <code>loss_total_cv</code>,
+<code>loss_ci_lo</code>, <code>loss_ci_hi</code> carry per-cell bootstrap SE / CI on
+projected cells (observed cells stay <code>NA</code>).</p></dd>
 
 <dt><code>proj</code></dt>
 <dd><p>Same shape as <code>full</code>, with observed-cell projection
 columns NA'd out.</p></dd>
 
 <dt><code>summary</code></dt>
-<dd><p>Cohort-level reserve summary: <code>[group, cohort, latest, loss_ult, reserve, elr, q]</code>.</p></dd>
+<dd><p>Cohort-level reserve summary: <code>[group, cohort, latest, loss_ult, reserve, elr, q]</code>. When <code>bootstrap</code> is
+enabled, additional columns <code>loss_total_se</code>, <code>loss_total_cv</code>,
+<code>loss_ci_lo</code>, <code>loss_ci_hi</code> carry bootstrap SE / CI on
+<code>loss_ult</code>.</p></dd>
 
 <dt><code>prior</code></dt>
 <dd><p>Resolved <code>data.table(group..., cohort, elr)</code>.</p></dd>
@@ -208,6 +320,20 @@ emerged fractions.</p></dd>
 <dd><p>The inner <code>ExposureFit</code> used to derive
 \(E_i^{ult}\).</p></dd>
 
+<dt><code>bootstrap</code></dt>
+<dd><p>When <code>bootstrap</code> is enabled, a
+<code>BFBootstrap</code> helper holding both Triangle-level
+<code>BootstrapTriangle</code> objects and the per-replicate ultimate
+replicates; <code>NULL</code> otherwise.</p></dd>
+
+<dt><code>ci_type</code></dt>
+<dd><p><code>"bootstrap"</code> when <code>bootstrap</code> is enabled,
+<code>"analytical"</code> (placeholder) otherwise.</p></dd>
+
+<dt><code>alpha</code>, <code>sigma_method</code>, <code>recent</code>, <code>regime</code>, <code>maturity</code></dt>
+<dd><p>Inputs forwarded to the inner <code><a href="fit_cl.html">fit_cl()</a></code> / <code><a href="fit_exposure.html">fit_exposure()</a></code>
+calls.</p></dd>
+
 
 </dl></div>
     <div class="section level2">
@@ -219,7 +345,7 @@ emerged fractions.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="fit_capecod.html">fit_capecod()</a></code> (pooled ELR variant), <code><a href="fit_cl.html">fit_cl()</a></code>,
+    <div class="dont-index"><p><code><a href="fit_cc.html">fit_cc()</a></code> (pooled ELR variant), <code><a href="fit_cl.html">fit_cl()</a></code>,
 <code><a href="fit_exposure.html">fit_exposure()</a></code></p></div>
     </div>
 

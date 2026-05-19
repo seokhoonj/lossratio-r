@@ -24,16 +24,40 @@ where
 - \\E_i^{ult}\\: cohort \\i\\'s ultimate exposure, projected via chain
   ladder on the `exposure` column.
 
-This is a *standalone* worker – it does not currently integrate with
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
+This is a peer worker alongside
+[`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
 /
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md).
-Point projection only; analytical MSEP (Mack 2008) is not yet computed.
+[`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md)
+/
+[`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md).
+Standalone for the BF recipe – composition with
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
+is not part of this worker. Point projection is always computed;
+bootstrap SE / CI is opt-in via `bootstrap = TRUE` (Phase 3b).
+Closed-form Mack (2008) MSEP is not yet implemented.
 
 ## Usage
 
 ``` r
-fit_bf(x, loss = "loss", exposure = "exposure", prior, ...)
+fit_bf(
+  x,
+  loss = "loss",
+  exposure = "exposure",
+  prior,
+  bootstrap = NULL,
+  B = 999L,
+  seed = NULL,
+  type = c("parametric", "nonparametric", "analytical"),
+  residual = c("cell", "link"),
+  process = c("gamma", "od_pois", "normal"),
+  alpha = 1,
+  sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
+  recent = NULL,
+  regime = NULL,
+  maturity = NULL,
+  conf_level = 0.95,
+  ...
+)
 ```
 
 ## Arguments
@@ -63,6 +87,103 @@ fit_bf(x, loss = "loss", exposure = "exposure", prior, ...)
 
   :   Per-cohort ELR. Must cover every cohort present in `x` (extras are
       silently dropped, missing cohorts raise an error).
+
+- bootstrap:
+
+  Bootstrap configuration. Five forms accepted:
+
+  `NULL` / `FALSE` (default)
+
+  :   Point estimate only – no bootstrap SE/CI.
+
+  `TRUE` / `"auto"`
+
+  :   Internal
+      [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
+      calls (one for loss, one for exposure) sharing `seed` so replicate
+      indices align across the two simulations.
+
+  Named list `list(loss = BootstrapTriangle, exposure = BootstrapTriangle)`
+
+  :   Pre-built objects from
+      [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md).
+      Must have matching `meta$B` / `meta$seed` so per-replicate
+      composition is well-defined; `meta$target` must be `"loss"` and
+      `"exposure"` respectively.
+
+  Function `function(tri) -> list(loss = ..., exposure = ...)`
+
+  :   Lazy spec invoked on the input Triangle (leakage-safe for
+      [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)).
+
+  Latest observed cumulative loss is *not* perturbed in the BF recipe –
+  it is treated as the cohort anchor, mirroring the point-estimate
+  formula.
+
+- B:
+
+  Integer number of bootstrap replicates. Used only when `bootstrap`
+  resolves to `"auto"`. Default `999`.
+
+- seed:
+
+  Optional integer seed for reproducible bootstrap. Default `NULL`.
+
+- type:
+
+  One of `"parametric"` (default), `"nonparametric"`, or `"analytical"`.
+  The latter is reserved for Phase 3c (Mack 2008 closed-form MSEP) and
+  currently errors.
+
+- residual:
+
+  Residual scope for `type = "nonparametric"`. One of `"cell"` (default)
+  or `"link"`. See
+  [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md).
+
+- process:
+
+  One of `"gamma"` (default), `"od_pois"`, or `"normal"`. See
+  [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md).
+
+- alpha:
+
+  Numeric scalar passed through to the inner
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
+  and
+  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
+  calls. Default `1`.
+
+- sigma_method:
+
+  Sigma extrapolation method forwarded to
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
+  /
+  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md).
+  Default `"locf"`.
+
+- recent:
+
+  Optional positive integer; calendar-diagonal filter forwarded to the
+  inner fits. Default `NULL`.
+
+- regime:
+
+  Optional regime specification forwarded to the inner loss and exposure
+  fits. See
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
+  for the four-type dispatch.
+
+- maturity:
+
+  Optional maturity specification forwarded to the inner loss fit. See
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
+  for the four-type dispatch.
+
+- conf_level:
+
+  Confidence level for the bootstrap quantile CI on `loss_ult`. Default
+  `0.95`.
 
 - ...:
 
@@ -104,6 +225,9 @@ An object of class `"BFFit"` containing:
 
   `data.table`
   `[group, cohort, dev, loss_obs, loss_proj, exposure_obs, exposure_proj, is_observed, incr_loss_proj, exposure_incr_proj]`.
+  When `bootstrap` is enabled, additional columns `loss_total_se`,
+  `loss_total_cv`, `loss_ci_lo`, `loss_ci_hi` carry per-cell bootstrap
+  SE / CI on projected cells (observed cells stay `NA`).
 
 - `proj`:
 
@@ -112,7 +236,9 @@ An object of class `"BFFit"` containing:
 - `summary`:
 
   Cohort-level reserve summary:
-  `[group, cohort, latest, loss_ult, reserve, elr, q]`.
+  `[group, cohort, latest, loss_ult, reserve, elr, q]`. When `bootstrap`
+  is enabled, additional columns `loss_total_se`, `loss_total_cv`,
+  `loss_ci_lo`, `loss_ci_hi` carry bootstrap SE / CI on `loss_ult`.
 
 - `prior`:
 
@@ -130,6 +256,25 @@ An object of class `"BFFit"` containing:
 
   The inner `ExposureFit` used to derive \\E_i^{ult}\\.
 
+- `bootstrap`:
+
+  When `bootstrap` is enabled, a `BFBootstrap` helper holding both
+  Triangle-level `BootstrapTriangle` objects and the per-replicate
+  ultimate replicates; `NULL` otherwise.
+
+- `ci_type`:
+
+  `"bootstrap"` when `bootstrap` is enabled, `"analytical"`
+  (placeholder) otherwise.
+
+- `alpha`, `sigma_method`, `recent`, `regime`, `maturity`:
+
+  Inputs forwarded to the inner
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
+  /
+  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
+  calls.
+
 ## References
 
 Bornhuetter, R. L. and Ferguson, R. E. (1972). The actuary and IBNR.
@@ -140,7 +285,7 @@ Bulletin*, 38(1), 87-103. (MSEP – not yet implemented.)
 
 ## See also
 
-[`fit_capecod()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_capecod.md)
+[`fit_cc()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cc.md)
 (pooled ELR variant),
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md),
 [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
