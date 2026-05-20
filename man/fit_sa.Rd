@@ -35,9 +35,10 @@ fit_sa(
 \item{alpha}{Variance-structure exponent for the loss fit. Default \code{1}.}
 
 \item{exposure_fit}{Optional pre-built \code{ExposureFit} supplying the
-exposure projection. When \code{NULL}, \code{fit_sa()} calls \code{\link[=fit_exposure]{fit_exposure()}}
-internally using \code{exposure_method}, \code{exposure_alpha}, and the
-resolved \code{regime}.}
+exposure projection. When \code{NULL}, \code{fit_sa()} builds the exposure
+projection internally -- a worker-layer \code{fit_cl()} on the
+\code{exposure} column -- using \code{exposure_method}, \code{exposure_alpha},
+and the resolved \code{regime}.}
 
 \item{exposure_method}{One of \code{"ed"} (default) or \code{"cl"}. Used only
 when \code{exposure_fit = NULL}.}

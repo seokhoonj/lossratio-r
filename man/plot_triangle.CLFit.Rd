@@ -2,77 +2,21 @@
 % Please edit documentation in R/cl-vis.R
 \name{plot_triangle.CLFit}
 \alias{plot_triangle.CLFit}
-\title{Plot chain ladder results as a triangle table}
+\title{Plot a chain ladder fit as a triangle table}
 \usage{
-\method{plot_triangle}{CLFit}(
-  x,
-  region = c("proj", "full", "data"),
-  view = c("value", "usage"),
-  label_style = c("value", "cv", "se", "ci"),
-  label_size = NULL,
-  conf_level = 0.95,
-  amount_divisor = "auto",
-  theme = c("view", "save", "shiny"),
-  nrow = NULL,
-  ncol = NULL,
-  ...
-)
+\method{plot_triangle}{CLFit}(x, ...)
 }
 \arguments{
 \item{x}{An object of class \code{"CLFit"}.}
 
-\item{region}{Cell region to plot (only used when \code{view = "value"}).
-One of \code{"proj"} (default; projected cells only, observed cells
-masked), \code{"full"} (observed + projected), or \code{"data"} (observed
-from \code{x$data} -- the raw Triangle, no projection).}
-
-\item{view}{Plot mode. One of:
-\describe{
-\item{"value" (default)}{Per-cell metric heatmap. \code{region}
-selects which cells to display.}
-\item{"usage"}{Cell-status heatmap (\code{fit_data} / \code{excluded} /
-\code{future}) driven by the fit's \code{x$recent}. \code{region} is
-ignored. CL has no \code{regime} / maturity hooks, so the
-hybrid overlays do not apply.}
-}}
-
-\item{label_style}{One of \code{"value"} (default), \code{"cv"}, \code{"se"}, or
-\code{"ci"}.}
-
-\item{label_size}{Numeric size of the in-cell text label. Defaults
-to \code{3} for \code{label_style = "value"}, \code{"cv"}, or \code{"se"} and \code{2.5}
-for \code{label_style = "ci"} (two-line labels).}
-
-\item{conf_level}{Confidence level used when \code{label_style = "ci"}.
-Default is \code{0.95}.}
-
-\item{amount_divisor}{Numeric scaling factor for amount variables.
-Default is \code{1}.}
-
-\item{theme}{A string passed to \code{\link[=.switch_theme]{.switch_theme()}}.}
-
-\item{nrow, ncol}{Number of rows and columns for \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}.}
-
-\item{...}{Additional arguments passed to \code{\link[=.switch_theme]{.switch_theme()}}.}
+\item{...}{Forwarded to \code{.plot_triangle_fit()} -- \code{region}, \code{view},
+\code{label_style}, \code{label_size}, \code{conf_level}, \code{amount_divisor},
+\code{theme}, \code{nrow}, \code{ncol}.}
 }
 \value{
-A ggplot object.
+A \code{ggplot} object.
 }
 \description{
-Visualise a \code{"CLFit"} object as a triangle-style heatmap table.
-
-The \code{region} argument controls which values are shown:
-\describe{
-\item{\code{"proj"}}{Projected cells only.}
-\item{\code{"full"}}{Observed and projected full triangle.}
-\item{\code{"data"}}{Original observed data from \code{x$data}.}
-}
-
-The \code{label_style} argument controls cell labels:
-\describe{
-\item{\code{"value"}}{Projected value only. Applied to all cells.}
-\item{\code{"cv"}}{Coefficient of variation (\%) for projected cells.}
-\item{\code{"se"}}{Standard error for projected cells.}
-\item{\code{"ci"}}{Confidence interval for projected cells.}
-}
+Triangle-style heatmap for a \code{"CLFit"}. Delegates to the shared
+role-agnostic \code{.plot_triangle_fit()} implementation.
 }

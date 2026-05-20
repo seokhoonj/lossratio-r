@@ -387,10 +387,14 @@ plot.ExposureFit <- function(x, ...) {
 }
 
 
-#' Plot chain ladder results as a triangle table
+#' Triangle-table plot for a projection-level fit
 #'
 #' @description
-#' Visualise a `"CLFit"` object as a triangle-style heatmap table.
+#' Role-agnostic triangle-style heatmap shared by the `plot_triangle`
+#' methods for `CLFit` / `SAFit` / `BFFit` / `CCFit` / `ExposureFit`.
+#' The cell metric and per-cell SE / CV columns are derived from
+#' `x$loss` (`loss_*` for the loss-side fits, `exposure_*` for an
+#' `ExposureFit`).
 #'
 #' The `region` argument controls which values are shown:
 #' \describe{
@@ -407,7 +411,8 @@ plot.ExposureFit <- function(x, ...) {
 #'   \item{`"ci"`}{Confidence interval for projected cells.}
 #' }
 #'
-#' @param x An object of class `"CLFit"`.
+#' @param x A projection-level fit (`CLFit`, `SAFit`, `BFFit`, `CCFit`,
+#'   or `ExposureFit`).
 #' @param region Cell region to plot (only used when `view = "value"`).
 #'   One of `"proj"` (default; projected cells only, observed cells
 #'   masked), `"full"` (observed + projected), or `"data"` (observed
@@ -436,21 +441,18 @@ plot.ExposureFit <- function(x, ...) {
 #'
 #' @return A ggplot object.
 #'
-#' @method plot_triangle CLFit
-#' @export
-plot_triangle.CLFit <- function(x,
-                                 region         = c("proj", "full", "data"),
-                                 view           = c("value", "usage"),
-                                 label_style    = c("value", "cv", "se", "ci"),
-                                 label_size     = NULL,
-                                 conf_level     = 0.95,
-                                 amount_divisor = "auto",
-                                 theme          = c("view", "save", "shiny"),
-                                 nrow           = NULL,
-                                 ncol           = NULL,
-                                 ...) {
-
-  .assert_class(x, c("CLFit", "SAFit", "BFFit", "CCFit", "ExposureFit"))
+#' @keywords internal
+.plot_triangle_fit <- function(x,
+                                region         = c("proj", "full", "data"),
+                                view           = c("value", "usage"),
+                                label_style    = c("value", "cv", "se", "ci"),
+                                label_size     = NULL,
+                                conf_level     = 0.95,
+                                amount_divisor = "auto",
+                                theme          = c("view", "save", "shiny"),
+                                nrow           = NULL,
+                                ncol           = NULL,
+                                ...) {
 
   # Suppress R CMD check NOTEs for `data.table` temp columns referenced
   # bare inside `j` expressions later in this function.
@@ -691,11 +693,32 @@ plot_triangle.CLFit <- function(x,
 }
 
 
+#' Plot a chain ladder fit as a triangle table
+#'
+#' @description
+#' Triangle-style heatmap for a `"CLFit"`. Delegates to the shared
+#' role-agnostic `.plot_triangle_fit()` implementation.
+#'
+#' @param x An object of class `"CLFit"`.
+#' @param ... Forwarded to `.plot_triangle_fit()` -- `region`, `view`,
+#'   `label_style`, `label_size`, `conf_level`, `amount_divisor`,
+#'   `theme`, `nrow`, `ncol`.
+#'
+#' @return A `ggplot` object.
+#'
+#' @method plot_triangle CLFit
+#' @export
+plot_triangle.CLFit <- function(x, ...) {
+  .assert_class(x, "CLFit")
+  .plot_triangle_fit(x, ...)
+}
+
+
 #' Plot a stage-adaptive fit as a triangle table
 #'
 #' @description
 #' Triangle-style heatmap for a `"SAFit"`. Delegates to the
-#' role-agnostic implementation shared with [plot_triangle.CLFit()].
+#' shared role-agnostic `.plot_triangle_fit()` implementation.
 #'
 #' @param x An object of class `"SAFit"`.
 #' @param ... Forwarded to the shared implementation -- `region`,
@@ -708,7 +731,7 @@ plot_triangle.CLFit <- function(x,
 #' @export
 plot_triangle.SAFit <- function(x, ...) {
   .assert_class(x, "SAFit")
-  plot_triangle.CLFit(x, ...)
+  .plot_triangle_fit(x, ...)
 }
 
 
@@ -716,7 +739,7 @@ plot_triangle.SAFit <- function(x, ...) {
 #'
 #' @description
 #' Triangle-style heatmap for a `"BFFit"`. Delegates to the
-#' role-agnostic implementation shared with [plot_triangle.CLFit()].
+#' shared role-agnostic `.plot_triangle_fit()` implementation.
 #'
 #' @param x An object of class `"BFFit"`.
 #' @param ... Forwarded to the shared implementation -- see
@@ -728,7 +751,7 @@ plot_triangle.SAFit <- function(x, ...) {
 #' @export
 plot_triangle.BFFit <- function(x, ...) {
   .assert_class(x, "BFFit")
-  plot_triangle.CLFit(x, ...)
+  .plot_triangle_fit(x, ...)
 }
 
 
@@ -736,7 +759,7 @@ plot_triangle.BFFit <- function(x, ...) {
 #'
 #' @description
 #' Triangle-style heatmap for a `"CCFit"`. Delegates to the
-#' role-agnostic implementation shared with [plot_triangle.CLFit()].
+#' shared role-agnostic `.plot_triangle_fit()` implementation.
 #'
 #' @param x An object of class `"CCFit"`.
 #' @param ... Forwarded to the shared implementation -- see
@@ -748,7 +771,7 @@ plot_triangle.BFFit <- function(x, ...) {
 #' @export
 plot_triangle.CCFit <- function(x, ...) {
   .assert_class(x, "CCFit")
-  plot_triangle.CLFit(x, ...)
+  .plot_triangle_fit(x, ...)
 }
 
 
@@ -756,7 +779,7 @@ plot_triangle.CCFit <- function(x, ...) {
 #'
 #' @description
 #' Triangle-style heatmap for an `"ExposureFit"`. Delegates to the
-#' role-agnostic implementation shared with [plot_triangle.CLFit()];
+#' shared role-agnostic `.plot_triangle_fit()` implementation;
 #' the cell metric is the exposure projection.
 #'
 #' @param x An object of class `"ExposureFit"`.
@@ -769,5 +792,5 @@ plot_triangle.CCFit <- function(x, ...) {
 #' @export
 plot_triangle.ExposureFit <- function(x, ...) {
   .assert_class(x, "ExposureFit")
-  plot_triangle.CLFit(x, ...)
+  .plot_triangle_fit(x, ...)
 }

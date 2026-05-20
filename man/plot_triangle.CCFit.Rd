@@ -17,5 +17,5 @@ A \code{ggplot} object.
 }
 \description{
 Triangle-style heatmap for a \code{"CCFit"}. Delegates to the
-role-agnostic implementation shared with \code{\link[=plot_triangle.CLFit]{plot_triangle.CLFit()}}.
+shared role-agnostic \code{.plot_triangle_fit()} implementation.
 }

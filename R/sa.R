@@ -17,9 +17,10 @@
 #' @param exposure Cumulative exposure column name. Default `"exposure"`.
 #' @param alpha Variance-structure exponent for the loss fit. Default `1`.
 #' @param exposure_fit Optional pre-built `ExposureFit` supplying the
-#'   exposure projection. When `NULL`, `fit_sa()` calls [fit_exposure()]
-#'   internally using `exposure_method`, `exposure_alpha`, and the
-#'   resolved `regime`.
+#'   exposure projection. When `NULL`, `fit_sa()` builds the exposure
+#'   projection internally -- a worker-layer `fit_cl()` on the
+#'   `exposure` column -- using `exposure_method`, `exposure_alpha`,
+#'   and the resolved `regime`.
 #' @param exposure_method One of `"ed"` (default) or `"cl"`. Used only
 #'   when `exposure_fit = NULL`.
 #' @param exposure_alpha Variance-structure exponent for the exposure fit.
