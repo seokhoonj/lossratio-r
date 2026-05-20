@@ -89,7 +89,7 @@ plot.Triangle <- function(x,
   grp     <- attr(x, "groups")
   coh     <- attr(x, "cohort")
   dev <- attr(x, "dev")
-  metric <- .capture_names(x, !!rlang::enquo(metric))
+  metric <- .check_metric(metric, x)
 
   if (identical(amount_divisor, "auto"))
     amount_divisor <- .auto_divisor(
@@ -352,7 +352,7 @@ plot.Calendar <- function(x,
 
   grp     <- attr(x, "groups")
   cal     <- attr(x, "calendar")
-  metric <- .capture_names(x, !!rlang::enquo(metric))
+  metric <- .check_metric(metric, x)
 
   valid_vars <- c(
     "ratio", "incr_ratio",
@@ -609,7 +609,7 @@ plot_triangle.Triangle <- function(x,
   grp     <- attr(x, "groups")
   coh     <- attr(x, "cohort")
   dev <- attr(x, "dev")
-  metric <- .capture_names(x, !!rlang::enquo(metric))
+  metric <- .check_metric(metric, x)
 
   valid_vars <- c(
     "ratio", "incr_ratio",
@@ -845,7 +845,7 @@ plot.Total <- function(x,
   theme <- match.arg(theme)
 
   grp     <- attr(x, "groups")
-  metric <- .capture_names(x, !!rlang::enquo(metric))
+  metric <- .check_metric(metric, x)
 
   valid_vars <- c("ratio", "loss", "exposure", "loss_share", "exposure_share")
 

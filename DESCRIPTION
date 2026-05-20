@@ -30,8 +30,7 @@ Imports:
     data.table (>= 1.13.0),
     ecp,
     ggplot2 (>= 3.5.0),
-    ggshort,
-    rlang (>= 1.1.7)
+    ggshort
 Suggests:
     knitr,
     pkgdown,

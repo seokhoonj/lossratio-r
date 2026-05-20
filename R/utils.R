@@ -21,6 +21,29 @@
 }
 
 
+#' Validate a `metric` plotting argument
+#'
+#' @description
+#' Internal helper for the `plot_triangle()` methods: checks that
+#' `metric` is a single column name present in `data` and returns it.
+#'
+#' @param metric A single character column name.
+#' @param data A `data.frame`-like object.
+#'
+#' @return `metric`, unchanged, after validation.
+#'
+#' @keywords internal
+.check_metric <- function(metric, data) {
+  if (!is.character(metric) || length(metric) != 1L || is.na(metric))
+    stop("`metric` must be a single column name (character).",
+         call. = FALSE)
+  if (!metric %in% names(data))
+    stop(sprintf("`metric` column '%s' not found.", metric),
+         call. = FALSE)
+  metric
+}
+
+
 # Cohort axis label ------------------------------------------------------
 
 #' Period axis label with grain qualifier

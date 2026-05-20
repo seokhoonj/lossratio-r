@@ -255,7 +255,7 @@ plot.RatioFit <- function(x,
 
     if (length(facet_vars)) {
       p <- p + ggplot2::facet_wrap(
-        ggplot2::vars(!!!rlang::syms(facet_vars)),
+        facet_vars,
         scales   = scales,
         nrow     = nrow,
         ncol     = ncol,

@@ -18,7 +18,6 @@
 #'   hstack_plots_with_legend scale_color_by_month_gradientn
 #'   scale_fill_pair_manual scale_y_comma set_ggshort_font stat_mean_hline
 #'   switch_theme
-#' @importFrom rlang enquo
 #' @importFrom stats median reformulate setNames sigma window
 #' @importFrom utils head tail
 ## usethis namespace: end

@@ -201,7 +201,7 @@ plot.CLFit <- function(x,
     # facet
     if (length(c(grp, "cohort"))) {
       p <- p + ggplot2::facet_wrap(
-        ggplot2::vars(!!!rlang::syms(c(grp, "cohort"))),
+        c(grp, "cohort"),
         scales   = scales,
         nrow     = nrow,
         ncol     = ncol,
@@ -274,7 +274,7 @@ plot.CLFit <- function(x,
   # facet
   if (length(grp)) {
     p <- p + ggplot2::facet_wrap(
-      ggplot2::vars(!!!rlang::syms(grp)),
+      grp,
       scales = scales,
       nrow   = nrow,
       ncol   = ncol
@@ -577,7 +577,7 @@ plot_triangle.CLFit <- function(x,
   # 7) facet
   if (length(grp)) {
     p <- p + ggplot2::facet_wrap(
-      ggplot2::vars(!!!rlang::syms(grp)),
+      grp,
       nrow = nrow,
       ncol = ncol
     )
