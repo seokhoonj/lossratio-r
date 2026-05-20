@@ -18,10 +18,6 @@
 #'   hstack_plots_with_legend scale_color_by_month_gradientn
 #'   scale_fill_pair_manual scale_y_comma set_ggshort_font stat_mean_hline
 #'   switch_theme
-#' @importFrom instead add_group_stats assert_class assert_length capture_names
-#'   check_col_spec format_period get_half_start get_half_start
-#'   get_quarter_start get_year_start has_cols longer prepend_class
-#'   set_instead_font summarise_group_stats update_class read_rds
 #' @importFrom rlang enquo
 #' @importFrom stats median reformulate setNames sigma window
 #' @importFrom utils head tail

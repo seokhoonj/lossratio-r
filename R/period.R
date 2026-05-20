@@ -8,8 +8,9 @@
 #' Three concerns:
 #'
 #' 1. **Date coercion** -- accept Date / POSIXt / integer / character and
-#'    produce a Date column. Wraps `instead::as_date_safe` for the
-#'    string path; integer (yyyy / yyyymm / yyyymmdd) handled inline.
+#'    produce a Date column. The string path is handled by an internal
+#'    `.as_date_safe` (ISO-style formats); integer
+#'    (yyyy / yyyymm / yyyymmdd) handled inline.
 #' 2. **Grain** -- detect / validate granularity codes:
 #'    `"M"` (month) / `"Q"` (quarter) / `"H"` (half-yearly) / `"Y"` (yearly).
 #'    `grain = "auto"` resolves to the inferred input grain.
@@ -64,11 +65,52 @@ NULL
 }
 
 
+# Coerce a character vector of date strings to Date. Accepts the
+# ISO-style formats actuarial experience data uses -- yyyy-mm-dd,
+# yyyy/mm/dd, yyyymmdd, and the same with a trailing HH:MM:SS. Empty
+# strings become NA; an unrecognised format is an error (ambiguous
+# day-month orders are not guessed -- pre-format such data instead).
+.as_date_safe <- function(x) {
+  if (inherits(x, "Date"))   return(x)
+  if (inherits(x, "POSIXt")) return(as.Date(x))
+  if (is.factor(x))          x <- as.character(x)
+  if (!is.character(x))
+    stop("Date input must be character, factor, Date, or POSIXt.",
+         call. = FALSE)
+
+  x[!nzchar(trimws(x))] <- NA_character_
+  out <- as.Date(rep(NA_character_, length(x)))
+  idx <- which(!is.na(x))
+  if (!length(idx)) return(out)
+  v <- trimws(x[idx])
+
+  patterns <- list(
+    c("^[0-9]{4}-[0-9]{2}-[0-9]{2}( +[0-9:]{8})?$", "%Y-%m-%d"),
+    c("^[0-9]{4}/[0-9]{2}/[0-9]{2}( +[0-9:]{8})?$", "%Y/%m/%d"),
+    c("^[0-9]{8}$",                                 "%Y%m%d")
+  )
+  for (p in patterns) {
+    hit <- grepl(p[1L], v)
+    if (any(hit)) out[idx[hit]] <- as.Date(v[hit], format = p[2L])
+  }
+
+  bad <- is.na(out[idx])
+  if (any(bad)) {
+    u <- unique(v[bad])
+    n <- min(5L, length(u))
+    stop(sprintf("Unsupported date format(s): %s%s.",
+                 paste(u[seq_len(n)], collapse = ", "),
+                 if (length(u) > n) ", ..." else ""), call. = FALSE)
+  }
+  out
+}
+
+
 .coerce_to_date <- function(x, var_name) {
   if (inherits(x, "Date"))   return(x)
   if (inherits(x, "POSIXt")) return(as.Date(x))
   if (is.factor(x))          x <- as.character(x)
-  if (is.character(x))       return(instead::as_date_safe(x))
+  if (is.character(x))       return(.as_date_safe(x))
   if (is.integer(x) || is.numeric(x)) return(.int_to_date(x, var_name))
   stop(sprintf(
     "Cannot coerce column '%s' (class %s) to Date. Supported: Date, POSIXt, integer, character, factor.",
