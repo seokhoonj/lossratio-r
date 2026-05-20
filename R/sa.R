@@ -20,7 +20,7 @@
 #'   exposure projection. When `NULL`, `fit_sa()` calls [fit_exposure()]
 #'   internally using `exposure_method`, `exposure_alpha`, and the
 #'   resolved `regime`.
-#' @param exposure_method One of `"cl"` (default) or `"ed"`. Used only
+#' @param exposure_method One of `"ed"` (default) or `"cl"`. Used only
 #'   when `exposure_fit = NULL`.
 #' @param exposure_alpha Variance-structure exponent for the exposure fit.
 #'   Default `1`.
@@ -77,7 +77,7 @@ fit_sa <- function(x,
                    exposure        = "exposure",
                    alpha           = 1,
                    exposure_fit    = NULL,
-                   exposure_method = c("cl", "ed"),
+                   exposure_method = c("ed", "cl"),
                    exposure_alpha  = 1,
                    sigma_method    = c("locf", "min_last2", "loglinear",
                                        "mack", "none"),

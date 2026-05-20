@@ -9,7 +9,7 @@ bootstrap(x, ...)
 
 \method{bootstrap}{Triangle}(
   x,
-  type = c("analytical", "nonparametric", "parametric"),
+  type = c("parametric", "nonparametric", "analytical"),
   residual = c("cell", "link"),
   hat_adj = TRUE,
   demean = TRUE,
@@ -33,7 +33,8 @@ bootstrap(x, ...)
 
 \item{...}{Reserved for future use.}
 
-\item{type}{One of \code{"analytical"}, \code{"nonparametric"}, or \code{"parametric"}.
+\item{type}{One of \code{"parametric"} (default), \code{"nonparametric"}, or
+\code{"analytical"}.
 \code{"analytical"} draws new link factors from
 \code{N(f_hat, sqrt(Var(f_hat)))} (Mack 1993 closed-form propagation; CL
 only). \code{"nonparametric"} resamples standardized residuals and

@@ -10,7 +10,7 @@ fit_loss(
   alpha = 1,
   regime = NULL,
   exposure_fit = NULL,
-  exposure_method = c("cl", "ed"),
+  exposure_method = c("ed", "cl"),
   exposure_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
@@ -44,7 +44,7 @@ exposure projection. Only used by \code{"ed"} (via \code{fit_ed}'s internal
 exposure handling) and \code{"sa"}. When \code{NULL}, the worker calls
 \code{\link[=fit_exposure]{fit_exposure()}} internally.}
 
-\item{exposure_method}{One of \code{"cl"} (default) or \code{"ed"}. Used only
+\item{exposure_method}{One of \code{"ed"} (default) or \code{"cl"}. Used only
 when \code{exposure_fit = NULL} for \code{"sa"}.}
 
 \item{exposure_alpha}{Variance-structure exponent for the exposure fit.

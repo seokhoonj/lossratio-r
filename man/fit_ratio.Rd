@@ -6,28 +6,33 @@
 \usage{
 fit_ratio(
   x,
-  method = c("ed", "cl", "sa"),
+  method = c("ed", "cl", "sa", "bf", "cc"),
   loss_alpha = 1,
   loss_regime = NULL,
-  exposure_method = c("cl", "ed"),
+  exposure_method = c("ed", "cl"),
   exposure_alpha = 1,
   exposure_regime = NULL,
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   maturity = "auto",
+  tail = FALSE,
   se_method = c("fixed", "delta"),
   rho = 0.95,
   conf_level = 0.95,
   bootstrap = NULL,
   B = 999L,
-  seed = NULL
+  seed = NULL,
+  ...
 )
 }
 \arguments{
 \item{x}{An object of class \code{"Triangle"}. The standardized \code{"loss"}
 and \code{"exposure"} columns are used (\code{as_triangle()} produces these).}
 
-\item{method}{One of \code{"ed"} (default), \code{"cl"}, or \code{"sa"}.}
+\item{method}{One of \code{"ed"} (default), \code{"cl"}, \code{"sa"}, \code{"bf"}, or
+\code{"cc"} -- the loss-side projection method, forwarded to
+\code{\link[=fit_loss]{fit_loss()}}. \code{"bf"} and \code{"cc"} require their prior arguments
+(\code{prior}, etc.) supplied through \code{...}.}
 
 \item{loss_alpha}{Numeric scalar controlling the variance structure for
 loss estimation. Default is \code{1}.}
@@ -54,7 +59,7 @@ intensities from a regime change.}
 the change date are excluded from estimation.}
 }}
 
-\item{exposure_method}{One of \code{"cl"} (default) or \code{"ed"}. Forwarded to
+\item{exposure_method}{One of \code{"ed"} (default) or \code{"cl"}. Forwarded to
 \code{\link[=fit_exposure]{fit_exposure()}} when constructing the exposure projection.}
 
 \item{exposure_alpha}{Numeric scalar for exposure chain ladder. Default
@@ -93,6 +98,10 @@ triangle and returning a \code{Maturity} object (e.g. from
 When \code{method = "sa"}, this also determines the switch point between
 ED and CL phases.}
 
+\item{tail}{Tail factor for the loss-side projection, forwarded to
+\code{\link[=fit_loss]{fit_loss()}}. \code{FALSE} (default) applies none; \code{TRUE} estimates a
+log-linear tail factor; a numeric value is used directly.}
+
 \item{se_method}{Method for computing \code{ratio_se = SE(L/P)}. One of:
 \describe{
 \item{\code{"fixed"} (default)}{Premium treated as fixed (non-random).
@@ -120,7 +129,7 @@ in the cohort summary. Default is \code{0.95}.}
 \item{bootstrap}{Bootstrap configuration. Five forms accepted:
 \describe{
 \item{\code{NULL} (default)}{Auto-resolved by \code{method}: bootstrap for
-\code{"sa"}/\code{"ed"}, analytical for \code{"cl"}. Matches legacy behavior.}
+\code{"sa"}/\code{"ed"}, analytical for \code{"cl"}/\code{"bf"}/\code{"cc"}.}
 \item{\code{TRUE} / \code{FALSE}}{Back-compat with the legacy logical arg.
 \code{TRUE} triggers \code{"auto"}; \code{FALSE} disables.}
 \item{\code{"auto"}}{Internal \code{bootstrap()} call on the loss triangle
@@ -142,13 +151,17 @@ plus \code{rho} correlation).}
 
 \item{seed}{Optional integer seed for reproducible bootstrap.
 Default is \code{NULL}.}
+
+\item{...}{Additional arguments forwarded to \code{\link[=fit_loss]{fit_loss()}} and its
+worker -- notably \code{prior} (and related arguments) when
+\code{method = "bf"} or \code{"cc"}.}
 }
 \value{
 An object of class \code{"RatioFit"}.
 }
 \description{
 Unified interface for loss ratio projection from a \code{"Triangle"} object.
-Three projection methods are available:
+Five projection methods are available:
 
 \describe{
 \item{\code{"ed"} (default)}{Exposure-driven for all development periods.
@@ -170,10 +183,16 @@ chain ladder projection
 \eqn{C^L_{k+1} = f_k \cdot C^L_k} preserves the cohort's
 observed level.
 }}
+\item{\code{"bf"}}{Bornhuetter-Ferguson: blends the chain-ladder
+ultimate with an external prior loss ratio by the emergence
+fraction. Requires a \code{prior} argument, passed through \code{...}.}
+\item{\code{"cc"}}{Cape Cod: like \code{"bf"}, but the prior loss ratio is
+estimated by pooling the data rather than supplied externally.}
 }
 
-In all cases, exposure is projected forward using chain ladder:
-\deqn{\hat{C}^P_{i,k+1} = f^P_k \cdot \hat{C}^P_{i,k}}
+In all cases, exposure is projected forward to ultimate; the point
+projection is identical under \code{exposure_method = "ed"} or \code{"cl"}
+(they differ only in the variance recursion).
 
 This function is the \emph{composition} layer over \code{\link[=fit_loss]{fit_loss()}} and
 \code{\link[=fit_exposure]{fit_exposure()}}: it delegates loss projection to \code{fit_loss()},

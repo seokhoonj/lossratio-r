@@ -191,7 +191,8 @@
 #'    distribution to use.
 #'
 #' @param x A `Triangle` object.
-#' @param type One of `"analytical"`, `"nonparametric"`, or `"parametric"`.
+#' @param type One of `"parametric"` (default), `"nonparametric"`, or
+#'   `"analytical"`.
 #'   `"analytical"` draws new link factors from
 #'   `N(f_hat, sqrt(Var(f_hat)))` (Mack 1993 closed-form propagation; CL
 #'   only). `"nonparametric"` resamples standardized residuals and
@@ -348,8 +349,8 @@ bootstrap <- function(x, ...) {
 #'   target so downstream refit helpers know which column to read.
 #' @export
 bootstrap.Triangle <- function(x,
-                                type        = c("analytical", "nonparametric",
-                                                "parametric"),
+                                type        = c("parametric", "nonparametric",
+                                                "analytical"),
                                 residual    = c("cell", "link"),
                                 hat_adj     = TRUE,
                                 demean      = TRUE,

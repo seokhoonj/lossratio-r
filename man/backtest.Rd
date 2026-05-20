@@ -11,8 +11,8 @@ backtest(
   x,
   holdout = 6L,
   target = c("ratio", "loss", "exposure"),
-  loss_method = c("ed", "cl", "sa"),
-  exposure_method = c("cl", "ed"),
+  loss_method = c("ed", "cl", "sa", "bf", "cc"),
+  exposure_method = c("ed", "cl"),
   loss_alpha = 1,
   exposure_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
@@ -24,7 +24,7 @@ backtest(
   rho = 0.95,
   conf_level = 0.95,
   bootstrap = NULL,
-  B = 999,
+  B = 999L,
   seed = NULL,
   ...
 )
@@ -49,11 +49,13 @@ is treated as the held-out actual.}
 
 \item{loss_method}{Method for the loss-side projection. Passed to
 \code{fit_ratio()} / \code{fit_loss()} as their \code{method} argument. One of
-\code{"sa"}, \code{"ed"}, \code{"cl"}. Unused for \code{target = "exposure"}.}
+\code{"ed"} (default), \code{"cl"}, \code{"sa"}, \code{"bf"}, or \code{"cc"}. \code{"bf"} / \code{"cc"}
+need their prior arguments supplied through \code{...}. Unused for
+\code{target = "exposure"}.}
 
 \item{exposure_method}{Method for the exposure-side projection.
 Passed to \code{fit_ratio()} / \code{fit_loss()} / \code{fit_exposure()}. One of
-\code{"cl"}, \code{"ed"}.}
+\code{"ed"} (default) or \code{"cl"}.}
 
 \item{loss_alpha, exposure_alpha}{Mack alpha for loss-side / exposure-side
 chain-ladder estimation.}

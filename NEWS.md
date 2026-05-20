@@ -1,5 +1,20 @@
 # lossratio (development version)
 
+* **API consistency pass.** Several entry points were aligned so the
+  same concept behaves the same way regardless of entry point:
+  * `exposure_method` now defaults to `"ed"` (was `"cl"`) in
+    `fit_sa()` / `fit_loss()` / `fit_ratio()` / `backtest()`, matching
+    `fit_exposure()`. This changes the default exposure-side variance
+    recursion; point projections are unaffected. Pass
+    `exposure_method = "cl"` to keep the old behaviour.
+  * `bootstrap()`'s `type` now defaults to `"parametric"` (was
+    `"analytical"`), matching the `fit_sa()` / `fit_bf()` / `fit_cc()`
+    workers. Pass `type = "analytical"` for the closed-form path.
+  * `fit_ratio()` and `backtest()` accept `"bf"` and `"cc"` as
+    loss-side methods (forwarded to `fit_loss()`); supply the prior
+    arguments through `...`.
+  * `fit_ratio()` gained a `tail` argument, forwarded to `fit_loss()`.
+
 * **Buehlmann-Straub credibility blend for `fit_bf()` / `fit_cc()`.**
   A new `credibility` argument switches the BF / CC blend weight from
   the emergence fraction `q` to a Buehlmann-Straub credibility factor

@@ -35,10 +35,12 @@
 #'   is treated as the held-out actual.
 #' @param loss_method Method for the loss-side projection. Passed to
 #'   `fit_ratio()` / `fit_loss()` as their `method` argument. One of
-#'   `"sa"`, `"ed"`, `"cl"`. Unused for `target = "exposure"`.
+#'   `"ed"` (default), `"cl"`, `"sa"`, `"bf"`, or `"cc"`. `"bf"` / `"cc"`
+#'   need their prior arguments supplied through `...`. Unused for
+#'   `target = "exposure"`.
 #' @param exposure_method Method for the exposure-side projection.
 #'   Passed to `fit_ratio()` / `fit_loss()` / `fit_exposure()`. One of
-#'   `"cl"`, `"ed"`.
+#'   `"ed"` (default) or `"cl"`.
 #' @param loss_alpha,exposure_alpha Mack alpha for loss-side / exposure-side
 #'   chain-ladder estimation.
 #' @inheritParams fit_ata
@@ -143,8 +145,8 @@
 backtest <- function(x,
                      holdout         = 6L,
                      target          = c("ratio", "loss", "exposure"),
-                     loss_method     = c("ed", "cl", "sa"),
-                     exposure_method = c("cl", "ed"),
+                     loss_method     = c("ed", "cl", "sa", "bf", "cc"),
+                     exposure_method = c("ed", "cl"),
                      loss_alpha      = 1,
                      exposure_alpha  = 1,
                      sigma_method    = c("locf", "min_last2", "loglinear",
@@ -157,7 +159,7 @@ backtest <- function(x,
                      rho             = 0.95,
                      conf_level      = 0.95,
                      bootstrap       = NULL,
-                     B               = 999,
+                     B               = 999L,
                      seed            = NULL,
                      ...) {
 
