@@ -223,8 +223,7 @@ detect_convergence <- function(triangle,
     stop("`window` must be a single integer >= 2.", call. = FALSE)
   window <- as.integer(window)
 
-  grp <- attr(triangle, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(triangle)
   dev <- attr(triangle, "dev")
 
   # 2) resolve mat_k --------------------------------------------------

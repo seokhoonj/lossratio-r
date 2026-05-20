@@ -344,8 +344,7 @@ summary.Link <- function(object,
   if (!is.numeric(tol) || length(tol) != 1L || is.na(tol) || tol < 0)
     stop("`tol` must be a single non-negative numeric value.", call. = FALSE)
 
-  grp <- attr(x, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(x)
 
   dt <- .copy_dt(x)
 

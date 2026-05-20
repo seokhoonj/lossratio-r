@@ -249,8 +249,7 @@ fit_loss <- function(x,
   # data.table NSE bindings
   loss_proj <- loss_total_se <- exposure_proj <- is_observed <- NULL
 
-  grp <- attr(triangle, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(triangle)
 
   # Standard slot list (NULL-fill missing) -------------------------------
   std_slots <- c("data", "method", "groups", "cohort", "dev",

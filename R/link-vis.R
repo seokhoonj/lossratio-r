@@ -131,8 +131,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   scales <- match.arg(scales)
   theme  <- match.arg(theme)
 
-  grp <- attr(x, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(x)
 
   loss <- attr(x, "loss")
   meta <- .get_plot_meta(loss)
@@ -459,8 +458,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   scales <- match.arg(scales)
   theme  <- match.arg(theme)
 
-  grp <- attr(x, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(x)
 
   # 1) compute summary
   smr <- summary(x, model = "ed", alpha = alpha)

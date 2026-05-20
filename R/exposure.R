@@ -142,8 +142,7 @@ fit_exposure <- function(x,
   # Resolve regime input (NULL / Regime / "auto" / function) -> NULL or Regime
   regime <- .resolve_regime(regime, x)
 
-  grp <- attr(x, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(x)
 
   # 1) Worker call. Both CL and ED methods share the same exposure point
   # estimate (mathematically equivalent: g_k on self-projected exposure
@@ -351,6 +350,41 @@ fit_exposure <- function(x,
 }
 
 
+#' Build the internal exposure-side `ExposureFit` for a within-role composer
+#'
+#' @description
+#' Within-role composers (`fit_bf()`, `fit_cc()`) need an ultimate
+#' exposure projection. They obtain it by calling the worker `fit_cl()`
+#' directly on the standardized `exposure` column -- a downward
+#' worker-layer dispatch, avoiding the upward dependency on the
+#' `fit_exposure()` dispatcher -- then translating the worker's `loss_*`
+#' schema to `exposure_*` and tagging the result as an `ExposureFit`.
+#' This helper packages that shared three-step block.
+#'
+#' @param x A `Triangle`.
+#' @param alpha,sigma_method,recent,regime Forwarded to [fit_cl()].
+#' @param groups Group columns, for the incremental / CI derivation in
+#'   [.exposure_rename_full()].
+#' @param conf_level Confidence level for the analytical CI columns.
+#'
+#' @return A `CLFit` with `ExposureFit` prepended to its class and an
+#'   `exposure_*`-schema `$full`.
+#'
+#' @keywords internal
+.build_internal_exposure_fit <- function(x, alpha, sigma_method,
+                                         recent = NULL, regime = NULL,
+                                         groups = NULL, conf_level = 0.95) {
+  fit <- fit_cl(x, method = "mack", loss = "exposure",
+                alpha        = alpha,
+                sigma_method = sigma_method,
+                recent       = recent,
+                regime       = regime)
+  fit$full <- .exposure_rename_full(fit$full, groups, conf_level = conf_level)
+  class(fit) <- c("ExposureFit", class(fit))
+  fit
+}
+
+
 #' Apply the ED additive variance recursion to a CL worker's `$full`
 #'
 #' @description
@@ -390,8 +424,7 @@ fit_exposure <- function(x,
   # bare inside `j` expressions later in this function.
   .is_obs <- NULL
 
-  grp <- attr(triangle, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(triangle)
 
   f  <- selected$f_sel
   s2 <- selected$sigma2

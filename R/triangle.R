@@ -1132,7 +1132,7 @@ as_calendar <- function(x) {
 
   .assert_class(x, "Triangle")
 
-  grp <- attr(x, "groups");   if (is.null(grp))  grp <- character(0)
+  grp <- .resolve_groups(x)
   grain <- attr(x, "grain")
   if (is.null(grain) || !nzchar(grain))
     stop("Triangle missing `grain` attribute -- cannot derive calendar.",
@@ -1430,7 +1430,7 @@ as_total <- function(x) {
 
   .assert_class(x, "Triangle")
 
-  grp <- attr(x, "groups");  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(x)
 
   dt <- .copy_dt(x)
 
@@ -1577,8 +1577,7 @@ mask_triangle <- function(x, holdout = 0L) {
 
   if (holdout == 0L) return(data.table::copy(x))
 
-  grp <- attr(x, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(x)
 
   dt <- .copy_dt(x)
   dt[, (".coh_rank") := data.table::frank(cohort, ties.method = "dense"),

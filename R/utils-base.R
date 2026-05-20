@@ -141,6 +141,41 @@
 }
 
 
+# Group resolution --------------------------------------------------------
+
+#' Resolve the grouping columns of a Triangle / Link / fit object
+#'
+#' Returns `attr(x, "groups")`, or `character(0)` when the attribute is
+#' absent -- the canonical "no groups" sentinel used throughout the
+#' package.
+#'
+#' @param x An object carrying (or lacking) a `"groups"` attribute.
+#'
+#' @return A character vector of group column names; `character(0)`
+#'   when there are none.
+#'
+#' @keywords internal
+.resolve_groups <- function(x) {
+  grp <- attr(x, "groups")
+  if (is.null(grp)) character(0) else grp
+}
+
+
+#' Group vector for a data.table `by =` argument
+#'
+#' `data.table`'s `by =` wants `NULL` (not `character(0)`) to mean
+#' "no grouping". This converts an empty group vector accordingly.
+#'
+#' @param grp Character vector of group column names, possibly empty.
+#'
+#' @return `grp` unchanged, or `NULL` when `grp` is empty.
+#'
+#' @keywords internal
+.by_grp <- function(grp) {
+  if (length(grp) == 0L) NULL else grp
+}
+
+
 # Column helpers ----------------------------------------------------------
 
 #' Whether all of `cols` are present in `names(df)`

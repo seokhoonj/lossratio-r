@@ -142,8 +142,7 @@ detect_maturity <- function(x,
   min_run     <- as.integer(min_run)
 
   smr <- .copy_dt(x)
-  grp <- attr(x, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(x)
 
   # internal: find first mature row in a single-group summary table
   .first_mature_row <- function(d,
@@ -272,8 +271,7 @@ detect_maturity <- function(x,
   if (!is.character(groups))
     stop("`groups` must be `NULL` or a character vector.", call. = FALSE)
 
-  grp_orig <- attr(x, "groups")
-  if (is.null(grp_orig)) grp_orig <- character(0)
+  grp_orig <- .resolve_groups(x)
 
   if (length(groups)) {
     bad <- setdiff(groups, grp_orig)

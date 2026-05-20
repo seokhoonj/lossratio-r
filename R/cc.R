@@ -186,8 +186,7 @@ fit_cc <- function(x,
     stop("`B` must be a single positive integer.", call. = FALSE)
   B <- as.integer(B)
 
-  grp <- attr(x, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(x)
   by_cols <- c(grp, "cohort")
 
   # 1) CL on loss for q_i + ultimate exposure -----------------------------
@@ -196,38 +195,16 @@ fit_cc <- function(x,
                    sigma_method = sigma_method,
                    recent       = recent,
                    regime       = regime)
-  # Worker-layer dispatch: call fit_cl directly on the exposure column
-  # (mirror fit_ed pattern) rather than fit_exposure (a dispatcher) to
-  # avoid the upward worker -> dispatcher dependency. Reuse the
-  # exposure-side schema helper for the role-specific column rename.
-  exposure_fit <- fit_cl(x, method = "mack", loss = "exposure",
-                         alpha        = alpha,
-                         sigma_method = sigma_method,
-                         recent       = recent,
-                         regime       = regime)
-  exposure_fit$full <- .exposure_rename_full(exposure_fit$full, grp,
-                                             conf_level = 0.95)
-  class(exposure_fit) <- c("ExposureFit", class(exposure_fit))
+  # CL on exposure for ultimate exposure
+  exposure_fit <- .build_internal_exposure_fit(
+    x, alpha = alpha, sigma_method = sigma_method,
+    recent = recent, regime = regime, groups = grp)
 
   # 2) per-cohort q_i + ultimate exposure ---------------------------------
-  loss_latest <- cl_fit$full[is_observed == TRUE,
-                              .SD[.N, .(loss_latest = loss_obs)],
-                              by = by_cols]
-  loss_ult <- cl_fit$full[, .SD[.N, .(loss_ult_cl = loss_proj)],
-                          by = by_cols]
-  dt <- loss_latest[loss_ult, on = by_cols]
-  dt[, q := data.table::fifelse(
-    is.finite(loss_ult_cl) & loss_ult_cl > 0,
-    loss_latest / loss_ult_cl,
-    NA_real_
-  )]
-
-  exp_ult <- exposure_fit$full[, .SD[.N, .(exposure_ult = exposure_proj)],
-                                by = by_cols]
-  dt <- exp_ult[dt, on = by_cols]
+  dt <- .compute_q_table(cl_fit$full, exposure_fit$full, by_cols)
 
   # 3) Cape Cod pooled ELR within group -----------------------------------
-  by_grp <- if (length(grp) == 0L) NULL else grp
+  by_grp <- .by_grp(grp)
   elr_pool <- dt[, .(elr_cc = sum(loss_latest, na.rm = TRUE) /
                           sum(exposure_ult * q, na.rm = TRUE)),
                     by = by_grp]
@@ -368,7 +345,7 @@ fit_cc <- function(x,
     # Cape Cod also produces uncertainty on the pooled ELR itself.
     elr_b <- bootstrap_obj$elr_cc_replicates
     alpha2 <- (1 - conf_level) / 2
-    by_grp <- if (length(grp) == 0L) NULL else grp
+    by_grp <- .by_grp(grp)
     elr_summary <- elr_b[, .(
       elr_cc_se     = stats::sd(elr_cc_b, na.rm = TRUE),
       elr_cc_ci_lo  = stats::quantile(elr_cc_b, alpha2,     type = 1L,

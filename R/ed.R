@@ -62,8 +62,7 @@
     stop("`.summarize_link_ed()` requires a Link built with `exposure`.",
          call. = FALSE)
 
-  grp <- attr(object, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(object)
 
   dt <- .copy_dt(object)
 
@@ -308,8 +307,7 @@ fit_ed <- function(x,
   # ED rule: Delta loss_k = g_k * cumulative_exposure_k. Factor pair is
   # fit_intensity (loss-side g_k) + fit_cl on exposure (exposure projection).
   # No fit_ata / CL factor needed -- those are fit_cl's pair.
-  grp <- attr(x, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(x)
 
   # 4a) exposure projection: Mack CL on the exposure column
   exposure_cl <- fit_cl(
@@ -612,8 +610,7 @@ summary.EDFit <- function(object, ...) {
 #' @export
 print.EDFit <- function(x, ...) {
 
-  grp <- attr(x$link, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(x$link)
 
   cat("<EDFit>\n")
   cat("method      :", x$method,                  "\n")
@@ -687,8 +684,7 @@ print.EDFit <- function(x, ...) {
   if (!is.numeric(tol) || length(tol) != 1L || is.na(tol) || tol < 0)
     stop("`tol` must be a single non-negative numeric value.", call. = FALSE)
 
-  grp <- attr(x, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(x)
 
   dt <- .copy_dt(x)
 
@@ -820,8 +816,7 @@ print.EDFit <- function(x, ...) {
   # bare inside `j` expressions later in this function.
   .denom <- NULL
 
-  grp <- attr(x$link, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(x$link)
 
   ed_long <- .copy_dt(x$link)
   sel     <- data.table::copy(x$selected)

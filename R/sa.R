@@ -143,8 +143,7 @@ fit_sa <- function(x,
                      "n_inf", "n_nan", "valid_ratio")
       m_groups <- setdiff(names(maturity), stat_cols)
     }
-    data_groups <- attr(x, "groups")
-    if (is.null(data_groups)) data_groups <- character(0)
+    data_groups <- .resolve_groups(x)
     if (length(m_groups) > 0L && !setequal(m_groups, data_groups)) {
       x <- .rebucket_triangle_groups(x, m_groups)
     }

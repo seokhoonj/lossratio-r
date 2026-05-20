@@ -580,8 +580,7 @@ print.CLFit <- function(x, ...) {
   # bare inside `j` expressions later in this function.
   .wt <- .denom <- NULL
 
-  grp <- attr(ata_fit$link, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(ata_fit$link)
 
   link_long <- .copy_dt(ata_fit$link)
   sel       <- data.table::copy(ata_fit$selected)

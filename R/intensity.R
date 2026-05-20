@@ -116,7 +116,7 @@ fit_intensity <- function(x,
   if (!is.null(regime)) {
     link <- .apply_regime_filter(
       link, regime = regime,
-      groups = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
+      groups = .resolve_groups(link),
       cohort = "cohort",
       dev = "ata_from"
     )
@@ -126,14 +126,13 @@ fit_intensity <- function(x,
   if (!is.null(recent)) {
     link <- .apply_recent_filter(
       link, recent,
-      groups = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
+      groups = .resolve_groups(link),
       cohort = "cohort",
       dev = "ata_from"
     )
   }
 
-  grp <- attr(link, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(link)
 
   # 3) WLS intensity per link -------------------------------------------
   ed_summary <- summary(link, alpha = alpha, model = "ed", ...)
@@ -202,8 +201,7 @@ summary.IntensityFit <- function(object, ...) {
 #' @export
 print.IntensityFit <- function(x, ...) {
 
-  grp <- attr(x$link, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(x$link)
 
   cat("<IntensityFit>\n")
   cat("alpha       :", x$alpha, "\n")

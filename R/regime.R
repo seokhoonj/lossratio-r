@@ -208,12 +208,7 @@ detect_regime <- function(x,
   #   by = NULL (default) -> use `attr(x, "groups")` if non-empty, else pooled
   #   by = character(0)   -> force pooled (single cohort sequence)
   #   by = character(.)   -> explicit grouping columns
-  grp <- if (is.null(by)) {
-    g <- attr(x, "groups")
-    if (is.null(g)) character(0) else g
-  } else {
-    by
-  }
+  grp <- if (is.null(by)) .resolve_groups(x) else by
 
   if (length(coh) != 1L)
     stop("`x` must have exactly one `cohort`.", call. = FALSE)
@@ -234,8 +229,7 @@ detect_regime <- function(x,
   # see `?detect_regime` for the recommended use case of each.
   derived <- c("loss_ata", "exposure_ata", "loss_ed")
   if (loss %in% derived) {
-    grp_for_derive <- attr(x, "groups")
-    if (is.null(grp_for_derive)) grp_for_derive <- character(0)
+    grp_for_derive <- .resolve_groups(x)
     d <- .derive_regime_target(d, loss, groups = grp_for_derive)
   } else if (!(loss %in% names(d))) {
     stop(sprintf("`loss` = '%s' not found in `x`.", loss),

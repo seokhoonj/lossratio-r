@@ -482,8 +482,7 @@ bootstrap.Triangle <- function(x,
     maturity <- NULL
   }
 
-  grp <- attr(x, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(x)
 
   is_residual_mode   <- identical(type, "nonparametric")
   is_parametric_mode <- identical(type, "parametric")

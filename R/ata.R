@@ -122,8 +122,7 @@
 
   .assert_class(object, "Link")
 
-  grp <- attr(object, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(object)
 
   dt <- .copy_dt(object)
 
@@ -355,8 +354,7 @@ fit_ata <- function(x,
                      "n_inf", "n_nan", "valid_ratio")
       m_groups <- setdiff(names(maturity), stat_cols)
     }
-    data_groups <- attr(x, "groups")
-    if (is.null(data_groups)) data_groups <- character(0)
+    data_groups <- .resolve_groups(x)
     if (length(m_groups) > 0L && !setequal(m_groups, data_groups)) {
       x <- .rebucket_triangle_groups(x, m_groups)
     }
@@ -375,7 +373,7 @@ fit_ata <- function(x,
   if (!is.null(regime)) {
     link <- .apply_regime_filter(
       link, regime = regime,
-      groups = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
+      groups = .resolve_groups(link),
       cohort = "cohort",
       dev = "ata_from"
     )
@@ -387,7 +385,7 @@ fit_ata <- function(x,
   if (!is.null(recent)) {
     link <- .apply_recent_filter(
       link, recent,
-      groups = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
+      groups = .resolve_groups(link),
       cohort = "cohort",
       dev = "ata_from"
     )
@@ -400,8 +398,7 @@ fit_ata <- function(x,
   # a `maturity_spec()` closure to the `maturity` arg.
   use_maturity <- !is.null(maturity)
 
-  grp <- attr(link, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(link)
 
   # 4) compute summary statistics and WLS estimates ---------------------
   ata_summary <- summary(link, alpha = alpha, model = "ata", ...)
@@ -473,8 +470,7 @@ summary.ATAFit <- function(object, ...) {
 #' @export
 print.ATAFit <- function(x, ...) {
 
-  grp <- attr(x$link, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(x$link)
 
   cat("<ATAFit>\n")
   cat("alpha       :", x$alpha,  "\n")

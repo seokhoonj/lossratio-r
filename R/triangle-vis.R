@@ -975,8 +975,7 @@ plot.Total <- function(x,
   .data_present <- .coh_rank <- .cal_idx <- .max_cal <- NULL
   .max_cal_fit <- .cd_join <- .m_k_join <- .pass_filter <- NULL
 
-  grp <- attr(x, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(x)
 
   obs <- .copy_dt(x)
 
@@ -1272,8 +1271,7 @@ plot.Total <- function(x,
                          metric   = "loss") {
 
   .assert_class(triangle, "Triangle")
-  grp <- attr(triangle, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(triangle)
 
   # 2-pass maturity detection: run when `regime` is set AND the caller
   # actually wants maturity ("auto", a `Maturity` object, or a

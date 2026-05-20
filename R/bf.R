@@ -243,8 +243,7 @@ fit_bf <- function(x,
     stop("`B` must be a single positive integer.", call. = FALSE)
   B <- as.integer(B)
 
-  grp <- attr(x, "groups")
-  if (is.null(grp)) grp <- character(0)
+  grp <- .resolve_groups(x)
 
   # 1) CL on loss for q_i -------------------------------------------------
   cl_fit <- fit_cl(x, loss = loss,
@@ -255,19 +254,9 @@ fit_bf <- function(x,
                    maturity     = maturity)
 
   # 2) CL on exposure for ultimate exposure -------------------------------
-  # Worker-layer dispatch: call fit_cl directly on the exposure column
-  # (mirror fit_ed pattern) rather than fit_exposure (a dispatcher) to
-  # avoid the upward worker -> dispatcher dependency. Reuse the
-  # exposure-side schema helper for the role-specific column rename so
-  # downstream code reads `exposure_*` columns as before.
-  exposure_fit <- fit_cl(x, method = "mack", loss = "exposure",
-                         alpha        = alpha,
-                         sigma_method = sigma_method,
-                         recent       = recent,
-                         regime       = regime)
-  exposure_fit$full <- .exposure_rename_full(exposure_fit$full, grp,
-                                             conf_level = 0.95)
-  class(exposure_fit) <- c("ExposureFit", class(exposure_fit))
+  exposure_fit <- .build_internal_exposure_fit(
+    x, alpha = alpha, sigma_method = sigma_method,
+    recent = recent, regime = regime, groups = grp)
 
   # 3) per-cohort q_i + ultimate exposure ---------------------------------
   by_cols <- c(grp, "cohort")
@@ -275,22 +264,8 @@ fit_bf <- function(x,
   loss_grid <- cl_fit$full
   exp_grid  <- exposure_fit$full
 
-  # latest observed cum loss + projected ultimate (last dev per cohort)
-  loss_latest <- loss_grid[is_observed == TRUE,
-                           .SD[.N, .(loss_latest = loss_obs)],
-                           by = by_cols]
-  loss_ult <- loss_grid[, .SD[.N, .(loss_ult_cl = loss_proj)],
-                        by = by_cols]
-  dt <- loss_latest[loss_ult, on = by_cols]
-  dt[, q := data.table::fifelse(
-    is.finite(loss_ult_cl) & loss_ult_cl > 0,
-    loss_latest / loss_ult_cl,
-    NA_real_
-  )]
-
-  exp_ult <- exp_grid[, .SD[.N, .(exposure_ult = exposure_proj)],
-                      by = by_cols]
-  dt <- exp_ult[dt, on = by_cols]
+  # latest observed cum loss, CL ultimate, q_i, and ultimate exposure
+  dt <- .compute_q_table(loss_grid, exp_grid, by_cols)
 
   # per-cohort ultimate-cell SEs for the analytical MSEP path:
   # CL process / parameter / total SE on loss, total SE on exposure.
@@ -485,6 +460,46 @@ fit_bf <- function(x,
   )
   class(out) <- c("BFFit", "list")
   out
+}
+
+
+#' Compute the per-cohort emergence table (q_i + ultimate exposure)
+#'
+#' @description
+#' Shared by [fit_bf()] and [fit_cc()]. From a loss-side `CLFit$full`
+#' and an exposure-side `ExposureFit$full`, builds the per-cohort table
+#' of latest observed loss, CL-ultimate loss, the emergence fraction
+#' \eqn{q_i = L_{obs} / L_{ult}^{CL}}, and ultimate exposure -- the
+#' inputs the Bornhuetter-Ferguson / Cape Cod blend consumes.
+#'
+#' @param loss_full A loss-side `$full` grid (`is_observed`, `loss_obs`,
+#'   `loss_proj`).
+#' @param exp_full An exposure-side `$full` grid (`exposure_proj`).
+#' @param by_cols Per-cohort key columns, `c(groups, "cohort")`.
+#'
+#' @return A `data.table` keyed by `by_cols` with `loss_latest`,
+#'   `loss_ult_cl`, `q`, and `exposure_ult`.
+#'
+#' @keywords internal
+.compute_q_table <- function(loss_full, exp_full, by_cols) {
+  is_observed <- loss_obs <- loss_proj <- NULL
+  q <- loss_ult_cl <- exposure_proj <- NULL
+
+  loss_latest <- loss_full[is_observed == TRUE,
+                           .SD[.N, .(loss_latest = loss_obs)],
+                           by = by_cols]
+  loss_ult <- loss_full[, .SD[.N, .(loss_ult_cl = loss_proj)],
+                        by = by_cols]
+  dt <- loss_latest[loss_ult, on = by_cols]
+  dt[, q := data.table::fifelse(
+    is.finite(loss_ult_cl) & loss_ult_cl > 0,
+    loss_latest / loss_ult_cl,
+    NA_real_
+  )]
+
+  exp_ult <- exp_full[, .SD[.N, .(exposure_ult = exposure_proj)],
+                      by = by_cols]
+  exp_ult[dt, on = by_cols]
 }
 
 
@@ -804,7 +819,7 @@ summary.BFFit <- function(object, ...) {
   lr <- s2 <- NULL
 
   d      <- data.table::copy(per_cohort)
-  by_grp <- if (length(groups) == 0L) NULL else groups
+  by_grp <- .by_grp(groups)
 
   # K = VHM, estimated per group from the precision-weighted spread of
   # the cohort loss ratios (reliable cohorts dominate), or supplied.
@@ -1027,7 +1042,7 @@ summary.BFFit <- function(object, ...) {
     loss_latest / loss_ult_cl_b, NA_real_)]
 
   if (isTRUE(cape_cod)) {
-    by_grp <- if (length(groups) == 0L) NULL else groups
+    by_grp <- .by_grp(groups)
     elr_boot <- ult_b[, .(elr_cc_b = sum(loss_latest, na.rm = TRUE) /
                             sum(exposure_ult_b * q_b, na.rm = TRUE)),
                       by = c(by_grp, "rep")]
