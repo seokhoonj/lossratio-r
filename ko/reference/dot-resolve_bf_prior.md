@@ -7,7 +7,7 @@ present in the input triangle.
 ## Usage
 
 ``` r
-.resolve_bf_prior(prior, q_grid, by_cols)
+.resolve_bf_prior(prior, dt, by_cols)
 ```
 
 ## Arguments
@@ -17,7 +17,7 @@ present in the input triangle.
   The user-supplied prior. See
   [`fit_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.md).
 
-- q_grid:
+- dt:
 
   The per-cohort `data.table` (carrying `cohort` etc.).
 
