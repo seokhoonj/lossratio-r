@@ -2602,6 +2602,71 @@ print.BootstrapTriangle <- function(x, ...) {
 
 
 
+#' Overlay bootstrap summary statistics onto a fit's `$full` grid
+#'
+#' @description
+#' The shared core of every bootstrap-CI path (`.lossfit_bootstrap()`,
+#' `.exposurefit_bootstrap()`, and the in-worker `fit_sa()` /
+#' `fit_ratio()` blocks). Given an already-resolved bootstrap result,
+#' it renames the `bootstrap()` summary columns to the caller's
+#' `<role>_*` schema, joins them onto `full` by `(groups, cohort, dev)`,
+#' and -- on projected cells only -- overlays the bootstrap SE / CV
+#' (and quantile CI when present) over the analytical values.
+#'
+#' Observed cells keep their analytical SE: the upper-triangle
+#' perturbation is a parameter-uncertainty tool, not a claim about
+#' observed-cell variability.
+#'
+#' @param full The fit's `$full` `data.table`.
+#' @param boots A non-`NULL` resolved bootstrap result; `boots$summary`
+#'   carries `mean_proj`, `param_se`, `proc_se`, `total_se`,
+#'   `total_cv`, and optionally `ci_lo` / `ci_hi`.
+#' @param role Column-name prefix, `"loss"` or `"exposure"`.
+#' @param groups Group columns; the join key is
+#'   `c(groups, "cohort", "dev")`.
+#' @param se_cols Statistic suffixes to overlay -- e.g.
+#'   `c("param_se", "proc_se", "total_se", "total_cv")` for loss,
+#'   `c("total_se", "total_cv")` for exposure. The point projection is
+#'   never overlaid; it stays analytical.
+#'
+#' @return `full` with the bootstrap values overlaid and the temporary
+#'   `_boot` columns dropped.
+#'
+#' @keywords internal
+.apply_bootstrap_overlay <- function(full, boots, role, groups, se_cols) {
+  bsum  <- data.table::copy(boots$summary)
+  stats <- c("proj", "param_se", "proc_se", "total_se", "total_cv")
+  data.table::setnames(
+    bsum,
+    c("mean_proj", "param_se", "proc_se", "total_se", "total_cv"),
+    paste0(role, "_", stats, "_boot")
+  )
+  has_ci <- all(c("ci_lo", "ci_hi") %in% names(bsum))
+  if (has_ci) {
+    data.table::setnames(bsum, c("ci_lo", "ci_hi"),
+                         paste0(role, c("_ci_lo_boot", "_ci_hi_boot")))
+  }
+
+  full <- merge(full, bsum, by = c(groups, "cohort", "dev"),
+                all.x = TRUE, sort = FALSE)
+
+  is_proj  <- full$is_observed == FALSE
+  overlays <- if (has_ci) c(se_cols, "ci_lo", "ci_hi") else se_cols
+  for (sfx in overlays) {
+    col  <- paste0(role, "_", sfx)
+    vals <- full[[paste0(col, "_boot")]]
+    ok   <- is_proj & is.finite(vals)
+    full[ok, (col) := vals[ok]]
+  }
+
+  drop_boot <- paste0(role, "_", stats, "_boot")
+  if (has_ci)
+    drop_boot <- c(drop_boot, paste0(role, c("_ci_lo_boot", "_ci_hi_boot")))
+  full[, (intersect(drop_boot, names(full))) := NULL]
+  full
+}
+
+
 #' Apply bootstrap CI to a CL / ED dispatcher fit
 #'
 #' @description
@@ -2653,37 +2718,9 @@ print.BootstrapTriangle <- function(x, ...) {
 
   full <- fit$full
 
-  bsum <- data.table::copy(boots$summary)
-  data.table::setnames(
-    bsum,
-    c("mean_proj", "param_se", "proc_se", "total_se", "total_cv"),
-    c("loss_proj_boot", "loss_param_se_boot", "loss_proc_se_boot",
-      "loss_total_se_boot", "loss_total_cv_boot")
-  )
-  has_ci <- all(c("ci_lo", "ci_hi") %in% names(bsum))
-  if (has_ci) {
-    data.table::setnames(bsum, c("ci_lo", "ci_hi"),
-                                c("loss_ci_lo_boot", "loss_ci_hi_boot"))
-  }
-
-  full <- merge(full, bsum,
-                by = c(grp, "cohort", "dev"),
-                all.x = TRUE, sort = FALSE)
-
-  is_proj <- full$is_observed == FALSE
-  full[is_proj & is.finite(loss_param_se_boot), loss_param_se := loss_param_se_boot]
-  full[is_proj & is.finite(loss_proc_se_boot),  loss_proc_se  := loss_proc_se_boot]
-  full[is_proj & is.finite(loss_total_se_boot), loss_total_se := loss_total_se_boot]
-  full[is_proj & is.finite(loss_total_cv_boot), loss_total_cv := loss_total_cv_boot]
-  if (has_ci) {
-    full[is_proj & is.finite(loss_ci_lo_boot), loss_ci_lo := loss_ci_lo_boot]
-    full[is_proj & is.finite(loss_ci_hi_boot), loss_ci_hi := loss_ci_hi_boot]
-  }
-  drop_boot <- c("loss_proj_boot", "loss_param_se_boot",
-                  "loss_proc_se_boot", "loss_total_se_boot",
-                  "loss_total_cv_boot")
-  if (has_ci) drop_boot <- c(drop_boot, "loss_ci_lo_boot", "loss_ci_hi_boot")
-  full[, (drop_boot) := NULL]
+  full <- .apply_bootstrap_overlay(
+    full, boots, role = "loss", groups = grp,
+    se_cols = c("param_se", "proc_se", "total_se", "total_cv"))
 
   fit$full <- full
 

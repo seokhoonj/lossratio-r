@@ -424,37 +424,9 @@ fit_sa <- function(x,
   )
 
   if (!is.null(boots)) {
-    bsum <- data.table::copy(boots$summary)
-    data.table::setnames(
-      bsum,
-      c("mean_proj", "param_se", "proc_se", "total_se", "total_cv"),
-      c("loss_proj_boot", "loss_param_se_boot", "loss_proc_se_boot",
-        "loss_total_se_boot", "loss_total_cv_boot")
-    )
-    has_ci <- all(c("ci_lo", "ci_hi") %in% names(bsum))
-    if (has_ci) {
-      data.table::setnames(bsum, c("ci_lo", "ci_hi"),
-                                  c("loss_ci_lo_boot", "loss_ci_hi_boot"))
-    }
-
-    full <- merge(full, bsum,
-                  by = c(grp, "cohort", "dev"),
-                  all.x = TRUE, sort = FALSE)
-
-    is_proj <- full$is_observed == FALSE
-    full[is_proj & is.finite(loss_param_se_boot), loss_param_se := loss_param_se_boot]
-    full[is_proj & is.finite(loss_proc_se_boot),  loss_proc_se  := loss_proc_se_boot]
-    full[is_proj & is.finite(loss_total_se_boot), loss_total_se := loss_total_se_boot]
-    full[is_proj & is.finite(loss_total_cv_boot), loss_total_cv := loss_total_cv_boot]
-    if (has_ci) {
-      full[is_proj & is.finite(loss_ci_lo_boot), loss_ci_lo := loss_ci_lo_boot]
-      full[is_proj & is.finite(loss_ci_hi_boot), loss_ci_hi := loss_ci_hi_boot]
-    }
-    drop_boot <- c("loss_proj_boot", "loss_param_se_boot",
-                    "loss_proc_se_boot", "loss_total_se_boot",
-                    "loss_total_cv_boot")
-    if (has_ci) drop_boot <- c(drop_boot, "loss_ci_lo_boot", "loss_ci_hi_boot")
-    full[, (drop_boot) := NULL]
+    full <- .apply_bootstrap_overlay(
+      full, boots, role = "loss", groups = grp,
+      se_cols = c("param_se", "proc_se", "total_se", "total_cv"))
   }
 
   # Incremental projections --------------------------------------------

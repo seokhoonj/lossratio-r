@@ -338,43 +338,12 @@ fit_ratio <- function(x,
   )
 
   if (!is.null(boots)) {
-    bsum <- data.table::copy(boots$summary)
-    # Rename to the fit_ratio column convention so the merge / override
-    # below uses the same names as the analytical path.
-    data.table::setnames(
-      bsum,
-      c("mean_proj", "param_se", "proc_se", "total_se", "total_cv"),
-      c("loss_proj_boot", "loss_param_se_boot", "loss_proc_se_boot",
-        "loss_total_se_boot", "loss_total_cv_boot")
-    )
-    has_ci <- all(c("ci_lo", "ci_hi") %in% names(bsum))
-    if (has_ci) {
-      data.table::setnames(bsum, c("ci_lo", "ci_hi"),
-                                  c("loss_ci_lo_boot", "loss_ci_hi_boot"))
-    }
-
-    full <- merge(full, bsum,
-                  by = c(grp, "cohort", "dev"),
-                  all.x = TRUE, sort = FALSE)
-
-    # Only override projection columns on non-observed cells. Observed
-    # cells keep their analytical SE = 0 -- the bootstrap perturbation
-    # of the upper triangle is a tool for parameter uncertainty, not a
-    # claim about observed cell variability.
-    is_proj <- full$is_observed == FALSE
-    full[is_proj & is.finite(loss_param_se_boot), loss_param_se := loss_param_se_boot]
-    full[is_proj & is.finite(loss_proc_se_boot),  loss_proc_se  := loss_proc_se_boot]
-    full[is_proj & is.finite(loss_total_se_boot), loss_total_se := loss_total_se_boot]
-    full[is_proj & is.finite(loss_total_cv_boot), loss_total_cv := loss_total_cv_boot]
-    if (has_ci) {
-      full[is_proj & is.finite(loss_ci_lo_boot), loss_ci_lo := loss_ci_lo_boot]
-      full[is_proj & is.finite(loss_ci_hi_boot), loss_ci_hi := loss_ci_hi_boot]
-    }
-    drop_boot <- c("loss_proj_boot", "loss_param_se_boot",
-                    "loss_proc_se_boot", "loss_total_se_boot",
-                    "loss_total_cv_boot")
-    if (has_ci) drop_boot <- c(drop_boot, "loss_ci_lo_boot", "loss_ci_hi_boot")
-    full[, (drop_boot) := NULL]
+    # Map the bootstrap summary onto the loss_* schema and overlay it
+    # on projected cells (the shared core of the analytical-path
+    # workers). Observed cells keep their analytical SE.
+    full <- .apply_bootstrap_overlay(
+      full, boots, role = "loss", groups = grp,
+      se_cols = c("param_se", "proc_se", "total_se", "total_cv"))
 
     # Recompute ratio_se from bootstrap-derived loss_total_se. Under
     # `se_method = "delta"`, this combines with `exposure_total_se`

@@ -261,35 +261,9 @@ fit_exposure <- function(x,
   )
 
   if (!is.null(boots)) {
-    bsum <- data.table::copy(boots$summary)
-    data.table::setnames(
-      bsum,
-      c("mean_proj", "param_se", "proc_se", "total_se", "total_cv"),
-      c("exposure_proj_boot", "exposure_param_se_boot", "exposure_proc_se_boot",
-        "exposure_total_se_boot", "exposure_total_cv_boot")
-    )
-    has_ci <- all(c("ci_lo", "ci_hi") %in% names(bsum))
-    if (has_ci) {
-      data.table::setnames(bsum, c("ci_lo", "ci_hi"),
-                                  c("exposure_ci_lo_boot", "exposure_ci_hi_boot"))
-    }
-
-    result$full <- merge(result$full, bsum,
-                         by = c(groups, "cohort", "dev"), all.x = TRUE,
-                         sort = FALSE)
-
-    is_proj <- result$full$is_observed == FALSE
-    result$full[is_proj & is.finite(exposure_total_se_boot), exposure_total_se := exposure_total_se_boot]
-    result$full[is_proj & is.finite(exposure_total_cv_boot), exposure_total_cv := exposure_total_cv_boot]
-    if (has_ci) {
-      result$full[is_proj & is.finite(exposure_ci_lo_boot), exposure_ci_lo := exposure_ci_lo_boot]
-      result$full[is_proj & is.finite(exposure_ci_hi_boot), exposure_ci_hi := exposure_ci_hi_boot]
-    }
-    drop_boot <- c("exposure_proj_boot", "exposure_param_se_boot",
-                    "exposure_proc_se_boot", "exposure_total_se_boot",
-                    "exposure_total_cv_boot")
-    if (has_ci) drop_boot <- c(drop_boot, "exposure_ci_lo_boot", "exposure_ci_hi_boot")
-    result$full[, (drop_boot) := NULL]
+    result$full <- .apply_bootstrap_overlay(
+      result$full, boots, role = "exposure", groups = groups,
+      se_cols = c("total_se", "total_cv"))
   }
 
   result$ci_type   <- if (!is.null(boots)) "bootstrap" else "analytical"
