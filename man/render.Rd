@@ -76,10 +76,7 @@ The input object \code{x}, invisibly.
 }
 \description{
 \code{render()} prints a data frame, data table, or Triangle object as a
-compact, fixed-width console table. The layout deliberately mirrors
-the dataframe console output of the package's Python sibling,
-\code{lossratio-py}, so that the R and Python implementations produce
-visually consistent table previews.
+compact, fixed-width console table.
 
 The rendered table has four parts:
 \itemize{
@@ -88,9 +85,15 @@ The rendered table has four parts:
 column-type row (\verb{<int>}, \verb{<dbl>}, \verb{<date>}, \verb{<chr>}, ...);
 \item a head / tail sample of rows -- when the object has more than
 \code{n} rows the middle is collapsed to a single ellipsis row;
-\item a "\code{N} more variables" footer listing the columns dropped
-when the table is too wide for the console.
+\item a tibble-style "\code{N} more variables" footer listing the
+columns dropped when the table is too wide for the console.
 }
+
+The grid, \verb{shape:} header, and per-column type row follow the
+dataframe console layout of the package's Python sibling,
+\code{lossratio-py}; the truncated-columns footer follows the \code{tibble}
+print convention. Both are adopted so that \code{lossratio} previews stay
+visually consistent with the wider R and Python tabular ecosystems.
 
 Columns are selected from both ends inward until they fill \code{width};
 the dropped middle columns are summarised in the footer.
