@@ -18,6 +18,7 @@ fit_cc(
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   regime = NULL,
+  credibility = NULL,
   conf_level = 0.95,
   ...
 )
@@ -64,8 +65,14 @@ forwarded to the inner fits. Default \code{NULL}.}
 \item{regime}{Optional regime specification forwarded to the inner
 loss and exposure fits. See \code{\link[=fit_cl]{fit_cl()}} for the four-type dispatch.}
 
-\item{conf_level}{Confidence level for bootstrap quantile CI. Default
-\code{0.95}.}
+\item{credibility}{Optional credibility specification. \code{NULL}
+(default) gives the classical CC blend weighted by the emergence
+fraction \code{q}. A list \code{list(method = "bs", K = NULL)} switches to a
+Buehlmann-Straub credibility blend \code{ult = Z * CL + (1 - Z) * prior}
+with the pooled ELR as the prior; \code{Z = K / (K + s^2)} shrinks a
+green / rare-event cohort toward the pooled ELR. See \code{\link[=fit_bf]{fit_bf()}} for
+the full description. A credibility blend uses the analytical SE
+path.}
 
 \item{...}{Reserved for future extension (currently unused).}
 }
@@ -85,6 +92,9 @@ projected cells, and \verb{$summary} carries the same plus
 \item{\code{elr_cc}}{\code{data.table(group..., elr_cc)} -- the pooled ELR
 per group (or scalar if no group).}
 \item{\code{q}}{Per-cohort emerged fraction.}
+\item{\code{credibility}}{\code{NULL} for the classical blend, or a list
+\code{list(method, weights)} with the Buehlmann-Straub \code{Z} / \code{K}
+per cohort.}
 \item{\code{cl_fit}, \code{exposure_fit}}{Inner CL / Exposure fits.}
 \item{\code{bootstrap}}{When \code{bootstrap} is enabled, a
 \code{CCBootstrap} helper holding both Triangle-level

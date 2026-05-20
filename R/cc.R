@@ -66,8 +66,14 @@
 #'   forwarded to the inner fits. Default `NULL`.
 #' @param regime Optional regime specification forwarded to the inner
 #'   loss and exposure fits. See [fit_cl()] for the four-type dispatch.
-#' @param conf_level Confidence level for bootstrap quantile CI. Default
-#'   `0.95`.
+#' @param credibility Optional credibility specification. `NULL`
+#'   (default) gives the classical CC blend weighted by the emergence
+#'   fraction `q`. A list `list(method = "bs", K = NULL)` switches to a
+#'   Buehlmann-Straub credibility blend `ult = Z * CL + (1 - Z) * prior`
+#'   with the pooled ELR as the prior; `Z = K / (K + s^2)` shrinks a
+#'   green / rare-event cohort toward the pooled ELR. See [fit_bf()] for
+#'   the full description. A credibility blend uses the analytical SE
+#'   path.
 #' @param ... Reserved for future extension (currently unused).
 #'
 #' @return An object of class `"CCFit"` containing:
@@ -85,6 +91,9 @@
 #'     \item{`elr_cc`}{`data.table(group..., elr_cc)` -- the pooled ELR
 #'       per group (or scalar if no group).}
 #'     \item{`q`}{Per-cohort emerged fraction.}
+#'     \item{`credibility`}{`NULL` for the classical blend, or a list
+#'       `list(method, weights)` with the Buehlmann-Straub `Z` / `K`
+#'       per cohort.}
 #'     \item{`cl_fit`, `exposure_fit`}{Inner CL / Exposure fits.}
 #'     \item{`bootstrap`}{When `bootstrap` is enabled, a
 #'       `CCBootstrap` helper holding both Triangle-level
@@ -144,6 +153,7 @@ fit_cc <- function(x,
                                     "mack", "none"),
                    recent       = NULL,
                    regime       = NULL,
+                   credibility  = NULL,
                    conf_level   = 0.95,
                    ...) {
 
@@ -151,8 +161,9 @@ fit_cc <- function(x,
   cohort <- elr <- elr_cc <- loss_obs <- loss_proj <- exposure_proj <- NULL
   is_observed <- q <- loss_latest <- exposure_ult <- NULL
   elr_cc_b <- elr_cc_se <- NULL
-  loss_proc_se <- loss_param_se <- exposure_total_se <- NULL
+  loss_proc_se <- loss_param_se <- loss_total_se <- exposure_total_se <- NULL
   loss_ult_cl <- var_q <- var_eult <- var_elr <- elr_cc_var <- NULL
+  lr <- s2 <- Z <- loss_ult_cc <- NULL
 
   .assert_triangle_input(x, "fit_cc()")
 
@@ -160,6 +171,7 @@ fit_cc <- function(x,
   residual     <- match.arg(residual)
   process      <- match.arg(process)
   sigma_method <- match.arg(sigma_method)
+  credibility  <- .resolve_credibility(credibility)
 
   if (!is.numeric(alpha) || length(alpha) != 1L ||
       is.na(alpha) || !is.finite(alpha))
@@ -224,10 +236,37 @@ fit_cc <- function(x,
     dt <- elr_pool[dt, on = grp]
   }
 
+  # per-cohort ultimate-cell SEs (analytical MSEP + credibility weight)
+  loss_se <- cl_fit$full[, .SD[.N, .(loss_proc_se  = loss_proc_se,
+                                     loss_param_se = loss_param_se,
+                                     loss_total_se = loss_total_se)],
+                         by = by_cols]
+  exp_se  <- exposure_fit$full[, .SD[.N,
+                .(exposure_total_se = exposure_total_se)],
+                by = by_cols]
+
   # 4) BF formula with pooled ELR -----------------------------------------
+  # Classical CC blends with the emergence fraction q; a credibility
+  # spec replaces it with the Buehlmann-Straub factor Z (see
+  # `.credibility_bs()`).
   dt[, elr := elr_cc]
-  dt[, loss_ult_cc := loss_latest +
-         (1 - q) * elr_cc * exposure_ult]
+  if (is.null(credibility)) {
+    cred_tbl <- NULL
+    dt[, loss_ult_cc := loss_latest + (1 - q) * elr_cc * exposure_ult]
+  } else {
+    cred_in <- merge(dt, loss_se, by = by_cols, sort = FALSE)
+    cred_in[, ("lr") := data.table::fifelse(
+        is.finite(exposure_ult) & exposure_ult > 0,
+        loss_ult_cl / exposure_ult, NA_real_)]
+    cred_in[, ("s2") := data.table::fifelse(
+        is.finite(exposure_ult) & exposure_ult > 0,
+        loss_total_se^2 / exposure_ult^2, NA_real_)]
+    cred_tbl <- .credibility_bs(cred_in, groups = grp, K = credibility$K)
+    dt <- merge(dt, cred_tbl[, c(by_cols, "Z", "K"), with = FALSE],
+                by = by_cols, sort = FALSE)
+    dt[, loss_ult_cc := Z * loss_ult_cl +
+          (1 - Z) * elr_cc * exposure_ult]
+  }
   dt[, reserve := loss_ult_cc - loss_latest]
 
   # 5) cell-level full grid (BF cell pattern, see fit_bf). Base = CL$full
@@ -287,8 +326,11 @@ fit_cc <- function(x,
                        c("latest",      "loss_ult",    "elr"))
 
   # 8) prediction error: bootstrap composition or analytical MSEP --------
-  # `type = "analytical"` forces the closed-form Mack (2008) path.
-  boots <- if (identical(type, "analytical")) NULL else
+  # `type = "analytical"` forces the closed-form Mack (2008) path; a
+  # credibility blend also routes through the analytical path.
+  boots <- if (identical(type, "analytical") || !is.null(credibility))
+    NULL
+  else
     .resolve_bootstrap_bf(
       bootstrap, x,
       B        = B,
@@ -358,12 +400,6 @@ fit_cc <- function(x,
     # analytical MSEP (Mack 2008 decomposition) -- Cape Cod variant.
     # The pooled ELR is data-estimated, so Var(ELR_cc) is derived by
     # the delta method on elr_cc = sum(loss_latest) / sum(E_ult * q).
-    loss_se <- cl_fit$full[, .SD[.N, .(loss_proc_se  = loss_proc_se,
-                                       loss_param_se = loss_param_se)],
-                           by = by_cols]
-    exp_se  <- exposure_fit$full[, .SD[.N,
-                  .(exposure_total_se = exposure_total_se)],
-                  by = by_cols]
     ana <- merge(dt, loss_se, by = by_cols, sort = FALSE)
     ana <- merge(ana, exp_se, by = by_cols, sort = FALSE)
     ana[, var_eult := data.table::fifelse(is.finite(exposure_total_se),
@@ -389,6 +425,8 @@ fit_cc <- function(x,
       ana <- elr_var[ana, on = grp]
       data.table::setnames(ana, "elr_cc_var", "var_elr")
     }
+    # under a credibility blend the effective weight is Z, not q.
+    if (!is.null(credibility)) ana[, ("q") := Z]
     data.table::setnames(ana, "loss_ult_cc", "loss_ult")
     se_tbl <- .bf_analytical_se(ana, by_cols, conf_level)
     summ   <- merge(summ, se_tbl, by = by_cols, sort = FALSE)
@@ -437,6 +475,9 @@ fit_cc <- function(x,
     summary      = summ,
     elr_cc       = elr_pool,
     q            = dt[, c(by_cols, "q"), with = FALSE],
+    credibility  = if (is.null(credibility)) NULL else
+      list(method = "bs",
+           weights = cred_tbl[, c(by_cols, "Z", "K"), with = FALSE]),
     cl_fit       = cl_fit,
     exposure_fit = exposure_fit,
     bootstrap    = bootstrap_obj,

@@ -14,6 +14,27 @@ test_that("fit_cc returns class 'CCFit'", {
   expect_equal(fit$method, "cc")
 })
 
+test_that("fit_cc classical (credibility = NULL) has no credibility slot", {
+  fit <- fit_cc(sub)
+  expect_null(fit$credibility)
+})
+
+test_that("fit_cc credibility = 'bs' returns per-cohort Z weights", {
+  fit <- fit_cc(sub, credibility = list(method = "bs"))
+  expect_false(is.null(fit$credibility))
+  expect_equal(fit$credibility$method, "bs")
+  w <- fit$credibility$weights
+  expect_true(all(c("Z", "K") %in% names(w)))
+  expect_true(all(w$Z >= 0 & w$Z <= 1, na.rm = TRUE))
+  expect_equal(fit$ci_type, "analytical")
+})
+
+test_that("fit_cc credibility: Z rises with cohort maturity", {
+  fit <- fit_cc(sub, credibility = list(method = "bs"))
+  w <- fit$credibility$weights[order(fit$credibility$weights$cohort), ]
+  expect_gt(mean(utils::head(w$Z, 5)), mean(utils::tail(w$Z, 5)))
+})
+
 test_that("fit_cc type='analytical' fills SE / CI + pooled-ELR columns", {
   fit <- fit_cc(sub, type = "analytical")
   expect_equal(fit$ci_type, "analytical")
