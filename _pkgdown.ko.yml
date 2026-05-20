@@ -171,11 +171,13 @@ reference:
 - title: 시각화
   desc: >
     `plot()` (base generic) 과 `plot_triangle()` (lossratio generic)
-    이 객체 클래스에 따라 dispatch.
+    이 객체 클래스에 따라 dispatch. `render()` 는 data frame 과
+    `Triangle` 객체용 콘솔 테이블 렌더러.
   contents:
   - plot_triangle
   - starts_with("plot.")
   - starts_with("plot_triangle.")
+  - render
 
 - title: 기타 S3 메서드
   desc: 패키지 클래스에 등록된 print / summary / longer 메서드.

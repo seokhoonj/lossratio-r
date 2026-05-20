@@ -4,7 +4,7 @@
 \alias{.resolve_y_scale}
 \title{Resolve y-axis scale for a plot}
 \usage{
-.resolve_y_scale(meta, amount_divisor = 100000000)
+.resolve_y_scale(meta, amount_divisor = 1e+08)
 }
 \arguments{
 \item{meta}{A named list produced by \code{\link[=.get_plot_meta]{.get_plot_meta()}}, containing at

@@ -224,11 +224,13 @@ reference:
 - title: Visualisation
   desc: >
     `plot()` (base generic) and `plot_triangle()` (lossratio generic)
-    dispatch on the object class.
+    dispatch on the object class. `render()` is a console table
+    renderer for data frames and `Triangle` objects.
   contents:
   - plot_triangle
   - starts_with("plot.")
   - starts_with("plot_triangle.")
+  - render
 
 - title: Other S3 methods
   desc: print / summary / longer methods registered on package classes.
