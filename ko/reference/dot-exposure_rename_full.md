@@ -9,5 +9,5 @@ and analytical CI bounds (`exposure_ci_lo`, `exposure_ci_hi`) from
 ## Usage
 
 ``` r
-.exposure_rename_full(full, grp, conf_level)
+.exposure_rename_full(full, groups, conf_level)
 ```

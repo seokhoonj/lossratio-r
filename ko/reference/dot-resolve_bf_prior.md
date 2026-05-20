@@ -23,7 +23,7 @@ present in the input triangle.
 
 - by_cols:
 
-  Character vector of join columns (`c(grp, "cohort")`).
+  Character vector of join columns (`c(groups, "cohort")`).
 
 ## Value
 

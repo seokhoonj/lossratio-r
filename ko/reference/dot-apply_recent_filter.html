@@ -78,8 +78,8 @@ its group.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.apply_recent_filter</span><span class="op">(</span></span>
 <span>  <span class="va">dt</span>,</span>
 <span>  <span class="va">recent</span>,</span>
-<span>  grp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
-<span>  <span class="va">coh</span>,</span>
+<span>  groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
+<span>  <span class="va">cohort</span>,</span>
 <span>  <span class="va">dev</span>,</span>
 <span>  dev_split <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -98,11 +98,11 @@ its group.</p>
 is returned unchanged.</p></dd>
 
 
-<dt id="arg-grp">grp<a class="anchor" aria-label="anchor" href="#arg-grp"></a></dt>
+<dt id="arg-groups">groups<a class="anchor" aria-label="anchor" href="#arg-groups"></a></dt>
 <dd><p>Character vector of group columns (may be empty).</p></dd>
 
 
-<dt id="arg-coh">coh<a class="anchor" aria-label="anchor" href="#arg-coh"></a></dt>
+<dt id="arg-cohort">cohort<a class="anchor" aria-label="anchor" href="#arg-cohort"></a></dt>
 <dd><p>Single column name for the cohort variable (e.g. <code>cohort</code>).</p></dd>
 
 
@@ -117,9 +117,9 @@ for <code>Triangle</code> objects, or <code>ata_from</code> for <code>ATA</code>
 (= <code>ata_to</code>, the first CL-region dev). The recent filter is
 applied only to rows where <code>dev &gt;= dev_split</code> (CL region); rows
 with <code>dev &lt; dev_split</code> (ED region) are kept unconditionally.</p></li>
-<li><p>A <code>data.table</code> <code>[grp..., dev_split]</code> – per-group SA boundary
+<li><p>A <code>data.table</code> <code>[groups..., dev_split]</code> – per-group SA boundary
 (different <code>k*</code> per group). The group columns must be a subset
-of <code>grp</code>. Each row of <code>dt</code> looks up its <code>dev_split</code> via
+of <code>groups</code>. Each row of <code>dt</code> looks up its <code>dev_split</code> via
 left-join; rows whose group has no matching entry (NA after the
 join) are treated as if <code>dev_split = NULL</code> for that row (recent
 wedge applies to all dev for them).</p></li>

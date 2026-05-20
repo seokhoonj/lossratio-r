@@ -31,7 +31,7 @@ replicates.
 .bf_compose_bootstrap(
   boots,
   priors,
-  grp,
+  groups,
   by_cols,
   full,
   summ,
@@ -55,13 +55,13 @@ replicates.
   Pass `NULL` for the Cape Cod composition (ELR is data-pooled per
   replicate).
 
-- grp:
+- groups:
 
   Group column character vector.
 
 - by_cols:
 
-  `c(grp, "cohort")`.
+  `c(groups, "cohort")`.
 
 - full:
 
@@ -78,7 +78,7 @@ replicates.
 
 - cohorts_present:
 
-  Unique `[grp, cohort]` rows present in the triangle.
+  Unique `[groups, cohort]` rows present in the triangle.
 
 ## Value
 

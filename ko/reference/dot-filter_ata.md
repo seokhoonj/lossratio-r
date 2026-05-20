@@ -15,7 +15,7 @@ Internal helper that produces a `f_sel` column by applying two steps:
   ata_summary,
   maturity = NULL,
   use_maturity = FALSE,
-  grp = character(0),
+  groups = character(0),
   na_method = c("locf", "none")
 )
 ```
@@ -39,7 +39,7 @@ Internal helper that produces a `f_sel` column by applying two steps:
   Logical; if `TRUE`, apply the maturity filter. When `FALSE`,
   `maturity` is ignored entirely.
 
-- grp:
+- groups:
 
   Character vector of grouping variable names.
 

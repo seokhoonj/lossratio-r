@@ -25,5 +25,5 @@ The first dev row per cohort is NA (no predecessor). Downstream
 ## Usage
 
 ``` r
-.derive_regime_target(d, loss, grp = character(0))
+.derive_regime_target(d, loss, groups = character(0))
 ```

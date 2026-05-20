@@ -173,7 +173,7 @@ replicates.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.bf_compose_bootstrap</span><span class="op">(</span></span>
 <span>  <span class="va">boots</span>,</span>
 <span>  <span class="va">priors</span>,</span>
-<span>  <span class="va">grp</span>,</span>
+<span>  <span class="va">groups</span>,</span>
 <span>  <span class="va">by_cols</span>,</span>
 <span>  <span class="va">full</span>,</span>
 <span>  <span class="va">summ</span>,</span>
@@ -198,12 +198,12 @@ Pass <code>NULL</code> for the Cape Cod composition (ELR is data-pooled per
 replicate).</p></dd>
 
 
-<dt id="arg-grp">grp<a class="anchor" aria-label="anchor" href="#arg-grp"></a></dt>
+<dt id="arg-groups">groups<a class="anchor" aria-label="anchor" href="#arg-groups"></a></dt>
 <dd><p>Group column character vector.</p></dd>
 
 
 <dt id="arg-by-cols">by_cols<a class="anchor" aria-label="anchor" href="#arg-by-cols"></a></dt>
-<dd><p><code>c(grp, "cohort")</code>.</p></dd>
+<dd><p><code>c(groups, "cohort")</code>.</p></dd>
 
 
 <dt id="arg-full">full<a class="anchor" aria-label="anchor" href="#arg-full"></a></dt>
@@ -220,7 +220,7 @@ for join-on bootstrap SE / CI columns).</p></dd>
 
 
 <dt id="arg-cohorts-present">cohorts_present<a class="anchor" aria-label="anchor" href="#arg-cohorts-present"></a></dt>
-<dd><p>Unique <code>[grp, cohort]</code> rows present in the
+<dd><p>Unique <code>[groups, cohort]</code> rows present in the
 triangle.</p></dd>
 
 </dl></div>

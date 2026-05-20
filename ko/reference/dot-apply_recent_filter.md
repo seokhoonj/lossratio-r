@@ -13,8 +13,8 @@ The group-wise long-form condition is
 .apply_recent_filter(
   dt,
   recent,
-  grp = character(0),
-  coh,
+  groups = character(0),
+  cohort,
   dev,
   dev_split = NULL
 )
@@ -31,11 +31,11 @@ The group-wise long-form condition is
   Positive integer or `NULL`. When `NULL` or missing, `dt` is returned
   unchanged.
 
-- grp:
+- groups:
 
   Character vector of group columns (may be empty).
 
-- coh:
+- cohort:
 
   Single column name for the cohort variable (e.g. `cohort`).
 
@@ -55,12 +55,12 @@ The group-wise long-form condition is
     only to rows where `dev >= dev_split` (CL region); rows with
     `dev < dev_split` (ED region) are kept unconditionally.
 
-  - A `data.table` `[grp..., dev_split]` – per-group SA boundary
+  - A `data.table` `[groups..., dev_split]` – per-group SA boundary
     (different `k*` per group). The group columns must be a subset of
-    `grp`. Each row of `dt` looks up its `dev_split` via left-join; rows
-    whose group has no matching entry (NA after the join) are treated as
-    if `dev_split = NULL` for that row (recent wedge applies to all dev
-    for them).
+    `groups`. Each row of `dt` looks up its `dev_split` via left-join;
+    rows whose group has no matching entry (NA after the join) are
+    treated as if `dev_split = NULL` for that row (recent wedge applies
+    to all dev for them).
 
 ## Value
 

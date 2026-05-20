@@ -10,7 +10,7 @@ without the maturity gate (ED has no maturity concept).
 ``` r
 .select_intensity(
   ed_summary,
-  grp = character(0),
+  groups = character(0),
   na_method = c("zero", "locf", "none")
 )
 ```
@@ -21,7 +21,7 @@ without the maturity gate (ED has no maturity concept).
 
   An `EDSummary`.
 
-- grp:
+- groups:
 
   Character vector of group columns.
 

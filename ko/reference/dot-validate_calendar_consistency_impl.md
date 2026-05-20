@@ -6,5 +6,5 @@ occurring before the cohort start, which is logically impossible.
 ## Usage
 
 ``` r
-.validate_calendar_consistency_impl(dt, grp, coh, dev, cal)
+.validate_calendar_consistency_impl(dt, groups, cohort, dev, calendar)
 ```

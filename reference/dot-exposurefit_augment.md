@@ -9,7 +9,7 @@ helper in `R/loss.R`.
 ## Usage
 
 ``` r
-.exposurefit_augment(result, x, method, grp, conf_level)
+.exposurefit_augment(result, x, method, groups, conf_level)
 ```
 
 ## Arguments
@@ -26,7 +26,7 @@ helper in `R/loss.R`.
 
   One of `"cl"` / `"ed"`.
 
-- grp:
+- groups:
 
   Character vector of group columns.
 

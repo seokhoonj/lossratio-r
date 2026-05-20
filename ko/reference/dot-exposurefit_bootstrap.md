@@ -11,7 +11,7 @@ in `R/loss.R`.
 ## Usage
 
 ``` r
-.exposurefit_bootstrap(result, x, grp, bootstrap, B, seed, alpha)
+.exposurefit_bootstrap(result, x, groups, bootstrap, B, seed, alpha)
 ```
 
 ## Arguments
@@ -25,7 +25,7 @@ in `R/loss.R`.
 
   The original `Triangle`.
 
-- grp:
+- groups:
 
   Character vector of group columns.
 
