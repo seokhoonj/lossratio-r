@@ -161,6 +161,7 @@ Cape Cod ELR itself is data-driven and thus uncertain.</p>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span>, <span class="st">"mack"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  credibility <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  conf_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -237,9 +238,15 @@ forwarded to the inner fits. Default <code>NULL</code>.</p></dd>
 loss and exposure fits. See <code><a href="fit_cl.html">fit_cl()</a></code> for the four-type dispatch.</p></dd>
 
 
-<dt id="arg-conf-level">conf_level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
-<dd><p>Confidence level for bootstrap quantile CI. Default
-<code>0.95</code>.</p></dd>
+<dt id="arg-credibility">credibility<a class="anchor" aria-label="anchor" href="#arg-credibility"></a></dt>
+<dd><p>Optional credibility specification. <code>NULL</code>
+(default) gives the classical CC blend weighted by the emergence
+fraction <code>q</code>. A list <code>list(method = "bs", K = NULL)</code> switches to a
+Buehlmann-Straub credibility blend <code>ult = Z * CL + (1 - Z) * prior</code>
+with the pooled ELR as the prior; <code>Z = K / (K + s^2)</code> shrinks a
+green / rare-event cohort toward the pooled ELR. See <code><a href="fit_bf.html">fit_bf()</a></code> for
+the full description. A credibility blend uses the analytical SE
+path.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -274,6 +281,11 @@ per group (or scalar if no group).</p></dd>
 
 <dt><code>q</code></dt>
 <dd><p>Per-cohort emerged fraction.</p></dd>
+
+<dt><code>credibility</code></dt>
+<dd><p><code>NULL</code> for the classical blend, or a list
+<code>list(method, weights)</code> with the Buehlmann-Straub <code>Z</code> / <code>K</code>
+per cohort.</p></dd>
 
 <dt><code>cl_fit</code>, <code>exposure_fit</code></dt>
 <dd><p>Inner CL / Exposure fits.</p></dd>

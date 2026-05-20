@@ -60,6 +60,7 @@ fit_cc(
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   regime = NULL,
+  credibility = NULL,
   conf_level = 0.95,
   ...
 )
@@ -140,9 +141,17 @@ fit_cc(
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
   for the four-type dispatch.
 
-- conf_level:
+- credibility:
 
-  Confidence level for bootstrap quantile CI. Default `0.95`.
+  Optional credibility specification. `NULL` (default) gives the
+  classical CC blend weighted by the emergence fraction `q`. A list
+  `list(method = "bs", K = NULL)` switches to a Buehlmann-Straub
+  credibility blend `ult = Z * CL + (1 - Z) * prior` with the pooled ELR
+  as the prior; `Z = K / (K + s^2)` shrinks a green / rare-event cohort
+  toward the pooled ELR. See
+  [`fit_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.md)
+  for the full description. A credibility blend uses the analytical SE
+  path.
 
 - ...:
 
@@ -184,6 +193,11 @@ An object of class `"CCFit"` containing:
 - `q`:
 
   Per-cohort emerged fraction.
+
+- `credibility`:
+
+  `NULL` for the classical blend, or a list `list(method, weights)` with
+  the Buehlmann-Straub `Z` / `K` per cohort.
 
 - `cl_fit`, `exposure_fit`:
 

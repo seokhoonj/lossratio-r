@@ -55,6 +55,7 @@ fit_bf(
   recent = NULL,
   regime = NULL,
   maturity = NULL,
+  credibility = NULL,
   conf_level = 0.95,
   ...
 )
@@ -195,6 +196,22 @@ fit_bf(
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
   for the four-type dispatch.
 
+- credibility:
+
+  Optional credibility specification. `NULL` (default) gives the
+  classical BF blend with weight equal to the emergence fraction `q`. A
+  list `list(method = "bs", K = NULL)` switches to a Buehlmann-Straub
+  credibility blend `ult = Z * CL + (1 - Z) * prior`, where
+  `Z = K / (K + s^2)`, `s^2` is the variance of the cohort's own CL
+  loss-ratio estimate, and `K` is the variance of the hypothetical means
+  (the genuine between-cohort spread). `K` is estimated per group when
+  `NULL`, or supplied as a non-negative numeric scalar. The credibility
+  weight protects rare-event cohorts: a green cohort with a CL estimate
+  built on almost no data has a large `s^2`, so `Z` shrinks toward 0 and
+  the cohort is pulled to the prior even when its `q` is high. A
+  credibility blend always uses the analytical SE path (the SE is
+  approximate – the credibility factor is treated as a fixed plug-in).
+
 - conf_level:
 
   Confidence level for the bootstrap quantile CI on `loss_ult`. Default
@@ -262,6 +279,12 @@ An object of class `"BFFit"` containing:
 - `q`:
 
   `data.table(group..., cohort, q)` of expected emerged fractions.
+
+- `credibility`:
+
+  `NULL` for the classical blend, or a list `list(method, weights)`
+  where `weights` is a `data.table` `[group..., cohort, Z, K]` of the
+  Buehlmann-Straub credibility factors used in place of `q`.
 
 - `cl_fit`:
 

@@ -145,6 +145,7 @@ Mack (2008) MSEP is not yet implemented.</p>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maturity <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  credibility <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  conf_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -271,6 +272,24 @@ loss and exposure fits. See <code><a href="fit_cl.html">fit_cl()</a></code> for 
 loss fit. See <code><a href="fit_cl.html">fit_cl()</a></code> for the four-type dispatch.</p></dd>
 
 
+<dt id="arg-credibility">credibility<a class="anchor" aria-label="anchor" href="#arg-credibility"></a></dt>
+<dd><p>Optional credibility specification. <code>NULL</code>
+(default) gives the classical BF blend with weight equal to the
+emergence fraction <code>q</code>. A list <code>list(method = "bs", K = NULL)</code>
+switches to a Buehlmann-Straub credibility blend
+<code>ult = Z * CL + (1 - Z) * prior</code>, where <code>Z = K / (K + s^2)</code>,
+<code>s^2</code> is the variance of the cohort's own CL loss-ratio estimate,
+and <code>K</code> is the variance of the hypothetical means (the genuine
+between-cohort spread). <code>K</code> is estimated per group when <code>NULL</code>, or
+supplied as a non-negative numeric scalar. The credibility weight
+protects rare-event cohorts: a green cohort with a CL estimate
+built on almost no data has a large <code>s^2</code>, so <code>Z</code> shrinks toward 0
+and the cohort is pulled to the prior even when its <code>q</code> is high.
+A credibility blend always uses the analytical SE path (the SE is
+approximate – the credibility factor is treated as a fixed
+plug-in).</p></dd>
+
+
 <dt id="arg-conf-level">conf_level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
 <dd><p>Confidence level for the bootstrap quantile CI on
 <code>loss_ult</code>. Default <code>0.95</code>.</p></dd>
@@ -325,6 +344,12 @@ enabled, additional columns <code>loss_total_se</code>, <code>loss_total_cv</cod
 <dt><code>q</code></dt>
 <dd><p><code>data.table(group..., cohort, q)</code> of expected
 emerged fractions.</p></dd>
+
+<dt><code>credibility</code></dt>
+<dd><p><code>NULL</code> for the classical blend, or a list
+<code>list(method, weights)</code> where <code>weights</code> is a <code>data.table</code>
+<code>[group..., cohort, Z, K]</code> of the Buehlmann-Straub credibility
+factors used in place of <code>q</code>.</p></dd>
 
 <dt><code>cl_fit</code></dt>
 <dd><p>The inner <code>CLFit</code> used to derive \(q_i\).</p></dd>

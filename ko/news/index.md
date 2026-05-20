@@ -2,6 +2,22 @@
 
 ## lossratio (development version)
 
+- **Buehlmann-Straub credibility blend for
+  [`fit_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.md)
+  /
+  [`fit_cc()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cc.md).**
+  A new `credibility` argument switches the BF / CC blend weight from
+  the emergence fraction `q` to a Buehlmann-Straub credibility factor
+  `Z = K / (K + s^2)`, where `s^2` is the variance of the cohort’s own
+  CL loss-ratio estimate and `K` is the between-cohort variance of the
+  true loss ratios (estimated per group, or supplied).
+  `credibility = NULL` (default) keeps the classical blend. The
+  credibility weight protects rare-event and very green cohorts: a CL
+  estimate built on almost no data has a large `s^2`, so `Z` shrinks
+  toward 0 and the cohort is pulled to the prior even when its `q` is
+  high. The fit carries a `$credibility` slot with the per-cohort `Z` /
+  `K`.
+
 - **Analytical prediction error for
   [`fit_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.md)
   /
