@@ -72,10 +72,9 @@ plot_triangle(
 
 - label_size:
 
-  Numeric label text size forwarded to
-  [`ggshort::ggtable()`](https://rdrr.io/pkg/ggshort/man/ggtable.html).
-  Defaults to `3` for `label_style = "value"` and `2.5` for
-  `label_style = "detail"` (two-line labels).
+  Numeric size of the in-cell text label. Defaults to `3` for
+  `label_style = "value"` and `2.5` for `label_style = "detail"`
+  (two-line labels).
 
 - show_maturity:
 

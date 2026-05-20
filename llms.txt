@@ -123,10 +123,6 @@ pak::pak("seokhoonj/lossratio")
 remotes::install_github("seokhoonj/lossratio")
 ```
 
-The package currently depends on seokhoonj/instead and seokhoonj/ggshort
-(installed automatically via Remotes:; planned for removal in a future
-release).
-
 ## Quick Start
 
 ``` r
@@ -270,7 +266,7 @@ vignette("regime", package = "lossratio")
 
 ## License
 
-GPL (\>= 2). See
+MPL-2.0. See
 [LICENSE.md](https://seokhoonj.github.io/lossratio/LICENSE.md).
 
 ## Author

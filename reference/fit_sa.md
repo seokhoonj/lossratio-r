@@ -22,7 +22,7 @@ fit_sa(
   exposure = "exposure",
   alpha = 1,
   exposure_fit = NULL,
-  exposure_method = c("cl", "ed"),
+  exposure_method = c("ed", "cl"),
   exposure_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
@@ -68,7 +68,7 @@ fit_sa(
 
 - exposure_method:
 
-  One of `"cl"` (default) or `"ed"`. Used only when
+  One of `"ed"` (default) or `"cl"`. Used only when
   `exposure_fit = NULL`.
 
 - exposure_alpha:

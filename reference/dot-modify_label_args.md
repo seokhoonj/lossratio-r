@@ -1,8 +1,8 @@
-# Merge user-supplied `label_args` with the standard ggshort label defaults
+# Merge user-supplied `label_args` with the standard label defaults
 
-Mirrors `ggshort:::.modify_label_args()` so heatmap callers can supply a
-partial list (e.g. `list(size = 2.5)`) and let the remaining slots fall
-back to the standard ggshort label appearance.
+A cell label is a `geom_text()` layer; this fills any slot the caller
+did not supply (`family`, `size`, `angle`, `hjust`, `vjust`, `color`) so
+callers can pass a partial list such as `list(size = 2.5)`.
 
 ## Usage
 

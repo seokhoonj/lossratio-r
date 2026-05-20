@@ -118,8 +118,8 @@ flag over-projection. Aggregated by development period
 <span>  <span class="va">x</span>,</span>
 <span>  holdout <span class="op">=</span> <span class="fl">6L</span>,</span>
 <span>  target <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ratio"</span>, <span class="st">"loss"</span>, <span class="st">"exposure"</span><span class="op">)</span>,</span>
-<span>  loss_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ed"</span>, <span class="st">"cl"</span>, <span class="st">"sa"</span><span class="op">)</span>,</span>
-<span>  exposure_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cl"</span>, <span class="st">"ed"</span><span class="op">)</span>,</span>
+<span>  loss_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ed"</span>, <span class="st">"cl"</span>, <span class="st">"sa"</span>, <span class="st">"bf"</span>, <span class="st">"cc"</span><span class="op">)</span>,</span>
+<span>  exposure_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ed"</span>, <span class="st">"cl"</span><span class="op">)</span>,</span>
 <span>  loss_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  exposure_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span>, <span class="st">"mack"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
@@ -131,7 +131,7 @@ flag over-projection. Aggregated by development period
 <span>  rho <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  conf_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  bootstrap <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  B <span class="op">=</span> <span class="fl">999</span>,</span>
+<span>  B <span class="op">=</span> <span class="fl">999L</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
@@ -170,13 +170,15 @@ is treated as the held-out actual.</p></dd>
 <dt id="arg-loss-method">loss_method<a class="anchor" aria-label="anchor" href="#arg-loss-method"></a></dt>
 <dd><p>Method for the loss-side projection. Passed to
 <code><a href="fit_ratio.html">fit_ratio()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code> as their <code>method</code> argument. One of
-<code>"sa"</code>, <code>"ed"</code>, <code>"cl"</code>. Unused for <code>target = "exposure"</code>.</p></dd>
+<code>"ed"</code> (default), <code>"cl"</code>, <code>"sa"</code>, <code>"bf"</code>, or <code>"cc"</code>. <code>"bf"</code> / <code>"cc"</code>
+need their prior arguments supplied through <code>...</code>. Unused for
+<code>target = "exposure"</code>.</p></dd>
 
 
 <dt id="arg-exposure-method">exposure_method<a class="anchor" aria-label="anchor" href="#arg-exposure-method"></a></dt>
 <dd><p>Method for the exposure-side projection.
 Passed to <code><a href="fit_ratio.html">fit_ratio()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code> / <code><a href="fit_exposure.html">fit_exposure()</a></code>. One of
-<code>"cl"</code>, <code>"ed"</code>.</p></dd>
+<code>"ed"</code> (default) or <code>"cl"</code>.</p></dd>
 
 
 <dt id="arg-loss-alpha-exposure-alpha">loss_alpha, exposure_alpha<a class="anchor" aria-label="anchor" href="#arg-loss-alpha-exposure-alpha"></a></dt>

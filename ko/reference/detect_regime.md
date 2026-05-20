@@ -13,22 +13,15 @@ object whose `$changes`, `$labels`, etc. carry the group column.
 Single-group input retains the original scalar / Date-vector / matrix
 layout for backward compatibility.
 
-Three detection strategies are supported:
+Two detection strategies are supported:
 
 - `"e_divisive"`:
 
-  Multivariate non-parametric divisive change-point detection via
-  [`ecp::e.divisive()`](https://rdrr.io/pkg/ecp/man/e.divisive.html).
-  The number of regimes is determined by the data; only significant
-  changes at `sig_level` are retained. Preferred when the number of
-  regimes is not known in advance.
-
-- `"pelt"`:
-
-  Univariate mean change-point detection via
-  [`changepoint::cpt.mean()`](https://rdrr.io/pkg/changepoint/man/cpt.mean.html)
-  with the PELT algorithm applied to the first principal component of
-  the cohort feature matrix. Fast and may return multiple changes.
+  Multivariate non-parametric divisive change-point detection on the
+  energy statistic (Matteson & James 2014). The number of regimes is
+  determined by the data; only changes significant at `sig_level` are
+  retained. Preferred when the number of regimes is not known in
+  advance.
 
 - `"hclust"`:
 
@@ -45,7 +38,7 @@ detect_regime(
   loss = "ratio",
   by = NULL,
   window = "auto",
-  method = c("e_divisive", "pelt", "hclust"),
+  method = c("e_divisive", "hclust"),
   n_regimes = NULL,
   sig_level = 0.05,
   min_size = 3L,
@@ -127,13 +120,13 @@ print(x, ...)
 
 - method:
 
-  One of `"e_divisive"`, `"pelt"`, `"hclust"`.
+  One of `"e_divisive"`, `"hclust"`.
 
 - n_regimes:
 
   Integer. Number of regimes to force. `NULL` means auto-detect for
-  `"e_divisive"` and `"pelt"`; ignored (required to equal the requested
-  value) for `"hclust"`, where the default is `2`.
+  `"e_divisive"`; ignored (required to equal the requested value) for
+  `"hclust"`, where the default is `2`.
 
 - sig_level:
 
@@ -281,8 +274,8 @@ print(r)
 summary(r)
 plot(r)
 
-# ecp divisive change-point detection (requires the ecp package)
-r_ecp <- detect_regime(tri_sur, method = "e_divisive")
+# Energy-statistic divisive change-point detection
+r_ed <- detect_regime(tri_sur, method = "e_divisive")
 
 # Multi-group: detection per coverage
 tri_all <- as_triangle(

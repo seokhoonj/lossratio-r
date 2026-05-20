@@ -371,14 +371,8 @@ growth — both useful diagnostics.</p>
 <ul>
 <li><p><strong><code>"e_divisive"</code></strong> — preferred default.
 Multivariate, non-parametric, auto-detects the number of regimes at a
-given significance level. Slightly slower than the alternatives but
-requires no a priori choice of <code>n_regimes</code>.</p></li>
-<li><p><strong><code>"pelt"</code></strong> — fast univariate
-change-point detection applied to the first principal component. May
-return multiple changes and is useful when the trajectory variation is
-dominated by one axis (check <code>PC1 %</code> in the
-<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> output — if &gt; 70%, PELT is reliable; if much
-lower, prefer <code>"e_divisive"</code>).</p></li>
+given significance level, so it requires no a priori choice of
+<code>n_regimes</code>.</p></li>
 <li><p><strong><code>"hclust"</code></strong> — Ward hierarchical
 clustering on the scaled feature matrix, cut to <code>n_regimes</code>
 clusters (default <code>2</code>). Ignores chronological order and is
@@ -388,10 +382,10 @@ two groups (all pre-<code>t</code> in one cluster, all
 post-<code>t</code> in the other), the shift is structural rather than
 an artefact of the method.</p></li>
 </ul>
-<p>In practice, agreement across all three methods — as in the surgery
-example above, where <code>"e_divisive"</code>, <code>"pelt"</code>, and
-<code>"hclust"</code> all locate <code>24.04</code> as the regime
-boundary — is strong evidence of a real underwriting/rate shift.</p>
+<p>In practice, agreement across both methods — as in the surgery
+example above, where <code>"e_divisive"</code> and <code>"hclust"</code>
+both locate <code>24.04</code> as the regime boundary — is strong
+evidence of a real underwriting/rate shift.</p>
 </div>
 <div class="section level2">
 <h2 id="forcing-the-number-of-regimes">Forcing the number of regimes<a class="anchor" aria-label="anchor" href="#forcing-the-number-of-regimes"></a>
@@ -414,10 +408,9 @@ two-vs-three regime hypotheses — pass <code>n_regimes</code>:</p>
 <span><span class="co">#&gt;   3: 25.07-25.09 (3 cohorts)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Changes: 24.07, 25.07</span></span></code></pre></div>
-<p>For <code>"e_divisive"</code> and <code>"pelt"</code>,
-<code>n_regimes</code> is a request (the algorithm will return up to
-that many regimes if supported by the data). For <code>"hclust"</code>,
-it is a hard cut.</p>
+<p>For <code>"e_divisive"</code>, <code>n_regimes</code> is a request
+(the algorithm will return up to that many regimes if supported by the
+data). For <code>"hclust"</code>, it is a hard cut.</p>
 </div>
 <div class="section level2">
 <h2 id="multi-group-detection">Multi-group detection<a class="anchor" aria-label="anchor" href="#multi-group-detection"></a>

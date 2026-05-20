@@ -21,7 +21,7 @@ Setting any `*.size` argument to `0` replaces that element with
 ``` r
 .switch_theme(
   theme = c("view", "save", "shiny"),
-  family = getOption("lossratio.font"),
+  family = getOption("lossratio.font", ""),
   x.size = NULL,
   y.size = NULL,
   t.size = NULL,
@@ -56,7 +56,8 @@ Setting any `*.size` argument to `0` replaces that element with
 
 - family:
 
-  Font family; defaults to `getOption("lossratio.font")`.
+  Font family; defaults to `getOption("lossratio.font", "")` (empty
+  string = system default).
 
 - x.size, y.size, t.size, s.size, l.size:
 

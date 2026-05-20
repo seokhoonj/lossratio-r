@@ -1,7 +1,7 @@
 # Fit loss ratio projection model
 
 Unified interface for loss ratio projection from a `"Triangle"` object.
-Three projection methods are available:
+Five projection methods are available:
 
 - `"ed"` (default):
 
@@ -28,8 +28,20 @@ Three projection methods are available:
     projection \\C^L\_{k+1} = f_k \cdot C^L_k\\ preserves the cohort's
     observed level.
 
-In all cases, exposure is projected forward using chain ladder:
-\$\$\hat{C}^P\_{i,k+1} = f^P_k \cdot \hat{C}^P\_{i,k}\$\$
+- `"bf"`:
+
+  Bornhuetter-Ferguson: blends the chain-ladder ultimate with an
+  external prior loss ratio by the emergence fraction. Requires a
+  `prior` argument, passed through `...`.
+
+- `"cc"`:
+
+  Cape Cod: like `"bf"`, but the prior loss ratio is estimated by
+  pooling the data rather than supplied externally.
+
+In all cases, exposure is projected forward to ultimate; the point
+projection is identical under `exposure_method = "ed"` or `"cl"` (they
+differ only in the variance recursion).
 
 This function is the *composition* layer over
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
@@ -46,21 +58,23 @@ point + variance via the delta method (`se_method = "fixed"` or
 ``` r
 fit_ratio(
   x,
-  method = c("ed", "cl", "sa"),
+  method = c("ed", "cl", "sa", "bf", "cc"),
   loss_alpha = 1,
   loss_regime = NULL,
-  exposure_method = c("cl", "ed"),
+  exposure_method = c("ed", "cl"),
   exposure_alpha = 1,
   exposure_regime = NULL,
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   maturity = "auto",
+  tail = FALSE,
   se_method = c("fixed", "delta"),
   rho = 0.95,
   conf_level = 0.95,
   bootstrap = NULL,
   B = 999L,
-  seed = NULL
+  seed = NULL,
+  ...
 )
 ```
 
@@ -75,7 +89,11 @@ fit_ratio(
 
 - method:
 
-  One of `"ed"` (default), `"cl"`, or `"sa"`.
+  One of `"ed"` (default), `"cl"`, `"sa"`, `"bf"`, or `"cc"` – the
+  loss-side projection method, forwarded to
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md).
+  `"bf"` and `"cc"` require their prior arguments (`prior`, etc.)
+  supplied through `...`.
 
 - loss_alpha:
 
@@ -125,7 +143,7 @@ fit_ratio(
 
 - exposure_method:
 
-  One of `"cl"` (default) or `"ed"`. Forwarded to
+  One of `"ed"` (default) or `"cl"`. Forwarded to
   [`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md)
   when constructing the exposure projection.
 
@@ -186,6 +204,13 @@ fit_ratio(
   When `method = "sa"`, this also determines the switch point between ED
   and CL phases.
 
+- tail:
+
+  Tail factor for the loss-side projection, forwarded to
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md).
+  `FALSE` (default) applies none; `TRUE` estimates a log-linear tail
+  factor; a numeric value is used directly.
+
 - se_method:
 
   Method for computing `ratio_se = SE(L/P)`. One of:
@@ -225,7 +250,7 @@ fit_ratio(
   `NULL` (default)
 
   :   Auto-resolved by `method`: bootstrap for `"sa"`/`"ed"`, analytical
-      for `"cl"`. Matches legacy behavior.
+      for `"cl"`/`"bf"`/`"cc"`.
 
   `TRUE` / `FALSE`
 
@@ -267,6 +292,13 @@ fit_ratio(
 - seed:
 
   Optional integer seed for reproducible bootstrap. Default is `NULL`.
+
+- ...:
+
+  Additional arguments forwarded to
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+  and its worker – notably `prior` (and related arguments) when
+  `method = "bf"` or `"cc"`.
 
 ## Value
 

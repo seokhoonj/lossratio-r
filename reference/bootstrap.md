@@ -31,7 +31,7 @@ bootstrap(x, ...)
 # S3 method for class 'Triangle'
 bootstrap(
   x,
-  type = c("analytical", "nonparametric", "parametric"),
+  type = c("parametric", "nonparametric", "analytical"),
   residual = c("cell", "link"),
   hat_adj = TRUE,
   demean = TRUE,
@@ -63,7 +63,7 @@ bootstrap(
 
 - type:
 
-  One of `"analytical"`, `"nonparametric"`, or `"parametric"`.
+  One of `"parametric"` (default), `"nonparametric"`, or `"analytical"`.
   `"analytical"` draws new link factors from
   `N(f_hat, sqrt(Var(f_hat)))` (Mack 1993 closed-form propagation; CL
   only). `"nonparametric"` resamples standardized residuals and

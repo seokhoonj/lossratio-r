@@ -69,7 +69,7 @@ plot(
 - ...:
 
   Additional arguments passed to
-  [`ggshort::plot_pca()`](https://rdrr.io/pkg/ggshort/man/plot_pca.html).
+  [`.switch_theme()`](https://seokhoonj.github.io/lossratio/reference/dot-switch_theme.md).
 
 ## Value
 

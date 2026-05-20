@@ -209,7 +209,7 @@ Python 구현: [`lossratio-py`](https://github.com/seokhoonj/lossratio-py)
 
 ## 라이선스 / 저자
 
-GPL (≥ 2). Seokhoon Joo (<seokhoonj@gmail.com>)
+MPL-2.0. Seokhoon Joo (<seokhoonj@gmail.com>)
 
 # Package index
 

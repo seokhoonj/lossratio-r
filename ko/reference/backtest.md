@@ -31,8 +31,8 @@ backtest(
   x,
   holdout = 6L,
   target = c("ratio", "loss", "exposure"),
-  loss_method = c("ed", "cl", "sa"),
-  exposure_method = c("cl", "ed"),
+  loss_method = c("ed", "cl", "sa", "bf", "cc"),
+  exposure_method = c("ed", "cl"),
   loss_alpha = 1,
   exposure_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
@@ -44,7 +44,7 @@ backtest(
   rho = 0.95,
   conf_level = 0.95,
   bootstrap = NULL,
-  B = 999,
+  B = 999L,
   seed = NULL,
   ...
 )
@@ -84,8 +84,9 @@ print(x, ...)
   [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
-  as their `method` argument. One of `"sa"`, `"ed"`, `"cl"`. Unused for
-  `target = "exposure"`.
+  as their `method` argument. One of `"ed"` (default), `"cl"`, `"sa"`,
+  `"bf"`, or `"cc"`. `"bf"` / `"cc"` need their prior arguments supplied
+  through `...`. Unused for `target = "exposure"`.
 
 - exposure_method:
 
@@ -95,7 +96,7 @@ print(x, ...)
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
   /
   [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md).
-  One of `"cl"`, `"ed"`.
+  One of `"ed"` (default) or `"cl"`.
 
 - loss_alpha, exposure_alpha:
 

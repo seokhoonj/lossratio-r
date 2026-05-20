@@ -169,7 +169,7 @@ distribution to use.</p></li>
 <span><span class="co"># S3 method for class 'Triangle'</span></span>
 <span><span class="fu">bootstrap</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"analytical"</span>, <span class="st">"nonparametric"</span>, <span class="st">"parametric"</span><span class="op">)</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"parametric"</span>, <span class="st">"nonparametric"</span>, <span class="st">"analytical"</span><span class="op">)</span>,</span>
 <span>  residual <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cell"</span>, <span class="st">"link"</span><span class="op">)</span>,</span>
 <span>  hat_adj <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  demean <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -202,7 +202,8 @@ distribution to use.</p></li>
 
 
 <dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
-<dd><p>One of <code>"analytical"</code>, <code>"nonparametric"</code>, or <code>"parametric"</code>.
+<dd><p>One of <code>"parametric"</code> (default), <code>"nonparametric"</code>, or
+<code>"analytical"</code>.
 <code>"analytical"</code> draws new link factors from
 <code>N(f_hat, sqrt(Var(f_hat)))</code> (Mack 1993 closed-form propagation; CL
 only). <code>"nonparametric"</code> resamples standardized residuals and

@@ -11,19 +11,13 @@ independently per group, and results are combined into a single
 Regime object whose $changes, $labels, etc. carry the
 group column. Single-group input retains the original scalar /
 Date-vector / matrix layout for backward compatibility.
-Three detection strategies are supported:
+Two detection strategies are supported:
 "e_divisive"
-Multivariate non-parametric divisive change-point
-detection via ecp::e.divisive(). The number of regimes is
-determined by the data; only significant changes at
-sig_level are retained. Preferred when the number of regimes
-is not known in advance.
-
-"pelt"
-Univariate mean change-point detection via
-changepoint::cpt.mean() with the PELT algorithm applied to the
-first principal component of the cohort feature matrix. Fast
-and may return multiple changes.
+Multivariate non-parametric divisive
+change-point detection on the energy statistic (Matteson &amp;amp;
+James 2014). The number of regimes is determined by the data;
+only changes significant at sig_level are retained. Preferred
+when the number of regimes is not known in advance.
 
 "hclust"
 Ward hierarchical clustering on the scaled
@@ -46,19 +40,13 @@ independently per group, and results are combined into a single
 Regime object whose $changes, $labels, etc. carry the
 group column. Single-group input retains the original scalar /
 Date-vector / matrix layout for backward compatibility.
-Three detection strategies are supported:
+Two detection strategies are supported:
 "e_divisive"
-Multivariate non-parametric divisive change-point
-detection via ecp::e.divisive(). The number of regimes is
-determined by the data; only significant changes at
-sig_level are retained. Preferred when the number of regimes
-is not known in advance.
-
-"pelt"
-Univariate mean change-point detection via
-changepoint::cpt.mean() with the PELT algorithm applied to the
-first principal component of the cohort feature matrix. Fast
-and may return multiple changes.
+Multivariate non-parametric divisive
+change-point detection on the energy statistic (Matteson &amp;amp;
+James 2014). The number of regimes is determined by the data;
+only changes significant at sig_level are retained. Preferred
+when the number of regimes is not known in advance.
 
 "hclust"
 Ward hierarchical clustering on the scaled
@@ -140,18 +128,12 @@ independently per group, and results are combined into a single
 <code>Regime</code> object whose <code>$changes</code>, <code>$labels</code>, etc. carry the
 group column. Single-group input retains the original scalar /
 Date-vector / matrix layout for backward compatibility.</p>
-<p>Three detection strategies are supported:</p><dl><dt><code>"e_divisive"</code></dt>
-<dd><p>Multivariate non-parametric divisive change-point
-detection via <code><a href="https://rdrr.io/pkg/ecp/man/e.divisive.html" class="external-link">ecp::e.divisive()</a></code>. The number of regimes is
-determined by the data; only significant changes at
-<code>sig_level</code> are retained. Preferred when the number of regimes
-is not known in advance.</p></dd>
-
-<dt><code>"pelt"</code></dt>
-<dd><p>Univariate mean change-point detection via
-<code><a href="https://rdrr.io/pkg/changepoint/man/cpt.mean.html" class="external-link">changepoint::cpt.mean()</a></code> with the PELT algorithm applied to the
-first principal component of the cohort feature matrix. Fast
-and may return multiple changes.</p></dd>
+<p>Two detection strategies are supported:</p><dl><dt><code>"e_divisive"</code></dt>
+<dd><p>Multivariate non-parametric divisive
+change-point detection on the energy statistic (Matteson &amp;
+James 2014). The number of regimes is determined by the data;
+only changes significant at <code>sig_level</code> are retained. Preferred
+when the number of regimes is not known in advance.</p></dd>
 
 <dt><code>"hclust"</code></dt>
 <dd><p>Ward hierarchical clustering on the scaled
@@ -170,7 +152,7 @@ strictly chronological.</p></dd>
 <span>  loss <span class="op">=</span> <span class="st">"ratio"</span>,</span>
 <span>  by <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  window <span class="op">=</span> <span class="st">"auto"</span>,</span>
-<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"e_divisive"</span>, <span class="st">"pelt"</span>, <span class="st">"hclust"</span><span class="op">)</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"e_divisive"</span>, <span class="st">"hclust"</span><span class="op">)</span>,</span>
 <span>  n_regimes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sig_level <span class="op">=</span> <span class="fl">0.05</span>,</span>
 <span>  min_size <span class="op">=</span> <span class="fl">3L</span>,</span>
@@ -250,13 +232,13 @@ observed periods are dropped.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>One of <code>"e_divisive"</code>, <code>"pelt"</code>, <code>"hclust"</code>.</p></dd>
+<dd><p>One of <code>"e_divisive"</code>, <code>"hclust"</code>.</p></dd>
 
 
 <dt id="arg-n-regimes">n_regimes<a class="anchor" aria-label="anchor" href="#arg-n-regimes"></a></dt>
 <dd><p>Integer. Number of regimes to force. <code>NULL</code> means
-auto-detect for <code>"e_divisive"</code> and <code>"pelt"</code>; ignored (required to equal
-the requested value) for <code>"hclust"</code>, where the default is <code>2</code>.</p></dd>
+auto-detect for <code>"e_divisive"</code>; ignored (required to equal the
+requested value) for <code>"hclust"</code>, where the default is <code>2</code>.</p></dd>
 
 
 <dt id="arg-sig-level">sig_level<a class="anchor" aria-label="anchor" href="#arg-sig-level"></a></dt>
@@ -389,8 +371,8 @@ cohorts, single pooled factor) or estimate per-segment factors.</p></dd>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># ecp divisive change-point detection (requires the ecp package)</span></span></span>
-<span class="r-in"><span><span class="va">r_ecp</span> <span class="op">&lt;-</span> <span class="fu">detect_regime</span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Energy-statistic divisive change-point detection</span></span></span>
+<span class="r-in"><span><span class="va">r_ed</span> <span class="op">&lt;-</span> <span class="fu">detect_regime</span><span class="op">(</span><span class="va">tri_sur</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Multi-group: detection per coverage</span></span></span>
 <span class="r-in"><span><span class="va">tri_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="as_triangle.html">as_triangle</a></span><span class="op">(</span></span></span>

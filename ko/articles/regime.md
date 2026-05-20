@@ -214,15 +214,8 @@ shifts and diverge when the signal is weak or driven by book-size growth
 ## Choice of method
 
 - **`"e_divisive"`** — preferred default. Multivariate, non-parametric,
-  auto-detects the number of regimes at a given significance level.
-  Slightly slower than the alternatives but requires no a priori choice
-  of `n_regimes`.
-
-- **`"pelt"`** — fast univariate change-point detection applied to the
-  first principal component. May return multiple changes and is useful
-  when the trajectory variation is dominated by one axis (check `PC1 %`
-  in the [`print()`](https://rdrr.io/r/base/print.html) output — if \>
-  70%, PELT is reliable; if much lower, prefer `"e_divisive"`).
+  auto-detects the number of regimes at a given significance level, so
+  it requires no a priori choice of `n_regimes`.
 
 - **`"hclust"`** — Ward hierarchical clustering on the scaled feature
   matrix, cut to `n_regimes` clusters (default `2`). Ignores
@@ -232,10 +225,9 @@ shifts and diverge when the signal is weak or driven by book-size growth
   in the other), the shift is structural rather than an artefact of the
   method.
 
-In practice, agreement across all three methods — as in the surgery
-example above, where `"e_divisive"`, `"pelt"`, and `"hclust"` all locate
-`24.04` as the regime boundary — is strong evidence of a real
-underwriting/rate shift.
+In practice, agreement across both methods — as in the surgery example
+above, where `"e_divisive"` and `"hclust"` both locate `24.04` as the
+regime boundary — is strong evidence of a real underwriting/rate shift.
 
 ## Forcing the number of regimes
 
@@ -261,9 +253,9 @@ summary(r2)
 #> Changes: 24.07, 25.07
 ```
 
-For `"e_divisive"` and `"pelt"`, `n_regimes` is a request (the algorithm
-will return up to that many regimes if supported by the data). For
-`"hclust"`, it is a hard cut.
+For `"e_divisive"`, `n_regimes` is a request (the algorithm will return
+up to that many regimes if supported by the data). For `"hclust"`, it is
+a hard cut.
 
 ## Multi-group detection
 

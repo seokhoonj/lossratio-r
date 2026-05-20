@@ -2,6 +2,41 @@
 
 ## lossratio (development version)
 
+- **API consistency pass.** Several entry points were aligned so the
+  same concept behaves the same way regardless of entry point:
+
+  - `exposure_method` now defaults to `"ed"` (was `"cl"`) in
+    [`fit_sa()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_sa.md)
+    /
+    [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
+    /
+    [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
+    /
+    [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md),
+    matching
+    [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md).
+    This changes the default exposure-side variance recursion; point
+    projections are unaffected. Pass `exposure_method = "cl"` to keep
+    the old behaviour.
+  - [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)’s
+    `type` now defaults to `"parametric"` (was `"analytical"`), matching
+    the
+    [`fit_sa()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_sa.md)
+    /
+    [`fit_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.md)
+    /
+    [`fit_cc()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cc.md)
+    workers. Pass `type = "analytical"` for the closed-form path.
+  - [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
+    and
+    [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+    accept `"bf"` and `"cc"` as loss-side methods (forwarded to
+    [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md));
+    supply the prior arguments through `...`.
+  - [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
+    gained a `tail` argument, forwarded to
+    [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md).
+
 - **Buehlmann-Straub credibility blend for
   [`fit_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.md)
   /
