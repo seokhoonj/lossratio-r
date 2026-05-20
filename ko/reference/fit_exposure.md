@@ -149,7 +149,7 @@ fit_exposure(
 - B:
 
   Integer number of bootstrap replicates. Used only when `bootstrap`
-  resolves to `"auto"`. Default `999`.
+  resolves to `"auto"`. Default `999L`.
 
 - seed:
 

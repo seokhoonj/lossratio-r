@@ -172,11 +172,11 @@ replicates.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.bf_compose_bootstrap</span><span class="op">(</span></span>
 <span>  <span class="va">boots</span>,</span>
-<span>  <span class="va">prior_dt</span>,</span>
+<span>  <span class="va">prior_table</span>,</span>
 <span>  <span class="va">grp</span>,</span>
 <span>  <span class="va">by_cols</span>,</span>
 <span>  <span class="va">full</span>,</span>
-<span>  <span class="va">summary_dt</span>,</span>
+<span>  <span class="va">summary_table</span>,</span>
 <span>  <span class="va">conf_level</span>,</span>
 <span>  <span class="va">cohorts_present</span>,</span>
 <span>  cape_cod <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -192,7 +192,7 @@ replicates.</p>
 <code><a href="dot-resolve_bootstrap_bf.html">.resolve_bootstrap_bf()</a></code>.</p></dd>
 
 
-<dt id="arg-prior-dt">prior_dt<a class="anchor" aria-label="anchor" href="#arg-prior-dt"></a></dt>
+<dt id="arg-prior-table">prior_table<a class="anchor" aria-label="anchor" href="#arg-prior-table"></a></dt>
 <dd><p>Per-cohort ELR table (see <code><a href="dot-resolve_bf_prior.html">.resolve_bf_prior()</a></code>).
 Pass <code>NULL</code> for the Cape Cod composition (ELR is data-pooled per
 replicate).</p></dd>
@@ -211,7 +211,7 @@ replicate).</p></dd>
 for join-on bootstrap SE / CI columns).</p></dd>
 
 
-<dt id="arg-summary-dt">summary_dt<a class="anchor" aria-label="anchor" href="#arg-summary-dt"></a></dt>
+<dt id="arg-summary-table">summary_table<a class="anchor" aria-label="anchor" href="#arg-summary-table"></a></dt>
 <dd><p>The point-estimate cohort-level summary.</p></dd>
 
 

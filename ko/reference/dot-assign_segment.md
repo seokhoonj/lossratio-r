@@ -16,7 +16,7 @@ of `regime$treatment`. Callers decide whether to use the full partition
 ## Usage
 
 ``` r
-.assign_segment(coh_vals, regime, grp_dt = NULL)
+.assign_segment(coh_vals, regime, grp_cols = NULL)
 ```
 
 ## Arguments
@@ -29,7 +29,7 @@ of `regime$treatment`. Callers decide whether to use the full partition
 
   A `"Regime"` object or `NULL`.
 
-- grp_dt:
+- grp_cols:
 
   Optional `data.table` (`nrow == length(coh_vals)`) carrying the group
   columns named in `regime$groups`. Required when `regime` is

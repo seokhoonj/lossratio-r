@@ -93,7 +93,7 @@ partition (<code>"segment_wise"</code>) or collapse to the latest change
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.assign_segment</span><span class="op">(</span><span class="va">coh_vals</span>, <span class="va">regime</span>, grp_dt <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.assign_segment</span><span class="op">(</span><span class="va">coh_vals</span>, <span class="va">regime</span>, grp_cols <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -108,7 +108,7 @@ partition (<code>"segment_wise"</code>) or collapse to the latest change
 <dd><p>A <code>"Regime"</code> object or <code>NULL</code>.</p></dd>
 
 
-<dt id="arg-grp-dt">grp_dt<a class="anchor" aria-label="anchor" href="#arg-grp-dt"></a></dt>
+<dt id="arg-grp-cols">grp_cols<a class="anchor" aria-label="anchor" href="#arg-grp-cols"></a></dt>
 <dd><p>Optional <code>data.table</code> (<code>nrow == length(coh_vals)</code>)
 carrying the group columns named in <code>regime$groups</code>. Required when
 <code>regime</code> is multi-group; ignored otherwise. Each row's segment is

@@ -30,11 +30,11 @@ replicates.
 ``` r
 .bf_compose_bootstrap(
   boots,
-  prior_dt,
+  prior_table,
   grp,
   by_cols,
   full,
-  summary_dt,
+  summary_table,
   conf_level,
   cohorts_present,
   cape_cod = FALSE
@@ -48,7 +48,7 @@ replicates.
   A named list `list(loss = BT, exposure = BT)` from
   [`.resolve_bootstrap_bf()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_bootstrap_bf.md).
 
-- prior_dt:
+- prior_table:
 
   Per-cohort ELR table (see
   [`.resolve_bf_prior()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_bf_prior.md)).
@@ -68,7 +68,7 @@ replicates.
   The point-estimate `$full` data.table (used as the base for join-on
   bootstrap SE / CI columns).
 
-- summary_dt:
+- summary_table:
 
   The point-estimate cohort-level summary.
 

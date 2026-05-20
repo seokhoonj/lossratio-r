@@ -15,7 +15,7 @@ Mask precedence: `holdout` \> `used` \> `unused` \> `future`.
   regime = NULL,
   holdout = NULL,
   m_k = NULL,
-  m_k_dt = NULL
+  m_k_grid = NULL
 )
 ```
 
