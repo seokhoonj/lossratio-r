@@ -94,6 +94,12 @@ fit_bf(
       when a single a priori ELR is set per line of business. Must cover
       every group present in `x`.
 
+  A `data.frame` prior may also carry an optional `elr_se` column – the
+  standard error of the a priori ELR (a *distribution prior*). When
+  supplied, the bootstrap path draws a per-replicate ELR from
+  `Normal(elr, elr_se)` instead of treating the prior as a fixed point.
+  Omit it (or leave `NA`) for a deterministic prior.
+
 - bootstrap:
 
   Bootstrap configuration. Five forms accepted:

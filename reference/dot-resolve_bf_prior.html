@@ -10,6 +10,11 @@ elr but no cohort; the group's ELR is broadcast to every
 cohort in that group.
 
 
+A data.frame prior may carry an optional elr_se column – the
+standard error of the a priori ELR (a distribution prior). When
+present it drives the per-replicate ELR draw in the bootstrap path
+and the Var(ELR) term in the analytical path. When absent the ELR
+is treated as deterministic (elr_se is filled with NA).
 ELR coverage of every cohort present in the input triangle is
 validated regardless of shape."><meta property="og:description" content="Coerce a prior argument into a per-cohort data.table. Three input
 shapes are accepted:
@@ -22,6 +27,11 @@ elr but no cohort; the group's ELR is broadcast to every
 cohort in that group.
 
 
+A data.frame prior may carry an optional elr_se column – the
+standard error of the a priori ELR (a distribution prior). When
+present it drives the per-replicate ELR draw in the bootstrap path
+and the Var(ELR) term in the analytical path. When absent the ELR
+is treated as deterministic (elr_se is filled with NA).
 ELR coverage of every cohort present in the input triangle is
 validated regardless of shape."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Browser-language redirect: send Korean visitors to /ko/ on the
      landing page only. Deep links remain untouched. We use string
@@ -137,7 +147,12 @@ shapes are accepted:</p>
 <li><p>per-group <code>data.frame</code> – carries all grouping columns plus
 <code>elr</code> but no <code>cohort</code>; the group's ELR is broadcast to every
 cohort in that group.</p></li>
-</ul><p>ELR coverage of every cohort present in the input triangle is
+</ul><p>A <code>data.frame</code> prior may carry an optional <code>elr_se</code> column – the
+standard error of the a priori ELR (a <em>distribution prior</em>). When
+present it drives the per-replicate ELR draw in the bootstrap path
+and the <code>Var(ELR)</code> term in the analytical path. When absent the ELR
+is treated as deterministic (<code>elr_se</code> is filled with <code>NA</code>).</p>
+<p>ELR coverage of every cohort present in the input triangle is
 validated regardless of shape.</p>
     </div>
 
@@ -164,7 +179,7 @@ validated regardless of shape.</p>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>data.table</code> with columns <code>by_cols + "elr"</code>.</p>
+    <p>A <code>data.table</code> with columns <code>by_cols + c("elr", "elr_se")</code>.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

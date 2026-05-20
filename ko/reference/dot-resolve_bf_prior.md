@@ -12,6 +12,12 @@ shapes are accepted:
   no `cohort`; the group's ELR is broadcast to every cohort in that
   group.
 
+A `data.frame` prior may carry an optional `elr_se` column – the
+standard error of the a priori ELR (a *distribution prior*). When
+present it drives the per-replicate ELR draw in the bootstrap path and
+the `Var(ELR)` term in the analytical path. When absent the ELR is
+treated as deterministic (`elr_se` is filled with `NA`).
+
 ELR coverage of every cohort present in the input triangle is validated
 regardless of shape.
 
@@ -38,4 +44,4 @@ regardless of shape.
 
 ## Value
 
-A `data.table` with columns `by_cols + "elr"`.
+A `data.table` with columns `by_cols + c("elr", "elr_se")`.

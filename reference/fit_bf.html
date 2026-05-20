@@ -231,7 +231,11 @@ a single a priori ELR is set per line of business. Must cover
 every group present in <code>x</code>.</p></dd>
 
 
-</dl></dd>
+</dl><p>A <code>data.frame</code> prior may also carry an optional <code>elr_se</code> column –
+the standard error of the a priori ELR (a <em>distribution prior</em>).
+When supplied, the bootstrap path draws a per-replicate ELR from
+<code>Normal(elr, elr_se)</code> instead of treating the prior as a fixed
+point. Omit it (or leave <code>NA</code>) for a deterministic prior.</p></dd>
 
 
 <dt id="arg-bootstrap">bootstrap<a class="anchor" aria-label="anchor" href="#arg-bootstrap"></a></dt>
