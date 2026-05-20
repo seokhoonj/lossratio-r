@@ -87,6 +87,41 @@ test_that("fit_bf errors on incomplete prior data.frame", {
                regexp = "missing ELR")
 })
 
+test_that("fit_bf accepts a distribution prior (elr_se column)", {
+  cohorts <- unique(sub$cohort)
+  prior_dist <- data.frame(cohort = cohorts, elr = 0.8, elr_se = 0.1)
+  fit <- fit_bf(sub, prior = prior_dist)
+  expect_s3_class(fit, "BFFit")
+  expect_true("elr_se" %in% names(fit$prior))
+  expect_true(all(fit$prior$elr_se == 0.1))
+})
+
+test_that("fit_bf $prior carries NA elr_se for a deterministic prior", {
+  fit <- fit_bf(sub, prior = 0.7)
+  expect_true("elr_se" %in% names(fit$prior))
+  expect_true(all(is.na(fit$prior$elr_se)))
+})
+
+test_that("fit_bf rejects a negative elr_se", {
+  cohorts <- unique(sub$cohort)
+  bad <- data.frame(cohort = cohorts, elr = 0.8, elr_se = -0.1)
+  expect_error(fit_bf(sub, prior = bad), regexp = "non-negative")
+})
+
+test_that("distribution prior widens bootstrap SE vs deterministic prior", {
+  cohorts <- unique(sub$cohort)
+  prior_det  <- data.frame(cohort = cohorts, elr = 0.8)
+  prior_dist <- data.frame(cohort = cohorts, elr = 0.8, elr_se = 0.15)
+  fit_det  <- fit_bf(sub, prior = prior_det,  bootstrap = "auto",
+                     B = 200, seed = 1)
+  fit_dist <- fit_bf(sub, prior = prior_dist, bootstrap = "auto",
+                     B = 200, seed = 1)
+  # the per-replicate ELR draw injects extra variance into the ultimate
+  se_det  <- sum(fit_det$summary$loss_total_se,  na.rm = TRUE)
+  se_dist <- sum(fit_dist$summary$loss_total_se, na.rm = TRUE)
+  expect_gt(se_dist, se_det)
+})
+
 test_that("fit_bf $full has cell-level BF projection columns", {
   fit <- fit_bf(sub, prior = 0.7)
   for (nm in c("loss_obs", "loss_proj", "exposure_proj",

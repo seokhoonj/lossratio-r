@@ -43,7 +43,12 @@ silently dropped, missing cohorts raise an error).}
 per group, broadcast to every cohort in that group. Useful when
 a single a priori ELR is set per line of business. Must cover
 every group present in \code{x}.}
-}}
+}
+A \code{data.frame} prior may also carry an optional \code{elr_se} column --
+the standard error of the a priori ELR (a \emph{distribution prior}).
+When supplied, the bootstrap path draws a per-replicate ELR from
+\code{Normal(elr, elr_se)} instead of treating the prior as a fixed
+point. Omit it (or leave \code{NA}) for a deterministic prior.}
 
 \item{bootstrap}{Bootstrap configuration. Five forms accepted:
 \describe{

@@ -14,7 +14,7 @@
 \item{by_cols}{Character vector of join columns (\code{c(groups, "cohort")}).}
 }
 \value{
-A \code{data.table} with columns \code{by_cols + "elr"}.
+A \code{data.table} with columns \code{by_cols + c("elr", "elr_se")}.
 }
 \description{
 Coerce a \code{prior} argument into a per-cohort \code{data.table}. Three input
@@ -28,6 +28,12 @@ shapes are accepted:
 \code{elr} but no \code{cohort}; the group's ELR is broadcast to every
 cohort in that group.
 }
+
+A \code{data.frame} prior may carry an optional \code{elr_se} column -- the
+standard error of the a priori ELR (a \emph{distribution prior}). When
+present it drives the per-replicate ELR draw in the bootstrap path
+and the \code{Var(ELR)} term in the analytical path. When absent the ELR
+is treated as deterministic (\code{elr_se} is filled with \code{NA}).
 
 ELR coverage of every cohort present in the input triangle is
 validated regardless of shape.

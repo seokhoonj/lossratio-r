@@ -45,6 +45,11 @@
 #'       a single a priori ELR is set per line of business. Must cover
 #'       every group present in `x`.}
 #'   }
+#'   A `data.frame` prior may also carry an optional `elr_se` column --
+#'   the standard error of the a priori ELR (a *distribution prior*).
+#'   When supplied, the bootstrap path draws a per-replicate ELR from
+#'   `Normal(elr, elr_se)` instead of treating the prior as a fixed
+#'   point. Omit it (or leave `NA`) for a deterministic prior.
 #' @param bootstrap Bootstrap configuration. Five forms accepted:
 #'   \describe{
 #'     \item{`NULL` / `FALSE` (default)}{Point estimate only -- no
@@ -417,6 +422,12 @@ fit_bf <- function(x,
 #'     cohort in that group.
 #' }
 #'
+#' A `data.frame` prior may carry an optional `elr_se` column -- the
+#' standard error of the a priori ELR (a *distribution prior*). When
+#' present it drives the per-replicate ELR draw in the bootstrap path
+#' and the `Var(ELR)` term in the analytical path. When absent the ELR
+#' is treated as deterministic (`elr_se` is filled with `NA`).
+#'
 #' ELR coverage of every cohort present in the input triangle is
 #' validated regardless of shape.
 #'
@@ -424,27 +435,32 @@ fit_bf <- function(x,
 #' @param dt The per-cohort `data.table` (carrying `cohort` etc.).
 #' @param by_cols Character vector of join columns (`c(groups, "cohort")`).
 #'
-#' @return A `data.table` with columns `by_cols + "elr"`.
+#' @return A `data.table` with columns `by_cols + c("elr", "elr_se")`.
 #'
 #' @keywords internal
 .resolve_bf_prior <- function(prior, dt, by_cols) {
 
   cohorts <- unique(dt[, .SD, .SDcols = by_cols])
   groups  <- setdiff(by_cols, "cohort")
+  keep    <- c(by_cols, "elr", "elr_se")
 
   if (is.numeric(prior) && length(prior) == 1L) {
     if (!is.finite(prior) || prior <= 0)
       stop("`prior` (scalar) must be a positive finite numeric.",
            call. = FALSE)
     out <- data.table::copy(cohorts)
-    out[, ("elr") := prior]
-    return(out)
+    out[, c("elr", "elr_se") := list(prior, NA_real_)]
+    return(out[, keep, with = FALSE])
   }
 
   if (is.data.frame(prior)) {
     p <- data.table::as.data.table(prior)
     if (!("elr" %in% names(p)))
       stop("`prior` data.frame must carry an `elr` column.", call. = FALSE)
+    if (!("elr_se" %in% names(p)))
+      p[, ("elr_se") := NA_real_]
+    if (any(p$elr_se < 0, na.rm = TRUE))
+      stop("`prior` column `elr_se` must be non-negative.", call. = FALSE)
 
     if ("cohort" %in% names(p)) {
       # per-cohort prior (optionally group-qualified)
@@ -461,7 +477,7 @@ fit_bf <- function(x,
     if (any(!is.finite(out$elr)))
       stop("`prior` is missing ELR for one or more cohorts in `x`.",
            call. = FALSE)
-    return(out[, c(by_cols, "elr"), with = FALSE])
+    return(out[, keep, with = FALSE])
   }
 
   stop("`prior` must be a scalar numeric or a `data.frame` carrying ",
@@ -693,7 +709,7 @@ summary.BFFit <- function(object, ...) {
   # data.table NSE bindings
   rep <- loss_mean <- exposure_mean <- dev <- cohort <- NULL
   loss_obs <- loss_proj <- exposure_proj <- is_observed <- NULL
-  elr <- elr_b <- q_b <- exposure_ult_b <- loss_ult_b <- NULL
+  elr <- elr_se <- elr_b <- q_b <- exposure_ult_b <- loss_ult_b <- NULL
   loss_latest <- elr_cc_b <- L_b <- NULL
   loss_ult_b_med <- loss_ult_b_se <- NULL
   loss_ult_b_lo <- loss_ult_b_hi <- NULL
@@ -745,7 +761,16 @@ summary.BFFit <- function(object, ...) {
     ult_b[, elr_b := elr_cc_b]
   } else {
     ult_b <- merge(ult_b, priors, by = by_cols, sort = FALSE)
+    # Distribution prior: when the prior carries a finite `elr_se`, draw
+    # a per-replicate ELR from Normal(elr, elr_se) (floored at 0 -- ELR
+    # cannot be negative). A deterministic prior (elr_se NA) keeps the
+    # fixed point ELR for every replicate.
     ult_b[, elr_b := elr]
+    has_se <- is.finite(ult_b$elr_se) & ult_b$elr_se > 0
+    if (any(has_se)) {
+      ult_b[has_se, elr_b := pmax(0,
+        stats::rnorm(.N, mean = elr, sd = elr_se))]
+    }
   }
 
   ult_b[, loss_ult_b := loss_latest +
