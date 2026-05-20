@@ -240,7 +240,7 @@ plot_triangle(x)     # lossratio generic — cell heatmap layout
 ?as_triangle
 ?fit_ratio
 ?detect_regime
-vignette("regime-detection", package = "lossratio")
+vignette("regime", package = "lossratio")
 ```
 
 ## License

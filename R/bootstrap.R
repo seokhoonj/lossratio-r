@@ -2288,12 +2288,13 @@ bootstrap.Triangle <- function(x,
 # the summary computation.
 .boot_summary_from_arrays <- function(stage1_out, grp, target = "loss",
                                       quantile_ci = FALSE) {
+  ci_lo <- ci_hi <- NULL  # suppress R CMD check NOTEs for data.table NSE
   is_multi <- !is.null(stage1_out$grp_vals) &&
               !is.null(stage1_out$n_groups) &&
               stage1_out$n_groups > 0L
   if (is_multi) {
-    cum_mean_concat    <- do.call(c, lapply(stage1_out$cum_mean,    as.numeric))
-    cum_sampled_concat <- do.call(c, lapply(stage1_out$cum_sampled, as.numeric))
+    cum_mean_concat    <- unlist(stage1_out$cum_mean,    use.names = FALSE)
+    cum_sampled_concat <- unlist(stage1_out$cum_sampled, use.names = FALSE)
     n_groups <- stage1_out$n_groups
     grp_vals <- stage1_out$grp_vals
   } else {

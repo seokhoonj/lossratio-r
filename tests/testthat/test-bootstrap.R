@@ -492,14 +492,14 @@ test_that("residual = 'cell' returns a BootstrapTriangle with cell pool schema",
   expect_equal(nrow(b$pseudo_triangles), n_coh * n_dev * 10L)
 })
 
-test_that("residual = 'cell' default hat_adj is TRUE (chainladder-py parity)", {
+test_that("residual = 'cell' default hat_adj is TRUE (England-Verrall 1999)", {
   tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, keep_pseudo = TRUE, type = "nonparametric", residual = "cell",
                  process = "gamma", B = 5, seed = 1)
   expect_true(isTRUE(b$meta$hat_adj))
 })
 
-test_that("residual default is 'cell' (chainladder-py parity)", {
+test_that("residual default is 'cell' (England-Verrall 1999)", {
   tri <- make_sub_tri("surgery")
   b <- bootstrap(tri, keep_pseudo = TRUE, type = "nonparametric", process = "gamma",
                  B = 5, seed = 1)

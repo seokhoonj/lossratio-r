@@ -128,9 +128,9 @@ grid*. Exposure is not a fixed underwriting volume; it is a developing
 quantity driven by morbidity × sum insured × persistency — the *volume
 measure* of Mack (1993), the *natural weight* of Bühlmann-Straub (1970).
 
-## Estimation method library — `ed` / `cl` / `sa` (current) + `bf` / `cc` (planned)
+## Estimation method library — `ed` / `cl` / `sa` / `bf` / `cc`
 
-### Current (three methods)
+### Direct estimation (three methods)
 
 | Method | Point estimate | Variance helper | Domain character |
 |---|---|---|---|
@@ -141,7 +141,7 @@ measure* of Mack (1993), the *natural weight* of Bühlmann-Straub (1970).
 The order `ed` → `cl` → `sa` mirrors the methodological progression:
 *primitive (ED) → classical (CL) → composition (SA)*.
 
-### Planned (two methods) — *prior-anchored family*
+### Prior-anchored family (two methods)
 
 | Method | Point estimate | ELR source | Domain use case |
 |---|---|---|---|
@@ -215,8 +215,6 @@ The current scope is loss-ratio analysis, projection, and monitoring.
 The mathematical structure of the framework generalises naturally to
 several adjacent areas:
 
-- **BF / Cape Cod** — see Section *Estimation method library*; the
-  prior-anchored family is the next planned addition.
 - **Frequency-severity decomposition** — `fit_ed(loss = "claim_count",
   exposure = "insureds")` for frequency,
   `fit_ed(loss = "loss", exposure = "claim_count")` for severity. The

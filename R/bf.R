@@ -674,6 +674,7 @@ summary.BFFit <- function(object, ...) {
   loss_latest <- elr_cc_b <- L_b <- NULL
   loss_ult_b_med <- loss_ult_b_se <- NULL
   loss_ult_b_lo <- loss_ult_b_hi <- NULL
+  loss_ult_cl_b <- loss_proj_b <- NULL
 
   bt_loss <- boots$loss
   bt_exp  <- boots$exposure

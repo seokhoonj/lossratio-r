@@ -74,6 +74,20 @@ time (leakage-safe for \code{\link[=backtest]{backtest()}}).}
 \item{tail}{Logical or numeric. If \code{FALSE}, no tail factor is applied.
 If \code{TRUE}, a log-linear tail factor is estimated from selected factors.
 If numeric, the supplied value is used as the tail factor.}
+
+\item{bootstrap}{Optional bootstrap specification. Accepts \code{NULL}
+(default, analytical Mack SE only), a \code{BootstrapTriangle} object
+produced by \code{\link[=bootstrap]{bootstrap()}} (replayed for SE / CI), or the string
+\code{"auto"} to run an internal nonparametric bootstrap at fit time.}
+
+\item{B}{Integer number of bootstrap replicates when \code{bootstrap = "auto"}.
+Default \code{999L}.}
+
+\item{seed}{Optional integer seed for reproducible bootstrap draws.
+Default \code{NULL}.}
+
+\item{conf_level}{Numeric in \verb{(0, 1)}. Confidence level used for
+bootstrap-derived CI columns. Default \code{0.95}.}
 }
 \value{
 An object of class \code{"CLFit"} containing:

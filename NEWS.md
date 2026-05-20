@@ -1,5 +1,46 @@
 # lossratio (development version)
 
+* **Worker layer fix + bootstrap arg on `fit_cl` / `fit_ed`.**
+  `fit_bf()` / `fit_cc()` / `fit_sa()` now build their internal exposure
+  fit by calling `fit_cl(loss = "exposure", ...)` directly instead of
+  routing through `fit_exposure()` — downward-only Tier 3 -> Tier 4
+  dependency. `fit_cl()` and `fit_ed()` both gain `bootstrap`, `B`,
+  `seed`, `conf_level` arguments for symmetry with the SA / BF / CC
+  workers; `bootstrap = NULL` (default) preserves analytical Mack SE.
+  All fit-result classes standardised to `c("XFit", "list")` (or
+  prepended forms for the dispatchers).
+
+* **`fit_bf()` + `fit_cc()` promoted to peer workers** with bootstrap
+  composition. `fit_bf` takes an external prior ELR (Bornhuetter-Ferguson
+  1972); `fit_cc` derives ELR from data via payout weighting (Stanard
+  1985, Cape Cod). Both expose `bootstrap = "auto"` for cell / link /
+  parametric simulation and analytical fallback. Promotion makes them
+  available through `fit_loss(method = "bf" | "cc")`.
+
+* **`fit_sa` worker + `fit_loss` true dispatcher.** Phase 4 split the
+  stage-adaptive composition (`R/sa.R`, class `"SAFit"`) out of
+  `R/loss.R`, and `fit_loss()` now thin-dispatches by `method` to the
+  worker functions (`fit_ed` / `fit_cl` / `fit_sa` / `fit_bf` / `fit_cc`)
+  and augments their output to the LossFit-uniform `$full` schema via
+  `.lossfit_augment()`. `fit_exposure()` follows the same pattern with
+  `.exposurefit_augment()` + `.exposurefit_bootstrap()` (Phase 4c).
+
+* **BREAKING: bootstrap `type = "parametric"` -> `"analytical"` rename.**
+  The Mack closed-form SE option was previously mislabelled as
+  `"parametric"`. The textbook-parametric kernels (cell-distribution
+  sampling + refit, England-Verrall 1999) now use `type = "parametric"`,
+  and the analytical Mack closed-form lives at `type = "analytical"`.
+  `bootstrap.Triangle()` default is `"analytical"`; worker-side
+  `fit_sa` / `fit_bf` / `fit_cc` `type =` defaults to `"parametric"`
+  (cell-distribution simulation).
+
+* **SA nonparametric bootstrap proper kernel.** `bootstrap(method = "sa")`
+  previously silently dispatched to the CL cell kernel. Phase 1
+  introduced the dedicated `bootstrap_kernel_sa_cell` (and link variants)
+  that respect the stage transition at maturity `k^*`, with ED-stage
+  cells using additive `g_k` refit and CL-stage cells using multiplicative
+  `f_k` refit.
+
 * **ED bootstrap (Phase 1, fixed exposure).** `bootstrap()` now supports
   `method = "ed"` for `residual = "cell"`: per-replicate `g*_k` refit and
   additive forward projection (`Delta loss = g_k * P_{from} + noise`)

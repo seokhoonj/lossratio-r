@@ -145,7 +145,7 @@ long-format `pseudo_triangles` 테이블에는 *두 값 컬럼* 이 있다.
 적용이 의미 없다. 하삼각(lower triangle, 예측 영역) 에선 두 값이
 정확히 *Stage 2 process noise draw 만큼* 다르다.
 
-## 4. `$summary` 슬랫
+## 4. `$summary` 슬롯
 
 `bootstrap()` 은 cohort × dev 별 분해를 *한 번에* 계산하여 미리
 저장된 summary 로 노출한다. 하위 fit 함수가 *per-replicate 표본 분산
@@ -189,7 +189,7 @@ Mack 의 분석 식이 깔끔하게 합성되지 않기 때문이다.
 
 ## 6. `$summary` 의 활용
 
-분해된 `$summary` 슬랫은 하위 `fit_*(bootstrap = bt)` 호출이 분해된
+분해된 `$summary` 슬롯은 하위 `fit_*(bootstrap = bt)` 호출이 분해된
 컬럼을 표준 fit schema (`*_param_se`, `*_proc_se`, `*_total_se`,
 `*_total_cv`, `*_ci_lo`, `*_ci_hi`) 에 *그대로 매핑* 한다.
 *사용자가 직접 분해 산식을 짤 필요 없음*.

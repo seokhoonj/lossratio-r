@@ -121,26 +121,27 @@
 #'
 #' @export
 fit_cc <- function(x,
-                        loss         = "loss",
-                        exposure     = "exposure",
-                        bootstrap    = NULL,
-                        B            = 999L,
-                        seed         = NULL,
-                        type         = c("parametric", "nonparametric",
-                                         "analytical"),
-                        residual     = c("cell", "link"),
-                        process      = c("gamma", "od_pois", "normal"),
-                        alpha        = 1,
-                        sigma_method = c("locf", "min_last2", "loglinear",
-                                         "mack", "none"),
-                        recent       = NULL,
-                        regime       = NULL,
-                        conf_level   = 0.95,
-                        ...) {
+                   loss         = "loss",
+                   exposure     = "exposure",
+                   bootstrap    = NULL,
+                   B            = 999L,
+                   seed         = NULL,
+                   type         = c("parametric", "nonparametric",
+                                    "analytical"),
+                   residual     = c("cell", "link"),
+                   process      = c("gamma", "od_pois", "normal"),
+                   alpha        = 1,
+                   sigma_method = c("locf", "min_last2", "loglinear",
+                                    "mack", "none"),
+                   recent       = NULL,
+                   regime       = NULL,
+                   conf_level   = 0.95,
+                   ...) {
 
   # data.table NSE bindings
   cohort <- elr <- elr_cc <- loss_obs <- loss_proj <- exposure_proj <- NULL
   is_observed <- q <- loss_latest <- exposure_ult <- NULL
+  elr_cc_b <- elr_cc_se <- NULL
 
   .assert_triangle_input(x, "fit_cc()")
 

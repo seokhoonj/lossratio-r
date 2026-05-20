@@ -326,7 +326,7 @@ plot_triangle.TriangleValidation <- function(x,
   view <- match.arg(view)
   inv         <- attr(x, "invalid_rows", exact = TRUE)
   obs_pairs   <- attr(x, "observed_pairs", exact = TRUE)
-  cal_var     <- attr(x, "calendar", exact = TRUE)
+  cal         <- attr(x, "calendar", exact = TRUE)
   has_gaps    <- nrow(x) > 0L
   has_invalid <- !is.null(inv) && nrow(inv) > 0L
 
@@ -348,7 +348,7 @@ plot_triangle.TriangleValidation <- function(x,
     return(invisible(NULL))
   }
 
-  has_cal <- !is.null(cal_var) && cal_var %in% names(obs_pairs)
+  has_cal <- !is.null(cal) && cal %in% names(obs_pairs)
   has_dev <- !is.null(dev) && dev %in% names(obs_pairs)
 
   if (view == "calendar" && !has_cal) {
@@ -364,7 +364,7 @@ plot_triangle.TriangleValidation <- function(x,
   }
 
   # Pick the second-axis column for this view.
-  axis_col <- if (view == "dev" && has_dev) dev else cal_var
+  axis_col <- if (view == "dev" && has_dev) dev else cal
 
   bg <- data.table::copy(obs_pairs)
   # When obs_pairs has both cal and dev, drop the unused axis and
@@ -406,7 +406,7 @@ plot_triangle.TriangleValidation <- function(x,
   grid[, (".y") := factor(fmt_coh(.coh), levels = fmt_coh(coh_levels))]
 
   if (view == "dev") {
-    if (axis_col == cal_var) {
+    if (axis_col == cal) {
       grid[, (".x") := .count_periods(.coh, .axis, grain)]
     } else {
       grid[, (".x") := as.integer(.axis)]
@@ -512,7 +512,7 @@ plot_triangle.TriangleValidation <- function(x,
       ggplot2::scale_y_discrete(expand = c(0, 0)) +
       ggplot2::labs(
         title   = title,
-        x       = .calendar_label(cal_var, grain = grain),
+        x       = .calendar_label(cal, grain = grain),
         y       = .cohort_label(coh, grain = grain),
         caption = "Blue = observed (cal >= coh), red = invalid (cal < coh); blanks = gap"
       )

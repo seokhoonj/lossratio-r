@@ -47,6 +47,16 @@
 #' @param tail Logical or numeric. If `FALSE`, no tail factor is applied.
 #'   If `TRUE`, a log-linear tail factor is estimated from selected factors.
 #'   If numeric, the supplied value is used as the tail factor.
+#' @param bootstrap Optional bootstrap specification. Accepts `NULL`
+#'   (default, analytical Mack SE only), a `BootstrapTriangle` object
+#'   produced by [bootstrap()] (replayed for SE / CI), or the string
+#'   `"auto"` to run an internal nonparametric bootstrap at fit time.
+#' @param B Integer number of bootstrap replicates when `bootstrap = "auto"`.
+#'   Default `999L`.
+#' @param seed Optional integer seed for reproducible bootstrap draws.
+#'   Default `NULL`.
+#' @param conf_level Numeric in `(0, 1)`. Confidence level used for
+#'   bootstrap-derived CI columns. Default `0.95`.
 #'
 #' @return An object of class `"CLFit"` containing:
 #'   \describe{

@@ -203,6 +203,16 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #'   `function(tri) -> Regime`. Resolved internally via
 #'   [.resolve_regime()]. When supplied, cohorts with
 #'   `cohort < change_date` are excluded from estimation. Default is `NULL`.
+#' @param bootstrap Optional bootstrap specification. Accepts `NULL`
+#'   (default, analytical Mack SE only), a `BootstrapTriangle` object
+#'   produced by [bootstrap()] (replayed for SE / CI), or the string
+#'   `"auto"` to run an internal nonparametric bootstrap at fit time.
+#' @param B Integer number of bootstrap replicates when `bootstrap = "auto"`.
+#'   Default `999L`.
+#' @param seed Optional integer seed for reproducible bootstrap draws.
+#'   Default `NULL`.
+#' @param conf_level Numeric in `(0, 1)`. Confidence level used for
+#'   bootstrap-derived CI columns. Default `0.95`.
 #' @param ... Additional arguments passed to [summary.Link()].
 #'
 #' @return An object of class `"EDFit"` (a named list) with components:

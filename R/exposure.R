@@ -311,7 +311,7 @@ fit_exposure <- function(x,
 #'
 #' @keywords internal
 .exposure_rename_full <- function(full, grp, conf_level) {
-  full <- data.table::copy(.copy_dt(full))
+  full <- .copy_dt(full)
 
   rename_map <- c(
     loss_obs       = "exposure_obs",
@@ -383,7 +383,7 @@ fit_exposure <- function(x,
 #'
 #' @keywords internal
 .apply_ed_variance <- function(full, selected, triangle) {
-  full <- data.table::copy(.copy_dt(full))
+  full <- .copy_dt(full)
   selected <- .copy_dt(selected)
 
   # Suppress R CMD check NOTEs for `data.table` temp columns referenced

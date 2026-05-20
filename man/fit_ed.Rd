@@ -59,6 +59,20 @@ recent \code{recent} periods are used for estimation. Default is \code{NULL}.}
 \code{\link[=.resolve_regime]{.resolve_regime()}}. When supplied, cohorts with
 \code{cohort < change_date} are excluded from estimation. Default is \code{NULL}.}
 
+\item{bootstrap}{Optional bootstrap specification. Accepts \code{NULL}
+(default, analytical Mack SE only), a \code{BootstrapTriangle} object
+produced by \code{\link[=bootstrap]{bootstrap()}} (replayed for SE / CI), or the string
+\code{"auto"} to run an internal nonparametric bootstrap at fit time.}
+
+\item{B}{Integer number of bootstrap replicates when \code{bootstrap = "auto"}.
+Default \code{999L}.}
+
+\item{seed}{Optional integer seed for reproducible bootstrap draws.
+Default \code{NULL}.}
+
+\item{conf_level}{Numeric in \verb{(0, 1)}. Confidence level used for
+bootstrap-derived CI columns. Default \code{0.95}.}
+
 \item{...}{Additional arguments passed to \code{\link[=summary.Link]{summary.Link()}}.}
 }
 \value{

@@ -304,7 +304,7 @@ calls and inherits their constraints:
 
 - `?detect_convergence`, `?detect_maturity`, `?backtest`,
   `?detect_regime`, `?fit_ratio`.
-- `vignette("regime-detection")` — cohort homogeneity diagnostics that
+- `vignette("regime")` — cohort homogeneity diagnostics that
   feed step 1 of the workflow above.
 - `vignette("backtest")` — the underlying rolling holdout machinery
   that `detect_convergence()` is built on.

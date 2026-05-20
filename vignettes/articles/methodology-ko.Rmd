@@ -126,9 +126,9 @@ observable)*. *exposure* 는 *고정된 underwriting volume* 이 아니라
 *volume measure* 와 같은 의미, Bühlmann-Straub 1970 의 *natural weight*
 와 같은 의미.
 
-## 6. 추정 방법 library — `ed` / `cl` / `sa` (현재) + `bf` / `cc` (예정)
+## 6. 추정 방법 library — `ed` / `cl` / `sa` / `bf` / `cc`
 
-### 현재 구현 (세 method)
+### 직접 추정 (세 method)
 
 | Method               | 점추정 식                                   | 분산 helper               | 도메인 특성                     |
 |----------------------|---------------------------------------------|---------------------------|---------------------------------|
@@ -139,7 +139,7 @@ observable)*. *exposure* 는 *고정된 underwriting volume* 이 아니라
 세 method 의 *순서* (`ed` → `cl` → `sa`) 가 *방법론적 진화* 를 그대로
 표현한다: *primitive (ED)* → *classical (CL)* → *composition (SA)*.
 
-### 도입 예정 (두 method) — *prior-anchored family*
+### Prior-anchored family (두 method)
 
 | Method     | 점추정 식                                                                                       | ELR source                                              | 도메인 use case                                                                                                    |
 |------------|-------------------------------------------------------------------------------------------------|---------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
@@ -209,9 +209,6 @@ Sherman 1984 의 *log-linear (exponential form) tail* 은 이미
 현재 *손해율 분석·예측·모니터링* 에 정렬되어 있으나, framework 의
 *수학적 구조* 는 다음 영역까지 자연 일반화 가능:
 
--   **BF / Cape Cod 도입** — prior-anchored family 의 두 method (section
-    6 참조). BF 는 *외부 prior ELR*, Cape Cod 는 *payout-weighted 데이터
-    추정*. 미성숙 cohort + 요율 변경 시기에 critical.
 -   **frequency-severity 분해** —
     `fit_ed(loss = "claim_count", exposure =   "insureds")` 로
     *frequency* 추정,

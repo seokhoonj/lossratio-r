@@ -1,6 +1,6 @@
 # lossratio <img src="man/figures/logo.png" align="right" height="120"/>
 
-> **장기 건강보험 손해율 분석·예측·모니터링** 도구. Maturity 기반 단계 적응형(stage-adaptive: ED → CL) 손해율 예측 + Regime break 탐지(인수 정책 변경 등 코호트 축 구조 변화) + backtest 검증을 한 워크플로로 묶는다.
+> **장기 건강보험 손해율 분석·예측·모니터링** 도구. Maturity 기반 단계 적응형(stage-adaptive: ED → CL) 손해율 예측 + Regime change 탐지(인수 정책 변경 등 코호트 축 구조 변화) + backtest 검증을 한 워크플로로 묶는다.
 
 <p align="center">
 

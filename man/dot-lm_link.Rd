@@ -4,7 +4,7 @@
 \alias{.lm_link}
 \title{Estimate age-to-age factors via weighted least squares}
 \usage{
-.lm_link(x, weights = 1, alpha = 1, na_rm = TRUE, tol = 0.000000000001)
+.lm_link(x, weights = 1, alpha = 1, na_rm = TRUE, tol = 1e-12)
 }
 \arguments{
 \item{x}{An object of class \code{"Link"}.}
