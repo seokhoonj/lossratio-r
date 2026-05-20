@@ -726,8 +726,8 @@ plot_triangle.Triangle <- function(x,
       metric,
       loss          = "Cumulative Loss",
       incr_loss     = "Per-Period Loss",
-      exposure      = "Cumulative Premium",
-      incr_exposure = "Per-Period Premium",
+      exposure      = "Cumulative Exposure",
+      incr_exposure = "Per-Period Exposure",
       margin        = "Cumulative Margin",
       incr_margin   = "Per-Period Margin"
     )
@@ -754,8 +754,8 @@ plot_triangle.Triangle <- function(x,
       metric,
       loss_share          = "Cumulative Loss Proportion",
       incr_loss_share     = "Per-Period Loss Proportion",
-      exposure_share      = "Cumulative Premium Proportion",
-      incr_exposure_share = "Per-Period Premium Proportion"
+      exposure_share      = "Cumulative Exposure Proportion",
+      incr_exposure_share = "Per-Period Exposure Proportion"
     )
 
     caption_txt <- "Unit: %"

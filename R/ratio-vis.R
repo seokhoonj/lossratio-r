@@ -112,7 +112,7 @@ plot.RatioFit <- function(x,
     metric,
     ratio    = "Loss Ratio",
     loss     = "Loss",
-    exposure = "Premium"
+    exposure = "Exposure"
   )
   y_lab <- if (is_ratio) col_key else attr(x$data, metric)
   title <- paste0("Projected ", cum_word, " ", base_lab,
@@ -636,7 +636,7 @@ plot_triangle.RatioFit <- function(x,
   base_word  <- switch(metric,
                        ratio    = "Loss Ratio",
                        loss     = "Loss",
-                       exposure = "Premium")
+                       exposure = "Exposure")
   p <- p + ggplot2::labs(
     title   = paste0(cum_word, " ", base_word, " Triangle",
                      " (method: ", x$method, ")"),
