@@ -1,8 +1,9 @@
-# Internal helpers imported from the `instead` package ---------------------
+# Internal helpers: class manipulation, assertions, formatting ------------
 #
-# Copied and renamed with a leading `.` to mark as internal, so the
-# `instead` dependency can eventually be dropped. Keep behaviour in sync
-# with the upstream versions if they change.
+# General-purpose utilities shared across the package -- S3 class
+# manipulation, argument / column-spec assertions, and period / numeric
+# formatting. Internal helpers carry a leading `.`; `longer()` is the
+# one exported S3 generic.
 
 
 # Class manipulation ------------------------------------------------------
