@@ -17,17 +17,13 @@
 #' group column. Single-group input retains the original scalar /
 #' Date-vector / matrix layout for backward compatibility.
 #'
-#' Three detection strategies are supported:
+#' Two detection strategies are supported:
 #' \describe{
-#'   \item{`"e_divisive"`}{Multivariate non-parametric divisive change-point
-#'     detection via [ecp::e.divisive()]. The number of regimes is
-#'     determined by the data; only significant changes at
-#'     `sig_level` are retained. Preferred when the number of regimes
-#'     is not known in advance.}
-#'   \item{`"pelt"`}{Univariate mean change-point detection via
-#'     [changepoint::cpt.mean()] with the PELT algorithm applied to the
-#'     first principal component of the cohort feature matrix. Fast
-#'     and may return multiple changes.}
+#'   \item{`"e_divisive"`}{Multivariate non-parametric divisive
+#'     change-point detection on the energy statistic (Matteson &
+#'     James 2014). The number of regimes is determined by the data;
+#'     only changes significant at `sig_level` are retained. Preferred
+#'     when the number of regimes is not known in advance.}
 #'   \item{`"hclust"`}{Ward hierarchical clustering on the scaled
 #'     cohort feature matrix, cut to `n_regimes` clusters. Ignores
 #'     time ordering -- useful as a sanity check since non-adjacent
@@ -76,10 +72,10 @@
 #'   unavailable (NA, pooled mode, or `by` mismatching the Triangle's
 #'   `attr("groups")`). Cohorts with fewer than the resolved `window`
 #'   observed periods are dropped.
-#' @param method One of `"e_divisive"`, `"pelt"`, `"hclust"`.
+#' @param method One of `"e_divisive"`, `"hclust"`.
 #' @param n_regimes Integer. Number of regimes to force. `NULL` means
-#'   auto-detect for `"e_divisive"` and `"pelt"`; ignored (required to equal
-#'   the requested value) for `"hclust"`, where the default is `2`.
+#'   auto-detect for `"e_divisive"`; ignored (required to equal the
+#'   requested value) for `"hclust"`, where the default is `2`.
 #' @param sig_level Significance level for `"e_divisive"`. Default `0.05`.
 #' @param min_size Minimum segment size for `"e_divisive"`. Default `3`.
 #' @param treatment How downstream fits should apply this Regime when
@@ -160,8 +156,8 @@
 #' summary(r)
 #' plot(r)
 #'
-#' # ecp divisive change-point detection (requires the ecp package)
-#' r_ecp <- detect_regime(tri_sur, method = "e_divisive")
+#' # Energy-statistic divisive change-point detection
+#' r_ed <- detect_regime(tri_sur, method = "e_divisive")
 #'
 #' # Multi-group: detection per coverage
 #' tri_all <- as_triangle(
@@ -181,7 +177,7 @@ detect_regime <- function(x,
                           loss      = "ratio",
                           by        = NULL,
                           window    = "auto",
-                          method    = c("e_divisive", "pelt", "hclust"),
+                          method    = c("e_divisive", "hclust"),
                           n_regimes = NULL,
                           sig_level = 0.05,
                           min_size  = 3L,
@@ -539,7 +535,6 @@ detect_regime <- function(x,
 
   changes_idx <- .regime_changes(
     mat       = mat,
-    pca       = pca,
     method    = method,
     n_regimes = n_regimes,
     sig_level = sig_level,
@@ -611,42 +606,59 @@ detect_regime <- function(x,
 }
 
 
+#' E-Divisive change-point detection (Matteson & James 2014)
+#'
+#' Nonparametric multivariate change-point detection via the energy
+#' statistic. A greedy divisive procedure: within every open segment
+#' find the split that maximises the energy distance, accept the
+#' globally largest candidate when a permutation test clears
+#' `sig_level` (or, when `k` is supplied, accept the `k` largest
+#' unconditionally), and recurse on the two new segments.
+#'
+#' Written from the paper: Matteson, D. S. & James, N. A. (2014),
+#' "A nonparametric approach for multiple change point analysis of
+#' multivariate data", JASA 109(505), 334-345. The greedy recursion
+#' and its per-break permutation test run in the native kernel
+#' `C_e_divisive` (`src/e_divisive.c`) -- this is a thin wrapper.
+#' Permutations draw from R's RNG, so `set.seed()` controls
+#' reproducibility.
+#'
+#' @param X Numeric matrix of observations; rows are ordered
+#'   observations.
+#' @param k Optional integer count of change points to force. `NULL`
+#'   (default) lets the permutation test decide how many to keep.
+#' @param sig_level Permutation-test significance threshold; used only
+#'   when `k` is `NULL`.
+#' @param min_size Minimum size of either side of any split.
+#' @param R Number of permutations per significance test.
+#' @param alpha Distance exponent; `1` gives plain Euclidean distance.
+#'
+#' @return A list: `breakpoints` (sorted regime-start row indices) and
+#'   `p_values` (permutation p-value per breakpoint; `NA` for forced
+#'   breaks).
+#'
 #' @keywords internal
-.regime_changes <- function(mat, pca, method, n_regimes,
-                            sig_level, min_size) {
-  n <- nrow(mat)
+.e_divisive <- function(X, k = NULL, sig_level = 0.05, min_size = 3L,
+                        R = 199L, alpha = 1) {
+  X <- as.matrix(X)
+  storage.mode(X) <- "double"
+  k_arg <- if (is.null(k)) -1L else as.integer(k)
+  .Call(C_e_divisive, X, k_arg, as.numeric(sig_level),
+        as.integer(min_size), as.integer(R), as.numeric(alpha))
+}
 
+
+#' @keywords internal
+.regime_changes <- function(mat, method, n_regimes, sig_level, min_size) {
   if (method == "e_divisive") {
-    if (!requireNamespace("ecp", quietly = TRUE))
-      stop("Package 'ecp' is required for method = \"ecp\". ",
-           "Install with install.packages('ecp').", call. = FALSE)
     k_arg <- if (is.null(n_regimes)) NULL else as.integer(n_regimes - 1L)
-    res <- ecp::e.divisive(
-      X        = mat,
-      k        = k_arg,
-      sig.lvl  = sig_level,
-      min.size = as.integer(min_size)
+    res <- .e_divisive(
+      X         = mat,
+      k         = k_arg,
+      sig_level = sig_level,
+      min_size  = as.integer(min_size)
     )
-    est <- res$estimates
-    # ecp returns segment starts incl. 1 and n+1; interior = regime starts
-    est[-c(1L, length(est))]
-
-  } else if (method == "pelt") {
-    if (!requireNamespace("changepoint", quietly = TRUE))
-      stop("Package 'changepoint' is required for method = \"pelt\". ",
-           "Install with install.packages('changepoint').", call. = FALSE)
-    pc1 <- pca$x[, 1L]
-    if (is.null(n_regimes)) {
-      cpt <- changepoint::cpt.mean(pc1, method = "PELT",
-                                   minseglen = as.integer(min_size))
-    } else {
-      cpt <- changepoint::cpt.mean(pc1, method = "BinSeg",
-                                   Q         = as.integer(n_regimes - 1L),
-                                   minseglen = as.integer(min_size))
-    }
-    # changepoint returns last index of each segment; convert to starts
-    last_of_seg <- changepoint::cpts(cpt)
-    last_of_seg + 1L  # next index = start of new regime
+    res$breakpoints
 
   } else if (method == "hclust") {
     k <- if (is.null(n_regimes)) 2L else as.integer(n_regimes)

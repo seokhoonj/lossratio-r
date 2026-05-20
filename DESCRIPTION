@@ -16,7 +16,7 @@ Description: A loss ratio analytics toolkit for long-term health
     aggregation frameworks for diagnostics, and applies to any
     cumulative loss and exposure setting with sufficient sample per
     cell.
-License: GPL (>= 2)
+License: MPL-2.0
 URL: https://seokhoonj.github.io/lossratio,
     https://seokhoonj.github.io/lossratio/ko,
     https://github.com/seokhoonj/lossratio
@@ -25,10 +25,8 @@ Encoding: UTF-8
 LazyData: true
 Depends: R (>= 4.1.0)
 Imports:
-    changepoint,
     cli (>= 3.0.0),
     data.table (>= 1.13.0),
-    ecp,
     ggplot2 (>= 3.5.0)
 Suggests:
     knitr,

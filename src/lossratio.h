@@ -252,4 +252,20 @@ SEXP bootstrap_summary_kernel(
     SEXP quantile_ci_sxp,
     SEXP probs_sxp);
 
+/* ----- E-Divisive change-point detection (src/e_divisive.c) ---------------
+ *
+ * Nonparametric multivariate change-point detection on the energy
+ * statistic (Matteson & James 2014). Greedy divisive recursion with a
+ * per-break permutation test. Returns list(breakpoints, p_values) with
+ * breakpoints as sorted 1-indexed regime-start rows. See the file
+ * header of src/e_divisive.c for the full R <-> C contract.
+ */
+SEXP e_divisive(
+    SEXP X_sxp,
+    SEXP k_sxp,               /* change-point count to force, or -1 */
+    SEXP sig_level_sxp,
+    SEXP min_size_sxp,
+    SEXP R_sxp,               /* permutations per significance test */
+    SEXP alpha_sxp);
+
 #endif /* LOSSRATIO_H */

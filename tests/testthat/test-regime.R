@@ -56,9 +56,7 @@ test_that("$pca$sdev is positive numeric vector", {
   expect_true(all(r$pca$sdev >= 0))
 })
 
-test_that("methods 'pelt' and 'hclust' run", {
-  expect_s3_class(detect_regime(sub, window = 12, method = "pelt"),
-                  "Regime")
+test_that("method 'hclust' runs", {
   expect_s3_class(detect_regime(sub, window = 12, method = "hclust"),
                   "Regime")
 })

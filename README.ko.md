@@ -194,4 +194,4 @@ Python 구현: [`lossratio-py`](https://github.com/seokhoonj/lossratio-py) — s
 
 ## 라이선스 / 저자
 
-GPL (≥ 2). Seokhoon Joo ([seokhoonj\@gmail.com](mailto:seokhoonj@gmail.com){.email})
+MPL-2.0. Seokhoon Joo ([seokhoonj\@gmail.com](mailto:seokhoonj@gmail.com){.email})

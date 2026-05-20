@@ -256,7 +256,7 @@ vignette("regime", package = "lossratio")
 
 ## License
 
-GPL (\>= 2). See [LICENSE.md](LICENSE.md).
+MPL-2.0. See [LICENSE.md](LICENSE.md).
 
 ## Author
 

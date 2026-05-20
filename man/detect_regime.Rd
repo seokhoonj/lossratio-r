@@ -12,7 +12,7 @@ detect_regime(
   loss = "ratio",
   by = NULL,
   window = "auto",
-  method = c("e_divisive", "pelt", "hclust"),
+  method = c("e_divisive", "hclust"),
   n_regimes = NULL,
   sig_level = 0.05,
   min_size = 3L,
@@ -70,11 +70,11 @@ unavailable (NA, pooled mode, or \code{by} mismatching the Triangle's
 \code{attr("groups")}). Cohorts with fewer than the resolved \code{window}
 observed periods are dropped.}
 
-\item{method}{One of \code{"e_divisive"}, \code{"pelt"}, \code{"hclust"}.}
+\item{method}{One of \code{"e_divisive"}, \code{"hclust"}.}
 
 \item{n_regimes}{Integer. Number of regimes to force. \code{NULL} means
-auto-detect for \code{"e_divisive"} and \code{"pelt"}; ignored (required to equal
-the requested value) for \code{"hclust"}, where the default is \code{2}.}
+auto-detect for \code{"e_divisive"}; ignored (required to equal the
+requested value) for \code{"hclust"}, where the default is \code{2}.}
 
 \item{sig_level}{Significance level for \code{"e_divisive"}. Default \code{0.05}.}
 
@@ -156,17 +156,13 @@ independently per group, and results are combined into a single
 group column. Single-group input retains the original scalar /
 Date-vector / matrix layout for backward compatibility.
 
-Three detection strategies are supported:
+Two detection strategies are supported:
 \describe{
-\item{\code{"e_divisive"}}{Multivariate non-parametric divisive change-point
-detection via \code{\link[ecp:e.divisive]{ecp::e.divisive()}}. The number of regimes is
-determined by the data; only significant changes at
-\code{sig_level} are retained. Preferred when the number of regimes
-is not known in advance.}
-\item{\code{"pelt"}}{Univariate mean change-point detection via
-\code{\link[changepoint:cpt.mean]{changepoint::cpt.mean()}} with the PELT algorithm applied to the
-first principal component of the cohort feature matrix. Fast
-and may return multiple changes.}
+\item{\code{"e_divisive"}}{Multivariate non-parametric divisive
+change-point detection on the energy statistic (Matteson &
+James 2014). The number of regimes is determined by the data;
+only changes significant at \code{sig_level} are retained. Preferred
+when the number of regimes is not known in advance.}
 \item{\code{"hclust"}}{Ward hierarchical clustering on the scaled
 cohort feature matrix, cut to \code{n_regimes} clusters. Ignores
 time ordering -- useful as a sanity check since non-adjacent
@@ -193,8 +189,8 @@ print(r)
 summary(r)
 plot(r)
 
-# ecp divisive change-point detection (requires the ecp package)
-r_ecp <- detect_regime(tri_sur, method = "e_divisive")
+# Energy-statistic divisive change-point detection
+r_ed <- detect_regime(tri_sur, method = "e_divisive")
 
 # Multi-group: detection per coverage
 tri_all <- as_triangle(
