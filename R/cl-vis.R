@@ -1,3 +1,151 @@
+# Projection plot (shared by CL / SA / BF / CC / Exposure fits) ----------
+
+#' Projection plot for a projection-level fit
+#'
+#' @description
+#' Role-agnostic projection plot: observed and projected cumulative
+#' values by cohort over development periods, with an optional
+#' confidence band. The plotted column family is taken from `x$loss`
+#' (the fit's standardized role -- `"loss"` for CL / SA / BF / CC,
+#' `"exposure"` for an `ExposureFit`), so every projection-level fit
+#' shares one implementation. The interval is drawn whenever the
+#' `<role>_total_se` column is present and finite.
+#'
+#' @param x A projection-level fit (`CLFit`, `SAFit`, `BFFit`, `CCFit`,
+#'   or `ExposureFit`) with a `$full` grid and `$loss` / `$groups` /
+#'   `$cohort` / `$dev` slots.
+#' @inheritParams plot.CLFit
+#'
+#' @return A `ggplot` object.
+#'
+#' @keywords internal
+.plot_projection_fit <- function(x,
+                                 conf_level     = 0.95,
+                                 show_interval  = TRUE,
+                                 amount_divisor = "auto",
+                                 scales         = c("fixed", "free_y",
+                                                    "free_x", "free"),
+                                 theme          = c("view", "save", "shiny"),
+                                 nrow           = NULL,
+                                 ncol           = NULL,
+                                 ...) {
+
+  scales <- match.arg(scales)
+  theme  <- match.arg(theme)
+
+  if (!is.numeric(conf_level) || length(conf_level) != 1L ||
+      is.na(conf_level) || conf_level <= 0 || conf_level >= 1)
+    stop("`conf_level` must be a single numeric value in (0, 1).",
+         call. = FALSE)
+  if (!is.logical(show_interval) || length(show_interval) != 1L ||
+      is.na(show_interval))
+    stop("`show_interval` must be a single non-missing logical value.",
+         call. = FALSE)
+
+  grp    <- .resolve_groups(x)
+  dev    <- x$dev
+  metric <- x$loss
+
+  obs_col  <- paste0(metric, "_obs")
+  proj_col <- paste0(metric, "_proj")
+  se_col   <- paste0(metric, "_total_se")
+
+  full <- .copy_dt(x$full)
+
+  # The interval needs a per-cell total SE column; drop it when absent.
+  show_interval <- show_interval && se_col %in% names(full) &&
+    any(is.finite(full[[se_col]]))
+
+  if (identical(amount_divisor, "auto"))
+    amount_divisor <- .auto_divisor(full[[proj_col]])
+  meta         <- .get_plot_meta(metric, amount_divisor)
+  z_alpha      <- stats::qnorm((1 + conf_level) / 2)
+  caption_base <- meta$caption
+
+  obs  <- full[is.finite(full[[obs_col]])  & full$is_observed == TRUE]
+  proj <- full[is.finite(full[[proj_col]]) & full$is_observed == FALSE]
+
+  latest_obs  <- obs[, .SD[.N], by = c(grp, "cohort")]
+  latest_proj <- full[is.finite(full[[proj_col]]), .SD[.N],
+                      by = c(grp, "cohort")]
+  first_proj  <- proj[, .SD[1L], by = c(grp, "cohort")]
+
+  bridge <- latest_obs[, .SD, .SDcols = c(grp, "cohort", "dev", obs_col)]
+  data.table::setnames(bridge, c("dev", obs_col), c("x_start", "y_start"))
+  first_proj2 <- first_proj[, .SD,
+                            .SDcols = c(grp, "cohort", "dev", proj_col)]
+  data.table::setnames(first_proj2, c("dev", proj_col),
+                       c("x_end", "y_end"))
+  bridge <- first_proj2[bridge, on = c(grp, "cohort")]
+  bridge <- bridge[is.finite(bridge$x_start) & is.finite(bridge$y_start) &
+                   is.finite(bridge$x_end)   & is.finite(bridge$y_end)]
+
+  if (show_interval && nrow(proj)) {
+    proj$lower <- pmax(0, proj[[proj_col]] - z_alpha * proj[[se_col]])
+    proj$upper <- proj[[proj_col]] + z_alpha * proj[[se_col]]
+  }
+
+  p <- ggplot2::ggplot()
+
+  if (show_interval && nrow(proj)) {
+    p <- p + ggplot2::geom_ribbon(
+      data    = proj,
+      mapping = ggplot2::aes(x = .data[["dev"]], ymin = .data$lower,
+                             ymax = .data$upper, group = 1),
+      inherit.aes = FALSE, alpha = 0.15)
+  }
+
+  p <- p +
+    ggplot2::geom_line(
+      data    = obs,
+      mapping = ggplot2::aes(x = .data[["dev"]], y = .data[[obs_col]],
+                             group = .data[["cohort"]]),
+      linewidth = 0.8) +
+    ggplot2::geom_segment(
+      data    = bridge,
+      mapping = ggplot2::aes(x = .data$x_start, y = .data$y_start,
+                             xend = .data$x_end, yend = .data$y_end),
+      linewidth = 0.8) +
+    ggplot2::geom_line(
+      data    = proj,
+      mapping = ggplot2::aes(x = .data[["dev"]], y = .data[[proj_col]],
+                             group = .data[["cohort"]]),
+      linewidth = 0.8, linetype = "dashed") +
+    ggplot2::geom_point(
+      data    = latest_obs,
+      mapping = ggplot2::aes(x = .data[["dev"]], y = .data[[obs_col]]),
+      size = 1.8) +
+    ggplot2::geom_point(
+      data    = latest_proj,
+      mapping = ggplot2::aes(x = .data[["dev"]], y = .data[[proj_col]]),
+      size = 1.8, shape = 1)
+
+  if (!is.null(meta$hline)) {
+    p <- p + ggplot2::geom_hline(yintercept = meta$hline,
+                                 linetype = "dashed", color = "red")
+  }
+
+  p <- p +
+    ggplot2::scale_x_continuous(
+      labels = function(z) .format_period_safe(z, dev)) +
+    .resolve_y_scale(meta, amount_divisor)
+
+  p <- p + ggplot2::facet_wrap(
+    c(grp, "cohort"), scales = scales, nrow = nrow, ncol = ncol,
+    labeller = .combined_facet_labeller(c(grp, "cohort")))
+
+  p <- p + ggplot2::labs(
+    title   = paste0(meta$title, " Projection"),
+    x       = .pretty_var_label(dev),
+    y       = metric,
+    caption = if (show_interval)
+      paste0(caption_base, " | Interval: ", round(conf_level * 100), "%")
+    else caption_base)
+
+  p + .switch_theme(theme = theme, ...)
+}
+
+
 #' Plot a chain ladder fit
 #'
 #' @description
@@ -46,12 +194,22 @@ plot.CLFit <- function(x,
   scales <- match.arg(scales)
   theme  <- match.arg(theme)
 
-  is_mack <- identical(x$method, "mack")
+  if (type == "projection")
+    return(.plot_projection_fit(
+      x,
+      conf_level     = conf_level,
+      show_interval  = show_interval,
+      amount_divisor = amount_divisor,
+      scales         = scales,
+      theme          = theme,
+      nrow           = nrow,
+      ncol           = ncol,
+      ...
+    ))
 
-  if (type == "reserve" && !is_mack)
+  # `type = "reserve"` is chain-ladder specific (needs `$summary$reserve`).
+  if (!identical(x$method, "mack"))
     stop("`type = \"reserve\"` requires `method = \"mack\"`.", call. = FALSE)
-
-  if (!is_mack) show_interval <- FALSE
 
   if (!is.numeric(conf_level) || length(conf_level) != 1L ||
       is.na(conf_level) || conf_level <= 0 || conf_level >= 1)
@@ -75,155 +233,6 @@ plot.CLFit <- function(x,
   meta         <- .get_plot_meta(metric, amount_divisor)
   z_alpha      <- stats::qnorm((1 + conf_level) / 2)
   caption_base <- meta$caption
-
-  # --- projection -------------------------------------------------------
-  if (type == "projection") {
-
-    full <- .copy_dt(x$full)
-
-    obs  <- full[is_observed == TRUE  & is.finite(loss_obs)]
-    proj <- full[is_observed == FALSE & is.finite(loss_proj)]
-
-    latest_obs  <- obs[, .SD[.N],  by = c(grp, "cohort")]
-    latest_proj <- full[
-      is.finite(loss_proj), .SD[.N], by = c(grp, "cohort")
-    ]
-
-    first_proj <- proj[, .SD[1L], by = c(grp, "cohort")]
-
-    bridge <- latest_obs[
-      , .SD, .SDcols = c(grp, "cohort", "dev", "loss_obs")
-    ]
-    data.table::setnames(
-      bridge,
-      c("dev", "loss_obs"),
-      c("x_start", "y_start")
-    )
-
-    first_proj2 <- first_proj[
-      , .SD, .SDcols = c(grp, "cohort", "dev", "loss_proj")
-    ]
-    data.table::setnames(
-      first_proj2,
-      c("dev", "loss_proj"),
-      c("x_end", "y_end")
-    )
-    bridge <- first_proj2[bridge, on = c(grp, "cohort")]
-    bridge <- bridge[is.finite(x_start) & is.finite(y_start) &
-                     is.finite(x_end)   & is.finite(y_end)]
-
-    if (show_interval && nrow(proj)) {
-      proj[, `:=`(
-        lower = pmax(0, loss_proj - z_alpha * loss_total_se),
-        upper = loss_proj + z_alpha * loss_total_se
-      )]
-    }
-
-    p <- ggplot2::ggplot()
-
-    if (show_interval && nrow(proj)) {
-      p <- p + ggplot2::geom_ribbon(
-        data    = proj,
-        mapping = ggplot2::aes(
-          x     = .data[["dev"]],
-          ymin  = .data$lower,
-          ymax  = .data$upper,
-          group = 1
-        ),
-        inherit.aes = FALSE,
-        alpha       = 0.15
-      )
-    }
-
-    p <- p +
-      ggplot2::geom_line(
-        data    = obs,
-        mapping = ggplot2::aes(
-          x     = .data[["dev"]],
-          y     = .data$loss_obs,
-          group = .data[["cohort"]]
-        ),
-        linewidth = 0.8
-      ) +
-      ggplot2::geom_segment(
-        data    = bridge,
-        mapping = ggplot2::aes(
-          x    = .data$x_start,
-          y    = .data$y_start,
-          xend = .data$x_end,
-          yend = .data$y_end
-        ),
-        linewidth = 0.8
-      ) +
-      ggplot2::geom_line(
-        data    = proj,
-        mapping = ggplot2::aes(
-          x     = .data[["dev"]],
-          y     = .data$loss_proj,
-          group = .data[["cohort"]]
-        ),
-        linewidth = 0.8,
-        linetype  = "dashed"
-      ) +
-      ggplot2::geom_point(
-        data    = latest_obs,
-        mapping = ggplot2::aes(
-          x = .data[["dev"]],
-          y = .data$loss_obs
-        ),
-        size = 1.8
-      ) +
-      ggplot2::geom_point(
-        data    = latest_proj,
-        mapping = ggplot2::aes(
-          x = .data[["dev"]],
-          y = .data$loss_proj
-        ),
-        size  = 1.8,
-        shape = 1
-      )
-
-    if (!is.null(meta$hline)) {
-      p <- p + ggplot2::geom_hline(
-        yintercept = meta$hline,
-        linetype   = "dashed",
-        color      = "red"
-      )
-    }
-
-    # scales
-    p <- p +
-      ggplot2::scale_x_continuous(
-        labels = function(z) .format_period_safe(z, dev)
-      ) +
-      .resolve_y_scale(meta, amount_divisor)
-
-    # facet
-    if (length(c(grp, "cohort"))) {
-      p <- p + ggplot2::facet_wrap(
-        c(grp, "cohort"),
-        scales   = scales,
-        nrow     = nrow,
-        ncol     = ncol,
-        labeller = .combined_facet_labeller(c(grp, "cohort"))
-      )
-    }
-
-    # labs
-    p <- p + ggplot2::labs(
-      title   = paste0(meta$title, " Projection"),
-      x       = .pretty_var_label(dev),
-      y       = metric,
-      caption = if (show_interval) {
-        paste0(caption_base, " | Interval: ", round(conf_level * 100), "%")
-      } else {
-        caption_base
-      }
-    )
-
-    # theme
-    return(p + .switch_theme(theme = theme, ...))
-  }
 
   # --- reserve (mack only) ----------------------------------------------
   smr <- .copy_dt(x$summary)
@@ -295,6 +304,86 @@ plot.CLFit <- function(x,
 
   # theme
   p + .switch_theme(theme = theme, ...)
+}
+
+
+#' Plot a stage-adaptive fit
+#'
+#' @description
+#' Projection plot for a `"SAFit"` -- observed and projected cumulative
+#' loss by cohort, delegated to `.plot_projection_fit()`.
+#'
+#' @param x An object of class `"SAFit"`.
+#' @param ... Forwarded to `.plot_projection_fit()` -- `conf_level`,
+#'   `show_interval`, `amount_divisor`, `scales`, `theme`, `nrow`,
+#'   `ncol`, plus theme options.
+#'
+#' @return A `ggplot` object.
+#'
+#' @method plot SAFit
+#' @export
+plot.SAFit <- function(x, ...) {
+  .assert_class(x, "SAFit")
+  .plot_projection_fit(x, ...)
+}
+
+
+#' Plot a Bornhuetter-Ferguson fit
+#'
+#' @description
+#' Projection plot for a `"BFFit"` -- observed and projected cumulative
+#' loss by cohort, delegated to `.plot_projection_fit()`.
+#'
+#' @param x An object of class `"BFFit"`.
+#' @param ... Forwarded to `.plot_projection_fit()` -- see [plot.SAFit()].
+#'
+#' @return A `ggplot` object.
+#'
+#' @method plot BFFit
+#' @export
+plot.BFFit <- function(x, ...) {
+  .assert_class(x, "BFFit")
+  .plot_projection_fit(x, ...)
+}
+
+
+#' Plot a Cape Cod fit
+#'
+#' @description
+#' Projection plot for a `"CCFit"` -- observed and projected cumulative
+#' loss by cohort, delegated to `.plot_projection_fit()`.
+#'
+#' @param x An object of class `"CCFit"`.
+#' @param ... Forwarded to `.plot_projection_fit()` -- see [plot.SAFit()].
+#'
+#' @return A `ggplot` object.
+#'
+#' @method plot CCFit
+#' @export
+plot.CCFit <- function(x, ...) {
+  .assert_class(x, "CCFit")
+  .plot_projection_fit(x, ...)
+}
+
+
+#' Plot an exposure fit
+#'
+#' @description
+#' Projection plot for an `"ExposureFit"` -- observed and projected
+#' cumulative exposure by cohort, delegated to `.plot_projection_fit()`.
+#' Defined so an `ExposureFit` does not fall through to [plot.CLFit()],
+#' whose `$full` schema is loss-side.
+#'
+#' @param x An object of class `"ExposureFit"`.
+#' @param ... Forwarded to `.plot_projection_fit()` -- see [plot.SAFit()].
+#'
+#' @return A `ggplot` object.
+#'
+#' @method plot ExposureFit
+#' @export
+plot.ExposureFit <- function(x, ...) {
+  .assert_class(x, "ExposureFit")
+  .plot_projection_fit(x, ...)
 }
 
 
