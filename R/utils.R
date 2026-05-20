@@ -222,29 +222,6 @@
 }
 
 
-#' Granularity of a cohort or development variable
-#'
-#' Like [.get_period_type()] but also recognises the integer development-period
-#' columns (`dev_m` / `dev_q` / `dev_h` / `dev_y`). Used by
-#' [as_triangle()] to verify that `cohort` and `dev` share the
-#' same granularity. Not used for date formatting (these dev columns
-#' are integers, not Date).
-#'
-#' @keywords internal
-.get_granularity <- function(var) {
-  type <- .get_period_type(var)
-  if (!is.na(type)) return(type)
-  switch(
-    var,
-    dev_m = "month",
-    dev_q = "quarter",
-    dev_h = "half",
-    dev_y = "year",
-    NA_character_
-  )
-}
-
-
 # Plot meta ---------------------------------------------------------------
 
 #' Get plot display metadata for a value variable
