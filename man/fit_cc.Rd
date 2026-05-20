@@ -74,6 +74,9 @@ green / rare-event cohort toward the pooled ELR. See \code{\link[=fit_bf]{fit_bf
 the full description. A credibility blend uses the analytical SE
 path.}
 
+\item{conf_level}{Confidence level for the SE-based CI (bootstrap
+quantile or analytical normal). Default \code{0.95}.}
+
 \item{...}{Reserved for future extension (currently unused).}
 }
 \value{
