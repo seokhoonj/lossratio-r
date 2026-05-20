@@ -541,7 +541,7 @@ bootstrap.Triangle <- function(x,
       # Pool keyed by (cohort, dev = ata_to) for compatibility with the
       # cell-mode pool builder.
       cell_resid <- .boot_cell_residuals_ed(link, grp = grp)
-      phi_table <- attr(cell_resid, "phi_table")
+      phi <- attr(cell_resid, "phi")
       pool <- .boot_build_pool_cell_cl(cell_resid, grp = grp,
                                      pooling = pooling, tail = tail,
                                      min_pool = min_pool, maturity = maturity,
@@ -558,8 +558,8 @@ bootstrap.Triangle <- function(x,
       cell_resid_ed <- .boot_cell_residuals_ed(link, grp = grp)
       cell_resid_cl <- .boot_cell_residuals_cl(x, anchor = anchor, grp = grp,
                                             target = target, hat_adj = hat_adj)
-      phi_ed_table <- attr(cell_resid_ed, "phi_table")
-      phi_cl_table <- attr(cell_resid_cl, "phi_table")
+      phi_ed <- attr(cell_resid_ed, "phi")
+      phi_cl <- attr(cell_resid_cl, "phi")
       pool_ed <- .boot_build_pool_cell_cl(cell_resid_ed, grp = grp,
                                        pooling = pooling, tail = tail,
                                        min_pool = min_pool, maturity = maturity,
@@ -578,12 +578,12 @@ bootstrap.Triangle <- function(x,
       # Merge phi tables on group keys so .boot_stage1 per-group subset
       # gets both columns at once.
       if (length(grp) > 0L) {
-        phi_table <- merge(phi_ed_table, phi_cl_table, by = grp,
+        phi <- merge(phi_ed, phi_cl, by = grp,
                         suffixes = c("_ed", "_cl"), sort = FALSE)
       } else {
-        phi_table <- data.table::data.table(
-          phi_ed = if (nrow(phi_ed_table) > 0L) phi_ed_table$phi[1L] else NA_real_,
-          phi_cl = if (nrow(phi_cl_table) > 0L) phi_cl_table$phi[1L] else NA_real_
+        phi <- data.table::data.table(
+          phi_ed = if (nrow(phi_ed) > 0L) phi_ed$phi[1L] else NA_real_,
+          phi_cl = if (nrow(phi_cl) > 0L) phi_cl$phi[1L] else NA_real_
         )
       }
     } else {
@@ -593,7 +593,7 @@ bootstrap.Triangle <- function(x,
                                           target = target, hat_adj = hat_adj)
       # Extract per-group phi (ODP single scale) BEFORE pool transforms
       # the table -- the pool builder isn't required to preserve attrs.
-      phi_table <- attr(cell_resid, "phi_table")
+      phi <- attr(cell_resid, "phi")
       pool <- .boot_build_pool_cell_cl(cell_resid, grp = grp,
                                      pooling = pooling, tail = tail,
                                      min_pool = min_pool, maturity = maturity,
@@ -617,27 +617,27 @@ bootstrap.Triangle <- function(x,
 
     if (identical(method, "ed")) {
       cell_resid <- .boot_cell_residuals_ed(link, grp = grp)
-      phi_table <- attr(cell_resid, "phi_table")
+      phi <- attr(cell_resid, "phi")
     } else if (identical(method, "sa")) {
       cell_resid_ed <- .boot_cell_residuals_ed(link, grp = grp)
       cell_resid_cl <- .boot_cell_residuals_cl(x, anchor = anchor, grp = grp,
                                               target = target, hat_adj = hat_adj)
-      phi_ed_table <- attr(cell_resid_ed, "phi_table")
-      phi_cl_table <- attr(cell_resid_cl, "phi_table")
+      phi_ed <- attr(cell_resid_ed, "phi")
+      phi_cl <- attr(cell_resid_cl, "phi")
       if (length(grp) > 0L) {
-        phi_table <- merge(phi_ed_table, phi_cl_table, by = grp,
+        phi <- merge(phi_ed, phi_cl, by = grp,
                         suffixes = c("_ed", "_cl"), sort = FALSE)
       } else {
-        phi_table <- data.table::data.table(
-          phi_ed = if (nrow(phi_ed_table) > 0L) phi_ed_table$phi[1L] else NA_real_,
-          phi_cl = if (nrow(phi_cl_table) > 0L) phi_cl_table$phi[1L] else NA_real_
+        phi <- data.table::data.table(
+          phi_ed = if (nrow(phi_ed) > 0L) phi_ed$phi[1L] else NA_real_,
+          phi_cl = if (nrow(phi_cl) > 0L) phi_cl$phi[1L] else NA_real_
         )
       }
     } else {
       # method = "cl" parametric: ODP cell dispersion via CL Pearson form.
       cell_resid <- .boot_cell_residuals_cl(x, anchor = anchor, grp = grp,
                                             target = target, hat_adj = hat_adj)
-      phi_table <- attr(cell_resid, "phi_table")
+      phi <- attr(cell_resid, "phi")
     }
     pool <- .boot_empty_pool(grp)
   } else {
@@ -649,11 +649,11 @@ bootstrap.Triangle <- function(x,
     pool   <- .boot_empty_pool(grp)
   }
 
-  # phi_table: cell-mode + parametric only; otherwise NULL (analytical / Mack
+  # phi: cell-mode + parametric only; otherwise NULL (analytical / Mack
   # link path use sigma2 from the anchor).
   if (!(is_residual_mode && identical(residual, "cell")) &&
       !is_parametric_mode) {
-    phi_table <- NULL
+    phi <- NULL
   }
 
   # 5) Stage 1 + 2 -- B pseudo triangles (raw 3D arrays only) ----------------
@@ -663,7 +663,7 @@ bootstrap.Triangle <- function(x,
   # only when the user reads `$pseudo_triangles`.
   stage1_out <- .boot_stage1(
     triangle = x, link = link, anchor = anchor, pool = pool,
-    phi_table = phi_table,
+    phi = phi,
     grp = grp, is_residual_mode = is_residual_mode,
     is_parametric_mode = is_parametric_mode,
     residual = residual,
@@ -715,7 +715,7 @@ bootstrap.Triangle <- function(x,
         target      = target,
         groups      = grp,
         maturity    = if (!is.null(sa_maturity)) sa_maturity else maturity,
-        phi_table      = phi_table
+        phi      = phi
       )
     ),
     class = c("BootstrapTriangle", "list")
@@ -1103,7 +1103,7 @@ bootstrap.Triangle <- function(x,
       phi_one <- attr(one, "phi")
       for (col in names(gkey)) one[, (col) := gkey[[col]]]
       data.table::setcolorder(one, c(grp, "cohort", "dev", "residual", "mu_hat"))
-      attr(one, "phi_table") <- data.table::data.table(gkey, phi = phi_one)
+      attr(one, "phi") <- data.table::data.table(gkey, phi = phi_one)
       return(one)
     }
     out_list <- vector("list", nrow(grp_vals))
@@ -1120,11 +1120,11 @@ bootstrap.Triangle <- function(x,
     }
     res <- data.table::rbindlist(out_list, use.names = TRUE, fill = TRUE)
     data.table::setcolorder(res, c(grp, "cohort", "dev", "residual", "mu_hat"))
-    attr(res, "phi_table") <- data.table::rbindlist(phi_list, use.names = TRUE)
+    attr(res, "phi") <- data.table::rbindlist(phi_list, use.names = TRUE)
     res
   } else {
     one <- .boot_cell_residuals_one_cl(triangle, anchor, target, hat_adj)
-    attr(one, "phi_table") <- data.table::data.table(phi = attr(one, "phi"))
+    attr(one, "phi") <- data.table::data.table(phi = attr(one, "phi"))
     one
   }
 }
@@ -1282,27 +1282,27 @@ bootstrap.Triangle <- function(x,
   } else {
     by_grp <- NULL
   }
-  phi_table <- dt[is.finite(residual),
+  phi <- dt[is.finite(residual),
                list(
                  n_obs        = .N,
                  sum_r2       = sum(residual^2),
                  n_links_used = data.table::uniqueN(ata_to)
                ),
                by = by_grp]
-  phi_table[, ("phi") := data.table::fifelse(
+  phi[, ("phi") := data.table::fifelse(
     is.finite(n_obs) & is.finite(n_links_used) & n_obs > n_links_used,
     sum_r2 / (n_obs - n_links_used),
     NA_real_
   )]
   phi_keep <- c(grp, "phi")
-  phi_table <- phi_table[, .SD, .SDcols = phi_keep]
+  phi <- phi[, .SD, .SDcols = phi_keep]
 
   # Reshape to the (cohort, dev, residual, mu_hat) schema expected by
   # `.boot_build_pool_cell_cl` -- dev = ata_to.
   out_keep <- c(grp, "cohort", "ata_to", "residual", "mu_ed")
   out <- dt[, .SD, .SDcols = out_keep]
   data.table::setnames(out, c("ata_to", "mu_ed"), c("dev", "mu_hat"))
-  data.table::setattr(out, "phi_table", phi_table)
+  data.table::setattr(out, "phi", phi)
   out
 }
 
@@ -1381,15 +1381,15 @@ bootstrap.Triangle <- function(x,
   # NSE
   loss_delta <- exposure_from <- NULL
 
-  g_table <- link[is.finite(loss_delta) & is.finite(exposure_from) &
+  g_links <- link[is.finite(loss_delta) & is.finite(exposure_from) &
                  exposure_from > 0,
                list(g_hat = .boot_volume_weighted_ratio(loss_delta,
                                                        exposure_from)),
                by = "ata_to"]
   # Lookup g_hat for each anchor row by `ata_to` (anchor row order is the
   # canonical link order in `.boot_stage1_one`).
-  idx <- match(anchor$ata_to, g_table$ata_to)
-  out <- g_table$g_hat[idx]
+  idx <- match(anchor$ata_to, g_links$ata_to)
+  out <- g_links$g_hat[idx]
   out[!is.finite(out)] <- 0
   if (length(out) != n_links)
     out <- rep_len(out, n_links)
@@ -1507,7 +1507,7 @@ bootstrap.Triangle <- function(x,
 #
 # Returns long-format data.table [grp..., cohort, dev, rep, <target>].
 
-.boot_stage1 <- function(triangle, link, anchor, pool, phi_table,
+.boot_stage1 <- function(triangle, link, anchor, pool, phi,
                           grp, is_residual_mode,
                           is_parametric_mode = FALSE,
                           residual, process,
@@ -1521,13 +1521,13 @@ bootstrap.Triangle <- function(x,
     single_grp <- nrow(grp_vals) == 1L
     if (single_grp) {
       # Fast path: skip merges + rbindlist when only one group is present.
-      phi_g <- if (!is.null(phi_table) && nrow(phi_table) > 0L)
-                 merge(phi_table, grp_vals[1L], by = grp, sort = FALSE)
-               else phi_table
+      phi_g <- if (!is.null(phi) && nrow(phi) > 0L)
+                 merge(phi, grp_vals[1L], by = grp, sort = FALSE)
+               else phi
       mat_g <- .boot_subset_maturity(sa_maturity, grp_vals[1L], grp)
       return(.boot_stage1_one(
         triangle = triangle, link = link, anchor = anchor, pool = pool,
-        phi_table = phi_g,
+        phi = phi_g,
         is_residual_mode = is_residual_mode,
         is_parametric_mode = is_parametric_mode,
         residual = residual,
@@ -1544,13 +1544,13 @@ bootstrap.Triangle <- function(x,
       anchor_g <- merge(anchor, gkey, by = grp, sort = FALSE)
       pool_g <- if (nrow(pool) > 0L) merge(pool, gkey, by = grp, sort = FALSE)
                 else pool
-      phi_g  <- if (!is.null(phi_table) && nrow(phi_table) > 0L)
-                  merge(phi_table, gkey, by = grp, sort = FALSE)
-                else phi_table
+      phi_g  <- if (!is.null(phi) && nrow(phi) > 0L)
+                  merge(phi, gkey, by = grp, sort = FALSE)
+                else phi
       mat_g  <- .boot_subset_maturity(sa_maturity, gkey, grp)
       out_list[[gi]] <- .boot_stage1_one(
         triangle = tri_g, link = link_g, anchor = anchor_g, pool = pool_g,
-        phi_table = phi_g,
+        phi = phi_g,
         is_residual_mode = is_residual_mode,
         is_parametric_mode = is_parametric_mode,
         residual = residual,
@@ -1571,7 +1571,7 @@ bootstrap.Triangle <- function(x,
   } else {
     .boot_stage1_one(
       triangle = triangle, link = link, anchor = anchor, pool = pool,
-      phi_table = phi_table,
+      phi = phi,
       is_residual_mode = is_residual_mode,
       is_parametric_mode = is_parametric_mode,
       residual = residual,
@@ -1602,7 +1602,7 @@ bootstrap.Triangle <- function(x,
 # pseudo_triangles data.table is built lazily on first access to
 # `$pseudo_triangles` via `.boot_build_pseudo_long()` (and only when
 # `keep_pseudo = TRUE` flagged the result for that build).
-.boot_stage1_one <- function(triangle, link, anchor, pool, phi_table = NULL,
+.boot_stage1_one <- function(triangle, link, anchor, pool, phi = NULL,
                               is_residual_mode,
                               is_parametric_mode = FALSE,
                               residual = "link",
@@ -1783,8 +1783,8 @@ bootstrap.Triangle <- function(x,
         cell_pool_idx <- integer(n_active)
       }
 
-      phi <- if (!is.null(phi_table) && nrow(phi_table) > 0L) {
-        phi_table$phi[1L]
+      phi <- if (!is.null(phi) && nrow(phi) > 0L) {
+        phi$phi[1L]
       } else {
         NA_real_
       }
@@ -1901,13 +1901,13 @@ bootstrap.Triangle <- function(x,
       #    dev (last-one-wins), so build a fresh per-paradigm lookup
       #    directly from the pool here, splitting by prefix.
       if (length(pool_names) > 0L) {
-        pid_table <- unique(pool[, .SD, .SDcols = c("dev", "pool_id")])
-        pid_table[, ("paradigm") := data.table::fifelse(
+        pools <- unique(pool[, .SD, .SDcols = c("dev", "pool_id")])
+        pools[, ("paradigm") := data.table::fifelse(
           startsWith(pool_id, "ed|"), "ed",
           data.table::fifelse(startsWith(pool_id, "cl|"), "cl", NA_character_)
         )]
-        ed_lookup <- pid_table[paradigm == "ed"]
-        cl_lookup <- pid_table[paradigm == "cl"]
+        ed_lookup <- pools[paradigm == "ed"]
+        cl_lookup <- pools[paradigm == "cl"]
         ed_by_dev <- if (nrow(ed_lookup) > 0L)
                        setNames(ed_lookup$pool_id, as.character(ed_lookup$dev))
                      else character(0)
@@ -1928,12 +1928,12 @@ bootstrap.Triangle <- function(x,
         cell_pool_idx <- integer(n_active)
       }
 
-      # 5) Per-paradigm phi scalars (from merged phi_table with phi_ed / phi_cl).
-      phi_ed_val <- if (!is.null(phi_table) && nrow(phi_table) > 0L &&
-                        "phi_ed" %in% names(phi_table)) phi_table$phi_ed[1L]
+      # 5) Per-paradigm phi scalars (from merged phi with phi_ed / phi_cl).
+      phi_ed_val <- if (!is.null(phi) && nrow(phi) > 0L &&
+                        "phi_ed" %in% names(phi)) phi$phi_ed[1L]
                     else NA_real_
-      phi_cl_val <- if (!is.null(phi_table) && nrow(phi_table) > 0L &&
-                        "phi_cl" %in% names(phi_table)) phi_table$phi_cl[1L]
+      phi_cl_val <- if (!is.null(phi) && nrow(phi) > 0L &&
+                        "phi_cl" %in% names(phi)) phi$phi_cl[1L]
                     else NA_real_
 
       process_code <- switch(process,
@@ -1986,9 +1986,9 @@ bootstrap.Triangle <- function(x,
       }
 
       # Extract scalar phi for current group (cell ODP dispersion).
-      # phi_table is per-group; .boot_stage1 already subset it to grp_vals.
-      phi <- if (!is.null(phi_table) && nrow(phi_table) > 0L) {
-        phi_table$phi[1L]
+      # phi is per-group; .boot_stage1 already subset it to grp_vals.
+      phi <- if (!is.null(phi) && nrow(phi) > 0L) {
+        phi$phi[1L]
       } else {
         NA_real_
       }
@@ -2092,8 +2092,8 @@ bootstrap.Triangle <- function(x,
       cell_active_lin  <- which(upper_mask)
       cell_active_mu   <- mu_ed_grid[cell_active_lin]
 
-      phi <- if (!is.null(phi_table) && nrow(phi_table) > 0L) {
-        phi_table$phi[1L]
+      phi <- if (!is.null(phi) && nrow(phi) > 0L) {
+        phi$phi[1L]
       } else {
         NA_real_
       }
@@ -2166,11 +2166,11 @@ bootstrap.Triangle <- function(x,
                                 mu_hat_grid[active_lin_all],
                                 mu_ed_grid[active_lin_all])
 
-      phi_ed_val <- if (!is.null(phi_table) && nrow(phi_table) > 0L &&
-                        "phi_ed" %in% names(phi_table)) phi_table$phi_ed[1L]
+      phi_ed_val <- if (!is.null(phi) && nrow(phi) > 0L &&
+                        "phi_ed" %in% names(phi)) phi$phi_ed[1L]
                     else NA_real_
-      phi_cl_val <- if (!is.null(phi_table) && nrow(phi_table) > 0L &&
-                        "phi_cl" %in% names(phi_table)) phi_table$phi_cl[1L]
+      phi_cl_val <- if (!is.null(phi) && nrow(phi) > 0L &&
+                        "phi_cl" %in% names(phi)) phi$phi_cl[1L]
                     else NA_real_
 
       # Per-cell phi via stage dispatch -- matches the Stage-1 mu paradigm.
@@ -2204,8 +2204,8 @@ bootstrap.Triangle <- function(x,
       cell_active_lin  <- which(upper_mask)
       cell_active_mu   <- mu_hat_grid[cell_active_lin]
 
-      phi <- if (!is.null(phi_table) && nrow(phi_table) > 0L) {
-        phi_table$phi[1L]
+      phi <- if (!is.null(phi) && nrow(phi) > 0L) {
+        phi$phi[1L]
       } else {
         NA_real_
       }

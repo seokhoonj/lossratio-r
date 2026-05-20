@@ -4,12 +4,12 @@
 \alias{.resolve_bf_prior}
 \title{Resolve \code{prior} input for \code{fit_bf()}}
 \usage{
-.resolve_bf_prior(prior, q_grid, by_cols)
+.resolve_bf_prior(prior, dt, by_cols)
 }
 \arguments{
 \item{prior}{The user-supplied prior. See \code{\link[=fit_bf]{fit_bf()}}.}
 
-\item{q_grid}{The per-cohort \code{data.table} (carrying \code{cohort} etc.).}
+\item{dt}{The per-cohort \code{data.table} (carrying \code{cohort} etc.).}
 
 \item{by_cols}{Character vector of join columns (\code{c(grp, "cohort")}).}
 }

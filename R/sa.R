@@ -196,9 +196,9 @@ fit_sa <- function(x,
 
         dev_split_arg <- if (length(grp) > 0L &&
                              length(unique(m_k_vec)) > 1L) {
-          m_k_grid <- pre_maturity[, c(grp, "change"), with = FALSE]
-          data.table::setnames(m_k_grid, "change", "dev_split")
-          m_k_grid
+          grp_m_k <- pre_maturity[, c(grp, "change"), with = FALSE]
+          data.table::setnames(grp_m_k, "change", "dev_split")
+          grp_m_k
         } else {
           max(m_k_vec, na.rm = TRUE)
         }

@@ -538,14 +538,14 @@
   # `dev_split` may be either a scalar (single ED/CL boundary applied
   # to every group) or a `[grp..., dev_split]` data.table for
   # per-group SA hybrid (m_k differs across groups).
-  dev_split_is_table <- data.table::is.data.table(dev_split)
-  if (!is.null(dev_split) && !dev_split_is_table) {
+  dev_split_grouped <- data.table::is.data.table(dev_split)
+  if (!is.null(dev_split) && !dev_split_grouped) {
     if (!is.numeric(dev_split) || length(dev_split) != 1L || is.na(dev_split))
       stop("`dev_split` must be a single non-NA numeric scalar, ",
            "or a `[grp..., dev_split]` data.table for per-group SA hybrid.",
            call. = FALSE)
   }
-  if (dev_split_is_table) {
+  if (dev_split_grouped) {
     if (!"dev_split" %in% names(dev_split))
       stop("per-group `dev_split` data.table must have a column named ",
            "`dev_split`.", call. = FALSE)
@@ -571,7 +571,7 @@
 
   if (is.null(dev_split)) {
     keep <- finite_mask & (cal_idx > max_cal - recent)
-  } else if (dev_split_is_table) {
+  } else if (dev_split_grouped) {
     ds_vals <- dev_split[out, on = ds_join_cols, x.dev_split]
     # Group with NA dev_split: no SA boundary declared -> recent wedge
     # applies to all dev (no ED carve-out for that row).
@@ -877,14 +877,14 @@
   # `dev_split` may be either a scalar (single ED/CL boundary applied
   # to every group) or a `[grp..., dev_split]` data.table for
   # per-group SA hybrid (m_k differs across groups).
-  dev_split_is_table <- data.table::is.data.table(dev_split)
-  if (!is.null(dev_split) && !dev_split_is_table) {
+  dev_split_grouped <- data.table::is.data.table(dev_split)
+  if (!is.null(dev_split) && !dev_split_grouped) {
     if (!is.numeric(dev_split) || length(dev_split) != 1L || is.na(dev_split))
       stop("`dev_split` must be a single non-NA numeric scalar, ",
            "or a `[grp..., dev_split]` data.table for per-group SA hybrid.",
            call. = FALSE)
   }
-  if (dev_split_is_table && !"dev_split" %in% names(dev_split))
+  if (dev_split_grouped && !"dev_split" %in% names(dev_split))
     stop("per-group `dev_split` data.table must have a column named ",
          "`dev_split`.", call. = FALSE)
 
@@ -908,7 +908,7 @@
 
     if (is.null(dev_split)) {
       keep <- !matched | (coh_vals >= cd_vals)
-    } else if (dev_split_is_table) {
+    } else if (dev_split_grouped) {
       ds_join_cols <- setdiff(names(dev_split), "dev_split")
       ds_vals <- dev_split[out, on = ds_join_cols, x.dev_split]
       # Group with NA dev_split: no ED region declared -> cohort cut
@@ -924,7 +924,7 @@
     dev_vals <- out[[dev]]
     if (is.null(dev_split)) {
       keep <- coh_vals >= cd
-    } else if (dev_split_is_table) {
+    } else if (dev_split_grouped) {
       ds_join_cols <- setdiff(names(dev_split), "dev_split")
       ds_vals <- dev_split[out, on = ds_join_cols, x.dev_split]
       keep <- (coh_vals >= cd) |

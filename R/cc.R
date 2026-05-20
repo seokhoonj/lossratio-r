@@ -195,8 +195,8 @@ fit_cc <- function(x,
                               by = by_cols]
   loss_ult <- cl_fit$full[, .SD[.N, .(loss_ult_cl = loss_proj)],
                           by = by_cols]
-  q_grid <- loss_latest[loss_ult, on = by_cols]
-  q_grid[, q := data.table::fifelse(
+  dt <- loss_latest[loss_ult, on = by_cols]
+  dt[, q := data.table::fifelse(
     is.finite(loss_ult_cl) & loss_ult_cl > 0,
     loss_latest / loss_ult_cl,
     NA_real_
@@ -204,25 +204,25 @@ fit_cc <- function(x,
 
   exp_ult <- exposure_fit$full[, .SD[.N, .(exposure_ult = exposure_proj)],
                                 by = by_cols]
-  q_grid <- exp_ult[q_grid, on = by_cols]
+  dt <- exp_ult[dt, on = by_cols]
 
   # 3) Cape Cod pooled ELR within group -----------------------------------
   by_grp <- if (length(grp) == 0L) NULL else grp
-  elr_cc_table <- q_grid[, .(elr_cc = sum(loss_latest, na.rm = TRUE) /
+  elr_pool <- dt[, .(elr_cc = sum(loss_latest, na.rm = TRUE) /
                           sum(exposure_ult * q, na.rm = TRUE)),
                     by = by_grp]
   if (length(grp) == 0L) {
     # avoid empty-key join failure: append elr_cc column directly
-    q_grid[, elr_cc := elr_cc_table$elr_cc[1L]]
+    dt[, elr_cc := elr_pool$elr_cc[1L]]
   } else {
-    q_grid <- elr_cc_table[q_grid, on = grp]
+    dt <- elr_pool[dt, on = grp]
   }
 
   # 4) BF formula with pooled ELR -----------------------------------------
-  q_grid[, elr := elr_cc]
-  q_grid[, loss_ult_cc := loss_latest +
+  dt[, elr := elr_cc]
+  dt[, loss_ult_cc := loss_latest +
          (1 - q) * elr_cc * exposure_ult]
-  q_grid[, reserve := loss_ult_cc - loss_latest]
+  dt[, reserve := loss_ult_cc - loss_latest]
 
   # 5) cell-level full grid (BF cell pattern, see fit_bf). Base = CL$full
   #    plus exposure columns merged from ExposureFit$full.
@@ -234,7 +234,7 @@ fit_cc <- function(x,
   full <- exposure_fit$full[, c(by_cols, "dev", exp_cols), with = FALSE
                             ][full, on = c(by_cols, "dev")]
 
-  full <- q_grid[, c(by_cols, "loss_ult_cc", "q", "elr_cc",
+  full <- dt[, c(by_cols, "loss_ult_cc", "q", "elr_cc",
                    "exposure_ult", "loss_latest"),
                with = FALSE][full, on = by_cols]
 
@@ -273,10 +273,10 @@ fit_cc <- function(x,
   proj[is_observed == TRUE, (proj_cols) := NA_real_]
 
   # 7) cohort-level summary -----------------------------------------------
-  summary_table <- q_grid[, c(by_cols, "loss_latest", "loss_ult_cc",
+  summ <- dt[, c(by_cols, "loss_latest", "loss_ult_cc",
                           "reserve", "elr_cc", "q"),
                      with = FALSE]
-  data.table::setnames(summary_table,
+  data.table::setnames(summ,
                        c("loss_latest", "loss_ult_cc", "elr_cc"),
                        c("latest",      "loss_ult",    "elr"))
 
@@ -293,17 +293,17 @@ fit_cc <- function(x,
   if (!is.null(boots)) {
     cc_boot <- .bf_compose_bootstrap(
       boots         = boots,
-      prior_table      = NULL,
+      priors      = NULL,
       grp           = grp,
       by_cols       = by_cols,
       full          = full,
-      summary_table    = summary_table,
+      summ    = summ,
       conf_level    = conf_level,
-      cohorts_present = unique(q_grid[, .SD, .SDcols = by_cols]),
+      cohorts_present = unique(dt[, .SD, .SDcols = by_cols]),
       cape_cod      = TRUE
     )
     full       <- cc_boot$full
-    summary_table <- cc_boot$summary
+    summ <- cc_boot$summary
     proj       <- data.table::copy(full)
     proj_cols  <- intersect(
       c("loss_proj", "incr_loss_proj", "exposure_proj",
@@ -326,20 +326,20 @@ fit_cc <- function(x,
     ), by = by_grp]
 
     if (length(grp) == 0L) {
-      elr_cc_point <- elr_cc_table$elr_cc[1L]
-      summary_table[, ("elr_cc_se")    := elr_summary$elr_cc_se]
-      summary_table[, ("elr_cc_cv")    := data.table::fifelse(
+      elr_cc_point <- elr_pool$elr_cc[1L]
+      summ[, ("elr_cc_se")    := elr_summary$elr_cc_se]
+      summ[, ("elr_cc_cv")    := data.table::fifelse(
         is.finite(elr_cc_point) & elr_cc_point > 0,
         elr_summary$elr_cc_se / elr_cc_point, NA_real_)]
-      summary_table[, ("elr_cc_ci_lo") := elr_summary$elr_cc_ci_lo]
-      summary_table[, ("elr_cc_ci_hi") := elr_summary$elr_cc_ci_hi]
+      summ[, ("elr_cc_ci_lo") := elr_summary$elr_cc_ci_lo]
+      summ[, ("elr_cc_ci_hi") := elr_summary$elr_cc_ci_hi]
     } else {
-      elr_join <- merge(elr_summary, elr_cc_table,
+      elr_join <- merge(elr_summary, elr_pool,
                         by = grp, sort = FALSE)
       elr_join[, ("elr_cc_cv") := data.table::fifelse(
         is.finite(elr_cc) & elr_cc > 0,
         elr_cc_se / elr_cc, NA_real_)]
-      summary_table <- merge(summary_table,
+      summ <- merge(summ,
                           elr_join[, c(grp, "elr_cc_se", "elr_cc_cv",
                                        "elr_cc_ci_lo", "elr_cc_ci_hi"),
                                     with = FALSE],
@@ -363,9 +363,9 @@ fit_cc <- function(x,
     exposure     = exposure,
     full         = full,
     proj         = proj,
-    summary      = summary_table,
-    elr_cc       = elr_cc_table,
-    q            = q_grid[, c(by_cols, "q"), with = FALSE],
+    summary      = summ,
+    elr_cc       = elr_pool,
+    q            = dt[, c(by_cols, "q"), with = FALSE],
     cl_fit       = cl_fit,
     exposure_fit = exposure_fit,
     bootstrap    = bootstrap_obj,

@@ -960,7 +960,7 @@ plot.Total <- function(x,
                                 regime  = NULL,
                                 holdout = NULL,
                                 m_k     = NULL,
-                                m_k_grid  = NULL) {
+                                grp_m_k  = NULL) {
 
   .assert_class(x, "Triangle")
 
@@ -1080,15 +1080,15 @@ plot.Total <- function(x,
     expanded[, (".cd_join") := cd[expanded, on = join_cols, x.change_date]]
   }
 
-  # Per-group maturity: when `m_k_grid` is supplied (a `[grp..., m_k]`
+  # Per-group maturity: when `grp_m_k` is supplied (a `[grp..., m_k]`
   # data.table from the caller), broadcast it to a row-aligned column
   # so the SA hybrid threshold is per-group. NA rows (group not in
-  # m_k_grid) fall back to scalar `m_k` if provided, else NULL.
-  per_group_m_k <- !is.null(m_k_grid) && data.table::is.data.table(m_k_grid) &&
-                   nrow(m_k_grid) > 0L && "m_k" %in% names(m_k_grid)
+  # grp_m_k) fall back to scalar `m_k` if provided, else NULL.
+  per_group_m_k <- !is.null(grp_m_k) && data.table::is.data.table(grp_m_k) &&
+                   nrow(grp_m_k) > 0L && "m_k" %in% names(grp_m_k)
   if (per_group_m_k) {
-    m_k_join_cols <- setdiff(names(m_k_grid), "m_k")
-    expanded[, (".m_k_join") := m_k_grid[expanded, on = m_k_join_cols, x.m_k]]
+    m_k_join_cols <- setdiff(names(grp_m_k), "m_k")
+    expanded[, (".m_k_join") := grp_m_k[expanded, on = m_k_join_cols, x.m_k]]
     if (!is.null(m_k)) expanded[is.na(.m_k_join), (".m_k_join") := m_k]
   }
 
@@ -1169,7 +1169,7 @@ plot.Total <- function(x,
   #
   # dev_min(k) = max_cal_idx - last_cohort_rank_of_seg_k + 1
   #
-  # When `m_k` / `m_k_grid` is supplied (SA hybrid + maturity), the
+  # When `m_k` / `grp_m_k` is supplied (SA hybrid + maturity), the
   # mini-triangle cut applies only in the ED region (dev < m_k); the
   # CL region (dev >= m_k) is pooled across cohorts and stays `used`
   # regardless of segment. Without `m_k` the cut applies to all dev
@@ -1275,7 +1275,7 @@ plot.Total <- function(x,
   # explicitly opted out, so we skip detection and the segment_wise
   # mini-triangle stays pure (no CL pooling, no k* vline).
   m_k    <- NULL
-  m_k_grid <- NULL
+  grp_m_k <- NULL
   if (!is.null(regime) && !is.null(maturity)) {
     fit_for_mat <- tryCatch(
       fit_ata(x = triangle, loss = metric, maturity = maturity),
@@ -1291,10 +1291,10 @@ plot.Total <- function(x,
       # `maturity_at(cv_nm = "surgery", change = 4)` returns a 1-row dt
       # that should still mark *only* surgery, not every facet).
       if (length(grp) > 0L && all(grp %in% names(mat))) {
-        m_k_grid <- mat[, c(grp, "change"), with = FALSE]
-        data.table::setnames(m_k_grid, "change", "m_k")
-        m_k_grid <- m_k_grid[is.finite(m_k)]
-        if (!nrow(m_k_grid)) m_k_grid <- NULL
+        grp_m_k <- mat[, c(grp, "change"), with = FALSE]
+        data.table::setnames(grp_m_k, "change", "m_k")
+        grp_m_k <- grp_m_k[is.finite(m_k)]
+        if (!nrow(grp_m_k)) grp_m_k <- NULL
         m_k <- max(mat$change, na.rm = TRUE)
       } else {
         m_k <- max(mat$change, na.rm = TRUE)
@@ -1308,7 +1308,7 @@ plot.Total <- function(x,
     regime  = regime,
     holdout = holdout,
     m_k     = m_k,
-    m_k_grid  = m_k_grid
+    grp_m_k  = grp_m_k
   )
 
   # Carry plot-rendering metadata on attributes so
@@ -1318,7 +1318,7 @@ plot.Total <- function(x,
   data.table::setattr(out, "recent",  recent)
   data.table::setattr(out, "holdout", holdout)
   data.table::setattr(out, "m_k",     m_k)
-  data.table::setattr(out, "m_k_grid",  m_k_grid)
+  data.table::setattr(out, "m_k",  grp_m_k)
   out
 }
 
@@ -1366,7 +1366,7 @@ plot.Total <- function(x,
   # Pull plot-rendering metadata off the usage object's attributes.
   regime <- attr(usage, "regime",  exact = TRUE)
   m_k    <- attr(usage, "m_k",     exact = TRUE)
-  m_k_grid <- attr(usage, "m_k_grid",  exact = TRUE)
+  grp_m_k <- attr(usage, "m_k",  exact = TRUE)
 
   is_segment_wise <- inherits(regime, "Regime") &&
                      identical(regime$treatment, "segment_wise")
@@ -1409,11 +1409,11 @@ plot.Total <- function(x,
   # so the boundary visually separates ED region (dev < m_k) on the
   # left from CL region (dev >= m_k) on the right.
   #
-  # `m_k_grid` (when present) is a `[grp..., m_k]` data.table -- each facet
+  # `grp_m_k` (when present) is a `[grp..., m_k]` data.table -- each facet
   # draws its own k* boundary. Falls back to scalar `m_k` for single
   # group / pooled. Mirrors the regime-change hline dispatch below.
-  if (!is.null(m_k_grid)) {
-    vline_df <- data.table::copy(m_k_grid)
+  if (!is.null(grp_m_k)) {
+    vline_df <- data.table::copy(grp_m_k)
     vline_df[, (".xint") := m_k - 0.5]
     p <- p + ggplot2::geom_vline(
       data       = vline_df,
@@ -1549,9 +1549,9 @@ plot.Total <- function(x,
     "Data usage (full)"
   }
 
-  subtitle_txt <- if (!is.null(m_k_grid)) {
+  subtitle_txt <- if (!is.null(grp_m_k)) {
     sprintf("hybrid mode: maturity k* per group (range %g-%g)",
-            min(m_k_grid$m_k), max(m_k_grid$m_k))
+            min(grp_m_k$m_k), max(grp_m_k$m_k))
   } else if (!is.null(m_k)) {
     sprintf("hybrid mode: maturity k* = %g", m_k)
   } else {

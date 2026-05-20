@@ -188,7 +188,7 @@ fit_exposure <- function(x,
   data.table::setattr(exposure_usage, "recent",  recent)
   data.table::setattr(exposure_usage, "holdout", NULL)
   data.table::setattr(exposure_usage, "m_k",     NULL)
-  data.table::setattr(exposure_usage, "m_k_grid",  NULL)
+  data.table::setattr(exposure_usage, "m_k",  NULL)
   result$usage <- exposure_usage
 
   result$regime                   <- regime
