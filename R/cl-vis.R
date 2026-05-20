@@ -334,10 +334,9 @@ plot.CLFit <- function(x,
 #'   }
 #' @param label_style One of `"value"` (default), `"cv"`, `"se"`, or
 #'   `"ci"`.
-#' @param label_size Numeric label text size forwarded to
-#'   [ggshort::ggtable()]. Defaults to `3` for `label_style = "value"`,
-#'   `"cv"`, or `"se"` and `2.5` for `label_style = "ci"` (two-line
-#'   labels).
+#' @param label_size Numeric size of the in-cell text label. Defaults
+#'   to `3` for `label_style = "value"`, `"cv"`, or `"se"` and `2.5`
+#'   for `label_style = "ci"` (two-line labels).
 #' @param conf_level Confidence level used when `label_style = "ci"`.
 #'   Default is `0.95`.
 #' @param amount_divisor Numeric scaling factor for amount variables.
@@ -564,14 +563,16 @@ plot_triangle.CLFit <- function(x,
 
   # 6) base plot --------------------------------------------------------
   label_args <- .modify_label_args(list(size = label_size))
-  p <- ggshort::ggtable(
+  p <- .cell_grid(
     data       = dt,
-    x          = .data[["dev"]],
-    y          = .data$.y,
-    label      = .data$label,
+    x          = "dev",
+    y          = ".y",
+    label      = "label",
+    fill       = ".value",
+    fill_scale = "threshold",
+    fill_args  = fill_args,
     label_args = label_args,
-    fill       = .data$.value,
-    fill_args  = fill_args
+    border     = "panel"
   )
 
   # 7) facet

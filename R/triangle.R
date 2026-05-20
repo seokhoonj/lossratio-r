@@ -471,9 +471,8 @@ plot_triangle.TriangleValidation <- function(x,
                             .y_pos = ys)
 
     # Convert calendar to factor so tiles get uniform unit width
-    # (matches `ggshort::ggheatmap`/`ggtable` behaviour). Date axis
-    # would otherwise leak thin white gaps from 28/30/31-day month
-    # lengths.
+    # (matches the cell-grid behaviour). Date axis would otherwise
+    # leak thin white gaps from 28/30/31-day month lengths.
     cal_levels <- sort(unique(grid$.axis))
     grid[, (".cal_lab") := factor(fmt_coh(.axis), levels = fmt_coh(cal_levels))]
     cal_pos <- match(format(asc_coh), format(cal_levels))

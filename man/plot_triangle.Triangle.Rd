@@ -42,11 +42,11 @@ next line, the associated loss / exposure amounts. For amount and
 proportion metrics, this falls back to \code{"value"}.}
 }}
 
-\item{label_size}{Numeric label text size forwarded to
-\code{\link[ggshort:ggtable]{ggshort::ggtable()}}. Defaults to \code{3} for \code{label_style = "value"}
-and \code{2.5} for \code{label_style = "detail"} (two-line labels need a
-smaller size to fit). Other label appearance fields (family,
-color, hjust, ...) fall back to ggshort defaults.}
+\item{label_size}{Numeric size of the in-cell text label. Defaults
+to \code{3} for \code{label_style = "value"} and \code{2.5} for
+\code{label_style = "detail"} (two-line labels need a smaller size to
+fit). Other label appearance fields (family, color, hjust, ...)
+fall back to the standard label defaults.}
 
 \item{amount_divisor}{Numeric scaling factor applied to amount variables
 (e.g., \code{loss}, \code{incr_loss}, \code{exposure}, \code{incr_exposure}, \code{margin}, \code{incr_margin}) before plotting.

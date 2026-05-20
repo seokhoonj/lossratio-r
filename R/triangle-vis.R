@@ -531,11 +531,11 @@ plot_triangle <- function(x, ...) {
 #'       next line, the associated loss / exposure amounts. For amount and
 #'       proportion metrics, this falls back to `"value"`.}
 #'   }
-#' @param label_size Numeric label text size forwarded to
-#'   [ggshort::ggtable()]. Defaults to `3` for `label_style = "value"`
-#'   and `2.5` for `label_style = "detail"` (two-line labels need a
-#'   smaller size to fit). Other label appearance fields (family,
-#'   color, hjust, ...) fall back to ggshort defaults.
+#' @param label_size Numeric size of the in-cell text label. Defaults
+#'   to `3` for `label_style = "value"` and `2.5` for
+#'   `label_style = "detail"` (two-line labels need a smaller size to
+#'   fit). Other label appearance fields (family, color, hjust, ...)
+#'   fall back to the standard label defaults.
 #' @param amount_divisor Numeric scaling factor applied to amount variables
 #'   (e.g., `loss`, `incr_loss`, `exposure`, `incr_exposure`, `margin`, `incr_margin`) before plotting.
 #'   Default `"auto"` picks the largest divisor in
@@ -706,14 +706,16 @@ plot_triangle.Triangle <- function(x,
       "Unit: %"
     }
 
-    p <- ggshort::ggtable(
+    p <- .cell_grid(
       data       = dt,
-      x          = .data[[".x"]],
-      y          = .data[[".y"]],
-      label      = .data[["label"]],
+      x          = ".x",
+      y          = ".y",
+      label      = "label",
+      fill       = fill_col,
+      fill_scale = "threshold",
+      fill_args  = list(threshold = 1),
       label_args = label_args,
-      fill       = .data[[fill_col]],
-      fill_args  = list(threshold = 1)
+      border     = "panel"
     )
 
   } else if (metric %in% amount_vars) {
@@ -732,14 +734,16 @@ plot_triangle.Triangle <- function(x,
 
     caption_txt <- sprintf("Unit: %s", .get_amount_unit(amount_divisor))
 
-    p <- ggshort::ggtable(
+    p <- .cell_grid(
       data       = dt,
-      x          = .data[[".x"]],
-      y          = .data[[".y"]],
-      label      = .data[["label"]],
+      x          = ".x",
+      y          = ".y",
+      label      = "label",
+      fill       = metric,
+      fill_scale = "threshold",
+      fill_args  = list(when = "<", threshold = 0),
       label_args = label_args,
-      fill       = .data[[metric]],
-      fill_args  = list(when = "<", threshold = 0)
+      border     = "panel"
     )
 
   } else if (metric %in% prop_vars) {
@@ -756,14 +760,16 @@ plot_triangle.Triangle <- function(x,
 
     caption_txt <- "Unit: %"
 
-    p <- ggshort::ggtable(
+    p <- .cell_grid(
       data       = dt,
-      x          = .data[[".x"]],
-      y          = .data[[".y"]],
-      label      = .data[["label"]],
+      x          = ".x",
+      y          = ".y",
+      label      = "label",
+      fill       = metric,
+      fill_scale = "threshold",
+      fill_args  = list(threshold = 0.05),
       label_args = label_args,
-      fill       = .data[[metric]],
-      fill_args  = list(threshold = 0.05)
+      border     = "panel"
     )
   }
 

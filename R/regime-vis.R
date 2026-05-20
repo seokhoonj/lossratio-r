@@ -28,7 +28,7 @@
 #' @param palette Brewer palette name for discrete regimes. Default
 #'   `"Set1"`.
 #' @param theme Theme string passed to [.switch_theme()].
-#' @param ... Additional arguments passed to [ggshort::plot_pca()].
+#' @param ... Additional arguments passed to [.switch_theme()].
 #'
 #' @return A `ggplot` object (single-group), or a named list of `ggplot`
 #'   objects (multi-group; one entry per group).
@@ -70,8 +70,6 @@ plot.Regime <- function(x,
   df  <- as.data.frame(mat)
   df$regime <- x$labels$regime
 
-  measure_vars <- setdiff(names(df), "regime")
-
   ve <- (x$pca$sdev ^ 2) / sum(x$pca$sdev ^ 2)
   subtitle <- sprintf(
     "method: %s | window: %s 1, ..., %d | %d cohorts | PC1 %.1f%% / PC2 %.1f%%",
@@ -86,10 +84,8 @@ plot.Regime <- function(x,
     "no change point detected"
   }
 
-  ggshort::plot_pca(
+  .regime_pca_plot(
     data         = df,
-    measure_vars = !!measure_vars,
-    color_var    = regime,
     show_arrow   = show_arrow,
     show_label   = show_label,
     show_ellipse = show_ellipse,
@@ -108,7 +104,7 @@ plot.Regime <- function(x,
 
 #' Multi-group plot helper for `Regime`
 #'
-#' Builds one PCA panel per group via [ggshort::plot_pca()] and returns
+#' Builds one PCA panel per group via [.regime_pca_plot()] and returns
 #' a named list of `ggplot` objects keyed by group value.
 #'
 #' @keywords internal
@@ -128,7 +124,6 @@ plot.Regime <- function(x,
                           .coerce_match(gv, x$labels[[grp]])]
     df$regime <- lab_sub$regime
 
-    measure_vars <- setdiff(names(df), "regime")
     ve <- (pca$sdev ^ 2) / sum(pca$sdev ^ 2)
     subtitle <- sprintf(
       "%s | %d cohorts | PC1 %.1f%% / PC2 %.1f%%",
@@ -144,10 +139,8 @@ plot.Regime <- function(x,
       "no change point detected"
     }
 
-    ggshort::plot_pca(
+    .regime_pca_plot(
       data         = df,
-      measure_vars = !!measure_vars,
-      color_var    = regime,
       show_arrow   = show_arrow,
       show_label   = show_label,
       show_ellipse = show_ellipse,

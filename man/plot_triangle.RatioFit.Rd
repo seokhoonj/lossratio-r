@@ -50,9 +50,9 @@ ignored.}
 \item{label_style}{One of \code{"value"} (ratio only) or \code{"detail"}
 (ratio with loss/exposure amounts). Default is \code{"value"}.}
 
-\item{label_size}{Numeric label text size forwarded to
-\code{\link[ggshort:ggtable]{ggshort::ggtable()}}. Defaults to \code{3} for \code{label_style = "value"}
-and \code{2.5} for \code{label_style = "detail"} (two-line labels).}
+\item{label_size}{Numeric size of the in-cell text label. Defaults
+to \code{3} for \code{label_style = "value"} and \code{2.5} for
+\code{label_style = "detail"} (two-line labels).}
 
 \item{show_maturity}{Logical; if \code{TRUE}, show maturity line.
 Default is \code{TRUE}.}

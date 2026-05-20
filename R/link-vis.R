@@ -232,7 +232,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
       label.size  = 0.3,
       fill        = "white",
       alpha       = 0.8,
-      family      = getOption("ggshort.font"),
+      family      = getOption("lossratio.font", ""),
       inherit.aes = FALSE
     )
   }
@@ -716,22 +716,24 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   label_args <- .modify_label_args(list(size = label_size))
 
   # 8) base heatmap -----------------------------------------------------
-  p <- ggshort::ggheatmap(
-    data       = dt,
-    x          = ata_link,
-    y          = .y,
-    label      = label,
-    label_args = label_args,
-    fill       = .ata_fill,
-    fill_args  = list(
-      low       = "#D9ECFF",
-      mid       = "white",
-      high      = "#F8D7DA",
-      midpoint  = 0,
-      color     = "black",
-      linewidth = 0.3,
-      guide     = "none"
-    )
+  p <- .cell_grid(
+    data         = dt,
+    x            = "ata_link",
+    y            = ".y",
+    label        = "label",
+    fill         = ".ata_fill",
+    fill_scale   = "gradient",
+    fill_args    = list(
+      low      = "#D9ECFF",
+      mid      = "white",
+      high     = "#F8D7DA",
+      midpoint = 0,
+      guide    = "none"
+    ),
+    label_args   = label_args,
+    border       = "tile",
+    border_color = "black",
+    border_width = 0.3
   )
 
   # 9) maturity vline and label -----------------------------------------
@@ -864,22 +866,24 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   label_args <- .modify_label_args(list(size = label_size))
 
   # 6) base heatmap
-  p <- ggshort::ggheatmap(
-    data       = dt,
-    x          = ata_link,
-    y          = .y,
-    label      = label,
-    label_args = label_args,
-    fill       = .intensity_fill,
-    fill_args  = list(
-      low       = "#D9ECFF",
-      mid       = "white",
-      high      = "#F8D7DA",
-      midpoint  = 0,
-      color     = "black",
-      linewidth = 0.3,
-      guide     = "none"
-    )
+  p <- .cell_grid(
+    data         = dt,
+    x            = "ata_link",
+    y            = ".y",
+    label        = "label",
+    fill         = ".intensity_fill",
+    fill_scale   = "gradient",
+    fill_args    = list(
+      low      = "#D9ECFF",
+      mid      = "white",
+      high     = "#F8D7DA",
+      midpoint = 0,
+      guide    = "none"
+    ),
+    label_args   = label_args,
+    border       = "tile",
+    border_color = "black",
+    border_width = 0.3
   )
 
   # 7) facet

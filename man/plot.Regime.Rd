@@ -38,7 +38,7 @@ point. Defaults \code{TRUE}.}
 
 \item{theme}{Theme string passed to \code{\link[=.switch_theme]{.switch_theme()}}.}
 
-\item{...}{Additional arguments passed to \code{\link[ggshort:plot_pca]{ggshort::plot_pca()}}.}
+\item{...}{Additional arguments passed to \code{\link[=.switch_theme]{.switch_theme()}}.}
 }
 \value{
 A \code{ggplot} object (single-group), or a named list of \code{ggplot}

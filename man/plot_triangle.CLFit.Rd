@@ -39,10 +39,9 @@ hybrid overlays do not apply.}
 \item{label_style}{One of \code{"value"} (default), \code{"cv"}, \code{"se"}, or
 \code{"ci"}.}
 
-\item{label_size}{Numeric label text size forwarded to
-\code{\link[ggshort:ggtable]{ggshort::ggtable()}}. Defaults to \code{3} for \code{label_style = "value"},
-\code{"cv"}, or \code{"se"} and \code{2.5} for \code{label_style = "ci"} (two-line
-labels).}
+\item{label_size}{Numeric size of the in-cell text label. Defaults
+to \code{3} for \code{label_style = "value"}, \code{"cv"}, or \code{"se"} and \code{2.5}
+for \code{label_style = "ci"} (two-line labels).}
 
 \item{conf_level}{Confidence level used when \code{label_style = "ci"}.
 Default is \code{0.95}.}

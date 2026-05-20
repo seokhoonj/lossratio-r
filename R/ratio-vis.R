@@ -343,9 +343,9 @@ plot.RatioFit <- function(x,
 #'   }
 #' @param label_style One of `"value"` (ratio only) or `"detail"`
 #'   (ratio with loss/exposure amounts). Default is `"value"`.
-#' @param label_size Numeric label text size forwarded to
-#'   [ggshort::ggtable()]. Defaults to `3` for `label_style = "value"`
-#'   and `2.5` for `label_style = "detail"` (two-line labels).
+#' @param label_size Numeric size of the in-cell text label. Defaults
+#'   to `3` for `label_style = "value"` and `2.5` for
+#'   `label_style = "detail"` (two-line labels).
 #' @param show_maturity Logical; if `TRUE`, show maturity line.
 #'   Default is `TRUE`.
 #' @param digits Number of decimal places for ratio display.
@@ -525,23 +525,25 @@ plot_triangle.RatioFit <- function(x,
   plot_data[, (".y") := factor(.y, levels = y_levels)]
 
   # 8) base heatmap
-  p <- ggshort::ggheatmap(
-    data       = plot_data,
-    x          = ata_link,
-    y          = .y,
-    label      = label,
-    label_args = label_args,
-    fill       = .fill,
-    fill_args  = list(
-      low       = "#D9ECFF",
-      mid       = "white",
-      high      = "#F8D7DA",
-      midpoint  = 0,
-      color     = "black",
-      linewidth = 0.3,
-      guide     = "none",
-      na.value  = "grey95"
-    )
+  p <- .cell_grid(
+    data         = plot_data,
+    x            = "ata_link",
+    y            = ".y",
+    label        = "label",
+    fill         = ".fill",
+    fill_scale   = "gradient",
+    fill_args    = list(
+      low      = "#D9ECFF",
+      mid      = "white",
+      high     = "#F8D7DA",
+      midpoint = 0,
+      na       = "grey95",
+      guide    = "none"
+    ),
+    label_args   = label_args,
+    border       = "tile",
+    border_color = "black",
+    border_width = 0.3
   )
 
   # 9) projected cell overlay (dashed border)

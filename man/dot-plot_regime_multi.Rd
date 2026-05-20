@@ -18,7 +18,7 @@
 )
 }
 \description{
-Builds one PCA panel per group via \code{\link[ggshort:plot_pca]{ggshort::plot_pca()}} and returns
+Builds one PCA panel per group via \code{\link[=.regime_pca_plot]{.regime_pca_plot()}} and returns
 a named list of \code{ggplot} objects keyed by group value.
 }
 \keyword{internal}

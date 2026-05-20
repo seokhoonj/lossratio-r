@@ -118,10 +118,6 @@ pak::pak("seokhoonj/lossratio")
 remotes::install_github("seokhoonj/lossratio")
 ```
 
-The package currently depends on seokhoonj/instead and seokhoonj/ggshort
-(installed automatically via Remotes:; planned for removal in a
-future release).
-
 ## Quick Start
 
 ``` r
