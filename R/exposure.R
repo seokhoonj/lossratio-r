@@ -219,6 +219,10 @@ fit_exposure <- function(x,
     result$full <- .apply_ed_variance(result$full, result$selected, x)
   }
   result$full <- .exposure_rename_full(result$full, groups, conf_level)
+  # `$proj` mirrors `$full`'s schema (observed cells NA-masked); apply the
+  # same loss_* -> exposure_* rename so both slots are consistent.
+  if (!is.null(result$proj))
+    result$proj <- .exposure_rename_full(result$proj, groups, conf_level)
   result
 }
 

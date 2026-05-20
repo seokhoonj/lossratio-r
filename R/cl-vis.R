@@ -450,11 +450,11 @@ plot_triangle.CLFit <- function(x,
                                  ncol           = NULL,
                                  ...) {
 
-  .assert_class(x, "CLFit")
+  .assert_class(x, c("CLFit", "SAFit", "BFFit", "CCFit", "ExposureFit"))
 
   # Suppress R CMD check NOTEs for `data.table` temp columns referenced
   # bare inside `j` expressions later in this function.
-  .value <- NULL
+  .value <- .cv <- .se <- is_observed <- NULL
 
   region      <- match.arg(region)
   view        <- match.arg(view)
@@ -477,12 +477,12 @@ plot_triangle.CLFit <- function(x,
     ))
   }
 
-  is_mack <- identical(x$method, "mack")
-
-  if (label_style != "value" && !is_mack)
+  # cv / se / ci labels need per-cell standard errors on the fit.
+  if (label_style != "value" &&
+      !paste0(x$loss, "_total_se") %in% names(x$full))
     stop(
       "`label_style = \"", label_style,
-      "\"` requires `method = \"mack\"`.",
+      "\"` requires per-cell standard errors on the fit.",
       call. = FALSE
     )
 
@@ -536,9 +536,9 @@ plot_triangle.CLFit <- function(x,
   )
 
   if (region == "data") {
-    dt[, (".value") := .SD[[metric]], .SDcols = metric]
+    dt[, (".value") := .SD[[1L]], .SDcols = metric]
   } else {
-    dt[, (".value") := loss_proj]
+    dt[, (".value") := .SD[[1L]], .SDcols = paste0(metric, "_proj")]
   }
 
   if (identical(amount_divisor, "auto"))
@@ -575,33 +575,39 @@ plot_triangle.CLFit <- function(x,
   } else {
     dt[, ("label") := ""]
 
+    # Alias the metric's per-cell SE / CV to fixed names so the label
+    # expressions stay role-agnostic (loss_* for CL/SA/BF/CC,
+    # exposure_* for an ExposureFit).
+    dt[, (".se") := .SD[[1L]], .SDcols = paste0(metric, "_total_se")]
+    dt[, (".cv") := .SD[[1L]], .SDcols = paste0(metric, "_total_cv")]
+
     if (label_style == "cv") {
-      dt[is_observed == FALSE & is.finite(loss_total_cv),
-         ("label") := sprintf("%.0f", loss_total_cv * 100)]
+      dt[is_observed == FALSE & is.finite(.cv),
+         ("label") := sprintf("%.0f", .cv * 100)]
 
     } else if (label_style == "se") {
       if (is_ratio) {
-        dt[is_observed == FALSE & is.finite(loss_total_se),
-           ("label") := sprintf("%.3f", loss_total_se)]
+        dt[is_observed == FALSE & is.finite(.se),
+           ("label") := sprintf("%.3f", .se)]
       } else {
-        dt[is_observed == FALSE & is.finite(loss_total_se),
-           ("label") := sprintf("%.1f", loss_total_se / amount_divisor)]
+        dt[is_observed == FALSE & is.finite(.se),
+           ("label") := sprintf("%.1f", .se / amount_divisor)]
       }
 
     } else if (label_style == "ci") {
       if (is_ratio) {
-        dt[is_observed == FALSE & is.finite(loss_total_se),
+        dt[is_observed == FALSE & is.finite(.se),
            ("label") := sprintf(
              "[%.0f, %.0f]",
-             pmax(0, .value - z_alpha * loss_total_se) * 100,
-             (.value + z_alpha * loss_total_se) * 100
+             pmax(0, .value - z_alpha * .se) * 100,
+             (.value + z_alpha * .se) * 100
            )]
       } else {
-        dt[is_observed == FALSE & is.finite(loss_total_se),
+        dt[is_observed == FALSE & is.finite(.se),
            ("label") := sprintf(
              "[%.1f, %.1f]",
-             pmax(0, .value - z_alpha * loss_total_se) / amount_divisor,
-             (.value + z_alpha * loss_total_se) / amount_divisor
+             pmax(0, .value - z_alpha * .se) / amount_divisor,
+             (.value + z_alpha * .se) / amount_divisor
            )]
       }
     }
@@ -682,4 +688,86 @@ plot_triangle.CLFit <- function(x,
 
   # 9) theme
   p + .switch_theme(theme = theme, ...)
+}
+
+
+#' Plot a stage-adaptive fit as a triangle table
+#'
+#' @description
+#' Triangle-style heatmap for a `"SAFit"`. Delegates to the
+#' role-agnostic implementation shared with [plot_triangle.CLFit()].
+#'
+#' @param x An object of class `"SAFit"`.
+#' @param ... Forwarded to the shared implementation -- `region`,
+#'   `view`, `label_style`, `label_size`, `conf_level`,
+#'   `amount_divisor`, `theme`, `nrow`, `ncol`.
+#'
+#' @return A `ggplot` object.
+#'
+#' @method plot_triangle SAFit
+#' @export
+plot_triangle.SAFit <- function(x, ...) {
+  .assert_class(x, "SAFit")
+  plot_triangle.CLFit(x, ...)
+}
+
+
+#' Plot a Bornhuetter-Ferguson fit as a triangle table
+#'
+#' @description
+#' Triangle-style heatmap for a `"BFFit"`. Delegates to the
+#' role-agnostic implementation shared with [plot_triangle.CLFit()].
+#'
+#' @param x An object of class `"BFFit"`.
+#' @param ... Forwarded to the shared implementation -- see
+#'   [plot_triangle.SAFit()].
+#'
+#' @return A `ggplot` object.
+#'
+#' @method plot_triangle BFFit
+#' @export
+plot_triangle.BFFit <- function(x, ...) {
+  .assert_class(x, "BFFit")
+  plot_triangle.CLFit(x, ...)
+}
+
+
+#' Plot a Cape Cod fit as a triangle table
+#'
+#' @description
+#' Triangle-style heatmap for a `"CCFit"`. Delegates to the
+#' role-agnostic implementation shared with [plot_triangle.CLFit()].
+#'
+#' @param x An object of class `"CCFit"`.
+#' @param ... Forwarded to the shared implementation -- see
+#'   [plot_triangle.SAFit()].
+#'
+#' @return A `ggplot` object.
+#'
+#' @method plot_triangle CCFit
+#' @export
+plot_triangle.CCFit <- function(x, ...) {
+  .assert_class(x, "CCFit")
+  plot_triangle.CLFit(x, ...)
+}
+
+
+#' Plot an exposure fit as a triangle table
+#'
+#' @description
+#' Triangle-style heatmap for an `"ExposureFit"`. Delegates to the
+#' role-agnostic implementation shared with [plot_triangle.CLFit()];
+#' the cell metric is the exposure projection.
+#'
+#' @param x An object of class `"ExposureFit"`.
+#' @param ... Forwarded to the shared implementation -- see
+#'   [plot_triangle.SAFit()].
+#'
+#' @return A `ggplot` object.
+#'
+#' @method plot_triangle ExposureFit
+#' @export
+plot_triangle.ExposureFit <- function(x, ...) {
+  .assert_class(x, "ExposureFit")
+  plot_triangle.CLFit(x, ...)
 }
