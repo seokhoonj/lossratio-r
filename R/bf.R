@@ -93,6 +93,21 @@
 #'   loss and exposure fits. See [fit_cl()] for the four-type dispatch.
 #' @param maturity Optional maturity specification forwarded to the inner
 #'   loss fit. See [fit_cl()] for the four-type dispatch.
+#' @param credibility Optional credibility specification. `NULL`
+#'   (default) gives the classical BF blend with weight equal to the
+#'   emergence fraction `q`. A list `list(method = "bs", K = NULL)`
+#'   switches to a Buehlmann-Straub credibility blend
+#'   `ult = Z * CL + (1 - Z) * prior`, where `Z = K / (K + s^2)`,
+#'   `s^2` is the variance of the cohort's own CL loss-ratio estimate,
+#'   and `K` is the variance of the hypothetical means (the genuine
+#'   between-cohort spread). `K` is estimated per group when `NULL`, or
+#'   supplied as a non-negative numeric scalar. The credibility weight
+#'   protects rare-event cohorts: a green cohort with a CL estimate
+#'   built on almost no data has a large `s^2`, so `Z` shrinks toward 0
+#'   and the cohort is pulled to the prior even when its `q` is high.
+#'   A credibility blend always uses the analytical SE path (the SE is
+#'   approximate -- the credibility factor is treated as a fixed
+#'   plug-in).
 #' @param conf_level Confidence level for the bootstrap quantile CI on
 #'   `loss_ult`. Default `0.95`.
 #' @param ... Reserved for future extension (currently unused).
@@ -122,6 +137,10 @@
 #'     \item{`prior`}{Resolved `data.table(group..., cohort, elr)`.}
 #'     \item{`q`}{`data.table(group..., cohort, q)` of expected
 #'       emerged fractions.}
+#'     \item{`credibility`}{`NULL` for the classical blend, or a list
+#'       `list(method, weights)` where `weights` is a `data.table`
+#'       `[group..., cohort, Z, K]` of the Buehlmann-Straub credibility
+#'       factors used in place of `q`.}
 #'     \item{`cl_fit`}{The inner `CLFit` used to derive \eqn{q_i}.}
 #'     \item{`exposure_fit`}{The inner `ExposureFit` used to derive
 #'       \eqn{E_i^{ult}}.}
@@ -190,14 +209,17 @@ fit_bf <- function(x,
                    recent       = NULL,
                    regime       = NULL,
                    maturity     = NULL,
+                   credibility  = NULL,
                    conf_level   = 0.95,
                    ...) {
 
   # data.table NSE bindings
   cohort <- elr <- loss_obs <- loss_proj <- exposure_proj <- NULL
   is_observed <- q <- NULL
-  loss_proc_se <- loss_param_se <- exposure_total_se <- NULL
-  elr_se <- var_elr <- var_eult <- NULL
+  loss_proc_se <- loss_param_se <- loss_total_se <- NULL
+  exposure_total_se <- elr_se <- var_elr <- var_eult <- NULL
+  loss_ult_cl <- exposure_ult <- lr <- s2 <- NULL
+  Z <- loss_ult_bf <- NULL
 
   .assert_triangle_input(x, "fit_bf()")
   if (missing(prior))
@@ -208,6 +230,7 @@ fit_bf <- function(x,
   residual     <- match.arg(residual)
   process      <- match.arg(process)
   sigma_method <- match.arg(sigma_method)
+  credibility  <- .resolve_credibility(credibility)
 
   if (!is.numeric(alpha) || length(alpha) != 1L ||
       is.na(alpha) || !is.finite(alpha))
@@ -270,9 +293,10 @@ fit_bf <- function(x,
   dt <- exp_ult[dt, on = by_cols]
 
   # per-cohort ultimate-cell SEs for the analytical MSEP path:
-  # CL process / parameter SE on loss, total SE on exposure.
+  # CL process / parameter / total SE on loss, total SE on exposure.
   loss_se <- loss_grid[, .SD[.N, .(loss_proc_se  = loss_proc_se,
-                                   loss_param_se = loss_param_se)],
+                                   loss_param_se = loss_param_se,
+                                   loss_total_se = loss_total_se)],
                        by = by_cols]
   exp_se  <- exp_grid[, .SD[.N, .(exposure_total_se = exposure_total_se)],
                       by = by_cols]
@@ -281,9 +305,32 @@ fit_bf <- function(x,
   priors <- .resolve_bf_prior(prior, dt, by_cols)
 
   # 5) BF formula ---------------------------------------------------------
+  # Classical BF blends with the emergence fraction q:
+  #   ult = q * CL + (1 - q) * prior  =  L_obs + (1 - q) * ELR * E_ult.
+  # With a credibility spec the blend weight q is replaced by the
+  # Buehlmann-Straub credibility factor Z (see `.credibility_bs()`).
   agg <- priors[dt, on = by_cols]
-  agg[, loss_ult_bf := loss_latest +
-        (1 - q) * elr * exposure_ult]
+
+  if (is.null(credibility)) {
+    cred_tbl <- NULL
+    agg[, loss_ult_bf := loss_latest + (1 - q) * elr * exposure_ult]
+  } else {
+    # per-cohort credibility weight Z: s2 = Var(CL loss ratio), large
+    # for green / rare-event cohorts -> Z -> 0 -> pulled to the prior.
+    cred_in <- merge(agg, loss_se, by = by_cols, sort = FALSE)
+    cred_in[, ("lr") := data.table::fifelse(
+        is.finite(exposure_ult) & exposure_ult > 0,
+        loss_ult_cl / exposure_ult, NA_real_)]
+    cred_in[, ("s2") := data.table::fifelse(
+        is.finite(exposure_ult) & exposure_ult > 0,
+        loss_total_se^2 / exposure_ult^2, NA_real_)]
+    cred_tbl <- .credibility_bs(cred_in, groups = grp, K = credibility$K)
+    agg <- merge(agg, cred_tbl[, c(by_cols, "Z", "K"), with = FALSE],
+                 by = by_cols, sort = FALSE)
+    # credibility blend: ult = Z * CL + (1 - Z) * prior.
+    agg[, loss_ult_bf := Z * loss_ult_cl +
+          (1 - Z) * elr * exposure_ult]
+  }
   agg[, reserve := loss_ult_bf - loss_latest]
 
   # 6) cell-level full grid (project BF ultimate proportionally to CL
@@ -352,8 +399,12 @@ fit_bf <- function(x,
 
   # 9) prediction error: bootstrap composition or analytical MSEP --------
   # `type = "analytical"` forces the closed-form path; the bootstrap
-  # types route through `.resolve_bootstrap_bf()`.
-  boots <- if (identical(type, "analytical")) NULL else
+  # types route through `.resolve_bootstrap_bf()`. A credibility blend
+  # also routes through the analytical path -- the bootstrap composition
+  # is defined for the classical (q-weighted) BF only.
+  boots <- if (identical(type, "analytical") || !is.null(credibility))
+    NULL
+  else
     .resolve_bootstrap_bf(
       bootstrap, x,
       B        = B,
@@ -393,6 +444,10 @@ fit_bf <- function(x,
                                           elr_se^2, 0)]
     ana[, var_eult := data.table::fifelse(is.finite(exposure_total_se),
                                           exposure_total_se^2, 0)]
+    # under a credibility blend the effective weight is Z, not q; the
+    # MSEP then uses Z (approximate -- treats the credibility factor as
+    # a fixed plug-in).
+    if (!is.null(credibility)) ana[, ("q") := Z]
     data.table::setnames(ana, "loss_ult_bf", "loss_ult")
     se_tbl <- .bf_analytical_se(ana, by_cols, conf_level)
     summ   <- merge(summ, se_tbl, by = by_cols, sort = FALSE)
@@ -415,6 +470,9 @@ fit_bf <- function(x,
     summary      = summ,
     prior        = priors,
     q            = dt[, c(by_cols, "q"), with = FALSE],
+    credibility  = if (is.null(credibility)) NULL else
+      list(method = "bs",
+           weights = cred_tbl[, c(by_cols, "Z", "K"), with = FALSE]),
     cl_fit       = cl_fit,
     exposure_fit = exposure_fit,
     bootstrap    = bootstrap_obj,
@@ -676,6 +734,105 @@ summary.BFFit <- function(object, ...) {
   stop("`bootstrap` must be NULL, TRUE/FALSE, \"auto\", a named list ",
        "`list(loss, exposure)` of `BootstrapTriangle` objects, or a ",
        "function returning one.", call. = FALSE)
+}
+
+
+#' Resolve the `credibility` argument for `fit_bf()` / `fit_cc()`
+#'
+#' @description
+#' Validate and normalise the `credibility` argument into a spec list
+#' or `NULL` (classical BF / CC, weight = emergence fraction `q`).
+#'
+#' @param credibility `NULL` or a list `list(method = "bs", K = ...)`.
+#'
+#' @return `NULL` or `list(method = "bs", K = <NULL or numeric>)`.
+#'
+#' @keywords internal
+.resolve_credibility <- function(credibility) {
+  if (is.null(credibility)) return(NULL)
+  if (!is.list(credibility))
+    stop("`credibility` must be NULL or a list, e.g. ",
+         "list(method = \"bs\", K = NULL).", call. = FALSE)
+  method <- credibility$method
+  if (is.null(method) || !identical(method, "bs"))
+    stop("`credibility$method` must be \"bs\" (Buhlmann-Straub). ",
+         "LFC is not yet available.", call. = FALSE)
+  K <- credibility$K
+  if (!is.null(K) && (!is.numeric(K) || length(K) != 1L ||
+                      is.na(K) || K < 0))
+    stop("`credibility$K` must be NULL (auto) or a non-negative ",
+         "numeric scalar.", call. = FALSE)
+  list(method = "bs", K = K)
+}
+
+
+#' Buehlmann-Straub credibility weight per cohort
+#'
+#' @description
+#' Compute the per-cohort Buehlmann-Straub credibility factor
+#'
+#' \deqn{Z_i = \frac{K}{K + s_i^2}}
+#'
+#' that replaces the emergence fraction \eqn{q_i} as the BF / CC blend
+#' weight. \eqn{s_i^2} is the variance of cohort \eqn{i}'s own chain
+#' ladder loss-ratio estimate, and \eqn{K} is the variance of the
+#' hypothetical means (VHM) -- the genuine between-cohort spread of the
+#' true loss ratios. This is the standard credibility form
+#' \eqn{Z = \tau^2 / (\tau^2 + \sigma^2/w)} written directly in terms of
+#' the per-cohort estimate variance.
+#'
+#' The classical weight `q` only measures *how much has emerged*; a
+#' rare-event or very green cohort can have a high `q` yet a chain
+#' ladder estimate built on almost no data. There \eqn{s_i^2} is large,
+#' so \eqn{Z_i \to 0} and the cohort is pulled toward the prior --
+#' exactly the protection the credibility blend is meant to give.
+#'
+#' @param per_cohort A `data.table` with one row per cohort carrying
+#'   `by_cols`, `lr` (cohort CL ultimate loss ratio), and `s2` (the
+#'   variance of that loss-ratio estimate).
+#' @param groups Group column character vector.
+#' @param K `NULL` (estimate the VHM per group) or a non-negative
+#'   numeric scalar overriding it.
+#'
+#' @return `per_cohort` with added columns `K` (the VHM scale used) and
+#'   `Z` (the credibility weight).
+#'
+#' @keywords internal
+.credibility_bs <- function(per_cohort, groups, K = NULL) {
+
+  # data.table NSE bindings
+  lr <- s2 <- NULL
+
+  d      <- data.table::copy(per_cohort)
+  by_grp <- if (length(groups) == 0L) NULL else groups
+
+  # K = VHM, estimated per group from the precision-weighted spread of
+  # the cohort loss ratios (reliable cohorts dominate), or supplied.
+  k_tbl <- d[, {
+      ok <- is.finite(lr) & is.finite(s2) & s2 > 0
+      kk <- if (!is.null(K)) {
+        K
+      } else if (sum(ok) < 2L) {
+        0                         # < 2 cohorts: cannot estimate VHM
+      } else {
+        xx <- lr[ok]; ss <- s2[ok]
+        u  <- 1 / ss                          # precision weights
+        mu <- sum(u * xx) / sum(u)
+        var_w  <- sum(u * (xx - mu)^2) / sum(u)
+        s2_bar <- length(u) / sum(u)          # = weighted mean of s2
+        max(0, var_w - s2_bar)
+      }
+      .(K = kk)
+    }, by = by_grp]
+
+  if (length(groups) == 0L) {
+    d[, ("K") := k_tbl$K[1L]]
+  } else {
+    d <- k_tbl[d, on = groups]
+  }
+  d[, ("Z") := data.table::fifelse(
+      is.finite(s2) & (K + s2) > 0, K / (K + s2), 0)]
+  d
 }
 
 

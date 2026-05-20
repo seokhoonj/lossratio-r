@@ -131,6 +131,50 @@ test_that("fit_bf analytical: distribution prior widens SE", {
             sum(det$summary$loss_total_se))
 })
 
+test_that("fit_bf classical (credibility = NULL) has no credibility slot", {
+  fit <- fit_bf(sub, prior = 0.7)
+  expect_null(fit$credibility)
+})
+
+test_that("fit_bf credibility = 'bs' returns per-cohort Z weights", {
+  fit <- fit_bf(sub, prior = 0.7, credibility = list(method = "bs"))
+  expect_false(is.null(fit$credibility))
+  expect_equal(fit$credibility$method, "bs")
+  w <- fit$credibility$weights
+  expect_true(all(c("Z", "K") %in% names(w)))
+  expect_true(all(w$Z >= 0 & w$Z <= 1, na.rm = TRUE))
+})
+
+test_that("fit_bf credibility: Z rises with cohort maturity", {
+  fit <- fit_bf(sub, prior = 0.7, credibility = list(method = "bs"))
+  w <- fit$credibility$weights[order(fit$credibility$weights$cohort), ]
+  # mature (early) cohorts get a higher credibility weight than the
+  # green (recent) ones
+  expect_gt(mean(utils::head(w$Z, 5)), mean(utils::tail(w$Z, 5)))
+})
+
+test_that("fit_bf credibility forces the analytical SE path", {
+  fit <- fit_bf(sub, prior = 0.7, credibility = list(method = "bs"),
+                bootstrap = "auto", B = 30)
+  expect_equal(fit$ci_type, "analytical")
+  expect_null(fit$bootstrap)
+})
+
+test_that("fit_bf credibility accepts a user-supplied K", {
+  fit <- fit_bf(sub, prior = 0.7,
+                credibility = list(method = "bs", K = 0.05))
+  expect_equal(unique(fit$credibility$weights$K), 0.05)
+})
+
+test_that("fit_bf credibility rejects an invalid spec", {
+  expect_error(fit_bf(sub, prior = 0.7,
+                      credibility = list(method = "lfc")),
+               regexp = "bs")
+  expect_error(fit_bf(sub, prior = 0.7,
+                      credibility = list(method = "bs", K = -1)),
+               regexp = "non-negative")
+})
+
 test_that("distribution prior widens bootstrap SE vs deterministic prior", {
   cohorts <- unique(sub$cohort)
   prior_det  <- data.frame(cohort = cohorts, elr = 0.8)

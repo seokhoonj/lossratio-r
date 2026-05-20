@@ -20,6 +20,7 @@ fit_bf(
   recent = NULL,
   regime = NULL,
   maturity = NULL,
+  credibility = NULL,
   conf_level = 0.95,
   ...
 )
@@ -102,6 +103,22 @@ loss and exposure fits. See \code{\link[=fit_cl]{fit_cl()}} for the four-type di
 \item{maturity}{Optional maturity specification forwarded to the inner
 loss fit. See \code{\link[=fit_cl]{fit_cl()}} for the four-type dispatch.}
 
+\item{credibility}{Optional credibility specification. \code{NULL}
+(default) gives the classical BF blend with weight equal to the
+emergence fraction \code{q}. A list \code{list(method = "bs", K = NULL)}
+switches to a Buehlmann-Straub credibility blend
+\code{ult = Z * CL + (1 - Z) * prior}, where \code{Z = K / (K + s^2)},
+\code{s^2} is the variance of the cohort's own CL loss-ratio estimate,
+and \code{K} is the variance of the hypothetical means (the genuine
+between-cohort spread). \code{K} is estimated per group when \code{NULL}, or
+supplied as a non-negative numeric scalar. The credibility weight
+protects rare-event cohorts: a green cohort with a CL estimate
+built on almost no data has a large \code{s^2}, so \code{Z} shrinks toward 0
+and the cohort is pulled to the prior even when its \code{q} is high.
+A credibility blend always uses the analytical SE path (the SE is
+approximate -- the credibility factor is treated as a fixed
+plug-in).}
+
 \item{conf_level}{Confidence level for the bootstrap quantile CI on
 \code{loss_ult}. Default \code{0.95}.}
 
@@ -130,6 +147,10 @@ enabled, additional columns \code{loss_total_se}, \code{loss_total_cv},
 \item{\code{prior}}{Resolved \code{data.table(group..., cohort, elr)}.}
 \item{\code{q}}{\code{data.table(group..., cohort, q)} of expected
 emerged fractions.}
+\item{\code{credibility}}{\code{NULL} for the classical blend, or a list
+\code{list(method, weights)} where \code{weights} is a \code{data.table}
+\verb{[group..., cohort, Z, K]} of the Buehlmann-Straub credibility
+factors used in place of \code{q}.}
 \item{\code{cl_fit}}{The inner \code{CLFit} used to derive \eqn{q_i}.}
 \item{\code{exposure_fit}}{The inner \code{ExposureFit} used to derive
 \eqn{E_i^{ult}}.}
