@@ -83,10 +83,16 @@ fit_bf(
 
   :   Applied uniformly to every cohort.
 
-  `data.frame` with columns `cohort` and `elr`
+  per-cohort `data.frame` (`cohort` + `elr`)
 
   :   Per-cohort ELR. Must cover every cohort present in `x` (extras are
       silently dropped, missing cohorts raise an error).
+
+  per-group `data.frame` (grouping columns + `elr`)
+
+  :   One ELR per group, broadcast to every cohort in that group. Useful
+      when a single a priori ELR is set per line of business. Must cover
+      every group present in `x`.
 
 - bootstrap:
 

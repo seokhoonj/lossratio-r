@@ -20,7 +20,7 @@ avoid numerical noise from essentially perfect fits.
 ## Usage
 
 ``` r
-.lm_link(x, weights = 1, alpha = 1, na_rm = TRUE, tol = 0.000000000001)
+.lm_link(x, weights = 1, alpha = 1, na_rm = TRUE, tol = 1e-12)
 ```
 
 ## Arguments

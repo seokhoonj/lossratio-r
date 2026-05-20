@@ -161,6 +161,8 @@ compare projections against the withheld actuals.
 and
 [`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
 (lossratio generic) dispatch on the object class.
+[`render()`](https://seokhoonj.github.io/lossratio/reference/render.md)
+is a console table renderer for data frames and `Triangle` objects.
 
 - [`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
   : Triangle plot generic
@@ -235,6 +237,10 @@ and
 
 - [`plot_triangle(`*`<TriangleValidation>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.TriangleValidation.md)
   : Triangle-heatmap view of dev-sequence gaps
+
+- [`render()`](https://seokhoonj.github.io/lossratio/reference/render.md)
+  [`print(`*`<Triangle>`*`)`](https://seokhoonj.github.io/lossratio/reference/render.md)
+  : Render a tabular object as a compact console table
 
 ## Other S3 methods
 
@@ -314,6 +320,10 @@ print / summary / longer methods registered on package classes.
   :
 
   Print method for `SAFit`
+
+- [`render()`](https://seokhoonj.github.io/lossratio/reference/render.md)
+  [`print(`*`<Triangle>`*`)`](https://seokhoonj.github.io/lossratio/reference/render.md)
+  : Render a tabular object as a compact console table
 
 - [`summary(`*`<ATAFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.ATAFit.md)
   :

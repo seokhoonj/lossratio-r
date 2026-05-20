@@ -172,10 +172,16 @@ denominator of the prior ELR. Default <code>"exposure"</code>.</p></dd>
 <dd><p>The a priori expected loss ratio. Accepts:</p><dl><dt>single numeric</dt>
 <dd><p>Applied uniformly to every cohort.</p></dd>
 
-<dt><code>data.frame</code> with columns <code>cohort</code> and <code>elr</code></dt>
+<dt>per-cohort <code>data.frame</code> (<code>cohort</code> + <code>elr</code>)</dt>
 <dd><p>Per-cohort
 ELR. Must cover every cohort present in <code>x</code> (extras are
 silently dropped, missing cohorts raise an error).</p></dd>
+
+<dt>per-group <code>data.frame</code> (grouping columns + <code>elr</code>)</dt>
+<dd><p>One ELR
+per group, broadcast to every cohort in that group. Useful when
+a single a priori ELR is set per line of business. Must cover
+every group present in <code>x</code>.</p></dd>
 
 
 </dl></dd>

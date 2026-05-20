@@ -1,8 +1,19 @@
 # Resolve `prior` input for `fit_bf()`
 
-Coerce a `prior` argument (scalar numeric or `data.frame(cohort, elr)`)
-into a per-cohort `data.table`. Validates ELR coverage of every cohort
-present in the input triangle.
+Coerce a `prior` argument into a per-cohort `data.table`. Three input
+shapes are accepted:
+
+- scalar numeric – applied uniformly to every cohort;
+
+- per-cohort `data.frame` – carries a `cohort` column plus `elr`
+  (optionally group-qualified);
+
+- per-group `data.frame` – carries all grouping columns plus `elr` but
+  no `cohort`; the group's ELR is broadcast to every cohort in that
+  group.
+
+ELR coverage of every cohort present in the input triangle is validated
+regardless of shape.
 
 ## Usage
 
