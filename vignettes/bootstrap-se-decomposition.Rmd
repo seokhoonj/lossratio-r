@@ -154,6 +154,26 @@ bootstrap perturbation has already absorbed the data variability there.
 On the lower triangle (projected region), the two diverge by exactly
 the process-noise draw.
 
+## The `type` argument — three SE paradigms
+
+`bootstrap()` and the worker fits (`fit_sa()`, `fit_bf()`, `fit_cc()`)
+take a `type` argument that selects how parameter uncertainty is
+generated:
+
+| `type` | Stage-1 perturbation | When to use |
+|---|---|---|
+| `"analytical"` | None — closed-form Mack (1993) MSEP, no simulation | Fast, distribution-free SE; default for `bootstrap.Triangle()` |
+| `"nonparametric"` | Residuals are resampled from the observed development pattern | No distributional assumption; the classic resampling bootstrap |
+| `"parametric"` | Cells are redrawn from a fitted distribution, then factors are refit (England-Verrall 1999) | Captures distributional shape; default for the `fit_sa/bf/cc` workers |
+
+`"analytical"` skips the per-replicate loop entirely and returns the
+Mack closed-form decomposition; `B` is ignored. `"nonparametric"` and
+`"parametric"` both run `B` replicates but differ in how Stage-1
+draws are produced — `"nonparametric"` resamples residuals,
+`"parametric"` samples each cell from its fitted process distribution
+and refits the factors. All three feed the same Stage-2 process-noise
+step and yield the same `$summary` decomposition columns.
+
 ## The `$summary` slot
 
 `bootstrap()` computes the cohort × dev decomposition once and exposes

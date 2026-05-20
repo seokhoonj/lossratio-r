@@ -111,7 +111,7 @@ fit_exposure <- function(x,
                          tail         = FALSE,
                          conf_level   = 0.95,
                          bootstrap    = NULL,
-                         B            = 999,
+                         B            = 999L,
                          seed         = NULL) {
 
   # data.table NSE bindings for R CMD check

@@ -178,7 +178,7 @@ fit_ratio <- function(x,
                       rho             = 0.95,
                       conf_level      = 0.95,
                       bootstrap       = NULL,
-                      B               = 999,
+                      B               = 999L,
                       seed            = NULL) {
 
   # data.table NSE bindings for R CMD check
