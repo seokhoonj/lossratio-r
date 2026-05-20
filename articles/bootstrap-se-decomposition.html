@@ -307,6 +307,55 @@ On the lower triangle (projected region), the two diverge by exactly the
 process-noise draw.</p>
 </div>
 <div class="section level2">
+<h2 id="the-type-argument-three-se-paradigms">The <code>type</code> argument — three SE paradigms<a class="anchor" aria-label="anchor" href="#the-type-argument-three-se-paradigms"></a>
+</h2>
+<p><code><a href="../reference/bootstrap.html">bootstrap()</a></code> and the worker fits (<code><a href="../reference/fit_sa.html">fit_sa()</a></code>,
+<code><a href="../reference/fit_bf.html">fit_bf()</a></code>, <code><a href="../reference/fit_cc.html">fit_cc()</a></code>) take a <code>type</code>
+argument that selects how parameter uncertainty is generated:</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th><code>type</code></th>
+<th>Stage-1 perturbation</th>
+<th>When to use</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>"analytical"</code></td>
+<td>None — closed-form Mack (1993) MSEP, no simulation</td>
+<td>Fast, distribution-free SE; default for
+<code><a href="../reference/bootstrap.html">bootstrap.Triangle()</a></code>
+</td>
+</tr>
+<tr class="even">
+<td><code>"nonparametric"</code></td>
+<td>Residuals are resampled from the observed development pattern</td>
+<td>No distributional assumption; the classic resampling bootstrap</td>
+</tr>
+<tr class="odd">
+<td><code>"parametric"</code></td>
+<td>Cells are redrawn from a fitted distribution, then factors are refit
+(England-Verrall 1999)</td>
+<td>Captures distributional shape; default for the
+<code>fit_sa/bf/cc</code> workers</td>
+</tr>
+</tbody>
+</table>
+<p><code>"analytical"</code> skips the per-replicate loop entirely and
+returns the Mack closed-form decomposition; <code>B</code> is ignored.
+<code>"nonparametric"</code> and <code>"parametric"</code> both run
+<code>B</code> replicates but differ in how Stage-1 draws are produced —
+<code>"nonparametric"</code> resamples residuals,
+<code>"parametric"</code> samples each cell from its fitted process
+distribution and refits the factors. All three feed the same Stage-2
+process-noise step and yield the same <code>$summary</code>
+decomposition columns.</p>
+</div>
+<div class="section level2">
 <h2 id="the-summary-slot">The <code>$summary</code> slot<a class="anchor" aria-label="anchor" href="#the-summary-slot"></a>
 </h2>
 <p><code><a href="../reference/bootstrap.html">bootstrap()</a></code> computes the cohort × dev decomposition once

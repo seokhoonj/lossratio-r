@@ -106,7 +106,7 @@
 <div id="lossratio-" class="section level1">
 
 <blockquote>
-<p><strong>장기 건강보험 손해율 분석·예측·모니터링</strong> 도구. Maturity 기반 단계 적응형(stage-adaptive: ED → CL) 손해율 예측 + Regime break 탐지(인수 정책 변경 등 코호트 축 구조 변화) + backtest 검증을 한 워크플로로 묶는다.</p>
+<p><strong>장기 건강보험 손해율 분석·예측·모니터링</strong> 도구. Maturity 기반 단계 적응형(stage-adaptive: ED → CL) 손해율 예측 + Regime change 탐지(인수 정책 변경 등 코호트 축 구조 변화) + backtest 검증을 한 워크플로로 묶는다.</p>
 </blockquote>
 <p align="center">
 </p>
@@ -231,6 +231,11 @@
 <h3 id="단계-적응형stage-adaptive-sa">단계 적응형(stage-adaptive, SA)<a class="anchor" aria-label="anchor" href="#%EB%8B%A8%EA%B3%84-%EC%A0%81%EC%9D%91%ED%98%95stage-adaptive-sa"></a></h3>
 <p><code>fit_ratio(method = "sa")</code>. 두 방법의 합성: 성숙점 이전은 ED, 이후는 CL. ED 의 초기 dev 안정성 + CL 의 후기 dev 코호트 anchoring 결합.</p>
 <p><em>언제 사용</em>: 장기-tail 포트폴리오 – 초기 dev 의 변동성(ED phase) + 후기 dev 의 코호트-레벨 drift(CL phase) 둘 다 처리.</p>
+</div>
+<div class="section level3">
+<h3 id="prior-anchored-bf--cc">Prior-anchored (BF / CC)<a class="anchor" aria-label="anchor" href="#prior-anchored-bf--cc"></a></h3>
+<p><code>fit_loss(method = "bf")</code> / <code><a href="reference/fit_bf.html">fit_bf()</a></code> 와 <code>fit_loss(method = "cc")</code> / <code><a href="reference/fit_cc.html">fit_cc()</a></code>. 두 방법 모두 예상 손해율 (ELR) 과 관측 손해를 결합한다: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">Ult</mtext><mo>=</mo><msub><mi>L</mi><mtext mathvariant="normal">latest</mtext></msub><mo>+</mo><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>q</mi><mo stretchy="false" form="postfix">)</mo><mo>⋅</mo><mtext mathvariant="normal">ELR</mtext><mo>⋅</mo><msub><mi>E</mi><mtext mathvariant="normal">ult</mtext></msub></mrow><annotation encoding="application/x-tex">\text{Ult} = L_{\text{latest}} + (1 - q) \cdot \text{ELR} \cdot E_{\text{ult}}</annotation></semantics></math>. Bornhuetter-Ferguson (1972) 는 ELR 을 외부 prior 로 받고, Cape Cod (Stanard 1985) 는 payout 가중으로 데이터에서 추정한다.</p>
+<p><em>언제 사용</em>: 미성숙 코호트 또는 요율 변경 직후 코호트 – 관측 데이터만으로 예측을 anchoring 하기에 너무 빈약할 때. 신뢰할 외부 prior 가 있으면 BF, 포트폴리오가 단일 코호트 응집 ELR 목표를 시사하면 CC.</p>
 </div>
 </div>
 <div class="section level2">

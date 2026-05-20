@@ -227,6 +227,22 @@ later-dev behaviour.
 phase) but cohort-level drift needs cohort-anchored projection in later
 dev (CL phase).
 
+### Prior-Anchored (BF / CC)
+
+`fit_loss(method = "bf")` /
+[`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md)
+and `fit_loss(method = "cc")` /
+[`fit_cc()`](https://seokhoonj.github.io/lossratio/reference/fit_cc.md).
+Both blend an expected loss ratio (ELR) with the observed loss:
+$`\text{Ult} = L_{\text{latest}} + (1 - q) \cdot \text{ELR} \cdot E_{\text{ult}}`$.
+Bornhuetter-Ferguson (1972) takes the ELR from an external prior; Cape
+Cod (Stanard 1985) derives it from the data by payout weighting.
+
+*When to use*: immature cohorts or post-rate-change cohorts where the
+observed data is too thin to anchor a projection on its own – BF when a
+credible external prior exists, CC when the portfolio suggests a single
+cohort-cohesive ELR target.
+
 ## Visualisation
 
 Both S3 generics dispatch on object class:
@@ -249,7 +265,7 @@ work uniformly across `Triangle`, `Calendar`, `Link`, `ATAFit`, `EDFit`,
 ?as_triangle
 ?fit_ratio
 ?detect_regime
-vignette("regime-detection", package = "lossratio")
+vignette("regime", package = "lossratio")
 ```
 
 ## License

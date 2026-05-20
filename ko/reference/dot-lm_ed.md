@@ -12,5 +12,5 @@ C^L\_{i,k+1}) \propto (C^P\_{i,k})^{\alpha}\\.
 ## Usage
 
 ``` r
-.lm_ed(x, alpha = 1, na_rm = TRUE, tol = 0.000000000001)
+.lm_ed(x, alpha = 1, na_rm = TRUE, tol = 1e-12)
 ```

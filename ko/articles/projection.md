@@ -12,7 +12,7 @@ For cohort $`i`$ at dev $`k`$:
 - $`C^P_{i,k}`$ — cumulative risk premium (exposure)
 - $`f_k = C^L_{k+1} / C^L_k`$ — age-to-age (chain ladder) factor
 - $`g_k = \Delta C^L_k / C^P_k`$ — exposure-driven intensity
-- maturity point $`m_g`$ — dev at which $`f_k`$ stabilises for group
+- maturity point $`k^*`$ — dev at which $`f_k`$ stabilises for group
   $`g`$ (detected from CV / RSE thresholds)
 
 ## Method 1: Exposure-Driven (`"ed"`, default)
@@ -232,8 +232,8 @@ behaves the opposite way:
 ``` math
 \hat{C}^L_{i,k+1} \;=\;
 \begin{cases}
-\hat{C}^L_{i,k} + g_k \cdot C^P_{i,k} & k < m_g \quad \text{(ED before maturity)} \\
-f_k \cdot \hat{C}^L_{i,k}              & k \ge m_g \quad \text{(CL after maturity)}
+\hat{C}^L_{i,k} + g_k \cdot C^P_{i,k} & k < k^* \quad \text{(ED before maturity)} \\
+f_k \cdot \hat{C}^L_{i,k}              & k \ge k^* \quad \text{(CL after maturity)}
 \end{cases}
 ```
 
@@ -599,7 +599,7 @@ underlying ATA factors.
 
 ## Maturity input
 
-For `method = "sa"` the maturity point $`m_g`$ determines where the
+For `method = "sa"` the maturity point $`k^*`$ determines where the
 projection switches from ED to CL. By default
 [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
 /

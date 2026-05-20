@@ -404,6 +404,12 @@
 <p><code>fit_ratio(method = "sa")</code>. Composition of the two: ED before maturity, CL after. Combines ED’s early-dev stability with CL’s cohort-anchored later-dev behaviour.</p>
 <p><em>When to use</em>: long-tail portfolios where early dev is volatile (ED phase) but cohort-level drift needs cohort-anchored projection in later dev (CL phase).</p>
 </div>
+<div class="section level3">
+<h3 id="prior-anchored-bf--cc">Prior-Anchored (BF / CC)<a class="anchor" aria-label="anchor" href="#prior-anchored-bf--cc"></a>
+</h3>
+<p><code>fit_loss(method = "bf")</code> / <code><a href="reference/fit_bf.html">fit_bf()</a></code> and <code>fit_loss(method = "cc")</code> / <code><a href="reference/fit_cc.html">fit_cc()</a></code>. Both blend an expected loss ratio (ELR) with the observed loss: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">Ult</mtext><mo>=</mo><msub><mi>L</mi><mtext mathvariant="normal">latest</mtext></msub><mo>+</mo><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>q</mi><mo stretchy="false" form="postfix">)</mo><mo>⋅</mo><mtext mathvariant="normal">ELR</mtext><mo>⋅</mo><msub><mi>E</mi><mtext mathvariant="normal">ult</mtext></msub></mrow><annotation encoding="application/x-tex">\text{Ult} = L_{\text{latest}} + (1 - q) \cdot \text{ELR} \cdot E_{\text{ult}}</annotation></semantics></math>. Bornhuetter-Ferguson (1972) takes the ELR from an external prior; Cape Cod (Stanard 1985) derives it from the data by payout weighting.</p>
+<p><em>When to use</em>: immature cohorts or post-rate-change cohorts where the observed data is too thin to anchor a projection on its own – BF when a credible external prior exists, CC when the portfolio suggests a single cohort-cohesive ELR target.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="visualisation">Visualisation<a class="anchor" aria-label="anchor" href="#visualisation"></a>
@@ -421,7 +427,7 @@
 <code class="sourceCode R"><span><span class="op">?</span><span class="va">as_triangle</span></span>
 <span><span class="op">?</span><span class="va">fit_ratio</span></span>
 <span><span class="op">?</span><span class="va">detect_regime</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"regime-detection"</span>, package <span class="op">=</span> <span class="st">"lossratio"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"regime"</span>, package <span class="op">=</span> <span class="st">"lossratio"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>

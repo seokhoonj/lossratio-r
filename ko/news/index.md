@@ -2,6 +2,63 @@
 
 ## lossratio (development version)
 
+- **Worker layer fix + bootstrap arg on `fit_cl` / `fit_ed`.**
+  [`fit_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.md)
+  /
+  [`fit_cc()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cc.md)
+  /
+  [`fit_sa()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_sa.md)
+  now build their internal exposure fit by calling
+  `fit_cl(loss = "exposure", ...)` directly instead of routing through
+  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
+  — downward-only Tier 3 -\> Tier 4 dependency.
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
+  and
+  [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md)
+  both gain `bootstrap`, `B`, `seed`, `conf_level` arguments for
+  symmetry with the SA / BF / CC workers; `bootstrap = NULL` (default)
+  preserves analytical Mack SE. All fit-result classes standardised to
+  `c("XFit", "list")` (or prepended forms for the dispatchers).
+
+- **[`fit_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.md) +
+  [`fit_cc()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cc.md)
+  promoted to peer workers** with bootstrap composition. `fit_bf` takes
+  an external prior ELR (Bornhuetter-Ferguson 1972); `fit_cc` derives
+  ELR from data via payout weighting (Stanard 1985, Cape Cod). Both
+  expose `bootstrap = "auto"` for cell / link / parametric simulation
+  and analytical fallback. Promotion makes them available through
+  `fit_loss(method = "bf" | "cc")`.
+
+- **`fit_sa` worker + `fit_loss` true dispatcher.** Phase 4 split the
+  stage-adaptive composition (`R/sa.R`, class `"SAFit"`) out of
+  `R/loss.R`, and
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
+  now thin-dispatches by `method` to the worker functions (`fit_ed` /
+  `fit_cl` / `fit_sa` / `fit_bf` / `fit_cc`) and augments their output
+  to the LossFit-uniform `$full` schema via
+  [`.lossfit_augment()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-lossfit_augment.md).
+  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
+  follows the same pattern with
+  [`.exposurefit_augment()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-exposurefit_augment.md) +
+  [`.exposurefit_bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-exposurefit_bootstrap.md)
+  (Phase 4c).
+
+- **BREAKING: bootstrap `type = "parametric"` -\> `"analytical"`
+  rename.** The Mack closed-form SE option was previously mislabelled as
+  `"parametric"`. The textbook-parametric kernels (cell-distribution
+  sampling + refit, England-Verrall 1999) now use `type = "parametric"`,
+  and the analytical Mack closed-form lives at `type = "analytical"`.
+  [`bootstrap.Triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
+  default is `"analytical"`; worker-side `fit_sa` / `fit_bf` / `fit_cc`
+  `type =` defaults to `"parametric"` (cell-distribution simulation).
+
+- **SA nonparametric bootstrap proper kernel.**
+  `bootstrap(method = "sa")` previously silently dispatched to the CL
+  cell kernel. Phase 1 introduced the dedicated
+  `bootstrap_kernel_sa_cell` (and link variants) that respect the stage
+  transition at maturity `k^*`, with ED-stage cells using additive `g_k`
+  refit and CL-stage cells using multiplicative `f_k` refit.
+
 - **ED bootstrap (Phase 1, fixed exposure).**
   [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
   now supports `method = "ed"` for `residual = "cell"`: per-replicate

@@ -15,7 +15,7 @@
 - $`C^P_{i,k}`$ — 누적 위험보험료 (익스포저)
 - $`f_k = C^L_{k+1} / C^L_k`$ — ATA 인자(age-to-age factor)
 - $`g_k = \Delta C^L_k / C^P_k`$ — 노출 기반(exposure-driven, ED) 강도
-- 성숙점(maturity point) $`m_g`$ — 그룹 $`g`$ 에서 $`f_k`$ 가 안정화되는
+- 성숙점(maturity point) $`k^*`$ — 그룹 $`g`$ 에서 $`f_k`$ 가 안정화되는
   dev (CV / RSE 임계값으로 탐지)
 
 ## 1. 노출 기반(exposure-driven, ED) (`"ed"`, default)
@@ -227,8 +227,8 @@ plot(ratio_cl, metric = "ratio")
 ``` math
 \hat{C}^L_{i,k+1} \;=\;
 \begin{cases}
-\hat{C}^L_{i,k} + g_k \cdot C^P_{i,k} & k < m_g \quad \text{(성숙점 이전: ED)} \\
-f_k \cdot \hat{C}^L_{i,k}              & k \ge m_g \quad \text{(성숙점 이후: CL)}
+\hat{C}^L_{i,k} + g_k \cdot C^P_{i,k} & k < k^* \quad \text{(성숙점 이전: ED)} \\
+f_k \cdot \hat{C}^L_{i,k}              & k \ge k^* \quad \text{(성숙점 이후: CL)}
 \end{cases}
 ```
 
@@ -587,7 +587,7 @@ unconditional safe baseline 이다. 코호트-레벨 drift 가 의심되거나 A
 
 ## 7. 성숙점 입력 방식
 
-`method = "sa"` 에서는 성숙점 $`m_g`$ 가 ED → CL 전환 지점이 된다.
+`method = "sa"` 에서는 성숙점 $`k^*`$ 가 ED → CL 전환 지점이 된다.
 [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
 /
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)

@@ -170,6 +170,28 @@ recent <code>recent</code> periods are used for estimation. Default is <code>NUL
 <code>cohort &lt; change_date</code> are excluded from estimation. Default is <code>NULL</code>.</p></dd>
 
 
+<dt id="arg-bootstrap">bootstrap<a class="anchor" aria-label="anchor" href="#arg-bootstrap"></a></dt>
+<dd><p>Optional bootstrap specification. Accepts <code>NULL</code>
+(default, analytical Mack SE only), a <code>BootstrapTriangle</code> object
+produced by <code><a href="bootstrap.html">bootstrap()</a></code> (replayed for SE / CI), or the string
+<code>"auto"</code> to run an internal nonparametric bootstrap at fit time.</p></dd>
+
+
+<dt id="arg-b">B<a class="anchor" aria-label="anchor" href="#arg-b"></a></dt>
+<dd><p>Integer number of bootstrap replicates when <code>bootstrap = "auto"</code>.
+Default <code>999L</code>.</p></dd>
+
+
+<dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
+<dd><p>Optional integer seed for reproducible bootstrap draws.
+Default <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-conf-level">conf_level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
+<dd><p>Numeric in <code>(0, 1)</code>. Confidence level used for
+bootstrap-derived CI columns. Default <code>0.95</code>.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional arguments passed to <code><a href="summary.Link.html">summary.Link()</a></code>.</p></dd>
 

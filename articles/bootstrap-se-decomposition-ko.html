@@ -294,9 +294,56 @@ replicate 마다:</p>
 이미 부트스트랩 perturbation 이 데이터 변동성을 흡수했으므로 추가 잡음
 적용이 의미 없다. 하삼각(lower triangle, 예측 영역) 에선 두 값이 정확히
 <em>Stage 2 process noise draw 만큼</em> 다르다.</p>
+<div class="section level3">
+<h3 id="type-인자-세-가지-se-패러다임">
+<code>type</code> 인자 — 세 가지 SE 패러다임<a class="anchor" aria-label="anchor" href="#type-%EC%9D%B8%EC%9E%90-%EC%84%B8-%EA%B0%80%EC%A7%80-se-%ED%8C%A8%EB%9F%AC%EB%8B%A4%EC%9E%84"></a>
+</h3>
+<p><code><a href="../reference/bootstrap.html">bootstrap()</a></code> 과 worker 적합 함수(<code><a href="../reference/fit_sa.html">fit_sa()</a></code>,
+<code><a href="../reference/fit_bf.html">fit_bf()</a></code>, <code><a href="../reference/fit_cc.html">fit_cc()</a></code>) 는 모수 불확실성을 어떻게
+생성할지 고르는 <code>type</code> 인자를 받는다.</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th><code>type</code></th>
+<th>Stage-1 perturbation</th>
+<th>용도</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>"analytical"</code></td>
+<td>없음 — Mack(1993) MSEP closed-form, 시뮬레이션 없음</td>
+<td>빠르고 분포 가정 없는 SE; <code><a href="../reference/bootstrap.html">bootstrap.Triangle()</a></code> 의
+default</td>
+</tr>
+<tr class="even">
+<td><code>"nonparametric"</code></td>
+<td>관측된 발전 패턴에서 잔차를 재추출</td>
+<td>분포 가정 없는 고전적 재추출 부트스트랩</td>
+</tr>
+<tr class="odd">
+<td><code>"parametric"</code></td>
+<td>적합된 분포에서 셀을 재추출 후 인자 재적합(England-Verrall
+1999)</td>
+<td>분포 형태까지 반영; <code>fit_sa/bf/cc</code> worker 의 default</td>
+</tr>
+</tbody>
+</table>
+<p><code>"analytical"</code> 은 per-replicate 루프를 건너뛰고 Mack
+closed-form 분해를 그대로 반환한다 (<code>B</code> 무시).
+<code>"nonparametric"</code> 과 <code>"parametric"</code> 은 둘 다
+<code>B</code> 회 replicate 를 돌리되 Stage-1 draw 방식만 다르다 —
+<code>"nonparametric"</code> 은 잔차를 재추출하고,
+<code>"parametric"</code> 은 각 셀을 적합된 process 분포에서 표본추출한
+뒤 인자를 재적합한다. 세 type 모두 동일한 Stage-2 process-noise 단계를
+거쳐 동일한 <code>$summary</code> 분해 컬럼을 산출한다.</p>
+</div>
 </div>
 <div class="section level2">
-<h2 id="summary-슬랫">4. <code>$summary</code> 슬랫<a class="anchor" aria-label="anchor" href="#summary-%EC%8A%AC%EB%9E%AB"></a>
+<h2 id="summary-슬롯">4. <code>$summary</code> 슬롯<a class="anchor" aria-label="anchor" href="#summary-%EC%8A%AC%EB%A1%AF"></a>
 </h2>
 <p><code><a href="../reference/bootstrap.html">bootstrap()</a></code> 은 cohort × dev 별 분해를 <em>한 번에</em>
 계산하여 미리 저장된 summary 로 노출한다. 하위 fit 함수가
@@ -394,7 +441,7 @@ normal) 에도 <em>closed-form 분산 유도 없이</em> 작동한다.</li>
 <div class="section level2">
 <h2 id="summary-의-활용">6. <code>$summary</code> 의 활용<a class="anchor" aria-label="anchor" href="#summary-%EC%9D%98-%ED%99%9C%EC%9A%A9"></a>
 </h2>
-<p>분해된 <code>$summary</code> 슬랫은 하위
+<p>분해된 <code>$summary</code> 슬롯은 하위
 <code>fit_*(bootstrap = bt)</code> 호출이 분해된 컬럼을 표준 fit schema
 (<code>*_param_se</code>, <code>*_proc_se</code>,
 <code>*_total_se</code>, <code>*_total_cv</code>, <code>*_ci_lo</code>,

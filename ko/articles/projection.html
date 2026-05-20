@@ -119,7 +119,7 @@ at dev
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>g</mi><mi>k</mi></msub><mo>=</mo><mi mathvariant="normal">Δ</mi><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup><mi>/</mi><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">g_k = \Delta C^L_k / C^P_k</annotation></semantics></math>
 — exposure-driven intensity</li>
 <li>maturity point
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>m</mi><mi>g</mi></msub><annotation encoding="application/x-tex">m_g</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
 — dev at which
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
 stabilises for group
@@ -336,11 +336,11 @@ the fact that
 is volatile early and stable late, while
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>g</mi><mi>k</mi></msub><annotation encoding="application/x-tex">g_k</annotation></semantics></math>
 behaves the opposite way:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><mrow><mo stretchy="true" form="prefix">{</mo><mtable><mtr><mtd columnalign="left" style="text-align: left"><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>L</mi></msubsup><mo>+</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>P</mi></msubsup></mtd><mtd columnalign="left" style="text-align: left"><mi>k</mi><mo>&lt;</mo><msub><mi>m</mi><mi>g</mi></msub><mspace width="1.0em"></mspace><mtext mathvariant="normal">(ED before maturity)</mtext></mtd></mtr><mtr><mtd columnalign="left" style="text-align: left"><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>L</mi></msubsup></mtd><mtd columnalign="left" style="text-align: left"><mi>k</mi><mo>≥</mo><msub><mi>m</mi><mi>g</mi></msub><mspace width="1.0em"></mspace><mtext mathvariant="normal">(CL after maturity)</mtext></mtd></mtr></mtable></mrow></mrow><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><mrow><mo stretchy="true" form="prefix">{</mo><mtable><mtr><mtd columnalign="left" style="text-align: left"><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>L</mi></msubsup><mo>+</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>P</mi></msubsup></mtd><mtd columnalign="left" style="text-align: left"><mi>k</mi><mo>&lt;</mo><msup><mi>k</mi><mo>*</mo></msup><mspace width="1.0em"></mspace><mtext mathvariant="normal">(ED before maturity)</mtext></mtd></mtr><mtr><mtd columnalign="left" style="text-align: left"><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>L</mi></msubsup></mtd><mtd columnalign="left" style="text-align: left"><mi>k</mi><mo>≥</mo><msup><mi>k</mi><mo>*</mo></msup><mspace width="1.0em"></mspace><mtext mathvariant="normal">(CL after maturity)</mtext></mtd></mtr></mtable></mrow></mrow><annotation encoding="application/x-tex">
 \hat{C}^L_{i,k+1} \;=\;
 \begin{cases}
-\hat{C}^L_{i,k} + g_k \cdot C^P_{i,k} &amp; k &lt; m_g \quad \text{(ED before maturity)} \\
-f_k \cdot \hat{C}^L_{i,k}              &amp; k \ge m_g \quad \text{(CL after maturity)}
+\hat{C}^L_{i,k} + g_k \cdot C^P_{i,k} &amp; k &lt; k^* \quad \text{(ED before maturity)} \\
+f_k \cdot \hat{C}^L_{i,k}              &amp; k \ge k^* \quad \text{(CL after maturity)}
 \end{cases}
 </annotation></semantics></math></p>
 <p>Behaviour:</p>
@@ -736,7 +736,7 @@ ATA factors.</p>
 <h2 id="maturity-input">Maturity input<a class="anchor" aria-label="anchor" href="#maturity-input"></a>
 </h2>
 <p>For <code>method = "sa"</code> the maturity point
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>m</mi><mi>g</mi></msub><annotation encoding="application/x-tex">m_g</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
 determines where the projection switches from ED to CL. By default
 <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> / <code><a href="../reference/fit_loss.html">fit_loss()</a></code> use
 <code>maturity = "auto"</code>, which calls

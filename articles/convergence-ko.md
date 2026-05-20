@@ -293,8 +293,8 @@ claim 노이즈 때문에 실 portfolio 에서 보기 어렵고, $`0.20`$ 이상
   [`?backtest`](https://seokhoonj.github.io/lossratio/reference/backtest.md),
   [`?detect_regime`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md),
   [`?fit_ratio`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md).
-- `vignette("regime-detection")` — 위 워크플로 1단계의 코호트 동질성
-  진단.
+- [`vignette("regime")`](https://seokhoonj.github.io/lossratio/articles/regime.md)
+  — 위 워크플로 1단계의 코호트 동질성 진단.
 - [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/articles/backtest.md)
   —
   [`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md)

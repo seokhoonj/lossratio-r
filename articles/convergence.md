@@ -302,8 +302,9 @@ calls and inherits their constraints:
   [`?backtest`](https://seokhoonj.github.io/lossratio/reference/backtest.md),
   [`?detect_regime`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md),
   [`?fit_ratio`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md).
-- `vignette("regime-detection")` — cohort homogeneity diagnostics that
-  feed step 1 of the workflow above.
+- [`vignette("regime")`](https://seokhoonj.github.io/lossratio/articles/regime.md)
+  — cohort homogeneity diagnostics that feed step 1 of the workflow
+  above.
 - [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/articles/backtest.md)
   — the underlying rolling holdout machinery that
   [`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md)

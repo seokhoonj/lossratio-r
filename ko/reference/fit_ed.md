@@ -95,6 +95,29 @@ fit_ed(
   When supplied, cohorts with `cohort < change_date` are excluded from
   estimation. Default is `NULL`.
 
+- bootstrap:
+
+  Optional bootstrap specification. Accepts `NULL` (default, analytical
+  Mack SE only), a `BootstrapTriangle` object produced by
+  [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
+  (replayed for SE / CI), or the string `"auto"` to run an internal
+  nonparametric bootstrap at fit time.
+
+- B:
+
+  Integer number of bootstrap replicates when `bootstrap = "auto"`.
+  Default `999L`.
+
+- seed:
+
+  Optional integer seed for reproducible bootstrap draws. Default
+  `NULL`.
+
+- conf_level:
+
+  Numeric in `(0, 1)`. Confidence level used for bootstrap-derived CI
+  columns. Default `0.95`.
+
 - ...:
 
   Additional arguments passed to

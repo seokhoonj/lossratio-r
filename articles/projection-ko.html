@@ -169,7 +169,7 @@ dev
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>g</mi><mi>k</mi></msub><mo>=</mo><mi mathvariant="normal">Δ</mi><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup><mi>/</mi><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">g_k = \Delta C^L_k / C^P_k</annotation></semantics></math>
 — 노출 기반(exposure-driven, ED) 강도</li>
 <li>성숙점(maturity point)
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>m</mi><mi>g</mi></msub><annotation encoding="application/x-tex">m_g</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
 — 그룹
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>g</mi><annotation encoding="application/x-tex">g</annotation></semantics></math>
 에서
@@ -383,11 +383,11 @@ post-change 코호트를 over-project 가능 — 명시적 필터는
 가 초반에는 변동성이 크고 후반에는 안정적이라는 사실, 그리고
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>g</mi><mi>k</mi></msub><annotation encoding="application/x-tex">g_k</annotation></semantics></math>
 는 그 반대로 움직인다는 사실을 활용해 성숙점에서 추정량을 전환한다:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><mrow><mo stretchy="true" form="prefix">{</mo><mtable><mtr><mtd columnalign="left" style="text-align: left"><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>L</mi></msubsup><mo>+</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>P</mi></msubsup></mtd><mtd columnalign="left" style="text-align: left"><mi>k</mi><mo>&lt;</mo><msub><mi>m</mi><mi>g</mi></msub><mspace width="1.0em"></mspace><mtext mathvariant="normal">(성숙점 이전: ED)</mtext></mtd></mtr><mtr><mtd columnalign="left" style="text-align: left"><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>L</mi></msubsup></mtd><mtd columnalign="left" style="text-align: left"><mi>k</mi><mo>≥</mo><msub><mi>m</mi><mi>g</mi></msub><mspace width="1.0em"></mspace><mtext mathvariant="normal">(성숙점 이후: CL)</mtext></mtd></mtr></mtable></mrow></mrow><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><mrow><mo stretchy="true" form="prefix">{</mo><mtable><mtr><mtd columnalign="left" style="text-align: left"><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>L</mi></msubsup><mo>+</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>P</mi></msubsup></mtd><mtd columnalign="left" style="text-align: left"><mi>k</mi><mo>&lt;</mo><msup><mi>k</mi><mo>*</mo></msup><mspace width="1.0em"></mspace><mtext mathvariant="normal">(성숙점 이전: ED)</mtext></mtd></mtr><mtr><mtd columnalign="left" style="text-align: left"><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>L</mi></msubsup></mtd><mtd columnalign="left" style="text-align: left"><mi>k</mi><mo>≥</mo><msup><mi>k</mi><mo>*</mo></msup><mspace width="1.0em"></mspace><mtext mathvariant="normal">(성숙점 이후: CL)</mtext></mtd></mtr></mtable></mrow></mrow><annotation encoding="application/x-tex">
 \hat{C}^L_{i,k+1} \;=\;
 \begin{cases}
-\hat{C}^L_{i,k} + g_k \cdot C^P_{i,k} &amp; k &lt; m_g \quad \text{(성숙점 이전: ED)} \\
-f_k \cdot \hat{C}^L_{i,k}              &amp; k \ge m_g \quad \text{(성숙점 이후: CL)}
+\hat{C}^L_{i,k} + g_k \cdot C^P_{i,k} &amp; k &lt; k^* \quad \text{(성숙점 이전: ED)} \\
+f_k \cdot \hat{C}^L_{i,k}              &amp; k \ge k^* \quad \text{(성숙점 이후: CL)}
 \end{cases}
 </annotation></semantics></math></p>
 <p>특성:</p>
@@ -773,7 +773,7 @@ unconditional safe baseline 이다. 코호트-레벨 drift 가 의심되거나 A
 <h2 id="성숙점-입력-방식">7. 성숙점 입력 방식<a class="anchor" aria-label="anchor" href="#%EC%84%B1%EC%88%99%EC%A0%90-%EC%9E%85%EB%A0%A5-%EB%B0%A9%EC%8B%9D"></a>
 </h2>
 <p><code>method = "sa"</code> 에서는 성숙점
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>m</mi><mi>g</mi></msub><annotation encoding="application/x-tex">m_g</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
 가 ED → CL 전환 지점이 된다. <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> /
 <code><a href="../reference/fit_loss.html">fit_loss()</a></code> 의 default 는 <code>maturity = "auto"</code> 로,
 <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> 를 default 임계값으로 내부 호출한다. 그

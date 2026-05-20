@@ -34,7 +34,7 @@ fit_exposure(
   tail = FALSE,
   conf_level = 0.95,
   bootstrap = NULL,
-  B = 999,
+  B = 999L,
   seed = NULL
 )
 ```

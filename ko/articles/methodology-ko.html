@@ -347,11 +347,11 @@ volume</em> 이 아니라 <em>위험률 × 가입금액 × 유지율</em> 의 de
 Bühlmann-Straub 1970 의 <em>natural weight</em> 와 같은 의미.</p>
 </div>
 <div class="section level2">
-<h2 id="추정-방법-library-ed-cl-sa-현재-bf-cc-예정">6. 추정 방법 library — <code>ed</code> / <code>cl</code> /
-<code>sa</code> (현재) + <code>bf</code> / <code>cc</code> (예정)<a class="anchor" aria-label="anchor" href="#%EC%B6%94%EC%A0%95-%EB%B0%A9%EB%B2%95-library-ed-cl-sa-%ED%98%84%EC%9E%AC-bf-cc-%EC%98%88%EC%A0%95"></a>
+<h2 id="추정-방법-library-ed-cl-sa-bf-cc">6. 추정 방법 library — <code>ed</code> / <code>cl</code> /
+<code>sa</code> / <code>bf</code> / <code>cc</code><a class="anchor" aria-label="anchor" href="#%EC%B6%94%EC%A0%95-%EB%B0%A9%EB%B2%95-library-ed-cl-sa-bf-cc"></a>
 </h2>
 <div class="section level3">
-<h3 id="현재-구현-세-method">현재 구현 (세 method)<a class="anchor" aria-label="anchor" href="#%ED%98%84%EC%9E%AC-%EA%B5%AC%ED%98%84-%EC%84%B8-method"></a>
+<h3 id="직접-추정-세-method">직접 추정 (세 method)<a class="anchor" aria-label="anchor" href="#%EC%A7%81%EC%A0%91-%EC%B6%94%EC%A0%95-%EC%84%B8-method"></a>
 </h3>
 <table class="table">
 <colgroup>
@@ -402,7 +402,7 @@ Bühlmann-Straub 1970 의 <em>natural weight</em> 와 같은 의미.</p>
 (SA)</em>.</p>
 </div>
 <div class="section level3">
-<h3 id="도입-예정-두-method-prior-anchored-family">도입 예정 (두 method) — <em>prior-anchored family</em><a class="anchor" aria-label="anchor" href="#%EB%8F%84%EC%9E%85-%EC%98%88%EC%A0%95-%EB%91%90-method-prior-anchored-family"></a>
+<h3 id="prior-anchored-family-두-method">Prior-anchored family (두 method)<a class="anchor" aria-label="anchor" href="#prior-anchored-family-%EB%91%90-method"></a>
 </h3>
 <table class="table">
 <colgroup>
@@ -573,11 +573,6 @@ standalone 진입 / 진단 surface 등 <em>tail 추정 관련 아이디어</em> 
 <p>현재 <em>손해율 분석·예측·모니터링</em> 에 정렬되어 있으나, framework
 의 <em>수학적 구조</em> 는 다음 영역까지 자연 일반화 가능:</p>
 <ul>
-<li>
-<strong>BF / Cape Cod 도입</strong> — prior-anchored family 의 두
-method (section 6 참조). BF 는 <em>외부 prior ELR</em>, Cape Cod 는
-<em>payout-weighted 데이터 추정</em>. 미성숙 cohort + 요율 변경 시기에
-critical.</li>
 <li>
 <strong>frequency-severity 분해</strong> —
 <code>fit_ed(loss = "claim_count", exposure =   "insureds")</code> 로

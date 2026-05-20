@@ -135,7 +135,30 @@ long-format `pseudo_triangles` 테이블에는 *두 값 컬럼* 이 있다.
 적용이 의미 없다. 하삼각(lower triangle, 예측 영역) 에선 두 값이 정확히
 *Stage 2 process noise draw 만큼* 다르다.
 
-## 4. `$summary` 슬랫
+### `type` 인자 — 세 가지 SE 패러다임
+
+[`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
+과 worker 적합
+함수([`fit_sa()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_sa.md),
+[`fit_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.md),
+[`fit_cc()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cc.md))
+는 모수 불확실성을 어떻게 생성할지 고르는 `type` 인자를 받는다.
+
+| `type` | Stage-1 perturbation | 용도 |
+|----|----|----|
+| `"analytical"` | 없음 — Mack(1993) MSEP closed-form, 시뮬레이션 없음 | 빠르고 분포 가정 없는 SE; [`bootstrap.Triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md) 의 default |
+| `"nonparametric"` | 관측된 발전 패턴에서 잔차를 재추출 | 분포 가정 없는 고전적 재추출 부트스트랩 |
+| `"parametric"` | 적합된 분포에서 셀을 재추출 후 인자 재적합(England-Verrall 1999) | 분포 형태까지 반영; `fit_sa/bf/cc` worker 의 default |
+
+`"analytical"` 은 per-replicate 루프를 건너뛰고 Mack closed-form 분해를
+그대로 반환한다 (`B` 무시). `"nonparametric"` 과 `"parametric"` 은 둘 다
+`B` 회 replicate 를 돌리되 Stage-1 draw 방식만 다르다 —
+`"nonparametric"` 은 잔차를 재추출하고, `"parametric"` 은 각 셀을 적합된
+process 분포에서 표본추출한 뒤 인자를 재적합한다. 세 type 모두 동일한
+Stage-2 process-noise 단계를 거쳐 동일한 `$summary` 분해 컬럼을
+산출한다.
+
+## 4. `$summary` 슬롯
 
 [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
 은 cohort × dev 별 분해를 *한 번에* 계산하여 미리 저장된 summary 로
@@ -197,7 +220,7 @@ head(bt$summary)
 
 ## 6. `$summary` 의 활용
 
-분해된 `$summary` 슬랫은 하위 `fit_*(bootstrap = bt)` 호출이 분해된
+분해된 `$summary` 슬롯은 하위 `fit_*(bootstrap = bt)` 호출이 분해된
 컬럼을 표준 fit schema (`*_param_se`, `*_proc_se`, `*_total_se`,
 `*_total_cv`, `*_ci_lo`, `*_ci_hi`) 에 *그대로 매핑* 한다. *사용자가
 직접 분해 산식을 짤 필요 없음*.
