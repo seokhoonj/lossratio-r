@@ -120,6 +120,20 @@ anchoring 결합.
 *언제 사용*: 장기-tail 포트폴리오 -- 초기 dev 의 변동성(ED phase) +
 후기 dev 의 코호트-레벨 drift(CL phase) 둘 다 처리.
 
+### Prior-anchored (BF / CC)
+
+`fit_loss(method = "bf")` / `fit_bf()` 와
+`fit_loss(method = "cc")` / `fit_cc()`. 두 방법 모두 예상 손해율
+(ELR) 과 관측 손해를 결합한다:
+$\text{Ult} = L_{\text{latest}} + (1 - q) \cdot \text{ELR} \cdot E_{\text{ult}}$.
+Bornhuetter-Ferguson (1972) 는 ELR 을 외부 prior 로 받고, Cape Cod
+(Stanard 1985) 는 payout 가중으로 데이터에서 추정한다.
+
+*언제 사용*: 미성숙 코호트 또는 요율 변경 직후 코호트 -- 관측
+데이터만으로 예측을 anchoring 하기에 너무 빈약할 때. 신뢰할 외부
+prior 가 있으면 BF, 포트폴리오가 단일 코호트 응집 ELR 목표를
+시사하면 CC.
+
 ## 입력 형식
 
 long-format `data.frame` / `data.table`. 컬럼명은 자유 — `as_triangle()`
