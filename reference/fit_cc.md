@@ -153,6 +153,11 @@ fit_cc(
   for the full description. A credibility blend uses the analytical SE
   path.
 
+- conf_level:
+
+  Confidence level for the SE-based CI (bootstrap quantile or analytical
+  normal). Default `0.95`.
+
 - ...:
 
   Reserved for future extension (currently unused).
