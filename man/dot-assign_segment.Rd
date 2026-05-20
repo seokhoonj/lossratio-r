@@ -4,14 +4,14 @@
 \alias{.assign_segment}
 \title{Assign each cohort to a regime segment}
 \usage{
-.assign_segment(coh_vals, regime, grp_dt = NULL)
+.assign_segment(coh_vals, regime, grp_cols = NULL)
 }
 \arguments{
 \item{coh_vals}{Date vector of cohort values.}
 
 \item{regime}{A \code{"Regime"} object or \code{NULL}.}
 
-\item{grp_dt}{Optional \code{data.table} (\code{nrow == length(coh_vals)})
+\item{grp_cols}{Optional \code{data.table} (\code{nrow == length(coh_vals)})
 carrying the group columns named in \code{regime$groups}. Required when
 \code{regime} is multi-group; ignored otherwise. Each row's segment is
 computed against the change points for that row's group.}

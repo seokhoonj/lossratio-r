@@ -247,8 +247,8 @@ fit_bf <- function(x,
                            by = by_cols]
   loss_ult <- loss_grid[, .SD[.N, .(loss_ult_cl = loss_proj)],
                         by = by_cols]
-  q_dt <- loss_latest[loss_ult, on = by_cols]
-  q_dt[, q := data.table::fifelse(
+  q_grid <- loss_latest[loss_ult, on = by_cols]
+  q_grid[, q := data.table::fifelse(
     is.finite(loss_ult_cl) & loss_ult_cl > 0,
     loss_latest / loss_ult_cl,
     NA_real_
@@ -256,13 +256,13 @@ fit_bf <- function(x,
 
   exp_ult <- exp_grid[, .SD[.N, .(exposure_ult = exposure_proj)],
                       by = by_cols]
-  q_dt <- exp_ult[q_dt, on = by_cols]
+  q_grid <- exp_ult[q_grid, on = by_cols]
 
   # 4) resolve prior to a per-cohort table --------------------------------
-  prior_dt <- .resolve_bf_prior(prior, q_dt, by_cols)
+  prior_table <- .resolve_bf_prior(prior, q_grid, by_cols)
 
   # 5) BF formula ---------------------------------------------------------
-  agg <- prior_dt[q_dt, on = by_cols]
+  agg <- prior_table[q_grid, on = by_cols]
   agg[, loss_ult_bf := loss_latest +
         (1 - q) * elr * exposure_ult]
   agg[, reserve := loss_ult_bf - loss_latest]
@@ -324,10 +324,10 @@ fit_bf <- function(x,
   proj[is_observed == TRUE, (proj_cols) := NA_real_]
 
   # 8) cohort-level summary -----------------------------------------------
-  summary_dt <- agg[, c(by_cols, "loss_latest", "loss_ult_bf",
+  summary_table <- agg[, c(by_cols, "loss_latest", "loss_ult_bf",
                          "reserve", "elr", "q"),
                     with = FALSE]
-  data.table::setnames(summary_dt,
+  data.table::setnames(summary_table,
                        c("loss_latest", "loss_ult_bf"),
                        c("latest",      "loss_ult"))
 
@@ -344,16 +344,16 @@ fit_bf <- function(x,
   if (!is.null(boots)) {
     bf_boot <- .bf_compose_bootstrap(
       boots         = boots,
-      prior_dt      = prior_dt,
+      prior_table      = prior_table,
       grp           = grp,
       by_cols       = by_cols,
       full          = full,
-      summary_dt    = summary_dt,
+      summary_table    = summary_table,
       conf_level    = conf_level,
-      cohorts_present = unique(q_dt[, .SD, .SDcols = by_cols])
+      cohorts_present = unique(q_grid[, .SD, .SDcols = by_cols])
     )
     full        <- bf_boot$full
-    summary_dt  <- bf_boot$summary
+    summary_table  <- bf_boot$summary
     proj        <- data.table::copy(full)
     proj_cols   <- intersect(
       c("loss_proj", "incr_loss_proj", "exposure_proj",
@@ -380,9 +380,9 @@ fit_bf <- function(x,
     exposure     = exposure,
     full         = full,
     proj         = proj,
-    summary      = summary_dt,
-    prior        = prior_dt,
-    q            = q_dt[, c(by_cols, "q"), with = FALSE],
+    summary      = summary_table,
+    prior        = prior_table,
+    q            = q_grid[, c(by_cols, "q"), with = FALSE],
     cl_fit       = cl_fit,
     exposure_fit = exposure_fit,
     bootstrap    = bootstrap_obj,
@@ -406,15 +406,15 @@ fit_bf <- function(x,
 #' every cohort present in the input triangle.
 #'
 #' @param prior The user-supplied prior. See [fit_bf()].
-#' @param q_dt The per-cohort `data.table` (carrying `cohort` etc.).
+#' @param q_grid The per-cohort `data.table` (carrying `cohort` etc.).
 #' @param by_cols Character vector of join columns (`c(grp, "cohort")`).
 #'
 #' @return A `data.table` with columns `by_cols + "elr"`.
 #'
 #' @keywords internal
-.resolve_bf_prior <- function(prior, q_dt, by_cols) {
+.resolve_bf_prior <- function(prior, q_grid, by_cols) {
 
-  cohorts <- unique(q_dt[, .SD, .SDcols = by_cols])
+  cohorts <- unique(q_grid[, .SD, .SDcols = by_cols])
 
   if (is.numeric(prior) && length(prior) == 1L) {
     if (!is.finite(prior) || prior <= 0)
@@ -646,14 +646,14 @@ summary.BFFit <- function(object, ...) {
 #'
 #' @param boots A named list `list(loss = BT, exposure = BT)` from
 #'   `.resolve_bootstrap_bf()`.
-#' @param prior_dt Per-cohort ELR table (see `.resolve_bf_prior()`).
+#' @param prior_table Per-cohort ELR table (see `.resolve_bf_prior()`).
 #'   Pass `NULL` for the Cape Cod composition (ELR is data-pooled per
 #'   replicate).
 #' @param grp Group column character vector.
 #' @param by_cols `c(grp, "cohort")`.
 #' @param full The point-estimate `$full` data.table (used as the base
 #'   for join-on bootstrap SE / CI columns).
-#' @param summary_dt The point-estimate cohort-level summary.
+#' @param summary_table The point-estimate cohort-level summary.
 #' @param conf_level Confidence level for CI bounds.
 #' @param cohorts_present Unique `[grp, cohort]` rows present in the
 #'   triangle.
@@ -662,8 +662,8 @@ summary.BFFit <- function(object, ...) {
 #'   `BFBootstrap` / `CCBootstrap` helper class.
 #'
 #' @keywords internal
-.bf_compose_bootstrap <- function(boots, prior_dt, grp, by_cols,
-                                  full, summary_dt, conf_level,
+.bf_compose_bootstrap <- function(boots, prior_table, grp, by_cols,
+                                  full, summary_table, conf_level,
                                   cohorts_present,
                                   cape_cod = FALSE) {
 
@@ -711,17 +711,17 @@ summary.BFFit <- function(object, ...) {
 
   if (isTRUE(cape_cod)) {
     by_grp <- if (length(grp) == 0L) NULL else grp
-    elr_b_dt <- ult_b[, .(elr_cc_b = sum(loss_latest, na.rm = TRUE) /
+    elr_boot <- ult_b[, .(elr_cc_b = sum(loss_latest, na.rm = TRUE) /
                             sum(exposure_ult_b * q_b, na.rm = TRUE)),
                       by = c(by_grp, "rep")]
     if (length(grp) == 0L) {
-      ult_b <- merge(ult_b, elr_b_dt, by = "rep", sort = FALSE)
+      ult_b <- merge(ult_b, elr_boot, by = "rep", sort = FALSE)
     } else {
-      ult_b <- merge(ult_b, elr_b_dt, by = c(grp, "rep"), sort = FALSE)
+      ult_b <- merge(ult_b, elr_boot, by = c(grp, "rep"), sort = FALSE)
     }
     ult_b[, elr_b := elr_cc_b]
   } else {
-    ult_b <- merge(ult_b, prior_dt, by = by_cols, sort = FALSE)
+    ult_b <- merge(ult_b, prior_table, by = by_cols, sort = FALSE)
     ult_b[, elr_b := elr]
   }
 
@@ -737,7 +737,7 @@ summary.BFFit <- function(object, ...) {
     loss_ci_hi    = stats::quantile(loss_ult_b, 1 - alpha2, type = 1L,
                                     na.rm = TRUE, names = FALSE)
   ), by = by_cols]
-  ult_summary <- merge(ult_summary, summary_dt[, c(by_cols, "loss_ult"),
+  ult_summary <- merge(ult_summary, summary_table[, c(by_cols, "loss_ult"),
                                                 with = FALSE],
                        by = by_cols, sort = FALSE)
   ult_summary[, ("loss_total_cv") := data.table::fifelse(
@@ -745,10 +745,10 @@ summary.BFFit <- function(object, ...) {
     loss_total_se / loss_ult, NA_real_)]
   drop_cols <- intersect(c("loss_total_se", "loss_total_cv",
                            "loss_ci_lo", "loss_ci_hi"),
-                         names(summary_dt))
+                         names(summary_table))
   if (length(drop_cols))
-    summary_dt[, (drop_cols) := NULL]
-  summary_dt <- merge(summary_dt,
+    summary_table[, (drop_cols) := NULL]
+  summary_table <- merge(summary_table,
                       ult_summary[, c(by_cols, "loss_total_se",
                                       "loss_total_cv",
                                       "loss_ci_lo", "loss_ci_hi"),
@@ -823,11 +823,11 @@ summary.BFFit <- function(object, ...) {
   )
 
   if (isTRUE(cape_cod)) {
-    elr_cc_b_dt <- unique(ult_b[, c(grp, "rep", "elr_cc_b"),
+    elr_cc_boot <- unique(ult_b[, c(grp, "rep", "elr_cc_b"),
                                  with = FALSE])
-    data.table::setnames(elr_cc_b_dt, "rep", "b")
-    bootstrap_helper$elr_cc_replicates <- elr_cc_b_dt
+    data.table::setnames(elr_cc_boot, "rep", "b")
+    bootstrap_helper$elr_cc_replicates <- elr_cc_boot
   }
 
-  list(full = full, summary = summary_dt, bootstrap = bootstrap_helper)
+  list(full = full, summary = summary_table, bootstrap = bootstrap_helper)
 }

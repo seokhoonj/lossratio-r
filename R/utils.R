@@ -538,14 +538,14 @@
   # `dev_split` may be either a scalar (single ED/CL boundary applied
   # to every group) or a `[grp..., dev_split]` data.table for
   # per-group SA hybrid (m_k differs across groups).
-  dev_split_is_dt <- data.table::is.data.table(dev_split)
-  if (!is.null(dev_split) && !dev_split_is_dt) {
+  dev_split_is_table <- data.table::is.data.table(dev_split)
+  if (!is.null(dev_split) && !dev_split_is_table) {
     if (!is.numeric(dev_split) || length(dev_split) != 1L || is.na(dev_split))
       stop("`dev_split` must be a single non-NA numeric scalar, ",
            "or a `[grp..., dev_split]` data.table for per-group SA hybrid.",
            call. = FALSE)
   }
-  if (dev_split_is_dt) {
+  if (dev_split_is_table) {
     if (!"dev_split" %in% names(dev_split))
       stop("per-group `dev_split` data.table must have a column named ",
            "`dev_split`.", call. = FALSE)
@@ -571,7 +571,7 @@
 
   if (is.null(dev_split)) {
     keep <- finite_mask & (cal_idx > max_cal - recent)
-  } else if (dev_split_is_dt) {
+  } else if (dev_split_is_table) {
     ds_vals <- dev_split[out, on = ds_join_cols, x.dev_split]
     # Group with NA dev_split: no SA boundary declared -> recent wedge
     # applies to all dev (no ED carve-out for that row).
@@ -677,7 +677,7 @@
 #'
 #' @param coh_vals Date vector of cohort values.
 #' @param regime A `"Regime"` object or `NULL`.
-#' @param grp_dt Optional `data.table` (`nrow == length(coh_vals)`)
+#' @param grp_cols Optional `data.table` (`nrow == length(coh_vals)`)
 #'   carrying the group columns named in `regime$groups`. Required when
 #'   `regime` is multi-group; ignored otherwise. Each row's segment is
 #'   computed against the change points for that row's group.
@@ -685,7 +685,7 @@
 #' @return Integer vector of segment ids, same length as `coh_vals`.
 #'
 #' @keywords internal
-.assign_segment <- function(coh_vals, regime, grp_dt = NULL) {
+.assign_segment <- function(coh_vals, regime, grp_cols = NULL) {
   n <- length(coh_vals)
   if (n == 0L) return(integer(0))
 
@@ -706,22 +706,22 @@
   }
 
   rgrp <- regime$groups
-  if (is.null(grp_dt))
-    stop(".assign_segment(): multi-group Regime requires `grp_dt`.",
+  if (is.null(grp_cols))
+    stop(".assign_segment(): multi-group Regime requires `grp_cols`.",
          call. = FALSE)
-  if (!data.table::is.data.table(grp_dt))
-    grp_dt <- data.table::as.data.table(grp_dt)
+  if (!data.table::is.data.table(grp_cols))
+    grp_cols <- data.table::as.data.table(grp_cols)
 
-  missing_grp <- setdiff(rgrp, names(grp_dt))
+  missing_grp <- setdiff(rgrp, names(grp_cols))
   if (length(missing_grp))
-    stop(sprintf(".assign_segment(): `grp_dt` missing group cols: %s",
+    stop(sprintf(".assign_segment(): `grp_cols` missing group cols: %s",
                  paste(missing_grp, collapse = ", ")), call. = FALSE)
-  if (nrow(grp_dt) != n)
-    stop(sprintf(".assign_segment(): nrow(grp_dt) = %d, expected %d.",
-                 nrow(grp_dt), n), call. = FALSE)
+  if (nrow(grp_cols) != n)
+    stop(sprintf(".assign_segment(): nrow(grp_cols) = %d, expected %d.",
+                 nrow(grp_cols), n), call. = FALSE)
 
   work <- data.table::data.table(.idx = seq_len(n), .coh = coh_vals)
-  for (g in rgrp) data.table::set(work, j = g, value = grp_dt[[g]])
+  for (g in rgrp) data.table::set(work, j = g, value = grp_cols[[g]])
 
   out <- integer(n)
   grp_keys <- unique(work[, rgrp, with = FALSE])
@@ -799,13 +799,13 @@
   if (inherits(regime, "Regime") &&
       identical(regime$treatment, "segment_wise")) {
     out    <- .copy_dt(dt)
-    grp_dt <- if (length(grp)) out[, grp, with = FALSE] else NULL
+    grp_cols <- if (length(grp)) out[, grp, with = FALSE] else NULL
     # `[[<-` is base-R's assignment form: it invalidates data.table's
     # `.internal.selfref` and triggers a one-shot self-fix warning on
     # the next `:=`. Use `data.table::set()` which assigns by
     # reference and keeps selfref intact.
     data.table::set(out, j = "segment_id",
-                    value = .assign_segment(out[[coh]], regime, grp_dt))
+                    value = .assign_segment(out[[coh]], regime, grp_cols))
 
     bp <- regime$changes
     apply_mini_tri <- inherits(dt, "Triangle") &&
@@ -877,14 +877,14 @@
   # `dev_split` may be either a scalar (single ED/CL boundary applied
   # to every group) or a `[grp..., dev_split]` data.table for
   # per-group SA hybrid (m_k differs across groups).
-  dev_split_is_dt <- data.table::is.data.table(dev_split)
-  if (!is.null(dev_split) && !dev_split_is_dt) {
+  dev_split_is_table <- data.table::is.data.table(dev_split)
+  if (!is.null(dev_split) && !dev_split_is_table) {
     if (!is.numeric(dev_split) || length(dev_split) != 1L || is.na(dev_split))
       stop("`dev_split` must be a single non-NA numeric scalar, ",
            "or a `[grp..., dev_split]` data.table for per-group SA hybrid.",
            call. = FALSE)
   }
-  if (dev_split_is_dt && !"dev_split" %in% names(dev_split))
+  if (dev_split_is_table && !"dev_split" %in% names(dev_split))
     stop("per-group `dev_split` data.table must have a column named ",
          "`dev_split`.", call. = FALSE)
 
@@ -908,7 +908,7 @@
 
     if (is.null(dev_split)) {
       keep <- !matched | (coh_vals >= cd_vals)
-    } else if (dev_split_is_dt) {
+    } else if (dev_split_is_table) {
       ds_join_cols <- setdiff(names(dev_split), "dev_split")
       ds_vals <- dev_split[out, on = ds_join_cols, x.dev_split]
       # Group with NA dev_split: no ED region declared -> cohort cut
@@ -924,7 +924,7 @@
     dev_vals <- out[[dev]]
     if (is.null(dev_split)) {
       keep <- coh_vals >= cd
-    } else if (dev_split_is_dt) {
+    } else if (dev_split_is_table) {
       ds_join_cols <- setdiff(names(dev_split), "dev_split")
       ds_vals <- dev_split[out, on = ds_join_cols, x.dev_split]
       keep <- (coh_vals >= cd) |

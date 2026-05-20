@@ -62,7 +62,7 @@
 #'   exposure's self-anchor makes ED and CL algebraically equivalent
 #'   (`g_k = f_k - 1`, `sigma^2_g = sigma^2_f`).
 #' @param B Integer number of bootstrap replicates. Used only when
-#'   `bootstrap` resolves to `"auto"`. Default `999`.
+#'   `bootstrap` resolves to `"auto"`. Default `999L`.
 #' @param seed Optional integer seed for reproducible bootstrap. Default
 #'   `NULL`.
 #'
@@ -188,7 +188,7 @@ fit_exposure <- function(x,
   data.table::setattr(exposure_usage, "recent",  recent)
   data.table::setattr(exposure_usage, "holdout", NULL)
   data.table::setattr(exposure_usage, "m_k",     NULL)
-  data.table::setattr(exposure_usage, "m_k_dt",  NULL)
+  data.table::setattr(exposure_usage, "m_k_grid",  NULL)
   result$usage <- exposure_usage
 
   result$regime                   <- regime

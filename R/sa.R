@@ -177,9 +177,9 @@ fit_sa <- function(x,
         sigma_method = sigma_method,
         maturity     = maturity
       )
-      m_dt <- pre_loss_fit$maturity
+      pre_maturity <- pre_loss_fit$maturity
 
-      if (is.null(m_dt) || nrow(m_dt) == 0L) {
+      if (is.null(pre_maturity) || nrow(pre_maturity) == 0L) {
         warning(
           "regime: cannot detect maturity; falling back to ",
           "simple cohort cut.", call. = FALSE
@@ -192,13 +192,13 @@ fit_sa <- function(x,
         )
         regime <- NULL
       } else {
-        m_k_vec <- m_dt$change
+        m_k_vec <- pre_maturity$change
 
         dev_split_arg <- if (length(grp) > 0L &&
                              length(unique(m_k_vec)) > 1L) {
-          m_k_dt <- m_dt[, c(grp, "change"), with = FALSE]
-          data.table::setnames(m_k_dt, "change", "dev_split")
-          m_k_dt
+          m_k_grid <- pre_maturity[, c(grp, "change"), with = FALSE]
+          data.table::setnames(m_k_grid, "change", "dev_split")
+          m_k_grid
         } else {
           max(m_k_vec, na.rm = TRUE)
         }

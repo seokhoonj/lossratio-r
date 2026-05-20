@@ -77,7 +77,7 @@ exposure's self-anchor makes ED and CL algebraically equivalent
 (\code{g_k = f_k - 1}, \verb{sigma^2_g = sigma^2_f}).}
 
 \item{B}{Integer number of bootstrap replicates. Used only when
-\code{bootstrap} resolves to \code{"auto"}. Default \code{999}.}
+\code{bootstrap} resolves to \code{"auto"}. Default \code{999L}.}
 
 \item{seed}{Optional integer seed for reproducible bootstrap. Default
 \code{NULL}.}

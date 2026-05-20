@@ -6,11 +6,11 @@
 \usage{
 .bf_compose_bootstrap(
   boots,
-  prior_dt,
+  prior_table,
   grp,
   by_cols,
   full,
-  summary_dt,
+  summary_table,
   conf_level,
   cohorts_present,
   cape_cod = FALSE
@@ -20,7 +20,7 @@
 \item{boots}{A named list \code{list(loss = BT, exposure = BT)} from
 \code{.resolve_bootstrap_bf()}.}
 
-\item{prior_dt}{Per-cohort ELR table (see \code{.resolve_bf_prior()}).
+\item{prior_table}{Per-cohort ELR table (see \code{.resolve_bf_prior()}).
 Pass \code{NULL} for the Cape Cod composition (ELR is data-pooled per
 replicate).}
 
@@ -31,7 +31,7 @@ replicate).}
 \item{full}{The point-estimate \verb{$full} data.table (used as the base
 for join-on bootstrap SE / CI columns).}
 
-\item{summary_dt}{The point-estimate cohort-level summary.}
+\item{summary_table}{The point-estimate cohort-level summary.}
 
 \item{conf_level}{Confidence level for CI bounds.}
 

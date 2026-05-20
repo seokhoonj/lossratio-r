@@ -281,16 +281,16 @@ detect_regime <- function(x,
       "incr_exposure" = "exposure",
       "ratio"
     )
-    m_dt <- tryCatch(
+    maturity <- tryCatch(
       detect_maturity(x, loss = mat_loss),
       error = function(e) NULL
     )
-    if (!is.null(m_dt) && length(grp) > 0L &&
-        all(grp %in% names(m_dt)) &&
-        "change" %in% names(m_dt)) {
+    if (!is.null(maturity) && length(grp) > 0L &&
+        all(grp %in% names(maturity)) &&
+        "change" %in% names(maturity)) {
       vapply(seq_len(n_combos), function(i) {
         combo_row <- grp_combos[i]
-        m <- m_dt[combo_row, on = grp, nomatch = NULL]
+        m <- maturity[combo_row, on = grp, nomatch = NULL]
         v <- if (nrow(m)) m[["change"]][1L] else NA_integer_
         if (is.na(v)) WINDOW_AUTO_FALLBACK else as.integer(v)
       }, integer(1L))
@@ -362,7 +362,7 @@ detect_regime <- function(x,
   )
 
   # Combine changes: prepend group columns when grp is non-empty.
-  bp_dt_list <- lapply(which(ok), function(i) {
+  changes_list <- lapply(which(ok), function(i) {
     bp <- per_group[[i]]$changes
     if (!nrow(bp)) return(NULL)
     if (length(grp) > 0L) {
@@ -371,9 +371,9 @@ detect_regime <- function(x,
     }
     bp
   })
-  bp_dt_list <- bp_dt_list[!vapply(bp_dt_list, is.null, logical(1L))]
-  bp_dt <- if (length(bp_dt_list)) {
-    data.table::rbindlist(bp_dt_list)
+  changes_list <- changes_list[!vapply(changes_list, is.null, logical(1L))]
+  changes <- if (length(changes_list)) {
+    data.table::rbindlist(changes_list)
   } else if (length(grp) > 0L) {
     cbind(grp_combos[0L], empty_bp)
   } else {
@@ -389,7 +389,7 @@ detect_regime <- function(x,
     }
     lab
   })
-  labels_dt <- data.table::rbindlist(label_rows)
+  labels <- data.table::rbindlist(label_rows)
 
   n_regimes_vec  <- vapply(per_group[ok], `[[`, integer(1L), "n_regimes")
   trajectory_lst <- lapply(per_group[ok], `[[`, "trajectory")
@@ -425,8 +425,8 @@ detect_regime <- function(x,
     dev         = dev,
     groups      = grp,
     multi_group = !is_single,
-    labels      = labels_dt,
-    changes     = bp_dt,
+    labels      = labels,
+    changes     = changes,
     n_regimes   = n_regimes_out,
     trajectory  = trajectory_out,
     pca         = pca_out,
@@ -1013,7 +1013,7 @@ regime_at <- function(..., treatment = c("latest_only", "segment_wise")) {
   grp_cols <- args[grp]
 
   # Build changes data.table: group cols (if any) + canonical columns.
-  bp_dt <- if (length(grp)) {
+  changes <- if (length(grp)) {
     data.table::data.table(
       do.call(data.table::data.table, grp_cols),
       change     = bp,
@@ -1033,7 +1033,7 @@ regime_at <- function(..., treatment = c("latest_only", "segment_wise")) {
   }
 
   multi_group <- length(grp) > 0L &&
-                 nrow(unique(bp_dt[, grp, with = FALSE])) > 1L
+                 nrow(unique(changes[, grp, with = FALSE])) > 1L
 
   empty_labels <- data.table::data.table(
     cohort    = as.Date(character(0)),
@@ -1052,7 +1052,7 @@ regime_at <- function(..., treatment = c("latest_only", "segment_wise")) {
     groups      = grp,
     multi_group = multi_group,
     labels      = empty_labels,
-    changes     = bp_dt,
+    changes     = changes,
     n_regimes   = NA_integer_,
     trajectory  = NULL,
     pca         = NULL,

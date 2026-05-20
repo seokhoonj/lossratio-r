@@ -500,8 +500,8 @@ print.CLFit <- function(x, ...) {
   # When ata_fit was fitted with segment_wise treatment, attach
   # segment_id to each grid row so factor join keys by segment.
   if ("segment_id" %in% names(ata_fit$selected)) {
-    grp_dt <- if (length(grp)) full[, grp, with = FALSE] else NULL
-    full[, ("segment_id") := .assign_segment(cohort, ata_fit$regime, grp_dt)]
+    grp_cols <- if (length(grp)) full[, grp, with = FALSE] else NULL
+    full[, ("segment_id") := .assign_segment(cohort, ata_fit$regime, grp_cols)]
   }
 
   full

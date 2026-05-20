@@ -376,14 +376,14 @@ plot_triangle.TriangleValidation <- function(x,
 
   if (has_invalid) {
     if (axis_col %in% names(inv)) {
-      inv_dt <- inv[, .N, by = c(grp, coh, axis_col)]
-      data.table::setnames(inv_dt, c(coh, axis_col), c(".coh", ".axis"))
-      inv_dt[, (".status") := "invalid"]
+      inv_agg <- inv[, .N, by = c(grp, coh, axis_col)]
+      data.table::setnames(inv_agg, c(coh, axis_col), c(".coh", ".axis"))
+      inv_agg[, (".status") := "invalid"]
       # `obs_pairs` already aggregates ALL input rows (valid + invalid).
-      # For cells in `inv_dt`, drop the corresponding row from `bg` so we
-      # don't double-count -- invalid count comes from `inv_dt` alone.
-      bg <- bg[!inv_dt, on = c(grp, ".coh", ".axis")]
-      bg <- data.table::rbindlist(list(bg, inv_dt), fill = TRUE)
+      # For cells in `inv_agg`, drop the corresponding row from `bg` so we
+      # don't double-count -- invalid count comes from `inv_agg` alone.
+      bg <- bg[!inv_agg, on = c(grp, ".coh", ".axis")]
+      bg <- data.table::rbindlist(list(bg, inv_agg), fill = TRUE)
     }
   }
 

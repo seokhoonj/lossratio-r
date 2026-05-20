@@ -532,8 +532,8 @@ summary.LossFit <- function(object, ...) {
   has_seg_exposure <- "segment_id" %in% names(exposure_ata_fit$selected)
   if (has_seg_ed || has_seg_exposure) {
     reg <- if (has_seg_ed) ed_fit$regime else exposure_ata_fit$regime
-    grp_dt <- if (length(grp)) full[, grp, with = FALSE] else NULL
-    full[, ("segment_id") := .assign_segment(cohort, reg, grp_dt)]
+    grp_cols <- if (length(grp)) full[, grp, with = FALSE] else NULL
+    full[, ("segment_id") := .assign_segment(cohort, reg, grp_cols)]
   }
 
   exposure_cols <- c(grp, "ata_from",
