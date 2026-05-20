@@ -209,17 +209,17 @@ fit_exposure <- function(x,
 #' @param result A `CLFit` from `fit_cl(loss = "exposure", ...)`.
 #' @param x The original `Triangle`.
 #' @param method One of `"cl"` / `"ed"`.
-#' @param grp Character vector of group columns.
+#' @param groups Character vector of group columns.
 #' @param conf_level Confidence level for analytical CI bounds.
 #'
 #' @return The augmented `CLFit` with `$full` carrying `exposure_*` columns.
 #'
 #' @keywords internal
-.exposurefit_augment <- function(result, x, method, grp, conf_level) {
+.exposurefit_augment <- function(result, x, method, groups, conf_level) {
   if (identical(method, "ed")) {
     result$full <- .apply_ed_variance(result$full, result$selected, x)
   }
-  result$full <- .exposure_rename_full(result$full, grp, conf_level)
+  result$full <- .exposure_rename_full(result$full, groups, conf_level)
   result
 }
 
@@ -235,14 +235,14 @@ fit_exposure <- function(x,
 #'
 #' @param result An augmented exposure fit (post `.exposurefit_augment()`).
 #' @param x The original `Triangle`.
-#' @param grp Character vector of group columns.
+#' @param groups Character vector of group columns.
 #' @param bootstrap,B,seed,alpha Forwarded to `.resolve_bootstrap()`.
 #'
 #' @return The updated fit with bootstrap CI overlaid on `$full` and
 #'   `ci_type` / `bootstrap` slots set.
 #'
 #' @keywords internal
-.exposurefit_bootstrap <- function(result, x, grp,
+.exposurefit_bootstrap <- function(result, x, groups,
                                    bootstrap, B, seed, alpha) {
   exposure_total_se <- exposure_total_cv <- exposure_ci_lo <- exposure_ci_hi <- NULL
   exposure_proj_boot <- exposure_param_se_boot <- exposure_proc_se_boot <- NULL
@@ -276,7 +276,7 @@ fit_exposure <- function(x,
     }
 
     result$full <- merge(result$full, bsum,
-                         by = c(grp, "cohort", "dev"), all.x = TRUE,
+                         by = c(groups, "cohort", "dev"), all.x = TRUE,
                          sort = FALSE)
 
     is_proj <- result$full$is_observed == FALSE
@@ -310,7 +310,7 @@ fit_exposure <- function(x,
 #' `exposure_proj` +/- z * `exposure_total_se`.
 #'
 #' @keywords internal
-.exposure_rename_full <- function(full, grp, conf_level) {
+.exposure_rename_full <- function(full, groups, conf_level) {
   full <- .copy_dt(full)
 
   rename_map <- c(
@@ -334,7 +334,7 @@ fit_exposure <- function(x,
 
   # Derive incremental projection if not already present.
   if (!"incr_exposure_proj" %in% names(full)) {
-    by_cols <- c(grp, "cohort")
+    by_cols <- c(groups, "cohort")
     full[, ("incr_exposure_proj") := exposure_proj -
            data.table::shift(exposure_proj, 1L, fill = 0),
          by = by_cols]

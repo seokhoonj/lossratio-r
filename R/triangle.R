@@ -90,8 +90,8 @@ validate_triangle <- function(df,
   dt_clean <- dt
   if (!is.null(cal)) {
     invalid <- .validate_calendar_consistency_impl(
-      dt, grp = grp, coh = coh,
-      dev = dev, cal = cal
+      dt, groups = grp, cohort = coh,
+      dev = dev, calendar = cal
     )
     if (nrow(invalid) > 0L) {
       ok <- is.na(dt[[cal]]) | is.na(dt[[coh]]) |
@@ -139,8 +139,8 @@ validate_triangle <- function(df,
   out
 }
 
-.validate_dev_continuity_impl <- function(dt, grp, coh, dev) {
-  grp_coh <- c(grp, coh)
+.validate_dev_continuity_impl <- function(dt, groups, cohort, dev) {
+  grp_coh <- c(groups, cohort)
 
   gaps <- dt[, {
     e <- .SD[[1L]]
@@ -163,8 +163,8 @@ validate_triangle <- function(df,
 
   gaps <- gaps[n_dev != n_expected]
 
-  data.table::setattr(gaps, "groups" , grp)
-  data.table::setattr(gaps, "cohort", coh)
+  data.table::setattr(gaps, "groups" , groups)
+  data.table::setattr(gaps, "cohort", cohort)
   data.table::setattr(gaps, "dev"   , dev)
 
   .prepend_class(gaps, "TriangleValidation")
@@ -176,19 +176,19 @@ validate_triangle <- function(df,
 #' as occurring before the cohort start, which is logically impossible.
 #'
 #' @keywords internal
-.validate_calendar_consistency_impl <- function(dt, grp, coh, dev, cal) {
-  ok <- !is.na(dt[[cal]]) & !is.na(dt[[coh]])
-  bad_idx <- ok & (dt[[cal]] < dt[[coh]])
+.validate_calendar_consistency_impl <- function(dt, groups, cohort, dev, calendar) {
+  ok <- !is.na(dt[[calendar]]) & !is.na(dt[[cohort]])
+  bad_idx <- ok & (dt[[calendar]] < dt[[cohort]])
   if (!any(bad_idx)) {
     return(data.table::data.table())
   }
 
   # `dev` may be NULL when validate_triangle is called without an
-  # explicit dev column; skip duplicating coh in that case.
-  keep <- unique(c(grp, coh, cal, if (!is.null(dev)) dev))
+  # explicit dev column; skip duplicating cohort in that case.
+  keep <- unique(c(groups, cohort, calendar, if (!is.null(dev)) dev))
   keep <- keep[keep %in% names(dt)]
   z <- dt[bad_idx, .SD, .SDcols = keep]
-  z[, ("reason") := sprintf("%s < %s", cal, coh)]
+  z[, ("reason") := sprintf("%s < %s", calendar, cohort)]
   z
 }
 
@@ -1247,7 +1247,7 @@ as_calendar <- function(x) {
   .prepend_class(ds, "Calendar")
 }
 
-.validate_calendar_continuity_impl_grain <- function(dt, grp, cal, grain) {
+.validate_calendar_continuity_impl_grain <- function(dt, groups, calendar, grain) {
   step <- switch(grain,
                  M = "month",
                  Q = "3 months",
@@ -1275,10 +1275,10 @@ as_calendar <- function(x) {
     )
   }
 
-  if (length(grp)) {
-    gaps <- dt[, .row(.SD[[1L]]), by = grp, .SDcols = cal]
+  if (length(groups)) {
+    gaps <- dt[, .row(.SD[[1L]]), by = groups, .SDcols = calendar]
   } else {
-    r <- .row(dt[[cal]])
+    r <- .row(dt[[calendar]])
     gaps <- data.table::data.table(
       n_dev      = r$n_dev,
       n_expected = r$n_expected,
@@ -1288,8 +1288,8 @@ as_calendar <- function(x) {
 
   gaps <- gaps[n_dev != n_expected]
 
-  data.table::setattr(gaps, "groups" , grp)
-  data.table::setattr(gaps, "cohort", cal)
+  data.table::setattr(gaps, "groups" , groups)
+  data.table::setattr(gaps, "cohort", calendar)
 
   .prepend_class(gaps, "CalendarValidation")
 }

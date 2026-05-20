@@ -7,8 +7,8 @@
 .apply_regime_filter(
   dt,
   regime,
-  grp = character(0),
-  coh,
+  groups = character(0),
+  cohort,
   dev,
   dev_split = NULL
 )
@@ -24,12 +24,12 @@
 \item A single-group \code{Regime} object -- extracts the latest from
 \verb{$changes}.
 \item A multi-group \code{Regime} object -- dispatches per group on the
-intersection of \code{Regime$groups} and \code{grp}.
+intersection of \code{Regime$groups} and \code{groups}.
 }}
 
-\item{grp}{Character vector of group columns (may be empty).}
+\item{groups}{Character vector of group columns (may be empty).}
 
-\item{coh}{Single column name for the cohort variable.}
+\item{cohort}{Single column name for the cohort variable.}
 
 \item{dev}{Single column name for the development variable.}
 
@@ -43,15 +43,15 @@ regardless of cohort.}
 A filtered copy of \code{dt} (class preserved).
 }
 \description{
-Drops rows where \code{coh < change_date}. Optionally restrict the filter
+Drops rows where \code{cohort < change_date}. Optionally restrict the filter
 to rows with \code{dev < dev_split} (the ED region of an SA fit); rows
 with \code{dev >= dev_split} (CL region) are kept regardless of cohort.
 
 Supports both \strong{scalar} dispatch (single change date applied to every
 row) and \strong{per-group} dispatch (different change date per group,
 broadcast via left-join). The mode is auto-selected from
-\code{regime} and \code{grp}: a multi-group \code{Regime} whose \verb{$groups}
-intersect \code{grp} triggers the per-group path. Groups in \code{dt} that have
+\code{regime} and \code{groups}: a multi-group \code{Regime} whose \verb{$groups}
+intersect \code{groups} triggers the per-group path. Groups in \code{dt} that have
 no matching change date (NA after the left-join) are kept unfiltered.
 }
 \keyword{internal}

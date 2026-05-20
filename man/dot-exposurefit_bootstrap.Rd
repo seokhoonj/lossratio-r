@@ -4,14 +4,14 @@
 \alias{.exposurefit_bootstrap}
 \title{Overlay bootstrap SE / CI onto an ExposureFit \verb{$full}}
 \usage{
-.exposurefit_bootstrap(result, x, grp, bootstrap, B, seed, alpha)
+.exposurefit_bootstrap(result, x, groups, bootstrap, B, seed, alpha)
 }
 \arguments{
 \item{result}{An augmented exposure fit (post \code{.exposurefit_augment()}).}
 
 \item{x}{The original \code{Triangle}.}
 
-\item{grp}{Character vector of group columns.}
+\item{groups}{Character vector of group columns.}
 
 \item{bootstrap, B, seed, alpha}{Forwarded to \code{.resolve_bootstrap()}.}
 }

@@ -343,13 +343,13 @@ fit_bf <- function(x,
 
   if (!is.null(boots)) {
     bf_boot <- .bf_compose_bootstrap(
-      boots         = boots,
-      priors      = priors,
-      grp           = grp,
-      by_cols       = by_cols,
-      full          = full,
-      summ    = summ,
-      conf_level    = conf_level,
+      boots           = boots,
+      priors          = priors,
+      groups          = grp,
+      by_cols         = by_cols,
+      full            = full,
+      summ            = summ,
+      conf_level      = conf_level,
       cohorts_present = unique(dt[, .SD, .SDcols = by_cols])
     )
     full        <- bf_boot$full
@@ -407,7 +407,7 @@ fit_bf <- function(x,
 #'
 #' @param prior The user-supplied prior. See [fit_bf()].
 #' @param dt The per-cohort `data.table` (carrying `cohort` etc.).
-#' @param by_cols Character vector of join columns (`c(grp, "cohort")`).
+#' @param by_cols Character vector of join columns (`c(groups, "cohort")`).
 #'
 #' @return A `data.table` with columns `by_cols + "elr"`.
 #'
@@ -649,20 +649,20 @@ summary.BFFit <- function(object, ...) {
 #' @param priors Per-cohort ELR table (see `.resolve_bf_prior()`).
 #'   Pass `NULL` for the Cape Cod composition (ELR is data-pooled per
 #'   replicate).
-#' @param grp Group column character vector.
-#' @param by_cols `c(grp, "cohort")`.
+#' @param groups Group column character vector.
+#' @param by_cols `c(groups, "cohort")`.
 #' @param full The point-estimate `$full` data.table (used as the base
 #'   for join-on bootstrap SE / CI columns).
 #' @param summ The point-estimate cohort-level summary.
 #' @param conf_level Confidence level for CI bounds.
-#' @param cohorts_present Unique `[grp, cohort]` rows present in the
+#' @param cohorts_present Unique `[groups, cohort]` rows present in the
 #'   triangle.
 #'
 #' @return List `list(full, summary, bootstrap)` where `bootstrap` is the
 #'   `BFBootstrap` / `CCBootstrap` helper class.
 #'
 #' @keywords internal
-.bf_compose_bootstrap <- function(boots, priors, grp, by_cols,
+.bf_compose_bootstrap <- function(boots, priors, groups, by_cols,
                                   full, summ, conf_level,
                                   cohorts_present,
                                   cape_cod = FALSE) {
@@ -690,7 +690,7 @@ summary.BFFit <- function(object, ...) {
     stop("BF bootstrap composition requires `keep_pseudo = TRUE` on ",
          "both BootstrapTriangle objects.", call. = FALSE)
 
-  # Per (grp, cohort, rep) ultimate from the Stage 1 mean trajectory
+  # Per (groups, cohort, rep) ultimate from the Stage 1 mean trajectory
   # (last dev cell). Stage 1 = parameter uncertainty; the cell-level
   # SD of loss_ult_b across rep captures the BF parameter risk.
   ult_loss <- pl[, .(loss_ult_cl_b = loss_mean[which.max(dev)]),
@@ -710,14 +710,14 @@ summary.BFFit <- function(object, ...) {
     loss_latest / loss_ult_cl_b, NA_real_)]
 
   if (isTRUE(cape_cod)) {
-    by_grp <- if (length(grp) == 0L) NULL else grp
+    by_grp <- if (length(groups) == 0L) NULL else groups
     elr_boot <- ult_b[, .(elr_cc_b = sum(loss_latest, na.rm = TRUE) /
                             sum(exposure_ult_b * q_b, na.rm = TRUE)),
                       by = c(by_grp, "rep")]
-    if (length(grp) == 0L) {
+    if (length(groups) == 0L) {
       ult_b <- merge(ult_b, elr_boot, by = "rep", sort = FALSE)
     } else {
-      ult_b <- merge(ult_b, elr_boot, by = c(grp, "rep"), sort = FALSE)
+      ult_b <- merge(ult_b, elr_boot, by = c(groups, "rep"), sort = FALSE)
     }
     ult_b[, elr_b := elr_cc_b]
   } else {
@@ -755,7 +755,7 @@ summary.BFFit <- function(object, ...) {
                                   with = FALSE],
                       by = by_cols, sort = FALSE)
 
-  # Cell-level projection per replicate. Per (grp, cohort, dev, rep):
+  # Cell-level projection per replicate. Per (groups, cohort, dev, rep):
   # cl_remainder_b = loss_mean_b - loss_latest
   # ult_remainder_b = loss_ult_b - loss_latest
   # scale_b = ult_remainder_b / cl_remainder_b_last_dev (cohort scalar)
@@ -823,7 +823,7 @@ summary.BFFit <- function(object, ...) {
   )
 
   if (isTRUE(cape_cod)) {
-    elr_cc_boot <- unique(ult_b[, c(grp, "rep", "elr_cc_b"),
+    elr_cc_boot <- unique(ult_b[, c(groups, "rep", "elr_cc_b"),
                                  with = FALSE])
     data.table::setnames(elr_cc_boot, "rep", "b")
     bootstrap_helper$elr_cc_replicates <- elr_cc_boot

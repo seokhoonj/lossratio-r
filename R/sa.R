@@ -186,8 +186,8 @@ fit_sa <- function(x,
         )
         x <- .apply_regime_filter(
           x, regime,
-          grp = grp,
-          coh = "cohort",
+          groups = grp,
+          cohort = "cohort",
           dev = "dev"
         )
         regime <- NULL
@@ -205,15 +205,15 @@ fit_sa <- function(x,
 
         x <- .apply_regime_filter(
           x, regime,
-          grp       = grp,
-          coh       = "cohort", dev = "dev",
+          groups    = grp,
+          cohort    = "cohort", dev = "dev",
           dev_split = dev_split_arg
         )
         if (!is.null(recent)) {
           x <- .apply_recent_filter(
             x, recent,
-            grp       = grp,
-            coh       = "cohort", dev = "dev",
+            groups    = grp,
+            cohort    = "cohort", dev = "dev",
             dev_split = dev_split_arg
           )
           recent <- NULL
@@ -230,8 +230,6 @@ fit_sa <- function(x,
   # supplied a pre-built exposure_fit (ExposureFit class from a
   # composer-layer caller like fit_ratio), we accept it as-is.
   if (is.null(exposure_fit)) {
-    grp_local <- attr(x, "groups")
-    if (is.null(grp_local)) grp_local <- character(0)
     exposure_fit <- fit_cl(
       x,
       method       = "mack",
@@ -247,7 +245,7 @@ fit_sa <- function(x,
                                               exposure_fit$selected, x)
     }
     exposure_fit$full <- .exposure_rename_full(exposure_fit$full,
-                                               grp_local,
+                                               grp,
                                                conf_level = 0.95)
     class(exposure_fit) <- c("ExposureFit", class(exposure_fit))
   }

@@ -4,7 +4,7 @@
 \alias{.exposurefit_augment}
 \title{Augment a CL worker result into the ExposureFit \verb{$full} schema}
 \usage{
-.exposurefit_augment(result, x, method, grp, conf_level)
+.exposurefit_augment(result, x, method, groups, conf_level)
 }
 \arguments{
 \item{result}{A \code{CLFit} from \code{fit_cl(loss = "exposure", ...)}.}
@@ -13,7 +13,7 @@
 
 \item{method}{One of \code{"cl"} / \code{"ed"}.}
 
-\item{grp}{Character vector of group columns.}
+\item{groups}{Character vector of group columns.}
 
 \item{conf_level}{Confidence level for analytical CI bounds.}
 }

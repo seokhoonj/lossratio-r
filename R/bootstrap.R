@@ -525,12 +525,12 @@ bootstrap.Triangle <- function(x,
     # 2) Compute Mack anchor per (group, ata_to). Used by all branches
     #    for the `f_anchor` / `sigma2_anchor` slots; ED additionally
     #    computes its own `g_hat` per link further below.
-    anchor <- .boot_anchor_cl(link, grp = grp, alpha = alpha)
+    anchor <- .boot_anchor_cl(link, groups = grp, alpha = alpha)
 
     if (identical(residual, "link")) {
       # Pinheiro 2003: standardized link residuals on each Link row
-      link <- .boot_attach_residuals_cl(link, anchor = anchor, grp = grp)
-      pool <- .boot_build_pool_cl(link, anchor = anchor, grp = grp,
+      link <- .boot_attach_residuals_cl(link, anchor = anchor, groups = grp)
+      pool <- .boot_build_pool_cl(link, anchor = anchor, groups = grp,
                                 pooling = pooling, tail = tail,
                                 min_pool = min_pool, maturity = maturity)
     } else if (identical(method, "ed")) {
@@ -540,9 +540,9 @@ bootstrap.Triangle <- function(x,
       #              / sqrt(g_k * exposure_from)
       # Pool keyed by (cohort, dev = ata_to) for compatibility with the
       # cell-mode pool builder.
-      cell_resid <- .boot_cell_residuals_ed(link, grp = grp)
+      cell_resid <- .boot_cell_residuals_ed(link, groups = grp)
       phi <- attr(cell_resid, "phi")
-      pool <- .boot_build_pool_cell_cl(cell_resid, grp = grp,
+      pool <- .boot_build_pool_cell_cl(cell_resid, groups = grp,
                                      pooling = pooling, tail = tail,
                                      min_pool = min_pool, maturity = maturity,
                                      demean = demean)
@@ -555,16 +555,16 @@ bootstrap.Triangle <- function(x,
       # flat residual vector with `pool_id` prefixes "ed|" / "cl|"
       # ensuring no collision at lookup time. Each ACTIVE cell at Stage 1
       # picks the right bucket via the paradigm match in .boot_stage1_one.
-      cell_resid_ed <- .boot_cell_residuals_ed(link, grp = grp)
-      cell_resid_cl <- .boot_cell_residuals_cl(x, anchor = anchor, grp = grp,
+      cell_resid_ed <- .boot_cell_residuals_ed(link, groups = grp)
+      cell_resid_cl <- .boot_cell_residuals_cl(x, anchor = anchor, groups = grp,
                                             target = target, hat_adj = hat_adj)
       phi_ed <- attr(cell_resid_ed, "phi")
       phi_cl <- attr(cell_resid_cl, "phi")
-      pool_ed <- .boot_build_pool_cell_cl(cell_resid_ed, grp = grp,
+      pool_ed <- .boot_build_pool_cell_cl(cell_resid_ed, groups = grp,
                                        pooling = pooling, tail = tail,
                                        min_pool = min_pool, maturity = maturity,
                                        demean = demean)
-      pool_cl <- .boot_build_pool_cell_cl(cell_resid_cl, grp = grp,
+      pool_cl <- .boot_build_pool_cell_cl(cell_resid_cl, groups = grp,
                                        pooling = pooling, tail = tail,
                                        min_pool = min_pool, maturity = maturity,
                                        demean = demean)
@@ -589,12 +589,12 @@ bootstrap.Triangle <- function(x,
     } else {
       # E-V 1999/2002: Pearson residuals on incremental cells, optionally
       # leverage-corrected (hat_adj). Pool keyed by (cohort, dev).
-      cell_resid <- .boot_cell_residuals_cl(x, anchor = anchor, grp = grp,
+      cell_resid <- .boot_cell_residuals_cl(x, anchor = anchor, groups = grp,
                                           target = target, hat_adj = hat_adj)
       # Extract per-group phi (ODP single scale) BEFORE pool transforms
       # the table -- the pool builder isn't required to preserve attrs.
       phi <- attr(cell_resid, "phi")
-      pool <- .boot_build_pool_cell_cl(cell_resid, grp = grp,
+      pool <- .boot_build_pool_cell_cl(cell_resid, groups = grp,
                                      pooling = pooling, tail = tail,
                                      min_pool = min_pool, maturity = maturity,
                                      demean = demean)
@@ -613,14 +613,14 @@ bootstrap.Triangle <- function(x,
     } else {
       link <- as_link(x, loss = target, drop_invalid = TRUE)
     }
-    anchor <- .boot_anchor_cl(link, grp = grp, alpha = alpha)
+    anchor <- .boot_anchor_cl(link, groups = grp, alpha = alpha)
 
     if (identical(method, "ed")) {
-      cell_resid <- .boot_cell_residuals_ed(link, grp = grp)
+      cell_resid <- .boot_cell_residuals_ed(link, groups = grp)
       phi <- attr(cell_resid, "phi")
     } else if (identical(method, "sa")) {
-      cell_resid_ed <- .boot_cell_residuals_ed(link, grp = grp)
-      cell_resid_cl <- .boot_cell_residuals_cl(x, anchor = anchor, grp = grp,
+      cell_resid_ed <- .boot_cell_residuals_ed(link, groups = grp)
+      cell_resid_cl <- .boot_cell_residuals_cl(x, anchor = anchor, groups = grp,
                                               target = target, hat_adj = hat_adj)
       phi_ed <- attr(cell_resid_ed, "phi")
       phi_cl <- attr(cell_resid_cl, "phi")
@@ -635,7 +635,7 @@ bootstrap.Triangle <- function(x,
       }
     } else {
       # method = "cl" parametric: ODP cell dispersion via CL Pearson form.
-      cell_resid <- .boot_cell_residuals_cl(x, anchor = anchor, grp = grp,
+      cell_resid <- .boot_cell_residuals_cl(x, anchor = anchor, groups = grp,
                                             target = target, hat_adj = hat_adj)
       phi <- attr(cell_resid, "phi")
     }
@@ -645,7 +645,7 @@ bootstrap.Triangle <- function(x,
     # We still compute the anchor (f_hat, sigma2, f_var) -- those drive
     # the N(f_hat, sqrt(Var(f_hat))) draws inside .boot_stage1_one.
     link   <- as_link(x, loss = target, drop_invalid = TRUE)
-    anchor <- .boot_anchor_cl(link, grp = grp, alpha = alpha)
+    anchor <- .boot_anchor_cl(link, groups = grp, alpha = alpha)
     pool   <- .boot_empty_pool(grp)
   }
 
@@ -664,14 +664,14 @@ bootstrap.Triangle <- function(x,
   stage1_out <- .boot_stage1(
     triangle = x, link = link, anchor = anchor, pool = pool,
     phi = phi,
-    grp = grp, is_residual_mode = is_residual_mode,
+    groups = grp, is_residual_mode = is_residual_mode,
     is_parametric_mode = is_parametric_mode,
     residual = residual,
     process = process, method = method, B = B, alpha = alpha,
     target = target, sa_maturity = sa_maturity
   )
 
-  boot_summary <- .boot_summary_from_arrays(stage1_out, grp = grp,
+  boot_summary <- .boot_summary_from_arrays(stage1_out, groups = grp,
                                           target = target,
                                           quantile_ci = quantile_ci)
 
@@ -681,7 +681,7 @@ bootstrap.Triangle <- function(x,
   # ~250-300 ms reshape cost up front so subsequent reads are O(1) and
   # the object has no hidden mutation behaviour.
   pseudo_triangles <- if (isTRUE(keep_pseudo))
-    .boot_build_pseudo_long(stage1_out, target = target, grp = grp)
+    .boot_build_pseudo_long(stage1_out, target = target, groups = grp)
   else NULL
 
   structure(
@@ -741,8 +741,8 @@ bootstrap.Triangle <- function(x,
 
 # Empty residual pool used by the parametric path so downstream code that
 # inspects `pool$residual` / `pool$pool_id` sees a well-formed 0-row table.
-.boot_empty_pool <- function(grp) {
-  keep <- c(grp, "cohort", "ata_from", "ata_to", "residual", "pool_id")
+.boot_empty_pool <- function(groups) {
+  keep <- c(groups, "cohort", "ata_from", "ata_to", "residual", "pool_id")
   out <- data.table::data.table()
   for (col in keep) {
     out[, (col) := if (col == "residual") numeric(0)
@@ -776,11 +776,11 @@ bootstrap.Triangle <- function(x,
 # When n=1 for the last link, use Mack tail rule:
 #   sigma^2_K = min(sigma^2_{K-1}^2 / sigma^2_{K-2}, sigma^2_{K-2}, sigma^2_{K-1})
 # Simpler fallback when K < 3: sigma^2_K = sigma^2_{K-1}.
-.boot_anchor_cl <- function(link, grp, alpha = 1) {
+.boot_anchor_cl <- function(link, groups, alpha = 1) {
   # data.table NSE
   loss_from <- loss_to <- f_hat <- sigma2 <- f_var <- sum_from <- NULL
 
-  by_cols <- c(grp, "ata_from", "ata_to")
+  by_cols <- c(groups, "ata_from", "ata_to")
 
   anchor <- link[is.finite(loss_from) & is.finite(loss_to) & loss_from > 0,
                  {
@@ -802,12 +802,12 @@ bootstrap.Triangle <- function(x,
                  by = by_cols]
 
   # Mack tail rule for sigma2 at the last link if n=1
-  if (length(grp) > 0L) {
-    by_grp <- grp
+  if (length(groups) > 0L) {
+    by_grp <- groups
   } else {
     by_grp <- NULL
   }
-  data.table::setorderv(anchor, c(grp, "ata_from"))
+  data.table::setorderv(anchor, c(groups, "ata_from"))
   anchor[, sigma2 := .boot_fill_sigma2(sigma2), by = by_grp]
 
   anchor[, f_var := data.table::fifelse(
@@ -848,11 +848,11 @@ bootstrap.Triangle <- function(x,
 #
 # Returns the Link with two new columns: `residual` and `pool_id`. The
 # `pool_id` is filled later by .boot_build_pool_cl() (mode-dependent).
-.boot_attach_residuals_cl <- function(link, anchor, grp) {
+.boot_attach_residuals_cl <- function(link, anchor, groups) {
   # NSE
   loss_from <- loss_to <- f_hat <- sigma2 <- residual <- NULL
 
-  by_cols <- c(grp, "ata_from", "ata_to")
+  by_cols <- c(groups, "ata_from", "ata_to")
 
   dt <- .copy_dt(link)
   dt <- merge(dt, anchor[, .SD,
@@ -873,7 +873,7 @@ bootstrap.Triangle <- function(x,
 
 
 # Internal: build residual pool with `pool_id` per (pooling, tail) --------
-.boot_build_pool_cl <- function(link, anchor, grp, pooling, tail, min_pool,
+.boot_build_pool_cl <- function(link, anchor, groups, pooling, tail, min_pool,
                               maturity) {
   # data.table NSE
   residual <- ata_to <- mat_change <- grp_key <- N <- below <-
@@ -882,8 +882,8 @@ bootstrap.Triangle <- function(x,
   dt <- link[is.finite(residual)]
 
   # Build group key string ("g1|g2|...") once
-  if (length(grp) > 0L) {
-    dt[, ("grp_key") := do.call(paste, c(.SD, sep = "|")), .SDcols = grp]
+  if (length(groups) > 0L) {
+    dt[, ("grp_key") := do.call(paste, c(.SD, sep = "|")), .SDcols = groups]
   } else {
     dt[, ("grp_key") := ""]
   }
@@ -896,11 +896,11 @@ bootstrap.Triangle <- function(x,
     if (identical(tail, "maturity")) {
       # per-group maturity boundary: ata_to < k* keeps per-dev pool, ata_to
       # >= k* collapses to a single group-level pooled bucket ("POST").
-      if (length(grp) > 0L) {
+      if (length(groups) > 0L) {
         mat <- data.table::as.data.table(maturity)
-        mat <- mat[, .SD, .SDcols = c(grp, "change")]
+        mat <- mat[, .SD, .SDcols = c(groups, "change")]
         data.table::setnames(mat, "change", "mat_change")
-        dt <- merge(dt, mat, by = grp, all.x = TRUE, sort = FALSE)
+        dt <- merge(dt, mat, by = groups, all.x = TRUE, sort = FALSE)
       } else {
         mc <- attr(maturity, "change")
         if (is.null(mc)) {
@@ -943,7 +943,7 @@ bootstrap.Triangle <- function(x,
 
   dt[, grp_key := NULL]
 
-  keep <- c(grp, "cohort", "ata_from", "ata_to", "residual", "pool_id")
+  keep <- c(groups, "cohort", "ata_from", "ata_to", "residual", "pool_id")
   dt[, .SD, .SDcols = keep]
 }
 
@@ -1087,13 +1087,13 @@ bootstrap.Triangle <- function(x,
 # Drop cells where h_ii >= 1 - eps (corners) when hat_adj = TRUE.
 #
 # Returns a data.table with columns [grp..., cohort, dev, residual, mu_hat].
-.boot_cell_residuals_cl <- function(triangle, anchor, grp, target, hat_adj) {
+.boot_cell_residuals_cl <- function(triangle, anchor, groups, target, hat_adj) {
   # NSE
   cohort <- dev <- NULL
 
   # Per-group iteration
-  if (length(grp) > 0L) {
-    grp_vals <- unique(triangle[, .SD, .SDcols = grp])
+  if (length(groups) > 0L) {
+    grp_vals <- unique(triangle[, .SD, .SDcols = groups])
     single_grp <- nrow(grp_vals) == 1L
     if (single_grp) {
       # Fast path: skip merges, rbindlist, setcolorder for the common
@@ -1102,7 +1102,7 @@ bootstrap.Triangle <- function(x,
       one <- .boot_cell_residuals_one_cl(triangle, anchor, target, hat_adj)
       phi_one <- attr(one, "phi")
       for (col in names(gkey)) one[, (col) := gkey[[col]]]
-      data.table::setcolorder(one, c(grp, "cohort", "dev", "residual", "mu_hat"))
+      data.table::setcolorder(one, c(groups, "cohort", "dev", "residual", "mu_hat"))
       attr(one, "phi") <- data.table::data.table(gkey, phi = phi_one)
       return(one)
     }
@@ -1110,8 +1110,8 @@ bootstrap.Triangle <- function(x,
     phi_list <- vector("list", nrow(grp_vals))
     for (gi in seq_len(nrow(grp_vals))) {
       gkey <- grp_vals[gi]
-      tri_g <- merge(triangle, gkey, by = grp, sort = FALSE)
-      anc_g <- merge(anchor,   gkey, by = grp, sort = FALSE)
+      tri_g <- merge(triangle, gkey, by = groups, sort = FALSE)
+      anc_g <- merge(anchor,   gkey, by = groups, sort = FALSE)
       one <- .boot_cell_residuals_one_cl(tri_g, anc_g, target, hat_adj)
       phi_one <- attr(one, "phi")
       for (col in names(gkey)) one[, (col) := gkey[[col]]]
@@ -1119,7 +1119,7 @@ bootstrap.Triangle <- function(x,
       phi_list[[gi]] <- data.table::data.table(gkey, phi = phi_one)
     }
     res <- data.table::rbindlist(out_list, use.names = TRUE, fill = TRUE)
-    data.table::setcolorder(res, c(grp, "cohort", "dev", "residual", "mu_hat"))
+    data.table::setcolorder(res, c(groups, "cohort", "dev", "residual", "mu_hat"))
     attr(res, "phi") <- data.table::rbindlist(phi_list, use.names = TRUE)
     res
   } else {
@@ -1251,12 +1251,12 @@ bootstrap.Triangle <- function(x,
 # `phi` (cell-mode dispersion used for Stage 2 process noise) is computed
 # as `sum(r_raw^2) / (n_obs - p)` with `p = n_links` (one parameter per
 # link factor `g_k`), matching the ED-paradigm degrees-of-freedom.
-.boot_cell_residuals_ed <- function(link, grp) {
+.boot_cell_residuals_ed <- function(link, groups) {
   # NSE
   loss_delta <- exposure_from <- ata_to <- residual <- g_hat <- mu_ed <-
     n_obs <- sum_r2 <- n_links_used <- NULL
 
-  by_cols <- c(grp, "ata_to")
+  by_cols <- c(groups, "ata_to")
 
   dt <- data.table::copy(link)
 
@@ -1277,8 +1277,8 @@ bootstrap.Triangle <- function(x,
 
   # Per-group phi: ODP-style single dispersion using ED Pearson residuals.
   # Degrees of freedom = n_obs - n_links (one parameter g_k per link).
-  if (length(grp) > 0L) {
-    by_grp <- grp
+  if (length(groups) > 0L) {
+    by_grp <- groups
   } else {
     by_grp <- NULL
   }
@@ -1294,12 +1294,12 @@ bootstrap.Triangle <- function(x,
     sum_r2 / (n_obs - n_links_used),
     NA_real_
   )]
-  phi_keep <- c(grp, "phi")
+  phi_keep <- c(groups, "phi")
   phi <- phi[, .SD, .SDcols = phi_keep]
 
   # Reshape to the (cohort, dev, residual, mu_hat) schema expected by
   # `.boot_build_pool_cell_cl` -- dev = ata_to.
-  out_keep <- c(grp, "cohort", "ata_to", "residual", "mu_ed")
+  out_keep <- c(groups, "cohort", "ata_to", "residual", "mu_ed")
   out <- dt[, .SD, .SDcols = out_keep]
   data.table::setnames(out, c("ata_to", "mu_ed"), c("dev", "mu_hat"))
   data.table::setattr(out, "phi", phi)
@@ -1404,7 +1404,7 @@ bootstrap.Triangle <- function(x,
 #   - separated: per-dev pool ("grp_key|dev_j")
 #   - pooled:    one pool per group ("grp_key" or "all")
 #   - tail_pooled: per-dev pre-cut, single "POST" bucket post-cut
-.boot_build_pool_cell_cl <- function(cell_resid, grp, pooling, tail, min_pool,
+.boot_build_pool_cell_cl <- function(cell_resid, groups, pooling, tail, min_pool,
                                    maturity, demean = TRUE) {
   # NSE
   residual <- dev <- mat_change <- grp_key <- N <- below <-
@@ -1425,8 +1425,8 @@ bootstrap.Triangle <- function(x,
   # counter-view that the non-zero average may be a "characteristic of
   # the data set" and need not be removed. demean = FALSE leaves the
   # raw residuals untouched.
-  if (length(grp) > 0L) {
-    dt[, ("grp_key") := do.call(paste, c(.SD, sep = "|")), .SDcols = grp]
+  if (length(groups) > 0L) {
+    dt[, ("grp_key") := do.call(paste, c(.SD, sep = "|")), .SDcols = groups]
   } else {
     dt[, ("grp_key") := ""]
   }
@@ -1440,11 +1440,11 @@ bootstrap.Triangle <- function(x,
     dt[, ("pool_id") := data.table::fifelse(grp_key == "", "all", grp_key)]
   } else if (identical(pooling, "tail_pooled")) {
     if (identical(tail, "maturity")) {
-      if (length(grp) > 0L) {
+      if (length(groups) > 0L) {
         mat <- data.table::as.data.table(maturity)
-        mat <- mat[, .SD, .SDcols = c(grp, "change")]
+        mat <- mat[, .SD, .SDcols = c(groups, "change")]
         data.table::setnames(mat, "change", "mat_change")
-        dt <- merge(dt, mat, by = grp, all.x = TRUE, sort = FALSE)
+        dt <- merge(dt, mat, by = groups, all.x = TRUE, sort = FALSE)
       } else {
         mc <- attr(maturity, "change")
         if (is.null(mc)) {
@@ -1481,7 +1481,7 @@ bootstrap.Triangle <- function(x,
   }
 
   dt[, grp_key := NULL]
-  keep <- c(grp, "cohort", "dev", "residual", "pool_id")
+  keep <- c(groups, "cohort", "dev", "residual", "pool_id")
   dt[, .SD, .SDcols = keep]
 }
 
@@ -1508,7 +1508,7 @@ bootstrap.Triangle <- function(x,
 # Returns long-format data.table [grp..., cohort, dev, rep, <target>].
 
 .boot_stage1 <- function(triangle, link, anchor, pool, phi,
-                          grp, is_residual_mode,
+                          groups, is_residual_mode,
                           is_parametric_mode = FALSE,
                           residual, process,
                           method = "ed",
@@ -1516,15 +1516,15 @@ bootstrap.Triangle <- function(x,
                           sa_maturity = NULL) {
 
   # Per-group iteration
-  if (length(grp) > 0L) {
-    grp_vals <- unique(triangle[, .SD, .SDcols = grp])
+  if (length(groups) > 0L) {
+    grp_vals <- unique(triangle[, .SD, .SDcols = groups])
     single_grp <- nrow(grp_vals) == 1L
     if (single_grp) {
       # Fast path: skip merges + rbindlist when only one group is present.
       phi_g <- if (!is.null(phi) && nrow(phi) > 0L)
-                 merge(phi, grp_vals[1L], by = grp, sort = FALSE)
+                 merge(phi, grp_vals[1L], by = groups, sort = FALSE)
                else phi
-      mat_g <- .boot_subset_maturity(sa_maturity, grp_vals[1L], grp)
+      mat_g <- .boot_subset_maturity(sa_maturity, grp_vals[1L], groups)
       return(.boot_stage1_one(
         triangle = triangle, link = link, anchor = anchor, pool = pool,
         phi = phi_g,
@@ -1539,15 +1539,15 @@ bootstrap.Triangle <- function(x,
     out_list <- vector("list", nrow(grp_vals))
     for (gi in seq_len(nrow(grp_vals))) {
       gkey <- grp_vals[gi]
-      tri_g <- merge(triangle, gkey, by = grp, sort = FALSE)
-      link_g <- merge(link, gkey, by = grp, sort = FALSE)
-      anchor_g <- merge(anchor, gkey, by = grp, sort = FALSE)
-      pool_g <- if (nrow(pool) > 0L) merge(pool, gkey, by = grp, sort = FALSE)
+      tri_g <- merge(triangle, gkey, by = groups, sort = FALSE)
+      link_g <- merge(link, gkey, by = groups, sort = FALSE)
+      anchor_g <- merge(anchor, gkey, by = groups, sort = FALSE)
+      pool_g <- if (nrow(pool) > 0L) merge(pool, gkey, by = groups, sort = FALSE)
                 else pool
       phi_g  <- if (!is.null(phi) && nrow(phi) > 0L)
-                  merge(phi, gkey, by = grp, sort = FALSE)
+                  merge(phi, gkey, by = groups, sort = FALSE)
                 else phi
-      mat_g  <- .boot_subset_maturity(sa_maturity, gkey, grp)
+      mat_g  <- .boot_subset_maturity(sa_maturity, gkey, groups)
       out_list[[gi]] <- .boot_stage1_one(
         triangle = tri_g, link = link_g, anchor = anchor_g, pool = pool_g,
         phi = phi_g,
@@ -1587,11 +1587,11 @@ bootstrap.Triangle <- function(x,
 # Maturity object holds rows for all groups; per-group worker only needs
 # its own row to derive `mat_k_vec`. When `mat` is NULL or has no group
 # columns, return it unchanged (the .boot_stage1_one branch handles NULL).
-.boot_subset_maturity <- function(mat, gkey, grp) {
-  if (is.null(mat) || length(grp) == 0L) return(mat)
+.boot_subset_maturity <- function(mat, gkey, groups) {
+  if (is.null(mat) || length(groups) == 0L) return(mat)
   if (!is.data.frame(mat)) return(mat)
-  if (!all(grp %in% names(mat))) return(mat)
-  merge(data.table::as.data.table(mat), gkey, by = grp, sort = FALSE)
+  if (!all(groups %in% names(mat))) return(mat)
+  merge(data.table::as.data.table(mat), gkey, by = groups, sort = FALSE)
 }
 
 
@@ -2286,7 +2286,7 @@ bootstrap.Triangle <- function(x,
 # additionally exposes the long-format pseudo_triangles DT on
 # `stage1_out$pseudo_long` for user inspection, but it never re-enters
 # the summary computation.
-.boot_summary_from_arrays <- function(stage1_out, grp, target = "loss",
+.boot_summary_from_arrays <- function(stage1_out, groups, target = "loss",
                                       quantile_ci = FALSE) {
   ci_lo <- ci_hi <- NULL  # suppress R CMD check NOTEs for data.table NSE
   is_multi <- !is.null(stage1_out$grp_vals) &&
@@ -2326,13 +2326,13 @@ bootstrap.Triangle <- function(x,
     total_se  = res$total_se,
     total_cv  = res$total_cv
   )
-  if (length(grp) > 0L && !is.null(grp_vals)) {
+  if (length(groups) > 0L && !is.null(grp_vals)) {
     if (is.data.frame(grp_vals) && nrow(grp_vals) == n_groups) {
-      for (col in grp)
+      for (col in groups)
         dt[, (col) := rep(grp_vals[[col]], each = cell_n)]
     } else {
       # single-group fast path: grp_vals is a length-1 data.frame
-      for (col in grp) dt[, (col) := grp_vals[[col]]]
+      for (col in groups) dt[, (col) := grp_vals[[col]]]
     }
   }
 
@@ -2344,7 +2344,7 @@ bootstrap.Triangle <- function(x,
     dt[, ci_hi := res$ci_hi]
   }
 
-  by_cols  <- c(grp, "cohort", "dev")
+  by_cols  <- c(groups, "cohort", "dev")
   out_cols <- c(by_cols, "mean_proj",
                 "param_se", "proc_se", "total_se", "total_cv")
   if (isTRUE(quantile_ci)) out_cols <- c(out_cols, "ci_lo", "ci_hi")
@@ -2358,7 +2358,7 @@ bootstrap.Triangle <- function(x,
 # to $pseudo_triangles; never called during the summary path. ~250 ms
 # on a 4-group, 36 x 36, B=999 triangle, so we pay it only when the
 # user actually reads the slot.
-.boot_build_pseudo_long <- function(stage1_out, target = "loss", grp = character()) {
+.boot_build_pseudo_long <- function(stage1_out, target = "loss", groups = character()) {
   is_multi <- !is.null(stage1_out$grp_vals) &&
               !is.null(stage1_out$n_groups) &&
               stage1_out$n_groups > 0L

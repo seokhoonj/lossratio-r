@@ -4,7 +4,7 @@
 \alias{.get_plot_meta}
 \title{Get plot display metadata for a value variable}
 \usage{
-.get_plot_meta(metric, amount_divisor = 1e+08)
+.get_plot_meta(metric, amount_divisor = 100000000)
 }
 \arguments{
 \item{metric}{A single character string naming the variable to plot.

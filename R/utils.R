@@ -493,8 +493,8 @@
 #' @param dt A long-format development `data.table`.
 #' @param recent Positive integer or `NULL`. When `NULL` or missing, `dt`
 #'   is returned unchanged.
-#' @param grp Character vector of group columns (may be empty).
-#' @param coh Single column name for the cohort variable (e.g. `cohort`).
+#' @param groups Character vector of group columns (may be empty).
+#' @param cohort Single column name for the cohort variable (e.g. `cohort`).
 #' @param dev Single column name for the development variable (e.g. `dev`
 #'   for `Triangle` objects, or `ata_from` for `ATA`/`ED` objects).
 #' @param dev_split Optional SA-boundary specifier. Accepts:
@@ -503,9 +503,9 @@
 #'     (= `ata_to`, the first CL-region dev). The recent filter is
 #'     applied only to rows where `dev >= dev_split` (CL region); rows
 #'     with `dev < dev_split` (ED region) are kept unconditionally.
-#'   * A `data.table` `[grp..., dev_split]` -- per-group SA boundary
+#'   * A `data.table` `[groups..., dev_split]` -- per-group SA boundary
 #'     (different `k*` per group). The group columns must be a subset
-#'     of `grp`. Each row of `dt` looks up its `dev_split` via
+#'     of `groups`. Each row of `dt` looks up its `dev_split` via
 #'     left-join; rows whose group has no matching entry (NA after the
 #'     join) are treated as if `dev_split = NULL` for that row (recent
 #'     wedge applies to all dev for them).
@@ -515,8 +515,8 @@
 #'
 #' @keywords internal
 .apply_recent_filter <- function(dt, recent,
-                                 grp = character(0),
-                                 coh, dev, dev_split = NULL) {
+                                 groups = character(0),
+                                 cohort, dev, dev_split = NULL) {
 
   # Suppress R CMD check NOTEs for `data.table` temp columns referenced
   # bare inside `j` expressions later in this function.
@@ -536,33 +536,33 @@
   recent <- as.integer(recent)
 
   # `dev_split` may be either a scalar (single ED/CL boundary applied
-  # to every group) or a `[grp..., dev_split]` data.table for
+  # to every group) or a `[groups..., dev_split]` data.table for
   # per-group SA hybrid (m_k differs across groups).
   dev_split_grouped <- data.table::is.data.table(dev_split)
   if (!is.null(dev_split) && !dev_split_grouped) {
     if (!is.numeric(dev_split) || length(dev_split) != 1L || is.na(dev_split))
       stop("`dev_split` must be a single non-NA numeric scalar, ",
-           "or a `[grp..., dev_split]` data.table for per-group SA hybrid.",
+           "or a `[groups..., dev_split]` data.table for per-group SA hybrid.",
            call. = FALSE)
   }
   if (dev_split_grouped) {
     if (!"dev_split" %in% names(dev_split))
       stop("per-group `dev_split` data.table must have a column named ",
            "`dev_split`.", call. = FALSE)
-    ds_join_cols <- intersect(setdiff(names(dev_split), "dev_split"), grp)
+    ds_join_cols <- intersect(setdiff(names(dev_split), "dev_split"), groups)
     if (length(ds_join_cols) == 0L)
       stop("per-group `dev_split` data.table must share at least one ",
-           "group column with `grp`.", call. = FALSE)
+           "group column with `groups`.", call. = FALSE)
   }
 
   out <- data.table::copy(dt)
 
   # rank of cohort within group (1 = earliest), then calendar index
   out[, (".coh_rank") := data.table::frank(.SD[[1L]], ties.method = "dense"),
-      by = grp, .SDcols = coh]
+      by = groups, .SDcols = cohort]
   out[, (".cal_idx") := .coh_rank + .SD[[1L]] - 1L,
       .SDcols = dev]
-  out[, (".max_cal") := max(.cal_idx, na.rm = TRUE), by = grp]
+  out[, (".max_cal") := max(.cal_idx, na.rm = TRUE), by = groups]
 
   cal_idx <- out[[".cal_idx"]]
   max_cal <- out[[".max_cal"]]
@@ -667,7 +667,7 @@
 #' and (k+1)-th change is segment k+1; on or after the K-th change is
 #' segment K+1.
 #'
-#' Returns `rep(1L, length(coh_vals))` when `regime` is `NULL` or carries
+#' Returns `rep(1L, length(cohort_vals))` when `regime` is `NULL` or carries
 #' no changes -- every cohort is in the single (sole) segment.
 #'
 #' Treatment-agnostic: this helper preserves all change points regardless
@@ -675,18 +675,18 @@
 #' partition (`"segment_wise"`) or collapse to the latest change
 #' (`"latest_only"`).
 #'
-#' @param coh_vals Date vector of cohort values.
+#' @param cohort_vals Date vector of cohort values.
 #' @param regime A `"Regime"` object or `NULL`.
-#' @param grp_cols Optional `data.table` (`nrow == length(coh_vals)`)
+#' @param group_cols Optional `data.table` (`nrow == length(cohort_vals)`)
 #'   carrying the group columns named in `regime$groups`. Required when
 #'   `regime` is multi-group; ignored otherwise. Each row's segment is
 #'   computed against the change points for that row's group.
 #'
-#' @return Integer vector of segment ids, same length as `coh_vals`.
+#' @return Integer vector of segment ids, same length as `cohort_vals`.
 #'
 #' @keywords internal
-.assign_segment <- function(coh_vals, regime, grp_cols = NULL) {
-  n <- length(coh_vals)
+.assign_segment <- function(cohort_vals, regime, group_cols = NULL) {
+  n <- length(cohort_vals)
   if (n == 0L) return(integer(0))
 
   if (is.null(regime) || !inherits(regime, "Regime"))
@@ -697,31 +697,31 @@
       !"change" %in% names(changes))
     return(rep(1L, n))
 
-  coh_vals <- as.Date(coh_vals)
+  cohort_vals <- as.Date(cohort_vals)
   is_multi <- isTRUE(regime$multi_group) && length(regime$groups) > 0L
 
   if (!is_multi) {
     cd <- sort(as.Date(changes[["change"]]))
-    return(findInterval(coh_vals, cd) + 1L)
+    return(findInterval(cohort_vals, cd) + 1L)
   }
 
   rgrp <- regime$groups
-  if (is.null(grp_cols))
-    stop(".assign_segment(): multi-group Regime requires `grp_cols`.",
+  if (is.null(group_cols))
+    stop(".assign_segment(): multi-group Regime requires `group_cols`.",
          call. = FALSE)
-  if (!data.table::is.data.table(grp_cols))
-    grp_cols <- data.table::as.data.table(grp_cols)
+  if (!data.table::is.data.table(group_cols))
+    group_cols <- data.table::as.data.table(group_cols)
 
-  missing_grp <- setdiff(rgrp, names(grp_cols))
+  missing_grp <- setdiff(rgrp, names(group_cols))
   if (length(missing_grp))
-    stop(sprintf(".assign_segment(): `grp_cols` missing group cols: %s",
+    stop(sprintf(".assign_segment(): `group_cols` missing group cols: %s",
                  paste(missing_grp, collapse = ", ")), call. = FALSE)
-  if (nrow(grp_cols) != n)
-    stop(sprintf(".assign_segment(): nrow(grp_cols) = %d, expected %d.",
-                 nrow(grp_cols), n), call. = FALSE)
+  if (nrow(group_cols) != n)
+    stop(sprintf(".assign_segment(): nrow(group_cols) = %d, expected %d.",
+                 nrow(group_cols), n), call. = FALSE)
 
-  work <- data.table::data.table(.idx = seq_len(n), .coh = coh_vals)
-  for (g in rgrp) data.table::set(work, j = g, value = grp_cols[[g]])
+  work <- data.table::data.table(.idx = seq_len(n), .cohort = cohort_vals)
+  for (g in rgrp) data.table::set(work, j = g, value = group_cols[[g]])
 
   out <- integer(n)
   grp_keys <- unique(work[, rgrp, with = FALSE])
@@ -730,7 +730,7 @@
     ch_g <- changes[key, on = rgrp, nomatch = NULL][["change"]]
     sub  <- work[key, on = rgrp]
     seg  <- if (length(ch_g))
-              findInterval(sub$.coh, sort(as.Date(ch_g))) + 1L
+              findInterval(sub$.cohort, sort(as.Date(ch_g))) + 1L
             else
               rep(1L, nrow(sub))
     out[sub$.idx] <- seg
@@ -742,15 +742,15 @@
 #' Apply regime-change (cohort) filter to a triangle-shaped data.table
 #'
 #' @description
-#' Drops rows where `coh < change_date`. Optionally restrict the filter
+#' Drops rows where `cohort < change_date`. Optionally restrict the filter
 #' to rows with `dev < dev_split` (the ED region of an SA fit); rows
 #' with `dev >= dev_split` (CL region) are kept regardless of cohort.
 #'
 #' Supports both **scalar** dispatch (single change date applied to every
 #' row) and **per-group** dispatch (different change date per group,
 #' broadcast via left-join). The mode is auto-selected from
-#' `regime` and `grp`: a multi-group `Regime` whose `$groups`
-#' intersect `grp` triggers the per-group path. Groups in `dt` that have
+#' `regime` and `groups`: a multi-group `Regime` whose `$groups`
+#' intersect `groups` triggers the per-group path. Groups in `dt` that have
 #' no matching change date (NA after the left-join) are kept unfiltered.
 #'
 #' @param dt A data.table.
@@ -761,9 +761,9 @@
 #'   * A single-group `Regime` object -- extracts the latest from
 #'     `$changes`.
 #'   * A multi-group `Regime` object -- dispatches per group on the
-#'     intersection of `Regime$groups` and `grp`.
-#' @param grp Character vector of group columns (may be empty).
-#' @param coh Single column name for the cohort variable.
+#'     intersection of `Regime$groups` and `groups`.
+#' @param groups Character vector of group columns (may be empty).
+#' @param cohort Single column name for the cohort variable.
 #' @param dev Single column name for the development variable.
 #' @param dev_split Optional numeric scalar -- the maturity target dev
 #'   (= `ata_to`, equivalently the first CL-region dev). When supplied,
@@ -775,8 +775,8 @@
 #'
 #' @keywords internal
 .apply_regime_filter <- function(dt, regime,
-                                 grp = character(0),
-                                 coh, dev, dev_split = NULL) {
+                                 groups = character(0),
+                                 cohort, dev, dev_split = NULL) {
 
   # data.table NSE bindings -- temp columns referenced bare inside `j`
   # expressions later (per official data.table importing guide).
@@ -786,7 +786,7 @@
     stop("`dt` must be a data.table.", call. = FALSE)
 
   # treatment = "segment_wise": each segment uses its own mini-triangle
-  # anchored at the latest cal diagonal -- for segment k with cohorts in
+  # anchored at the latest calendar diagonal -- for segment k with cohorts in
   # [first_k, last_k] (per group), USED cells satisfy
   # `dev >= dev_min(k) = max_cal_idx - last_cohort_rank_of_seg_k + 1`.
   # Cells outside any mini-triangle are dropped so downstream factor
@@ -799,13 +799,13 @@
   if (inherits(regime, "Regime") &&
       identical(regime$treatment, "segment_wise")) {
     out    <- .copy_dt(dt)
-    grp_cols <- if (length(grp)) out[, grp, with = FALSE] else NULL
+    grp_cols <- if (length(groups)) out[, groups, with = FALSE] else NULL
     # `[[<-` is base-R's assignment form: it invalidates data.table's
     # `.internal.selfref` and triggers a one-shot self-fix warning on
     # the next `:=`. Use `data.table::set()` which assigns by
     # reference and keeps selfref intact.
     data.table::set(out, j = "segment_id",
-                    value = .assign_segment(out[[coh]], regime, grp_cols))
+                    value = .assign_segment(out[[cohort]], regime, grp_cols))
 
     bp <- regime$changes
     apply_mini_tri <- inherits(dt, "Triangle") &&
@@ -814,26 +814,26 @@
 
     if (apply_mini_tri) {
 
-      rgrp <- intersect(grp,
+      rgrp <- intersect(groups,
                         if (is.null(regime$groups)) character(0)
                         else regime$groups)
 
-      # Per-group cohort rank + cal index. Match the convention used by
+      # Per-group cohort rank + calendar index. Match the convention used by
       # `.compute_triangle_usage()` so the algorithm boundary matches
       # the heatmap.
-      if (length(grp)) {
+      if (length(groups)) {
         out[, ".coh_rank_seg" := data.table::frank(.SD[[1L]],
                                                    ties.method = "dense"),
-            by = grp, .SDcols = coh]
+            by = groups, .SDcols = cohort]
       } else {
         out[, ".coh_rank_seg" := data.table::frank(.SD[[1L]],
                                                    ties.method = "dense"),
-            .SDcols = coh]
+            .SDcols = cohort]
       }
       out[, ".cal_idx_seg" := .coh_rank_seg + .SD[[1L]] - 1L,
           .SDcols = dev]
-      if (length(grp)) {
-        out[, ".max_cal_seg" := max(.cal_idx_seg, na.rm = TRUE), by = grp]
+      if (length(groups)) {
+        out[, ".max_cal_seg" := max(.cal_idx_seg, na.rm = TRUE), by = groups]
       } else {
         out[, ".max_cal_seg" := max(.cal_idx_seg, na.rm = TRUE)]
       }
@@ -868,29 +868,29 @@
     return(out[])
   }
 
-  cd <- .resolve_regime_change_date(regime, by = grp)
+  cd <- .resolve_regime_change_date(regime, by = groups)
 
   if (is.null(cd)) {
     return(data.table::copy(dt))
   }
 
   # `dev_split` may be either a scalar (single ED/CL boundary applied
-  # to every group) or a `[grp..., dev_split]` data.table for
+  # to every group) or a `[groups..., dev_split]` data.table for
   # per-group SA hybrid (m_k differs across groups).
   dev_split_grouped <- data.table::is.data.table(dev_split)
   if (!is.null(dev_split) && !dev_split_grouped) {
     if (!is.numeric(dev_split) || length(dev_split) != 1L || is.na(dev_split))
       stop("`dev_split` must be a single non-NA numeric scalar, ",
-           "or a `[grp..., dev_split]` data.table for per-group SA hybrid.",
+           "or a `[groups..., dev_split]` data.table for per-group SA hybrid.",
            call. = FALSE)
   }
   if (dev_split_grouped && !"dev_split" %in% names(dev_split))
     stop("per-group `dev_split` data.table must have a column named ",
          "`dev_split`.", call. = FALSE)
 
-  coh_class <- class(dt[[coh]])
+  coh_class <- class(dt[[cohort]])
   if (!any(coh_class %in% c("Date", "POSIXct", "POSIXt"))) {
-    stop("Column `", coh, "` must be of class Date or POSIXct/POSIXt.",
+    stop("Column `", cohort, "` must be of class Date or POSIXct/POSIXt.",
          call. = FALSE)
   }
 
@@ -902,7 +902,7 @@
     join_cols <- setdiff(names(cd), "change_date")
     cd_vals <- cd[out, on = join_cols, x.change_date]
 
-    coh_vals <- out[[coh]]
+    coh_vals <- out[[cohort]]
     dev_vals <- out[[dev]]
     matched  <- !is.na(cd_vals)
 
@@ -920,7 +920,7 @@
     }
   } else {
     # Scalar change-date path (backward-compat)
-    coh_vals <- out[[coh]]
+    coh_vals <- out[[cohort]]
     dev_vals <- out[[dev]]
     if (is.null(dev_split)) {
       keep <- coh_vals >= cd

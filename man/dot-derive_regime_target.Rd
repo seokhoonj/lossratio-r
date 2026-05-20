@@ -4,7 +4,7 @@
 \alias{.derive_regime_target}
 \title{Derive a non-native regime detection metric}
 \usage{
-.derive_regime_target(d, loss, grp = character(0))
+.derive_regime_target(d, loss, groups = character(0))
 }
 \description{
 Computes diagnostic / experimental detection metrics that are not stored

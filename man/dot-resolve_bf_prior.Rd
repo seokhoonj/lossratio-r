@@ -11,7 +11,7 @@
 
 \item{dt}{The per-cohort \code{data.table} (carrying \code{cohort} etc.).}
 
-\item{by_cols}{Character vector of join columns (\code{c(grp, "cohort")}).}
+\item{by_cols}{Character vector of join columns (\code{c(groups, "cohort")}).}
 }
 \value{
 A \code{data.table} with columns \code{by_cols + "elr"}.

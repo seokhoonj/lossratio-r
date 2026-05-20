@@ -7,7 +7,7 @@
 .bf_compose_bootstrap(
   boots,
   priors,
-  grp,
+  groups,
   by_cols,
   full,
   summ,
@@ -24,9 +24,9 @@
 Pass \code{NULL} for the Cape Cod composition (ELR is data-pooled per
 replicate).}
 
-\item{grp}{Group column character vector.}
+\item{groups}{Group column character vector.}
 
-\item{by_cols}{\code{c(grp, "cohort")}.}
+\item{by_cols}{\code{c(groups, "cohort")}.}
 
 \item{full}{The point-estimate \verb{$full} data.table (used as the base
 for join-on bootstrap SE / CI columns).}
@@ -35,7 +35,7 @@ for join-on bootstrap SE / CI columns).}
 
 \item{conf_level}{Confidence level for CI bounds.}
 
-\item{cohorts_present}{Unique \verb{[grp, cohort]} rows present in the
+\item{cohorts_present}{Unique \verb{[groups, cohort]} rows present in the
 triangle.}
 }
 \value{

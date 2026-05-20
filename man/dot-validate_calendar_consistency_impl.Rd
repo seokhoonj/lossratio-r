@@ -4,7 +4,7 @@
 \alias{.validate_calendar_consistency_impl}
 \title{Internal: row-level cohort vs calendar consistency check}
 \usage{
-.validate_calendar_consistency_impl(dt, grp, coh, dev, cal)
+.validate_calendar_consistency_impl(dt, groups, cohort, dev, calendar)
 }
 \description{
 Flag rows where \code{calendar < cohort} -- claims/events recorded

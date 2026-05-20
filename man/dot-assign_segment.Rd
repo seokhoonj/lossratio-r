@@ -4,20 +4,20 @@
 \alias{.assign_segment}
 \title{Assign each cohort to a regime segment}
 \usage{
-.assign_segment(coh_vals, regime, grp_cols = NULL)
+.assign_segment(cohort_vals, regime, group_cols = NULL)
 }
 \arguments{
-\item{coh_vals}{Date vector of cohort values.}
+\item{cohort_vals}{Date vector of cohort values.}
 
 \item{regime}{A \code{"Regime"} object or \code{NULL}.}
 
-\item{grp_cols}{Optional \code{data.table} (\code{nrow == length(coh_vals)})
+\item{group_cols}{Optional \code{data.table} (\code{nrow == length(cohort_vals)})
 carrying the group columns named in \code{regime$groups}. Required when
 \code{regime} is multi-group; ignored otherwise. Each row's segment is
 computed against the change points for that row's group.}
 }
 \value{
-Integer vector of segment ids, same length as \code{coh_vals}.
+Integer vector of segment ids, same length as \code{cohort_vals}.
 }
 \description{
 Maps a cohort vector to integer segment ids (\verb{1, 2, ..., K+1}) given
@@ -26,7 +26,7 @@ cohort earlier than the first change is segment 1; between the k-th
 and (k+1)-th change is segment k+1; on or after the K-th change is
 segment K+1.
 
-Returns \code{rep(1L, length(coh_vals))} when \code{regime} is \code{NULL} or carries
+Returns \code{rep(1L, length(cohort_vals))} when \code{regime} is \code{NULL} or carries
 no changes -- every cohort is in the single (sole) segment.
 
 Treatment-agnostic: this helper preserves all change points regardless

@@ -375,8 +375,8 @@ fit_ata <- function(x,
   if (!is.null(regime)) {
     link <- .apply_regime_filter(
       link, regime = regime,
-      grp = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
-      coh = "cohort",
+      groups = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
+      cohort = "cohort",
       dev = "ata_from"
     )
   }
@@ -387,8 +387,8 @@ fit_ata <- function(x,
   if (!is.null(recent)) {
     link <- .apply_recent_filter(
       link, recent,
-      grp = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
-      coh = "cohort",
+      groups = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
+      cohort = "cohort",
       dev = "ata_from"
     )
   }
@@ -412,7 +412,7 @@ fit_ata <- function(x,
     ata_summary  = ata_summary,
     maturity     = maturity,
     use_maturity = use_maturity,
-    grp          = grp,
+    groups       = grp,
     na_method    = na_method
   )
 
@@ -522,7 +522,7 @@ print.ATAFit <- function(x, ...) {
 #'   [summary.Link()] with `model = "ata"`.
 #' @param maturity A `data.table` from [detect_maturity()], or `NULL`
 #'   when `use_maturity = FALSE`.
-#' @param grp Character vector of grouping variable names.
+#' @param groups Character vector of grouping variable names.
 #' @param use_maturity Logical; if `TRUE`, apply the maturity filter.
 #'   When `FALSE`, `maturity` is ignored entirely.
 #' @param na_method One of `"locf"` or `"none"`.
@@ -533,7 +533,7 @@ print.ATAFit <- function(x, ...) {
 .filter_ata <- function(ata_summary,
                         maturity     = NULL,
                         use_maturity = FALSE,
-                        grp          = character(0),
+                        groups       = character(0),
                         na_method    = c("locf", "none")) {
 
   na_method <- match.arg(na_method)
@@ -550,12 +550,12 @@ print.ATAFit <- function(x, ...) {
     mat <- .copy_dt(maturity)
 
     # keep only group vars and maturity_from
-    keep_cols <- c(grp, "ata_from")
+    keep_cols <- c(groups, "ata_from")
     mat_from  <- mat[, .SD, .SDcols = intersect(keep_cols, names(mat))]
     data.table::setnames(mat_from, "ata_from", "maturity_from")
 
-    if (length(grp)) {
-      z <- mat_from[z, on = grp]
+    if (length(groups)) {
+      z <- mat_from[z, on = groups]
     } else {
       if (nrow(mat_from) != 1L)
         stop(
@@ -576,7 +576,7 @@ print.ATAFit <- function(x, ...) {
   # When segment_id is present (segment_wise treatment), fill per segment
   # so factors from one regime never leak into another.
   has_seg <- "segment_id" %in% names(z)
-  fill_by <- c(grp, if (has_seg) "segment_id")
+  fill_by <- c(groups, if (has_seg) "segment_id")
   if (na_method == "locf") {
     if (length(fill_by)) {
       data.table::setorderv(z, c(fill_by, "ata_from", "ata_to"))

@@ -240,7 +240,7 @@ detect_regime <- function(x,
   if (loss %in% derived) {
     grp_for_derive <- attr(x, "groups")
     if (is.null(grp_for_derive)) grp_for_derive <- character(0)
-    d <- .derive_regime_target(d, loss, grp = grp_for_derive)
+    d <- .derive_regime_target(d, loss, groups = grp_for_derive)
   } else if (!(loss %in% names(d))) {
     stop(sprintf("`loss` = '%s' not found in `x`.", loss),
          call. = FALSE)
@@ -323,7 +323,7 @@ detect_regime <- function(x,
         n_regimes = n_regimes,
         sig_level = sig_level,
         min_size  = min_size,
-        coh       = coh,
+        cohort    = coh,
         dev       = dev
       ),
       error = function(e) {
@@ -459,7 +459,7 @@ detect_regime <- function(x,
 #' `.detect_regime_single` handles NA-tolerant aggregation.
 #'
 #' @keywords internal
-.derive_regime_target <- function(d, loss, grp = character(0)) {
+.derive_regime_target <- function(d, loss, groups = character(0)) {
   # The function arg `loss` is the trajectory-metric name string
   # (e.g. "loss_ata"); rebind to `metric` so the bare `loss` inside j
   # below unambiguously refers to the Triangle's `loss` column.
@@ -467,7 +467,7 @@ detect_regime <- function(x,
   loss   <- NULL  # suppress R CMD check NOTE for bare column ref in j
   exposure <- dev <- NULL
 
-  by_cols <- c(grp, "cohort")
+  by_cols <- c(groups, "cohort")
   d <- .copy_dt(d)
 
   if (metric == "loss_ata") {
@@ -504,7 +504,7 @@ detect_regime <- function(x,
 #' @keywords internal
 .detect_regime_single <- function(d, loss, window, method,
                                   n_regimes, sig_level, min_size,
-                                  coh, dev) {
+                                  cohort, dev) {
 
   d <- d[d[["dev"]] <= window]
   n_cohorts <- d[, .(n = .N), by = c("cohort")]

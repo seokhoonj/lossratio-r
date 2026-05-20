@@ -8,7 +8,7 @@
   ata_summary,
   maturity = NULL,
   use_maturity = FALSE,
-  grp = character(0),
+  groups = character(0),
   na_method = c("locf", "none")
 )
 }
@@ -22,7 +22,7 @@ when \code{use_maturity = FALSE}.}
 \item{use_maturity}{Logical; if \code{TRUE}, apply the maturity filter.
 When \code{FALSE}, \code{maturity} is ignored entirely.}
 
-\item{grp}{Character vector of grouping variable names.}
+\item{groups}{Character vector of grouping variable names.}
 
 \item{na_method}{One of \code{"locf"} or \code{"none"}.}
 }

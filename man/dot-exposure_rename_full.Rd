@@ -4,7 +4,7 @@
 \alias{.exposure_rename_full}
 \title{Rename loss_* columns to exposure_* and add incr/CI columns}
 \usage{
-.exposure_rename_full(full, grp, conf_level)
+.exposure_rename_full(full, groups, conf_level)
 }
 \description{
 Translates the worker (\code{fit_cl}) output's \verb{loss_*} columns to the

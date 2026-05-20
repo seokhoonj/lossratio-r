@@ -12,7 +12,7 @@
   n_regimes,
   sig_level,
   min_size,
-  coh,
+  cohort,
   dev
 )
 }

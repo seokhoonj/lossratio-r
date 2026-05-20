@@ -116,8 +116,8 @@ fit_intensity <- function(x,
   if (!is.null(regime)) {
     link <- .apply_regime_filter(
       link, regime = regime,
-      grp = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
-      coh = "cohort",
+      groups = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
+      cohort = "cohort",
       dev = "ata_from"
     )
   }
@@ -126,8 +126,8 @@ fit_intensity <- function(x,
   if (!is.null(recent)) {
     link <- .apply_recent_filter(
       link, recent,
-      grp = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
-      coh = "cohort",
+      groups = if (is.null(attr(link, "groups"))) character(0) else attr(link, "groups"),
+      cohort = "cohort",
       dev = "ata_from"
     )
   }
@@ -141,7 +141,7 @@ fit_intensity <- function(x,
   # 4) selected intensity series with LOCF + sigma extrapolation --------
   selected <- .select_intensity(
     ed_summary = ed_summary,
-    grp        = grp,
+    groups     = grp,
     na_method  = na_method
   )
   selected <- .extrapolate_sigma_ata(selected, method = sigma_method)
@@ -244,14 +244,14 @@ print.IntensityFit <- function(x, ...) {
 #' has no maturity concept).
 #'
 #' @param ed_summary An `EDSummary`.
-#' @param grp Character vector of group columns.
+#' @param groups Character vector of group columns.
 #' @param na_method One of `"locf"` (default) or `"none"`.
 #'
 #' @return A `data.table` with `g_sel` added.
 #'
 #' @keywords internal
 .select_intensity <- function(ed_summary,
-                              grp       = character(0),
+                              groups    = character(0),
                               na_method = c("zero", "locf", "none")) {
 
   na_method <- match.arg(na_method)
@@ -262,7 +262,7 @@ print.IntensityFit <- function(x, ...) {
   # When segment_id is present (segment_wise treatment), LOCF fills must
   # happen per segment so factors from one regime never leak into another.
   has_seg <- "segment_id" %in% names(z)
-  fill_by <- c(grp, if (has_seg) "segment_id")
+  fill_by <- c(groups, if (has_seg) "segment_id")
 
   if (na_method == "zero") {
     z[is.na(g_sel), ("g_sel") := 0]

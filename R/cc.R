@@ -292,15 +292,15 @@ fit_cc <- function(x,
 
   if (!is.null(boots)) {
     cc_boot <- .bf_compose_bootstrap(
-      boots         = boots,
-      priors      = NULL,
-      grp           = grp,
-      by_cols       = by_cols,
-      full          = full,
-      summ    = summ,
-      conf_level    = conf_level,
+      boots           = boots,
+      priors          = NULL,
+      groups          = grp,
+      by_cols         = by_cols,
+      full            = full,
+      summ            = summ,
+      conf_level      = conf_level,
       cohorts_present = unique(dt[, .SD, .SDcols = by_cols]),
-      cape_cod      = TRUE
+      cape_cod        = TRUE
     )
     full       <- cc_boot$full
     summ <- cc_boot$summary

@@ -4,7 +4,7 @@
 \alias{.lm_ed}
 \title{Estimate ED intensity via weighted least squares}
 \usage{
-.lm_ed(x, alpha = 1, na_rm = TRUE, tol = 1e-12)
+.lm_ed(x, alpha = 1, na_rm = TRUE, tol = 0.000000000001)
 }
 \description{
 Internal helper that fits one no-intercept weighted linear model per

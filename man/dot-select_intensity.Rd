@@ -6,14 +6,14 @@
 \usage{
 .select_intensity(
   ed_summary,
-  grp = character(0),
+  groups = character(0),
   na_method = c("zero", "locf", "none")
 )
 }
 \arguments{
 \item{ed_summary}{An \code{EDSummary}.}
 
-\item{grp}{Character vector of group columns.}
+\item{groups}{Character vector of group columns.}
 
 \item{na_method}{One of \code{"locf"} (default) or \code{"none"}.}
 }
