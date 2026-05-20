@@ -14,6 +14,31 @@ test_that("fit_cc returns class 'CCFit'", {
   expect_equal(fit$method, "cc")
 })
 
+test_that("fit_cc type='analytical' fills SE / CI + pooled-ELR columns", {
+  fit <- fit_cc(sub, type = "analytical")
+  expect_equal(fit$ci_type, "analytical")
+  for (nm in c("loss_total_se", "loss_total_cv", "loss_ci_lo", "loss_ci_hi",
+               "elr_cc_se", "elr_cc_cv", "elr_cc_ci_lo", "elr_cc_ci_hi"))
+    expect_true(nm %in% names(fit$summary))
+  expect_true(all(fit$summary$loss_total_se >= 0, na.rm = TRUE))
+  # one pooled ELR -> one elr_cc_se shared across the group's cohorts
+  expect_equal(length(unique(fit$summary$elr_cc_se)), 1L)
+})
+
+test_that("fit_cc analytical works with multiple groups", {
+  multi <- as_triangle(experience[coverage %in% c("surgery", "ci")],
+                       groups   = "coverage",
+                       cohort   = "uy_m",
+                       calendar = "cy_m",
+                       loss     = "incr_loss",
+                       exposure = "incr_exposure")
+  fit <- fit_cc(multi, type = "analytical")
+  expect_equal(fit$ci_type, "analytical")
+  expect_true(all(c("loss_total_se", "elr_cc_se") %in% names(fit$summary)))
+  # each group carries its own pooled-ELR SE
+  expect_equal(length(unique(fit$summary$elr_cc_se)), 2L)
+})
+
 test_that("fit_cc produces a single pooled ELR per group", {
   fit <- fit_cc(sub)
   expect_true("elr_cc" %in% names(fit$elr_cc))
@@ -149,11 +174,12 @@ test_that("fit_cc bootstrap type = 'nonparametric' works", {
   expect_true(any(is.finite(fit$summary$loss_total_se)))
 })
 
-test_that("fit_cc bootstrap type = 'analytical' errors", {
-  expect_error(
-    fit_cc(sub, bootstrap = TRUE, B = 30, type = "analytical"),
-    regexp = "not yet implemented"
-  )
+test_that("fit_cc type = 'analytical' takes precedence over bootstrap", {
+  # `type = "analytical"` forces the closed-form path even when a
+  # bootstrap is requested.
+  fit <- fit_cc(sub, bootstrap = TRUE, B = 30, type = "analytical")
+  expect_equal(fit$ci_type, "analytical")
+  expect_null(fit$bootstrap)
 })
 
 test_that("fit_cc accepts a pre-built bootstrap pair", {

@@ -108,6 +108,29 @@ test_that("fit_bf rejects a negative elr_se", {
   expect_error(fit_bf(sub, prior = bad), regexp = "non-negative")
 })
 
+test_that("fit_bf type='analytical' fills cohort-level SE / CI", {
+  fit <- fit_bf(sub, prior = 0.7, type = "analytical")
+  expect_equal(fit$ci_type, "analytical")
+  for (nm in c("loss_total_se", "loss_total_cv", "loss_ci_lo", "loss_ci_hi"))
+    expect_true(nm %in% names(fit$summary))
+  expect_true(all(fit$summary$loss_total_se >= 0, na.rm = TRUE))
+  # the green (less mature) recent cohorts carry the higher CV
+  s <- fit$summary[order(fit$summary$cohort), ]
+  expect_gt(mean(utils::tail(s$loss_total_cv, 5), na.rm = TRUE),
+            mean(utils::head(s$loss_total_cv, 5), na.rm = TRUE))
+})
+
+test_that("fit_bf analytical: distribution prior widens SE", {
+  cohorts <- unique(sub$cohort)
+  det  <- fit_bf(sub, prior = data.frame(cohort = cohorts, elr = 0.7),
+                 type = "analytical")
+  dist <- fit_bf(sub, prior = data.frame(cohort = cohorts, elr = 0.7,
+                                         elr_se = 0.15),
+                 type = "analytical")
+  expect_gt(sum(dist$summary$loss_total_se),
+            sum(det$summary$loss_total_se))
+})
+
 test_that("distribution prior widens bootstrap SE vs deterministic prior", {
   cohorts <- unique(sub$cohort)
   prior_det  <- data.frame(cohort = cohorts, elr = 0.8)
@@ -232,12 +255,13 @@ test_that("fit_bf bootstrap type = 'nonparametric' works", {
   expect_true(any(is.finite(fit$summary$loss_total_se)))
 })
 
-test_that("fit_bf bootstrap type = 'analytical' errors", {
-  expect_error(
-    fit_bf(sub, prior = 0.7, bootstrap = TRUE, B = 30,
-           type = "analytical"),
-    regexp = "not yet implemented"
-  )
+test_that("fit_bf type = 'analytical' takes precedence over bootstrap", {
+  # `type = "analytical"` forces the closed-form path even when a
+  # bootstrap is requested.
+  fit <- fit_bf(sub, prior = 0.7, bootstrap = TRUE, B = 30,
+                type = "analytical")
+  expect_equal(fit$ci_type, "analytical")
+  expect_null(fit$bootstrap)
 })
 
 test_that("fit_bf accepts a pre-built bootstrap pair", {

@@ -75,8 +75,11 @@ point-estimate formula.}
 \code{NULL}.}
 
 \item{type}{One of \code{"parametric"} (default), \code{"nonparametric"}, or
-\code{"analytical"}. The latter is reserved for Phase 3c (Mack 2008
-closed-form MSEP) and currently errors.}
+\code{"analytical"}. \code{"parametric"} / \code{"nonparametric"} select the
+bootstrap residual paradigm; \code{"analytical"} skips simulation and
+uses the closed-form Mack (2008) BF MSEP decomposition for the
+cohort-level SE / CI. When no bootstrap is requested the analytical
+path is used regardless of \code{type}.}
 
 \item{residual}{Residual scope for \code{type = "nonparametric"}. One of
 \code{"cell"} (default) or \code{"link"}. See \code{\link[=bootstrap]{bootstrap()}}.}
@@ -134,8 +137,10 @@ emerged fractions.}
 \code{BFBootstrap} helper holding both Triangle-level
 \code{BootstrapTriangle} objects and the per-replicate ultimate
 replicates; \code{NULL} otherwise.}
-\item{\code{ci_type}}{\code{"bootstrap"} when \code{bootstrap} is enabled,
-\code{"analytical"} (placeholder) otherwise.}
+\item{\code{ci_type}}{\code{"bootstrap"} when a bootstrap was run,
+\code{"analytical"} when the closed-form Mack (2008) MSEP was used.
+In the analytical case \verb{$summary} carries \code{loss_total_se},
+\code{loss_total_cv}, \code{loss_ci_lo}, and \code{loss_ci_hi}.}
 \item{\code{alpha}, \code{sigma_method}, \code{recent}, \code{regime}, \code{maturity}}{
 Inputs forwarded to the inner \code{\link[=fit_cl]{fit_cl()}} / \code{\link[=fit_exposure]{fit_exposure()}}
 calls.}

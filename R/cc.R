@@ -49,7 +49,12 @@
 #' @param seed Optional integer seed for reproducible bootstrap. Default
 #'   `NULL`.
 #' @param type One of `"parametric"` (default), `"nonparametric"`, or
-#'   `"analytical"`. The latter is reserved for Phase 3c.
+#'   `"analytical"`. `"parametric"` / `"nonparametric"` select the
+#'   bootstrap residual paradigm; `"analytical"` skips simulation and
+#'   uses the closed-form Mack (2008) MSEP decomposition (with
+#'   `Var(ELR_cc)` from the delta method on the pooled ELR). When no
+#'   bootstrap is requested the analytical path is used regardless of
+#'   `type`.
 #' @param residual Residual scope for `type = "nonparametric"`. One of
 #'   `"cell"` (default) or `"link"`.
 #' @param process One of `"gamma"` (default), `"od_pois"`, `"normal"`.
@@ -86,8 +91,12 @@
 #'       `BootstrapTriangle` objects, the per-replicate ultimate
 #'       replicates, and the per-replicate pooled ELR draws; `NULL`
 #'       otherwise.}
-#'     \item{`ci_type`}{`"bootstrap"` when `bootstrap` is enabled,
-#'       `"analytical"` (placeholder) otherwise.}
+#'     \item{`ci_type`}{`"bootstrap"` when a bootstrap was run,
+#'       `"analytical"` when the closed-form Mack (2008) MSEP was used.
+#'       In the analytical case `$summary` carries `loss_total_se` /
+#'       `loss_total_cv` / `loss_ci_lo` / `loss_ci_hi` plus the pooled-ELR
+#'       columns `elr_cc_se` / `elr_cc_cv` / `elr_cc_ci_lo` /
+#'       `elr_cc_ci_hi`.}
 #'     \item{`alpha`, `sigma_method`, `recent`, `regime`}{Inputs
 #'       forwarded to the inner [fit_cl()] / [fit_exposure()] calls.}
 #'   }
@@ -142,6 +151,8 @@ fit_cc <- function(x,
   cohort <- elr <- elr_cc <- loss_obs <- loss_proj <- exposure_proj <- NULL
   is_observed <- q <- loss_latest <- exposure_ult <- NULL
   elr_cc_b <- elr_cc_se <- NULL
+  loss_proc_se <- loss_param_se <- exposure_total_se <- NULL
+  loss_ult_cl <- var_q <- var_eult <- var_elr <- elr_cc_var <- NULL
 
   .assert_triangle_input(x, "fit_cc()")
 
@@ -149,11 +160,6 @@ fit_cc <- function(x,
   residual     <- match.arg(residual)
   process      <- match.arg(process)
   sigma_method <- match.arg(sigma_method)
-
-  if (identical(type, "analytical"))
-    stop("type = 'analytical' (closed-form Cape Cod MSEP) is not yet ",
-         "implemented (Phase 3c). Use type = 'parametric' or ",
-         "type = 'nonparametric'.", call. = FALSE)
 
   if (!is.numeric(alpha) || length(alpha) != 1L ||
       is.na(alpha) || !is.finite(alpha))
@@ -280,15 +286,17 @@ fit_cc <- function(x,
                        c("loss_latest", "loss_ult_cc", "elr_cc"),
                        c("latest",      "loss_ult",    "elr"))
 
-  # 8) bootstrap composition (optional) -----------------------------------
-  boots <- .resolve_bootstrap_bf(
-    bootstrap, x,
-    B        = B,
-    seed     = seed,
-    type     = type,
-    residual = residual,
-    process  = process
-  )
+  # 8) prediction error: bootstrap composition or analytical MSEP --------
+  # `type = "analytical"` forces the closed-form Mack (2008) path.
+  boots <- if (identical(type, "analytical")) NULL else
+    .resolve_bootstrap_bf(
+      bootstrap, x,
+      B        = B,
+      seed     = seed,
+      type     = type,
+      residual = residual,
+      process  = process
+    )
 
   if (!is.null(boots)) {
     cc_boot <- .bf_compose_bootstrap(
@@ -347,6 +355,69 @@ fit_cc <- function(x,
     }
     ci_type       <- "bootstrap"
   } else {
+    # analytical MSEP (Mack 2008 decomposition) -- Cape Cod variant.
+    # The pooled ELR is data-estimated, so Var(ELR_cc) is derived by
+    # the delta method on elr_cc = sum(loss_latest) / sum(E_ult * q).
+    loss_se <- cl_fit$full[, .SD[.N, .(loss_proc_se  = loss_proc_se,
+                                       loss_param_se = loss_param_se)],
+                           by = by_cols]
+    exp_se  <- exposure_fit$full[, .SD[.N,
+                  .(exposure_total_se = exposure_total_se)],
+                  by = by_cols]
+    ana <- merge(dt, loss_se, by = by_cols, sort = FALSE)
+    ana <- merge(ana, exp_se, by = by_cols, sort = FALSE)
+    ana[, var_eult := data.table::fifelse(is.finite(exposure_total_se),
+                                          exposure_total_se^2, 0)]
+    ana[, var_q := data.table::fifelse(
+          is.finite(loss_ult_cl) & loss_ult_cl > 0,
+          (q^2 / loss_ult_cl^2) * loss_param_se^2, 0)]
+
+    # Var(elr_cc) per group: elr_cc = N / D with N = sum(loss_latest)
+    # (observed, fixed) and D = sum(E_ult * q); delta method on 1 / D.
+    elr_var <- ana[, {
+        N  <- sum(loss_latest,      na.rm = TRUE)
+        D  <- sum(exposure_ult * q, na.rm = TRUE)
+        vD <- sum(q^2 * var_eult + exposure_ult^2 * var_q +
+                  var_eult * var_q, na.rm = TRUE)
+        .(elr_cc_var = if (is.finite(D) && D > 0)
+                         N^2 / D^4 * vD else 0)
+      }, by = by_grp]
+
+    if (length(grp) == 0L) {
+      ana[, var_elr := elr_var$elr_cc_var[1L]]
+    } else {
+      ana <- elr_var[ana, on = grp]
+      data.table::setnames(ana, "elr_cc_var", "var_elr")
+    }
+    data.table::setnames(ana, "loss_ult_cc", "loss_ult")
+    se_tbl <- .bf_analytical_se(ana, by_cols, conf_level)
+    summ   <- merge(summ, se_tbl, by = by_cols, sort = FALSE)
+
+    # ELR uncertainty columns (mirror the bootstrap path).
+    z <- stats::qnorm(1 - (1 - conf_level) / 2)
+    if (length(grp) == 0L) {
+      elr_cc_pt <- elr_pool$elr_cc[1L]
+      elr_cc_sd <- sqrt(max(elr_var$elr_cc_var[1L], 0))
+      summ[, c("elr_cc_se", "elr_cc_cv",
+               "elr_cc_ci_lo", "elr_cc_ci_hi") := list(
+        elr_cc_sd,
+        if (is.finite(elr_cc_pt) && elr_cc_pt > 0)
+          elr_cc_sd / elr_cc_pt else NA_real_,
+        elr_cc_pt - z * elr_cc_sd,
+        elr_cc_pt + z * elr_cc_sd)]
+    } else {
+      elr_se_tbl <- merge(elr_pool, elr_var, by = grp, sort = FALSE)
+      elr_se_tbl[, ("elr_cc_se") := sqrt(pmax(elr_cc_var, 0))]
+      elr_se_tbl[, ("elr_cc_cv") := data.table::fifelse(
+          is.finite(elr_cc) & elr_cc > 0, elr_cc_se / elr_cc, NA_real_)]
+      elr_se_tbl[, ("elr_cc_ci_lo") := elr_cc - z * elr_cc_se]
+      elr_se_tbl[, ("elr_cc_ci_hi") := elr_cc + z * elr_cc_se]
+      summ <- merge(summ,
+                    elr_se_tbl[, c(grp, "elr_cc_se", "elr_cc_cv",
+                                   "elr_cc_ci_lo", "elr_cc_ci_hi"),
+                               with = FALSE],
+                    by = grp, sort = FALSE)
+    }
     bootstrap_obj <- NULL
     ci_type       <- "analytical"
   }

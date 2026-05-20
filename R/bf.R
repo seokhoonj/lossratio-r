@@ -74,8 +74,11 @@
 #' @param seed Optional integer seed for reproducible bootstrap. Default
 #'   `NULL`.
 #' @param type One of `"parametric"` (default), `"nonparametric"`, or
-#'   `"analytical"`. The latter is reserved for Phase 3c (Mack 2008
-#'   closed-form MSEP) and currently errors.
+#'   `"analytical"`. `"parametric"` / `"nonparametric"` select the
+#'   bootstrap residual paradigm; `"analytical"` skips simulation and
+#'   uses the closed-form Mack (2008) BF MSEP decomposition for the
+#'   cohort-level SE / CI. When no bootstrap is requested the analytical
+#'   path is used regardless of `type`.
 #' @param residual Residual scope for `type = "nonparametric"`. One of
 #'   `"cell"` (default) or `"link"`. See [bootstrap()].
 #' @param process One of `"gamma"` (default), `"od_pois"`, or `"normal"`.
@@ -126,8 +129,10 @@
 #'       `BFBootstrap` helper holding both Triangle-level
 #'       `BootstrapTriangle` objects and the per-replicate ultimate
 #'       replicates; `NULL` otherwise.}
-#'     \item{`ci_type`}{`"bootstrap"` when `bootstrap` is enabled,
-#'       `"analytical"` (placeholder) otherwise.}
+#'     \item{`ci_type`}{`"bootstrap"` when a bootstrap was run,
+#'       `"analytical"` when the closed-form Mack (2008) MSEP was used.
+#'       In the analytical case `$summary` carries `loss_total_se`,
+#'       `loss_total_cv`, `loss_ci_lo`, and `loss_ci_hi`.}
 #'     \item{`alpha`, `sigma_method`, `recent`, `regime`, `maturity`}{
 #'       Inputs forwarded to the inner [fit_cl()] / [fit_exposure()]
 #'       calls.}
@@ -191,6 +196,8 @@ fit_bf <- function(x,
   # data.table NSE bindings
   cohort <- elr <- loss_obs <- loss_proj <- exposure_proj <- NULL
   is_observed <- q <- NULL
+  loss_proc_se <- loss_param_se <- exposure_total_se <- NULL
+  elr_se <- var_elr <- var_eult <- NULL
 
   .assert_triangle_input(x, "fit_bf()")
   if (missing(prior))
@@ -201,11 +208,6 @@ fit_bf <- function(x,
   residual     <- match.arg(residual)
   process      <- match.arg(process)
   sigma_method <- match.arg(sigma_method)
-
-  if (identical(type, "analytical"))
-    stop("type = 'analytical' (Mack 2008 closed-form BF MSEP) is not ",
-         "yet implemented (Phase 3c). Use type = 'parametric' or ",
-         "type = 'nonparametric'.", call. = FALSE)
 
   if (!is.numeric(alpha) || length(alpha) != 1L ||
       is.na(alpha) || !is.finite(alpha))
@@ -266,6 +268,14 @@ fit_bf <- function(x,
   exp_ult <- exp_grid[, .SD[.N, .(exposure_ult = exposure_proj)],
                       by = by_cols]
   dt <- exp_ult[dt, on = by_cols]
+
+  # per-cohort ultimate-cell SEs for the analytical MSEP path:
+  # CL process / parameter SE on loss, total SE on exposure.
+  loss_se <- loss_grid[, .SD[.N, .(loss_proc_se  = loss_proc_se,
+                                   loss_param_se = loss_param_se)],
+                       by = by_cols]
+  exp_se  <- exp_grid[, .SD[.N, .(exposure_total_se = exposure_total_se)],
+                      by = by_cols]
 
   # 4) resolve prior to a per-cohort table --------------------------------
   priors <- .resolve_bf_prior(prior, dt, by_cols)
@@ -340,15 +350,18 @@ fit_bf <- function(x,
                        c("loss_latest", "loss_ult_bf"),
                        c("latest",      "loss_ult"))
 
-  # 9) bootstrap composition (optional) -----------------------------------
-  boots <- .resolve_bootstrap_bf(
-    bootstrap, x,
-    B        = B,
-    seed     = seed,
-    type     = type,
-    residual = residual,
-    process  = process
-  )
+  # 9) prediction error: bootstrap composition or analytical MSEP --------
+  # `type = "analytical"` forces the closed-form path; the bootstrap
+  # types route through `.resolve_bootstrap_bf()`.
+  boots <- if (identical(type, "analytical")) NULL else
+    .resolve_bootstrap_bf(
+      bootstrap, x,
+      B        = B,
+      seed     = seed,
+      type     = type,
+      residual = residual,
+      process  = process
+    )
 
   if (!is.null(boots)) {
     bf_boot <- .bf_compose_bootstrap(
@@ -373,6 +386,16 @@ fit_bf <- function(x,
     bootstrap_obj <- bf_boot$bootstrap
     ci_type       <- "bootstrap"
   } else {
+    # analytical MSEP (Mack 2008 decomposition) -- cohort-level SE / CI.
+    ana <- merge(agg, loss_se, by = by_cols, sort = FALSE)
+    ana <- merge(ana, exp_se,  by = by_cols, sort = FALSE)
+    ana[, var_elr  := data.table::fifelse(is.finite(elr_se),
+                                          elr_se^2, 0)]
+    ana[, var_eult := data.table::fifelse(is.finite(exposure_total_se),
+                                          exposure_total_se^2, 0)]
+    data.table::setnames(ana, "loss_ult_bf", "loss_ult")
+    se_tbl <- .bf_analytical_se(ana, by_cols, conf_level)
+    summ   <- merge(summ, se_tbl, by = by_cols, sort = FALSE)
     bootstrap_obj <- NULL
     ci_type       <- "analytical"
   }
@@ -653,6 +676,104 @@ summary.BFFit <- function(object, ...) {
   stop("`bootstrap` must be NULL, TRUE/FALSE, \"auto\", a named list ",
        "`list(loss, exposure)` of `BootstrapTriangle` objects, or a ",
        "function returning one.", call. = FALSE)
+}
+
+
+#' Analytical BF / Cape Cod prediction error (Mack 2008 decomposition)
+#'
+#' @description
+#' Closed-form mean squared error of prediction for the per-cohort BF /
+#' Cape Cod ultimate, following the decomposition of Mack (2008,
+#' "The Prediction Error of Bornhuetter/Ferguson", ASTIN Bulletin
+#' 38(1), Section 5):
+#'
+#' \deqn{\mathrm{msep}(R_i) = \mathrm{proc}_i +
+#'   (\hat U_i^2 + \mathrm{Var}(\hat U_i))\,\mathrm{Var}(q_i) +
+#'   \mathrm{Var}(\hat U_i)\,(1 - q_i)^2}
+#'
+#' where the three terms are the process error, the development-pattern
+#' estimation error, and the prior estimation error. The point estimate
+#' is unchanged -- only the variance is added (the "framework borrowed"
+#' approach: Mack's three-term structure with the variances sourced
+#' from `lossratio`'s own fits).
+#'
+#' Variance inputs:
+#' \itemize{
+#'   \item \eqn{\mathrm{Var}(\hat U_i)} -- the prior ultimate
+#'     \eqn{\hat U_i = \mathrm{ELR}_i \cdot E^{ult}_i} is a product of
+#'     two independent factors, so
+#'     \eqn{\mathrm{Var}(\hat U_i) = (E^{ult}_i)^2\,\mathrm{Var}(\mathrm{ELR}_i)
+#'     + \mathrm{ELR}_i^2\,\mathrm{Var}(E^{ult}_i)
+#'     + \mathrm{Var}(\mathrm{ELR}_i)\,\mathrm{Var}(E^{ult}_i)}.
+#'     `Var(ELR)` comes from the distribution prior's `elr_se` (0 for a
+#'     deterministic prior); `Var(E_ult)` from the exposure fit SE.
+#'   \item \eqn{\mathrm{Var}(q_i)} -- delta method on
+#'     \eqn{q_i = L^{obs}_i / L^{ult,CL}_i}, using the CL parameter SE.
+#'   \item process -- the CL process variance scaled by the BF / CL
+#'     reserve ratio (process noise is taken proportional to the
+#'     projected future-loss volume).
+#' }
+#'
+#' @param per_cohort A `data.table` with one row per cohort carrying
+#'   `by_cols`, `q`, `loss_ult` (BF / CC ultimate), `loss_latest`,
+#'   `reserve`, `elr`, `exposure_ult`, `var_elr`, `var_eult`,
+#'   `loss_ult_cl`, `loss_proc_se`, `loss_param_se`.
+#' @param by_cols `c(groups, "cohort")`.
+#' @param conf_level Confidence level for the normal CI bounds.
+#'
+#' @return A `data.table` with columns `by_cols + c("loss_total_se",
+#'   "loss_total_cv", "loss_ci_lo", "loss_ci_hi")`.
+#'
+#' @keywords internal
+.bf_analytical_se <- function(per_cohort, by_cols, conf_level) {
+
+  # data.table NSE bindings
+  elr <- exposure_ult <- var_elr <- var_eult <- q <- NULL
+  loss_ult <- loss_ult_cl <- loss_latest <- reserve <- NULL
+  loss_proc_se <- loss_param_se <- NULL
+  U_hat <- var_U <- var_q <- reserve_cl <- proc_var <- est_var <- NULL
+  msep <- loss_total_se <- loss_total_cv <- loss_ci_lo <- loss_ci_hi <- NULL
+
+  d <- data.table::copy(per_cohort)
+
+  # prior ultimate U_hat = ELR * E_ult, and its variance as a product
+  # of two independent factors.
+  d[, U_hat := elr * exposure_ult]
+  d[, var_U := exposure_ult^2 * var_elr +
+               elr^2 * var_eult +
+               var_elr * var_eult]
+
+  # Var(q): delta method on q = loss_latest / loss_ult_cl.
+  d[, var_q := data.table::fifelse(
+      is.finite(loss_ult_cl) & loss_ult_cl > 0,
+      (q^2 / loss_ult_cl^2) * loss_param_se^2, 0)]
+
+  # Process error: the CL reserve process variance scaled to the BF /
+  # CC reserve volume (process noise proportional to projected
+  # future loss, consistent with Mack 2008 assumption BF3).
+  d[, reserve_cl := loss_ult_cl - loss_latest]
+  d[, proc_var := data.table::fifelse(
+      is.finite(reserve_cl) & abs(reserve_cl) > .Machine$double.eps,
+      loss_proc_se^2 * (reserve / reserve_cl),
+      loss_proc_se^2)]
+  d[, proc_var := pmax(proc_var, 0)]
+
+  # Mack (2008) three-term MSEP for the reserve; the BF / CC ultimate
+  # adds the observed latest loss (a constant) so its SE equals the
+  # reserve SE.
+  d[, est_var := (U_hat^2 + var_U) * var_q + var_U * (1 - q)^2]
+  d[, msep := proc_var + est_var]
+  d[, loss_total_se := sqrt(pmax(msep, 0))]
+  d[, loss_total_cv := data.table::fifelse(
+      is.finite(loss_ult) & loss_ult > 0,
+      loss_total_se / loss_ult, NA_real_)]
+
+  z <- stats::qnorm(1 - (1 - conf_level) / 2)
+  d[, loss_ci_lo := loss_ult - z * loss_total_se]
+  d[, loss_ci_hi := loss_ult + z * loss_total_se]
+
+  d[, c(by_cols, "loss_total_se", "loss_total_cv",
+        "loss_ci_lo", "loss_ci_hi"), with = FALSE]
 }
 
 

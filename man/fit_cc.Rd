@@ -40,7 +40,12 @@ fit_cc(
 \code{NULL}.}
 
 \item{type}{One of \code{"parametric"} (default), \code{"nonparametric"}, or
-\code{"analytical"}. The latter is reserved for Phase 3c.}
+\code{"analytical"}. \code{"parametric"} / \code{"nonparametric"} select the
+bootstrap residual paradigm; \code{"analytical"} skips simulation and
+uses the closed-form Mack (2008) MSEP decomposition (with
+\code{Var(ELR_cc)} from the delta method on the pooled ELR). When no
+bootstrap is requested the analytical path is used regardless of
+\code{type}.}
 
 \item{residual}{Residual scope for \code{type = "nonparametric"}. One of
 \code{"cell"} (default) or \code{"link"}.}
@@ -86,8 +91,12 @@ per group (or scalar if no group).}
 \code{BootstrapTriangle} objects, the per-replicate ultimate
 replicates, and the per-replicate pooled ELR draws; \code{NULL}
 otherwise.}
-\item{\code{ci_type}}{\code{"bootstrap"} when \code{bootstrap} is enabled,
-\code{"analytical"} (placeholder) otherwise.}
+\item{\code{ci_type}}{\code{"bootstrap"} when a bootstrap was run,
+\code{"analytical"} when the closed-form Mack (2008) MSEP was used.
+In the analytical case \verb{$summary} carries \code{loss_total_se} /
+\code{loss_total_cv} / \code{loss_ci_lo} / \code{loss_ci_hi} plus the pooled-ELR
+columns \code{elr_cc_se} / \code{elr_cc_cv} / \code{elr_cc_ci_lo} /
+\code{elr_cc_ci_hi}.}
 \item{\code{alpha}, \code{sigma_method}, \code{recent}, \code{regime}}{Inputs
 forwarded to the inner \code{\link[=fit_cl]{fit_cl()}} / \code{\link[=fit_exposure]{fit_exposure()}} calls.}
 }
