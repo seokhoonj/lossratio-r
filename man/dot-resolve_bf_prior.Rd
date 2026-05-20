@@ -17,7 +17,19 @@
 A \code{data.table} with columns \code{by_cols + "elr"}.
 }
 \description{
-Coerce a \code{prior} argument (scalar numeric or \code{data.frame(cohort, elr)}) into a per-cohort \code{data.table}. Validates ELR coverage of
-every cohort present in the input triangle.
+Coerce a \code{prior} argument into a per-cohort \code{data.table}. Three input
+shapes are accepted:
+
+\itemize{
+\item scalar numeric -- applied uniformly to every cohort;
+\item per-cohort \code{data.frame} -- carries a \code{cohort} column plus
+\code{elr} (optionally group-qualified);
+\item per-group \code{data.frame} -- carries all grouping columns plus
+\code{elr} but no \code{cohort}; the group's ELR is broadcast to every
+cohort in that group.
+}
+
+ELR coverage of every cohort present in the input triangle is
+validated regardless of shape.
 }
 \keyword{internal}

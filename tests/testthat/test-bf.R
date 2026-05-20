@@ -45,6 +45,37 @@ test_that("fit_bf accepts a data.frame prior with per-cohort ELR", {
   expect_equal(setkey_fit$elr, setkey_dt$elr)
 })
 
+test_that("fit_bf accepts a per-group data.frame prior (no cohort column)", {
+  multi <- as_triangle(experience[coverage %in% c("surgery", "ci")],
+                       groups   = "coverage",
+                       cohort   = "uy_m",
+                       calendar = "cy_m",
+                       loss     = "incr_loss",
+                       exposure = "incr_exposure")
+  prior_grp <- data.frame(
+    coverage = c("surgery", "ci"),
+    elr      = c(0.70, 0.85)
+  )
+  fit <- fit_bf(multi, prior = prior_grp)
+  expect_s3_class(fit, "BFFit")
+  # each group's ELR broadcast to every cohort in that group
+  resolved <- data.table::as.data.table(fit$prior)
+  expect_equal(unique(resolved[coverage == "surgery"]$elr), 0.70)
+  expect_equal(unique(resolved[coverage == "ci"]$elr), 0.85)
+  expect_true(nrow(resolved) > 2L)
+})
+
+test_that("fit_bf errors on a per-group prior missing a group", {
+  multi <- as_triangle(experience[coverage %in% c("surgery", "ci")],
+                       groups   = "coverage",
+                       cohort   = "uy_m",
+                       calendar = "cy_m",
+                       loss     = "incr_loss",
+                       exposure = "incr_exposure")
+  prior_grp <- data.frame(coverage = "surgery", elr = 0.70)
+  expect_error(fit_bf(multi, prior = prior_grp), regexp = "missing ELR")
+})
+
 test_that("fit_bf errors when prior is missing", {
   expect_error(fit_bf(sub), regexp = "`prior` is required")
 })

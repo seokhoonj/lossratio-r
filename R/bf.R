@@ -37,9 +37,13 @@
 #' @param prior The a priori expected loss ratio. Accepts:
 #'   \describe{
 #'     \item{single numeric}{Applied uniformly to every cohort.}
-#'     \item{`data.frame` with columns `cohort` and `elr`}{Per-cohort
+#'     \item{per-cohort `data.frame` (`cohort` + `elr`)}{Per-cohort
 #'       ELR. Must cover every cohort present in `x` (extras are
 #'       silently dropped, missing cohorts raise an error).}
+#'     \item{per-group `data.frame` (grouping columns + `elr`)}{One ELR
+#'       per group, broadcast to every cohort in that group. Useful when
+#'       a single a priori ELR is set per line of business. Must cover
+#'       every group present in `x`.}
 #'   }
 #' @param bootstrap Bootstrap configuration. Five forms accepted:
 #'   \describe{
@@ -401,9 +405,20 @@ fit_bf <- function(x,
 #' Resolve `prior` input for `fit_bf()`
 #'
 #' @description
-#' Coerce a `prior` argument (scalar numeric or `data.frame(cohort,
-#' elr)`) into a per-cohort `data.table`. Validates ELR coverage of
-#' every cohort present in the input triangle.
+#' Coerce a `prior` argument into a per-cohort `data.table`. Three input
+#' shapes are accepted:
+#'
+#' \itemize{
+#'   \item scalar numeric -- applied uniformly to every cohort;
+#'   \item per-cohort `data.frame` -- carries a `cohort` column plus
+#'     `elr` (optionally group-qualified);
+#'   \item per-group `data.frame` -- carries all grouping columns plus
+#'     `elr` but no `cohort`; the group's ELR is broadcast to every
+#'     cohort in that group.
+#' }
+#'
+#' ELR coverage of every cohort present in the input triangle is
+#' validated regardless of shape.
 #'
 #' @param prior The user-supplied prior. See [fit_bf()].
 #' @param dt The per-cohort `data.table` (carrying `cohort` etc.).
@@ -415,6 +430,7 @@ fit_bf <- function(x,
 .resolve_bf_prior <- function(prior, dt, by_cols) {
 
   cohorts <- unique(dt[, .SD, .SDcols = by_cols])
+  groups  <- setdiff(by_cols, "cohort")
 
   if (is.numeric(prior) && length(prior) == 1L) {
     if (!is.finite(prior) || prior <= 0)
@@ -427,14 +443,20 @@ fit_bf <- function(x,
 
   if (is.data.frame(prior)) {
     p <- data.table::as.data.table(prior)
-    needed <- c("cohort", "elr")
-    if (!all(needed %in% names(p)))
-      stop("`prior` data.frame must have columns `cohort` and `elr`.",
-           call. = FALSE)
-    join_cols <- intersect(by_cols, names(p))
-    if (!("cohort" %in% join_cols))
-      stop("`prior` must contain a `cohort` column matching the triangle.",
-           call. = FALSE)
+    if (!("elr" %in% names(p)))
+      stop("`prior` data.frame must carry an `elr` column.", call. = FALSE)
+
+    if ("cohort" %in% names(p)) {
+      # per-cohort prior (optionally group-qualified)
+      join_cols <- intersect(by_cols, names(p))
+    } else if (length(groups) > 0L && all(groups %in% names(p))) {
+      # per-group prior: one ELR per group, broadcast to every cohort
+      join_cols <- groups
+    } else {
+      stop("`prior` data.frame must carry either a `cohort` column ",
+           "(per-cohort prior) or all grouping columns (per-group ",
+           "prior).", call. = FALSE)
+    }
     out <- p[cohorts, on = join_cols, nomatch = NA]
     if (any(!is.finite(out$elr)))
       stop("`prior` is missing ELR for one or more cohorts in `x`.",
@@ -442,7 +464,8 @@ fit_bf <- function(x,
     return(out[, c(by_cols, "elr"), with = FALSE])
   }
 
-  stop("`prior` must be a scalar numeric or a `data.frame(cohort, elr)`.",
+  stop("`prior` must be a scalar numeric or a `data.frame` carrying ",
+       "`elr` plus either `cohort` or the grouping columns.",
        call. = FALSE)
 }
 

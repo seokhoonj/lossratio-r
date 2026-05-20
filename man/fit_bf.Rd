@@ -36,9 +36,13 @@ denominator of the prior ELR. Default \code{"exposure"}.}
 \item{prior}{The a priori expected loss ratio. Accepts:
 \describe{
 \item{single numeric}{Applied uniformly to every cohort.}
-\item{\code{data.frame} with columns \code{cohort} and \code{elr}}{Per-cohort
+\item{per-cohort \code{data.frame} (\code{cohort} + \code{elr})}{Per-cohort
 ELR. Must cover every cohort present in \code{x} (extras are
 silently dropped, missing cohorts raise an error).}
+\item{per-group \code{data.frame} (grouping columns + \code{elr})}{One ELR
+per group, broadcast to every cohort in that group. Useful when
+a single a priori ELR is set per line of business. Must cover
+every group present in \code{x}.}
 }}
 
 \item{bootstrap}{Bootstrap configuration. Five forms accepted:
