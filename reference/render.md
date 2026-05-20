@@ -1,10 +1,7 @@
 # Render a tabular object as a compact console table
 
 `render()` prints a data frame, data table, or Triangle object as a
-compact, fixed-width console table. The layout deliberately mirrors the
-dataframe console output of the package's Python sibling,
-`lossratio-py`, so that the R and Python implementations produce
-visually consistent table previews.
+compact, fixed-width console table.
 
 The rendered table has four parts:
 
@@ -16,8 +13,14 @@ The rendered table has four parts:
 - a head / tail sample of rows – when the object has more than `n` rows
   the middle is collapsed to a single ellipsis row;
 
-- a "`N` more variables" footer listing the columns dropped when the
-  table is too wide for the console.
+- a tibble-style "`N` more variables" footer listing the columns dropped
+  when the table is too wide for the console.
+
+The grid, `shape:` header, and per-column type row follow the dataframe
+console layout of the package's Python sibling, `lossratio-py`; the
+truncated-columns footer follows the `tibble` print convention. Both are
+adopted so that `lossratio` previews stay visually consistent with the
+wider R and Python tabular ecosystems.
 
 Columns are selected from both ends inward until they fill `width`; the
 dropped middle columns are summarised in the footer. `print.Triangle()`

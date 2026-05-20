@@ -2,6 +2,36 @@
 
 ## lossratio (development version)
 
+- **Analytical prediction error for
+  [`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md)
+  /
+  [`fit_cc()`](https://seokhoonj.github.io/lossratio/reference/fit_cc.md).**
+  `type = "analytical"` is now implemented (previously a stub error). It
+  computes the closed-form mean squared error of prediction via the
+  Mack (2008) Bornhuetter-Ferguson MSEP decomposition – process error
+  plus development-pattern and prior estimation error – without
+  simulation. `$summary` carries `loss_total_se` / `loss_total_cv` /
+  `loss_ci_lo` / `loss_ci_hi`;
+  [`fit_cc()`](https://seokhoonj.github.io/lossratio/reference/fit_cc.md)
+  additionally reports `elr_cc_se` / `elr_cc_cv` / `elr_cc_ci_lo` /
+  `elr_cc_ci_hi` for the data-estimated pooled ELR. The analytical path
+  is also used whenever no bootstrap is requested, so every fit now
+  reports an SE.
+
+- **Distribution prior for
+  [`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md).**
+  A `data.frame` prior may carry an optional `elr_se` column – the
+  standard error of the a priori ELR. The bootstrap path then draws a
+  per-replicate ELR from `Normal(elr, elr_se)`, and the analytical path
+  feeds it into the `Var(ELR)` term. A deterministic prior (no `elr_se`)
+  is unchanged.
+
+- **Per-group prior for
+  [`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md).**
+  A prior `data.frame` may carry the grouping columns plus `elr` without
+  a `cohort` column; the group’s ELR is then broadcast to every cohort
+  in that group.
+
 - **Worker layer fix + bootstrap arg on `fit_cl` / `fit_ed`.**
   [`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md)
   /

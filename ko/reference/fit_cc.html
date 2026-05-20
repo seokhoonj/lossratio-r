@@ -200,7 +200,12 @@ Cape Cod ELR itself is data-driven and thus uncertain.</p>
 
 <dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
 <dd><p>One of <code>"parametric"</code> (default), <code>"nonparametric"</code>, or
-<code>"analytical"</code>. The latter is reserved for Phase 3c.</p></dd>
+<code>"analytical"</code>. <code>"parametric"</code> / <code>"nonparametric"</code> select the
+bootstrap residual paradigm; <code>"analytical"</code> skips simulation and
+uses the closed-form Mack (2008) MSEP decomposition (with
+<code>Var(ELR_cc)</code> from the delta method on the pooled ELR). When no
+bootstrap is requested the analytical path is used regardless of
+<code>type</code>.</p></dd>
 
 
 <dt id="arg-residual">residual<a class="anchor" aria-label="anchor" href="#arg-residual"></a></dt>
@@ -281,8 +286,12 @@ replicates, and the per-replicate pooled ELR draws; <code>NULL</code>
 otherwise.</p></dd>
 
 <dt><code>ci_type</code></dt>
-<dd><p><code>"bootstrap"</code> when <code>bootstrap</code> is enabled,
-<code>"analytical"</code> (placeholder) otherwise.</p></dd>
+<dd><p><code>"bootstrap"</code> when a bootstrap was run,
+<code>"analytical"</code> when the closed-form Mack (2008) MSEP was used.
+In the analytical case <code>$summary</code> carries <code>loss_total_se</code> /
+<code>loss_total_cv</code> / <code>loss_ci_lo</code> / <code>loss_ci_hi</code> plus the pooled-ELR
+columns <code>elr_cc_se</code> / <code>elr_cc_cv</code> / <code>elr_cc_ci_lo</code> /
+<code>elr_cc_ci_hi</code>.</p></dd>
 
 <dt><code>alpha</code>, <code>sigma_method</code>, <code>recent</code>, <code>regime</code></dt>
 <dd><p>Inputs

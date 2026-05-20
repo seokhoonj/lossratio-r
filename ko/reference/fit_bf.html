@@ -229,8 +229,11 @@ point-estimate formula.</p></dd>
 
 <dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
 <dd><p>One of <code>"parametric"</code> (default), <code>"nonparametric"</code>, or
-<code>"analytical"</code>. The latter is reserved for Phase 3c (Mack 2008
-closed-form MSEP) and currently errors.</p></dd>
+<code>"analytical"</code>. <code>"parametric"</code> / <code>"nonparametric"</code> select the
+bootstrap residual paradigm; <code>"analytical"</code> skips simulation and
+uses the closed-form Mack (2008) BF MSEP decomposition for the
+cohort-level SE / CI. When no bootstrap is requested the analytical
+path is used regardless of <code>type</code>.</p></dd>
 
 
 <dt id="arg-residual">residual<a class="anchor" aria-label="anchor" href="#arg-residual"></a></dt>
@@ -337,8 +340,10 @@ emerged fractions.</p></dd>
 replicates; <code>NULL</code> otherwise.</p></dd>
 
 <dt><code>ci_type</code></dt>
-<dd><p><code>"bootstrap"</code> when <code>bootstrap</code> is enabled,
-<code>"analytical"</code> (placeholder) otherwise.</p></dd>
+<dd><p><code>"bootstrap"</code> when a bootstrap was run,
+<code>"analytical"</code> when the closed-form Mack (2008) MSEP was used.
+In the analytical case <code>$summary</code> carries <code>loss_total_se</code>,
+<code>loss_total_cv</code>, <code>loss_ci_lo</code>, and <code>loss_ci_hi</code>.</p></dd>
 
 <dt><code>alpha</code>, <code>sigma_method</code>, <code>recent</code>, <code>regime</code>, <code>maturity</code></dt>
 <dd><p>Inputs forwarded to the inner <code><a href="fit_cl.html">fit_cl()</a></code> / <code><a href="fit_exposure.html">fit_exposure()</a></code>

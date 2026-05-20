@@ -144,8 +144,11 @@ fit_bf(
 - type:
 
   One of `"parametric"` (default), `"nonparametric"`, or `"analytical"`.
-  The latter is reserved for Phase 3c (Mack 2008 closed-form MSEP) and
-  currently errors.
+  `"parametric"` / `"nonparametric"` select the bootstrap residual
+  paradigm; `"analytical"` skips simulation and uses the closed-form
+  Mack (2008) BF MSEP decomposition for the cohort-level SE / CI. When
+  no bootstrap is requested the analytical path is used regardless of
+  `type`.
 
 - residual:
 
@@ -276,8 +279,10 @@ An object of class `"BFFit"` containing:
 
 - `ci_type`:
 
-  `"bootstrap"` when `bootstrap` is enabled, `"analytical"`
-  (placeholder) otherwise.
+  `"bootstrap"` when a bootstrap was run, `"analytical"` when the
+  closed-form Mack (2008) MSEP was used. In the analytical case
+  `$summary` carries `loss_total_se`, `loss_total_cv`, `loss_ci_lo`, and
+  `loss_ci_hi`.
 
 - `alpha`, `sigma_method`, `recent`, `regime`, `maturity`:
 

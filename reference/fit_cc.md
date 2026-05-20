@@ -97,7 +97,11 @@ fit_cc(
 - type:
 
   One of `"parametric"` (default), `"nonparametric"`, or `"analytical"`.
-  The latter is reserved for Phase 3c.
+  `"parametric"` / `"nonparametric"` select the bootstrap residual
+  paradigm; `"analytical"` skips simulation and uses the closed-form
+  Mack (2008) MSEP decomposition (with `Var(ELR_cc)` from the delta
+  method on the pooled ELR). When no bootstrap is requested the
+  analytical path is used regardless of `type`.
 
 - residual:
 
@@ -193,8 +197,11 @@ An object of class `"CCFit"` containing:
 
 - `ci_type`:
 
-  `"bootstrap"` when `bootstrap` is enabled, `"analytical"`
-  (placeholder) otherwise.
+  `"bootstrap"` when a bootstrap was run, `"analytical"` when the
+  closed-form Mack (2008) MSEP was used. In the analytical case
+  `$summary` carries `loss_total_se` / `loss_total_cv` / `loss_ci_lo` /
+  `loss_ci_hi` plus the pooled-ELR columns `elr_cc_se` / `elr_cc_cv` /
+  `elr_cc_ci_lo` / `elr_cc_ci_hi`.
 
 - `alpha`, `sigma_method`, `recent`, `regime`:
 
