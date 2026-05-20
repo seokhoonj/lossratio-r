@@ -271,59 +271,55 @@
 #' @keywords internal
 .get_plot_meta <- function(metric, amount_divisor = 1e8) {
 
-  ratio_vars  <- c("ratio", "incr_ratio")
-  amount_vars <- c("loss", "incr_loss",
-                   "exposure", "incr_exposure",
-                   "margin", "incr_margin")
-  prop_vars   <- c("loss_share", "incr_loss_share",
-                   "exposure_share", "incr_exposure_share")
+  # Per-metric lookup tables -- each plot metric maps explicitly to its
+  # display type and plot title. `caption` and `hline` are properties of
+  # the type, so they are derived from `type` below rather than listed
+  # per metric.
+  type_of <- c(
+    ratio               = "ratio",
+    incr_ratio          = "ratio",
+    loss                = "amount",
+    incr_loss           = "amount",
+    exposure            = "amount",
+    incr_exposure       = "amount",
+    margin              = "amount",
+    incr_margin         = "amount",
+    loss_share          = "prop",
+    incr_loss_share     = "prop",
+    exposure_share      = "prop",
+    incr_exposure_share = "prop"
+  )
+  title_of <- c(
+    ratio               = "Cumulative Loss Ratio",
+    incr_ratio          = "Per-Period Loss Ratio",
+    loss                = "Cumulative Loss",
+    incr_loss           = "Per-Period Loss",
+    exposure            = "Cumulative Premium",
+    incr_exposure       = "Per-Period Premium",
+    margin              = "Cumulative Margin",
+    incr_margin         = "Per-Period Margin",
+    loss_share          = "Cumulative Loss Proportion",
+    incr_loss_share     = "Per-Period Loss Proportion",
+    exposure_share      = "Cumulative Premium Proportion",
+    incr_exposure_share = "Per-Period Premium Proportion"
+  )
 
-  if (metric %in% ratio_vars) {
-    list(
-      type  = "ratio",
-      title = switch(metric,
-                       ratio      = "Cumulative Loss Ratio",
-                       incr_ratio = "Per-Period Loss Ratio"
-      ),
-      caption = "Unit: %",
-      hline   = 1
-    )
+  if (!metric %in% names(type_of))
+    stop(sprintf("Unknown `metric`: '%s'.", metric), call. = FALSE)
 
-  } else if (metric %in% amount_vars) {
-    unit_txt <- .get_amount_unit(amount_divisor)
-    list(
-      type  = "amount",
-      title = switch(metric,
-                       loss          = "Cumulative Loss",
-                       incr_loss     = "Per-Period Loss",
-                       exposure      = "Cumulative Premium",
-                       incr_exposure = "Per-Period Premium",
-                       margin        = "Cumulative Margin",
-                       incr_margin   = "Per-Period Margin"
-      ),
-      caption = if (nzchar(unit_txt)) paste("Unit:", unit_txt) else NULL,
-      hline   = 0
-    )
+  type     <- type_of[[metric]]
+  unit_txt <- .get_amount_unit(amount_divisor)
 
-  } else if (metric %in% prop_vars) {
-    list(
-      type  = "prop",
-      title = switch(metric,
-                       loss_share          = "Cumulative Loss Proportion",
-                       incr_loss_share     = "Per-Period Loss Proportion",
-                       exposure_share      = "Cumulative Premium Proportion",
-                       incr_exposure_share = "Per-Period Premium Proportion"
-      ),
-      caption = "Unit: %",
-      hline   = NULL
-    )
-
-  } else {
-    stop(
-      sprintf("Unknown `metric`: '%s'.", metric),
-      call. = FALSE
-    )
-  }
+  list(
+    type    = type,
+    title   = title_of[[metric]],
+    caption = switch(
+      type,
+      amount = if (nzchar(unit_txt)) paste("Unit:", unit_txt) else NULL,
+      "Unit: %"               # ratio and prop
+    ),
+    hline   = switch(type, ratio = 1, amount = 0, prop = NULL)
+  )
 }
 
 
