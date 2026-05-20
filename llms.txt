@@ -445,8 +445,14 @@ is a console table renderer for data frames and `Triangle` objects.
 - [`plot(`*`<ATAFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.ATAFit.md)
   : Plot an ata fit
 
+- [`plot(`*`<BFFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.BFFit.md)
+  : Plot a Bornhuetter-Ferguson fit
+
 - [`plot(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.Backtest.md)
   : Plot a backtest object
+
+- [`plot(`*`<CCFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.CCFit.md)
+  : Plot a Cape Cod fit
 
 - [`plot(`*`<CLFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.CLFit.md)
   : Plot a chain ladder fit
@@ -459,6 +465,9 @@ is a console table renderer for data frames and `Triangle` objects.
 
 - [`plot(`*`<EDFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.EDFit.md)
   : Plot an ED fit
+
+- [`plot(`*`<ExposureFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.ExposureFit.md)
+  : Plot an exposure fit
 
 - [`plot(`*`<IntensityFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.IntensityFit.md)
   : Plot an Intensity fit
@@ -475,6 +484,9 @@ is a console table renderer for data frames and `Triangle` objects.
 - [`plot(`*`<RegimeOptimalWindow>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.RegimeOptimalWindow.md)
   : Plot change-count vs window with the elbow marker
 
+- [`plot(`*`<SAFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.SAFit.md)
+  : Plot a stage-adaptive fit
+
 - [`plot(`*`<Total>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.Total.md)
   :
 
@@ -489,14 +501,23 @@ is a console table renderer for data frames and `Triangle` objects.
 - [`plot_triangle(`*`<ATAFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.ATAFit.md)
   : Triangle heatmap for an ata fit
 
+- [`plot_triangle(`*`<BFFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.BFFit.md)
+  : Plot a Bornhuetter-Ferguson fit as a triangle table
+
 - [`plot_triangle(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.Backtest.md)
   : Triangle heatmap of backtest A/E Error
+
+- [`plot_triangle(`*`<CCFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.CCFit.md)
+  : Plot a Cape Cod fit as a triangle table
 
 - [`plot_triangle(`*`<CLFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.CLFit.md)
   : Plot chain ladder results as a triangle table
 
 - [`plot_triangle(`*`<EDFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.EDFit.md)
   : Triangle heatmap for an ED fit
+
+- [`plot_triangle(`*`<ExposureFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.ExposureFit.md)
+  : Plot an exposure fit as a triangle table
 
 - [`plot_triangle(`*`<IntensityFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.IntensityFit.md)
   : Triangle heatmap for an Intensity fit
@@ -506,6 +527,9 @@ is a console table renderer for data frames and `Triangle` objects.
 
 - [`plot_triangle(`*`<RatioFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.RatioFit.md)
   : Plot loss ratio projection as a triangle heatmap
+
+- [`plot_triangle(`*`<SAFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.SAFit.md)
+  : Plot a stage-adaptive fit as a triangle table
 
 - [`plot_triangle(`*`<Triangle>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.Triangle.md)
   : Plot development values as a triangle table
