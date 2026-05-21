@@ -35,25 +35,14 @@ navbar:
       - text: 전체 글
         href: articles/index.html
       - text: -------
-      - text: Aggregation frameworks
-        href: articles/aggregation-frameworks-ko.html
-      - text: Triangle, Link and Maturity
-        href: articles/triangle-link-and-maturity-ko.html
-      - text: Regime
-        href: articles/regime-ko.html
-      - text: Projection
+      - text: 예측 방법론
         href: articles/projection-ko.html
-      - text: Regime change filter
-        href: articles/regime-change-filter-ko.html
+      - text: 진단 (성숙점·수렴점·regime)
+        href: articles/diagnostics-ko.html
       - text: Backtest
         href: articles/backtest-ko.html
-      - text: Convergence
-        href: articles/convergence-ko.html
       - text: 부트스트랩 표준오차 분해
         href: articles/bootstrap-se-decomposition-ko.html
-      - text: -------
-      - text: (참고) Chain ladder 를 이용한 준비금 산출
-        href: articles/chain-ladder-reserving-ko.html
     reference:
       text: 참조
       href: reference/index.html
@@ -199,30 +188,15 @@ articles:
 - title: 글
   navbar: ~
   contents:
-  - "articles/methodology-ko"
-  - "articles/aggregation-frameworks-ko"
-  - "articles/triangle-link-and-maturity-ko"
-  - "articles/regime-ko"
+  - "articles/getting-started-ko"
   - "articles/projection-ko"
-  - "articles/regime-change-filter-ko"
+  - "articles/diagnostics-ko"
   - "articles/backtest-ko"
-  - "articles/convergence-ko"
   - "articles/bootstrap-se-decomposition-ko"
-- title: 참고
-  navbar: ~
-  contents:
-  - "articles/chain-ladder-reserving-ko"
 - title: internal
   contents:
-  - "articles/getting-started-ko"
   - getting-started
-  - methodology
-  - aggregation-frameworks
-  - triangle-link-and-maturity
-  - regime
   - projection
-  - regime-change-filter
+  - diagnostics
   - backtest
-  - convergence
   - bootstrap-se-decomposition
-  - chain-ladder-reserving

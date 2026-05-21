@@ -518,7 +518,7 @@ plot_triangle <- function(x, ...) {
 #'       `metric`, `label_style`, `amount_divisor`, `nrow`, `ncol`.}
 #'     \item{"usage"}{Cell-status heatmap (used / holdout / unused /
 #'       future). Accepts `recent`, `regime`, `holdout`, `maturity`
-#'       via `...`. See `vignette("regime-change-filter")` for details.}
+#'       via `...`. See `vignette("diagnostics")` for details.}
 #'   }
 #' @param metric A single metric to plot. Must be one of:
 #'   `"ratio"`, `"incr_ratio"`,

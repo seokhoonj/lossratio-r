@@ -1,8 +1,8 @@
 ---
-title: "Get started: lossratio 시작하기"
+title: "lossratio 시작하기"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Get started: lossratio 시작하기}
+  %\VignetteIndexEntry{lossratio 시작하기}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -18,141 +18,429 @@ knitr::opts_chunk$set(
   dpi        = 150,
   out.width  = "100%"
 )
+options(lossratio.font = "")
+library(lossratio)
 ```
 
-> 영어 원본 보기: [Getting started with lossratio](../getting-started.html)
+이 문서는 lossratio 패키지의 핵심 함수들을 **데이터 준비 -> 적합 -> 진단
+-> 검증 -> 시각화** 순서로 처음부터 끝까지 따라가는 시작용 자료다. 각
+단계마다 *무엇을 호출하는지*, *왜 그렇게 동작하는지*, *결과를 어떻게
+읽는지* 를 함께 설명한다. 이 한 편만 따라 읽으면 패키지의 전체 작업
+흐름을 파악할 수 있도록 구성했다.
 
-이 문서는 `lossratio` 의 전체 파이프라인을 내장 합성 experience
-데이터 위에서 따라간다. long-format raw 데이터에서 시작하여 적합된 손해율
-추정까지 이어진다.
 
-## 입력 형태
+## 1. 이 패키지가 푸는 문제
 
-`lossratio` 는 long-format experience 데이터를 입력으로 사용한다 — 한 행은
-(코호트 × 경과 기간 × 그룹) 셀 하나에 대응한다. 내장 데이터셋
-`experience` 는 2,664 행 테이블로, 여러 집계 주기의 calendar / underwriting
-기간 컬럼, `coverage` 그룹 컬럼, 기간별 금액 컬럼
-(`incr_loss`, `incr_premium`) 을 포함한다.
+장기 건강보험은 한 번 인수한 계약이 수십 년간 유지된다. 그래서 어떤
+인수 시점(코호트)의 계약군이 시간이 지나며 손해율을 어떻게 쌓아 가는지를
+미리 내다보는 것이 핵심 과제다.
 
-```{r}
-library(lossratio)
+lossratio 는 이 문제를 **코호트 x 경과기간(cohort x dev)** 격자 위에서
+다룬다.
 
+- **코호트(cohort)** -- 계약을 인수한 시점 (예: 2023년 1월 인수분).
+- **경과기간(development period, dev)** -- 인수 후 흐른 기간.
+
+각 셀에는 누적 손해(`loss`)와 누적 보험료(`premium`)가 들어가고, 손해율은
+`ratio = loss / premium` 로 정의된다. 아직 관측되지 않은 미래 경과기간의
+셀을 추정하는 것이 "예측"이며, 이 패키지의 여러 `fit_*` 함수가 서로 다른
+방법으로 그 추정을 수행한다.
+
+
+## 2. 데이터: `experience`
+
+패키지에는 합성 experience 데이터가 내장돼 있다. `experience` 는
+도메인 표준어로, 실제 계리 경험통계(experience study)의 셀 단위 기록을
+가리킨다. long-format 테이블이며 한 행은 (코호트 x 경과기간 x 그룹) 셀
+하나에 대응한다.
+
+```{r data}
 data(experience)
 str(experience)
+head(experience)
 ```
 
-## 1단계 — 코호트 × 경과 기간 구조 구축
+핵심 컬럼만 보면 다음과 같다.
 
-```{r}
+- `coverage` -- 담보(그룹). surgery / ci / cancer / death 네 종목.
+- `uy_m` -- 인수월(underwriting month). 코호트 축의 원본 컬럼.
+- `cy_m` -- 달력월(calendar month).
+- `dev_m` -- 경과월(development month).
+- `incr_loss`, `incr_premium` -- **증분(기간별)** 손해와 보험료.
+
+입력이 증분이라는 점에 주목한다. raw experience 는 보통 "이번 달에
+얼마가 발생/경과했는가" 형태로 쌓이기 때문이다. 누적값은 패키지가
+내부에서 만든다.
+
+
+## 3. Triangle 만들기 -- `as_triangle()`
+
+`as_triangle()` 는 raw experience 를 표준 **Triangle** 객체로 바꾼다.
+검증 + 좌표 표준화 + 집계를 한 번에 수행한다.
+
+```{r triangle}
 tri <- as_triangle(
+  experience,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "incr_loss",
+  premium  = "incr_premium"
+)
+tri
+```
+
+`as_triangle()` 의 동작을 풀어 보면 다음과 같다.
+
+- 필수 컬럼의 존재를 확인하고 expected type 으로 코어션한다,
+- 인구통계 차원을 집계해 제거한다,
+- 누적 컬럼(`loss`, `premium`)과 파생 지표(`margin`, `ratio`,
+  `loss_share`, `premium_share`)를 추가한다,
+- 원본 컬럼명(`uy_m`, `incr_loss` 등)을 표준 이름(`cohort`, `dev`,
+  `loss`, `premium` ...)으로 rename 하고, 원본명은 attribute 에 보존한다.
+
+출력 컬럼은 **누적이 기본**이고 증분은 `incr_` 접두사를 붙인다 --
+`loss`/`incr_loss`, `premium`/`incr_premium`, `ratio`/`incr_ratio`.
+
+이미 누적 삼각형을 갖고 있다면 `cell_type = "cumulative"` 를 주면 된다.
+그러면 `as_triangle()` 가 코호트별로 차분해 증분을 자동 산출한다.
+
+```{r triangle-cumulative, eval = FALSE}
+# 누적 손해/보험료를 가진 경우
+as_triangle(df_cumulative,
+            groups = "coverage", cohort = "uy_m", calendar = "cy_m",
+            loss = "loss", premium = "premium",
+            cell_type = "cumulative")
+```
+
+이후 설명은 한 종목만 떼어 단일 그룹으로 진행하면 출력이 깔끔하다.
+
+```{r triangle-one}
+tri1 <- as_triangle(
   experience[coverage == "surgery"],
   groups   = "coverage",
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium = "incr_premium"
+  premium  = "incr_premium"
 )
-class(tri)
-names(tri)
 ```
 
-`as_triangle()` 의 동작:
+Triangle 자체를 히트맵으로 볼 수 있다.
 
-- 필수 컬럼 (`cy_m`, `uy_m`, `incr_loss`, `incr_premium`) 의 존재를
-  확인하고 expected type 으로 코어션한다,
-- 인구통계 차원을 집계하여 제거한다 (여기서는 `age_band`, `gender`),
-- 누적 컬럼 (`loss`, `premium`) 을 추가한다,
-- 파생 지표 (`margin`, `ratio`, `loss_share`, `premium_share`) 를 추가한다,
-- 코호트 / 경과 기간 컬럼을 표준명 `cohort` 와 `dev` 로 rename 한다,
-- 원본 컬럼명은 attribute (`cohort`, `dev`) 로 보존하여
-  이후 plot 라벨에서 활용 가능하게 한다.
-
-## 2단계 — 진단
-
-```{r}
-plot(tri)              # 코호트별 ratio 궤적
-plot_triangle(tri)     # ratio 셀의 heatmap
-summary(tri)           # 경과 기간별 그룹 통계량
+```{r triangle-plot}
+plot_triangle(tri1, metric = "ratio")
 ```
 
-## 3단계 — 링크 단계 진단
+대각선 윗쪽(관측 영역)만 값이 차 있고, 아래쪽 빈 곳이 앞으로 예측해야
+할 미래 셀이다.
 
-링크(연속한 두 경과 기간) 단계 인자를 살피는 두 보완적 관점이다. 어느
-경과 기간까지 정보가 안정화되는가를 진단하며, 이후 예측 단계의 입력이
-된다.
 
-```{r}
-# ATA 인자(age-to-age factor) — 곱셈형, chain ladder 의 입력
-fit_ata(tri, loss = "loss")
+## 4. Calendar 와 Total -- 다른 집계 관점
 
-# 노출 기반(exposure-driven) 강도 인자 — 덧셈형, ED 의 입력
-fit_intensity(tri, loss = "loss", exposure = "premium")
+같은 experience 데이터는 분석 질문에 따라 세 가지 방식으로 집계할 수
+있고, 빌더도 셋이다.
+
+| 빌더            | 출력 객체  | 차원                     | 사용 시점                  |
+|-----------------|------------|--------------------------|----------------------------|
+| `as_triangle()` | `Triangle` | 코호트 x dev (2D)        | SA, ED, CL 예측            |
+| `as_calendar()` | `Calendar` | 달력 기간 (1D)           | 달력 추세, 대각선 효과     |
+| `as_total()`    | `Total`    | 포트폴리오 합계 (그룹별) | 상위 수준 손해율 비교      |
+
+**Calendar** 는 코호트를 대각선 위로 합산한다 -- 각 행이 모든 인수
+코호트에 걸친 하나의 달력 기간이며, 수학적으로 Triangle 의 대각선 합과
+동치다. 손해율의 달력 추세나 대각선 효과(calendar-year effect) 점검에
+쓴다. `t` 컬럼은 그룹 내 순차 인덱스(1, 2, 3, ...)일 뿐 경과기간이
+아니다.
+
+```{r calendar}
+cal <- as_calendar(tri1)
+head(cal)
+plot(cal)               # x axis: calendar (Date)
 ```
 
-`fit_ata()` 는 링크별 ATA 인자 $f_k$ 를, `fit_intensity()` 는 강도 인자
-$g_k = \Delta C^L_k / C^P_k$ 를 반환한다. 두 출력 모두 *factor 레벨*
-진단으로, 예측치 (`$full`) 는 갖지 않는다.
+**Total** 은 두 차원을 모두 합쳐 그룹당 한 값으로 축약한다. 담보별
+전체 손해율 비교 같은 포트폴리오 수준 질문에 쓴다. `period_from` /
+`period_to` 로 기간을 맞추면 그룹 간 비교 가능성이 확보된다.
 
-## 4단계 — 예측
+```{r total}
+tot <- as_total(tri1)
+head(tot)
+```
 
-예측 레벨 추정량은 세 가지로, `fit_cl()` 과 `fit_ed()` 가 한 쌍의
-sibling, `fit_ratio()` 은 둘을 결합하는 통합 인터페이스이다.
+이후 예측 절차는 모두 `Triangle` 을 입력으로 쓴다.
 
-```{r}
-# Chain ladder (곱셈형 예측)
-cl <- fit_cl(tri, loss = "loss", method = "mack")
-plot(cl, type = "projection")
+
+## 5. 손해 전개를 보는 두 관점
+
+미래 셀을 추정하려면 "손해가 경과기간에 따라 어떻게 늘어나는가"를
+모형으로 표현해야 한다. lossratio 는 두 가지 기본 관점을 쓴다.
+
+- **곱셈형 -- chain ladder (CL)**. 다음 경과기간의 누적 손해는 현재의
+  배수다: `C_{k+1} = f_k * C_k`. 여기서 `f_k` 가 **ATA 인자(age-to-age
+  factor)**이며, 인접한 두 경과기간의 누적 손해 비율로 추정한다.
+- **가법형 -- 노출 기반(exposure-driven, ED)**. 다음 기간의 손해
+  *증분* 을 보험료에 비례시킨다: `Δloss = g_k * premium`. `g_k` 는
+  단위 보험료당 손해 강도다.
+
+둘은 서로 보완적이다. 경과 초기에는 누적 손해가 작아 ATA 인자가 크게
+출렁이므로 보험료에 닻을 내리는 ED 가 안정적이고, 경과가 무르익으면 ATA
+인자가 안정되어 CL 이 코호트의 관측 수준을 잘 보존한다.
+
+### 링크 단계 진단 -- `as_link()`
+
+Triangle 에서 연속한 두 경과기간을 잇는 **Link** 객체를 만들면, 위
+두 인자를 적합 전에 직접 점검할 수 있다. `as_link()` 에 `loss` 만 주면
+관측된 ATA 인자를, `exposure` 까지 주면 ED 강도 `g_k` 를 담는다 --
+워커 레이어에서 보험료 컬럼은 `exposure` 인자로 받는다.
+
+```{r link}
+ata <- as_link(tri1, loss = "loss")                        # ATA 모드
+ed  <- as_link(tri1, loss = "loss", exposure = "premium")  # ED 모드
+head(summary(ata, model = "ata"))
+```
+
+`summary(link, model = "ata"|"ed")` 는 링크별 mean / median / cv /
+`f`(또는 `g`) 등 인자 통계를 산출한다. 이 통계가 뒤에서 성숙점 검출을
+구동한다. 더 깊은 진단은 `vignette("getting-started")` 를
+참고한다.
+
+
+## 6. `fit_cl()` -- chain ladder
+
+`fit_cl()` 은 누적 `loss` 위에서 Mack(1993) 방식의 chain ladder 적합을
+수행한다.
+
+```{r fit-cl}
+cl <- fit_cl(tri1)
 summary(cl)
-
-# Exposure-driven (덧셈형 예측)
-ed <- fit_ed(tri, loss = "loss", exposure = "premium")
-summary(ed)
 ```
 
-`fit_ratio()` 은 손해율 통합 인터페이스이다. default 는 `method = "ed"`
-(노출 기반(exposure-driven, ED) baseline) 으로, 성숙점이나 regime 검출에
-의존하지 않는 안전한 baseline 이다. 코호트-anchored projection 이 필요할
-때는 `method = "cl"` (체인 래더(chain ladder, CL)), 초기 변동과 후기
-drift 가 모두 존재할 때는 `method = "sa"` (단계 적응형(stage-adaptive,
-SA)) 로 전환한다. SA 는 성숙점(maturity point) 이전에는 노출 기반,
-이후에는 체인 래더를 적용하는 합성이다.
+`summary()` 는 코호트별 ultimate 손해와 표준오차(`loss_total_se`),
+변동계수(`loss_total_cv`)를 보여준다. 표준오차는 Mack 의 분산 분해를
+따라 *과정오차(process)* 와 *모수오차(parameter)* 의 합으로 산출된다.
 
-```{r}
-ratio <- fit_ratio(tri)        # default: method = "ed"
-plot(ratio, metric = "ratio")
-summary(ratio)
+`$full` 슬롯에는 관측 + 예측 전 영역의 셀별 결과가 들어 있다.
+
+```{r fit-cl-full}
+head(cl$full[, c("cohort", "dev", "loss_obs", "loss_proj",
+                 "loss_total_se", "is_observed")])
 ```
 
-## 5단계 — 구조 변화 진단
+투영 곡선을 보면 코호트별 관측(실선)과 예측(점선)이 이어진다.
 
-`detect_regime()` 은 최근 코호트가 이전 코호트와 다르게 행동하는지
-검사한다. 동질적 부분집합에 한하여 손해율 적합을 수행하기 위한 전처리
-단계로 활용된다.
-
-```{r}
-sub <- as_triangle(
-  experience[coverage == "surgery"],
-  groups   = "coverage",
-  cohort   = "uy_m",
-  calendar = "cy_m",
-  loss     = "incr_loss",
-  premium = "incr_premium"
-)
-detect_regime(sub, method = "e_divisive")
+```{r fit-cl-plot, fig.height = 8}
+plot(cl)
 ```
 
-상세 설명은 `vignette("regime")` 을 참고한다.
 
-## 다음 단계
+## 7. `fit_ed()` -- 노출 기반
 
-- `vignette("aggregation-frameworks")` — `as_triangle`, `as_calendar`,
-  `as_total` 의 사용 시점 비교.
-- `vignette("projection")` — `fit_ratio()` 에서 `"sa"` / `"ed"` /
-  `"cl"` 중 선택 기준.
-- `vignette("chain-ladder-reserving")` — `fit_cl()` 심층 해설 (Mack 분산, tail factor).
-- `vignette("triangle-link-and-maturity")` — `summary()`,
-  `detect_maturity()`, triangle 형식의 시각화.
-- `vignette("regime")` — `detect_regime()` 을 통한 코호트
-  간 구조 변화 진단.
-- `vignette("backtest")` — `fit_cl` 또는 `fit_ratio` 을 사용한 대각선
-  hold-out 검증.
+`fit_ed()` 는 같은 삼각형을 가법형 ED 모형으로 적합한다.
+
+```{r fit-ed}
+ed_fit <- fit_ed(tri1)
+summary(ed_fit)
+```
+
+점 예측(`loss_proj`)은 CL 과 ED 가 거의 같다 -- 둘 다 같은 데이터를
+설명하기 때문이다. 차이는 *분산이 어떻게 쌓이는가* 에 있다. CL 은
+배수 `f` 의 제곱으로 분산을 증폭시키고, ED 는 보험료에 비례한 증분을
+더해 간다. 그래서 초기 경과기간에서 ED 의 표준오차가 더 차분하다.
+
+
+## 8. `fit_sa()` -- 단계 적응형
+
+`fit_sa()` 는 두 관점을 **단계 적응형(stage-adaptive, SA)** 으로
+합성한다. **성숙점(maturity point)** 이전 경과기간은 ED 로, 이후는 CL
+로 적합한다.
+
+```{r fit-sa}
+sa <- fit_sa(tri1)
+summary(sa)
+```
+
+성숙점은 ATA 인자가 충분히 안정된 경과기간으로, 내부에서 자동 검출된다
+(2-pass). 직관은 단순하다 -- ATA 인자가 아직 출렁이는 초기 구간은
+보험료에 닻을 내리고(ED), 안정된 이후 구간은 코호트 자신의 발전을
+따른다(CL). SA 는 이 패키지가 장기 손해율 예측의 기본 작업마로 삼는
+방법이다.
+
+```{r fit-sa-plot, fig.height = 8}
+plot(sa)
+```
+
+
+## 9. `fit_bf()` -- Bornhuetter-Ferguson
+
+`fit_bf()` 는 **외부 사전(prior) 손해율** 을 끌어들인다. 아직 발현되지
+않은 미래 부분은 데이터가 아니라 prior 가 채운다.
+
+\[
+\hat L^{ult}_i = L^{obs}_i + (1 - q_i)\cdot \mathrm{ELR}_i \cdot E^{ult}_i
+\]
+
+`q_i` 는 코호트 i 의 발현 비율(`L^{obs} / L^{ult, CL}`)이다. 즉 BF 는
+*이미 발현된 부분은 데이터*, *아직 안 나온 부분은 prior* 로 채우는
+신뢰도(credibility) 혼합이다. `prior` 인자는 필수다.
+
+```{r fit-bf}
+bf <- fit_bf(tri1, prior = 0.70)
+summary(bf)
+```
+
+prior 를 코호트마다 다르게 주거나(데이터프레임), 분포 prior(`elr_se`
+열 포함)로 줄 수도 있다. 데이터가 거의 없는 초기 코호트일수록 결과가
+prior 쪽으로 끌린다 -- 그것이 BF 를 쓰는 이유다.
+
+
+## 10. `fit_cc()` -- Cape Cod
+
+`fit_cc()` 는 BF 와 같은 구조이되, 사전 손해율을 외부에서 받지 않고
+**데이터를 풀링해 추정** 한다.
+
+\[
+\widehat{\mathrm{ELR}} =
+  \frac{\sum_i L^{obs}_i}{\sum_i E^{ult}_i \cdot q_i}
+\]
+
+```{r fit-cc}
+cc <- fit_cc(tri1)
+summary(cc)
+```
+
+`prior` 인자가 없는 점만 빼면 호출과 출력은 BF 와 같다. prior 를 따로
+구할 근거가 없을 때, 자기 포트폴리오가 스스로 ELR 을 말하게 하는
+방법이다.
+
+
+## 11. `fit_loss()` / `fit_premium()` -- 통합 디스패처
+
+방법을 매번 다른 함수로 부르는 대신, `fit_loss()` 하나로 `method` 인자만
+바꿔 호출할 수 있다.
+
+```{r fit-loss}
+fl <- fit_loss(tri1, method = "sa")
+class(fl)
+```
+
+`method` 는 `"ed"`(기본), `"cl"`, `"sa"`, `"bf"`, `"cc"` 중 하나다.
+`"bf"`/`"cc"` 는 prior 등 추가 인자를 `...` 로 넘긴다. `fit_premium()`
+는 보험료 측을 따로 적합하는 짝 함수다.
+
+```{r fit-premium}
+fe <- fit_premium(tri1)
+summary(fe)
+```
+
+
+## 12. `fit_ratio()` -- 손해율 합성
+
+`fit_ratio()` 는 손해 측과 보험료 측을 각각 적합한 뒤 둘을 결합해
+**손해율** 을 산출하는 합성(composition) 레이어다.
+
+```{r fit-ratio}
+lr <- fit_ratio(tri1, method = "sa")
+summary(lr)
+```
+
+`$full` 에는 `loss_proj` / `premium_proj` / `ratio_proj` 와 손해율
+표준오차(`ratio_se`)·신뢰구간(`ratio_ci_lo`/`ratio_ci_hi`)이 함께 들어
+있다.
+
+```{r fit-ratio-full}
+head(lr$full[, c("cohort", "dev", "loss_proj", "premium_proj",
+                 "ratio_proj", "ratio_se")])
+```
+
+손해율 표준오차는 `se_method` 로 정한다 -- `"fixed"`(기본)는 보험료를
+알려진 값으로 취급하고, `"delta"`는 보험료의 불확실성과 손해-보험료
+상관까지 델타법으로 반영한다.
+
+```{r fit-ratio-plot, fig.height = 8}
+plot(lr)
+```
+
+
+## 13. 진단 -- 성숙점·수렴점·regime
+
+적합 전후로 삼각형의 구조를 점검하는 진단 함수들이 있다.
+
+**성숙점** -- ATA 인자가 안정되는 경과기간. SA 의 단계 전환점이기도
+하다.
+
+```{r detect-maturity}
+detect_maturity(tri1)
+```
+
+**수렴점(convergence point)** -- 예측 손해율이 더 이상 의미 있게
+움직이지 않는 경과기간. 누적 손해율의 분모가 자라며 신호를 감쇠시키는
+**관성(inertia)** 을 이중 기준으로 걸러 검출한다.
+
+```{r detect-convergence}
+detect_convergence(tri1)
+```
+
+**regime** -- 인수 코호트 사이의 구조적 변화. 보험료·약관·인수
+가이드라인 변경 등이 특정 시점 이후 코호트의 손해 양상을 바꿨는지를
+탐지한다.
+
+```{r detect-regime}
+reg <- detect_regime(tri)
+reg$changes
+```
+
+`experience` 의 surgery 종목에는 2024 년 중 합성 regime change 가
+심어져 있어, 위 결과에서 해당 변화 시점이 잡힌다.
+
+
+## 14. `backtest()` -- 검증
+
+`backtest()` 는 최근 달력 대각선 몇 개를 가린 뒤 다시 적합하고, 가려진
+실제값과 예측값을 비교해 모형의 정확도를 측정한다.
+
+```{r backtest}
+bt <- backtest(tri1, holdout = 6L, target = "ratio", loss_method = "sa")
+summary(bt)
+```
+
+`target` 은 `"ratio"`/`"loss"`/`"premium"` 중 하나이며, 각각
+`fit_ratio`/`fit_loss`/`fit_premium` 를 내부에서 호출한다. 결과의
+A/E error 표로 어느 경과기간·대각선에서 모형이 빗나갔는지 볼 수 있다.
+
+```{r backtest-plot}
+plot(bt)
+```
+
+
+## 15. 시각화 -- `plot()` / `plot_triangle()`
+
+모든 주요 객체는 두 갈래의 그림을 지원한다.
+
+- `plot(x)` -- 궤적/진단 차트 (코호트별 전개 곡선, regime PCA 등).
+- `plot_triangle(x)` -- 삼각형 히트맵 (셀별 값 또는 셀 상태).
+
+```{r plot-examples, fig.height = 8}
+plot_triangle(sa, label_style = "cv")
+```
+
+`plot_triangle()` 의 `label_style` 은 셀 라벨을 값(`"value"`)·변동계수
+(`"cv"`)·표준오차(`"se"`)·신뢰구간(`"ci"`)으로 바꾼다. `plot()` 의
+`type`·`region` 등 세부 인자는 각 클래스의 도움말(`?plot.CLFit` 등)을
+참고한다.
+
+CL / ED / SA / BF / CC / Premium 적합 결과 모두 같은 방식으로
+`plot()` 과 `plot_triangle()` 을 지원하므로, 어떤 방법을 쓰든 시각화
+인터페이스는 동일하다.
+
+
+## 16. 함께 보기
+
+이 문서는 핵심 작업 흐름을 한 번에 따라가는 것이 목적이다. 각 주제의
+방법론적 배경과 세부 옵션은 다음을 참고한다.
+
+- `?as_triangle`, `?fit_cl`, `?fit_sa`, `?fit_ratio` 등 함수별 도움말.
+- `vignette("projection")` -- 예측 방법 선택과 방법론 상세.
+- `vignette("diagnostics")` -- 성숙점·수렴점·regime 진단 심화.
+- `vignette("backtest")` -- 검증 절차.
+- `vignette("bootstrap-se-decomposition")` -- 부트스트랩 표준오차 분해.

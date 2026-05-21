@@ -238,5 +238,5 @@ VaR percentile (75%, 95%, 99%) 이 모두 *정수 순위 index* 에 떨어지므
 ## 8. 함께 보기
 
 - `vignette("backtest")` — hold-out 기반 부트스트랩 검증
-- `vignette("chain-ladder-reserving")` — 기초 체인 래더
+- `vignette("projection")` — 기초 체인 래더
 - `?bootstrap` — 전체 인자 reference

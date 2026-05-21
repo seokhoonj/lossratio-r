@@ -88,25 +88,14 @@ navbar:
       - text: All articles
         href: articles/index.html
       - text: -------
-      - text: Aggregation frameworks
-        href: articles/aggregation-frameworks.html
-      - text: Triangle, Link and Maturity
-        href: articles/triangle-link-and-maturity.html
-      - text: Regime
-        href: articles/regime.html
-      - text: Projection
+      - text: Projection methods
         href: articles/projection.html
-      - text: Regime change filter
-        href: articles/regime-change-filter.html
+      - text: 'Diagnostics: maturity, convergence, regime'
+        href: articles/diagnostics.html
       - text: Backtest
         href: articles/backtest.html
-      - text: Convergence
-        href: articles/convergence.html
       - text: Bootstrap SE decomposition
         href: articles/bootstrap-se-decomposition.html
-      - text: -------
-      - text: (Reference) Chain ladder reserving
-        href: articles/chain-ladder-reserving.html
     language:
       text: KO
       href: ./ko/
@@ -252,31 +241,16 @@ articles:
 - title: Articles
   navbar: ~
   contents:
-  - methodology
-  - aggregation-frameworks
-  - triangle-link-and-maturity
-  - regime
+  - getting-started
   - projection
-  - regime-change-filter
+  - diagnostics
   - backtest
-  - convergence
   - bootstrap-se-decomposition
-- title: Reference
-  navbar: ~
-  contents:
-  - chain-ladder-reserving
 - title: internal
   navbar: ~
   contents:
-  - getting-started
-  - "articles/methodology-ko"
   - "articles/getting-started-ko"
-  - "articles/aggregation-frameworks-ko"
-  - "articles/triangle-link-and-maturity-ko"
-  - "articles/regime-ko"
   - "articles/projection-ko"
-  - "articles/regime-change-filter-ko"
+  - "articles/diagnostics-ko"
   - "articles/backtest-ko"
-  - "articles/convergence-ko"
   - "articles/bootstrap-se-decomposition-ko"
-  - "articles/chain-ladder-reserving-ko"

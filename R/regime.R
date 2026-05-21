@@ -57,7 +57,7 @@
 #'   }
 #'   Derived metrics drop the first dev row per cohort (no predecessor),
 #'   then re-index `dev` so detection sees a contiguous sequence. See the
-#'   `vignette("regime")` "Choice of loss" section for guidance on
+#'   `vignette("diagnostics")` "Choice of loss" section for guidance on
 #'   which loss metric matches which suspected event.
 #' @param by Grouping column(s) for per-combination detection. `NULL`
 #'   (default) reuses the Triangle's `attr(x, "groups")` when non-empty --

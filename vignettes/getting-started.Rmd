@@ -1,8 +1,8 @@
 ---
-title: "Get started: lossratio quick tour"
+title: "Getting started with lossratio"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Get started: lossratio quick tour}
+  %\VignetteIndexEntry{Getting started with lossratio}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -18,31 +18,104 @@ knitr::opts_chunk$set(
   dpi        = 150,
   out.width  = "100%"
 )
+options(lossratio.font = "")
+library(lossratio)
 ```
 
-This vignette walks the full `lossratio` pipeline on the bundled
-synthetic experience data, from raw long-format rows to a fitted
-loss-ratio projection.
+This vignette walks the core functions of the lossratio package end to
+end, in the order **prepare the data -> fit -> diagnose -> validate ->
+visualise**. At each step it explains *what* is being called, *why* it
+behaves the way it does, and *how* to read the result. Reading this one
+document is enough to grasp the full workflow.
 
-## Input shape
+## The problem this package solves
 
-`lossratio` consumes long-format experience data — one row per
-(cohort × dev × group) cell. The bundled dataset
-`experience` is a 2,664-row table with calendar / underwriting
-period columns at multiple granularities, a `coverage` group
-column, and per-period amounts (`incr_loss`, `incr_premium`).
+In long-term health insurance a policy, once underwritten, stays in
+force for decades. The central task is therefore to look ahead and see
+how a group of contracts written at a given point in time (a cohort)
+accumulates its loss ratio as the years pass.
 
-```{r}
-library(lossratio)
+lossratio frames this problem on a **cohort x development-period
+(cohort x dev)** grid.
 
+- **cohort** -- the time a contract was underwritten (e.g. January 2023
+  business).
+- **development period (dev)** -- the time elapsed since underwriting.
+
+Each cell holds a cumulative loss (`loss`) and a cumulative premium
+(`premium`), and the loss ratio is defined as `ratio = loss / premium`.
+Estimating the cells of future development periods that have not yet
+been observed is the act of projection, and the various `fit_*`
+functions in this package perform that estimate in different ways.
+
+## The data: `experience`
+
+The package ships with a synthetic experience dataset. The term
+experience is the domain standard, referring to the cell-level records
+of an actuarial experience study.
+
+```{r data}
 data(experience)
 str(experience)
+head(experience)
 ```
 
-## Step 1 — Build the cohort × dev structure
+The key columns are:
 
-```{r}
+- `coverage` -- the line of business (group). Four products: surgery,
+  ci, cancer, death.
+- `uy_m` -- underwriting month. The source column for the cohort axis.
+- `cy_m` -- calendar month.
+- `dev_m` -- development month.
+- `incr_loss`, `incr_premium` -- **incremental (per-period)** loss and
+  premium.
+
+Note that the input is incremental: raw experience is usually
+accumulated in the form "how much was incurred / earned this month".
+The cumulative values are constructed inside the package.
+
+## Building a Triangle -- `as_triangle()`
+
+`as_triangle()` turns raw experience into a standard **Triangle**
+object. It performs validation, coordinate standardisation, and
+aggregation in one call.
+
+```{r triangle}
 tri <- as_triangle(
+  experience,
+  groups   = "coverage",
+  cohort   = "uy_m",
+  calendar = "cy_m",
+  loss     = "incr_loss",
+  premium  = "incr_premium"
+)
+tri
+```
+
+It takes the original column names (`uy_m`, `incr_loss`, ...) and
+renames them to standard names (`cohort`, `dev`, `loss`, `premium`,
+...), preserving the originals as attributes. The output columns are
+**cumulative by default**, with incremental columns carrying the
+`incr_` prefix -- `loss`/`incr_loss`, `premium`/`incr_premium`,
+`ratio`/`incr_ratio`.
+
+If you already hold a cumulative triangle, pass `cell_type =
+"cumulative"`. `as_triangle()` then differences within each cohort to
+recover the increments automatically.
+
+```{r triangle-cumulative, eval = FALSE}
+# when loss / premium are already cumulative
+as_triangle(df_cumulative,
+            groups = "coverage", cohort = "uy_m", calendar = "cy_m",
+            loss = "loss", premium = "premium",
+            cell_type = "cumulative")
+```
+
+The rest of the walkthrough uses a single product so the output stays
+compact.
+
+```{r triangle-one}
+tri1 <- as_triangle(
   experience[coverage == "surgery"],
   groups   = "coverage",
   cohort   = "uy_m",
@@ -50,114 +123,350 @@ tri <- as_triangle(
   loss     = "incr_loss",
   premium  = "incr_premium"
 )
-class(tri)
-names(tri)
 ```
 
-`as_triangle()`:
+The triangle itself can be viewed as a heatmap.
 
-- validates required columns (`cy_m`, `uy_m`, `incr_loss`,
-  `incr_premium`) and coerces them to the expected types,
-- aggregates demographic dimensions away (here: `age_band`, `gender`),
-- standardises raw input names to the per-period slots `incr_loss`
-  and `incr_premium`,
-- adds cumulative companions (`loss`, `premium`) — cumulative is the
-  unmarked default; per-period carries the `_incr` suffix,
-- adds derived metrics (`margin` / `incr_margin`, `ratio` / `incr_ratio`,
-  proportions),
-- standardises the cohort / development columns to the names `cohort`
-  and `dev`,
-- preserves original column names as attributes (`cohort`,
-  `dev`, `loss`, `premium`) for downstream plot labels.
-
-## Step 2 — Diagnostics
-
-```{r}
-plot(tri)              # cohort trajectories of ratio
-plot_triangle(tri)     # heatmap of ratio cells
-summary(tri)           # group-wise statistics by dev
+```{r triangle-plot}
+plot_triangle(tri1, metric = "ratio")
 ```
 
-## Step 3 — Link-level diagnostics
+Only the upper-left region (the observed area) is filled; the empty
+lower-right cells are the future cells still to be projected.
 
-Two complementary views of the per-link factor that drives development.
-Both are *factor-level* — they return per-link estimates only; they do
-not produce projections (`$full`).
+## Two views of loss development
 
-```{r}
-# Age-to-age factors — multiplicative, input to chain ladder
-fit_ata(tri, loss = "loss")
+To project future cells, the way "loss grows over development time"
+must be expressed as a model. lossratio uses two basic views.
 
-# Exposure-driven intensities — additive, input to ED
-fit_intensity(tri, loss = "loss", exposure = "premium")
-```
+- **Multiplicative -- chain ladder (CL)**. The cumulative loss at the
+  next development period is a multiple of the current one: `C_{k+1} =
+  f_k * C_k`. Here `f_k` is the age-to-age factor, estimated as the
+  ratio of cumulative loss between two adjacent development periods.
+- **Additive -- exposure-driven (ED)**. The loss *increment* of the
+  next period is made proportional to premium: `Δloss = g_k * premium`.
+  `g_k` is the loss intensity per unit of premium.
 
-`fit_ata()` returns selected ATA factors $f_k$ per development link.
-`fit_intensity()` returns intensity factors $g_k = \Delta C^L_k / C^P_k$.
-Both feed the projection-level estimators below and are used to detect
-the maturity point.
+The two are complementary. Early in development the cumulative loss is
+small, so the age-to-age factor swings widely; anchoring on premium
+makes the exposure-driven view more stable. As development matures the
+age-to-age factor settles, and chain ladder preserves the cohort's own
+observed level well.
 
-## Step 4 — Projection
+## `fit_cl()` -- chain ladder
 
-The projection-level estimators come as a pair of siblings,
-`fit_cl()` and `fit_ed()`, plus `fit_ratio()` as the unified interface
-that combines them.
+`fit_cl()` performs a Mack (1993) chain ladder fit on the cumulative
+`loss`.
 
-```{r}
-# Chain ladder (multiplicative projection)
-cl <- fit_cl(tri, loss = "loss", method = "mack")
-plot(cl, type = "projection")
+```{r fit-cl}
+cl <- fit_cl(tri1)
 summary(cl)
+```
 
-# Exposure-driven (additive projection)
-ed <- fit_ed(tri, loss = "loss", exposure = "premium")
+`summary()` reports the ultimate loss per cohort with its standard
+error (`loss_total_se`) and coefficient of variation (`loss_total_cv`).
+The standard error follows Mack's variance decomposition, computed as
+the sum of *process error* and *parameter error*.
+
+The `$full` slot holds the cell-level result over both the observed and
+projected regions.
+
+```{r fit-cl-full}
+head(cl$full[, c("cohort", "dev", "loss_obs", "loss_proj",
+                 "loss_total_se", "is_observed")])
+```
+
+The projection curves connect each cohort's observed values (solid)
+with its projection (dashed).
+
+```{r fit-cl-plot, fig.height = 8}
+plot(cl)
+```
+
+## `fit_ed()` -- exposure-driven
+
+`fit_ed()` fits the same triangle with the additive exposure-driven
+model.
+
+```{r fit-ed}
+ed <- fit_ed(tri1)
 summary(ed)
 ```
 
-`fit_ratio()` is the unified loss-ratio interface. The default
-`method = "ed"` (exposure-driven) is the unconditional safe
-baseline -- no maturity or regime detection needed. Use
-`method = "cl"` for cohort-anchored projection under cohort-level
-drift, or `method = "sa"` (stage-adaptive) for long-tail
-portfolios where both volatile early dev and cohort drift coexist.
+The point projection (`loss_proj`) is nearly identical between chain
+ladder and exposure-driven -- both explain the same data. The
+difference lies in *how the variance accumulates*. Chain ladder
+amplifies variance through the square of the multiplier `f`, while the
+exposure-driven model adds premium-proportional increments. As a
+result the exposure-driven standard error is calmer in the early
+development periods.
 
-```{r}
-ratio <- fit_ratio(tri)
-plot(ratio, metric = "ratio")
-summary(ratio)
+## `fit_sa()` -- stage-adaptive
+
+`fit_sa()` blends the two views in a stage-adaptive (SA) way: the
+development periods before the maturity point are fit with the
+exposure-driven model, and the periods after it with chain ladder.
+
+```{r fit-sa}
+sa <- fit_sa(tri1)
+summary(sa)
 ```
 
-## Step 5 — Structural change diagnostics
+The maturity point is the development period where the age-to-age
+factor has settled sufficiently, detected automatically inside the fit
+(two-pass). The intuition is simple: the early region, where the
+age-to-age factor still swings, anchors on premium (ED); the settled
+region thereafter follows the cohort's own development (CL). Stage
+adaptation is the package's default workhorse for long-term loss-ratio
+projection.
 
-`detect_regime()` checks whether recent cohorts behave
-differently from earlier ones. Useful as a preprocessing step before
-loss-ratio fitting on a homogeneous subset:
+```{r fit-sa-plot, fig.height = 8}
+plot(sa)
+```
 
-```{r}
-sub <- as_triangle(
-  experience[coverage == "surgery"],
-  groups   = "coverage",
-  cohort   = "uy_m",
-  calendar = "cy_m",
-  loss     = "incr_loss",
-  premium  = "incr_premium"
+## `fit_bf()` -- Bornhuetter-Ferguson
+
+`fit_bf()` brings in an **external prior loss ratio**. The portion of
+loss that has not yet emerged is filled not by the data but by the
+prior.
+
+\[
+\hat L^{ult}_i = L^{obs}_i + (1 - q_i)\cdot \mathrm{ELR}_i \cdot E^{ult}_i
+\]
+
+`q_i` is the emergence ratio of cohort i (`L^{obs} / L^{ult, CL}`). In
+other words Bornhuetter-Ferguson is a credibility blend that fills the
+*already-emerged part with data* and the *not-yet-emerged part with the
+prior*. The `prior` argument is required.
+
+```{r fit-bf}
+bf <- fit_bf(tri1, prior = 0.70)
+summary(bf)
+```
+
+The prior can vary by cohort (a data frame) or be a distributional
+prior (with an `elr_se` column). The younger a cohort -- the less data
+it has -- the more its result is pulled toward the prior; that is
+precisely the reason to use Bornhuetter-Ferguson.
+
+## `fit_cc()` -- Cape Cod
+
+`fit_cc()` has the same structure as Bornhuetter-Ferguson, except the
+prior loss ratio is not supplied externally -- it is **estimated by
+pooling the data**.
+
+\[
+\widehat{\mathrm{ELR}} =
+  \frac{\sum_i L^{obs}_i}{\sum_i E^{ult}_i \cdot q_i}
+\]
+
+```{r fit-cc}
+cc <- fit_cc(tri1)
+summary(cc)
+```
+
+Apart from the absence of a `prior` argument, the call and the output
+match Bornhuetter-Ferguson. It is the method to use when there is no
+external basis for a prior and you let the portfolio speak its own ELR.
+
+## `fit_loss()` / `fit_premium()` -- the unified dispatchers
+
+Rather than calling a different function for each method, `fit_loss()`
+lets you switch the method with a single `method` argument.
+
+```{r fit-loss}
+fl <- fit_loss(tri1, method = "sa")
+class(fl)
+```
+
+`method` is one of `"ed"` (default), `"cl"`, `"sa"`, `"bf"`, `"cc"`.
+For `"bf"` / `"cc"` extra arguments such as `prior` are forwarded
+through `...`. `fit_premium()` is the companion function that fits the
+premium side separately.
+
+```{r fit-premium}
+fe <- fit_premium(tri1)
+summary(fe)
+```
+
+## `fit_ratio()` -- composing the loss ratio
+
+`fit_ratio()` is the composition layer: it fits the loss side and the
+premium side separately, then combines them to produce the **loss
+ratio**.
+
+```{r fit-ratio}
+lr <- fit_ratio(tri1, method = "sa")
+summary(lr)
+```
+
+`$full` holds `loss_proj` / `premium_proj` / `ratio_proj` together with
+the loss-ratio standard error (`ratio_se`) and confidence interval
+(`ratio_ci_lo` / `ratio_ci_hi`).
+
+```{r fit-ratio-full}
+head(lr$full[, c("cohort", "dev", "loss_proj", "premium_proj",
+                 "ratio_proj", "ratio_se")])
+```
+
+The loss-ratio standard error is governed by `se_method`: `"fixed"`
+(default) treats premium as a known value, while `"delta"` carries the
+uncertainty of premium and the loss-premium correlation through the
+delta method.
+
+```{r fit-ratio-plot, fig.height = 8}
+plot(lr)
+```
+
+## Calendar and Total -- the other aggregation frameworks
+
+The same long-format experience can be aggregated three ways depending
+on the question. `as_triangle()` keeps both axes (cohort x dev) for
+projection; two siblings collapse one or both axes.
+
+`as_calendar()` collapses cohorts onto the diagonal, giving one row per
+calendar period -- the diagonal sum of the triangle. Use it for
+calendar-time trend and diagonal-effect analysis.
+
+```{r as-calendar}
+cal <- as_calendar(tri1)
+head(cal)
+plot(cal)              # x axis: calendar (Date)
+```
+
+The `t` column is a sequential index within group (1, 2, 3, ...), a
+time-series convention. It is *not* a development period.
+
+`as_total()` collapses both axes to one value per group, useful for
+portfolio-level comparison. The `period_from` / `period_to` arguments
+bound a fixed window so groups stay comparable.
+
+```{r as-total}
+tot <- as_total(
+  as_triangle(
+    experience[uy_m >= as.Date("2023-04-01") &
+               uy_m <= as.Date("2024-03-01")],
+    groups = "coverage", cohort = "uy_m", dev = "dev_m",
+    loss = "incr_loss", premium = "incr_premium"
+  )
 )
-detect_regime(sub, method = "e_divisive")
+head(tot)
 ```
 
-See `vignette("regime")` for the dedicated walkthrough.
+## The Link object -- factor-level diagnostics
 
-## Where to next
+Between a Triangle and a fit sits the **Link** object, the per-link
+factor table built by `as_link()`. It is the intermediate object that
+feeds both chain ladder and the exposure-driven model.
 
-- `vignette("aggregation-frameworks")` — when to use `as_triangle`
-  vs `as_calendar` vs `as_total`.
-- `vignette("projection")` — choosing among `"sa"` / `"ed"` /
-  `"cl"` in `fit_ratio()`.
-- `vignette("chain-ladder-reserving")` — `fit_cl()` deep dive (Mack variance,
-  tail factor).
-- `vignette("triangle-link-and-maturity")` — `summary()`,
-  `detect_maturity()`, and triangle-style visualisations.
-- `vignette("regime")` — `detect_regime()` for
-  structural-change diagnosis across cohorts.
-- `vignette("backtest")` — calendar-diagonal hold-out validation with
-  `fit_cl` or `fit_ratio`.
+```{r as-link}
+# single-variable mode -> observed age-to-age factors
+ata <- as_link(tri1, loss = "loss")
+summary(ata, model = "ata")
+
+# dual-variable mode -> exposure-driven intensities g_k
+ed_link <- as_link(tri1, loss = "loss", exposure = "premium")
+summary(ed_link, model = "ed")
+```
+
+In single-variable mode (`loss` only) the Link carries the observed
+age-to-age factors. Supplying `exposure` adds the exposure-driven
+intensity `intensity = loss_delta / premium_from`. The `summary()`
+method computes the per-link statistics -- mean / median / weighted
+factor, coefficient of variation, WLS standard error -- that drive
+maturity detection. The factor-level helpers `fit_ata()` and
+`fit_intensity()` wrap this same machinery and return per-link
+estimates only (no `$full` projection).
+
+## Diagnostics -- maturity, convergence, regime
+
+There are diagnostic functions for inspecting the triangle's structure
+before and after fitting.
+
+**Maturity point** -- the development period where the age-to-age
+factor settles. It is also the stage-switch point of the
+stage-adaptive method.
+
+```{r detect-maturity}
+detect_maturity(tri1)
+```
+
+**Convergence point** -- the development period beyond which the
+projected loss ratio no longer moves meaningfully. As the denominator
+of the cumulative loss ratio grows it dampens the signal -- an inertia
+effect -- which a dual criterion is used to filter through.
+
+```{r detect-convergence}
+detect_convergence(tri1)
+```
+
+**Regime** -- a structural change between underwriting cohorts. It
+detects whether a premium, policy-wording, or underwriting-guideline
+change altered the loss behaviour of cohorts after a certain point.
+
+```{r detect-regime}
+reg <- detect_regime(tri)
+reg$changes
+```
+
+The surgery product in `experience` has a synthetic regime change
+planted during 2024, so the result above picks up that change point.
+
+## `backtest()` -- validation
+
+`backtest()` hides the latest few calendar diagonals, refits the model,
+and compares the withheld actuals against the projection to measure the
+model's accuracy.
+
+```{r backtest}
+bt <- backtest(tri1, holdout = 6L, target = "ratio", loss_method = "sa")
+summary(bt)
+```
+
+`target` is one of `"ratio"` / `"loss"` / `"premium"`, calling
+`fit_ratio` / `fit_loss` / `fit_premium` internally. The resulting A/E
+error tables show which development periods and which diagonals the
+model missed.
+
+```{r backtest-plot}
+plot(bt)
+```
+
+## Visualisation -- `plot()` / `plot_triangle()`
+
+Every major object supports two families of plots.
+
+- `plot(x)` -- trajectory / diagnostic charts (per-cohort development
+  curves, regime PCA, and so on).
+- `plot_triangle(x)` -- triangular heatmaps (cell values or cell
+  status).
+
+```{r plot-examples, fig.height = 8}
+plot_triangle(sa, label_style = "cv")
+```
+
+The `label_style` argument of `plot_triangle()` switches the cell
+labels between value (`"value"`), coefficient of variation (`"cv"`),
+standard error (`"se"`), and confidence interval (`"ci"`). For the
+detailed arguments of `plot()` -- `type`, `region`, and so on -- see
+each class's help page (`?plot.CLFit` and friends).
+
+The CL / ED / SA / BF / CC / premium fit results all support `plot()`
+and `plot_triangle()` the same way, so the visualisation interface is
+identical regardless of method.
+
+## See also
+
+This tutorial follows the core workflow in one pass. For the
+methodological background and detailed options of each topic, see:
+
+- `?as_triangle`, `?fit_cl`, `?fit_sa`, `?fit_ratio` and other
+  per-function help pages.
+- `vignette("projection")` -- projection methods in depth.
+- `vignette("diagnostics")` -- maturity, convergence, and regime
+  detection.
+- `vignette("backtest")` -- the validation procedure.
+- `vignette("bootstrap-se-decomposition")` -- bootstrap standard
+  errors and variance decomposition.
+</content>
+</invoke>

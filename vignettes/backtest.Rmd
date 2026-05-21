@@ -201,7 +201,7 @@ projection lane directly.
 
 ## See also
 
-- `vignette("chain-ladder-reserving")` — `fit_cl()` reference.
+- `vignette("projection")` — `fit_cl()` reference.
 - `vignette("projection")` — `fit_ratio()` and the `"sa"`,
   `"ed"`, `"cl"` methods.
 - `?backtest`, `?plot.Backtest`, `?plot_triangle.Backtest`.

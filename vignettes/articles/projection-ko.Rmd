@@ -1,8 +1,8 @@
 ---
-title: "Projection: 손해율 예측 (ED, CL, SA)"
+title: "예측 방법론"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Projection: 손해율 예측 (ED, CL, SA)}
+  %\VignetteIndexEntry{예측 방법론}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -20,44 +20,109 @@ knitr::opts_chunk$set(
 )
 ```
 
-> 영어 원본 보기: [Loss-ratio projection methods: ED, CL, SA](../loss-ratio-methods.html)
+> 영어 원본 보기: [Projection methods](../projection.html)
 
-`fit_ratio()` 은 `Triangle` 객체로부터 코호트별 누적 손해율을
-추정한다. 세 가지 방법이 제공되며, 본 문서는 각 방법의
-장단점을 설명한다.
+이 문서는 lossratio 의 다섯 가지 예측 방법 — 노출 기반(exposure-driven,
+ED), 체인 래더(chain ladder, CL), 단계 적응형(stage-adaptive, SA),
+Bornhuetter-Ferguson(BF), Cape Cod(CC) — 을 깊이 있게 다룬다. 빠른
+시작 튜토리얼이 각 적합 함수를 *어떻게* 호출하는지 보여 준다면, 본
+문서는 각 방법이 *왜* 존재하며 *어떤 가정* 위에 서 있고 *언제* 한
+방법이 다른 방법보다 나은지를 설명한다. 대상 독자는 장기 건강보험
+손해율을 다루는 실무자다.
 
-## 표기
+## 1. 왜 전용 예측 도구가 필요한가
 
-코호트 $i$, dev $k$ 에 대하여:
+장기건강보험 손해율은 매일 다루는 task 다 — 코호트별 손해율 패턴
+분석, 미래 손해율 ult 예측, 실적이 예상과 얼마나 일치하는지 모니터링.
+그러나 기존 reserving 도구의 방법론적 기반은 대부분 손해보험(P&C)
+영역에서 발전했고, 장기건강보험의 다음과 같은 고유 특성은 직접
+반영되지 않는다.
+
+- **분모효과(denominator effect)와 관성(inertia)** — 누적 손해율
+  자체가 경과 기간이 누적될수록 분모가 자동으로 자라면서 신호가
+  감쇠된다.
+- **다회성 보험금** — 입원·수술·통원 등은 한 피보험자가 여러 차례
+  보험금을 받는다. 한 코호트의 ultimate frequency 가 1 을 초과할 수
+  있다.
+- **위험보험료 분리** — 한국의 장기보험료는 위험보험료 + 저축보험료 +
+  부가보험료의 합이다. 손해율의 진짜 분모는 위험보험료만이다.
+- **평탄화 보험료** — 비갱신형 상품은 가입 시 평균값으로 산출된 level
+  premium 을 전 기간 동일 부과한다. 따라서 charged premium 자체는
+  premium 가 아니다. 실제 period risk premium 은 위험률(t) x
+  가입금액 x 유지율(t) 로 외부 산출 후 입력해야 한다.
+- **체제 변화(regime change)** — 약관 개정·요율 조정·채널 mix
+  변화·인수 기준 변경 등이 코호트 단위로 손해율 양상을 바꾼다.
+
+lossratio 는 P&C 영역에서 발전한 reserving 방법론 — Mack 1993 chain
+ladder, Bornhuetter-Ferguson 1972, Cape Cod (Stanard 1985),
+Bühlmann-Straub 1970 credibility, Sherman 1984 의 tail 외삽 — 을 위
+도메인 issue 에 맞춰 재구성한 framework 다. 학술적 lineage 를
+존중하되, 장기건강보험 실무에서 바로 쓸 수 있는 도구가 목적이다.
+
+## 2. 방법론의 lineage
+
+장기 손해율 추정의 방법론적 뿌리는 다음의 P&C reserving 흐름이다.
+
+```
+1967  Bühlmann credibility           -- experience rating 의 수학적 형식화
+1970  Bühlmann-Straub                -- premium-varying credibility
+                                       (volume-weighted estimator)
+1972  Bornhuetter-Ferguson           -- prior + observed loss 결합
+1984  Sherman                        -- chain ladder tail factor 외삽
+1985  Stanard (Cape Cod)             -- Bühlmann-Straub 의 reserving 응용
+1993  Mack                           -- chain ladder 의 distribution-free MSE
+```
+
+이후 모든 내용을 끌고 가는 핵심 idea 두 가지:
+
+- **Chain ladder (Mack 1993)** — 누적 손해 $C_k$ 의 Markov 곱셈
+  recursion: $C_{k+1} = f_k \cdot C_k$ where
+  $f_k = \sum_i C_{i,k+1} / \sum_i C_{i,k}$.
+- **Cape Cod / Bühlmann-Straub** — 손해를 premium(= volume)으로
+  anchoring. $\widehat{ELR} = \sum_i L_i / \sum_i \pi_i$ 의 single
+  ratio 로 ult 산출.
+
+장기건강보험에 적용 시 둘 다 부분적으로 작동하지만, 모두 cracks 가
+있다.
+
+| 도메인 issue | Chain ladder | Cape Cod |
+|---|---|---|
+| 분모효과 / 관성 | 초기 dev 의 $f_k$ 가 과대 변동 ($C_k$ 작아서) | ELR 의 cohort 별 변동 무시 |
+| 평탄화 보험료 | 손해만 사용해 우회 가능 (발생률 변화엔 약함) | $\pi$ 가 flat 이면 진짜 premium 의 dev 변화 흡수 |
+| 다회성 보험금 | 사용 가능 (frequency x severity 무관) | 사용 가능 (volume measure 만 필요) |
+| 발전하는 위험보험료 | 무관 | single $\pi$ 가정 — triangle 형태 premium 미지원 |
+| 코호트 단위 체제 변화 | Mack 가정 (no calendar-year effect) 위반 | cohort heterogeneity 무시 |
+
+chain ladder 는 초기 dev 에 약하고, Cape Cod 는 premium 의 발전 양상을
+처리하지 못한다. 둘 다 각자 한 paradigm 의 한계를 갖는다 — 패키지가
+하나가 아니라 다섯 가지 방법을 제공하는 이유가 바로 이것이다.
+
+## 3. 핵심 framework: loss / premium / ratio
+
+lossratio 의 모든 추정은 다음 세 양 위에서 이루어진다.
+
+| 양 | 의미 | 컬럼 이름 (Triangle) |
+|---|---|---|
+| **loss** | 발생 손해의 누적량 | `loss`, `incr_loss` |
+| **premium** | 위험보험료 (장기 health 는 누적 위험보험료) | `premium`, `incr_premium` |
+| **ratio** | 손해율 (cumulative loss / cumulative premium) | `ratio`, `incr_ratio` |
+
+세 양 모두 cohort x dev grid 위에서 발전하는 관측치(stochastic
+observable)다. premium 는 고정된 underwriting volume 이 아니라
+위험률 x 가입금액 x 유지율의 dev 따라 변동하는 양이다 — Mack 1993 의
+volume measure, Bühlmann-Straub 1970 의 natural weight 와 같은 의미다.
+
+코호트 $i$, dev $k$ 에 대하여 예측 방법들이 쓰는 표기는 다음과 같다.
 
 - $C^L_{i,k}$ — 누적 손해액
 - $C^P_{i,k}$ — 누적 위험보험료
 - $f_k = C^L_{k+1} / C^L_k$ — ATA 인자(age-to-age factor)
 - $g_k = \Delta C^L_k / C^P_k$ — 노출 기반(exposure-driven, ED) 강도
-- 성숙점(maturity point) $k^*$ — 그룹 $g$ 에서 $f_k$ 가 안정화되는
-  dev (CV / RSE 임계값으로 탐지)
+- 성숙점(maturity point) $k^*$ — 그룹에서 $f_k$ 가 안정화되는 dev
+  (CV / RSE 임계값으로 탐지)
 
-## 1. 노출 기반(exposure-driven, ED) (`"ed"`, default)
-
-모든 미래 증분에 ED 를 적용한다:
-
-$$
-\hat{C}^L_{i,k+1} = \hat{C}^L_{i,k} + g_k \cdot C^P_{i,k}
-$$
-
-특성:
-
-- 무조건적 안전한 baseline — 성숙점 / regime 검출에 의존하지 않는다.
-- 위험보험료가 분모이므로 초기 dev 의 ATA 인자 변동에 강건하다.
-- 코호트 고유의 수준 신호를 잃는다 — 관측 손해가 더 높은
-  코호트도 그룹 단위 $g_k$ 로 수렴한다.
-
-언제 사용:
-
-- baseline 으로. pooled intensity $g_k$ 는 코호트들이 단위 보험료 당 손해
-  수준에서 대체로 동질적이라 가정한다.
-- 코호트-레벨 drift(약관 / 인수 정책 변경) 시 pooled 평균으로 편향되어
-  post-change 코호트를 over-project 가능 — 명시적 필터는 `regime` 인자.
+이하 모든 예시는 간결성을 위해 `surgery` 그룹만 사용한다 — 모든
+절차는 다중 그룹 입력에도 그대로 일반화된다.
 
 ```{r}
 library(lossratio)
@@ -68,48 +133,81 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium = "incr_premium"
+  premium  = "incr_premium"
 )
+```
 
+## 4. 직접 추정: ED, CL, SA
+
+직접 추정 세 method 는 데이터로부터 인자를 추정해 전방으로 연결한다.
+순서 `ed` -> `cl` -> `sa` 가 방법론적 진화를 그대로 표현한다 —
+primitive(ED) -> classical(CL) -> composition(SA).
+
+| Method | 점추정 식 | 분산 helper | 도메인 특성 |
+|---|---|---|---|
+| `"ed"` (default) | $\Delta L_{k+1} = g_k \cdot P_k$ (additive) | `.ed_g_var` (B-S 1970) | 초기 dev 의 ATA 변동성에 robust |
+| `"cl"` | $L_{k+1} = f_k \cdot L_k$ (multiplicative) | `.mack_f_var` (Mack 1993) | 후기 dev factor 안정화 후 자연 |
+| `"sa"` | 성숙점 $k^*$ 이전 ED, 이후 CL | 두 helper 의 합성 | ED 와 CL 의 stage-adaptive 합성 |
+
+### 4.1 노출 기반 (`"ed"`, default)
+
+ED 는 모든 미래 증분을 premium(위험보험료)을 분모로 하여 예측한다.
+
+$$
+\hat{C}^L_{i,k+1} = \hat{C}^L_{i,k} + g_k \cdot C^P_{i,k}
+$$
+
+ED 가 기본값인 이유는 unconditional safe baseline 이기 때문이다 —
+성숙점이나 regime 검출에 의존하지 않으며, 초기 dev 의 ATA 인자
+변동에도 강건하다. 초기 dev 의 작은 $C_k$ 가 분모에 들어가지 않으므로,
+초기 $f_k$ 가 일으키는 추정량 과대 변동에 영향받지 않는다.
+
+대가는 코호트 동질성 가정이다. pooled intensity $g_k$ 는 코호트들이
+단위 보험료당 손해 수준에서 대체로 동질적이라 가정한다. 코호트-레벨
+drift 가 있으면 추정이 pooled 평균으로 편향되어 post-change 코호트를
+over-project 할 수 있다 — 명시적 필터는 `regime` 인자다.
+
+**언제 사용:** 코호트 동질성이 그럴듯한 baseline 으로; chain ladder
+가 이점이 없는 short-tail 상품; ATA 인자가 전 link 에서 신뢰할 수
+없는 sparse 데이터.
+
+```{r}
 ratio_ed <- fit_ratio(tri, method = "ed")        # default
 plot(ratio_ed, metric = "ratio")
 summary(ratio_ed)
 ```
 
-## 2. 체인 래더(chain ladder, CL) (`"cl"`)
+### 4.2 체인 래더 (`"cl"`)
 
-고전적 Mack (1993) 모형:
+CL 은 고전적 Mack (1993) 모형이다.
 
 $$
 \hat{C}^L_{i,k+1} = f_k \cdot \hat{C}^L_{i,k}
 $$
 
-특성:
+코호트 자기 누적 손해가 anchor 역할을 하므로 코호트-레벨 drift 가
+명시적 regime 검출 없이 자연스럽게 propagation 된다. 대가는 ED 의
+거울상이다 — 초기 $f_k$ 에 노이즈가 있을 때 변동성이 크다. 작은
+분모가 link 오차를 증폭하기 때문이다.
 
-- 코호트 자기 cum_loss 가 anchor 역할이므로 *코호트-레벨 drift 가
-  자연스럽게 propagation* — 명시적 regime 검출 불필요.
-- 손해 예측에 한해서는 `fit_cl(tri, loss = "loss")` 과 동등하지만,
-  `fit_ratio()` 은 추가로 `premium` 에 대한 CL 로 보험료를 전방
-  추정하고 delta method 로 손해율 불확실성을 계산한다.
-- 초기 $f_k$ 에 노이즈가 있을 때 변동성이 크다 — 작은 분모가 link 오차를
-  증폭한다.
+`fit_ratio()` 안에서 CL method 는 손해와 보험료를 모두 — 각자 자기
+컬럼에 대한 chain ladder 로 — 전방 추정하고 delta method 로 손해율
+불확실성을 계산한다. 손해 lane 단독은 `fit_cl(tri)` 과 동등하다.
 
-언제 사용:
-
-- ATA 인자가 안정된 후. 특히 코호트-레벨 drift 시나리오에서 코호트의
-  관측 경로가 자동 anchor.
-- 규제 당국이 문서화 목적으로 고전적 Mack 형식을 요구하는 적립 작업.
+**언제 사용:** ATA 인자가 안정된 후; 코호트의 관측 경로가 추정의
+anchor 가 되어야 하는 코호트-레벨 drift 시나리오; 규제 당국이 문서화
+목적으로 고전적 Mack 형식을 요구하는 적립 작업.
 
 ```{r}
 ratio_cl <- fit_ratio(tri, method = "cl")
 plot(ratio_cl, metric = "ratio")
 ```
 
-## 3. 단계 적응형(stage-adaptive, SA) (`"sa"`)
+### 4.3 단계 적응형 (`"sa"`)
 
-두 방법의 합성. $f_k$ 가 초반에는 변동성이 크고 후반에는 안정적이라는
-사실, 그리고 $g_k$ 는 그 반대로 움직인다는 사실을 활용해 성숙점에서
-추정량을 전환한다:
+SA 는 성숙점 이전을 ED 로, 이후를 CL 로 합성한다. $f_k$ 가 초반에는
+변동성이 크고 후반에는 안정적이며, $g_k$ 는 그 반대로 움직인다는
+사실을 활용한다.
 
 $$
 \hat{C}^L_{i,k+1} \;=\;
@@ -119,20 +217,16 @@ f_k \cdot \hat{C}^L_{i,k}              & k \ge k^* \quad \text{(성숙점 이후
 \end{cases}
 $$
 
-특성:
+- **성숙점 이전** SA 는 손해 추정치를 보험료 volume 에 anchor 하여,
+  초기 $f_k$ 가 노이즈로 폭주하는 고전 CL 의 문제를 회피한다.
+- **성숙점 이후** SA 는 코호트 자체의 관측 수준을 보존하여, 순수 ED
+  가 꼬리에서 모든 코호트를 평균으로 끌어당기는 문제를 회피한다.
 
-- **성숙점 이전**: 손해 추정치가 보험료에 비례한다.
-  초기 $f_k$ 가 노이즈로 폭주하는 문제를 회피한다.
-- **성숙점 이후**: 코호트 자체의 관측 수준을 보존한다. ED 방법이
-  꼬리에서 모든 코호트를 평균으로 끌어당기는 문제를 회피한다.
-
-언제 사용:
-
-- 장기-tail 포트폴리오 — 초기 dev 의 변동성(ED phase) + 후기 dev 의
-  코호트-레벨 drift(CL phase) 둘 다 처리.
-- 최근 코호트(미성숙 데이터)와 오래된 코호트(성숙 데이터)가 혼재하는 경우.
-- 성숙점 이전·이후의 구조적 차이가 있는 건강보험 코호트
-  (예: 면책기간 전환).
+**언제 사용:** 초기 dev 의 변동성(ED phase)과 후기 dev 의 코호트-레벨
+drift(CL phase)를 둘 다 처리해야 하는 장기-tail 포트폴리오; 최근
+코호트(미성숙 데이터)와 오래된 코호트(성숙 데이터)가 혼재하는 경우;
+성숙점 이전·이후의 구조적 차이가 있는 건강보험 코호트(예: 면책기간
+전환).
 
 ```{r}
 ratio_sa <- fit_ratio(tri, method = "sa")
@@ -140,13 +234,7 @@ plot(ratio_sa, metric = "ratio")
 summary(ratio_sa)
 ```
 
-## 4. 비교
-
-| 방법 | mechanism | 언제 사용 |
-|---|---|---|
-| ED (default) | pooled $g_k$ x 코호트 보험료 | baseline; 코호트 동질성 가정 |
-| CL | pooled $f_k$ x 코호트 cum_loss | 코호트 drift; 코호트-anchored |
-| SA | ED 초기 + CL 후기 | 초기 변동 + 후기 drift 둘 다 |
+### 4.4 ED, CL, SA 비교
 
 ```{r}
 ratios <- list(
@@ -155,19 +243,157 @@ ratios <- list(
   sa = fit_ratio(tri, method = "sa")
 )
 
-# 코호트 단위 요약
+# 코호트 단위 ultimate 손해 요약
 summary(ratios$ed)$loss_ult
 summary(ratios$cl)$loss_ult
 summary(ratios$sa)$loss_ult
 ```
 
-## 5. 분산과 신뢰구간
+| 방법 | mechanism | 언제 사용 |
+|---|---|---|
+| ED (default) | pooled $g_k$ x 코호트 보험료 | baseline; 코호트 동질성 가정 |
+| CL | pooled $f_k$ x 코호트 cum_loss | 코호트 drift; 코호트-anchored |
+| SA | ED 초기 + CL 후기 | 초기 변동 + 후기 drift 둘 다 |
 
-`fit_ratio()` 은 `L/P` 의 표준오차를 두 가지 방식으로 산출한다:
+## 5. Prior-anchored 추정: BF, CC
 
-- `se_method = "fixed"` (default) — premium 을 고정 (비확률) 으로 취급,
-  $\mathrm{SE}(L/P) \approx \mathrm{SE}(L)/P$. 엄밀히는 `Var(P) = 0`,
-  `Cov(L,P) = 0` 을 가정한 delta method 의 degenerate case.
+ED, CL, SA 는 모두 인자를 데이터로부터 추정한다. 관측 triangle 이
+빈약할 때 — 미성숙 코호트, 또는 요율 변경 직후 코호트 — 그 추정은
+불안정할 수 있다. prior-anchored family 는 기대 손해율(ELR)을 이미
+발현된 손해와 결합한다.
+
+$$
+\text{Ult} = L_{\text{latest}}
+  + \left(1 - \tfrac{1}{\text{LDF}}\right) \cdot \pi \cdot \text{ELR}
+$$
+
+두 method 는 ELR 이 *어디서 오는가* 에서만 다르다.
+
+| Method | ELR source | 도메인 use case |
+|---|---|---|
+| `"bf"` | 외부 입력 (`prior` 로 사용자 지정) | 미성숙 + 요율 변경 직후 코호트 — observed 데이터 빈약 시 외부 prior 로 anchor (Bornhuetter-Ferguson 1972) |
+| `"cc"` | 데이터 추정 (payout-weighted $\sum L / \sum \pi \cdot \text{payout}$) | cohort 응집 추정 — pricing/industry 의 natural ELR target 가 있을 때 (Stanard 1985, Cape Cod) |
+
+### 5.1 Bornhuetter-Ferguson (`"bf"`)
+
+BF 는 ELR 을 외부 입력으로 받는다. 이미 발현된 손해
+$L_{\text{latest}}$ 는 그대로 두고, 미발현 부분 $(1 - 1/\text{LDF})$
+만 prior 로 채운다. 코호트가 성숙할수록 데이터 항이 우세해지고 prior
+는 사라진다 — BF 는 chain ladder 의 답으로 매끄럽게 수렴한다.
+
+```{r}
+fit_bf(tri, prior = 0.7)
+```
+
+`prior` 인자는 그룹별 `data.frame` 도 받으며, `elr_se` 컬럼을 함께
+넘기면 prior 를 고정점이 아닌 분포(distribution prior)로 다룬다.
+
+### 5.2 Cape Cod (`"cc"`)
+
+CC 는 BF 와 같은 결합 형태를 갖지만 ELR 을 데이터 자체에서 추정한다
+— 코호트 전반의 payout-weighted pooled ratio. pricing 또는 industry
+맥락이 일관된 단일 ELR target 을 시사하고 외부 prior 가 없을 때 자연
+스러운 선택이다.
+
+```{r}
+fit_cc(tri)
+```
+
+### 5.3 세 가지 aggregation 축
+
+ED, CC, BF 는 단위 보험료당 손해 신호를 집계하는 방식이 다르다.
+
+- **ED** — link 별 $g_k$: dev-granular, link 별 cohort-uniform.
+- **CC** — 코호트 단위 single ELR: cohort-uniform, dev-aggregated.
+- **BF** — 외부 prior: 데이터 추정 자체를 회피.
+
+다섯 method 가 함께 P&C reserving trinity 를 장기건강보험에 맞춰
+재구성하며, 세 aggregation 축이 각자 고유한 use case 를 갖는다.
+
+## 6. reserving worker 로서의 chain ladder
+
+`fit_cl()` 은 단일 값 컬럼에 대한 전용 chain ladder 적합 함수다.
+손해와 보험료를 동시에 추정해 손해율을 산출하는 `fit_ratio()` 과
+달리, `fit_cl()` 은 하나의 누적 지표를 전방으로 추정하고 코호트별
+Mack 방식 표준오차를 함께 계산한다. 이는 고전적 P&C reserving use
+case 다 — 보고기간 미종료 사고연도의 ultimate 지급/발생 손해 추정.
+P&C 배경 실무자는 익숙한 Mack workflow 를 그대로 알아볼 수 있다.
+
+```{r}
+cl <- fit_cl(tri)
+print(cl)
+```
+
+`fit_cl()` 은 인접 dev 의 누적 손해 비 $f_k = C^L_{k+1} / C^L_k$ —
+ATA 인자 — 를 link 별로 선택한 뒤 누적 곱으로 연결해 각 코호트의
+ultimate 까지 추정한다. 점 추정에 더해 Mack 공식은 추정 분산을
+프로세스 분산과 모수 분산으로 분해한다.
+
+- `loss_proc_se` — 프로세스 분산. $\sigma^2_k$ (경과 기간별 잔차
+  링크 분산) 으로부터 도출.
+- `loss_param_se` — 모수 분산. 선택된 ATA 인자 $\hat{f}_k$ 의
+  불확실성으로부터 도출.
+- `loss_total_se` — 총 표준오차,
+  $\sqrt{\mathrm{loss\_proc\_se}^2 + \mathrm{loss\_param\_se}^2}$.
+- `loss_total_cv` — 변동계수, `loss_total_se / loss_proj`.
+
+```{r}
+summary(cl)
+plot(cl, type = "projection", show_interval = TRUE)
+plot(cl, type = "reserve", conf_level = 0.95)
+```
+
+`plot_triangle()` 은 코호트 x dev 셀을 히트맵으로 표시하며, 관측된
+셀과 추정된 셀을 구분하고 `label_style` 로 셀별 CV / SE / CI 를
+표시한다.
+
+```{r}
+plot_triangle(cl, region = "full")        # 관측 + 추정
+plot_triangle(cl, label_style = "cv")     # 셀별 변동계수
+```
+
+### 6.1 Tail 인자
+
+마지막 관측 경과 기간에서도 손해가 여전히 발달 중인 triangle 의 경우,
+외삽한 tail 인자(tail factor)로 ultimate 를 추정한다. 외삽은 선택된
+ATA 인자에 대해 $\log(f_k - 1) \sim k$ 회귀 — Sherman (1984) log-linear
+tail — 를 적합한 뒤, 외삽된 $f_k$ 의 누적 곱만큼 추정 범위를 연장한다.
+기본값은 비활성(`tail = FALSE`)이다.
+
+```{r}
+fit_cl(tri, tail = TRUE)         # 로그 선형 외삽
+fit_cl(tri, tail = 1.025)        # 또는 명시적 tail 인자 값
+```
+
+### 6.2 Sigma 외삽 방법
+
+Mack 분산은 모든 발달 링크에서 $\sigma_k$ 가 필요한데, 마지막
+링크에서는 직접 추정이 불가능하다. `sigma_method` 가 외삽 방식을
+결정한다.
+
+| `sigma_method` | 동작 |
+|---|---|
+| `"locf"` | (default) 마지막 valid $\sigma$ 를 그대로 carry forward |
+| `"min_last2"` | 마지막 2 개 valid $\sigma$ 의 최솟값 — 보수적 |
+| `"loglinear"` | $\log(\sigma) \sim k$ 선형회귀로 외삽 |
+| `"mack"` | Mack (1993) Appendix B tail estimator — 마지막 link 1 개만 close-form, 그 외는 LOCF + warning |
+| `"none"` | 외삽 안 함; $\sigma$ 는 NA 유지 (variance 자동 0 처리) |
+
+장기 건강보험 권장: `"locf"` (default) 또는 `"mack"` (학술 보고).
+
+```{r}
+fit_cl(tri, sigma_method = "loglinear")
+```
+
+## 7. 분산과 신뢰구간
+
+`fit_ratio()` 은 `L/P` 의 표준오차를 두 가지 방식으로 산출한다.
+premium 불확실성이 어떻게 들어가는지가 차이다.
+
+- `se_method = "fixed"` (default) — premium 을 고정(비확률)으로
+  취급, $\mathrm{SE}(L/P) \approx \mathrm{SE}(L)/P$. 엄밀히는
+  `Var(P) = 0`, `Cov(L,P) = 0` 을 가정한 delta method 의 degenerate
+  case.
 - `se_method = "delta"` — premium 불확실성과 손해-premium 상관계수
   `rho` 를 반영한 full delta method:
 
@@ -177,37 +403,27 @@ $$
   - \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(P)}{P^3}
 $$
 
-부트스트랩 구간도 사용 가능하다:
+표준오차 추정에는 상호 보완적인 두 path 가 있다.
+
+- **Analytical** — `.mack_f_var()` (Mack 1993) + `.ed_g_var()` (B-S
+  1970) 로 closed-form 표준오차. 빠르고 분포 가정 free.
+- **Bootstrap** — 잔차 paradigm (`cell` / `link` / `parametric`) 별
+  forward simulation 으로 분포 형태까지 추정. residual 종류가
+  process variance scale 과 forward sim 모델을 함께 결정 (paradigm
+  matching).
+
+두 path 의 SE 가 현저히 다를 경우 모델 misspecification 신호다.
+평소 sanity check 으로 둘 다 산출해 비교하는 것이 권장된다.
 
 ```{r}
-ratio_boot <- fit_ratio(tri, method = "sa", bootstrap = TRUE, B = 1000, seed = 1)
+ratio_boot <- fit_ratio(tri, method = "ed", bootstrap = TRUE,
+                        B = 1000, seed = 1)
 summary(ratio_boot)
 ```
 
-## 6. 방법 선택
+## 8. SA 의 성숙점 입력 방식
 
-ED 가 기본값으로, 성숙점이나 regime 검출 없이도 안전하게 동작하는
-unconditional safe baseline 이다. 코호트-레벨 drift 가 의심되거나
-ATA 인자가 안정된 포트폴리오에서는 `"cl"` 로 전환, 초기 변동과 후기
-drift 가 모두 존재하는 long-tail 에서는 `"sa"` 로 합성한다.
-
-```
-기본은 "ed" — pooled g_k 기반 baseline. 성숙점 / regime 의존 없음.
-
-선택지:
-  ├── 코호트-레벨 drift 가 의심 / ATA 인자가 안정된 포트폴리오
-  │     → "cl"  (코호트 자기 cum_loss 가 anchor)
-  └── 장기-tail 에서 초기 변동 + 후기 drift 둘 다
-        → "sa"  (성숙점 이전 ED, 이후 CL 합성)
-```
-
-실무: **`"ed"` 로 시작한다** (default). 이후 민감도 점검을 위해
-`"cl"` 과 `"sa"` 를 함께 실행한다. 셋이 모두 일치하면 추정은
-견고하다. 결과가 갈라지면 성숙점 탐지와 기저 ATA 인자를 점검한다.
-
-## 7. 성숙점 입력 방식
-
-`method = "sa"` 에서는 성숙점 $k^*$ 가 ED → CL 전환 지점이 된다.
+`method = "sa"` 에서는 성숙점 $k^*$ 가 ED -> CL 전환 지점이 된다.
 `fit_ratio()` / `fit_loss()` 의 default 는 `maturity = "auto"` 로,
 `detect_maturity()` 를 default 임계값으로 내부 호출한다. 그 외 형태:
 
@@ -220,3 +436,64 @@ drift 가 모두 존재하는 long-tail 에서는 `"sa"` 로 합성한다.
   객체. 다중 refit 에서 고정.
 - `maturity = maturity_at(coverage = "surgery", change = 4)` — 그룹별
   $k^*$ 수동 지정 (예: 회사 표준값).
+
+같은 지연-spec / 사전-산출 / 수동 지정 패턴이 `fit_cl()` 에도
+적용되며, 거기서는 선택된 ATA 인자가 변동성이 클 때 추정을 성숙
+영역으로 제한하는 데 쓰인다.
+
+## 9. 방법 선택
+
+ED 가 기본값인 이유는 unconditional safe baseline 이기 때문이다 —
+성숙점이나 regime 검출 없이도 동작하며 초기 dev 변동에도 보수적이다.
+다른 방법들은 ED 의 동질성 가정이 비현실적이거나, 빈약한 triangle 에서
+추정한 인자보다 외부 anchor 가 나을 때 정당화된다.
+
+```
+기본은 "ed" — pooled g_k x 코호트 보험료. 성숙점 / regime 의존 없음.
+
+ED 의 가정이 한계에 부딪힐 때 다른 방법으로 전환:
+  ├── 코호트-레벨 drift (체제 변화, 인수 / 보장 변경)
+  │     → "cl"  (코호트 자기 cum_loss 가 drift 를 anchor)
+  ├── 초기 dev 변동 + 후기 코호트 drift 둘 다인 long-tail
+  │     → "sa"  (성숙점 이전 ED, 이후 CL)
+  ├── 모든 코호트가 이미 성숙, 초기 dev 변동 없음
+  │     → "cl"  (ED 영역 불필요)
+  ├── 미성숙 / 요율 변경 직후 코호트, 외부 ELR 보유
+  │     → "bf"  (외부 prior 를 발현 손해와 결합)
+  └── 일관된 단일 ELR target, 외부 prior 없음
+        → "cc"  (데이터 pooled ELR, BF 와 같은 결합 형태)
+```
+
+실무: **`"ed"` 로 시작한다** (default). 이후 민감도 점검을 위해
+`"cl"` 과 `"sa"` 를 함께 실행한다. 셋이 모두 일치하면 추정은 견고
+하다. 결과가 갈라지면 성숙점 탐지, regime 필터, 기저 ATA 인자를
+점검한다. 코호트가 너무 미성숙해 데이터 기반 방법을 신뢰하기 어려운
+경우 `"bf"` / `"cc"` 를 고려한다.
+
+## 10. 학술 reference
+
+- Bornhuetter, R. L. and Ferguson, R. E. (1972). The actuary and IBNR.
+  *Proceedings of the Casualty Actuarial Society*, 59, 181-195.
+- Bühlmann, H. (1967). Experience rating and credibility. *ASTIN
+  Bulletin*, 4(3), 199-207.
+- Bühlmann, H. and Straub, E. (1970). Glaubwürdigkeit für
+  Schadensätze. *Bulletin of the Swiss Association of Actuaries*, 70,
+  111-133.
+- Clark, D. R. (2003). LDF curve-fitting and stochastic reserving: A
+  maximum likelihood approach. *CAS Forum*, Fall 2003.
+- Mack, T. (1993). Distribution-free calculation of the standard error
+  of chain ladder reserve estimates. *ASTIN Bulletin*, 23(2), 213-225.
+- Sherman, R. E. (1984). Extrapolating, smoothing, and interpolating
+  development factors. *Proceedings of the Casualty Actuarial
+  Society*, 71, 122-155.
+- Stanard, J. N. (1985). A simulation test of prediction errors of
+  loss reserve estimation techniques. *Proceedings of the Casualty
+  Actuarial Society*, 72, 124-153.
+</content>
+
+## 11. 함께 보기
+
+- `vignette("getting-started")` — 패키지 시작 가이드 (데이터 -> Triangle/Link -> 적합).
+- `vignette("diagnostics")` — 성숙점·수렴점·regime 검출과 필터링.
+- `vignette("backtest")` — 대각선 hold-out 으로 모델 검증.
+- `vignette("bootstrap-se-decomposition")` — 부트스트랩 기반 SE 분해.

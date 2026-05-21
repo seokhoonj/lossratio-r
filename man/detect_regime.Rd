@@ -52,7 +52,7 @@ identical regime changes. Provided for API symmetry with the
 }
 Derived metrics drop the first dev row per cohort (no predecessor),
 then re-index \code{dev} so detection sees a contiguous sequence. See the
-\code{vignette("regime")} "Choice of loss" section for guidance on
+\code{vignette("diagnostics")} "Choice of loss" section for guidance on
 which loss metric matches which suspected event.}
 
 \item{by}{Grouping column(s) for per-combination detection. \code{NULL}

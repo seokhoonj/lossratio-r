@@ -254,5 +254,5 @@ percentile reports.
 ## See also
 
 `vignette("backtest")` for hold-out-based bootstrap validation,
-`vignette("chain-ladder-reserving")` for the underlying CL machinery,
+`vignette("projection")` for the underlying CL machinery,
 and `?bootstrap` for the full argument reference.

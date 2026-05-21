@@ -187,7 +187,7 @@ print(bt_ed_ratio)
 
 ## 8. 함께 보기
 
-- `vignette("chain-ladder-reserving")` — `fit_cl()` 참고.
+- `vignette("projection")` — `fit_cl()` 참고.
 - `vignette("projection")` — `fit_ratio()` 및 `"sa"`, `"ed"`, `"cl"`
   방법.
 - `?backtest`, `?plot.Backtest`, `?plot_triangle.Backtest`.
