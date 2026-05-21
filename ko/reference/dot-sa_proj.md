@@ -10,7 +10,7 @@ in Phase 4a.
 ## Usage
 
 ``` r
-.sa_proj(loss_obs, exposure_proj, g_sel, f_sel, maturity_from)
+.sa_proj(loss_obs, premium_proj, g_sel, f_sel, maturity_from)
 ```
 
 ## Arguments
@@ -19,9 +19,9 @@ in Phase 4a.
 
   Numeric vector of observed cumulative loss.
 
-- exposure_proj:
+- premium_proj:
 
-  Numeric vector of projected cumulative exposure.
+  Numeric vector of projected cumulative premium.
 
 - g_sel:
 

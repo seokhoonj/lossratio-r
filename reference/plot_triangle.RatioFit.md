@@ -10,7 +10,7 @@ by border style.
 # S3 method for class 'RatioFit'
 plot_triangle(
   x,
-  metric = c("ratio", "loss", "exposure"),
+  metric = c("ratio", "loss", "premium"),
   cell_type = c("cumulative", "incremental"),
   region = c("proj", "full", "data"),
   view = c("value", "usage"),
@@ -35,7 +35,7 @@ plot_triangle(
 - metric:
 
   Metric shown in the heatmap cells. One of `"ratio"` (default),
-  `"loss"`, `"exposure"`.
+  `"loss"`, `"premium"`.
 
 - cell_type:
 
@@ -47,7 +47,7 @@ plot_triangle(
 
   Cell region to plot (only used when `view = "value"`). One of `"proj"`
   (projected cells only, observed cells masked), `"full"` (observed +
-  projected), or `"data"` (observed cumulative loss / exposure / ratio
+  projected), or `"data"` (observed cumulative loss / premium / ratio
   from `x$data` – the raw Triangle, no projection). Default is `"proj"`.
 
 - view:
@@ -67,7 +67,7 @@ plot_triangle(
 
 - label_style:
 
-  One of `"value"` (ratio only) or `"detail"` (ratio with loss/exposure
+  One of `"value"` (ratio only) or `"detail"` (ratio with loss/premium
   amounts). Default is `"value"`.
 
 - label_size:

@@ -22,7 +22,7 @@ Five projection methods are available:
 
   - Before maturity: age-to-age factors are volatile, so exposure-driven
     projection \\\Delta C^L = g_k \cdot C^P_k\\ anchors the estimate to
-    exposure volume.
+    premium volume.
 
   - After maturity: age-to-age factors are stable, so chain ladder
     projection \\C^L\_{k+1} = f_k \cdot C^L_k\\ preserves the cohort's
@@ -39,19 +39,19 @@ Five projection methods are available:
   Cape Cod: like `"bf"`, but the prior loss ratio is estimated by
   pooling the data rather than supplied externally.
 
-In all cases, exposure is projected forward to ultimate; the point
-projection is identical under `exposure_method = "ed"` or `"cl"` (they
+In all cases, premium is projected forward to ultimate; the point
+projection is identical under `premium_method = "ed"` or `"cl"` (they
 differ only in the variance recursion).
 
 This function is the *composition* layer over
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
 and
-[`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md):
+[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md):
 it delegates loss projection to
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
-retrieves the embedded `ExposureFit`, and composes the loss-ratio
-point + variance via the delta method (`se_method = "fixed"` or
-`"delta"`). See `ARCHITECTURE.md` for the layered design.
+retrieves the embedded `PremiumFit`, and composes the loss-ratio point +
+variance via the delta method (`se_method = "fixed"` or `"delta"`). See
+`ARCHITECTURE.md` for the layered design.
 
 ## Usage
 
@@ -61,9 +61,9 @@ fit_ratio(
   method = c("ed", "cl", "sa", "bf", "cc"),
   loss_alpha = 1,
   loss_regime = NULL,
-  exposure_method = c("ed", "cl"),
-  exposure_alpha = 1,
-  exposure_regime = NULL,
+  premium_method = c("ed", "cl"),
+  premium_alpha = 1,
+  premium_regime = NULL,
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   maturity = "auto",
@@ -83,7 +83,7 @@ fit_ratio(
 - x:
 
   An object of class `"Triangle"`. The standardized `"loss"` and
-  `"exposure"` columns are used
+  `"premium"` columns are used
   ([`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
   produces these).
 
@@ -141,23 +141,23 @@ fit_ratio(
   :   Simple cohort cut: all cohorts strictly before the change date are
       excluded from estimation.
 
-- exposure_method:
+- premium_method:
 
   One of `"ed"` (default) or `"cl"`. Forwarded to
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
-  when constructing the exposure projection.
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
+  when constructing the premium projection.
 
-- exposure_alpha:
+- premium_alpha:
 
-  Numeric scalar for exposure chain ladder. Default is `1`.
+  Numeric scalar for premium chain ladder. Default is `1`.
 
-- exposure_regime:
+- premium_regime:
 
-  Exposure-side regime specification. Same four input types as
+  Premium-side regime specification. Same four input types as
   `loss_regime` (`NULL` / `Regime` / `"auto"` / function). Default
-  `NULL` – exposure is fit on the full triangle independently of
+  `NULL` – premium is fit on the full triangle independently of
   `loss_regime` (no lazy default). Set explicitly when the regime shift
-  affects exposure accrual too.
+  affects premium accrual too.
 
 - sigma_method:
 
@@ -220,21 +220,21 @@ fit_ratio(
   :   Premium treated as fixed (non-random). \\\mathrm{SE}(L/P) =
       \mathrm{SE}(L) / P\\. Strictly, this is the delta method with
       `Var(P) = 0` and `Cov(L,P) = 0`, i.e., a degenerate case under the
-      assumption that exposure is known.
+      assumption that premium is known.
 
   `"delta"`
 
-  :   Full delta method including exposure uncertainty and the
-      loss-exposure correlation `rho`: \$\$\mathrm{Var}(L/P) \approx
+  :   Full delta method including premium uncertainty and the
+      loss-premium correlation `rho`: \$\$\mathrm{Var}(L/P) \approx
       \frac{\mathrm{Var}(L)}{P^2} + \frac{L^2 \mathrm{Var}(P)}{P^4} -
       \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(P)}{P^3}\$\$
 
 - rho:
 
   Numeric scalar in `(-1, 1)`; assumed correlation between ultimate loss
-  and ultimate exposure. Only used when `se_method = "delta"`. Default
-  is `0.95`, matching the strong positive correlation typically observed
-  between cumulative loss and cumulative exposure in long-tail health
+  and ultimate premium. Only used when `se_method = "delta"`. Default is
+  `0.95`, matching the strong positive correlation typically observed
+  between cumulative loss and cumulative premium in long-tail health
   portfolios (analogous to the paid/incurred correlation used in Munich
   chain ladder).
 
@@ -279,9 +279,9 @@ fit_ratio(
   convention). `ratio_se` is recomputed from the bootstrap-derived
   `loss_total_se` via
   [`.compute_ratio_se()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-compute_ratio_se.md),
-  combined with the exposure-side SE per `se_method` (`"fixed"` ignores
-  exposure SE; `"delta"` uses `exposure_total_se` from the inner
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
+  combined with the premium-side SE per `se_method` (`"fixed"` ignores
+  premium SE; `"delta"` uses `premium_total_se` from the inner
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
   plus `rho` correlation).
 
 - B:
@@ -307,7 +307,7 @@ An object of class `"RatioFit"`.
 ## See also
 
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
-[`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md),
+[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md),
 [`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md),
 [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md),
 [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
@@ -325,7 +325,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 # Stage-adaptive (default): ED before maturity, CL after

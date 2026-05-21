@@ -7,7 +7,7 @@ The returned `"Regime"` object plugs into any function that consumes a
 Regime –
 [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md),
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md),
-[`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md),
+[`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md),
 [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md),
 and the regime-change resolver – by carrying the same `$changes` schema
 as

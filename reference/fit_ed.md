@@ -2,16 +2,16 @@
 
 Estimate incremental loss intensities \\g_k\\ from a `"Triangle"` object
 and return an `"EDFit"` object that bundles factor summaries, selected
-intensities, and a cell-level projection of cumulative loss and exposure
+intensities, and a cell-level projection of cumulative loss and premium
 (`$full`).
 
 Returns `g_sel`, `sigma2`, and factor variance
 \\\mathrm{Var}(\hat{g}\_k)\\ (column `g_var`) in `$selected`.
 
-The `$full` projection table holds cumulative loss / exposure
-projections and their standard errors, computed directly from the
-Mack-style ED recursion (see `.ed_proj`, `.ed_proc_var`,
-`.ed_param_var`). To validate an ED projection via
+The `$full` projection table holds cumulative loss / premium projections
+and their standard errors, computed directly from the Mack-style ED
+recursion (see `.ed_proj`, `.ed_proc_var`, `.ed_param_var`). To validate
+an ED projection via
 [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md),
 call `backtest(tri, target = "ratio", loss_method = "ed")`.
 
@@ -21,7 +21,7 @@ call `backtest(tri, target = "ratio", loss_method = "ed")`.
 fit_ed(
   x,
   loss = "loss",
-  exposure = "exposure",
+  premium = "premium",
   method = c("mack"),
   alpha = 1,
   na_method = c("locf", "zero", "none"),
@@ -48,9 +48,9 @@ fit_ed(
   [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md)
   and to downstream workers.
 
-- exposure:
+- premium:
 
-  Cumulative exposure variable. Default `"exposure"`. Forwarded to
+  Cumulative premium variable. Default `"premium"`. Forwarded to
   [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md)
   and to downstream workers.
 
@@ -137,9 +137,9 @@ An object of class `"EDFit"` (a named list) with components:
 
 - `full`:
 
-  `data.table` of per-cell cumulative loss / exposure projection plus
+  `data.table` of per-cell cumulative loss / premium projection plus
   role-prefixed SE / CV columns (`loss_proj`, `incr_loss_proj`,
-  `exposure_proj`, `incr_exposure_proj`, `loss_proc_se2`,
+  `premium_proj`, `incr_premium_proj`, `loss_proc_se2`,
   `loss_param_se2`, `loss_total_se2`, `loss_proc_se`, `loss_param_se`,
   `loss_total_se`, `loss_total_cv`). Available cells include both
   observed and projected; `is_observed` flags observed cells.

@@ -4,8 +4,8 @@ Visualise diagnostic summaries from a `"Link"` object. Dispatches to the
 multiplicative ATA branch (`model = "ata"`) or the additive
 exposure-driven branch (`model = "ed"`).
 
-The default `model` is chosen from `attr(x, "exposure")`: `NULL`
-(single-variable link) selects `"ata"`, a non-`NULL` exposure variable
+The default `model` is chosen from `attr(x, "premium")`: `NULL`
+(single-variable link) selects `"ata"`, a non-`NULL` premium variable
 (dual-variable link) selects `"ed"`.
 
 ## Usage
@@ -23,7 +23,7 @@ plot(x, model = NULL, ...)
 
 - model:
 
-  Either `"ata"` or `"ed"`. Default depends on `attr(x, "exposure")`.
+  Either `"ata"` or `"ed"`. Default depends on `attr(x, "premium")`.
 
 - ...:
 

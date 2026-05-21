@@ -50,7 +50,7 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 ```
 
@@ -163,7 +163,7 @@ plot(r)
 도메인 지식과 대조해야 한다.
 
 순서:
-`c("ratio", "loss_ata", "exposure_ata", "loss_ed", "exposure_ed", "loss", "exposure")`
+`c("ratio", "loss_ata", "premium_ata", "loss_ed", "premium_ed", "loss", "premium")`
 — cleanest 에서 riskiest 까지.
 
 | 감지하려는 시나리오 | 권장 `loss` | 주의사항 |
@@ -171,21 +171,21 @@ plot(r)
 | 일반적 LR 예측 정확도 (default) | `"ratio"` | 차등 성장 (loss/premium 성장률 비대칭) 으로 인한 *smooth drift* 를 sharp break |
 |  |  | 로 오인할 수 있음. |
 | Loss 발전 *속도* 변화 (CL `f`) | `"loss_ata"` *(진단용)* | dev=1 손실 + complete-row 요구 → sample 줄어듦; CV 가 낮아 작은 변동도 잡힘. |
-| Premium 인식 *속도* 변화 | `"exposure_ata"` *(진단용)* | `"loss_ata"` 와 같은 주의사항. |
-| 노출 단위당 loss *세기* 변화 (ED `g`) | `"loss_ed"` *(진단용)* | premium 으로 cross-normalize — 단독 해석이 까다로움. |
-| `exposure_ata` 와 동일 (API 대칭) | `"exposure_ed"` *(alias)* | PCA 표준화 후 `exposure_ata` 와 동일한 change — alias. |
+| Premium 인식 *속도* 변화 | `"premium_ata"` *(진단용)* | `"loss_ata"` 와 같은 주의사항. |
+| 보험료 단위당 loss *세기* 변화 (ED `g`) | `"loss_ed"` *(진단용)* | premium 으로 cross-normalize — 단독 해석이 까다로움. |
+| `premium_ata` 와 동일 (API 대칭) | `"premium_ed"` *(alias)* | PCA 표준화 후 `premium_ata` 와 동일한 change — alias. |
 | Loss *level* 변화 (claims handling, 보장 변경) | `"loss"` | raw cumulative — book size 성장이 도미넌트, false positive 빈번. |
-| Premium *level* 변화 (요율, 채널 변경) | `"exposure"` | `"loss"` 와 같은 주의사항. |
+| Premium *level* 변화 (요율, 채널 변경) | `"premium"` | `"loss"` 와 같은 주의사항. |
 
 참고:
 
 - `"ratio"` 이 default 인 이유 — 손해율이 패키지의 *예측 지표* 이고,
   비율이라 *book size 성장에 자동 면역*.
-- `"loss"` / `"exposure"` 은 raw cumulative 컬럼이라 *갑작스러운
-  absolute level shift* 의심 시 (예: 채널 종료로 보험료 거치액 급감)
-  유용. smooth book growth 는 false positive 빈번 — 결과를 *알려진
-  언더라이팅·claims 사건 타임라인* 과 대조 필수.
-- `"loss_ata"`, `"exposure_ata"`, `"loss_ed"` 는 *진단용* 지표. Triangle
+- `"loss"` / `"premium"` 은 raw cumulative 컬럼이라 *갑작스러운 absolute
+  level shift* 의심 시 (예: 채널 종료로 보험료 거치액 급감) 유용. smooth
+  book growth 는 false positive 빈번 — 결과를 *알려진 언더라이팅·claims
+  사건 타임라인* 과 대조 필수.
+- `"loss_ata"`, `"premium_ata"`, `"loss_ed"` 는 *진단용* 지표. Triangle
   에 저장된 컬럼이 아니라 inline 으로 derive 된다. CL 의 `f` / ED 의 `g`
   인자와 직접 대응하므로 여기서 검출된 change 는 모델의 stationarity
   가정 위반에 해당. *구조적 메커니즘* 으로 regime 을 귀속시키고 싶을 때
@@ -263,7 +263,7 @@ tri_all <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 r_all   <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 r_all$changes
@@ -300,5 +300,5 @@ r_all$changes
     얻는 경우가 많다.
 
 2.  **요율 변경 문서화**: 탐지된 변화점은 동반 논문의 *Limitations*
-    절에서 설명한 전처리 권고 (보험료 on-leveling 또는 익스포저 분해
+    절에서 설명한 전처리 권고 (보험료 on-leveling 또는 보험료 분해
     $`V = C^P / r`$) 의 데이터 기반 기준점이 된다.

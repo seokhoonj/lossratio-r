@@ -13,7 +13,7 @@ print(x, ...)
 
 - x:
 
-  A `PremiumFit` object.
+  An `PremiumFit` object.
 
 - ...:
 

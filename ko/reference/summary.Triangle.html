@@ -121,7 +121,7 @@ statistics for cumulative loss ratios (<code>ratio</code>) and per-period loss r
 <dd><p>Median of cumulative loss ratios</p></dd>
 
 <dt>ratio_wt</dt>
-<dd><p>Weighted cumulative loss ratio (<code>sum(loss) / sum(exposure)</code>)</p></dd>
+<dd><p>Weighted cumulative loss ratio (<code>sum(loss) / sum(premium)</code>)</p></dd>
 
 <dt>incr_ratio_mean</dt>
 <dd><p>Mean of per-period loss ratios</p></dd>
@@ -131,7 +131,7 @@ statistics for cumulative loss ratios (<code>ratio</code>) and per-period loss r
 
 <dt>incr_ratio_wt</dt>
 <dd><p>Weighted per-period loss ratio
-(<code>sum(incr_loss) / sum(incr_exposure)</code>)</p></dd>
+(<code>sum(incr_loss) / sum(incr_premium)</code>)</p></dd>
 
 
 </dl><p>The returned object keeps the attributes <code>groups</code> and <code>dev</code>,
@@ -139,10 +139,10 @@ and its class is updated to <code>"TriangleSummary"</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The weighted mean is computed as:</p><ul><li><p><code>ratio_wt      = sum(loss)      / sum(exposure)</code></p></li>
-<li><p><code>incr_ratio_wt = sum(incr_loss) / sum(incr_exposure)</code></p></li>
-</ul><p>These correspond to portfolio-level loss ratios based on exposure and
-are typically more stable than simple averages when exposure sizes differ
+    <p>The weighted mean is computed as:</p><ul><li><p><code>ratio_wt      = sum(loss)      / sum(premium)</code></p></li>
+<li><p><code>incr_ratio_wt = sum(incr_loss) / sum(incr_premium)</code></p></li>
+</ul><p>These correspond to portfolio-level loss ratios based on premium and
+are typically more stable than simple averages when premium sizes differ
 across cohorts.</p>
 <p>It is assumed that the input <code>Triangle</code> object does not contain missing values.</p>
     </div>
@@ -156,7 +156,7 @@ across cohorts.</p>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span></span>
+<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">smr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">d</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">smr</span><span class="op">)</span></span></span>

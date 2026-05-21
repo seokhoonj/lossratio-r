@@ -69,27 +69,27 @@ print(x, ...)
 
   Trajectory variable. Default is `"ratio"` (cumulative loss ratio).
   Accepts any column on the `Triangle` (e.g. `"ratio"`, `"loss"`,
-  `"exposure"`, `"incr_loss"`, `"incr_exposure"`), plus three
-  *diagnostic* derived metrics computed inline per (group, cohort):
+  `"premium"`, `"incr_loss"`, `"incr_premium"`), plus three *diagnostic*
+  derived metrics computed inline per (group, cohort):
 
   `"loss_ata"`
 
   :   Loss age-to-age factor `loss[k+1] / loss[k]` – multiplicative loss
       development speed (CL \$f_k\$).
 
-  `"exposure_ata"`
+  `"premium_ata"`
 
-  :   Exposure age-to-age factor – same form on exposure.
+  :   Premium age-to-age factor – same form on premium.
 
   `"loss_ed"`
 
-  :   Loss intensity `(loss[k] - loss[k-1]) / exposure[k-1]` – additive,
+  :   Loss intensity `(loss[k] - loss[k-1]) / premium[k-1]` – additive,
       exposure-anchored (ED model's \$g_k\$).
 
-  `"exposure_ed"`
+  `"premium_ed"`
 
-  :   Alias of `"exposure_ata"` – the two differ only by a constant
-      `(exposure_ata - 1)`, and the PCA standardization in detection
+  :   Alias of `"premium_ata"` – the two differ only by a constant
+      `(premium_ata - 1)`, and the PCA standardization in detection
       removes that shift, so they yield identical regime changes.
       Provided for API symmetry with the `loss_ata` / `loss_ed` pair.
 
@@ -264,7 +264,7 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 # Hierarchical clustering (no extra package dependency)
@@ -284,7 +284,7 @@ tri_all <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 r_all <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 print(r_all$changes)

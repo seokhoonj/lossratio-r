@@ -181,7 +181,7 @@
       </dl></div><div class="section level2">
       <h2 id="estimation">Estimation<a class="anchor" aria-label="anchor" href="#estimation"></a></h2>
 
-      <div class="section-desc"><p>Models that produce full projections on a Triangle. Base algorithms: <code>fit_cl</code> (chain ladder / multiplicative), <code>fit_ed</code> (exposure-driven / additive), <code>fit_sa</code> (stage-adaptive composition of ED + CL anchored on a maturity point). ELR-based reserve methods: <code>fit_bf</code> (Bornhuetter-Ferguson with external prior), <code>fit_cc</code> (Cape Cod with data-pooled ELR estimate). Role dispatchers: <code>fit_loss</code> (loss-side ed/cl/sa/bf/cc), <code>fit_exposure</code> (exposure-side ed/cl). Composition: <code>fit_ratio</code> (loss-ratio umbrella with delta-method SE). All return an object carrying a <code>$full</code> projection table.</p></div>
+      <div class="section-desc"><p>Models that produce full projections on a Triangle. Base algorithms: <code>fit_cl</code> (chain ladder / multiplicative), <code>fit_ed</code> (exposure-driven / additive), <code>fit_sa</code> (stage-adaptive composition of ED + CL anchored on a maturity point). ELR-based reserve methods: <code>fit_bf</code> (Bornhuetter-Ferguson with external prior), <code>fit_cc</code> (Cape Cod with data-pooled ELR estimate). Role dispatchers: <code>fit_loss</code> (loss-side ed/cl/sa/bf/cc), <code>fit_premium</code> (premium-side ed/cl). Composition: <code>fit_ratio</code> (loss-ratio umbrella with delta-method SE). All return an object carrying a <code>$full</code> projection table.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -232,10 +232,10 @@
 
         <dt>
 
-          <code><a href="fit_exposure.html">fit_exposure()</a></code>
+          <code><a href="fit_premium.html">fit_premium()</a></code>
 
         </dt>
-        <dd>Fit a chain ladder projection on the exposure triangle</dd>
+        <dd>Fit a chain ladder projection on the premium triangle</dd>
 
         <dt>
 
@@ -269,7 +269,7 @@
       </dl></div><div class="section level2">
       <h2 id="cell-selection-diagnostics">Cell-selection diagnostics<a class="anchor" aria-label="anchor" href="#cell-selection-diagnostics"></a></h2>
 
-      <div class="section-desc"><p>Decide which cells of the triangle to use for estimation. <code>detect_maturity</code> works along the dev axis (link beyond which ATA factors are stable); <code>detect_regime</code> works along the cohort axis (structural break across underwriting cohorts). The <code>*_at()</code> / <code>*_spec()</code> helpers build manual / lazy-detect input objects for the <code>maturity</code> / <code>loss_regime</code> / <code>exposure_regime</code> arguments of the fit functions.</p></div>
+      <div class="section-desc"><p>Decide which cells of the triangle to use for estimation. <code>detect_maturity</code> works along the dev axis (link beyond which ATA factors are stable); <code>detect_regime</code> works along the cohort axis (structural break across underwriting cohorts). The <code>*_at()</code> / <code>*_spec()</code> helpers build manual / lazy-detect input objects for the <code>maturity</code> / <code>loss_regime</code> / <code>premium_regime</code> arguments of the fit functions.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -320,7 +320,7 @@
       </dl></div><div class="section level2">
       <h2 id="bootstrap">Bootstrap<a class="anchor" aria-label="anchor" href="#bootstrap"></a></h2>
 
-      <div class="section-desc"><p>Cohort × dev standard-error decomposition via simulation (Pythagorean split into parameter and process components). Returned object is consumed by <code>fit_loss</code> / <code>fit_exposure</code> / <code>fit_ratio</code> through their <code>bootstrap</code> argument to replace analytical SE / CI with empirical counterparts.</p></div>
+      <div class="section-desc"><p>Cohort × dev standard-error decomposition via simulation (Pythagorean split into parameter and process components). Returned object is consumed by <code>fit_loss</code> / <code>fit_premium</code> / <code>fit_ratio</code> through their <code>bootstrap</code> argument to replace analytical SE / CI with empirical counterparts.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -364,7 +364,7 @@
           <code><a href="backtest.html">backtest()</a></code> <code><a href="backtest.html">print(<i>&lt;Backtest&gt;</i>)</a></code> <code><a href="backtest.html">summary(<i>&lt;Backtest&gt;</i>)</a></code> <code><a href="backtest.html">print(<i>&lt;summary.Backtest&gt;</i>)</a></code>
 
         </dt>
-        <dd>Backtest a loss / exposure / loss-ratio projection on existing data</dd>
+        <dd>Backtest a loss / premium / loss-ratio projection on existing data</dd>
       </dl></div><div class="section level2">
       <h2 id="visualisation">Visualisation<a class="anchor" aria-label="anchor" href="#visualisation"></a></h2>
 
@@ -440,13 +440,6 @@
 
         <dt>
 
-          <code><a href="plot.ExposureFit.html">plot(<i>&lt;ExposureFit&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot an exposure fit</dd>
-
-        <dt>
-
           <code><a href="plot.IntensityFit.html">plot(<i>&lt;IntensityFit&gt;</i>)</a></code>
 
         </dt>
@@ -458,6 +451,13 @@
 
         </dt>
         <dd>Plot link-factor diagnostics</dd>
+
+        <dt>
+
+          <code><a href="plot.PremiumFit.html">plot(<i>&lt;PremiumFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot an premium fit</dd>
 
         <dt>
 
@@ -552,13 +552,6 @@
 
         <dt>
 
-          <code><a href="plot_triangle.ExposureFit.html">plot_triangle(<i>&lt;ExposureFit&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot an exposure fit as a triangle table</dd>
-
-        <dt>
-
           <code><a href="plot_triangle.IntensityFit.html">plot_triangle(<i>&lt;IntensityFit&gt;</i>)</a></code>
 
         </dt>
@@ -570,6 +563,13 @@
 
         </dt>
         <dd>Plot a Link object as a triangle heatmap</dd>
+
+        <dt>
+
+          <code><a href="plot_triangle.PremiumFit.html">plot_triangle(<i>&lt;PremiumFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot an premium fit as a triangle table</dd>
 
         <dt>
 
@@ -620,7 +620,7 @@
           <code><a href="backtest.html">backtest()</a></code> <code><a href="backtest.html">print(<i>&lt;Backtest&gt;</i>)</a></code> <code><a href="backtest.html">summary(<i>&lt;Backtest&gt;</i>)</a></code> <code><a href="backtest.html">print(<i>&lt;summary.Backtest&gt;</i>)</a></code>
 
         </dt>
-        <dd>Backtest a loss / exposure / loss-ratio projection on existing data</dd>
+        <dd>Backtest a loss / premium / loss-ratio projection on existing data</dd>
 
         <dt>
 
@@ -687,13 +687,6 @@
 
         <dt>
 
-          <code><a href="print.ExposureFit.html">print(<i>&lt;ExposureFit&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print method for <code>ExposureFit</code></dd>
-
-        <dt>
-
           <code><a href="print.IntensityFit.html">print(<i>&lt;IntensityFit&gt;</i>)</a></code>
 
         </dt>
@@ -705,6 +698,13 @@
 
         </dt>
         <dd>Print method for <code>LossFit</code></dd>
+
+        <dt>
+
+          <code><a href="print.PremiumFit.html">print(<i>&lt;PremiumFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for <code>PremiumFit</code></dd>
 
         <dt>
 
@@ -771,13 +771,6 @@
 
         <dt>
 
-          <code><a href="summary.ExposureFit.html">summary(<i>&lt;ExposureFit&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summary method for <code>ExposureFit</code></dd>
-
-        <dt>
-
           <code><a href="summary.IntensityFit.html">summary(<i>&lt;IntensityFit&gt;</i>)</a></code>
 
         </dt>
@@ -796,6 +789,13 @@
 
         </dt>
         <dd>Summary method for <code>LossFit</code></dd>
+
+        <dt>
+
+          <code><a href="summary.PremiumFit.html">summary(<i>&lt;PremiumFit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Summary method for <code>PremiumFit</code></dd>
 
         <dt>
 

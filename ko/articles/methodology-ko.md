@@ -25,7 +25,7 @@
   부가보험료* 의 합이다. 손해율의 진짜 분모는 *위험보험료* 만이다.
 - **평탄화 보험료** — 비갱신형 상품은 가입 시 평균값으로 산출된 *level
   premium* 을 전 기간 동일 부과한다. 따라서 *charged premium 자체* 는
-  exposure 가 아니다. 실제 *period risk premium* 은 위험률(t) × 가입금액
+  premium 가 아니다. 실제 *period risk premium* 은 위험률(t) × 가입금액
   × 유지율(t) 로 *외부 산출* 후 입력해야 한다.
 - **체제 변화(regime change)** — 약관 개정·요율 조정·채널 mix 변화·인수
   기준 변경 등이 *코호트 단위* 로 손해율 동력학을 바꾼다.
@@ -42,7 +42,7 @@ Bühlmann-Straub 1970 credibility, Sherman 1984 의 tail 외삽 — 을 *위
 장기 손해율 추정의 *방법론적 뿌리* 는 다음의 P&C reserving 흐름이다.
 
     1967  Bühlmann credibility           -- experience rating 의 수학적 형식화
-    1970  Bühlmann-Straub                -- exposure-varying credibility
+    1970  Bühlmann-Straub                -- premium-varying credibility
                                            (volume-weighted estimator)
     1972  Bornhuetter-Ferguson           -- prior + observed loss 결합
     1984  Sherman                        -- chain ladder tail factor 외삽
@@ -54,7 +54,7 @@ Bühlmann-Straub 1970 credibility, Sherman 1984 의 tail 외삽 — 을 *위
 - **Chain ladder (Mack 1993)** — 누적 손해 $`C_k`$ 의 *Markov 곱셈
   recursion*: $`C_{k+1} = f_k \cdot C_k`$ where
   $`f_k = \sum_i C_{i,k+1} / \sum_i C_{i,k}`$.
-- **Cape Cod / Bühlmann-Straub** — 손해를 *exposure (= volume)* 으로
+- **Cape Cod / Bühlmann-Straub** — 손해를 *premium (= volume)* 으로
   anchoring. $`\widehat{ELR} = \sum_i L_i / \sum_i \pi_i`$ 의 single
   ratio 로 ult 산출.
 
@@ -66,7 +66,7 @@ Bühlmann-Straub 1970 credibility, Sherman 1984 의 tail 외삽 — 을 *위
 | 도메인 issue | Chain ladder | Cape Cod |
 |----|----|----|
 | 분모효과 / 관성 | 초기 dev 의 $`f_k`$ 가 *과대 변동* ($`C_k`$ 작아서) | ELR 의 *cohort 별 변동* 무시 |
-| 평탄화 보험료 | 손해만 사용해 *우회 가능* (하지만 발생률 변화에 약함) | π 가 *flat* 이면 *진짜 exposure 의 dev 변화* 흡수 |
+| 평탄화 보험료 | 손해만 사용해 *우회 가능* (하지만 발생률 변화에 약함) | π 가 *flat* 이면 *진짜 premium 의 dev 변화* 흡수 |
 | 다회성 보험금 | 사용 가능 (frequency × severity 무관) | 사용 가능 (volume measure 만 필요) |
 | 발전하는 위험보험료 | 무관 | *single π* 가정 — *triangle 형태 premium* 미지원 |
 | 코호트 단위 체제 변화 | *Mack 가정* (no calendar-year effect) *위반* | *cohort heterogeneity* 무시 |
@@ -78,7 +78,7 @@ Bühlmann-Straub 1970 credibility, Sherman 1984 의 tail 외삽 — 을 *위
 
 | \# | 적응 | 어떤 도메인 issue 를 푸는가 |
 |----|----|----|
-| \(a\) | **2D exposure triangle** — Cape Cod 의 *single π* 를 *cohort × dev triangle* 로 확장 | 발전하는 위험보험료 |
+| \(a\) | **2D premium triangle** — Cape Cod 의 *single π* 를 *cohort × dev triangle* 로 확장 | 발전하는 위험보험료 |
 | \(b\) | **per-link** $`g_k`$ — Cape Cod 의 *cohort-level ELR* 을 *link 단위* 로 정밀화 | 분모효과·관성 (link 별 변동 추적) |
 | \(c\) | **stage-adaptive (SA) hybrid** — chain ladder 의 *초기 변동* 영역을 *exposure-driven (ED)* 로 대체, 안정화 후 chain ladder 사용 | 초기 dev ATA 변동성 |
 | \(d\) | **regime detection** — 코호트 축 *구조적 변화점* 자동 검출 + 필터 | 약관·요율·인수 정책 변경 |
@@ -89,18 +89,18 @@ Bühlmann-Straub 1970 credibility, Sherman 1984 의 tail 외삽 — 을 *위
 에 맞춰* 재구성한 것이다. *새로운 paradigm 을 처음부터 만든 것이 아니다*
 — *기존 방법론의 정직한 transplant + adaptation* 이다.
 
-## 5. 핵심 framework — `loss / exposure / ratio`
+## 5. 핵심 framework — `loss / premium / ratio`
 
 lossratio 의 *모든 추정* 은 다음 *세 양* 위에서 이루어진다.
 
 | 양 | 의미 | 컬럼 이름 (Triangle) |
 |----|----|----|
 | **loss** | 발생 손해의 누적량 | `loss`, `incr_loss` |
-| **exposure** | 위험 노출량 (장기 health 는 *누적 위험보험료*) | `exposure`, `incr_exposure` |
-| **ratio** | 손해율 (cumulative loss / cumulative exposure) | `ratio`, `incr_ratio` |
+| **premium** | 위험보험료 (장기 health 는 *누적 위험보험료*) | `premium`, `incr_premium` |
+| **ratio** | 손해율 (cumulative loss / cumulative premium) | `ratio`, `incr_ratio` |
 
 *세 양 모두 cohort × dev grid 위에서 발전하는 관측치 (stochastic
-observable)*. *exposure* 는 *고정된 underwriting volume* 이 아니라
+observable)*. *premium* 는 *고정된 underwriting volume* 이 아니라
 *위험률 × 가입금액 × 유지율* 의 dev 따라 변동하는 양이다 — Mack 1993 의
 *volume measure* 와 같은 의미, Bühlmann-Straub 1970 의 *natural weight*
 와 같은 의미.
@@ -140,7 +140,7 @@ observable)*. *exposure* 는 *고정된 underwriting volume* 이 아니라
 safe baseline* 을 요구한다.
 
 - **ED 는 *maturity 검출 없이도* 작동** — single-pass 추정.
-- **ED 는 *exposure 에 anchor*** — 초기 dev 의 작은 $`C_k`$ 로 인한
+- **ED 는 *premium 에 anchor*** — 초기 dev 의 작은 $`C_k`$ 로 인한
   $`f_k`$ 과대 변동에 *영향받지 않음*.
 - **SA 는 *2-pass* (maturity 검출 → 적용)** — 더 정교하지만
   *infrastructure 의존*.
@@ -193,8 +193,8 @@ Sherman 1984 의 *log-linear (exponential form) tail* 은 이미
 *수학적 구조* 는 다음 영역까지 자연 일반화 가능:
 
 - **frequency-severity 분해** —
-  `fit_ed(loss = "claim_count", exposure = "insureds")` 로 *frequency*
-  추정, `fit_ed(loss = "loss", exposure = "claim_count")` 로 *severity*
+  `fit_ed(loss = "claim_count", premium = "insureds")` 로 *frequency*
+  추정, `fit_ed(loss = "loss", premium = "claim_count")` 로 *severity*
   추정. slot 재해석 만으로 framework 작동.
 - **lifetime / cohort 분석** — 가입연도별 cohort 의 *전 life cycle*
   손해율 궤적 분석. 현재 framework 의 자연 확장.

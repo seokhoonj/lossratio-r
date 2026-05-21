@@ -11,8 +11,8 @@ where
 at its latest observed development period.
 \(q_i = L_{obs, i} / \hat L_{ult, i}^{CL}\): the expected
 emerged fraction (inverse of cumulative LDF).
-\(E_i^{ult}\): cohort \(i\)'s ultimate exposure
-(projected via chain ladder on exposure).
+\(E_i^{ult}\): cohort \(i\)'s ultimate premium
+(projected via chain ladder on premium).
 
 
 Given \(\widehat{\mathrm{ELR}}^{CC}\), the per-cohort ultimate is
@@ -40,8 +40,8 @@ where
 at its latest observed development period.
 \(q_i = L_{obs, i} / \hat L_{ult, i}^{CL}\): the expected
 emerged fraction (inverse of cumulative LDF).
-\(E_i^{ult}\): cohort \(i\)'s ultimate exposure
-(projected via chain ladder on exposure).
+\(E_i^{ult}\): cohort \(i\)'s ultimate premium
+(projected via chain ladder on premium).
 
 
 Given \(\widehat{\mathrm{ELR}}^{CC}\), the per-cohort ultimate is
@@ -174,8 +174,8 @@ BF formula.</p>
 at its latest observed development period.</p></li>
 <li><p>\(q_i = L_{obs, i} / \hat L_{ult, i}^{CL}\): the expected
 emerged fraction (inverse of cumulative LDF).</p></li>
-<li><p>\(E_i^{ult}\): cohort \(i\)'s ultimate exposure
-(projected via chain ladder on exposure).</p></li>
+<li><p>\(E_i^{ult}\): cohort \(i\)'s ultimate premium
+(projected via chain ladder on premium).</p></li>
 </ul><p>Given \(\widehat{\mathrm{ELR}}^{CC}\), the per-cohort ultimate is
 obtained from the BF formula with this single pooled ELR:</p>
 <p>$$\hat L_{ult, i}^{CC} = L_{obs, i} +
@@ -197,7 +197,7 @@ Cape Cod ELR itself is data-driven and thus uncertain.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fit_cc</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  loss <span class="op">=</span> <span class="st">"loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"exposure"</span>,</span>
+<span>  premium <span class="op">=</span> <span class="st">"premium"</span>,</span>
 <span>  bootstrap <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  B <span class="op">=</span> <span class="fl">999L</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -226,9 +226,9 @@ Cape Cod ELR itself is data-driven and thus uncertain.</p>
 <dd><p>A single cumulative loss variable. Default <code>"loss"</code>.</p></dd>
 
 
-<dt id="arg-exposure">exposure<a class="anchor" aria-label="anchor" href="#arg-exposure"></a></dt>
-<dd><p>A single cumulative exposure variable. Default
-<code>"exposure"</code>.</p></dd>
+<dt id="arg-premium">premium<a class="anchor" aria-label="anchor" href="#arg-premium"></a></dt>
+<dd><p>A single cumulative premium variable. Default
+<code>"premium"</code>.</p></dd>
 
 
 <dt id="arg-bootstrap">bootstrap<a class="anchor" aria-label="anchor" href="#arg-bootstrap"></a></dt>
@@ -267,12 +267,12 @@ bootstrap is requested the analytical path is used regardless of
 
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
 <dd><p>Numeric scalar passed through to the inner <code><a href="fit_cl.html">fit_cl()</a></code> /
-<code><a href="fit_exposure.html">fit_exposure()</a></code> calls. Default <code>1</code>.</p></dd>
+<code><a href="fit_premium.html">fit_premium()</a></code> calls. Default <code>1</code>.</p></dd>
 
 
 <dt id="arg-sigma-method">sigma_method<a class="anchor" aria-label="anchor" href="#arg-sigma-method"></a></dt>
 <dd><p>Sigma extrapolation method forwarded to
-<code><a href="fit_cl.html">fit_cl()</a></code> / <code><a href="fit_exposure.html">fit_exposure()</a></code>. Default <code>"locf"</code>.</p></dd>
+<code><a href="fit_cl.html">fit_cl()</a></code> / <code><a href="fit_premium.html">fit_premium()</a></code>. Default <code>"locf"</code>.</p></dd>
 
 
 <dt id="arg-recent">recent<a class="anchor" aria-label="anchor" href="#arg-recent"></a></dt>
@@ -282,7 +282,7 @@ forwarded to the inner fits. Default <code>NULL</code>.</p></dd>
 
 <dt id="arg-regime">regime<a class="anchor" aria-label="anchor" href="#arg-regime"></a></dt>
 <dd><p>Optional regime specification forwarded to the inner
-loss and exposure fits. See <code><a href="fit_cl.html">fit_cl()</a></code> for the four-type dispatch.</p></dd>
+loss and premium fits. See <code><a href="fit_cl.html">fit_cl()</a></code> for the four-type dispatch.</p></dd>
 
 
 <dt id="arg-credibility">credibility<a class="anchor" aria-label="anchor" href="#arg-credibility"></a></dt>
@@ -316,7 +316,7 @@ quantile or analytical normal). Default <code>0.95</code>.</p></dd>
 <dt><code>method</code></dt>
 <dd><p><code>"cc"</code>.</p></dd>
 
-<dt><code>groups</code>, <code>cohort</code>, <code>dev</code>, <code>loss</code>, <code>exposure</code></dt>
+<dt><code>groups</code>, <code>cohort</code>, <code>dev</code>, <code>loss</code>, <code>premium</code></dt>
 <dd><p>Metadata.</p></dd>
 
 <dt><code>full</code>, <code>proj</code>, <code>summary</code></dt>
@@ -339,8 +339,8 @@ per group (or scalar if no group).</p></dd>
 <code>list(method, weights)</code> with the Buehlmann-Straub <code>Z</code> / <code>K</code>
 per cohort.</p></dd>
 
-<dt><code>cl_fit</code>, <code>exposure_fit</code></dt>
-<dd><p>Inner CL / Exposure fits.</p></dd>
+<dt><code>cl_fit</code>, <code>premium_fit</code></dt>
+<dd><p>Inner CL / Premium fits.</p></dd>
 
 <dt><code>bootstrap</code></dt>
 <dd><p>When <code>bootstrap</code> is enabled, a
@@ -359,7 +359,7 @@ columns <code>elr_cc_se</code> / <code>elr_cc_cv</code> / <code>elr_cc_ci_lo</co
 
 <dt><code>alpha</code>, <code>sigma_method</code>, <code>recent</code>, <code>regime</code></dt>
 <dd><p>Inputs
-forwarded to the inner <code><a href="fit_cl.html">fit_cl()</a></code> / <code><a href="fit_exposure.html">fit_exposure()</a></code> calls.</p></dd>
+forwarded to the inner <code><a href="fit_cl.html">fit_cl()</a></code> / <code><a href="fit_premium.html">fit_premium()</a></code> calls.</p></dd>
 
 
 </dl></div>
@@ -374,7 +374,7 @@ Actuarial Society</em>, 72, 124-148.</p>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="fit_bf.html">fit_bf()</a></code> (Bornhuetter-Ferguson with user-supplied prior),
-<code><a href="fit_cl.html">fit_cl()</a></code>, <code><a href="fit_exposure.html">fit_exposure()</a></code></p></div>
+<code><a href="fit_cl.html">fit_cl()</a></code>, <code><a href="fit_premium.html">fit_premium()</a></code></p></div>
     </div>
 
     <div class="section level2">
@@ -387,7 +387,7 @@ Actuarial Society</em>, 72, 124-148.</p>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span></span>
+<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu">fit_cc</span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cc</span><span class="op">)</span></span></span>

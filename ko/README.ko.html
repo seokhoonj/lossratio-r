@@ -87,7 +87,7 @@
 <strong><code>fit_ratio(method = "sa")</code></strong> — maturity 이전엔 exposure-driven (ED), 이후엔 chain ladder (CL)</td>
 </tr><tr><td>인수 기준 변경 등 구조적 변화</td>
 <td>
-<strong><code><a href="reference/detect_regime.html">detect_regime()</a></code></strong> + <code>loss_regime</code> / <code>exposure_regime</code> 인자 — 변화 이전 코호트를 자동으로 분리</td>
+<strong><code><a href="reference/detect_regime.html">detect_regime()</a></code></strong> + <code>loss_regime</code> / <code>premium_regime</code> 인자 — 변화 이전 코호트를 자동으로 분리</td>
 </tr><tr><td>“이 fit 이 얼마나 맞나?” 검증</td>
 <td>
 <strong><code><a href="reference/backtest.html">backtest()</a></code></strong> — 최근 N 대각선을 빼고 적합한 뒤 actual 과 비교</td>
@@ -116,7 +116,7 @@
 <span>  cohort    <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar  <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss      <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  exposure  <span class="op">=</span> <span class="st">"incr_exposure"</span>,</span>
+<span>  premium   <span class="op">=</span> <span class="st">"incr_premium"</span>,</span>
 <span>  cell_type <span class="op">=</span> <span class="st">"incremental"</span>   <span class="co"># default; "cumulative" 면 누적 입력</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
@@ -131,7 +131,7 @@
 <span><span class="fu"><a href="reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri</span>, by <span class="op">=</span> <span class="st">"coverage"</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 4) backtest — 최근 6 대각선을 빼고 fit + actual 비교</span></span>
-<span><span class="va">bt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, target <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span>  <span class="co"># target = "ratio" / "loss" / "exposure"</span></span>
+<span><span class="va">bt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, target <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span>  <span class="co"># target = "ratio" / "loss" / "premium"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -144,7 +144,7 @@
 </tr><tr><td><code>fit_ratio(method = "ed" / "cl" / "sa")</code></td>
 <td>손해율 적합 — <em>통합 인터페이스</em> (loss + premium 합성)</td>
 </tr><tr><td>
-<code><a href="reference/fit_loss.html">fit_loss()</a></code> / <code><a href="reference/fit_exposure.html">fit_exposure()</a></code>
+<code><a href="reference/fit_loss.html">fit_loss()</a></code> / <code><a href="reference/fit_premium.html">fit_premium()</a></code>
 </td>
 <td>역할별 디스패처 — 단일 측 (SE / CI 포함)</td>
 </tr><tr><td>
@@ -162,7 +162,7 @@
 </tr><tr><td><code><a href="reference/detect_convergence.html">detect_convergence()</a></code></td>
 <td>예측 손해율이 갱신을 멈추는 시점</td>
 </tr><tr><td><code><a href="reference/backtest.html">backtest()</a></code></td>
-<td>대각선 hold-out 으로 fit 검증 (target = ratio/loss/exposure)</td>
+<td>대각선 hold-out 으로 fit 검증 (target = ratio/loss/premium)</td>
 </tr><tr><td>
 <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> / <code><a href="reference/plot_triangle.html">plot_triangle()</a></code>
 </td>
@@ -172,8 +172,8 @@
 <h2 id="손해율-적합-방법">손해율 적합 방법<a class="anchor" aria-label="anchor" href="#%EC%86%90%ED%95%B4%EC%9C%A8-%EC%A0%81%ED%95%A9-%EB%B0%A9%EB%B2%95"></a></h2>
 <div class="section level3">
 <h3 id="노출-기반exposure-driven-ed-default">노출 기반(exposure-driven, ED) (default)<a class="anchor" aria-label="anchor" href="#%EB%85%B8%EC%B6%9C-%EA%B8%B0%EB%B0%98exposure-driven-ed-default"></a></h3>
-<p><code>fit_ratio(method = "ed")</code> (default) 또는 <code><a href="reference/fit_ed.html">fit_ed()</a></code>. 모든 손해 증분이 노출(위험보험료)을 분모로 사용: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><msup><mi>C</mi><mi>L</mi></msup><mo>=</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">\Delta C^L = g_k \cdot C^P_k</annotation></semantics></math>. 무조건적 안전한 baseline – 성숙점 / regime 검출 의존 없음, 초기 dev 의 ATA 인자 변동에 강건.</p>
-<p><em>언제 사용</em>: baseline 으로. pooled intensity <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>g</mi><mi>k</mi></msub><annotation encoding="application/x-tex">g_k</annotation></semantics></math> 는 코호트들이 단위 노출 당 손해 수준에서 대체로 동질적이라고 가정 – 코호트-레벨 drift(약관 / 인수 정책 변경) 시 pooled 평균으로 편향, post-change 코호트를 over-project 가능. 명시적 필터는 <code>regime</code> 인자.</p>
+<p><code>fit_ratio(method = "ed")</code> (default) 또는 <code><a href="reference/fit_ed.html">fit_ed()</a></code>. 모든 손해 증분이 보험료(위험보험료)를 분모로 사용: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><msup><mi>C</mi><mi>L</mi></msup><mo>=</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">\Delta C^L = g_k \cdot C^P_k</annotation></semantics></math>. 무조건적 안전한 baseline – 성숙점 / regime 검출 의존 없음, 초기 dev 의 ATA 인자 변동에 강건.</p>
+<p><em>언제 사용</em>: baseline 으로. pooled intensity <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>g</mi><mi>k</mi></msub><annotation encoding="application/x-tex">g_k</annotation></semantics></math> 는 코호트들이 단위 보험료 당 손해 수준에서 대체로 동질적이라고 가정 – 코호트-레벨 drift(약관 / 인수 정책 변경) 시 pooled 평균으로 편향, post-change 코호트를 over-project 가능. 명시적 필터는 <code>regime</code> 인자.</p>
 </div>
 <div class="section level3">
 <h3 id="체인-래더chain-ladder-cl">체인 래더(chain ladder, CL)<a class="anchor" aria-label="anchor" href="#%EC%B2%B4%EC%9D%B8-%EB%9E%98%EB%8D%94chain-ladder-cl"></a></h3>
@@ -215,10 +215,10 @@
 <td>
 <code>"incr_loss"</code> / <code>"loss"</code>
 </td>
-</tr><tr><td><code>exposure</code></td>
-<td>기간별 <em>또는</em> 누적 익스포저 (장기 health 는 위험보험료)</td>
+</tr><tr><td><code>premium</code></td>
+<td>기간별 <em>또는</em> 누적 보험료 (장기 health 는 위험보험료)</td>
 <td>
-<code>"incr_exposure"</code> / <code>"exposure"</code>
+<code>"incr_premium"</code> / <code>"premium"</code>
 </td>
 </tr><tr><td>
 <code>groups</code> <em>(선택)</em>
@@ -229,7 +229,7 @@
 <code>cell_type</code> <em>(default)</em>
 </td>
 <td>
-<code>loss</code> / <code>exposure</code> 값의 해석</td>
+<code>loss</code> / <code>premium</code> 값의 해석</td>
 <td>
 <code>"incremental"</code> / <code>"cumulative"</code>
 </td>

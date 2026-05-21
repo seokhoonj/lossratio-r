@@ -230,24 +230,24 @@ Also used by S3 <code><a href="https://rdrr.io/r/base/print.html" class="externa
 <dt id="arg-loss">loss<a class="anchor" aria-label="anchor" href="#arg-loss"></a></dt>
 <dd><p>Trajectory variable. Default is <code>"ratio"</code> (cumulative loss
 ratio). Accepts any column on the <code>Triangle</code> (e.g. <code>"ratio"</code>,
-<code>"loss"</code>, <code>"exposure"</code>, <code>"incr_loss"</code>, <code>"incr_exposure"</code>), plus three
+<code>"loss"</code>, <code>"premium"</code>, <code>"incr_loss"</code>, <code>"incr_premium"</code>), plus three
 <em>diagnostic</em> derived metrics computed inline per (group, cohort):</p><dl><dt><code>"loss_ata"</code></dt>
 <dd><p>Loss age-to-age factor
 <code>loss[k+1] / loss[k]</code> – multiplicative loss development speed
 (CL $f_k$).</p></dd>
 
-<dt><code>"exposure_ata"</code></dt>
-<dd><p>Exposure age-to-age factor – same form on
-exposure.</p></dd>
+<dt><code>"premium_ata"</code></dt>
+<dd><p>Premium age-to-age factor – same form on
+premium.</p></dd>
 
 <dt><code>"loss_ed"</code></dt>
 <dd><p>Loss intensity
-<code>(loss[k] - loss[k-1]) / exposure[k-1]</code> – additive,
+<code>(loss[k] - loss[k-1]) / premium[k-1]</code> – additive,
 exposure-anchored (ED model's $g_k$).</p></dd>
 
-<dt><code>"exposure_ed"</code></dt>
-<dd><p>Alias of <code>"exposure_ata"</code> – the two differ
-only by a constant <code>(exposure_ata - 1)</code>, and the PCA
+<dt><code>"premium_ed"</code></dt>
+<dd><p>Alias of <code>"premium_ata"</code> – the two differ
+only by a constant <code>(premium_ata - 1)</code>, and the PCA
 standardization in detection removes that shift, so they yield
 identical regime changes. Provided for API symmetry with the
 <code>loss_ata</code> / <code>loss_ed</code> pair.</p></dd>
@@ -408,7 +408,7 @@ cohorts, single pooled factor) or estimate per-segment factors.</p></dd>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span></span>
+<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Hierarchical clustering (no extra package dependency)</span></span></span>
@@ -428,7 +428,7 @@ cohorts, single pooled factor) or estimate per-segment factors.</p></dd>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span></span>
+<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">r_all</span> <span class="op">&lt;-</span> <span class="fu">detect_regime</span><span class="op">(</span><span class="va">tri_all</span>, by <span class="op">=</span> <span class="st">"coverage"</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">r_all</span><span class="op">$</span><span class="va">changes</span><span class="op">)</span></span></span>

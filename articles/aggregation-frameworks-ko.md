@@ -39,23 +39,23 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 head(tri)
 #> shape: (6, 18)
-#> ┌──────────┬───────────┬────────────┬───┬────────────────┬────────────────┐
-#> │ coverage ┆ n_cohorts ┆ cohort     ┆ … ┆ exposure_share ┆ incr_exposure… │
-#> │ <chr>    ┆ <int>     ┆ <date>     ┆ … ┆ <dbl>          ┆ <dbl>          │
-#> ├──────────┼───────────┼────────────┼───┼────────────────┼────────────────┤
-#> │ ci       ┆ 36        ┆ 2023-01-01 ┆ … ┆ 0.381171       ┆ 0.381171       │
-#> │ ci       ┆ 35        ┆ 2023-01-01 ┆ … ┆ 0.380346       ┆ 0.379558       │
-#> │ ci       ┆ 34        ┆ 2023-01-01 ┆ … ┆ 0.387352       ┆ 0.401744       │
-#> │ ci       ┆ 33        ┆ 2023-01-01 ┆ … ┆ 0.379535       ┆ 0.356118       │
-#> │ ci       ┆ 32        ┆ 2023-01-01 ┆ … ┆ 0.377646       ┆ 0.370060       │
-#> │ ci       ┆ 31        ┆ 2023-01-01 ┆ … ┆ 0.377400       ┆ 0.376114       │
-#> └──────────┴───────────┴────────────┴───┴────────────────┴────────────────┘
-#> 13 more variables: dev <int>, loss <dbl>, incr_loss <dbl>, exposure <dbl>,
-#>                    incr_exposure <dbl>, ratio <dbl>, incr_ratio <dbl>,
+#> ┌──────────┬───────────┬────────────┬───┬───────────────┬────────────────┐
+#> │ coverage ┆ n_cohorts ┆ cohort     ┆ … ┆ premium_share ┆ incr_premium_… │
+#> │ <chr>    ┆ <int>     ┆ <date>     ┆ … ┆ <dbl>         ┆ <dbl>          │
+#> ├──────────┼───────────┼────────────┼───┼───────────────┼────────────────┤
+#> │ ci       ┆ 36        ┆ 2023-01-01 ┆ … ┆ 0.381171      ┆ 0.381171       │
+#> │ ci       ┆ 35        ┆ 2023-01-01 ┆ … ┆ 0.380346      ┆ 0.379558       │
+#> │ ci       ┆ 34        ┆ 2023-01-01 ┆ … ┆ 0.387352      ┆ 0.401744       │
+#> │ ci       ┆ 33        ┆ 2023-01-01 ┆ … ┆ 0.379535      ┆ 0.356118       │
+#> │ ci       ┆ 32        ┆ 2023-01-01 ┆ … ┆ 0.377646      ┆ 0.370060       │
+#> │ ci       ┆ 31        ┆ 2023-01-01 ┆ … ┆ 0.377400      ┆ 0.376114       │
+#> └──────────┴───────────┴────────────┴───┴───────────────┴────────────────┘
+#> 13 more variables: dev <int>, loss <dbl>, incr_loss <dbl>, premium <dbl>,
+#>                    incr_premium <dbl>, ratio <dbl>, incr_ratio <dbl>,
 #>                    margin <dbl>, incr_margin <dbl>, profit <fct>,
 #>                    incr_profit <fct>, loss_share <dbl>, incr_loss_share <dbl>
 ```
@@ -77,7 +77,7 @@ plot(tri)              # 코호트별 궤적, 그룹별 facet
 # dev 축 모두 분기 단위로 다시 만들어 패널당 ~10 × 10 셀로 줄인다.
 # 문서 표시 크기에 맞춘 처리이며, 실제 분석에서는 플롯을 키우면 월
 # 단위 그대로 볼 수 있다.
-tri_q <- as_triangle(experience, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure", grain = "Q")
+tri_q <- as_triangle(experience, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium", grain = "Q")
 plot_triangle(tri_q)   # 코호트 × dev ratio 히트맵
 ```
 
@@ -86,7 +86,7 @@ plot_triangle(tri_q)   # 코호트 × dev ratio 히트맵
 `Triangle` 은 다음 함수의 입력으로 사용된다.
 
 - [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md)
-  — 발달 인자 (ATA / ED 는 `loss` + 선택적 `exposure` 로 선택)
+  — 발달 인자 (ATA / ED 는 `loss` + 선택적 `premium` 로 선택)
 - [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
   [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
   — 추정
@@ -99,23 +99,23 @@ plot_triangle(tri_q)   # 코호트 × dev ratio 히트맵
 
 tri <- as_triangle(experience, groups = "coverage",
                    cohort = "uy_m", calendar = "cy_m",
-                   loss = "incr_loss", exposure = "incr_exposure")
+                   loss = "incr_loss", premium = "incr_premium")
 cal <- as_calendar(tri)
 head(cal)
 #> shape: (6, 18)
-#> ┌──────────┬────────────┬─────────┬───┬────────────────┬────────────────┐
-#> │ coverage ┆ calendar   ┆ cal_idx ┆ … ┆ exposure_share ┆ incr_exposure… │
-#> │ <chr>    ┆ <date>     ┆ <int>   ┆ … ┆ <dbl>          ┆ <dbl>          │
-#> ├──────────┼────────────┼─────────┼───┼────────────────┼────────────────┤
-#> │ cancer   ┆ 2023-01-01 ┆ 1       ┆ … ┆ 0.492583       ┆ 0.492583       │
-#> │ cancer   ┆ 2023-02-01 ┆ 2       ┆ … ┆ 0.452030       ┆ 0.428106       │
-#> │ cancer   ┆ 2023-03-01 ┆ 3       ┆ … ┆ 0.416257       ┆ 0.382514       │
-#> │ cancer   ┆ 2023-04-01 ┆ 4       ┆ … ┆ 0.389202       ┆ 0.348604       │
-#> │ cancer   ┆ 2023-05-01 ┆ 5       ┆ … ┆ 0.377872       ┆ 0.352976       │
-#> │ cancer   ┆ 2023-06-01 ┆ 6       ┆ … ┆ 0.355725       ┆ 0.304826       │
-#> └──────────┴────────────┴─────────┴───┴────────────────┴────────────────┘
-#> 13 more variables: n_cohorts <int>, loss <dbl>, incr_loss <dbl>, exposure <dbl>,
-#>                    incr_exposure <dbl>, ratio <dbl>, incr_ratio <dbl>,
+#> ┌──────────┬────────────┬─────────┬───┬───────────────┬────────────────┐
+#> │ coverage ┆ calendar   ┆ cal_idx ┆ … ┆ premium_share ┆ incr_premium_… │
+#> │ <chr>    ┆ <date>     ┆ <int>   ┆ … ┆ <dbl>         ┆ <dbl>          │
+#> ├──────────┼────────────┼─────────┼───┼───────────────┼────────────────┤
+#> │ cancer   ┆ 2023-01-01 ┆ 1       ┆ … ┆ 0.492583      ┆ 0.492583       │
+#> │ cancer   ┆ 2023-02-01 ┆ 2       ┆ … ┆ 0.452030      ┆ 0.428106       │
+#> │ cancer   ┆ 2023-03-01 ┆ 3       ┆ … ┆ 0.416257      ┆ 0.382514       │
+#> │ cancer   ┆ 2023-04-01 ┆ 4       ┆ … ┆ 0.389202      ┆ 0.348604       │
+#> │ cancer   ┆ 2023-05-01 ┆ 5       ┆ … ┆ 0.377872      ┆ 0.352976       │
+#> │ cancer   ┆ 2023-06-01 ┆ 6       ┆ … ┆ 0.355725      ┆ 0.304826       │
+#> └──────────┴────────────┴─────────┴───┴───────────────┴────────────────┘
+#> 13 more variables: n_cohorts <int>, loss <dbl>, incr_loss <dbl>, premium <dbl>,
+#>                    incr_premium <dbl>, ratio <dbl>, incr_ratio <dbl>,
 #>                    margin <dbl>, incr_margin <dbl>, profit <fct>,
 #>                    incr_profit <fct>, loss_share <dbl>, incr_loss_share <dbl>
 ```
@@ -151,21 +151,21 @@ tri_bounded <- as_triangle(
              uy_m <= as.Date("2024-03-01")],
   groups = "coverage", cohort = "uy_m",
   dev = "dev_m",
-  loss = "incr_loss", exposure = "incr_exposure"
+  loss = "incr_loss", premium = "incr_premium"
 )
 tot <- as_total(tri_bounded)
 head(tot)
 #> shape: (4, 9)
-#> ┌───────────┬───────────┬─────────────┬───┬────────────┬────────────────┐
-#> │ coverage  ┆ n_cohorts ┆ sales_start ┆ … ┆ loss_share ┆ exposure_share │
-#> │ <chr>     ┆ <int>     ┆ <date>      ┆ … ┆ <dbl>      ┆ <dbl>          │
-#> ├───────────┼───────────┼─────────────┼───┼────────────┼────────────────┤
-#> │ ci        ┆ 12        ┆ 2023-04-01  ┆ … ┆ 0.33461100 ┆ 0.427133       │
-#> │ cancer    ┆ 12        ┆ 2023-04-01  ┆ … ┆ 0.11375800 ┆ 0.162389       │
-#> │ inpatient ┆ 12        ┆ 2023-04-01  ┆ … ┆ 0.00644687 ┆ 0.016502       │
-#> │ surgery   ┆ 12        ┆ 2023-04-01  ┆ … ┆ 0.54518400 ┆ 0.393976       │
-#> └───────────┴───────────┴─────────────┴───┴────────────┴────────────────┘
-#> 4 more variables: sales_end <date>, loss <dbl>, exposure <dbl>, ratio <dbl>
+#> ┌───────────┬───────────┬─────────────┬───┬────────────┬───────────────┐
+#> │ coverage  ┆ n_cohorts ┆ sales_start ┆ … ┆ loss_share ┆ premium_share │
+#> │ <chr>     ┆ <int>     ┆ <date>      ┆ … ┆ <dbl>      ┆ <dbl>         │
+#> ├───────────┼───────────┼─────────────┼───┼────────────┼───────────────┤
+#> │ ci        ┆ 12        ┆ 2023-04-01  ┆ … ┆ 0.33461100 ┆ 0.427133      │
+#> │ cancer    ┆ 12        ┆ 2023-04-01  ┆ … ┆ 0.11375800 ┆ 0.162389      │
+#> │ inpatient ┆ 12        ┆ 2023-04-01  ┆ … ┆ 0.00644687 ┆ 0.016502      │
+#> │ surgery   ┆ 12        ┆ 2023-04-01  ┆ … ┆ 0.54518400 ┆ 0.393976      │
+#> └───────────┴───────────┴─────────────┴───┴────────────┴───────────────┘
+#> 4 more variables: sales_end <date>, loss <dbl>, premium <dbl>, ratio <dbl>
 ```
 
 그룹당 한 행이며 해당 기간의 손해액 / 위험보험료 / 손해율을 요약한다.

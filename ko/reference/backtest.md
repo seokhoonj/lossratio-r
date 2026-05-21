@@ -1,4 +1,4 @@
-# Backtest a loss / exposure / loss-ratio projection on existing data
+# Backtest a loss / premium / loss-ratio projection on existing data
 
 Hold out the latest `holdout` calendar diagonals from the input
 `Triangle`, refit a target-specific projection on the earlier portion,
@@ -13,8 +13,8 @@ The target is selected with `target`:
 - `target = "loss"` – score the loss projection from
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md).
 
-- `target = "exposure"` – score the exposure projection from
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md).
+- `target = "premium"` – score the premium projection from
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md).
 
 The A/E Error (`ae_err`) follows the standard actuarial A/E convention
 and is computed cell-wise as \$\$ae\\err =
@@ -30,15 +30,15 @@ development period (`col_summary`) and by calendar diagonal
 backtest(
   x,
   holdout = 6L,
-  target = c("ratio", "loss", "exposure"),
+  target = c("ratio", "loss", "premium"),
   loss_method = c("ed", "cl", "sa", "bf", "cc"),
-  exposure_method = c("ed", "cl"),
+  premium_method = c("ed", "cl"),
   loss_alpha = 1,
-  exposure_alpha = 1,
+  premium_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   loss_regime = NULL,
-  exposure_regime = NULL,
+  premium_regime = NULL,
   maturity = "auto",
   se_method = c("fixed", "delta"),
   rho = 0.95,
@@ -74,9 +74,9 @@ print(x, ...)
 - target:
 
   Character scalar. Which projection to backtest. One of `"ratio"`
-  (default), `"loss"`, `"exposure"`. Determines which fitter is called
-  on the masked triangle and which column on `x` is treated as the
-  held-out actual.
+  (default), `"loss"`, `"premium"`. Determines which fitter is called on
+  the masked triangle and which column on `x` is treated as the held-out
+  actual.
 
 - loss_method:
 
@@ -86,21 +86,21 @@ print(x, ...)
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
   as their `method` argument. One of `"ed"` (default), `"cl"`, `"sa"`,
   `"bf"`, or `"cc"`. `"bf"` / `"cc"` need their prior arguments supplied
-  through `...`. Unused for `target = "exposure"`.
+  through `...`. Unused for `target = "premium"`.
 
-- exposure_method:
+- premium_method:
 
-  Method for the exposure-side projection. Passed to
+  Method for the premium-side projection. Passed to
   [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
   /
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md).
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md).
   One of `"ed"` (default) or `"cl"`.
 
-- loss_alpha, exposure_alpha:
+- loss_alpha, premium_alpha:
 
-  Mack alpha for loss-side / exposure-side chain-ladder estimation.
+  Mack alpha for loss-side / premium-side chain-ladder estimation.
 
 - sigma_method:
 
@@ -117,9 +117,9 @@ print(x, ...)
 
   Calendar-diagonal recency filter forwarded to the fitter.
 
-- loss_regime, exposure_regime:
+- loss_regime, premium_regime:
 
-  Regime spec for the loss / exposure side. Each accepts one of four
+  Regime spec for the loss / premium side. Each accepts one of four
   input types, dispatched by
   [`.resolve_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_regime.md):
 
@@ -137,7 +137,7 @@ print(x, ...)
   - A function `function(tri) -> Regime` – called on the masked triangle
     for the same leakage-safe reason.
 
-  `exposure_regime` is resolved independently from `loss_regime`.
+  `premium_regime` is resolved independently from `loss_regime`.
 
 - maturity:
 
@@ -167,13 +167,13 @@ print(x, ...)
 
   Standard-error composition for
   [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md).
-  Unused for `target = "loss"` / `target = "exposure"`.
+  Unused for `target = "loss"` / `target = "premium"`.
 
 - rho:
 
-  Loss-exposure correlation used by
+  Loss-premium correlation used by
   [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
-  delta method. Unused for `target = "loss"` / `target = "exposure"`.
+  delta method. Unused for `target = "loss"` / `target = "premium"`.
 
 - conf_level:
 
@@ -181,7 +181,7 @@ print(x, ...)
   [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
-  intervals. Unused for `target = "exposure"`.
+  intervals. Unused for `target = "premium"`.
 
 - bootstrap, B, seed:
 
@@ -190,7 +190,7 @@ print(x, ...)
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
   /
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)).
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)).
   `bootstrap = NULL` (default) defers to the fitter's method-dependent
   resolution: bootstrap for SA/ED methods, analytical for pure CL. The
   fitter accepts the full 4-type dispatch (`NULL` / logical / `"auto"` /
@@ -260,7 +260,7 @@ An object of class `"Backtest"` with components:
 
 [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md),
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
-[`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md),
+[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md),
 [`plot.Backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/plot.Backtest.md)
 
 ## Examples
@@ -274,12 +274,12 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 bt_ratio    <- backtest(tri, holdout = 6L, target = "ratio")
 bt_loss     <- backtest(tri, holdout = 6L, target = "loss")
-bt_exposure <- backtest(tri, holdout = 6L, target = "exposure")
+bt_premium <- backtest(tri, holdout = 6L, target = "premium")
 
 print(bt_ratio)
 summary(bt_ratio)

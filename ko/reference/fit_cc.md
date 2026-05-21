@@ -16,8 +16,8 @@ where
 - \\q_i = L\_{obs, i} / \hat L\_{ult, i}^{CL}\\: the expected emerged
   fraction (inverse of cumulative LDF).
 
-- \\E_i^{ult}\\: cohort \\i\\'s ultimate exposure (projected via chain
-  ladder on exposure).
+- \\E_i^{ult}\\: cohort \\i\\'s ultimate premium (projected via chain
+  ladder on premium).
 
 Given \\\widehat{\mathrm{ELR}}^{CC}\\, the per-cohort ultimate is
 obtained from the BF formula with this single pooled ELR:
@@ -49,7 +49,7 @@ Cape Cod ELR itself is data-driven and thus uncertain.
 fit_cc(
   x,
   loss = "loss",
-  exposure = "exposure",
+  premium = "premium",
   bootstrap = NULL,
   B = 999L,
   seed = NULL,
@@ -76,9 +76,9 @@ fit_cc(
 
   A single cumulative loss variable. Default `"loss"`.
 
-- exposure:
+- premium:
 
-  A single cumulative exposure variable. Default `"exposure"`.
+  A single cumulative premium variable. Default `"premium"`.
 
 - bootstrap:
 
@@ -118,7 +118,7 @@ fit_cc(
   Numeric scalar passed through to the inner
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
   /
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
   calls. Default `1`.
 
 - sigma_method:
@@ -126,7 +126,7 @@ fit_cc(
   Sigma extrapolation method forwarded to
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
   /
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md).
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md).
   Default `"locf"`.
 
 - recent:
@@ -136,7 +136,7 @@ fit_cc(
 
 - regime:
 
-  Optional regime specification forwarded to the inner loss and exposure
+  Optional regime specification forwarded to the inner loss and premium
   fits. See
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
   for the four-type dispatch.
@@ -178,7 +178,7 @@ An object of class `"CCFit"` containing:
 
   `"cc"`.
 
-- `groups`, `cohort`, `dev`, `loss`, `exposure`:
+- `groups`, `cohort`, `dev`, `loss`, `premium`:
 
   Metadata.
 
@@ -204,9 +204,9 @@ An object of class `"CCFit"` containing:
   `NULL` for the classical blend, or a list `list(method, weights)` with
   the Buehlmann-Straub `Z` / `K` per cohort.
 
-- `cl_fit`, `exposure_fit`:
+- `cl_fit`, `premium_fit`:
 
-  Inner CL / Exposure fits.
+  Inner CL / Premium fits.
 
 - `bootstrap`:
 
@@ -227,7 +227,7 @@ An object of class `"CCFit"` containing:
   Inputs forwarded to the inner
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
   /
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
   calls.
 
 ## References
@@ -244,7 +244,7 @@ Bornhuetter, R. L. and Ferguson, R. E. (1972). The actuary and IBNR.
 [`fit_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.md)
 (Bornhuetter-Ferguson with user-supplied prior),
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md),
-[`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
+[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
 
 ## Examples
 
@@ -257,7 +257,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 cc <- fit_cc(tri)
 summary(cc)

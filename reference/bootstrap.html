@@ -179,7 +179,7 @@ distribution to use.</p></li>
 <span>  tail <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"maturity"</span><span class="op">)</span>,</span>
 <span>  min_pool <span class="op">=</span> <span class="fl">5L</span>,</span>
 <span>  maturity <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  target <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"loss"</span>, <span class="st">"exposure"</span><span class="op">)</span>,</span>
+<span>  target <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"loss"</span>, <span class="st">"premium"</span><span class="op">)</span>,</span>
 <span>  B <span class="op">=</span> <span class="fl">499L</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -258,7 +258,7 @@ Phase 5b.3 and currently errors.</p></dd>
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>Fit-model paradigm whose lower-triangle forward projection
 the bootstrap should produce. One of <code>"ed"</code> (default – exposure-driven
-additive recursion across all dev; Phase 1 keeps exposure fixed,
+additive recursion across all dev; Phase 1 keeps premium fixed,
 projected once via CL), <code>"cl"</code> (chain-ladder multiplicative recursion
 across all dev), <code>"sa"</code> (stage-adaptive – ED before maturity, CL after;
 currently routes through the CL kernel pending Phase 4 SA bootstrap).
@@ -295,7 +295,7 @@ the string <code>"auto"</code>, or a function <code>function(tri) -&gt; Maturity
 
 <dt id="arg-target">target<a class="anchor" aria-label="anchor" href="#arg-target"></a></dt>
 <dd><p>Cumulative metric to perturb. One of <code>"loss"</code> (default) or
-<code>"exposure"</code>. The value column in <code>$pseudo_triangles</code> is named after this
+<code>"premium"</code>. The value column in <code>$pseudo_triangles</code> is named after this
 target so downstream refit helpers know which column to read.</p></dd>
 
 
@@ -339,7 +339,7 @@ trajectories, custom quantile work). On a typical 4-group monthly
 triangle at <code>B = 999</code> the reshape costs ~250-300 ms and ~200 MB on
 top of <code>$summary</code>; users who only consume <code>$summary</code> (the common
 case) should leave this <code>FALSE</code>. <code><a href="fit_ratio.html">fit_ratio()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code> /
-<code><a href="fit_exposure.html">fit_exposure()</a></code> always pass <code>FALSE</code> internally because they only
+<code><a href="fit_premium.html">fit_premium()</a></code> always pass <code>FALSE</code> internally because they only
 read <code>$summary</code>. Set <code>TRUE</code> explicitly if you want to inspect
 <code>$pseudo_triangles</code> directly.</p></dd>
 
@@ -386,7 +386,7 @@ residual mode: <code>[groups, cohort, ata_from, ata_to, residual, pool_id]</code
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span></span>
+<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Cell-residual bootstrap (default)</span></span></span>

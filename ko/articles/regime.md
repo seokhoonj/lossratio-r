@@ -52,7 +52,7 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium  = "incr_premium"
 )
 ```
 
@@ -167,7 +167,7 @@ and each has its own failure mode. Pick the metric that matches the
 event you suspect — and always cross-check with domain knowledge.
 
 Order:
-`c("ratio", "loss_ata", "exposure_ata", "loss_ed", "exposure_ed", "loss", "exposure")`
+`c("ratio", "loss_ata", "premium_ata", "loss_ed", "premium_ed", "loss", "premium")`
 — cleanest to riskiest.
 
 | Scenario to detect | Recommended `loss` | Caveat |
@@ -176,23 +176,23 @@ Order:
 |  |  | is mis-labelled as a sharp break. |
 | Loss development *speed* change (CL `f`) | `"loss_ata"` *(diagnostic)* | Loses dev = 1 row + complete-row requirement → sample size shrinks; over-sensitive on |
 |  |  | low-CV factors. |
-| Premium recognition *speed* change | `"exposure_ata"` *(diagnostic)* | Same caveats as `"loss_ata"`. |
-| Loss *intensity* per unit exposure (ED `g`) | `"loss_ed"` *(diagnostic)* | Cross-normalised by premium; harder to interpret in isolation. |
-| Same as `exposure_ata` (API symmetry) | `"exposure_ed"` *(alias)* | Equivalent to `exposure_ata` after PCA standardization — same changes. |
+| Premium recognition *speed* change | `"premium_ata"` *(diagnostic)* | Same caveats as `"loss_ata"`. |
+| Loss *intensity* per unit premium (ED `g`) | `"loss_ed"` *(diagnostic)* | Cross-normalised by premium; harder to interpret in isolation. |
+| Same as `premium_ata` (API symmetry) | `"premium_ed"` *(alias)* | Equivalent to `premium_ata` after PCA standardization — same changes. |
 | Loss *level* shift (claim handling, coverage) | `"loss"` | Raw cumulative — book-size growth dominates; false positives common. |
-| Premium *level* shift (rate, channel) | `"exposure"` | Same caveat as `"loss"`. |
+| Premium *level* shift (rate, channel) | `"premium"` | Same caveat as `"loss"`. |
 
 Notes:
 
 - `"ratio"` is the default because the loss ratio is the package’s
   projection metric and is naturally scale-invariant (immune to
   book-size growth).
-- `"loss"` / `"exposure"` use the raw cumulative columns and are most
+- `"loss"` / `"premium"` use the raw cumulative columns and are most
   useful when the suspected event is a sudden *absolute level shift*
   (e.g. a channel termination dropping premium volume). Smooth book
   growth will frequently produce false positives — read every result
   alongside a known timeline of underwriting / claims-handling events.
-- `"loss_ata"`, `"exposure_ata"`, `"loss_ed"` are diagnostic metrics
+- `"loss_ata"`, `"premium_ata"`, `"loss_ed"` are diagnostic metrics
   derived inline (not stored on the `Triangle`). They map directly to
   the CL `f`-factor / ED `g`-factor used during fitting, so a change
   detected here corresponds to a violation of the model’s stationarity
@@ -271,7 +271,7 @@ tri_all <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium  = "incr_premium"
 )
 r_all   <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 r_all$changes
@@ -310,4 +310,4 @@ framework. Its output is useful in two ways:
 2.  **Rate-change documentation**: a detected change provides a
     data-driven anchor for the preprocessing recommendations outlined in
     the *Limitations* section of the companion paper (premium
-    on-leveling or exposure decomposition `V = C^P / r`).
+    on-leveling or premium decomposition `V = C^P / r`).

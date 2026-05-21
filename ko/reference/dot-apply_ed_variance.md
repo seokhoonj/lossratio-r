@@ -39,4 +39,4 @@ Updated `full` data.table with `loss_proc_se2`, `loss_param_se2`,
 `loss_total_se2`, `loss_proc_se`, `loss_param_se`, `loss_total_se`,
 `loss_proc_cv`, `loss_param_cv`, `loss_total_cv` columns rebuilt under
 the ED recursion (column names match the upstream `fit_cl` worker
-convention; the dispatcher renames them to `exposure_*` afterwards).
+convention; the dispatcher renames them to `premium_*` afterwards).

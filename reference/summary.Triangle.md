@@ -52,7 +52,7 @@ A `data.table` grouped by `groups` and `dev`, containing:
 
 - ratio_wt:
 
-  Weighted cumulative loss ratio (`sum(loss) / sum(exposure)`)
+  Weighted cumulative loss ratio (`sum(loss) / sum(premium)`)
 
 - incr_ratio_mean:
 
@@ -64,7 +64,7 @@ A `data.table` grouped by `groups` and `dev`, containing:
 
 - incr_ratio_wt:
 
-  Weighted per-period loss ratio (`sum(incr_loss) / sum(incr_exposure)`)
+  Weighted per-period loss ratio (`sum(incr_loss) / sum(incr_premium)`)
 
 The returned object keeps the attributes `groups` and `dev`, and its
 class is updated to `"TriangleSummary"`.
@@ -73,13 +73,13 @@ class is updated to `"TriangleSummary"`.
 
 The weighted mean is computed as:
 
-- `ratio_wt = sum(loss) / sum(exposure)`
+- `ratio_wt = sum(loss) / sum(premium)`
 
-- `incr_ratio_wt = sum(incr_loss) / sum(incr_exposure)`
+- `incr_ratio_wt = sum(incr_loss) / sum(incr_premium)`
 
-These correspond to portfolio-level loss ratios based on exposure and
-are typically more stable than simple averages when exposure sizes
-differ across cohorts.
+These correspond to portfolio-level loss ratios based on premium and are
+typically more stable than simple averages when premium sizes differ
+across cohorts.
 
 It is assumed that the input `Triangle` object does not contain missing
 values.
@@ -94,7 +94,7 @@ d <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 smr <- summary(d)
 head(smr)

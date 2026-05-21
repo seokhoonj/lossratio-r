@@ -10,7 +10,7 @@ workflow, parallel to
 [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md)
 for the multiplicative (chain ladder) side. Both operate at the *factor
 level* without producing a full projection. For full ED projection
-(cumulative loss / exposure / ratio), use
+(cumulative loss / premium / ratio), use
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md)
 which accepts either a `Triangle` or an `IntensityFit` (skipping a
 rebuild of the link table when factors are already computed).
@@ -21,7 +21,7 @@ rebuild of the link table when factors are already computed).
 fit_intensity(
   x,
   loss = "loss",
-  exposure = "exposure",
+  premium = "premium",
   alpha = 1,
   na_method = c("locf", "zero", "none"),
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
@@ -42,10 +42,10 @@ fit_intensity(
   A single cumulative metric used as the link numerator. Default
   `"loss"`.
 
-- exposure:
+- premium:
 
-  A single cumulative metric used as the exposure anchor. Default
-  `"exposure"`.
+  A single cumulative metric used as the premium anchor. Default
+  `"premium"`.
 
 - alpha:
 
@@ -108,7 +108,7 @@ A list of class `"IntensityFit"` with components:
 
   The (possibly filtered) `Link` object used for estimation.
 
-- `groups`, `cohort`, `dev`, `loss`, `exposure`:
+- `groups`, `cohort`, `dev`, `loss`, `premium`:
 
   Variable name relays from the input `Triangle`.
 
@@ -165,9 +165,9 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
-intensity_fit <- fit_intensity(tri, loss = "loss", exposure = "exposure")
+intensity_fit <- fit_intensity(tri, loss = "loss", premium = "premium")
 summary(intensity_fit)
 } # }
 ```

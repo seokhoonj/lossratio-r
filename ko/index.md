@@ -25,7 +25,7 @@ configuration](articles/articles/figs/triangle_usage_panels.png)
 | 도전 과제 | `lossratio` 의 응답 |
 |----|----|
 | 초기 dev 의 ATA 인자가 너무 Noisy | **`fit_ratio(method = "sa")`** — maturity 이전엔 exposure-driven (ED), 이후엔 chain ladder (CL) |
-| 인수 기준 변경 등 구조적 변화 | **[`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)** + `loss_regime` / `exposure_regime` 인자 — 변화 이전 코호트를 자동으로 분리 |
+| 인수 기준 변경 등 구조적 변화 | **[`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)** + `loss_regime` / `premium_regime` 인자 — 변화 이전 코호트를 자동으로 분리 |
 | “이 fit 이 얼마나 맞나?” 검증 | **[`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)** — 최근 N 대각선을 빼고 적합한 뒤 actual 과 비교 |
 
 세 component 가 **한 figure 에서 동시에** 작동하는 것을 위 그림이
@@ -57,7 +57,7 @@ tri <- as_triangle(
   cohort    = "uy_m",
   calendar  = "cy_m",
   loss      = "incr_loss",
-  exposure  = "incr_exposure",
+  premium   = "incr_premium",
   cell_type = "incremental"   # default; "cumulative" 면 누적 입력
 )
 plot(tri)
@@ -72,7 +72,7 @@ plot_triangle(ratio)
 detect_regime(tri, by = "coverage", method = "e_divisive")
 
 # 4) backtest — 최근 6 대각선을 빼고 fit + actual 비교
-bt <- backtest(tri, holdout = 6L, target = "ratio")  # target = "ratio" / "loss" / "exposure"
+bt <- backtest(tri, holdout = 6L, target = "ratio")  # target = "ratio" / "loss" / "premium"
 plot(bt)
 plot_triangle(bt)
 ```
@@ -83,13 +83,13 @@ plot_triangle(bt)
 |----|----|
 | [`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md) | long-format 데이터 → `Triangle` (코호트 × dev) |
 | `fit_ratio(method = "ed" / "cl" / "sa")` | 손해율 적합 — *통합 인터페이스* (loss + premium 합성) |
-| [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md) / [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md) | 역할별 디스패처 — 단일 측 (SE / CI 포함) |
+| [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md) / [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md) | 역할별 디스패처 — 단일 측 (SE / CI 포함) |
 | [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md) / [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md) | 단일 stage (chain ladder / exposure-driven) |
 | [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md) / [`fit_intensity()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_intensity.md) | link 단계 진단 — 곱셈형 / 덧셈형 |
 | [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md) | ATA 인자가 수렴하는 dev 위치 |
 | [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md) | 코호트 축 구조적 변화 탐지 |
 | [`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md) | 예측 손해율이 갱신을 멈추는 시점 |
-| [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md) | 대각선 hold-out 으로 fit 검증 (target = ratio/loss/exposure) |
+| [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md) | 대각선 hold-out 으로 fit 검증 (target = ratio/loss/premium) |
 | [`plot()`](https://rdrr.io/r/graphics/plot.default.html) / [`plot_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.md) | S3 generic — 객체 클래스로 dispatch |
 
 ## 손해율 적합 방법
@@ -98,14 +98,14 @@ plot_triangle(bt)
 
 `fit_ratio(method = "ed")` (default) 또는
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md).
-모든 손해 증분이 노출(위험보험료)을 분모로 사용:
+모든 손해 증분이 보험료(위험보험료)를 분모로 사용:
 $`\Delta C^L = g_k \cdot C^P_k`$. 무조건적 안전한 baseline – 성숙점 /
 regime 검출 의존 없음, 초기 dev 의 ATA 인자 변동에 강건.
 
 *언제 사용*: baseline 으로. pooled intensity $`g_k`$ 는 코호트들이 단위
-노출 당 손해 수준에서 대체로 동질적이라고 가정 – 코호트-레벨 drift(약관
-/ 인수 정책 변경) 시 pooled 평균으로 편향, post-change 코호트를
-over-project 가능. 명시적 필터는 `regime` 인자.
+보험료 당 손해 수준에서 대체로 동질적이라고 가정 – 코호트-레벨
+drift(약관 / 인수 정책 변경) 시 pooled 평균으로 편향, post-change
+코호트를 over-project 가능. 명시적 필터는 `regime` 인자.
 
 ### 체인 래더(chain ladder, CL)
 
@@ -152,9 +152,9 @@ long-format `data.frame` / `data.table`. 컬럼명은 자유 —
 | `cohort` | 코호트 시점 (장기 health 는 보통 인수 시점 UY) (Date) | `"uy_m"`, `"uy"` |
 | `calendar` *또는* `dev` | 달력 시점 (Date) *또는* 경과 기간 (int) | `"cy_m"` / `"dev_m"` |
 | `loss` | 기간별 *또는* 누적 손해 | `"incr_loss"` / `"loss"` |
-| `exposure` | 기간별 *또는* 누적 익스포저 (장기 health 는 위험보험료) | `"incr_exposure"` / `"exposure"` |
+| `premium` | 기간별 *또는* 누적 보험료 (장기 health 는 위험보험료) | `"incr_premium"` / `"premium"` |
 | `groups` *(선택)* | 그룹 컬럼: 상품 / 담보 / 연령 / 성별 / 가입금액 | `"coverage"` |
-| `cell_type` *(default)* | `loss` / `exposure` 값의 해석 | `"incremental"` / `"cumulative"` |
+| `cell_type` *(default)* | `loss` / `premium` 값의 해석 | `"incremental"` / `"cumulative"` |
 
 해석을 정하는 두 인자:
 

@@ -100,7 +100,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium  = "incr_premium"
 )
 
 res <- detect_convergence(tri)
@@ -277,16 +277,16 @@ calls and inherits their constraints:
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
   (default `method = "ed"` – exposure-driven; optionally `"cl"` / `"sa"`
   for cohort-anchored) and
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md).
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md).
   Choices made inside that composition (loss method, regime filter,
   maturity argument) feed through to `conv_k`; review the underlying
   `fit_ratio` settings when interpreting the result. Pass
   `loss_method =`, `loss_regime =`, etc. through `...` to override.
 - **Portfolio aggregation**: the portfolio LR aggregates per-group
-  ultimates via exposure weighting
-  (`sum(loss_ult) / sum(exposure_ult)`). Calendar-year shocks
-  (regulatory changes, cost trend) can move every group together; the
-  drift metrics will not separate that from genuine convergence.
+  ultimates via premium weighting (`sum(loss_ult) / sum(premium_ult)`).
+  Calendar-year shocks (regulatory changes, cost trend) can move every
+  group together; the drift metrics will not separate that from genuine
+  convergence.
 - **Multi-group triangles**: `dispersion` is currently collapsed across
   groups by median. When groups behave differently, running each group
   separately is recommended.

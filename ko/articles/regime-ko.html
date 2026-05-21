@@ -150,7 +150,7 @@ shifts across underwriting cohorts</a></p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
+<span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -255,7 +255,7 @@ regime 들이 <em>어떻게</em> 다른지 (예: 변화가 주로 초기 경과�
 <em>false positive 모드</em> 가 있다. 의심되는 사건의 성격에 맞춰 지표를
 고르고, 결과는 항상 도메인 지식과 대조해야 한다.</p>
 <p>순서:
-<code>c("ratio", "loss_ata", "exposure_ata", "loss_ed", "exposure_ed", "loss", "exposure")</code>
+<code>c("ratio", "loss_ata", "premium_ata", "loss_ed", "premium_ed", "loss", "premium")</code>
 — cleanest 에서 riskiest 까지.</p>
 <table class="table">
 <colgroup>
@@ -292,13 +292,13 @@ drift</em> 를 sharp break</td>
 <tr class="even">
 <td>Premium 인식 <em>속도</em> 변화</td>
 <td>
-<code>"exposure_ata"</code> <em>(진단용)</em>
+<code>"premium_ata"</code> <em>(진단용)</em>
 </td>
 <td>
 <code>"loss_ata"</code> 와 같은 주의사항.</td>
 </tr>
 <tr class="odd">
-<td>노출 단위당 loss <em>세기</em> 변화 (ED <code>g</code>)</td>
+<td>보험료 단위당 loss <em>세기</em> 변화 (ED <code>g</code>)</td>
 <td>
 <code>"loss_ed"</code> <em>(진단용)</em>
 </td>
@@ -306,11 +306,11 @@ drift</em> 를 sharp break</td>
 </tr>
 <tr class="even">
 <td>
-<code>exposure_ata</code> 와 동일 (API 대칭)</td>
+<code>premium_ata</code> 와 동일 (API 대칭)</td>
 <td>
-<code>"exposure_ed"</code> <em>(alias)</em>
+<code>"premium_ed"</code> <em>(alias)</em>
 </td>
-<td>PCA 표준화 후 <code>exposure_ata</code> 와 동일한 change —
+<td>PCA 표준화 후 <code>premium_ata</code> 와 동일한 change —
 alias.</td>
 </tr>
 <tr class="odd">
@@ -321,7 +321,7 @@ alias.</td>
 </tr>
 <tr class="even">
 <td>Premium <em>level</em> 변화 (요율, 채널 변경)</td>
-<td><code>"exposure"</code></td>
+<td><code>"premium"</code></td>
 <td>
 <code>"loss"</code> 와 같은 주의사항.</td>
 </tr>
@@ -333,13 +333,13 @@ alias.</td>
 <code>"ratio"</code> 이 default 인 이유 — 손해율이 패키지의 <em>예측
 지표</em> 이고, 비율이라 <em>book size 성장에 자동 면역</em>.</li>
 <li>
-<code>"loss"</code> / <code>"exposure"</code> 은 raw cumulative
+<code>"loss"</code> / <code>"premium"</code> 은 raw cumulative
 컬럼이라 <em>갑작스러운 absolute level shift</em> 의심 시 (예: 채널
 종료로 보험료 거치액 급감) 유용. smooth book growth 는 false positive
 빈번 — 결과를 <em>알려진 언더라이팅·claims 사건 타임라인</em> 과 대조
 필수.</li>
 <li>
-<code>"loss_ata"</code>, <code>"exposure_ata"</code>,
+<code>"loss_ata"</code>, <code>"premium_ata"</code>,
 <code>"loss_ed"</code> 는 <em>진단용</em> 지표. Triangle 에 저장된
 컬럼이 아니라 inline 으로 derive 된다. CL 의 <code>f</code> / ED 의
 <code>g</code> 인자와 직접 대응하므로 여기서 검출된 change 는 모델의
@@ -414,7 +414,7 @@ Ward 계층 클러스터링을 적용하고 <code>n_regimes</code> 개 (default:
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
+<span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">r_all</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_all</span>, by <span class="op">=</span> <span class="st">"coverage"</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
 <span><span class="va">r_all</span><span class="op">$</span><span class="va">changes</span></span>
@@ -446,7 +446,7 @@ Ward 계층 클러스터링을 적용하고 <code>n_regimes</code> 개 (default:
 많다.</p></li>
 <li><p><strong>요율 변경 문서화</strong>: 탐지된 변화점은 동반 논문의
 <em>Limitations</em> 절에서 설명한 전처리 권고 (보험료 on-leveling 또는
-익스포저 분해
+보험료 분해
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mo>=</mo><msup><mi>C</mi><mi>P</mi></msup><mi>/</mi><mi>r</mi></mrow><annotation encoding="application/x-tex">V = C^P / r</annotation></semantics></math>)
 의 데이터 기반 기준점이 된다.</p></li>
 </ol>

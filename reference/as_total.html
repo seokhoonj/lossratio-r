@@ -12,9 +12,9 @@ Total summarises:
 the number of observed cohorts (n_cohorts)
 the first and last observed cohort periods
 (sales_start, sales_end)
-total loss and total exposure (sum over all cells)
-total loss ratio (ratio = loss / exposure)
-each group's share of total loss and total exposure
+total loss and total premium (sum over all cells)
+total loss ratio (ratio = loss / premium)
+each group's share of total loss and total premium
 
 
 Pre-filter the Triangle (e.g. by cohort range or coverage) before
@@ -31,9 +31,9 @@ Total summarises:
 the number of observed cohorts (n_cohorts)
 the first and last observed cohort periods
 (sales_start, sales_end)
-total loss and total exposure (sum over all cells)
-total loss ratio (ratio = loss / exposure)
-each group's share of total loss and total exposure
+total loss and total premium (sum over all cells)
+total loss ratio (ratio = loss / premium)
+each group's share of total loss and total premium
 
 
 Pre-filter the Triangle (e.g. by cohort range or coverage) before
@@ -155,9 +155,9 @@ coverages, or channels.</p>
 <p>Total summarises:</p><ul><li><p>the number of observed cohorts (<code>n_cohorts</code>)</p></li>
 <li><p>the first and last observed cohort periods
 (<code>sales_start</code>, <code>sales_end</code>)</p></li>
-<li><p>total <code>loss</code> and total <code>exposure</code> (sum over all cells)</p></li>
-<li><p>total loss ratio (<code>ratio = loss / exposure</code>)</p></li>
-<li><p>each group's share of total loss and total exposure</p></li>
+<li><p>total <code>loss</code> and total <code>premium</code> (sum over all cells)</p></li>
+<li><p>total loss ratio (<code>ratio = loss / premium</code>)</p></li>
+<li><p>each group's share of total loss and total premium</p></li>
 </ul><p>Pre-filter the Triangle (e.g. by cohort range or coverage) before
 calling <code>as_total()</code> if a subset summary is needed.</p>
     </div>
@@ -189,17 +189,17 @@ calling <code>as_total()</code> if a subset summary is needed.</p>
 <dt>loss</dt>
 <dd><p>Total loss</p></dd>
 
-<dt>exposure</dt>
-<dd><p>Total exposure</p></dd>
+<dt>premium</dt>
+<dd><p>Total premium</p></dd>
 
 <dt>ratio</dt>
-<dd><p>Total loss ratio (<code>loss / exposure</code>)</p></dd>
+<dd><p>Total loss ratio (<code>loss / premium</code>)</p></dd>
 
 <dt>loss_share</dt>
 <dd><p>Share of total loss</p></dd>
 
-<dt>exposure_share</dt>
-<dd><p>Share of total exposure</p></dd>
+<dt>premium_share</dt>
+<dd><p>Share of total premium</p></dd>
 
 
 </dl></div>
@@ -213,7 +213,7 @@ calling <code>as_total()</code> if a subset summary is needed.</p>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span></span>
+<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">as_total</span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>

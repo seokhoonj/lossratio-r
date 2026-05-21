@@ -1,15 +1,15 @@
 # Per-replicate BF / Cape Cod composition from two BootstrapTriangle
 
-Given paired loss-side and exposure-side `BootstrapTriangle` objects
+Given paired loss-side and premium-side `BootstrapTriangle` objects
 (with `keep_pseudo = TRUE` so the per-replicate cohort-by-dev cum loss /
-cum exposure means are available), compose the BF / Cape Cod ultimate
+cum premium means are available), compose the BF / Cape Cod ultimate
 distribution per replicate:
 
 1.  For each replicate \\b\\, derive \\q_i^b = L\_{obs,i} /
     L\_{ult,i}^{CL,b}\\ from the loss-side Stage 1 mean trajectory
     (last-dev cell).
 
-2.  Derive \\E_i^{ult,b}\\ from the exposure-side Stage 1 mean last-dev
+2.  Derive \\E_i^{ult,b}\\ from the premium-side Stage 1 mean last-dev
     cell.
 
 3.  For BF: \\L\_{ult,i}^{b} = L\_{obs,i} + (1 - q_i^b) \cdot
@@ -45,7 +45,7 @@ replicates.
 
 - boots:
 
-  A named list `list(loss = BT, exposure = BT)` from
+  A named list `list(loss = BT, premium = BT)` from
   [`.resolve_bootstrap_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_bootstrap_bf.md).
 
 - priors:

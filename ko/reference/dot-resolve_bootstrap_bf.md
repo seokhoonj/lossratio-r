@@ -2,9 +2,9 @@
 
 Four-type dispatch mirroring
 [`.resolve_bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_bootstrap.md)
-but returning a *pair* of `BootstrapTriangle` objects (loss + exposure)
-– BF / Cape Cod compose loss-side parameter uncertainty (via \\q_i^b\\)
-and exposure-side parameter uncertainty (via \\E_i^{ult,b}\\) into a
+but returning a *pair* of `BootstrapTriangle` objects (loss + premium) –
+BF / Cape Cod compose loss-side parameter uncertainty (via \\q_i^b\\)
+and premium-side parameter uncertainty (via \\E_i^{ult,b}\\) into a
 single ultimate distribution.
 
 Accepts:
@@ -15,10 +15,10 @@ Accepts:
   [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
   calls (one per target) sharing `seed` so replicate indices align.
 
-- Named list `list(loss = BT, exposure = BT)` – validate `meta$B` and
+- Named list `list(loss = BT, premium = BT)` – validate `meta$B` and
   `meta$seed` match.
 
-- Function `function(tri) -> list(loss = ..., exposure = ...)`.
+- Function `function(tri) -> list(loss = ..., premium = ...)`.
 
 ## Usage
 

@@ -2,7 +2,7 @@
 
 The shared core of every bootstrap-CI path
 ([`.lossfit_bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-lossfit_bootstrap.md),
-[`.exposurefit_bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-exposurefit_bootstrap.md),
+[`.premiumfit_bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-premiumfit_bootstrap.md),
 and the in-worker
 [`fit_sa()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_sa.md)
 /
@@ -38,7 +38,7 @@ variability.
 
 - role:
 
-  Column-name prefix, `"loss"` or `"exposure"`.
+  Column-name prefix, `"loss"` or `"premium"`.
 
 - groups:
 
@@ -48,8 +48,8 @@ variability.
 
   Statistic suffixes to overlay – e.g.
   `c("param_se", "proc_se", "total_se", "total_cv")` for loss,
-  `c("total_se", "total_cv")` for exposure. The point projection is
-  never overlaid; it stays analytical.
+  `c("total_se", "total_cv")` for premium. The point projection is never
+  overlaid; it stays analytical.
 
 ## Value
 

@@ -3,18 +3,18 @@
 The selected metric is plotted over the calendar-style calendar,
 or over the calendar development variable stored in attr(x, "dev").
 Ratio metrics (ratio, incr_ratio) and proportion metrics
-(loss_share, incr_loss_share, exposure_share, incr_exposure_share) are
+(loss_share, incr_loss_share, premium_share, incr_premium_share) are
 plotted on the original scale and displayed as percentages via y-axis labels.
-Amount metrics (loss, incr_loss, exposure, incr_exposure, margin,
+Amount metrics (loss, incr_loss, premium, incr_premium, margin,
 incr_margin) are plotted on the original scale and displayed using y-axis
 labels scaled by amount_divisor.
 If grouping variables are present, lines are drawn separately by group.'><meta property="og:description" content='Visualise an object of class Calendar as a time-series plot.
 The selected metric is plotted over the calendar-style calendar,
 or over the calendar development variable stored in attr(x, "dev").
 Ratio metrics (ratio, incr_ratio) and proportion metrics
-(loss_share, incr_loss_share, exposure_share, incr_exposure_share) are
+(loss_share, incr_loss_share, premium_share, incr_premium_share) are
 plotted on the original scale and displayed as percentages via y-axis labels.
-Amount metrics (loss, incr_loss, exposure, incr_exposure, margin,
+Amount metrics (loss, incr_loss, premium, incr_premium, margin,
 incr_margin) are plotted on the original scale and displayed using y-axis
 labels scaled by amount_divisor.
 If grouping variables are present, lines are drawn separately by group.'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
@@ -80,9 +80,9 @@ If grouping variables are present, lines are drawn separately by group.'><meta p
 The selected metric is plotted over the calendar-style <code>calendar</code>,
 or over the calendar development variable stored in <code>attr(x, "dev")</code>.</p>
 <p>Ratio metrics (<code>ratio</code>, <code>incr_ratio</code>) and proportion metrics
-(<code>loss_share</code>, <code>incr_loss_share</code>, <code>exposure_share</code>, <code>incr_exposure_share</code>) are
+(<code>loss_share</code>, <code>incr_loss_share</code>, <code>premium_share</code>, <code>incr_premium_share</code>) are
 plotted on the original scale and displayed as percentages via y-axis labels.
-Amount metrics (<code>loss</code>, <code>incr_loss</code>, <code>exposure</code>, <code>incr_exposure</code>, <code>margin</code>,
+Amount metrics (<code>loss</code>, <code>incr_loss</code>, <code>premium</code>, <code>incr_premium</code>, <code>margin</code>,
 <code>incr_margin</code>) are plotted on the original scale and displayed using y-axis
 labels scaled by <code>amount_divisor</code>.</p>
 <p>If grouping variables are present, lines are drawn separately by group.</p>
@@ -113,8 +113,8 @@ labels scaled by <code>amount_divisor</code>.</p>
 <dt id="arg-metric">metric<a class="anchor" aria-label="anchor" href="#arg-metric"></a></dt>
 <dd><p>A single metric to plot. Must be one of:
 <code>"ratio"</code>, <code>"incr_ratio"</code>,
-<code>"loss"</code>, <code>"incr_loss"</code>, <code>"exposure"</code>, <code>"incr_exposure"</code>, <code>"margin"</code>, <code>"incr_margin"</code>,
-<code>"loss_share"</code>, <code>"incr_loss_share"</code>, <code>"exposure_share"</code>, or <code>"incr_exposure_share"</code>.</p></dd>
+<code>"loss"</code>, <code>"incr_loss"</code>, <code>"premium"</code>, <code>"incr_premium"</code>, <code>"margin"</code>, <code>"incr_margin"</code>,
+<code>"loss_share"</code>, <code>"incr_loss_share"</code>, <code>"premium_share"</code>, or <code>"incr_premium_share"</code>.</p></dd>
 
 
 <dt id="arg-amount-divisor">amount_divisor<a class="anchor" aria-label="anchor" href="#arg-amount-divisor"></a></dt>
@@ -154,8 +154,8 @@ formatted with one decimal. Default <code>FALSE</code>.</p></dd>
     <p>The x-axis is the calendar variable stored in <code>attr(x, "calendar")</code>
 (a Date, formatted per the triangle's <code>grain</code>).</p>
 <p>The loss ratio is defined as:
-$$ratio = loss / exposure$$</p>
-<p>where <code>exposure</code> denotes risk premium rather than written premium.</p>
+$$ratio = loss / premium$$</p>
+<p>where <code>premium</code> denotes risk premium rather than written premium.</p>
     </div>
 
     <div class="section level2">
@@ -166,7 +166,7 @@ $$ratio = loss / exposure$$</p>
 <span class="r-in"><span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span></span>
+<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>

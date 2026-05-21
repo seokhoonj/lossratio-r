@@ -8,7 +8,7 @@ This is the factor-level diagnostic for the exposure-driven (ED)
 workflow, parallel to fit_ata() for the multiplicative (chain
 ladder) side. Both operate at the factor level without
 producing a full projection. For full ED projection (cumulative
-loss / exposure / ratio), use fit_ed() which accepts either a
+loss / premium / ratio), use fit_ed() which accepts either a
 Triangle or an IntensityFit (skipping a rebuild of the link
 table when factors are already computed).'><meta property="og:description" content='Estimate per-development-link incremental loss intensities
 \(g_k = \mathbb{E}[\Delta L_k / C^P_k]\) from a "Triangle" and
@@ -19,7 +19,7 @@ This is the factor-level diagnostic for the exposure-driven (ED)
 workflow, parallel to fit_ata() for the multiplicative (chain
 ladder) side. Both operate at the factor level without
 producing a full projection. For full ED projection (cumulative
-loss / exposure / ratio), use fit_ed() which accepts either a
+loss / premium / ratio), use fit_ed() which accepts either a
 Triangle or an IntensityFit (skipping a rebuild of the link
 table when factors are already computed).'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Browser-language redirect: send Korean visitors to /ko/ on the
      landing page only. Deep links remain untouched. We use string
@@ -136,7 +136,7 @@ diagnostic statistics.</p>
 workflow, parallel to <code><a href="fit_ata.html">fit_ata()</a></code> for the multiplicative (chain
 ladder) side. Both operate at the <em>factor level</em> without
 producing a full projection. For full ED projection (cumulative
-loss / exposure / ratio), use <code><a href="fit_ed.html">fit_ed()</a></code> which accepts either a
+loss / premium / ratio), use <code><a href="fit_ed.html">fit_ed()</a></code> which accepts either a
 <code>Triangle</code> or an <code>IntensityFit</code> (skipping a rebuild of the link
 table when factors are already computed).</p>
     </div>
@@ -146,7 +146,7 @@ table when factors are already computed).</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fit_intensity</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  loss <span class="op">=</span> <span class="st">"loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"exposure"</span>,</span>
+<span>  premium <span class="op">=</span> <span class="st">"premium"</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  na_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"zero"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span>, <span class="st">"mack"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
@@ -169,9 +169,9 @@ table when factors are already computed).</p>
 numerator. Default <code>"loss"</code>.</p></dd>
 
 
-<dt id="arg-exposure">exposure<a class="anchor" aria-label="anchor" href="#arg-exposure"></a></dt>
+<dt id="arg-premium">premium<a class="anchor" aria-label="anchor" href="#arg-premium"></a></dt>
 <dd><p>A single cumulative metric used as the
-exposure anchor. Default <code>"exposure"</code>.</p></dd>
+premium anchor. Default <code>"premium"</code>.</p></dd>
 
 
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
@@ -228,7 +228,7 @@ change are dropped before estimation.</p></dd>
 estimation.</p></dd>
 
 <dt><code>groups</code>, <code>cohort</code>, <code>dev</code>, <code>loss</code>,
-<code>exposure</code></dt>
+<code>premium</code></dt>
 <dd><p>Variable name relays from the input <code>Triangle</code>.</p></dd>
 
 <dt><code>link</code></dt>
@@ -280,9 +280,9 @@ instability. <code>fit_intensity()</code> therefore deliberately omits a
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span></span>
+<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">intensity_fit</span> <span class="op">&lt;-</span> <span class="fu">fit_intensity</span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, exposure <span class="op">=</span> <span class="st">"exposure"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">intensity_fit</span> <span class="op">&lt;-</span> <span class="fu">fit_intensity</span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, premium <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">intensity_fit</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>

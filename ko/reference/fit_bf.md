@@ -3,7 +3,7 @@
 Fit a Bornhuetter-Ferguson (1972) projection from a `"Triangle"` object.
 The BF estimator blends the *observed* cumulative loss for each cohort
 with an *a priori* expected loss ratio (ELR) applied to the cohort's
-ultimate exposure, weighted by the expected unemerged fraction \\1 -
+ultimate premium, weighted by the expected unemerged fraction \\1 -
 q_i\\:
 
 \$\$\hat L\_{ult, i}^{BF} = L\_{obs, i} + (1 - q_i) \cdot
@@ -21,8 +21,8 @@ where
 - \\\mathrm{ELR}\_i\\: the user-supplied a priori expected loss ratio
   for cohort \\i\\ (`prior` argument).
 
-- \\E_i^{ult}\\: cohort \\i\\'s ultimate exposure, projected via chain
-  ladder on the `exposure` column.
+- \\E_i^{ult}\\: cohort \\i\\'s ultimate premium, projected via chain
+  ladder on the `premium` column.
 
 This is a peer worker alongside
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
@@ -42,7 +42,7 @@ Closed-form Mack (2008) MSEP is not yet implemented.
 fit_bf(
   x,
   loss = "loss",
-  exposure = "exposure",
+  premium = "premium",
   prior,
   bootstrap = NULL,
   B = 999L,
@@ -71,10 +71,10 @@ fit_bf(
 
   A single cumulative loss variable to project. Default `"loss"`.
 
-- exposure:
+- premium:
 
-  A single cumulative exposure variable used as the denominator of the
-  prior ELR. Default `"exposure"`.
+  A single cumulative premium variable used as the denominator of the
+  prior ELR. Default `"premium"`.
 
 - prior:
 
@@ -113,18 +113,18 @@ fit_bf(
 
   :   Internal
       [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
-      calls (one for loss, one for exposure) sharing `seed` so replicate
+      calls (one for loss, one for premium) sharing `seed` so replicate
       indices align across the two simulations.
 
-  Named list `list(loss = BootstrapTriangle, exposure = BootstrapTriangle)`
+  Named list `list(loss = BootstrapTriangle, premium = BootstrapTriangle)`
 
   :   Pre-built objects from
       [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md).
       Must have matching `meta$B` / `meta$seed` so per-replicate
       composition is well-defined; `meta$target` must be `"loss"` and
-      `"exposure"` respectively.
+      `"premium"` respectively.
 
-  Function `function(tri) -> list(loss = ..., exposure = ...)`
+  Function `function(tri) -> list(loss = ..., premium = ...)`
 
   :   Lazy spec invoked on the input Triangle (leakage-safe for
       [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)).
@@ -167,7 +167,7 @@ fit_bf(
   Numeric scalar passed through to the inner
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
   and
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
   calls. Default `1`.
 
 - sigma_method:
@@ -175,7 +175,7 @@ fit_bf(
   Sigma extrapolation method forwarded to
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
   /
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md).
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md).
   Default `"locf"`.
 
 - recent:
@@ -185,7 +185,7 @@ fit_bf(
 
 - regime:
 
-  Optional regime specification forwarded to the inner loss and exposure
+  Optional regime specification forwarded to the inner loss and premium
   fits. See
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
   for the four-type dispatch.
@@ -249,14 +249,14 @@ An object of class `"BFFit"` containing:
 
   Raw development variable name.
 
-- `loss`, `exposure`:
+- `loss`, `premium`:
 
-  Loss / exposure variable names.
+  Loss / premium variable names.
 
 - `full`:
 
   `data.table`
-  `[group, cohort, dev, loss_obs, loss_proj, exposure_obs, exposure_proj, is_observed, incr_loss_proj, incr_exposure_proj]`.
+  `[group, cohort, dev, loss_obs, loss_proj, premium_obs, premium_proj, is_observed, incr_loss_proj, incr_premium_proj]`.
   When `bootstrap` is enabled, additional columns `loss_total_se`,
   `loss_total_cv`, `loss_ci_lo`, `loss_ci_hi` carry per-cell bootstrap
   SE / CI on projected cells (observed cells stay `NA`).
@@ -290,9 +290,9 @@ An object of class `"BFFit"` containing:
 
   The inner `CLFit` used to derive \\q_i\\.
 
-- `exposure_fit`:
+- `premium_fit`:
 
-  The inner `ExposureFit` used to derive \\E_i^{ult}\\.
+  The inner `PremiumFit` used to derive \\E_i^{ult}\\.
 
 - `bootstrap`:
 
@@ -312,7 +312,7 @@ An object of class `"BFFit"` containing:
   Inputs forwarded to the inner
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
   /
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
   calls.
 
 ## References
@@ -328,7 +328,7 @@ Bulletin*, 38(1), 87-103. (MSEP – not yet implemented.)
 [`fit_cc()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cc.md)
 (pooled ELR variant),
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md),
-[`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
+[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
 
 ## Examples
 
@@ -341,7 +341,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 # Scalar prior: 0.7 ELR for every cohort

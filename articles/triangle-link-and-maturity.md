@@ -24,7 +24,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium  = "incr_premium"
 )
 ```
 
@@ -74,9 +74,9 @@ plot_triangle(tri, metric = "incr_ratio")     # incremental ratio
 ``` r
 
 
-# detail labels (ratio + loss/exposure amounts) are 2-line — use quarterly cells
-tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure", grain = "Q")
-plot_triangle(tri_q, label_style = "detail") # ratio + (loss / exposure)
+# detail labels (ratio + loss/premium amounts) are 2-line — use quarterly cells
+tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium", grain = "Q")
+plot_triangle(tri_q, label_style = "detail") # ratio + (loss / premium)
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-3-3.png)
@@ -113,7 +113,7 @@ ratios per (group, dev) cell.
 
 The `Link` object is the link table (age-to-age factor table) built from
 the triangle. In single-variable mode it carries the observed ATA
-factors; with `exposure` it carries the ED-style intensities
+factors; with `premium` it carries the ED-style intensities
 $`g_k = \Delta C^L_k / C^P_k`$.
 
 ``` r
@@ -211,10 +211,10 @@ plot_triangle(ata, label_size = 2.5, show_maturity = TRUE)   # overlay maturity 
 
 
 # detail labels are two lines and overlap on monthly cells — rebuild on
-# the quarterly triangle so the two-line "factor (loss / exposure)" text
+# the quarterly triangle so the two-line "factor (loss / premium)" text
 # has room (label_size auto-shrinks to 2.2 in detail mode).
 ata_q <- as_link(tri_q, loss = "loss")
-plot_triangle(ata_q, label_style = "detail")      # factor + (loss / exposure)
+plot_triangle(ata_q, label_style = "detail")      # factor + (loss / premium)
 ```
 
 ![](triangle-link-and-maturity_files/figure-html/unnamed-chunk-7-3.png)
@@ -227,7 +227,7 @@ link’s median.
 
 ``` r
 
-ed <- as_link(tri, loss = "loss", exposure = "exposure")
+ed <- as_link(tri, loss = "loss", premium = "premium")
 sm <- summary(ed, model = "ed", alpha = 1)
 head(sm)
 #> Key: <coverage>
@@ -388,7 +388,7 @@ tri_all <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium  = "incr_premium"
 )
 detect_maturity(tri_all, loss = "loss")
 #> Key: <coverage>
@@ -482,14 +482,14 @@ fit_ratio(tri, recent = 12)
 #> <RatioFit>
 #> method            : ed 
 #> loss_alpha        : 1 
-#> exposure_alpha    : 1 
+#> premium_alpha     : 1 
 #> se_method         : fixed 
 #> conf_level        : 0.95 
 #> ci_type           : bootstrap  (B = 999, seed = NULL) 
 #> sigma_method      : locf 
 #> recent            : 12 
 #> loss_regime       : none
-#> exposure_regime   : none
+#> premium_regime    : none
 #> maturity[surgery] : 4 
 #> groups            : coverage 
 #> periods           : 36

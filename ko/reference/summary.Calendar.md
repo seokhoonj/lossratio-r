@@ -47,7 +47,7 @@ A `data.table` of class `"CalendarSummary"` with one row per
 
 - ratio_wt:
 
-  Weighted cumulative loss ratio (`sum(loss) / sum(exposure)`).
+  Weighted cumulative loss ratio (`sum(loss) / sum(premium)`).
 
 - incr_ratio_mean:
 
@@ -59,8 +59,7 @@ A `data.table` of class `"CalendarSummary"` with one row per
 
 - incr_ratio_wt:
 
-  Weighted per-period loss ratio
-  (`sum(incr_loss) / sum(incr_exposure)`).
+  Weighted per-period loss ratio (`sum(incr_loss) / sum(incr_premium)`).
 
 The returned object preserves the attributes `groups`, `calendar`, and
 `grain`.
@@ -74,7 +73,7 @@ cal <- as_calendar(
   groups   = "coverage",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 smr  <- summary(cal)
 head(smr)

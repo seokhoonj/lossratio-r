@@ -169,9 +169,9 @@ in grey and overlays three summary statistics:</p><ul><li><p>Mean</p></li>
 <dt id="arg-metric">metric<a class="anchor" aria-label="anchor" href="#arg-metric"></a></dt>
 <dd><p>A single metric to plot. Must be one of:
 <code>"ratio"</code>, <code>"incr_ratio"</code>,
-<code>"loss"</code>, <code>"incr_loss"</code>, <code>"exposure"</code>, <code>"incr_exposure"</code>,
+<code>"loss"</code>, <code>"incr_loss"</code>, <code>"premium"</code>, <code>"incr_premium"</code>,
 <code>"margin"</code>, <code>"incr_margin"</code>,
-<code>"loss_share"</code>, <code>"incr_loss_share"</code>, <code>"exposure_share"</code>, or <code>"incr_exposure_share"</code>.</p></dd>
+<code>"loss_share"</code>, <code>"incr_loss_share"</code>, <code>"premium_share"</code>, or <code>"incr_premium_share"</code>.</p></dd>
 
 
 <dt id="arg-summary">summary<a class="anchor" aria-label="anchor" href="#arg-summary"></a></dt>
@@ -221,11 +221,11 @@ Cohort lines are grouped by the period variable stored in
 <code>attr(x, "cohort")</code>, and facets are created from
 <code>attr(x, "groups")</code>.</p>
 <p>The cumulative loss ratio is defined here as:
-$$ratio = loss / exposure$$</p>
+$$ratio = loss / premium$$</p>
 <p>For long-term health insurance applications, risk premium is commonly
-used as the <code>exposure</code> measure.</p>
-<p>The weighted mean is defined as:</p><ul><li><p><code>ratio_wt      = sum(loss)      / sum(exposure)</code></p></li>
-<li><p><code>incr_ratio_wt = sum(incr_loss) / sum(incr_exposure)</code></p></li>
+used as the <code>premium</code> measure.</p>
+<p>The weighted mean is defined as:</p><ul><li><p><code>ratio_wt      = sum(loss)      / sum(premium)</code></p></li>
+<li><p><code>incr_ratio_wt = sum(incr_loss) / sum(incr_premium)</code></p></li>
 </ul><p>Ratio and proportion metrics are plotted on the original scale and displayed
 as percentages via y-axis labels. Amount metrics are plotted on the original
 scale and displayed using y-axis labels scaled by <code>amount_divisor</code>.</p>

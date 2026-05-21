@@ -41,7 +41,7 @@ bootstrap(
   tail = c("auto", "maturity"),
   min_pool = 5L,
   maturity = NULL,
-  target = c("loss", "exposure"),
+  target = c("loss", "premium"),
   B = 499L,
   seed = NULL,
   alpha = 1,
@@ -115,7 +115,7 @@ bootstrap(
 
   Fit-model paradigm whose lower-triangle forward projection the
   bootstrap should produce. One of `"ed"` (default – exposure-driven
-  additive recursion across all dev; Phase 1 keeps exposure fixed,
+  additive recursion across all dev; Phase 1 keeps premium fixed,
   projected once via CL), `"cl"` (chain-ladder multiplicative recursion
   across all dev), `"sa"` (stage-adaptive – ED before maturity, CL
   after; currently routes through the CL kernel pending Phase 4 SA
@@ -153,7 +153,7 @@ bootstrap(
 - target:
 
   Cumulative metric to perturb. One of `"loss"` (default) or
-  `"exposure"`. The value column in `$pseudo_triangles` is named after
+  `"premium"`. The value column in `$pseudo_triangles` is named after
   this target so downstream refit helpers know which column to read.
 
 - B:
@@ -203,7 +203,7 @@ bootstrap(
   /
   [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
   /
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md)
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
   always pass `FALSE` internally because they only read `$summary`. Set
   `TRUE` explicitly if you want to inspect `$pseudo_triangles` directly.
 
@@ -254,7 +254,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 # Cell-residual bootstrap (default)

@@ -33,8 +33,8 @@ forwards to a worker selected by `method`:
 
 The dispatcher returns a `LossFit` object whose `$full` schema is
 uniform across methods (`loss_obs`, `loss_proj`, `loss_total_se`,
-`loss_ci_lo`, `loss_ci_hi`, `exposure_obs`, `exposure_proj`,
-`incr_exposure_proj`, plus method-specific extras). Missing slots on
+`loss_ci_lo`, `loss_ci_hi`, `premium_obs`, `premium_proj`,
+`incr_premium_proj`, plus method-specific extras). Missing slots on
 worker outputs (e.g. `loss_ata_fit` for ED, `ed`/`selected` for
 CL/BF/CC) are synthesized as `NULL` so downstream code such as
 [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
@@ -48,9 +48,9 @@ fit_loss(
   method = c("ed", "cl", "sa", "bf", "cc"),
   alpha = 1,
   regime = NULL,
-  exposure_fit = NULL,
-  exposure_method = c("ed", "cl"),
-  exposure_alpha = 1,
+  premium_fit = NULL,
+  premium_method = c("ed", "cl"),
+  premium_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   maturity = "auto",
@@ -68,7 +68,7 @@ fit_loss(
 
 - x:
 
-  A `"Triangle"` object. The standardized `"loss"` and `"exposure"`
+  A `"Triangle"` object. The standardized `"loss"` and `"premium"`
   columns are used
   ([`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
   produces these).
@@ -87,26 +87,26 @@ fit_loss(
   dispatch (`NULL` / `Regime` / `"auto"` / function). Behavior depends
   on `method`: SA uses a hybrid 2-pass filter; ED / CL / BF / CC use a
   simple cohort cut. The same resolved regime is applied to the internal
-  exposure fit – callers needing an asymmetric loss/exposure split
-  should use
+  premium fit – callers needing an asymmetric loss/premium split should
+  use
   [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md).
 
-- exposure_fit:
+- premium_fit:
 
-  Optional pre-built `ExposureFit` supplying the exposure projection.
-  Only used by `"ed"` (via `fit_ed`'s internal exposure handling) and
-  `"sa"`. When `NULL`, the worker calls
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md)
+  Optional pre-built `PremiumFit` supplying the premium projection. Only
+  used by `"ed"` (via `fit_ed`'s internal premium handling) and `"sa"`.
+  When `NULL`, the worker calls
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
   internally.
 
-- exposure_method:
+- premium_method:
 
-  One of `"ed"` (default) or `"cl"`. Used only when
-  `exposure_fit = NULL` for `"sa"`.
+  One of `"ed"` (default) or `"cl"`. Used only when `premium_fit = NULL`
+  for `"sa"`.
 
-- exposure_alpha:
+- premium_alpha:
 
-  Variance-structure exponent for the exposure fit. Default `1`.
+  Variance-structure exponent for the premium fit. Default `1`.
 
 - sigma_method:
 
@@ -170,7 +170,7 @@ fit_loss(
 ## Value
 
 An object of class `"LossFit"`. List with components: `full`, `proj`,
-`maturity`, `loss_ata_fit`, `exposure_ata_fit`, `exposure_fit`, `ed`,
+`maturity`, `loss_ata_fit`, `premium_ata_fit`, `premium_fit`, `ed`,
 `factor`, `selected`, plus metadata.
 
 ## See also
@@ -180,7 +180,7 @@ An object of class `"LossFit"`. List with components: `full`, `proj`,
 [`fit_sa()`](https://seokhoonj.github.io/lossratio/reference/fit_sa.md),
 [`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md),
 [`fit_cc()`](https://seokhoonj.github.io/lossratio/reference/fit_cc.md),
-[`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md),
+[`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md),
 [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md).
 
 ## Examples
@@ -194,7 +194,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 lf    <- fit_loss(tri)                    # ED (default)

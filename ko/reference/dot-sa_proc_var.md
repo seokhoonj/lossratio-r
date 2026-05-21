@@ -9,7 +9,7 @@ CL phase (Mack):
 ``` r
 .sa_proc_var(
   loss_proj,
-  exposure_proj,
+  premium_proj,
   g_sigma2,
   f_sigma2,
   f_sel,

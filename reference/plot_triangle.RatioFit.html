@@ -119,7 +119,7 @@ distinguished by border style.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'RatioFit'</span></span>
 <span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ratio"</span>, <span class="st">"loss"</span>, <span class="st">"exposure"</span><span class="op">)</span>,</span>
+<span>  metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ratio"</span>, <span class="st">"loss"</span>, <span class="st">"premium"</span><span class="op">)</span>,</span>
 <span>  cell_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cumulative"</span>, <span class="st">"incremental"</span><span class="op">)</span>,</span>
 <span>  region <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"proj"</span>, <span class="st">"full"</span>, <span class="st">"data"</span><span class="op">)</span>,</span>
 <span>  view <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"value"</span>, <span class="st">"usage"</span><span class="op">)</span>,</span>
@@ -145,7 +145,7 @@ distinguished by border style.</p>
 
 <dt id="arg-metric">metric<a class="anchor" aria-label="anchor" href="#arg-metric"></a></dt>
 <dd><p>Metric shown in the heatmap cells. One of <code>"ratio"</code>
-(default), <code>"loss"</code>, <code>"exposure"</code>.</p></dd>
+(default), <code>"loss"</code>, <code>"premium"</code>.</p></dd>
 
 
 <dt id="arg-cell-type">cell_type<a class="anchor" aria-label="anchor" href="#arg-cell-type"></a></dt>
@@ -158,7 +158,7 @@ distinguished by border style.</p>
 <dd><p>Cell region to plot (only used when <code>view = "value"</code>).
 One of <code>"proj"</code> (projected cells only, observed cells masked),
 <code>"full"</code> (observed + projected), or <code>"data"</code> (observed cumulative
-loss / exposure / ratio from <code>x$data</code> – the raw Triangle, no
+loss / premium / ratio from <code>x$data</code> – the raw Triangle, no
 projection). Default is <code>"proj"</code>.</p></dd>
 
 
@@ -179,7 +179,7 @@ ignored.</p></dd>
 
 <dt id="arg-label-style">label_style<a class="anchor" aria-label="anchor" href="#arg-label-style"></a></dt>
 <dd><p>One of <code>"value"</code> (ratio only) or <code>"detail"</code>
-(ratio with loss/exposure amounts). Default is <code>"value"</code>.</p></dd>
+(ratio with loss/premium amounts). Default is <code>"value"</code>.</p></dd>
 
 
 <dt id="arg-label-size">label_size<a class="anchor" aria-label="anchor" href="#arg-label-size"></a></dt>

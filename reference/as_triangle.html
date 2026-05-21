@@ -9,7 +9,7 @@ Validate – required columns are present, dates coerce
 cleanly, the grain is consistent. Hard errors on schema issues
 so downstream code never receives malformed input.
 Standardise + aggregate – rename to package-canonical
-column names (cohort, calendar, dev, loss, exposure,
+column names (cohort, calendar, dev, loss, premium,
 ...), auto-detect grain (M / Q / H / Y) from cohort
 spacing, derive dev from (cohort, calendar), aggregate to
 (group, cohort, dev), and enrich with cumulative / share /
@@ -33,19 +33,19 @@ cumulative loss and cumulative premium,
 per-period and cumulative proportions,
 per-period and cumulative margin,
 profit indicators,
-per-period loss ratio (incr_ratio = incr_loss / incr_exposure) and
-cumulative loss ratio (ratio = loss / exposure).
+per-period loss ratio (incr_ratio = incr_loss / incr_premium) and
+cumulative loss ratio (ratio = loss / premium).
 
 
 The cumulative loss ratio is defined as:
-$$ratio = loss / exposure$$
+$$ratio = loss / premium$$
 For long-term health insurance applications, risk premium is commonly
-used as the exposure measure.
+used as the premium measure.
 Proportion variables are computed within each (cohort, dev) cell:
 incr_loss_share     = incr_loss     / sum(incr_loss)
-incr_exposure_share = incr_exposure / sum(incr_exposure)
+incr_premium_share = incr_premium / sum(incr_premium)
 loss_share          = loss          / sum(loss)
-exposure_share      = exposure      / sum(exposure)
+premium_share      = premium      / sum(premium)
 
 
 Therefore, for a fixed (cohort, dev) cell, the proportions
@@ -60,7 +60,7 @@ Validate – required columns are present, dates coerce
 cleanly, the grain is consistent. Hard errors on schema issues
 so downstream code never receives malformed input.
 Standardise + aggregate – rename to package-canonical
-column names (cohort, calendar, dev, loss, exposure,
+column names (cohort, calendar, dev, loss, premium,
 ...), auto-detect grain (M / Q / H / Y) from cohort
 spacing, derive dev from (cohort, calendar), aggregate to
 (group, cohort, dev), and enrich with cumulative / share /
@@ -84,19 +84,19 @@ cumulative loss and cumulative premium,
 per-period and cumulative proportions,
 per-period and cumulative margin,
 profit indicators,
-per-period loss ratio (incr_ratio = incr_loss / incr_exposure) and
-cumulative loss ratio (ratio = loss / exposure).
+per-period loss ratio (incr_ratio = incr_loss / incr_premium) and
+cumulative loss ratio (ratio = loss / premium).
 
 
 The cumulative loss ratio is defined as:
-$$ratio = loss / exposure$$
+$$ratio = loss / premium$$
 For long-term health insurance applications, risk premium is commonly
-used as the exposure measure.
+used as the premium measure.
 Proportion variables are computed within each (cohort, dev) cell:
 incr_loss_share     = incr_loss     / sum(incr_loss)
-incr_exposure_share = incr_exposure / sum(incr_exposure)
+incr_premium_share = incr_premium / sum(incr_premium)
 loss_share          = loss          / sum(loss)
-exposure_share      = exposure      / sum(exposure)
+premium_share      = premium      / sum(premium)
 
 
 Therefore, for a fixed (cohort, dev) cell, the proportions
@@ -216,7 +216,7 @@ methods (<code><a href="fit_ratio.html">fit_ratio()</a></code>, <code><a href="f
 cleanly, the grain is consistent. Hard errors on schema issues
 so downstream code never receives malformed input.</p></li>
 <li><p><strong>Standardise + aggregate</strong> – rename to package-canonical
-column names (<code>cohort</code>, <code>calendar</code>, <code>dev</code>, <code>loss</code>, <code>exposure</code>,
+column names (<code>cohort</code>, <code>calendar</code>, <code>dev</code>, <code>loss</code>, <code>premium</code>,
 ...), auto-detect grain (<code>M</code> / <code>Q</code> / <code>H</code> / <code>Y</code>) from <code>cohort</code>
 spacing, derive <code>dev</code> from <code>(cohort, calendar)</code>, aggregate to
 <code>(group, cohort, dev)</code>, and enrich with cumulative / share /
@@ -237,16 +237,16 @@ column.</p>
 <li><p>per-period and cumulative proportions,</p></li>
 <li><p>per-period and cumulative margin,</p></li>
 <li><p>profit indicators,</p></li>
-<li><p>per-period loss ratio (<code>incr_ratio = incr_loss / incr_exposure</code>) and
-cumulative loss ratio (<code>ratio = loss / exposure</code>).</p></li>
+<li><p>per-period loss ratio (<code>incr_ratio = incr_loss / incr_premium</code>) and
+cumulative loss ratio (<code>ratio = loss / premium</code>).</p></li>
 </ul><p>The cumulative loss ratio is defined as:
-$$ratio = loss / exposure$$</p>
+$$ratio = loss / premium$$</p>
 <p>For long-term health insurance applications, risk premium is commonly
-used as the <code>exposure</code> measure.</p>
+used as the <code>premium</code> measure.</p>
 <p>Proportion variables are computed within each <code>(cohort, dev)</code> cell:</p><ul><li><p><code>incr_loss_share     = incr_loss     / sum(incr_loss)</code></p></li>
-<li><p><code>incr_exposure_share = incr_exposure / sum(incr_exposure)</code></p></li>
+<li><p><code>incr_premium_share = incr_premium / sum(incr_premium)</code></p></li>
 <li><p><code>loss_share          = loss          / sum(loss)</code></p></li>
-<li><p><code>exposure_share      = exposure      / sum(exposure)</code></p></li>
+<li><p><code>premium_share      = premium      / sum(premium)</code></p></li>
 </ul><p>Therefore, for a fixed <code>(cohort, dev)</code> cell, the proportions
 sum to 1 across groups. These are useful for examining the composition of
 each development cell across products or other grouping variables.</p>
@@ -261,7 +261,7 @@ each development cell across products or other grouping variables.</p>
 <span>  calendar <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  dev <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">loss</span>,</span>
-<span>  <span class="va">exposure</span>,</span>
+<span>  <span class="va">premium</span>,</span>
 <span>  grain <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  cell_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"incremental"</span>, <span class="st">"cumulative"</span><span class="op">)</span>,</span>
 <span>  fill_gaps <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -274,7 +274,7 @@ each development cell across products or other grouping variables.</p>
 
 <dl><dt id="arg-df">df<a class="anchor" aria-label="anchor" href="#arg-df"></a></dt>
 <dd><p>A data.frame containing experience data with per-period loss and
-exposure columns plus <code>cohort</code> and <code>calendar</code> Date columns
+premium columns plus <code>cohort</code> and <code>calendar</code> Date columns
 (or any input that the internal Date coercion accepts: Date, POSIXt,
 integer <code>yyyy</code> / <code>yyyymm</code> / <code>yyyymmdd</code>, ISO string).</p></dd>
 
@@ -285,7 +285,7 @@ integer <code>yyyy</code> / <code>yyyymm</code> / <code>yyyymmdd</code>, ISO str
 
 <dt id="arg-cohort">cohort<a class="anchor" aria-label="anchor" href="#arg-cohort"></a></dt>
 <dd><p>Single column (raw name) defining the underwriting /
-exposure period start (e.g., <code>"uy_m"</code>).</p></dd>
+premium period start (e.g., <code>"uy_m"</code>).</p></dd>
 
 
 <dt id="arg-calendar">calendar<a class="anchor" aria-label="anchor" href="#arg-calendar"></a></dt>
@@ -310,9 +310,9 @@ calendar-diagonal logic uses cohort + dev). When both are given,
 (raw name, e.g., <code>"incr_loss"</code>).</p></dd>
 
 
-<dt id="arg-exposure">exposure<a class="anchor" aria-label="anchor" href="#arg-exposure"></a></dt>
-<dd><p>Single character; per-period exposure column in <code>df</code>
-(raw name, e.g., <code>"incr_exposure"</code>). Exposure measure used as
+<dt id="arg-premium">premium<a class="anchor" aria-label="anchor" href="#arg-premium"></a></dt>
+<dd><p>Single character; per-period premium column in <code>df</code>
+(raw name, e.g., <code>"incr_premium"</code>). Premium measure used as
 denominator for loss ratio calculations. For long-term health
 insurance applications, risk premium is commonly used.</p></dd>
 
@@ -326,7 +326,7 @@ the input is binned (floored) to that grain before aggregation.</p></dd>
 
 <dt id="arg-cell-type">cell_type<a class="anchor" aria-label="anchor" href="#arg-cell-type"></a></dt>
 <dd><p>One of <code>"incremental"</code> (default) or <code>"cumulative"</code>.
-Whether <code>loss</code> and <code>exposure</code> in <code>df</code> already hold per-period
+Whether <code>loss</code> and <code>premium</code> in <code>df</code> already hold per-period
 (incremental) values or cumulative-within-cohort values. The
 internal triangle is always built on the incremental representation;
 <code>"cumulative"</code> inputs are differenced first.</p></dd>
@@ -349,15 +349,15 @@ derived columns:</p><dl><dt>n_cohorts</dt>
 <dt>loss, incr_loss</dt>
 <dd><p>Cumulative and per-period loss</p></dd>
 
-<dt>exposure, incr_exposure</dt>
-<dd><p>Cumulative and per-period exposure</p></dd>
+<dt>premium, incr_premium</dt>
+<dd><p>Cumulative and per-period premium</p></dd>
 
 <dt>ratio, incr_ratio</dt>
 <dd><p>Cumulative and per-period loss ratio</p></dd>
 
 <dt>margin, incr_margin</dt>
 <dd><p>Cumulative and per-period margin
-(<code>exposure - loss</code>)</p></dd>
+(<code>premium - loss</code>)</p></dd>
 
 <dt>profit, incr_profit</dt>
 <dd><p>Profit indicator (factor <code>"pos"</code> / <code>"neg"</code>)</p></dd>
@@ -366,14 +366,14 @@ derived columns:</p><dl><dt>n_cohorts</dt>
 <dd><p>Cumulative and per-period proportions
 of loss within each <code>(cohort, dev)</code> cell</p></dd>
 
-<dt>exposure_share, incr_exposure_share</dt>
+<dt>premium_share, incr_premium_share</dt>
 <dd><p>Cumulative and per-period
-proportions of exposure within each <code>(cohort, dev)</code> cell</p></dd>
+proportions of premium within each <code>(cohort, dev)</code> cell</p></dd>
 
 
 </dl><p>Attributes set on the returned object: <code>groups</code>, <code>cohort</code>,
 <code>calendar</code>, <code>grain</code>, <code>dev</code> (= <code>"dev_&lt;lower(grain)&gt;"</code>, e.g.
-<code>"dev_m"</code>), <code>loss</code>, <code>exposure</code>, <code>longer</code>.</p>
+<code>"dev_m"</code>), <code>loss</code>, <code>premium</code>, <code>longer</code>.</p>
     </div>
 
     <div class="section level2">
@@ -385,7 +385,7 @@ proportions of exposure within each <code>(cohort, dev)</code> cell</p></dd>
 <span class="r-in"><span>  uy_m          <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2023-01-01"</span>, <span class="st">"2023-02-01"</span>, <span class="st">"2023-03-01"</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  cy_m          <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2023-01-01"</span>, <span class="st">"2023-02-01"</span><span class="op">)</span><span class="op">)</span>, <span class="fl">6</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  incr_loss     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">80</span>, <span class="fl">120</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  incr_exposure <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">90</span>, <span class="fl">110</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  incr_premium <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">90</span>, <span class="fl">110</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># auto-detected monthly grain</span></span></span>
@@ -395,7 +395,7 @@ proportions of exposure within each <code>(cohort, dev)</code> cell</p></dd>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span></span>
+<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># explicit quarterly view (re-bins monthly input to quarterly)</span></span></span>
@@ -405,7 +405,7 @@ proportions of exposure within each <code>(cohort, dev)</code> cell</p></dd>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span>,</span></span>
+<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span>,</span></span>
 <span class="r-in"><span>  grain    <span class="op">=</span> <span class="st">"Q"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>

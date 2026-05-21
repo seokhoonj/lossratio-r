@@ -2,14 +2,14 @@
 
 Worker fits (`CLFit`, `EDFit`, `SAFit`, `BFFit`, `CCFit`) each have
 their own slot layouts. This helper adds missing slots (`loss_ata_fit`,
-`exposure_ata_fit`, `exposure_fit`, `ed`, `factor`, `selected`, `usage`,
+`premium_ata_fit`, `premium_fit`, `ed`, `factor`, `selected`, `usage`,
 `ci_type`, `conf_level`, `bootstrap`) as `NULL` if absent, ensures
-`$full` carries the dispatcher-uniform columns (`exposure_obs`,
-`exposure_proj`, `incr_exposure_proj`, `loss_ci_lo`, `loss_ci_hi`,
+`$full` carries the dispatcher-uniform columns (`premium_obs`,
+`premium_proj`, `incr_premium_proj`, `loss_ci_lo`, `loss_ci_hi`,
 `loss_total_cv`), and assigns class `"LossFit"`.
 
-For `"cl"`, this synthesizes the exposure columns by running an
-[`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md)
+For `"cl"`, this synthesizes the premium columns by running an
+[`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
 internally when none are present.
 
 ## Usage
@@ -19,9 +19,9 @@ internally when none are present.
   fit,
   triangle,
   method,
-  exposure_fit,
-  exposure_method,
-  exposure_alpha,
+  premium_fit,
+  premium_method,
+  premium_alpha,
   sigma_method,
   recent,
   regime,

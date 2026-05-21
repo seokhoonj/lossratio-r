@@ -218,7 +218,7 @@ choice of <code>alpha</code> materially affects the estimated factor.</p></li>
 <code><a href="as_link.html">as_link()</a></code> when <code>weight</code> is supplied), that column is
 automatically used as the WLS weight in place of <code>loss_from</code>. This
 is useful when <code>loss = "ratio"</code>, where <code>loss_from</code> carries no
-exposure information and an external exposure variable such as <code>exposure</code>
+premium information and an external premium variable such as <code>premium</code>
 should be used instead.</p>
     </div>
     <div class="section level2">
@@ -230,7 +230,7 @@ $$cv = \frac{SD(f_k)}{\bar{f}_k}$$
 where \(f_k\) are the individual observed ata values for link
 \(k\) and \(\bar{f}_k\) is their arithmetic mean. The <code>cv</code>
 reflects the relative spread of observed factors across cohorts,
-regardless of the exposure scale. It is used by
+regardless of the premium scale. It is used by
 <code><a href="detect_maturity.html">detect_maturity()</a></code> as one of the criteria for determining the
 maturity point.</p>
     </div>
@@ -242,10 +242,10 @@ maturity point.</p>
 $$rse = \frac{SE(\hat{f}_k)}{\hat{f}_k}$$
 where \(SE(\hat{f}_k)\) is the standard error of the
 WLS-estimated factor. Unlike <code>cv</code>, which treats all cohorts equally,
-<code>rse</code> gives more weight to cohorts with larger exposures (via the
+<code>rse</code> gives more weight to cohorts with larger premiums (via the
 WLS weights). A small <code>rse</code> indicates that the WLS estimate is
 precise, which tends to occur when: (1) there are many cohorts,
-(2) exposures are large, and (3) the observed ata values are
+(2) premiums are large, and (3) the observed ata values are
 consistent across cohorts.</p>
     </div>
     <div class="section level2">

@@ -8,7 +8,7 @@ ED phase: `param_{k+1} = param_k + (C^P_k)^2 * Var(g_k)`. CL phase:
 ``` r
 .sa_param_var(
   loss_proj,
-  exposure_proj,
+  premium_proj,
   g_var,
   f_var,
   f_sel,

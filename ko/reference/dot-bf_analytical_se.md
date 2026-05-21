@@ -24,7 +24,7 @@ Variance inputs:
   \mathrm{ELR}\_i^2\\\mathrm{Var}(E^{ult}\_i) +
   \mathrm{Var}(\mathrm{ELR}\_i)\\\mathrm{Var}(E^{ult}\_i)\\. `Var(ELR)`
   comes from the distribution prior's `elr_se` (0 for a deterministic
-  prior); `Var(E_ult)` from the exposure fit SE.
+  prior); `Var(E_ult)` from the premium fit SE.
 
 - \\\mathrm{Var}(q_i)\\ – delta method on \\q_i = L^{obs}\_i /
   L^{ult,CL}\_i\\, using the CL parameter SE.
@@ -45,7 +45,7 @@ Variance inputs:
 
   A `data.table` with one row per cohort carrying `by_cols`, `q`,
   `loss_ult` (BF / CC ultimate), `loss_latest`, `reserve`, `elr`,
-  `exposure_ult`, `var_elr`, `var_eult`, `loss_ult_cl`, `loss_proc_se`,
+  `premium_ult`, `var_elr`, `var_eult`, `loss_ult_cl`, `loss_proc_se`,
   `loss_param_se`.
 
 - by_cols:

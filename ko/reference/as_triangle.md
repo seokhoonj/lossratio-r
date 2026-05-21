@@ -19,7 +19,7 @@ Three steps happen inside this single call:
     code never receives malformed input.
 
 2.  **Standardise + aggregate** – rename to package-canonical column
-    names (`cohort`, `calendar`, `dev`, `loss`, `exposure`, ...),
+    names (`cohort`, `calendar`, `dev`, `loss`, `premium`, ...),
     auto-detect grain (`M` / `Q` / `H` / `Y`) from `cohort` spacing,
     derive `dev` from `(cohort, calendar)`, aggregate to
     `(group, cohort, dev)`, and enrich with cumulative / share / LR
@@ -48,23 +48,23 @@ The result contains:
 
 - profit indicators,
 
-- per-period loss ratio (`incr_ratio = incr_loss / incr_exposure`) and
-  cumulative loss ratio (`ratio = loss / exposure`).
+- per-period loss ratio (`incr_ratio = incr_loss / incr_premium`) and
+  cumulative loss ratio (`ratio = loss / premium`).
 
-The cumulative loss ratio is defined as: \$\$ratio = loss / exposure\$\$
+The cumulative loss ratio is defined as: \$\$ratio = loss / premium\$\$
 
 For long-term health insurance applications, risk premium is commonly
-used as the `exposure` measure.
+used as the `premium` measure.
 
 Proportion variables are computed within each `(cohort, dev)` cell:
 
 - `incr_loss_share = incr_loss / sum(incr_loss)`
 
-- `incr_exposure_share = incr_exposure / sum(incr_exposure)`
+- `incr_premium_share = incr_premium / sum(incr_premium)`
 
 - `loss_share = loss / sum(loss)`
 
-- `exposure_share = exposure / sum(exposure)`
+- `premium_share = premium / sum(premium)`
 
 Therefore, for a fixed `(cohort, dev)` cell, the proportions sum to 1
 across groups. These are useful for examining the composition of each
@@ -80,7 +80,7 @@ as_triangle(
   calendar = NULL,
   dev = NULL,
   loss,
-  exposure,
+  premium,
   grain = "auto",
   cell_type = c("incremental", "cumulative"),
   fill_gaps = FALSE
@@ -92,7 +92,7 @@ as_triangle(
 - df:
 
   A data.frame containing experience data with per-period loss and
-  exposure columns plus `cohort` and `calendar` Date columns (or any
+  premium columns plus `cohort` and `calendar` Date columns (or any
   input that the internal Date coercion accepts: Date, POSIXt, integer
   `yyyy` / `yyyymm` / `yyyymmdd`, ISO string).
 
@@ -102,7 +102,7 @@ as_triangle(
 
 - cohort:
 
-  Single column (raw name) defining the underwriting / exposure period
+  Single column (raw name) defining the underwriting / premium period
   start (e.g., `"uy_m"`).
 
 - calendar:
@@ -126,11 +126,11 @@ as_triangle(
   Single character; per-period loss column in `df` (raw name, e.g.,
   `"incr_loss"`).
 
-- exposure:
+- premium:
 
-  Single character; per-period exposure column in `df` (raw name, e.g.,
-  `"incr_exposure"`). Exposure measure used as denominator for loss
-  ratio calculations. For long-term health insurance applications, risk
+  Single character; per-period premium column in `df` (raw name, e.g.,
+  `"incr_premium"`). Premium measure used as denominator for loss ratio
+  calculations. For long-term health insurance applications, risk
   premium is commonly used.
 
 - grain:
@@ -143,7 +143,7 @@ as_triangle(
 - cell_type:
 
   One of `"incremental"` (default) or `"cumulative"`. Whether `loss` and
-  `exposure` in `df` already hold per-period (incremental) values or
+  `premium` in `df` already hold per-period (incremental) values or
   cumulative-within-cohort values. The internal triangle is always built
   on the incremental representation; `"cumulative"` inputs are
   differenced first.
@@ -169,9 +169,9 @@ columns:
 
   Cumulative and per-period loss
 
-- exposure, incr_exposure:
+- premium, incr_premium:
 
-  Cumulative and per-period exposure
+  Cumulative and per-period premium
 
 - ratio, incr_ratio:
 
@@ -179,7 +179,7 @@ columns:
 
 - margin, incr_margin:
 
-  Cumulative and per-period margin (`exposure - loss`)
+  Cumulative and per-period margin (`premium - loss`)
 
 - profit, incr_profit:
 
@@ -190,14 +190,14 @@ columns:
   Cumulative and per-period proportions of loss within each
   `(cohort, dev)` cell
 
-- exposure_share, incr_exposure_share:
+- premium_share, incr_premium_share:
 
-  Cumulative and per-period proportions of exposure within each
+  Cumulative and per-period proportions of premium within each
   `(cohort, dev)` cell
 
 Attributes set on the returned object: `groups`, `cohort`, `calendar`,
 `grain`, `dev` (= `"dev_<lower(grain)>"`, e.g. `"dev_m"`), `loss`,
-`exposure`, `longer`.
+`premium`, `longer`.
 
 ## Examples
 
@@ -209,7 +209,7 @@ df <- data.frame(
   uy_m          = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
   cy_m          = rep(as.Date(c("2023-01-01", "2023-02-01")), 6),
   incr_loss     = runif(12, 80, 120),
-  incr_exposure = runif(12, 90, 110)
+  incr_premium = runif(12, 90, 110)
 )
 
 # auto-detected monthly grain
@@ -219,7 +219,7 @@ res_m <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 # explicit quarterly view (re-bins monthly input to quarterly)
@@ -229,7 +229,7 @@ res_q <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure",
+  premium = "incr_premium",
   grain    = "Q"
 )
 

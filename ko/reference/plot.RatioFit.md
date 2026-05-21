@@ -10,8 +10,8 @@ The plotted metric is the cross-product of `metric` and `cell_type`:
 - `metric = "incr_ratio"` (i.e., `cell_type = "incremental"`):
   per-period loss ratio.
 
-- `metric = "loss"` / `"exposure"`: same split – cumulative or
-  per-period amounts.
+- `metric = "loss"` / `"premium"`: same split – cumulative or per-period
+  amounts.
 
 Confidence bands are drawn only for cumulative metrics
 (`cell_type = "cumulative"`), since the fit output does not carry SE
@@ -23,7 +23,7 @@ columns for incremental projections.
 # S3 method for class 'RatioFit'
 plot(
   x,
-  metric = c("ratio", "loss", "exposure"),
+  metric = c("ratio", "loss", "premium"),
   cell_type = c("cumulative", "incremental"),
   per_group = NULL,
   ask = grDevices::dev.interactive(),
@@ -46,7 +46,7 @@ plot(
 
 - metric:
 
-  Metric to plot. One of `"ratio"` (default), `"loss"`, `"exposure"`.
+  Metric to plot. One of `"ratio"` (default), `"loss"`, `"premium"`.
 
 - cell_type:
 

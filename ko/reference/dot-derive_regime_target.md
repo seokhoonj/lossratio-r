@@ -8,15 +8,15 @@ directly on the Triangle:
   Loss age-to-age factor – `loss[k+1] / loss[k]` per (group, cohort).
   Captures *multiplicative* development speed.
 
-- `exposure_ata`:
+- `premium_ata`:
 
-  Exposure age-to-age factor – same form on exposure. Captures exposure
+  Premium age-to-age factor – same form on premium. Captures premium
   *recognition speed*.
 
 - `loss_ed`:
 
   Loss intensity (ED model's \$g_k\$) –
-  `(loss[k] - loss[k-1]) / exposure[k-1]` per (group, cohort).
+  `(loss[k] - loss[k-1]) / premium[k-1]` per (group, cohort).
   *Additive*, exposure-anchored.
 
 The first dev row per cohort is NA (no predecessor). Downstream

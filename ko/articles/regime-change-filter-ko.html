@@ -120,8 +120,8 @@ ED 영역” 까지 좁은 창으로만 보게 만든다.</p>
 (post-change 코호트만 사용).</li>
 <li>성숙점 이후의 CL 영역: 대각선 단위 컷 (<code>recent</code>).</li>
 </ul>
-<p><code>loss_regime</code> (와 exposure-side 짝
-<code>exposure_regime</code>) 인자가 이 직관을 그대로 구현한다.</p>
+<p><code>loss_regime</code> (와 premium-side 짝
+<code>premium_regime</code>) 인자가 이 직관을 그대로 구현한다.</p>
 </div>
 <div class="section level2">
 <h2 id="두-축의-비대칭성">2. 두 축의 비대칭성<a class="anchor" aria-label="anchor" href="#%EB%91%90-%EC%B6%95%EC%9D%98-%EB%B9%84%EB%8C%80%EC%B9%AD%EC%84%B1"></a>
@@ -184,13 +184,13 @@ long-tail (옛 regime 도 자기 late-dev 발전이 필요한 경우) 에서 사
 <h2 id="api">3. API<a class="anchor" aria-label="anchor" href="#api"></a>
 </h2>
 <p><code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> 은 role 별 두 인자 —
-<code>loss_regime</code> (loss-side 필터) 와
-<code>exposure_regime</code> (exposure-side 필터; default 는
-<code>loss_regime</code> 와 동일) 을 받는다. <code><a href="../reference/fit_loss.html">fit_loss()</a></code> /
-<code><a href="../reference/fit_exposure.html">fit_exposure()</a></code> 은 단일 <code>regime</code> 인자.
-<code><a href="../reference/backtest.html">backtest()</a></code> 는 <code>fit_ratio</code> 와 동일하게
-<code>loss_regime</code> / <code>exposure_regime</code> . 네 함수 모두
-다음 입력 타입을 공유한다.</p>
+<code>loss_regime</code> (loss-side 필터) 와 <code>premium_regime</code>
+(premium-side 필터; default 는 <code>loss_regime</code> 와 동일) 을
+받는다. <code><a href="../reference/fit_loss.html">fit_loss()</a></code> / <code><a href="../reference/fit_premium.html">fit_premium()</a></code> 은 단일
+<code>regime</code> 인자. <code><a href="../reference/backtest.html">backtest()</a></code> 는
+<code>fit_ratio</code> 와 동일하게 <code>loss_regime</code> /
+<code>premium_regime</code> . 네 함수 모두 다음 입력 타입을
+공유한다.</p>
 <table class="table">
 <colgroup>
 <col width="38%">
@@ -236,7 +236,7 @@ long-tail (옛 regime 도 자기 late-dev 발전이 필요한 경우) 에서 사
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
+<span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 수동 change 날짜 — regime_at() 으로 literal 날짜를 Regime 으로 감싼다</span></span>
@@ -328,7 +328,7 @@ backtest 를 돌리고 결과를 비교한다.</p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
+<span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">reg</span>     <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span><span class="op">)</span></span>
 <span></span>
@@ -408,7 +408,7 @@ cut 의 두 axis 컷을
 <span>    cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>    calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>    loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>    exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
+<span>    premium <span class="op">=</span> <span class="st">"incr_premium"</span></span>
 <span>  <span class="op">)</span></span>
 <span>  <span class="va">reg_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_g</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri_g</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
@@ -438,7 +438,7 @@ calendar-side 표류만 누른다.</li>
 <li>향후 도입 예정인 credibility weighting 으로 pre-change 코호트의 link
 factor 에 부분 가중을 부여한다 (TODO).</li>
 </ul>
-<p>또한 <code>loss_regime</code> / <code>exposure_regime</code> 는 link
+<p>또한 <code>loss_regime</code> / <code>premium_regime</code> 는 link
 factor 추정 단계에서만 작동하며, 추정이 끝난 뒤에는 모든 코호트가 같은
 link factor 를 공유한다. change 이전 코호트의 ultimate 추정도
 post-change 데이터로 전이되므로, 사용자는 이 점을 인지하고 결과를 해석할

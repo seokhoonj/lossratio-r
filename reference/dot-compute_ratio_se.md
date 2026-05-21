@@ -10,8 +10,8 @@ Ratio-specific internal helper. Two variants:
 
 - `"delta"`:
 
-  First-order Taylor (delta method) including exposure uncertainty and
-  loss-exposure correlation `rho`: \\\mathrm{Var}(L/P) \approx
+  First-order Taylor (delta method) including premium uncertainty and
+  loss-premium correlation `rho`: \\\mathrm{Var}(L/P) \approx
   (\mathrm{SE}(L)/P)^2 + (L \cdot \mathrm{SE}(P) / P^2)^2 - 2 \rho L
   \mathrm{SE}(L) \mathrm{SE}(P) / P^3\\. The variance is clipped at zero
   before the square root (high `rho` can drive the linearised estimate
@@ -28,9 +28,9 @@ ratio-SE utility.
 ``` r
 .compute_ratio_se(
   loss,
-  exposure,
+  premium,
   loss_se,
-  exposure_se = NULL,
+  premium_se = NULL,
   method = c("fixed", "delta"),
   rho = 0.95
 )
@@ -42,15 +42,15 @@ ratio-SE utility.
 
   Ultimate loss vector (`L`).
 
-- exposure:
+- premium:
 
-  Ultimate exposure vector (`E`).
+  Ultimate premium vector (`E`).
 
 - loss_se:
 
   `SE(L)`.
 
-- exposure_se:
+- premium_se:
 
   `SE(P)`. Unused for `"fixed"`; may be `NULL`.
 
@@ -60,7 +60,7 @@ ratio-SE utility.
 
 - rho:
 
-  Loss-exposure correlation in `(-1, 1)`. Used only for `"delta"`.
+  Loss-premium correlation in `(-1, 1)`. Used only for `"delta"`.
   Default `0.95`.
 
 ## Value

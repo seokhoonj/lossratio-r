@@ -3,10 +3,9 @@
 Role-agnostic projection plot: observed and projected cumulative values
 by cohort over development periods, with an optional confidence band.
 The plotted column family is taken from `x$loss` (the fit's standardized
-role – `"loss"` for CL / SA / BF / CC, `"exposure"` for an
-`ExposureFit`), so every projection-level fit shares one implementation.
-The interval is drawn whenever the `<role>_total_se` column is present
-and finite.
+role – `"loss"` for CL / SA / BF / CC, `"premium"` for an `PremiumFit`),
+so every projection-level fit shares one implementation. The interval is
+drawn whenever the `<role>_total_se` column is present and finite.
 
 ## Usage
 
@@ -29,7 +28,7 @@ and finite.
 - x:
 
   A projection-level fit (`CLFit`, `SAFit`, `BFFit`, `CCFit`, or
-  `ExposureFit`) with a `$full` grid and `$loss` / `$groups` / `$cohort`
+  `PremiumFit`) with a `$full` grid and `$loss` / `$groups` / `$cohort`
   / `$dev` slots.
 
 - conf_level:

@@ -134,11 +134,11 @@ this function; users can also call <code>fit_sa()</code> directly.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fit_sa</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  loss <span class="op">=</span> <span class="st">"loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"exposure"</span>,</span>
+<span>  premium <span class="op">=</span> <span class="st">"premium"</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  exposure_fit <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  exposure_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ed"</span>, <span class="st">"cl"</span><span class="op">)</span>,</span>
-<span>  exposure_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  premium_fit <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  premium_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ed"</span>, <span class="st">"cl"</span><span class="op">)</span>,</span>
+<span>  premium_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span>, <span class="st">"mack"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -158,36 +158,36 @@ this function; users can also call <code>fit_sa()</code> directly.</p>
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>A <code>"Triangle"</code> object. The standardized <code>"loss"</code> and
-<code>"exposure"</code> columns are used (<code><a href="as_triangle.html">as_triangle()</a></code> produces these).</p></dd>
+<code>"premium"</code> columns are used (<code><a href="as_triangle.html">as_triangle()</a></code> produces these).</p></dd>
 
 
 <dt id="arg-loss">loss<a class="anchor" aria-label="anchor" href="#arg-loss"></a></dt>
 <dd><p>Cumulative loss column name. Default <code>"loss"</code>.</p></dd>
 
 
-<dt id="arg-exposure">exposure<a class="anchor" aria-label="anchor" href="#arg-exposure"></a></dt>
-<dd><p>Cumulative exposure column name. Default <code>"exposure"</code>.</p></dd>
+<dt id="arg-premium">premium<a class="anchor" aria-label="anchor" href="#arg-premium"></a></dt>
+<dd><p>Cumulative premium column name. Default <code>"premium"</code>.</p></dd>
 
 
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
 <dd><p>Variance-structure exponent for the loss fit. Default <code>1</code>.</p></dd>
 
 
-<dt id="arg-exposure-fit">exposure_fit<a class="anchor" aria-label="anchor" href="#arg-exposure-fit"></a></dt>
-<dd><p>Optional pre-built <code>ExposureFit</code> supplying the
-exposure projection. When <code>NULL</code>, <code>fit_sa()</code> builds the exposure
+<dt id="arg-premium-fit">premium_fit<a class="anchor" aria-label="anchor" href="#arg-premium-fit"></a></dt>
+<dd><p>Optional pre-built <code>PremiumFit</code> supplying the
+premium projection. When <code>NULL</code>, <code>fit_sa()</code> builds the premium
 projection internally – a worker-layer <code><a href="fit_cl.html">fit_cl()</a></code> on the
-<code>exposure</code> column – using <code>exposure_method</code>, <code>exposure_alpha</code>,
+<code>premium</code> column – using <code>premium_method</code>, <code>premium_alpha</code>,
 and the resolved <code>regime</code>.</p></dd>
 
 
-<dt id="arg-exposure-method">exposure_method<a class="anchor" aria-label="anchor" href="#arg-exposure-method"></a></dt>
+<dt id="arg-premium-method">premium_method<a class="anchor" aria-label="anchor" href="#arg-premium-method"></a></dt>
 <dd><p>One of <code>"ed"</code> (default) or <code>"cl"</code>. Used only
-when <code>exposure_fit = NULL</code>.</p></dd>
+when <code>premium_fit = NULL</code>.</p></dd>
 
 
-<dt id="arg-exposure-alpha">exposure_alpha<a class="anchor" aria-label="anchor" href="#arg-exposure-alpha"></a></dt>
-<dd><p>Variance-structure exponent for the exposure fit.
+<dt id="arg-premium-alpha">premium_alpha<a class="anchor" aria-label="anchor" href="#arg-premium-alpha"></a></dt>
+<dd><p>Variance-structure exponent for the premium fit.
 Default <code>1</code>.</p></dd>
 
 
@@ -223,7 +223,7 @@ CL directly in that case).</p></dd>
 
 <dt id="arg-tail">tail<a class="anchor" aria-label="anchor" href="#arg-tail"></a></dt>
 <dd><p>Logical or numeric; tail factor for the CL phase.
-Forwarded to the internal exposure fit when relevant.</p></dd>
+Forwarded to the internal premium fit when relevant.</p></dd>
 
 
 <dt id="arg-conf-level">conf_level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
@@ -254,7 +254,7 @@ when <code>bootstrap = "auto"</code>.)</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An object of class <code>"SAFit"</code>. List with components mirroring
 <code>LossFit</code>: <code>full</code>, <code>proj</code>, <code>maturity</code>, <code>loss_ata_fit</code>,
-<code>exposure_ata_fit</code>, <code>exposure_fit</code>, <code>ed</code>, <code>factor</code>, <code>selected</code>, plus
+<code>premium_ata_fit</code>, <code>premium_fit</code>, <code>ed</code>, <code>factor</code>, <code>selected</code>, plus
 metadata (<code>method = "sa"</code>, <code>alpha</code>, <code>sigma_method</code>, <code>recent</code>,
 <code>regime</code>, <code>conf_level</code>, <code>ci_type</code>, <code>bootstrap</code>, <code>usage</code>).</p>
     </div>
@@ -273,7 +273,7 @@ metadata (<code>method = "sa"</code>, <code>alpha</code>, <code>sigma_method</co
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span></span>
+<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">sa</span> <span class="op">&lt;-</span> <span class="fu">fit_sa</span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span></span>

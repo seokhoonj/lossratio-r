@@ -29,7 +29,7 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium  = "incr_premium"
 )
 
 bt <- backtest(tri_sur, holdout = 6L)
@@ -50,7 +50,7 @@ The returned object is a `"Backtest"` list with these key slots:
 - `masked` — the triangle the fit was trained on (latest diagonals
   removed).
 - `fit` — the fit object returned by the target-specific dispatcher
-  (`fit_ratio` / `fit_loss` / `fit_exposure`) chosen by `target=`.
+  (`fit_ratio` / `fit_loss` / `fit_premium`) chosen by `target=`.
 
 `summary(bt)` prints the two summary tables alongside the call metadata.
 
@@ -103,10 +103,10 @@ head(bt$col_summary, 8)
 ```
 
 `ae_err_mean` averages cell-level A/E Error, `ae_err_med` is the median,
-and `ae_err_wt = sum(actual - proj) / sum(proj)` is the
-exposure-weighted pooled A/E ratio minus 1. Comparing the three columns
-flags whether a few large cells dominate (`ae_err_wt` very different
-from `ae_err_med`) or the bias is uniform.
+and `ae_err_wt = sum(actual - proj) / sum(proj)` is the premium-weighted
+pooled A/E ratio minus 1. Comparing the three columns flags whether a
+few large cells dominate (`ae_err_wt` very different from `ae_err_med`)
+or the bias is uniform.
 
 **`diag_summary` — calendar-year effect.** A single bad diagonal in
 otherwise unbiased output points at a calendar event (a rate change,
@@ -244,16 +244,16 @@ across the triangle.
 |----|----|----|----|
 | `"ratio"` | [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md) | `loss_method` | `ratio_proj` |
 | `"loss"` | [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md) | `loss_method` | `loss_proj` |
-| `"exposure"` | [`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md) | `exposure_method` | `exposure_proj` |
+| `"premium"` | [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md) | `premium_method` | `premium_proj` |
 
 The `loss_method` argument selects the underlying loss / loss-ratio
 projection strategy: `"ed"` (exposure-driven, the default) is the
 unconditional safe baseline – no maturity or regime detection needed;
 `"cl"` is the classical chain ladder, which lets the cohort’s own
 cum_loss anchor cohort-level drift; `"sa"` (stage-adaptive) blends ED
-before the maturity point with CL afterwards. The `exposure_method`
+before the maturity point with CL afterwards. The `premium_method`
 argument selects the premium projection strategy when
-`target = "exposure"`.
+`target = "premium"`.
 
 ``` r
 
@@ -264,7 +264,7 @@ bt_sa       <- backtest(tri_sur, holdout = 6L, loss_method = "sa")
 bt_loss     <- backtest(tri_sur, holdout = 6L,
                         target = "loss", loss_method = "cl")
 bt_premium  <- backtest(tri_sur, holdout = 6L,
-                        target = "exposure", exposure_method = "cl")
+                        target = "premium", premium_method = "cl")
 
 print(bt_ed)
 #> <Backtest>
@@ -275,7 +275,7 @@ print(bt_ed)
 ```
 
 For monetary impact (loss or premium) backtesting, set `target = "loss"`
-or `target = "exposure"` to score the corresponding projection lane
+or `target = "premium"` to score the corresponding projection lane
 directly.
 
 ## See also

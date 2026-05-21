@@ -3,7 +3,7 @@
 Internal 4-type dispatcher used by
 [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md),
 [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md),
-[`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md),
+[`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md),
 and
 [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
 to normalize the `regime` input (or split-axis variants such as

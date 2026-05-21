@@ -151,7 +151,7 @@ clustering method to the resulting multivariate sequence.</p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
+<span>  premium  <span class="op">=</span> <span class="st">"incr_premium"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -260,7 +260,7 @@ kinds of regime change, and each has its own failure mode. Pick the
 metric that matches the event you suspect — and always cross-check with
 domain knowledge.</p>
 <p>Order:
-<code>c("ratio", "loss_ata", "exposure_ata", "loss_ed", "exposure_ed", "loss", "exposure")</code>
+<code>c("ratio", "loss_ata", "premium_ata", "loss_ed", "premium_ed", "loss", "premium")</code>
 — cleanest to riskiest.</p>
 <table class="table">
 <colgroup>
@@ -302,23 +302,23 @@ over-sensitive on</td>
 <tr class="odd">
 <td>Premium recognition <em>speed</em> change</td>
 <td>
-<code>"exposure_ata"</code> <em>(diagnostic)</em>
+<code>"premium_ata"</code> <em>(diagnostic)</em>
 </td>
 <td>Same caveats as <code>"loss_ata"</code>.</td>
 </tr>
 <tr class="even">
-<td>Loss <em>intensity</em> per unit exposure (ED <code>g</code>)</td>
+<td>Loss <em>intensity</em> per unit premium (ED <code>g</code>)</td>
 <td>
 <code>"loss_ed"</code> <em>(diagnostic)</em>
 </td>
 <td>Cross-normalised by premium; harder to interpret in isolation.</td>
 </tr>
 <tr class="odd">
-<td>Same as <code>exposure_ata</code> (API symmetry)</td>
+<td>Same as <code>premium_ata</code> (API symmetry)</td>
 <td>
-<code>"exposure_ed"</code> <em>(alias)</em>
+<code>"premium_ed"</code> <em>(alias)</em>
 </td>
-<td>Equivalent to <code>exposure_ata</code> after PCA standardization —
+<td>Equivalent to <code>premium_ata</code> after PCA standardization —
 same changes.</td>
 </tr>
 <tr class="even">
@@ -329,7 +329,7 @@ common.</td>
 </tr>
 <tr class="odd">
 <td>Premium <em>level</em> shift (rate, channel)</td>
-<td><code>"exposure"</code></td>
+<td><code>"premium"</code></td>
 <td>Same caveat as <code>"loss"</code>.</td>
 </tr>
 </tbody>
@@ -341,14 +341,14 @@ common.</td>
 package’s projection metric and is naturally scale-invariant (immune to
 book-size growth).</li>
 <li>
-<code>"loss"</code> / <code>"exposure"</code> use the raw cumulative
+<code>"loss"</code> / <code>"premium"</code> use the raw cumulative
 columns and are most useful when the suspected event is a sudden
 <em>absolute level shift</em> (e.g. a channel termination dropping
 premium volume). Smooth book growth will frequently produce false
 positives — read every result alongside a known timeline of underwriting
 / claims-handling events.</li>
 <li>
-<code>"loss_ata"</code>, <code>"exposure_ata"</code>,
+<code>"loss_ata"</code>, <code>"premium_ata"</code>,
 <code>"loss_ed"</code> are diagnostic metrics derived inline (not stored
 on the <code>Triangle</code>). They map directly to the CL
 <code>f</code>-factor / ED <code>g</code>-factor used during fitting, so
@@ -425,7 +425,7 @@ gathered into a single <code>Regime</code> object.</p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
+<span>  premium  <span class="op">=</span> <span class="st">"incr_premium"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">r_all</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_all</span>, by <span class="op">=</span> <span class="st">"coverage"</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
 <span><span class="va">r_all</span><span class="op">$</span><span class="va">changes</span></span>
@@ -458,7 +458,7 @@ pooled fit.</p></li>
 <li><p><strong>Rate-change documentation</strong>: a detected change
 provides a data-driven anchor for the preprocessing recommendations
 outlined in the <em>Limitations</em> section of the companion paper
-(premium on-leveling or exposure decomposition
+(premium on-leveling or premium decomposition
 <code>V = C^P / r</code>).</p></li>
 </ol>
 </div>

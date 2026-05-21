@@ -16,7 +16,7 @@ applied to f-factor) and
 (ED / Buehlmann-Straub 1970 applied to g-intensity). They share the
 underlying volume-weighted variance idea (\\\sigma^2_g = \sigma^2_f\\
 via \\g_k = f_k - 1\\), but operate on different `Link` columns (f reads
-`loss_to`/`loss_from`; g reads `loss_delta`/`exposure_from`) and produce
+`loss_to`/`loss_from`; g reads `loss_delta`/`premium_from`) and produce
 differently-named output columns (`f_var` / `g_var`), so are kept as
 separate helpers.
 

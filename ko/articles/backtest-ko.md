@@ -31,7 +31,7 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 bt <- backtest(tri_sur, holdout = 6L)
@@ -52,7 +52,7 @@ print(bt)
 - `col_summary` — `dev` 별로 집계된 A/E Error.
 - `diag_summary` — 대각선별로 집계된 A/E Error.
 - `masked` — 적합에 사용된 triangle (최근 대각선이 제거됨).
-- `fit` — 내부 적합 객체 (`RatioFit`, `LossFit`, 또는 `ExposureFit`,
+- `fit` — 내부 적합 객체 (`RatioFit`, `LossFit`, 또는 `PremiumFit`,
   `target` 에 따라 결정).
 
 `summary(bt)` 는 호출 메타데이터와 함께 두 요약 표를 출력한다.
@@ -104,7 +104,7 @@ head(bt$col_summary, 8)
 ```
 
 `ae_err_mean` 은 셀 단위 A/E Error 의 평균, `ae_err_med` 는 중앙값,
-`ae_err_wt = sum(actual - proj) / sum(proj)` 는 노출 가중 pooled A/E
+`ae_err_wt = sum(actual - proj) / sum(proj)` 는 보험료 가중 pooled A/E
 ratio 에서 1 을 뺀 값이다. 세 컬럼을 비교하면 소수의 큰 셀이 결과를
 지배하는지 (`ae_err_wt` 가 `ae_err_med` 와 크게 다른 경우) 또는 편향이
 균일한지 식별할 수 있다.
@@ -243,7 +243,7 @@ plot_triangle(bt)         # hold-out 영역에 대한 발산형 팔레트 히트
 |----|----|----|----|
 | `"ratio"` | [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md) | `loss_method` | `ratio_proj` |
 | `"loss"` | [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md) | `loss_method` | `loss_proj` |
-| `"exposure"` | [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md) | `exposure_method` | `exposure_proj` |
+| `"premium"` | [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md) | `premium_method` | `premium_proj` |
 
 ``` r
 
@@ -267,7 +267,7 @@ print(bt_ed_ratio)
 의미를 가진다. 반면 `loss` 를 백테스팅하면 결과가 hold-out 대각선에서
 가장 큰 코호트 쪽으로 가중된다.
 
-보험료 백테스트는 `target = "exposure"` 으로 직접 수행한다.
+보험료 백테스트는 `target = "premium"` 으로 직접 수행한다.
 
 ## 8. 함께 보기
 

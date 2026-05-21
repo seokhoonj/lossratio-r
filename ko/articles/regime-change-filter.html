@@ -116,8 +116,8 @@ only post-change cohorts.</li>
 <strong>Post-maturity (CL region):</strong> diagonal cut — keep only
 the recent <code>N</code> calendar diagonals.</li>
 </ul>
-<p><code>loss_regime</code> (and its exposure-side sibling
-<code>exposure_regime</code>) implements that split.</p>
+<p><code>loss_regime</code> (and its premium-side sibling
+<code>premium_regime</code>) implements that split.</p>
 </div>
 <div class="section level2">
 <h2 id="two-axis-asymmetry">Two-axis asymmetry<a class="anchor" aria-label="anchor" href="#two-axis-asymmetry"></a>
@@ -183,11 +183,11 @@ hasn’t yet observed late-dev development.</li>
 </h2>
 <p><code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> takes two role-specific regime arguments —
 <code>loss_regime</code> (loss-side filter) and
-<code>exposure_regime</code> (exposure-side filter; defaults to
+<code>premium_regime</code> (premium-side filter; defaults to
 <code>loss_regime</code>). <code><a href="../reference/fit_loss.html">fit_loss()</a></code> /
-<code><a href="../reference/fit_exposure.html">fit_exposure()</a></code> take a single <code>regime</code> argument.
+<code><a href="../reference/fit_premium.html">fit_premium()</a></code> take a single <code>regime</code> argument.
 <code><a href="../reference/backtest.html">backtest()</a></code> mirrors <code>fit_ratio</code> with
-<code>loss_regime</code> / <code>exposure_regime</code>. All four accept
+<code>loss_regime</code> / <code>premium_regime</code>. All four accept
 the same input types:</p>
 <table class="table">
 <colgroup>
@@ -234,7 +234,7 @@ explicit:</p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
+<span>  premium  <span class="op">=</span> <span class="st">"incr_premium"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Manual change date via regime_at() — wrap a literal date in a Regime</span></span>
@@ -382,7 +382,7 @@ group:</p>
 <span>    cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>    calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>    loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>    exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
+<span>    premium  <span class="op">=</span> <span class="st">"incr_premium"</span></span>
 <span>  <span class="op">)</span></span>
 <span>  <span class="va">reg_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_g</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri_g</span>, method <span class="op">=</span> <span class="st">"sa"</span>, recent <span class="op">=</span> <span class="fl">18L</span>,</span>
@@ -404,10 +404,10 @@ and link factors
 become noisy. A practical threshold is <code>n_post ≳ 6</code>. Below
 that, prefer <code>recent</code> alone, or wait for credibility-weighted
 blending of pre- and post-change factors (planned).</p>
-<p>Note also that <code>loss_regime</code> /
-<code>exposure_regime</code> only filter the data feeding link factor
-estimation. Once the factors are fixed, all cohorts share them, so
-pre-change ultimates inherit the post-change dynamics.</p>
+<p>Note also that <code>loss_regime</code> / <code>premium_regime</code>
+only filter the data feeding link factor estimation. Once the factors
+are fixed, all cohorts share them, so pre-change ultimates inherit the
+post-change dynamics.</p>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>

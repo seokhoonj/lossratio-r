@@ -10,13 +10,12 @@ backtest validation.
 insurance**, covering cohort development analysis, stage-adaptive
 projection, regime detection, and backtest validation. Input is
 long-format experience data — each row (cohort × dev × demographic) maps
-to one Triangle cell, with loss and exposure columns (`loss`,
-`exposure`).
+to one Triangle cell, with loss and premium columns (`loss`, `premium`).
 
 In long-term health insurance, new claims and premium are generated and
-earned continuously within each cohort, so cumulative loss and exposure
+earned continuously within each cohort, so cumulative loss and premium
 grow together. Age-to-age (ATA) factors tend to show high variability in
-early development, and exposure (≈ risk premium) becomes a more stable
+early development, and premium (≈ risk premium) becomes a more stable
 and reliable anchor. Product redesigns, underwriting changes, or
 regulatory actions can also produce structural breaks that accumulate
 across cohorts.
@@ -35,7 +34,7 @@ It provides:
   (`Total`)
 - Age-to-age (`ATA`) and exposure-driven (`ED`) development modeling via
   the worker layer (`fit_cl`, `fit_ed`, `fit_ata`, `fit_intensity`)
-- Role-specific dispatchers (`fit_loss`, `fit_exposure`) that project a
+- Role-specific dispatchers (`fit_loss`, `fit_premium`) that project a
   single side with standard errors and confidence intervals
 - Loss ratio projection (`fit_ratio`) composes loss and premium fits
   with three methods:
@@ -68,8 +67,8 @@ arguments and the function standardises internally.
 | `cohort` | Cohort period (typically UY for long-term health) (Date) | `"uy_m"`, `"uy"` |
 | `calendar` *or* `dev` | Calendar period (Date) *or* `dev` period (integer) | `"cy_m"` / `"dev_m"` |
 | `loss` | Per-period *or* cumulative claim amount | `"incr_loss"` / `"loss"` |
-| `exposure` | Per-period *or* cumulative exposure (risk premium) | `"incr_exposure"` / `"exposure"` |
-| `cell_type` *(default)* | Interpretation of `loss` / `exposure` values | `"incremental"` / `"cumulative"` |
+| `premium` | Per-period *or* cumulative premium (risk premium) | `"incr_premium"` / `"premium"` |
+| `cell_type` *(default)* | Interpretation of `loss` / `premium` values | `"incremental"` / `"cumulative"` |
 | `groups` *(optional)* | Grouping column(s): product, coverage, age, … | `"coverage"` |
 
 Two more arguments govern interpretation:
@@ -94,23 +93,22 @@ cumulative + incremental cell values plus the derived `ratio`, `margin`,
 Throughout the package, cumulative is the unmarked default and
 per-period values carry an `incr_` (incremental) prefix:
 
-| Metric   | Cumulative (default) | Per-period (`incr_`) |
-|----------|----------------------|----------------------|
-| Loss     | `loss`               | `incr_loss`          |
-| Exposure | `exposure`           | `incr_exposure`      |
-| Ratio    | `ratio`              | `incr_ratio`         |
-| Margin   | `margin`             | `incr_margin`        |
-| Profit   | `profit`             | `incr_profit`        |
+| Metric  | Cumulative (default) | Per-period (`incr_`) |
+|---------|----------------------|----------------------|
+| Loss    | `loss`               | `incr_loss`          |
+| Premium | `premium`            | `incr_premium`       |
+| Ratio   | `ratio`              | `incr_ratio`         |
+| Margin  | `margin`             | `incr_margin`        |
+| Profit  | `profit`             | `incr_profit`        |
 
-Raw `experience` input is per-period only (`incr_loss`,
-`incr_exposure`);
+Raw `experience` input is per-period only (`incr_loss`, `incr_premium`);
 [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
 produces both forms in the output. Worker fit functions (`fit_cl`,
-`fit_ed`, `fit_ata`, `fit_intensity`) take `loss` / `exposure` /
-`weight` arguments; dispatcher functions (`fit_loss`, `fit_exposure`)
-and the composition `fit_ratio` use role-specific `loss_*` /
-`exposure_*` argument names. Cumulative slots (`"loss"`, `"exposure"`)
-are the defaults.
+`fit_ed`, `fit_ata`, `fit_intensity`) take `loss` / `premium` / `weight`
+arguments; dispatcher functions (`fit_loss`, `fit_premium`) and the
+composition `fit_ratio` use role-specific `loss_*` / `premium_*`
+argument names. Cumulative slots (`"loss"`, `"premium"`) are the
+defaults.
 
 ## Installation
 
@@ -141,7 +139,7 @@ tri <- as_triangle(
   cohort    = "uy_m",
   calendar  = "cy_m",
   loss      = "incr_loss",
-  exposure  = "incr_exposure",
+  premium   = "incr_premium",
   cell_type = "incremental"   # default; use "cumulative" for pre-summed cells
 )
 
@@ -149,7 +147,7 @@ plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
 
 # Exposure-driven fit (additive ED intensity)
-ed <- fit_ed(tri, loss = "loss", exposure = "exposure")
+ed <- fit_ed(tri, loss = "loss", premium = "premium")
 
 # Chain ladder fit (multiplicative ATA factors)
 cl <- fit_cl(tri, loss = "loss")
@@ -190,12 +188,12 @@ Original column names are preserved as attributes (`cohort`, `calendar`,
 
 `fit_ratio(method = "ed")` (default) or
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md).
-All loss increments use exposure (risk premium) as the denominator:
+All loss increments use premium (risk premium) as the denominator:
 $`\Delta C^L = g_k \cdot C^P_k`$. Unconditional safe baseline – no
 maturity dependency, robust under early-dev age-to-age volatility.
 
 *When to use*: as a baseline. The pooled intensity $`g_k`$ assumes
-cohorts are reasonably homogeneous in loss-per-exposure level; under
+cohorts are reasonably homogeneous in loss-per-premium level; under
 cohort-level drift (e.g., underwriting / coverage regime change), the
 projection biases toward the pooled mean and may over-project
 post-change cohorts. See the `regime` argument for explicit filtering.
@@ -324,7 +322,7 @@ additive), `fit_sa` (stage-adaptive composition of ED + CL anchored on a
 maturity point). ELR-based reserve methods: `fit_bf`
 (Bornhuetter-Ferguson with external prior), `fit_cc` (Cape Cod with
 data-pooled ELR estimate). Role dispatchers: `fit_loss` (loss-side
-ed/cl/sa/bf/cc), `fit_exposure` (exposure-side ed/cl). Composition:
+ed/cl/sa/bf/cc), `fit_premium` (premium-side ed/cl). Composition:
 `fit_ratio` (loss-ratio umbrella with delta-method SE). All return an
 object carrying a `$full` projection table.
 
@@ -348,8 +346,8 @@ object carrying a `$full` projection table.
 - [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
   : Fit a loss projection on a Triangle
 
-- [`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md)
-  : Fit a chain ladder projection on the exposure triangle
+- [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+  : Fit a chain ladder projection on the premium triangle
 
 - [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
   : Fit loss ratio projection model
@@ -377,7 +375,7 @@ Decide which cells of the triangle to use for estimation.
 factors are stable); `detect_regime` works along the cohort axis
 (structural break across underwriting cohorts). The `*_at()` /
 `*_spec()` helpers build manual / lazy-detect input objects for the
-`maturity` / `loss_regime` / `exposure_regime` arguments of the fit
+`maturity` / `loss_regime` / `premium_regime` arguments of the fit
 functions.
 
 - [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
@@ -400,7 +398,7 @@ functions.
 
 Cohort × dev standard-error decomposition via simulation (Pythagorean
 split into parameter and process components). Returned object is
-consumed by `fit_loss` / `fit_exposure` / `fit_ratio` through their
+consumed by `fit_loss` / `fit_premium` / `fit_ratio` through their
 `bootstrap` argument to replace analytical SE / CI with empirical
 counterparts.
 
@@ -428,7 +426,7 @@ compare projections against the withheld actuals.
   [`print(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   [`summary(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   [`print(`*`<summary.Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
-  : Backtest a loss / exposure / loss-ratio projection on existing data
+  : Backtest a loss / premium / loss-ratio projection on existing data
 
 ## Visualisation
 
@@ -466,14 +464,14 @@ is a console table renderer for data frames and `Triangle` objects.
 - [`plot(`*`<EDFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.EDFit.md)
   : Plot an ED fit
 
-- [`plot(`*`<ExposureFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.ExposureFit.md)
-  : Plot an exposure fit
-
 - [`plot(`*`<IntensityFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.IntensityFit.md)
   : Plot an Intensity fit
 
 - [`plot(`*`<Link>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.Link.md)
   : Plot link-factor diagnostics
+
+- [`plot(`*`<PremiumFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.PremiumFit.md)
+  : Plot an premium fit
 
 - [`plot(`*`<RatioFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.RatioFit.md)
   : Plot a loss ratio fit
@@ -516,14 +514,14 @@ is a console table renderer for data frames and `Triangle` objects.
 - [`plot_triangle(`*`<EDFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.EDFit.md)
   : Triangle heatmap for an ED fit
 
-- [`plot_triangle(`*`<ExposureFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.ExposureFit.md)
-  : Plot an exposure fit as a triangle table
-
 - [`plot_triangle(`*`<IntensityFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.IntensityFit.md)
   : Triangle heatmap for an Intensity fit
 
 - [`plot_triangle(`*`<Link>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.Link.md)
   : Plot a Link object as a triangle heatmap
+
+- [`plot_triangle(`*`<PremiumFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.PremiumFit.md)
+  : Plot an premium fit as a triangle table
 
 - [`plot_triangle(`*`<RatioFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.RatioFit.md)
   : Plot loss ratio projection as a triangle heatmap
@@ -549,7 +547,7 @@ print / summary / longer methods registered on package classes.
   [`print(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   [`summary(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   [`print(`*`<summary.Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
-  : Backtest a loss / exposure / loss-ratio projection on existing data
+  : Backtest a loss / premium / loss-ratio projection on existing data
 
 - [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
   [`print(`*`<Regime>`*`)`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
@@ -595,11 +593,6 @@ print / summary / longer methods registered on package classes.
 
   Print method for `EDSummary`
 
-- [`print(`*`<ExposureFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.ExposureFit.md)
-  :
-
-  Print method for `ExposureFit`
-
 - [`print(`*`<IntensityFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.IntensityFit.md)
   :
 
@@ -609,6 +602,11 @@ print / summary / longer methods registered on package classes.
   :
 
   Print method for `LossFit`
+
+- [`print(`*`<PremiumFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.PremiumFit.md)
+  :
+
+  Print method for `PremiumFit`
 
 - [`print(`*`<RatioFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.RatioFit.md)
   :
@@ -652,11 +650,6 @@ print / summary / longer methods registered on package classes.
 
   Summary method for `EDFit`
 
-- [`summary(`*`<ExposureFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.ExposureFit.md)
-  :
-
-  Summary method for `ExposureFit`
-
 - [`summary(`*`<IntensityFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.IntensityFit.md)
   :
 
@@ -671,6 +664,11 @@ print / summary / longer methods registered on package classes.
   :
 
   Summary method for `LossFit`
+
+- [`summary(`*`<PremiumFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.PremiumFit.md)
+  :
+
+  Summary method for `PremiumFit`
 
 - [`summary(`*`<RatioFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.RatioFit.md)
   :

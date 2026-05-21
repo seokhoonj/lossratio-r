@@ -337,7 +337,7 @@ incremental LR.</p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
+<span>  premium  <span class="op">=</span> <span class="st">"incr_premium"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
@@ -600,7 +600,7 @@ every method.</li>
 <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code>, which internally composes
 <code><a href="../reference/fit_loss.html">fit_loss()</a></code> (default <code>method = "ed"</code> –
 exposure-driven; optionally <code>"cl"</code> / <code>"sa"</code> for
-cohort-anchored) and <code><a href="../reference/fit_exposure.html">fit_exposure()</a></code>. Choices made inside
+cohort-anchored) and <code><a href="../reference/fit_premium.html">fit_premium()</a></code>. Choices made inside
 that composition (loss method, regime filter, maturity argument) feed
 through to <code>conv_k</code>; review the underlying
 <code>fit_ratio</code> settings when interpreting the result. Pass
@@ -608,8 +608,8 @@ through to <code>conv_k</code>; review the underlying
 <code>...</code> to override.</li>
 <li>
 <strong>Portfolio aggregation</strong>: the portfolio LR aggregates
-per-group ultimates via exposure weighting
-(<code>sum(loss_ult) / sum(exposure_ult)</code>). Calendar-year shocks
+per-group ultimates via premium weighting
+(<code>sum(loss_ult) / sum(premium_ult)</code>). Calendar-year shocks
 (regulatory changes, cost trend) can move every group together; the
 drift metrics will not separate that from genuine convergence.</li>
 <li>

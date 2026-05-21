@@ -13,7 +13,7 @@ summary(object, ...)
 
 - object:
 
-  A `PremiumFit` object.
+  An `PremiumFit` object.
 
 - ...:
 

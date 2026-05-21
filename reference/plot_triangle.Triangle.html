@@ -3,23 +3,23 @@
 period and dev dimensions, and each cell displays the selected metric.
 For ratio metrics (ratio, incr_ratio), labels can show either the ratio alone or
 the ratio together with the associated loss / risk premium amounts.
-For amount metrics (loss, incr_loss, exposure, incr_exposure, margin, incr_margin),
+For amount metrics (loss, incr_loss, premium, incr_premium, margin, incr_margin),
 labels show the selected amount only.
-For proportion metrics (loss_share, incr_loss_share, exposure_share, incr_exposure_share),
+For proportion metrics (loss_share, incr_loss_share, premium_share, incr_premium_share),
 labels are displayed as percentages.
 The loss ratio is defined as:
-$$ratio = loss / exposure$$
-where exposure denotes risk premium rather than written premium."><meta property="og:description" content="Visualise a Triangle object as a triangle-style table. Cells are arranged by
+$$ratio = loss / premium$$
+where premium denotes risk premium rather than written premium."><meta property="og:description" content="Visualise a Triangle object as a triangle-style table. Cells are arranged by
 period and dev dimensions, and each cell displays the selected metric.
 For ratio metrics (ratio, incr_ratio), labels can show either the ratio alone or
 the ratio together with the associated loss / risk premium amounts.
-For amount metrics (loss, incr_loss, exposure, incr_exposure, margin, incr_margin),
+For amount metrics (loss, incr_loss, premium, incr_premium, margin, incr_margin),
 labels show the selected amount only.
-For proportion metrics (loss_share, incr_loss_share, exposure_share, incr_exposure_share),
+For proportion metrics (loss_share, incr_loss_share, premium_share, incr_premium_share),
 labels are displayed as percentages.
 The loss ratio is defined as:
-$$ratio = loss / exposure$$
-where exposure denotes risk premium rather than written premium."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Browser-language redirect: send Korean visitors to /ko/ on the
+$$ratio = loss / premium$$
+where premium denotes risk premium rather than written premium."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Browser-language redirect: send Korean visitors to /ko/ on the
      landing page only. Deep links remain untouched. We use string
      slicing rather than a regex with end-anchor, because pandoc
      treats the dollar sign as a template variable delimiter. --><script>
@@ -129,13 +129,13 @@ where exposure denotes risk premium rather than written premium."><meta property
 period and dev dimensions, and each cell displays the selected metric.</p>
 <p>For ratio metrics (<code>ratio</code>, <code>incr_ratio</code>), labels can show either the ratio alone or
 the ratio together with the associated loss / risk premium amounts.</p>
-<p>For amount metrics (<code>loss</code>, <code>incr_loss</code>, <code>exposure</code>, <code>incr_exposure</code>, <code>margin</code>, <code>incr_margin</code>),
+<p>For amount metrics (<code>loss</code>, <code>incr_loss</code>, <code>premium</code>, <code>incr_premium</code>, <code>margin</code>, <code>incr_margin</code>),
 labels show the selected amount only.</p>
-<p>For proportion metrics (<code>loss_share</code>, <code>incr_loss_share</code>, <code>exposure_share</code>, <code>incr_exposure_share</code>),
+<p>For proportion metrics (<code>loss_share</code>, <code>incr_loss_share</code>, <code>premium_share</code>, <code>incr_premium_share</code>),
 labels are displayed as percentages.</p>
 <p>The loss ratio is defined as:
-$$ratio = loss / exposure$$</p>
-<p>where <code>exposure</code> denotes risk premium rather than written premium.</p>
+$$ratio = loss / premium$$</p>
+<p>where <code>premium</code> denotes risk premium rather than written premium.</p>
     </div>
 
     <div class="section level2">
@@ -180,8 +180,8 @@ via <code>...</code>. See <code><a href="../articles/regime-change-filter.html">
 <dt id="arg-metric">metric<a class="anchor" aria-label="anchor" href="#arg-metric"></a></dt>
 <dd><p>A single metric to plot. Must be one of:
 <code>"ratio"</code>, <code>"incr_ratio"</code>,
-<code>"loss"</code>, <code>"incr_loss"</code>, <code>"exposure"</code>, <code>"incr_exposure"</code>, <code>"margin"</code>, <code>"incr_margin"</code>,
-<code>"loss_share"</code>, <code>"incr_loss_share"</code>, <code>"exposure_share"</code>, or <code>"incr_exposure_share"</code>.</p></dd>
+<code>"loss"</code>, <code>"incr_loss"</code>, <code>"premium"</code>, <code>"incr_premium"</code>, <code>"margin"</code>, <code>"incr_margin"</code>,
+<code>"loss_share"</code>, <code>"incr_loss_share"</code>, <code>"premium_share"</code>, or <code>"incr_premium_share"</code>.</p></dd>
 
 
 <dt id="arg-label-style">label_style<a class="anchor" aria-label="anchor" href="#arg-label-style"></a></dt>
@@ -190,7 +190,7 @@ via <code>...</code>. See <code><a href="../articles/regime-change-filter.html">
 
 <dt>"detail"</dt>
 <dd><p>For <code>ratio</code> / <code>incr_ratio</code>, show the ratio in percent and, on the
-next line, the associated loss / exposure amounts. For amount and
+next line, the associated loss / premium amounts. For amount and
 proportion metrics, this falls back to <code>"value"</code>.</p></dd>
 
 
@@ -207,7 +207,7 @@ fall back to the standard label defaults.</p></dd>
 
 <dt id="arg-amount-divisor">amount_divisor<a class="anchor" aria-label="anchor" href="#arg-amount-divisor"></a></dt>
 <dd><p>Numeric scaling factor applied to amount variables
-(e.g., <code>loss</code>, <code>incr_loss</code>, <code>exposure</code>, <code>incr_exposure</code>, <code>margin</code>, <code>incr_margin</code>) before plotting.
+(e.g., <code>loss</code>, <code>incr_loss</code>, <code>premium</code>, <code>incr_premium</code>, <code>margin</code>, <code>incr_margin</code>) before plotting.
 Default <code>"auto"</code> picks the largest divisor in
 <code>{1, 1e3, 1e6, 1e7, 1e8, 1e9}</code> such that the median displayed
 value is still at least <code>1</code>, minimising label digit count.</p></dd>
@@ -251,15 +251,15 @@ displayed in units of 100 million KRW.</p>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span></span>
+<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, metric <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, metric <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, metric <span class="op">=</span> <span class="st">"exposure"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, metric <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, metric <span class="op">=</span> <span class="st">"loss_share"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, metric <span class="op">=</span> <span class="st">"exposure_share"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, metric <span class="op">=</span> <span class="st">"premium_share"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, label_style <span class="op">=</span> <span class="st">"value"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">d</span>, label_style <span class="op">=</span> <span class="st">"detail"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>

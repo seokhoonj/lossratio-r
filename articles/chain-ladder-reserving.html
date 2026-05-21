@@ -153,7 +153,7 @@ ladder workflow they’re already familiar with.</p>
 </blockquote>
 <p><code><a href="../reference/fit_cl.html">fit_cl()</a></code> is the dedicated chain ladder fit for a single
 value column. Unlike <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> (which projects loss /
-exposure jointly to get loss ratio), <code><a href="../reference/fit_cl.html">fit_cl()</a></code> projects one
+premium jointly to get loss ratio), <code><a href="../reference/fit_cl.html">fit_cl()</a></code> projects one
 cumulative metric forward and computes Mack-style standard errors per
 cohort.</p>
 <div class="section level2">
@@ -170,7 +170,7 @@ every step generalises to multi-group input.</p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
+<span>  premium  <span class="op">=</span> <span class="st">"incr_premium"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
@@ -189,7 +189,7 @@ every step generalises to multi-group input.</p>
 <span><span class="co">#&gt; periods     : 36</span></span></code></pre></div>
 <p><code>loss</code> selects the cumulative column to project —
 typically <code>"loss"</code> (cumulative loss) for reserving, or
-<code>"exposure"</code> (cumulative risk premium) for exposure
+<code>"premium"</code> (cumulative risk premium) for premium
 projection.</p>
 </div>
 <div class="section level2">

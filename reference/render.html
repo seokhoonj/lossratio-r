@@ -260,22 +260,22 @@ for columns dropped to fit <code>width</code>. Default <code>TRUE</code>.</p></d
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">render</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">experience</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> shape: (20, 15)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ┌──────────┬────────────┬────────────┬───┬───────┬───────────┬───────────────┐</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> │ coverage ┆ uy         ┆ uy_h       ┆ … ┆ dev_m ┆ incr_loss ┆ incr_exposure │</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> │ &lt;chr&gt;    ┆ &lt;date&gt;     ┆ &lt;date&gt;     ┆ … ┆ &lt;int&gt; ┆ &lt;dbl&gt;     ┆ &lt;dbl&gt;         │</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ├──────────┼────────────┼────────────┼───┼───────┼───────────┼───────────────┤</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 1     ┆ 1262380   ┆ 27993100      │</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 2     ┆ 11255800  ┆ 29183900      │</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 3     ┆ 11281300  ┆ 29402000      │</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 4     ┆ 33602400  ┆ 26570500      │</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 5     ┆ 7152620   ┆ 27471900      │</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> │ …        ┆ …          ┆ …          ┆ … ┆ …     ┆ …         ┆ …             │</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 16    ┆ 7722100   ┆ 27913400      │</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 17    ┆ 22519000  ┆ 27243500      │</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 18    ┆ 20817800  ┆ 25789500      │</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 19    ┆ 7146940   ┆ 27527300      │</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 20    ┆ 33749300  ┆ 26870800      │</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> └──────────┴────────────┴────────────┴───┴───────┴───────────┴───────────────┘</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ┌──────────┬────────────┬────────────┬───┬───────┬───────────┬──────────────┐</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> │ coverage ┆ uy         ┆ uy_h       ┆ … ┆ dev_m ┆ incr_loss ┆ incr_premium │</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> │ &lt;chr&gt;    ┆ &lt;date&gt;     ┆ &lt;date&gt;     ┆ … ┆ &lt;int&gt; ┆ &lt;dbl&gt;     ┆ &lt;dbl&gt;        │</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ├──────────┼────────────┼────────────┼───┼───────┼───────────┼──────────────┤</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 1     ┆ 1262380   ┆ 27993100     │</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 2     ┆ 11255800  ┆ 29183900     │</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 3     ┆ 11281300  ┆ 29402000     │</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 4     ┆ 33602400  ┆ 26570500     │</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 5     ┆ 7152620   ┆ 27471900     │</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> │ …        ┆ …          ┆ …          ┆ … ┆ …     ┆ …         ┆ …            │</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 16    ┆ 7722100   ┆ 27913400     │</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 17    ┆ 22519000  ┆ 27243500     │</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 18    ┆ 20817800  ┆ 25789500     │</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 19    ┆ 7146940   ┆ 27527300     │</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> │ ci       ┆ 2023-01-01 ┆ 2023-01-01 ┆ … ┆ 20    ┆ 33749300  ┆ 26870800     │</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> └──────────┴────────────┴────────────┴───┴───────┴───────────┴──────────────┘</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 9 more variables: uy_q &lt;date&gt;, uy_m &lt;date&gt;, cy &lt;date&gt;, cy_h &lt;date&gt;, cy_q &lt;date&gt;,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                   cy_m &lt;date&gt;, dev_y &lt;int&gt;, dev_h &lt;int&gt;, dev_q &lt;int&gt; </span>
 <span class="r-in"><span></span></span>

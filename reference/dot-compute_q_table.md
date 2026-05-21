@@ -1,14 +1,13 @@
-# Compute the per-cohort emergence table (q_i + ultimate exposure)
+# Compute the per-cohort emergence table (q_i + ultimate premium)
 
 Shared by
 [`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md)
 and
 [`fit_cc()`](https://seokhoonj.github.io/lossratio/reference/fit_cc.md).
-From a loss-side `CLFit$full` and an exposure-side `ExposureFit$full`,
+From a loss-side `CLFit$full` and an premium-side `PremiumFit$full`,
 builds the per-cohort table of latest observed loss, CL-ultimate loss,
 the emergence fraction \\q_i = L\_{obs} / L\_{ult}^{CL}\\, and ultimate
-exposure – the inputs the Bornhuetter-Ferguson / Cape Cod blend
-consumes.
+premium – the inputs the Bornhuetter-Ferguson / Cape Cod blend consumes.
 
 ## Usage
 
@@ -24,7 +23,7 @@ consumes.
 
 - exp_full:
 
-  An exposure-side `$full` grid (`exposure_proj`).
+  An premium-side `$full` grid (`premium_proj`).
 
 - by_cols:
 
@@ -33,4 +32,4 @@ consumes.
 ## Value
 
 A `data.table` keyed by `by_cols` with `loss_latest`, `loss_ult_cl`,
-`q`, and `exposure_ult`.
+`q`, and `premium_ult`.

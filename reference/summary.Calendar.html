@@ -158,7 +158,7 @@ diagonals rather than development periods.</p>
 
 <dt>ratio_wt</dt>
 <dd><p>Weighted cumulative loss ratio
-(<code>sum(loss) / sum(exposure)</code>).</p></dd>
+(<code>sum(loss) / sum(premium)</code>).</p></dd>
 
 <dt>incr_ratio_mean</dt>
 <dd><p>Mean of per-period loss ratios.</p></dd>
@@ -168,7 +168,7 @@ diagonals rather than development periods.</p>
 
 <dt>incr_ratio_wt</dt>
 <dd><p>Weighted per-period loss ratio
-(<code>sum(incr_loss) / sum(incr_exposure)</code>).</p></dd>
+(<code>sum(incr_loss) / sum(incr_premium)</code>).</p></dd>
 
 
 </dl><p>The returned object preserves the attributes <code>groups</code>,
@@ -183,7 +183,7 @@ diagonals rather than development periods.</p>
 <span class="r-in"><span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span></span>
+<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">smr</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cal</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">smr</span><span class="op">)</span></span></span>

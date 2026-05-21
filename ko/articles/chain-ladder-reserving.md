@@ -12,7 +12,7 @@
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
 is the dedicated chain ladder fit for a single value column. Unlike
 [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
-(which projects loss / exposure jointly to get loss ratio),
+(which projects loss / premium jointly to get loss ratio),
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
 projects one cumulative metric forward and computes Mack-style standard
 errors per cohort.
@@ -32,7 +32,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium  = "incr_premium"
 )
 
 cl <- fit_cl(tri, loss = "loss", method = "mack")
@@ -52,8 +52,8 @@ print(cl)
 ```
 
 `loss` selects the cumulative column to project — typically `"loss"`
-(cumulative loss) for reserving, or `"exposure"` (cumulative risk
-premium) for exposure projection.
+(cumulative loss) for reserving, or `"premium"` (cumulative risk
+premium) for premium projection.
 
 ## Mack chain ladder
 

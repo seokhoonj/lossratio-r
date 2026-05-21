@@ -10,7 +10,7 @@ loss-ratio projection.
 dev × group) cell. The bundled dataset `experience` is a 2,664-row table
 with calendar / underwriting period columns at multiple granularities, a
 `coverage` group column, and per-period amounts (`incr_loss`,
-`incr_exposure`).
+`incr_premium`).
 
 ``` r
 
@@ -19,21 +19,21 @@ library(lossratio)
 data(experience)
 str(experience)
 #> Classes 'data.table' and 'data.frame':   2664 obs. of  15 variables:
-#>  $ coverage     : chr  "ci" "ci" "ci" "ci" ...
-#>  $ uy           : Date, format: "2023-01-01" "2023-01-01" ...
-#>  $ uy_h         : Date, format: "2023-01-01" "2023-01-01" ...
-#>  $ uy_q         : Date, format: "2023-01-01" "2023-01-01" ...
-#>  $ uy_m         : Date, format: "2023-01-01" "2023-01-01" ...
-#>  $ cy           : Date, format: "2023-01-01" "2023-01-01" ...
-#>  $ cy_h         : Date, format: "2023-01-01" "2023-01-01" ...
-#>  $ cy_q         : Date, format: "2023-01-01" "2023-01-01" ...
-#>  $ cy_m         : Date, format: "2023-01-01" "2023-02-01" ...
-#>  $ dev_y        : int  1 1 1 1 1 1 1 1 1 1 ...
-#>  $ dev_h        : int  1 1 1 1 1 1 2 2 2 2 ...
-#>  $ dev_q        : int  1 1 1 2 2 2 3 3 3 4 ...
-#>  $ dev_m        : int  1 2 3 4 5 6 7 8 9 10 ...
-#>  $ incr_loss    : num  1262380 11255763 11281309 33602387 7152622 ...
-#>  $ incr_exposure: num  27993106 29183931 29401966 26570540 27471886 ...
+#>  $ coverage    : chr  "ci" "ci" "ci" "ci" ...
+#>  $ uy          : Date, format: "2023-01-01" "2023-01-01" ...
+#>  $ uy_h        : Date, format: "2023-01-01" "2023-01-01" ...
+#>  $ uy_q        : Date, format: "2023-01-01" "2023-01-01" ...
+#>  $ uy_m        : Date, format: "2023-01-01" "2023-01-01" ...
+#>  $ cy          : Date, format: "2023-01-01" "2023-01-01" ...
+#>  $ cy_h        : Date, format: "2023-01-01" "2023-01-01" ...
+#>  $ cy_q        : Date, format: "2023-01-01" "2023-01-01" ...
+#>  $ cy_m        : Date, format: "2023-01-01" "2023-02-01" ...
+#>  $ dev_y       : int  1 1 1 1 1 1 1 1 1 1 ...
+#>  $ dev_h       : int  1 1 1 1 1 1 2 2 2 2 ...
+#>  $ dev_q       : int  1 1 1 2 2 2 3 3 3 4 ...
+#>  $ dev_m       : int  1 2 3 4 5 6 7 8 9 10 ...
+#>  $ incr_loss   : num  1262380 11255763 11281309 33602387 7152622 ...
+#>  $ incr_premium: num  27993106 29183931 29401966 26570540 27471886 ...
 #>  - attr(*, ".internal.selfref")=<pointer: (nil)>
 ```
 
@@ -47,34 +47,34 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium  = "incr_premium"
 )
 class(tri)
 #> [1] "Triangle"   "data.table" "data.frame"
 names(tri)
-#>  [1] "coverage"            "n_cohorts"           "cohort"             
-#>  [4] "dev"                 "loss"                "incr_loss"          
-#>  [7] "exposure"            "incr_exposure"       "ratio"              
-#> [10] "incr_ratio"          "margin"              "incr_margin"        
-#> [13] "profit"              "incr_profit"         "loss_share"         
-#> [16] "incr_loss_share"     "exposure_share"      "incr_exposure_share"
+#>  [1] "coverage"           "n_cohorts"          "cohort"            
+#>  [4] "dev"                "loss"               "incr_loss"         
+#>  [7] "premium"            "incr_premium"       "ratio"             
+#> [10] "incr_ratio"         "margin"             "incr_margin"       
+#> [13] "profit"             "incr_profit"        "loss_share"        
+#> [16] "incr_loss_share"    "premium_share"      "incr_premium_share"
 ```
 
 [`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md):
 
 - validates required columns (`cy_m`, `uy_m`, `incr_loss`,
-  `incr_exposure`) and coerces them to the expected types,
+  `incr_premium`) and coerces them to the expected types,
 - aggregates demographic dimensions away (here: `age_band`, `gender`),
 - standardises raw input names to the per-period slots `incr_loss` and
-  `incr_exposure`,
-- adds cumulative companions (`loss`, `exposure`) — cumulative is the
+  `incr_premium`,
+- adds cumulative companions (`loss`, `premium`) — cumulative is the
   unmarked default; per-period carries the `_incr` suffix,
 - adds derived metrics (`margin` / `incr_margin`, `ratio` /
   `incr_ratio`, proportions),
 - standardises the cohort / development columns to the names `cohort`
   and `dev`,
 - preserves original column names as attributes (`cohort`, `dev`,
-  `loss`, `exposure`) for downstream plot labels.
+  `loss`, `premium`) for downstream plot labels.
 
 ## Step 2 — Diagnostics
 
@@ -199,7 +199,7 @@ fit_ata(tri, loss = "loss")
 #> ata links   : 35
 
 # Exposure-driven intensities — additive, input to ED
-fit_intensity(tri, loss = "loss", exposure = "exposure")
+fit_intensity(tri, loss = "loss", premium = "premium")
 #> <IntensityFit>
 #> alpha       : 1 
 #> sigma_method: locf 
@@ -321,7 +321,7 @@ summary(cl)
 #>             <num>         <num>         <num>
 
 # Exposure-driven (additive projection)
-ed <- fit_ed(tri, loss = "loss", exposure = "exposure")
+ed <- fit_ed(tri, loss = "loss", premium = "premium")
 summary(ed)
 #> Key: <coverage>
 #>     coverage ata_from ata_to ata_link    mean  median      wt      cv       g
@@ -423,46 +423,46 @@ plot(ratio, metric = "ratio")
 ``` r
 
 summary(ratio)
-#>     coverage     cohort     latest   loss_ult    reserve exposure_ult
-#>       <char>     <Date>      <num>      <num>      <num>        <num>
-#>  1:  surgery 2023-01-01  410248522  410248522          0    274192564
-#>  2:  surgery 2023-02-01  976330445 1001304261   24973816    665667720
-#>  3:  surgery 2023-03-01  978486045 1027365215   48879170    702047332
-#>  4:  surgery 2023-04-01 2029909919 2186835972  156926053   1464399410
-#>  5:  surgery 2023-05-01  624219436  700124202   75904766    483147255
-#>  6:  surgery 2023-06-01  802880717  924502357  121621640    591568799
-#>  7:  surgery 2023-07-01 2539141549 3028986426  489844877   1958263736
-#>  8:  surgery 2023-08-01  393678329  488454953   94776624    327535560
-#>  9:  surgery 2023-09-01 1364052542 1725804921  361752379   1091733892
-#> 10:  surgery 2023-10-01  979266043 1308019740  328753697    864204933
-#> 11:  surgery 2023-11-01  604685679  876716310  272030631    630311110
-#> 12:  surgery 2023-12-01 1026345366 1527010394  500665028   1057060867
-#> 13:  surgery 2024-01-01 1912177598 2942802614 1030625016   2009045340
-#> 14:  surgery 2024-02-01  733902485 1193629493  459727008    832229795
-#> 15:  surgery 2024-03-01  415459873  685046660  269586787    454345985
-#> 16:  surgery 2024-04-01 3286053526 5424401591 2138348065   3372494516
-#> 17:  surgery 2024-05-01 1451731153 2740753232 1289022079   1899849125
-#> 18:  surgery 2024-06-01  629668308 1170293302  540624994    750125230
-#> 19:  surgery 2024-07-01 1250954693 3461664518 2210709825   2891548085
-#> 20:  surgery 2024-08-01  425346694 1212435170  787088476    976935246
-#> 21:  surgery 2024-09-01  278156543  870725770  592569227    703906575
-#> 22:  surgery 2024-10-01  352070323 1217843289  865772966    984833529
-#> 23:  surgery 2024-11-01   99050501  398006955  298956454    324081360
-#> 24:  surgery 2024-12-01  103194013  456590846  353396833    366444614
-#> 25:  surgery 2025-01-01  227089025 1064623873  837534848    833732378
-#> 26:  surgery 2025-02-01  939163074 4386331021 3447167947   3286151352
-#> 27:  surgery 2025-03-01  112828845  727050149  614221304    566316398
-#> 28:  surgery 2025-04-01   82472453  616924302  534451849    476819833
-#> 29:  surgery 2025-05-01  141214851 1330756277 1189541426   1027051048
-#> 30:  surgery 2025-06-01  136406102 1072907077  936500975    783037474
-#> 31:  surgery 2025-07-01  149144024 1209357471 1060213447    859730812
-#> 32:  surgery 2025-08-01  116327076 1432029264 1315702188   1037192185
-#> 33:  surgery 2025-09-01   67465470  865239645  797774175    611257142
-#> 34:  surgery 2025-10-01  121626173 1911124852 1789498679   1338462726
-#> 35:  surgery 2025-11-01   15716444  828091909  812375465    593147593
-#> 36:  surgery 2025-12-01    4825085 1442904476 1438079391   1022559927
-#>     coverage     cohort     latest   loss_ult    reserve exposure_ult
-#>       <char>     <Date>      <num>      <num>      <num>        <num>
+#>     coverage     cohort     latest   loss_ult    reserve premium_ult
+#>       <char>     <Date>      <num>      <num>      <num>       <num>
+#>  1:  surgery 2023-01-01  410248522  410248522          0   274192564
+#>  2:  surgery 2023-02-01  976330445 1001304261   24973816   665667720
+#>  3:  surgery 2023-03-01  978486045 1027365215   48879170   702047332
+#>  4:  surgery 2023-04-01 2029909919 2186835972  156926053  1464399410
+#>  5:  surgery 2023-05-01  624219436  700124202   75904766   483147255
+#>  6:  surgery 2023-06-01  802880717  924502357  121621640   591568799
+#>  7:  surgery 2023-07-01 2539141549 3028986426  489844877  1958263736
+#>  8:  surgery 2023-08-01  393678329  488454953   94776624   327535560
+#>  9:  surgery 2023-09-01 1364052542 1725804921  361752379  1091733892
+#> 10:  surgery 2023-10-01  979266043 1308019740  328753697   864204933
+#> 11:  surgery 2023-11-01  604685679  876716310  272030631   630311110
+#> 12:  surgery 2023-12-01 1026345366 1527010394  500665028  1057060867
+#> 13:  surgery 2024-01-01 1912177598 2942802614 1030625016  2009045340
+#> 14:  surgery 2024-02-01  733902485 1193629493  459727008   832229795
+#> 15:  surgery 2024-03-01  415459873  685046660  269586787   454345985
+#> 16:  surgery 2024-04-01 3286053526 5424401591 2138348065  3372494516
+#> 17:  surgery 2024-05-01 1451731153 2740753232 1289022079  1899849125
+#> 18:  surgery 2024-06-01  629668308 1170293302  540624994   750125230
+#> 19:  surgery 2024-07-01 1250954693 3461664518 2210709825  2891548085
+#> 20:  surgery 2024-08-01  425346694 1212435170  787088476   976935246
+#> 21:  surgery 2024-09-01  278156543  870725770  592569227   703906575
+#> 22:  surgery 2024-10-01  352070323 1217843289  865772966   984833529
+#> 23:  surgery 2024-11-01   99050501  398006955  298956454   324081360
+#> 24:  surgery 2024-12-01  103194013  456590846  353396833   366444614
+#> 25:  surgery 2025-01-01  227089025 1064623873  837534848   833732378
+#> 26:  surgery 2025-02-01  939163074 4386331021 3447167947  3286151352
+#> 27:  surgery 2025-03-01  112828845  727050149  614221304   566316398
+#> 28:  surgery 2025-04-01   82472453  616924302  534451849   476819833
+#> 29:  surgery 2025-05-01  141214851 1330756277 1189541426  1027051048
+#> 30:  surgery 2025-06-01  136406102 1072907077  936500975   783037474
+#> 31:  surgery 2025-07-01  149144024 1209357471 1060213447   859730812
+#> 32:  surgery 2025-08-01  116327076 1432029264 1315702188  1037192185
+#> 33:  surgery 2025-09-01   67465470  865239645  797774175   611257142
+#> 34:  surgery 2025-10-01  121626173 1911124852 1789498679  1338462726
+#> 35:  surgery 2025-11-01   15716444  828091909  812375465   593147593
+#> 36:  surgery 2025-12-01    4825085 1442904476 1438079391  1022559927
+#>     coverage     cohort     latest   loss_ult    reserve premium_ult
+#>       <char>     <Date>      <num>      <num>      <num>       <num>
 #>     ratio_latest ratio_ult maturity_from loss_proc_se loss_param_se
 #>            <num>     <num>         <num>        <num>         <num>
 #>  1:    1.4962059  1.496206            NA            0             0
@@ -560,7 +560,7 @@ sub <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium  = "incr_premium"
 )
 detect_regime(sub, method = "e_divisive")
 #> <Regime>

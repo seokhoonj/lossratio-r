@@ -19,7 +19,7 @@ two independent factors, so
     + \mathrm{ELR}_i^2\,\mathrm{Var}(E^{ult}_i)
     + \mathrm{Var}(\mathrm{ELR}_i)\,\mathrm{Var}(E^{ult}_i)\).
 Var(ELR) comes from the distribution prior's elr_se (0 for a
-deterministic prior); Var(E_ult) from the exposure fit SE.
+deterministic prior); Var(E_ult) from the premium fit SE.
 \(\mathrm{Var}(q_i)\) – delta method on
 \(q_i = L^{obs}_i / L^{ult,CL}_i\), using the CL parameter SE.
 process – the CL process variance scaled by the BF / CL
@@ -46,7 +46,7 @@ two independent factors, so
     + \mathrm{ELR}_i^2\,\mathrm{Var}(E^{ult}_i)
     + \mathrm{Var}(\mathrm{ELR}_i)\,\mathrm{Var}(E^{ult}_i)\).
 Var(ELR) comes from the distribution prior's elr_se (0 for a
-deterministic prior); Var(E_ult) from the exposure fit SE.
+deterministic prior); Var(E_ult) from the premium fit SE.
 \(\mathrm{Var}(q_i)\) – delta method on
 \(q_i = L^{obs}_i / L^{ult,CL}_i\), using the CL parameter SE.
 process – the CL process variance scaled by the BF / CL
@@ -131,7 +131,7 @@ two independent factors, so
     + \mathrm{ELR}_i^2\,\mathrm{Var}(E^{ult}_i)
     + \mathrm{Var}(\mathrm{ELR}_i)\,\mathrm{Var}(E^{ult}_i)\).
 <code>Var(ELR)</code> comes from the distribution prior's <code>elr_se</code> (0 for a
-deterministic prior); <code>Var(E_ult)</code> from the exposure fit SE.</p></li>
+deterministic prior); <code>Var(E_ult)</code> from the premium fit SE.</p></li>
 <li><p>\(\mathrm{Var}(q_i)\) – delta method on
 \(q_i = L^{obs}_i / L^{ult,CL}_i\), using the CL parameter SE.</p></li>
 <li><p>process – the CL process variance scaled by the BF / CL
@@ -151,7 +151,7 @@ projected future-loss volume).</p></li>
 <dl><dt id="arg-per-cohort">per_cohort<a class="anchor" aria-label="anchor" href="#arg-per-cohort"></a></dt>
 <dd><p>A <code>data.table</code> with one row per cohort carrying
 <code>by_cols</code>, <code>q</code>, <code>loss_ult</code> (BF / CC ultimate), <code>loss_latest</code>,
-<code>reserve</code>, <code>elr</code>, <code>exposure_ult</code>, <code>var_elr</code>, <code>var_eult</code>,
+<code>reserve</code>, <code>elr</code>, <code>premium_ult</code>, <code>var_elr</code>, <code>var_eult</code>,
 <code>loss_ult_cl</code>, <code>loss_proc_se</code>, <code>loss_param_se</code>.</p></dd>
 
 

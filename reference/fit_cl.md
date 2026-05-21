@@ -11,7 +11,7 @@ then applied recursively. The point forecast follows the standard
 recursion, and prediction uncertainty is decomposed into process
 variance and parameter variance.
 
-When `weight` is supplied (e.g. `"exposure"`), age-to-age factors and
+When `weight` is supplied (e.g. `"premium"`), age-to-age factors and
 their variance are estimated using the supplied WLS weights.
 
 ## Usage
@@ -49,13 +49,13 @@ fit_cl(
 - loss:
 
   A single cumulative loss variable (column to project). Typical choices
-  are `"loss"`, `"exposure"`, or `"ratio"`.
+  are `"loss"`, `"premium"`, or `"ratio"`.
 
 - weight:
 
   An optional column name passed to
   [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md)
-  as the WLS weight variable. Typically `"exposure"` when
+  as the WLS weight variable. Typically `"premium"` when
   `loss = "ratio"`. Default is `NULL`.
 
 - alpha:
@@ -267,7 +267,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 # Mack chain ladder with process / parameter standard errors
@@ -275,7 +275,7 @@ cl_mack <- fit_cl(tri, loss = "loss", method = "mack")
 summary(cl_mack)
 plot(cl_mack)
 
-# WLS factors for ratio (loss ratio) using exposure as the weight
-cl_ratio <- fit_cl(tri, loss = "ratio", weight = "exposure")
+# WLS factors for ratio (loss ratio) using premium as the weight
+cl_ratio <- fit_cl(tri, loss = "ratio", weight = "premium")
 } # }
 ```

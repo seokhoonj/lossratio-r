@@ -23,7 +23,7 @@ becomes reliable, which in turn makes downstream LR projection
 reliable. ATA factors of ratio itself (a ratio of two cumulative
 quantities) carry additional noise and tend to give less precise
 maturity decisions. Override loss only when you specifically
-want maturity of exposure development or another cumulative metric.'><meta property="og:description" content='Identify the first mature age-to-age (ata) link from a Triangle.
+want maturity of premium development or another cumulative metric.'><meta property="og:description" content='Identify the first mature age-to-age (ata) link from a Triangle.
 Internally builds a single-variable Link table, computes the
 per-link diagnostic via summary.Link() with model = "ata", and
 then locates the first link whose statistics satisfy all maturity
@@ -47,7 +47,7 @@ becomes reliable, which in turn makes downstream LR projection
 reliable. ATA factors of ratio itself (a ratio of two cumulative
 quantities) carry additional noise and tend to give less precise
 maturity decisions. Override loss only when you specifically
-want maturity of exposure development or another cumulative metric.'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
+want maturity of premium development or another cumulative metric.'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
@@ -127,7 +127,7 @@ becomes reliable, which in turn makes downstream LR projection
 reliable. ATA factors of <code>ratio</code> itself (a ratio of two cumulative
 quantities) carry additional noise and tend to give less precise
 maturity decisions. Override <code>loss</code> only when you specifically
-want maturity of exposure development or another cumulative metric.</p>
+want maturity of premium development or another cumulative metric.</p>
     </div>
 
     <div class="section level2">
@@ -172,7 +172,7 @@ current Triangle grouping (fully backward compatible).
 maturity row. Any non-<code>NULL</code>, non-empty value must be a subset of
 <code>attr(x, "groups")</code>; column order is irrelevant. When the requested
 <code>groups</code> is coarser than the Triangle grouping, the underlying
-<code>loss</code> / <code>exposure</code> / <code>ratio</code> columns are re-aggregated to the coarser
+<code>loss</code> / <code>premium</code> / <code>ratio</code> columns are re-aggregated to the coarser
 partition before computing ata links.</p></dd>
 
 

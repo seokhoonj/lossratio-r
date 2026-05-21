@@ -19,11 +19,11 @@ dispatches `method = "sa"` to this function; users can also call
 fit_sa(
   x,
   loss = "loss",
-  exposure = "exposure",
+  premium = "premium",
   alpha = 1,
-  exposure_fit = NULL,
-  exposure_method = c("ed", "cl"),
-  exposure_alpha = 1,
+  premium_fit = NULL,
+  premium_method = c("ed", "cl"),
+  premium_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   regime = NULL,
@@ -41,7 +41,7 @@ fit_sa(
 
 - x:
 
-  A `"Triangle"` object. The standardized `"loss"` and `"exposure"`
+  A `"Triangle"` object. The standardized `"loss"` and `"premium"`
   columns are used
   ([`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
   produces these).
@@ -50,31 +50,31 @@ fit_sa(
 
   Cumulative loss column name. Default `"loss"`.
 
-- exposure:
+- premium:
 
-  Cumulative exposure column name. Default `"exposure"`.
+  Cumulative premium column name. Default `"premium"`.
 
 - alpha:
 
   Variance-structure exponent for the loss fit. Default `1`.
 
-- exposure_fit:
+- premium_fit:
 
-  Optional pre-built `ExposureFit` supplying the exposure projection.
-  When `NULL`, `fit_sa()` builds the exposure projection internally – a
+  Optional pre-built `PremiumFit` supplying the premium projection. When
+  `NULL`, `fit_sa()` builds the premium projection internally – a
   worker-layer
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
-  on the `exposure` column – using `exposure_method`, `exposure_alpha`,
-  and the resolved `regime`.
+  on the `premium` column – using `premium_method`, `premium_alpha`, and
+  the resolved `regime`.
 
-- exposure_method:
+- premium_method:
 
   One of `"ed"` (default) or `"cl"`. Used only when
-  `exposure_fit = NULL`.
+  `premium_fit = NULL`.
 
-- exposure_alpha:
+- premium_alpha:
 
-  Variance-structure exponent for the exposure fit. Default `1`.
+  Variance-structure exponent for the premium fit. Default `1`.
 
 - sigma_method:
 
@@ -108,7 +108,7 @@ fit_sa(
 - tail:
 
   Logical or numeric; tail factor for the CL phase. Forwarded to the
-  internal exposure fit when relevant.
+  internal premium fit when relevant.
 
 - conf_level:
 
@@ -137,8 +137,8 @@ fit_sa(
 ## Value
 
 An object of class `"SAFit"`. List with components mirroring `LossFit`:
-`full`, `proj`, `maturity`, `loss_ata_fit`, `exposure_ata_fit`,
-`exposure_fit`, `ed`, `factor`, `selected`, plus metadata
+`full`, `proj`, `maturity`, `loss_ata_fit`, `premium_ata_fit`,
+`premium_fit`, `ed`, `factor`, `selected`, plus metadata
 (`method = "sa"`, `alpha`, `sigma_method`, `recent`, `regime`,
 `conf_level`, `ci_type`, `bootstrap`, `usage`).
 
@@ -160,7 +160,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 sa <- fit_sa(tri)

@@ -45,9 +45,9 @@ plot(
 - metric:
 
   A single metric to plot. Must be one of: `"ratio"`, `"incr_ratio"`,
-  `"loss"`, `"incr_loss"`, `"exposure"`, `"incr_exposure"`, `"margin"`,
+  `"loss"`, `"incr_loss"`, `"premium"`, `"incr_premium"`, `"margin"`,
   `"incr_margin"`, `"loss_share"`, `"incr_loss_share"`,
-  `"exposure_share"`, or `"incr_exposure_share"`.
+  `"premium_share"`, or `"incr_premium_share"`.
 
 - summary:
 
@@ -98,16 +98,16 @@ Cohort lines are grouped by the period variable stored in
 `attr(x, "cohort")`, and facets are created from `attr(x, "groups")`.
 
 The cumulative loss ratio is defined here as: \$\$ratio = loss /
-exposure\$\$
+premium\$\$
 
 For long-term health insurance applications, risk premium is commonly
-used as the `exposure` measure.
+used as the `premium` measure.
 
 The weighted mean is defined as:
 
-- `ratio_wt = sum(loss) / sum(exposure)`
+- `ratio_wt = sum(loss) / sum(premium)`
 
-- `incr_ratio_wt = sum(incr_loss) / sum(incr_exposure)`
+- `incr_ratio_wt = sum(incr_loss) / sum(incr_premium)`
 
 Ratio and proportion metrics are plotted on the original scale and
 displayed as percentages via y-axis labels. Amount metrics are plotted

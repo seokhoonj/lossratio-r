@@ -9,18 +9,18 @@ link-pair rows. Each row corresponds to one development link
 (cohort, ata_from -&amp;gt; ata_to), the long-format intermediate
 underlying both the chain ladder (CL) and exposure-driven (ED)
 workflows.
-Two modes are produced depending on exposure:
+Two modes are produced depending on premium:
 
-Single-variable mode (exposure = NULL)
+Single-variable mode (premium = NULL)
 The age-to-age
 factor is \(ata = value_{to} / value_{from}\), where
 \(value\) is the column named by loss.
 
-Dual-variable mode (exposure supplied)
+Dual-variable mode (premium supplied)
 In addition to
 the loss-side ATA, the exposure-driven intensity
-\(g = \Delta loss / exposure_{from}\) is computed and stored in
-the intensity column. Exposure measure used as denominator for
+\(g = \Delta loss / premium_{from}\) is computed and stored in
+the intensity column. Premium measure used as denominator for
 loss ratio calculations; for long-term health insurance
 applications, risk premium is commonly used.
 
@@ -36,18 +36,18 @@ link-pair rows. Each row corresponds to one development link
 (cohort, ata_from -&amp;gt; ata_to), the long-format intermediate
 underlying both the chain ladder (CL) and exposure-driven (ED)
 workflows.
-Two modes are produced depending on exposure:
+Two modes are produced depending on premium:
 
-Single-variable mode (exposure = NULL)
+Single-variable mode (premium = NULL)
 The age-to-age
 factor is \(ata = value_{to} / value_{from}\), where
 \(value\) is the column named by loss.
 
-Dual-variable mode (exposure supplied)
+Dual-variable mode (premium supplied)
 In addition to
 the loss-side ATA, the exposure-driven intensity
-\(g = \Delta loss / exposure_{from}\) is computed and stored in
-the intensity column. Exposure measure used as denominator for
+\(g = \Delta loss / premium_{from}\) is computed and stored in
+the intensity column. Premium measure used as denominator for
 loss ratio calculations; for long-term health insurance
 applications, risk premium is commonly used.
 
@@ -169,17 +169,17 @@ link-pair rows. Each row corresponds to one development link
 <code>(cohort, ata_from -&gt; ata_to)</code>, the long-format intermediate
 underlying both the chain ladder (CL) and exposure-driven (ED)
 workflows.</p>
-<p>Two modes are produced depending on <code>exposure</code>:</p>
-<dl><dt>Single-variable mode (<code>exposure = NULL</code>)</dt>
+<p>Two modes are produced depending on <code>premium</code>:</p>
+<dl><dt>Single-variable mode (<code>premium = NULL</code>)</dt>
 <dd><p>The age-to-age
 factor is \(ata = value_{to} / value_{from}\), where
 \(value\) is the column named by <code>loss</code>.</p></dd>
 
-<dt>Dual-variable mode (<code>exposure</code> supplied)</dt>
+<dt>Dual-variable mode (<code>premium</code> supplied)</dt>
 <dd><p>In addition to
 the loss-side ATA, the exposure-driven intensity
-\(g = \Delta loss / exposure_{from}\) is computed and stored in
-the <code>intensity</code> column. Exposure measure used as denominator for
+\(g = \Delta loss / premium_{from}\) is computed and stored in
+the <code>intensity</code> column. Premium measure used as denominator for
 loss ratio calculations; for long-term health insurance
 applications, risk premium is commonly used.</p></dd>
 
@@ -191,7 +191,7 @@ applications, risk premium is commonly used.</p></dd>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">as_link</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  loss <span class="op">=</span> <span class="st">"loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  premium <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  weight <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  min_denom <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  drop_invalid <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -208,29 +208,29 @@ applications, risk premium is commonly used.</p></dd>
 
 <dt id="arg-loss">loss<a class="anchor" aria-label="anchor" href="#arg-loss"></a></dt>
 <dd><p>A single cumulative metric used as the link
-numerator. Must be one of <code>"loss"</code>, <code>"exposure"</code>, or <code>"ratio"</code>. Default
+numerator. Must be one of <code>"loss"</code>, <code>"premium"</code>, or <code>"ratio"</code>. Default
 <code>"loss"</code>. For loss-side ATA this is the cumulative loss column, but
 any cumulative metric on the Triangle may be supplied.</p></dd>
 
 
-<dt id="arg-exposure">exposure<a class="anchor" aria-label="anchor" href="#arg-exposure"></a></dt>
+<dt id="arg-premium">premium<a class="anchor" aria-label="anchor" href="#arg-premium"></a></dt>
 <dd><p>Optional second cumulative metric, treated as the
-exposure anchor for the ED workflow. Must be one of <code>"loss"</code>,
-<code>"exposure"</code>, <code>"ratio"</code>, and must differ from <code>loss</code>. When <code>NULL</code>
+premium anchor for the ED workflow. Must be one of <code>"loss"</code>,
+<code>"premium"</code>, <code>"ratio"</code>, and must differ from <code>loss</code>. When <code>NULL</code>
 (default), only the single-variable columns are produced.</p></dd>
 
 
 <dt id="arg-weight">weight<a class="anchor" aria-label="anchor" href="#arg-weight"></a></dt>
 <dd><p>Optional cumulative metric used as WLS weight in
 downstream <code>summary</code> / <code>fit_ata</code> calls. Must differ from
-<code>loss</code>. Cannot be combined with <code>exposure</code> (the dual
+<code>loss</code>. Cannot be combined with <code>premium</code> (the dual
 workflow has its own anchor).</p></dd>
 
 
 <dt id="arg-min-denom">min_denom<a class="anchor" aria-label="anchor" href="#arg-min-denom"></a></dt>
 <dd><p>Minimum denominator required to compute <code>ata</code>
 and <code>intensity</code>. If <code>loss_from &lt;= min_denom</code>, <code>ata</code> becomes <code>NA</code>;
-if <code>exposure_from &lt;= min_denom</code>, <code>intensity</code> becomes <code>NA</code>. Default
+if <code>premium_from &lt;= min_denom</code>, <code>intensity</code> becomes <code>NA</code>. Default
 <code>0</code>.</p></dd>
 
 
@@ -245,11 +245,11 @@ diagnostics.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>data.table</code> of class <code>"Link"</code> with columns:</p><ul><li><p>Always: <code>[group]</code>, <code>cohort</code>, <code>ata_from</code>, <code>ata_to</code>, <code>ata_link</code>,
 <code>loss_from</code>, <code>loss_to</code>, <code>loss_delta</code>, <code>ata</code>.</p></li>
-<li><p>If <code>exposure</code> is set: also <code>exposure_from</code>, <code>exposure_to</code>,
-<code>exposure_delta</code>, <code>intensity</code>.</p></li>
+<li><p>If <code>premium</code> is set: also <code>premium_from</code>, <code>premium_to</code>,
+<code>premium_delta</code>, <code>intensity</code>.</p></li>
 <li><p>If <code>weight</code> is set: also <code>weight</code>.</p></li>
 </ul><p>The returned object carries attributes <code>groups</code>, <code>cohort</code>,
-<code>dev</code>, <code>loss</code>, <code>exposure</code> (or <code>NULL</code>), <code>weight</code>
+<code>dev</code>, <code>loss</code>, <code>premium</code> (or <code>NULL</code>), <code>weight</code>
 (or <code>NULL</code>).</p>
     </div>
     <div class="section level2">
@@ -267,14 +267,14 @@ diagnostics.</p></dd>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span></span>
+<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Single-variable: cumulative-loss link factors (ATA workflow)</span></span></span>
 <span class="r-in"><span><span class="va">link_loss</span> <span class="op">&lt;-</span> <span class="fu">as_link</span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Dual-variable: ED-ready link table (loss + exposure)</span></span></span>
-<span class="r-in"><span><span class="va">link_ed</span> <span class="op">&lt;-</span> <span class="fu">as_link</span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, exposure <span class="op">=</span> <span class="st">"exposure"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Dual-variable: ED-ready link table (loss + premium)</span></span></span>
+<span class="r-in"><span><span class="va">link_ed</span> <span class="op">&lt;-</span> <span class="fu">as_link</span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, premium <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">link_ed</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>

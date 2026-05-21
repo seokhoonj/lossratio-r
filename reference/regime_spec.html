@@ -4,7 +4,7 @@ Returns a closure that the consumer (fit_* or backtest()) invokes
 on its own internal triangle. The point is conditional /
 deferred detection – the change points depend on which cells the
 caller decides to expose:
-In fit_ratio() / fit_loss() / fit_exposure(), the spec is invoked
+In fit_ratio() / fit_loss() / fit_premium(), the spec is invoked
 on the full triangle the user passed in.
 In backtest(), the spec is invoked on the masked triangle of
 each holdout fold, never on the full triangle. Held-out
@@ -24,7 +24,7 @@ Returns a closure that the consumer (fit_* or backtest()) invokes
 on its own internal triangle. The point is conditional /
 deferred detection – the change points depend on which cells the
 caller decides to expose:
-In fit_ratio() / fit_loss() / fit_exposure(), the spec is invoked
+In fit_ratio() / fit_loss() / fit_premium(), the spec is invoked
 on the full triangle the user passed in.
 In backtest(), the spec is invoked on the masked triangle of
 each holdout fold, never on the full triangle. Held-out
@@ -149,7 +149,7 @@ regime_at() when you want a fixed regime tested across folds."><meta property="o
 Returns a closure that the consumer (fit_* or <code><a href="backtest.html">backtest()</a></code>) invokes
 on its own <em>internal</em> triangle. The point is <strong>conditional /
 deferred</strong> detection – the change points depend on which cells the
-caller decides to expose:</p><ul><li><p>In <code><a href="fit_ratio.html">fit_ratio()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code> / <code><a href="fit_exposure.html">fit_exposure()</a></code>, the spec is invoked
+caller decides to expose:</p><ul><li><p>In <code><a href="fit_ratio.html">fit_ratio()</a></code> / <code><a href="fit_loss.html">fit_loss()</a></code> / <code><a href="fit_premium.html">fit_premium()</a></code>, the spec is invoked
 on the <em>full</em> triangle the user passed in.</p></li>
 <li><p>In <code><a href="backtest.html">backtest()</a></code>, <strong>the spec is invoked on the masked triangle of
 each holdout fold</strong>, <em>never</em> on the full triangle. Held-out

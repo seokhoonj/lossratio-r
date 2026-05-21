@@ -20,27 +20,27 @@ The result is a long-format `data.table` with class
 premium, incremental and cumulative LR, margin, profit, and share
 columns within each `calendar` cell.
 
-The cumulative loss ratio is defined as: \$\$ratio = loss / exposure\$\$
+The cumulative loss ratio is defined as: \$\$ratio = loss / premium\$\$
 
 For long-term health insurance applications, risk premium is commonly
-used as the `exposure` measure.
+used as the `premium` measure.
 
 Proportion variables are computed within each `calendar` cell:
 
 - `incr_loss_share = incr_loss / sum(incr_loss)`
 
-- `incr_exposure_share = incr_exposure / sum(incr_exposure)`
+- `incr_premium_share = incr_premium / sum(incr_premium)`
 
 - `loss_share = loss / sum(loss)`
 
-- `exposure_share = exposure / sum(exposure)`
+- `premium_share = premium / sum(premium)`
 
 Therefore, for a fixed `calendar` cell, the proportions sum to 1 across
 groups. These are useful for examining the composition of each calendar
 period across products or other grouping variables.
 
 Calendar derives `calendar = cohort + (dev - 1)` using the Triangle's
-`grain` attribute and aggregates the incremental `loss` / `exposure`
+`grain` attribute and aggregates the incremental `loss` / `premium`
 columns by `(groups, calendar)`. This works for Triangles built in
 either mode (with or without an original `calendar` column in the raw
 experience), since `cohort + dev` is always sufficient to reconstruct
@@ -76,9 +76,9 @@ columns:
 
   Cumulative and per-period loss
 
-- exposure, incr_exposure:
+- premium, incr_premium:
 
-  Cumulative and per-period exposure
+  Cumulative and per-period premium
 
 - ratio, incr_ratio:
 
@@ -92,7 +92,7 @@ columns:
 
   Profit indicator
 
-- loss_share, incr_loss_share, exposure_share, incr_exposure_share:
+- loss_share, incr_loss_share, premium_share, incr_premium_share:
 
   Proportions within each `calendar` cell
 
@@ -109,7 +109,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 cal <- as_calendar(tri)

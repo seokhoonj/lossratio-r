@@ -2,10 +2,57 @@
 
 ## lossratio (development version)
 
+- **BREAKING: identifier rename `exposure` -\> `premium`.** The
+  denominator slot reverts to `premium`, the natural domain word for
+  loss-ratio analytics (loss ratio = loss / premium). The earlier
+  framework-generic choice `exposure` (still unreleased) is superseded:
+  “cumulative exposure” / “incremental exposure” read as non-standard in
+  an insurance reserving context, whereas “cumulative premium” /
+  “incremental premium” are immediately clear. The derived `ratio`
+  column / fit family is unchanged. Prose noun phrases (“loss ratio”,
+  “premium”, “risk premium”, “premium measure”) are unchanged, and the
+  exposure-driven (ED) method keeps its name.
+
+  Migration (find-and-replace at call sites):
+
+  - `as_triangle(..., exposure = "incr_exposure")` -\>
+    `as_triangle(..., premium = "incr_premium")`
+  - `fit_exposure(...)` -\> `fit_premium(...)`
+  - `fit_loss(..., exposure_method = ..., exposure_alpha = ..., exposure_fit = ...)`
+    -\>
+    `fit_loss(..., premium_method = ..., premium_alpha = ..., premium_fit = ...)`
+  - `fit_ratio(..., exposure_method = ..., exposure_alpha = ..., exposure_regime = ...)`
+    -\>
+    `fit_ratio(..., premium_method = ..., premium_alpha = ..., premium_regime = ...)`
+  - `backtest(..., target = "exposure", exposure_method = ...)` -\>
+    `backtest(..., target = "premium", premium_method = ...)`
+  - `bootstrap(tri, target = "exposure")` -\>
+    `bootstrap(tri, target = "premium")`
+  - `RatioFit$exposure_alpha`, `$exposure_regime` -\> `$premium_alpha`,
+    `$premium_regime`
+  - `LossFit$exposure_fit` -\> `$premium_fit`
+  - S3 class `"ExposureFit"` -\> `"PremiumFit"`
+    (incl. `print.ExposureFit()` / `summary.ExposureFit()` -\>
+    [`print.PremiumFit()`](https://seokhoonj.github.io/lossratio/ko/reference/print.PremiumFit.md)
+    /
+    [`summary.PremiumFit()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.PremiumFit.md))
+  - `attr(ExposureFit_obj, "exposure_method")` -\>
+    `attr(PremiumFit_obj, "premium_method")`
+  - Triangle / Calendar / Total columns: `exposure`, `incr_exposure`,
+    `exposure_share`, `incr_exposure_share` -\> `premium`,
+    `incr_premium`, `premium_share`, `incr_premium_share`
+  - Fit output columns: `exposure_proj`, `exposure_obs`,
+    `exposure_proc_se`, `exposure_param_se`, `exposure_total_se`,
+    `exposure_total_cv`, `exposure_ci_lo`, `exposure_ci_hi`,
+    `incr_exposure_proj` -\> `premium_*`
+  - R source file: `R/exposure.R` -\> `R/premium.R`
+  - Raw dataset (`data/experience.rda`): column `incr_exposure` -\>
+    `incr_premium` (regenerated)
+
 - **API consistency pass.** Several entry points were aligned so the
   same concept behaves the same way regardless of entry point:
 
-  - `exposure_method` now defaults to `"ed"` (was `"cl"`) in
+  - `premium_method` now defaults to `"ed"` (was `"cl"`) in
     [`fit_sa()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_sa.md)
     /
     [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
@@ -14,10 +61,10 @@
     /
     [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md),
     matching
-    [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md).
-    This changes the default exposure-side variance recursion; point
-    projections are unaffected. Pass `exposure_method = "cl"` to keep
-    the old behaviour.
+    [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md).
+    This changes the default premium-side variance recursion; point
+    projections are unaffected. Pass `premium_method = "cl"` to keep the
+    old behaviour.
   - [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)’s
     `type` now defaults to `"parametric"` (was `"analytical"`), matching
     the
@@ -89,9 +136,9 @@
   [`fit_cc()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cc.md)
   /
   [`fit_sa()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_sa.md)
-  now build their internal exposure fit by calling
-  `fit_cl(loss = "exposure", ...)` directly instead of routing through
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
+  now build their internal premium fit by calling
+  `fit_cl(loss = "premium", ...)` directly instead of routing through
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
   — downward-only Tier 3 -\> Tier 4 dependency.
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
   and
@@ -118,10 +165,10 @@
   `fit_cl` / `fit_sa` / `fit_bf` / `fit_cc`) and augments their output
   to the LossFit-uniform `$full` schema via
   [`.lossfit_augment()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-lossfit_augment.md).
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
   follows the same pattern with
-  [`.exposurefit_augment()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-exposurefit_augment.md) +
-  [`.exposurefit_bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-exposurefit_bootstrap.md)
+  [`.premiumfit_augment()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-premiumfit_augment.md) +
+  [`.premiumfit_bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-premiumfit_bootstrap.md)
   (Phase 4c).
 
 - **BREAKING: bootstrap `type = "parametric"` -\> `"analytical"`
@@ -140,17 +187,17 @@
   transition at maturity `k^*`, with ED-stage cells using additive `g_k`
   refit and CL-stage cells using multiplicative `f_k` refit.
 
-- **ED bootstrap (Phase 1, fixed exposure).**
+- **ED bootstrap (Phase 1, fixed premium).**
   [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
   now supports `method = "ed"` for `residual = "cell"`: per-replicate
   `g*_k` refit and additive forward projection
   (`Delta loss = g_k * P_{from} + noise`) instead of the multiplicative
-  chain ladder. Exposure stays fixed across replicates (projected once
-  via CL on the exposure column). New native helpers
+  chain ladder. Premium stays fixed across replicates (projected once
+  via CL on the premium column). New native helpers
   `bootstrap_refit_gstar` / `bootstrap_fwd_proj_ed_and_clip` /
   `bootstrap_fwd_sim_ed_cell` parallel the CL kernel triple; the C entry
   point is `C_bootstrap_kernel_ed_cell` (17 args). Phase 2 / 3 (joint
-  loss + exposure bootstrap) deferred. `method = "ed"` requires
+  loss + premium bootstrap) deferred. `method = "ed"` requires
   `residual = "cell"`; ED + link residuals is not implemented.
 
 - **[`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
@@ -208,16 +255,16 @@
   `attr(., "loss")` on Link, ATAFit, EDFit, CLFit, IntensityFit,
   Maturity, Regime, and Convergence objects. The `target` arg on
   [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
-  (a dispatcher enum selecting `"ratio"` / `"loss"` / `"exposure"`) is
+  (a dispatcher enum selecting `"ratio"` / `"loss"` / `"premium"`) is
   **unchanged** — that is a different semantic (which metric to
-  backtest) and stays as-is. Bootstrap’s
-  `target = c("loss", "exposure")` enum is also unchanged.
+  backtest) and stays as-is. Bootstrap’s `target = c("loss", "premium")`
+  enum is also unchanged.
 
   Migration:
 
   - `fit_cl(tri, target = "loss")` -\> `fit_cl(tri, loss = "loss")`
-  - `fit_ed(tri, target = "loss", exposure = ...)` -\>
-    `fit_ed(tri, loss = "loss", exposure = ...)`
+  - `fit_ed(tri, target = "loss", premium = ...)` -\>
+    `fit_ed(tri, loss = "loss", premium = ...)`
   - `as_link(tri, target = "loss")` -\> `as_link(tri, loss = "loss")`
   - `detect_maturity(tri, target = "loss")` -\>
     `detect_maturity(tri, loss = "loss")`
@@ -264,10 +311,8 @@
     `RatioFit$exposure_alpha`, `$exposure_regime`
   - `LossFit$prem_fit` -\> `$exposure_fit`
   - S3 class `"PremFit"` -\> `"ExposureFit"` (incl. `print.PremFit()` /
-    `summary.PremFit()` -\>
-    [`print.ExposureFit()`](https://seokhoonj.github.io/lossratio/ko/reference/print.ExposureFit.md)
-    /
-    [`summary.ExposureFit()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.ExposureFit.md))
+    `summary.PremFit()` -\> `print.ExposureFit()` /
+    `summary.ExposureFit()`)
   - S3 class `"LRFit"` -\> `"RatioFit"` (incl. `print.LRFit()` /
     `summary.LRFit()` / `plot.LRFit()` / `plot_triangle.LRFit()` -\>
     `*.RatioFit()`)
@@ -365,13 +410,13 @@
 - [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
   result slot `fit_fn_name` renamed to `dispatcher` for clarity (the
   value is still the dispatcher name — `fit_ratio` / `fit_loss` /
-  `fit_exposure` — selected by `target=`).
+  `fit_premium` — selected by `target=`).
   [`print()`](https://rdrr.io/r/base/print.html) /
   [`summary()`](https://rdrr.io/r/base/summary.html) labels updated
   accordingly.
 
 - [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md),
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md),
   [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md),
   and
   [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)

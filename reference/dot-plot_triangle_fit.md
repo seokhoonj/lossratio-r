@@ -1,9 +1,9 @@
 # Triangle-table plot for a projection-level fit
 
 Role-agnostic triangle-style heatmap shared by the `plot_triangle`
-methods for `CLFit` / `SAFit` / `BFFit` / `CCFit` / `ExposureFit`. The
+methods for `CLFit` / `SAFit` / `BFFit` / `CCFit` / `PremiumFit`. The
 cell metric and per-cell SE / CV columns are derived from `x$loss`
-(`loss_*` for the loss-side fits, `exposure_*` for an `ExposureFit`).
+(`loss_*` for the loss-side fits, `premium_*` for an `PremiumFit`).
 
 The `region` argument controls which values are shown:
 
@@ -60,7 +60,7 @@ The `label_style` argument controls cell labels:
 - x:
 
   A projection-level fit (`CLFit`, `SAFit`, `BFFit`, `CCFit`, or
-  `ExposureFit`).
+  `PremiumFit`).
 
 - region:
 

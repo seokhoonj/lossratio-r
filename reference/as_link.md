@@ -20,19 +20,19 @@ into link-pair rows. Each row corresponds to one development link
 `(cohort, ata_from -> ata_to)`, the long-format intermediate underlying
 both the chain ladder (CL) and exposure-driven (ED) workflows.
 
-Two modes are produced depending on `exposure`:
+Two modes are produced depending on `premium`:
 
-- Single-variable mode (`exposure = NULL`):
+- Single-variable mode (`premium = NULL`):
 
   The age-to-age factor is \\ata = value\_{to} / value\_{from}\\, where
   \\value\\ is the column named by `loss`.
 
-- Dual-variable mode (`exposure` supplied):
+- Dual-variable mode (`premium` supplied):
 
   In addition to the loss-side ATA, the exposure-driven intensity \\g =
-  \Delta loss / exposure\_{from}\\ is computed and stored in the
-  `intensity` column. Exposure measure used as denominator for loss
-  ratio calculations; for long-term health insurance applications, risk
+  \Delta loss / premium\_{from}\\ is computed and stored in the
+  `intensity` column. Premium measure used as denominator for loss ratio
+  calculations; for long-term health insurance applications, risk
   premium is commonly used.
 
 ## Usage
@@ -41,7 +41,7 @@ Two modes are produced depending on `exposure`:
 as_link(
   x,
   loss = "loss",
-  exposure = NULL,
+  premium = NULL,
   weight = NULL,
   min_denom = 0,
   drop_invalid = FALSE
@@ -57,14 +57,14 @@ as_link(
 - loss:
 
   A single cumulative metric used as the link numerator. Must be one of
-  `"loss"`, `"exposure"`, or `"ratio"`. Default `"loss"`. For loss-side
+  `"loss"`, `"premium"`, or `"ratio"`. Default `"loss"`. For loss-side
   ATA this is the cumulative loss column, but any cumulative metric on
   the Triangle may be supplied.
 
-- exposure:
+- premium:
 
-  Optional second cumulative metric, treated as the exposure anchor for
-  the ED workflow. Must be one of `"loss"`, `"exposure"`, `"ratio"`, and
+  Optional second cumulative metric, treated as the premium anchor for
+  the ED workflow. Must be one of `"loss"`, `"premium"`, `"ratio"`, and
   must differ from `loss`. When `NULL` (default), only the
   single-variable columns are produced.
 
@@ -72,13 +72,13 @@ as_link(
 
   Optional cumulative metric used as WLS weight in downstream `summary`
   / `fit_ata` calls. Must differ from `loss`. Cannot be combined with
-  `exposure` (the dual workflow has its own anchor).
+  `premium` (the dual workflow has its own anchor).
 
 - min_denom:
 
   Minimum denominator required to compute `ata` and `intensity`. If
   `loss_from <= min_denom`, `ata` becomes `NA`; if
-  `exposure_from <= min_denom`, `intensity` becomes `NA`. Default `0`.
+  `premium_from <= min_denom`, `intensity` becomes `NA`. Default `0`.
 
 - drop_invalid:
 
@@ -93,13 +93,13 @@ A `data.table` of class `"Link"` with columns:
 - Always: `[group]`, `cohort`, `ata_from`, `ata_to`, `ata_link`,
   `loss_from`, `loss_to`, `loss_delta`, `ata`.
 
-- If `exposure` is set: also `exposure_from`, `exposure_to`,
-  `exposure_delta`, `intensity`.
+- If `premium` is set: also `premium_from`, `premium_to`,
+  `premium_delta`, `intensity`.
 
 - If `weight` is set: also `weight`.
 
 The returned object carries attributes `groups`, `cohort`, `dev`,
-`loss`, `exposure` (or `NULL`), `weight` (or `NULL`).
+`loss`, `premium` (or `NULL`), `weight` (or `NULL`).
 
 ## See also
 
@@ -119,14 +119,14 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 # Single-variable: cumulative-loss link factors (ATA workflow)
 link_loss <- as_link(tri, loss = "loss")
 
-# Dual-variable: ED-ready link table (loss + exposure)
-link_ed <- as_link(tri, loss = "loss", exposure = "exposure")
+# Dual-variable: ED-ready link table (loss + premium)
+link_ed <- as_link(tri, loss = "loss", premium = "premium")
 head(link_ed)
 } # }
 ```

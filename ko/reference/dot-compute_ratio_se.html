@@ -7,8 +7,8 @@ Premium treated as fixed (non-random).
 case of the delta method with Var(P) = 0 and Cov(L,P) = 0.
 
 "delta"
-First-order Taylor (delta method) including exposure
-uncertainty and loss-exposure correlation rho:
+First-order Taylor (delta method) including premium
+uncertainty and loss-premium correlation rho:
 \(\mathrm{Var}(L/P) \approx (\mathrm{SE}(L)/P)^2 +
       (L \cdot \mathrm{SE}(P) / P^2)^2 -
       2 \rho L \mathrm{SE}(L) \mathrm{SE}(P) / P^3\).
@@ -28,8 +28,8 @@ Premium treated as fixed (non-random).
 case of the delta method with Var(P) = 0 and Cov(L,P) = 0.
 
 "delta"
-First-order Taylor (delta method) including exposure
-uncertainty and loss-exposure correlation rho:
+First-order Taylor (delta method) including premium
+uncertainty and loss-premium correlation rho:
 \(\mathrm{Var}(L/P) \approx (\mathrm{SE}(L)/P)^2 +
       (L \cdot \mathrm{SE}(P) / P^2)^2 -
       2 \rho L \mathrm{SE}(L) \mathrm{SE}(P) / P^3\).
@@ -107,8 +107,8 @@ estimated), so this helper is not a generic ratio-SE utility.'><meta property="o
 case of the delta method with <code>Var(P) = 0</code> and <code>Cov(L,P) = 0</code>.</p></dd>
 
 <dt><code>"delta"</code></dt>
-<dd><p>First-order Taylor (delta method) including exposure
-uncertainty and loss-exposure correlation <code>rho</code>:
+<dd><p>First-order Taylor (delta method) including premium
+uncertainty and loss-premium correlation <code>rho</code>:
 \(\mathrm{Var}(L/P) \approx (\mathrm{SE}(L)/P)^2 +
       (L \cdot \mathrm{SE}(P) / P^2)^2 -
       2 \rho L \mathrm{SE}(L) \mathrm{SE}(P) / P^3\).
@@ -125,9 +125,9 @@ estimated), so this helper is <em>not</em> a generic ratio-SE utility.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.compute_ratio_se</span><span class="op">(</span></span>
 <span>  <span class="va">loss</span>,</span>
-<span>  <span class="va">exposure</span>,</span>
+<span>  <span class="va">premium</span>,</span>
 <span>  <span class="va">loss_se</span>,</span>
-<span>  exposure_se <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  premium_se <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fixed"</span>, <span class="st">"delta"</span><span class="op">)</span>,</span>
 <span>  rho <span class="op">=</span> <span class="fl">0.95</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -141,15 +141,15 @@ estimated), so this helper is <em>not</em> a generic ratio-SE utility.</p>
 <dd><p>Ultimate loss vector (<code>L</code>).</p></dd>
 
 
-<dt id="arg-exposure">exposure<a class="anchor" aria-label="anchor" href="#arg-exposure"></a></dt>
-<dd><p>Ultimate exposure vector (<code>E</code>).</p></dd>
+<dt id="arg-premium">premium<a class="anchor" aria-label="anchor" href="#arg-premium"></a></dt>
+<dd><p>Ultimate premium vector (<code>E</code>).</p></dd>
 
 
 <dt id="arg-loss-se">loss_se<a class="anchor" aria-label="anchor" href="#arg-loss-se"></a></dt>
 <dd><p><code>SE(L)</code>.</p></dd>
 
 
-<dt id="arg-exposure-se">exposure_se<a class="anchor" aria-label="anchor" href="#arg-exposure-se"></a></dt>
+<dt id="arg-premium-se">premium_se<a class="anchor" aria-label="anchor" href="#arg-premium-se"></a></dt>
 <dd><p><code>SE(P)</code>. Unused for <code>"fixed"</code>; may be <code>NULL</code>.</p></dd>
 
 
@@ -158,7 +158,7 @@ estimated), so this helper is <em>not</em> a generic ratio-SE utility.</p>
 
 
 <dt id="arg-rho">rho<a class="anchor" aria-label="anchor" href="#arg-rho"></a></dt>
-<dd><p>Loss-exposure correlation in <code>(-1, 1)</code>. Used only for
+<dd><p>Loss-premium correlation in <code>(-1, 1)</code>. Used only for
 <code>"delta"</code>. Default <code>0.95</code>.</p></dd>
 
 </dl></div>

@@ -382,7 +382,7 @@ MAD<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
+<span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
@@ -643,16 +643,16 @@ reserving 주의사항을 적용.</li>
 <strong>모형 조건부</strong>: 예측 LR 은 <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> 로
 산출. <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> 이 내부적으로 <code><a href="../reference/fit_loss.html">fit_loss()</a></code>
 (default <code>method = "ed"</code> — 노출 기반) 와
-<code><a href="../reference/fit_exposure.html">fit_exposure()</a></code> 을 합성하므로, 그 안의 선택 (loss method,
+<code><a href="../reference/fit_premium.html">fit_premium()</a></code> 을 합성하므로, 그 안의 선택 (loss method,
 regime 필터, maturity 인자) 이 <code>conv_k</code> 로 흘러간다. 결과
 해석 시 <code>fit_ratio</code> 설정을 같이 확인할 것. <code>...</code>
 으로 <code>loss_method =</code>, <code>loss_regime =</code> 등 override
 가능.</li>
 <li>
 <strong>포트폴리오 집계</strong>: portfolio LR 은 그룹별 ultimate 의
-익스포저 가중 (<code>sum(loss_ult) / sum(exposure_ult)</code>). 달력
-연도 충격 (요율 개정, 의료비 인플레) 은 모든 그룹을 동시에 움직일 수
-있고, drift metric 들은 이를 진짜 수렴과 구별하지 못한다.</li>
+보험료 가중 (<code>sum(loss_ult) / sum(premium_ult)</code>). 달력 연도
+충격 (요율 개정, 의료비 인플레) 은 모든 그룹을 동시에 움직일 수 있고,
+drift metric 들은 이를 진짜 수렴과 구별하지 못한다.</li>
 <li>
 <strong>다중 그룹 triangle</strong>: 현재 구현은
 <code>dispersion</code> 을 그룹 간 median 으로 collapse. 그룹이 다르게

@@ -12,8 +12,8 @@
 > fit_cl](https://seokhoonj.github.io/lossratio/chain-ladder-reserving.md)
 
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
-은 단일 값 컬럼에 대한 전용 chain ladder 적합 함수이다. 손해와
-익스포저를 동시에 추정해 손해율을 산출하는
+은 단일 값 컬럼에 대한 전용 chain ladder 적합 함수이다. 손해와 보험료를
+동시에 추정해 손해율을 산출하는
 [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
 과 달리,
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
@@ -35,7 +35,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 cl <- fit_cl(tri, loss = "loss", method = "mack")
@@ -55,7 +55,7 @@ print(cl)
 ```
 
 `loss` 는 추정 대상 누적 컬럼을 선택한다 — 준비금 산출에는 보통 `"loss"`
-(누적 손해), 익스포저 추정에는 `"exposure"` (누적 위험보험료) 를 쓴다.
+(누적 손해), 보험료 추정에는 `"premium"` (누적 위험보험료) 를 쓴다.
 
 ## 2. Mack chain ladder
 

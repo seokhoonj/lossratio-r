@@ -8,16 +8,16 @@ For ratio metrics (`ratio`, `incr_ratio`), labels can show either the
 ratio alone or the ratio together with the associated loss / risk
 premium amounts.
 
-For amount metrics (`loss`, `incr_loss`, `exposure`, `incr_exposure`,
+For amount metrics (`loss`, `incr_loss`, `premium`, `incr_premium`,
 `margin`, `incr_margin`), labels show the selected amount only.
 
 For proportion metrics (`loss_share`, `incr_loss_share`,
-`exposure_share`, `incr_exposure_share`), labels are displayed as
+`premium_share`, `incr_premium_share`), labels are displayed as
 percentages.
 
-The loss ratio is defined as: \$\$ratio = loss / exposure\$\$
+The loss ratio is defined as: \$\$ratio = loss / premium\$\$
 
-where `exposure` denotes risk premium rather than written premium.
+where `premium` denotes risk premium rather than written premium.
 
 ## Usage
 
@@ -62,9 +62,9 @@ plot_triangle(
 - metric:
 
   A single metric to plot. Must be one of: `"ratio"`, `"incr_ratio"`,
-  `"loss"`, `"incr_loss"`, `"exposure"`, `"incr_exposure"`, `"margin"`,
+  `"loss"`, `"incr_loss"`, `"premium"`, `"incr_premium"`, `"margin"`,
   `"incr_margin"`, `"loss_share"`, `"incr_loss_share"`,
-  `"exposure_share"`, or `"incr_exposure_share"`.
+  `"premium_share"`, or `"incr_premium_share"`.
 
 - label_style:
 
@@ -77,7 +77,7 @@ plot_triangle(
   "detail"
 
   :   For `ratio` / `incr_ratio`, show the ratio in percent and, on the
-      next line, the associated loss / exposure amounts. For amount and
+      next line, the associated loss / premium amounts. For amount and
       proportion metrics, this falls back to `"value"`.
 
 - label_size:
@@ -91,7 +91,7 @@ plot_triangle(
 - amount_divisor:
 
   Numeric scaling factor applied to amount variables (e.g., `loss`,
-  `incr_loss`, `exposure`, `incr_exposure`, `margin`, `incr_margin`)
+  `incr_loss`, `premium`, `incr_premium`, `margin`, `incr_margin`)
   before plotting. Default `"auto"` picks the largest divisor in
   `{1, 1e3, 1e6, 1e7, 1e8, 1e9}` such that the median displayed value is
   still at least `1`, minimising label digit count.
@@ -139,15 +139,15 @@ d <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 plot_triangle(d)
 plot_triangle(d, metric = "ratio")
 plot_triangle(d, metric = "loss")
-plot_triangle(d, metric = "exposure")
+plot_triangle(d, metric = "premium")
 plot_triangle(d, metric = "loss_share")
-plot_triangle(d, metric = "exposure_share")
+plot_triangle(d, metric = "premium_share")
 plot_triangle(d, label_style = "value")
 plot_triangle(d, label_style = "detail")
 } # }

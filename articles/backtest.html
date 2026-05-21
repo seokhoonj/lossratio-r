@@ -169,7 +169,7 @@ actual exceeded expected) and negative values flag over-projection.</p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
+<span>  premium  <span class="op">=</span> <span class="st">"incr_premium"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">bt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span></span>
@@ -198,7 +198,7 @@ diagonals removed).</li>
 <li>
 <code>fit</code> — the fit object returned by the target-specific
 dispatcher (<code>fit_ratio</code> / <code>fit_loss</code> /
-<code>fit_exposure</code>) chosen by <code>target=</code>.</li>
+<code>fit_premium</code>) chosen by <code>target=</code>.</li>
 </ul>
 <p><code>summary(bt)</code> prints the two summary tables alongside the
 call metadata.</p>
@@ -252,7 +252,7 @@ flag tail miscalibration.</p>
 <p><code>ae_err_mean</code> averages cell-level A/E Error,
 <code>ae_err_med</code> is the median, and
 <code>ae_err_wt = sum(actual - proj) / sum(proj)</code> is the
-exposure-weighted pooled A/E ratio minus 1. Comparing the three columns
+premium-weighted pooled A/E ratio minus 1. Comparing the three columns
 flags whether a few large cells dominate (<code>ae_err_wt</code> very
 different from <code>ae_err_med</code>) or the bias is uniform.</p>
 <p><strong><code>diag_summary</code> — calendar-year effect.</strong> A
@@ -395,10 +395,10 @@ held-out actuals:</p>
 <td><code>loss_proj</code></td>
 </tr>
 <tr class="odd">
-<td><code>"exposure"</code></td>
-<td><code><a href="../reference/fit_exposure.html">fit_exposure()</a></code></td>
-<td><code>exposure_method</code></td>
-<td><code>exposure_proj</code></td>
+<td><code>"premium"</code></td>
+<td><code><a href="../reference/fit_premium.html">fit_premium()</a></code></td>
+<td><code>premium_method</code></td>
+<td><code>premium_proj</code></td>
 </tr>
 </tbody>
 </table>
@@ -408,9 +408,8 @@ default) is the unconditional safe baseline – no maturity or regime
 detection needed; <code>"cl"</code> is the classical chain ladder, which
 lets the cohort’s own cum_loss anchor cohort-level drift;
 <code>"sa"</code> (stage-adaptive) blends ED before the maturity point
-with CL afterwards. The <code>exposure_method</code> argument selects
-the premium projection strategy when
-<code>target = "exposure"</code>.</p>
+with CL afterwards. The <code>premium_method</code> argument selects the
+premium projection strategy when <code>target = "premium"</code>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bt_ed</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span>  <span class="co"># default</span></span>
 <span><span class="va">bt_cl</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, loss_method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
@@ -419,7 +418,7 @@ the premium projection strategy when
 <span><span class="va">bt_loss</span>     <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>,</span>
 <span>                        target <span class="op">=</span> <span class="st">"loss"</span>, loss_method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
 <span><span class="va">bt_premium</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri_sur</span>, holdout <span class="op">=</span> <span class="fl">6L</span>,</span>
-<span>                        target <span class="op">=</span> <span class="st">"exposure"</span>, exposure_method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
+<span>                        target <span class="op">=</span> <span class="st">"premium"</span>, premium_method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">bt_ed</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Backtest&gt;</span></span>
@@ -428,8 +427,8 @@ the premium projection strategy when
 <span><span class="co">#&gt;   holdout   : 6 diagonals (159 cells)</span></span>
 <span><span class="co">#&gt;   A/E Error : mean -9.38% / median -4.39%</span></span></code></pre></div>
 <p>For monetary impact (loss or premium) backtesting, set
-<code>target = "loss"</code> or <code>target = "exposure"</code> to
-score the corresponding projection lane directly.</p>
+<code>target = "loss"</code> or <code>target = "premium"</code> to score
+the corresponding projection lane directly.</p>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>

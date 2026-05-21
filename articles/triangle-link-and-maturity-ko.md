@@ -28,7 +28,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 ```
 
@@ -79,8 +79,8 @@ plot_triangle(tri, metric = "incr_ratio")     # 증분 ratio
 
 
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly 로 다시 빌드
-tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure", grain = "Q")
-plot_triangle(tri_q, label_style = "detail")  # 비율 + (loss / exposure)
+tri_q <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium", grain = "Q")
+plot_triangle(tri_q, label_style = "detail")  # 비율 + (loss / premium)
 ```
 
 ![](triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-3-3.png)
@@ -117,7 +117,7 @@ head(sm)
 
 `Link` 객체는 triangle 으로부터 빌드된 단계 연결 테이블(link table)
 이다. 단일 변수 모드에서는 관측된 **ATA 인자**(age-to-age factor) 를
-담고, `exposure` 를 지정하면 ED 강도 $`g_k = \Delta C^L_k / C^P_k`$ 를
+담고, `premium` 를 지정하면 ED 강도 $`g_k = \Delta C^L_k / C^P_k`$ 를
 담는다.
 
 ``` r
@@ -215,7 +215,7 @@ plot_triangle(ata, label_size = 2.5, show_maturity = TRUE)  # 성숙점 라인 o
 
 # detail 라벨은 두 줄이라 monthly 셀에서는 겹침 — quarterly Link 로 다시 빌드
 ata_q <- as_link(tri_q, loss = "loss")
-plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / exposure)
+plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / premium)
 ```
 
 ![](triangle-link-and-maturity-ko_files/figure-html/unnamed-chunk-7-3.png)
@@ -228,7 +228,7 @@ plot_triangle(ata_q, label_style = "detail")      # 인자 + (loss / exposure)
 
 ``` r
 
-ed <- as_link(tri, loss = "loss", exposure = "exposure")
+ed <- as_link(tri, loss = "loss", premium = "premium")
 sm <- summary(ed, model = "ed", alpha = 1)
 head(sm)
 #> Key: <coverage>
@@ -386,7 +386,7 @@ tri_all <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 detect_maturity(tri_all, loss = "loss")
 #> Key: <coverage>
@@ -479,14 +479,14 @@ fit_ratio(tri, recent = 12)
 #> <RatioFit>
 #> method            : ed 
 #> loss_alpha        : 1 
-#> exposure_alpha    : 1 
+#> premium_alpha     : 1 
 #> se_method         : fixed 
 #> conf_level        : 0.95 
 #> ci_type           : bootstrap  (B = 999, seed = NULL) 
 #> sigma_method      : locf 
 #> recent            : 12 
 #> loss_regime       : none
-#> exposure_regime   : none
+#> premium_regime    : none
 #> maturity[surgery] : 4 
 #> groups            : coverage 
 #> periods           : 36

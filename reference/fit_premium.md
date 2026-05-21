@@ -1,22 +1,23 @@
-# Fit a chain ladder projection on the prem (exposure) triangle
+# Fit a chain ladder projection on the premium triangle
 
-Project cumulative prem across the cohort x development grid with a
+Project cumulative premium across the cohort x development grid with a
 chain ladder estimator. Two variance recursions are supported:
 
 - `"ed"` (default):
 
-  Additive recursion. Empirically more robust on long-projection prem
+  Additive recursion. Empirically more robust on long-projection premium
   triangles – the multiplicative scaling of the classical CL recursion
   can blow up under cohort-wise heterogeneity (regime changes in
-  premium, channel changes, amendments). See `dev/prem_projection.qmd`.
+  premium, channel changes, amendments). See
+  `dev/premium_projection.qmd`.
 
 - `"cl"`:
 
   Mack (1993) multiplicative recursion. Point projection identical to
   ED; only the SE accumulation differs.
 
-Both methods share the same point estimate – self-weighted ED on prem is
-mathematically equivalent to chain ladder on the same column
+Both methods share the same point estimate – self-weighted ED on premium
+is mathematically equivalent to chain ladder on the same column
 (`f_k = 1 + g_k`). The only operational difference is how cumulative
 variance is propagated forward.
 
@@ -28,12 +29,12 @@ fit_premium(
   method = c("ed", "cl"),
   alpha = 1,
   regime = NULL,
-  sigma_method = c("locf", "min_last2", "loglinear"),
+  sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   tail = FALSE,
   conf_level = 0.95,
   bootstrap = NULL,
-  B = 999,
+  B = 999L,
   seed = NULL
 )
 ```
@@ -42,8 +43,8 @@ fit_premium(
 
 - x:
 
-  A `"Triangle"` object. The standardized `"prem"` column is used as the
-  projection target.
+  A `"Triangle"` object. The standardized `"premium"` column is used as
+  the projection metric.
 
 - method:
 
@@ -57,7 +58,8 @@ fit_premium(
 
 - regime:
 
-  Optional regime specification (prem side). Accepts four input types:
+  Optional regime specification (premium side). Accepts four input
+  types:
 
   `NULL` (default)
 
@@ -72,7 +74,7 @@ fit_premium(
 
   `"auto"`
 
-  :   Detect regime internally via `detect_regime(x, target = "lr")` on
+  :   Detect regime internally via `detect_regime(x, loss = "ratio")` on
       the input triangle.
 
   Function / closure
@@ -81,12 +83,18 @@ fit_premium(
       custom-config detection.
 
   Pre-change cohorts (cohorts before the resolved `Regime`'s change
-  date) are excluded from prem factor estimation.
+  date) are excluded from premium factor estimation.
 
 - sigma_method:
 
-  Sigma extrapolation method. One of `"locf"` (default), `"min_last2"`,
-  or `"loglinear"`.
+  Method used to extrapolate `sigma` for links where it cannot be
+  estimated. One of `"locf"` (default), `"min_last2"`, `"loglinear"`,
+  `"mack"`, or `"none"`. `"mack"` applies the Mack (1993, Appendix B)
+  tail estimator to the last unestimated link only, falling back to LOCF
+  for any earlier ones with a warning. `"none"` performs no
+  extrapolation; `sigma` stays `NA` and downstream variance terms drop
+  those links via finite-value guards. Passed to
+  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio/reference/dot-extrapolate_sigma_ata.md).
 
 - recent:
 
@@ -99,8 +107,8 @@ fit_premium(
 
 - conf_level:
 
-  Confidence level for analytical CI on the prem projection
-  (`prem_ci_lo`, `prem_ci_hi`). Default `0.95`.
+  Confidence level for analytical CI on the premium projection
+  (`premium_ci_lo`, `premium_ci_hi`). Default `0.95`.
 
 - bootstrap:
 
@@ -121,13 +129,13 @@ fit_premium(
   :   Internal
       [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
       call on the premium triangle with defaults
-      `(type = "parametric", process = "normal", target = "prem")`.
+      `(type = "analytical", process = "normal", target = "premium")`.
 
   `BootstrapTriangle`
 
   :   Pre-built object from
       [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md).
-      Must have `meta$target == "prem"`.
+      Must have `meta$target == "premium"`.
 
   Function `function(tri) -> BootstrapTriangle`
 
@@ -141,7 +149,7 @@ fit_premium(
 - B:
 
   Integer number of bootstrap replicates. Used only when `bootstrap`
-  resolves to `"auto"`. Default `999`.
+  resolves to `"auto"`. Default `999L`.
 
 - seed:
 
@@ -152,18 +160,19 @@ fit_premium(
 An object of class `"PremiumFit"` (a list with the same structure as
 `CLFit`). Components: `selected`, `full`, `data`, plus attribute
 `premium_method`. The `$full` data.table uses role-specific column names
-(`prem_obs`, `prem_proj`, `incr_prem_proj`, `prem_proc_se`,
-`prem_param_se`, `prem_total_se`, `prem_proc_cv`, `prem_param_cv`,
-`prem_total_cv`, `prem_ci_lo`, `prem_ci_hi`). Under `bootstrap = TRUE`,
-`prem_ci_lo` / `prem_ci_hi` are bootstrap quantiles and `prem_total_se`
-/ `prem_total_cv` are derived from the simulation SD; the analytical
+(`premium_obs`, `premium_proj`, `incr_premium_proj`, `premium_proc_se`,
+`premium_param_se`, `premium_total_se`, `premium_proc_cv`,
+`premium_param_cv`, `premium_total_cv`, `premium_ci_lo`,
+`premium_ci_hi`). Under `bootstrap = TRUE`, `premium_ci_lo` /
+`premium_ci_hi` are bootstrap quantiles and `premium_total_se` /
+`premium_total_cv` are derived from the simulation SD; the analytical
 proc/param decomposition is retained as diagnostic.
 
 ## See also
 
 [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
 [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md),
-[`fit_lr()`](https://seokhoonj.github.io/lossratio/reference/fit_lr.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md),
 [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md).
 
 ## Examples
@@ -177,7 +186,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium  = "incr_prem"
+  premium = "incr_premium"
 )
 
 # ED-additive recursion (default; robust on long projections)

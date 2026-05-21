@@ -175,9 +175,9 @@ premium. The actuarially meaningful denominator for loss ratio is the
 <li>
 <strong>Levelled premium</strong> — Non-renewable contracts charge a
 level premium computed at issue as the lifetime average. The <em>charged
-premium</em> is not exposure; the <em>period risk premium</em>
-(morbidity rate × sum insured × persistency) must be constructed
-externally before being passed in.</li>
+premium</em> is not premium; the <em>period risk premium</em> (morbidity
+rate × sum insured × persistency) must be constructed externally before
+being passed in.</li>
 <li>
 <strong>Regime change</strong> — Product redesigns, rate revisions,
 channel-mix shifts, and underwriting updates introduce
@@ -196,7 +196,7 @@ goal is a tool that domain practitioners can use immediately.</p>
 <p>The methodological roots of long-term loss-ratio estimation lie in
 the following P&amp;C reserving thread:</p>
 <pre><code>1967  Bühlmann credibility           experience rating formalised
-1970  Bühlmann-Straub                exposure-varying credibility
+1970  Bühlmann-Straub                premium-varying credibility
                                      (volume-weighted estimator)
 1972  Bornhuetter-Ferguson           prior + observed loss blending
 1984  Sherman                        chain ladder tail extrapolation
@@ -215,7 +215,7 @@ where
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mi>k</mi></msub><mo>=</mo><msub><mo>∑</mo><mi>i</mi></msub><msub><mi>C</mi><mrow><mi>i</mi><mo>,</mo><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mi>/</mi><msub><mo>∑</mo><mi>i</mi></msub><msub><mi>C</mi><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow></msub></mrow><annotation encoding="application/x-tex">f_k = \sum_i C_{i,k+1} / \sum_i C_{i,k}</annotation></semantics></math>.</li>
 <li>
 <strong>Cape Cod / Bühlmann-Straub</strong> — Loss anchored to
-exposure (volume).
+premium (volume).
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mrow><mi>E</mi><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mo>=</mo><msub><mo>∑</mo><mi>i</mi></msub><msub><mi>L</mi><mi>i</mi></msub><mi>/</mi><msub><mo>∑</mo><mi>i</mi></msub><msub><mi>π</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\widehat{ELR} = \sum_i L_i / \sum_i \pi_i</annotation></semantics></math>
 yields a single ratio that drives ultimate estimation.</li>
 </ul>
@@ -250,7 +250,7 @@ over-volatile (small
 <td>Loss-only avoids it (but weak against incidence shifts)</td>
 <td>Flat
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>π</mi><annotation encoding="application/x-tex">\pi</annotation></semantics></math>
-absorbs developing exposure</td>
+absorbs developing premium</td>
 </tr>
 <tr class="odd">
 <td>Recurrent claims</td>
@@ -273,7 +273,7 @@ assumption breaks</td>
 </tbody>
 </table>
 <p>→ Chain ladder is weak early, Cape Cod cannot track developing
-exposure. Each paradigm is incomplete on its own.</p>
+premium. Each paradigm is incomplete on its own.</p>
 </div>
 <div class="section level2">
 <h2 id="six-adaptations-in-lossratio-each-maps-to-a-domain-issue">Six adaptations in lossratio — each maps to a domain issue<a class="anchor" aria-label="anchor" href="#six-adaptations-in-lossratio-each-maps-to-a-domain-issue"></a>
@@ -293,7 +293,7 @@ exposure. Each paradigm is incomplete on its own.</p>
 <tr class="odd">
 <td>(a)</td>
 <td>
-<strong>2D exposure triangle</strong> — extend Cape Cod’s single
+<strong>2D premium triangle</strong> — extend Cape Cod’s single
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>π</mi><annotation encoding="application/x-tex">\pi</annotation></semantics></math>
 to a cohort × dev triangle</td>
 <td>Developing risk premium</td>
@@ -345,7 +345,7 @@ scratch, but an honest transplant + adaptation of the existing
 literature.</p>
 </div>
 <div class="section level2">
-<h2 id="core-framework-loss-exposure-ratio">Core framework — <code>loss / exposure / ratio</code><a class="anchor" aria-label="anchor" href="#core-framework-loss-exposure-ratio"></a>
+<h2 id="core-framework-loss-premium-ratio">Core framework — <code>loss / premium / ratio</code><a class="anchor" aria-label="anchor" href="#core-framework-loss-premium-ratio"></a>
 </h2>
 <p>All estimation rests on three observable quantities:</p>
 <table class="table">
@@ -368,15 +368,15 @@ literature.</p>
 </td>
 </tr>
 <tr class="even">
-<td><strong>exposure</strong></td>
+<td><strong>premium</strong></td>
 <td>Risk-bearing volume (risk premium for long-term health)</td>
 <td>
-<code>exposure</code>, <code>incr_exposure</code>
+<code>premium</code>, <code>incr_premium</code>
 </td>
 </tr>
 <tr class="odd">
 <td><strong>ratio</strong></td>
-<td>Loss ratio (cumulative loss / cumulative exposure)</td>
+<td>Loss ratio (cumulative loss / cumulative premium)</td>
 <td>
 <code>ratio</code>, <code>incr_ratio</code>
 </td>
@@ -384,7 +384,7 @@ literature.</p>
 </tbody>
 </table>
 <p>All three are <em>stochastic observables developing over the cohort ×
-dev grid</em>. Exposure is not a fixed underwriting volume; it is a
+dev grid</em>. Premium is not a fixed underwriting volume; it is a
 developing quantity driven by morbidity × sum insured × persistency —
 the <em>volume measure</em> of Mack (1993), the <em>natural weight</em>
 of Bühlmann-Straub (1970).</p>
@@ -506,7 +506,7 @@ volatility demands an <em>unconditional safe baseline</em>:</p>
 <strong>ED operates single-pass</strong> — no maturity detection
 dependency.</li>
 <li>
-<strong>ED anchors on exposure</strong> — the small
+<strong>ED anchors on premium</strong> — the small
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>C</mi><mi>k</mi></msub><annotation encoding="application/x-tex">C_k</annotation></semantics></math>
 of early dev does not inflate the estimate (no
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>C</mi><mi>k</mi></msub><annotation encoding="application/x-tex">C_k</annotation></semantics></math>
@@ -613,8 +613,8 @@ several adjacent areas:</p>
 <ul>
 <li>
 <strong>Frequency-severity decomposition</strong> —
-<code>fit_ed(loss = "claim_count", exposure = "insureds")</code> for
-frequency, <code>fit_ed(loss = "loss", exposure = "claim_count")</code>
+<code>fit_ed(loss = "claim_count", premium = "insureds")</code> for
+frequency, <code>fit_ed(loss = "loss", premium = "claim_count")</code>
 for severity. The framework works through slot reinterpretation
 alone.</li>
 <li>

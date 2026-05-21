@@ -8,14 +8,14 @@ exposure-driven model before the maturity point and chain ladder after
 it, with supporting maturity point detection and cohort regime detection
 for handling structural breaks. Provides cohort by development period,
 calendar period, and total aggregation frameworks for diagnostics, and
-applies to any cumulative loss and exposure setting with sufficient
+applies to any cumulative loss and premium setting with sufficient
 sample per cell.
 
 ## Details
 
-The core loss ratio is defined as: \$\$ratio = loss / exposure\$\$
+The core loss ratio is defined as: \$\$ratio = loss / premium\$\$
 
-where `exposure` represents risk premium, not written premium.
+where `premium` represents risk premium, not written premium.
 
 ## See also
 

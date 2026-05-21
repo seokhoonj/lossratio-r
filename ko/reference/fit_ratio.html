@@ -19,7 +19,7 @@ age factors only once they have stabilised.
 Before maturity: age-to-age factors are volatile, so
 exposure-driven projection
 \(\Delta C^L = g_k \cdot C^P_k\) anchors the estimate
-to exposure volume.
+to premium volume.
 After maturity: age-to-age factors are stable, so
 chain ladder projection
 \(C^L_{k+1} = f_k \cdot C^L_k\) preserves the cohort's
@@ -38,12 +38,12 @@ estimated by pooling the data rather than supplied externally.
 
 
 
-In all cases, exposure is projected forward to ultimate; the point
-projection is identical under exposure_method = &quot;ed&quot; or &quot;cl&quot;
+In all cases, premium is projected forward to ultimate; the point
+projection is identical under premium_method = &quot;ed&quot; or &quot;cl&quot;
 (they differ only in the variance recursion).
 This function is the composition layer over fit_loss() and
-fit_exposure(): it delegates loss projection to fit_loss(),
-retrieves the embedded ExposureFit, and composes the loss-ratio
+fit_premium(): it delegates loss projection to fit_loss(),
+retrieves the embedded PremiumFit, and composes the loss-ratio
 point + variance via the delta method (se_method = &quot;fixed&quot; or
 &quot;delta&quot;). See ARCHITECTURE.md for the layered design."><meta property="og:description" content="Unified interface for loss ratio projection from a &quot;Triangle&quot; object.
 Five projection methods are available:
@@ -65,7 +65,7 @@ age factors only once they have stabilised.
 Before maturity: age-to-age factors are volatile, so
 exposure-driven projection
 \(\Delta C^L = g_k \cdot C^P_k\) anchors the estimate
-to exposure volume.
+to premium volume.
 After maturity: age-to-age factors are stable, so
 chain ladder projection
 \(C^L_{k+1} = f_k \cdot C^L_k\) preserves the cohort's
@@ -84,12 +84,12 @@ estimated by pooling the data rather than supplied externally.
 
 
 
-In all cases, exposure is projected forward to ultimate; the point
-projection is identical under exposure_method = &quot;ed&quot; or &quot;cl&quot;
+In all cases, premium is projected forward to ultimate; the point
+projection is identical under premium_method = &quot;ed&quot; or &quot;cl&quot;
 (they differ only in the variance recursion).
 This function is the composition layer over fit_loss() and
-fit_exposure(): it delegates loss projection to fit_loss(),
-retrieves the embedded ExposureFit, and composes the loss-ratio
+fit_premium(): it delegates loss projection to fit_loss(),
+retrieves the embedded PremiumFit, and composes the loss-ratio
 point + variance via the delta method (se_method = &quot;fixed&quot; or
 &quot;delta&quot;). See ARCHITECTURE.md for the layered design."><meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
@@ -168,7 +168,7 @@ after maturity. Requires maturity detection (2-pass), uses age-to-
 age factors only once they have stabilised.</p><ul><li><p>Before maturity: age-to-age factors are volatile, so
 exposure-driven projection
 \(\Delta C^L = g_k \cdot C^P_k\) anchors the estimate
-to exposure volume.</p></li>
+to premium volume.</p></li>
 <li><p>After maturity: age-to-age factors are stable, so
 chain ladder projection
 \(C^L_{k+1} = f_k \cdot C^L_k\) preserves the cohort's
@@ -185,12 +185,12 @@ fraction. Requires a <code>prior</code> argument, passed through <code>...</code
 estimated by pooling the data rather than supplied externally.</p></dd>
 
 
-</dl><p>In all cases, exposure is projected forward to ultimate; the point
-projection is identical under <code>exposure_method = "ed"</code> or <code>"cl"</code>
+</dl><p>In all cases, premium is projected forward to ultimate; the point
+projection is identical under <code>premium_method = "ed"</code> or <code>"cl"</code>
 (they differ only in the variance recursion).</p>
 <p>This function is the <em>composition</em> layer over <code><a href="fit_loss.html">fit_loss()</a></code> and
-<code><a href="fit_exposure.html">fit_exposure()</a></code>: it delegates loss projection to <code><a href="fit_loss.html">fit_loss()</a></code>,
-retrieves the embedded <code>ExposureFit</code>, and composes the loss-ratio
+<code><a href="fit_premium.html">fit_premium()</a></code>: it delegates loss projection to <code><a href="fit_loss.html">fit_loss()</a></code>,
+retrieves the embedded <code>PremiumFit</code>, and composes the loss-ratio
 point + variance via the delta method (<code>se_method = "fixed"</code> or
 <code>"delta"</code>). See <code>ARCHITECTURE.md</code> for the layered design.</p>
     </div>
@@ -202,9 +202,9 @@ point + variance via the delta method (<code>se_method = "fixed"</code> or
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ed"</span>, <span class="st">"cl"</span>, <span class="st">"sa"</span>, <span class="st">"bf"</span>, <span class="st">"cc"</span><span class="op">)</span>,</span>
 <span>  loss_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  loss_regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  exposure_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ed"</span>, <span class="st">"cl"</span><span class="op">)</span>,</span>
-<span>  exposure_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  exposure_regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  premium_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ed"</span>, <span class="st">"cl"</span><span class="op">)</span>,</span>
+<span>  premium_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  premium_regime <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sigma_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"locf"</span>, <span class="st">"min_last2"</span>, <span class="st">"loglinear"</span>, <span class="st">"mack"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maturity <span class="op">=</span> <span class="st">"auto"</span>,</span>
@@ -225,7 +225,7 @@ point + variance via the delta method (<code>se_method = "fixed"</code> or
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>An object of class <code>"Triangle"</code>. The standardized <code>"loss"</code>
-and <code>"exposure"</code> columns are used (<code><a href="as_triangle.html">as_triangle()</a></code> produces these).</p></dd>
+and <code>"premium"</code> columns are used (<code><a href="as_triangle.html">as_triangle()</a></code> produces these).</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
@@ -273,22 +273,22 @@ the change date are excluded from estimation.</p></dd>
 </dl></dd>
 
 
-<dt id="arg-exposure-method">exposure_method<a class="anchor" aria-label="anchor" href="#arg-exposure-method"></a></dt>
+<dt id="arg-premium-method">premium_method<a class="anchor" aria-label="anchor" href="#arg-premium-method"></a></dt>
 <dd><p>One of <code>"ed"</code> (default) or <code>"cl"</code>. Forwarded to
-<code><a href="fit_exposure.html">fit_exposure()</a></code> when constructing the exposure projection.</p></dd>
+<code><a href="fit_premium.html">fit_premium()</a></code> when constructing the premium projection.</p></dd>
 
 
-<dt id="arg-exposure-alpha">exposure_alpha<a class="anchor" aria-label="anchor" href="#arg-exposure-alpha"></a></dt>
-<dd><p>Numeric scalar for exposure chain ladder. Default
+<dt id="arg-premium-alpha">premium_alpha<a class="anchor" aria-label="anchor" href="#arg-premium-alpha"></a></dt>
+<dd><p>Numeric scalar for premium chain ladder. Default
 is <code>1</code>.</p></dd>
 
 
-<dt id="arg-exposure-regime">exposure_regime<a class="anchor" aria-label="anchor" href="#arg-exposure-regime"></a></dt>
-<dd><p>Exposure-side regime specification. Same four
+<dt id="arg-premium-regime">premium_regime<a class="anchor" aria-label="anchor" href="#arg-premium-regime"></a></dt>
+<dd><p>Premium-side regime specification. Same four
 input types as <code>loss_regime</code> (<code>NULL</code> / <code>Regime</code> / <code>"auto"</code> / function).
-Default <code>NULL</code> – exposure is fit on the full triangle independently
+Default <code>NULL</code> – premium is fit on the full triangle independently
 of <code>loss_regime</code> (no lazy default). Set explicitly when the regime
-shift affects exposure accrual too.</p></dd>
+shift affects premium accrual too.</p></dd>
 
 
 <dt id="arg-sigma-method">sigma_method<a class="anchor" aria-label="anchor" href="#arg-sigma-method"></a></dt>
@@ -341,11 +341,11 @@ log-linear tail factor; a numeric value is used directly.</p></dd>
 <dd><p>Premium treated as fixed (non-random).
 \(\mathrm{SE}(L/P) = \mathrm{SE}(L) / P\). Strictly, this is
 the delta method with <code>Var(P) = 0</code> and <code>Cov(L,P) = 0</code>, i.e., a
-degenerate case under the assumption that exposure is known.</p></dd>
+degenerate case under the assumption that premium is known.</p></dd>
 
 <dt><code>"delta"</code></dt>
-<dd><p>Full delta method including exposure uncertainty
-and the loss-exposure correlation <code>rho</code>:
+<dd><p>Full delta method including premium uncertainty
+and the loss-premium correlation <code>rho</code>:
 $$\mathrm{Var}(L/P) \approx \frac{\mathrm{Var}(L)}{P^2}
         + \frac{L^2 \mathrm{Var}(P)}{P^4}
         - \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(P)}{P^3}$$</p></dd>
@@ -356,10 +356,10 @@ $$\mathrm{Var}(L/P) \approx \frac{\mathrm{Var}(L)}{P^2}
 
 <dt id="arg-rho">rho<a class="anchor" aria-label="anchor" href="#arg-rho"></a></dt>
 <dd><p>Numeric scalar in <code>(-1, 1)</code>; assumed correlation between
-ultimate loss and ultimate exposure. Only used when
+ultimate loss and ultimate premium. Only used when
 <code>se_method = "delta"</code>. Default is <code>0.95</code>, matching the strong
 positive correlation typically observed between cumulative loss
-and cumulative exposure in long-tail health portfolios (analogous
+and cumulative premium in long-tail health portfolios (analogous
 to the paid/incurred correlation used in Munich chain ladder).</p></dd>
 
 
@@ -393,8 +393,8 @@ invoked on the input Triangle (leakage-safe for <code><a href="backtest.html">ba
 </dl><p>Premium is held at observed values during the bootstrap (loss-only
 convention). <code>ratio_se</code> is recomputed from the bootstrap-derived
 <code>loss_total_se</code> via <code><a href="dot-compute_ratio_se.html">.compute_ratio_se()</a></code>, combined with the
-exposure-side SE per <code>se_method</code> (<code>"fixed"</code> ignores exposure SE;
-<code>"delta"</code> uses <code>exposure_total_se</code> from the inner <code><a href="fit_exposure.html">fit_exposure()</a></code>
+premium-side SE per <code>se_method</code> (<code>"fixed"</code> ignores premium SE;
+<code>"delta"</code> uses <code>premium_total_se</code> from the inner <code><a href="fit_premium.html">fit_premium()</a></code>
 plus <code>rho</code> correlation).</p></dd>
 
 
@@ -420,7 +420,7 @@ worker – notably <code>prior</code> (and related arguments) when
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="fit_loss.html">fit_loss()</a></code>, <code><a href="fit_exposure.html">fit_exposure()</a></code>, <code><a href="as_triangle.html">as_triangle()</a></code>,
+    <div class="dont-index"><p><code><a href="fit_loss.html">fit_loss()</a></code>, <code><a href="fit_premium.html">fit_premium()</a></code>, <code><a href="as_triangle.html">as_triangle()</a></code>,
 <code><a href="as_link.html">as_link()</a></code>, <code><a href="fit_ata.html">fit_ata()</a></code>, <code><a href="fit_ed.html">fit_ed()</a></code>, <code><a href="detect_maturity.html">detect_maturity()</a></code></p></div>
     </div>
 
@@ -434,7 +434,7 @@ worker – notably <code>prior</code> (and related arguments) when
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span></span>
+<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Stage-adaptive (default): ED before maturity, CL after</span></span></span>

@@ -49,7 +49,7 @@ additive), `fit_sa` (stage-adaptive composition of ED + CL anchored on a
 maturity point). ELR-based reserve methods: `fit_bf`
 (Bornhuetter-Ferguson with external prior), `fit_cc` (Cape Cod with
 data-pooled ELR estimate). Role dispatchers: `fit_loss` (loss-side
-ed/cl/sa/bf/cc), `fit_exposure` (exposure-side ed/cl). Composition:
+ed/cl/sa/bf/cc), `fit_premium` (premium-side ed/cl). Composition:
 `fit_ratio` (loss-ratio umbrella with delta-method SE). All return an
 object carrying a `$full` projection table.
 
@@ -73,8 +73,8 @@ object carrying a `$full` projection table.
 - [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
   : Fit a loss projection on a Triangle
 
-- [`fit_exposure()`](https://seokhoonj.github.io/lossratio/reference/fit_exposure.md)
-  : Fit a chain ladder projection on the exposure triangle
+- [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+  : Fit a chain ladder projection on the premium triangle
 
 - [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
   : Fit loss ratio projection model
@@ -102,7 +102,7 @@ Decide which cells of the triangle to use for estimation.
 factors are stable); `detect_regime` works along the cohort axis
 (structural break across underwriting cohorts). The `*_at()` /
 `*_spec()` helpers build manual / lazy-detect input objects for the
-`maturity` / `loss_regime` / `exposure_regime` arguments of the fit
+`maturity` / `loss_regime` / `premium_regime` arguments of the fit
 functions.
 
 - [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
@@ -125,7 +125,7 @@ functions.
 
 Cohort × dev standard-error decomposition via simulation (Pythagorean
 split into parameter and process components). Returned object is
-consumed by `fit_loss` / `fit_exposure` / `fit_ratio` through their
+consumed by `fit_loss` / `fit_premium` / `fit_ratio` through their
 `bootstrap` argument to replace analytical SE / CI with empirical
 counterparts.
 
@@ -153,7 +153,7 @@ compare projections against the withheld actuals.
   [`print(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   [`summary(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   [`print(`*`<summary.Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
-  : Backtest a loss / exposure / loss-ratio projection on existing data
+  : Backtest a loss / premium / loss-ratio projection on existing data
 
 ## Visualisation
 
@@ -191,14 +191,14 @@ is a console table renderer for data frames and `Triangle` objects.
 - [`plot(`*`<EDFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.EDFit.md)
   : Plot an ED fit
 
-- [`plot(`*`<ExposureFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.ExposureFit.md)
-  : Plot an exposure fit
-
 - [`plot(`*`<IntensityFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.IntensityFit.md)
   : Plot an Intensity fit
 
 - [`plot(`*`<Link>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.Link.md)
   : Plot link-factor diagnostics
+
+- [`plot(`*`<PremiumFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.PremiumFit.md)
+  : Plot an premium fit
 
 - [`plot(`*`<RatioFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot.RatioFit.md)
   : Plot a loss ratio fit
@@ -241,14 +241,14 @@ is a console table renderer for data frames and `Triangle` objects.
 - [`plot_triangle(`*`<EDFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.EDFit.md)
   : Triangle heatmap for an ED fit
 
-- [`plot_triangle(`*`<ExposureFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.ExposureFit.md)
-  : Plot an exposure fit as a triangle table
-
 - [`plot_triangle(`*`<IntensityFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.IntensityFit.md)
   : Triangle heatmap for an Intensity fit
 
 - [`plot_triangle(`*`<Link>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.Link.md)
   : Plot a Link object as a triangle heatmap
+
+- [`plot_triangle(`*`<PremiumFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.PremiumFit.md)
+  : Plot an premium fit as a triangle table
 
 - [`plot_triangle(`*`<RatioFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.RatioFit.md)
   : Plot loss ratio projection as a triangle heatmap
@@ -274,7 +274,7 @@ print / summary / longer methods registered on package classes.
   [`print(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   [`summary(`*`<Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
   [`print(`*`<summary.Backtest>`*`)`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
-  : Backtest a loss / exposure / loss-ratio projection on existing data
+  : Backtest a loss / premium / loss-ratio projection on existing data
 
 - [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
   [`print(`*`<Regime>`*`)`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
@@ -320,11 +320,6 @@ print / summary / longer methods registered on package classes.
 
   Print method for `EDSummary`
 
-- [`print(`*`<ExposureFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.ExposureFit.md)
-  :
-
-  Print method for `ExposureFit`
-
 - [`print(`*`<IntensityFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.IntensityFit.md)
   :
 
@@ -334,6 +329,11 @@ print / summary / longer methods registered on package classes.
   :
 
   Print method for `LossFit`
+
+- [`print(`*`<PremiumFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.PremiumFit.md)
+  :
+
+  Print method for `PremiumFit`
 
 - [`print(`*`<RatioFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/print.RatioFit.md)
   :
@@ -377,11 +377,6 @@ print / summary / longer methods registered on package classes.
 
   Summary method for `EDFit`
 
-- [`summary(`*`<ExposureFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.ExposureFit.md)
-  :
-
-  Summary method for `ExposureFit`
-
 - [`summary(`*`<IntensityFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.IntensityFit.md)
   :
 
@@ -396,6 +391,11 @@ print / summary / longer methods registered on package classes.
   :
 
   Summary method for `LossFit`
+
+- [`summary(`*`<PremiumFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.PremiumFit.md)
+  :
+
+  Summary method for `PremiumFit`
 
 - [`summary(`*`<RatioFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/summary.RatioFit.md)
   :

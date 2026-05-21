@@ -5,12 +5,11 @@ selected metric is plotted over the calendar-style `calendar`, or over
 the calendar development variable stored in `attr(x, "dev")`.
 
 Ratio metrics (`ratio`, `incr_ratio`) and proportion metrics
-(`loss_share`, `incr_loss_share`, `exposure_share`,
-`incr_exposure_share`) are plotted on the original scale and displayed
-as percentages via y-axis labels. Amount metrics (`loss`, `incr_loss`,
-`exposure`, `incr_exposure`, `margin`, `incr_margin`) are plotted on the
-original scale and displayed using y-axis labels scaled by
-`amount_divisor`.
+(`loss_share`, `incr_loss_share`, `premium_share`, `incr_premium_share`)
+are plotted on the original scale and displayed as percentages via
+y-axis labels. Amount metrics (`loss`, `incr_loss`, `premium`,
+`incr_premium`, `margin`, `incr_margin`) are plotted on the original
+scale and displayed using y-axis labels scaled by `amount_divisor`.
 
 If grouping variables are present, lines are drawn separately by group.
 
@@ -38,9 +37,9 @@ plot(
 - metric:
 
   A single metric to plot. Must be one of: `"ratio"`, `"incr_ratio"`,
-  `"loss"`, `"incr_loss"`, `"exposure"`, `"incr_exposure"`, `"margin"`,
+  `"loss"`, `"incr_loss"`, `"premium"`, `"incr_premium"`, `"margin"`,
   `"incr_margin"`, `"loss_share"`, `"incr_loss_share"`,
-  `"exposure_share"`, or `"incr_exposure_share"`.
+  `"premium_share"`, or `"incr_premium_share"`.
 
 - amount_divisor:
 
@@ -81,9 +80,9 @@ A `ggplot` object.
 The x-axis is the calendar variable stored in `attr(x, "calendar")` (a
 Date, formatted per the triangle's `grain`).
 
-The loss ratio is defined as: \$\$ratio = loss / exposure\$\$
+The loss ratio is defined as: \$\$ratio = loss / premium\$\$
 
-where `exposure` denotes risk premium rather than written premium.
+where `premium` denotes risk premium rather than written premium.
 
 ## Examples
 
@@ -94,7 +93,7 @@ x <- as_calendar(
   groups   = "coverage",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 plot(x)

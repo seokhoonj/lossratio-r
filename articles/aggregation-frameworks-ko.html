@@ -213,23 +213,23 @@ aggregation frameworks</a></p>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
+<span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="co">#&gt; shape: (6, 18)</span></span>
-<span><span class="co">#&gt; ┌──────────┬───────────┬────────────┬───┬────────────────┬────────────────┐</span></span>
-<span><span class="co">#&gt; │ coverage ┆ n_cohorts ┆ cohort     ┆ … ┆ exposure_share ┆ incr_exposure… │</span></span>
-<span><span class="co">#&gt; │ &lt;chr&gt;    ┆ &lt;int&gt;     ┆ &lt;date&gt;     ┆ … ┆ &lt;dbl&gt;          ┆ &lt;dbl&gt;          │</span></span>
-<span><span class="co">#&gt; ├──────────┼───────────┼────────────┼───┼────────────────┼────────────────┤</span></span>
-<span><span class="co">#&gt; │ ci       ┆ 36        ┆ 2023-01-01 ┆ … ┆ 0.381171       ┆ 0.381171       │</span></span>
-<span><span class="co">#&gt; │ ci       ┆ 35        ┆ 2023-01-01 ┆ … ┆ 0.380346       ┆ 0.379558       │</span></span>
-<span><span class="co">#&gt; │ ci       ┆ 34        ┆ 2023-01-01 ┆ … ┆ 0.387352       ┆ 0.401744       │</span></span>
-<span><span class="co">#&gt; │ ci       ┆ 33        ┆ 2023-01-01 ┆ … ┆ 0.379535       ┆ 0.356118       │</span></span>
-<span><span class="co">#&gt; │ ci       ┆ 32        ┆ 2023-01-01 ┆ … ┆ 0.377646       ┆ 0.370060       │</span></span>
-<span><span class="co">#&gt; │ ci       ┆ 31        ┆ 2023-01-01 ┆ … ┆ 0.377400       ┆ 0.376114       │</span></span>
-<span><span class="co">#&gt; └──────────┴───────────┴────────────┴───┴────────────────┴────────────────┘</span></span>
-<span><span class="co">#&gt; 13 more variables: dev &lt;int&gt;, loss &lt;dbl&gt;, incr_loss &lt;dbl&gt;, exposure &lt;dbl&gt;,</span></span>
-<span><span class="co">#&gt;                    incr_exposure &lt;dbl&gt;, ratio &lt;dbl&gt;, incr_ratio &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; ┌──────────┬───────────┬────────────┬───┬───────────────┬────────────────┐</span></span>
+<span><span class="co">#&gt; │ coverage ┆ n_cohorts ┆ cohort     ┆ … ┆ premium_share ┆ incr_premium_… │</span></span>
+<span><span class="co">#&gt; │ &lt;chr&gt;    ┆ &lt;int&gt;     ┆ &lt;date&gt;     ┆ … ┆ &lt;dbl&gt;         ┆ &lt;dbl&gt;          │</span></span>
+<span><span class="co">#&gt; ├──────────┼───────────┼────────────┼───┼───────────────┼────────────────┤</span></span>
+<span><span class="co">#&gt; │ ci       ┆ 36        ┆ 2023-01-01 ┆ … ┆ 0.381171      ┆ 0.381171       │</span></span>
+<span><span class="co">#&gt; │ ci       ┆ 35        ┆ 2023-01-01 ┆ … ┆ 0.380346      ┆ 0.379558       │</span></span>
+<span><span class="co">#&gt; │ ci       ┆ 34        ┆ 2023-01-01 ┆ … ┆ 0.387352      ┆ 0.401744       │</span></span>
+<span><span class="co">#&gt; │ ci       ┆ 33        ┆ 2023-01-01 ┆ … ┆ 0.379535      ┆ 0.356118       │</span></span>
+<span><span class="co">#&gt; │ ci       ┆ 32        ┆ 2023-01-01 ┆ … ┆ 0.377646      ┆ 0.370060       │</span></span>
+<span><span class="co">#&gt; │ ci       ┆ 31        ┆ 2023-01-01 ┆ … ┆ 0.377400      ┆ 0.376114       │</span></span>
+<span><span class="co">#&gt; └──────────┴───────────┴────────────┴───┴───────────────┴────────────────┘</span></span>
+<span><span class="co">#&gt; 13 more variables: dev &lt;int&gt;, loss &lt;dbl&gt;, incr_loss &lt;dbl&gt;, premium &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt;                    incr_premium &lt;dbl&gt;, ratio &lt;dbl&gt;, incr_ratio &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt;                    margin &lt;dbl&gt;, incr_margin &lt;dbl&gt;, profit &lt;fct&gt;,</span></span>
 <span><span class="co">#&gt;                    incr_profit &lt;fct&gt;, loss_share &lt;dbl&gt;, incr_loss_share &lt;dbl&gt;</span></span></code></pre></div>
 <p>각 행은 (코호트, dev) 셀 하나이며 누적 손해액 / 누적 위험보험료 값을
@@ -243,14 +243,14 @@ aggregation frameworks</a></p>
 <span><span class="co"># dev 축 모두 분기 단위로 다시 만들어 패널당 ~10 × 10 셀로 줄인다.</span></span>
 <span><span class="co"># 문서 표시 크기에 맞춘 처리이며, 실제 분석에서는 플롯을 키우면 월</span></span>
 <span><span class="co"># 단위 그대로 볼 수 있다.</span></span>
-<span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span><span class="va">experience</span>, groups <span class="op">=</span> <span class="st">"coverage"</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>, calendar <span class="op">=</span> <span class="st">"cy_m"</span>, loss <span class="op">=</span> <span class="st">"incr_loss"</span>, exposure <span class="op">=</span> <span class="st">"incr_exposure"</span>, grain <span class="op">=</span> <span class="st">"Q"</span><span class="op">)</span></span>
+<span><span class="va">tri_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span><span class="va">experience</span>, groups <span class="op">=</span> <span class="st">"coverage"</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>, calendar <span class="op">=</span> <span class="st">"cy_m"</span>, loss <span class="op">=</span> <span class="st">"incr_loss"</span>, premium <span class="op">=</span> <span class="st">"incr_premium"</span>, grain <span class="op">=</span> <span class="st">"Q"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri_q</span><span class="op">)</span>   <span class="co"># 코호트 × dev ratio 히트맵</span></span></code></pre></div>
 <p><img src="aggregation-frameworks-ko_files/figure-html/unnamed-chunk-2-2.png" class="r-plt" alt="" width="100%"></p>
 <p><code>Triangle</code> 은 다음 함수의 입력으로 사용된다.</p>
 <ul>
 <li>
 <code><a href="../reference/as_link.html">as_link()</a></code> — 발달 인자 (ATA / ED 는 <code>loss</code> +
-선택적 <code>exposure</code> 로 선택)</li>
+선택적 <code>premium</code> 로 선택)</li>
 <li>
 <code><a href="../reference/fit_cl.html">fit_cl()</a></code>, <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> — 추정</li>
 <li>
@@ -263,23 +263,23 @@ aggregation frameworks</a></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span><span class="va">experience</span>, groups <span class="op">=</span> <span class="st">"coverage"</span>,</span>
 <span>                   cohort <span class="op">=</span> <span class="st">"uy_m"</span>, calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
-<span>                   loss <span class="op">=</span> <span class="st">"incr_loss"</span>, exposure <span class="op">=</span> <span class="st">"incr_exposure"</span><span class="op">)</span></span>
+<span>                   loss <span class="op">=</span> <span class="st">"incr_loss"</span>, premium <span class="op">=</span> <span class="st">"incr_premium"</span><span class="op">)</span></span>
 <span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_calendar.html">as_calendar</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cal</span><span class="op">)</span></span>
 <span><span class="co">#&gt; shape: (6, 18)</span></span>
-<span><span class="co">#&gt; ┌──────────┬────────────┬─────────┬───┬────────────────┬────────────────┐</span></span>
-<span><span class="co">#&gt; │ coverage ┆ calendar   ┆ cal_idx ┆ … ┆ exposure_share ┆ incr_exposure… │</span></span>
-<span><span class="co">#&gt; │ &lt;chr&gt;    ┆ &lt;date&gt;     ┆ &lt;int&gt;   ┆ … ┆ &lt;dbl&gt;          ┆ &lt;dbl&gt;          │</span></span>
-<span><span class="co">#&gt; ├──────────┼────────────┼─────────┼───┼────────────────┼────────────────┤</span></span>
-<span><span class="co">#&gt; │ cancer   ┆ 2023-01-01 ┆ 1       ┆ … ┆ 0.492583       ┆ 0.492583       │</span></span>
-<span><span class="co">#&gt; │ cancer   ┆ 2023-02-01 ┆ 2       ┆ … ┆ 0.452030       ┆ 0.428106       │</span></span>
-<span><span class="co">#&gt; │ cancer   ┆ 2023-03-01 ┆ 3       ┆ … ┆ 0.416257       ┆ 0.382514       │</span></span>
-<span><span class="co">#&gt; │ cancer   ┆ 2023-04-01 ┆ 4       ┆ … ┆ 0.389202       ┆ 0.348604       │</span></span>
-<span><span class="co">#&gt; │ cancer   ┆ 2023-05-01 ┆ 5       ┆ … ┆ 0.377872       ┆ 0.352976       │</span></span>
-<span><span class="co">#&gt; │ cancer   ┆ 2023-06-01 ┆ 6       ┆ … ┆ 0.355725       ┆ 0.304826       │</span></span>
-<span><span class="co">#&gt; └──────────┴────────────┴─────────┴───┴────────────────┴────────────────┘</span></span>
-<span><span class="co">#&gt; 13 more variables: n_cohorts &lt;int&gt;, loss &lt;dbl&gt;, incr_loss &lt;dbl&gt;, exposure &lt;dbl&gt;,</span></span>
-<span><span class="co">#&gt;                    incr_exposure &lt;dbl&gt;, ratio &lt;dbl&gt;, incr_ratio &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; ┌──────────┬────────────┬─────────┬───┬───────────────┬────────────────┐</span></span>
+<span><span class="co">#&gt; │ coverage ┆ calendar   ┆ cal_idx ┆ … ┆ premium_share ┆ incr_premium_… │</span></span>
+<span><span class="co">#&gt; │ &lt;chr&gt;    ┆ &lt;date&gt;     ┆ &lt;int&gt;   ┆ … ┆ &lt;dbl&gt;         ┆ &lt;dbl&gt;          │</span></span>
+<span><span class="co">#&gt; ├──────────┼────────────┼─────────┼───┼───────────────┼────────────────┤</span></span>
+<span><span class="co">#&gt; │ cancer   ┆ 2023-01-01 ┆ 1       ┆ … ┆ 0.492583      ┆ 0.492583       │</span></span>
+<span><span class="co">#&gt; │ cancer   ┆ 2023-02-01 ┆ 2       ┆ … ┆ 0.452030      ┆ 0.428106       │</span></span>
+<span><span class="co">#&gt; │ cancer   ┆ 2023-03-01 ┆ 3       ┆ … ┆ 0.416257      ┆ 0.382514       │</span></span>
+<span><span class="co">#&gt; │ cancer   ┆ 2023-04-01 ┆ 4       ┆ … ┆ 0.389202      ┆ 0.348604       │</span></span>
+<span><span class="co">#&gt; │ cancer   ┆ 2023-05-01 ┆ 5       ┆ … ┆ 0.377872      ┆ 0.352976       │</span></span>
+<span><span class="co">#&gt; │ cancer   ┆ 2023-06-01 ┆ 6       ┆ … ┆ 0.355725      ┆ 0.304826       │</span></span>
+<span><span class="co">#&gt; └──────────┴────────────┴─────────┴───┴───────────────┴────────────────┘</span></span>
+<span><span class="co">#&gt; 13 more variables: n_cohorts &lt;int&gt;, loss &lt;dbl&gt;, incr_loss &lt;dbl&gt;, premium &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt;                    incr_premium &lt;dbl&gt;, ratio &lt;dbl&gt;, incr_ratio &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt;                    margin &lt;dbl&gt;, incr_margin &lt;dbl&gt;, profit &lt;fct&gt;,</span></span>
 <span><span class="co">#&gt;                    incr_profit &lt;fct&gt;, loss_share &lt;dbl&gt;, incr_loss_share &lt;dbl&gt;</span></span></code></pre></div>
 <p>각 행은 그룹별 달력 기간 하나이다. <code>t</code> 컬럼은 그룹 내부의
@@ -310,21 +310,21 @@ on-leveling 이벤트)</li>
 <span>             <span class="va">uy_m</span> <span class="op">&lt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2024-03-01"</span><span class="op">)</span><span class="op">]</span>,</span>
 <span>  groups <span class="op">=</span> <span class="st">"coverage"</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  dev <span class="op">=</span> <span class="st">"dev_m"</span>,</span>
-<span>  loss <span class="op">=</span> <span class="st">"incr_loss"</span>, exposure <span class="op">=</span> <span class="st">"incr_exposure"</span></span>
+<span>  loss <span class="op">=</span> <span class="st">"incr_loss"</span>, premium <span class="op">=</span> <span class="st">"incr_premium"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">tot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_total.html">as_total</a></span><span class="op">(</span><span class="va">tri_bounded</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tot</span><span class="op">)</span></span>
 <span><span class="co">#&gt; shape: (4, 9)</span></span>
-<span><span class="co">#&gt; ┌───────────┬───────────┬─────────────┬───┬────────────┬────────────────┐</span></span>
-<span><span class="co">#&gt; │ coverage  ┆ n_cohorts ┆ sales_start ┆ … ┆ loss_share ┆ exposure_share │</span></span>
-<span><span class="co">#&gt; │ &lt;chr&gt;     ┆ &lt;int&gt;     ┆ &lt;date&gt;      ┆ … ┆ &lt;dbl&gt;      ┆ &lt;dbl&gt;          │</span></span>
-<span><span class="co">#&gt; ├───────────┼───────────┼─────────────┼───┼────────────┼────────────────┤</span></span>
-<span><span class="co">#&gt; │ ci        ┆ 12        ┆ 2023-04-01  ┆ … ┆ 0.33461100 ┆ 0.427133       │</span></span>
-<span><span class="co">#&gt; │ cancer    ┆ 12        ┆ 2023-04-01  ┆ … ┆ 0.11375800 ┆ 0.162389       │</span></span>
-<span><span class="co">#&gt; │ inpatient ┆ 12        ┆ 2023-04-01  ┆ … ┆ 0.00644687 ┆ 0.016502       │</span></span>
-<span><span class="co">#&gt; │ surgery   ┆ 12        ┆ 2023-04-01  ┆ … ┆ 0.54518400 ┆ 0.393976       │</span></span>
-<span><span class="co">#&gt; └───────────┴───────────┴─────────────┴───┴────────────┴────────────────┘</span></span>
-<span><span class="co">#&gt; 4 more variables: sales_end &lt;date&gt;, loss &lt;dbl&gt;, exposure &lt;dbl&gt;, ratio &lt;dbl&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; ┌───────────┬───────────┬─────────────┬───┬────────────┬───────────────┐</span></span>
+<span><span class="co">#&gt; │ coverage  ┆ n_cohorts ┆ sales_start ┆ … ┆ loss_share ┆ premium_share │</span></span>
+<span><span class="co">#&gt; │ &lt;chr&gt;     ┆ &lt;int&gt;     ┆ &lt;date&gt;      ┆ … ┆ &lt;dbl&gt;      ┆ &lt;dbl&gt;         │</span></span>
+<span><span class="co">#&gt; ├───────────┼───────────┼─────────────┼───┼────────────┼───────────────┤</span></span>
+<span><span class="co">#&gt; │ ci        ┆ 12        ┆ 2023-04-01  ┆ … ┆ 0.33461100 ┆ 0.427133      │</span></span>
+<span><span class="co">#&gt; │ cancer    ┆ 12        ┆ 2023-04-01  ┆ … ┆ 0.11375800 ┆ 0.162389      │</span></span>
+<span><span class="co">#&gt; │ inpatient ┆ 12        ┆ 2023-04-01  ┆ … ┆ 0.00644687 ┆ 0.016502      │</span></span>
+<span><span class="co">#&gt; │ surgery   ┆ 12        ┆ 2023-04-01  ┆ … ┆ 0.54518400 ┆ 0.393976      │</span></span>
+<span><span class="co">#&gt; └───────────┴───────────┴─────────────┴───┴────────────┴───────────────┘</span></span>
+<span><span class="co">#&gt; 4 more variables: sales_end &lt;date&gt;, loss &lt;dbl&gt;, premium &lt;dbl&gt;, ratio &lt;dbl&gt;</span></span></code></pre></div>
 <p>그룹당 한 행이며 해당 기간의 손해액 / 위험보험료 / 손해율을 요약한다.
 <code>period_from</code> / <code>period_to</code> 인자로 기간을 지정해
 그룹 간 비교 가능성을 확보한다.</p>
