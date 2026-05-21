@@ -2,7 +2,7 @@
 % Please edit documentation in R/bf.R
 \name{.compute_q_table}
 \alias{.compute_q_table}
-\title{Compute the per-cohort emergence table (q_i + ultimate exposure)}
+\title{Compute the per-cohort emergence table (q_i + ultimate premium)}
 \usage{
 .compute_q_table(loss_full, exp_full, by_cols)
 }
@@ -10,19 +10,19 @@
 \item{loss_full}{A loss-side \verb{$full} grid (\code{is_observed}, \code{loss_obs},
 \code{loss_proj}).}
 
-\item{exp_full}{An exposure-side \verb{$full} grid (\code{exposure_proj}).}
+\item{exp_full}{An premium-side \verb{$full} grid (\code{premium_proj}).}
 
 \item{by_cols}{Per-cohort key columns, \code{c(groups, "cohort")}.}
 }
 \value{
 A \code{data.table} keyed by \code{by_cols} with \code{loss_latest},
-\code{loss_ult_cl}, \code{q}, and \code{exposure_ult}.
+\code{loss_ult_cl}, \code{q}, and \code{premium_ult}.
 }
 \description{
 Shared by \code{\link[=fit_bf]{fit_bf()}} and \code{\link[=fit_cc]{fit_cc()}}. From a loss-side \code{CLFit$full}
-and an exposure-side \code{ExposureFit$full}, builds the per-cohort table
+and an premium-side \code{PremiumFit$full}, builds the per-cohort table
 of latest observed loss, CL-ultimate loss, the emergence fraction
-\eqn{q_i = L_{obs} / L_{ult}^{CL}}, and ultimate exposure -- the
+\eqn{q_i = L_{obs} / L_{ult}^{CL}}, and ultimate premium -- the
 inputs the Bornhuetter-Ferguson / Cape Cod blend consumes.
 }
 \keyword{internal}

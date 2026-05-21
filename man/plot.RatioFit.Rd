@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{RatioFit}(
   x,
-  metric = c("ratio", "loss", "exposure"),
+  metric = c("ratio", "loss", "premium"),
   cell_type = c("cumulative", "incremental"),
   per_group = NULL,
   ask = grDevices::dev.interactive(),
@@ -24,7 +24,7 @@
 \item{x}{An object of class \code{"RatioFit"}.}
 
 \item{metric}{Metric to plot. One of \code{"ratio"} (default), \code{"loss"},
-\code{"exposure"}.}
+\code{"premium"}.}
 
 \item{cell_type}{Aggregation. One of \code{"cumulative"} (default) or
 \code{"incremental"}.}
@@ -65,7 +65,7 @@ The plotted metric is the cross-product of \code{metric} and \code{cell_type}:
 ratio (default).
 \item \code{metric = "incr_ratio"} (i.e., \code{cell_type = "incremental"}):
 per-period loss ratio.
-\item \code{metric = "loss"} / \code{"exposure"}: same split -- cumulative or
+\item \code{metric = "loss"} / \code{"premium"}: same split -- cumulative or
 per-period amounts.
 }
 Confidence bands are drawn only for cumulative metrics

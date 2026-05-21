@@ -20,9 +20,9 @@
 
 \item{metric}{A single metric to plot. Must be one of:
 \code{"ratio"}, \code{"incr_ratio"},
-\code{"loss"}, \code{"incr_loss"}, \code{"exposure"}, \code{"incr_exposure"},
+\code{"loss"}, \code{"incr_loss"}, \code{"premium"}, \code{"incr_premium"},
 \code{"margin"}, \code{"incr_margin"},
-\code{"loss_share"}, \code{"incr_loss_share"}, \code{"exposure_share"}, or \code{"incr_exposure_share"}.}
+\code{"loss_share"}, \code{"incr_loss_share"}, \code{"premium_share"}, or \code{"incr_premium_share"}.}
 
 \item{summary}{Logical. If \code{FALSE} (default), shows raw cohort trajectories.
 If \code{TRUE}, shows grey cohort trajectories with overlaid summary lines
@@ -77,15 +77,15 @@ Cohort lines are grouped by the period variable stored in
 \code{attr(x, "groups")}.
 
 The cumulative loss ratio is defined here as:
-\deqn{ratio = loss / exposure}
+\deqn{ratio = loss / premium}
 
 For long-term health insurance applications, risk premium is commonly
-used as the \code{exposure} measure.
+used as the \code{premium} measure.
 
 The weighted mean is defined as:
 \itemize{
-\item \code{ratio_wt      = sum(loss)      / sum(exposure)}
-\item \code{incr_ratio_wt = sum(incr_loss) / sum(incr_exposure)}
+\item \code{ratio_wt      = sum(loss)      / sum(premium)}
+\item \code{incr_ratio_wt = sum(incr_loss) / sum(incr_premium)}
 }
 
 Ratio and proportion metrics are plotted on the original scale and displayed

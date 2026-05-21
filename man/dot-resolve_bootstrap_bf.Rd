@@ -16,9 +16,9 @@
 }
 \description{
 Four-type dispatch mirroring \code{.resolve_bootstrap()} but returning a
-\emph{pair} of \code{BootstrapTriangle} objects (loss + exposure) -- BF / Cape
+\emph{pair} of \code{BootstrapTriangle} objects (loss + premium) -- BF / Cape
 Cod compose loss-side parameter uncertainty (via \eqn{q_i^b}) and
-exposure-side parameter uncertainty (via \eqn{E_i^{ult,b}}) into a
+premium-side parameter uncertainty (via \eqn{E_i^{ult,b}}) into a
 single ultimate distribution.
 
 Accepts:
@@ -26,9 +26,9 @@ Accepts:
 \item \code{NULL} / \code{FALSE} -- returns \code{NULL} (point estimate only).
 \item \code{TRUE} / \code{"auto"} -- two internal \code{bootstrap()} calls (one per
 target) sharing \code{seed} so replicate indices align.
-\item Named list \code{list(loss = BT, exposure = BT)} -- validate
+\item Named list \code{list(loss = BT, premium = BT)} -- validate
 \code{meta$B} and \code{meta$seed} match.
-\item Function \verb{function(tri) -> list(loss = ..., exposure = ...)}.
+\item Function \verb{function(tri) -> list(loss = ..., premium = ...)}.
 }
 }
 \keyword{internal}

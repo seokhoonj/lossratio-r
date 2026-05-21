@@ -13,14 +13,14 @@
 carries \code{mean_proj}, \code{param_se}, \code{proc_se}, \code{total_se},
 \code{total_cv}, and optionally \code{ci_lo} / \code{ci_hi}.}
 
-\item{role}{Column-name prefix, \code{"loss"} or \code{"exposure"}.}
+\item{role}{Column-name prefix, \code{"loss"} or \code{"premium"}.}
 
 \item{groups}{Group columns; the join key is
 \code{c(groups, "cohort", "dev")}.}
 
 \item{se_cols}{Statistic suffixes to overlay -- e.g.
 \code{c("param_se", "proc_se", "total_se", "total_cv")} for loss,
-\code{c("total_se", "total_cv")} for exposure. The point projection is
+\code{c("total_se", "total_cv")} for premium. The point projection is
 never overlaid; it stays analytical.}
 }
 \value{
@@ -29,7 +29,7 @@ never overlaid; it stays analytical.}
 }
 \description{
 The shared core of every bootstrap-CI path (\code{.lossfit_bootstrap()},
-\code{.exposurefit_bootstrap()}, and the in-worker \code{fit_sa()} /
+\code{.premiumfit_bootstrap()}, and the in-worker \code{fit_sa()} /
 \code{fit_ratio()} blocks). Given an already-resolved bootstrap result,
 it renames the \code{bootstrap()} summary columns to the caller's
 \verb{<role>_*} schema, joins them onto \code{full} by \verb{(groups, cohort, dev)},

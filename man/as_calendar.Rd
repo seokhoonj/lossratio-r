@@ -20,11 +20,11 @@ within its group, not a true development period (\code{cym - uym}).
 Useful for aligning groups with different starting periods on a
 common index scale.}
 \item{loss, incr_loss}{Cumulative and per-period loss}
-\item{exposure, incr_exposure}{Cumulative and per-period exposure}
+\item{premium, incr_premium}{Cumulative and per-period premium}
 \item{ratio, incr_ratio}{Cumulative and per-period loss ratio}
 \item{margin, incr_margin}{Cumulative and per-period margin}
 \item{profit, incr_profit}{Profit indicator}
-\item{loss_share, incr_loss_share, exposure_share, incr_exposure_share}{
+\item{loss_share, incr_loss_share, premium_share, incr_premium_share}{
 Proportions within each \code{calendar} cell}
 }
 
@@ -48,17 +48,17 @@ loss / premium, incremental and cumulative LR, margin, profit, and
 share columns within each \code{calendar} cell.
 
 The cumulative loss ratio is defined as:
-\deqn{ratio = loss / exposure}
+\deqn{ratio = loss / premium}
 
 For long-term health insurance applications, risk premium is commonly
-used as the \code{exposure} measure.
+used as the \code{premium} measure.
 
 Proportion variables are computed within each \code{calendar} cell:
 \itemize{
 \item \code{incr_loss_share     = incr_loss     / sum(incr_loss)}
-\item \code{incr_exposure_share = incr_exposure / sum(incr_exposure)}
+\item \code{incr_premium_share = incr_premium / sum(incr_premium)}
 \item \code{loss_share          = loss          / sum(loss)}
-\item \code{exposure_share      = exposure      / sum(exposure)}
+\item \code{premium_share      = premium      / sum(premium)}
 }
 
 Therefore, for a fixed \code{calendar} cell, the proportions
@@ -67,7 +67,7 @@ each calendar period across products or other grouping variables.
 
 Calendar derives \code{calendar = cohort + (dev - 1)} using the
 Triangle's \code{grain} attribute and aggregates the incremental
-\code{loss} / \code{exposure} columns by \verb{(groups, calendar)}. This works for
+\code{loss} / \code{premium} columns by \verb{(groups, calendar)}. This works for
 Triangles built in either mode (with or without an original
 \code{calendar} column in the raw experience), since \code{cohort + dev} is
 always sufficient to reconstruct the calendar axis at the
@@ -81,7 +81,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 cal <- as_calendar(tri)

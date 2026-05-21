@@ -232,7 +232,7 @@
 #'   Phase 5b.3 and currently errors.
 #' @param method Fit-model paradigm whose lower-triangle forward projection
 #'   the bootstrap should produce. One of `"ed"` (default -- exposure-driven
-#'   additive recursion across all dev; Phase 1 keeps exposure fixed,
+#'   additive recursion across all dev; Phase 1 keeps premium fixed,
 #'   projected once via CL), `"cl"` (chain-ladder multiplicative recursion
 #'   across all dev), `"sa"` (stage-adaptive -- ED before maturity, CL after;
 #'   currently routes through the CL kernel pending Phase 4 SA bootstrap).
@@ -283,7 +283,7 @@
 #'   triangle at `B = 999` the reshape costs ~250-300 ms and ~200 MB on
 #'   top of `$summary`; users who only consume `$summary` (the common
 #'   case) should leave this `FALSE`. `fit_ratio()` / `fit_loss()` /
-#'   `fit_exposure()` always pass `FALSE` internally because they only
+#'   `fit_premium()` always pass `FALSE` internally because they only
 #'   read `$summary`. Set `TRUE` explicitly if you want to inspect
 #'   `$pseudo_triangles` directly.
 #' @param ... Reserved for future use.
@@ -319,7 +319,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   exposure = "incr_exposure"
+#'   premium = "incr_premium"
 #' )
 #'
 #' # Cell-residual bootstrap (default)
@@ -345,7 +345,7 @@ bootstrap <- function(x, ...) {
 
 #' @rdname bootstrap
 #' @param target Cumulative metric to perturb. One of `"loss"` (default) or
-#'   `"exposure"`. The value column in `$pseudo_triangles` is named after this
+#'   `"premium"`. The value column in `$pseudo_triangles` is named after this
 #'   target so downstream refit helpers know which column to read.
 #' @export
 bootstrap.Triangle <- function(x,
@@ -362,7 +362,7 @@ bootstrap.Triangle <- function(x,
                                 tail        = c("auto", "maturity"),
                                 min_pool    = 5L,
                                 maturity    = NULL,
-                                target      = c("loss", "exposure"),
+                                target      = c("loss", "premium"),
                                 B           = 499L,
                                 seed        = NULL,
                                 alpha       = 1,
@@ -511,12 +511,12 @@ bootstrap.Triangle <- function(x,
 
   if (is_residual_mode) {
     # 1) Build Link on the chosen target. ED + cell and SA + cell both need
-    #    the dual-variable Link (loss + exposure) so we can read
-    #    `exposure_from`; the other branches only need the single-variable
+    #    the dual-variable Link (loss + premium) so we can read
+    #    `premium_from`; the other branches only need the single-variable
     #    Link (chain ladder anchor).
     if (identical(residual, "cell") &&
         (identical(method, "ed") || identical(method, "sa"))) {
-      link <- as_link(x, loss = target, exposure = "exposure",
+      link <- as_link(x, loss = target, premium = "premium",
                       drop_invalid = TRUE)
     } else {
       link <- as_link(x, loss = target, drop_invalid = TRUE)
@@ -534,10 +534,10 @@ bootstrap.Triangle <- function(x,
                                 pooling = pooling, tail = tail,
                                 min_pool = min_pool, maturity = maturity)
     } else if (identical(method, "ed")) {
-      # ED-paradigm cell residual (Phase 1, fixed exposure). Pearson
+      # ED-paradigm cell residual (Phase 1, fixed premium). Pearson
       # residuals follow the additive form:
-      #   r_{i, k} = (loss_delta - g_k * exposure_from)
-      #              / sqrt(g_k * exposure_from)
+      #   r_{i, k} = (loss_delta - g_k * premium_from)
+      #              / sqrt(g_k * premium_from)
       # Pool keyed by (cohort, dev = ata_to) for compatibility with the
       # cell-mode pool builder.
       cell_resid <- .boot_cell_residuals_ed(link, groups = grp)
@@ -608,7 +608,7 @@ bootstrap.Triangle <- function(x,
     #   Pearson residuals (just like cell-mode), since it's the natural
     #   variance scale for ProcessDist.
     if (identical(method, "ed") || identical(method, "sa")) {
-      link <- as_link(x, loss = target, exposure = "exposure",
+      link <- as_link(x, loss = target, premium = "premium",
                       drop_invalid = TRUE)
     } else {
       link <- as_link(x, loss = target, drop_invalid = TRUE)
@@ -755,7 +755,7 @@ bootstrap.Triangle <- function(x,
 
 # Internal: volume-weighted ratio sum(num) / sum(den) with the standard
 # finiteness/positivity gate. Returns NA_real_ when no row passes the
-# gate. Shared kernel for the loss CL, ED intensity, and exposure CL
+# gate. Shared kernel for the loss CL, ED intensity, and premium CL
 # anchors.
 .boot_volume_weighted_ratio <- function(num, den) {
   ok <- is.finite(num) & is.finite(den) & den > 0
@@ -1017,18 +1017,18 @@ bootstrap.Triangle <- function(x,
 
 # Internal: additive ED step closures for `.boot_fitted_grid`.
 # `g_by_to[j]` is the per-link intensity applied at link (j-1 -> j);
-# `exposure_obs_mat[i, j-1]` is the FROM-side cumulative exposure for that
+# `premium_obs_mat[i, j-1]` is the FROM-side cumulative premium for that
 # link.
-.boot_steps_ed <- function(g_by_to, exposure_obs_mat) {
+.boot_steps_ed <- function(g_by_to, premium_obs_mat) {
   list(
     fwd = function(cur, i, j) {
       g_k    <- g_by_to[j]
-      e_from <- exposure_obs_mat[i, j - 1L]
+      e_from <- premium_obs_mat[i, j - 1L]
       if (is.finite(g_k) && is.finite(e_from)) cur + g_k * e_from else cur
     },
     bwd = function(cur, i, j) {
       g_k    <- g_by_to[j + 1L]
-      e_from <- exposure_obs_mat[i, j]
+      e_from <- premium_obs_mat[i, j]
       if (is.finite(g_k) && is.finite(e_from)) cur - g_k * e_from else cur
     }
   )
@@ -1232,10 +1232,10 @@ bootstrap.Triangle <- function(x,
 # Internal: ED-paradigm Pearson cell residuals (Phase 1) ------------------
 #
 # For each link cell (cohort, ata_to) of the dual-variable Link table:
-#   mu_ed   = g_k * exposure_from
+#   mu_ed   = g_k * premium_from
 #   r_raw   = (loss_delta - mu_ed) / sqrt(mu_ed)
 # where g_k is the volume-weighted per-link intensity anchor
-# (sum(loss_delta) / sum(exposure_from) over observed link rows). Cells
+# (sum(loss_delta) / sum(premium_from) over observed link rows). Cells
 # with non-positive mu_ed or non-finite endpoints are excluded.
 #
 # The pool builder (`.boot_build_pool_cell_cl`) consumes a (cohort, dev,
@@ -1253,7 +1253,7 @@ bootstrap.Triangle <- function(x,
 # link factor `g_k`), matching the ED-paradigm degrees-of-freedom.
 .boot_cell_residuals_ed <- function(link, groups) {
   # NSE
-  loss_delta <- exposure_from <- ata_to <- residual <- g_hat <- mu_ed <-
+  loss_delta <- premium_from <- ata_to <- residual <- g_hat <- mu_ed <-
     n_obs <- sum_r2 <- n_links_used <- NULL
 
   by_cols <- c(groups, "ata_to")
@@ -1261,14 +1261,14 @@ bootstrap.Triangle <- function(x,
   dt <- data.table::copy(link)
 
   # Per-link g_hat anchor (volume-weighted) on observed link rows.
-  link_anchor <- dt[is.finite(loss_delta) & is.finite(exposure_from) &
-                     exposure_from > 0,
-                   list(g_hat = sum(loss_delta) / sum(exposure_from)),
+  link_anchor <- dt[is.finite(loss_delta) & is.finite(premium_from) &
+                     premium_from > 0,
+                   list(g_hat = sum(loss_delta) / sum(premium_from)),
                    by = by_cols]
 
   dt <- merge(dt, link_anchor, by = by_cols, all.x = TRUE, sort = FALSE)
 
-  dt[, ("mu_ed") := g_hat * exposure_from]
+  dt[, ("mu_ed") := g_hat * premium_from]
   dt[, ("residual") := data.table::fifelse(
     is.finite(loss_delta) & is.finite(mu_ed) & mu_ed > 0,
     (loss_delta - mu_ed) / sqrt(mu_ed),
@@ -1307,27 +1307,27 @@ bootstrap.Triangle <- function(x,
 }
 
 
-# Internal: cumulative exposure observed matrix [n_coh, n_dev] ------------
-.ensure_exposure_obs_mat <- function(triangle, cohorts, devs, n_coh, n_dev) {
+# Internal: cumulative premium observed matrix [n_coh, n_dev] ------------
+.ensure_premium_obs_mat <- function(triangle, cohorts, devs, n_coh, n_dev) {
   mat <- matrix(NA_real_, nrow = n_coh, ncol = n_dev,
                 dimnames = list(as.character(cohorts), as.character(devs)))
   ci_vec <- match(triangle$cohort, cohorts)
   di_vec <- match(triangle$dev,    devs)
   ok <- !is.na(ci_vec) & !is.na(di_vec)
   if (any(ok)) {
-    mat[cbind(ci_vec[ok], di_vec[ok])] <- triangle[["exposure"]][ok]
+    mat[cbind(ci_vec[ok], di_vec[ok])] <- triangle[["premium"]][ok]
   }
   mat
 }
 
 
-# Internal: per-link f_hat anchor on the exposure column ------------------
+# Internal: per-link f_hat anchor on the premium column ------------------
 #
-# Standard CL volume-weighted ATA factor on cumulative exposure:
-#   f_p_k = sum_i exposure[i, k+1] / sum_i exposure[i, k]
+# Standard CL volume-weighted ATA factor on cumulative premium:
+#   f_p_k = sum_i premium[i, k+1] / sum_i premium[i, k]
 # Returns a list with `f_by_to` (length n_dev; NA for dev = 1) so the
 # projector can look up the factor by `to-dev` index.
-.boot_anchor_exposure_cl <- function(exp_obs_mat, last_obs_idx,
+.boot_anchor_premium_cl <- function(exp_obs_mat, last_obs_idx,
                                     n_coh, n_dev, devs) {
   f_by_to <- rep(NA_real_, n_dev)
   if (n_dev < 2L) return(list(f_by_to = f_by_to))
@@ -1344,13 +1344,13 @@ bootstrap.Triangle <- function(x,
 }
 
 
-# Internal: project exposure forward via CL on the exposure column --------
+# Internal: project premium forward via CL on the premium column --------
 #
-# Phase 1 assumption: exposure is treated as known (a single deterministic
+# Phase 1 assumption: premium is treated as known (a single deterministic
 # projection across all B replicates). For each cohort `i`, starting at
 # its last observed dev, roll forward with the per-link `f_by_to`. The
 # upper-triangle (observed) entries are preserved from `exp_obs_mat`.
-.boot_proj_exposure_cl <- function(exp_obs_mat, last_obs_idx,
+.boot_proj_premium_cl <- function(exp_obs_mat, last_obs_idx,
                                       f_by_to, n_coh, n_dev) {
   out <- exp_obs_mat
   for (i in seq_len(n_coh)) {
@@ -1371,20 +1371,20 @@ bootstrap.Triangle <- function(x,
 
 # Internal: per-link g_hat anchor (intensity, ED) -------------------------
 #
-# `link` is a dual-variable Link table (built with `as_link(..., exposure)`)
-# whose `intensity` column already encodes `loss_delta / exposure_from`.
+# `link` is a dual-variable Link table (built with `as_link(..., premium)`)
+# whose `intensity` column already encodes `loss_delta / premium_from`.
 # The volume-weighted per-link intensity is
-#   g_k = sum_i loss_delta_{i, k} / sum_i exposure_from_{i, k}
+#   g_k = sum_i loss_delta_{i, k} / sum_i premium_from_{i, k}
 # Returned vector aligns with `anchor` row order
 # (i.e., `g_hat_vec[k]` matches `anchor$ata_to[k]` and `link_to_idx[k]`).
 .boot_anchor_ed <- function(anchor, link, n_links) {
   # NSE
-  loss_delta <- exposure_from <- NULL
+  loss_delta <- premium_from <- NULL
 
-  g_links <- link[is.finite(loss_delta) & is.finite(exposure_from) &
-                 exposure_from > 0,
+  g_links <- link[is.finite(loss_delta) & is.finite(premium_from) &
+                 premium_from > 0,
                list(g_hat = .boot_volume_weighted_ratio(loss_delta,
-                                                       exposure_from)),
+                                                       premium_from)),
                by = "ata_to"]
   # Lookup g_hat for each anchor row by `ata_to` (anchor row order is the
   # canonical link order in `.boot_stage1_one`).
@@ -1669,7 +1669,7 @@ bootstrap.Triangle <- function(x,
   # Cell-style draw modes: precompute fitted incremental means mu_hat_{ij}
   # (full grid). Reused across replicates -- these are the original-data
   # fits, not per-replicate refits. ED-paradigm builds its own
-  # `mu_ed_grid` below from `g_hat * exposure_from`, so it skips this.
+  # `mu_ed_grid` below from `g_hat * premium_from`, so it skips this.
   # SA-paradigm needs BOTH grids (CL grid for late-dev cells, ED grid for
   # early-dev cells), so it builds both. Same precompute is needed for
   # the parametric path (cell-distribution sampling needs mu per cell).
@@ -1722,33 +1722,33 @@ bootstrap.Triangle <- function(x,
     }
 
     if (identical(method, "ed")) {
-      # ----- ED-paradigm cell residual (Phase 1: fixed exposure) -------
+      # ----- ED-paradigm cell residual (Phase 1: fixed premium) -------
       # mu_ed is built by `.boot_fitted_grid` with additive ED step
       # closures (`.boot_steps_ed`) -- the additive mirror of the CL
       # multiplicative recursion. Each cohort anchors at its observed
       # cumulative loss at `last_obs_idx`, then back-fills earlier devs
       # and projects later devs by additive increments
-      # g_k * exposure_from. The upper-triangle partial sums match the
+      # g_k * premium_from. The upper-triangle partial sums match the
       # observed cumulative exactly (no anchor drift).
       # Residuals on link cells (j >= 2) come from the ED Pearson form
       # (Delta loss - g_k * P_{k-1}) / sqrt(g_k * P_{k-1}); first-period
       # cells have no link and pass through unperturbed.
 
-      # 1) Observed cumulative exposure matrix + CL forward projection
-      #    on the exposure column (projection lives in the lower
+      # 1) Observed cumulative premium matrix + CL forward projection
+      #    on the premium column (projection lives in the lower
       #    triangle; the upper triangle keeps the observed values).
-      exp_obs_mat <- .ensure_exposure_obs_mat(triangle, cohorts, devs,
-                                              n_coh, n_dev)
-      exp_anchor  <- .boot_anchor_exposure_cl(exp_obs_mat, last_obs_idx,
-                                              n_coh, n_dev, devs)
-      exposure_proj_mat <- .boot_proj_exposure_cl(exp_obs_mat,
+      exp_obs_mat <- .ensure_premium_obs_mat(triangle, cohorts, devs,
+                                             n_coh, n_dev)
+      exp_anchor  <- .boot_anchor_premium_cl(exp_obs_mat, last_obs_idx,
+                                             n_coh, n_dev, devs)
+      premium_proj_mat <- .boot_proj_premium_cl(exp_obs_mat,
                                                      last_obs_idx,
                                                      exp_anchor$f_by_to,
                                                      n_coh, n_dev)
 
       # 2) Per-link g_hat anchor on the original triangle (intensity
       #    weighted): g_k = sum_i (loss_delta_{i, k}) /
-      #                      sum_i (exposure_from_{i, k}). Indexed by
+      #                      sum_i (premium_from_{i, k}). Indexed by
       #    ata_to (one entry per link, aligned with link_to_idx).
       g_hat_vec <- .boot_anchor_ed(anchor, link, n_links)
 
@@ -1756,15 +1756,15 @@ bootstrap.Triangle <- function(x,
       #    the CL multiplicative recursion). Each cohort is anchored at
       #    its observed cumulative loss at `last_obs_idx`; the upper
       #    triangle is back-filled and the lower triangle projected by
-      #    additive increments g_k * exposure_from. By construction the
+      #    additive increments g_k * premium_from. By construction the
       #    sum of `mu_ed_grid[i, 1:last_j]` matches the observed
       #    cumulative at `last_j` exactly (no anchor drift). The
-      #    exposure argument is `exposure_proj_mat` (upper triangle =
+      #    premium argument is `premium_proj_mat` (upper triangle =
       #    observed, lower triangle = CL-projected) so lower-triangle
-      #    additive steps have a finite exposure_from to multiply by.
+      #    additive steps have a finite premium_from to multiply by.
       g_by_to <- rep(NA_real_, n_dev)
       g_by_to[link_to_idx] <- g_hat_vec
-      steps      <- .boot_steps_ed(g_by_to, exposure_proj_mat)
+      steps      <- .boot_steps_ed(g_by_to, premium_proj_mat)
       mu_ed_grid <- .boot_fitted_grid(mat_obs, last_obs_idx, n_coh, n_dev,
                                       steps$fwd, steps$bwd)
 
@@ -1807,7 +1807,7 @@ bootstrap.Triangle <- function(x,
         as.integer(link_to_idx),
         as.integer(k_idx_by_j),
         as.numeric(g_hat_vec),
-        as.numeric(exposure_proj_mat),
+        as.numeric(premium_proj_mat),
         as.numeric(phi),
         as.numeric(alpha),
         process_code,
@@ -1821,8 +1821,8 @@ bootstrap.Triangle <- function(x,
       # Each active cell is classified by its paradigm:
       #   - ED: from-dev < mat_k_vec[i]  (use mu_ed_grid + ED pool prefix)
       #   - CL: from-dev >= mat_k_vec[i] (use mu_hat_grid + CL pool prefix)
-      # The link uses dual-variable form (loss + exposure) so we can read
-      # exposure_from in the ED branch.
+      # The link uses dual-variable form (loss + premium) so we can read
+      # premium_from in the ED branch.
 
       # 1) Build per-cohort mat_k_vec (1-indexed from-dev where CL begins).
       #    NA / no-Maturity -> .Machine$integer.max (all-ED fallback).
@@ -1841,18 +1841,18 @@ bootstrap.Triangle <- function(x,
       # 2) Build the ED-paradigm fitted grid (mirror of .boot_cell_residuals_ed
       #    structure: per-link g_hat anchor + chain-anchored ED projection)
       #    using the SAME helpers as the ED-only branch.
-      exp_obs_mat <- .ensure_exposure_obs_mat(triangle, cohorts, devs,
-                                              n_coh, n_dev)
-      exp_anchor  <- .boot_anchor_exposure_cl(exp_obs_mat, last_obs_idx,
-                                              n_coh, n_dev, devs)
-      exposure_proj_mat <- .boot_proj_exposure_cl(exp_obs_mat,
+      exp_obs_mat <- .ensure_premium_obs_mat(triangle, cohorts, devs,
+                                             n_coh, n_dev)
+      exp_anchor  <- .boot_anchor_premium_cl(exp_obs_mat, last_obs_idx,
+                                             n_coh, n_dev, devs)
+      premium_proj_mat <- .boot_proj_premium_cl(exp_obs_mat,
                                                      last_obs_idx,
                                                      exp_anchor$f_by_to,
                                                      n_coh, n_dev)
       g_hat_vec <- .boot_anchor_ed(anchor, link, n_links)
       g_by_to   <- rep(NA_real_, n_dev)
       g_by_to[link_to_idx] <- g_hat_vec
-      ed_steps   <- .boot_steps_ed(g_by_to, exposure_proj_mat)
+      ed_steps   <- .boot_steps_ed(g_by_to, premium_proj_mat)
       mu_ed_grid <- .boot_fitted_grid(mat_obs, last_obs_idx, n_coh, n_dev,
                                       ed_steps$fwd, ed_steps$bwd)
 
@@ -1956,7 +1956,7 @@ bootstrap.Triangle <- function(x,
         as.integer(k_idx_by_j),
         as.numeric(f_hat_vec),
         as.numeric(g_hat_vec),
-        as.numeric(exposure_proj_mat),
+        as.numeric(premium_proj_mat),
         as.integer(mat_k_vec),
         as.numeric(phi_ed_val),
         as.numeric(phi_cl_val),
@@ -2072,19 +2072,19 @@ bootstrap.Triangle <- function(x,
                            1L)
 
     if (identical(method, "ed")) {
-      # ED parametric: build mu_ed_grid + g_hat_vec + exposure_proj.
-      exp_obs_mat <- .ensure_exposure_obs_mat(triangle, cohorts, devs,
-                                              n_coh, n_dev)
-      exp_anchor  <- .boot_anchor_exposure_cl(exp_obs_mat, last_obs_idx,
-                                              n_coh, n_dev, devs)
-      exposure_proj_mat <- .boot_proj_exposure_cl(exp_obs_mat,
+      # ED parametric: build mu_ed_grid + g_hat_vec + premium_proj.
+      exp_obs_mat <- .ensure_premium_obs_mat(triangle, cohorts, devs,
+                                             n_coh, n_dev)
+      exp_anchor  <- .boot_anchor_premium_cl(exp_obs_mat, last_obs_idx,
+                                             n_coh, n_dev, devs)
+      premium_proj_mat <- .boot_proj_premium_cl(exp_obs_mat,
                                                      last_obs_idx,
                                                      exp_anchor$f_by_to,
                                                      n_coh, n_dev)
       g_hat_vec <- .boot_anchor_ed(anchor, link, n_links)
       g_by_to   <- rep(NA_real_, n_dev)
       g_by_to[link_to_idx] <- g_hat_vec
-      ed_steps   <- .boot_steps_ed(g_by_to, exposure_proj_mat)
+      ed_steps   <- .boot_steps_ed(g_by_to, premium_proj_mat)
       mu_ed_grid <- .boot_fitted_grid(mat_obs, last_obs_idx, n_coh, n_dev,
                                       ed_steps$fwd, ed_steps$bwd)
 
@@ -2107,7 +2107,7 @@ bootstrap.Triangle <- function(x,
         as.integer(link_to_idx),
         as.integer(k_idx_by_j),
         as.numeric(g_hat_vec),
-        as.numeric(exposure_proj_mat),
+        as.numeric(premium_proj_mat),
         as.numeric(phi),
         as.numeric(alpha),
         process_code,
@@ -2118,7 +2118,7 @@ bootstrap.Triangle <- function(x,
 
     } else if (identical(method, "sa")) {
       # SA parametric: per-cell phi via stage classification, plus both
-      # f_hat / g_hat / exposure_proj / mat_k_vec for the dual-refit and
+      # f_hat / g_hat / premium_proj / mat_k_vec for the dual-refit and
       # stage-switch projection.
       mat_k_vec <- rep(.Machine$integer.max, n_coh)
       if (!is.null(sa_maturity)) {
@@ -2131,18 +2131,18 @@ bootstrap.Triangle <- function(x,
         }
       }
 
-      exp_obs_mat <- .ensure_exposure_obs_mat(triangle, cohorts, devs,
-                                              n_coh, n_dev)
-      exp_anchor  <- .boot_anchor_exposure_cl(exp_obs_mat, last_obs_idx,
-                                              n_coh, n_dev, devs)
-      exposure_proj_mat <- .boot_proj_exposure_cl(exp_obs_mat,
+      exp_obs_mat <- .ensure_premium_obs_mat(triangle, cohorts, devs,
+                                             n_coh, n_dev)
+      exp_anchor  <- .boot_anchor_premium_cl(exp_obs_mat, last_obs_idx,
+                                             n_coh, n_dev, devs)
+      premium_proj_mat <- .boot_proj_premium_cl(exp_obs_mat,
                                                      last_obs_idx,
                                                      exp_anchor$f_by_to,
                                                      n_coh, n_dev)
       g_hat_vec <- .boot_anchor_ed(anchor, link, n_links)
       g_by_to   <- rep(NA_real_, n_dev)
       g_by_to[link_to_idx] <- g_hat_vec
-      ed_steps   <- .boot_steps_ed(g_by_to, exposure_proj_mat)
+      ed_steps   <- .boot_steps_ed(g_by_to, premium_proj_mat)
       mu_ed_grid <- .boot_fitted_grid(mat_obs, last_obs_idx, n_coh, n_dev,
                                       ed_steps$fwd, ed_steps$bwd)
 
@@ -2186,7 +2186,7 @@ bootstrap.Triangle <- function(x,
         as.integer(k_idx_by_j),
         as.numeric(f_hat_vec),
         as.numeric(g_hat_vec),
-        as.numeric(exposure_proj_mat),
+        as.numeric(premium_proj_mat),
         as.integer(mat_k_vec),
         as.numeric(cell_active_phi),
         as.numeric(phi_ed_val),
@@ -2486,7 +2486,7 @@ print.BootstrapTriangle <- function(x, ...) {
 
 # Section 6 -- Bootstrap argument resolver ====================================
 #
-# fit_ratio / fit_loss / fit_exposure / backtest pass the user-supplied
+# fit_ratio / fit_loss / fit_premium / backtest pass the user-supplied
 # `bootstrap` argument through this single resolver. Output is either
 # `NULL` (analytical path) or a `BootstrapTriangle`. The fit functions
 # then read `bt$summary` directly -- the SE decomposition + CI columns
@@ -2556,7 +2556,7 @@ print.BootstrapTriangle <- function(x, ...) {
     # Pass only the args that apply to the chosen `type`. Analytical path
     # has no residual pool, so omitting residual/hat_adj/pooling/tail/
     # min_pool/maturity prevents the validator from triggering "ignored"
-    # warnings inside fit_loss / fit_exposure / fit_ratio (which always
+    # warnings inside fit_loss / fit_premium / fit_ratio (which always
     # forward `type = "analytical"` for their internal default).
     args <- list(tri,
                  type        = type,
@@ -2607,7 +2607,7 @@ print.BootstrapTriangle <- function(x, ...) {
 #'
 #' @description
 #' The shared core of every bootstrap-CI path (`.lossfit_bootstrap()`,
-#' `.exposurefit_bootstrap()`, and the in-worker `fit_sa()` /
+#' `.premiumfit_bootstrap()`, and the in-worker `fit_sa()` /
 #' `fit_ratio()` blocks). Given an already-resolved bootstrap result,
 #' it renames the `bootstrap()` summary columns to the caller's
 #' `<role>_*` schema, joins them onto `full` by `(groups, cohort, dev)`,
@@ -2622,12 +2622,12 @@ print.BootstrapTriangle <- function(x, ...) {
 #' @param boots A non-`NULL` resolved bootstrap result; `boots$summary`
 #'   carries `mean_proj`, `param_se`, `proc_se`, `total_se`,
 #'   `total_cv`, and optionally `ci_lo` / `ci_hi`.
-#' @param role Column-name prefix, `"loss"` or `"exposure"`.
+#' @param role Column-name prefix, `"loss"` or `"premium"`.
 #' @param groups Group columns; the join key is
 #'   `c(groups, "cohort", "dev")`.
 #' @param se_cols Statistic suffixes to overlay -- e.g.
 #'   `c("param_se", "proc_se", "total_se", "total_cv")` for loss,
-#'   `c("total_se", "total_cv")` for exposure. The point projection is
+#'   `c("total_se", "total_cv")` for premium. The point projection is
 #'   never overlaid; it stays analytical.
 #'
 #' @return `full` with the bootstrap values overlaid and the temporary
@@ -2675,7 +2675,7 @@ print.BootstrapTriangle <- function(x, ...) {
 #' calls this helper to map a `bootstrap()` summary onto the worker's
 #' analytical `$full` schema -- same shape as the in-worker logic in
 #' `fit_sa()`. Premium stays at observed values (loss-only bootstrap;
-#' exposure-side uncertainty is layered by `fit_ratio()`).
+#' premium-side uncertainty is layered by `fit_ratio()`).
 #'
 #' @keywords internal
 .lossfit_bootstrap <- function(fit,
@@ -2728,8 +2728,8 @@ print.BootstrapTriangle <- function(x, ...) {
   # Rebuild $proj with consistent NA masking
   proj <- data.table::copy(full)
   na_cols <- c(
-    "loss_proj", "exposure_proj",
-    "incr_loss_proj", "incr_exposure_proj",
+    "loss_proj", "premium_proj",
+    "incr_loss_proj", "incr_premium_proj",
     "loss_proc_se2", "loss_param_se2", "loss_total_se2",
     "loss_proc_se",  "loss_param_se",  "loss_total_se",
     "loss_total_cv",

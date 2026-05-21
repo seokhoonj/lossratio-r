@@ -9,7 +9,7 @@
 \arguments{
 \item{per_cohort}{A \code{data.table} with one row per cohort carrying
 \code{by_cols}, \code{q}, \code{loss_ult} (BF / CC ultimate), \code{loss_latest},
-\code{reserve}, \code{elr}, \code{exposure_ult}, \code{var_elr}, \code{var_eult},
+\code{reserve}, \code{elr}, \code{premium_ult}, \code{var_elr}, \code{var_eult},
 \code{loss_ult_cl}, \code{loss_proc_se}, \code{loss_param_se}.}
 
 \item{by_cols}{\code{c(groups, "cohort")}.}
@@ -44,7 +44,7 @@ two independent factors, so
     + \mathrm{ELR}_i^2\,\mathrm{Var}(E^{ult}_i)
     + \mathrm{Var}(\mathrm{ELR}_i)\,\mathrm{Var}(E^{ult}_i)}.
 \code{Var(ELR)} comes from the distribution prior's \code{elr_se} (0 for a
-deterministic prior); \code{Var(E_ult)} from the exposure fit SE.
+deterministic prior); \code{Var(E_ult)} from the premium fit SE.
 \item \eqn{\mathrm{Var}(q_i)} -- delta method on
 \eqn{q_i = L^{obs}_i / L^{ult,CL}_i}, using the CL parameter SE.
 \item process -- the CL process variance scaled by the BF / CL

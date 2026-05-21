@@ -20,29 +20,29 @@
 #'
 #' The dispatcher returns a `LossFit` object whose `$full` schema is
 #' uniform across methods (`loss_obs`, `loss_proj`, `loss_total_se`,
-#' `loss_ci_lo`, `loss_ci_hi`, `exposure_obs`, `exposure_proj`,
-#' `incr_exposure_proj`, plus method-specific extras). Missing slots on
+#' `loss_ci_lo`, `loss_ci_hi`, `premium_obs`, `premium_proj`,
+#' `incr_premium_proj`, plus method-specific extras). Missing slots on
 #' worker outputs (e.g. `loss_ata_fit` for ED, `ed`/`selected` for CL/BF/CC)
 #' are synthesized as `NULL` so downstream code such as [fit_ratio()] can
 #' guard uniformly.
 #'
 #' @param x A `"Triangle"` object. The standardized `"loss"` and
-#'   `"exposure"` columns are used (`as_triangle()` produces these).
+#'   `"premium"` columns are used (`as_triangle()` produces these).
 #' @param method One of `"ed"` (default), `"cl"`, `"sa"`, `"bf"`, or `"cc"`.
 #' @param alpha Variance-structure exponent for the loss fit. Default `1`.
 #' @param regime Optional regime specification (loss-side). Accepts the
 #'   standard 4-type dispatch (`NULL` / `Regime` / `"auto"` / function).
 #'   Behavior depends on `method`: SA uses a hybrid 2-pass filter; ED / CL
 #'   / BF / CC use a simple cohort cut. The same resolved regime is
-#'   applied to the internal exposure fit -- callers needing an asymmetric
-#'   loss/exposure split should use [fit_ratio()].
-#' @param exposure_fit Optional pre-built `ExposureFit` supplying the
-#'   exposure projection. Only used by `"ed"` (via `fit_ed`'s internal
-#'   exposure handling) and `"sa"`. When `NULL`, the worker calls
-#'   [fit_exposure()] internally.
-#' @param exposure_method One of `"ed"` (default) or `"cl"`. Used only
-#'   when `exposure_fit = NULL` for `"sa"`.
-#' @param exposure_alpha Variance-structure exponent for the exposure fit.
+#'   applied to the internal premium fit -- callers needing an asymmetric
+#'   loss/premium split should use [fit_ratio()].
+#' @param premium_fit Optional pre-built `PremiumFit` supplying the
+#'   premium projection. Only used by `"ed"` (via `fit_ed`'s internal
+#'   premium handling) and `"sa"`. When `NULL`, the worker calls
+#'   [fit_premium()] internally.
+#' @param premium_method One of `"ed"` (default) or `"cl"`. Used only
+#'   when `premium_fit = NULL` for `"sa"`.
+#' @param premium_alpha Variance-structure exponent for the premium fit.
 #'   Default `1`.
 #' @inheritParams fit_ata
 #' @param recent Optional positive integer; calendar-diagonal filter.
@@ -63,11 +63,11 @@
 #'   For `method = "bf"`, `prior` is required.
 #'
 #' @return An object of class `"LossFit"`. List with components:
-#'   `full`, `proj`, `maturity`, `loss_ata_fit`, `exposure_ata_fit`,
-#'   `exposure_fit`, `ed`, `factor`, `selected`, plus metadata.
+#'   `full`, `proj`, `maturity`, `loss_ata_fit`, `premium_ata_fit`,
+#'   `premium_fit`, `ed`, `factor`, `selected`, plus metadata.
 #'
 #' @seealso [fit_ed()], [fit_cl()], [fit_sa()], [fit_bf()], [fit_cc()],
-#'   [fit_exposure()], [fit_ratio()].
+#'   [fit_premium()], [fit_ratio()].
 #'
 #' @examples
 #' \dontrun{
@@ -78,7 +78,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   exposure = "incr_exposure"
+#'   premium = "incr_premium"
 #' )
 #'
 #' lf    <- fit_loss(tri)                    # ED (default)
@@ -88,28 +88,28 @@
 #'
 #' @export
 fit_loss <- function(x,
-                     method          = c("ed", "cl", "sa", "bf", "cc"),
-                     alpha           = 1,
-                     regime          = NULL,
-                     exposure_fit    = NULL,
-                     exposure_method = c("ed", "cl"),
-                     exposure_alpha  = 1,
-                     sigma_method    = c("locf", "min_last2", "loglinear",
-                                         "mack", "none"),
-                     recent          = NULL,
-                     maturity        = "auto",
-                     tail            = FALSE,
-                     conf_level      = 0.95,
-                     bootstrap       = NULL,
-                     B               = 999L,
-                     seed            = NULL,
+                     method         = c("ed", "cl", "sa", "bf", "cc"),
+                     alpha          = 1,
+                     regime         = NULL,
+                     premium_fit    = NULL,
+                     premium_method = c("ed", "cl"),
+                     premium_alpha  = 1,
+                     sigma_method   = c("locf", "min_last2", "loglinear",
+                                        "mack", "none"),
+                     recent         = NULL,
+                     maturity       = "auto",
+                     tail           = FALSE,
+                     conf_level     = 0.95,
+                     bootstrap      = NULL,
+                     B              = 999L,
+                     seed           = NULL,
                      type,
                      ...) {
 
   .assert_triangle_input(x, "fit_loss()")
-  method          <- match.arg(method)
-  sigma_method    <- match.arg(sigma_method)
-  exposure_method <- match.arg(exposure_method)
+  method         <- match.arg(method)
+  sigma_method   <- match.arg(sigma_method)
+  premium_method <- match.arg(premium_method)
 
   if (!is.numeric(alpha) || length(alpha) != 1L ||
       is.na(alpha) || !is.finite(alpha))
@@ -152,21 +152,21 @@ fit_loss <- function(x,
                                NULL else maturity,
                   tail     = tail))),
     ed = do.call(fit_ed, c(common, list(
-                  exposure = "exposure"))),
+                  premium = "premium"))),
     sa = do.call(fit_sa, c(common, list(
-                  exposure        = "exposure",
-                  maturity        = maturity,
-                  exposure_fit    = exposure_fit,
-                  exposure_method = exposure_method,
-                  exposure_alpha  = exposure_alpha,
-                  tail            = tail,
-                  conf_level      = conf_level,
-                  bootstrap       = bootstrap,
-                  B               = B,
-                  seed            = seed,
-                  type            = if (missing(type)) "parametric" else type))),
+                  premium        = "premium",
+                  maturity       = maturity,
+                  premium_fit    = premium_fit,
+                  premium_method = premium_method,
+                  premium_alpha  = premium_alpha,
+                  tail           = tail,
+                  conf_level     = conf_level,
+                  bootstrap      = bootstrap,
+                  B              = B,
+                  seed           = seed,
+                  type           = if (missing(type)) "parametric" else type))),
     bf = do.call(fit_bf, c(common, list(
-                  exposure   = "exposure",
+                  premium    = "premium",
                   maturity   = if (identical(maturity, "auto"))
                                  NULL else maturity,
                   prior      = dots$prior,
@@ -176,7 +176,7 @@ fit_loss <- function(x,
                   seed       = seed,
                   type       = if (missing(type)) "parametric" else type))),
     cc = do.call(fit_cc, c(common, list(
-                  exposure   = "exposure",
+                  premium    = "premium",
                   conf_level = conf_level,
                   bootstrap  = bootstrap,
                   B          = B,
@@ -186,17 +186,17 @@ fit_loss <- function(x,
 
   # Augment to LossFit schema --------------------------------------------
   out <- .lossfit_augment(
-    fit               = fit,
-    triangle          = x,
-    method            = method,
-    exposure_fit      = exposure_fit,
-    exposure_method   = exposure_method,
-    exposure_alpha    = exposure_alpha,
-    sigma_method      = sigma_method,
-    recent            = recent,
-    regime            = regime,
-    maturity_arg      = maturity,
-    conf_level        = conf_level
+    fit            = fit,
+    triangle       = x,
+    method         = method,
+    premium_fit    = premium_fit,
+    premium_method = premium_method,
+    premium_alpha  = premium_alpha,
+    sigma_method   = sigma_method,
+    recent         = recent,
+    regime         = regime,
+    maturity_arg   = maturity,
+    conf_level     = conf_level
   )
 
   # For CL / ED workers, the dispatcher owns bootstrap overwriting (the
@@ -224,22 +224,22 @@ fit_loss <- function(x,
 #' @description
 #' Worker fits (`CLFit`, `EDFit`, `SAFit`, `BFFit`, `CCFit`) each have
 #' their own slot layouts. This helper adds missing slots (`loss_ata_fit`,
-#' `exposure_ata_fit`, `exposure_fit`, `ed`, `factor`, `selected`,
+#' `premium_ata_fit`, `premium_fit`, `ed`, `factor`, `selected`,
 #' `usage`, `ci_type`, `conf_level`, `bootstrap`) as `NULL` if absent,
 #' ensures `$full` carries the dispatcher-uniform columns
-#' (`exposure_obs`, `exposure_proj`, `incr_exposure_proj`, `loss_ci_lo`,
+#' (`premium_obs`, `premium_proj`, `incr_premium_proj`, `loss_ci_lo`,
 #' `loss_ci_hi`, `loss_total_cv`), and assigns class `"LossFit"`.
 #'
-#' For `"cl"`, this synthesizes the exposure columns by running an
-#' [fit_exposure()] internally when none are present.
+#' For `"cl"`, this synthesizes the premium columns by running an
+#' [fit_premium()] internally when none are present.
 #'
 #' @keywords internal
 .lossfit_augment <- function(fit,
                              triangle,
                              method,
-                             exposure_fit,
-                             exposure_method,
-                             exposure_alpha,
+                             premium_fit,
+                             premium_method,
+                             premium_alpha,
                              sigma_method,
                              recent,
                              regime,
@@ -247,15 +247,15 @@ fit_loss <- function(x,
                              conf_level) {
 
   # data.table NSE bindings
-  loss_proj <- loss_total_se <- exposure_proj <- is_observed <- NULL
+  loss_proj <- loss_total_se <- premium_proj <- is_observed <- NULL
 
   grp <- .resolve_groups(triangle)
 
   # Standard slot list (NULL-fill missing) -------------------------------
   std_slots <- c("data", "method", "groups", "cohort", "dev",
                  "full", "proj", "summary",
-                 "maturity", "loss_ata_fit", "exposure_ata_fit",
-                 "exposure_fit", "ed", "factor", "selected",
+                 "maturity", "loss_ata_fit", "premium_ata_fit",
+                 "premium_fit", "ed", "factor", "selected",
                  "alpha", "sigma_method", "recent", "regime",
                  "conf_level", "ci_type", "bootstrap", "usage")
   for (slot in std_slots) {
@@ -278,38 +278,38 @@ fit_loss <- function(x,
     fit$maturity <- .resolve_maturity(maturity_arg, triangle)
   }
 
-  # Ensure $full has exposure columns -----------------------------------
+  # Ensure $full has premium columns -----------------------------------
   full <- fit$full
-  needs_exposure <- !all(c("exposure_obs", "exposure_proj",
-                            "incr_exposure_proj") %in% names(full))
-  if (needs_exposure) {
-    # Run internal exposure fit and join exposure columns.
-    if (is.null(exposure_fit)) {
-      exposure_fit <- fit_exposure(
+  needs_premium <- !all(c("premium_obs", "premium_proj",
+                            "incr_premium_proj") %in% names(full))
+  if (needs_premium) {
+    # Run internal premium fit and join premium columns.
+    if (is.null(premium_fit)) {
+      premium_fit <- fit_premium(
         triangle,
-        method       = exposure_method,
-        alpha        = exposure_alpha,
+        method       = premium_method,
+        alpha        = premium_alpha,
         sigma_method = sigma_method,
         regime       = regime,
         bootstrap    = FALSE
       )
     }
-    pf_full  <- .copy_dt(exposure_fit$full)
+    pf_full  <- .copy_dt(premium_fit$full)
     keep_keys <- intersect(c(grp, "cohort", "dev"), names(pf_full))
-    pf_cols   <- c(keep_keys, "exposure_obs", "exposure_proj",
-                   "incr_exposure_proj")
+    pf_cols   <- c(keep_keys, "premium_obs", "premium_proj",
+                   "incr_premium_proj")
     pf_cols   <- intersect(pf_cols, names(pf_full))
     pf_join   <- pf_full[, .SD, .SDcols = pf_cols]
     full      <- pf_join[full, on = keep_keys]
-    fit$exposure_fit <- exposure_fit
+    fit$premium_fit <- premium_fit
   }
 
-  # Ensure incr_exposure_proj exists (workers using legacy suffix already
+  # Ensure incr_premium_proj exists (workers using legacy suffix already
   # patched, but guard anyway).
-  if ("exposure_proj" %in% names(full) &&
-      !"incr_exposure_proj" %in% names(full)) {
-    full[, ("incr_exposure_proj") := exposure_proj -
-           data.table::shift(exposure_proj, 1L, fill = 0),
+  if ("premium_proj" %in% names(full) &&
+      !"incr_premium_proj" %in% names(full)) {
+    full[, ("incr_premium_proj") := premium_proj -
+           data.table::shift(premium_proj, 1L, fill = 0),
          by = c(grp, "cohort")]
   }
 
@@ -345,8 +345,8 @@ fit_loss <- function(x,
   if (!is.null(fit$proj)) {
     proj <- data.table::copy(full)
     na_cols <- c(
-      "loss_proj", "exposure_proj",
-      "incr_loss_proj", "incr_exposure_proj",
+      "loss_proj", "premium_proj",
+      "incr_loss_proj", "incr_premium_proj",
       "loss_proc_se2", "loss_param_se2", "loss_total_se2",
       "loss_proc_se",  "loss_param_se",  "loss_total_se",
       "loss_total_cv",
@@ -481,12 +481,12 @@ summary.LossFit <- function(object, ...) {
 
 # Shared grid expansion helper --------------------------------------------
 
-#' Expand a `Triangle` object to a full projection grid (loss + exposure)
+#' Expand a `Triangle` object to a full projection grid (loss + premium)
 #'
 #' @description
 #' Internal helper used by `fit_sa()` and `fit_ed()`. Builds a complete
-#' cohort x dev grid plus the projected exposure path (CL projection
-#' anchored on the supplied `exposure_ata_fit`). The ED loss-side projection
+#' cohort x dev grid plus the projected premium path (CL projection
+#' anchored on the supplied `premium_ata_fit`). The ED loss-side projection
 #' is added downstream by the caller.
 #'
 #' Lives here because both `fit_sa()` (R/sa.R) and `fit_ed()` (R/ed.R)
@@ -496,9 +496,9 @@ summary.LossFit <- function(object, ...) {
 #' @keywords internal
 .expand_grid <- function(triangle,
                          ed_fit,
-                         exposure_ata_fit,
+                         premium_ata_fit,
                          loss,
-                         exposure) {
+                         premium) {
 
   grp <- attr(triangle, "groups")
 
@@ -507,15 +507,15 @@ summary.LossFit <- function(object, ...) {
   raw <- .copy_dt(triangle)
 
   loss_col <- loss    # rebind, was target
-  exp_col  <- exposure
+  exp_col  <- premium
   obs <- raw[, .(
-    loss_obs     = get(loss_col),
-    exposure_obs = get(exp_col)
+    loss_obs    = get(loss_col),
+    premium_obs = get(exp_col)
   ), by = c(grp, "cohort", "dev")]
 
-  max_dev_ed       <- max(ed_fit$selected$ata_to, na.rm = TRUE)
-  max_dev_exposure <- max(exposure_ata_fit$selected$ata_to, na.rm = TRUE)
-  max_dev          <- max(max_dev_ed, max_dev_exposure)
+  max_dev_ed      <- max(ed_fit$selected$ata_to, na.rm = TRUE)
+  max_dev_premium <- max(premium_ata_fit$selected$ata_to, na.rm = TRUE)
+  max_dev         <- max(max_dev_ed, max_dev_premium)
 
   full <- unique(obs[, .SD, .SDcols = c(grp, "cohort")])
   full <- full[, .(dev = seq_len(max_dev)), by = c(grp, "cohort")]
@@ -527,28 +527,28 @@ summary.LossFit <- function(object, ...) {
 
   # Attach segment_id when either side of the projection was fitted
   # segment_wise.
-  has_seg_ed       <- "segment_id" %in% names(ed_fit$selected)
-  has_seg_exposure <- "segment_id" %in% names(exposure_ata_fit$selected)
-  if (has_seg_ed || has_seg_exposure) {
-    reg <- if (has_seg_ed) ed_fit$regime else exposure_ata_fit$regime
+  has_seg_ed      <- "segment_id" %in% names(ed_fit$selected)
+  has_seg_premium <- "segment_id" %in% names(premium_ata_fit$selected)
+  if (has_seg_ed || has_seg_premium) {
+    reg <- if (has_seg_ed) ed_fit$regime else premium_ata_fit$regime
     grp_cols <- if (length(grp)) full[, grp, with = FALSE] else NULL
     full[, ("segment_id") := .assign_segment(cohort, reg, grp_cols)]
   }
 
-  exposure_cols <- c(grp, "ata_from",
-                     if (has_seg_exposure) "segment_id",
+  premium_cols <- c(grp, "ata_from",
+                     if (has_seg_premium) "segment_id",
                      "f_sel")
-  exposure_sel <- exposure_ata_fit$selected[, .SD, .SDcols = exposure_cols]
-  data.table::setnames(exposure_sel, c("ata_from", "f_sel"),
-                       c("dev", "f_exposure"))
-  full <- exposure_sel[full,
-                       on = c(grp, "dev", if (has_seg_exposure) "segment_id")]
+  premium_sel <- premium_ata_fit$selected[, .SD, .SDcols = premium_cols]
+  data.table::setnames(premium_sel, c("ata_from", "f_sel"),
+                       c("dev", "f_premium"))
+  full <- premium_sel[full,
+                       on = c(grp, "dev", if (has_seg_premium) "segment_id")]
 
-  full[, ("exposure_proj") := .cl_proj(
-    loss_obs = exposure_obs,
-    f_sel    = f_exposure
+  full[, ("premium_proj") := .cl_proj(
+    loss_obs = premium_obs,
+    f_sel    = f_premium
   ), by = c(grp, "cohort")]
 
-  full[, ("f_exposure") := NULL]
+  full[, ("f_premium") := NULL]
   full
 }

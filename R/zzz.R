@@ -25,8 +25,8 @@ utils::globalVariables(c(
   ".",
   "i.is_observed", "i.loss_param_se", "i.loss_proc_se", "i.loss_proj",
   "i.loss_total_se", "i.ratio_ci_lo", "i.ratio_ci_hi", "i.ratio_cv",
-  "i.ratio_proj", "i.ratio_se", "i.n_cohorts", "i.exposure_proj",
-  "i.exposure_total_cv", "i.exposure_total_se",
+  "i.ratio_proj", "i.ratio_se", "i.n_cohorts", "i.premium_proj",
+  "i.premium_total_cv", "i.premium_total_se",
   "x.change_date", "x.dev_split", "x.m_k",
 
   # 2. Triangle / Link / fit output schema -----------------------------
@@ -34,9 +34,9 @@ utils::globalVariables(c(
   "ata", "ata_from", "ata_link", "ata_to",
   "change", "change_count",
   "cohort", "dev",
-  "elr", "elr_cc", "exposure_ult",
-  "exposure_from", "exposure_proj", "exposure_to",
-  "f", "f_exposure", "f_sel", "f_sigma2", "f_var",
+  "elr", "elr_cc", "premium_ult",
+  "premium_from", "premium_proj", "premium_to",
+  "f", "f_premium", "f_sel", "f_sigma2", "f_var",
   "g", "g_sel", "g_sigma2", "g_var",
   "intensity",
   "is_excluded", "is_fit_data", "is_held_out", "is_observed",
@@ -48,8 +48,8 @@ utils::globalVariables(c(
   "q",
   "ratio", "incr_ratio", "ratio_proj", "ratio_se", "ratio_var",
   "magnitude_mean", "mat_x", "maturity_from",
-  "exposure", "incr_exposure", "incr_exposure_proj", "exposure_obs",
-  "exposure_share",
+  "premium", "incr_premium", "incr_premium_proj", "premium_obs",
+  "premium_share",
   "regime", "regime_id", "reserve", "selected",
   "actual", "incr_actual", "expected", "incr_expected",
   "value",  # default melt() value column when value.name not set
@@ -63,7 +63,7 @@ utils::globalVariables(c(
   "loss_tail",
   "loss_total_cv",  "loss_total_se",  "loss_total_se2",
   "loss_total_se_tail", "loss_total_se2_tail",
-  "exposure_total_cv", "exposure_total_se",
+  "premium_total_cv", "premium_total_se",
 
   # 4. Aggregation counts & plot coordinate vars -----------------------
   "N", "n", "n_expected", "n_cohorts", "n_dev", "n_valid",

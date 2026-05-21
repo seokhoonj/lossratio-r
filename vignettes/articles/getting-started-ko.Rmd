@@ -32,7 +32,7 @@ knitr::opts_chunk$set(
 (코호트 × 경과 기간 × 그룹) 셀 하나에 대응한다. 내장 데이터셋
 `experience` 는 2,664 행 테이블로, 여러 집계 주기의 calendar / underwriting
 기간 컬럼, `coverage` 그룹 컬럼, 기간별 금액 컬럼
-(`incr_loss`, `incr_exposure`) 을 포함한다.
+(`incr_loss`, `incr_premium`) 을 포함한다.
 
 ```{r}
 library(lossratio)
@@ -50,7 +50,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 class(tri)
 names(tri)
@@ -58,11 +58,11 @@ names(tri)
 
 `as_triangle()` 의 동작:
 
-- 필수 컬럼 (`cy_m`, `uy_m`, `incr_loss`, `incr_exposure`) 의 존재를
+- 필수 컬럼 (`cy_m`, `uy_m`, `incr_loss`, `incr_premium`) 의 존재를
   확인하고 expected type 으로 코어션한다,
 - 인구통계 차원을 집계하여 제거한다 (여기서는 `age_band`, `gender`),
-- 누적 컬럼 (`loss`, `exposure`) 을 추가한다,
-- 파생 지표 (`margin`, `ratio`, `loss_share`, `exposure_share`) 를 추가한다,
+- 누적 컬럼 (`loss`, `premium`) 을 추가한다,
+- 파생 지표 (`margin`, `ratio`, `loss_share`, `premium_share`) 를 추가한다,
 - 코호트 / 경과 기간 컬럼을 표준명 `cohort` 와 `dev` 로 rename 한다,
 - 원본 컬럼명은 attribute (`cohort`, `dev`) 로 보존하여
   이후 plot 라벨에서 활용 가능하게 한다.
@@ -86,7 +86,7 @@ summary(tri)           # 경과 기간별 그룹 통계량
 fit_ata(tri, loss = "loss")
 
 # 노출 기반(exposure-driven) 강도 인자 — 덧셈형, ED 의 입력
-fit_intensity(tri, loss = "loss", exposure = "exposure")
+fit_intensity(tri, loss = "loss", premium = "premium")
 ```
 
 `fit_ata()` 는 링크별 ATA 인자 $f_k$ 를, `fit_intensity()` 는 강도 인자
@@ -105,7 +105,7 @@ plot(cl, type = "projection")
 summary(cl)
 
 # Exposure-driven (덧셈형 예측)
-ed <- fit_ed(tri, loss = "loss", exposure = "exposure")
+ed <- fit_ed(tri, loss = "loss", premium = "premium")
 summary(ed)
 ```
 
@@ -136,7 +136,7 @@ sub <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 detect_regime(sub, method = "e_divisive")
 ```

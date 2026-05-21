@@ -172,7 +172,7 @@
 .is_ratio_metric <- function(metric) {
   metric %in% c("ratio", "incr_ratio",
                 "loss_share", "incr_loss_share",
-                "exposure_share", "incr_exposure_share")
+                "premium_share", "incr_premium_share")
 }
 
 
@@ -257,28 +257,28 @@
     incr_ratio          = "ratio",
     loss                = "amount",
     incr_loss           = "amount",
-    exposure            = "amount",
-    incr_exposure       = "amount",
+    premium             = "amount",
+    incr_premium        = "amount",
     margin              = "amount",
     incr_margin         = "amount",
     loss_share          = "prop",
     incr_loss_share     = "prop",
-    exposure_share      = "prop",
-    incr_exposure_share = "prop"
+    premium_share       = "prop",
+    incr_premium_share  = "prop"
   )
   title_of <- c(
     ratio               = "Cumulative Loss Ratio",
     incr_ratio          = "Per-Period Loss Ratio",
     loss                = "Cumulative Loss",
     incr_loss           = "Per-Period Loss",
-    exposure            = "Cumulative Exposure",
-    incr_exposure       = "Per-Period Exposure",
+    premium             = "Cumulative Premium",
+    incr_premium        = "Per-Period Premium",
     margin              = "Cumulative Margin",
     incr_margin         = "Per-Period Margin",
     loss_share          = "Cumulative Loss Proportion",
     incr_loss_share     = "Per-Period Loss Proportion",
-    exposure_share      = "Cumulative Exposure Proportion",
-    incr_exposure_share = "Per-Period Exposure Proportion"
+    premium_share       = "Cumulative Premium Proportion",
+    incr_premium_share  = "Per-Period Premium Proportion"
   )
 
   if (!metric %in% names(type_of))

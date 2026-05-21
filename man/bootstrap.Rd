@@ -19,7 +19,7 @@ bootstrap(x, ...)
   tail = c("auto", "maturity"),
   min_pool = 5L,
   maturity = NULL,
-  target = c("loss", "exposure"),
+  target = c("loss", "premium"),
   B = 499L,
   seed = NULL,
   alpha = 1,
@@ -79,7 +79,7 @@ Phase 5b.3 and currently errors.}
 
 \item{method}{Fit-model paradigm whose lower-triangle forward projection
 the bootstrap should produce. One of \code{"ed"} (default -- exposure-driven
-additive recursion across all dev; Phase 1 keeps exposure fixed,
+additive recursion across all dev; Phase 1 keeps premium fixed,
 projected once via CL), \code{"cl"} (chain-ladder multiplicative recursion
 across all dev), \code{"sa"} (stage-adaptive -- ED before maturity, CL after;
 currently routes through the CL kernel pending Phase 4 SA bootstrap).
@@ -106,7 +106,7 @@ point).}
 the string \code{"auto"}, or a function \verb{function(tri) -> Maturity}.}
 
 \item{target}{Cumulative metric to perturb. One of \code{"loss"} (default) or
-\code{"exposure"}. The value column in \verb{$pseudo_triangles} is named after this
+\code{"premium"}. The value column in \verb{$pseudo_triangles} is named after this
 target so downstream refit helpers know which column to read.}
 
 \item{B}{Number of bootstrap replicates. Default \code{499} -- the Davison &
@@ -140,7 +140,7 @@ trajectories, custom quantile work). On a typical 4-group monthly
 triangle at \code{B = 999} the reshape costs ~250-300 ms and ~200 MB on
 top of \verb{$summary}; users who only consume \verb{$summary} (the common
 case) should leave this \code{FALSE}. \code{fit_ratio()} / \code{fit_loss()} /
-\code{fit_exposure()} always pass \code{FALSE} internally because they only
+\code{fit_premium()} always pass \code{FALSE} internally because they only
 read \verb{$summary}. Set \code{TRUE} explicitly if you want to inspect
 \verb{$pseudo_triangles} directly.}
 }
@@ -195,7 +195,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 # Cell-residual bootstrap (default)

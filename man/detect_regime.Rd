@@ -33,19 +33,19 @@ Also used by S3 \code{print()} method on \code{Regime} objects.}
 
 \item{loss}{Trajectory variable. Default is \code{"ratio"} (cumulative loss
 ratio). Accepts any column on the \code{Triangle} (e.g. \code{"ratio"},
-\code{"loss"}, \code{"exposure"}, \code{"incr_loss"}, \code{"incr_exposure"}), plus three
+\code{"loss"}, \code{"premium"}, \code{"incr_loss"}, \code{"incr_premium"}), plus three
 \emph{diagnostic} derived metrics computed inline per (group, cohort):
 \describe{
 \item{\code{"loss_ata"}}{Loss age-to-age factor
 \code{loss[k+1] / loss[k]} -- multiplicative loss development speed
 (CL $f_k$).}
-\item{\code{"exposure_ata"}}{Exposure age-to-age factor -- same form on
-exposure.}
+\item{\code{"premium_ata"}}{Premium age-to-age factor -- same form on
+premium.}
 \item{\code{"loss_ed"}}{Loss intensity
-\code{(loss[k] - loss[k-1]) / exposure[k-1]} -- additive,
+\code{(loss[k] - loss[k-1]) / premium[k-1]} -- additive,
 exposure-anchored (ED model's $g_k$).}
-\item{\code{"exposure_ed"}}{Alias of \code{"exposure_ata"} -- the two differ
-only by a constant \code{(exposure_ata - 1)}, and the PCA
+\item{\code{"premium_ed"}}{Alias of \code{"premium_ata"} -- the two differ
+only by a constant \code{(premium_ata - 1)}, and the PCA
 standardization in detection removes that shift, so they yield
 identical regime changes. Provided for API symmetry with the
 \code{loss_ata} / \code{loss_ed} pair.}
@@ -179,7 +179,7 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 # Hierarchical clustering (no extra package dependency)
@@ -199,7 +199,7 @@ tri_all <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 r_all <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 print(r_all$changes)

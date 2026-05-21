@@ -1,8 +1,8 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
-sub <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
+sub <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
 
 test_that("backtest returns class 'Backtest'", {
   bt <- backtest(sub, holdout = 6L, target = "loss", loss_method = "cl")
@@ -28,7 +28,7 @@ test_that("ae_err has expected columns", {
 })
 
 test_that("backtest stores both cumulative and incremental views", {
-  for (t in c("ratio", "loss", "exposure")) {
+  for (t in c("ratio", "loss", "premium")) {
     bt <- backtest(sub, holdout = 6L, target = t, loss_method = "cl")
     expect_s3_class(bt, "Backtest")
     # Cumulative columns
@@ -93,7 +93,7 @@ test_that("backtest errors on invalid holdout", {
 })
 
 test_that("backtest errors on invalid target", {
-  # `target` is one of "ratio" / "loss" / "exposure" (match.arg).
+  # `target` is one of "ratio" / "loss" / "premium" (match.arg).
   expect_error(
     backtest(sub, holdout = 6L, target = "nonexistent")
   )
@@ -174,11 +174,11 @@ test_that("plot.Backtest dispatches for ratio backtests", {
   }
 })
 
-# target = "exposure" support --------------------------------------------
+# target = "premium" support --------------------------------------------
 
-test_that("backtest works with target = 'exposure', exposure_method = 'ed'", {
-  bt <- backtest(sub, holdout = 6L, target = "exposure",
-                 exposure_method = "ed")
+test_that("backtest works with target = 'premium', premium_method = 'ed'", {
+  bt <- backtest(sub, holdout = 6L, target = "premium",
+                 premium_method = "ed")
   expect_s3_class(bt, "Backtest")
   expect_true("expected" %in% names(bt$ae_err))
   expect_true(any(is.finite(bt$ae_err$ae_err)))

@@ -99,7 +99,7 @@ When the input \code{"Link"} object contains a \code{weight} column (added by
 \code{\link[=as_link]{as_link()}} when \code{weight} is supplied), that column is
 automatically used as the WLS weight in place of \code{loss_from}. This
 is useful when \code{loss = "ratio"}, where \code{loss_from} carries no
-exposure information and an external exposure variable such as \code{exposure}
+premium information and an external premium variable such as \code{premium}
 should be used instead.
 }
 
@@ -110,7 +110,7 @@ The coefficient of variation is defined as:
 where \eqn{f_k} are the individual observed ata values for link
 \eqn{k} and \eqn{\bar{f}_k} is their arithmetic mean. The \code{cv}
 reflects the relative spread of observed factors across cohorts,
-regardless of the exposure scale. It is used by
+regardless of the premium scale. It is used by
 \code{\link[=detect_maturity]{detect_maturity()}} as one of the criteria for determining the
 maturity point.
 }
@@ -121,10 +121,10 @@ The relative standard error is defined as:
 \deqn{rse = \frac{SE(\hat{f}_k)}{\hat{f}_k}}
 where \eqn{SE(\hat{f}_k)} is the standard error of the
 WLS-estimated factor. Unlike \code{cv}, which treats all cohorts equally,
-\code{rse} gives more weight to cohorts with larger exposures (via the
+\code{rse} gives more weight to cohorts with larger premiums (via the
 WLS weights). A small \code{rse} indicates that the WLS estimate is
 precise, which tends to occur when: (1) there are many cohorts,
-(2) exposures are large, and (3) the observed ata values are
+(2) premiums are large, and (3) the observed ata values are
 consistent across cohorts.
 }
 

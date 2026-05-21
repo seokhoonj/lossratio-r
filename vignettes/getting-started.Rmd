@@ -30,7 +30,7 @@ loss-ratio projection.
 (cohort × dev × group) cell. The bundled dataset
 `experience` is a 2,664-row table with calendar / underwriting
 period columns at multiple granularities, a `coverage` group
-column, and per-period amounts (`incr_loss`, `incr_exposure`).
+column, and per-period amounts (`incr_loss`, `incr_premium`).
 
 ```{r}
 library(lossratio)
@@ -48,7 +48,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium  = "incr_premium"
 )
 class(tri)
 names(tri)
@@ -57,18 +57,18 @@ names(tri)
 `as_triangle()`:
 
 - validates required columns (`cy_m`, `uy_m`, `incr_loss`,
-  `incr_exposure`) and coerces them to the expected types,
+  `incr_premium`) and coerces them to the expected types,
 - aggregates demographic dimensions away (here: `age_band`, `gender`),
 - standardises raw input names to the per-period slots `incr_loss`
-  and `incr_exposure`,
-- adds cumulative companions (`loss`, `exposure`) — cumulative is the
+  and `incr_premium`,
+- adds cumulative companions (`loss`, `premium`) — cumulative is the
   unmarked default; per-period carries the `_incr` suffix,
 - adds derived metrics (`margin` / `incr_margin`, `ratio` / `incr_ratio`,
   proportions),
 - standardises the cohort / development columns to the names `cohort`
   and `dev`,
 - preserves original column names as attributes (`cohort`,
-  `dev`, `loss`, `exposure`) for downstream plot labels.
+  `dev`, `loss`, `premium`) for downstream plot labels.
 
 ## Step 2 — Diagnostics
 
@@ -89,7 +89,7 @@ not produce projections (`$full`).
 fit_ata(tri, loss = "loss")
 
 # Exposure-driven intensities — additive, input to ED
-fit_intensity(tri, loss = "loss", exposure = "exposure")
+fit_intensity(tri, loss = "loss", premium = "premium")
 ```
 
 `fit_ata()` returns selected ATA factors $f_k$ per development link.
@@ -110,7 +110,7 @@ plot(cl, type = "projection")
 summary(cl)
 
 # Exposure-driven (additive projection)
-ed <- fit_ed(tri, loss = "loss", exposure = "exposure")
+ed <- fit_ed(tri, loss = "loss", premium = "premium")
 summary(ed)
 ```
 
@@ -140,7 +140,7 @@ sub <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium  = "incr_premium"
 )
 detect_regime(sub, method = "e_divisive")
 ```

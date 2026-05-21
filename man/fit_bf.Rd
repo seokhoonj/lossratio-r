@@ -7,7 +7,7 @@
 fit_bf(
   x,
   loss = "loss",
-  exposure = "exposure",
+  premium = "premium",
   prior,
   bootstrap = NULL,
   B = 999L,
@@ -31,8 +31,8 @@ fit_bf(
 \item{loss}{A single cumulative loss variable to project. Default
 \code{"loss"}.}
 
-\item{exposure}{A single cumulative exposure variable used as the
-denominator of the prior ELR. Default \code{"exposure"}.}
+\item{premium}{A single cumulative premium variable used as the
+denominator of the prior ELR. Default \code{"premium"}.}
 
 \item{prior}{The a priori expected loss ratio. Accepts:
 \describe{
@@ -56,13 +56,13 @@ point. Omit it (or leave \code{NA}) for a deterministic prior.}
 \item{\code{NULL} / \code{FALSE} (default)}{Point estimate only -- no
 bootstrap SE/CI.}
 \item{\code{TRUE} / \code{"auto"}}{Internal \code{bootstrap()} calls (one for
-loss, one for exposure) sharing \code{seed} so replicate indices
+loss, one for premium) sharing \code{seed} so replicate indices
 align across the two simulations.}
-\item{Named list \code{list(loss = BootstrapTriangle, exposure = BootstrapTriangle)}}{Pre-built objects from \code{bootstrap()}. Must
+\item{Named list \code{list(loss = BootstrapTriangle, premium = BootstrapTriangle)}}{Pre-built objects from \code{bootstrap()}. Must
 have matching \code{meta$B} / \code{meta$seed} so per-replicate
 composition is well-defined; \code{meta$target} must be \code{"loss"}
-and \code{"exposure"} respectively.}
-\item{Function \verb{function(tri) -> list(loss = ..., exposure = ...)}}{Lazy spec invoked on the input Triangle (leakage-safe
+and \code{"premium"} respectively.}
+\item{Function \verb{function(tri) -> list(loss = ..., premium = ...)}}{Lazy spec invoked on the input Triangle (leakage-safe
 for \code{backtest()}).}
 }
 Latest observed cumulative loss is \emph{not} perturbed in the BF
@@ -89,16 +89,16 @@ path is used regardless of \code{type}.}
 See \code{\link[=bootstrap]{bootstrap()}}.}
 
 \item{alpha}{Numeric scalar passed through to the inner \code{\link[=fit_cl]{fit_cl()}} and
-\code{\link[=fit_exposure]{fit_exposure()}} calls. Default \code{1}.}
+\code{\link[=fit_premium]{fit_premium()}} calls. Default \code{1}.}
 
 \item{sigma_method}{Sigma extrapolation method forwarded to
-\code{\link[=fit_cl]{fit_cl()}} / \code{\link[=fit_exposure]{fit_exposure()}}. Default \code{"locf"}.}
+\code{\link[=fit_cl]{fit_cl()}} / \code{\link[=fit_premium]{fit_premium()}}. Default \code{"locf"}.}
 
 \item{recent}{Optional positive integer; calendar-diagonal filter
 forwarded to the inner fits. Default \code{NULL}.}
 
 \item{regime}{Optional regime specification forwarded to the inner
-loss and exposure fits. See \code{\link[=fit_cl]{fit_cl()}} for the four-type dispatch.}
+loss and premium fits. See \code{\link[=fit_cl]{fit_cl()}} for the four-type dispatch.}
 
 \item{maturity}{Optional maturity specification forwarded to the inner
 loss fit. See \code{\link[=fit_cl]{fit_cl()}} for the four-type dispatch.}
@@ -133,8 +133,8 @@ An object of class \code{"BFFit"} containing:
 \item{\code{groups}}{Grouping variable names.}
 \item{\code{cohort}}{Raw cohort variable name.}
 \item{\code{dev}}{Raw development variable name.}
-\item{\code{loss}, \code{exposure}}{Loss / exposure variable names.}
-\item{\code{full}}{\code{data.table} \verb{[group, cohort, dev, loss_obs, loss_proj, exposure_obs, exposure_proj, is_observed, incr_loss_proj, incr_exposure_proj]}. When \code{bootstrap} is
+\item{\code{loss}, \code{premium}}{Loss / premium variable names.}
+\item{\code{full}}{\code{data.table} \verb{[group, cohort, dev, loss_obs, loss_proj, premium_obs, premium_proj, is_observed, incr_loss_proj, incr_premium_proj]}. When \code{bootstrap} is
 enabled, additional columns \code{loss_total_se}, \code{loss_total_cv},
 \code{loss_ci_lo}, \code{loss_ci_hi} carry per-cell bootstrap SE / CI on
 projected cells (observed cells stay \code{NA}).}
@@ -152,7 +152,7 @@ emerged fractions.}
 \verb{[group..., cohort, Z, K]} of the Buehlmann-Straub credibility
 factors used in place of \code{q}.}
 \item{\code{cl_fit}}{The inner \code{CLFit} used to derive \eqn{q_i}.}
-\item{\code{exposure_fit}}{The inner \code{ExposureFit} used to derive
+\item{\code{premium_fit}}{The inner \code{PremiumFit} used to derive
 \eqn{E_i^{ult}}.}
 \item{\code{bootstrap}}{When \code{bootstrap} is enabled, a
 \code{BFBootstrap} helper holding both Triangle-level
@@ -163,7 +163,7 @@ replicates; \code{NULL} otherwise.}
 In the analytical case \verb{$summary} carries \code{loss_total_se},
 \code{loss_total_cv}, \code{loss_ci_lo}, and \code{loss_ci_hi}.}
 \item{\code{alpha}, \code{sigma_method}, \code{recent}, \code{regime}, \code{maturity}}{
-Inputs forwarded to the inner \code{\link[=fit_cl]{fit_cl()}} / \code{\link[=fit_exposure]{fit_exposure()}}
+Inputs forwarded to the inner \code{\link[=fit_cl]{fit_cl()}} / \code{\link[=fit_premium]{fit_premium()}}
 calls.}
 }
 }
@@ -171,7 +171,7 @@ calls.}
 Fit a Bornhuetter-Ferguson (1972) projection from a \code{"Triangle"}
 object. The BF estimator blends the \emph{observed} cumulative loss for
 each cohort with an \emph{a priori} expected loss ratio (ELR) applied to
-the cohort's ultimate exposure, weighted by the expected unemerged
+the cohort's ultimate premium, weighted by the expected unemerged
 fraction \eqn{1 - q_i}:
 
 \deqn{\hat L_{ult, i}^{BF} = L_{obs, i} +
@@ -186,8 +186,8 @@ emerged fraction}, equivalent to the inverse of the cumulative
 loss development factor (LDF) for cohort \eqn{i}.
 \item \eqn{\mathrm{ELR}_i}: the user-supplied a priori expected loss
 ratio for cohort \eqn{i} (\code{prior} argument).
-\item \eqn{E_i^{ult}}: cohort \eqn{i}'s ultimate exposure, projected
-via chain ladder on the \code{exposure} column.
+\item \eqn{E_i^{ult}}: cohort \eqn{i}'s ultimate premium, projected
+via chain ladder on the \code{premium} column.
 }
 
 This is a peer worker alongside \code{\link[=fit_cl]{fit_cl()}} / \code{\link[=fit_ed]{fit_ed()}} / \code{\link[=fit_loss]{fit_loss()}}.
@@ -205,7 +205,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 # Scalar prior: 0.7 ELR for every cohort
@@ -230,5 +230,5 @@ Mack, T. (2008). The prediction error of Bornhuetter/Ferguson.
 }
 \seealso{
 \code{\link[=fit_cc]{fit_cc()}} (pooled ELR variant), \code{\link[=fit_cl]{fit_cl()}},
-\code{\link[=fit_exposure]{fit_exposure()}}
+\code{\link[=fit_premium]{fit_premium()}}
 }

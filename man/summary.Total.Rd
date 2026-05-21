@@ -33,7 +33,7 @@ tot <- as_total(
   cohort   = "uy_m",
   dev      = "dev_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 summary(tot)
 }

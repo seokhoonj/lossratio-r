@@ -1,7 +1,7 @@
 # Synthetic experience-study generator for the lossratio package.
 #
 # Produces a 36 x 36 jagged triangle x 4 coverages, deterministic via
-# set.seed(20260501). Calibration scalars (target ratio, exposure volume,
+# set.seed(20260501). Calibration scalars (target ratio, premium volume,
 # cell noise CV) per coverage were measured once on a real long-term
 # Korean health-insurance portfolio and are baked in here as constants
 # so this script ships without any real-data dependency. `surgery`
@@ -33,8 +33,8 @@ set.seed(20260501L)
 calib <- data.table(
   coverage      = c("ci",       "cancer",   "inpatient", "surgery"),
   target_ratio  = c(0.6041798,  0.4966633,  0.3533962,   1.4291995),
-  exposure_mean = c(490082826,  403465899,  32725571,    704738057),
-  exposure_cv   = c(0.9332768,  0.8684393,  0.8545352,   0.6738675),
+  premium_mean = c(490082826,  403465899,  32725571,    704738057),
+  premium_cv   = c(0.9332768,  0.8684393,  0.8545352,   0.6738675),
   cell_cv       = c(1.3679838,  1.6660074,  0.8603264,   0.3589258)
 )
 
@@ -60,16 +60,16 @@ records <- vector("list", 0L)
 for (i in seq_len(nrow(calib))) {
   cv            <- calib$coverage[i]
   target_ratio  <- calib$target_ratio[i]
-  exposure_mean <- calib$exposure_mean[i] / K
-  exposure_cv   <- calib$exposure_cv[i]
+  premium_mean <- calib$premium_mean[i] / K
+  premium_cv   <- calib$premium_cv[i]
   cell_cv       <- calib$cell_cv[i]
 
   shift_at    <- if (!is.null(shifts[[cv]])) shifts[[cv]]$at    else NA_integer_
   shift_scale <- if (!is.null(shifts[[cv]])) shifts[[cv]]$scale else 1.0
 
   for (ci in 0L:(n_cohorts - 1L)) {
-    cohort_mult      <- exp(rnorm(1L, mean = 0, sd = exposure_cv))
-    exposure_base_ci <- exposure_mean * cohort_mult
+    cohort_mult      <- exp(rnorm(1L, mean = 0, sd = premium_cv))
+    premium_base_ci <- premium_mean * cohort_mult
     eff_target       <- target_ratio *
                         (if (!is.na(shift_at) && ci >= shift_at) shift_scale else 1.0)
 
@@ -83,13 +83,13 @@ for (i in seq_len(nrow(calib))) {
       cm_c <- (ci + k) %% 12L + 1L
       cy_m <- as.Date(sprintf("%d-%02d-01", 2023L + cy_c, cm_c))
 
-      incr_exposure <- exposure_base_ci * (1 + rnorm(1L, 0, 0.05))
-      incr_exposure <- max(incr_exposure, 0)
+      incr_premium <- premium_base_ci * (1 + rnorm(1L, 0, 0.05))
+      incr_premium <- max(incr_premium, 0)
 
       noise <- exp(rnorm(1L, 0, log(1 + cell_cv)))
-      incr_loss <- incr_exposure * eff_target * weights[k + 1L] * K * noise
+      incr_loss <- incr_premium * eff_target * weights[k + 1L] * K * noise
 
-      # Real-world exposure / loss are recorded in won (integer);
+      # Real-world premium / loss are recorded in won (integer);
       # round to match that convention but keep `numeric` (double)
       # storage -- actuarial values may exceed R's int32 ceiling once
       # portfolios scale, and downstream computations (cumulative
@@ -99,7 +99,7 @@ for (i in seq_len(nrow(calib))) {
         cy_m          = cy_m,
         uy_m          = uy_m,
         incr_loss     = round(incr_loss),
-        incr_exposure = round(incr_exposure)
+        incr_premium = round(incr_premium)
       )
     }
   }
@@ -140,7 +140,7 @@ setcolorder(experience, c(
   "uy", "uy_h", "uy_q", "uy_m",
   "cy", "cy_h", "cy_q", "cy_m",
   "dev_y", "dev_h", "dev_q", "dev_m",
-  "incr_loss", "incr_exposure"
+  "incr_loss", "incr_premium"
 ))
 
 cat(sprintf("experience: %d rows x %d cols, coverage = %s\n",

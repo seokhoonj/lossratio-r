@@ -7,7 +7,7 @@
 .summarize_link_ed(object, alpha = 1, digits = 5, ...)
 }
 \arguments{
-\item{object}{A \code{Link} object built with \code{exposure} set,
+\item{object}{A \code{Link} object built with \code{premium} set,
 typically produced by \code{\link[=as_link]{as_link()}}.}
 
 \item{alpha}{Numeric scalar controlling the variance structure in the
@@ -25,7 +25,7 @@ per development link with descriptive statistics and WLS estimates.
 \description{
 Internal helper that computes group-wise summary statistics for
 incremental loss intensity \eqn{g} from a dual-variable \code{Link} object
-(built with \code{exposure} set). Dispatched via \code{\link[=summary.Link]{summary.Link()}} when
+(built with \code{premium} set). Dispatched via \code{\link[=summary.Link]{summary.Link()}} when
 \code{model = "ed"}.
 
 Two purposes:
@@ -48,13 +48,13 @@ Both \code{wt} and \code{g} are weighted averages of the observed intensities,
 but they differ in how weights are assigned:
 
 \describe{
-\item{\code{wt}}{Exposure-weighted mean:
+\item{\code{wt}}{Premium-weighted mean:
 \eqn{wt = \sum \Delta C^L_{i,k+1} / \sum C^P_{i,k}}.
 Computed from all rows where both values are finite.
 Independent of \code{alpha}.}
 \item{\code{g}}{WLS-estimated intensity from
-\code{lm(loss_delta ~ exposure_from + 0)}. Only rows where
-\code{exposure_from > 0} are used. When \code{alpha = 2}, \code{g} and \code{wt}
+\code{lm(loss_delta ~ premium_from + 0)}. Only rows where
+\code{premium_from > 0} are used. When \code{alpha = 2}, \code{g} and \code{wt}
 are numerically equivalent.}
 }
 }

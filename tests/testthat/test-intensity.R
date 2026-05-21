@@ -1,8 +1,8 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
-sub <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
+sub <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
 
 
 test_that("fit_intensity returns class 'IntensityFit'", {
@@ -13,7 +13,7 @@ test_that("fit_intensity returns class 'IntensityFit'", {
 test_that("fit_intensity bundles expected components", {
   intensity_fit <- fit_intensity(sub)
   for (nm in c("call", "data", "groups", "cohort", "dev",
-               "loss", "exposure", "link", "factor", "selected",
+               "loss", "premium", "link", "factor", "selected",
                "alpha", "na_method", "sigma_method", "recent",
                "regime")) {
     expect_true(nm %in% names(intensity_fit), info = paste("missing", nm))
@@ -63,16 +63,16 @@ test_that("print.IntensityFit does not error", {
 })
 
 test_that("Link (ED mode) carries `intensity` column (not `g`)", {
-  link_ed <- as_link(sub, loss = "loss", exposure = "exposure")
+  link_ed <- as_link(sub, loss = "loss", premium = "premium")
   expect_true("intensity" %in% names(link_ed))
   expect_false("g" %in% names(link_ed))
 })
 
-test_that("intensity == loss_delta / exposure_from when exposure_from > 0", {
-  link_ed <- as_link(sub, loss = "loss", exposure = "exposure")
-  ok <- is.finite(link_ed$intensity) & link_ed$exposure_from > 0
+test_that("intensity == loss_delta / premium_from when premium_from > 0", {
+  link_ed <- as_link(sub, loss = "loss", premium = "premium")
+  ok <- is.finite(link_ed$intensity) & link_ed$premium_from > 0
   expect_equal(link_ed$intensity[ok],
-               link_ed$loss_delta[ok] / link_ed$exposure_from[ok],
+               link_ed$loss_delta[ok] / link_ed$premium_from[ok],
                tolerance = 1e-6)
 })
 
@@ -94,7 +94,7 @@ test_that("plot_triangle.IntensityFit returns ggplot", {
 
 test_that(".ed_g_var accepts both IntensityFit and EDFit", {
   ifit <- fit_intensity(sub)
-  efit <- fit_ed(sub, loss = "loss", exposure = "exposure")
+  efit <- fit_ed(sub, loss = "loss", premium = "premium")
   sel_from_intensity <- lossratio:::.ed_g_var(ifit, alpha = 1)
   sel_from_ed        <- lossratio:::.ed_g_var(efit, alpha = 1)
   expect_true("g_var" %in% names(sel_from_intensity))

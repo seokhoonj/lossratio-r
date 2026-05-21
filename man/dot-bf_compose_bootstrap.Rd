@@ -17,7 +17,7 @@
 )
 }
 \arguments{
-\item{boots}{A named list \code{list(loss = BT, exposure = BT)} from
+\item{boots}{A named list \code{list(loss = BT, premium = BT)} from
 \code{.resolve_bootstrap_bf()}.}
 
 \item{priors}{Per-cohort ELR table (see \code{.resolve_bf_prior()}).
@@ -43,16 +43,16 @@ List \code{list(full, summary, bootstrap)} where \code{bootstrap} is the
 \code{BFBootstrap} / \code{CCBootstrap} helper class.
 }
 \description{
-Given paired loss-side and exposure-side \code{BootstrapTriangle} objects
+Given paired loss-side and premium-side \code{BootstrapTriangle} objects
 (with \code{keep_pseudo = TRUE} so the per-replicate cohort-by-dev cum
-loss / cum exposure means are available), compose the BF / Cape Cod
+loss / cum premium means are available), compose the BF / Cape Cod
 ultimate distribution per replicate:
 
 \enumerate{
 \item For each replicate \eqn{b}, derive \eqn{q_i^b =
     L_{obs,i} / L_{ult,i}^{CL,b}} from the loss-side Stage 1 mean
 trajectory (last-dev cell).
-\item Derive \eqn{E_i^{ult,b}} from the exposure-side Stage 1 mean
+\item Derive \eqn{E_i^{ult,b}} from the premium-side Stage 1 mean
 last-dev cell.
 \item For BF: \eqn{L_{ult,i}^{b} = L_{obs,i} +
     (1 - q_i^b) \cdot \mathrm{ELR}_i \cdot E_i^{ult,b}}.

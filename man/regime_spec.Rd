@@ -23,7 +23,7 @@ on its own \emph{internal} triangle. The point is \strong{conditional /
 deferred} detection -- the change points depend on which cells the
 caller decides to expose:
 \itemize{
-\item In \code{fit_ratio()} / \code{fit_loss()} / \code{fit_exposure()}, the spec is invoked
+\item In \code{fit_ratio()} / \code{fit_loss()} / \code{fit_premium()}, the spec is invoked
 on the \emph{full} triangle the user passed in.
 \item In \code{\link[=backtest]{backtest()}}, \strong{the spec is invoked on the masked triangle of
 each holdout fold}, \emph{never} on the full triangle. Held-out

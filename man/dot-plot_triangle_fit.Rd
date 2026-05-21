@@ -20,7 +20,7 @@
 }
 \arguments{
 \item{x}{A projection-level fit (\code{CLFit}, \code{SAFit}, \code{BFFit}, \code{CCFit},
-or \code{ExposureFit}).}
+or \code{PremiumFit}).}
 
 \item{region}{Cell region to plot (only used when \code{view = "value"}).
 One of \code{"proj"} (default; projected cells only, observed cells
@@ -61,10 +61,10 @@ A ggplot object.
 }
 \description{
 Role-agnostic triangle-style heatmap shared by the \code{plot_triangle}
-methods for \code{CLFit} / \code{SAFit} / \code{BFFit} / \code{CCFit} / \code{ExposureFit}.
+methods for \code{CLFit} / \code{SAFit} / \code{BFFit} / \code{CCFit} / \code{PremiumFit}.
 The cell metric and per-cell SE / CV columns are derived from
-\code{x$loss} (\verb{loss_*} for the loss-side fits, \verb{exposure_*} for an
-\code{ExposureFit}).
+\code{x$loss} (\verb{loss_*} for the loss-side fits, \verb{premium_*} for an
+\code{PremiumFit}).
 
 The \code{region} argument controls which values are shown:
 \describe{

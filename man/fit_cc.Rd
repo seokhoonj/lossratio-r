@@ -7,7 +7,7 @@
 fit_cc(
   x,
   loss = "loss",
-  exposure = "exposure",
+  premium = "premium",
   bootstrap = NULL,
   B = 999L,
   seed = NULL,
@@ -28,8 +28,8 @@ fit_cc(
 
 \item{loss}{A single cumulative loss variable. Default \code{"loss"}.}
 
-\item{exposure}{A single cumulative exposure variable. Default
-\code{"exposure"}.}
+\item{premium}{A single cumulative premium variable. Default
+\code{"premium"}.}
 
 \item{bootstrap}{Bootstrap configuration. Same forms as
 \code{\link[=fit_bf]{fit_bf()}}'s \code{bootstrap} arg -- see there for the full description.}
@@ -54,16 +54,16 @@ bootstrap is requested the analytical path is used regardless of
 \item{process}{One of \code{"gamma"} (default), \code{"od_pois"}, \code{"normal"}.}
 
 \item{alpha}{Numeric scalar passed through to the inner \code{\link[=fit_cl]{fit_cl()}} /
-\code{\link[=fit_exposure]{fit_exposure()}} calls. Default \code{1}.}
+\code{\link[=fit_premium]{fit_premium()}} calls. Default \code{1}.}
 
 \item{sigma_method}{Sigma extrapolation method forwarded to
-\code{\link[=fit_cl]{fit_cl()}} / \code{\link[=fit_exposure]{fit_exposure()}}. Default \code{"locf"}.}
+\code{\link[=fit_cl]{fit_cl()}} / \code{\link[=fit_premium]{fit_premium()}}. Default \code{"locf"}.}
 
 \item{recent}{Optional positive integer; calendar-diagonal filter
 forwarded to the inner fits. Default \code{NULL}.}
 
 \item{regime}{Optional regime specification forwarded to the inner
-loss and exposure fits. See \code{\link[=fit_cl]{fit_cl()}} for the four-type dispatch.}
+loss and premium fits. See \code{\link[=fit_cl]{fit_cl()}} for the four-type dispatch.}
 
 \item{credibility}{Optional credibility specification. \code{NULL}
 (default) gives the classical CC blend weighted by the emergence
@@ -85,7 +85,7 @@ An object of class \code{"CCFit"} containing:
 \item{\code{call}}{The matched call.}
 \item{\code{data}}{The input \code{Triangle}.}
 \item{\code{method}}{\code{"cc"}.}
-\item{\code{groups}, \code{cohort}, \code{dev}, \code{loss}, \code{exposure}}{Metadata.}
+\item{\code{groups}, \code{cohort}, \code{dev}, \code{loss}, \code{premium}}{Metadata.}
 \item{\code{full}, \code{proj}, \code{summary}}{Same shape as \code{BFFit}. With
 bootstrap enabled, \verb{$full} carries
 \code{loss_total_se}/\code{loss_total_cv}/\code{loss_ci_lo}/\code{loss_ci_hi} on
@@ -98,7 +98,7 @@ per group (or scalar if no group).}
 \item{\code{credibility}}{\code{NULL} for the classical blend, or a list
 \code{list(method, weights)} with the Buehlmann-Straub \code{Z} / \code{K}
 per cohort.}
-\item{\code{cl_fit}, \code{exposure_fit}}{Inner CL / Exposure fits.}
+\item{\code{cl_fit}, \code{premium_fit}}{Inner CL / Premium fits.}
 \item{\code{bootstrap}}{When \code{bootstrap} is enabled, a
 \code{CCBootstrap} helper holding both Triangle-level
 \code{BootstrapTriangle} objects, the per-replicate ultimate
@@ -111,7 +111,7 @@ In the analytical case \verb{$summary} carries \code{loss_total_se} /
 columns \code{elr_cc_se} / \code{elr_cc_cv} / \code{elr_cc_ci_lo} /
 \code{elr_cc_ci_hi}.}
 \item{\code{alpha}, \code{sigma_method}, \code{recent}, \code{regime}}{Inputs
-forwarded to the inner \code{\link[=fit_cl]{fit_cl()}} / \code{\link[=fit_exposure]{fit_exposure()}} calls.}
+forwarded to the inner \code{\link[=fit_cl]{fit_cl()}} / \code{\link[=fit_premium]{fit_premium()}} calls.}
 }
 }
 \description{
@@ -130,8 +130,8 @@ where
 at its latest observed development period.
 \item \eqn{q_i = L_{obs, i} / \hat L_{ult, i}^{CL}}: the expected
 emerged fraction (inverse of cumulative LDF).
-\item \eqn{E_i^{ult}}: cohort \eqn{i}'s ultimate exposure
-(projected via chain ladder on exposure).
+\item \eqn{E_i^{ult}}: cohort \eqn{i}'s ultimate premium
+(projected via chain ladder on premium).
 }
 
 Given \eqn{\widehat{\mathrm{ELR}}^{CC}}, the per-cohort ultimate is
@@ -161,7 +161,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 cc <- fit_cc(tri)
 summary(cc)
@@ -179,5 +179,5 @@ Bornhuetter, R. L. and Ferguson, R. E. (1972). The actuary and IBNR.
 }
 \seealso{
 \code{\link[=fit_bf]{fit_bf()}} (Bornhuetter-Ferguson with user-supplied prior),
-\code{\link[=fit_cl]{fit_cl()}}, \code{\link[=fit_exposure]{fit_exposure()}}
+\code{\link[=fit_cl]{fit_cl()}}, \code{\link[=fit_premium]{fit_premium()}}
 }

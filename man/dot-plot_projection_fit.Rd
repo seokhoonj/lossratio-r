@@ -18,7 +18,7 @@
 }
 \arguments{
 \item{x}{A projection-level fit (\code{CLFit}, \code{SAFit}, \code{BFFit}, \code{CCFit},
-or \code{ExposureFit}) with a \verb{$full} grid and \verb{$loss} / \verb{$groups} /
+or \code{PremiumFit}) with a \verb{$full} grid and \verb{$loss} / \verb{$groups} /
 \verb{$cohort} / \verb{$dev} slots.}
 
 \item{conf_level}{Confidence level for interval display. Default is
@@ -47,7 +47,7 @@ Role-agnostic projection plot: observed and projected cumulative
 values by cohort over development periods, with an optional
 confidence band. The plotted column family is taken from \code{x$loss}
 (the fit's standardized role -- \code{"loss"} for CL / SA / BF / CC,
-\code{"exposure"} for an \code{ExposureFit}), so every projection-level fit
+\code{"premium"} for an \code{PremiumFit}), so every projection-level fit
 shares one implementation. The interval is drawn whenever the
 \verb{<role>_total_se} column is present and finite.
 }

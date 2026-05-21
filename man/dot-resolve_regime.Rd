@@ -22,7 +22,7 @@ inputs operate on this triangle instead of \code{tri}.}
 }
 \description{
 Internal 4-type dispatcher used by \code{fit_ratio()}, \code{fit_loss()},
-\code{fit_exposure()}, and \code{\link[=backtest]{backtest()}} to normalize the \code{regime}
+\code{fit_premium()}, and \code{\link[=backtest]{backtest()}} to normalize the \code{regime}
 input (or split-axis variants such as \code{loss_regime}) into a
 single representation: either \code{NULL} (no filter) or a \code{"Regime"}
 object.

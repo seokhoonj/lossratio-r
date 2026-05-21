@@ -59,8 +59,8 @@
 #' Extract portfolio-level projected loss ratio from a Backtest fit object
 #'
 #' Aggregates per-cohort projected ultimate to a single portfolio loss ratio
-#' via exposure-weighting:
-#' \eqn{\sum_i loss_{ult,i} / \sum_i exposure_{ult,i}}.
+#' via premium-weighting:
+#' \eqn{\sum_i loss_{ult,i} / \sum_i premium_{ult,i}}.
 #'
 #' @param bt A `Backtest` object (result of `backtest()`).
 #'
@@ -70,10 +70,10 @@
   if (is.null(bt) || is.null(bt$fit) || is.null(bt$fit$summary))
     return(NA_real_)
   s <- data.table::as.data.table(bt$fit$summary)
-  needed <- c("loss_ult", "exposure_ult")
+  needed <- c("loss_ult", "premium_ult")
   if (!all(needed %in% names(s))) return(NA_real_)
   total_loss <- sum(s$loss_ult,     na.rm = TRUE)
-  total_exp  <- sum(s$exposure_ult, na.rm = TRUE)
+  total_exp  <- sum(s$premium_ult, na.rm = TRUE)
   if (!is.finite(total_exp) || total_exp <= 0) return(NA_real_)
   total_loss / total_exp
 }
@@ -228,7 +228,7 @@ detect_convergence <- function(triangle,
 
   # 2) resolve mat_k --------------------------------------------------
   if (is.null(mat_k)) {
-    mat    <- detect_maturity(triangle, loss = "ratio", weight = "exposure")
+    mat    <- detect_maturity(triangle, loss = "ratio", weight = "premium")
     mat_k  <- suppressWarnings(min(mat$change, na.rm = TRUE))
     if (!is.finite(mat_k))
       stop("`detect_maturity(loss = \"ratio\")` returned no mature link ",

@@ -1,4 +1,4 @@
-# Projection plot (shared by CL / SA / BF / CC / Exposure fits) ----------
+# Projection plot (shared by CL / SA / BF / CC / Premium fits) ----------
 
 #' Projection plot for a projection-level fit
 #'
@@ -7,12 +7,12 @@
 #' values by cohort over development periods, with an optional
 #' confidence band. The plotted column family is taken from `x$loss`
 #' (the fit's standardized role -- `"loss"` for CL / SA / BF / CC,
-#' `"exposure"` for an `ExposureFit`), so every projection-level fit
+#' `"premium"` for an `PremiumFit`), so every projection-level fit
 #' shares one implementation. The interval is drawn whenever the
 #' `<role>_total_se` column is present and finite.
 #'
 #' @param x A projection-level fit (`CLFit`, `SAFit`, `BFFit`, `CCFit`,
-#'   or `ExposureFit`) with a `$full` grid and `$loss` / `$groups` /
+#'   or `PremiumFit`) with a `$full` grid and `$loss` / `$groups` /
 #'   `$cohort` / `$dev` slots.
 #' @inheritParams plot.CLFit
 #'
@@ -366,23 +366,23 @@ plot.CCFit <- function(x, ...) {
 }
 
 
-#' Plot an exposure fit
+#' Plot an premium fit
 #'
 #' @description
-#' Projection plot for an `"ExposureFit"` -- observed and projected
-#' cumulative exposure by cohort, delegated to `.plot_projection_fit()`.
-#' Defined so an `ExposureFit` does not fall through to [plot.CLFit()],
+#' Projection plot for an `"PremiumFit"` -- observed and projected
+#' cumulative premium by cohort, delegated to `.plot_projection_fit()`.
+#' Defined so an `PremiumFit` does not fall through to [plot.CLFit()],
 #' whose `$full` schema is loss-side.
 #'
-#' @param x An object of class `"ExposureFit"`.
+#' @param x An object of class `"PremiumFit"`.
 #' @param ... Forwarded to `.plot_projection_fit()` -- see [plot.SAFit()].
 #'
 #' @return A `ggplot` object.
 #'
-#' @method plot ExposureFit
+#' @method plot PremiumFit
 #' @export
-plot.ExposureFit <- function(x, ...) {
-  .assert_class(x, "ExposureFit")
+plot.PremiumFit <- function(x, ...) {
+  .assert_class(x, "PremiumFit")
   .plot_projection_fit(x, ...)
 }
 
@@ -391,10 +391,10 @@ plot.ExposureFit <- function(x, ...) {
 #'
 #' @description
 #' Role-agnostic triangle-style heatmap shared by the `plot_triangle`
-#' methods for `CLFit` / `SAFit` / `BFFit` / `CCFit` / `ExposureFit`.
+#' methods for `CLFit` / `SAFit` / `BFFit` / `CCFit` / `PremiumFit`.
 #' The cell metric and per-cell SE / CV columns are derived from
-#' `x$loss` (`loss_*` for the loss-side fits, `exposure_*` for an
-#' `ExposureFit`).
+#' `x$loss` (`loss_*` for the loss-side fits, `premium_*` for an
+#' `PremiumFit`).
 #'
 #' The `region` argument controls which values are shown:
 #' \describe{
@@ -412,7 +412,7 @@ plot.ExposureFit <- function(x, ...) {
 #' }
 #'
 #' @param x A projection-level fit (`CLFit`, `SAFit`, `BFFit`, `CCFit`,
-#'   or `ExposureFit`).
+#'   or `PremiumFit`).
 #' @param region Cell region to plot (only used when `view = "value"`).
 #'   One of `"proj"` (default; projected cells only, observed cells
 #'   masked), `"full"` (observed + projected), or `"data"` (observed
@@ -506,7 +506,7 @@ plot.ExposureFit <- function(x, ...) {
 
   ratio_vars <- c("ratio", "incr_ratio")
   prop_vars  <- c("loss_share", "incr_loss_share",
-                  "exposure_share", "incr_exposure_share")
+                  "premium_share", "incr_premium_share")
   is_ratio   <- metric %in% c(ratio_vars, prop_vars)
 
   base_title <- switch(
@@ -515,14 +515,14 @@ plot.ExposureFit <- function(x, ...) {
     incr_ratio          = "Per-Period Loss Ratio",
     loss                = "Cumulative Loss",
     incr_loss           = "Per-Period Loss",
-    exposure            = "Cumulative Exposure",
-    incr_exposure       = "Per-Period Exposure",
+    premium             = "Cumulative Premium",
+    incr_premium        = "Per-Period Premium",
     margin              = "Cumulative Margin",
     incr_margin         = "Per-Period Margin",
     loss_share          = "Cumulative Loss Proportion",
     incr_loss_share     = "Per-Period Loss Proportion",
-    exposure_share      = "Cumulative Exposure Proportion",
-    incr_exposure_share = "Per-Period Exposure Proportion",
+    premium_share       = "Cumulative Premium Proportion",
+    incr_premium_share  = "Per-Period Premium Proportion",
     metric
   )
 
@@ -579,7 +579,7 @@ plot.ExposureFit <- function(x, ...) {
 
     # Alias the metric's per-cell SE / CV to fixed names so the label
     # expressions stay role-agnostic (loss_* for CL/SA/BF/CC,
-    # exposure_* for an ExposureFit).
+    # premium_* for an PremiumFit).
     dt[, (".se") := .SD[[1L]], .SDcols = paste0(metric, "_total_se")]
     dt[, (".cv") := .SD[[1L]], .SDcols = paste0(metric, "_total_cv")]
 
@@ -775,22 +775,22 @@ plot_triangle.CCFit <- function(x, ...) {
 }
 
 
-#' Plot an exposure fit as a triangle table
+#' Plot an premium fit as a triangle table
 #'
 #' @description
-#' Triangle-style heatmap for an `"ExposureFit"`. Delegates to the
+#' Triangle-style heatmap for an `"PremiumFit"`. Delegates to the
 #' shared role-agnostic `.plot_triangle_fit()` implementation;
-#' the cell metric is the exposure projection.
+#' the cell metric is the premium projection.
 #'
-#' @param x An object of class `"ExposureFit"`.
+#' @param x An object of class `"PremiumFit"`.
 #' @param ... Forwarded to the shared implementation -- see
 #'   [plot_triangle.SAFit()].
 #'
 #' @return A `ggplot` object.
 #'
-#' @method plot_triangle ExposureFit
+#' @method plot_triangle PremiumFit
 #' @export
-plot_triangle.ExposureFit <- function(x, ...) {
-  .assert_class(x, "ExposureFit")
+plot_triangle.PremiumFit <- function(x, ...) {
+  .assert_class(x, "PremiumFit")
   .plot_triangle_fit(x, ...)
 }

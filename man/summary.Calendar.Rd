@@ -19,11 +19,11 @@ A \code{data.table} of class \code{"CalendarSummary"} with one row per
 \item{ratio_mean}{Mean of cumulative loss ratios.}
 \item{ratio_median}{Median of cumulative loss ratios.}
 \item{ratio_wt}{Weighted cumulative loss ratio
-(\code{sum(loss) / sum(exposure)}).}
+(\code{sum(loss) / sum(premium)}).}
 \item{incr_ratio_mean}{Mean of per-period loss ratios.}
 \item{incr_ratio_median}{Median of per-period loss ratios.}
 \item{incr_ratio_wt}{Weighted per-period loss ratio
-(\code{sum(incr_loss) / sum(incr_exposure)}).}
+(\code{sum(incr_loss) / sum(incr_premium)}).}
 }
 
 The returned object preserves the attributes \code{groups},
@@ -46,7 +46,7 @@ cal <- as_calendar(
   groups   = "coverage",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 smr  <- summary(cal)
 head(smr)

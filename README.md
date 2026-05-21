@@ -10,13 +10,13 @@ backtest validation.
 insurance**, covering cohort development analysis, stage-adaptive
 projection, regime detection, and backtest validation. Input is
 long-format experience data — each row (cohort × dev × demographic)
-maps to one Triangle cell, with loss and exposure columns (`loss`,
-`exposure`).
+maps to one Triangle cell, with loss and premium columns (`loss`,
+`premium`).
 
 In long-term health insurance, new claims and premium are generated
 and earned continuously within each cohort, so cumulative loss and
-exposure grow together. Age-to-age (ATA) factors tend to show high
-variability in early development, and exposure (≈ risk premium)
+premium grow together. Age-to-age (ATA) factors tend to show high
+variability in early development, and premium (≈ risk premium)
 becomes a more stable and reliable anchor. Product
 redesigns, underwriting changes, or regulatory actions can also
 produce structural breaks that accumulate across cohorts.
@@ -36,7 +36,7 @@ It provides:
     total (`Total`)
 -   Age-to-age (`ATA`) and exposure-driven (`ED`) development modeling
     via the worker layer (`fit_cl`, `fit_ed`, `fit_ata`, `fit_intensity`)
--   Role-specific dispatchers (`fit_loss`, `fit_exposure`) that project a
+-   Role-specific dispatchers (`fit_loss`, `fit_premium`) that project a
     single side with standard errors and confidence intervals
 -   Loss ratio projection (`fit_ratio`) composes loss and premium fits with
     three methods:
@@ -67,8 +67,8 @@ function standardises internally.
 | `cohort`                 | Cohort period (typically UY for long-term health) (Date) | `"uy_m"`, `"uy"`             |
 | `calendar` *or* `dev`    | Calendar period (Date) *or* `dev` period (integer)   | `"cy_m"` / `"dev_m"`             |
 | `loss`                   | Per-period *or* cumulative claim amount              | `"incr_loss"` / `"loss"`         |
-| `exposure`               | Per-period *or* cumulative exposure (risk premium)   | `"incr_exposure"` / `"exposure"` |
-| `cell_type` *(default)*  | Interpretation of `loss` / `exposure` values         | `"incremental"` / `"cumulative"` |
+| `premium`                | Per-period *or* cumulative premium (risk premium)    | `"incr_premium"` / `"premium"`   |
+| `cell_type` *(default)*  | Interpretation of `loss` / `premium` values          | `"incremental"` / `"cumulative"` |
 | `groups` *(optional)*    | Grouping column(s): product, coverage, age, ...      | `"coverage"`                     |
 
 Two more arguments govern interpretation:
@@ -94,18 +94,18 @@ per-period values carry an `incr_` (incremental) prefix:
 | Metric         | Cumulative (default) | Per-period (`incr_`) |
 |----------------|----------------------|----------------------|
 | Loss           | `loss`               | `incr_loss`          |
-| Exposure       | `exposure`           | `incr_exposure`      |
+| Premium        | `premium`            | `incr_premium`       |
 | Ratio          | `ratio`              | `incr_ratio`         |
 | Margin         | `margin`             | `incr_margin`        |
 | Profit         | `profit`             | `incr_profit`        |
 
 Raw `experience` input is per-period only (`incr_loss`,
-`incr_exposure`); `as_triangle()` produces both forms in the
+`incr_premium`); `as_triangle()` produces both forms in the
 output. Worker fit functions (`fit_cl`, `fit_ed`, `fit_ata`,
-`fit_intensity`) take `loss` / `exposure` / `weight` arguments;
-dispatcher functions (`fit_loss`, `fit_exposure`) and the
-composition `fit_ratio` use role-specific `loss_*` / `exposure_*`
-argument names. Cumulative slots (`"loss"`, `"exposure"`) are the
+`fit_intensity`) take `loss` / `premium` / `weight` arguments;
+dispatcher functions (`fit_loss`, `fit_premium`) and the
+composition `fit_ratio` use role-specific `loss_*` / `premium_*`
+argument names. Cumulative slots (`"loss"`, `"premium"`) are the
 defaults.
 
 ## Installation
@@ -135,7 +135,7 @@ tri <- as_triangle(
   cohort    = "uy_m",
   calendar  = "cy_m",
   loss      = "incr_loss",
-  exposure  = "incr_exposure",
+  premium   = "incr_premium",
   cell_type = "incremental"   # default; use "cumulative" for pre-summed cells
 )
 
@@ -143,7 +143,7 @@ plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
 
 # Exposure-driven fit (additive ED intensity)
-ed <- fit_ed(tri, loss = "loss", exposure = "exposure")
+ed <- fit_ed(tri, loss = "loss", premium = "premium")
 
 # Chain ladder fit (multiplicative ATA factors)
 cl <- fit_cl(tri, loss = "loss")
@@ -184,12 +184,12 @@ etc.). Original column names are preserved as attributes (`cohort`,
 ### Exposure-Driven (default)
 
 `fit_ratio(method = "ed")` (default) or `fit_ed()`. All loss
-increments use exposure (risk premium) as the denominator:
+increments use premium (risk premium) as the denominator:
 $\Delta C^L = g_k \cdot C^P_k$. Unconditional safe baseline -- no
 maturity dependency, robust under early-dev age-to-age volatility.
 
 *When to use*: as a baseline. The pooled intensity $g_k$ assumes
-cohorts are reasonably homogeneous in loss-per-exposure level;
+cohorts are reasonably homogeneous in loss-per-premium level;
 under cohort-level drift (e.g., underwriting / coverage regime
 change), the projection biases toward the pooled mean and may
 over-project post-change cohorts. See the `regime` argument for

@@ -5,20 +5,20 @@
 \alias{print.Backtest}
 \alias{summary.Backtest}
 \alias{print.summary.Backtest}
-\title{Backtest a loss / exposure / loss-ratio projection on existing data}
+\title{Backtest a loss / premium / loss-ratio projection on existing data}
 \usage{
 backtest(
   x,
   holdout = 6L,
-  target = c("ratio", "loss", "exposure"),
+  target = c("ratio", "loss", "premium"),
   loss_method = c("ed", "cl", "sa", "bf", "cc"),
-  exposure_method = c("ed", "cl"),
+  premium_method = c("ed", "cl"),
   loss_alpha = 1,
-  exposure_alpha = 1,
+  premium_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   loss_regime = NULL,
-  exposure_regime = NULL,
+  premium_regime = NULL,
   maturity = "auto",
   se_method = c("fixed", "delta"),
   rho = 0.95,
@@ -43,7 +43,7 @@ backtest(
 before refitting. Default \code{6L}.}
 
 \item{target}{Character scalar. Which projection to backtest. One
-of \code{"ratio"} (default), \code{"loss"}, \code{"exposure"}. Determines which
+of \code{"ratio"} (default), \code{"loss"}, \code{"premium"}. Determines which
 fitter is called on the masked triangle and which column on \code{x}
 is treated as the held-out actual.}
 
@@ -51,13 +51,13 @@ is treated as the held-out actual.}
 \code{fit_ratio()} / \code{fit_loss()} as their \code{method} argument. One of
 \code{"ed"} (default), \code{"cl"}, \code{"sa"}, \code{"bf"}, or \code{"cc"}. \code{"bf"} / \code{"cc"}
 need their prior arguments supplied through \code{...}. Unused for
-\code{target = "exposure"}.}
+\code{target = "premium"}.}
 
-\item{exposure_method}{Method for the exposure-side projection.
-Passed to \code{fit_ratio()} / \code{fit_loss()} / \code{fit_exposure()}. One of
+\item{premium_method}{Method for the premium-side projection.
+Passed to \code{fit_ratio()} / \code{fit_loss()} / \code{fit_premium()}. One of
 \code{"ed"} (default) or \code{"cl"}.}
 
-\item{loss_alpha, exposure_alpha}{Mack alpha for loss-side / exposure-side
+\item{loss_alpha, premium_alpha}{Mack alpha for loss-side / premium-side
 chain-ladder estimation.}
 
 \item{sigma_method}{Method used to extrapolate \code{sigma} for links where it
@@ -72,7 +72,7 @@ terms drop those links via finite-value guards. Passed to
 \item{recent}{Calendar-diagonal recency filter forwarded to the
 fitter.}
 
-\item{loss_regime, exposure_regime}{Regime spec for the loss / exposure
+\item{loss_regime, premium_regime}{Regime spec for the loss / premium
 side. Each accepts one of four input types, dispatched by
 \code{\link[=.resolve_regime]{.resolve_regime()}}:
 \itemize{
@@ -84,7 +84,7 @@ the simulated backtest cutoff).
 \item A function \verb{function(tri) -> Regime} -- called on the
 masked triangle for the same leakage-safe reason.
 }
-\code{exposure_regime} is resolved independently from \code{loss_regime}.}
+\code{premium_regime} is resolved independently from \code{loss_regime}.}
 
 \item{maturity}{Maturity input. Used only for \code{target = "ratio"} and
 \code{target = "loss"} (stage-adaptive). Accepts one of four input
@@ -103,17 +103,17 @@ same leakage-safe reason.
 }}
 
 \item{se_method}{Standard-error composition for \code{fit_ratio()}. Unused
-for \code{target = "loss"} / \code{target = "exposure"}.}
+for \code{target = "loss"} / \code{target = "premium"}.}
 
-\item{rho}{Loss-exposure correlation used by \code{fit_ratio()} delta
-method. Unused for \code{target = "loss"} / \code{target = "exposure"}.}
+\item{rho}{Loss-premium correlation used by \code{fit_ratio()} delta
+method. Unused for \code{target = "loss"} / \code{target = "premium"}.}
 
 \item{conf_level}{Confidence level for \code{fit_ratio()} / \code{fit_loss()}
-intervals. Unused for \code{target = "exposure"}.}
+intervals. Unused for \code{target = "premium"}.}
 
 \item{bootstrap, B, seed}{Bootstrap controls forwarded to the
 target-specific fitter (\code{fit_ratio()} / \code{fit_loss()} /
-\code{fit_exposure()}). \code{bootstrap = NULL} (default) defers to the
+\code{fit_premium()}). \code{bootstrap = NULL} (default) defers to the
 fitter's method-dependent resolution: bootstrap for SA/ED methods,
 analytical for pure CL. The fitter accepts the full 4-type dispatch
 (\code{NULL} / logical / \code{"auto"} / \code{BootstrapTriangle} / function). For
@@ -162,8 +162,8 @@ The target is selected with \code{target}:
 \item \code{target = "ratio"} -- score the loss-ratio projection from
 \code{fit_ratio()}.
 \item \code{target = "loss"} -- score the loss projection from \code{fit_loss()}.
-\item \code{target = "exposure"} -- score the exposure projection from
-\code{fit_exposure()}.
+\item \code{target = "premium"} -- score the premium projection from
+\code{fit_premium()}.
 }
 
 The A/E Error (\code{ae_err}) follows the standard actuarial A/E
@@ -183,12 +183,12 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 bt_ratio    <- backtest(tri, holdout = 6L, target = "ratio")
 bt_loss     <- backtest(tri, holdout = 6L, target = "loss")
-bt_exposure <- backtest(tri, holdout = 6L, target = "exposure")
+bt_premium <- backtest(tri, holdout = 6L, target = "premium")
 
 print(bt_ratio)
 summary(bt_ratio)
@@ -197,5 +197,5 @@ plot(bt_ratio)
 
 }
 \seealso{
-\code{\link[=fit_ratio]{fit_ratio()}}, \code{\link[=fit_loss]{fit_loss()}}, \code{\link[=fit_exposure]{fit_exposure()}}, \code{\link[=plot.Backtest]{plot.Backtest()}}
+\code{\link[=fit_ratio]{fit_ratio()}}, \code{\link[=fit_loss]{fit_loss()}}, \code{\link[=fit_premium]{fit_premium()}}, \code{\link[=plot.Backtest]{plot.Backtest()}}
 }

@@ -9,9 +9,9 @@ fit_loss(
   method = c("ed", "cl", "sa", "bf", "cc"),
   alpha = 1,
   regime = NULL,
-  exposure_fit = NULL,
-  exposure_method = c("ed", "cl"),
-  exposure_alpha = 1,
+  premium_fit = NULL,
+  premium_method = c("ed", "cl"),
+  premium_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   maturity = "auto",
@@ -26,7 +26,7 @@ fit_loss(
 }
 \arguments{
 \item{x}{A \code{"Triangle"} object. The standardized \code{"loss"} and
-\code{"exposure"} columns are used (\code{as_triangle()} produces these).}
+\code{"premium"} columns are used (\code{as_triangle()} produces these).}
 
 \item{method}{One of \code{"ed"} (default), \code{"cl"}, \code{"sa"}, \code{"bf"}, or \code{"cc"}.}
 
@@ -36,18 +36,18 @@ fit_loss(
 standard 4-type dispatch (\code{NULL} / \code{Regime} / \code{"auto"} / function).
 Behavior depends on \code{method}: SA uses a hybrid 2-pass filter; ED / CL
 / BF / CC use a simple cohort cut. The same resolved regime is
-applied to the internal exposure fit -- callers needing an asymmetric
-loss/exposure split should use \code{\link[=fit_ratio]{fit_ratio()}}.}
+applied to the internal premium fit -- callers needing an asymmetric
+loss/premium split should use \code{\link[=fit_ratio]{fit_ratio()}}.}
 
-\item{exposure_fit}{Optional pre-built \code{ExposureFit} supplying the
-exposure projection. Only used by \code{"ed"} (via \code{fit_ed}'s internal
-exposure handling) and \code{"sa"}. When \code{NULL}, the worker calls
-\code{\link[=fit_exposure]{fit_exposure()}} internally.}
+\item{premium_fit}{Optional pre-built \code{PremiumFit} supplying the
+premium projection. Only used by \code{"ed"} (via \code{fit_ed}'s internal
+premium handling) and \code{"sa"}. When \code{NULL}, the worker calls
+\code{\link[=fit_premium]{fit_premium()}} internally.}
 
-\item{exposure_method}{One of \code{"ed"} (default) or \code{"cl"}. Used only
-when \code{exposure_fit = NULL} for \code{"sa"}.}
+\item{premium_method}{One of \code{"ed"} (default) or \code{"cl"}. Used only
+when \code{premium_fit = NULL} for \code{"sa"}.}
 
-\item{exposure_alpha}{Variance-structure exponent for the exposure fit.
+\item{premium_alpha}{Variance-structure exponent for the premium fit.
 Default \code{1}.}
 
 \item{sigma_method}{Method used to extrapolate \code{sigma} for links where it
@@ -86,8 +86,8 @@ For \code{method = "bf"}, \code{prior} is required.}
 }
 \value{
 An object of class \code{"LossFit"}. List with components:
-\code{full}, \code{proj}, \code{maturity}, \code{loss_ata_fit}, \code{exposure_ata_fit},
-\code{exposure_fit}, \code{ed}, \code{factor}, \code{selected}, plus metadata.
+\code{full}, \code{proj}, \code{maturity}, \code{loss_ata_fit}, \code{premium_ata_fit},
+\code{premium_fit}, \code{ed}, \code{factor}, \code{selected}, plus metadata.
 }
 \description{
 Project cumulative loss across the cohort x development grid. \code{fit_loss()}
@@ -109,8 +109,8 @@ from the data).}
 
 The dispatcher returns a \code{LossFit} object whose \verb{$full} schema is
 uniform across methods (\code{loss_obs}, \code{loss_proj}, \code{loss_total_se},
-\code{loss_ci_lo}, \code{loss_ci_hi}, \code{exposure_obs}, \code{exposure_proj},
-\code{incr_exposure_proj}, plus method-specific extras). Missing slots on
+\code{loss_ci_lo}, \code{loss_ci_hi}, \code{premium_obs}, \code{premium_proj},
+\code{incr_premium_proj}, plus method-specific extras). Missing slots on
 worker outputs (e.g. \code{loss_ata_fit} for ED, \code{ed}/\code{selected} for CL/BF/CC)
 are synthesized as \code{NULL} so downstream code such as \code{\link[=fit_ratio]{fit_ratio()}} can
 guard uniformly.
@@ -124,7 +124,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 lf    <- fit_loss(tri)                    # ED (default)
@@ -135,5 +135,5 @@ lf_sa <- fit_loss(tri, method = "sa")
 }
 \seealso{
 \code{\link[=fit_ed]{fit_ed()}}, \code{\link[=fit_cl]{fit_cl()}}, \code{\link[=fit_sa]{fit_sa()}}, \code{\link[=fit_bf]{fit_bf()}}, \code{\link[=fit_cc]{fit_cc()}},
-\code{\link[=fit_exposure]{fit_exposure()}}, \code{\link[=fit_ratio]{fit_ratio()}}.
+\code{\link[=fit_premium]{fit_premium()}}, \code{\link[=fit_ratio]{fit_ratio()}}.
 }

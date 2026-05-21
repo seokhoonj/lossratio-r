@@ -17,11 +17,11 @@ A \code{data.table} grouped by \code{groups} and \code{dev}, containing:
 \item{n_cohorts}{Number of observations in the cell}
 \item{ratio_mean}{Mean of cumulative loss ratios}
 \item{ratio_median}{Median of cumulative loss ratios}
-\item{ratio_wt}{Weighted cumulative loss ratio (\code{sum(loss) / sum(exposure)})}
+\item{ratio_wt}{Weighted cumulative loss ratio (\code{sum(loss) / sum(premium)})}
 \item{incr_ratio_mean}{Mean of per-period loss ratios}
 \item{incr_ratio_median}{Median of per-period loss ratios}
 \item{incr_ratio_wt}{Weighted per-period loss ratio
-(\code{sum(incr_loss) / sum(incr_exposure)})}
+(\code{sum(incr_loss) / sum(incr_premium)})}
 }
 
 The returned object keeps the attributes \code{groups} and \code{dev},
@@ -46,12 +46,12 @@ The following statistics are computed:
 \details{
 The weighted mean is computed as:
 \itemize{
-\item \code{ratio_wt      = sum(loss)      / sum(exposure)}
-\item \code{incr_ratio_wt = sum(incr_loss) / sum(incr_exposure)}
+\item \code{ratio_wt      = sum(loss)      / sum(premium)}
+\item \code{incr_ratio_wt = sum(incr_loss) / sum(incr_premium)}
 }
 
-These correspond to portfolio-level loss ratios based on exposure and
-are typically more stable than simple averages when exposure sizes differ
+These correspond to portfolio-level loss ratios based on premium and
+are typically more stable than simple averages when premium sizes differ
 across cohorts.
 
 It is assumed that the input \code{Triangle} object does not contain missing values.
@@ -64,7 +64,7 @@ d <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 smr <- summary(d)
 head(smr)

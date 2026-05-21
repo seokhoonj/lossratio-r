@@ -7,7 +7,7 @@
 as_link(
   x,
   loss = "loss",
-  exposure = NULL,
+  premium = NULL,
   weight = NULL,
   min_denom = 0,
   drop_invalid = FALSE
@@ -17,23 +17,23 @@ as_link(
 \item{x}{A \code{Triangle} object.}
 
 \item{loss}{A single cumulative metric used as the link
-numerator. Must be one of \code{"loss"}, \code{"exposure"}, or \code{"ratio"}. Default
+numerator. Must be one of \code{"loss"}, \code{"premium"}, or \code{"ratio"}. Default
 \code{"loss"}. For loss-side ATA this is the cumulative loss column, but
 any cumulative metric on the Triangle may be supplied.}
 
-\item{exposure}{Optional second cumulative metric, treated as the
-exposure anchor for the ED workflow. Must be one of \code{"loss"},
-\code{"exposure"}, \code{"ratio"}, and must differ from \code{loss}. When \code{NULL}
+\item{premium}{Optional second cumulative metric, treated as the
+premium anchor for the ED workflow. Must be one of \code{"loss"},
+\code{"premium"}, \code{"ratio"}, and must differ from \code{loss}. When \code{NULL}
 (default), only the single-variable columns are produced.}
 
 \item{weight}{Optional cumulative metric used as WLS weight in
 downstream \code{summary} / \code{fit_ata} calls. Must differ from
-\code{loss}. Cannot be combined with \code{exposure} (the dual
+\code{loss}. Cannot be combined with \code{premium} (the dual
 workflow has its own anchor).}
 
 \item{min_denom}{Minimum denominator required to compute \code{ata}
 and \code{intensity}. If \code{loss_from <= min_denom}, \code{ata} becomes \code{NA};
-if \code{exposure_from <= min_denom}, \code{intensity} becomes \code{NA}. Default
+if \code{premium_from <= min_denom}, \code{intensity} becomes \code{NA}. Default
 \code{0}.}
 
 \item{drop_invalid}{Logical; if \code{TRUE}, rows with non-finite \code{ata}
@@ -46,13 +46,13 @@ A \code{data.table} of class \code{"Link"} with columns:
 \itemize{
 \item Always: \verb{[group]}, \code{cohort}, \code{ata_from}, \code{ata_to}, \code{ata_link},
 \code{loss_from}, \code{loss_to}, \code{loss_delta}, \code{ata}.
-\item If \code{exposure} is set: also \code{exposure_from}, \code{exposure_to},
-\code{exposure_delta}, \code{intensity}.
+\item If \code{premium} is set: also \code{premium_from}, \code{premium_to},
+\code{premium_delta}, \code{intensity}.
 \item If \code{weight} is set: also \code{weight}.
 }
 
 The returned object carries attributes \code{groups}, \code{cohort},
-\code{dev}, \code{loss}, \code{exposure} (or \code{NULL}), \code{weight}
+\code{dev}, \code{loss}, \code{premium} (or \code{NULL}), \code{weight}
 (or \code{NULL}).
 }
 \description{
@@ -68,16 +68,16 @@ link-pair rows. Each row corresponds to one development link
 underlying both the chain ladder (CL) and exposure-driven (ED)
 workflows.
 
-Two modes are produced depending on \code{exposure}:
+Two modes are produced depending on \code{premium}:
 
 \describe{
-\item{Single-variable mode (\code{exposure = NULL})}{The age-to-age
+\item{Single-variable mode (\code{premium = NULL})}{The age-to-age
 factor is \eqn{ata = value_{to} / value_{from}}, where
 \eqn{value} is the column named by \code{loss}.}
-\item{Dual-variable mode (\code{exposure} supplied)}{In addition to
+\item{Dual-variable mode (\code{premium} supplied)}{In addition to
 the loss-side ATA, the exposure-driven intensity
-\eqn{g = \Delta loss / exposure_{from}} is computed and stored in
-the \code{intensity} column. Exposure measure used as denominator for
+\eqn{g = \Delta loss / premium_{from}} is computed and stored in
+the \code{intensity} column. Premium measure used as denominator for
 loss ratio calculations; for long-term health insurance
 applications, risk premium is commonly used.}
 }
@@ -90,14 +90,14 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 # Single-variable: cumulative-loss link factors (ATA workflow)
 link_loss <- as_link(tri, loss = "loss")
 
-# Dual-variable: ED-ready link table (loss + exposure)
-link_ed <- as_link(tri, loss = "loss", exposure = "exposure")
+# Dual-variable: ED-ready link table (loss + premium)
+link_ed <- as_link(tri, loss = "loss", premium = "premium")
 head(link_ed)
 }
 

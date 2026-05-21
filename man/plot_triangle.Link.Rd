@@ -10,7 +10,7 @@
 \item{x}{An object of class \code{"Link"}.}
 
 \item{model}{Either \code{"ata"} or \code{"ed"}. Default depends on
-\code{attr(x, "exposure")}.}
+\code{attr(x, "premium")}.}
 
 \item{...}{Arguments forwarded to the underlying plotting helper.}
 }
@@ -22,6 +22,6 @@ Visualise a \code{"Link"} object as a triangle-style heatmap. Dispatches to
 the multiplicative ATA branch (\code{model = "ata"}) or the additive
 exposure-driven branch (\code{model = "ed"}).
 
-The default \code{model} is chosen from \code{attr(x, "exposure")}: \code{NULL}
+The default \code{model} is chosen from \code{attr(x, "premium")}: \code{NULL}
 selects \code{"ata"}, non-\code{NULL} selects \code{"ed"}.
 }

@@ -7,7 +7,7 @@
 fit_intensity(
   x,
   loss = "loss",
-  exposure = "exposure",
+  premium = "premium",
   alpha = 1,
   na_method = c("locf", "zero", "none"),
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
@@ -22,8 +22,8 @@ fit_intensity(
 \item{loss}{A single cumulative metric used as the link
 numerator. Default \code{"loss"}.}
 
-\item{exposure}{A single cumulative metric used as the
-exposure anchor. Default \code{"exposure"}.}
+\item{premium}{A single cumulative metric used as the
+premium anchor. Default \code{"premium"}.}
 
 \item{alpha}{WLS weight exponent. Default \code{1}.}
 
@@ -64,7 +64,7 @@ A list of class \code{"IntensityFit"} with components:
 \item{\code{data}}{The (possibly filtered) \code{Link} object used for
 estimation.}
 \item{\code{groups}, \code{cohort}, \code{dev}, \code{loss},
-\code{exposure}}{Variable name relays from the input \code{Triangle}.}
+\code{premium}}{Variable name relays from the input \code{Triangle}.}
 \item{\code{link}}{Alias of \code{data} for parallelism with
 \code{\link[=fit_ata]{fit_ata()}}.}
 \item{\code{factor}}{The \code{EDSummary} returned by
@@ -91,7 +91,7 @@ This is the factor-level diagnostic for the exposure-driven (ED)
 workflow, parallel to \code{\link[=fit_ata]{fit_ata()}} for the multiplicative (chain
 ladder) side. Both operate at the \emph{factor level} without
 producing a full projection. For full ED projection (cumulative
-loss / exposure / ratio), use \code{\link[=fit_ed]{fit_ed()}} which accepts either a
+loss / premium / ratio), use \code{\link[=fit_ed]{fit_ed()}} which accepts either a
 \code{Triangle} or an \code{IntensityFit} (skipping a rebuild of the link
 table when factors are already computed).
 }
@@ -113,9 +113,9 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
-intensity_fit <- fit_intensity(tri, loss = "loss", exposure = "exposure")
+intensity_fit <- fit_intensity(tri, loss = "loss", premium = "premium")
 summary(intensity_fit)
 }
 

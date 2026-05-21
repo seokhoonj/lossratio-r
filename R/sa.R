@@ -12,18 +12,18 @@
 #' this function; users can also call `fit_sa()` directly.
 #'
 #' @param x A `"Triangle"` object. The standardized `"loss"` and
-#'   `"exposure"` columns are used (`as_triangle()` produces these).
+#'   `"premium"` columns are used (`as_triangle()` produces these).
 #' @param loss Cumulative loss column name. Default `"loss"`.
-#' @param exposure Cumulative exposure column name. Default `"exposure"`.
+#' @param premium Cumulative premium column name. Default `"premium"`.
 #' @param alpha Variance-structure exponent for the loss fit. Default `1`.
-#' @param exposure_fit Optional pre-built `ExposureFit` supplying the
-#'   exposure projection. When `NULL`, `fit_sa()` builds the exposure
+#' @param premium_fit Optional pre-built `PremiumFit` supplying the
+#'   premium projection. When `NULL`, `fit_sa()` builds the premium
 #'   projection internally -- a worker-layer `fit_cl()` on the
-#'   `exposure` column -- using `exposure_method`, `exposure_alpha`,
+#'   `premium` column -- using `premium_method`, `premium_alpha`,
 #'   and the resolved `regime`.
-#' @param exposure_method One of `"ed"` (default) or `"cl"`. Used only
-#'   when `exposure_fit = NULL`.
-#' @param exposure_alpha Variance-structure exponent for the exposure fit.
+#' @param premium_method One of `"ed"` (default) or `"cl"`. Used only
+#'   when `premium_fit = NULL`.
+#' @param premium_alpha Variance-structure exponent for the premium fit.
 #'   Default `1`.
 #' @inheritParams fit_ata
 #' @param recent Optional positive integer; calendar-diagonal filter.
@@ -37,7 +37,7 @@
 #'   SA requires a maturity -- `NULL` disables SA entirely (use ED or
 #'   CL directly in that case).
 #' @param tail Logical or numeric; tail factor for the CL phase.
-#'   Forwarded to the internal exposure fit when relevant.
+#'   Forwarded to the internal premium fit when relevant.
 #' @param conf_level Confidence level for the analytical CI on the loss
 #'   projection. Default `0.95`.
 #' @param bootstrap Bootstrap configuration (NULL / TRUE / FALSE /
@@ -50,7 +50,7 @@
 #'
 #' @return An object of class `"SAFit"`. List with components mirroring
 #'   `LossFit`: `full`, `proj`, `maturity`, `loss_ata_fit`,
-#'   `exposure_ata_fit`, `exposure_fit`, `ed`, `factor`, `selected`, plus
+#'   `premium_ata_fit`, `premium_fit`, `ed`, `factor`, `selected`, plus
 #'   metadata (`method = "sa"`, `alpha`, `sigma_method`, `recent`,
 #'   `regime`, `conf_level`, `ci_type`, `bootstrap`, `usage`).
 #'
@@ -65,7 +65,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   exposure = "incr_exposure"
+#'   premium = "incr_premium"
 #' )
 #'
 #' sa <- fit_sa(tri)
@@ -74,24 +74,24 @@
 #'
 #' @export
 fit_sa <- function(x,
-                   loss            = "loss",
-                   exposure        = "exposure",
-                   alpha           = 1,
-                   exposure_fit    = NULL,
-                   exposure_method = c("ed", "cl"),
-                   exposure_alpha  = 1,
-                   sigma_method    = c("locf", "min_last2", "loglinear",
-                                       "mack", "none"),
-                   recent          = NULL,
-                   regime          = NULL,
-                   maturity        = "auto",
-                   tail            = FALSE,
-                   conf_level      = 0.95,
-                   bootstrap       = NULL,
-                   B               = 999L,
-                   seed            = NULL,
-                   type            = c("parametric", "nonparametric",
-                                       "analytical")) {
+                   loss           = "loss",
+                   premium        = "premium",
+                   alpha          = 1,
+                   premium_fit    = NULL,
+                   premium_method = c("ed", "cl"),
+                   premium_alpha  = 1,
+                   sigma_method   = c("locf", "min_last2", "loglinear",
+                                      "mack", "none"),
+                   recent         = NULL,
+                   regime         = NULL,
+                   maturity       = "auto",
+                   tail           = FALSE,
+                   conf_level     = 0.95,
+                   bootstrap      = NULL,
+                   B              = 999L,
+                   seed           = NULL,
+                   type           = c("parametric", "nonparametric",
+                                      "analytical")) {
 
   # data.table NSE bindings for R CMD check
   loss_param_se <- loss_proc_se <- loss_total_se <- loss_total_cv <- NULL
@@ -99,25 +99,25 @@ fit_sa <- function(x,
   loss_proj_boot <- loss_param_se_boot <- loss_proc_se_boot <- NULL
   loss_total_se_boot <- loss_total_cv_boot <- NULL
   loss_ci_lo_boot <- loss_ci_hi_boot <- NULL
-  loss_obs <- exposure_proj <- g_sel <- f_sel <- maturity_from <- NULL
+  loss_obs <- premium_proj <- g_sel <- f_sel <- maturity_from <- NULL
   loss_proj <- g_sigma2 <- f_sigma2 <- f_var <- g_var <- last_obs <- NULL
   loss_proc_se2 <- loss_param_se2 <- loss_total_se2 <- is_observed <- NULL
 
   .assert_triangle_input(x, "fit_sa()")
-  sigma_method    <- match.arg(sigma_method)
-  exposure_method <- match.arg(exposure_method)
+  sigma_method   <- match.arg(sigma_method)
+  premium_method <- match.arg(premium_method)
   if (!missing(type)) type <- match.arg(type)
 
-  if (!is.null(exposure_fit) && !inherits(exposure_fit, "ExposureFit"))
-    stop("`exposure_fit` must be an ExposureFit object or NULL.",
+  if (!is.null(premium_fit) && !inherits(premium_fit, "PremiumFit"))
+    stop("`premium_fit` must be an PremiumFit object or NULL.",
          call. = FALSE)
 
   if (!is.numeric(alpha) || length(alpha) != 1L ||
       is.na(alpha) || !is.finite(alpha))
     stop("`alpha` must be a single finite numeric value.", call. = FALSE)
-  if (!is.numeric(exposure_alpha) || length(exposure_alpha) != 1L ||
-      is.na(exposure_alpha) || !is.finite(exposure_alpha))
-    stop("`exposure_alpha` must be a single finite numeric value.",
+  if (!is.numeric(premium_alpha) || length(premium_alpha) != 1L ||
+      is.na(premium_alpha) || !is.finite(premium_alpha))
+    stop("`premium_alpha` must be a single finite numeric value.",
          call. = FALSE)
   if (!is.numeric(conf_level) || length(conf_level) != 1L ||
       is.na(conf_level) || conf_level <= 0 || conf_level >= 1)
@@ -223,39 +223,39 @@ fit_sa <- function(x,
     }
   }
 
-  # Resolve exposure_fit ----------------------------------------------
-  # Worker-layer dispatch: call fit_cl directly on the exposure column
-  # (mirror fit_ed pattern) rather than fit_exposure (a dispatcher) to
+  # Resolve premium_fit ----------------------------------------------
+  # Worker-layer dispatch: call fit_cl directly on the premium column
+  # (mirror fit_ed pattern) rather than fit_premium (a dispatcher) to
   # avoid the upward worker -> dispatcher dependency. If the caller
-  # supplied a pre-built exposure_fit (ExposureFit class from a
+  # supplied a pre-built premium_fit (PremiumFit class from a
   # composer-layer caller like fit_ratio), we accept it as-is.
-  if (is.null(exposure_fit)) {
-    exposure_fit <- fit_cl(
+  if (is.null(premium_fit)) {
+    premium_fit <- fit_cl(
       x,
       method       = "mack",
-      loss         = "exposure",
-      alpha        = exposure_alpha,
+      loss         = "premium",
+      alpha        = premium_alpha,
       sigma_method = sigma_method,
       regime       = regime_user
     )
-    # Apply exposure-side variance overlay when exposure_method = "ed"
-    # (mirror fit_exposure behaviour for variance recursion choice).
-    if (identical(exposure_method, "ed")) {
-      exposure_fit$full <- .apply_ed_variance(exposure_fit$full,
-                                              exposure_fit$selected, x)
+    # Apply premium-side variance overlay when premium_method = "ed"
+    # (mirror fit_premium behaviour for variance recursion choice).
+    if (identical(premium_method, "ed")) {
+      premium_fit$full <- .apply_ed_variance(premium_fit$full,
+                                              premium_fit$selected, x)
     }
-    exposure_fit$full <- .exposure_rename_full(exposure_fit$full,
+    premium_fit$full <- .premium_rename_full(premium_fit$full,
                                                grp,
                                                conf_level = 0.95)
-    class(exposure_fit) <- c("ExposureFit", class(exposure_fit))
+    class(premium_fit) <- c("PremiumFit", class(premium_fit))
   }
-  exposure_ata_fit <- structure(
+  premium_ata_fit <- structure(
     list(
-      selected     = exposure_fit$selected,
-      link         = exposure_fit$link,
-      data         = exposure_fit$data,
+      selected     = premium_fit$selected,
+      link         = premium_fit$link,
+      data         = premium_fit$data,
       method       = "mack",
-      alpha        = exposure_alpha,
+      alpha        = premium_alpha,
       sigma_method = sigma_method,
       maturity     = NULL
     ),
@@ -281,7 +281,7 @@ fit_sa <- function(x,
   intensity_fit <- fit_intensity(
     x,
     loss         = "loss",
-    exposure     = "exposure",
+    premium      = "premium",
     alpha        = alpha,
     sigma_method = sigma_method,
     recent       = recent,
@@ -305,11 +305,11 @@ fit_sa <- function(x,
 
   # Expand to full projection grid -------------------------------------
   full <- .expand_grid(
-    triangle         = x,
-    ed_fit           = ed_fit,
-    exposure_ata_fit = exposure_ata_fit,
-    loss             = "loss",
-    exposure         = "exposure"
+    triangle        = x,
+    ed_fit          = ed_fit,
+    premium_ata_fit = premium_ata_fit,
+    loss            = "loss",
+    premium         = "premium"
   )
 
   has_seg_ed <- "segment_id" %in% names(ed_fit$selected)
@@ -364,7 +364,7 @@ fit_sa <- function(x,
   # Loss point projection (SA) -----------------------------------------
   full[, ("loss_proj") := .sa_proj(
     loss_obs      = loss_obs,
-    exposure_proj = exposure_proj,
+    premium_proj  = premium_proj,
     g_sel         = g_sel,
     f_sel         = f_sel,
     maturity_from = maturity_from[1L]
@@ -374,7 +374,7 @@ fit_sa <- function(x,
   full[, `:=`(
     loss_proc_se2  = .sa_proc_var(
       loss_proj     = loss_proj,
-      exposure_proj = exposure_proj,
+      premium_proj  = premium_proj,
       g_sigma2      = g_sigma2,
       f_sigma2      = f_sigma2,
       f_sel         = f_sel,
@@ -384,7 +384,7 @@ fit_sa <- function(x,
     ),
     loss_param_se2 = .sa_param_var(
       loss_proj     = loss_proj,
-      exposure_proj = exposure_proj,
+      premium_proj  = premium_proj,
       g_var         = g_var,
       f_var         = f_var,
       f_sel         = f_sel,
@@ -434,15 +434,15 @@ fit_sa <- function(x,
   full[, ("incr_loss_proj") := loss_proj -
          data.table::shift(loss_proj, 1L, fill = 0),
        by = c(grp, "cohort")]
-  full[, ("incr_exposure_proj") := exposure_proj -
-         data.table::shift(exposure_proj, 1L, fill = 0),
+  full[, ("incr_premium_proj") := premium_proj -
+         data.table::shift(premium_proj, 1L, fill = 0),
        by = c(grp, "cohort")]
 
   # proj: NA-mask observed cells ---------------------------------------
   proj    <- data.table::copy(full)
   na_cols <- c(
-    "loss_proj", "exposure_proj",
-    "incr_loss_proj", "incr_exposure_proj",
+    "loss_proj", "premium_proj",
+    "incr_loss_proj", "incr_premium_proj",
     "loss_proc_se2", "loss_param_se2", "loss_total_se2",
     "loss_proc_se",  "loss_param_se",  "loss_total_se",
     "loss_total_cv",
@@ -462,34 +462,34 @@ fit_sa <- function(x,
 
   # Assemble SAFit -----------------------------------------------------
   out <- list(
-    call             = match.call(),
-    data             = x,
-    method           = "sa",
-    groups           = grp,
-    cohort           = coh,
-    dev              = dev,
-    loss             = "loss",
-    exposure         = "exposure",
-    full             = full,
-    proj             = proj,
-    summary          = NULL,
-    maturity         = maturity,
-    loss_ata_fit     = loss_ata_fit,
-    exposure_ata_fit = exposure_ata_fit,
-    exposure_fit     = exposure_fit,
-    ed               = ed_fit$link,
-    factor           = ed_fit$factor,
-    selected         = ed_fit$selected,
-    alpha            = alpha,
-    sigma_method     = sigma_method,
-    recent           = recent_user,
-    regime           = regime_user,
-    conf_level       = conf_level,
-    ci_type          = if (!is.null(boots)) "bootstrap" else "analytical",
-    bootstrap        = if (!is.null(boots))
-                         list(B = boots$meta$B, seed = boots$meta$seed)
-                       else NULL,
-    usage            = usage
+    call            = match.call(),
+    data            = x,
+    method          = "sa",
+    groups          = grp,
+    cohort          = coh,
+    dev             = dev,
+    loss            = "loss",
+    premium         = "premium",
+    full            = full,
+    proj            = proj,
+    summary         = NULL,
+    maturity        = maturity,
+    loss_ata_fit    = loss_ata_fit,
+    premium_ata_fit = premium_ata_fit,
+    premium_fit     = premium_fit,
+    ed              = ed_fit$link,
+    factor          = ed_fit$factor,
+    selected        = ed_fit$selected,
+    alpha           = alpha,
+    sigma_method    = sigma_method,
+    recent          = recent_user,
+    regime          = regime_user,
+    conf_level      = conf_level,
+    ci_type         = if (!is.null(boots)) "bootstrap" else "analytical",
+    bootstrap       = if (!is.null(boots))
+                        list(B = boots$meta$B, seed = boots$meta$seed)
+                      else NULL,
+    usage           = usage
   )
 
   class(out) <- c("SAFit", "list")
@@ -603,7 +603,7 @@ summary.SAFit <- function(object, ...) {
 #' in Phase 4a.
 #'
 #' @param loss_obs Numeric vector of observed cumulative loss.
-#' @param exposure_proj Numeric vector of projected cumulative exposure.
+#' @param premium_proj Numeric vector of projected cumulative premium.
 #' @param g_sel Numeric vector of ED intensities.
 #' @param f_sel Numeric vector of CL factors.
 #' @param maturity_from Numeric scalar; switch point. `NA` means
@@ -613,7 +613,7 @@ summary.SAFit <- function(object, ...) {
 #'
 #' @keywords internal
 .sa_proj <- function(loss_obs,
-                     exposure_proj,
+                     premium_proj,
                      g_sel,
                      f_sel,
                      maturity_from) {
@@ -636,7 +636,7 @@ summary.SAFit <- function(object, ...) {
     if (k < mat) {
       # ED phase: additive
       g_now <- g_sel[k]
-      e_now <- exposure_proj[k]
+      e_now <- premium_proj[k]
       if (is.finite(g_now) && is.finite(e_now)) {
         v[i] <- v_prev + g_now * e_now
       }
@@ -661,7 +661,7 @@ summary.SAFit <- function(object, ...) {
 #'
 #' @keywords internal
 .sa_proc_var <- function(loss_proj,
-                         exposure_proj,
+                         premium_proj,
                          g_sigma2,
                          f_sigma2,
                          f_sel,
@@ -681,7 +681,7 @@ summary.SAFit <- function(object, ...) {
 
     if (k < mat) {
       s2  <- g_sigma2[k]
-      e_k <- exposure_proj[k]
+      e_k <- premium_proj[k]
 
       proc[i] <- proc[i - 1L]
       if (is.finite(s2) && is.finite(e_k) && e_k > 0) {
@@ -713,7 +713,7 @@ summary.SAFit <- function(object, ...) {
 #'
 #' @keywords internal
 .sa_param_var <- function(loss_proj,
-                          exposure_proj,
+                          premium_proj,
                           g_var,
                           f_var,
                           f_sel,
@@ -732,7 +732,7 @@ summary.SAFit <- function(object, ...) {
 
     if (k < mat) {
       gv  <- g_var[k]
-      e_k <- exposure_proj[k]
+      e_k <- premium_proj[k]
 
       param[i] <- param[i - 1L]
       if (is.finite(gv) && is.finite(e_k)) {

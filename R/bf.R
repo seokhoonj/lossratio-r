@@ -4,7 +4,7 @@
 #' Fit a Bornhuetter-Ferguson (1972) projection from a `"Triangle"`
 #' object. The BF estimator blends the *observed* cumulative loss for
 #' each cohort with an *a priori* expected loss ratio (ELR) applied to
-#' the cohort's ultimate exposure, weighted by the expected unemerged
+#' the cohort's ultimate premium, weighted by the expected unemerged
 #' fraction \eqn{1 - q_i}:
 #'
 #' \deqn{\hat L_{ult, i}^{BF} = L_{obs, i} +
@@ -19,8 +19,8 @@
 #'     loss development factor (LDF) for cohort \eqn{i}.
 #'   \item \eqn{\mathrm{ELR}_i}: the user-supplied a priori expected loss
 #'     ratio for cohort \eqn{i} (`prior` argument).
-#'   \item \eqn{E_i^{ult}}: cohort \eqn{i}'s ultimate exposure, projected
-#'     via chain ladder on the `exposure` column.
+#'   \item \eqn{E_i^{ult}}: cohort \eqn{i}'s ultimate premium, projected
+#'     via chain ladder on the `premium` column.
 #' }
 #'
 #' This is a peer worker alongside [fit_cl()] / [fit_ed()] / [fit_loss()].
@@ -32,8 +32,8 @@
 #' @param x A `Triangle` object.
 #' @param loss A single cumulative loss variable to project. Default
 #'   `"loss"`.
-#' @param exposure A single cumulative exposure variable used as the
-#'   denominator of the prior ELR. Default `"exposure"`.
+#' @param premium A single cumulative premium variable used as the
+#'   denominator of the prior ELR. Default `"premium"`.
 #' @param prior The a priori expected loss ratio. Accepts:
 #'   \describe{
 #'     \item{single numeric}{Applied uniformly to every cohort.}
@@ -55,14 +55,14 @@
 #'     \item{`NULL` / `FALSE` (default)}{Point estimate only -- no
 #'       bootstrap SE/CI.}
 #'     \item{`TRUE` / `"auto"`}{Internal `bootstrap()` calls (one for
-#'       loss, one for exposure) sharing `seed` so replicate indices
+#'       loss, one for premium) sharing `seed` so replicate indices
 #'       align across the two simulations.}
-#'     \item{Named list `list(loss = BootstrapTriangle, exposure =
+#'     \item{Named list `list(loss = BootstrapTriangle, premium =
 #'       BootstrapTriangle)`}{Pre-built objects from `bootstrap()`. Must
 #'       have matching `meta$B` / `meta$seed` so per-replicate
 #'       composition is well-defined; `meta$target` must be `"loss"`
-#'       and `"exposure"` respectively.}
-#'     \item{Function `function(tri) -> list(loss = ..., exposure =
+#'       and `"premium"` respectively.}
+#'     \item{Function `function(tri) -> list(loss = ..., premium =
 #'       ...)`}{Lazy spec invoked on the input Triangle (leakage-safe
 #'       for `backtest()`).}
 #'   }
@@ -84,13 +84,13 @@
 #' @param process One of `"gamma"` (default), `"od_pois"`, or `"normal"`.
 #'   See [bootstrap()].
 #' @param alpha Numeric scalar passed through to the inner [fit_cl()] and
-#'   [fit_exposure()] calls. Default `1`.
+#'   [fit_premium()] calls. Default `1`.
 #' @param sigma_method Sigma extrapolation method forwarded to
-#'   [fit_cl()] / [fit_exposure()]. Default `"locf"`.
+#'   [fit_cl()] / [fit_premium()]. Default `"locf"`.
 #' @param recent Optional positive integer; calendar-diagonal filter
 #'   forwarded to the inner fits. Default `NULL`.
 #' @param regime Optional regime specification forwarded to the inner
-#'   loss and exposure fits. See [fit_cl()] for the four-type dispatch.
+#'   loss and premium fits. See [fit_cl()] for the four-type dispatch.
 #' @param maturity Optional maturity specification forwarded to the inner
 #'   loss fit. See [fit_cl()] for the four-type dispatch.
 #' @param credibility Optional credibility specification. `NULL`
@@ -120,10 +120,10 @@
 #'     \item{`groups`}{Grouping variable names.}
 #'     \item{`cohort`}{Raw cohort variable name.}
 #'     \item{`dev`}{Raw development variable name.}
-#'     \item{`loss`, `exposure`}{Loss / exposure variable names.}
+#'     \item{`loss`, `premium`}{Loss / premium variable names.}
 #'     \item{`full`}{`data.table` `[group, cohort, dev, loss_obs,
-#'       loss_proj, exposure_obs, exposure_proj, is_observed,
-#'       incr_loss_proj, incr_exposure_proj]`. When `bootstrap` is
+#'       loss_proj, premium_obs, premium_proj, is_observed,
+#'       incr_loss_proj, incr_premium_proj]`. When `bootstrap` is
 #'       enabled, additional columns `loss_total_se`, `loss_total_cv`,
 #'       `loss_ci_lo`, `loss_ci_hi` carry per-cell bootstrap SE / CI on
 #'       projected cells (observed cells stay `NA`).}
@@ -142,7 +142,7 @@
 #'       `[group..., cohort, Z, K]` of the Buehlmann-Straub credibility
 #'       factors used in place of `q`.}
 #'     \item{`cl_fit`}{The inner `CLFit` used to derive \eqn{q_i}.}
-#'     \item{`exposure_fit`}{The inner `ExposureFit` used to derive
+#'     \item{`premium_fit`}{The inner `PremiumFit` used to derive
 #'       \eqn{E_i^{ult}}.}
 #'     \item{`bootstrap`}{When `bootstrap` is enabled, a
 #'       `BFBootstrap` helper holding both Triangle-level
@@ -153,7 +153,7 @@
 #'       In the analytical case `$summary` carries `loss_total_se`,
 #'       `loss_total_cv`, `loss_ci_lo`, and `loss_ci_hi`.}
 #'     \item{`alpha`, `sigma_method`, `recent`, `regime`, `maturity`}{
-#'       Inputs forwarded to the inner [fit_cl()] / [fit_exposure()]
+#'       Inputs forwarded to the inner [fit_cl()] / [fit_premium()]
 #'       calls.}
 #'   }
 #'
@@ -165,7 +165,7 @@
 #' *ASTIN Bulletin*, 38(1), 87-103. (MSEP -- not yet implemented.)
 #'
 #' @seealso [fit_cc()] (pooled ELR variant), [fit_cl()],
-#'   [fit_exposure()]
+#'   [fit_premium()]
 #'
 #' @examples
 #' \dontrun{
@@ -176,7 +176,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   exposure = "incr_exposure"
+#'   premium = "incr_premium"
 #' )
 #'
 #' # Scalar prior: 0.7 ELR for every cohort
@@ -194,7 +194,7 @@
 #' @export
 fit_bf <- function(x,
                    loss         = "loss",
-                   exposure     = "exposure",
+                   premium      = "premium",
                    prior,
                    bootstrap    = NULL,
                    B            = 999L,
@@ -214,11 +214,11 @@ fit_bf <- function(x,
                    ...) {
 
   # data.table NSE bindings
-  cohort <- elr <- loss_obs <- loss_proj <- exposure_proj <- NULL
+  cohort <- elr <- loss_obs <- loss_proj <- premium_proj <- NULL
   is_observed <- q <- NULL
   loss_proc_se <- loss_param_se <- loss_total_se <- NULL
-  exposure_total_se <- elr_se <- var_elr <- var_eult <- NULL
-  loss_ult_cl <- exposure_ult <- lr <- s2 <- NULL
+  premium_total_se <- elr_se <- var_elr <- var_eult <- NULL
+  loss_ult_cl <- premium_ult <- lr <- s2 <- NULL
   Z <- loss_ult_bf <- NULL
 
   .assert_triangle_input(x, "fit_bf()")
@@ -253,27 +253,27 @@ fit_bf <- function(x,
                    regime       = regime,
                    maturity     = maturity)
 
-  # 2) CL on exposure for ultimate exposure -------------------------------
-  exposure_fit <- .build_internal_exposure_fit(
+  # 2) CL on premium for ultimate premium -------------------------------
+  premium_fit <- .build_internal_premium_fit(
     x, alpha = alpha, sigma_method = sigma_method,
     recent = recent, regime = regime, groups = grp)
 
-  # 3) per-cohort q_i + ultimate exposure ---------------------------------
+  # 3) per-cohort q_i + ultimate premium ---------------------------------
   by_cols <- c(grp, "cohort")
 
   loss_grid <- cl_fit$full
-  exp_grid  <- exposure_fit$full
+  exp_grid  <- premium_fit$full
 
-  # latest observed cum loss, CL ultimate, q_i, and ultimate exposure
+  # latest observed cum loss, CL ultimate, q_i, and ultimate premium
   dt <- .compute_q_table(loss_grid, exp_grid, by_cols)
 
   # per-cohort ultimate-cell SEs for the analytical MSEP path:
-  # CL process / parameter / total SE on loss, total SE on exposure.
+  # CL process / parameter / total SE on loss, total SE on premium.
   loss_se <- loss_grid[, .SD[.N, .(loss_proc_se  = loss_proc_se,
                                    loss_param_se = loss_param_se,
                                    loss_total_se = loss_total_se)],
                        by = by_cols]
-  exp_se  <- exp_grid[, .SD[.N, .(exposure_total_se = exposure_total_se)],
+  exp_se  <- exp_grid[, .SD[.N, .(premium_total_se = premium_total_se)],
                       by = by_cols]
 
   # 4) resolve prior to a per-cohort table --------------------------------
@@ -288,40 +288,40 @@ fit_bf <- function(x,
 
   if (is.null(credibility)) {
     cred_tbl <- NULL
-    agg[, loss_ult_bf := loss_latest + (1 - q) * elr * exposure_ult]
+    agg[, loss_ult_bf := loss_latest + (1 - q) * elr * premium_ult]
   } else {
     # per-cohort credibility weight Z: s2 = Var(CL loss ratio), large
     # for green / rare-event cohorts -> Z -> 0 -> pulled to the prior.
     cred_in <- merge(agg, loss_se, by = by_cols, sort = FALSE)
     cred_in[, ("lr") := data.table::fifelse(
-        is.finite(exposure_ult) & exposure_ult > 0,
-        loss_ult_cl / exposure_ult, NA_real_)]
+        is.finite(premium_ult) & premium_ult > 0,
+        loss_ult_cl / premium_ult, NA_real_)]
     cred_in[, ("s2") := data.table::fifelse(
-        is.finite(exposure_ult) & exposure_ult > 0,
-        loss_total_se^2 / exposure_ult^2, NA_real_)]
+        is.finite(premium_ult) & premium_ult > 0,
+        loss_total_se^2 / premium_ult^2, NA_real_)]
     cred_tbl <- .credibility_bs(cred_in, groups = grp, K = credibility$K)
     agg <- merge(agg, cred_tbl[, c(by_cols, "Z", "K"), with = FALSE],
                  by = by_cols, sort = FALSE)
     # credibility blend: ult = Z * CL + (1 - Z) * prior.
     agg[, loss_ult_bf := Z * loss_ult_cl +
-          (1 - Z) * elr * exposure_ult]
+          (1 - Z) * elr * premium_ult]
   }
   agg[, reserve := loss_ult_bf - loss_latest]
 
   # 6) cell-level full grid (project BF ultimate proportionally to CL
-  #    pattern between current dev and J). Base = CL$full + exposure
-  #    columns from ExposureFit$full so the BFFit cell layout carries
-  #    both loss and exposure projections.
+  #    pattern between current dev and J). Base = CL$full + premium
+  #    columns from PremiumFit$full so the BFFit cell layout carries
+  #    both loss and premium projections.
   full <- .copy_dt(loss_grid)
   exp_cols <- intersect(
-    c("exposure_obs", "exposure_proj", "incr_exposure_proj"),
+    c("premium_obs", "premium_proj", "incr_premium_proj"),
     names(exp_grid)
   )
   full <- exp_grid[, c(by_cols, "dev", exp_cols), with = FALSE
                    ][full, on = c(by_cols, "dev")]
 
   full <- agg[, c(by_cols, "loss_ult_bf", "q", "elr",
-                  "exposure_ult", "loss_latest"),
+                  "premium_ult", "loss_latest"),
               with = FALSE][full, on = by_cols]
 
   # BF cell-level pattern: at the latest observed dev, loss = loss_obs.
@@ -349,18 +349,18 @@ fit_bf <- function(x,
   full[, ("incr_loss_proj") := loss_proj -
          data.table::shift(loss_proj, 1L, fill = 0),
        by = by_cols]
-  full[, ("incr_exposure_proj") := exposure_proj -
-         data.table::shift(exposure_proj, 1L, fill = 0),
+  full[, ("incr_premium_proj") := premium_proj -
+         data.table::shift(premium_proj, 1L, fill = 0),
        by = by_cols]
 
   # drop intermediate workspace columns
-  full[, c("loss_ult_bf", "q", "elr", "exposure_ult",
+  full[, c("loss_ult_bf", "q", "elr", "premium_ult",
            "loss_latest", "loss_proj_cl") := NULL]
 
   # 7) proj: NA out observed cells ----------------------------------------
   proj <- data.table::copy(full)
   proj_cols <- c("loss_proj", "incr_loss_proj",
-                 "exposure_proj", "incr_exposure_proj")
+                 "premium_proj", "incr_premium_proj")
   proj_cols <- intersect(proj_cols, names(proj))
   proj[is_observed == TRUE, (proj_cols) := NA_real_]
 
@@ -404,8 +404,8 @@ fit_bf <- function(x,
     summ  <- bf_boot$summary
     proj        <- data.table::copy(full)
     proj_cols   <- intersect(
-      c("loss_proj", "incr_loss_proj", "exposure_proj",
-        "incr_exposure_proj", "loss_total_se", "loss_total_cv",
+      c("loss_proj", "incr_loss_proj", "premium_proj",
+        "incr_premium_proj", "loss_total_se", "loss_total_cv",
         "loss_ci_lo", "loss_ci_hi"),
       names(proj))
     proj[is_observed == TRUE, (proj_cols) := NA_real_]
@@ -417,8 +417,8 @@ fit_bf <- function(x,
     ana <- merge(ana, exp_se,  by = by_cols, sort = FALSE)
     ana[, var_elr  := data.table::fifelse(is.finite(elr_se),
                                           elr_se^2, 0)]
-    ana[, var_eult := data.table::fifelse(is.finite(exposure_total_se),
-                                          exposure_total_se^2, 0)]
+    ana[, var_eult := data.table::fifelse(is.finite(premium_total_se),
+                                          premium_total_se^2, 0)]
     # under a credibility blend the effective weight is Z, not q; the
     # MSEP then uses Z (approximate -- treats the credibility factor as
     # a fixed plug-in).
@@ -439,7 +439,7 @@ fit_bf <- function(x,
     cohort       = attr(x, "cohort"),
     dev          = attr(x, "dev"),
     loss         = loss,
-    exposure     = exposure,
+    premium      = premium,
     full         = full,
     proj         = proj,
     summary      = summ,
@@ -449,7 +449,7 @@ fit_bf <- function(x,
       list(method = "bs",
            weights = cred_tbl[, c(by_cols, "Z", "K"), with = FALSE]),
     cl_fit       = cl_fit,
-    exposure_fit = exposure_fit,
+    premium_fit  = premium_fit,
     bootstrap    = bootstrap_obj,
     ci_type      = ci_type,
     alpha        = alpha,
@@ -463,27 +463,27 @@ fit_bf <- function(x,
 }
 
 
-#' Compute the per-cohort emergence table (q_i + ultimate exposure)
+#' Compute the per-cohort emergence table (q_i + ultimate premium)
 #'
 #' @description
 #' Shared by [fit_bf()] and [fit_cc()]. From a loss-side `CLFit$full`
-#' and an exposure-side `ExposureFit$full`, builds the per-cohort table
+#' and an premium-side `PremiumFit$full`, builds the per-cohort table
 #' of latest observed loss, CL-ultimate loss, the emergence fraction
-#' \eqn{q_i = L_{obs} / L_{ult}^{CL}}, and ultimate exposure -- the
+#' \eqn{q_i = L_{obs} / L_{ult}^{CL}}, and ultimate premium -- the
 #' inputs the Bornhuetter-Ferguson / Cape Cod blend consumes.
 #'
 #' @param loss_full A loss-side `$full` grid (`is_observed`, `loss_obs`,
 #'   `loss_proj`).
-#' @param exp_full An exposure-side `$full` grid (`exposure_proj`).
+#' @param exp_full An premium-side `$full` grid (`premium_proj`).
 #' @param by_cols Per-cohort key columns, `c(groups, "cohort")`.
 #'
 #' @return A `data.table` keyed by `by_cols` with `loss_latest`,
-#'   `loss_ult_cl`, `q`, and `exposure_ult`.
+#'   `loss_ult_cl`, `q`, and `premium_ult`.
 #'
 #' @keywords internal
 .compute_q_table <- function(loss_full, exp_full, by_cols) {
   is_observed <- loss_obs <- loss_proj <- NULL
-  q <- loss_ult_cl <- exposure_proj <- NULL
+  q <- loss_ult_cl <- premium_proj <- NULL
 
   loss_latest <- loss_full[is_observed == TRUE,
                            .SD[.N, .(loss_latest = loss_obs)],
@@ -497,7 +497,7 @@ fit_bf <- function(x,
     NA_real_
   )]
 
-  exp_ult <- exp_full[, .SD[.N, .(exposure_ult = exposure_proj)],
+  exp_ult <- exp_full[, .SD[.N, .(premium_ult = premium_proj)],
                       by = by_cols]
   exp_ult[dt, on = by_cols]
 }
@@ -594,7 +594,7 @@ print.BFFit <- function(x, ...) {
   cat("<BFFit>\n")
   cat("method        :", x$method,            "\n")
   cat("loss          :", x$loss,              "\n")
-  cat("exposure      :", x$exposure,          "\n")
+  cat("premium       :", x$premium,          "\n")
   cat("alpha         :", x$alpha,             "\n")
   cat("sigma_method  :", x$sigma_method,      "\n")
   cat("recent        :",
@@ -651,16 +651,16 @@ summary.BFFit <- function(object, ...) {
 # Section -- Bootstrap composition ============================================
 #
 # fit_bf and fit_cc consume two BootstrapTriangle objects (loss-side
-# + exposure-side, sharing a seed so replicate indices align) and compose
+# + premium-side, sharing a seed so replicate indices align) and compose
 # them per-replicate into a BF / Cape Cod ultimate distribution.
 
 #' Resolve `bootstrap` input for `fit_bf()` / `fit_cc()`
 #'
 #' @description
 #' Four-type dispatch mirroring `.resolve_bootstrap()` but returning a
-#' *pair* of `BootstrapTriangle` objects (loss + exposure) -- BF / Cape
+#' *pair* of `BootstrapTriangle` objects (loss + premium) -- BF / Cape
 #' Cod compose loss-side parameter uncertainty (via \eqn{q_i^b}) and
-#' exposure-side parameter uncertainty (via \eqn{E_i^{ult,b}}) into a
+#' premium-side parameter uncertainty (via \eqn{E_i^{ult,b}}) into a
 #' single ultimate distribution.
 #'
 #' Accepts:
@@ -668,9 +668,9 @@ summary.BFFit <- function(object, ...) {
 #'   \item `NULL` / `FALSE` -- returns `NULL` (point estimate only).
 #'   \item `TRUE` / `"auto"` -- two internal `bootstrap()` calls (one per
 #'     target) sharing `seed` so replicate indices align.
-#'   \item Named list `list(loss = BT, exposure = BT)` -- validate
+#'   \item Named list `list(loss = BT, premium = BT)` -- validate
 #'     `meta$B` and `meta$seed` match.
-#'   \item Function `function(tri) -> list(loss = ..., exposure = ...)`.
+#'   \item Function `function(tri) -> list(loss = ..., premium = ...)`.
 #' }
 #'
 #' @keywords internal
@@ -690,33 +690,33 @@ summary.BFFit <- function(object, ...) {
 
   if (is.list(arg) && !inherits(arg, "BootstrapTriangle") &&
       !is.function(arg) &&
-      all(c("loss", "exposure") %in% names(arg))) {
+      all(c("loss", "premium") %in% names(arg))) {
     bt_loss <- arg$loss
-    bt_exp  <- arg$exposure
+    bt_exp  <- arg$premium
     if (!inherits(bt_loss, "BootstrapTriangle"))
       stop("`bootstrap$loss` must be a BootstrapTriangle object.",
            call. = FALSE)
     if (!inherits(bt_exp, "BootstrapTriangle"))
-      stop("`bootstrap$exposure` must be a BootstrapTriangle object.",
+      stop("`bootstrap$premium` must be a BootstrapTriangle object.",
            call. = FALSE)
     if (!identical(bt_loss$meta$target, "loss"))
       stop("`bootstrap$loss` has meta$target = '", bt_loss$meta$target,
            "' but `fit_bf()` / `fit_cc()` expects target = 'loss'.",
            call. = FALSE)
-    if (!identical(bt_exp$meta$target, "exposure"))
-      stop("`bootstrap$exposure` has meta$target = '",
+    if (!identical(bt_exp$meta$target, "premium"))
+      stop("`bootstrap$premium` has meta$target = '",
            bt_exp$meta$target, "' but `fit_bf()` / `fit_cc()` ",
-           "expects target = 'exposure'.", call. = FALSE)
+           "expects target = 'premium'.", call. = FALSE)
     if (!identical(bt_loss$meta$B, bt_exp$meta$B))
       stop("`bootstrap$loss$meta$B` (", bt_loss$meta$B,
-           ") must equal `bootstrap$exposure$meta$B` (",
+           ") must equal `bootstrap$premium$meta$B` (",
            bt_exp$meta$B, ").", call. = FALSE)
-    return(list(loss = bt_loss, exposure = bt_exp))
+    return(list(loss = bt_loss, premium = bt_exp))
   }
 
   if (identical(arg, "auto")) {
     # Force keep_pseudo = TRUE -- the BF composition needs per-replicate
-    # cohort-by-dev cum loss / cum exposure (Stage 1 means) to compose
+    # cohort-by-dev cum loss / cum premium (Stage 1 means) to compose
     # ultimates one replicate at a time. Same seed for both calls so
     # replicate indices align. Only forward `residual` to the
     # nonparametric path; parametric path errors on its presence.
@@ -733,21 +733,21 @@ summary.BFFit <- function(object, ...) {
                                          target = "loss"), common))
     bt_exp  <- do.call(bootstrap, c(list(tri,
                                          type   = type,
-                                         target = "exposure"), common))
-    return(list(loss = bt_loss, exposure = bt_exp))
+                                         target = "premium"), common))
+    return(list(loss = bt_loss, premium = bt_exp))
   }
 
   if (is.function(arg)) {
     out <- arg(tri)
-    if (!is.list(out) || !all(c("loss", "exposure") %in% names(out)))
+    if (!is.list(out) || !all(c("loss", "premium") %in% names(out)))
       stop("bootstrap function must return ",
-           "`list(loss = BootstrapTriangle, exposure = BootstrapTriangle)`.",
+           "`list(loss = BootstrapTriangle, premium = BootstrapTriangle)`.",
            call. = FALSE)
     return(.resolve_bootstrap_bf(out, tri))
   }
 
   stop("`bootstrap` must be NULL, TRUE/FALSE, \"auto\", a named list ",
-       "`list(loss, exposure)` of `BootstrapTriangle` objects, or a ",
+       "`list(loss, premium)` of `BootstrapTriangle` objects, or a ",
        "function returning one.", call. = FALSE)
 }
 
@@ -878,7 +878,7 @@ summary.BFFit <- function(object, ...) {
 #'     + \mathrm{ELR}_i^2\,\mathrm{Var}(E^{ult}_i)
 #'     + \mathrm{Var}(\mathrm{ELR}_i)\,\mathrm{Var}(E^{ult}_i)}.
 #'     `Var(ELR)` comes from the distribution prior's `elr_se` (0 for a
-#'     deterministic prior); `Var(E_ult)` from the exposure fit SE.
+#'     deterministic prior); `Var(E_ult)` from the premium fit SE.
 #'   \item \eqn{\mathrm{Var}(q_i)} -- delta method on
 #'     \eqn{q_i = L^{obs}_i / L^{ult,CL}_i}, using the CL parameter SE.
 #'   \item process -- the CL process variance scaled by the BF / CL
@@ -888,7 +888,7 @@ summary.BFFit <- function(object, ...) {
 #'
 #' @param per_cohort A `data.table` with one row per cohort carrying
 #'   `by_cols`, `q`, `loss_ult` (BF / CC ultimate), `loss_latest`,
-#'   `reserve`, `elr`, `exposure_ult`, `var_elr`, `var_eult`,
+#'   `reserve`, `elr`, `premium_ult`, `var_elr`, `var_eult`,
 #'   `loss_ult_cl`, `loss_proc_se`, `loss_param_se`.
 #' @param by_cols `c(groups, "cohort")`.
 #' @param conf_level Confidence level for the normal CI bounds.
@@ -900,7 +900,7 @@ summary.BFFit <- function(object, ...) {
 .bf_analytical_se <- function(per_cohort, by_cols, conf_level) {
 
   # data.table NSE bindings
-  elr <- exposure_ult <- var_elr <- var_eult <- q <- NULL
+  elr <- premium_ult <- var_elr <- var_eult <- q <- NULL
   loss_ult <- loss_ult_cl <- loss_latest <- reserve <- NULL
   loss_proc_se <- loss_param_se <- NULL
   U_hat <- var_U <- var_q <- reserve_cl <- proc_var <- est_var <- NULL
@@ -910,8 +910,8 @@ summary.BFFit <- function(object, ...) {
 
   # prior ultimate U_hat = ELR * E_ult, and its variance as a product
   # of two independent factors.
-  d[, U_hat := elr * exposure_ult]
-  d[, var_U := exposure_ult^2 * var_elr +
+  d[, U_hat := elr * premium_ult]
+  d[, var_U := premium_ult^2 * var_elr +
                elr^2 * var_eult +
                var_elr * var_eult]
 
@@ -952,16 +952,16 @@ summary.BFFit <- function(object, ...) {
 #' Per-replicate BF / Cape Cod composition from two BootstrapTriangle
 #'
 #' @description
-#' Given paired loss-side and exposure-side `BootstrapTriangle` objects
+#' Given paired loss-side and premium-side `BootstrapTriangle` objects
 #' (with `keep_pseudo = TRUE` so the per-replicate cohort-by-dev cum
-#' loss / cum exposure means are available), compose the BF / Cape Cod
+#' loss / cum premium means are available), compose the BF / Cape Cod
 #' ultimate distribution per replicate:
 #'
 #' \enumerate{
 #'   \item For each replicate \eqn{b}, derive \eqn{q_i^b =
 #'     L_{obs,i} / L_{ult,i}^{CL,b}} from the loss-side Stage 1 mean
 #'     trajectory (last-dev cell).
-#'   \item Derive \eqn{E_i^{ult,b}} from the exposure-side Stage 1 mean
+#'   \item Derive \eqn{E_i^{ult,b}} from the premium-side Stage 1 mean
 #'     last-dev cell.
 #'   \item For BF: \eqn{L_{ult,i}^{b} = L_{obs,i} +
 #'     (1 - q_i^b) \cdot \mathrm{ELR}_i \cdot E_i^{ult,b}}.
@@ -976,7 +976,7 @@ summary.BFFit <- function(object, ...) {
 #' Cell-level and cohort-level SE / CI are the SD / quantiles across
 #' replicates.
 #'
-#' @param boots A named list `list(loss = BT, exposure = BT)` from
+#' @param boots A named list `list(loss = BT, premium = BT)` from
 #'   `.resolve_bootstrap_bf()`.
 #' @param priors Per-cohort ELR table (see `.resolve_bf_prior()`).
 #'   Pass `NULL` for the Cape Cod composition (ELR is data-pooled per
@@ -1000,16 +1000,16 @@ summary.BFFit <- function(object, ...) {
                                   cape_cod = FALSE) {
 
   # data.table NSE bindings
-  rep <- loss_mean <- exposure_mean <- dev <- cohort <- NULL
-  loss_obs <- loss_proj <- exposure_proj <- is_observed <- NULL
-  elr <- elr_se <- elr_b <- q_b <- exposure_ult_b <- loss_ult_b <- NULL
+  rep <- loss_mean <- premium_mean <- dev <- cohort <- NULL
+  loss_obs <- loss_proj <- premium_proj <- is_observed <- NULL
+  elr <- elr_se <- elr_b <- q_b <- premium_ult_b <- loss_ult_b <- NULL
   loss_latest <- elr_cc_b <- L_b <- NULL
   loss_ult_b_med <- loss_ult_b_se <- NULL
   loss_ult_b_lo <- loss_ult_b_hi <- NULL
   loss_ult_cl_b <- loss_proj_b <- NULL
 
   bt_loss <- boots$loss
-  bt_exp  <- boots$exposure
+  bt_exp  <- boots$premium
   B       <- bt_loss$meta$B
   seed    <- bt_loss$meta$seed
   type    <- bt_loss$meta$type
@@ -1027,7 +1027,7 @@ summary.BFFit <- function(object, ...) {
   # SD of loss_ult_b across rep captures the BF parameter risk.
   ult_loss <- pl[, .(loss_ult_cl_b = loss_mean[which.max(dev)]),
                  by = c(by_cols, "rep")]
-  ult_exp  <- pe[, .(exposure_ult_b = exposure_mean[which.max(dev)]),
+  ult_exp  <- pe[, .(premium_ult_b = premium_mean[which.max(dev)]),
                  by = c(by_cols, "rep")]
 
   # Per-cohort observed latest loss (anchor).
@@ -1044,7 +1044,7 @@ summary.BFFit <- function(object, ...) {
   if (isTRUE(cape_cod)) {
     by_grp <- .by_grp(groups)
     elr_boot <- ult_b[, .(elr_cc_b = sum(loss_latest, na.rm = TRUE) /
-                            sum(exposure_ult_b * q_b, na.rm = TRUE)),
+                            sum(premium_ult_b * q_b, na.rm = TRUE)),
                       by = c(by_grp, "rep")]
     if (length(groups) == 0L) {
       ult_b <- merge(ult_b, elr_boot, by = "rep", sort = FALSE)
@@ -1067,7 +1067,7 @@ summary.BFFit <- function(object, ...) {
   }
 
   ult_b[, loss_ult_b := loss_latest +
-          (1 - q_b) * elr_b * exposure_ult_b]
+          (1 - q_b) * elr_b * premium_ult_b]
 
   # Cohort-level SE / CI on loss_ult_b across replicates.
   alpha2 <- (1 - conf_level) / 2
@@ -1142,7 +1142,7 @@ summary.BFFit <- function(object, ...) {
 
   # Assemble per-replicate ultimate replicates (kept on the helper for
   # diagnostics + downstream consumers).
-  ult_keep_cols <- c(by_cols, "rep", "q_b", "exposure_ult_b",
+  ult_keep_cols <- c(by_cols, "rep", "q_b", "premium_ult_b",
                      "elr_b", "loss_ult_b")
   ult_replicates <- ult_b[, .SD, .SDcols = ult_keep_cols]
   data.table::setnames(ult_replicates, "rep", "b")
@@ -1150,15 +1150,15 @@ summary.BFFit <- function(object, ...) {
   helper_class <- if (isTRUE(cape_cod)) "CCBootstrap" else "BFBootstrap"
   bootstrap_helper <- structure(
     list(
-      loss_bootstrap     = bt_loss,
-      exposure_bootstrap = bt_exp,
-      ult_replicates     = ult_replicates,
-      cell_replicates    = NULL,
-      B                  = B,
-      seed               = seed,
-      type               = type,
-      residual           = residual,
-      process            = process
+      loss_bootstrap    = bt_loss,
+      premium_bootstrap = bt_exp,
+      ult_replicates    = ult_replicates,
+      cell_replicates   = NULL,
+      B                 = B,
+      seed              = seed,
+      type              = type,
+      residual          = residual,
+      process           = process
     ),
     class = c(helper_class, "list")
   )

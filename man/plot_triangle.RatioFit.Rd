@@ -6,7 +6,7 @@
 \usage{
 \method{plot_triangle}{RatioFit}(
   x,
-  metric = c("ratio", "loss", "exposure"),
+  metric = c("ratio", "loss", "premium"),
   cell_type = c("cumulative", "incremental"),
   region = c("proj", "full", "data"),
   view = c("value", "usage"),
@@ -25,7 +25,7 @@
 \item{x}{An object of class \code{"RatioFit"}.}
 
 \item{metric}{Metric shown in the heatmap cells. One of \code{"ratio"}
-(default), \code{"loss"}, \code{"exposure"}.}
+(default), \code{"loss"}, \code{"premium"}.}
 
 \item{cell_type}{Aggregation. One of \code{"cumulative"} (default) or
 \code{"incremental"}. Combined with \code{metric} to select the column
@@ -34,7 +34,7 @@
 \item{region}{Cell region to plot (only used when \code{view = "value"}).
 One of \code{"proj"} (projected cells only, observed cells masked),
 \code{"full"} (observed + projected), or \code{"data"} (observed cumulative
-loss / exposure / ratio from \code{x$data} -- the raw Triangle, no
+loss / premium / ratio from \code{x$data} -- the raw Triangle, no
 projection). Default is \code{"proj"}.}
 
 \item{view}{Plot mode. One of:
@@ -48,7 +48,7 @@ ignored.}
 }}
 
 \item{label_style}{One of \code{"value"} (ratio only) or \code{"detail"}
-(ratio with loss/exposure amounts). Default is \code{"value"}.}
+(ratio with loss/premium amounts). Default is \code{"value"}.}
 
 \item{label_size}{Numeric size of the in-cell text label. Defaults
 to \code{3} for \code{label_style = "value"} and \code{2.5} for

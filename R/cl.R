@@ -8,16 +8,16 @@
 #' point forecast follows the standard recursion, and prediction
 #' uncertainty is decomposed into process variance and parameter variance.
 #'
-#' When `weight` is supplied (e.g. `"exposure"`), age-to-age factors and
+#' When `weight` is supplied (e.g. `"premium"`), age-to-age factors and
 #' their variance are estimated using the supplied WLS weights.
 #'
 #' @param x An object of class `"Triangle"`.
 #' @param method One of `"mack"`. Default is `"mack"`. The argument is
 #'   retained for future extensibility.
 #' @param loss A single cumulative loss variable (column to project).
-#'   Typical choices are `"loss"`, `"exposure"`, or `"ratio"`.
+#'   Typical choices are `"loss"`, `"premium"`, or `"ratio"`.
 #' @param weight An optional column name passed to [as_link()] as
-#'   the WLS weight variable. Typically `"exposure"` when `loss = "ratio"`.
+#'   the WLS weight variable. Typically `"premium"` when `loss = "ratio"`.
 #'   Default is `NULL`.
 #' @param alpha Numeric scalar controlling the variance structure in
 #'   [fit_ata()]. Default is `1`.
@@ -100,7 +100,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   exposure = "incr_exposure"
+#'   premium  = "incr_premium"
 #' )
 #'
 #' # Mack chain ladder with process / parameter standard errors
@@ -108,8 +108,8 @@
 #' summary(cl_mack)
 #' plot(cl_mack)
 #'
-#' # WLS factors for ratio (loss ratio) using exposure as the weight
-#' cl_ratio <- fit_cl(tri, loss = "ratio", weight = "exposure")
+#' # WLS factors for ratio (loss ratio) using premium as the weight
+#' cl_ratio <- fit_cl(tri, loss = "ratio", weight = "premium")
 #' }
 #'
 #' @export
@@ -341,13 +341,13 @@ fit_cl <- function(x,
 
   # 17) bootstrap overlay (optional) -------------------------------------
   # When bootstrap is non-NULL / non-FALSE, replace projected-cell SE/CI
-  # with bootstrap-derived values. Supports loss = "loss" / "exposure"
+  # with bootstrap-derived values. Supports loss = "loss" / "premium"
   # (bootstrap.Triangle target enum); custom column names fall back to
   # analytical with a warning.
   if (!is.null(bootstrap) &&
       !(is.logical(bootstrap) && length(bootstrap) == 1L &&
         isFALSE(bootstrap))) {
-    if (loss_col %in% c("loss", "exposure")) {
+    if (loss_col %in% c("loss", "premium")) {
       out <- .lossfit_bootstrap(
         fit        = out,
         triangle   = x,
@@ -359,7 +359,7 @@ fit_cl <- function(x,
         target     = loss_col
       )
     } else {
-      warning("Bootstrap is supported for loss = 'loss' or 'exposure' only ",
+      warning("Bootstrap is supported for loss = 'loss' or 'premium' only ",
               "(got '", loss_col, "'). Falling back to analytical SE.",
               call. = FALSE)
       out$ci_type   <- "analytical"
@@ -562,7 +562,7 @@ print.CLFit <- function(x, ...) {
 #' applied to g-intensity). They share the underlying volume-weighted
 #' variance idea (\eqn{\sigma^2_g = \sigma^2_f} via \eqn{g_k = f_k - 1}),
 #' but operate on different `Link` columns (f reads `loss_to`/`loss_from`;
-#' g reads `loss_delta`/`exposure_from`) and produce differently-named
+#' g reads `loss_delta`/`premium_from`) and produce differently-named
 #' output columns (`f_var` / `g_var`), so are kept as separate helpers.
 #'
 #' Also used by [fit_ratio()] for the CL component.

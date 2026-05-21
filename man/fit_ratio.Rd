@@ -9,9 +9,9 @@ fit_ratio(
   method = c("ed", "cl", "sa", "bf", "cc"),
   loss_alpha = 1,
   loss_regime = NULL,
-  exposure_method = c("ed", "cl"),
-  exposure_alpha = 1,
-  exposure_regime = NULL,
+  premium_method = c("ed", "cl"),
+  premium_alpha = 1,
+  premium_regime = NULL,
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   maturity = "auto",
@@ -27,7 +27,7 @@ fit_ratio(
 }
 \arguments{
 \item{x}{An object of class \code{"Triangle"}. The standardized \code{"loss"}
-and \code{"exposure"} columns are used (\code{as_triangle()} produces these).}
+and \code{"premium"} columns are used (\code{as_triangle()} produces these).}
 
 \item{method}{One of \code{"ed"} (default), \code{"cl"}, \code{"sa"}, \code{"bf"}, or
 \code{"cc"} -- the loss-side projection method, forwarded to
@@ -59,17 +59,17 @@ intensities from a regime change.}
 the change date are excluded from estimation.}
 }}
 
-\item{exposure_method}{One of \code{"ed"} (default) or \code{"cl"}. Forwarded to
-\code{\link[=fit_exposure]{fit_exposure()}} when constructing the exposure projection.}
+\item{premium_method}{One of \code{"ed"} (default) or \code{"cl"}. Forwarded to
+\code{\link[=fit_premium]{fit_premium()}} when constructing the premium projection.}
 
-\item{exposure_alpha}{Numeric scalar for exposure chain ladder. Default
+\item{premium_alpha}{Numeric scalar for premium chain ladder. Default
 is \code{1}.}
 
-\item{exposure_regime}{Exposure-side regime specification. Same four
+\item{premium_regime}{Premium-side regime specification. Same four
 input types as \code{loss_regime} (\code{NULL} / \code{Regime} / \code{"auto"} / function).
-Default \code{NULL} -- exposure is fit on the full triangle independently
+Default \code{NULL} -- premium is fit on the full triangle independently
 of \code{loss_regime} (no lazy default). Set explicitly when the regime
-shift affects exposure accrual too.}
+shift affects premium accrual too.}
 
 \item{sigma_method}{Method used to extrapolate \code{sigma} for links where it
 cannot be estimated. One of \code{"locf"} (default), \code{"min_last2"},
@@ -107,9 +107,9 @@ log-linear tail factor; a numeric value is used directly.}
 \item{\code{"fixed"} (default)}{Premium treated as fixed (non-random).
 \eqn{\mathrm{SE}(L/P) = \mathrm{SE}(L) / P}. Strictly, this is
 the delta method with \code{Var(P) = 0} and \code{Cov(L,P) = 0}, i.e., a
-degenerate case under the assumption that exposure is known.}
-\item{\code{"delta"}}{Full delta method including exposure uncertainty
-and the loss-exposure correlation \code{rho}:
+degenerate case under the assumption that premium is known.}
+\item{\code{"delta"}}{Full delta method including premium uncertainty
+and the loss-premium correlation \code{rho}:
 \deqn{\mathrm{Var}(L/P) \approx \frac{\mathrm{Var}(L)}{P^2}
         + \frac{L^2 \mathrm{Var}(P)}{P^4}
         - \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(P)}{P^3}}
@@ -117,10 +117,10 @@ and the loss-exposure correlation \code{rho}:
 }}
 
 \item{rho}{Numeric scalar in \verb{(-1, 1)}; assumed correlation between
-ultimate loss and ultimate exposure. Only used when
+ultimate loss and ultimate premium. Only used when
 \code{se_method = "delta"}. Default is \code{0.95}, matching the strong
 positive correlation typically observed between cumulative loss
-and cumulative exposure in long-tail health portfolios (analogous
+and cumulative premium in long-tail health portfolios (analogous
 to the paid/incurred correlation used in Munich chain ladder).}
 
 \item{conf_level}{Confidence level used for \code{ratio_ci_lo}/\code{ratio_ci_hi}
@@ -142,8 +142,8 @@ invoked on the input Triangle (leakage-safe for \code{backtest()}).}
 Premium is held at observed values during the bootstrap (loss-only
 convention). \code{ratio_se} is recomputed from the bootstrap-derived
 \code{loss_total_se} via \code{.compute_ratio_se()}, combined with the
-exposure-side SE per \code{se_method} (\code{"fixed"} ignores exposure SE;
-\code{"delta"} uses \code{exposure_total_se} from the inner \code{fit_exposure()}
+premium-side SE per \code{se_method} (\code{"fixed"} ignores premium SE;
+\code{"delta"} uses \code{premium_total_se} from the inner \code{fit_premium()}
 plus \code{rho} correlation).}
 
 \item{B}{Integer number of bootstrap replications. Used only when
@@ -177,7 +177,7 @@ age factors only once they have stabilised.
 \item Before maturity: age-to-age factors are volatile, so
 exposure-driven projection
 \eqn{\Delta C^L = g_k \cdot C^P_k} anchors the estimate
-to exposure volume.
+to premium volume.
 \item After maturity: age-to-age factors are stable, so
 chain ladder projection
 \eqn{C^L_{k+1} = f_k \cdot C^L_k} preserves the cohort's
@@ -190,13 +190,13 @@ fraction. Requires a \code{prior} argument, passed through \code{...}.}
 estimated by pooling the data rather than supplied externally.}
 }
 
-In all cases, exposure is projected forward to ultimate; the point
-projection is identical under \code{exposure_method = "ed"} or \code{"cl"}
+In all cases, premium is projected forward to ultimate; the point
+projection is identical under \code{premium_method = "ed"} or \code{"cl"}
 (they differ only in the variance recursion).
 
 This function is the \emph{composition} layer over \code{\link[=fit_loss]{fit_loss()}} and
-\code{\link[=fit_exposure]{fit_exposure()}}: it delegates loss projection to \code{fit_loss()},
-retrieves the embedded \code{ExposureFit}, and composes the loss-ratio
+\code{\link[=fit_premium]{fit_premium()}}: it delegates loss projection to \code{fit_loss()},
+retrieves the embedded \code{PremiumFit}, and composes the loss-ratio
 point + variance via the delta method (\code{se_method = "fixed"} or
 \code{"delta"}). See \code{ARCHITECTURE.md} for the layered design.
 }
@@ -209,7 +209,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 # Stage-adaptive (default): ED before maturity, CL after
@@ -226,6 +226,6 @@ ratio_cl <- fit_ratio(tri, method = "cl")
 
 }
 \seealso{
-\code{\link[=fit_loss]{fit_loss()}}, \code{\link[=fit_exposure]{fit_exposure()}}, \code{\link[=as_triangle]{as_triangle()}},
+\code{\link[=fit_loss]{fit_loss()}}, \code{\link[=fit_premium]{fit_premium()}}, \code{\link[=as_triangle]{as_triangle()}},
 \code{\link[=as_link]{as_link()}}, \code{\link[=fit_ata]{fit_ata()}}, \code{\link[=fit_ed]{fit_ed()}}, \code{\link[=detect_maturity]{detect_maturity()}}
 }

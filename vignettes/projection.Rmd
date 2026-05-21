@@ -29,7 +29,7 @@ explains the trade-offs.
 For cohort $i$ at dev $k$:
 
 - $C^L_{i,k}$ — cumulative loss
-- $C^P_{i,k}$ — cumulative risk premium (exposure)
+- $C^P_{i,k}$ — cumulative risk premium (premium)
 - $f_k = C^L_{k+1} / C^L_k$ — age-to-age (chain ladder) factor
 - $g_k = \Delta C^L_k / C^P_k$ — exposure-driven intensity
 - maturity point $k^*$ — dev at which $f_k$ stabilises
@@ -37,7 +37,7 @@ For cohort $i$ at dev $k$:
 
 ## Method 1: Exposure-Driven (`"ed"`, default)
 
-All future increments use exposure (risk premium) as the
+All future increments use premium (risk premium) as the
 denominator:
 
 $$
@@ -52,7 +52,7 @@ Behaviour:
 
 - Stable when premium volume is informative across full development.
 - The pooled intensity $g_k$ assumes cohorts are reasonably
-  homogeneous in loss-per-exposure level. Under cohort-level drift
+  homogeneous in loss-per-premium level. Under cohort-level drift
   the projection biases toward the pooled mean and may over-project
   post-change cohorts -- see the `regime` argument for explicit
   filtering.
@@ -73,7 +73,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium  = "incr_premium"
 )
 
 ratio_ed <- fit_ratio(tri, method = "ed")        # default
@@ -96,7 +96,7 @@ Behaviour:
 
 - Standard reserving practice. Equivalent to `fit_cl(tri, loss = "loss")`
   for the loss projection, but `fit_ratio()` additionally projects
-  exposure forward via CL on `exposure` and computes the loss-ratio
+  premium forward via CL on `premium` and computes the loss-ratio
   uncertainty via the delta method.
 - Volatile when early $f_k$ are noisy -- small denominators amplify
   link errors.
@@ -156,7 +156,7 @@ summary(ratio_sa)
 
 | method | mechanism                       | when to use                                                         |
 |--------|---------------------------------|---------------------------------------------------------------------|
-| ED     | pooled $g_k$ x cohort exposure  | default baseline; assumes cohort homogeneity                        |
+| ED     | pooled $g_k$ x cohort premium  | default baseline; assumes cohort homogeneity                        |
 | CL     | pooled $f_k$ x cohort cum_loss  | cohort-level drift; cohort-anchored                                 |
 | SA     | ED early + CL late              | long-tail with both volatile early dev and cohort-level late drift  |
 
@@ -206,7 +206,7 @@ under early-dev volatility. CL and SA are warranted when the
 default's homogeneity assumption is unrealistic.
 
 ```
-Default is "ed" -- pooled g_k x cohort exposure, no maturity dependency.
+Default is "ed" -- pooled g_k x cohort premium, no maturity dependency.
 
 Move to "cl" or "sa" when ED's assumptions become limiting:
   |-- Cohort-level drift (regime change, underwriting / coverage shift)

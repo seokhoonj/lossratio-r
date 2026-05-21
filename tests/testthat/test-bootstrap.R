@@ -638,7 +638,7 @@ test_that(".resolve_bootstrap rejects bad input", {
 # Legacy .boot_refit / .boot_summarize_se tests removed -- fit_* now read
 # bt$summary directly (wrap-only), so those helpers and the tests that
 # exercised them in isolation are obsolete. Bootstrap behaviour is now
-# verified through the public fit_ratio / fit_loss / fit_exposure interface
+# verified through the public fit_ratio / fit_loss / fit_premium interface
 # and the bt$summary structure tests above.
 
 
@@ -646,84 +646,84 @@ test_that(".resolve_bootstrap rejects bad input", {
 # bootstrap.Triangle target arg
 # ---------------------------------------------------------------------------
 
-test_that("bootstrap.Triangle accepts target = 'exposure'", {
+test_that("bootstrap.Triangle accepts target = 'premium'", {
   tri <- make_sub_tri("surgery")
-  b <- bootstrap(tri, keep_pseudo = TRUE, target = "exposure", B = 10, seed = 1)
-  expect_identical(b$meta$target, "exposure")
-  expect_true("exposure_mean"    %in% names(b$pseudo_triangles))
-  expect_true("exposure_sampled" %in% names(b$pseudo_triangles))
+  b <- bootstrap(tri, keep_pseudo = TRUE, target = "premium", B = 10, seed = 1)
+  expect_identical(b$meta$target, "premium")
+  expect_true("premium_mean"    %in% names(b$pseudo_triangles))
+  expect_true("premium_sampled" %in% names(b$pseudo_triangles))
   expect_false("loss_mean" %in% names(b$pseudo_triangles))
 })
 
 test_that(".resolve_bootstrap target mismatch is rejected", {
   tri <- make_sub_tri("surgery")
   b_loss <- bootstrap(tri, keep_pseudo = TRUE, target = "loss", B = 5, seed = 1)
-  b_exposure <- bootstrap(tri, keep_pseudo = TRUE, target = "exposure", B = 5, seed = 1)
+  b_premium <- bootstrap(tri, keep_pseudo = TRUE, target = "premium", B = 5, seed = 1)
 
-  expect_error(.resolve_bootstrap(b_loss, tri, target = "exposure"),
+  expect_error(.resolve_bootstrap(b_loss, tri, target = "premium"),
                "expects target")
-  expect_error(.resolve_bootstrap(b_exposure, tri, target = "loss"),
+  expect_error(.resolve_bootstrap(b_premium, tri, target = "loss"),
                "expects target")
-  expect_identical(.resolve_bootstrap(b_exposure, tri, target = "exposure"), b_exposure)
+  expect_identical(.resolve_bootstrap(b_premium, tri, target = "premium"), b_premium)
 })
 
 
 # ---------------------------------------------------------------------------
-# Phase 2b: fit_exposure migration to new bootstrap pipeline
+# Phase 2b: fit_premium migration to new bootstrap pipeline
 # ---------------------------------------------------------------------------
 
-test_that("fit_exposure default (method=ed) uses bootstrap", {
+test_that("fit_premium default (method=ed) uses bootstrap", {
   tri <- make_sub_tri("surgery")
-  pf <- fit_exposure(tri, seed = 1, B = 50)
+  pf <- fit_premium(tri, seed = 1, B = 50)
   expect_identical(pf$ci_type, "bootstrap")
   expect_true(!is.null(pf$bootstrap))
 })
 
-test_that("fit_exposure method=cl bootstrap=FALSE uses analytical", {
+test_that("fit_premium method=cl bootstrap=FALSE uses analytical", {
   tri <- make_sub_tri("surgery")
-  pf <- fit_exposure(tri, method = "cl", bootstrap = FALSE)
+  pf <- fit_premium(tri, method = "cl", bootstrap = FALSE)
   expect_identical(pf$ci_type, "analytical")
   expect_null(pf$bootstrap)
 })
 
-test_that("fit_exposure method=cl bootstrap=TRUE uses bootstrap", {
+test_that("fit_premium method=cl bootstrap=TRUE uses bootstrap", {
   tri <- make_sub_tri("surgery")
-  pf <- fit_exposure(tri, method = "cl", bootstrap = TRUE, seed = 1, B = 50)
+  pf <- fit_premium(tri, method = "cl", bootstrap = TRUE, seed = 1, B = 50)
   expect_identical(pf$ci_type, "bootstrap")
 })
 
-test_that("fit_exposure accepts a pre-built BootstrapTriangle", {
+test_that("fit_premium accepts a pre-built BootstrapTriangle", {
   tri <- make_sub_tri("surgery")
-  b <- bootstrap(tri, keep_pseudo = TRUE, target = "exposure", B = 50, seed = 1)
-  pf <- fit_exposure(tri, method = "ed", bootstrap = b)
+  b <- bootstrap(tri, keep_pseudo = TRUE, target = "premium", B = 50, seed = 1)
+  pf <- fit_premium(tri, method = "ed", bootstrap = b)
   expect_identical(pf$ci_type, "bootstrap")
   expect_identical(pf$bootstrap$B, 50L)
 })
 
-test_that("fit_exposure accepts a bootstrap function (lazy spec)", {
+test_that("fit_premium accepts a bootstrap function (lazy spec)", {
   tri <- make_sub_tri("surgery")
-  fn <- function(t) bootstrap(t, target = "exposure", B = 30, seed = 1)
-  pf <- fit_exposure(tri, bootstrap = fn)
+  fn <- function(t) bootstrap(t, target = "premium", B = 30, seed = 1)
+  pf <- fit_premium(tri, bootstrap = fn)
   expect_identical(pf$ci_type, "bootstrap")
   expect_identical(pf$bootstrap$B, 30L)
 })
 
-test_that("fit_exposure rejects a BootstrapTriangle built on the wrong target", {
+test_that("fit_premium rejects a BootstrapTriangle built on the wrong target", {
   tri <- make_sub_tri("surgery")
   b_loss <- bootstrap(tri, keep_pseudo = TRUE, target = "loss", B = 30, seed = 1)
-  expect_error(fit_exposure(tri, bootstrap = b_loss),
+  expect_error(fit_premium(tri, bootstrap = b_loss),
                "expects target")
 })
 
-test_that("fit_exposure projected cells have finite SE/CI under bootstrap", {
+test_that("fit_premium projected cells have finite SE/CI under bootstrap", {
   tri <- make_sub_tri("surgery")
-  pf <- fit_exposure(tri, seed = 1, B = 100)
+  pf <- fit_premium(tri, seed = 1, B = 100)
   proj <- pf$full[is_observed == FALSE]
-  expect_true(all(is.finite(proj$exposure_proj)))
-  expect_true(all(is.finite(proj$exposure_total_se)))
-  expect_true(all(is.finite(proj$exposure_ci_lo)))
-  expect_true(all(is.finite(proj$exposure_ci_hi)))
-  expect_true(all(proj$exposure_ci_lo <= proj$exposure_ci_hi))
+  expect_true(all(is.finite(proj$premium_proj)))
+  expect_true(all(is.finite(proj$premium_total_se)))
+  expect_true(all(is.finite(proj$premium_ci_lo)))
+  expect_true(all(is.finite(proj$premium_ci_hi)))
+  expect_true(all(proj$premium_ci_lo <= proj$premium_ci_hi))
 })
 
 
@@ -775,8 +775,8 @@ test_that("fit_loss accepts a bootstrap function (lazy spec)", {
 
 test_that("fit_loss rejects a BootstrapTriangle on the wrong target", {
   tri <- make_sub_tri("surgery")
-  b_exposure <- bootstrap(tri, keep_pseudo = TRUE, target = "exposure", B = 30, seed = 1)
-  expect_error(fit_loss(tri, bootstrap = b_exposure),
+  b_premium <- bootstrap(tri, keep_pseudo = TRUE, target = "premium", B = 30, seed = 1)
+  expect_error(fit_loss(tri, bootstrap = b_premium),
                "expects target")
 })
 
@@ -839,24 +839,24 @@ test_that("fit_ratio accepts a bootstrap function (lazy spec)", {
 
 test_that("fit_ratio rejects a BootstrapTriangle on the wrong target", {
   tri <- make_sub_tri("surgery")
-  b_exposure <- bootstrap(tri, keep_pseudo = TRUE, target = "exposure", B = 30, seed = 1)
-  expect_error(fit_ratio(tri, bootstrap = b_exposure),
+  b_premium <- bootstrap(tri, keep_pseudo = TRUE, target = "premium", B = 30, seed = 1)
+  expect_error(fit_ratio(tri, bootstrap = b_premium),
                "expects target")
 })
 
-test_that("fit_ratio se_method='delta' incorporates exposure SE", {
+test_that("fit_ratio se_method='delta' incorporates premium SE", {
   tri <- make_sub_tri("surgery")
   lf_fixed <- fit_ratio(tri, method = "sa", se_method = "fixed",
                      seed = 1, B = 50)
   lf_delta <- fit_ratio(tri, method = "sa", se_method = "delta",
                      seed = 1, B = 50)
   # `delta` typically gives smaller ratio_se than `fixed` because rho > 0
-  # cancels part of the loss/exposure variance (the strong positive
-  # correlation between cumulative loss and exposure projection).
+  # cancels part of the loss/premium variance (the strong positive
+  # correlation between cumulative loss and premium projection).
   proj_fixed <- lf_fixed$full[is_observed == FALSE & is.finite(ratio_proj)]
   proj_delta <- lf_delta$full[is_observed == FALSE & is.finite(ratio_proj)]
   expect_true(all(is.finite(proj_delta$ratio_se)))
-  expect_true(all(is.finite(proj_delta$exposure_total_se)))
+  expect_true(all(is.finite(proj_delta$premium_total_se)))
   expect_true(mean(proj_delta$ratio_se) < mean(proj_fixed$ratio_se))
 })
 
@@ -893,9 +893,9 @@ test_that("backtest target='loss' bootstrap=FALSE uses analytical", {
   expect_null(bt$fit$bootstrap)
 })
 
-test_that("backtest target='exposure' bootstrap=TRUE uses bootstrap", {
+test_that("backtest target='premium' bootstrap=TRUE uses bootstrap", {
   tri <- make_sub_tri("surgery")
-  bt <- backtest(tri, holdout = 6L, target = "exposure",
+  bt <- backtest(tri, holdout = 6L, target = "premium",
                   bootstrap = TRUE, seed = 1, B = 50)
   expect_identical(bt$fit$ci_type, "bootstrap")
 })
@@ -927,9 +927,9 @@ test_that("backtest function-based bootstrap targets the masked triangle", {
 
 test_that("backtest rejects a BootstrapTriangle on the wrong target", {
   tri <- make_sub_tri("surgery")
-  b_exposure <- bootstrap(tri, keep_pseudo = TRUE, target = "exposure", B = 30, seed = 1)
+  b_premium <- bootstrap(tri, keep_pseudo = TRUE, target = "premium", B = 30, seed = 1)
   expect_error(
-    backtest(tri, holdout = 6L, target = "loss", bootstrap = b_exposure),
+    backtest(tri, holdout = 6L, target = "loss", bootstrap = b_premium),
     "expects target"
   )
 })
@@ -1151,7 +1151,7 @@ test_that("keep_pseudo = FALSE $summary matches keep_pseudo = TRUE summary numer
 
 
 # ---------------------------------------------------------------------------
-# ED bootstrap (Phase 1 -- fixed exposure, additive forward projection)
+# ED bootstrap (Phase 1 -- fixed premium, additive forward projection)
 # ---------------------------------------------------------------------------
 
 test_that("ED bootstrap (method = 'ed') returns expected BootstrapTriangle shape", {
@@ -1229,7 +1229,7 @@ test_that("ED bootstrap point estimate lands in the right order of magnitude", {
                   method = "ed", process = "gamma",
                   B = 200, seed = 1)
   # Analytical ED on the same triangle (intensity-weighted refit).
-  ed_fit <- fit_ed(tri, loss = "loss", exposure = "exposure")
+  ed_fit <- fit_ed(tri, loss = "loss", premium = "premium")
   # Compare ultimate per cohort between bootstrap mean and analytical
   # projection.
   ult_dev <- max(bt$summary$dev)
@@ -1242,7 +1242,7 @@ test_that("ED bootstrap point estimate lands in the right order of magnitude", {
   expect_gt(nrow(m), 0L)
   # With `.boot_fitted_grid` + `.boot_steps_ed` chain-anchoring AND the
   # fixed `bootstrap_refit_ed_gstar` denominator coverage (same FINITE mask on
-  # cum and exposure_proj together, matching analytical g_hat coverage),
+  # cum and premium_proj together, matching analytical g_hat coverage),
   # the bootstrap aggregate ultimate matches the analytical aggregate
   # within ~0.5 percent on the 4 cv synthetic data. Tight 5% threshold.
   ratio <- sum(m$boot_mean) / sum(m$ana)

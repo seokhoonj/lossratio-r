@@ -1,7 +1,7 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
 
 test_that("fit_ratio default (method = 'ed') returns class 'RatioFit'", {
   lr <- fit_ratio(tri, bootstrap = FALSE)
@@ -13,19 +13,19 @@ test_that("RatioFit has expected list elements", {
   lr <- fit_ratio(tri, method = "sa", bootstrap = FALSE)
   for (nm in c("data", "method", "groups", "cohort", "dev",
                "full", "proj", "summary",
-               "ed", "loss_ata_fit", "exposure_ata_fit", "maturity",
+               "ed", "loss_ata_fit", "premium_ata_fit", "maturity",
                "se_method", "rho", "conf_level",
-               "loss_regime", "exposure_regime")) {
+               "loss_regime", "premium_regime")) {
     expect_true(nm %in% names(lr), info = paste("missing", nm))
   }
 })
 
 test_that("$full has expected columns", {
   lr <- fit_ratio(tri, method = "sa", bootstrap = FALSE)
-  for (nm in c("coverage", "cohort", "dev", "loss_obs", "exposure_obs",
+  for (nm in c("coverage", "cohort", "dev", "loss_obs", "premium_obs",
                "is_observed",
-               "loss_proj", "exposure_proj", "ratio_proj",
-               "incr_loss_proj", "incr_exposure_proj", "incr_ratio_proj")) {
+               "loss_proj", "premium_proj", "ratio_proj",
+               "incr_loss_proj", "incr_premium_proj", "incr_ratio_proj")) {
     expect_true(nm %in% names(lr$full), info = paste("missing", nm))
   }
 })
@@ -35,17 +35,17 @@ test_that("incremental projections recover cumulative via per-cohort cumsum", {
   full <- data.table::copy(lr$full)
   data.table::setorder(full, coverage, cohort, dev)
   full[, .loss_recovered     := cumsum(incr_loss_proj),     by = .(coverage, cohort)]
-  full[, .exposure_recovered := cumsum(incr_exposure_proj), by = .(coverage, cohort)]
+  full[, .premium_recovered := cumsum(incr_premium_proj), by = .(coverage, cohort)]
   rows <- full[is.finite(loss_proj) & is.finite(incr_loss_proj)]
   expect_equal(rows$.loss_recovered,     rows$loss_proj,     tolerance = 1e-8)
-  expect_equal(rows$.exposure_recovered, rows$exposure_proj, tolerance = 1e-8)
+  expect_equal(rows$.premium_recovered, rows$premium_proj, tolerance = 1e-8)
 })
 
 test_that("$pred masks incremental projections on observed cells", {
   lr <- fit_ratio(tri, method = "sa", bootstrap = FALSE)
   obs <- lr$pred[lr$pred$is_observed == TRUE, ]
   expect_true(all(is.na(obs$incr_loss_proj)))
-  expect_true(all(is.na(obs$incr_exposure_proj)))
+  expect_true(all(is.na(obs$incr_premium_proj)))
   expect_true(all(is.na(obs$incr_ratio_proj)))
 })
 
@@ -95,7 +95,7 @@ test_that("fit_ratio with loss_regime + method=sa applies hybrid filter", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
   reg <- regime_at(change = "2025-07-01")
   fit_full <- fit_ratio(tri, method = "sa", bootstrap = FALSE)
   fit_brk  <- fit_ratio(tri, method = "sa", loss_regime = reg,
@@ -110,7 +110,7 @@ test_that("fit_ratio with loss_regime + method=ed drops pre-break cohorts", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
   reg <- regime_at(change = "2025-07-01")
   fit_full <- fit_ratio(tri, method = "ed", bootstrap = FALSE)
   fit_brk  <- fit_ratio(tri, method = "ed", loss_regime = reg, bootstrap = FALSE)
@@ -121,7 +121,7 @@ test_that("fit_ratio with NULL loss_regime is unchanged", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
   a <- fit_ratio(tri, method = "sa", bootstrap = FALSE)
   b <- fit_ratio(tri, method = "sa", loss_regime = NULL, bootstrap = FALSE)
   expect_identical(a$full$ratio_proj, b$full$ratio_proj)
@@ -131,7 +131,7 @@ test_that("fit_ratio with Regime preserves the Regime object", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
   reg <- detect_regime(tri)
   fit_reg <- fit_ratio(tri, method = "sa", loss_regime = reg, recent = 18L, bootstrap = FALSE)
   expect_s3_class(fit_reg$loss_regime, "Regime")

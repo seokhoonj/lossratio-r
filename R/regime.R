@@ -38,19 +38,19 @@
 #'   `summary()` method.
 #' @param loss Trajectory variable. Default is `"ratio"` (cumulative loss
 #'   ratio). Accepts any column on the `Triangle` (e.g. `"ratio"`,
-#'   `"loss"`, `"exposure"`, `"incr_loss"`, `"incr_exposure"`), plus three
+#'   `"loss"`, `"premium"`, `"incr_loss"`, `"incr_premium"`), plus three
 #'   *diagnostic* derived metrics computed inline per (group, cohort):
 #'   \describe{
 #'     \item{`"loss_ata"`}{Loss age-to-age factor
 #'       `loss[k+1] / loss[k]` -- multiplicative loss development speed
 #'       (CL $f_k$).}
-#'     \item{`"exposure_ata"`}{Exposure age-to-age factor -- same form on
-#'       exposure.}
+#'     \item{`"premium_ata"`}{Premium age-to-age factor -- same form on
+#'       premium.}
 #'     \item{`"loss_ed"`}{Loss intensity
-#'       `(loss[k] - loss[k-1]) / exposure[k-1]` -- additive,
+#'       `(loss[k] - loss[k-1]) / premium[k-1]` -- additive,
 #'       exposure-anchored (ED model's $g_k$).}
-#'     \item{`"exposure_ed"`}{Alias of `"exposure_ata"` -- the two differ
-#'       only by a constant `(exposure_ata - 1)`, and the PCA
+#'     \item{`"premium_ed"`}{Alias of `"premium_ata"` -- the two differ
+#'       only by a constant `(premium_ata - 1)`, and the PCA
 #'       standardization in detection removes that shift, so they yield
 #'       identical regime changes. Provided for API symmetry with the
 #'       `loss_ata` / `loss_ed` pair.}
@@ -146,7 +146,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   exposure = "incr_exposure"
+#'   premium  = "incr_premium"
 #' )
 #'
 #' # Hierarchical clustering (no extra package dependency)
@@ -166,7 +166,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   exposure = "incr_exposure"
+#'   premium  = "incr_premium"
 #' )
 #' r_all <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 #' print(r_all$changes)
@@ -217,17 +217,17 @@ detect_regime <- function(x,
 
   d <- .copy_dt(x)
 
-  # `exposure_ed` is mathematically equivalent to `exposure_ata - 1`
-  # (delta exposure / cum_exposure_prev vs cum_exposure / cum_exposure_prev),
+  # `premium_ed` is mathematically equivalent to `premium_ata - 1`
+  # (delta premium / cum_premium_prev vs cum_premium / cum_premium_prev),
   # and the PCA standardization (`center=TRUE, scale=TRUE`) removes the
   # constant shift -- so detection produces identical changes. Treat
   # as alias.
-  if (loss == "exposure_ed") loss <- "exposure_ata"
+  if (loss == "premium_ed") loss <- "premium_ata"
 
   # Derived metrics (not native Triangle columns) -- compute inline per
   # (group, cohort) before detection. These are diagnostic/experimental;
   # see `?detect_regime` for the recommended use case of each.
-  derived <- c("loss_ata", "exposure_ata", "loss_ed")
+  derived <- c("loss_ata", "premium_ata", "loss_ed")
   if (loss %in% derived) {
     grp_for_derive <- .resolve_groups(x)
     d <- .derive_regime_target(d, loss, groups = grp_for_derive)
@@ -265,10 +265,10 @@ detect_regime <- function(x,
     # detect_maturity supports cumulative metrics only -- map _incr to its
     # cumulative counterpart, fall back to "ratio" otherwise.
     mat_loss <- switch(loss,
-      "ratio" = , "loss" = , "exposure" = loss,
+      "ratio" = , "loss" = , "premium" = loss,
       "incr_ratio"    = "ratio",
       "incr_loss"     = "loss",
-      "incr_exposure" = "exposure",
+      "incr_premium" = "premium",
       "ratio"
     )
     maturity <- tryCatch(
@@ -438,10 +438,10 @@ detect_regime <- function(x,
 #' \describe{
 #'   \item{`loss_ata`}{Loss age-to-age factor -- `loss[k+1] / loss[k]` per
 #'     (group, cohort). Captures *multiplicative* development speed.}
-#'   \item{`exposure_ata`}{Exposure age-to-age factor -- same form on exposure.
-#'     Captures exposure *recognition speed*.}
+#'   \item{`premium_ata`}{Premium age-to-age factor -- same form on premium.
+#'     Captures premium *recognition speed*.}
 #'   \item{`loss_ed`}{Loss intensity (ED model's $g_k$) --
-#'     `(loss[k] - loss[k-1]) / exposure[k-1]` per (group, cohort).
+#'     `(loss[k] - loss[k-1]) / premium[k-1]` per (group, cohort).
 #'     *Additive*, exposure-anchored.}
 #' }
 #'
@@ -455,7 +455,7 @@ detect_regime <- function(x,
   # below unambiguously refers to the Triangle's `loss` column.
   metric <- loss
   loss   <- NULL  # suppress R CMD check NOTE for bare column ref in j
-  exposure <- dev <- NULL
+  premium <- dev <- NULL
 
   by_cols <- c(groups, "cohort")
   d <- .copy_dt(d)
@@ -463,12 +463,12 @@ detect_regime <- function(x,
   if (metric == "loss_ata") {
     d[, ("loss_ata") := loss / data.table::shift(loss, 1L, type = "lag"),
       by = by_cols]
-  } else if (metric == "exposure_ata") {
-    d[, ("exposure_ata") := exposure / data.table::shift(exposure, 1L, type = "lag"),
+  } else if (metric == "premium_ata") {
+    d[, ("premium_ata") := premium / data.table::shift(premium, 1L, type = "lag"),
       by = by_cols]
   } else if (metric == "loss_ed") {
     d[, ("loss_ed") := (loss - data.table::shift(loss, 1L, type = "lag")) /
-                   data.table::shift(exposure, 1L, type = "lag"),
+                   data.table::shift(premium, 1L, type = "lag"),
       by = by_cols]
   } else {
     stop(sprintf("Unknown derived metric: '%s'.", metric), call. = FALSE)
@@ -925,7 +925,7 @@ print.summary.Regime <- function(x, ...) {
 #' User-facing helper for hand-specifying a regime change (or a set of
 #' per-group changes) without running [detect_regime()]. The returned
 #' `"Regime"` object plugs into any function that consumes a Regime --
-#' `fit_ratio()`, `fit_loss()`, `fit_exposure()`, [backtest()], and the
+#' `fit_ratio()`, `fit_loss()`, `fit_premium()`, [backtest()], and the
 #' regime-change resolver -- by carrying the same `$changes` schema as
 #' [detect_regime()] output.
 #'
@@ -1081,7 +1081,7 @@ regime_at <- function(..., treatment = c("latest_only", "segment_wise")) {
 #' deferred** detection -- the change points depend on which cells the
 #' caller decides to expose:
 #'
-#' * In `fit_ratio()` / `fit_loss()` / `fit_exposure()`, the spec is invoked
+#' * In `fit_ratio()` / `fit_loss()` / `fit_premium()`, the spec is invoked
 #'   on the *full* triangle the user passed in.
 #'
 #' * In [backtest()], **the spec is invoked on the masked triangle of
@@ -1137,7 +1137,7 @@ regime_spec <- function(...) {
 #'
 #' @description
 #' Internal 4-type dispatcher used by `fit_ratio()`, `fit_loss()`,
-#' `fit_exposure()`, and [backtest()] to normalize the `regime`
+#' `fit_premium()`, and [backtest()] to normalize the `regime`
 #' input (or split-axis variants such as `loss_regime`) into a
 #' single representation: either `NULL` (no filter) or a `"Regime"`
 #' object.

@@ -11,22 +11,22 @@ test_that("fit_sa $full carries the LossFit-compatible columns", {
   tri <- make_sub_tri("surgery")
   sa  <- fit_sa(tri, bootstrap = FALSE)
   for (nm in c("cohort", "dev",
-               "loss_obs", "exposure_obs", "is_observed",
-               "loss_proj", "exposure_proj",
-               "incr_loss_proj", "incr_exposure_proj",
+               "loss_obs", "premium_obs", "is_observed",
+               "loss_proj", "premium_proj",
+               "incr_loss_proj", "incr_premium_proj",
                "loss_total_se", "loss_total_cv",
                "loss_ci_lo", "loss_ci_hi")) {
     expect_true(nm %in% names(sa$full), info = paste("missing", nm))
   }
 })
 
-test_that("fit_sa exposes ed / loss_ata_fit / exposure_ata_fit slots", {
+test_that("fit_sa exposes ed / loss_ata_fit / premium_ata_fit slots", {
   tri <- make_sub_tri("surgery")
   sa  <- fit_sa(tri, bootstrap = FALSE)
   expect_true(!is.null(sa$ed))
-  expect_s3_class(sa$loss_ata_fit,     "ATAFit")
-  expect_s3_class(sa$exposure_ata_fit, "ATAFit")
-  expect_s3_class(sa$exposure_fit,     "ExposureFit")
+  expect_s3_class(sa$loss_ata_fit,    "ATAFit")
+  expect_s3_class(sa$premium_ata_fit, "ATAFit")
+  expect_s3_class(sa$premium_fit,     "PremiumFit")
 })
 
 test_that("fit_sa default uses bootstrap (ci_type = 'bootstrap')", {

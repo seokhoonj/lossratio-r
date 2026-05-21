@@ -16,13 +16,13 @@
 #' the multiplicative ATA branch (`model = "ata"`) or the additive
 #' exposure-driven branch (`model = "ed"`).
 #'
-#' The default `model` is chosen from `attr(x, "exposure")`: `NULL`
-#' (single-variable link) selects `"ata"`, a non-`NULL` exposure variable
+#' The default `model` is chosen from `attr(x, "premium")`: `NULL`
+#' (single-variable link) selects `"ata"`, a non-`NULL` premium variable
 #' (dual-variable link) selects `"ed"`.
 #'
 #' @param x An object of class `"Link"`.
 #' @param model Either `"ata"` or `"ed"`. Default depends on
-#'   `attr(x, "exposure")`.
+#'   `attr(x, "premium")`.
 #' @param ... Arguments forwarded to the underlying plotting helper. See
 #'   the per-model parameter list in Details.
 #'
@@ -45,12 +45,12 @@ plot.Link <- function(x, model = NULL, ...) {
   .assert_class(x, "Link")
 
   if (is.null(model)) {
-    model <- if (!is.null(attr(x, "exposure"))) "ed" else "ata"
+    model <- if (!is.null(attr(x, "premium"))) "ed" else "ata"
   }
   model <- match.arg(model, c("ata", "ed"))
 
-  if (identical(model, "ed") && is.null(attr(x, "exposure")))
-    stop("`model = 'ed'` requires a Link built with `exposure`.",
+  if (identical(model, "ed") && is.null(attr(x, "premium")))
+    stop("`model = 'ed'` requires a Link built with `premium`.",
          call. = FALSE)
 
   if (identical(model, "ata")) {
@@ -70,12 +70,12 @@ plot.Link <- function(x, model = NULL, ...) {
 #' the multiplicative ATA branch (`model = "ata"`) or the additive
 #' exposure-driven branch (`model = "ed"`).
 #'
-#' The default `model` is chosen from `attr(x, "exposure")`: `NULL`
+#' The default `model` is chosen from `attr(x, "premium")`: `NULL`
 #' selects `"ata"`, non-`NULL` selects `"ed"`.
 #'
 #' @param x An object of class `"Link"`.
 #' @param model Either `"ata"` or `"ed"`. Default depends on
-#'   `attr(x, "exposure")`.
+#'   `attr(x, "premium")`.
 #' @param ... Arguments forwarded to the underlying plotting helper.
 #'
 #' @return A `ggplot` object.
@@ -87,12 +87,12 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   .assert_class(x, "Link")
 
   if (is.null(model)) {
-    model <- if (!is.null(attr(x, "exposure"))) "ed" else "ata"
+    model <- if (!is.null(attr(x, "premium"))) "ed" else "ata"
   }
   model <- match.arg(model, c("ata", "ed"))
 
-  if (identical(model, "ed") && is.null(attr(x, "exposure")))
-    stop("`model = 'ed'` requires a Link built with `exposure`.",
+  if (identical(model, "ed") && is.null(attr(x, "premium")))
+    stop("`model = 'ed'` requires a Link built with `premium`.",
          call. = FALSE)
 
   if (identical(model, "ata")) {
@@ -681,7 +681,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   # 5) build title ------------------------------------------------------
   title_txt <- switch(loss,
                       loss     = "ATA Factor for Cumulative Loss",
-                      exposure = "ATA Factor for Cumulative Exposure",
+                      premium  = "ATA Factor for Cumulative Premium",
                       ratio    = "ATA Factor for Cumulative Loss Ratio",
                       "ATA Factor"
   )
@@ -834,7 +834,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   # 3) build cell labels
   if (identical(amount_divisor, "auto"))
     amount_divisor <- .auto_divisor(
-      if (label_style == "value") numeric(0) else dt[["exposure_from"]]
+      if (label_style == "value") numeric(0) else dt[["premium_from"]]
     )
 
   if (label_style == "value") {
@@ -846,7 +846,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
       is.finite(intensity),
       sprintf("%.3f\n(%.1f/%.1f)", intensity,
               loss_delta / amount_divisor,
-              exposure_from / amount_divisor),
+              premium_from / amount_divisor),
       ""
     )]
     caption_txt <- sprintf(

@@ -1,8 +1,8 @@
 # Setup
 data(experience)
 exp <- experience
-sub <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
-tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+sub <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
 
 test_that("detect_convergence returns class 'Convergence' with required fields", {
   res <- detect_convergence(sub)
@@ -31,7 +31,7 @@ test_that("conv_k is >= mat_k when non-NA", {
 test_that("insufficient history yields conv_k == NA", {
   mat_k_guess <- 6L
   short_exp <- exp[coverage == "surgery" & dev_m <= mat_k_guess + 2L]
-  short_tri <- as_triangle(short_exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+  short_tri <- as_triangle(short_exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
   res <- detect_convergence(short_tri, mat_k = mat_k_guess)
   expect_true(is.na(res$conv_k))
 })
@@ -170,7 +170,7 @@ test_that("no-candidate dev sequence emits warning and returns conv_k = NA", {
   tiny_exp <- exp[coverage == "surgery" & dev_m <= 4L]
   tiny_tri <- as_triangle(tiny_exp, groups = "coverage", cohort = "uy_m",
                           calendar = "cy_m", loss = "incr_loss",
-                          exposure = "incr_exposure")
+                          premium = "incr_premium")
   expect_warning(
     res <- detect_convergence(tiny_tri, mat_k = 4L),
     regexp = "No candidate dev"
@@ -185,7 +185,7 @@ test_that("auto mat_k failure error explains the cause + how to override", {
   tri <- tryCatch(
     as_triangle(one_coh, groups = "coverage", cohort = "uy_m",
                 calendar = "cy_m", loss = "incr_loss",
-                exposure = "incr_exposure"),
+                premium = "incr_premium"),
     error = function(e) NULL
   )
   if (!is.null(tri)) {

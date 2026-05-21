@@ -1,12 +1,50 @@
 # lossratio (development version)
 
+* **BREAKING: identifier rename `exposure` -> `premium`.** The
+  denominator slot reverts to `premium`, the natural domain word for
+  loss-ratio analytics (loss ratio = loss / premium). The earlier
+  framework-generic choice `exposure` (still unreleased) is superseded:
+  "cumulative exposure" / "incremental exposure" read as non-standard
+  in an insurance reserving context, whereas "cumulative premium" /
+  "incremental premium" are immediately clear. The derived `ratio`
+  column / fit family is unchanged. Prose noun phrases ("loss ratio",
+  "premium", "risk premium", "premium measure") are unchanged, and the
+  exposure-driven (ED) method keeps its name.
+
+  Migration (find-and-replace at call sites):
+    * `as_triangle(..., exposure = "incr_exposure")`   -> `as_triangle(..., premium = "incr_premium")`
+    * `fit_exposure(...)`                              -> `fit_premium(...)`
+    * `fit_loss(..., exposure_method = ..., exposure_alpha = ..., exposure_fit = ...)`
+      -> `fit_loss(..., premium_method = ..., premium_alpha = ..., premium_fit = ...)`
+    * `fit_ratio(..., exposure_method = ..., exposure_alpha = ..., exposure_regime = ...)`
+      -> `fit_ratio(..., premium_method = ..., premium_alpha = ..., premium_regime = ...)`
+    * `backtest(..., target = "exposure", exposure_method = ...)`
+      -> `backtest(..., target = "premium", premium_method = ...)`
+    * `bootstrap(tri, target = "exposure")`            -> `bootstrap(tri, target = "premium")`
+    * `RatioFit$exposure_alpha`, `$exposure_regime`    -> `$premium_alpha`, `$premium_regime`
+    * `LossFit$exposure_fit`                           -> `$premium_fit`
+    * S3 class `"ExposureFit"`                         -> `"PremiumFit"`
+      (incl. `print.ExposureFit()` / `summary.ExposureFit()` ->
+      `print.PremiumFit()` / `summary.PremiumFit()`)
+    * `attr(ExposureFit_obj, "exposure_method")`       -> `attr(PremiumFit_obj, "premium_method")`
+    * Triangle / Calendar / Total columns: `exposure`, `incr_exposure`,
+      `exposure_share`, `incr_exposure_share` -> `premium`,
+      `incr_premium`, `premium_share`, `incr_premium_share`
+    * Fit output columns: `exposure_proj`, `exposure_obs`,
+      `exposure_proc_se`, `exposure_param_se`, `exposure_total_se`,
+      `exposure_total_cv`, `exposure_ci_lo`, `exposure_ci_hi`,
+      `incr_exposure_proj` -> `premium_*`
+    * R source file: `R/exposure.R`                    -> `R/premium.R`
+    * Raw dataset (`data/experience.rda`): column `incr_exposure` ->
+      `incr_premium` (regenerated)
+
 * **API consistency pass.** Several entry points were aligned so the
   same concept behaves the same way regardless of entry point:
-  * `exposure_method` now defaults to `"ed"` (was `"cl"`) in
+  * `premium_method` now defaults to `"ed"` (was `"cl"`) in
     `fit_sa()` / `fit_loss()` / `fit_ratio()` / `backtest()`, matching
-    `fit_exposure()`. This changes the default exposure-side variance
+    `fit_premium()`. This changes the default premium-side variance
     recursion; point projections are unaffected. Pass
-    `exposure_method = "cl"` to keep the old behaviour.
+    `premium_method = "cl"` to keep the old behaviour.
   * `bootstrap()`'s `type` now defaults to `"parametric"` (was
     `"analytical"`), matching the `fit_sa()` / `fit_bf()` / `fit_cc()`
     workers. Pass `type = "analytical"` for the closed-form path.
@@ -49,9 +87,9 @@
   group's ELR is then broadcast to every cohort in that group.
 
 * **Worker layer fix + bootstrap arg on `fit_cl` / `fit_ed`.**
-  `fit_bf()` / `fit_cc()` / `fit_sa()` now build their internal exposure
-  fit by calling `fit_cl(loss = "exposure", ...)` directly instead of
-  routing through `fit_exposure()` — downward-only Tier 3 -> Tier 4
+  `fit_bf()` / `fit_cc()` / `fit_sa()` now build their internal premium
+  fit by calling `fit_cl(loss = "premium", ...)` directly instead of
+  routing through `fit_premium()` — downward-only Tier 3 -> Tier 4
   dependency. `fit_cl()` and `fit_ed()` both gain `bootstrap`, `B`,
   `seed`, `conf_level` arguments for symmetry with the SA / BF / CC
   workers; `bootstrap = NULL` (default) preserves analytical Mack SE.
@@ -70,8 +108,8 @@
   `R/loss.R`, and `fit_loss()` now thin-dispatches by `method` to the
   worker functions (`fit_ed` / `fit_cl` / `fit_sa` / `fit_bf` / `fit_cc`)
   and augments their output to the LossFit-uniform `$full` schema via
-  `.lossfit_augment()`. `fit_exposure()` follows the same pattern with
-  `.exposurefit_augment()` + `.exposurefit_bootstrap()` (Phase 4c).
+  `.lossfit_augment()`. `fit_premium()` follows the same pattern with
+  `.premiumfit_augment()` + `.premiumfit_bootstrap()` (Phase 4c).
 
 * **BREAKING: bootstrap `type = "parametric"` -> `"analytical"` rename.**
   The Mack closed-form SE option was previously mislabelled as
@@ -89,15 +127,15 @@
   cells using additive `g_k` refit and CL-stage cells using multiplicative
   `f_k` refit.
 
-* **ED bootstrap (Phase 1, fixed exposure).** `bootstrap()` now supports
+* **ED bootstrap (Phase 1, fixed premium).** `bootstrap()` now supports
   `method = "ed"` for `residual = "cell"`: per-replicate `g*_k` refit and
   additive forward projection (`Delta loss = g_k * P_{from} + noise`)
-  instead of the multiplicative chain ladder. Exposure stays fixed across
-  replicates (projected once via CL on the exposure column). New native
+  instead of the multiplicative chain ladder. Premium stays fixed across
+  replicates (projected once via CL on the premium column). New native
   helpers `bootstrap_refit_gstar` / `bootstrap_fwd_proj_ed_and_clip` /
   `bootstrap_fwd_sim_ed_cell` parallel the CL kernel triple; the C entry
   point is `C_bootstrap_kernel_ed_cell` (17 args). Phase 2 / 3 (joint
-  loss + exposure bootstrap) deferred. `method = "ed"` requires
+  loss + premium bootstrap) deferred. `method = "ed"` requires
   `residual = "cell"`; ED + link residuals is not implemented.
 
 * **`bootstrap()` method-enum reorder — `c("sa", "cl", "ed")` ->
@@ -140,13 +178,13 @@
   attribute key `attr(., "target")` becomes `attr(., "loss")` on Link,
   ATAFit, EDFit, CLFit, IntensityFit, Maturity, Regime, and Convergence
   objects. The `target` arg on `backtest()` (a dispatcher enum
-  selecting `"ratio"` / `"loss"` / `"exposure"`) is **unchanged** — that
+  selecting `"ratio"` / `"loss"` / `"premium"`) is **unchanged** — that
   is a different semantic (which metric to backtest) and stays as-is.
-  Bootstrap's `target = c("loss", "exposure")` enum is also unchanged.
+  Bootstrap's `target = c("loss", "premium")` enum is also unchanged.
 
   Migration:
     * `fit_cl(tri, target = "loss")`                    -> `fit_cl(tri, loss = "loss")`
-    * `fit_ed(tri, target = "loss", exposure = ...)`    -> `fit_ed(tri, loss = "loss", exposure = ...)`
+    * `fit_ed(tri, target = "loss", premium = ...)`    -> `fit_ed(tri, loss = "loss", premium = ...)`
     * `as_link(tri, target = "loss")`                   -> `as_link(tri, loss = "loss")`
     * `detect_maturity(tri, target = "loss")`           -> `detect_maturity(tri, loss = "loss")`
     * `detect_regime(tri, target = "ratio")`            -> `detect_regime(tri, loss = "ratio")`
@@ -263,10 +301,10 @@
   `bt$ae_err$actual`, `bt$ae_err$target_proj` with `bt$ae_err$expected`.
 * `backtest()` result slot `fit_fn_name` renamed to `dispatcher`
   for clarity (the value is still the dispatcher name —
-  `fit_ratio` / `fit_loss` / `fit_exposure` — selected by `target=`).
+  `fit_ratio` / `fit_loss` / `fit_premium` — selected by `target=`).
   `print()` / `summary()` labels updated accordingly.
 
-* `fit_loss()`, `fit_exposure()`, `fit_ratio()`, and `backtest()` now
+* `fit_loss()`, `fit_premium()`, `fit_ratio()`, and `backtest()` now
   attach a `$usage` `data.table` to the result: one row per
   `(group, cohort, dev)` cell of the *pre-filter* triangle with a
   `status` factor (`used` / `unused` / `holdout` / `future`).

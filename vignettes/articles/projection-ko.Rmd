@@ -31,7 +31,7 @@ knitr::opts_chunk$set(
 코호트 $i$, dev $k$ 에 대하여:
 
 - $C^L_{i,k}$ — 누적 손해액
-- $C^P_{i,k}$ — 누적 위험보험료 (익스포저)
+- $C^P_{i,k}$ — 누적 위험보험료
 - $f_k = C^L_{k+1} / C^L_k$ — ATA 인자(age-to-age factor)
 - $g_k = \Delta C^L_k / C^P_k$ — 노출 기반(exposure-driven, ED) 강도
 - 성숙점(maturity point) $k^*$ — 그룹 $g$ 에서 $f_k$ 가 안정화되는
@@ -48,13 +48,13 @@ $$
 특성:
 
 - 무조건적 안전한 baseline — 성숙점 / regime 검출에 의존하지 않는다.
-- 익스포저(위험보험료)가 분모이므로 초기 dev 의 ATA 인자 변동에 강건하다.
+- 위험보험료가 분모이므로 초기 dev 의 ATA 인자 변동에 강건하다.
 - 코호트 고유의 수준 신호를 잃는다 — 관측 손해가 더 높은
   코호트도 그룹 단위 $g_k$ 로 수렴한다.
 
 언제 사용:
 
-- baseline 으로. pooled intensity $g_k$ 는 코호트들이 단위 노출 당 손해
+- baseline 으로. pooled intensity $g_k$ 는 코호트들이 단위 보험료 당 손해
   수준에서 대체로 동질적이라 가정한다.
 - 코호트-레벨 drift(약관 / 인수 정책 변경) 시 pooled 평균으로 편향되어
   post-change 코호트를 over-project 가능 — 명시적 필터는 `regime` 인자.
@@ -68,7 +68,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 ratio_ed <- fit_ratio(tri, method = "ed")        # default
@@ -89,7 +89,7 @@ $$
 - 코호트 자기 cum_loss 가 anchor 역할이므로 *코호트-레벨 drift 가
   자연스럽게 propagation* — 명시적 regime 검출 불필요.
 - 손해 예측에 한해서는 `fit_cl(tri, loss = "loss")` 과 동등하지만,
-  `fit_ratio()` 은 추가로 `exposure` 에 대한 CL 로 익스포저를 전방
+  `fit_ratio()` 은 추가로 `premium` 에 대한 CL 로 보험료를 전방
   추정하고 delta method 로 손해율 불확실성을 계산한다.
 - 초기 $f_k$ 에 노이즈가 있을 때 변동성이 크다 — 작은 분모가 link 오차를
   증폭한다.
@@ -121,7 +121,7 @@ $$
 
 특성:
 
-- **성숙점 이전**: 손해 추정치가 익스포저에 비례한다.
+- **성숙점 이전**: 손해 추정치가 보험료에 비례한다.
   초기 $f_k$ 가 노이즈로 폭주하는 문제를 회피한다.
 - **성숙점 이후**: 코호트 자체의 관측 수준을 보존한다. ED 방법이
   꼬리에서 모든 코호트를 평균으로 끌어당기는 문제를 회피한다.
@@ -144,7 +144,7 @@ summary(ratio_sa)
 
 | 방법 | mechanism | 언제 사용 |
 |---|---|---|
-| ED (default) | pooled $g_k$ x 코호트 익스포저 | baseline; 코호트 동질성 가정 |
+| ED (default) | pooled $g_k$ x 코호트 보험료 | baseline; 코호트 동질성 가정 |
 | CL | pooled $f_k$ x 코호트 cum_loss | 코호트 drift; 코호트-anchored |
 | SA | ED 초기 + CL 후기 | 초기 변동 + 후기 drift 둘 다 |
 

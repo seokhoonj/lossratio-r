@@ -150,7 +150,7 @@ reference:
     `fit_bf` (Bornhuetter-Ferguson with external prior),
     `fit_cc` (Cape Cod with data-pooled ELR estimate).
     Role dispatchers: `fit_loss` (loss-side ed/cl/sa/bf/cc),
-    `fit_exposure` (exposure-side ed/cl). Composition: `fit_ratio`
+    `fit_premium` (premium-side ed/cl). Composition: `fit_ratio`
     (loss-ratio umbrella with delta-method SE). All return an object
     carrying a `$full` projection table.
   contents:
@@ -160,7 +160,7 @@ reference:
   - fit_bf
   - fit_cc
   - fit_loss
-  - fit_exposure
+  - fit_premium
   - fit_ratio
 
 - title: Factor diagnostics
@@ -184,7 +184,7 @@ reference:
     ATA factors are stable); `detect_regime` works along the cohort
     axis (structural break across underwriting cohorts). The
     `*_at()` / `*_spec()` helpers build manual / lazy-detect input
-    objects for the `maturity` / `loss_regime` / `exposure_regime`
+    objects for the `maturity` / `loss_regime` / `premium_regime`
     arguments of the fit functions.
   contents:
   - detect_maturity
@@ -198,7 +198,7 @@ reference:
   desc: >
     Cohort × dev standard-error decomposition via simulation (Pythagorean
     split into parameter and process components). Returned object is
-    consumed by `fit_loss` / `fit_exposure` / `fit_ratio` through their
+    consumed by `fit_loss` / `fit_premium` / `fit_ratio` through their
     `bootstrap` argument to replace analytical SE / CI with empirical
     counterparts.
   contents:

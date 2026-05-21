@@ -13,7 +13,7 @@
 #'     ratio (default).
 #'   \item `metric = "incr_ratio"` (i.e., `cell_type = "incremental"`):
 #'     per-period loss ratio.
-#'   \item `metric = "loss"` / `"exposure"`: same split -- cumulative or
+#'   \item `metric = "loss"` / `"premium"`: same split -- cumulative or
 #'     per-period amounts.
 #' }
 #' Confidence bands are drawn only for cumulative metrics
@@ -22,7 +22,7 @@
 #'
 #' @param x An object of class `"RatioFit"`.
 #' @param metric Metric to plot. One of `"ratio"` (default), `"loss"`,
-#'   `"exposure"`.
+#'   `"premium"`.
 #' @param cell_type Aggregation. One of `"cumulative"` (default) or
 #'   `"incremental"`.
 #' @param per_group Logical or `NULL`. When `TRUE` (auto for multi-group
@@ -46,7 +46,7 @@
 #' @method plot RatioFit
 #' @export
 plot.RatioFit <- function(x,
-                          metric         = c("ratio", "loss", "exposure"),
+                          metric         = c("ratio", "loss", "premium"),
                           cell_type      = c("cumulative", "incremental"),
                           per_group      = NULL,
                           ask            = grDevices::dev.interactive(),
@@ -101,8 +101,8 @@ plot.RatioFit <- function(x,
     ci_lo_col <- "ratio_ci_lo";   ci_hi_col <- "ratio_ci_hi"
   } else if (!is_incr && metric == "loss") {
     ci_lo_col <- "loss_ci_lo"; ci_hi_col <- "loss_ci_hi"
-  } else if (!is_incr && metric == "exposure") {
-    ci_lo_col <- "exposure_ci_lo"; ci_hi_col <- "exposure_ci_hi"
+  } else if (!is_incr && metric == "premium") {
+    ci_lo_col <- "premium_ci_lo"; ci_hi_col <- "premium_ci_hi"
   } else {
     ci_lo_col <- NA_character_;   ci_hi_col <- NA_character_
   }
@@ -110,9 +110,9 @@ plot.RatioFit <- function(x,
   cum_word <- if (is_incr) "Per-Period" else "Cumulative"
   base_lab <- switch(
     metric,
-    ratio    = "Loss Ratio",
-    loss     = "Loss",
-    exposure = "Exposure"
+    ratio   = "Loss Ratio",
+    loss    = "Loss",
+    premium = "Premium"
   )
   y_lab <- if (is_ratio) col_key else attr(x$data, metric)
   title <- paste0("Projected ", cum_word, " ", base_lab,
@@ -126,20 +126,20 @@ plot.RatioFit <- function(x,
   proj <- full[is_observed == FALSE & is.finite(full[[val_col]])]
 
   # Observed-cell value:
-  #   * Cumulative loss / exposure read the raw `_obs` column.
-  #   * Cumulative ratio is derived as loss_obs / exposure_obs.
+  #   * Cumulative loss / premium read the raw `_obs` column.
+  #   * Cumulative ratio is derived as loss_obs / premium_obs.
   #   * Incremental metrics reuse `<metric>_incr_proj` since
-  #     loss/exposure_proj equals their `_obs` counterparts on observed rows.
+  #     loss/premium_proj equals their `_obs` counterparts on observed rows.
   if (is_incr) {
     obs[, (".y") := .SD[[1L]], .SDcols = val_col]
   } else if (metric == "loss") {
     obs[, (".y") := loss_obs]
-  } else if (metric == "exposure") {
-    obs[, (".y") := exposure_obs]
+  } else if (metric == "premium") {
+    obs[, (".y") := premium_obs]
   } else {  # cumulative ratio
     obs[, (".y") := data.table::fifelse(
-      is.finite(exposure_obs) & exposure_obs != 0,
-      loss_obs / exposure_obs, NA_real_
+      is.finite(premium_obs) & premium_obs != 0,
+      loss_obs / premium_obs, NA_real_
     )]
   }
 
@@ -323,14 +323,14 @@ plot.RatioFit <- function(x,
 #'
 #' @param x An object of class `"RatioFit"`.
 #' @param metric Metric shown in the heatmap cells. One of `"ratio"`
-#'   (default), `"loss"`, `"exposure"`.
+#'   (default), `"loss"`, `"premium"`.
 #' @param cell_type Aggregation. One of `"cumulative"` (default) or
 #'   `"incremental"`. Combined with `metric` to select the column
 #'   (e.g., `metric = "ratio"`, `cell_type = "incremental"` -> `incr_ratio`).
 #' @param region Cell region to plot (only used when `view = "value"`).
 #'   One of `"proj"` (projected cells only, observed cells masked),
 #'   `"full"` (observed + projected), or `"data"` (observed cumulative
-#'   loss / exposure / ratio from `x$data` -- the raw Triangle, no
+#'   loss / premium / ratio from `x$data` -- the raw Triangle, no
 #'   projection). Default is `"proj"`.
 #' @param view Plot mode. One of:
 #'   \describe{
@@ -342,7 +342,7 @@ plot.RatioFit <- function(x,
 #'       ignored.}
 #'   }
 #' @param label_style One of `"value"` (ratio only) or `"detail"`
-#'   (ratio with loss/exposure amounts). Default is `"value"`.
+#'   (ratio with loss/premium amounts). Default is `"value"`.
 #' @param label_size Numeric size of the in-cell text label. Defaults
 #'   to `3` for `label_style = "value"` and `2.5` for
 #'   `label_style = "detail"` (two-line labels).
@@ -361,7 +361,7 @@ plot.RatioFit <- function(x,
 #' @method plot_triangle RatioFit
 #' @export
 plot_triangle.RatioFit <- function(x,
-                                   metric         = c("ratio", "loss", "exposure"),
+                                   metric         = c("ratio", "loss", "premium"),
                                    cell_type      = c("cumulative", "incremental"),
                                    region         = c("proj", "full", "data"),
                                    view           = c("value", "usage"),
@@ -426,7 +426,7 @@ plot_triangle.RatioFit <- function(x,
     dt[, ("is_observed") := TRUE]
 
   # 2) compute .value for (metric, cell_type). The `data` region (raw
-  # Triangle) has bare column names (ratio, incr_loss, exposure, ...).
+  # Triangle) has bare column names (ratio, incr_loss, premium, ...).
   # The `proj` / `full` regions have the `_proj` suffix on the same base.
   if (region == "data") {
     if (!(col_key %in% names(dt)))
@@ -466,8 +466,8 @@ plot_triangle.RatioFit <- function(x,
   fmt <- paste0("%.", digits, "f")
 
   # Ratio metrics (ratio / incr_ratio) render as %. Amount metrics
-  # (loss / incr_loss / exposure / incr_exposure) render scaled by
-  # `amount_divisor`. `detail` label_style adds the loss/exposure
+  # (loss / incr_loss / premium / incr_premium) render scaled by
+  # `amount_divisor`. `detail` label_style adds the loss/premium
   # breakdown only for ratio metrics -- meaningless for amounts.
   if (label_style == "value" || !is_ratio) {
     if (is_ratio) {
@@ -487,11 +487,11 @@ plot_triangle.RatioFit <- function(x,
               col_key, .get_amount_unit(amount_divisor))
     }
   } else {
-    # ratio + detail: show loss/exposure breakdown beneath the ratio value
-    loss_base     <- if (is_incr) "incr_loss"     else "loss"
-    exposure_base <- if (is_incr) "incr_exposure" else "exposure"
-    loss_col      <- if (region == "data") loss_base     else paste0(loss_base, "_proj")
-    exposure_col  <- if (region == "data") exposure_base else paste0(exposure_base, "_proj")
+    # ratio + detail: show loss/premium breakdown beneath the ratio value
+    loss_base    <- if (is_incr) "incr_loss"    else "loss"
+    premium_base <- if (is_incr) "incr_premium" else "premium"
+    loss_col     <- if (region == "data") loss_base    else paste0(loss_base, "_proj")
+    premium_col  <- if (region == "data") premium_base else paste0(premium_base, "_proj")
     dt[, ("label") := data.table::fifelse(
       is.finite(.value),
       sprintf(
@@ -501,7 +501,7 @@ plot_triangle.RatioFit <- function(x,
         .SD[[2L]] / amount_divisor
       ),
       ""
-    ), .SDcols = c(loss_col, exposure_col)]
+    ), .SDcols = c(loss_col, premium_col)]
     caption_txt <- sprintf(
       "Unit: %s %% (%s, column-wise relative fill)",
       col_key, .get_amount_unit(amount_divisor)
@@ -634,9 +634,9 @@ plot_triangle.RatioFit <- function(x,
   # 12) labs
   cum_word   <- if (is_incr) "Per-Period" else "Cumulative"
   base_word  <- switch(metric,
-                       ratio    = "Loss Ratio",
-                       loss     = "Loss",
-                       exposure = "Exposure")
+                       ratio   = "Loss Ratio",
+                       loss    = "Loss",
+                       premium = "Premium")
   p <- p + ggplot2::labs(
     title   = paste0(cum_word, " ", base_word, " Triangle",
                      " (method: ", x$method, ")"),

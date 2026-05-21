@@ -7,7 +7,7 @@
 fit_ed(
   x,
   loss = "loss",
-  exposure = "exposure",
+  premium = "premium",
   method = c("mack"),
   alpha = 1,
   na_method = c("locf", "zero", "none"),
@@ -27,7 +27,7 @@ fit_ed(
 \item{loss}{Cumulative loss variable. Default \code{"loss"}.
 Forwarded to \code{\link[=as_link]{as_link()}} and to downstream workers.}
 
-\item{exposure}{Cumulative exposure variable. Default \code{"exposure"}.
+\item{premium}{Cumulative premium variable. Default \code{"premium"}.
 Forwarded to \code{\link[=as_link]{as_link()}} and to downstream workers.}
 
 \item{method}{Estimation method. Currently only \code{"mack"} is supported.}
@@ -81,10 +81,10 @@ An object of class \code{"EDFit"} (a named list) with components:
 \item{\code{factor}}{\code{EDSummary} of fitted intensities per development link.}
 \item{\code{selected}}{\code{data.table} of selected \code{g_sel}, \code{sigma2},
 and \code{g_var}.}
-\item{\code{full}}{\code{data.table} of per-cell cumulative loss / exposure
+\item{\code{full}}{\code{data.table} of per-cell cumulative loss / premium
 projection plus role-prefixed SE / CV columns
-(\code{loss_proj}, \code{incr_loss_proj}, \code{exposure_proj},
-\code{incr_exposure_proj}, \code{loss_proc_se2}, \code{loss_param_se2},
+(\code{loss_proj}, \code{incr_loss_proj}, \code{premium_proj},
+\code{incr_premium_proj}, \code{loss_proc_se2}, \code{loss_param_se2},
 \code{loss_total_se2}, \code{loss_proc_se}, \code{loss_param_se},
 \code{loss_total_se}, \code{loss_total_cv}). Available cells include
 both observed and projected; \code{is_observed} flags observed cells.}
@@ -95,12 +95,12 @@ both observed and projected; \code{is_observed} flags observed cells.}
 Estimate incremental loss intensities \eqn{g_k} from a \code{"Triangle"}
 object and return an \code{"EDFit"} object that bundles factor summaries,
 selected intensities, and a cell-level projection of cumulative loss
-and exposure (\verb{$full}).
+and premium (\verb{$full}).
 
 Returns \code{g_sel}, \code{sigma2}, and factor variance
 \eqn{\mathrm{Var}(\hat{g}_k)} (column \code{g_var}) in \verb{$selected}.
 
-The \verb{$full} projection table holds cumulative loss / exposure
+The \verb{$full} projection table holds cumulative loss / premium
 projections and their standard errors, computed directly from the
 Mack-style ED recursion (see \code{.ed_proj}, \code{.ed_proc_var},
 \code{.ed_param_var}). To validate an ED projection via \code{\link[=backtest]{backtest()}},

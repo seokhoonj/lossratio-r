@@ -5,7 +5,7 @@ sub <- as_triangle(experience[coverage == "surgery"],
                    cohort   = "uy_m",
                    calendar = "cy_m",
                    loss     = "incr_loss",
-                   exposure = "incr_exposure")
+                   premium  = "incr_premium")
 
 
 test_that("fit_bf returns class 'BFFit' with scalar prior", {
@@ -22,7 +22,7 @@ test_that("fit_bf $summary carries cohort-level BF reserve", {
   # ult >= latest (positive reserve when q < 1) for all cohorts
   expect_true(all(fit$summary$loss_ult >= fit$summary$latest -
                     1e-6 * abs(fit$summary$latest)))
-  # reserve = (1 - q) * elr * exposure_ult on the BF formula
+  # reserve = (1 - q) * elr * premium_ult on the BF formula
   # (sanity: reserve > 0 when q < 1)
   with_dev <- fit$summary[fit$summary$q < 1, ]
   expect_true(all(with_dev$reserve > 0))
@@ -51,7 +51,7 @@ test_that("fit_bf accepts a per-group data.frame prior (no cohort column)", {
                        cohort   = "uy_m",
                        calendar = "cy_m",
                        loss     = "incr_loss",
-                       exposure = "incr_exposure")
+                       premium  = "incr_premium")
   prior_grp <- data.frame(
     coverage = c("surgery", "ci"),
     elr      = c(0.70, 0.85)
@@ -71,7 +71,7 @@ test_that("fit_bf errors on a per-group prior missing a group", {
                        cohort   = "uy_m",
                        calendar = "cy_m",
                        loss     = "incr_loss",
-                       exposure = "incr_exposure")
+                       premium  = "incr_premium")
   prior_grp <- data.frame(coverage = "surgery", elr = 0.70)
   expect_error(fit_bf(multi, prior = prior_grp), regexp = "missing ELR")
 })
@@ -191,7 +191,7 @@ test_that("distribution prior widens bootstrap SE vs deterministic prior", {
 
 test_that("fit_bf $full has cell-level BF projection columns", {
   fit <- fit_bf(sub, prior = 0.7)
-  for (nm in c("loss_obs", "loss_proj", "exposure_proj",
+  for (nm in c("loss_obs", "loss_proj", "premium_proj",
                "is_observed", "incr_loss_proj")) {
     expect_true(nm %in% names(fit$full), info = paste("missing", nm))
   }
@@ -259,7 +259,7 @@ test_that("fit_bf $full schema intersects LossFit", {
 test_that("fit_bf supports multi-group $summary", {
   tri_mg <- as_triangle(experience, groups = "coverage",
                        cohort = "uy_m", calendar = "cy_m",
-                       loss = "incr_loss", exposure = "incr_exposure")
+                       loss = "incr_loss", premium = "incr_premium")
   fit <- fit_bf(tri_mg, prior = 0.7)
   expect_true("coverage" %in% names(fit$summary))
   expect_gte(length(unique(fit$summary$coverage)), 2L)
@@ -313,16 +313,16 @@ test_that("fit_bf accepts a pre-built bootstrap pair", {
                        target = "loss", B = 25, seed = 7,
                        keep_pseudo = TRUE)
   bt_exp <- bootstrap(sub, type = "parametric", method = "cl",
-                      target = "exposure", B = 25, seed = 7,
+                      target = "premium", B = 25, seed = 7,
                       keep_pseudo = TRUE)
   fit <- fit_bf(sub, prior = 0.7,
-                bootstrap = list(loss = bt_loss, exposure = bt_exp))
+                bootstrap = list(loss = bt_loss, premium = bt_exp))
   expect_equal(fit$ci_type, "bootstrap")
   expect_equal(fit$bootstrap$B, 25L)
   # wrong target rejected
   expect_error(
     fit_bf(sub, prior = 0.7,
-           bootstrap = list(loss = bt_exp, exposure = bt_exp)),
+           bootstrap = list(loss = bt_exp, premium = bt_exp)),
     regexp = "target"
   )
 })

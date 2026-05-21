@@ -4,9 +4,9 @@
 \alias{.ed_param_var}
 \title{ED parameter variance for a single cohort}
 \usage{
-.ed_param_var(exposure_proj, g_var, last_obs)
+.ed_param_var(premium_proj, g_var, last_obs)
 }
 \description{
-Additive recursion: \verb{param_\{k+1\} = param_k + (exposure_k)^2 * Var(g_k)}.
+Additive recursion: \verb{param_\{k+1\} = param_k + (premium_k)^2 * Var(g_k)}.
 }
 \keyword{internal}

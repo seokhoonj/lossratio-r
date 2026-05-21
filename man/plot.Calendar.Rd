@@ -19,8 +19,8 @@
 
 \item{metric}{A single metric to plot. Must be one of:
 \code{"ratio"}, \code{"incr_ratio"},
-\code{"loss"}, \code{"incr_loss"}, \code{"exposure"}, \code{"incr_exposure"}, \code{"margin"}, \code{"incr_margin"},
-\code{"loss_share"}, \code{"incr_loss_share"}, \code{"exposure_share"}, or \code{"incr_exposure_share"}.}
+\code{"loss"}, \code{"incr_loss"}, \code{"premium"}, \code{"incr_premium"}, \code{"margin"}, \code{"incr_margin"},
+\code{"loss_share"}, \code{"incr_loss_share"}, \code{"premium_share"}, or \code{"incr_premium_share"}.}
 
 \item{amount_divisor}{Numeric scaling factor used only for y-axis labels of
 amount variables. Default \code{"auto"} (picks the divisor that produces
@@ -49,9 +49,9 @@ The selected metric is plotted over the calendar-style \code{calendar},
 or over the calendar development variable stored in \code{attr(x, "dev")}.
 
 Ratio metrics (\code{ratio}, \code{incr_ratio}) and proportion metrics
-(\code{loss_share}, \code{incr_loss_share}, \code{exposure_share}, \code{incr_exposure_share}) are
+(\code{loss_share}, \code{incr_loss_share}, \code{premium_share}, \code{incr_premium_share}) are
 plotted on the original scale and displayed as percentages via y-axis labels.
-Amount metrics (\code{loss}, \code{incr_loss}, \code{exposure}, \code{incr_exposure}, \code{margin},
+Amount metrics (\code{loss}, \code{incr_loss}, \code{premium}, \code{incr_premium}, \code{margin},
 \code{incr_margin}) are plotted on the original scale and displayed using y-axis
 labels scaled by \code{amount_divisor}.
 
@@ -62,9 +62,9 @@ The x-axis is the calendar variable stored in \code{attr(x, "calendar")}
 (a Date, formatted per the triangle's \code{grain}).
 
 The loss ratio is defined as:
-\deqn{ratio = loss / exposure}
+\deqn{ratio = loss / premium}
 
-where \code{exposure} denotes risk premium rather than written premium.
+where \code{premium} denotes risk premium rather than written premium.
 }
 \examples{
 \dontrun{
@@ -73,7 +73,7 @@ x <- as_calendar(
   groups   = "coverage",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 plot(x)

@@ -5,7 +5,7 @@ sub <- as_triangle(experience[coverage == "surgery"],
                    cohort   = "uy_m",
                    calendar = "cy_m",
                    loss     = "incr_loss",
-                   exposure = "incr_exposure")
+                   premium  = "incr_premium")
 
 
 test_that("fit_cc returns class 'CCFit'", {
@@ -52,7 +52,7 @@ test_that("fit_cc analytical works with multiple groups", {
                        cohort   = "uy_m",
                        calendar = "cy_m",
                        loss     = "incr_loss",
-                       exposure = "incr_exposure")
+                       premium  = "incr_premium")
   fit <- fit_cc(multi, type = "analytical")
   expect_equal(fit$ci_type, "analytical")
   expect_true(all(c("loss_total_se", "elr_cc_se") %in% names(fit$summary)))
@@ -81,7 +81,7 @@ test_that("fit_cc reserve is non-negative for non-fully-emerged cohorts", {
 
 test_that("fit_cc $full and $proj match the BFFit cell layout", {
   fit <- fit_cc(sub)
-  for (nm in c("loss_obs", "loss_proj", "exposure_proj",
+  for (nm in c("loss_obs", "loss_proj", "premium_proj",
                "is_observed", "incr_loss_proj")) {
     expect_true(nm %in% names(fit$full), info = paste("missing", nm))
   }
@@ -93,9 +93,9 @@ test_that("fit_cc $full and $proj match the BFFit cell layout", {
 test_that("fit_cc pooled ELR matches the Stanard 1985 closed form", {
   fit <- fit_cc(sub)
   # Reproduce the Cape Cod ELR directly from the underlying CL and
-  # exposure fits to make sure the formula is implemented as documented.
+  # premium fits to make sure the formula is implemented as documented.
   cl_fit  <- fit$cl_fit
-  exp_fit <- fit$exposure_fit
+  exp_fit <- fit$premium_fit
   by_cols <- c(fit$groups, "cohort")
 
   loss_latest <- cl_fit$full[is_observed == TRUE,
@@ -105,7 +105,7 @@ test_that("fit_cc pooled ELR matches the Stanard 1985 closed form", {
                               by = by_cols]
   q_dt <- loss_latest[loss_ult_cl, on = by_cols]
   q_dt[, q := L / L_ult]
-  exp_ult <- exp_fit$full[, .SD[.N, .(E = exposure_proj)],
+  exp_ult <- exp_fit$full[, .SD[.N, .(E = premium_proj)],
                           by = by_cols]
   q_dt <- exp_ult[q_dt, on = by_cols]
 
@@ -152,7 +152,7 @@ test_that("fit_cc $full schema intersects LossFit", {
 test_that("fit_cc supports multi-group $summary", {
   tri_mg <- as_triangle(experience, groups = "coverage",
                        cohort = "uy_m", calendar = "cy_m",
-                       loss = "incr_loss", exposure = "incr_exposure")
+                       loss = "incr_loss", premium = "incr_premium")
   fit <- fit_cc(tri_mg)
   expect_true("coverage" %in% names(fit$summary))
   expect_gte(length(unique(fit$summary$coverage)), 2L)
@@ -208,15 +208,15 @@ test_that("fit_cc accepts a pre-built bootstrap pair", {
                        target = "loss", B = 25, seed = 7,
                        keep_pseudo = TRUE)
   bt_exp <- bootstrap(sub, type = "parametric", method = "cl",
-                      target = "exposure", B = 25, seed = 7,
+                      target = "premium", B = 25, seed = 7,
                       keep_pseudo = TRUE)
   fit <- fit_cc(sub,
-                     bootstrap = list(loss = bt_loss, exposure = bt_exp))
+                     bootstrap = list(loss = bt_loss, premium = bt_exp))
   expect_equal(fit$ci_type, "bootstrap")
   expect_equal(fit$bootstrap$B, 25L)
   expect_error(
     fit_cc(sub,
-                bootstrap = list(loss = bt_exp, exposure = bt_exp)),
+                bootstrap = list(loss = bt_exp, premium = bt_exp)),
     regexp = "target"
   )
 })

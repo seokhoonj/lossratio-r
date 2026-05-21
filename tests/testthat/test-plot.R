@@ -1,15 +1,15 @@
 # Setup -- full pipeline objects for plot dispatch tests
 data(experience)
 exp  <- experience
-tri  <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+tri  <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
 cal  <- as_calendar(tri)
 ata  <- as_link(tri, loss = "loss")
 af   <- fit_ata(tri, loss = "loss")
-ed   <- as_link(tri, loss = "loss", exposure = "exposure")
-ef   <- fit_ed(tri, loss = "loss", exposure = "exposure")
+ed   <- as_link(tri, loss = "loss", premium = "premium")
+ef   <- fit_ed(tri, loss = "loss", premium = "premium")
 cl_m <- fit_cl(tri, loss = "loss", method = "mack")
 lr   <- fit_ratio(tri, method = "sa", bootstrap = FALSE)
-sub  <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+sub  <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
 reg  <- detect_regime(sub, window = 12, method = "e_divisive")
 
 is_plot <- function(x) inherits(x, "ggplot") || inherits(x, "gtable")
@@ -55,7 +55,7 @@ test_that("plot.CLFit dispatches (mack, both types)", {
 })
 
 test_that("plot.RatioFit dispatches across metrics and cell_types", {
-  for (m in c("ratio", "loss", "exposure")) {
+  for (m in c("ratio", "loss", "premium")) {
     for (ct in c("cumulative", "incremental")) {
       p <- suppressWarnings(plot(lr, metric = m, cell_type = ct,
                                  per_group = FALSE))

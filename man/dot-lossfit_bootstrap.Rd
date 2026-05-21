@@ -20,6 +20,6 @@ The CL and ED workers don't run bootstrap natively. The dispatcher
 calls this helper to map a \code{bootstrap()} summary onto the worker's
 analytical \verb{$full} schema -- same shape as the in-worker logic in
 \code{fit_sa()}. Premium stays at observed values (loss-only bootstrap;
-exposure-side uncertainty is layered by \code{fit_ratio()}).
+premium-side uncertainty is layered by \code{fit_ratio()}).
 }
 \keyword{internal}

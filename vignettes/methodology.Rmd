@@ -43,7 +43,7 @@ following long-term health characteristics are not directly captured:
   the *risk premium* portion alone.
 - **Levelled premium** — Non-renewable contracts charge a level
   premium computed at issue as the lifetime average. The *charged
-  premium* is not exposure; the *period risk premium*
+  premium* is not premium; the *period risk premium*
   (morbidity rate × sum insured × persistency) must be constructed
   externally before being passed in.
 - **Regime change** — Product redesigns, rate revisions, channel-mix
@@ -64,7 +64,7 @@ following P&C reserving thread:
 
 ```
 1967  Bühlmann credibility           experience rating formalised
-1970  Bühlmann-Straub                exposure-varying credibility
+1970  Bühlmann-Straub                premium-varying credibility
                                      (volume-weighted estimator)
 1972  Bornhuetter-Ferguson           prior + observed loss blending
 1984  Sherman                        chain ladder tail extrapolation
@@ -79,7 +79,7 @@ Two core ideas matter for long-term health:
 - **Chain ladder (Mack 1993)** — Markov multiplicative recursion on
   cumulative loss \(C_k\): \(C_{k+1} = f_k \cdot C_k\) where
   \(f_k = \sum_i C_{i,k+1} / \sum_i C_{i,k}\).
-- **Cape Cod / Bühlmann-Straub** — Loss anchored to exposure (volume).
+- **Cape Cod / Bühlmann-Straub** — Loss anchored to premium (volume).
   \(\widehat{ELR} = \sum_i L_i / \sum_i \pi_i\) yields a single ratio
   that drives ultimate estimation.
 
@@ -90,19 +90,19 @@ Both apply *partially* to long-term health, but both have cracks.
 | Domain issue | Chain ladder | Cape Cod |
 |---|---|---|
 | Denominator effect / inertia | Early-dev \(f_k\) over-volatile (small \(C_k\)) | Cohort-level ELR variation ignored |
-| Levelled premium | Loss-only avoids it (but weak against incidence shifts) | Flat \(\pi\) absorbs developing exposure |
+| Levelled premium | Loss-only avoids it (but weak against incidence shifts) | Flat \(\pi\) absorbs developing premium |
 | Recurrent claims | Works (freq × sev decoupled) | Works (volume measure only) |
 | Developing risk premium | Not relevant | *Single \(\pi\)* assumption breaks |
 | Cohort-level regime change | Violates Mack's no-calendar-year-effect | Cohort heterogeneity averaged out |
 
 → Chain ladder is weak early, Cape Cod cannot track developing
-exposure. Each paradigm is incomplete on its own.
+premium. Each paradigm is incomplete on its own.
 
 ## Six adaptations in lossratio — each maps to a domain issue
 
 | # | Adaptation | Domain issue it addresses |
 |---|---|---|
-| (a) | **2D exposure triangle** — extend Cape Cod's single \(\pi\) to a cohort × dev triangle | Developing risk premium |
+| (a) | **2D premium triangle** — extend Cape Cod's single \(\pi\) to a cohort × dev triangle | Developing risk premium |
 | (b) | **per-link \(g_k\)** — refine Cape Cod's cohort-level ELR to per-link intensity | Denominator effect / inertia (link-level variation) |
 | (c) | **Stage-adaptive (SA) hybrid** — substitute exposure-driven (ED) for chain ladder in the early-dev unstable region; switch to chain ladder after maturity | Early-dev ATA volatility |
 | (d) | **Regime detection** — automatic detection of structural break points on the cohort axis, with filter | Rate / underwriting changes |
@@ -113,18 +113,18 @@ Each adaptation is a *targeted reuse* of a P&C method for a specific
 long-term health issue — not a new paradigm built from scratch, but an
 honest transplant + adaptation of the existing literature.
 
-## Core framework — `loss / exposure / ratio`
+## Core framework — `loss / premium / ratio`
 
 All estimation rests on three observable quantities:
 
 | Quantity | Meaning | Triangle column |
 |---|---|---|
 | **loss** | Cumulative loss | `loss`, `incr_loss` |
-| **exposure** | Risk-bearing volume (risk premium for long-term health) | `exposure`, `incr_exposure` |
-| **ratio** | Loss ratio (cumulative loss / cumulative exposure) | `ratio`, `incr_ratio` |
+| **premium** | Risk-bearing volume (risk premium for long-term health) | `premium`, `incr_premium` |
+| **ratio** | Loss ratio (cumulative loss / cumulative premium) | `ratio`, `incr_ratio` |
 
 All three are *stochastic observables developing over the cohort × dev
-grid*. Exposure is not a fixed underwriting volume; it is a developing
+grid*. Premium is not a fixed underwriting volume; it is a developing
 quantity driven by morbidity × sum insured × persistency — the *volume
 measure* of Mack (1993), the *natural weight* of Bühlmann-Straub (1970).
 
@@ -164,7 +164,7 @@ Long-term health's combination of denominator effect + early-dev ATA
 volatility demands an *unconditional safe baseline*:
 
 - **ED operates single-pass** — no maturity detection dependency.
-- **ED anchors on exposure** — the small \(C_k\) of early dev does not
+- **ED anchors on premium** — the small \(C_k\) of early dev does not
   inflate the estimate (no \(C_k\) in denominator).
 - **SA is two-pass** (maturity detection → projection) — more refined
   but with infrastructure cost.
@@ -216,8 +216,8 @@ The mathematical structure of the framework generalises naturally to
 several adjacent areas:
 
 - **Frequency-severity decomposition** — `fit_ed(loss = "claim_count",
-  exposure = "insureds")` for frequency,
-  `fit_ed(loss = "loss", exposure = "claim_count")` for severity. The
+  premium = "insureds")` for frequency,
+  `fit_ed(loss = "loss", premium = "claim_count")` for severity. The
   framework works through slot reinterpretation alone.
 - **Lifetime / cohort analysis** — full life-cycle loss-ratio tracking
   per issue-year cohort. A natural extension of the existing

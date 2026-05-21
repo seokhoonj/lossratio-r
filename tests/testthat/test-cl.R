@@ -1,7 +1,7 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
 
 test_that("fit_cl method = 'mack' returns class 'CLFit' with expected structure", {
   cl <- fit_cl(tri, loss = "loss", method = "mack")

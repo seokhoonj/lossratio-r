@@ -11,7 +11,7 @@ as_triangle(
   calendar = NULL,
   dev = NULL,
   loss,
-  exposure,
+  premium,
   grain = "auto",
   cell_type = c("incremental", "cumulative"),
   fill_gaps = FALSE
@@ -19,14 +19,14 @@ as_triangle(
 }
 \arguments{
 \item{df}{A data.frame containing experience data with per-period loss and
-exposure columns plus \code{cohort} and \code{calendar} Date columns
+premium columns plus \code{cohort} and \code{calendar} Date columns
 (or any input that the internal Date coercion accepts: Date, POSIXt,
 integer \code{yyyy} / \code{yyyymm} / \code{yyyymmdd}, ISO string).}
 
 \item{groups}{Column(s) used for grouping (e.g., product, gender).}
 
 \item{cohort}{Single column (raw name) defining the underwriting /
-exposure period start (e.g., \code{"uy_m"}).}
+premium period start (e.g., \code{"uy_m"}).}
 
 \item{calendar}{Single column (raw name) defining the calendar period of
 the observation (e.g., \code{"cy_m"}). Optional -- supply either \code{calendar}
@@ -44,8 +44,8 @@ calendar-diagonal logic uses cohort + dev). When both are given,
 \item{loss}{Single character; per-period loss column in \code{df}
 (raw name, e.g., \code{"incr_loss"}).}
 
-\item{exposure}{Single character; per-period exposure column in \code{df}
-(raw name, e.g., \code{"incr_exposure"}). Exposure measure used as
+\item{premium}{Single character; per-period premium column in \code{df}
+(raw name, e.g., \code{"incr_premium"}). Premium measure used as
 denominator for loss ratio calculations. For long-term health
 insurance applications, risk premium is commonly used.}
 
@@ -55,7 +55,7 @@ Explicit values must be at least as coarse as the input grain;
 the input is binned (floored) to that grain before aggregation.}
 
 \item{cell_type}{One of \code{"incremental"} (default) or \code{"cumulative"}.
-Whether \code{loss} and \code{exposure} in \code{df} already hold per-period
+Whether \code{loss} and \code{premium} in \code{df} already hold per-period
 (incremental) values or cumulative-within-cohort values. The
 internal triangle is always built on the incremental representation;
 \code{"cumulative"} inputs are differenced first.}
@@ -72,20 +72,20 @@ derived columns:
 \describe{
 \item{n_cohorts}{Number of distinct cohorts observed}
 \item{loss, incr_loss}{Cumulative and per-period loss}
-\item{exposure, incr_exposure}{Cumulative and per-period exposure}
+\item{premium, incr_premium}{Cumulative and per-period premium}
 \item{ratio, incr_ratio}{Cumulative and per-period loss ratio}
 \item{margin, incr_margin}{Cumulative and per-period margin
-(\code{exposure - loss})}
+(\code{premium - loss})}
 \item{profit, incr_profit}{Profit indicator (factor \code{"pos"} / \code{"neg"})}
 \item{loss_share, incr_loss_share}{Cumulative and per-period proportions
 of loss within each \verb{(cohort, dev)} cell}
-\item{exposure_share, incr_exposure_share}{Cumulative and per-period
-proportions of exposure within each \verb{(cohort, dev)} cell}
+\item{premium_share, incr_premium_share}{Cumulative and per-period
+proportions of premium within each \verb{(cohort, dev)} cell}
 }
 
 Attributes set on the returned object: \code{groups}, \code{cohort},
 \code{calendar}, \code{grain}, \code{dev} (= \code{"dev_<lower(grain)>"}, e.g.
-\code{"dev_m"}), \code{loss}, \code{exposure}, \code{longer}.
+\code{"dev_m"}), \code{loss}, \code{premium}, \code{longer}.
 }
 \description{
 Validate raw experience data, aggregate it onto a \verb{(group, cohort, dev)} grid, and assign the \code{Triangle} S3 class so the downstream
@@ -100,7 +100,7 @@ Three steps happen inside this single call:
 cleanly, the grain is consistent. Hard errors on schema issues
 so downstream code never receives malformed input.
 \item \strong{Standardise + aggregate} -- rename to package-canonical
-column names (\code{cohort}, \code{calendar}, \code{dev}, \code{loss}, \code{exposure},
+column names (\code{cohort}, \code{calendar}, \code{dev}, \code{loss}, \code{premium},
 ...), auto-detect grain (\code{M} / \code{Q} / \code{H} / \code{Y}) from \code{cohort}
 spacing, derive \code{dev} from \verb{(cohort, calendar)}, aggregate to
 \verb{(group, cohort, dev)}, and enrich with cumulative / share /
@@ -127,22 +127,22 @@ The result contains:
 \item per-period and cumulative proportions,
 \item per-period and cumulative margin,
 \item profit indicators,
-\item per-period loss ratio (\code{incr_ratio = incr_loss / incr_exposure}) and
-cumulative loss ratio (\code{ratio = loss / exposure}).
+\item per-period loss ratio (\code{incr_ratio = incr_loss / incr_premium}) and
+cumulative loss ratio (\code{ratio = loss / premium}).
 }
 
 The cumulative loss ratio is defined as:
-\deqn{ratio = loss / exposure}
+\deqn{ratio = loss / premium}
 
 For long-term health insurance applications, risk premium is commonly
-used as the \code{exposure} measure.
+used as the \code{premium} measure.
 
 Proportion variables are computed within each \verb{(cohort, dev)} cell:
 \itemize{
 \item \code{incr_loss_share     = incr_loss     / sum(incr_loss)}
-\item \code{incr_exposure_share = incr_exposure / sum(incr_exposure)}
+\item \code{incr_premium_share = incr_premium / sum(incr_premium)}
 \item \code{loss_share          = loss          / sum(loss)}
-\item \code{exposure_share      = exposure      / sum(exposure)}
+\item \code{premium_share      = premium      / sum(premium)}
 }
 
 Therefore, for a fixed \verb{(cohort, dev)} cell, the proportions
@@ -157,7 +157,7 @@ df <- data.frame(
   uy_m          = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
   cy_m          = rep(as.Date(c("2023-01-01", "2023-02-01")), 6),
   incr_loss     = runif(12, 80, 120),
-  incr_exposure = runif(12, 90, 110)
+  incr_premium = runif(12, 90, 110)
 )
 
 # auto-detected monthly grain
@@ -167,7 +167,7 @@ res_m <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 # explicit quarterly view (re-bins monthly input to quarterly)
@@ -177,7 +177,7 @@ res_q <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure",
+  premium = "incr_premium",
   grain    = "Q"
 )
 

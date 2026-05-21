@@ -28,10 +28,10 @@ fit_cl(
 retained for future extensibility.}
 
 \item{loss}{A single cumulative loss variable (column to project).
-Typical choices are \code{"loss"}, \code{"exposure"}, or \code{"ratio"}.}
+Typical choices are \code{"loss"}, \code{"premium"}, or \code{"ratio"}.}
 
 \item{weight}{An optional column name passed to \code{\link[=as_link]{as_link()}} as
-the WLS weight variable. Typically \code{"exposure"} when \code{loss = "ratio"}.
+the WLS weight variable. Typically \code{"premium"} when \code{loss = "ratio"}.
 Default is \code{NULL}.}
 
 \item{alpha}{Numeric scalar controlling the variance structure in
@@ -129,7 +129,7 @@ through \code{\link[=as_link]{as_link()}} and \code{\link[=fit_ata]{fit_ata()}},
 point forecast follows the standard recursion, and prediction
 uncertainty is decomposed into process variance and parameter variance.
 
-When \code{weight} is supplied (e.g. \code{"exposure"}), age-to-age factors and
+When \code{weight} is supplied (e.g. \code{"premium"}), age-to-age factors and
 their variance are estimated using the supplied WLS weights.
 }
 \examples{
@@ -141,7 +141,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 # Mack chain ladder with process / parameter standard errors
@@ -149,8 +149,8 @@ cl_mack <- fit_cl(tri, loss = "loss", method = "mack")
 summary(cl_mack)
 plot(cl_mack)
 
-# WLS factors for ratio (loss ratio) using exposure as the weight
-cl_ratio <- fit_cl(tri, loss = "ratio", weight = "exposure")
+# WLS factors for ratio (loss ratio) using premium as the weight
+cl_ratio <- fit_cl(tri, loss = "ratio", weight = "premium")
 }
 
 }

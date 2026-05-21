@@ -4,9 +4,9 @@
 \alias{.ed_proc_var}
 \title{ED process variance for a single cohort}
 \usage{
-.ed_proc_var(exposure_proj, g_sigma2, last_obs, alpha = 1)
+.ed_proc_var(premium_proj, g_sigma2, last_obs, alpha = 1)
 }
 \description{
-Additive recursion: \verb{proc_\{k+1\} = proc_k + sigma^2_\{g,k\} * (exposure_k)^alpha}.
+Additive recursion: \verb{proc_\{k+1\} = proc_k + sigma^2_\{g,k\} * (premium_k)^alpha}.
 }
 \keyword{internal}

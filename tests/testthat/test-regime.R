@@ -1,7 +1,7 @@
 # Setup -- use a single-group subset to keep test fast
 data(experience)
 exp <- experience
-sub <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+sub <- as_triangle(exp[coverage == "surgery"], groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
 
 test_that("detect_regime returns class 'Regime' (e_divisive default)", {
   r <- detect_regime(sub, window = 12, method = "e_divisive")
@@ -88,7 +88,7 @@ test_that("print methods don't error", {
 
 # Multi-group regime detection --------------------------------------------
 
-tri_all <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+tri_all <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
 
 test_that("multi-group detect_regime returns class 'Regime'", {
   r <- detect_regime(tri_all, by = "coverage", window = 12, method = "e_divisive")
@@ -183,7 +183,7 @@ test_that("detect_regime warns and skips groups that fail individually", {
   # others remain valid. Drop most of one coverage's cohorts.
   big_K <- 12L
   exp_part <- experience[!(coverage == "ci" & uy_m > as.Date("2023-03-01"))]
-  tri_part <- as_triangle(exp_part, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+  tri_part <- as_triangle(exp_part, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
   expect_warning(
     r_part <- detect_regime(tri_part, by = "coverage", window = big_K,
                             method = "e_divisive"),
@@ -212,7 +212,7 @@ test_that("by = character(0) forces pooled detection on multi-group Triangle", {
   tri_one <- as_triangle(experience[coverage == "surgery"],
                             groups = "coverage",
                             cohort = "uy_m", calendar = "cy_m",
-                            loss = "incr_loss", exposure = "incr_exposure")
+                            loss = "incr_loss", premium = "incr_premium")
   r_pooled <- detect_regime(tri_one, by = character(0) , window = 6L,
                             method = "e_divisive")
   expect_s3_class(r_pooled, "Regime")
@@ -253,7 +253,7 @@ test_that("backtest passes multi-group Regime through to dispatcher", {
   r <- detect_regime(tri_all, by = "coverage", window = 6L,
                      method = "e_divisive")
   bt <- backtest(tri_all, holdout = 6L, target = "ratio",
-                loss_method = "sa", exposure_method = "ed",
+                loss_method = "sa", premium_method = "ed",
                 loss_regime = r, bootstrap = FALSE)
   expect_s3_class(bt, "Backtest")
   expect_true(nrow(bt$ae_err) > 0L)

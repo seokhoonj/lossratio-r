@@ -4,12 +4,12 @@
 \alias{.sa_proj}
 \title{Stage-adaptive (SA) point projection for a single cohort}
 \usage{
-.sa_proj(loss_obs, exposure_proj, g_sel, f_sel, maturity_from)
+.sa_proj(loss_obs, premium_proj, g_sel, f_sel, maturity_from)
 }
 \arguments{
 \item{loss_obs}{Numeric vector of observed cumulative loss.}
 
-\item{exposure_proj}{Numeric vector of projected cumulative exposure.}
+\item{premium_proj}{Numeric vector of projected cumulative premium.}
 
 \item{g_sel}{Numeric vector of ED intensities.}
 

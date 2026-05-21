@@ -6,9 +6,9 @@
 \usage{
 .compute_ratio_se(
   loss,
-  exposure,
+  premium,
   loss_se,
-  exposure_se = NULL,
+  premium_se = NULL,
   method = c("fixed", "delta"),
   rho = 0.95
 )
@@ -16,15 +16,15 @@
 \arguments{
 \item{loss}{Ultimate loss vector (\code{L}).}
 
-\item{exposure}{Ultimate exposure vector (\code{E}).}
+\item{premium}{Ultimate premium vector (\code{E}).}
 
 \item{loss_se}{\code{SE(L)}.}
 
-\item{exposure_se}{\code{SE(P)}. Unused for \code{"fixed"}; may be \code{NULL}.}
+\item{premium_se}{\code{SE(P)}. Unused for \code{"fixed"}; may be \code{NULL}.}
 
 \item{method}{One of \code{"fixed"} (default) or \code{"delta"}.}
 
-\item{rho}{Loss-exposure correlation in \verb{(-1, 1)}. Used only for
+\item{rho}{Loss-premium correlation in \verb{(-1, 1)}. Used only for
 \code{"delta"}. Default \code{0.95}.}
 }
 \value{
@@ -37,8 +37,8 @@ Ratio-specific internal helper. Two variants:
 \item{\code{"fixed"} (default)}{Premium treated as fixed (non-random).
 \eqn{\mathrm{SE}(L/P) = \mathrm{SE}(L) / P}. Strictly a degenerate
 case of the delta method with \code{Var(P) = 0} and \code{Cov(L,P) = 0}.}
-\item{\code{"delta"}}{First-order Taylor (delta method) including exposure
-uncertainty and loss-exposure correlation \code{rho}:
+\item{\code{"delta"}}{First-order Taylor (delta method) including premium
+uncertainty and loss-premium correlation \code{rho}:
 \eqn{\mathrm{Var}(L/P) \approx (\mathrm{SE}(L)/P)^2 +
       (L \cdot \mathrm{SE}(P) / P^2)^2 -
       2 \rho L \mathrm{SE}(L) \mathrm{SE}(P) / P^3}.

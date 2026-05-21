@@ -16,8 +16,8 @@
 #'     at its latest observed development period.
 #'   \item \eqn{q_i = L_{obs, i} / \hat L_{ult, i}^{CL}}: the expected
 #'     emerged fraction (inverse of cumulative LDF).
-#'   \item \eqn{E_i^{ult}}: cohort \eqn{i}'s ultimate exposure
-#'     (projected via chain ladder on exposure).
+#'   \item \eqn{E_i^{ult}}: cohort \eqn{i}'s ultimate premium
+#'     (projected via chain ladder on premium).
 #' }
 #'
 #' Given \eqn{\widehat{\mathrm{ELR}}^{CC}}, the per-cohort ultimate is
@@ -40,8 +40,8 @@
 #'
 #' @param x A `Triangle` object.
 #' @param loss A single cumulative loss variable. Default `"loss"`.
-#' @param exposure A single cumulative exposure variable. Default
-#'   `"exposure"`.
+#' @param premium A single cumulative premium variable. Default
+#'   `"premium"`.
 #' @param bootstrap Bootstrap configuration. Same forms as
 #'   [fit_bf()]'s `bootstrap` arg -- see there for the full description.
 #' @param B Integer number of bootstrap replicates. Used only when
@@ -59,13 +59,13 @@
 #'   `"cell"` (default) or `"link"`.
 #' @param process One of `"gamma"` (default), `"od_pois"`, `"normal"`.
 #' @param alpha Numeric scalar passed through to the inner [fit_cl()] /
-#'   [fit_exposure()] calls. Default `1`.
+#'   [fit_premium()] calls. Default `1`.
 #' @param sigma_method Sigma extrapolation method forwarded to
-#'   [fit_cl()] / [fit_exposure()]. Default `"locf"`.
+#'   [fit_cl()] / [fit_premium()]. Default `"locf"`.
 #' @param recent Optional positive integer; calendar-diagonal filter
 #'   forwarded to the inner fits. Default `NULL`.
 #' @param regime Optional regime specification forwarded to the inner
-#'   loss and exposure fits. See [fit_cl()] for the four-type dispatch.
+#'   loss and premium fits. See [fit_cl()] for the four-type dispatch.
 #' @param credibility Optional credibility specification. `NULL`
 #'   (default) gives the classical CC blend weighted by the emergence
 #'   fraction `q`. A list `list(method = "bs", K = NULL)` switches to a
@@ -83,7 +83,7 @@
 #'     \item{`call`}{The matched call.}
 #'     \item{`data`}{The input `Triangle`.}
 #'     \item{`method`}{`"cc"`.}
-#'     \item{`groups`, `cohort`, `dev`, `loss`, `exposure`}{Metadata.}
+#'     \item{`groups`, `cohort`, `dev`, `loss`, `premium`}{Metadata.}
 #'     \item{`full`, `proj`, `summary`}{Same shape as `BFFit`. With
 #'       bootstrap enabled, `$full` carries
 #'       `loss_total_se`/`loss_total_cv`/`loss_ci_lo`/`loss_ci_hi` on
@@ -96,7 +96,7 @@
 #'     \item{`credibility`}{`NULL` for the classical blend, or a list
 #'       `list(method, weights)` with the Buehlmann-Straub `Z` / `K`
 #'       per cohort.}
-#'     \item{`cl_fit`, `exposure_fit`}{Inner CL / Exposure fits.}
+#'     \item{`cl_fit`, `premium_fit`}{Inner CL / Premium fits.}
 #'     \item{`bootstrap`}{When `bootstrap` is enabled, a
 #'       `CCBootstrap` helper holding both Triangle-level
 #'       `BootstrapTriangle` objects, the per-replicate ultimate
@@ -109,7 +109,7 @@
 #'       columns `elr_cc_se` / `elr_cc_cv` / `elr_cc_ci_lo` /
 #'       `elr_cc_ci_hi`.}
 #'     \item{`alpha`, `sigma_method`, `recent`, `regime`}{Inputs
-#'       forwarded to the inner [fit_cl()] / [fit_exposure()] calls.}
+#'       forwarded to the inner [fit_cl()] / [fit_premium()] calls.}
 #'   }
 #'
 #' @references
@@ -121,7 +121,7 @@
 #' *Proceedings of the Casualty Actuarial Society*, 59, 181-195.
 #'
 #' @seealso [fit_bf()] (Bornhuetter-Ferguson with user-supplied prior),
-#'   [fit_cl()], [fit_exposure()]
+#'   [fit_cl()], [fit_premium()]
 #'
 #' @examples
 #' \dontrun{
@@ -132,7 +132,7 @@
 #'   cohort   = "uy_m",
 #'   calendar = "cy_m",
 #'   loss     = "incr_loss",
-#'   exposure = "incr_exposure"
+#'   premium = "incr_premium"
 #' )
 #' cc <- fit_cc(tri)
 #' summary(cc)
@@ -142,7 +142,7 @@
 #' @export
 fit_cc <- function(x,
                    loss         = "loss",
-                   exposure     = "exposure",
+                   premium      = "premium",
                    bootstrap    = NULL,
                    B            = 999L,
                    seed         = NULL,
@@ -160,10 +160,10 @@ fit_cc <- function(x,
                    ...) {
 
   # data.table NSE bindings
-  cohort <- elr <- elr_cc <- loss_obs <- loss_proj <- exposure_proj <- NULL
-  is_observed <- q <- loss_latest <- exposure_ult <- NULL
+  cohort <- elr <- elr_cc <- loss_obs <- loss_proj <- premium_proj <- NULL
+  is_observed <- q <- loss_latest <- premium_ult <- NULL
   elr_cc_b <- elr_cc_se <- NULL
-  loss_proc_se <- loss_param_se <- loss_total_se <- exposure_total_se <- NULL
+  loss_proc_se <- loss_param_se <- loss_total_se <- premium_total_se <- NULL
   loss_ult_cl <- var_q <- var_eult <- var_elr <- elr_cc_var <- NULL
   lr <- s2 <- Z <- loss_ult_cc <- NULL
 
@@ -189,24 +189,24 @@ fit_cc <- function(x,
   grp <- .resolve_groups(x)
   by_cols <- c(grp, "cohort")
 
-  # 1) CL on loss for q_i + ultimate exposure -----------------------------
+  # 1) CL on loss for q_i + ultimate premium -----------------------------
   cl_fit <- fit_cl(x, loss = loss,
                    alpha        = alpha,
                    sigma_method = sigma_method,
                    recent       = recent,
                    regime       = regime)
-  # CL on exposure for ultimate exposure
-  exposure_fit <- .build_internal_exposure_fit(
+  # CL on premium for ultimate premium
+  premium_fit <- .build_internal_premium_fit(
     x, alpha = alpha, sigma_method = sigma_method,
     recent = recent, regime = regime, groups = grp)
 
-  # 2) per-cohort q_i + ultimate exposure ---------------------------------
-  dt <- .compute_q_table(cl_fit$full, exposure_fit$full, by_cols)
+  # 2) per-cohort q_i + ultimate premium ---------------------------------
+  dt <- .compute_q_table(cl_fit$full, premium_fit$full, by_cols)
 
   # 3) Cape Cod pooled ELR within group -----------------------------------
   by_grp <- .by_grp(grp)
   elr_pool <- dt[, .(elr_cc = sum(loss_latest, na.rm = TRUE) /
-                          sum(exposure_ult * q, na.rm = TRUE)),
+                          sum(premium_ult * q, na.rm = TRUE)),
                     by = by_grp]
   if (length(grp) == 0L) {
     # avoid empty-key join failure: append elr_cc column directly
@@ -220,8 +220,8 @@ fit_cc <- function(x,
                                      loss_param_se = loss_param_se,
                                      loss_total_se = loss_total_se)],
                          by = by_cols]
-  exp_se  <- exposure_fit$full[, .SD[.N,
-                .(exposure_total_se = exposure_total_se)],
+  exp_se  <- premium_fit$full[, .SD[.N,
+                .(premium_total_se = premium_total_se)],
                 by = by_cols]
 
   # 4) BF formula with pooled ELR -----------------------------------------
@@ -231,35 +231,35 @@ fit_cc <- function(x,
   dt[, elr := elr_cc]
   if (is.null(credibility)) {
     cred_tbl <- NULL
-    dt[, loss_ult_cc := loss_latest + (1 - q) * elr_cc * exposure_ult]
+    dt[, loss_ult_cc := loss_latest + (1 - q) * elr_cc * premium_ult]
   } else {
     cred_in <- merge(dt, loss_se, by = by_cols, sort = FALSE)
     cred_in[, ("lr") := data.table::fifelse(
-        is.finite(exposure_ult) & exposure_ult > 0,
-        loss_ult_cl / exposure_ult, NA_real_)]
+        is.finite(premium_ult) & premium_ult > 0,
+        loss_ult_cl / premium_ult, NA_real_)]
     cred_in[, ("s2") := data.table::fifelse(
-        is.finite(exposure_ult) & exposure_ult > 0,
-        loss_total_se^2 / exposure_ult^2, NA_real_)]
+        is.finite(premium_ult) & premium_ult > 0,
+        loss_total_se^2 / premium_ult^2, NA_real_)]
     cred_tbl <- .credibility_bs(cred_in, groups = grp, K = credibility$K)
     dt <- merge(dt, cred_tbl[, c(by_cols, "Z", "K"), with = FALSE],
                 by = by_cols, sort = FALSE)
     dt[, loss_ult_cc := Z * loss_ult_cl +
-          (1 - Z) * elr_cc * exposure_ult]
+          (1 - Z) * elr_cc * premium_ult]
   }
   dt[, reserve := loss_ult_cc - loss_latest]
 
   # 5) cell-level full grid (BF cell pattern, see fit_bf). Base = CL$full
-  #    plus exposure columns merged from ExposureFit$full.
+  #    plus premium columns merged from PremiumFit$full.
   full <- .copy_dt(cl_fit$full)
   exp_cols <- intersect(
-    c("exposure_obs", "exposure_proj", "incr_exposure_proj"),
-    names(exposure_fit$full)
+    c("premium_obs", "premium_proj", "incr_premium_proj"),
+    names(premium_fit$full)
   )
-  full <- exposure_fit$full[, c(by_cols, "dev", exp_cols), with = FALSE
+  full <- premium_fit$full[, c(by_cols, "dev", exp_cols), with = FALSE
                             ][full, on = c(by_cols, "dev")]
 
   full <- dt[, c(by_cols, "loss_ult_cc", "q", "elr_cc",
-                   "exposure_ult", "loss_latest"),
+                   "premium_ult", "loss_latest"),
                with = FALSE][full, on = by_cols]
 
   full[, ("loss_proj_cc") := {
@@ -282,17 +282,17 @@ fit_cc <- function(x,
   full[, ("incr_loss_proj") := loss_proj -
          data.table::shift(loss_proj, 1L, fill = 0),
        by = by_cols]
-  full[, ("incr_exposure_proj") := exposure_proj -
-         data.table::shift(exposure_proj, 1L, fill = 0),
+  full[, ("incr_premium_proj") := premium_proj -
+         data.table::shift(premium_proj, 1L, fill = 0),
        by = by_cols]
 
-  full[, c("loss_ult_cc", "q", "elr_cc", "exposure_ult",
+  full[, c("loss_ult_cc", "q", "elr_cc", "premium_ult",
            "loss_latest", "loss_proj_cl") := NULL]
 
   # 6) proj: NA out observed cells ----------------------------------------
   proj <- data.table::copy(full)
   proj_cols <- c("loss_proj", "incr_loss_proj",
-                 "exposure_proj", "incr_exposure_proj")
+                 "premium_proj", "incr_premium_proj")
   proj_cols <- intersect(proj_cols, names(proj))
   proj[is_observed == TRUE, (proj_cols) := NA_real_]
 
@@ -335,8 +335,8 @@ fit_cc <- function(x,
     summ <- cc_boot$summary
     proj       <- data.table::copy(full)
     proj_cols  <- intersect(
-      c("loss_proj", "incr_loss_proj", "exposure_proj",
-        "incr_exposure_proj", "loss_total_se", "loss_total_cv",
+      c("loss_proj", "incr_loss_proj", "premium_proj",
+        "incr_premium_proj", "loss_total_se", "loss_total_cv",
         "loss_ci_lo", "loss_ci_hi"),
       names(proj))
     proj[is_observed == TRUE, (proj_cols) := NA_real_]
@@ -381,8 +381,8 @@ fit_cc <- function(x,
     # the delta method on elr_cc = sum(loss_latest) / sum(E_ult * q).
     ana <- merge(dt, loss_se, by = by_cols, sort = FALSE)
     ana <- merge(ana, exp_se, by = by_cols, sort = FALSE)
-    ana[, var_eult := data.table::fifelse(is.finite(exposure_total_se),
-                                          exposure_total_se^2, 0)]
+    ana[, var_eult := data.table::fifelse(is.finite(premium_total_se),
+                                          premium_total_se^2, 0)]
     ana[, var_q := data.table::fifelse(
           is.finite(loss_ult_cl) & loss_ult_cl > 0,
           (q^2 / loss_ult_cl^2) * loss_param_se^2, 0)]
@@ -391,8 +391,8 @@ fit_cc <- function(x,
     # (observed, fixed) and D = sum(E_ult * q); delta method on 1 / D.
     elr_var <- ana[, {
         N  <- sum(loss_latest,      na.rm = TRUE)
-        D  <- sum(exposure_ult * q, na.rm = TRUE)
-        vD <- sum(q^2 * var_eult + exposure_ult^2 * var_q +
+        D  <- sum(premium_ult * q, na.rm = TRUE)
+        vD <- sum(q^2 * var_eult + premium_ult^2 * var_q +
                   var_eult * var_q, na.rm = TRUE)
         .(elr_cc_var = if (is.finite(D) && D > 0)
                          N^2 / D^4 * vD else 0)
@@ -448,7 +448,7 @@ fit_cc <- function(x,
     cohort       = attr(x, "cohort"),
     dev          = attr(x, "dev"),
     loss         = loss,
-    exposure     = exposure,
+    premium      = premium,
     full         = full,
     proj         = proj,
     summary      = summ,
@@ -458,7 +458,7 @@ fit_cc <- function(x,
       list(method = "bs",
            weights = cred_tbl[, c(by_cols, "Z", "K"), with = FALSE]),
     cl_fit       = cl_fit,
-    exposure_fit = exposure_fit,
+    premium_fit  = premium_fit,
     bootstrap    = bootstrap_obj,
     ci_type      = ci_type,
     alpha        = alpha,
@@ -483,7 +483,7 @@ print.CCFit <- function(x, ...) {
   cat("<CCFit>\n")
   cat("method        :", x$method,        "\n")
   cat("loss          :", x$loss,          "\n")
-  cat("exposure      :", x$exposure,      "\n")
+  cat("premium       :", x$premium,      "\n")
   cat("alpha         :", x$alpha,         "\n")
   cat("sigma_method  :", x$sigma_method,  "\n")
   cat("recent        :",

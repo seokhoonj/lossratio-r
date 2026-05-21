@@ -12,10 +12,10 @@ directly on the Triangle:
 \describe{
 \item{\code{loss_ata}}{Loss age-to-age factor -- \code{loss[k+1] / loss[k]} per
 (group, cohort). Captures \emph{multiplicative} development speed.}
-\item{\code{exposure_ata}}{Exposure age-to-age factor -- same form on exposure.
-Captures exposure \emph{recognition speed}.}
+\item{\code{premium_ata}}{Premium age-to-age factor -- same form on premium.
+Captures premium \emph{recognition speed}.}
 \item{\code{loss_ed}}{Loss intensity (ED model's $g_k$) --
-\code{(loss[k] - loss[k-1]) / exposure[k-1]} per (group, cohort).
+\code{(loss[k] - loss[k-1]) / premium[k-1]} per (group, cohort).
 \emph{Additive}, exposure-anchored.}
 }
 

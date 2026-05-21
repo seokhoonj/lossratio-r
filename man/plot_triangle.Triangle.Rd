@@ -31,14 +31,14 @@ via \code{...}. See \code{vignette("regime-change-filter")} for details.}
 
 \item{metric}{A single metric to plot. Must be one of:
 \code{"ratio"}, \code{"incr_ratio"},
-\code{"loss"}, \code{"incr_loss"}, \code{"exposure"}, \code{"incr_exposure"}, \code{"margin"}, \code{"incr_margin"},
-\code{"loss_share"}, \code{"incr_loss_share"}, \code{"exposure_share"}, or \code{"incr_exposure_share"}.}
+\code{"loss"}, \code{"incr_loss"}, \code{"premium"}, \code{"incr_premium"}, \code{"margin"}, \code{"incr_margin"},
+\code{"loss_share"}, \code{"incr_loss_share"}, \code{"premium_share"}, or \code{"incr_premium_share"}.}
 
 \item{label_style}{Label display style. One of:
 \describe{
 \item{"value"}{Show only the selected metric.}
 \item{"detail"}{For \code{ratio} / \code{incr_ratio}, show the ratio in percent and, on the
-next line, the associated loss / exposure amounts. For amount and
+next line, the associated loss / premium amounts. For amount and
 proportion metrics, this falls back to \code{"value"}.}
 }}
 
@@ -49,7 +49,7 @@ fit). Other label appearance fields (family, color, hjust, ...)
 fall back to the standard label defaults.}
 
 \item{amount_divisor}{Numeric scaling factor applied to amount variables
-(e.g., \code{loss}, \code{incr_loss}, \code{exposure}, \code{incr_exposure}, \code{margin}, \code{incr_margin}) before plotting.
+(e.g., \code{loss}, \code{incr_loss}, \code{premium}, \code{incr_premium}, \code{margin}, \code{incr_margin}) before plotting.
 Default \code{"auto"} picks the largest divisor in
 \verb{\{1, 1e3, 1e6, 1e7, 1e8, 1e9\}} such that the median displayed
 value is still at least \code{1}, minimising label digit count.}
@@ -71,16 +71,16 @@ period and dev dimensions, and each cell displays the selected metric.
 For ratio metrics (\code{ratio}, \code{incr_ratio}), labels can show either the ratio alone or
 the ratio together with the associated loss / risk premium amounts.
 
-For amount metrics (\code{loss}, \code{incr_loss}, \code{exposure}, \code{incr_exposure}, \code{margin}, \code{incr_margin}),
+For amount metrics (\code{loss}, \code{incr_loss}, \code{premium}, \code{incr_premium}, \code{margin}, \code{incr_margin}),
 labels show the selected amount only.
 
-For proportion metrics (\code{loss_share}, \code{incr_loss_share}, \code{exposure_share}, \code{incr_exposure_share}),
+For proportion metrics (\code{loss_share}, \code{incr_loss_share}, \code{premium_share}, \code{incr_premium_share}),
 labels are displayed as percentages.
 
 The loss ratio is defined as:
-\deqn{ratio = loss / exposure}
+\deqn{ratio = loss / premium}
 
-where \code{exposure} denotes risk premium rather than written premium.
+where \code{premium} denotes risk premium rather than written premium.
 }
 \details{
 The x-axis uses the development variable stored in \code{attr(x, "dev")}, and
@@ -102,15 +102,15 @@ d <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 plot_triangle(d)
 plot_triangle(d, metric = "ratio")
 plot_triangle(d, metric = "loss")
-plot_triangle(d, metric = "exposure")
+plot_triangle(d, metric = "premium")
 plot_triangle(d, metric = "loss_share")
-plot_triangle(d, metric = "exposure_share")
+plot_triangle(d, metric = "premium_share")
 plot_triangle(d, label_style = "value")
 plot_triangle(d, label_style = "detail")
 }

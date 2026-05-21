@@ -8,9 +8,9 @@
   fit,
   triangle,
   method,
-  exposure_fit,
-  exposure_method,
-  exposure_alpha,
+  premium_fit,
+  premium_method,
+  premium_alpha,
   sigma_method,
   recent,
   regime,
@@ -21,13 +21,13 @@
 \description{
 Worker fits (\code{CLFit}, \code{EDFit}, \code{SAFit}, \code{BFFit}, \code{CCFit}) each have
 their own slot layouts. This helper adds missing slots (\code{loss_ata_fit},
-\code{exposure_ata_fit}, \code{exposure_fit}, \code{ed}, \code{factor}, \code{selected},
+\code{premium_ata_fit}, \code{premium_fit}, \code{ed}, \code{factor}, \code{selected},
 \code{usage}, \code{ci_type}, \code{conf_level}, \code{bootstrap}) as \code{NULL} if absent,
 ensures \verb{$full} carries the dispatcher-uniform columns
-(\code{exposure_obs}, \code{exposure_proj}, \code{incr_exposure_proj}, \code{loss_ci_lo},
+(\code{premium_obs}, \code{premium_proj}, \code{incr_premium_proj}, \code{loss_ci_lo},
 \code{loss_ci_hi}, \code{loss_total_cv}), and assigns class \code{"LossFit"}.
 
-For \code{"cl"}, this synthesizes the exposure columns by running an
-\code{\link[=fit_exposure]{fit_exposure()}} internally when none are present.
+For \code{"cl"}, this synthesizes the premium columns by running an
+\code{\link[=fit_premium]{fit_premium()}} internally when none are present.
 }
 \keyword{internal}

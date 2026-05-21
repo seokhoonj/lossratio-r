@@ -14,11 +14,11 @@
 }
 \value{
 A \code{Triangle} with \code{attr(., "groups")} set to the requested
-value and \code{loss} / \code{exposure} / \code{ratio} aggregated to the requested
+value and \code{loss} / \code{premium} / \code{ratio} aggregated to the requested
 partition.
 }
 \description{
-Re-aggregates \code{loss} / \code{exposure} / \code{incr_loss} / \code{incr_exposure} over
+Re-aggregates \code{loss} / \code{premium} / \code{incr_loss} / \code{incr_premium} over
 the dropped grouping columns and recomputes \code{ratio} / \code{incr_ratio} as
 ratios of the aggregated totals. Other cell-level columns
 (\code{margin}, \code{profit}, \code{loss_share}, ...) are not regenerated -- the

@@ -7,11 +7,11 @@
 fit_sa(
   x,
   loss = "loss",
-  exposure = "exposure",
+  premium = "premium",
   alpha = 1,
-  exposure_fit = NULL,
-  exposure_method = c("ed", "cl"),
-  exposure_alpha = 1,
+  premium_fit = NULL,
+  premium_method = c("ed", "cl"),
+  premium_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   regime = NULL,
@@ -26,24 +26,24 @@ fit_sa(
 }
 \arguments{
 \item{x}{A \code{"Triangle"} object. The standardized \code{"loss"} and
-\code{"exposure"} columns are used (\code{as_triangle()} produces these).}
+\code{"premium"} columns are used (\code{as_triangle()} produces these).}
 
 \item{loss}{Cumulative loss column name. Default \code{"loss"}.}
 
-\item{exposure}{Cumulative exposure column name. Default \code{"exposure"}.}
+\item{premium}{Cumulative premium column name. Default \code{"premium"}.}
 
 \item{alpha}{Variance-structure exponent for the loss fit. Default \code{1}.}
 
-\item{exposure_fit}{Optional pre-built \code{ExposureFit} supplying the
-exposure projection. When \code{NULL}, \code{fit_sa()} builds the exposure
+\item{premium_fit}{Optional pre-built \code{PremiumFit} supplying the
+premium projection. When \code{NULL}, \code{fit_sa()} builds the premium
 projection internally -- a worker-layer \code{fit_cl()} on the
-\code{exposure} column -- using \code{exposure_method}, \code{exposure_alpha},
+\code{premium} column -- using \code{premium_method}, \code{premium_alpha},
 and the resolved \code{regime}.}
 
-\item{exposure_method}{One of \code{"ed"} (default) or \code{"cl"}. Used only
-when \code{exposure_fit = NULL}.}
+\item{premium_method}{One of \code{"ed"} (default) or \code{"cl"}. Used only
+when \code{premium_fit = NULL}.}
 
-\item{exposure_alpha}{Variance-structure exponent for the exposure fit.
+\item{premium_alpha}{Variance-structure exponent for the premium fit.
 Default \code{1}.}
 
 \item{sigma_method}{Method used to extrapolate \code{sigma} for links where it
@@ -69,7 +69,7 @@ SA requires a maturity -- \code{NULL} disables SA entirely (use ED or
 CL directly in that case).}
 
 \item{tail}{Logical or numeric; tail factor for the CL phase.
-Forwarded to the internal exposure fit when relevant.}
+Forwarded to the internal premium fit when relevant.}
 
 \item{conf_level}{Confidence level for the analytical CI on the loss
 projection. Default \code{0.95}.}
@@ -88,7 +88,7 @@ when \code{bootstrap = "auto"}.)}
 \value{
 An object of class \code{"SAFit"}. List with components mirroring
 \code{LossFit}: \code{full}, \code{proj}, \code{maturity}, \code{loss_ata_fit},
-\code{exposure_ata_fit}, \code{exposure_fit}, \code{ed}, \code{factor}, \code{selected}, plus
+\code{premium_ata_fit}, \code{premium_fit}, \code{ed}, \code{factor}, \code{selected}, plus
 metadata (\code{method = "sa"}, \code{alpha}, \code{sigma_method}, \code{recent},
 \code{regime}, \code{conf_level}, \code{ci_type}, \code{bootstrap}, \code{usage}).
 }
@@ -112,7 +112,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 
 sa <- fit_sa(tri)

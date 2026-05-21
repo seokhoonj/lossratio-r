@@ -53,7 +53,7 @@
 #' [as_link()] when `weight` is supplied), that column is
 #' automatically used as the WLS weight in place of `loss_from`. This
 #' is useful when `loss = "ratio"`, where `loss_from` carries no
-#' exposure information and an external exposure variable such as `exposure`
+#' premium information and an external premium variable such as `premium`
 #' should be used instead.
 #'
 #' @section Coefficient of variation (`cv`):
@@ -62,7 +62,7 @@
 #' where \eqn{f_k} are the individual observed ata values for link
 #' \eqn{k} and \eqn{\bar{f}_k} is their arithmetic mean. The `cv`
 #' reflects the relative spread of observed factors across cohorts,
-#' regardless of the exposure scale. It is used by
+#' regardless of the premium scale. It is used by
 #' [detect_maturity()] as one of the criteria for determining the
 #' maturity point.
 #'
@@ -71,10 +71,10 @@
 #' \deqn{rse = \frac{SE(\hat{f}_k)}{\hat{f}_k}}
 #' where \eqn{SE(\hat{f}_k)} is the standard error of the
 #' WLS-estimated factor. Unlike `cv`, which treats all cohorts equally,
-#' `rse` gives more weight to cohorts with larger exposures (via the
+#' `rse` gives more weight to cohorts with larger premiums (via the
 #' WLS weights). A small `rse` indicates that the WLS estimate is
 #' precise, which tends to occur when: (1) there are many cohorts,
-#' (2) exposures are large, and (3) the observed ata values are
+#' (2) premiums are large, and (3) the observed ata values are
 #' consistent across cohorts.
 #'
 #' @param object An object of class `"Link"`, typically produced by

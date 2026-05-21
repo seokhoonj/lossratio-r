@@ -22,7 +22,7 @@ applied to f-factor) and \code{\link[=.ed_g_var]{.ed_g_var()}} (ED / Buehlmann-S
 applied to g-intensity). They share the underlying volume-weighted
 variance idea (\eqn{\sigma^2_g = \sigma^2_f} via \eqn{g_k = f_k - 1}),
 but operate on different \code{Link} columns (f reads \code{loss_to}/\code{loss_from};
-g reads \code{loss_delta}/\code{exposure_from}) and produce differently-named
+g reads \code{loss_delta}/\code{premium_from}) and produce differently-named
 output columns (\code{f_var} / \code{g_var}), so are kept as separate helpers.
 
 Also used by \code{\link[=fit_ratio]{fit_ratio()}} for the CL component.

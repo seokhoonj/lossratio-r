@@ -1,7 +1,7 @@
 # Setup
 data(experience)
 exp <- experience
-tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
 ata <- as_link(tri, loss = "loss")
 
 test_that("as_link returns class 'Link' with expected columns", {
@@ -29,9 +29,9 @@ test_that("ata == loss_to / loss_from when loss_from > 0", {
 })
 
 test_that("weight adds 'weight' column", {
-  ata_w <- as_link(tri, loss = "ratio", weight = "exposure")
+  ata_w <- as_link(tri, loss = "ratio", weight = "premium")
   expect_true("weight" %in% names(ata_w))
-  expect_equal(attr(ata_w, "weight"), "exposure")
+  expect_equal(attr(ata_w, "weight"), "premium")
 })
 
 test_that("as_link errors on invalid loss", {
@@ -185,7 +185,7 @@ test_that("fit_ata with regime drops pre-break cohorts", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
   ata <- as_link(tri, loss = "loss")
 
   fit_full <- fit_ata(tri, loss = "loss")
@@ -203,7 +203,7 @@ test_that("fit_ata with NULL regime is unchanged from default", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
   ata <- as_link(tri, loss = "loss")
   fit_default <- fit_ata(tri, loss = "loss")
   fit_null    <- fit_ata(tri, loss = "loss", regime = NULL)
@@ -215,7 +215,7 @@ test_that("fit_ata with Regime input preserves the Regime object", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
-                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", exposure = "incr_exposure")
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
   reg <- detect_regime(tri)
   ata <- as_link(tri, loss = "loss")
   fit_reg <- fit_ata(tri, loss = "loss", regime = reg)
@@ -228,7 +228,7 @@ test_that("fit_ata with treatment='segment_wise' yields per-segment factors", {
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m",
-                        loss = "incr_loss", exposure = "incr_exposure")
+                        loss = "incr_loss", premium = "incr_premium")
   reg_seg <- regime_at(change = "2024-04-01", treatment = "segment_wise")
   reg_lat <- regime_at(change = "2024-04-01", treatment = "latest_only")
 

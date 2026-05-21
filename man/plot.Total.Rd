@@ -16,8 +16,8 @@
 \item{x}{An object of class \code{Total}.}
 
 \item{metric}{A single metric to plot. Must be one of the columns
-carried by a \code{Total}: \code{"ratio"}, \code{"loss"}, \code{"exposure"}, \code{"loss_share"}, or
-\code{"exposure_share"}. Default \code{"ratio"}.}
+carried by a \code{Total}: \code{"ratio"}, \code{"loss"}, \code{"premium"}, \code{"loss_share"}, or
+\code{"premium_share"}. Default \code{"ratio"}.}
 
 \item{amount_divisor}{Numeric scaling factor used only for y-axis
 labels of amount variables. Default \code{1e8}.}
@@ -53,7 +53,7 @@ tot <- as_total(
   cohort   = "uy_m",
   dev      = "dev_m",
   loss     = "incr_loss",
-  exposure = "incr_exposure"
+  premium = "incr_premium"
 )
 plot(tot)
 plot(tot, metric = "loss")
