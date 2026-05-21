@@ -138,6 +138,7 @@
 </li>
 <li>Raw dataset (<code>data/experience.rda</code>): column <code>incr_exposure</code> -&gt; <code>incr_premium</code> (regenerated)</li>
 </ul></li>
+<li><p>The <code>maturity_from</code> column reported for <code>method = "sa"</code> fits (in <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> and the underlying <code>$full</code> table) now carries the maturity link’s to-index (<code>ata_to</code>, the first CL-phase dev) instead of its from-index, matching the package convention that a maturity point is a link target dev. Projections, standard errors, and confidence intervals are unchanged – only the reported column value shifts up by one.</p></li>
 <li>
 <p><strong>API consistency pass.</strong> Several entry points were aligned so the same concept behaves the same way regardless of entry point:</p>
 <ul><li>

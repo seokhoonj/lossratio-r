@@ -1,7 +1,7 @@
 # Stage-adaptive (SA) point projection for a single cohort
 
 Internal helper that projects cumulative loss with the SA rule: ED phase
-before maturity (`k < maturity_from`), CL phase after.
+for dev before `maturity_from`; CL phase from `maturity_from` onward.
 
 Originally lived in `R/loss.R` – moved to `R/sa.R` alongside
 [`fit_sa()`](https://seokhoonj.github.io/lossratio/reference/fit_sa.md)
@@ -33,7 +33,8 @@ in Phase 4a.
 
 - maturity_from:
 
-  Numeric scalar; switch point. `NA` means ED-only (no switch).
+  Numeric scalar; the first CL-phase dev (the maturity link's to-index /
+  `ata_to`). `NA` means ED-only (no switch).
 
 ## Value
 

@@ -49,6 +49,14 @@
   - Raw dataset (`data/experience.rda`): column `incr_exposure` -\>
     `incr_premium` (regenerated)
 
+- The `maturity_from` column reported for `method = "sa"` fits (in
+  [`summary()`](https://rdrr.io/r/base/summary.html) and the underlying
+  `$full` table) now carries the maturity link’s to-index (`ata_to`, the
+  first CL-phase dev) instead of its from-index, matching the package
+  convention that a maturity point is a link target dev. Projections,
+  standard errors, and confidence intervals are unchanged – only the
+  reported column value shifts up by one.
+
 - **API consistency pass.** Several entry points were aligned so the
   same concept behaves the same way regardless of entry point:
 
