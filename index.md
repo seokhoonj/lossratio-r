@@ -147,7 +147,7 @@ plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
 
 # Exposure-driven fit (additive ED intensity)
-ed <- fit_ed(tri, loss = "loss", premium = "premium")
+ed <- fit_ed(tri, loss = "loss", exposure = "premium")
 
 # Chain ladder fit (multiplicative ATA factors)
 cl <- fit_cl(tri, loss = "loss")
@@ -259,7 +259,7 @@ work uniformly across `Triangle`, `Calendar`, `Link`, `ATAFit`, `EDFit`,
 ?as_triangle
 ?fit_ratio
 ?detect_regime
-vignette("regime", package = "lossratio")
+vignette("diagnostics", package = "lossratio")
 ```
 
 ## License

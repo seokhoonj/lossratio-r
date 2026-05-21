@@ -19,11 +19,11 @@ dispatches `method = "sa"` to this function; users can also call
 fit_sa(
   x,
   loss = "loss",
-  premium = "premium",
+  exposure = "premium",
   alpha = 1,
-  premium_fit = NULL,
-  premium_method = c("ed", "cl"),
-  premium_alpha = 1,
+  exposure_fit = NULL,
+  exposure_method = c("ed", "cl"),
+  exposure_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   regime = NULL,
@@ -50,7 +50,7 @@ fit_sa(
 
   Cumulative loss column name. Default `"loss"`.
 
-- premium:
+- exposure:
 
   Cumulative premium column name. Default `"premium"`.
 
@@ -58,21 +58,21 @@ fit_sa(
 
   Variance-structure exponent for the loss fit. Default `1`.
 
-- premium_fit:
+- exposure_fit:
 
   Optional pre-built `PremiumFit` supplying the premium projection. When
   `NULL`, `fit_sa()` builds the premium projection internally – a
   worker-layer
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
-  on the `premium` column – using `premium_method`, `premium_alpha`, and
-  the resolved `regime`.
+  on the `premium` column – using `exposure_method`, `exposure_alpha`,
+  and the resolved `regime`.
 
-- premium_method:
+- exposure_method:
 
   One of `"ed"` (default) or `"cl"`. Used only when
-  `premium_fit = NULL`.
+  `exposure_fit = NULL`.
 
-- premium_alpha:
+- exposure_alpha:
 
   Variance-structure exponent for the premium fit. Default `1`.
 

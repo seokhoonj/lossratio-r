@@ -49,7 +49,7 @@ Cape Cod ELR itself is data-driven and thus uncertain.
 fit_cc(
   x,
   loss = "loss",
-  premium = "premium",
+  exposure = "premium",
   bootstrap = NULL,
   B = 999L,
   seed = NULL,
@@ -76,7 +76,7 @@ fit_cc(
 
   A single cumulative loss variable. Default `"loss"`.
 
-- premium:
+- exposure:
 
   A single cumulative premium variable. Default `"premium"`.
 

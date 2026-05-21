@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Get started: lossratio 시작하기 • lossratio</title>
+<title>lossratio 시작하기 • lossratio</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<script src="../extra.js"></script><meta property="og:title" content="Get started: lossratio 시작하기">
+<script src="../extra.js"></script><meta property="og:title" content="lossratio 시작하기">
 <meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs">
 <!-- Browser-language redirect: send Korean visitors to /ko/ on the
      landing page only. Deep links remain untouched. We use string
@@ -98,16 +98,10 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/index.html">All articles</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/aggregation-frameworks.html">Aggregation frameworks</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-link-and-maturity.html">Triangle, Link and Maturity</a></li>
-    <li><a class="dropdown-item" href="../articles/regime.html">Regime</a></li>
-    <li><a class="dropdown-item" href="../articles/projection.html">Projection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-change-filter.html">Regime change filter</a></li>
+    <li><a class="dropdown-item" href="../articles/projection.html">Projection methods</a></li>
+    <li><a class="dropdown-item" href="../articles/diagnostics.html">Diagnostics: maturity, convergence, regime</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
-    <li><a class="dropdown-item" href="../articles/convergence.html">Convergence</a></li>
     <li><a class="dropdown-item" href="../articles/bootstrap-se-decomposition.html">Bootstrap SE decomposition</a></li>
-    <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/chain-ladder-reserving.html">(Reference) Chain ladder reserving</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -131,7 +125,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>Get started: lossratio 시작하기</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>lossratio 시작하기</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/seokhoonj/lossratio/blob/main/vignettes/articles/getting-started-ko.Rmd" class="external-link"><code>vignettes/articles/getting-started-ko.Rmd</code></a></small>
@@ -140,26 +134,43 @@
 
     
     
-<blockquote>
-<p>영어 원본 보기: <a href="../getting-started.html">Getting started
-with lossratio</a></p>
-</blockquote>
-<p>이 문서는 <code>lossratio</code> 의 전체 파이프라인을 내장 합성
-experience 데이터 위에서 따라간다. long-format raw 데이터에서 시작하여
-적합된 손해율 추정까지 이어진다.</p>
+<p>이 문서는 lossratio 패키지의 핵심 함수들을 <strong>데이터 준비 -&gt;
+적합 -&gt; 진단 -&gt; 검증 -&gt; 시각화</strong> 순서로 처음부터 끝까지
+따라가는 시작용 자료다. 각 단계마다 <em>무엇을 호출하는지</em>, <em>왜
+그렇게 동작하는지</em>, <em>결과를 어떻게 읽는지</em> 를 함께 설명한다.
+이 한 편만 따라 읽으면 패키지의 전체 작업 흐름을 파악할 수 있도록
+구성했다.</p>
 <div class="section level2">
-<h2 id="입력-형태">입력 형태<a class="anchor" aria-label="anchor" href="#%EC%9E%85%EB%A0%A5-%ED%98%95%ED%83%9C"></a>
+<h2 id="이-패키지가-푸는-문제">1. 이 패키지가 푸는 문제<a class="anchor" aria-label="anchor" href="#%EC%9D%B4-%ED%8C%A8%ED%82%A4%EC%A7%80%EA%B0%80-%ED%91%B8%EB%8A%94-%EB%AC%B8%EC%A0%9C"></a>
 </h2>
-<p><code>lossratio</code> 는 long-format experience 데이터를 입력으로
-사용한다 — 한 행은 (코호트 × 경과 기간 × 그룹) 셀 하나에 대응한다. 내장
-데이터셋 <code>experience</code> 는 2,664 행 테이블로, 여러 집계 주기의
-calendar / underwriting 기간 컬럼, <code>coverage</code> 그룹 컬럼,
-기간별 금액 컬럼 (<code>incr_loss</code>, <code>incr_premium</code>) 을
-포함한다.</p>
+<p>장기 건강보험은 한 번 인수한 계약이 수십 년간 유지된다. 그래서 어떤
+인수 시점(코호트)의 계약군이 시간이 지나며 손해율을 어떻게 쌓아 가는지를
+미리 내다보는 것이 핵심 과제다.</p>
+<p>lossratio 는 이 문제를 <strong>코호트 x 경과기간(cohort x
+dev)</strong> 격자 위에서 다룬다.</p>
+<ul>
+<li>
+<strong>코호트(cohort)</strong> – 계약을 인수한 시점 (예: 2023년 1월
+인수분).</li>
+<li>
+<strong>경과기간(development period, dev)</strong> – 인수 후 흐른
+기간.</li>
+</ul>
+<p>각 셀에는 누적 손해(<code>loss</code>)와 누적
+보험료(<code>premium</code>)가 들어가고, 손해율은
+<code>ratio = loss / premium</code> 로 정의된다. 아직 관측되지 않은 미래
+경과기간의 셀을 추정하는 것이 “예측”이며, 이 패키지의 여러
+<code>fit_*</code> 함수가 서로 다른 방법으로 그 추정을 수행한다.</p>
+</div>
+<div class="section level2">
+<h2 id="데이터-experience">2. 데이터: <code>experience</code><a class="anchor" aria-label="anchor" href="#%EB%8D%B0%EC%9D%B4%ED%84%B0-experience"></a>
+</h2>
+<p>패키지에는 합성 experience 데이터가 내장돼 있다.
+<code>experience</code> 는 도메인 표준어로, 실제 계리
+경험통계(experience study)의 셀 단위 기록을 가리킨다. long-format
+테이블이며 한 행은 (코호트 x 경과기간 x 그룹) 셀 하나에 대응한다.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio">lossratio</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Classes 'data.table' and 'data.frame':   2664 obs. of  15 variables:</span></span>
 <span><span class="co">#&gt;  $ coverage    : chr  "ci" "ci" "ci" "ci" ...</span></span>
@@ -177,188 +188,270 @@ calendar / underwriting 기간 컬럼, <code>coverage</code> 그룹 컬럼,
 <span><span class="co">#&gt;  $ dev_m       : int  1 2 3 4 5 6 7 8 9 10 ...</span></span>
 <span><span class="co">#&gt;  $ incr_loss   : num  1262380 11255763 11281309 33602387 7152622 ...</span></span>
 <span><span class="co">#&gt;  $ incr_premium: num  27993106 29183931 29401966 26570540 27471886 ...</span></span>
-<span><span class="co">#&gt;  - attr(*, ".internal.selfref")=&lt;pointer: (nil)&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt;  - attr(*, ".internal.selfref")=&lt;pointer: (nil)&gt;</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    coverage         uy       uy_h       uy_q       uy_m         cy       cy_h</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt;     &lt;Date&gt;     &lt;Date&gt;     &lt;Date&gt;     &lt;Date&gt;     &lt;Date&gt;</span></span>
+<span><span class="co">#&gt; 1:       ci 2023-01-01 2023-01-01 2023-01-01 2023-01-01 2023-01-01 2023-01-01</span></span>
+<span><span class="co">#&gt; 2:       ci 2023-01-01 2023-01-01 2023-01-01 2023-01-01 2023-01-01 2023-01-01</span></span>
+<span><span class="co">#&gt; 3:       ci 2023-01-01 2023-01-01 2023-01-01 2023-01-01 2023-01-01 2023-01-01</span></span>
+<span><span class="co">#&gt; 4:       ci 2023-01-01 2023-01-01 2023-01-01 2023-01-01 2023-01-01 2023-01-01</span></span>
+<span><span class="co">#&gt; 5:       ci 2023-01-01 2023-01-01 2023-01-01 2023-01-01 2023-01-01 2023-01-01</span></span>
+<span><span class="co">#&gt; 6:       ci 2023-01-01 2023-01-01 2023-01-01 2023-01-01 2023-01-01 2023-01-01</span></span>
+<span><span class="co">#&gt;          cy_q       cy_m dev_y dev_h dev_q dev_m incr_loss incr_premium</span></span>
+<span><span class="co">#&gt;        &lt;Date&gt;     &lt;Date&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1: 2023-01-01 2023-01-01     1     1     1     1   1262380     27993106</span></span>
+<span><span class="co">#&gt; 2: 2023-01-01 2023-02-01     1     1     1     2  11255763     29183931</span></span>
+<span><span class="co">#&gt; 3: 2023-01-01 2023-03-01     1     1     1     3  11281309     29401966</span></span>
+<span><span class="co">#&gt; 4: 2023-04-01 2023-04-01     1     1     2     4  33602387     26570540</span></span>
+<span><span class="co">#&gt; 5: 2023-04-01 2023-05-01     1     1     2     5   7152622     27471886</span></span>
+<span><span class="co">#&gt; 6: 2023-04-01 2023-06-01     1     1     2     6  10110525     26769360</span></span></code></pre></div>
+<p>핵심 컬럼만 보면 다음과 같다.</p>
+<ul>
+<li>
+<code>coverage</code> – 담보(그룹). surgery / ci / cancer / death 네
+종목.</li>
+<li>
+<code>uy_m</code> – 인수월(underwriting month). 코호트 축의 원본
+컬럼.</li>
+<li>
+<code>cy_m</code> – 달력월(calendar month).</li>
+<li>
+<code>dev_m</code> – 경과월(development month).</li>
+<li>
+<code>incr_loss</code>, <code>incr_premium</code> –
+<strong>증분(기간별)</strong> 손해와 보험료.</li>
+</ul>
+<p>입력이 증분이라는 점에 주목한다. raw experience 는 보통 “이번 달에
+얼마가 발생/경과했는가” 형태로 쌓이기 때문이다. 누적값은 패키지가
+내부에서 만든다.</p>
 </div>
 <div class="section level2">
-<h2 id="단계-코호트-경과-기간-구조-구축">1단계 — 코호트 × 경과 기간 구조 구축<a class="anchor" aria-label="anchor" href="#%EB%8B%A8%EA%B3%84-%EC%BD%94%ED%98%B8%ED%8A%B8-%EA%B2%BD%EA%B3%BC-%EA%B8%B0%EA%B0%84-%EA%B5%AC%EC%A1%B0-%EA%B5%AC%EC%B6%95"></a>
+<h2 id="triangle-만들기-as_triangle">3. Triangle 만들기 – <code>as_triangle()</code><a class="anchor" aria-label="anchor" href="#triangle-%EB%A7%8C%EB%93%A4%EA%B8%B0-as_triangle"></a>
 </h2>
+<p><code><a href="../reference/as_triangle.html">as_triangle()</a></code> 는 raw experience 를 표준
+<strong>Triangle</strong> 객체로 바꾼다. 검증 + 좌표 표준화 + 집계를 한
+번에 수행한다.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
+<span>  <span class="va">experience</span>,</span>
+<span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
+<span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
+<span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
+<span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
+<span>  premium  <span class="op">=</span> <span class="st">"incr_premium"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">tri</span></span>
+<span><span class="co">#&gt; shape: (2_664, 18)</span></span>
+<span><span class="co">#&gt; ┌──────────┬───────────┬────────────┬───┬───────────────┬────────────────┐</span></span>
+<span><span class="co">#&gt; │ coverage ┆ n_cohorts ┆ cohort     ┆ … ┆ premium_share ┆ incr_premium_… │</span></span>
+<span><span class="co">#&gt; │ &lt;chr&gt;    ┆ &lt;int&gt;     ┆ &lt;date&gt;     ┆ … ┆ &lt;dbl&gt;         ┆ &lt;dbl&gt;          │</span></span>
+<span><span class="co">#&gt; ├──────────┼───────────┼────────────┼───┼───────────────┼────────────────┤</span></span>
+<span><span class="co">#&gt; │ ci       ┆ 36        ┆ 2023-01-01 ┆ … ┆ 0.381171      ┆ 0.381171       │</span></span>
+<span><span class="co">#&gt; │ ci       ┆ 35        ┆ 2023-01-01 ┆ … ┆ 0.380346      ┆ 0.379558       │</span></span>
+<span><span class="co">#&gt; │ ci       ┆ 34        ┆ 2023-01-01 ┆ … ┆ 0.387352      ┆ 0.401744       │</span></span>
+<span><span class="co">#&gt; │ ci       ┆ 33        ┆ 2023-01-01 ┆ … ┆ 0.379535      ┆ 0.356118       │</span></span>
+<span><span class="co">#&gt; │ ci       ┆ 32        ┆ 2023-01-01 ┆ … ┆ 0.377646      ┆ 0.370060       │</span></span>
+<span><span class="co">#&gt; │ …        ┆ …         ┆ …          ┆ … ┆ …             ┆ …              │</span></span>
+<span><span class="co">#&gt; │ surgery  ┆ 35        ┆ 2025-10-01 ┆ … ┆ 0.872357      ┆ 0.874228       │</span></span>
+<span><span class="co">#&gt; │ surgery  ┆ 34        ┆ 2025-10-01 ┆ … ┆ 0.874537      ┆ 0.878680       │</span></span>
+<span><span class="co">#&gt; │ surgery  ┆ 36        ┆ 2025-11-01 ┆ … ┆ 0.667521      ┆ 0.667521       │</span></span>
+<span><span class="co">#&gt; │ surgery  ┆ 35        ┆ 2025-11-01 ┆ … ┆ 0.669140      ┆ 0.670648       │</span></span>
+<span><span class="co">#&gt; │ surgery  ┆ 36        ┆ 2025-12-01 ┆ … ┆ 0.544008      ┆ 0.544008       │</span></span>
+<span><span class="co">#&gt; └──────────┴───────────┴────────────┴───┴───────────────┴────────────────┘</span></span>
+<span><span class="co">#&gt; 13 more variables: dev &lt;int&gt;, loss &lt;dbl&gt;, incr_loss &lt;dbl&gt;, premium &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt;                    incr_premium &lt;dbl&gt;, ratio &lt;dbl&gt;, incr_ratio &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt;                    margin &lt;dbl&gt;, incr_margin &lt;dbl&gt;, profit &lt;fct&gt;,</span></span>
+<span><span class="co">#&gt;                    incr_profit &lt;fct&gt;, loss_share &lt;dbl&gt;, incr_loss_share &lt;dbl&gt;</span></span></code></pre></div>
+<p><code><a href="../reference/as_triangle.html">as_triangle()</a></code> 의 동작을 풀어 보면 다음과 같다.</p>
+<ul>
+<li>필수 컬럼의 존재를 확인하고 expected type 으로 코어션한다,</li>
+<li>인구통계 차원을 집계해 제거한다,</li>
+<li>누적 컬럼(<code>loss</code>, <code>premium</code>)과 파생
+지표(<code>margin</code>, <code>ratio</code>, <code>loss_share</code>,
+<code>premium_share</code>)를 추가한다,</li>
+<li>원본 컬럼명(<code>uy_m</code>, <code>incr_loss</code> 등)을 표준
+이름(<code>cohort</code>, <code>dev</code>, <code>loss</code>,
+<code>premium</code> …)으로 rename 하고, 원본명은 attribute 에
+보존한다.</li>
+</ul>
+<p>출력 컬럼은 <strong>누적이 기본</strong>이고 증분은
+<code>incr_</code> 접두사를 붙인다 –
+<code>loss</code>/<code>incr_loss</code>,
+<code>premium</code>/<code>incr_premium</code>,
+<code>ratio</code>/<code>incr_ratio</code>.</p>
+<p>이미 누적 삼각형을 갖고 있다면 <code>cell_type = "cumulative"</code>
+를 주면 된다. 그러면 <code><a href="../reference/as_triangle.html">as_triangle()</a></code> 가 코호트별로 차분해
+증분을 자동 산출한다.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># 누적 손해/보험료를 가진 경우</span></span>
+<span><span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span><span class="va">df_cumulative</span>,</span>
+<span>            groups <span class="op">=</span> <span class="st">"coverage"</span>, cohort <span class="op">=</span> <span class="st">"uy_m"</span>, calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
+<span>            loss <span class="op">=</span> <span class="st">"loss"</span>, premium <span class="op">=</span> <span class="st">"premium"</span>,</span>
+<span>            cell_type <span class="op">=</span> <span class="st">"cumulative"</span><span class="op">)</span></span></code></pre></div>
+<p>이후 설명은 한 종목만 떼어 단일 그룹으로 진행하면 출력이
+깔끔하다.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tri1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
 <span>  <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"surgery"</span><span class="op">]</span>,</span>
 <span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
 <span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "Triangle"   "data.table" "data.frame"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "coverage"           "n_cohorts"          "cohort"            </span></span>
-<span><span class="co">#&gt;  [4] "dev"                "loss"               "incr_loss"         </span></span>
-<span><span class="co">#&gt;  [7] "premium"            "incr_premium"       "ratio"             </span></span>
-<span><span class="co">#&gt; [10] "incr_ratio"         "margin"             "incr_margin"       </span></span>
-<span><span class="co">#&gt; [13] "profit"             "incr_profit"        "loss_share"        </span></span>
-<span><span class="co">#&gt; [16] "incr_loss_share"    "premium_share"      "incr_premium_share"</span></span></code></pre></div>
-<p><code><a href="../reference/as_triangle.html">as_triangle()</a></code> 의 동작:</p>
-<ul>
-<li>필수 컬럼 (<code>cy_m</code>, <code>uy_m</code>,
-<code>incr_loss</code>, <code>incr_premium</code>) 의 존재를 확인하고
-expected type 으로 코어션한다,</li>
-<li>인구통계 차원을 집계하여 제거한다 (여기서는 <code>age_band</code>,
-<code>gender</code>),</li>
-<li>누적 컬럼 (<code>loss</code>, <code>premium</code>) 을
-추가한다,</li>
-<li>파생 지표 (<code>margin</code>, <code>ratio</code>,
-<code>loss_share</code>, <code>premium_share</code>) 를 추가한다,</li>
-<li>코호트 / 경과 기간 컬럼을 표준명 <code>cohort</code> 와
-<code>dev</code> 로 rename 한다,</li>
-<li>원본 컬럼명은 attribute (<code>cohort</code>, <code>dev</code>) 로
-보존하여 이후 plot 라벨에서 활용 가능하게 한다.</li>
-</ul>
-</div>
-<div class="section level2">
-<h2 id="단계-진단">2단계 — 진단<a class="anchor" aria-label="anchor" href="#%EB%8B%A8%EA%B3%84-%EC%A7%84%EB%8B%A8"></a>
-</h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>              <span class="co"># 코호트별 ratio 궤적</span></span></code></pre></div>
-<p><img src="getting-started-ko_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="100%"></p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>     <span class="co"># ratio 셀의 heatmap</span></span></code></pre></div>
-<p><img src="getting-started-ko_files/figure-html/unnamed-chunk-3-2.png" class="r-plt" alt="" width="100%"></p>
+<span>  premium  <span class="op">=</span> <span class="st">"incr_premium"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Triangle 자체를 히트맵으로 볼 수 있다.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>           <span class="co"># 경과 기간별 그룹 통계량</span></span>
-<span><span class="co">#&gt; Key: &lt;coverage, dev&gt;</span></span>
-<span><span class="co">#&gt;     coverage   dev n_cohorts ratio_mean ratio_median  ratio_wt incr_ratio_mean</span></span>
-<span><span class="co">#&gt;       &lt;char&gt; &lt;int&gt;     &lt;int&gt;      &lt;num&gt;        &lt;num&gt;     &lt;num&gt;           &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:  surgery     1        36  0.2522898    0.2393582 0.2525932       0.2522898</span></span>
-<span><span class="co">#&gt;  2:  surgery     2        35  0.8030639    0.7859128 0.7890646       1.3572087</span></span>
-<span><span class="co">#&gt;  3:  surgery     3        34  0.9258662    0.8997912 0.9204360       1.1519240</span></span>
-<span><span class="co">#&gt;  4:  surgery     4        33  0.9856772    0.9716558 0.9778502       1.1797269</span></span>
-<span><span class="co">#&gt;  5:  surgery     5        32  1.0336648    1.0502252 1.0447602       1.2268717</span></span>
-<span><span class="co">#&gt;  6:  surgery     6        31  1.0945723    1.1832332 1.0892484       1.3676102</span></span>
-<span><span class="co">#&gt;  7:  surgery     7        30  1.1226602    1.2307968 1.1260090       1.2795209</span></span>
-<span><span class="co">#&gt;  8:  surgery     8        29  1.1476579    1.2385036 1.1607484       1.2695757</span></span>
-<span><span class="co">#&gt;  9:  surgery     9        28  1.1867831    1.2831350 1.1993421       1.3565716</span></span>
-<span><span class="co">#&gt; 10:  surgery    10        27  1.2189764    1.3392377 1.2161749       1.3443230</span></span>
-<span><span class="co">#&gt; 11:  surgery    11        26  1.2398508    1.3528781 1.2306363       1.2546351</span></span>
-<span><span class="co">#&gt; 12:  surgery    12        25  1.2748031    1.3729018 1.2943160       1.5245126</span></span>
-<span><span class="co">#&gt; 13:  surgery    13        24  1.3088959    1.4291378 1.3202706       1.4851972</span></span>
-<span><span class="co">#&gt; 14:  surgery    14        23  1.3391485    1.4270947 1.3407729       1.4339388</span></span>
-<span><span class="co">#&gt; 15:  surgery    15        22  1.3721398    1.4269041 1.3628824       1.5014265</span></span>
-<span><span class="co">#&gt; 16:  surgery    16        21  1.3940933    1.4310343 1.3828890       1.3639729</span></span>
-<span><span class="co">#&gt; 17:  surgery    17        20  1.4097869    1.4405611 1.3901633       1.2645684</span></span>
-<span><span class="co">#&gt; 18:  surgery    18        19  1.4308462    1.4384627 1.4131833       1.3636669</span></span>
-<span><span class="co">#&gt; 19:  surgery    19        18  1.4674058    1.4314176 1.4992667       1.5607399</span></span>
-<span><span class="co">#&gt; 20:  surgery    20        17  1.4630633    1.4413678 1.4973696       1.5135877</span></span>
-<span><span class="co">#&gt; 21:  surgery    21        16  1.4721202    1.4604722 1.5143362       1.5431636</span></span>
-<span><span class="co">#&gt; 22:  surgery    22        15  1.4559264    1.4614643 1.4742311       1.3944927</span></span>
-<span><span class="co">#&gt; 23:  surgery    23        14  1.4530162    1.4526203 1.4719093       1.4497984</span></span>
-<span><span class="co">#&gt; 24:  surgery    24        13  1.4623530    1.4505400 1.4765376       1.5517800</span></span>
-<span><span class="co">#&gt; 25:  surgery    25        12  1.4673860    1.4686413 1.4836300       1.5166770</span></span>
-<span><span class="co">#&gt; 26:  surgery    26        11  1.4824851    1.4947915 1.4961973       1.6915615</span></span>
-<span><span class="co">#&gt; 27:  surgery    27        10  1.5033314    1.5018660 1.5214048       1.6430325</span></span>
-<span><span class="co">#&gt; 28:  surgery    28         9  1.5055939    1.4952451 1.5305297       1.6071526</span></span>
-<span><span class="co">#&gt; 29:  surgery    29         8  1.4998251    1.4964613 1.5184059       1.6846552</span></span>
-<span><span class="co">#&gt; 30:  surgery    30         7  1.5011849    1.5030635 1.5172585       1.5112226</span></span>
-<span><span class="co">#&gt; 31:  surgery    31         6  1.4961175    1.4880367 1.5006586       1.6444377</span></span>
-<span><span class="co">#&gt; 32:  surgery    32         5  1.4890487    1.4954533 1.4933984       1.7690619</span></span>
-<span><span class="co">#&gt; 33:  surgery    33         4  1.5086788    1.5126330 1.5093436       1.8628827</span></span>
-<span><span class="co">#&gt; 34:  surgery    34         3  1.5021688    1.5068628 1.5004958       1.3432240</span></span>
-<span><span class="co">#&gt; 35:  surgery    35         2  1.5066599    1.5066599 1.5083770       1.2290223</span></span>
-<span><span class="co">#&gt; 36:  surgery    36         1  1.4962059    1.4962059 1.4962059       1.2855791</span></span>
-<span><span class="co">#&gt;     coverage   dev n_cohorts ratio_mean ratio_median  ratio_wt incr_ratio_mean</span></span>
-<span><span class="co">#&gt;       &lt;char&gt; &lt;int&gt;     &lt;int&gt;      &lt;num&gt;        &lt;num&gt;     &lt;num&gt;           &lt;num&gt;</span></span>
-<span><span class="co">#&gt;     incr_ratio_median incr_ratio_wt</span></span>
-<span><span class="co">#&gt;                 &lt;num&gt;         &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:         0.2393582     0.2525932</span></span>
-<span><span class="co">#&gt;  2:         1.2618216     1.3280769</span></span>
-<span><span class="co">#&gt;  3:         1.1517980     1.1728982</span></span>
-<span><span class="co">#&gt;  4:         1.1167740     1.1742272</span></span>
-<span><span class="co">#&gt;  5:         1.2663383     1.3110155</span></span>
-<span><span class="co">#&gt;  6:         1.2676379     1.2752751</span></span>
-<span><span class="co">#&gt;  7:         1.1820596     1.3386507</span></span>
-<span><span class="co">#&gt;  8:         1.2534497     1.3649817</span></span>
-<span><span class="co">#&gt;  9:         1.2365352     1.3663756</span></span>
-<span><span class="co">#&gt; 10:         1.2201009     1.2953679</span></span>
-<span><span class="co">#&gt; 11:         1.2665782     1.2806481</span></span>
-<span><span class="co">#&gt; 12:         1.4833182     1.5935069</span></span>
-<span><span class="co">#&gt; 13:         1.3855136     1.4462040</span></span>
-<span><span class="co">#&gt; 14:         1.3888344     1.5051091</span></span>
-<span><span class="co">#&gt; 15:         1.3047737     1.5731446</span></span>
-<span><span class="co">#&gt; 16:         1.3118128     1.3730719</span></span>
-<span><span class="co">#&gt; 17:         1.2342326     1.2723713</span></span>
-<span><span class="co">#&gt; 18:         1.2757634     1.4565681</span></span>
-<span><span class="co">#&gt; 19:         1.4756463     1.5827383</span></span>
-<span><span class="co">#&gt; 20:         1.4438045     1.5321948</span></span>
-<span><span class="co">#&gt; 21:         1.5642856     1.5803810</span></span>
-<span><span class="co">#&gt; 22:         1.3370493     1.4612516</span></span>
-<span><span class="co">#&gt; 23:         1.3865805     1.4391562</span></span>
-<span><span class="co">#&gt; 24:         1.4213562     1.4363201</span></span>
-<span><span class="co">#&gt; 25:         1.4433495     1.4198077</span></span>
-<span><span class="co">#&gt; 26:         1.5738705     1.5628175</span></span>
-<span><span class="co">#&gt; 27:         1.4080903     1.8551455</span></span>
-<span><span class="co">#&gt; 28:         1.4361840     1.7482784</span></span>
-<span><span class="co">#&gt; 29:         1.8359202     1.5456207</span></span>
-<span><span class="co">#&gt; 30:         1.3661139     1.4455959</span></span>
-<span><span class="co">#&gt; 31:         1.4673015     1.5987246</span></span>
-<span><span class="co">#&gt; 32:         1.5883761     1.6630214</span></span>
-<span><span class="co">#&gt; 33:         1.8353115     1.8309606</span></span>
-<span><span class="co">#&gt; 34:         1.3503129     1.3440389</span></span>
-<span><span class="co">#&gt; 35:         1.2290223     1.1775157</span></span>
-<span><span class="co">#&gt; 36:         1.2855791     1.2855791</span></span>
-<span><span class="co">#&gt;     incr_ratio_median incr_ratio_wt</span></span>
-<span><span class="co">#&gt;                 &lt;num&gt;         &lt;num&gt;</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">tri1</span>, metric <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started-ko_files/figure-html/triangle-plot-1.png" class="r-plt" alt="" width="100%"></p>
+<p>대각선 윗쪽(관측 영역)만 값이 차 있고, 아래쪽 빈 곳이 앞으로 예측해야
+할 미래 셀이다.</p>
 </div>
 <div class="section level2">
-<h2 id="단계-링크-단계-진단">3단계 — 링크 단계 진단<a class="anchor" aria-label="anchor" href="#%EB%8B%A8%EA%B3%84-%EB%A7%81%ED%81%AC-%EB%8B%A8%EA%B3%84-%EC%A7%84%EB%8B%A8"></a>
+<h2 id="calendar-와-total-다른-집계-관점">4. Calendar 와 Total – 다른 집계 관점<a class="anchor" aria-label="anchor" href="#calendar-%EC%99%80-total-%EB%8B%A4%EB%A5%B8-%EC%A7%91%EA%B3%84-%EA%B4%80%EC%A0%90"></a>
 </h2>
-<p>링크(연속한 두 경과 기간) 단계 인자를 살피는 두 보완적 관점이다. 어느
-경과 기간까지 정보가 안정화되는가를 진단하며, 이후 예측 단계의 입력이
-된다.</p>
+<p>같은 experience 데이터는 분석 질문에 따라 세 가지 방식으로 집계할 수
+있고, 빌더도 셋이다.</p>
+<table class="table">
+<colgroup>
+<col width="20%">
+<col width="14%">
+<col width="31%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>빌더</th>
+<th>출력 객체</th>
+<th>차원</th>
+<th>사용 시점</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code><a href="../reference/as_triangle.html">as_triangle()</a></code></td>
+<td><code>Triangle</code></td>
+<td>코호트 x dev (2D)</td>
+<td>SA, ED, CL 예측</td>
+</tr>
+<tr class="even">
+<td><code><a href="../reference/as_calendar.html">as_calendar()</a></code></td>
+<td><code>Calendar</code></td>
+<td>달력 기간 (1D)</td>
+<td>달력 추세, 대각선 효과</td>
+</tr>
+<tr class="odd">
+<td><code><a href="../reference/as_total.html">as_total()</a></code></td>
+<td><code>Total</code></td>
+<td>포트폴리오 합계 (그룹별)</td>
+<td>상위 수준 손해율 비교</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Calendar</strong> 는 코호트를 대각선 위로 합산한다 – 각 행이
+모든 인수 코호트에 걸친 하나의 달력 기간이며, 수학적으로 Triangle 의
+대각선 합과 동치다. 손해율의 달력 추세나 대각선 효과(calendar-year
+effect) 점검에 쓴다. <code>t</code> 컬럼은 그룹 내 순차 인덱스(1, 2, 3,
+…)일 뿐 경과기간이 아니다.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># ATA 인자(age-to-age factor) — 곱셈형, chain ladder 의 입력</span></span>
-<span><span class="fu"><a href="../reference/fit_ata.html">fit_ata</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;ATAFit&gt;</span></span>
-<span><span class="co">#&gt; alpha       : 1 </span></span>
-<span><span class="co">#&gt; sigma_method: locf </span></span>
-<span><span class="co">#&gt; recent      : all </span></span>
-<span><span class="co">#&gt; regime      : none</span></span>
-<span><span class="co">#&gt; use_maturity: FALSE </span></span>
-<span><span class="co">#&gt; groups      : coverage </span></span>
-<span><span class="co">#&gt; n_groups    : 1 </span></span>
-<span><span class="co">#&gt; ata links   : 35</span></span>
-<span></span>
-<span><span class="co"># 노출 기반(exposure-driven) 강도 인자 — 덧셈형, ED 의 입력</span></span>
-<span><span class="fu"><a href="../reference/fit_intensity.html">fit_intensity</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, premium <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;IntensityFit&gt;</span></span>
-<span><span class="co">#&gt; alpha       : 1 </span></span>
-<span><span class="co">#&gt; sigma_method: locf </span></span>
-<span><span class="co">#&gt; recent      : all </span></span>
-<span><span class="co">#&gt; regime      : none</span></span>
-<span><span class="co">#&gt; groups      : coverage </span></span>
-<span><span class="co">#&gt; n_groups    : 1 </span></span>
-<span><span class="co">#&gt; ata links   : 35</span></span></code></pre></div>
-<p><code><a href="../reference/fit_ata.html">fit_ata()</a></code> 는 링크별 ATA 인자
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
-를, <code><a href="../reference/fit_intensity.html">fit_intensity()</a></code> 는 강도 인자
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>g</mi><mi>k</mi></msub><mo>=</mo><mi mathvariant="normal">Δ</mi><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup><mi>/</mi><msubsup><mi>C</mi><mi>k</mi><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">g_k = \Delta C^L_k / C^P_k</annotation></semantics></math>
-를 반환한다. 두 출력 모두 <em>factor 레벨</em> 진단으로, 예측치
-(<code>$full</code>) 는 갖지 않는다.</p>
+<code class="sourceCode R"><span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_calendar.html">as_calendar</a></span><span class="op">(</span><span class="va">tri1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cal</span><span class="op">)</span></span>
+<span><span class="co">#&gt; shape: (6, 18)</span></span>
+<span><span class="co">#&gt; ┌──────────┬────────────┬─────────┬───┬───────────────┬────────────────┐</span></span>
+<span><span class="co">#&gt; │ coverage ┆ calendar   ┆ cal_idx ┆ … ┆ premium_share ┆ incr_premium_… │</span></span>
+<span><span class="co">#&gt; │ &lt;chr&gt;    ┆ &lt;date&gt;     ┆ &lt;int&gt;   ┆ … ┆ &lt;dbl&gt;         ┆ &lt;dbl&gt;          │</span></span>
+<span><span class="co">#&gt; ├──────────┼────────────┼─────────┼───┼───────────────┼────────────────┤</span></span>
+<span><span class="co">#&gt; │ surgery  ┆ 2023-01-01 ┆ 1       ┆ … ┆ 1             ┆ 1              │</span></span>
+<span><span class="co">#&gt; │ surgery  ┆ 2023-02-01 ┆ 2       ┆ … ┆ 1             ┆ 1              │</span></span>
+<span><span class="co">#&gt; │ surgery  ┆ 2023-03-01 ┆ 3       ┆ … ┆ 1             ┆ 1              │</span></span>
+<span><span class="co">#&gt; │ surgery  ┆ 2023-04-01 ┆ 4       ┆ … ┆ 1             ┆ 1              │</span></span>
+<span><span class="co">#&gt; │ surgery  ┆ 2023-05-01 ┆ 5       ┆ … ┆ 1             ┆ 1              │</span></span>
+<span><span class="co">#&gt; │ surgery  ┆ 2023-06-01 ┆ 6       ┆ … ┆ 1             ┆ 1              │</span></span>
+<span><span class="co">#&gt; └──────────┴────────────┴─────────┴───┴───────────────┴────────────────┘</span></span>
+<span><span class="co">#&gt; 13 more variables: n_cohorts &lt;int&gt;, loss &lt;dbl&gt;, incr_loss &lt;dbl&gt;, premium &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt;                    incr_premium &lt;dbl&gt;, ratio &lt;dbl&gt;, incr_ratio &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt;                    margin &lt;dbl&gt;, incr_margin &lt;dbl&gt;, profit &lt;fct&gt;,</span></span>
+<span><span class="co">#&gt;                    incr_profit &lt;fct&gt;, loss_share &lt;dbl&gt;, incr_loss_share &lt;dbl&gt;</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cal</span><span class="op">)</span>               <span class="co"># x axis: calendar (Date)</span></span></code></pre></div>
+<p><img src="getting-started-ko_files/figure-html/calendar-1.png" class="r-plt" alt="" width="100%"></p>
+<p><strong>Total</strong> 은 두 차원을 모두 합쳐 그룹당 한 값으로
+축약한다. 담보별 전체 손해율 비교 같은 포트폴리오 수준 질문에 쓴다.
+<code>period_from</code> / <code>period_to</code> 로 기간을 맞추면 그룹
+간 비교 가능성이 확보된다.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_total.html">as_total</a></span><span class="op">(</span><span class="va">tri1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tot</span><span class="op">)</span></span>
+<span><span class="co">#&gt; shape: (1, 9)</span></span>
+<span><span class="co">#&gt; ┌──────────┬───────────┬─────────────┬───┬────────────┬───────────────┐</span></span>
+<span><span class="co">#&gt; │ coverage ┆ n_cohorts ┆ sales_start ┆ … ┆ loss_share ┆ premium_share │</span></span>
+<span><span class="co">#&gt; │ &lt;chr&gt;    ┆ &lt;int&gt;     ┆ &lt;date&gt;      ┆ … ┆ &lt;dbl&gt;      ┆ &lt;dbl&gt;         │</span></span>
+<span><span class="co">#&gt; ├──────────┼───────────┼─────────────┼───┼────────────┼───────────────┤</span></span>
+<span><span class="co">#&gt; │ surgery  ┆ 36        ┆ 2023-01-01  ┆ … ┆ 1          ┆ 1             │</span></span>
+<span><span class="co">#&gt; └──────────┴───────────┴─────────────┴───┴────────────┴───────────────┘</span></span>
+<span><span class="co">#&gt; 4 more variables: sales_end &lt;date&gt;, loss &lt;dbl&gt;, premium &lt;dbl&gt;, ratio &lt;dbl&gt;</span></span></code></pre></div>
+<p>이후 예측 절차는 모두 <code>Triangle</code> 을 입력으로 쓴다.</p>
 </div>
 <div class="section level2">
-<h2 id="단계-예측">4단계 — 예측<a class="anchor" aria-label="anchor" href="#%EB%8B%A8%EA%B3%84-%EC%98%88%EC%B8%A1"></a>
+<h2 id="손해-전개를-보는-두-관점">5. 손해 전개를 보는 두 관점<a class="anchor" aria-label="anchor" href="#%EC%86%90%ED%95%B4-%EC%A0%84%EA%B0%9C%EB%A5%BC-%EB%B3%B4%EB%8A%94-%EB%91%90-%EA%B4%80%EC%A0%90"></a>
 </h2>
-<p>예측 레벨 추정량은 세 가지로, <code><a href="../reference/fit_cl.html">fit_cl()</a></code> 과
-<code><a href="../reference/fit_ed.html">fit_ed()</a></code> 가 한 쌍의 sibling, <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> 은
-둘을 결합하는 통합 인터페이스이다.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Chain ladder (곱셈형 예측)</span></span>
-<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, method <span class="op">=</span> <span class="st">"mack"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cl</span>, type <span class="op">=</span> <span class="st">"projection"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started-ko_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="100%"></p>
+<p>미래 셀을 추정하려면 “손해가 경과기간에 따라 어떻게 늘어나는가”를
+모형으로 표현해야 한다. lossratio 는 두 가지 기본 관점을 쓴다.</p>
+<ul>
+<li>
+<strong>곱셈형 – chain ladder (CL)</strong>. 다음 경과기간의 누적
+손해는 현재의 배수다: <code>C_{k+1} = f_k * C_k</code>. 여기서
+<code>f_k</code> 가 <strong>ATA 인자(age-to-age factor)</strong>이며,
+인접한 두 경과기간의 누적 손해 비율로 추정한다.</li>
+<li>
+<strong>가법형 – 노출 기반(exposure-driven, ED)</strong>. 다음
+기간의 손해 <em>증분</em> 을 보험료에 비례시킨다:
+<code>Δloss = g_k * premium</code>. <code>g_k</code> 는 단위 보험료당
+손해 강도다.</li>
+</ul>
+<p>둘은 서로 보완적이다. 경과 초기에는 누적 손해가 작아 ATA 인자가 크게
+출렁이므로 보험료에 닻을 내리는 ED 가 안정적이고, 경과가 무르익으면 ATA
+인자가 안정되어 CL 이 코호트의 관측 수준을 잘 보존한다.</p>
+<div class="section level3">
+<h3 id="링크-단계-진단-as_link">링크 단계 진단 – <code>as_link()</code><a class="anchor" aria-label="anchor" href="#%EB%A7%81%ED%81%AC-%EB%8B%A8%EA%B3%84-%EC%A7%84%EB%8B%A8-as_link"></a>
+</h3>
+<p>Triangle 에서 연속한 두 경과기간을 잇는 <strong>Link</strong> 객체를
+만들면, 위 두 인자를 적합 전에 직접 점검할 수 있다.
+<code><a href="../reference/as_link.html">as_link()</a></code> 에 <code>loss</code> 만 주면 관측된 ATA 인자를,
+<code>exposure</code> 까지 주면 ED 강도 <code>g_k</code> 를 담는다 –
+워커 레이어에서 보험료 컬럼은 <code>exposure</code> 인자로 받는다.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">ata</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_link.html">as_link</a></span><span class="op">(</span><span class="va">tri1</span>, loss <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span>                        <span class="co"># ATA 모드</span></span>
+<span><span class="va">ed</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_link.html">as_link</a></span><span class="op">(</span><span class="va">tri1</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, exposure <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span>  <span class="co"># ED 모드</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ata</span>, model <span class="op">=</span> <span class="st">"ata"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
+<span><span class="co">#&gt;    coverage ata_from ata_to ata_link  mean median    wt    cv     f  f_se   rse</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;fctr&gt; &lt;num&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:  surgery        1      2      1-2 6.595  6.089 6.163 0.427 6.163 0.382 0.062</span></span>
+<span><span class="co">#&gt; 2:  surgery        2      3      2-3 1.765  1.768 1.739 0.157 1.739 0.042 0.024</span></span>
+<span><span class="co">#&gt; 3:  surgery        3      4      3-4 1.435  1.400 1.418 0.105 1.418 0.027 0.019</span></span>
+<span><span class="co">#&gt; 4:  surgery        4      5      4-5 1.324  1.331 1.339 0.068 1.339 0.018 0.014</span></span>
+<span><span class="co">#&gt; 5:  surgery        5      6      5-6 1.267  1.246 1.243 0.070 1.243 0.016 0.013</span></span>
+<span><span class="co">#&gt; 6:  surgery        6      7      6-7 1.204  1.194 1.205 0.048 1.205 0.011 0.009</span></span>
+<span><span class="co">#&gt;       sigma n_cohorts n_valid n_inf n_nan valid_ratio</span></span>
+<span><span class="co">#&gt;       &lt;num&gt;     &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;       &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1: 6207.618        35      35     0     0           1</span></span>
+<span><span class="co">#&gt; 2: 1689.250        34      34     0     0           1</span></span>
+<span><span class="co">#&gt; 3: 1372.883        33      33     0     0           1</span></span>
+<span><span class="co">#&gt; 4: 1105.053        32      32     0     0           1</span></span>
+<span><span class="co">#&gt; 5: 1086.826        31      31     0     0           1</span></span>
+<span><span class="co">#&gt; 6:  812.770        30      30     0     0           1</span></span></code></pre></div>
+<p><code>summary(link, model = "ata"|"ed")</code> 는 링크별 mean /
+median / cv / <code>f</code>(또는 <code>g</code>) 등 인자 통계를
+산출한다. 이 통계가 뒤에서 성숙점 검출을 구동한다. 더 깊은 진단은
+<code><a href="../articles/getting-started.html">vignette("getting-started")</a></code> 를 참고한다.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="fit_cl-chain-ladder">6. <code>fit_cl()</code> – chain ladder<a class="anchor" aria-label="anchor" href="#fit_cl-chain-ladder"></a>
+</h2>
+<p><code><a href="../reference/fit_cl.html">fit_cl()</a></code> 은 누적 <code>loss</code> 위에서 Mack(1993)
+방식의 chain ladder 적합을 수행한다.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve loss_proc_se</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;        &lt;num&gt;</span></span>
 <span><span class="co">#&gt;  1:  surgery 2023-01-01  410248522  410248522          0            0</span></span>
@@ -438,11 +531,38 @@ expected type 으로 코어션한다,</li>
 <span><span class="co">#&gt; 35:      21034520     195237078   0.434194593</span></span>
 <span><span class="co">#&gt; 36:      66075497     477337136   0.561019265</span></span>
 <span><span class="co">#&gt;     loss_param_se loss_total_se loss_total_cv</span></span>
-<span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;         &lt;num&gt;</span></span>
-<span></span>
-<span><span class="co"># Exposure-driven (덧셈형 예측)</span></span>
-<span><span class="va">ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, premium <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ed</span><span class="op">)</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;         &lt;num&gt;</span></span></code></pre></div>
+<p><code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> 는 코호트별 ultimate 손해와
+표준오차(<code>loss_total_se</code>),
+변동계수(<code>loss_total_cv</code>)를 보여준다. 표준오차는 Mack 의 분산
+분해를 따라 <em>과정오차(process)</em> 와 <em>모수오차(parameter)</em>
+의 합으로 산출된다.</p>
+<p><code>$full</code> 슬롯에는 관측 + 예측 전 영역의 셀별 결과가 들어
+있다.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cl</span><span class="op">$</span><span class="va">full</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cohort"</span>, <span class="st">"dev"</span>, <span class="st">"loss_obs"</span>, <span class="st">"loss_proj"</span>,</span>
+<span>                 <span class="st">"loss_total_se"</span>, <span class="st">"is_observed"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt;        cohort   dev loss_obs loss_proj loss_total_se is_observed</span></span>
+<span><span class="co">#&gt;        &lt;Date&gt; &lt;int&gt;    &lt;num&gt;     &lt;num&gt;         &lt;num&gt;      &lt;lgcl&gt;</span></span>
+<span><span class="co">#&gt; 1: 2023-01-01     1  1886123   1886123             0        TRUE</span></span>
+<span><span class="co">#&gt; 2: 2023-01-01     2 14030514  14030514             0        TRUE</span></span>
+<span><span class="co">#&gt; 3: 2023-01-01     3 24427715  24427715             0        TRUE</span></span>
+<span><span class="co">#&gt; 4: 2023-01-01     4 34672477  34672477             0        TRUE</span></span>
+<span><span class="co">#&gt; 5: 2023-01-01     5 44990229  44990229             0        TRUE</span></span>
+<span><span class="co">#&gt; 6: 2023-01-01     6 55621697  55621697             0        TRUE</span></span></code></pre></div>
+<p>투영 곡선을 보면 코호트별 관측(실선)과 예측(점선)이 이어진다.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started-ko_files/figure-html/fit-cl-plot-1.png" class="r-plt" alt="" width="100%"></p>
+</div>
+<div class="section level2">
+<h2 id="fit_ed-노출-기반">7. <code>fit_ed()</code> – 노출 기반<a class="anchor" aria-label="anchor" href="#fit_ed-%EB%85%B8%EC%B6%9C-%EA%B8%B0%EB%B0%98"></a>
+</h2>
+<p><code><a href="../reference/fit_ed.html">fit_ed()</a></code> 는 같은 삼각형을 가법형 ED 모형으로
+적합한다.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ed_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ed.html">fit_ed</a></span><span class="op">(</span><span class="va">tri1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ed_fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
 <span><span class="co">#&gt;     coverage ata_from ata_to ata_link    mean  median      wt      cv       g</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;fctr&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt;</span></span>
@@ -522,193 +642,760 @@ expected type 으로 코어션한다,</li>
 <span><span class="co">#&gt; 35:      NA      NA         NA         1       1     0     0           1</span></span>
 <span><span class="co">#&gt;        g_se     rse      sigma n_cohorts n_valid n_inf n_nan valid_ratio</span></span>
 <span><span class="co">#&gt;       &lt;num&gt;   &lt;num&gt;      &lt;num&gt;     &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;       &lt;num&gt;</span></span></code></pre></div>
-<p><code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> 은 손해율 통합 인터페이스이다. default 는
-<code>method = "ed"</code> (노출 기반(exposure-driven, ED) baseline)
-으로, 성숙점이나 regime 검출에 의존하지 않는 안전한 baseline 이다.
-코호트-anchored projection 이 필요할 때는 <code>method = "cl"</code>
-(체인 래더(chain ladder, CL)), 초기 변동과 후기 drift 가 모두 존재할
-때는 <code>method = "sa"</code> (단계 적응형(stage-adaptive, SA)) 로
-전환한다. SA 는 성숙점(maturity point) 이전에는 노출 기반, 이후에는 체인
-래더를 적용하는 합성이다.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ratio</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span>        <span class="co"># default: method = "ed"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ratio</span>, metric <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started-ko_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="100%"></p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratio</span><span class="op">)</span></span>
+<p>점 예측(<code>loss_proj</code>)은 CL 과 ED 가 거의 같다 – 둘 다 같은
+데이터를 설명하기 때문이다. 차이는 <em>분산이 어떻게 쌓이는가</em> 에
+있다. CL 은 배수 <code>f</code> 의 제곱으로 분산을 증폭시키고, ED 는
+보험료에 비례한 증분을 더해 간다. 그래서 초기 경과기간에서 ED 의
+표준오차가 더 차분하다.</p>
+</div>
+<div class="section level2">
+<h2 id="fit_sa-단계-적응형">8. <code>fit_sa()</code> – 단계 적응형<a class="anchor" aria-label="anchor" href="#fit_sa-%EB%8B%A8%EA%B3%84-%EC%A0%81%EC%9D%91%ED%98%95"></a>
+</h2>
+<p><code><a href="../reference/fit_sa.html">fit_sa()</a></code> 는 두 관점을 <strong>단계
+적응형(stage-adaptive, SA)</strong> 으로 합성한다.
+<strong>성숙점(maturity point)</strong> 이전 경과기간은 ED 로, 이후는 CL
+로 적합한다.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sa</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_sa.html">fit_sa</a></span><span class="op">(</span><span class="va">tri1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sa</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     coverage     cohort   loss_ult loss_total_se loss_total_cv</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;         &lt;num&gt;         &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:  surgery 2023-01-01  410248522             0   0.000000000</span></span>
+<span><span class="co">#&gt;  2:  surgery 2023-02-01 1001441303       5213830   0.005206903</span></span>
+<span><span class="co">#&gt;  3:  surgery 2023-03-01 1026151243       6516765   0.006351412</span></span>
+<span><span class="co">#&gt;  4:  surgery 2023-04-01 2186771221      13328275   0.006095671</span></span>
+<span><span class="co">#&gt;  5:  surgery 2023-05-01  697669301       5934623   0.008507146</span></span>
+<span><span class="co">#&gt;  6:  surgery 2023-06-01  931393934      19748953   0.021210955</span></span>
+<span><span class="co">#&gt;  7:  surgery 2023-07-01 3050990158      47562095   0.015597747</span></span>
+<span><span class="co">#&gt;  8:  surgery 2023-08-01  488218204      16944542   0.034721030</span></span>
+<span><span class="co">#&gt;  9:  surgery 2023-09-01 1751869308      42574746   0.024314556</span></span>
+<span><span class="co">#&gt; 10:  surgery 2023-10-01 1311793843      41329107   0.031518532</span></span>
+<span><span class="co">#&gt; 11:  surgery 2023-11-01  848103123      37157863   0.043825274</span></span>
+<span><span class="co">#&gt; 12:  surgery 2023-12-01 1497869029      57599154   0.038467355</span></span>
+<span><span class="co">#&gt; 13:  surgery 2024-01-01 2901492851      88235644   0.030420598</span></span>
+<span><span class="co">#&gt; 14:  surgery 2024-02-01 1160045952      54795036   0.047259587</span></span>
+<span><span class="co">#&gt; 15:  surgery 2024-03-01  686574148      43001505   0.062669337</span></span>
+<span><span class="co">#&gt; 16:  surgery 2024-04-01 5687484014     153573839   0.027023203</span></span>
+<span><span class="co">#&gt; 17:  surgery 2024-05-01 2645801838      99819176   0.037767381</span></span>
+<span><span class="co">#&gt; 18:  surgery 2024-06-01 1209024555      70198966   0.058126448</span></span>
+<span><span class="co">#&gt; 19:  surgery 2024-07-01 2542927190     113847340   0.044828055</span></span>
+<span><span class="co">#&gt; 20:  surgery 2024-08-01  918120582      65147845   0.071058089</span></span>
+<span><span class="co">#&gt; 21:  surgery 2024-09-01  635470028      57830189   0.091140754</span></span>
+<span><span class="co">#&gt; 22:  surgery 2024-10-01  856446521      72983751   0.085349352</span></span>
+<span><span class="co">#&gt; 23:  surgery 2024-11-01  260916096      41722607   0.160138402</span></span>
+<span><span class="co">#&gt; 24:  surgery 2024-12-01  295637296      49055982   0.166160578</span></span>
+<span><span class="co">#&gt; 25:  surgery 2025-01-01  710560093      84025806   0.118458337</span></span>
+<span><span class="co">#&gt; 26:  surgery 2025-02-01 3276849152     207578746   0.063455505</span></span>
+<span><span class="co">#&gt; 27:  surgery 2025-03-01  434950057      72002829   0.165840618</span></span>
+<span><span class="co">#&gt; 28:  surgery 2025-04-01  356301148      69341707   0.194927969</span></span>
+<span><span class="co">#&gt; 29:  surgery 2025-05-01  697290587     118074803   0.169587982</span></span>
+<span><span class="co">#&gt; 30:  surgery 2025-06-01  789468799     138920305   0.176211772</span></span>
+<span><span class="co">#&gt; 31:  surgery 2025-07-01 1040451732     169134660   0.162761021</span></span>
+<span><span class="co">#&gt; 32:  surgery 2025-08-01 1008356733     187372862   0.185979990</span></span>
+<span><span class="co">#&gt; 33:  surgery 2025-09-01  783000257     182485783   0.233248980</span></span>
+<span><span class="co">#&gt; 34:  surgery 2025-10-01 2001214863     340964049   0.170558023</span></span>
+<span><span class="co">#&gt; 35:  surgery 2025-11-01  576954661     191871774   0.427367699</span></span>
+<span><span class="co">#&gt; 36:  surgery 2025-12-01 1246569307     468598419   0.551014826</span></span>
+<span><span class="co">#&gt;     coverage     cohort   loss_ult loss_total_se loss_total_cv</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;         &lt;num&gt;         &lt;num&gt;</span></span></code></pre></div>
+<p>성숙점은 ATA 인자가 충분히 안정된 경과기간으로, 내부에서 자동
+검출된다 (2-pass). 직관은 단순하다 – ATA 인자가 아직 출렁이는 초기
+구간은 보험료에 닻을 내리고(ED), 안정된 이후 구간은 코호트 자신의 발전을
+따른다(CL). SA 는 이 패키지가 장기 손해율 예측의 기본 작업마로 삼는
+방법이다.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sa</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started-ko_files/figure-html/fit-sa-plot-1.png" class="r-plt" alt="" width="100%"></p>
+</div>
+<div class="section level2">
+<h2 id="fit_bf-bornhuetter-ferguson">9. <code>fit_bf()</code> – Bornhuetter-Ferguson<a class="anchor" aria-label="anchor" href="#fit_bf-bornhuetter-ferguson"></a>
+</h2>
+<p><code><a href="../reference/fit_bf.html">fit_bf()</a></code> 는 <strong>외부 사전(prior) 손해율</strong> 을
+끌어들인다. 아직 발현되지 않은 미래 부분은 데이터가 아니라 prior 가
+채운다.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover><mi>L</mi><mo accent="true">̂</mo></mover><mi>i</mi><mrow><mi>u</mi><mi>l</mi><mi>t</mi></mrow></msubsup><mo>=</mo><msubsup><mi>L</mi><mi>i</mi><mrow><mi>o</mi><mi>b</mi><mi>s</mi></mrow></msubsup><mo>+</mo><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><msub><mi>q</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>⋅</mo><msub><mrow><mi mathvariant="normal">E</mi><mi mathvariant="normal">L</mi><mi mathvariant="normal">R</mi></mrow><mi>i</mi></msub><mo>⋅</mo><msubsup><mi>E</mi><mi>i</mi><mrow><mi>u</mi><mi>l</mi><mi>t</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">
+\hat L^{ult}_i = L^{obs}_i + (1 - q_i)\cdot \mathrm{ELR}_i \cdot E^{ult}_i
+</annotation></semantics></math></p>
+<p><code>q_i</code> 는 코호트 i 의 발현
+비율(<code>L^{obs} / L^{ult, CL}</code>)이다. 즉 BF 는 <em>이미 발현된
+부분은 데이터</em>, <em>아직 안 나온 부분은 prior</em> 로 채우는
+신뢰도(credibility) 혼합이다. <code>prior</code> 인자는 필수다.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_bf.html">fit_bf</a></span><span class="op">(</span><span class="va">tri1</span>, prior <span class="op">=</span> <span class="fl">0.70</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">bf</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve   elr           q</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt; &lt;num&gt;       &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:  surgery 2023-01-01  410248522  410248522          0   0.7 1.000000000</span></span>
+<span><span class="co">#&gt;  2:  surgery 2023-02-01  976330445  988014446   11684001   0.7 0.974925282</span></span>
+<span><span class="co">#&gt;  3:  surgery 2023-03-01  978486045 1001313340   22827295   0.7 0.953549540</span></span>
+<span><span class="co">#&gt;  4:  surgery 2023-04-01 2029909919 2103440848   73530929   0.7 0.928268078</span></span>
+<span><span class="co">#&gt;  5:  surgery 2023-05-01  624219436  659825088   35605652   0.7 0.894721088</span></span>
+<span><span class="co">#&gt;  6:  surgery 2023-06-01  802880717  860017751   57137034   0.7 0.862020556</span></span>
+<span><span class="co">#&gt;  7:  surgery 2023-07-01 2539141549 2769110891  229969342   0.7 0.832235247</span></span>
+<span><span class="co">#&gt;  8:  surgery 2023-08-01  393678329  438075731   44397402   0.7 0.806357333</span></span>
+<span><span class="co">#&gt;  9:  surgery 2023-09-01 1364052542 1533228915  169176373   0.7 0.778626885</span></span>
+<span><span class="co">#&gt; 10:  surgery 2023-10-01  979266043 1132613702  153347659   0.7 0.746509101</span></span>
+<span><span class="co">#&gt; 11:  surgery 2023-11-01  604685679  731321345  126635666   0.7 0.712986030</span></span>
+<span><span class="co">#&gt; 12:  surgery 2023-12-01 1026345366 1259276578  232931212   0.7 0.685203677</span></span>
+<span><span class="co">#&gt; 13:  surgery 2024-01-01 1912177598 2391691252  479513654   0.7 0.659032331</span></span>
+<span><span class="co">#&gt; 14:  surgery 2024-02-01  733902485  947906510  214004025   0.7 0.632649494</span></span>
+<span><span class="co">#&gt; 15:  surgery 2024-03-01  415459873  541048315  125588442   0.7 0.605120181</span></span>
+<span><span class="co">#&gt; 16:  surgery 2024-04-01 3286053526 4282833085  996779559   0.7 0.577769277</span></span>
+<span><span class="co">#&gt; 17:  surgery 2024-05-01 1451731153 2051922702  600191549   0.7 0.548692322</span></span>
+<span><span class="co">#&gt; 18:  surgery 2024-06-01  629668308  881286702  251618394   0.7 0.520806882</span></span>
+<span><span class="co">#&gt; 19:  surgery 2024-07-01 1250954693 2279320912 1028366219   0.7 0.491934924</span></span>
+<span><span class="co">#&gt; 20:  surgery 2024-08-01  425346694  792385329  367038635   0.7 0.463279772</span></span>
+<span><span class="co">#&gt; 21:  surgery 2024-09-01  278156543  555212439  277055896   0.7 0.437717801</span></span>
+<span><span class="co">#&gt; 22:  surgery 2024-10-01  352070323  758060195  405989872   0.7 0.411082670</span></span>
+<span><span class="co">#&gt; 23:  surgery 2024-11-01   99050501  239786684  140736183   0.7 0.379625874</span></span>
+<span><span class="co">#&gt; 24:  surgery 2024-12-01  103194013  270168423  166974410   0.7 0.349056139</span></span>
+<span><span class="co">#&gt; 25:  surgery 2025-01-01  227089025  624183994  397094969   0.7 0.319591583</span></span>
+<span><span class="co">#&gt; 26:  surgery 2025-02-01  939163074 2580188625 1641025551   0.7 0.286605526</span></span>
+<span><span class="co">#&gt; 27:  surgery 2025-03-01  112828845  406416040  293587195   0.7 0.259406438</span></span>
+<span><span class="co">#&gt; 28:  surgery 2025-04-01   82472453  338988233  256515780   0.7 0.231468390</span></span>
+<span><span class="co">#&gt; 29:  surgery 2025-05-01  141214851  714552172  573337321   0.7 0.202519371</span></span>
+<span><span class="co">#&gt; 30:  surgery 2025-06-01  136406102  589825915  453419813   0.7 0.172782132</span></span>
+<span><span class="co">#&gt; 31:  surgery 2025-07-01  149144024  664688641  515544617   0.7 0.143345452</span></span>
+<span><span class="co">#&gt; 32:  surgery 2025-08-01  116327076  758604071  642276995   0.7 0.115363018</span></span>
+<span><span class="co">#&gt; 33:  surgery 2025-09-01   67465470  458478144  391012674   0.7 0.086162769</span></span>
+<span><span class="co">#&gt; 34:  surgery 2025-10-01  121626173 1001607436  879981263   0.7 0.060776169</span></span>
+<span><span class="co">#&gt; 35:  surgery 2025-11-01   15716444  416407427  400690983   0.7 0.034952352</span></span>
+<span><span class="co">#&gt; 36:  surgery 2025-12-01    4825085  716557798  711732713   0.7 0.005670972</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve   elr           q</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt; &lt;num&gt;       &lt;num&gt;</span></span>
+<span><span class="co">#&gt;     loss_total_se loss_total_cv loss_ci_lo loss_ci_hi</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;      &lt;num&gt;      &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:             0   0.000000000  410248522  410248522</span></span>
+<span><span class="co">#&gt;  2:       2706900   0.002739737  982709020  993319872</span></span>
+<span><span class="co">#&gt;  3:       3577408   0.003572716  994301749 1008324932</span></span>
+<span><span class="co">#&gt;  4:       6838847   0.003251267 2090036953 2116844742</span></span>
+<span><span class="co">#&gt;  5:       3492508   0.005293082  652979898  666670278</span></span>
+<span><span class="co">#&gt;  6:      12372795   0.014386674  835767517  884267984</span></span>
+<span><span class="co">#&gt;  7:      26644265   0.009621956 2716889092 2821332690</span></span>
+<span><span class="co">#&gt;  8:      10853531   0.024775468  416803200  459348261</span></span>
+<span><span class="co">#&gt;  9:      26083909   0.017012404 1482105392 1584352438</span></span>
+<span><span class="co">#&gt; 10:      26797039   0.023659469 1080092472 1185134933</span></span>
+<span><span class="co">#&gt; 11:      26147262   0.035753452  680073652  782569037</span></span>
+<span><span class="co">#&gt; 12:      36904052   0.029305756 1186945964 1331607192</span></span>
+<span><span class="co">#&gt; 13:      54554640   0.022810068 2284766123 2498616381</span></span>
+<span><span class="co">#&gt; 14:      37132355   0.039173014  875128432 1020684589</span></span>
+<span><span class="co">#&gt; 15:      28309725   0.052323840  485562273  596534358</span></span>
+<span><span class="co">#&gt; 16:      82259622   0.019206824 4121607187 4444058982</span></span>
+<span><span class="co">#&gt; 17:      67184067   0.032742007 1920244351 2183601052</span></span>
+<span><span class="co">#&gt; 18:      43376322   0.049219309  796270672  966302731</span></span>
+<span><span class="co">#&gt; 19:      93872014   0.041184202 2095335146 2463306678</span></span>
+<span><span class="co">#&gt; 20:      56754159   0.071624444  681149222  903621437</span></span>
+<span><span class="co">#&gt; 21:      50204160   0.090423334  456814094  653610784</span></span>
+<span><span class="co">#&gt; 22:      61451372   0.081063974  637617720  878502671</span></span>
+<span><span class="co">#&gt; 23:      39077740   0.162968764  163195722  316377647</span></span>
+<span><span class="co">#&gt; 24:      46347332   0.171549773  179329323  361007524</span></span>
+<span><span class="co">#&gt; 25:      76064334   0.121862039  475100639  773267350</span></span>
+<span><span class="co">#&gt; 26:     162339147   0.062917550 2262009743 2898367507</span></span>
+<span><span class="co">#&gt; 27:      69290105   0.170490578  270609928  542222151</span></span>
+<span><span class="co">#&gt; 28:      66987095   0.197608910  207695939  470280527</span></span>
+<span><span class="co">#&gt; 29:     121492740   0.170026409  476430778  952673567</span></span>
+<span><span class="co">#&gt; 30:     114220772   0.193651668  365957315  813694515</span></span>
+<span><span class="co">#&gt; 31:     127500326   0.191819625  414792595  914584687</span></span>
+<span><span class="co">#&gt; 32:     156435540   0.206215002  451996047 1065212095</span></span>
+<span><span class="co">#&gt; 33:     133546948   0.291283127  196730936  720225351</span></span>
+<span><span class="co">#&gt; 34:     231723393   0.231351511  547437930 1455776941</span></span>
+<span><span class="co">#&gt; 35:     187300253   0.449800461   49305677  783509176</span></span>
+<span><span class="co">#&gt; 36:     434845529   0.606853390 -135723778 1568839373</span></span>
+<span><span class="co">#&gt;     loss_total_se loss_total_cv loss_ci_lo loss_ci_hi</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;      &lt;num&gt;      &lt;num&gt;</span></span></code></pre></div>
+<p>prior 를 코호트마다 다르게 주거나(데이터프레임), 분포
+prior(<code>elr_se</code> 열 포함)로 줄 수도 있다. 데이터가 거의 없는
+초기 코호트일수록 결과가 prior 쪽으로 끌린다 – 그것이 BF 를 쓰는
+이유다.</p>
+</div>
+<div class="section level2">
+<h2 id="fit_cc-cape-cod">10. <code>fit_cc()</code> – Cape Cod<a class="anchor" aria-label="anchor" href="#fit_cc-cape-cod"></a>
+</h2>
+<p><code><a href="../reference/fit_cc.html">fit_cc()</a></code> 는 BF 와 같은 구조이되, 사전 손해율을 외부에서
+받지 않고 <strong>데이터를 풀링해 추정</strong> 한다.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mrow><mi mathvariant="normal">E</mi><mi mathvariant="normal">L</mi><mi mathvariant="normal">R</mi></mrow><mo accent="true">̂</mo></mover><mo>=</mo><mfrac><mrow><munder><mo>∑</mo><mi>i</mi></munder><msubsup><mi>L</mi><mi>i</mi><mrow><mi>o</mi><mi>b</mi><mi>s</mi></mrow></msubsup></mrow><mrow><munder><mo>∑</mo><mi>i</mi></munder><msubsup><mi>E</mi><mi>i</mi><mrow><mi>u</mi><mi>l</mi><mi>t</mi></mrow></msubsup><mo>⋅</mo><msub><mi>q</mi><mi>i</mi></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">
+\widehat{\mathrm{ELR}} =
+  \frac{\sum_i L^{obs}_i}{\sum_i E^{ult}_i \cdot q_i}
+</annotation></semantics></math></p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cc.html">fit_cc</a></span><span class="op">(</span><span class="va">tri1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cc</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve      elr           q</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;    &lt;num&gt;       &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:  surgery 2023-01-01  410248522  410248522          0 1.355821 1.000000000</span></span>
+<span><span class="co">#&gt;  2:  surgery 2023-02-01  976330445  998961036   22630591 1.355821 0.974925282</span></span>
+<span><span class="co">#&gt;  3:  surgery 2023-03-01  978486045 1022699937   44213892 1.355821 0.953549540</span></span>
+<span><span class="co">#&gt;  4:  surgery 2023-04-01 2029909919 2172331022  142421103 1.355821 0.928268078</span></span>
+<span><span class="co">#&gt;  5:  surgery 2023-05-01  624219436  693183562   68964126 1.355821 0.894721088</span></span>
+<span><span class="co">#&gt;  6:  surgery 2023-06-01  802880717  913548697  110667980 1.355821 0.862020556</span></span>
+<span><span class="co">#&gt;  7:  surgery 2023-07-01 2539141549 2984566188  445424639 1.355821 0.832235247</span></span>
+<span><span class="co">#&gt;  8:  surgery 2023-08-01  393678329  479671081   85992752 1.355821 0.806357333</span></span>
+<span><span class="co">#&gt;  9:  surgery 2023-09-01 1364052542 1691728066  327675524 1.355821 0.778626885</span></span>
+<span><span class="co">#&gt; 10:  surgery 2023-10-01  979266043 1276283138  297017095 1.355821 0.746509101</span></span>
+<span><span class="co">#&gt; 11:  surgery 2023-11-01  604685679  849964659  245278980 1.355821 0.712986030</span></span>
+<span><span class="co">#&gt; 12:  surgery 2023-12-01 1026345366 1477506812  451161446 1.355821 0.685203677</span></span>
+<span><span class="co">#&gt; 13:  surgery 2024-01-01 1912177598 2840941382  928763784 1.355821 0.659032331</span></span>
+<span><span class="co">#&gt; 14:  surgery 2024-02-01  733902485 1148404108  414501623 1.355821 0.632649494</span></span>
+<span><span class="co">#&gt; 15:  surgery 2024-03-01  415459873  658710499  243250626 1.355821 0.605120181</span></span>
+<span><span class="co">#&gt; 16:  surgery 2024-04-01 3286053526 5216702938 1930649412 1.355821 0.577769277</span></span>
+<span><span class="co">#&gt; 17:  surgery 2024-05-01 1451731153 2614234387 1162503234 1.355821 0.548692322</span></span>
+<span><span class="co">#&gt; 18:  surgery 2024-06-01  629668308 1117024715  487356407 1.355821 0.520806882</span></span>
+<span><span class="co">#&gt; 19:  surgery 2024-07-01 1250954693 3242783898 1991829205 1.355821 0.491934924</span></span>
+<span><span class="co">#&gt; 20:  surgery 2024-08-01  425346694 1136259071  710912377 1.355821 0.463279772</span></span>
+<span><span class="co">#&gt; 21:  surgery 2024-09-01  278156543  814782518  536625975 1.355821 0.437717801</span></span>
+<span><span class="co">#&gt; 22:  surgery 2024-10-01  352070323 1138426847  786356524 1.355821 0.411082670</span></span>
+<span><span class="co">#&gt; 23:  surgery 2024-11-01   99050501  371640591  272590090 1.355821 0.379625874</span></span>
+<span><span class="co">#&gt; 24:  surgery 2024-12-01  103194013  426604585  323410572 1.355821 0.349056139</span></span>
+<span><span class="co">#&gt; 25:  surgery 2025-01-01  227089025  996217126  769128101 1.355821 0.319591583</span></span>
+<span><span class="co">#&gt; 26:  surgery 2025-02-01  939163074 4117644201 3178481127 1.355821 0.286605526</span></span>
+<span><span class="co">#&gt; 27:  surgery 2025-03-01  112828845  681474078  568645233 1.355821 0.259406438</span></span>
+<span><span class="co">#&gt; 28:  surgery 2025-04-01   82472453  579314544  496842091 1.355821 0.231468390</span></span>
+<span><span class="co">#&gt; 29:  surgery 2025-05-01  141214851 1251704480 1110489629 1.355821 0.202519371</span></span>
+<span><span class="co">#&gt; 30:  surgery 2025-06-01  136406102 1014629063  878222961 1.355821 0.172782132</span></span>
+<span><span class="co">#&gt; 31:  surgery 2025-07-01  149144024 1147695713  998551689 1.355821 0.143345452</span></span>
+<span><span class="co">#&gt; 32:  surgery 2025-08-01  116327076 1360345066 1244017990 1.355821 0.115363018</span></span>
+<span><span class="co">#&gt; 33:  surgery 2025-09-01   67465470  824812852  757347382 1.355821 0.086162769</span></span>
+<span><span class="co">#&gt; 34:  surgery 2025-10-01  121626173 1826050478 1704424305 1.355821 0.060776169</span></span>
+<span><span class="co">#&gt; 35:  surgery 2025-11-01   15716444  791809616  776093172 1.355821 0.034952352</span></span>
+<span><span class="co">#&gt; 36:  surgery 2025-12-01    4825085 1383370954 1378545869 1.355821 0.005670972</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve      elr           q</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;    &lt;num&gt;       &lt;num&gt;</span></span>
+<span><span class="co">#&gt;     loss_total_se loss_total_cv loss_ci_lo loss_ci_hi   elr_cc_se   elr_cc_cv</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;      &lt;num&gt;      &lt;num&gt;       &lt;num&gt;       &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:             0   0.000000000  410248522  410248522 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt;  2:       4593602   0.004598379  989957742 1007964329 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt;  3:       5861160   0.005731065 1011212275 1034187600 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt;  4:      11606085   0.005342687 2149583513 2195078531 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt;  5:       5324825   0.007681696  682747097  703620028 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt;  6:      17799733   0.019484165  878661861  948435533 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt;  7:      40172904   0.013460215 2905828743 3063303632 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt;  8:      15331659   0.031962858  449621582  509720580 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt;  9:      37557573   0.022200715 1618116576 1765339557 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 10:      38142195   0.029885371 1201525810 1351040465 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 11:      36892692   0.043404972  777656311  922273007 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 12:      52372680   0.035446659 1374858246 1580155378 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 13:      78351886   0.027579550 2687374507 2994508257 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 14:      52317595   0.045556781 1045863507 1250944710 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 15:      39656345   0.060202995  580985491  736435508 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 16:     118649233   0.022744104 4984154715 5449251161 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 17:      95166627   0.036403250 2427711225 2800757549 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 18:      60795329   0.054426127  997868060 1236181369 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 19:     133200048   0.041075832 2981716601 3503851194 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 20:      79519501   0.069983601  980403712 1292114430 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 21:      70211447   0.086172009  677170611  952394425 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 22:      86035035   0.075573618  969801276 1307052417 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 23:      54540884   0.146757070  264742423  478538760 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 24:      64681286   0.151618825  299831594  553377576 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 25:     106241396   0.106644820  787987815 1204446437 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 26:     227653283   0.055287264 3671451966 4563836436 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 27:      96742990   0.141961364  491861302  871086855 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 28:      93540835   0.161468129  395977876  762651212 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 29:     169670289   0.135551395  919156825 1584252135 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 30:     159480991   0.157181572  702052063 1327206062 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 31:     178077636   0.155161019  798669960 1496721466 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 32:     218535228   0.160646908  932023889 1788666243 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 33:     186560125   0.226184794  459161726 1190463978 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 34:     323931990   0.177394871 1191155445 2460945512 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 35:     261700792   0.330509742  278885490 1304733743 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt; 36:     606816525   0.438650619  194032420 2572709489 0.004723362 0.003483765</span></span>
+<span><span class="co">#&gt;     loss_total_se loss_total_cv loss_ci_lo loss_ci_hi   elr_cc_se   elr_cc_cv</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;      &lt;num&gt;      &lt;num&gt;       &lt;num&gt;       &lt;num&gt;</span></span>
+<span><span class="co">#&gt;     elr_cc_ci_lo elr_cc_ci_hi</span></span>
+<span><span class="co">#&gt;            &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt;  2:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt;  3:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt;  4:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt;  5:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt;  6:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt;  7:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt;  8:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt;  9:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 10:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 11:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 12:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 13:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 14:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 15:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 16:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 17:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 18:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 19:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 20:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 21:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 22:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 23:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 24:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 25:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 26:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 27:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 28:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 29:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 30:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 31:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 32:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 33:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 34:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 35:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt; 36:     1.346563     1.365079</span></span>
+<span><span class="co">#&gt;     elr_cc_ci_lo elr_cc_ci_hi</span></span>
+<span><span class="co">#&gt;            &lt;num&gt;        &lt;num&gt;</span></span></code></pre></div>
+<p><code>prior</code> 인자가 없는 점만 빼면 호출과 출력은 BF 와 같다.
+prior 를 따로 구할 근거가 없을 때, 자기 포트폴리오가 스스로 ELR 을
+말하게 하는 방법이다.</p>
+</div>
+<div class="section level2">
+<h2 id="fit_loss-fit_premium-통합-디스패처">11. <code>fit_loss()</code> / <code>fit_premium()</code> – 통합
+디스패처<a class="anchor" aria-label="anchor" href="#fit_loss-fit_premium-%ED%86%B5%ED%95%A9-%EB%94%94%EC%8A%A4%ED%8C%A8%EC%B2%98"></a>
+</h2>
+<p>방법을 매번 다른 함수로 부르는 대신, <code><a href="../reference/fit_loss.html">fit_loss()</a></code> 하나로
+<code>method</code> 인자만 바꿔 호출할 수 있다.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_loss.html">fit_loss</a></span><span class="op">(</span><span class="va">tri1</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">fl</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "LossFit" "SAFit"   "list"</span></span></code></pre></div>
+<p><code>method</code> 는 <code>"ed"</code>(기본), <code>"cl"</code>,
+<code>"sa"</code>, <code>"bf"</code>, <code>"cc"</code> 중 하나다.
+<code>"bf"</code>/<code>"cc"</code> 는 prior 등 추가 인자를
+<code>...</code> 로 넘긴다. <code><a href="../reference/fit_premium.html">fit_premium()</a></code> 는 보험료 측을
+따로 적합하는 짝 함수다.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fe</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_premium.html">fit_premium</a></span><span class="op">(</span><span class="va">tri1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fe</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     coverage     cohort premium_ult premium_total_se premium_total_cv</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;       &lt;num&gt;            &lt;num&gt;            &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:  surgery 2023-01-01   274192564               NA               NA</span></span>
+<span><span class="co">#&gt;  2:  surgery 2023-02-01   665667720         203317.9     0.0003054339</span></span>
+<span><span class="co">#&gt;  3:  surgery 2023-03-01   702047332         262601.1     0.0003740529</span></span>
+<span><span class="co">#&gt;  4:  surgery 2023-04-01  1464399410        1367093.2     0.0009335767</span></span>
+<span><span class="co">#&gt;  5:  surgery 2023-05-01   483147255         703451.6     0.0014560085</span></span>
+<span><span class="co">#&gt;  6:  surgery 2023-06-01   591568799        1058731.8     0.0017897177</span></span>
+<span><span class="co">#&gt;  7:  surgery 2023-07-01  1958263736        3910208.1     0.0019968584</span></span>
+<span><span class="co">#&gt;  8:  surgery 2023-08-01   327535560        1828256.1     0.0055820892</span></span>
+<span><span class="co">#&gt;  9:  surgery 2023-09-01  1091733892        3952483.5     0.0036204828</span></span>
+<span><span class="co">#&gt; 10:  surgery 2023-10-01   864204933        3794976.2     0.0043913554</span></span>
+<span><span class="co">#&gt; 11:  surgery 2023-11-01   630311110        3272175.4     0.0051914680</span></span>
+<span><span class="co">#&gt; 12:  surgery 2023-12-01  1057060867        4484495.4     0.0042424185</span></span>
+<span><span class="co">#&gt; 13:  surgery 2024-01-01  2009045340        7688434.5     0.0038268640</span></span>
+<span><span class="co">#&gt; 14:  surgery 2024-02-01   832229795        4949366.6     0.0059470920</span></span>
+<span><span class="co">#&gt; 15:  surgery 2024-03-01   454345985        4045484.1     0.0089042245</span></span>
+<span><span class="co">#&gt; 16:  surgery 2024-04-01  3372494516       13992783.5     0.0041491213</span></span>
+<span><span class="co">#&gt; 17:  surgery 2024-05-01  1899849125       10075728.1     0.0053035580</span></span>
+<span><span class="co">#&gt; 18:  surgery 2024-06-01   750125230        6364391.3     0.0084844581</span></span>
+<span><span class="co">#&gt; 19:  surgery 2024-07-01  2891548085       14716651.1     0.0050896560</span></span>
+<span><span class="co">#&gt; 20:  surgery 2024-08-01   976935246        8364192.9     0.0085619202</span></span>
+<span><span class="co">#&gt; 21:  surgery 2024-09-01   703906575        7175630.7     0.0101943622</span></span>
+<span><span class="co">#&gt; 22:  surgery 2024-10-01   984833529        9313644.4     0.0094572623</span></span>
+<span><span class="co">#&gt; 23:  surgery 2024-11-01   324081360        5678519.9     0.0175216881</span></span>
+<span><span class="co">#&gt; 24:  surgery 2024-12-01   366444614        6236672.5     0.0170197403</span></span>
+<span><span class="co">#&gt; 25:  surgery 2025-01-01   833732378       10465225.2     0.0125525791</span></span>
+<span><span class="co">#&gt; 26:  surgery 2025-02-01  3286151352       23703310.8     0.0072131978</span></span>
+<span><span class="co">#&gt; 27:  surgery 2025-03-01   566316398        9534760.8     0.0168363975</span></span>
+<span><span class="co">#&gt; 28:  surgery 2025-04-01   476819833       10109619.3     0.0212023387</span></span>
+<span><span class="co">#&gt; 29:  surgery 2025-05-01  1027051048       16264024.8     0.0158367196</span></span>
+<span><span class="co">#&gt; 30:  surgery 2025-06-01   783037474       14618828.5     0.0186703135</span></span>
+<span><span class="co">#&gt; 31:  surgery 2025-07-01   859730812       17196880.8     0.0200032954</span></span>
+<span><span class="co">#&gt; 32:  surgery 2025-08-01  1037192185       21996644.0     0.0212094340</span></span>
+<span><span class="co">#&gt; 33:  surgery 2025-09-01   611257142       18778118.6     0.0307201006</span></span>
+<span><span class="co">#&gt; 34:  surgery 2025-10-01  1338462726       33336201.9     0.0249073599</span></span>
+<span><span class="co">#&gt; 35:  surgery 2025-11-01   593147593       24282233.8     0.0409388868</span></span>
+<span><span class="co">#&gt; 36:  surgery 2025-12-01  1022559927       47680639.5     0.0466199619</span></span>
+<span><span class="co">#&gt;     coverage     cohort premium_ult premium_total_se premium_total_cv</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;       &lt;num&gt;            &lt;num&gt;            &lt;num&gt;</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="fit_ratio-손해율-합성">12. <code>fit_ratio()</code> – 손해율 합성<a class="anchor" aria-label="anchor" href="#fit_ratio-%EC%86%90%ED%95%B4%EC%9C%A8-%ED%95%A9%EC%84%B1"></a>
+</h2>
+<p><code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> 는 손해 측과 보험료 측을 각각 적합한 뒤 둘을
+결합해 <strong>손해율</strong> 을 산출하는 합성(composition)
+레이어다.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri1</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve premium_ult</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;       &lt;num&gt;</span></span>
 <span><span class="co">#&gt;  1:  surgery 2023-01-01  410248522  410248522          0   274192564</span></span>
-<span><span class="co">#&gt;  2:  surgery 2023-02-01  976330445 1001304261   24973816   665667720</span></span>
-<span><span class="co">#&gt;  3:  surgery 2023-03-01  978486045 1027365215   48879170   702047332</span></span>
-<span><span class="co">#&gt;  4:  surgery 2023-04-01 2029909919 2186835972  156926053  1464399410</span></span>
-<span><span class="co">#&gt;  5:  surgery 2023-05-01  624219436  700124202   75904766   483147255</span></span>
-<span><span class="co">#&gt;  6:  surgery 2023-06-01  802880717  924502357  121621640   591568799</span></span>
-<span><span class="co">#&gt;  7:  surgery 2023-07-01 2539141549 3028986426  489844877  1958263736</span></span>
-<span><span class="co">#&gt;  8:  surgery 2023-08-01  393678329  488454953   94776624   327535560</span></span>
-<span><span class="co">#&gt;  9:  surgery 2023-09-01 1364052542 1725804921  361752379  1091733892</span></span>
-<span><span class="co">#&gt; 10:  surgery 2023-10-01  979266043 1308019740  328753697   864204933</span></span>
-<span><span class="co">#&gt; 11:  surgery 2023-11-01  604685679  876716310  272030631   630311110</span></span>
-<span><span class="co">#&gt; 12:  surgery 2023-12-01 1026345366 1527010394  500665028  1057060867</span></span>
-<span><span class="co">#&gt; 13:  surgery 2024-01-01 1912177598 2942802614 1030625016  2009045340</span></span>
-<span><span class="co">#&gt; 14:  surgery 2024-02-01  733902485 1193629493  459727008   832229795</span></span>
-<span><span class="co">#&gt; 15:  surgery 2024-03-01  415459873  685046660  269586787   454345985</span></span>
-<span><span class="co">#&gt; 16:  surgery 2024-04-01 3286053526 5424401591 2138348065  3372494516</span></span>
-<span><span class="co">#&gt; 17:  surgery 2024-05-01 1451731153 2740753232 1289022079  1899849125</span></span>
-<span><span class="co">#&gt; 18:  surgery 2024-06-01  629668308 1170293302  540624994   750125230</span></span>
-<span><span class="co">#&gt; 19:  surgery 2024-07-01 1250954693 3461664518 2210709825  2891548085</span></span>
-<span><span class="co">#&gt; 20:  surgery 2024-08-01  425346694 1212435170  787088476   976935246</span></span>
-<span><span class="co">#&gt; 21:  surgery 2024-09-01  278156543  870725770  592569227   703906575</span></span>
-<span><span class="co">#&gt; 22:  surgery 2024-10-01  352070323 1217843289  865772966   984833529</span></span>
-<span><span class="co">#&gt; 23:  surgery 2024-11-01   99050501  398006955  298956454   324081360</span></span>
-<span><span class="co">#&gt; 24:  surgery 2024-12-01  103194013  456590846  353396833   366444614</span></span>
-<span><span class="co">#&gt; 25:  surgery 2025-01-01  227089025 1064623873  837534848   833732378</span></span>
-<span><span class="co">#&gt; 26:  surgery 2025-02-01  939163074 4386331021 3447167947  3286151352</span></span>
-<span><span class="co">#&gt; 27:  surgery 2025-03-01  112828845  727050149  614221304   566316398</span></span>
-<span><span class="co">#&gt; 28:  surgery 2025-04-01   82472453  616924302  534451849   476819833</span></span>
-<span><span class="co">#&gt; 29:  surgery 2025-05-01  141214851 1330756277 1189541426  1027051048</span></span>
-<span><span class="co">#&gt; 30:  surgery 2025-06-01  136406102 1072907077  936500975   783037474</span></span>
-<span><span class="co">#&gt; 31:  surgery 2025-07-01  149144024 1209357471 1060213447   859730812</span></span>
-<span><span class="co">#&gt; 32:  surgery 2025-08-01  116327076 1432029264 1315702188  1037192185</span></span>
-<span><span class="co">#&gt; 33:  surgery 2025-09-01   67465470  865239645  797774175   611257142</span></span>
-<span><span class="co">#&gt; 34:  surgery 2025-10-01  121626173 1911124852 1789498679  1338462726</span></span>
-<span><span class="co">#&gt; 35:  surgery 2025-11-01   15716444  828091909  812375465   593147593</span></span>
-<span><span class="co">#&gt; 36:  surgery 2025-12-01    4825085 1442904476 1438079391  1022559927</span></span>
+<span><span class="co">#&gt;  2:  surgery 2023-02-01  976330445 1001441303   25110858   665667720</span></span>
+<span><span class="co">#&gt;  3:  surgery 2023-03-01  978486045 1026151243   47665198   702047332</span></span>
+<span><span class="co">#&gt;  4:  surgery 2023-04-01 2029909919 2186771221  156861302  1464399410</span></span>
+<span><span class="co">#&gt;  5:  surgery 2023-05-01  624219436  697669301   73449865   483147255</span></span>
+<span><span class="co">#&gt;  6:  surgery 2023-06-01  802880717  931393934  128513217   591568799</span></span>
+<span><span class="co">#&gt;  7:  surgery 2023-07-01 2539141549 3050990158  511848609  1958263736</span></span>
+<span><span class="co">#&gt;  8:  surgery 2023-08-01  393678329  488218204   94539875   327535560</span></span>
+<span><span class="co">#&gt;  9:  surgery 2023-09-01 1364052542 1751869308  387816766  1091733892</span></span>
+<span><span class="co">#&gt; 10:  surgery 2023-10-01  979266043 1311793843  332527800   864204933</span></span>
+<span><span class="co">#&gt; 11:  surgery 2023-11-01  604685679  848103123  243417444   630311110</span></span>
+<span><span class="co">#&gt; 12:  surgery 2023-12-01 1026345366 1497869029  471523663  1057060867</span></span>
+<span><span class="co">#&gt; 13:  surgery 2024-01-01 1912177598 2901492851  989315253  2009045340</span></span>
+<span><span class="co">#&gt; 14:  surgery 2024-02-01  733902485 1160045952  426143467   832229795</span></span>
+<span><span class="co">#&gt; 15:  surgery 2024-03-01  415459873  686574148  271114275   454345985</span></span>
+<span><span class="co">#&gt; 16:  surgery 2024-04-01 3286053526 5687484014 2401430488  3372494516</span></span>
+<span><span class="co">#&gt; 17:  surgery 2024-05-01 1451731153 2645801838 1194070685  1899849125</span></span>
+<span><span class="co">#&gt; 18:  surgery 2024-06-01  629668308 1209024555  579356247   750125230</span></span>
+<span><span class="co">#&gt; 19:  surgery 2024-07-01 1250954693 2542927190 1291972497  2891548085</span></span>
+<span><span class="co">#&gt; 20:  surgery 2024-08-01  425346694  918120582  492773888   976935246</span></span>
+<span><span class="co">#&gt; 21:  surgery 2024-09-01  278156543  635470028  357313485   703906575</span></span>
+<span><span class="co">#&gt; 22:  surgery 2024-10-01  352070323  856446521  504376198   984833529</span></span>
+<span><span class="co">#&gt; 23:  surgery 2024-11-01   99050501  260916096  161865595   324081360</span></span>
+<span><span class="co">#&gt; 24:  surgery 2024-12-01  103194013  295637296  192443283   366444614</span></span>
+<span><span class="co">#&gt; 25:  surgery 2025-01-01  227089025  710560093  483471068   833732378</span></span>
+<span><span class="co">#&gt; 26:  surgery 2025-02-01  939163074 3276849152 2337686078  3286151352</span></span>
+<span><span class="co">#&gt; 27:  surgery 2025-03-01  112828845  434950057  322121212   566316398</span></span>
+<span><span class="co">#&gt; 28:  surgery 2025-04-01   82472453  356301148  273828695   476819833</span></span>
+<span><span class="co">#&gt; 29:  surgery 2025-05-01  141214851  697290587  556075736  1027051048</span></span>
+<span><span class="co">#&gt; 30:  surgery 2025-06-01  136406102  789468799  653062697   783037474</span></span>
+<span><span class="co">#&gt; 31:  surgery 2025-07-01  149144024 1040451732  891307708   859730812</span></span>
+<span><span class="co">#&gt; 32:  surgery 2025-08-01  116327076 1008356733  892029657  1037192185</span></span>
+<span><span class="co">#&gt; 33:  surgery 2025-09-01   67465470  783000257  715534787   611257142</span></span>
+<span><span class="co">#&gt; 34:  surgery 2025-10-01  121626173 2001214863 1879588690  1338462726</span></span>
+<span><span class="co">#&gt; 35:  surgery 2025-11-01   15716444  576954661  561238217   593147593</span></span>
+<span><span class="co">#&gt; 36:  surgery 2025-12-01    4825085 1246569307 1241744222  1022559927</span></span>
 <span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve premium_ult</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;       &lt;num&gt;</span></span>
 <span><span class="co">#&gt;     ratio_latest ratio_ult maturity_from loss_proc_se loss_param_se</span></span>
 <span><span class="co">#&gt;            &lt;num&gt;     &lt;num&gt;         &lt;num&gt;        &lt;num&gt;         &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:    1.4962059  1.496206            NA            0             0</span></span>
-<span><span class="co">#&gt;  2:    1.5107824  1.504210            NA      2934231       4309793</span></span>
-<span><span class="co">#&gt;  3:    1.4771448  1.463385            NA      3982661       5158162</span></span>
-<span><span class="co">#&gt;  4:    1.5139132  1.493333            NA      6546789      11609585</span></span>
-<span><span class="co">#&gt;  5:    1.4543748  1.449091            NA      4547580       3813039</span></span>
-<span><span class="co">#&gt;  6:    1.5796369  1.562798            NA     17628088       8903464</span></span>
-<span><span class="co">#&gt;  7:    1.5597190  1.546771            NA     35686361      31442590</span></span>
-<span><span class="co">#&gt;  8:    1.4945957  1.491304            NA     16152143       5121110</span></span>
-<span><span class="co">#&gt;  9:    1.6079808  1.580793            NA     37357117      20421919</span></span>
-<span><span class="co">#&gt; 10:    1.5129472  1.513553            NA     37573001      17215247</span></span>
-<span><span class="co">#&gt; 11:    1.3298743  1.390926            NA     35161608      12015326</span></span>
-<span><span class="co">#&gt; 12:    1.3981081  1.444581            NA     53162531      22167720</span></span>
-<span><span class="co">#&gt; 13:    1.4274951  1.464777            NA     76259904      44384184</span></span>
-<span><span class="co">#&gt; 14:    1.3793745  1.434255            NA     51529679      18632983</span></span>
-<span><span class="co">#&gt; 15:    1.4969280  1.507764            NA     41482939      11326747</span></span>
-<span><span class="co">#&gt; 16:    1.6712898  1.608424            NA    120195326      95592928</span></span>
-<span><span class="co">#&gt; 17:    1.3770835  1.442616            NA     88447102      46270702</span></span>
-<span><span class="co">#&gt; 18:    1.5918247  1.560131            NA     66834389      21472291</span></span>
-<span><span class="co">#&gt; 19:    0.8658750  1.197167            NA    104028932      46251465</span></span>
-<span><span class="co">#&gt; 20:    0.9236050  1.241060            NA     62896850      16977280</span></span>
-<span><span class="co">#&gt; 21:    0.8920448  1.236991            NA     56583751      11941938</span></span>
-<span><span class="co">#&gt; 22:    0.8596968  1.236598            NA     71133708      16328611</span></span>
-<span><span class="co">#&gt; 23:    0.7871749  1.228108            NA     41388948       5266012</span></span>
-<span><span class="co">#&gt; 24:    0.7813438  1.246002            NA     48660596       6215769</span></span>
-<span><span class="co">#&gt; 25:    0.8188282  1.276937            NA     82549103      15683804</span></span>
-<span><span class="co">#&gt; 26:    0.9377837  1.334793            NA    193613125      74852479</span></span>
-<span><span class="co">#&gt; 27:    0.7193486  1.283823            NA     71295313      10069046</span></span>
-<span><span class="co">#&gt; 28:    0.6947510  1.293831            NA     68826316       8438639</span></span>
-<span><span class="co">#&gt; 29:    0.6203897  1.295706            NA    116537796      18989499</span></span>
-<span><span class="co">#&gt; 30:    0.8981587  1.370186            NA    137078933      22543675</span></span>
-<span><span class="co">#&gt; 31:    1.0440457  1.406670            NA    166193829      31402939</span></span>
-<span><span class="co">#&gt; 32:    0.8100543  1.380679            NA    184425493      33103273</span></span>
-<span><span class="co">#&gt; 33:    0.9985960  1.415508            NA    180452022      27168526</span></span>
-<span><span class="co">#&gt; 34:    1.0894657  1.427851            NA    331672128      79057462</span></span>
-<span><span class="co">#&gt; 35:    0.4765917  1.396098            NA    190733674      20867271</span></span>
-<span><span class="co">#&gt; 36:    0.1689836  1.411071            NA    464027946      65288155</span></span>
+<span><span class="co">#&gt;  1:    1.4962059 1.4962059             3            0             0</span></span>
+<span><span class="co">#&gt;  2:    1.5107824 1.5044162             3      2974816       4362011</span></span>
+<span><span class="co">#&gt;  3:    1.4771448 1.4616554             3      4270032       5160023</span></span>
+<span><span class="co">#&gt;  4:    1.5139132 1.4932888             3      7041128      11598550</span></span>
+<span><span class="co">#&gt;  5:    1.4543748 1.4440097             3      4511892       3807155</span></span>
+<span><span class="co">#&gt;  6:    1.5796369 1.5744474             3     17444256       9252798</span></span>
+<span><span class="co">#&gt;  7:    1.5597190 1.5580078             3     35085745      32956647</span></span>
+<span><span class="co">#&gt;  8:    1.4945957 1.4905808             3     15581189       5527584</span></span>
+<span><span class="co">#&gt;  9:    1.6079808 1.6046670             3     37754499      22337518</span></span>
+<span><span class="co">#&gt; 10:    1.5129472 1.5179199             3     36292444      18145424</span></span>
+<span><span class="co">#&gt; 11:    1.3298743 1.3455310             3     36448974      12573545</span></span>
+<span><span class="co">#&gt; 12:    1.3981081 1.4170130             3     50088510      23067166</span></span>
+<span><span class="co">#&gt; 13:    1.4274951 1.4442147             3     77086126      45322232</span></span>
+<span><span class="co">#&gt; 14:    1.3793745 1.3939010             3     52024922      19053928</span></span>
+<span><span class="co">#&gt; 15:    1.4969280 1.5111263             3     41835349      11430104</span></span>
+<span><span class="co">#&gt; 16:    1.6712898 1.6864324             3    128329943      96356457</span></span>
+<span><span class="co">#&gt; 17:    1.3770835 1.3926379             3     88940013      45748540</span></span>
+<span><span class="co">#&gt; 18:    1.5918247 1.6117636             3     64461772      21226463</span></span>
+<span><span class="co">#&gt; 19:    0.8658750 0.8794345             3    102590260      46504658</span></span>
+<span><span class="co">#&gt; 20:    0.9236050 0.9397968             3     64598903      17104018</span></span>
+<span><span class="co">#&gt; 21:    0.8920448 0.9027761             3     55690523      12099317</span></span>
+<span><span class="co">#&gt; 22:    0.8596968 0.8696358             3     66391237      16462136</span></span>
+<span><span class="co">#&gt; 23:    0.7871749 0.8050944             3     41431955       5297452</span></span>
+<span><span class="co">#&gt; 24:    0.7813438 0.8067721             3     49894835       6370067</span></span>
+<span><span class="co">#&gt; 25:    0.8188282 0.8522640             3     85025980      15999454</span></span>
+<span><span class="co">#&gt; 26:    0.9377837 0.9971693             3    182877119      76356271</span></span>
+<span><span class="co">#&gt; 27:    0.7193486 0.7680337             3     69632308      10311279</span></span>
+<span><span class="co">#&gt; 28:    0.6947510 0.7472448             3     70309787       8715699</span></span>
+<span><span class="co">#&gt; 29:    0.6203897 0.6789250             3    118636641      19479723</span></span>
+<span><span class="co">#&gt; 30:    0.8981587 1.0082133             3    132736664      23023332</span></span>
+<span><span class="co">#&gt; 31:    1.0440457 1.2102064             3    165733132      31664923</span></span>
+<span><span class="co">#&gt; 32:    0.8100543 0.9721985             3    185534229      32540766</span></span>
+<span><span class="co">#&gt; 33:    0.9985960 1.2809670             3    184367813      27287599</span></span>
+<span><span class="co">#&gt; 34:    1.0894657 1.4951592             3    330089483      80102400</span></span>
+<span><span class="co">#&gt; 35:    0.4765917 0.9727000             3    197962944      20848833</span></span>
+<span><span class="co">#&gt; 36:    0.1689836 1.2190672             3    476510733      64518340</span></span>
 <span><span class="co">#&gt;     ratio_latest ratio_ult maturity_from loss_proc_se loss_param_se</span></span>
 <span><span class="co">#&gt;            &lt;num&gt;     &lt;num&gt;         &lt;num&gt;        &lt;num&gt;         &lt;num&gt;</span></span>
 <span><span class="co">#&gt;     loss_total_se loss_total_cv    ratio_se    ratio_cv ratio_ci_lo ratio_ci_hi</span></span>
 <span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:             0   0.000000000 0.000000000 0.000000000   1.4962059    1.496206</span></span>
-<span><span class="co">#&gt;  2:       5213830   0.005207039 0.007832482 0.005207039   1.4888589    1.519562</span></span>
-<span><span class="co">#&gt;  3:       6516765   0.006343182 0.009282515 0.006343182   1.4451911    1.481578</span></span>
-<span><span class="co">#&gt;  4:      13328275   0.006094776 0.009101530 0.006094776   1.4754943    1.511172</span></span>
-<span><span class="co">#&gt;  5:       5934623   0.008476529 0.012283260 0.008476529   1.4250160    1.473165</span></span>
-<span><span class="co">#&gt;  6:      19748953   0.021361712 0.033384034 0.021361712   1.4973662    1.628229</span></span>
-<span><span class="co">#&gt;  7:      47562095   0.015702314 0.024287890 0.015702314   1.4991681    1.594375</span></span>
-<span><span class="co">#&gt;  8:      16944542   0.034690081 0.051733442 0.034690081   1.3899079    1.592699</span></span>
-<span><span class="co">#&gt;  9:      42574746   0.024669501 0.038997366 0.024669501   1.5043592    1.657226</span></span>
-<span><span class="co">#&gt; 10:      41329107   0.031596700 0.047823272 0.031596700   1.4198208    1.607285</span></span>
-<span><span class="co">#&gt; 11:      37157863   0.042382995 0.058951622 0.042382995   1.2753833    1.506469</span></span>
-<span><span class="co">#&gt; 12:      57599154   0.037720211 0.054489912 0.037720211   1.3377831    1.551380</span></span>
-<span><span class="co">#&gt; 13:      88235644   0.029983541 0.043919190 0.029983541   1.3786966    1.550857</span></span>
-<span><span class="co">#&gt; 14:      54795036   0.045906235 0.065841233 0.045906235   1.3052083    1.563301</span></span>
-<span><span class="co">#&gt; 15:      43001505   0.062771643 0.094644843 0.062771643   1.3222638    1.693265</span></span>
-<span><span class="co">#&gt; 16:     153573839   0.028311665 0.045537165 0.028311665   1.5191729    1.697675</span></span>
-<span><span class="co">#&gt; 17:      99819176   0.036420344 0.052540580 0.036420344   1.3396386    1.545594</span></span>
-<span><span class="co">#&gt; 18:      70198966   0.059984079 0.093582996 0.059984079   1.3767113    1.743550</span></span>
-<span><span class="co">#&gt; 19:     113847340   0.032888034 0.039372453 0.032888034   1.1199979    1.274335</span></span>
-<span><span class="co">#&gt; 20:      65147845   0.053733055 0.066685940 0.053733055   1.1103579    1.371762</span></span>
-<span><span class="co">#&gt; 21:      57830189   0.066416077 0.082156058 0.066416077   1.0759676    1.398013</span></span>
-<span><span class="co">#&gt; 22:      72983751   0.059928689 0.074107704 0.059928689   1.0913497    1.381847</span></span>
-<span><span class="co">#&gt; 23:      41722607   0.104828839 0.128741150 0.104828839   0.9757801    1.480436</span></span>
-<span><span class="co">#&gt; 24:      49055982   0.107439697 0.133870114 0.107439697   0.9836217    1.508383</span></span>
-<span><span class="co">#&gt; 25:      84025806   0.078925344 0.100782707 0.078925344   1.0794067    1.474468</span></span>
-<span><span class="co">#&gt; 26:     207578746   0.047324004 0.063167737 0.047324004   1.2109863    1.458599</span></span>
-<span><span class="co">#&gt; 27:      72002829   0.099034199 0.127142405 0.099034199   1.0346287    1.533018</span></span>
-<span><span class="co">#&gt; 28:      69341707   0.112399053 0.145425384 0.112399053   1.0088025    1.578860</span></span>
-<span><span class="co">#&gt; 29:     118074803   0.088727594 0.114964882 0.088727594   1.0703790    1.521033</span></span>
-<span><span class="co">#&gt; 30:     138920305   0.129480276 0.177412077 0.129480276   1.0224648    1.717907</span></span>
-<span><span class="co">#&gt; 31:     169134660   0.139854976 0.196729788 0.139854976   1.0210866    1.792253</span></span>
-<span><span class="co">#&gt; 32:     187372862   0.130844297 0.180653947 0.130844297   1.0266036    1.734754</span></span>
-<span><span class="co">#&gt; 33:     182485783   0.210907792 0.298541761 0.210907792   0.8303773    2.000640</span></span>
-<span><span class="co">#&gt; 34:     340964049   0.178410138 0.254743029 0.178410138   0.9285635    1.927138</span></span>
-<span><span class="co">#&gt; 35:     191871774   0.231703476 0.323480658 0.231703476   0.7620871    2.030108</span></span>
-<span><span class="co">#&gt; 36:     468598419   0.324760527 0.458260104 0.324760527   0.5128975    2.309244</span></span>
+<span><span class="co">#&gt;  1:             0   0.000000000 0.000000000 0.000000000   1.4962059   1.4962059</span></span>
+<span><span class="co">#&gt;  2:       5279836   0.005272237 0.007931639 0.005272237   1.4888705   1.5199619</span></span>
+<span><span class="co">#&gt;  3:       6697687   0.006526998 0.009540221 0.006526998   1.4429569   1.4803538</span></span>
+<span><span class="co">#&gt;  4:      13568488   0.006204804 0.009265565 0.006204804   1.4751286   1.5114490</span></span>
+<span><span class="co">#&gt;  5:       5903524   0.008461780 0.012218892 0.008461780   1.4200611   1.4679582</span></span>
+<span><span class="co">#&gt;  6:      19746299   0.021200803 0.033379548 0.021200803   1.5090246   1.6398701</span></span>
+<span><span class="co">#&gt;  7:      48136785   0.015777430 0.024581360 0.015777430   1.5098292   1.6061864</span></span>
+<span><span class="co">#&gt;  8:      16532623   0.033863185 0.050475812 0.033863185   1.3916500   1.5895115</span></span>
+<span><span class="co">#&gt;  9:      43867607   0.025040456 0.040181593 0.025040456   1.5259125   1.6834214</span></span>
+<span><span class="co">#&gt; 10:      40575829   0.030931560 0.046951629 0.030931560   1.4258964   1.6099434</span></span>
+<span><span class="co">#&gt; 11:      38556734   0.045462318 0.061170958 0.045462318   1.2256381   1.4654238</span></span>
+<span><span class="co">#&gt; 12:      55144837   0.036815526 0.052168081 0.036815526   1.3147655   1.5192606</span></span>
+<span><span class="co">#&gt; 13:      89422455   0.030819464 0.044509924 0.030819464   1.3569769   1.5314526</span></span>
+<span><span class="co">#&gt; 14:      55404374   0.047760500 0.066573409 0.047760500   1.2634195   1.5243825</span></span>
+<span><span class="co">#&gt; 15:      43368695   0.063166805 0.095453018 0.063166805   1.3240418   1.6982107</span></span>
+<span><span class="co">#&gt; 16:     160477852   0.028215965 0.047584318 0.028215965   1.5931688   1.7796959</span></span>
+<span><span class="co">#&gt; 17:     100016273   0.037801876 0.052644324 0.037801876   1.2894569   1.4958188</span></span>
+<span><span class="co">#&gt; 18:      67866655   0.056133397 0.090473767 0.056133397   1.4344383   1.7890889</span></span>
+<span><span class="co">#&gt; 19:     112638558   0.044294842 0.038954413 0.044294842   0.8030853   0.9557838</span></span>
+<span><span class="co">#&gt; 20:      66824889   0.072784436 0.068402577 0.072784436   0.8057302   1.0738634</span></span>
+<span><span class="co">#&gt; 21:      56989717   0.089681204 0.080962047 0.089681204   0.7440934   1.0614588</span></span>
+<span><span class="co">#&gt; 22:      68401742   0.079866916 0.069455131 0.079866916   0.7335063   1.0057654</span></span>
+<span><span class="co">#&gt; 23:      41769245   0.160086887 0.128885060 0.160086887   0.5524843   1.0577045</span></span>
+<span><span class="co">#&gt; 24:      50299824   0.170140320 0.137264466 0.170140320   0.5377387   1.0758055</span></span>
+<span><span class="co">#&gt; 25:      86518205   0.121760574 0.103772154 0.121760574   0.6488743   1.0556537</span></span>
+<span><span class="co">#&gt; 26:     198177499   0.060478066 0.060306869 0.060478066   0.8789700   1.1153686</span></span>
+<span><span class="co">#&gt; 27:      70391625   0.161838408 0.124297345 0.161838408   0.5244153   1.0116520</span></span>
+<span><span class="co">#&gt; 28:      70847933   0.198842842 0.148584283 0.198842842   0.4560250   1.0384647</span></span>
+<span><span class="co">#&gt; 29:     120225256   0.172417723 0.117058695 0.172417723   0.4494941   0.9083558</span></span>
+<span><span class="co">#&gt; 30:     134718580   0.170644590 0.172046146 0.170644590   0.6710091   1.3454176</span></span>
+<span><span class="co">#&gt; 31:     168730965   0.162170872 0.196260228 0.162170872   0.8255434   1.5948694</span></span>
+<span><span class="co">#&gt; 32:     188366269   0.186805188 0.181611732 0.186805188   0.6162461   1.3281510</span></span>
+<span><span class="co">#&gt; 33:     186376242   0.238028328 0.304906445 0.238028328   0.6833614   1.8785727</span></span>
+<span><span class="co">#&gt; 34:     339669635   0.169731717 0.253775939 0.169731717   0.9977675   1.9925509</span></span>
+<span><span class="co">#&gt; 35:     199057783   0.345014602 0.335595702 0.345014602   0.3149445   1.6304555</span></span>
+<span><span class="co">#&gt; 36:     480858705   0.385745664 0.470249902 0.385745664   0.2973944   2.1407401</span></span>
 <span><span class="co">#&gt;     loss_total_se loss_total_cv    ratio_se    ratio_cv ratio_ci_lo ratio_ci_hi</span></span>
 <span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;</span></span></code></pre></div>
+<p><code>$full</code> 에는 <code>loss_proj</code> /
+<code>premium_proj</code> / <code>ratio_proj</code> 와 손해율
+표준오차(<code>ratio_se</code>)·신뢰구간(<code>ratio_ci_lo</code>/<code>ratio_ci_hi</code>)이
+함께 들어 있다.</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">lr</span><span class="op">$</span><span class="va">full</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cohort"</span>, <span class="st">"dev"</span>, <span class="st">"loss_proj"</span>, <span class="st">"premium_proj"</span>,</span>
+<span>                 <span class="st">"ratio_proj"</span>, <span class="st">"ratio_se"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt;        cohort   dev loss_proj premium_proj ratio_proj ratio_se</span></span>
+<span><span class="co">#&gt;        &lt;Date&gt; &lt;int&gt;     &lt;num&gt;        &lt;num&gt;      &lt;num&gt;    &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1: 2023-01-01     1   1886123      7527562  0.2505623        0</span></span>
+<span><span class="co">#&gt; 2: 2023-01-01     2  14030514     15168591  0.9249715        0</span></span>
+<span><span class="co">#&gt; 3: 2023-01-01     3  24427715     22794364  1.0716559        0</span></span>
+<span><span class="co">#&gt; 4: 2023-01-01     4  34672477     31558907  1.0986590        0</span></span>
+<span><span class="co">#&gt; 5: 2023-01-01     5  44990229     39336754  1.1437199        0</span></span>
+<span><span class="co">#&gt; 6: 2023-01-01     6  55621697     47008228  1.1832332        0</span></span></code></pre></div>
+<p>손해율 표준오차는 <code>se_method</code> 로 정한다 –
+<code>"fixed"</code>(기본)는 보험료를 알려진 값으로 취급하고,
+<code>"delta"</code>는 보험료의 불확실성과 손해-보험료 상관까지
+델타법으로 반영한다.</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started-ko_files/figure-html/fit-ratio-plot-1.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level2">
-<h2 id="단계-구조-변화-진단">5단계 — 구조 변화 진단<a class="anchor" aria-label="anchor" href="#%EB%8B%A8%EA%B3%84-%EA%B5%AC%EC%A1%B0-%EB%B3%80%ED%99%94-%EC%A7%84%EB%8B%A8"></a>
+<h2 id="진단-성숙점수렴점regime">13. 진단 – 성숙점·수렴점·regime<a class="anchor" aria-label="anchor" href="#%EC%A7%84%EB%8B%A8-%EC%84%B1%EC%88%99%EC%A0%90%EC%88%98%EB%A0%B4%EC%A0%90regime"></a>
 </h2>
-<p><code><a href="../reference/detect_regime.html">detect_regime()</a></code> 은 최근 코호트가 이전 코호트와 다르게
-행동하는지 검사한다. 동질적 부분집합에 한하여 손해율 적합을 수행하기
-위한 전처리 단계로 활용된다.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
-<span>  <span class="va">experience</span><span class="op">[</span><span class="va">coverage</span> <span class="op">==</span> <span class="st">"surgery"</span><span class="op">]</span>,</span>
-<span>  groups   <span class="op">=</span> <span class="st">"coverage"</span>,</span>
-<span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span>
-<span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
-<span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
-<span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">sub</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;Regime&gt;</span></span>
-<span><span class="co">#&gt;   method    : e_divisive</span></span>
-<span><span class="co">#&gt;   loss      : ratio</span></span>
-<span><span class="co">#&gt;   treatment : latest_only</span></span>
-<span><span class="co">#&gt;   window (window) : dev_m 1-4</span></span>
-<span><span class="co">#&gt;   cohorts    : 33 analysed (3 dropped)</span></span>
-<span><span class="co">#&gt;   regimes    : 2</span></span>
-<span><span class="co">#&gt;   changes    : 24.07</span></span>
-<span><span class="co">#&gt;   PC1 / PC2  : 75.6% / 18.9%</span></span></code></pre></div>
-<p>상세 설명은 <code><a href="../articles/regime.html">vignette("regime")</a></code> 을 참고한다.</p>
+<p>적합 전후로 삼각형의 구조를 점검하는 진단 함수들이 있다.</p>
+<p><strong>성숙점</strong> – ATA 인자가 안정되는 경과기간. SA 의 단계
+전환점이기도 하다.</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/detect_maturity.html">detect_maturity</a></span><span class="op">(</span><span class="va">tri1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Key: &lt;coverage&gt;</span></span>
+<span><span class="co">#&gt;    coverage ata_from change ata_link     mean   median       wt        cv</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;    &lt;num&gt;  &lt;num&gt;   &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;     &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:  surgery        3      4      3-4 1.434507 1.400098 1.417706 0.1053282</span></span>
+<span><span class="co">#&gt;           f       f_se        rse    sigma n_cohorts n_valid n_inf n_nan</span></span>
+<span><span class="co">#&gt;       &lt;num&gt;      &lt;num&gt;      &lt;num&gt;    &lt;num&gt;     &lt;num&gt;   &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1: 1.417706 0.02651852 0.01870522 1372.883        33      33     0     0</span></span>
+<span><span class="co">#&gt;    valid_ratio</span></span>
+<span><span class="co">#&gt;          &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:           1</span></span></code></pre></div>
+<p><strong>수렴점(convergence point)</strong> – 예측 손해율이 더 이상
+의미 있게 움직이지 않는 경과기간. 누적 손해율의 분모가 자라며 신호를
+감쇠시키는 <strong>관성(inertia)</strong> 을 이중 기준으로 걸러
+검출한다.</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/detect_convergence.html">detect_convergence</a></span><span class="op">(</span><span class="va">tri1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;Convergence&gt;</span></span>
+<span><span class="co">#&gt;   method     : tail</span></span>
+<span><span class="co">#&gt;   conv_k     : NA</span></span>
+<span><span class="co">#&gt;   mat_k      : 4</span></span>
+<span><span class="co">#&gt;   dev_max    : 36</span></span>
+<span><span class="co">#&gt;   candidates : 31</span></span>
+<span><span class="co">#&gt;   passes :</span></span>
+<span><span class="co">#&gt;     window :  0/31 (drift_window &lt; 0.01  &amp; dispersion &lt; 0.15)</span></span>
+<span><span class="co">#&gt;     tail   :  0/31 (drift_tail   &lt; 0.01  &amp; dispersion &lt; 0.15)  &lt;- method</span></span>
+<span><span class="co">#&gt;     slope  :  1/31 (|slope|      &lt; 0.001 &amp; dispersion &lt; 0.15)</span></span>
+<span><span class="co">#&gt;     all    :  0/31 (window AND tail AND slope)</span></span></code></pre></div>
+<p><strong>regime</strong> – 인수 코호트 사이의 구조적 변화.
+보험료·약관·인수 가이드라인 변경 등이 특정 시점 이후 코호트의 손해
+양상을 바꿨는지를 탐지한다.</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
+<span><span class="va">reg</span><span class="op">$</span><span class="va">changes</span></span>
+<span><span class="co">#&gt;    coverage     change regime_id pre_value post_value magnitude</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;     &lt;Date&gt;     &lt;int&gt;     &lt;num&gt;      &lt;num&gt;     &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:  surgery 2024-07-01         2 0.9065895  0.5479919 0.3585976</span></span></code></pre></div>
+<p><code>experience</code> 의 surgery 종목에는 2024 년 중 합성 regime
+change 가 심어져 있어, 위 결과에서 해당 변화 시점이 잡힌다.</p>
 </div>
 <div class="section level2">
-<h2 id="다음-단계">다음 단계<a class="anchor" aria-label="anchor" href="#%EB%8B%A4%EC%9D%8C-%EB%8B%A8%EA%B3%84"></a>
+<h2 id="backtest-검증">14. <code>backtest()</code> – 검증<a class="anchor" aria-label="anchor" href="#backtest-%EA%B2%80%EC%A6%9D"></a>
 </h2>
+<p><code><a href="../reference/backtest.html">backtest()</a></code> 는 최근 달력 대각선 몇 개를 가린 뒤 다시
+적합하고, 가려진 실제값과 예측값을 비교해 모형의 정확도를 측정한다.</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backtest.html">backtest</a></span><span class="op">(</span><span class="va">tri1</span>, holdout <span class="op">=</span> <span class="fl">6L</span>, target <span class="op">=</span> <span class="st">"ratio"</span>, loss_method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Backtest summary</span></span>
+<span><span class="co">#&gt;   dispatcher: fit_ratio</span></span>
+<span><span class="co">#&gt;   target    : ratio</span></span>
+<span><span class="co">#&gt;   holdout   : 6 diagonals (159 cells)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; By dev:</span></span>
+<span><span class="co">#&gt;     coverage   dev     n      aeg_mean       aeg_med   ae_err_mean</span></span>
+<span><span class="co">#&gt;       &lt;char&gt; &lt;int&gt; &lt;int&gt;         &lt;num&gt;         &lt;num&gt;         &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:  surgery     2     1 -0.2879720892 -0.2879720892 -0.3667493406</span></span>
+<span><span class="co">#&gt;  2:  surgery     3     2 -0.1058236209 -0.1058236209 -0.0901195589</span></span>
+<span><span class="co">#&gt;  3:  surgery     4     3 -0.0438970022  0.0217666029 -0.0230071083</span></span>
+<span><span class="co">#&gt;  4:  surgery     5     4 -0.0110558266  0.0054351372  0.0118645748</span></span>
+<span><span class="co">#&gt;  5:  surgery     6     5 -0.0160114000  0.0370902061  0.0134987613</span></span>
+<span><span class="co">#&gt;  6:  surgery     7     6  0.0066390570  0.0520519271  0.0354091701</span></span>
+<span><span class="co">#&gt;  7:  surgery     8     6  0.0387556832  0.0468493428  0.0591624141</span></span>
+<span><span class="co">#&gt;  8:  surgery     9     6  0.0165983758  0.0181339640  0.0244533252</span></span>
+<span><span class="co">#&gt;  9:  surgery    10     6  0.0177699119  0.0134168699  0.0253607766</span></span>
+<span><span class="co">#&gt; 10:  surgery    11     6  0.0191431289  0.0114886577  0.0231290386</span></span>
+<span><span class="co">#&gt; 11:  surgery    12     6  0.0007211923  0.0015017408  0.0006387361</span></span>
+<span><span class="co">#&gt; 12:  surgery    13     6  0.0157220903  0.0076137593  0.0186533032</span></span>
+<span><span class="co">#&gt; 13:  surgery    14     6  0.0146558512  0.0269373691  0.0203566313</span></span>
+<span><span class="co">#&gt; 14:  surgery    15     6 -0.0164147403 -0.0078793254 -0.0085724729</span></span>
+<span><span class="co">#&gt; 15:  surgery    16     6 -0.0053773998 -0.0036509669 -0.0020439585</span></span>
+<span><span class="co">#&gt; 16:  surgery    17     6  0.0030866922 -0.0028402355  0.0055714790</span></span>
+<span><span class="co">#&gt; 17:  surgery    18     6 -0.0125129664 -0.0247929775 -0.0069398934</span></span>
+<span><span class="co">#&gt; 18:  surgery    19     6 -0.0113103120 -0.0086054969 -0.0082932779</span></span>
+<span><span class="co">#&gt; 19:  surgery    20     6 -0.0211209295 -0.0300370470 -0.0146794960</span></span>
+<span><span class="co">#&gt; 20:  surgery    21     6 -0.0123320969 -0.0288302132 -0.0081315596</span></span>
+<span><span class="co">#&gt; 21:  surgery    22     6 -0.0265367863 -0.0357010146 -0.0174246731</span></span>
+<span><span class="co">#&gt; 22:  surgery    23     6 -0.0241615696 -0.0113727688 -0.0160124793</span></span>
+<span><span class="co">#&gt; 23:  surgery    24     6  0.0023608518  0.0086349370  0.0019991795</span></span>
+<span><span class="co">#&gt; 24:  surgery    25     6 -0.0122696331 -0.0177060339 -0.0080061801</span></span>
+<span><span class="co">#&gt; 25:  surgery    26     6  0.0028673644 -0.0154389229  0.0029017289</span></span>
+<span><span class="co">#&gt; 26:  surgery    27     6 -0.0022551943 -0.0219579321 -0.0005984627</span></span>
+<span><span class="co">#&gt; 27:  surgery    28     6  0.0021536077  0.0005528274  0.0021335463</span></span>
+<span><span class="co">#&gt; 28:  surgery    29     6  0.0179714842  0.0123131943  0.0130930298</span></span>
+<span><span class="co">#&gt; 29:  surgery    30     6 -0.0039272898  0.0020727095 -0.0024107193</span></span>
+<span><span class="co">#&gt;     coverage   dev     n      aeg_mean       aeg_med   ae_err_mean</span></span>
+<span><span class="co">#&gt;       &lt;char&gt; &lt;int&gt; &lt;int&gt;         &lt;num&gt;         &lt;num&gt;         &lt;num&gt;</span></span>
+<span><span class="co">#&gt;        ae_err_med     ae_err_wt incr_aeg_mean incr_aeg_med incr_ae_err_mean</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;         &lt;num&gt;        &lt;num&gt;            &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1: -0.3667493406 -0.3667493406   -0.57495418 -0.574954175      -0.42911219</span></span>
+<span><span class="co">#&gt;  2: -0.0901195589 -0.1544635152   -0.03295105 -0.032951048       0.03104206</span></span>
+<span><span class="co">#&gt;  3:  0.0437848471 -0.0656622116    0.03896663 -0.060404427       0.07170889</span></span>
+<span><span class="co">#&gt;  4:  0.0123517418 -0.0162647786    0.07049188  0.081146126       0.09271533</span></span>
+<span><span class="co">#&gt;  5:  0.0621128725 -0.0220352052   -0.04049602  0.091444980       0.04486252</span></span>
+<span><span class="co">#&gt;  6:  0.0757446843  0.0088632803    0.12761981  0.080299453       0.16250805</span></span>
+<span><span class="co">#&gt;  7:  0.0725907702  0.0550856653    0.02069969  0.007197477       0.01564729</span></span>
+<span><span class="co">#&gt;  8:  0.0277518849  0.0223891429   -0.10613396 -0.136121764      -0.13147267</span></span>
+<span><span class="co">#&gt;  9:  0.0171529396  0.0229537555    0.11236174  0.105535088       0.15605437</span></span>
+<span><span class="co">#&gt; 10:  0.0154512077  0.0237389543    0.15969892  0.189675674       0.19686096</span></span>
+<span><span class="co">#&gt; 11:  0.0018922252  0.0008808334   -0.08257465 -0.094057006      -0.08660181</span></span>
+<span><span class="co">#&gt; 12:  0.0090087054  0.0190934981    0.17134975  0.064672398       0.19168084</span></span>
+<span><span class="co">#&gt; 13:  0.0321857613  0.0152643056   -0.02644494 -0.114754500       0.01007152</span></span>
+<span><span class="co">#&gt; 14: -0.0079107504 -0.0151493835   -0.41106393 -0.321970213      -0.28852360</span></span>
+<span><span class="co">#&gt; 15: -0.0044851592 -0.0044371719    0.19818694  0.117799240       0.15063258</span></span>
+<span><span class="co">#&gt; 16: -0.0018539369  0.0023518033    0.15672998  0.256737634       0.16971640</span></span>
+<span><span class="co">#&gt; 17: -0.0169311833 -0.0088467233   -0.13589998 -0.185237736      -0.06313735</span></span>
+<span><span class="co">#&gt; 18: -0.0054623225 -0.0075105462    0.06448340  0.048368896       0.03305654</span></span>
+<span><span class="co">#&gt; 19: -0.0209835277 -0.0141893838   -0.17389925 -0.113722964      -0.11085823</span></span>
+<span><span class="co">#&gt; 20: -0.0195936468 -0.0083339178    0.04888552 -0.116631342       0.04109121</span></span>
+<span><span class="co">#&gt; 21: -0.0241489266 -0.0181905096   -0.22822576 -0.207832035      -0.14657964</span></span>
+<span><span class="co">#&gt; 22: -0.0079804501 -0.0164674504   -0.14845744 -0.096634453      -0.09654333</span></span>
+<span><span class="co">#&gt; 23:  0.0070443849  0.0016326821    0.16627897 -0.261922846       0.12001108</span></span>
+<span><span class="co">#&gt; 24: -0.0128789134 -0.0083069614   -0.21608907 -0.189756124      -0.13659900</span></span>
+<span><span class="co">#&gt; 25: -0.0098650416  0.0019209162    0.07312011 -0.164382561       0.05824859</span></span>
+<span><span class="co">#&gt; 26: -0.0142767203 -0.0014781843   -0.32083035 -0.625762580      -0.17477888</span></span>
+<span><span class="co">#&gt; 27:  0.0004018279  0.0014147005    0.06914757 -0.017229197       0.04186226</span></span>
+<span><span class="co">#&gt; 28:  0.0081992616  0.0120992517    0.44252486  0.663837977       0.34283700</span></span>
+<span><span class="co">#&gt; 29:  0.0012135586 -0.0026098433   -0.14700411 -0.270271875      -0.09019624</span></span>
+<span><span class="co">#&gt;        ae_err_med     ae_err_wt incr_aeg_mean incr_aeg_med incr_ae_err_mean</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;         &lt;num&gt;        &lt;num&gt;            &lt;num&gt;</span></span>
+<span><span class="co">#&gt;     incr_ae_err_med incr_ae_err_wt</span></span>
+<span><span class="co">#&gt;               &lt;num&gt;          &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:    -0.429112189    -0.42911219</span></span>
+<span><span class="co">#&gt;  2:     0.031042058    -0.03788330</span></span>
+<span><span class="co">#&gt;  3:    -0.051312889     0.04819216</span></span>
+<span><span class="co">#&gt;  4:     0.101566115     0.08262484</span></span>
+<span><span class="co">#&gt;  5:     0.130130156    -0.04711615</span></span>
+<span><span class="co">#&gt;  6:     0.136743653     0.14894131</span></span>
+<span><span class="co">#&gt;  7:     0.008088929     0.02505782</span></span>
+<span><span class="co">#&gt;  8:    -0.163940480    -0.12387084</span></span>
+<span><span class="co">#&gt;  9:     0.125264952     0.13525827</span></span>
+<span><span class="co">#&gt; 10:     0.236016698     0.19825482</span></span>
+<span><span class="co">#&gt; 11:    -0.093881374    -0.08139958</span></span>
+<span><span class="co">#&gt; 12:     0.070449982     0.19355031</span></span>
+<span><span class="co">#&gt; 13:    -0.124397482    -0.02436243</span></span>
+<span><span class="co">#&gt; 14:    -0.299928631    -0.30564120</span></span>
+<span><span class="co">#&gt; 15:     0.148772947     0.17845143</span></span>
+<span><span class="co">#&gt; 16:     0.285614433     0.13524568</span></span>
+<span><span class="co">#&gt; 17:    -0.124958477    -0.09463269</span></span>
+<span><span class="co">#&gt; 18:     0.033222595     0.04168906</span></span>
+<span><span class="co">#&gt; 19:    -0.074261725    -0.11230739</span></span>
+<span><span class="co">#&gt; 20:    -0.069418132     0.03288272</span></span>
+<span><span class="co">#&gt; 21:    -0.133308413    -0.14878192</span></span>
+<span><span class="co">#&gt; 22:    -0.064872712    -0.09810761</span></span>
+<span><span class="co">#&gt; 23:    -0.190149810     0.11735901</span></span>
+<span><span class="co">#&gt; 24:    -0.131504726    -0.14062139</span></span>
+<span><span class="co">#&gt; 25:    -0.103229976     0.04391763</span></span>
+<span><span class="co">#&gt; 26:    -0.317754317    -0.16402220</span></span>
+<span><span class="co">#&gt; 27:    -0.009548040     0.04577902</span></span>
+<span><span class="co">#&gt; 28:     0.509453512     0.33144073</span></span>
+<span><span class="co">#&gt; 29:    -0.165797630    -0.08977373</span></span>
+<span><span class="co">#&gt;     incr_ae_err_med incr_ae_err_wt</span></span>
+<span><span class="co">#&gt;               &lt;num&gt;          &lt;num&gt;</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; By calendar diagonal:</span></span>
+<span><span class="co">#&gt;    coverage cal_idx     n      aeg_mean       aeg_med  ae_err_mean   ae_err_med</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;   &lt;int&gt; &lt;int&gt;         &lt;num&gt;         &lt;num&gt;        &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:  surgery      31    29 -0.0125686252 -0.0056732350 -0.011309410 -0.003699313</span></span>
+<span><span class="co">#&gt; 2:  surgery      32    28 -0.0104717812 -0.0114871218 -0.002794292 -0.009588959</span></span>
+<span><span class="co">#&gt; 3:  surgery      33    27  0.0004718616  0.0050471735  0.007666312  0.006154835</span></span>
+<span><span class="co">#&gt; 4:  surgery      34    26  0.0012851467 -0.0002953897  0.008094503  0.000421251</span></span>
+<span><span class="co">#&gt; 5:  surgery      35    25 -0.0006986581  0.0145835308  0.007408947  0.009455704</span></span>
+<span><span class="co">#&gt; 6:  surgery      36    24 -0.0027175011  0.0105940082  0.005874139  0.009450279</span></span>
+<span><span class="co">#&gt;        ae_err_wt incr_aeg_mean incr_aeg_med incr_ae_err_mean incr_ae_err_med</span></span>
+<span><span class="co">#&gt;            &lt;num&gt;         &lt;num&gt;        &lt;num&gt;            &lt;num&gt;           &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1: -0.0107004533   -0.08350070  -0.07460811     -0.036347452     -0.06750071</span></span>
+<span><span class="co">#&gt; 2: -0.0089044278   -0.07573837  -0.07440057     -0.003857981     -0.07262916</span></span>
+<span><span class="co">#&gt; 3:  0.0004012161    0.18105966   0.09849605      0.147072061      0.12954698</span></span>
+<span><span class="co">#&gt; 4:  0.0010973317    0.01407124  -0.02312661      0.017058138     -0.02473897</span></span>
+<span><span class="co">#&gt; 5: -0.0005997009   -0.03104560  -0.09210258     -0.008476082     -0.07819464</span></span>
+<span><span class="co">#&gt; 6: -0.0023535415   -0.06224227  -0.09299902     -0.016968983     -0.09358995</span></span>
+<span><span class="co">#&gt;    incr_ae_err_wt</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:    -0.06558617</span></span>
+<span><span class="co">#&gt; 2:    -0.06014060</span></span>
+<span><span class="co">#&gt; 3:     0.14477037</span></span>
+<span><span class="co">#&gt; 4:     0.01130928</span></span>
+<span><span class="co">#&gt; 5:    -0.02508022</span></span>
+<span><span class="co">#&gt; 6:    -0.05088339</span></span></code></pre></div>
+<p><code>target</code> 은
+<code>"ratio"</code>/<code>"loss"</code>/<code>"premium"</code> 중
+하나이며, 각각
+<code>fit_ratio</code>/<code>fit_loss</code>/<code>fit_premium</code> 를
+내부에서 호출한다. 결과의 A/E error 표로 어느 경과기간·대각선에서 모형이
+빗나갔는지 볼 수 있다.</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bt</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started-ko_files/figure-html/backtest-plot-1.png" class="r-plt" alt="" width="100%"></p>
+</div>
+<div class="section level2">
+<h2 id="시각화-plot-plot_triangle">15. 시각화 – <code>plot()</code> / <code>plot_triangle()</code><a class="anchor" aria-label="anchor" href="#%EC%8B%9C%EA%B0%81%ED%99%94-plot-plot_triangle"></a>
+</h2>
+<p>모든 주요 객체는 두 갈래의 그림을 지원한다.</p>
 <ul>
 <li>
-<code><a href="../articles/aggregation-frameworks.html">vignette("aggregation-frameworks")</a></code> —
-<code>as_triangle</code>, <code>as_calendar</code>,
-<code>as_total</code> 의 사용 시점 비교.</li>
+<code>plot(x)</code> – 궤적/진단 차트 (코호트별 전개 곡선, regime
+PCA 등).</li>
 <li>
-<code><a href="../articles/projection.html">vignette("projection")</a></code> — <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> 에서
-<code>"sa"</code> / <code>"ed"</code> / <code>"cl"</code> 중 선택
-기준.</li>
+<code>plot_triangle(x)</code> – 삼각형 히트맵 (셀별 값 또는 셀
+상태).</li>
+</ul>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">sa</span>, label_style <span class="op">=</span> <span class="st">"cv"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started-ko_files/figure-html/plot-examples-1.png" class="r-plt" alt="" width="100%"></p>
+<p><code><a href="../reference/plot_triangle.html">plot_triangle()</a></code> 의 <code>label_style</code> 은 셀 라벨을
+값(<code>"value"</code>)·변동계수
+(<code>"cv"</code>)·표준오차(<code>"se"</code>)·신뢰구간(<code>"ci"</code>)으로
+바꾼다. <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> 의 <code>type</code>·<code>region</code> 등
+세부 인자는 각 클래스의 도움말(<code><a href="../reference/plot.CLFit.html">?plot.CLFit</a></code> 등)을
+참고한다.</p>
+<p>CL / ED / SA / BF / CC / Premium 적합 결과 모두 같은 방식으로
+<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> 과 <code><a href="../reference/plot_triangle.html">plot_triangle()</a></code> 을 지원하므로, 어떤
+방법을 쓰든 시각화 인터페이스는 동일하다.</p>
+</div>
+<div class="section level2">
+<h2 id="함께-보기">16. 함께 보기<a class="anchor" aria-label="anchor" href="#%ED%95%A8%EA%BB%98-%EB%B3%B4%EA%B8%B0"></a>
+</h2>
+<p>이 문서는 핵심 작업 흐름을 한 번에 따라가는 것이 목적이다. 각 주제의
+방법론적 배경과 세부 옵션은 다음을 참고한다.</p>
+<ul>
 <li>
-<code><a href="../articles/chain-ladder-reserving.html">vignette("chain-ladder-reserving")</a></code> —
-<code><a href="../reference/fit_cl.html">fit_cl()</a></code> 심층 해설 (Mack 분산, tail factor).</li>
+<code><a href="../reference/as_triangle.html">?as_triangle</a></code>, <code><a href="../reference/fit_cl.html">?fit_cl</a></code>,
+<code><a href="../reference/fit_sa.html">?fit_sa</a></code>, <code><a href="../reference/fit_ratio.html">?fit_ratio</a></code> 등 함수별 도움말.</li>
 <li>
-<code><a href="../articles/triangle-link-and-maturity.html">vignette("triangle-link-and-maturity")</a></code> —
-<code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>, <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code>, triangle 형식의
-시각화.</li>
+<code><a href="../articles/projection.html">vignette("projection")</a></code> – 예측 방법 선택과 방법론
+상세.</li>
 <li>
-<code><a href="../articles/regime.html">vignette("regime")</a></code> — <code><a href="../reference/detect_regime.html">detect_regime()</a></code> 을
-통한 코호트 간 구조 변화 진단.</li>
+<code><a href="../articles/diagnostics.html">vignette("diagnostics")</a></code> – 성숙점·수렴점·regime 진단
+심화.</li>
 <li>
-<code><a href="../articles/backtest.html">vignette("backtest")</a></code> — <code>fit_cl</code> 또는
-<code>fit_ratio</code> 을 사용한 대각선 hold-out 검증.</li>
+<code><a href="../articles/backtest.html">vignette("backtest")</a></code> – 검증 절차.</li>
+<li>
+<code><a href="../articles/bootstrap-se-decomposition.html">vignette("bootstrap-se-decomposition")</a></code> – 부트스트랩
+표준오차 분해.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

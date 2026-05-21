@@ -21,7 +21,7 @@ call `backtest(tri, target = "ratio", loss_method = "ed")`.
 fit_ed(
   x,
   loss = "loss",
-  premium = "premium",
+  exposure = "premium",
   method = c("mack"),
   alpha = 1,
   na_method = c("locf", "zero", "none"),
@@ -48,9 +48,10 @@ fit_ed(
   [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md)
   and to downstream workers.
 
-- premium:
+- exposure:
 
-  Cumulative premium variable. Default `"premium"`. Forwarded to
+  Cumulative exposure-base variable (the loss-ratio denominator,
+  typically premium). Default `"premium"`. Forwarded to
   [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md)
   and to downstream workers.
 

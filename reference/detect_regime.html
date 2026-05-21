@@ -133,16 +133,10 @@ strictly chronological.
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/index.html">All articles</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/aggregation-frameworks.html">Aggregation frameworks</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-link-and-maturity.html">Triangle, Link and Maturity</a></li>
-    <li><a class="dropdown-item" href="../articles/regime.html">Regime</a></li>
-    <li><a class="dropdown-item" href="../articles/projection.html">Projection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-change-filter.html">Regime change filter</a></li>
+    <li><a class="dropdown-item" href="../articles/projection.html">Projection methods</a></li>
+    <li><a class="dropdown-item" href="../articles/diagnostics.html">Diagnostics: maturity, convergence, regime</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
-    <li><a class="dropdown-item" href="../articles/convergence.html">Convergence</a></li>
     <li><a class="dropdown-item" href="../articles/bootstrap-se-decomposition.html">Bootstrap SE decomposition</a></li>
-    <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/chain-ladder-reserving.html">(Reference) Chain ladder reserving</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -255,7 +249,7 @@ identical regime changes. Provided for API symmetry with the
 
 </dl><p>Derived metrics drop the first dev row per cohort (no predecessor),
 then re-index <code>dev</code> so detection sees a contiguous sequence. See the
-<code><a href="../articles/regime.html">vignette("regime")</a></code> "Choice of loss" section for guidance on
+<code><a href="../articles/diagnostics.html">vignette("diagnostics")</a></code> "Choice of loss" section for guidance on
 which loss metric matches which suspected event.</p></dd>
 
 
@@ -408,7 +402,7 @@ cohorts, single pooled factor) or estimate per-segment factors.</p></dd>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Hierarchical clustering (no extra package dependency)</span></span></span>
@@ -428,7 +422,7 @@ cohorts, single pooled factor) or estimate per-segment factors.</p></dd>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">r_all</span> <span class="op">&lt;-</span> <span class="fu">detect_regime</span><span class="op">(</span><span class="va">tri_all</span>, by <span class="op">=</span> <span class="st">"coverage"</span>, method <span class="op">=</span> <span class="st">"e_divisive"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">r_all</span><span class="op">$</span><span class="va">changes</span><span class="op">)</span></span></span>

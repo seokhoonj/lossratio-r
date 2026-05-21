@@ -193,9 +193,9 @@ plot_triangle(ratio, view = "usage")                       # 맨 위 이미지�
 ``` r
 
 vignette("getting-started",        package = "lossratio")
-vignette("regime-change-filter",   package = "lossratio")
+vignette("diagnostics",   package = "lossratio")
 vignette("backtest",               package = "lossratio")
-vignette("triangle-link-and-maturity", package = "lossratio")
+vignette("getting-started", package = "lossratio")
 ?fit_ratio
 ?detect_regime
 ```

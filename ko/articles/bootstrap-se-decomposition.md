@@ -265,7 +265,7 @@ percentile reports.
 
 [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/ko/articles/backtest.md)
 for hold-out-based bootstrap validation,
-[`vignette("chain-ladder-reserving")`](https://seokhoonj.github.io/lossratio/ko/articles/chain-ladder-reserving.md)
+[`vignette("projection")`](https://seokhoonj.github.io/lossratio/ko/articles/projection.md)
 for the underlying CL machinery, and
 [`?bootstrap`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
 for the full argument reference.

@@ -6,8 +6,10 @@ Internal helper computing:
 
 where \\W_k = \sum_i w\_{i,k} \cdot C\_{i,k}^\alpha\\. This is
 consistent with the WLS weight \\w\_{i,k} / C\_{i,k}^{2-\alpha}\\ used
-in `.lm_ata()` and follows Mack (1993)'s distribution-free
-standard-error derivation for the chain ladder reserve estimator.
+in
+[`.lm_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-lm_ata.md)
+and follows Mack (1993)'s distribution-free standard-error derivation
+for the chain ladder reserve estimator.
 
 Paradigm pairing: the package keeps two natural analytical variance
 helpers, one per paradigm-target pair: `.mack_f_var()` (CL / Mack 1993

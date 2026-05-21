@@ -42,7 +42,7 @@ Closed-form Mack (2008) MSEP is not yet implemented.
 fit_bf(
   x,
   loss = "loss",
-  premium = "premium",
+  exposure = "premium",
   prior,
   bootstrap = NULL,
   B = 999L,
@@ -71,7 +71,7 @@ fit_bf(
 
   A single cumulative loss variable to project. Default `"loss"`.
 
-- premium:
+- exposure:
 
   A single cumulative premium variable used as the denominator of the
   prior ELR. Default `"premium"`.

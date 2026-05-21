@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Projection: SA, ED, CL methods • lossratio</title>
+<title>Projection methods • lossratio</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<script src="../extra.js"></script><meta property="og:title" content="Projection: SA, ED, CL methods">
+<script src="../extra.js"></script><meta property="og:title" content="Projection methods">
 <meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs">
 <!-- Browser-language redirect: send Korean visitors to /ko/ on the
      landing page only. Deep links remain untouched. We use string
@@ -98,16 +98,10 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/index.html">All articles</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/aggregation-frameworks.html">Aggregation frameworks</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-link-and-maturity.html">Triangle, Link and Maturity</a></li>
-    <li><a class="dropdown-item" href="../articles/regime.html">Regime</a></li>
-    <li><a class="dropdown-item" href="../articles/projection.html">Projection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-change-filter.html">Regime change filter</a></li>
+    <li><a class="dropdown-item" href="../articles/projection.html">Projection methods</a></li>
+    <li><a class="dropdown-item" href="../articles/diagnostics.html">Diagnostics: maturity, convergence, regime</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
-    <li><a class="dropdown-item" href="../articles/convergence.html">Convergence</a></li>
     <li><a class="dropdown-item" href="../articles/bootstrap-se-decomposition.html">Bootstrap SE decomposition</a></li>
-    <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/chain-ladder-reserving.html">(Reference) Chain ladder reserving</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -131,7 +125,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>Projection: SA, ED, CL methods</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Projection methods</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/seokhoonj/lossratio/blob/main/vignettes/projection.Rmd" class="external-link"><code>vignettes/projection.Rmd</code></a></small>
@@ -140,16 +134,188 @@
 
     
     
-<p><code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> projects cumulative loss ratio per cohort
-from a <code>Triangle</code> object. Three methods are available; this
-vignette explains the trade-offs.</p>
+<blockquote>
+<p>Korean version: <a href="articles/projection-ko.html">예측
+방법론</a></p>
+</blockquote>
+<p>This is a deep-dive into the five projection methods in
+<code>lossratio</code> — exposure-driven (ED), chain ladder (CL),
+stage-adaptive (SA), Bornhuetter-Ferguson (BF), and Cape Cod (CC). The
+getting-started tutorial shows <em>how</em> to call each fit; this
+document explains <em>why</em> each method exists, what assumption it
+rests on, and when one is preferable to another. The intended reader is
+a practitioner working on long-term health insurance loss ratios.</p>
 <div class="section level2">
-<h2 id="notation">Notation<a class="anchor" aria-label="anchor" href="#notation"></a>
+<h2 id="why-a-dedicated-projection-toolkit">Why a dedicated projection toolkit<a class="anchor" aria-label="anchor" href="#why-a-dedicated-projection-toolkit"></a>
 </h2>
+<p>Loss ratio is a daily task in long-term health insurance: analysing
+cohort-level patterns, projecting ultimate outcomes, and monitoring
+realised experience against expectations. Existing reserving toolkits
+mostly trace back to property and casualty (P&amp;C) origins, where the
+following long-term health characteristics are not directly
+captured:</p>
+<ul>
+<li>
+<strong>Denominator effect and inertia</strong> — Cumulative loss
+ratio’s denominator grows mechanically with development, dampening the
+signal of recent experience.</li>
+<li>
+<strong>Recurrent claims</strong> — Hospitalisation, surgery (grade
+1-5), and outpatient coverage allow a single insured to file multiple
+claims; cumulative claim count can exceed insured count.</li>
+<li>
+<strong>Risk premium decomposition</strong> — In Korea, long-term
+insurance premium splits into risk premium + savings premium + loading
+premium. The actuarially meaningful denominator for loss ratio is the
+<em>risk premium</em> portion alone.</li>
+<li>
+<strong>Levelled premium</strong> — Non-renewable contracts charge a
+level premium computed at issue as the lifetime average. The <em>charged
+premium</em> is not premium; the <em>period risk premium</em> (morbidity
+rate x sum insured x persistency) must be constructed externally before
+being passed in.</li>
+<li>
+<strong>Regime change</strong> — Product redesigns, rate revisions,
+channel-mix shifts, and underwriting updates introduce
+<em>cohort-level</em> structural breaks in loss-ratio dynamics.</li>
+</ul>
+<p><code>lossratio</code> transplants core P&amp;C reserving methodology
+— Mack (1993) chain ladder, Bornhuetter-Ferguson (1972), Cape Cod
+(Stanard 1985), Bühlmann-Straub (1970) credibility, and Sherman (1984)
+tail extrapolation — and adapts each piece to the long-term health
+issues above. The academic lineage is preserved; the goal is a tool that
+domain practitioners can use immediately.</p>
+</div>
+<div class="section level2">
+<h2 id="methodological-lineage">Methodological lineage<a class="anchor" aria-label="anchor" href="#methodological-lineage"></a>
+</h2>
+<p>The methodological roots of long-term loss-ratio estimation lie in
+the following P&amp;C reserving thread:</p>
+<pre><code>1967  Bühlmann credibility           experience rating formalised
+1970  Bühlmann-Straub                premium-varying credibility
+                                     (volume-weighted estimator)
+1972  Bornhuetter-Ferguson           prior + observed loss blending
+1984  Sherman                        chain ladder tail extrapolation
+1985  Stanard (Cape Cod)             reserving application of B-S
+1993  Mack                           distribution-free MSE for chain
+                                     ladder</code></pre>
+<p>Two core ideas drive everything that follows:</p>
+<ul>
+<li>
+<strong>Chain ladder (Mack 1993)</strong> — Markov multiplicative
+recursion on cumulative loss
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>C</mi><mi>k</mi></msub><annotation encoding="application/x-tex">C_k</annotation></semantics></math>:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msub><mi>C</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">C_{k+1} = f_k \cdot C_k</annotation></semantics></math>
+where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mi>k</mi></msub><mo>=</mo><msub><mo>∑</mo><mi>i</mi></msub><msub><mi>C</mi><mrow><mi>i</mi><mo>,</mo><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mi>/</mi><msub><mo>∑</mo><mi>i</mi></msub><msub><mi>C</mi><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow></msub></mrow><annotation encoding="application/x-tex">f_k = \sum_i C_{i,k+1} / \sum_i C_{i,k}</annotation></semantics></math>.</li>
+<li>
+<strong>Cape Cod / Bühlmann-Straub</strong> — Loss anchored to
+premium (volume).
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mrow><mi>E</mi><mi>L</mi><mi>R</mi></mrow><mo accent="true">̂</mo></mover><mo>=</mo><msub><mo>∑</mo><mi>i</mi></msub><msub><mi>L</mi><mi>i</mi></msub><mi>/</mi><msub><mo>∑</mo><mi>i</mi></msub><msub><mi>π</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\widehat{ELR} = \sum_i L_i / \sum_i \pi_i</annotation></semantics></math>
+yields a single ratio that drives ultimate estimation.</li>
+</ul>
+<p>Both apply <em>partially</em> to long-term health, but both have
+cracks:</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>Domain issue</th>
+<th>Chain ladder</th>
+<th>Cape Cod</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Denominator effect / inertia</td>
+<td>Early-dev
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
+over-volatile (small
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>C</mi><mi>k</mi></msub><annotation encoding="application/x-tex">C_k</annotation></semantics></math>)</td>
+<td>Cohort-level ELR variation ignored</td>
+</tr>
+<tr class="even">
+<td>Levelled premium</td>
+<td>Loss-only avoids it (weak against incidence shifts)</td>
+<td>Flat
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>π</mi><annotation encoding="application/x-tex">\pi</annotation></semantics></math>
+absorbs developing premium</td>
+</tr>
+<tr class="odd">
+<td>Recurrent claims</td>
+<td>Works (freq x sev decoupled)</td>
+<td>Works (volume measure only)</td>
+</tr>
+<tr class="even">
+<td>Developing risk premium</td>
+<td>Not relevant</td>
+<td>
+<em>Single
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>π</mi><annotation encoding="application/x-tex">\pi</annotation></semantics></math></em>
+assumption breaks</td>
+</tr>
+<tr class="odd">
+<td>Cohort-level regime change</td>
+<td>Violates Mack’s no-calendar-year-effect</td>
+<td>Cohort heterogeneity averaged out</td>
+</tr>
+</tbody>
+</table>
+<p>Chain ladder is weak early; Cape Cod cannot track developing premium.
+Each paradigm is incomplete on its own — which is exactly why the
+package offers five methods rather than one.</p>
+</div>
+<div class="section level2">
+<h2 id="the-core-framework-loss-premium-ratio">The core framework: loss / premium / ratio<a class="anchor" aria-label="anchor" href="#the-core-framework-loss-premium-ratio"></a>
+</h2>
+<p>All estimation rests on three observable quantities:</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>Quantity</th>
+<th>Meaning</th>
+<th>Triangle column</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><strong>loss</strong></td>
+<td>Cumulative loss</td>
+<td>
+<code>loss</code>, <code>incr_loss</code>
+</td>
+</tr>
+<tr class="even">
+<td><strong>premium</strong></td>
+<td>Risk-bearing volume (risk premium for long-term health)</td>
+<td>
+<code>premium</code>, <code>incr_premium</code>
+</td>
+</tr>
+<tr class="odd">
+<td><strong>ratio</strong></td>
+<td>Loss ratio (cumulative loss / cumulative premium)</td>
+<td>
+<code>ratio</code>, <code>incr_ratio</code>
+</td>
+</tr>
+</tbody>
+</table>
+<p>All three are <em>stochastic observables developing over the cohort x
+dev grid</em>. Premium is not a fixed underwriting volume; it is a
+developing quantity driven by morbidity x sum insured x persistency —
+the <em>volume measure</em> of Mack (1993), the <em>natural weight</em>
+of Bühlmann-Straub (1970).</p>
 <p>For cohort
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
-at dev
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>:</p>
+at development period
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+the projection methods use this notation:</p>
 <ul>
 <li>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>C</mi><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>L</mi></msubsup><annotation encoding="application/x-tex">C^L_{i,k}</annotation></semantics></math>
@@ -165,43 +331,13 @@ at dev
 — exposure-driven intensity</li>
 <li>maturity point
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
-— dev at which
+— the development period at which
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
-stabilises for group
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>g</mi><annotation encoding="application/x-tex">g</annotation></semantics></math>
-(detected from CV / RSE thresholds)</li>
+stabilises for a group (detected from CV / RSE thresholds)</li>
 </ul>
-</div>
-<div class="section level2">
-<h2 id="method-1-exposure-driven-ed-default">Method 1: Exposure-Driven (<code>"ed"</code>, default)<a class="anchor" aria-label="anchor" href="#method-1-exposure-driven-ed-default"></a>
-</h2>
-<p>All future increments use premium (risk premium) as the
-denominator:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mo>=</mo><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>L</mi></msubsup><mo>+</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">
-\hat{C}^L_{i,k+1} = \hat{C}^L_{i,k} + g_k \cdot C^P_{i,k}
-</annotation></semantics></math></p>
-<p>ED is the default because it is an <em>unconditional safe
-baseline</em> – no maturity or regime detection is required, and the
-projection is robust under early-dev age-to-age volatility.</p>
-<p>Behaviour:</p>
-<ul>
-<li>Stable when premium volume is informative across full
-development.</li>
-<li>The pooled intensity
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>g</mi><mi>k</mi></msub><annotation encoding="application/x-tex">g_k</annotation></semantics></math>
-assumes cohorts are reasonably homogeneous in loss-per-premium level.
-Under cohort-level drift the projection biases toward the pooled mean
-and may over-project post-change cohorts – see the <code>regime</code>
-argument for explicit filtering.</li>
-</ul>
-<p>When to use:</p>
-<ul>
-<li>As a baseline projection where cohort homogeneity is plausible.</li>
-<li>Short-tail products where chain ladder offers no advantage.</li>
-<li>Sparse data where age-to-age factors are unreliable across all
-links.</li>
-</ul>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<p>We use the <code>surgery</code> group throughout for brevity — every
+step generalises to multi-group input.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio">lossratio</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
@@ -211,12 +347,91 @@ links.</li>
 <span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span>
 <span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span>
 <span>  premium  <span class="op">=</span> <span class="st">"incr_premium"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">ratio_ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span>        <span class="co"># default</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="direct-estimation-ed-cl-sa">Direct estimation: ED, CL, SA<a class="anchor" aria-label="anchor" href="#direct-estimation-ed-cl-sa"></a>
+</h2>
+<p>The three direct-estimation methods estimate factors from the data
+and chain them forward. Their order — <code>ed</code> -&gt;
+<code>cl</code> -&gt; <code>sa</code> — mirrors the methodological
+progression <em>primitive (ED) -&gt; classical (CL) -&gt; composition
+(SA)</em>.</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th>Method</th>
+<th>Point estimate</th>
+<th>Variance helper</th>
+<th>Domain character</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>
+<code>"ed"</code> (default)</td>
+<td>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><msub><mi>L</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msub><mi>P</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">\Delta L_{k+1} = g_k \cdot P_k</annotation></semantics></math>
+(additive)</td>
+<td>
+<code>.ed_g_var</code> (B-S 1970)</td>
+<td>Robust to early-dev ATA volatility</td>
+</tr>
+<tr class="even">
+<td><code>"cl"</code></td>
+<td>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msub><mi>L</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">L_{k+1} = f_k \cdot L_k</annotation></semantics></math>
+(multiplicative)</td>
+<td>
+<code>.mack_f_var</code> (Mack 1993)</td>
+<td>Natural after late-dev factor stabilisation</td>
+</tr>
+<tr class="odd">
+<td><code>"sa"</code></td>
+<td>ED before maturity
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>,
+CL after</td>
+<td>Composition</td>
+<td>Stage-adaptive composition of ED and CL</td>
+</tr>
+</tbody>
+</table>
+<div class="section level3">
+<h3 id="exposure-driven-ed-default">Exposure-driven (<code>"ed"</code>, default)<a class="anchor" aria-label="anchor" href="#exposure-driven-ed-default"></a>
+</h3>
+<p>ED projects every future increment using premium (risk premium) as
+the denominator:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mo>=</mo><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>L</mi></msubsup><mo>+</mo><msub><mi>g</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mi>C</mi><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>P</mi></msubsup></mrow><annotation encoding="application/x-tex">
+\hat{C}^L_{i,k+1} = \hat{C}^L_{i,k} + g_k \cdot C^P_{i,k}
+</annotation></semantics></math></p>
+<p>ED is the default because it is an <em>unconditional safe
+baseline</em>: no maturity or regime detection is required, and the
+projection is robust under early-dev age-to-age volatility. Because the
+small
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>C</mi><mi>k</mi></msub><annotation encoding="application/x-tex">C_k</annotation></semantics></math>
+of early dev never enters the denominator, ED does not inflate the
+estimate the way an early
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
+can.</p>
+<p>The trade-off is cohort homogeneity. The pooled intensity
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>g</mi><mi>k</mi></msub><annotation encoding="application/x-tex">g_k</annotation></semantics></math>
+assumes cohorts are reasonably homogeneous in loss-per-premium level.
+Under cohort-level drift the projection biases toward the pooled mean
+and may over-project post-change cohorts — see the <code>regime</code>
+argument for explicit filtering.</p>
+<p><strong>When to use ED:</strong> as a baseline where cohort
+homogeneity is plausible; short-tail products where chain ladder offers
+no advantage; sparse data where age-to-age factors are unreliable across
+all links.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ratio_ed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span>        <span class="co"># default</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ratio_ed</span>, metric <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="projection_files/figure-html/unnamed-chunk-1-1.png" class="r-plt" alt="" width="100%"></p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<p><img src="projection_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="100%"></p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratio_ed</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve premium_ult</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;       &lt;num&gt;</span></span>
@@ -339,42 +554,34 @@ links.</li>
 <span><span class="co">#&gt;     loss_total_se loss_total_cv    ratio_se    ratio_cv ratio_ci_lo ratio_ci_hi</span></span>
 <span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="method-2-classical-chain-ladder-cl">Method 2: Classical Chain Ladder (<code>"cl"</code>)<a class="anchor" aria-label="anchor" href="#method-2-classical-chain-ladder-cl"></a>
-</h2>
-<p>Classical Mack (1993) model:</p>
+<div class="section level3">
+<h3 id="classical-chain-ladder-cl">Classical chain ladder (<code>"cl"</code>)<a class="anchor" aria-label="anchor" href="#classical-chain-ladder-cl"></a>
+</h3>
+<p>CL is the classical Mack (1993) model:</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mo>=</mo><msub><mi>f</mi><mi>k</mi></msub><mo>⋅</mo><msubsup><mover><mi>C</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mi>L</mi></msubsup></mrow><annotation encoding="application/x-tex">
 \hat{C}^L_{i,k+1} = f_k \cdot \hat{C}^L_{i,k}
 </annotation></semantics></math></p>
-<p>The cohort’s own cum_loss acts as the anchor, so cohort-level drift
-propagates naturally without explicit regime detection.</p>
-<p>Behaviour:</p>
-<ul>
-<li>Standard reserving practice. Equivalent to
-<code>fit_cl(tri, loss = "loss")</code> for the loss projection, but
-<code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> additionally projects premium forward via CL on
-<code>premium</code> and computes the loss-ratio uncertainty via the
-delta method.</li>
-<li>Volatile when early
+<p>The cohort’s own cumulative loss acts as the anchor, so cohort-level
+drift propagates naturally without explicit regime detection. The
+trade-off is the mirror image of ED’s: CL is volatile when early
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
-are noisy – small denominators amplify link errors.</li>
-</ul>
-<p>When to use:</p>
-<ul>
-<li>Once age-to-age factors stabilise.</li>
-<li>Cohort-level drift scenarios where the cohort’s observed trajectory
-should anchor the projection.</li>
-<li>Reserving exercises where regulators expect the classical Mack form
-for documentation.</li>
-</ul>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+are noisy, because small denominators amplify link errors.</p>
+<p>Within <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code>, the CL method projects loss
+<em>and</em> premium forward — each via chain ladder on its own column —
+and computes the loss-ratio uncertainty via the delta method. The loss
+lane alone is equivalent to <code>fit_cl(tri)</code>.</p>
+<p><strong>When to use CL:</strong> once age-to-age factors stabilise;
+cohort-level drift scenarios where the cohort’s observed trajectory
+should anchor the projection; reserving exercises where regulators
+expect the classical Mack form for documentation.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ratio_cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ratio_cl</span>, metric <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="projection_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="100%"></p>
+<p><img src="projection_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="100%"></p>
 </div>
-<div class="section level2">
-<h2 id="method-3-stage-adaptive-sa">Method 3: Stage-Adaptive (<code>"sa"</code>)<a class="anchor" aria-label="anchor" href="#method-3-stage-adaptive-sa"></a>
-</h2>
+<div class="section level3">
+<h3 id="stage-adaptive-sa">Stage-adaptive (<code>"sa"</code>)<a class="anchor" aria-label="anchor" href="#stage-adaptive-sa"></a>
+</h3>
 <p>SA composes ED before the maturity point with CL after, exploiting
 the fact that
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
@@ -388,34 +595,28 @@ behaves the opposite way:</p>
 f_k \cdot \hat{C}^L_{i,k}              &amp; k \ge k^* \quad \text{(CL after maturity)}
 \end{cases}
 </annotation></semantics></math></p>
-<p>Behaviour:</p>
 <ul>
 <li>
-<strong>Before maturity</strong>: anchors the loss estimate to
-premium volume. Avoids the volatile-link explosion that classical CL
+<strong>Before maturity</strong> SA anchors the loss estimate to
+premium volume, avoiding the volatile-link explosion that classical CL
 suffers when early
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
 are noisy.</li>
 <li>
-<strong>After maturity</strong>: preserves the cohort’s own observed
-level. Avoids the “all cohorts converge to the average” behaviour that
-pure ED suffers in the tail.</li>
+<strong>After maturity</strong> SA preserves the cohort’s own
+observed level, avoiding the “all cohorts converge to the average”
+behaviour that pure ED suffers in the tail.</li>
 </ul>
-<p>When to use:</p>
-<ul>
-<li>Long-tail portfolios where early dev is volatile (ED phase) and
-cohort-level drift needs cohort-anchored projection in later dev (CL
-phase).</li>
-<li>Recent cohorts (immature data) mixed with older cohorts
-(matured).</li>
-<li>Health insurance cohorts with structural pre-/post-maturity
-difference (e.g. waiting period transitions).</li>
-</ul>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<p><strong>When to use SA:</strong> long-tail portfolios where early dev
+is volatile (ED phase) and cohort-level drift needs cohort-anchored
+projection in later dev (CL phase); recent cohorts (immature data) mixed
+with older cohorts (matured); health insurance cohorts with a structural
+pre-/post-maturity difference (e.g. waiting-period transitions).</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ratio_sa</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ratio_sa</span>, metric <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="projection_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="100%"></p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p><img src="projection_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" alt="" width="100%"></p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratio_sa</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve premium_ult</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;       &lt;num&gt;</span></span>
@@ -538,19 +739,48 @@ difference (e.g. waiting period transitions).</li>
 <span><span class="co">#&gt;     loss_total_se loss_total_cv    ratio_se    ratio_cv ratio_ci_lo ratio_ci_hi</span></span>
 <span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="method-summary">Method summary<a class="anchor" aria-label="anchor" href="#method-summary"></a>
-</h2>
+<div class="section level3">
+<h3 id="comparing-ed-cl-sa">Comparing ED, CL, SA<a class="anchor" aria-label="anchor" href="#comparing-ed-cl-sa"></a>
+</h3>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ratios</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  ed <span class="op">=</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span>,</span>
+<span>  cl <span class="op">=</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span>,</span>
+<span>  sa <span class="op">=</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Cohort-level ultimate-loss summary</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratios</span><span class="op">$</span><span class="va">ed</span><span class="op">)</span><span class="op">$</span><span class="va">loss_ult</span></span>
+<span><span class="co">#&gt;  [1]  410248522 1001304261 1027365215 2186835972  700124202  924502357</span></span>
+<span><span class="co">#&gt;  [7] 3028986426  488454953 1725804921 1308019740  876716310 1527010394</span></span>
+<span><span class="co">#&gt; [13] 2942802614 1193629493  685046660 5424401591 2740753232 1170293302</span></span>
+<span><span class="co">#&gt; [19] 3461664518 1212435170  870725770 1217843289  398006955  456590846</span></span>
+<span><span class="co">#&gt; [25] 1064623873 4386331021  727050149  616924302 1330756277 1072907077</span></span>
+<span><span class="co">#&gt; [31] 1209357471 1432029264  865239645 1911124852  828091909 1442904476</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratios</span><span class="op">$</span><span class="va">cl</span><span class="op">)</span><span class="op">$</span><span class="va">loss_ult</span></span>
+<span><span class="co">#&gt;  [1]  410248522 1001441303 1026151243 2186771221  697669301  931393934</span></span>
+<span><span class="co">#&gt;  [7] 3050990158  488218204 1751869308 1311793843  848103123 1497869029</span></span>
+<span><span class="co">#&gt; [13] 2901492851 1160045952  686574148 5687484014 2645801838 1209024555</span></span>
+<span><span class="co">#&gt; [19] 2542927190  918120582  635470028  856446521  260916096  295637296</span></span>
+<span><span class="co">#&gt; [25]  710560093 3276849152  434950057  356301148  697290587  789468799</span></span>
+<span><span class="co">#&gt; [31] 1040451732 1008356733  783000257 2001214863         NA         NA</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratios</span><span class="op">$</span><span class="va">sa</span><span class="op">)</span><span class="op">$</span><span class="va">loss_ult</span></span>
+<span><span class="co">#&gt;  [1]  410248522 1001441303 1026151243 2186771221  697669301  931393934</span></span>
+<span><span class="co">#&gt;  [7] 3050990158  488218204 1751869308 1311793843  848103123 1497869029</span></span>
+<span><span class="co">#&gt; [13] 2901492851 1160045952  686574148 5687484014 2645801838 1209024555</span></span>
+<span><span class="co">#&gt; [19] 2542927190  918120582  635470028  856446521  260916096  295637296</span></span>
+<span><span class="co">#&gt; [25]  710560093 3276849152  434950057  356301148  697290587  789468799</span></span>
+<span><span class="co">#&gt; [31] 1040451732 1008356733  783000257 2001214863  576954661 1246569307</span></span></code></pre></div>
 <table class="table">
 <colgroup>
-<col width="7%">
-<col width="30%">
-<col width="62%">
+<col width="33%">
+<col width="33%">
+<col width="33%">
 </colgroup>
 <thead><tr class="header">
-<th>method</th>
-<th>mechanism</th>
-<th>when to use</th>
+<th>Method</th>
+<th>Mechanism</th>
+<th>When to use</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
@@ -576,49 +806,378 @@ drift</td>
 </tbody>
 </table>
 </div>
+</div>
 <div class="section level2">
-<h2 id="comparison">Comparison<a class="anchor" aria-label="anchor" href="#comparison"></a>
+<h2 id="prior-anchored-estimation-bf-and-cc">Prior-anchored estimation: BF and CC<a class="anchor" aria-label="anchor" href="#prior-anchored-estimation-bf-and-cc"></a>
 </h2>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ratios</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  ed <span class="op">=</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"ed"</span><span class="op">)</span>,</span>
-<span>  cl <span class="op">=</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"cl"</span><span class="op">)</span>,</span>
-<span>  sa <span class="op">=</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"sa"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Cohort-level summary</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratios</span><span class="op">$</span><span class="va">ed</span><span class="op">)</span><span class="op">$</span><span class="va">loss_ult</span></span>
-<span><span class="co">#&gt;  [1]  410248522 1001304261 1027365215 2186835972  700124202  924502357</span></span>
-<span><span class="co">#&gt;  [7] 3028986426  488454953 1725804921 1308019740  876716310 1527010394</span></span>
-<span><span class="co">#&gt; [13] 2942802614 1193629493  685046660 5424401591 2740753232 1170293302</span></span>
-<span><span class="co">#&gt; [19] 3461664518 1212435170  870725770 1217843289  398006955  456590846</span></span>
-<span><span class="co">#&gt; [25] 1064623873 4386331021  727050149  616924302 1330756277 1072907077</span></span>
-<span><span class="co">#&gt; [31] 1209357471 1432029264  865239645 1911124852  828091909 1442904476</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratios</span><span class="op">$</span><span class="va">cl</span><span class="op">)</span><span class="op">$</span><span class="va">loss_ult</span></span>
-<span><span class="co">#&gt;  [1]  410248522 1001441303 1026151243 2186771221  697669301  931393934</span></span>
-<span><span class="co">#&gt;  [7] 3050990158  488218204 1751869308 1311793843  848103123 1497869029</span></span>
-<span><span class="co">#&gt; [13] 2901492851 1160045952  686574148 5687484014 2645801838 1209024555</span></span>
-<span><span class="co">#&gt; [19] 2542927190  918120582  635470028  856446521  260916096  295637296</span></span>
-<span><span class="co">#&gt; [25]  710560093 3276849152  434950057  356301148  697290587  789468799</span></span>
-<span><span class="co">#&gt; [31] 1040451732 1008356733  783000257 2001214863         NA         NA</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratios</span><span class="op">$</span><span class="va">sa</span><span class="op">)</span><span class="op">$</span><span class="va">loss_ult</span></span>
-<span><span class="co">#&gt;  [1]  410248522 1001441303 1026151243 2186771221  697669301  931393934</span></span>
-<span><span class="co">#&gt;  [7] 3050990158  488218204 1751869308 1311793843  848103123 1497869029</span></span>
-<span><span class="co">#&gt; [13] 2901492851 1160045952  686574148 5687484014 2645801838 1209024555</span></span>
-<span><span class="co">#&gt; [19] 2542927190  918120582  635470028  856446521  260916096  295637296</span></span>
-<span><span class="co">#&gt; [25]  710560093 3276849152  434950057  356301148  697290587  789468799</span></span>
-<span><span class="co">#&gt; [31] 1040451732 1008356733  783000257 2001214863  576954661 1246569307</span></span></code></pre></div>
+<p>ED, CL, and SA all estimate factors <em>from the data</em>. When the
+observed triangle is thin — immature cohorts, or cohorts right after a
+rate change — that estimate can be unstable. The prior-anchored family
+blends an expected loss ratio (ELR) with whatever loss has already
+emerged:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">Ult</mtext><mo>=</mo><msub><mi>L</mi><mtext mathvariant="normal">latest</mtext></msub><mo>+</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mstyle displaystyle="false"><mfrac><mn>1</mn><mtext mathvariant="normal">LDF</mtext></mfrac></mstyle><mo stretchy="true" form="postfix">)</mo></mrow><mo>⋅</mo><mi>π</mi><mo>⋅</mo><mtext mathvariant="normal">ELR</mtext></mrow><annotation encoding="application/x-tex">
+\text{Ult} = L_{\text{latest}}
+  + \left(1 - \tfrac{1}{\text{LDF}}\right) \cdot \pi \cdot \text{ELR}
+</annotation></semantics></math></p>
+<p>The two methods differ only in <em>where the ELR comes from</em>.</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>Method</th>
+<th>ELR source</th>
+<th>Domain use case</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>"bf"</code></td>
+<td>External (user supplied via <code>prior</code>)</td>
+<td>Immature and post-rate-change cohorts — anchor on an external prior
+when observed data is thin (Bornhuetter-Ferguson 1972)</td>
+</tr>
+<tr class="even">
+<td><code>"cc"</code></td>
+<td>Derived from data (payout-weighted
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>∑</mo><mi>L</mi><mi>/</mi><mo>∑</mo><mi>π</mi><mo>⋅</mo><mtext mathvariant="normal">payout</mtext></mrow><annotation encoding="application/x-tex">\sum L / \sum \pi \cdot \text{payout}</annotation></semantics></math>)</td>
+<td>Cohort-cohesive estimation — when pricing/industry suggests a
+natural single ELR target (Stanard 1985, Cape Cod)</td>
+</tr>
+</tbody>
+</table>
+<div class="section level3">
+<h3 id="bornhuetter-ferguson-bf">Bornhuetter-Ferguson (<code>"bf"</code>)<a class="anchor" aria-label="anchor" href="#bornhuetter-ferguson-bf"></a>
+</h3>
+<p>BF takes the ELR as an external input. The emerged loss
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>L</mi><mtext mathvariant="normal">latest</mtext></msub><annotation encoding="application/x-tex">L_{\text{latest}}</annotation></semantics></math>
+is kept as-is, and only the <em>unemerged</em> portion
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mn>1</mn><mi>/</mi><mtext mathvariant="normal">LDF</mtext><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(1 - 1/\text{LDF})</annotation></semantics></math>
+is filled in from the prior. As a cohort matures the data term dominates
+and the prior fades — BF degrades gracefully toward a chain-ladder
+answer.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_bf.html">fit_bf</a></span><span class="op">(</span><span class="va">tri</span>, prior <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;BFFit&gt;</span></span>
+<span><span class="co">#&gt; method        : bf </span></span>
+<span><span class="co">#&gt; loss          : loss </span></span>
+<span><span class="co">#&gt; premium       : premium </span></span>
+<span><span class="co">#&gt; alpha         : 1 </span></span>
+<span><span class="co">#&gt; sigma_method  : locf </span></span>
+<span><span class="co">#&gt; recent        : all </span></span>
+<span><span class="co">#&gt; regime        : none</span></span>
+<span><span class="co">#&gt; groups        : coverage </span></span>
+<span><span class="co">#&gt; cohorts (n)   : 36 </span></span>
+<span><span class="co">#&gt; prior         : scalar elr = 0.7 </span></span>
+<span><span class="co">#&gt; ci_type       : analytical</span></span></code></pre></div>
+<p>The <code>prior</code> argument also accepts a per-group
+<code>data.frame</code>, optionally carrying an <code>elr_se</code>
+column to treat the prior as a <em>distribution</em> rather than a fixed
+point.</p>
+</div>
+<div class="section level3">
+<h3 id="cape-cod-cc">Cape Cod (<code>"cc"</code>)<a class="anchor" aria-label="anchor" href="#cape-cod-cc"></a>
+</h3>
+<p>CC has the same blending form as BF but estimates the ELR <em>from
+the data itself</em> — a payout-weighted pooled ratio across cohorts. It
+is the natural choice when pricing or industry context suggests a single
+coherent ELR target and no external prior is on hand.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_cc.html">fit_cc</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;CCFit&gt;</span></span>
+<span><span class="co">#&gt; method        : cc </span></span>
+<span><span class="co">#&gt; loss          : loss </span></span>
+<span><span class="co">#&gt; premium       : premium </span></span>
+<span><span class="co">#&gt; alpha         : 1 </span></span>
+<span><span class="co">#&gt; sigma_method  : locf </span></span>
+<span><span class="co">#&gt; recent        : all </span></span>
+<span><span class="co">#&gt; regime        : none</span></span>
+<span><span class="co">#&gt; groups        : coverage </span></span>
+<span><span class="co">#&gt; cohorts (n)   : 36 </span></span>
+<span><span class="co">#&gt; pooled ELR    :</span></span>
+<span><span class="co">#&gt;   surgery : 1.3558</span></span>
+<span><span class="co">#&gt; ci_type       : analytical</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="three-aggregation-axes">Three aggregation axes<a class="anchor" aria-label="anchor" href="#three-aggregation-axes"></a>
+</h3>
+<p>ED, CC, and BF differ in how they aggregate the loss-per-premium
+signal:</p>
+<ul>
+<li>
+<strong>ED</strong> — per-link
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>g</mi><mi>k</mi></msub><annotation encoding="application/x-tex">g_k</annotation></semantics></math>:
+dev-granular, cohort-uniform per link.</li>
+<li>
+<strong>CC</strong> — cohort-level single ELR: cohort-uniform,
+dev-aggregated.</li>
+<li>
+<strong>BF</strong> — external prior: bypasses data estimation
+altogether.</li>
+</ul>
+<p>Together the five methods reconstruct the P&amp;C reserving trinity
+for long-term health, and the three aggregation axes each serve a
+distinct use case.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="chain-ladder-as-a-reserving-worker">Chain ladder as a reserving worker<a class="anchor" aria-label="anchor" href="#chain-ladder-as-a-reserving-worker"></a>
+</h2>
+<p><code><a href="../reference/fit_cl.html">fit_cl()</a></code> is the dedicated chain ladder fit for a single
+value column. Unlike <code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> — which projects loss and
+premium jointly to get loss ratio — <code><a href="../reference/fit_cl.html">fit_cl()</a></code> projects one
+cumulative metric forward and computes Mack-style standard errors per
+cohort. This is the classical P&amp;C <em>reserving</em> use case:
+projecting ultimate paid / incurred loss for an open accident year.
+Practitioners with a P&amp;C background will recognise the Mack workflow
+directly.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;CLFit&gt;</span></span>
+<span><span class="co">#&gt; method      : mack </span></span>
+<span><span class="co">#&gt; loss        : loss </span></span>
+<span><span class="co">#&gt; weight      : none </span></span>
+<span><span class="co">#&gt; alpha       : 1 </span></span>
+<span><span class="co">#&gt; sigma_method: locf </span></span>
+<span><span class="co">#&gt; recent      : all </span></span>
+<span><span class="co">#&gt; regime      : none</span></span>
+<span><span class="co">#&gt; use_maturity: FALSE </span></span>
+<span><span class="co">#&gt; tail_factor : 1 </span></span>
+<span><span class="co">#&gt; groups      : coverage </span></span>
+<span><span class="co">#&gt; periods     : 36</span></span></code></pre></div>
+<p><code><a href="../reference/fit_cl.html">fit_cl()</a></code> summarises adjacent development links by
+age-to-age factors
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mi>k</mi></msub><mo>=</mo><msubsup><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow><mi>L</mi></msubsup><mi>/</mi><msubsup><mi>C</mi><mi>k</mi><mi>L</mi></msubsup></mrow><annotation encoding="application/x-tex">f_k = C^L_{k+1} / C^L_k</annotation></semantics></math>,
+selected per link and then chained to project each cohort forward to
+ultimate. On top of the point projection, Mack’s formulae decompose the
+prediction variance into process and parameter components:</p>
+<ul>
+<li>
+<code>loss_proc_se</code> — process variance, from
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>σ</mi><mi>k</mi><mn>2</mn></msubsup><annotation encoding="application/x-tex">\sigma^2_k</annotation></semantics></math>
+(residual link variance per development period).</li>
+<li>
+<code>loss_param_se</code> — parameter variance, from the
+uncertainty of the selected age-to-age factors
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>f</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><annotation encoding="application/x-tex">\hat{f}_k</annotation></semantics></math>.</li>
+<li>
+<code>loss_total_se</code> — total standard error,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msqrt><mrow><msup><mtext mathvariant="normal">loss_proc_se</mtext><mn>2</mn></msup><mo>+</mo><msup><mtext mathvariant="normal">loss_param_se</mtext><mn>2</mn></msup></mrow></msqrt><annotation encoding="application/x-tex">\sqrt{\text{loss\_proc\_se}^2 + \text{loss\_param\_se}^2}</annotation></semantics></math>.</li>
+<li>
+<code>loss_total_cv</code> — coefficient of variation,
+<code>loss_total_se / loss_proj</code>.</li>
+</ul>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve loss_proc_se</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:  surgery 2023-01-01  410248522  410248522          0            0</span></span>
+<span><span class="co">#&gt;  2:  surgery 2023-02-01  976330445 1001441303   25110858      2751819</span></span>
+<span><span class="co">#&gt;  3:  surgery 2023-03-01  978486045 1026151243   47665198      3967869</span></span>
+<span><span class="co">#&gt;  4:  surgery 2023-04-01 2029909919 2186771221  156861302      6942937</span></span>
+<span><span class="co">#&gt;  5:  surgery 2023-05-01  624219436  697669301   73449865      4455636</span></span>
+<span><span class="co">#&gt;  6:  surgery 2023-06-01  802880717  931393934  128513217     17869565</span></span>
+<span><span class="co">#&gt;  7:  surgery 2023-07-01 2539141549 3050990158  511848609     35918003</span></span>
+<span><span class="co">#&gt;  8:  surgery 2023-08-01  393678329  488218204   94539875     15583801</span></span>
+<span><span class="co">#&gt;  9:  surgery 2023-09-01 1364052542 1751869308  387816766     38001618</span></span>
+<span><span class="co">#&gt; 10:  surgery 2023-10-01  979266043 1311793843  332527800     38496097</span></span>
+<span><span class="co">#&gt; 11:  surgery 2023-11-01  604685679  848103123  243417444     35719579</span></span>
+<span><span class="co">#&gt; 12:  surgery 2023-12-01 1026345366 1497869029  471523663     51405333</span></span>
+<span><span class="co">#&gt; 13:  surgery 2024-01-01 1912177598 2901492851  989315253     75674312</span></span>
+<span><span class="co">#&gt; 14:  surgery 2024-02-01  733902485 1160045952  426143467     51719398</span></span>
+<span><span class="co">#&gt; 15:  surgery 2024-03-01  415459873  686574148  271114275     41313266</span></span>
+<span><span class="co">#&gt; 16:  surgery 2024-04-01 3286053526 5687484014 2401430488    122770258</span></span>
+<span><span class="co">#&gt; 17:  surgery 2024-05-01 1451731153 2645801838 1194070685     93024106</span></span>
+<span><span class="co">#&gt; 18:  surgery 2024-06-01  629668308 1209024555  579356247     65346187</span></span>
+<span><span class="co">#&gt; 19:  surgery 2024-07-01 1250954693 2542927190 1291972497    103136528</span></span>
+<span><span class="co">#&gt; 20:  surgery 2024-08-01  425346694  918120582  492773888     65317866</span></span>
+<span><span class="co">#&gt; 21:  surgery 2024-09-01  278156543  635470028  357313485     56737053</span></span>
+<span><span class="co">#&gt; 22:  surgery 2024-10-01  352070323  856446521  504376198     68091257</span></span>
+<span><span class="co">#&gt; 23:  surgery 2024-11-01   99050501  260916096  161865595     41787166</span></span>
+<span><span class="co">#&gt; 24:  surgery 2024-12-01  103194013  295637296  192443283     49617195</span></span>
+<span><span class="co">#&gt; 25:  surgery 2025-01-01  227089025  710560093  483471068     83635489</span></span>
+<span><span class="co">#&gt; 26:  surgery 2025-02-01  939163074 3276849152 2337686078    192418633</span></span>
+<span><span class="co">#&gt; 27:  surgery 2025-03-01  112828845  434950057  322121212     72345359</span></span>
+<span><span class="co">#&gt; 28:  surgery 2025-04-01   82472453  356301148  273828695     68974257</span></span>
+<span><span class="co">#&gt; 29:  surgery 2025-05-01  141214851  697290587  556075736    119238986</span></span>
+<span><span class="co">#&gt; 30:  surgery 2025-06-01  136406102  789468799  653062697    136628652</span></span>
+<span><span class="co">#&gt; 31:  surgery 2025-07-01  149144024 1040451732  891307708    167039609</span></span>
+<span><span class="co">#&gt; 32:  surgery 2025-08-01  116327076 1008356733  892029657    183653360</span></span>
+<span><span class="co">#&gt; 33:  surgery 2025-09-01   67465470  783000257  715534787    179947037</span></span>
+<span><span class="co">#&gt; 34:  surgery 2025-10-01  121626173 2001214863 1879588690    337103186</span></span>
+<span><span class="co">#&gt; 35:  surgery 2025-11-01   15716444  449653406  433936962    194100658</span></span>
+<span><span class="co">#&gt; 36:  surgery 2025-12-01    4825085  850839118  846014033    472741759</span></span>
+<span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve loss_proc_se</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt;     loss_param_se loss_total_se loss_total_cv</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;         &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:             0             0   0.000000000</span></span>
+<span><span class="co">#&gt;  2:       4299412       5104650   0.005097304</span></span>
+<span><span class="co">#&gt;  3:       5021196       6399718   0.006236623</span></span>
+<span><span class="co">#&gt;  4:      11297887      13260717   0.006064062</span></span>
+<span><span class="co">#&gt;  5:       3696918       5789637   0.008298541</span></span>
+<span><span class="co">#&gt;  6:       8694892      19872657   0.021336469</span></span>
+<span><span class="co">#&gt;  7:      30501066      47121311   0.015444596</span></span>
+<span><span class="co">#&gt;  8:       5072721      16388635   0.033568259</span></span>
+<span><span class="co">#&gt;  9:      20827314      43334744   0.024736288</span></span>
+<span><span class="co">#&gt; 10:      16992221      42079509   0.032077837</span></span>
+<span><span class="co">#&gt; 11:      11901733      37650227   0.044393454</span></span>
+<span><span class="co">#&gt; 12:      22008504      55918535   0.037332059</span></span>
+<span><span class="co">#&gt; 13:      43971810      87522121   0.030164514</span></span>
+<span><span class="co">#&gt; 14:      18269127      54851227   0.047283667</span></span>
+<span><span class="co">#&gt; 15:      11014493      42756344   0.062274911</span></span>
+<span><span class="co">#&gt; 16:      92689755     153830838   0.027047256</span></span>
+<span><span class="co">#&gt; 17:      45040851     103354548   0.039063601</span></span>
+<span><span class="co">#&gt; 18:      20907249      68609309   0.056747655</span></span>
+<span><span class="co">#&gt; 19:      45568404     112754702   0.044340515</span></span>
+<span><span class="co">#&gt; 20:      16819267      67448584   0.073463753</span></span>
+<span><span class="co">#&gt; 21:      11859688      57963310   0.091213288</span></span>
+<span><span class="co">#&gt; 22:      16219631      69996398   0.081728860</span></span>
+<span><span class="co">#&gt; 23:       5190764      42108328   0.161386470</span></span>
+<span><span class="co">#&gt; 24:       6221683      50005754   0.169145620</span></span>
+<span><span class="co">#&gt; 25:      15668260      85090478   0.119751276</span></span>
+<span><span class="co">#&gt; 26:      75222224     206599403   0.063048188</span></span>
+<span><span class="co">#&gt; 27:      10161412      73055495   0.167962950</span></span>
+<span><span class="co">#&gt; 28:       8575343      69505285   0.195074548</span></span>
+<span><span class="co">#&gt; 29:      19174475     120770842   0.173200161</span></span>
+<span><span class="co">#&gt; 30:      22834478     138523651   0.175464377</span></span>
+<span><span class="co">#&gt; 31:      31445935     169973756   0.163365345</span></span>
+<span><span class="co">#&gt; 32:      32987225     186592373   0.185045993</span></span>
+<span><span class="co">#&gt; 33:      27713231     182068556   0.232526816</span></span>
+<span><span class="co">#&gt; 34:      80113491     346492034   0.173140846</span></span>
+<span><span class="co">#&gt; 35:      21034520     195237078   0.434194593</span></span>
+<span><span class="co">#&gt; 36:      66075497     477337136   0.561019265</span></span>
+<span><span class="co">#&gt;     loss_param_se loss_total_se loss_total_cv</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;         &lt;num&gt;</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cl</span>, type <span class="op">=</span> <span class="st">"projection"</span>, show_interval <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="projection_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="" width="100%"></p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cl</span>, type <span class="op">=</span> <span class="st">"reserve"</span>, conf_level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span></code></pre></div>
+<p><img src="projection_files/figure-html/unnamed-chunk-9-2.png" class="r-plt" alt="" width="100%"></p>
+<p><code><a href="../reference/plot_triangle.html">plot_triangle()</a></code> displays the cohort x dev cells as a
+heatmap, distinguishing observed cells from projected, with
+<code>label_style</code> showing per-cell CV / SE / CI:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">cl</span>, region <span class="op">=</span> <span class="st">"full"</span><span class="op">)</span>        <span class="co"># observed + projected</span></span></code></pre></div>
+<p><img src="projection_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="100%"></p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_triangle.html">plot_triangle</a></span><span class="op">(</span><span class="va">cl</span>, label_style <span class="op">=</span> <span class="st">"cv"</span><span class="op">)</span>     <span class="co"># per-cell coefficient of variation</span></span></code></pre></div>
+<p><img src="projection_files/figure-html/unnamed-chunk-10-2.png" class="r-plt" alt="" width="100%"></p>
+<div class="section level3">
+<h3 id="tail-factor">Tail factor<a class="anchor" aria-label="anchor" href="#tail-factor"></a>
+</h3>
+<p>For triangles where the latest observed development period is still
+developing, an extrapolated tail factor estimates ultimate. The
+extrapolation fits
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>f</mi><mi>k</mi></msub><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo>∼</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">\log(f_k - 1) \sim k</annotation></semantics></math>
+— a Sherman (1984) log-linear tail — to the selected ATA factors and
+extends the projection by the cumulative product of extrapolated
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>k</mi></msub><annotation encoding="application/x-tex">f_k</annotation></semantics></math>
+values. Disabled by default (<code>tail = FALSE</code>).</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, tail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>         <span class="co"># log-linear extrapolation</span></span>
+<span><span class="co">#&gt; &lt;CLFit&gt;</span></span>
+<span><span class="co">#&gt; method      : mack </span></span>
+<span><span class="co">#&gt; loss        : loss </span></span>
+<span><span class="co">#&gt; weight      : none </span></span>
+<span><span class="co">#&gt; alpha       : 1 </span></span>
+<span><span class="co">#&gt; sigma_method: locf </span></span>
+<span><span class="co">#&gt; recent      : all </span></span>
+<span><span class="co">#&gt; regime      : none</span></span>
+<span><span class="co">#&gt; use_maturity: FALSE </span></span>
+<span><span class="co">#&gt; tail_factor : 1.188138 </span></span>
+<span><span class="co">#&gt; groups      : coverage </span></span>
+<span><span class="co">#&gt; periods     : 36</span></span>
+<span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, tail <span class="op">=</span> <span class="fl">1.025</span><span class="op">)</span>        <span class="co"># or a literal tail factor</span></span>
+<span><span class="co">#&gt; &lt;CLFit&gt;</span></span>
+<span><span class="co">#&gt; method      : mack </span></span>
+<span><span class="co">#&gt; loss        : loss </span></span>
+<span><span class="co">#&gt; weight      : none </span></span>
+<span><span class="co">#&gt; alpha       : 1 </span></span>
+<span><span class="co">#&gt; sigma_method: locf </span></span>
+<span><span class="co">#&gt; recent      : all </span></span>
+<span><span class="co">#&gt; regime      : none</span></span>
+<span><span class="co">#&gt; use_maturity: FALSE </span></span>
+<span><span class="co">#&gt; tail_factor : 1.025 </span></span>
+<span><span class="co">#&gt; groups      : coverage </span></span>
+<span><span class="co">#&gt; periods     : 36</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="sigma-extrapolation-methods">Sigma extrapolation methods<a class="anchor" aria-label="anchor" href="#sigma-extrapolation-methods"></a>
+</h3>
+<p>Mack variance requires
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mi>k</mi></msub><annotation encoding="application/x-tex">\sigma_k</annotation></semantics></math>
+at all development links, including the last where it cannot be
+estimated directly. <code>sigma_method</code> controls the
+extrapolation:</p>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr class="header">
+<th><code>sigma_method</code></th>
+<th>Behaviour</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>"locf"</code></td>
+<td>(default) last observation carried forward</td>
+</tr>
+<tr class="even">
+<td><code>"min_last2"</code></td>
+<td>min of the last two estimable
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>σ</mi><annotation encoding="application/x-tex">\sigma</annotation></semantics></math>
+values — conservative</td>
+</tr>
+<tr class="odd">
+<td><code>"loglinear"</code></td>
+<td>log-linear extrapolation from the observed
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mi>k</mi></msub><annotation encoding="application/x-tex">\sigma_k</annotation></semantics></math>
+sequence</td>
+</tr>
+<tr class="even">
+<td><code>"mack"</code></td>
+<td>Mack (1993) Appendix B tail estimator — closed-form for the last
+link only; LOCF with warning beyond that</td>
+</tr>
+<tr class="odd">
+<td><code>"none"</code></td>
+<td>no extrapolation;
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>σ</mi><annotation encoding="application/x-tex">\sigma</annotation></semantics></math>
+stays <code>NA</code> (variance treated as zero downstream)</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_cl.html">fit_cl</a></span><span class="op">(</span><span class="va">tri</span>, sigma_method <span class="op">=</span> <span class="st">"loglinear"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;CLFit&gt;</span></span>
+<span><span class="co">#&gt; method      : mack </span></span>
+<span><span class="co">#&gt; loss        : loss </span></span>
+<span><span class="co">#&gt; weight      : none </span></span>
+<span><span class="co">#&gt; alpha       : 1 </span></span>
+<span><span class="co">#&gt; sigma_method: loglinear </span></span>
+<span><span class="co">#&gt; recent      : all </span></span>
+<span><span class="co">#&gt; regime      : none</span></span>
+<span><span class="co">#&gt; use_maturity: FALSE </span></span>
+<span><span class="co">#&gt; tail_factor : 1 </span></span>
+<span><span class="co">#&gt; groups      : coverage </span></span>
+<span><span class="co">#&gt; periods     : 36</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="variance-and-confidence-intervals">Variance and confidence intervals<a class="anchor" aria-label="anchor" href="#variance-and-confidence-intervals"></a>
 </h2>
 <p><code><a href="../reference/fit_ratio.html">fit_ratio()</a></code> reports analytical standard errors for
-<code>L/P</code>. Two variants:</p>
+<code>L/P</code>. Two variants control how premium uncertainty
+enters:</p>
 <ul>
 <li>
 <code>se_method = "fixed"</code> (default) — premium treated as
 fixed,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">S</mi><mi mathvariant="normal">E</mi></mrow><mo stretchy="false" form="prefix">(</mo><mi>L</mi><mi>/</mi><mi>P</mi><mo stretchy="false" form="postfix">)</mo><mo>≈</mo><mrow><mi mathvariant="normal">S</mi><mi mathvariant="normal">E</mi></mrow><mo stretchy="false" form="prefix">(</mo><mi>L</mi><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mi>P</mi></mrow><annotation encoding="application/x-tex">\mathrm{SE}(L/P) \approx \mathrm{SE}(L)/P</annotation></semantics></math>.
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">SE</mtext><mo stretchy="false" form="prefix">(</mo><mi>L</mi><mi>/</mi><mi>P</mi><mo stretchy="false" form="postfix">)</mo><mo>≈</mo><mtext mathvariant="normal">SE</mtext><mo stretchy="false" form="prefix">(</mo><mi>L</mi><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mi>P</mi></mrow><annotation encoding="application/x-tex">\text{SE}(L/P) \approx \text{SE}(L)/P</annotation></semantics></math>.
 Strictly the delta method with <code>Var(P) = 0</code> and
 <code>Cov(L,P) = 0</code>.</li>
 <li>
@@ -630,9 +1189,24 @@ premium uncertainty and loss-premium correlation <code>rho</code>:</li>
   + \frac{L^2 \mathrm{Var}(P)}{P^4}
   - \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(P)}{P^3}
 </annotation></semantics></math></p>
-<p>Bootstrap intervals are also available:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ratio_boot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"ed"</span>, bootstrap <span class="op">=</span> <span class="cn">TRUE</span>, B <span class="op">=</span> <span class="fl">1000</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<p>There are two complementary paths to SE estimation:</p>
+<ul>
+<li>
+<strong>Analytical</strong> — <code><a href="../reference/dot-mack_f_var.html">.mack_f_var()</a></code> (Mack 1993)
+and <code><a href="../reference/dot-ed_g_var.html">.ed_g_var()</a></code> (B-S 1970) provide closed-form per-link
+variance, distribution-free.</li>
+<li>
+<strong>Bootstrap</strong> — a residual paradigm (<code>cell</code>
+/ <code>link</code> / <code>parametric</code>) drives forward
+simulation, capturing distributional shape. Residual choice determines
+both the process variance scale and the forward-sim model (paradigm
+matching).</li>
+</ul>
+<p>A large divergence between the two paths is a model-misspecification
+signal; routinely computing both serves as a sanity check.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ratio_boot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ratio.html">fit_ratio</a></span><span class="op">(</span><span class="va">tri</span>, method <span class="op">=</span> <span class="st">"ed"</span>, bootstrap <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                        B <span class="op">=</span> <span class="fl">1000</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ratio_boot</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     coverage     cohort     latest   loss_ult    reserve premium_ult</span></span>
 <span><span class="co">#&gt;       &lt;char&gt;     &lt;Date&gt;      &lt;num&gt;      &lt;num&gt;      &lt;num&gt;       &lt;num&gt;</span></span>
@@ -756,29 +1330,7 @@ premium uncertainty and loss-premium correlation <code>rho</code>:</li>
 <span><span class="co">#&gt;             &lt;num&gt;         &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="choosing-a-method">Choosing a method<a class="anchor" aria-label="anchor" href="#choosing-a-method"></a>
-</h2>
-<p>ED is the default because it is the <em>unconditional safe
-baseline</em>: no maturity or regime detection is required, and it is
-conservative under early-dev volatility. CL and SA are warranted when
-the default’s homogeneity assumption is unrealistic.</p>
-<pre><code>Default is "ed" -- pooled g_k x cohort premium, no maturity dependency.
-
-Move to "cl" or "sa" when ED's assumptions become limiting:
-  |-- Cohort-level drift (regime change, underwriting / coverage shift)
-  |     -&gt; "cl"  (cohort's own cum_loss anchors the drift)
-  |-- Long-tail portfolio with BOTH volatile early dev AND cohort drift late
-  |     -&gt; "sa"  (ED before maturity, CL after)
-  |-- All cohorts already past maturity, no early-dev volatility
-        -&gt; "cl"  (no ED region needed)</code></pre>
-<p>In practice: <strong>start with <code>"ed"</code></strong> (the
-default), then run <code>"cl"</code> and <code>"sa"</code> for
-sensitivity. If all three agree, the projection is robust. If they
-diverge, inspect maturity detection, regime filters, and the underlying
-ATA factors.</p>
-</div>
-<div class="section level2">
-<h2 id="maturity-input">Maturity input<a class="anchor" aria-label="anchor" href="#maturity-input"></a>
+<h2 id="maturity-input-for-sa">Maturity input for SA<a class="anchor" aria-label="anchor" href="#maturity-input-for-sa"></a>
 </h2>
 <p>For <code>method = "sa"</code> the maturity point
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>
@@ -793,15 +1345,93 @@ forms:</p>
 for non-SA methods or for <code><a href="../reference/fit_ata.html">fit_ata()</a></code> standalone).</li>
 <li>
 <code>maturity = maturity_spec(max_cv = 0.05, min_run = 2L)</code> —
-lazy spec forwarding custom thresholds to <code><a href="../reference/detect_maturity.html">detect_maturity()</a></code>
-at fit time (leakage-safe for <code><a href="../reference/backtest.html">backtest()</a></code>).</li>
+a lazy spec forwarding custom thresholds to
+<code><a href="../reference/detect_maturity.html">detect_maturity()</a></code> at fit time (leakage-safe for
+<code><a href="../reference/backtest.html">backtest()</a></code>).</li>
 <li>
-<code>maturity = detect_maturity(tri, ...)</code> — pre-built
+<code>maturity = detect_maturity(tri, ...)</code> — a pre-built
 <code>Maturity</code> object, fixed across refits.</li>
 <li>
 <code>maturity = maturity_at(coverage = "surgery", change = 4)</code>
-— manual per-group override (e.g. company-standard
+— a manual per-group override (e.g. a company-standard
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>k</mi><mo>*</mo></msup><annotation encoding="application/x-tex">k^*</annotation></semantics></math>).</li>
+</ul>
+<p>The same lazy-spec / pre-built / manual pattern applies to
+<code><a href="../reference/fit_cl.html">fit_cl()</a></code>, where maturity filtering restricts the projection
+to the mature region when the selected ATA factors are volatile.</p>
+</div>
+<div class="section level2">
+<h2 id="choosing-a-method">Choosing a method<a class="anchor" aria-label="anchor" href="#choosing-a-method"></a>
+</h2>
+<p>ED is the default because it is the <em>unconditional safe
+baseline</em>: no maturity or regime detection is required, and it is
+conservative under early-dev volatility. The other methods are warranted
+when ED’s homogeneity assumption is unrealistic, or when an external
+anchor is preferable to factors estimated from a thin triangle.</p>
+<pre><code>Default is "ed" -- pooled g_k x cohort premium, no maturity dependency.
+
+Move to another method when ED's assumptions become limiting:
+  |-- Cohort-level drift (regime change, underwriting / coverage shift)
+  |     -&gt; "cl"  (cohort's own cum_loss anchors the drift)
+  |-- Long-tail portfolio with BOTH volatile early dev AND cohort drift
+  |     -&gt; "sa"  (ED before maturity, CL after)
+  |-- All cohorts already past maturity, no early-dev volatility
+  |     -&gt; "cl"  (no ED region needed)
+  |-- Immature / post-rate-change cohorts, an external ELR is on hand
+  |     -&gt; "bf"  (blend the external prior with emerged loss)
+  |-- A single coherent ELR target, no external prior available
+        -&gt; "cc"  (data-pooled ELR, same blending form as BF)</code></pre>
+<p>In practice: <strong>start with <code>"ed"</code></strong> (the
+default), then run <code>"cl"</code> and <code>"sa"</code> for
+sensitivity. If all three agree, the projection is robust. If they
+diverge, inspect maturity detection, regime filters, and the underlying
+ATA factors. Reach for <code>"bf"</code> / <code>"cc"</code> when the
+cohort is too immature for any data-only method to be trustworthy.</p>
+</div>
+<div class="section level2">
+<h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>
+</h2>
+<ul>
+<li>
+<code><a href="../articles/getting-started.html">vignette("getting-started")</a></code> — package quick-start
+guide.</li>
+<li>
+<code><a href="../articles/diagnostics.html">vignette("diagnostics")</a></code> — regime detection and
+filtering.</li>
+<li>
+<code><a href="../articles/backtest.html">vignette("backtest")</a></code> — calendar-diagonal hold-out
+validation.</li>
+<li>
+<code><a href="../articles/diagnostics.html">vignette("diagnostics")</a></code> — projected loss-ratio
+convergence diagnostic.</li>
+<li>
+<code><a href="../articles/getting-started.html">vignette("getting-started")</a></code> — Triangle / Link /
+Maturity data flow.</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<ul>
+<li>Bornhuetter, R. L. and Ferguson, R. E. (1972). The actuary and IBNR.
+<em>Proceedings of the Casualty Actuarial Society</em>, 59,
+181-195.</li>
+<li>Bühlmann, H. (1967). Experience rating and credibility. <em>ASTIN
+Bulletin</em>, 4(3), 199-207.</li>
+<li>Bühlmann, H. and Straub, E. (1970). Glaubwürdigkeit für
+Schadensätze. <em>Bulletin of the Swiss Association of Actuaries</em>,
+70, 111-133.</li>
+<li>Clark, D. R. (2003). LDF curve-fitting and stochastic reserving: A
+maximum likelihood approach. <em>CAS Forum</em>, Fall 2003.</li>
+<li>Mack, T. (1993). Distribution-free calculation of the standard error
+of chain ladder reserve estimates. <em>ASTIN Bulletin</em>, 23(2),
+213-225.</li>
+<li>Sherman, R. E. (1984). Extrapolating, smoothing, and interpolating
+development factors. <em>Proceedings of the Casualty Actuarial
+Society</em>, 71, 122-155.</li>
+<li>Stanard, J. N. (1985). A simulation test of prediction errors of
+loss reserve estimation techniques. <em>Proceedings of the Casualty
+Actuarial Society</em>, 72, 124-153.  </li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

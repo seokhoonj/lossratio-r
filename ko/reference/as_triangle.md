@@ -204,11 +204,11 @@ Attributes set on the returned object: `groups`, `cohort`, `calendar`,
 ``` r
 if (FALSE) { # \dontrun{
 df <- data.frame(
-  pd_cd         = rep(c("P001", "P002"), each = 6),
-  pd_nm         = rep(c("cancer", "health"), each = 6),
-  uy_m          = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
-  cy_m          = rep(as.Date(c("2023-01-01", "2023-02-01")), 6),
-  incr_loss     = runif(12, 80, 120),
+  pd_cd        = rep(c("P001", "P002"), each = 6),
+  pd_nm        = rep(c("cancer", "health"), each = 6),
+  uy_m         = rep(as.Date(c("2023-01-01", "2023-02-01", "2023-03-01")), 4),
+  cy_m         = rep(as.Date(c("2023-01-01", "2023-02-01")), 6),
+  incr_loss    = runif(12, 80, 120),
   incr_premium = runif(12, 90, 110)
 )
 
@@ -219,7 +219,7 @@ res_m <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium = "incr_premium"
+  premium  = "incr_premium"
 )
 
 # explicit quarterly view (re-bins monthly input to quarterly)
@@ -229,7 +229,7 @@ res_q <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium = "incr_premium",
+  premium  = "incr_premium",
   grain    = "Q"
 )
 

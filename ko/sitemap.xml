@@ -1,28 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/aggregation-frameworks-ko.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/aggregation-frameworks.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/backtest-ko.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/backtest.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/bootstrap-se-decomposition-ko.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/bootstrap-se-decomposition.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/chain-ladder-reserving-ko.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/chain-ladder-reserving.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/convergence-ko.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/convergence.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/diagnostics-ko.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/diagnostics.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/getting-started-ko.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/getting-started.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/index.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/methodology-ko.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/methodology.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/projection-ko.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/articles/projection.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/regime-change-filter-ko.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/regime-change-filter.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/regime-ko.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/regime.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/triangle-link-and-maturity-ko.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/articles/triangle-link-and-maturity.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/authors.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/index.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/news/index.html</loc></url>
@@ -94,8 +82,8 @@
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-has_cols.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-is_ratio_metric.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-kneedle_elbow.html</loc></url>
+<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-lm_ata.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-lm_ed.html</loc></url>
-<url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-lm_link.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-lossfit_augment.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-lossfit_bootstrap.html</loc></url>
 <url><loc>https://seokhoonj.github.io/lossratio/ko/reference/dot-mack_f_var.html</loc></url>

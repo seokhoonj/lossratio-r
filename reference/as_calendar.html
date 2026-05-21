@@ -16,9 +16,9 @@ $$ratio = loss / premium$$
 For long-term health insurance applications, risk premium is commonly
 used as the premium measure.
 Proportion variables are computed within each calendar cell:
-incr_loss_share     = incr_loss     / sum(incr_loss)
+incr_loss_share    = incr_loss    / sum(incr_loss)
 incr_premium_share = incr_premium / sum(incr_premium)
-loss_share          = loss          / sum(loss)
+loss_share         = loss         / sum(loss)
 premium_share      = premium      / sum(premium)
 
 
@@ -48,9 +48,9 @@ $$ratio = loss / premium$$
 For long-term health insurance applications, risk premium is commonly
 used as the premium measure.
 Proportion variables are computed within each calendar cell:
-incr_loss_share     = incr_loss     / sum(incr_loss)
+incr_loss_share    = incr_loss    / sum(incr_loss)
 incr_premium_share = incr_premium / sum(incr_premium)
-loss_share          = loss          / sum(loss)
+loss_share         = loss         / sum(loss)
 premium_share      = premium      / sum(premium)
 
 
@@ -139,16 +139,10 @@ Triangle's grain."><meta property="og:image" content="https://seokhoonj.github.i
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/index.html">All articles</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/aggregation-frameworks.html">Aggregation frameworks</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-link-and-maturity.html">Triangle, Link and Maturity</a></li>
-    <li><a class="dropdown-item" href="../articles/regime.html">Regime</a></li>
-    <li><a class="dropdown-item" href="../articles/projection.html">Projection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-change-filter.html">Regime change filter</a></li>
+    <li><a class="dropdown-item" href="../articles/projection.html">Projection methods</a></li>
+    <li><a class="dropdown-item" href="../articles/diagnostics.html">Diagnostics: maturity, convergence, regime</a></li>
     <li><a class="dropdown-item" href="../articles/backtest.html">Backtest</a></li>
-    <li><a class="dropdown-item" href="../articles/convergence.html">Convergence</a></li>
     <li><a class="dropdown-item" href="../articles/bootstrap-se-decomposition.html">Bootstrap SE decomposition</a></li>
-    <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/chain-ladder-reserving.html">(Reference) Chain ladder reserving</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -185,9 +179,9 @@ share columns within each <code>calendar</code> cell.</p>
 $$ratio = loss / premium$$</p>
 <p>For long-term health insurance applications, risk premium is commonly
 used as the <code>premium</code> measure.</p>
-<p>Proportion variables are computed within each <code>calendar</code> cell:</p><ul><li><p><code>incr_loss_share     = incr_loss     / sum(incr_loss)</code></p></li>
+<p>Proportion variables are computed within each <code>calendar</code> cell:</p><ul><li><p><code>incr_loss_share    = incr_loss    / sum(incr_loss)</code></p></li>
 <li><p><code>incr_premium_share = incr_premium / sum(incr_premium)</code></p></li>
-<li><p><code>loss_share          = loss          / sum(loss)</code></p></li>
+<li><p><code>loss_share         = loss         / sum(loss)</code></p></li>
 <li><p><code>premium_share      = premium      / sum(premium)</code></p></li>
 </ul><p>Therefore, for a fixed <code>calendar</code> cell, the proportions
 sum to 1 across groups. These are useful for examining the composition of
@@ -257,7 +251,7 @@ a melted long-format version (<code>class = "CalendarLonger"</code>).</p>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu">as_calendar</span><span class="op">(</span><span class="va">tri</span><span class="op">)</span></span></span>

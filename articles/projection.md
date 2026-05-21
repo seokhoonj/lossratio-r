@@ -1,46 +1,113 @@
-# Projection: SA, ED, CL methods
+# Projection methods
 
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
-projects cumulative loss ratio per cohort from a `Triangle` object.
-Three methods are available; this vignette explains the trade-offs.
+> Korean version: [예측
+> 방법론](https://seokhoonj.github.io/lossratio/articles/articles/projection-ko.md)
 
-## Notation
+This is a deep-dive into the five projection methods in `lossratio` —
+exposure-driven (ED), chain ladder (CL), stage-adaptive (SA),
+Bornhuetter-Ferguson (BF), and Cape Cod (CC). The getting-started
+tutorial shows *how* to call each fit; this document explains *why* each
+method exists, what assumption it rests on, and when one is preferable
+to another. The intended reader is a practitioner working on long-term
+health insurance loss ratios.
 
-For cohort $`i`$ at dev $`k`$:
+## Why a dedicated projection toolkit
+
+Loss ratio is a daily task in long-term health insurance: analysing
+cohort-level patterns, projecting ultimate outcomes, and monitoring
+realised experience against expectations. Existing reserving toolkits
+mostly trace back to property and casualty (P&C) origins, where the
+following long-term health characteristics are not directly captured:
+
+- **Denominator effect and inertia** — Cumulative loss ratio’s
+  denominator grows mechanically with development, dampening the signal
+  of recent experience.
+- **Recurrent claims** — Hospitalisation, surgery (grade 1-5), and
+  outpatient coverage allow a single insured to file multiple claims;
+  cumulative claim count can exceed insured count.
+- **Risk premium decomposition** — In Korea, long-term insurance premium
+  splits into risk premium + savings premium + loading premium. The
+  actuarially meaningful denominator for loss ratio is the *risk
+  premium* portion alone.
+- **Levelled premium** — Non-renewable contracts charge a level premium
+  computed at issue as the lifetime average. The *charged premium* is
+  not premium; the *period risk premium* (morbidity rate x sum insured x
+  persistency) must be constructed externally before being passed in.
+- **Regime change** — Product redesigns, rate revisions, channel-mix
+  shifts, and underwriting updates introduce *cohort-level* structural
+  breaks in loss-ratio dynamics.
+
+`lossratio` transplants core P&C reserving methodology — Mack (1993)
+chain ladder, Bornhuetter-Ferguson (1972), Cape Cod (Stanard 1985),
+Bühlmann-Straub (1970) credibility, and Sherman (1984) tail
+extrapolation — and adapts each piece to the long-term health issues
+above. The academic lineage is preserved; the goal is a tool that domain
+practitioners can use immediately.
+
+## Methodological lineage
+
+The methodological roots of long-term loss-ratio estimation lie in the
+following P&C reserving thread:
+
+    1967  Bühlmann credibility           experience rating formalised
+    1970  Bühlmann-Straub                premium-varying credibility
+                                         (volume-weighted estimator)
+    1972  Bornhuetter-Ferguson           prior + observed loss blending
+    1984  Sherman                        chain ladder tail extrapolation
+    1985  Stanard (Cape Cod)             reserving application of B-S
+    1993  Mack                           distribution-free MSE for chain
+                                         ladder
+
+Two core ideas drive everything that follows:
+
+- **Chain ladder (Mack 1993)** — Markov multiplicative recursion on
+  cumulative loss $`C_k`$: $`C_{k+1} = f_k \cdot C_k`$ where
+  $`f_k = \sum_i C_{i,k+1} / \sum_i C_{i,k}`$.
+- **Cape Cod / Bühlmann-Straub** — Loss anchored to premium (volume).
+  $`\widehat{ELR} = \sum_i L_i / \sum_i \pi_i`$ yields a single ratio
+  that drives ultimate estimation.
+
+Both apply *partially* to long-term health, but both have cracks:
+
+| Domain issue | Chain ladder | Cape Cod |
+|----|----|----|
+| Denominator effect / inertia | Early-dev $`f_k`$ over-volatile (small $`C_k`$) | Cohort-level ELR variation ignored |
+| Levelled premium | Loss-only avoids it (weak against incidence shifts) | Flat $`\pi`$ absorbs developing premium |
+| Recurrent claims | Works (freq x sev decoupled) | Works (volume measure only) |
+| Developing risk premium | Not relevant | *Single $`\pi`$* assumption breaks |
+| Cohort-level regime change | Violates Mack’s no-calendar-year-effect | Cohort heterogeneity averaged out |
+
+Chain ladder is weak early; Cape Cod cannot track developing premium.
+Each paradigm is incomplete on its own — which is exactly why the
+package offers five methods rather than one.
+
+## The core framework: loss / premium / ratio
+
+All estimation rests on three observable quantities:
+
+| Quantity | Meaning | Triangle column |
+|----|----|----|
+| **loss** | Cumulative loss | `loss`, `incr_loss` |
+| **premium** | Risk-bearing volume (risk premium for long-term health) | `premium`, `incr_premium` |
+| **ratio** | Loss ratio (cumulative loss / cumulative premium) | `ratio`, `incr_ratio` |
+
+All three are *stochastic observables developing over the cohort x dev
+grid*. Premium is not a fixed underwriting volume; it is a developing
+quantity driven by morbidity x sum insured x persistency — the *volume
+measure* of Mack (1993), the *natural weight* of Bühlmann-Straub (1970).
+
+For cohort $`i`$ at development period $`k`$ the projection methods use
+this notation:
 
 - $`C^L_{i,k}`$ — cumulative loss
 - $`C^P_{i,k}`$ — cumulative risk premium (premium)
 - $`f_k = C^L_{k+1} / C^L_k`$ — age-to-age (chain ladder) factor
 - $`g_k = \Delta C^L_k / C^P_k`$ — exposure-driven intensity
-- maturity point $`k^*`$ — dev at which $`f_k`$ stabilises for group
-  $`g`$ (detected from CV / RSE thresholds)
+- maturity point $`k^*`$ — the development period at which $`f_k`$
+  stabilises for a group (detected from CV / RSE thresholds)
 
-## Method 1: Exposure-Driven (`"ed"`, default)
-
-All future increments use premium (risk premium) as the denominator:
-
-``` math
-\hat{C}^L_{i,k+1} = \hat{C}^L_{i,k} + g_k \cdot C^P_{i,k}
-```
-
-ED is the default because it is an *unconditional safe baseline* – no
-maturity or regime detection is required, and the projection is robust
-under early-dev age-to-age volatility.
-
-Behaviour:
-
-- Stable when premium volume is informative across full development.
-- The pooled intensity $`g_k`$ assumes cohorts are reasonably
-  homogeneous in loss-per-premium level. Under cohort-level drift the
-  projection biases toward the pooled mean and may over-project
-  post-change cohorts – see the `regime` argument for explicit
-  filtering.
-
-When to use:
-
-- As a baseline projection where cohort homogeneity is plausible.
-- Short-tail products where chain ladder offers no advantage.
-- Sparse data where age-to-age factors are unreliable across all links.
+We use the `surgery` group throughout for brevity — every step
+generalises to multi-group input.
 
 ``` r
 
@@ -54,12 +121,53 @@ tri <- as_triangle(
   loss     = "incr_loss",
   premium  = "incr_premium"
 )
+```
+
+## Direct estimation: ED, CL, SA
+
+The three direct-estimation methods estimate factors from the data and
+chain them forward. Their order — `ed` -\> `cl` -\> `sa` — mirrors the
+methodological progression *primitive (ED) -\> classical (CL) -\>
+composition (SA)*.
+
+| Method | Point estimate | Variance helper | Domain character |
+|----|----|----|----|
+| `"ed"` (default) | $`\Delta L_{k+1} = g_k \cdot P_k`$ (additive) | `.ed_g_var` (B-S 1970) | Robust to early-dev ATA volatility |
+| `"cl"` | $`L_{k+1} = f_k \cdot L_k`$ (multiplicative) | `.mack_f_var` (Mack 1993) | Natural after late-dev factor stabilisation |
+| `"sa"` | ED before maturity $`k^*`$, CL after | Composition | Stage-adaptive composition of ED and CL |
+
+### Exposure-driven (`"ed"`, default)
+
+ED projects every future increment using premium (risk premium) as the
+denominator:
+
+``` math
+\hat{C}^L_{i,k+1} = \hat{C}^L_{i,k} + g_k \cdot C^P_{i,k}
+```
+
+ED is the default because it is an *unconditional safe baseline*: no
+maturity or regime detection is required, and the projection is robust
+under early-dev age-to-age volatility. Because the small $`C_k`$ of
+early dev never enters the denominator, ED does not inflate the estimate
+the way an early $`f_k`$ can.
+
+The trade-off is cohort homogeneity. The pooled intensity $`g_k`$
+assumes cohorts are reasonably homogeneous in loss-per-premium level.
+Under cohort-level drift the projection biases toward the pooled mean
+and may over-project post-change cohorts — see the `regime` argument for
+explicit filtering.
+
+**When to use ED:** as a baseline where cohort homogeneity is plausible;
+short-tail products where chain ladder offers no advantage; sparse data
+where age-to-age factors are unreliable across all links.
+
+``` r
 
 ratio_ed <- fit_ratio(tri, method = "ed")        # default
 plot(ratio_ed, metric = "ratio")
 ```
 
-![](projection_files/figure-html/unnamed-chunk-1-1.png)
+![](projection_files/figure-html/unnamed-chunk-2-1.png)
 
 ``` r
 
@@ -186,34 +294,29 @@ summary(ratio_ed)
 #>             <num>         <num>       <num>       <num>       <num>       <num>
 ```
 
-## Method 2: Classical Chain Ladder (`"cl"`)
+### Classical chain ladder (`"cl"`)
 
-Classical Mack (1993) model:
+CL is the classical Mack (1993) model:
 
 ``` math
 \hat{C}^L_{i,k+1} = f_k \cdot \hat{C}^L_{i,k}
 ```
 
-The cohort’s own cum_loss acts as the anchor, so cohort-level drift
-propagates naturally without explicit regime detection.
+The cohort’s own cumulative loss acts as the anchor, so cohort-level
+drift propagates naturally without explicit regime detection. The
+trade-off is the mirror image of ED’s: CL is volatile when early $`f_k`$
+are noisy, because small denominators amplify link errors.
 
-Behaviour:
+Within
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md),
+the CL method projects loss *and* premium forward — each via chain
+ladder on its own column — and computes the loss-ratio uncertainty via
+the delta method. The loss lane alone is equivalent to `fit_cl(tri)`.
 
-- Standard reserving practice. Equivalent to
-  `fit_cl(tri, loss = "loss")` for the loss projection, but
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
-  additionally projects premium forward via CL on `premium` and computes
-  the loss-ratio uncertainty via the delta method.
-- Volatile when early $`f_k`$ are noisy – small denominators amplify
-  link errors.
-
-When to use:
-
-- Once age-to-age factors stabilise.
-- Cohort-level drift scenarios where the cohort’s observed trajectory
-  should anchor the projection.
-- Reserving exercises where regulators expect the classical Mack form
-  for documentation.
+**When to use CL:** once age-to-age factors stabilise; cohort-level
+drift scenarios where the cohort’s observed trajectory should anchor the
+projection; reserving exercises where regulators expect the classical
+Mack form for documentation.
 
 ``` r
 
@@ -221,9 +324,9 @@ ratio_cl <- fit_ratio(tri, method = "cl")
 plot(ratio_cl, metric = "ratio")
 ```
 
-![](projection_files/figure-html/unnamed-chunk-2-1.png)
+![](projection_files/figure-html/unnamed-chunk-3-1.png)
 
-## Method 3: Stage-Adaptive (`"sa"`)
+### Stage-adaptive (`"sa"`)
 
 SA composes ED before the maturity point with CL after, exploiting the
 fact that $`f_k`$ is volatile early and stable late, while $`g_k`$
@@ -237,23 +340,18 @@ f_k \cdot \hat{C}^L_{i,k}              & k \ge k^* \quad \text{(CL after maturit
 \end{cases}
 ```
 
-Behaviour:
-
-- **Before maturity**: anchors the loss estimate to premium volume.
-  Avoids the volatile-link explosion that classical CL suffers when
+- **Before maturity** SA anchors the loss estimate to premium volume,
+  avoiding the volatile-link explosion that classical CL suffers when
   early $`f_k`$ are noisy.
-- **After maturity**: preserves the cohort’s own observed level. Avoids
-  the “all cohorts converge to the average” behaviour that pure ED
-  suffers in the tail.
+- **After maturity** SA preserves the cohort’s own observed level,
+  avoiding the “all cohorts converge to the average” behaviour that pure
+  ED suffers in the tail.
 
-When to use:
-
-- Long-tail portfolios where early dev is volatile (ED phase) and
-  cohort-level drift needs cohort-anchored projection in later dev (CL
-  phase).
-- Recent cohorts (immature data) mixed with older cohorts (matured).
-- Health insurance cohorts with structural pre-/post-maturity difference
-  (e.g. waiting period transitions).
+**When to use SA:** long-tail portfolios where early dev is volatile (ED
+phase) and cohort-level drift needs cohort-anchored projection in later
+dev (CL phase); recent cohorts (immature data) mixed with older cohorts
+(matured); health insurance cohorts with a structural pre-/post-maturity
+difference (e.g. waiting-period transitions).
 
 ``` r
 
@@ -261,7 +359,7 @@ ratio_sa <- fit_ratio(tri, method = "sa")
 plot(ratio_sa, metric = "ratio")
 ```
 
-![](projection_files/figure-html/unnamed-chunk-3-1.png)
+![](projection_files/figure-html/unnamed-chunk-4-1.png)
 
 ``` r
 
@@ -388,15 +486,7 @@ summary(ratio_sa)
 #>             <num>         <num>       <num>       <num>       <num>       <num>
 ```
 
-## Method summary
-
-| method | mechanism | when to use |
-|----|----|----|
-| ED | pooled $`g_k`$ x cohort premium | default baseline; assumes cohort homogeneity |
-| CL | pooled $`f_k`$ x cohort cum_loss | cohort-level drift; cohort-anchored |
-| SA | ED early + CL late | long-tail with both volatile early dev and cohort-level late drift |
-
-## Comparison
+### Comparing ED, CL, SA
 
 ``` r
 
@@ -406,7 +496,7 @@ ratios <- list(
   sa = fit_ratio(tri, method = "sa")
 )
 
-# Cohort-level summary
+# Cohort-level ultimate-loss summary
 summary(ratios$ed)$loss_ult
 #>  [1]  410248522 1001304261 1027365215 2186835972  700124202  924502357
 #>  [7] 3028986426  488454953 1725804921 1308019740  876716310 1527010394
@@ -430,14 +520,336 @@ summary(ratios$sa)$loss_ult
 #> [31] 1040451732 1008356733  783000257 2001214863  576954661 1246569307
 ```
 
+| Method | Mechanism | When to use |
+|----|----|----|
+| ED | pooled $`g_k`$ x cohort premium | default baseline; assumes cohort homogeneity |
+| CL | pooled $`f_k`$ x cohort cum_loss | cohort-level drift; cohort-anchored |
+| SA | ED early + CL late | long-tail with both volatile early dev and cohort-level late drift |
+
+## Prior-anchored estimation: BF and CC
+
+ED, CL, and SA all estimate factors *from the data*. When the observed
+triangle is thin — immature cohorts, or cohorts right after a rate
+change — that estimate can be unstable. The prior-anchored family blends
+an expected loss ratio (ELR) with whatever loss has already emerged:
+
+``` math
+\text{Ult} = L_{\text{latest}}
+  + \left(1 - \tfrac{1}{\text{LDF}}\right) \cdot \pi \cdot \text{ELR}
+```
+
+The two methods differ only in *where the ELR comes from*.
+
+| Method | ELR source | Domain use case |
+|----|----|----|
+| `"bf"` | External (user supplied via `prior`) | Immature and post-rate-change cohorts — anchor on an external prior when observed data is thin (Bornhuetter-Ferguson 1972) |
+| `"cc"` | Derived from data (payout-weighted $`\sum L / \sum \pi \cdot \text{payout}`$) | Cohort-cohesive estimation — when pricing/industry suggests a natural single ELR target (Stanard 1985, Cape Cod) |
+
+### Bornhuetter-Ferguson (`"bf"`)
+
+BF takes the ELR as an external input. The emerged loss
+$`L_{\text{latest}}`$ is kept as-is, and only the *unemerged* portion
+$`(1 - 1/\text{LDF})`$ is filled in from the prior. As a cohort matures
+the data term dominates and the prior fades — BF degrades gracefully
+toward a chain-ladder answer.
+
+``` r
+
+fit_bf(tri, prior = 0.7)
+#> <BFFit>
+#> method        : bf 
+#> loss          : loss 
+#> premium       : premium 
+#> alpha         : 1 
+#> sigma_method  : locf 
+#> recent        : all 
+#> regime        : none
+#> groups        : coverage 
+#> cohorts (n)   : 36 
+#> prior         : scalar elr = 0.7 
+#> ci_type       : analytical
+```
+
+The `prior` argument also accepts a per-group `data.frame`, optionally
+carrying an `elr_se` column to treat the prior as a *distribution*
+rather than a fixed point.
+
+### Cape Cod (`"cc"`)
+
+CC has the same blending form as BF but estimates the ELR *from the data
+itself* — a payout-weighted pooled ratio across cohorts. It is the
+natural choice when pricing or industry context suggests a single
+coherent ELR target and no external prior is on hand.
+
+``` r
+
+fit_cc(tri)
+#> <CCFit>
+#> method        : cc 
+#> loss          : loss 
+#> premium       : premium 
+#> alpha         : 1 
+#> sigma_method  : locf 
+#> recent        : all 
+#> regime        : none
+#> groups        : coverage 
+#> cohorts (n)   : 36 
+#> pooled ELR    :
+#>   surgery : 1.3558
+#> ci_type       : analytical
+```
+
+### Three aggregation axes
+
+ED, CC, and BF differ in how they aggregate the loss-per-premium signal:
+
+- **ED** — per-link $`g_k`$: dev-granular, cohort-uniform per link.
+- **CC** — cohort-level single ELR: cohort-uniform, dev-aggregated.
+- **BF** — external prior: bypasses data estimation altogether.
+
+Together the five methods reconstruct the P&C reserving trinity for
+long-term health, and the three aggregation axes each serve a distinct
+use case.
+
+## Chain ladder as a reserving worker
+
+[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+is the dedicated chain ladder fit for a single value column. Unlike
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+— which projects loss and premium jointly to get loss ratio —
+[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+projects one cumulative metric forward and computes Mack-style standard
+errors per cohort. This is the classical P&C *reserving* use case:
+projecting ultimate paid / incurred loss for an open accident year.
+Practitioners with a P&C background will recognise the Mack workflow
+directly.
+
+``` r
+
+cl <- fit_cl(tri)
+print(cl)
+#> <CLFit>
+#> method      : mack 
+#> loss        : loss 
+#> weight      : none 
+#> alpha       : 1 
+#> sigma_method: locf 
+#> recent      : all 
+#> regime      : none
+#> use_maturity: FALSE 
+#> tail_factor : 1 
+#> groups      : coverage 
+#> periods     : 36
+```
+
+[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+summarises adjacent development links by age-to-age factors
+$`f_k = C^L_{k+1} / C^L_k`$, selected per link and then chained to
+project each cohort forward to ultimate. On top of the point projection,
+Mack’s formulae decompose the prediction variance into process and
+parameter components:
+
+- `loss_proc_se` — process variance, from $`\sigma^2_k`$ (residual link
+  variance per development period).
+- `loss_param_se` — parameter variance, from the uncertainty of the
+  selected age-to-age factors $`\hat{f}_k`$.
+- `loss_total_se` — total standard error,
+  $`\sqrt{\text{loss\_proc\_se}^2 + \text{loss\_param\_se}^2}`$.
+- `loss_total_cv` — coefficient of variation,
+  `loss_total_se / loss_proj`.
+
+``` r
+
+summary(cl)
+#>     coverage     cohort     latest   loss_ult    reserve loss_proc_se
+#>       <char>     <Date>      <num>      <num>      <num>        <num>
+#>  1:  surgery 2023-01-01  410248522  410248522          0            0
+#>  2:  surgery 2023-02-01  976330445 1001441303   25110858      2751819
+#>  3:  surgery 2023-03-01  978486045 1026151243   47665198      3967869
+#>  4:  surgery 2023-04-01 2029909919 2186771221  156861302      6942937
+#>  5:  surgery 2023-05-01  624219436  697669301   73449865      4455636
+#>  6:  surgery 2023-06-01  802880717  931393934  128513217     17869565
+#>  7:  surgery 2023-07-01 2539141549 3050990158  511848609     35918003
+#>  8:  surgery 2023-08-01  393678329  488218204   94539875     15583801
+#>  9:  surgery 2023-09-01 1364052542 1751869308  387816766     38001618
+#> 10:  surgery 2023-10-01  979266043 1311793843  332527800     38496097
+#> 11:  surgery 2023-11-01  604685679  848103123  243417444     35719579
+#> 12:  surgery 2023-12-01 1026345366 1497869029  471523663     51405333
+#> 13:  surgery 2024-01-01 1912177598 2901492851  989315253     75674312
+#> 14:  surgery 2024-02-01  733902485 1160045952  426143467     51719398
+#> 15:  surgery 2024-03-01  415459873  686574148  271114275     41313266
+#> 16:  surgery 2024-04-01 3286053526 5687484014 2401430488    122770258
+#> 17:  surgery 2024-05-01 1451731153 2645801838 1194070685     93024106
+#> 18:  surgery 2024-06-01  629668308 1209024555  579356247     65346187
+#> 19:  surgery 2024-07-01 1250954693 2542927190 1291972497    103136528
+#> 20:  surgery 2024-08-01  425346694  918120582  492773888     65317866
+#> 21:  surgery 2024-09-01  278156543  635470028  357313485     56737053
+#> 22:  surgery 2024-10-01  352070323  856446521  504376198     68091257
+#> 23:  surgery 2024-11-01   99050501  260916096  161865595     41787166
+#> 24:  surgery 2024-12-01  103194013  295637296  192443283     49617195
+#> 25:  surgery 2025-01-01  227089025  710560093  483471068     83635489
+#> 26:  surgery 2025-02-01  939163074 3276849152 2337686078    192418633
+#> 27:  surgery 2025-03-01  112828845  434950057  322121212     72345359
+#> 28:  surgery 2025-04-01   82472453  356301148  273828695     68974257
+#> 29:  surgery 2025-05-01  141214851  697290587  556075736    119238986
+#> 30:  surgery 2025-06-01  136406102  789468799  653062697    136628652
+#> 31:  surgery 2025-07-01  149144024 1040451732  891307708    167039609
+#> 32:  surgery 2025-08-01  116327076 1008356733  892029657    183653360
+#> 33:  surgery 2025-09-01   67465470  783000257  715534787    179947037
+#> 34:  surgery 2025-10-01  121626173 2001214863 1879588690    337103186
+#> 35:  surgery 2025-11-01   15716444  449653406  433936962    194100658
+#> 36:  surgery 2025-12-01    4825085  850839118  846014033    472741759
+#>     coverage     cohort     latest   loss_ult    reserve loss_proc_se
+#>       <char>     <Date>      <num>      <num>      <num>        <num>
+#>     loss_param_se loss_total_se loss_total_cv
+#>             <num>         <num>         <num>
+#>  1:             0             0   0.000000000
+#>  2:       4299412       5104650   0.005097304
+#>  3:       5021196       6399718   0.006236623
+#>  4:      11297887      13260717   0.006064062
+#>  5:       3696918       5789637   0.008298541
+#>  6:       8694892      19872657   0.021336469
+#>  7:      30501066      47121311   0.015444596
+#>  8:       5072721      16388635   0.033568259
+#>  9:      20827314      43334744   0.024736288
+#> 10:      16992221      42079509   0.032077837
+#> 11:      11901733      37650227   0.044393454
+#> 12:      22008504      55918535   0.037332059
+#> 13:      43971810      87522121   0.030164514
+#> 14:      18269127      54851227   0.047283667
+#> 15:      11014493      42756344   0.062274911
+#> 16:      92689755     153830838   0.027047256
+#> 17:      45040851     103354548   0.039063601
+#> 18:      20907249      68609309   0.056747655
+#> 19:      45568404     112754702   0.044340515
+#> 20:      16819267      67448584   0.073463753
+#> 21:      11859688      57963310   0.091213288
+#> 22:      16219631      69996398   0.081728860
+#> 23:       5190764      42108328   0.161386470
+#> 24:       6221683      50005754   0.169145620
+#> 25:      15668260      85090478   0.119751276
+#> 26:      75222224     206599403   0.063048188
+#> 27:      10161412      73055495   0.167962950
+#> 28:       8575343      69505285   0.195074548
+#> 29:      19174475     120770842   0.173200161
+#> 30:      22834478     138523651   0.175464377
+#> 31:      31445935     169973756   0.163365345
+#> 32:      32987225     186592373   0.185045993
+#> 33:      27713231     182068556   0.232526816
+#> 34:      80113491     346492034   0.173140846
+#> 35:      21034520     195237078   0.434194593
+#> 36:      66075497     477337136   0.561019265
+#>     loss_param_se loss_total_se loss_total_cv
+#>             <num>         <num>         <num>
+plot(cl, type = "projection", show_interval = TRUE)
+```
+
+![](projection_files/figure-html/unnamed-chunk-9-1.png)
+
+``` r
+
+plot(cl, type = "reserve", conf_level = 0.95)
+```
+
+![](projection_files/figure-html/unnamed-chunk-9-2.png)
+
+[`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
+displays the cohort x dev cells as a heatmap, distinguishing observed
+cells from projected, with `label_style` showing per-cell CV / SE / CI:
+
+``` r
+
+plot_triangle(cl, region = "full")        # observed + projected
+```
+
+![](projection_files/figure-html/unnamed-chunk-10-1.png)
+
+``` r
+
+plot_triangle(cl, label_style = "cv")     # per-cell coefficient of variation
+```
+
+![](projection_files/figure-html/unnamed-chunk-10-2.png)
+
+### Tail factor
+
+For triangles where the latest observed development period is still
+developing, an extrapolated tail factor estimates ultimate. The
+extrapolation fits $`\log(f_k - 1) \sim k`$ — a Sherman (1984)
+log-linear tail — to the selected ATA factors and extends the projection
+by the cumulative product of extrapolated $`f_k`$ values. Disabled by
+default (`tail = FALSE`).
+
+``` r
+
+fit_cl(tri, tail = TRUE)         # log-linear extrapolation
+#> <CLFit>
+#> method      : mack 
+#> loss        : loss 
+#> weight      : none 
+#> alpha       : 1 
+#> sigma_method: locf 
+#> recent      : all 
+#> regime      : none
+#> use_maturity: FALSE 
+#> tail_factor : 1.188138 
+#> groups      : coverage 
+#> periods     : 36
+fit_cl(tri, tail = 1.025)        # or a literal tail factor
+#> <CLFit>
+#> method      : mack 
+#> loss        : loss 
+#> weight      : none 
+#> alpha       : 1 
+#> sigma_method: locf 
+#> recent      : all 
+#> regime      : none
+#> use_maturity: FALSE 
+#> tail_factor : 1.025 
+#> groups      : coverage 
+#> periods     : 36
+```
+
+### Sigma extrapolation methods
+
+Mack variance requires $`\sigma_k`$ at all development links, including
+the last where it cannot be estimated directly. `sigma_method` controls
+the extrapolation:
+
+| `sigma_method` | Behaviour |
+|----|----|
+| `"locf"` | (default) last observation carried forward |
+| `"min_last2"` | min of the last two estimable $`\sigma`$ values — conservative |
+| `"loglinear"` | log-linear extrapolation from the observed $`\sigma_k`$ sequence |
+| `"mack"` | Mack (1993) Appendix B tail estimator — closed-form for the last link only; LOCF with warning beyond that |
+| `"none"` | no extrapolation; $`\sigma`$ stays `NA` (variance treated as zero downstream) |
+
+``` r
+
+fit_cl(tri, sigma_method = "loglinear")
+#> <CLFit>
+#> method      : mack 
+#> loss        : loss 
+#> weight      : none 
+#> alpha       : 1 
+#> sigma_method: loglinear 
+#> recent      : all 
+#> regime      : none
+#> use_maturity: FALSE 
+#> tail_factor : 1 
+#> groups      : coverage 
+#> periods     : 36
+```
+
 ## Variance and confidence intervals
 
 [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
-reports analytical standard errors for `L/P`. Two variants:
+reports analytical standard errors for `L/P`. Two variants control how
+premium uncertainty enters:
 
 - `se_method = "fixed"` (default) — premium treated as fixed,
-  $`\mathrm{SE}(L/P) \approx \mathrm{SE}(L)/P`$. Strictly the delta
-  method with `Var(P) = 0` and `Cov(L,P) = 0`.
+  $`\text{SE}(L/P) \approx \text{SE}(L)/P`$. Strictly the delta method
+  with `Var(P) = 0` and `Cov(L,P) = 0`.
 - `se_method = "delta"` — full delta method including premium
   uncertainty and loss-premium correlation `rho`:
 
@@ -447,11 +859,25 @@ reports analytical standard errors for `L/P`. Two variants:
   - \frac{2 \rho L \mathrm{SE}(L) \mathrm{SE}(P)}{P^3}
 ```
 
-Bootstrap intervals are also available:
+There are two complementary paths to SE estimation:
+
+- **Analytical** —
+  [`.mack_f_var()`](https://seokhoonj.github.io/lossratio/reference/dot-mack_f_var.md)
+  (Mack 1993) and
+  [`.ed_g_var()`](https://seokhoonj.github.io/lossratio/reference/dot-ed_g_var.md)
+  (B-S 1970) provide closed-form per-link variance, distribution-free.
+- **Bootstrap** — a residual paradigm (`cell` / `link` / `parametric`)
+  drives forward simulation, capturing distributional shape. Residual
+  choice determines both the process variance scale and the forward-sim
+  model (paradigm matching).
+
+A large divergence between the two paths is a model-misspecification
+signal; routinely computing both serves as a sanity check.
 
 ``` r
 
-ratio_boot <- fit_ratio(tri, method = "ed", bootstrap = TRUE, B = 1000, seed = 1)
+ratio_boot <- fit_ratio(tri, method = "ed", bootstrap = TRUE,
+                        B = 1000, seed = 1)
 summary(ratio_boot)
 #>     coverage     cohort     latest   loss_ult    reserve premium_ult
 #>       <char>     <Date>      <num>      <num>      <num>       <num>
@@ -575,29 +1001,7 @@ summary(ratio_boot)
 #>             <num>         <num>       <num>       <num>       <num>       <num>
 ```
 
-## Choosing a method
-
-ED is the default because it is the *unconditional safe baseline*: no
-maturity or regime detection is required, and it is conservative under
-early-dev volatility. CL and SA are warranted when the default’s
-homogeneity assumption is unrealistic.
-
-    Default is "ed" -- pooled g_k x cohort premium, no maturity dependency.
-
-    Move to "cl" or "sa" when ED's assumptions become limiting:
-      |-- Cohort-level drift (regime change, underwriting / coverage shift)
-      |     -> "cl"  (cohort's own cum_loss anchors the drift)
-      |-- Long-tail portfolio with BOTH volatile early dev AND cohort drift late
-      |     -> "sa"  (ED before maturity, CL after)
-      |-- All cohorts already past maturity, no early-dev volatility
-            -> "cl"  (no ED region needed)
-
-In practice: **start with `"ed"`** (the default), then run `"cl"` and
-`"sa"` for sensitivity. If all three agree, the projection is robust. If
-they diverge, inspect maturity detection, regime filters, and the
-underlying ATA factors.
-
-## Maturity input
+## Maturity input for SA
 
 For `method = "sa"` the maturity point $`k^*`$ determines where the
 projection switches from ED to CL. By default
@@ -612,12 +1016,77 @@ internally with default thresholds. Other forms:
   methods or for
   [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)
   standalone).
-- `maturity = maturity_spec(max_cv = 0.05, min_run = 2L)` — lazy spec
+- `maturity = maturity_spec(max_cv = 0.05, min_run = 2L)` — a lazy spec
   forwarding custom thresholds to
   [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
   at fit time (leakage-safe for
   [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)).
-- `maturity = detect_maturity(tri, ...)` — pre-built `Maturity` object,
-  fixed across refits.
-- `maturity = maturity_at(coverage = "surgery", change = 4)` — manual
-  per-group override (e.g. company-standard $`k^*`$).
+- `maturity = detect_maturity(tri, ...)` — a pre-built `Maturity`
+  object, fixed across refits.
+- `maturity = maturity_at(coverage = "surgery", change = 4)` — a manual
+  per-group override (e.g. a company-standard $`k^*`$).
+
+The same lazy-spec / pre-built / manual pattern applies to
+[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
+where maturity filtering restricts the projection to the mature region
+when the selected ATA factors are volatile.
+
+## Choosing a method
+
+ED is the default because it is the *unconditional safe baseline*: no
+maturity or regime detection is required, and it is conservative under
+early-dev volatility. The other methods are warranted when ED’s
+homogeneity assumption is unrealistic, or when an external anchor is
+preferable to factors estimated from a thin triangle.
+
+    Default is "ed" -- pooled g_k x cohort premium, no maturity dependency.
+
+    Move to another method when ED's assumptions become limiting:
+      |-- Cohort-level drift (regime change, underwriting / coverage shift)
+      |     -> "cl"  (cohort's own cum_loss anchors the drift)
+      |-- Long-tail portfolio with BOTH volatile early dev AND cohort drift
+      |     -> "sa"  (ED before maturity, CL after)
+      |-- All cohorts already past maturity, no early-dev volatility
+      |     -> "cl"  (no ED region needed)
+      |-- Immature / post-rate-change cohorts, an external ELR is on hand
+      |     -> "bf"  (blend the external prior with emerged loss)
+      |-- A single coherent ELR target, no external prior available
+            -> "cc"  (data-pooled ELR, same blending form as BF)
+
+In practice: **start with `"ed"`** (the default), then run `"cl"` and
+`"sa"` for sensitivity. If all three agree, the projection is robust. If
+they diverge, inspect maturity detection, regime filters, and the
+underlying ATA factors. Reach for `"bf"` / `"cc"` when the cohort is too
+immature for any data-only method to be trustworthy.
+
+## See also
+
+- [`vignette("getting-started")`](https://seokhoonj.github.io/lossratio/articles/getting-started.md)
+  — package quick-start guide.
+- [`vignette("diagnostics")`](https://seokhoonj.github.io/lossratio/articles/diagnostics.md)
+  — regime detection and filtering.
+- [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/articles/backtest.md)
+  — calendar-diagonal hold-out validation.
+- [`vignette("diagnostics")`](https://seokhoonj.github.io/lossratio/articles/diagnostics.md)
+  — projected loss-ratio convergence diagnostic.
+- [`vignette("getting-started")`](https://seokhoonj.github.io/lossratio/articles/getting-started.md)
+  — Triangle / Link / Maturity data flow.
+
+## References
+
+- Bornhuetter, R. L. and Ferguson, R. E. (1972). The actuary and IBNR.
+  *Proceedings of the Casualty Actuarial Society*, 59, 181-195.
+- Bühlmann, H. (1967). Experience rating and credibility. *ASTIN
+  Bulletin*, 4(3), 199-207.
+- Bühlmann, H. and Straub, E. (1970). Glaubwürdigkeit für Schadensätze.
+  *Bulletin of the Swiss Association of Actuaries*, 70, 111-133.
+- Clark, D. R. (2003). LDF curve-fitting and stochastic reserving: A
+  maximum likelihood approach. *CAS Forum*, Fall 2003.
+- Mack, T. (1993). Distribution-free calculation of the standard error
+  of chain ladder reserve estimates. *ASTIN Bulletin*, 23(2), 213-225.
+- Sherman, R. E. (1984). Extrapolating, smoothing, and interpolating
+  development factors. *Proceedings of the Casualty Actuarial Society*,
+  71, 122-155.
+- Stanard, J. N. (1985). A simulation test of prediction errors of loss
+  reserve estimation techniques. *Proceedings of the Casualty Actuarial
+  Society*, 72, 124-153.

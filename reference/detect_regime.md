@@ -95,7 +95,7 @@ print(x, ...)
 
   Derived metrics drop the first dev row per cohort (no predecessor),
   then re-index `dev` so detection sees a contiguous sequence. See the
-  [`vignette("regime")`](https://seokhoonj.github.io/lossratio/articles/regime.md)
+  [`vignette("diagnostics")`](https://seokhoonj.github.io/lossratio/articles/diagnostics.md)
   "Choice of loss" section for guidance on which loss metric matches
   which suspected event.
 
@@ -264,7 +264,7 @@ tri_sur <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium = "incr_premium"
+  premium  = "incr_premium"
 )
 
 # Hierarchical clustering (no extra package dependency)
@@ -284,7 +284,7 @@ tri_all <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium = "incr_premium"
+  premium  = "incr_premium"
 )
 r_all <- detect_regime(tri_all, by = "coverage", method = "e_divisive")
 print(r_all$changes)

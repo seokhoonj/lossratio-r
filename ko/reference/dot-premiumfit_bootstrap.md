@@ -1,4 +1,4 @@
-# Overlay bootstrap SE / CI onto an PremiumFit `$full`
+# Overlay bootstrap SE / CI onto a PremiumFit `$full`
 
 Calls
 [`.resolve_bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-resolve_bootstrap.md)

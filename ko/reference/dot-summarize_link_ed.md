@@ -2,7 +2,7 @@
 
 Internal helper that computes group-wise summary statistics for
 incremental loss intensity \\g\\ from a dual-variable `Link` object
-(built with `premium` set). Dispatched via
+(built with `exposure` set). Dispatched via
 [`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md)
 when `model = "ed"`.
 
@@ -28,7 +28,7 @@ Two purposes:
 
 - object:
 
-  A `Link` object built with `premium` set, typically produced by
+  A `Link` object built with `exposure` set, typically produced by
   [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md).
 
 - alpha:

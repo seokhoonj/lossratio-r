@@ -251,7 +251,7 @@ percentile (75%, 95%, 99%) 이 모두 *정수 순위 index* 에 떨어지므로,
 
 - [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/ko/articles/backtest.md)
   — hold-out 기반 부트스트랩 검증
-- [`vignette("chain-ladder-reserving")`](https://seokhoonj.github.io/lossratio/ko/articles/chain-ladder-reserving.md)
+- [`vignette("projection")`](https://seokhoonj.github.io/lossratio/ko/articles/projection.md)
   — 기초 체인 래더
 - [`?bootstrap`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
   — 전체 인자 reference

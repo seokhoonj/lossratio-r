@@ -9,19 +9,19 @@ link-pair rows. Each row corresponds to one development link
 (cohort, ata_from -&amp;gt; ata_to), the long-format intermediate
 underlying both the chain ladder (CL) and exposure-driven (ED)
 workflows.
-Two modes are produced depending on premium:
+Two modes are produced depending on exposure:
 
-Single-variable mode (premium = NULL)
+Single-variable mode (exposure = NULL)
 The age-to-age
 factor is \(ata = value_{to} / value_{from}\), where
 \(value\) is the column named by loss.
 
-Dual-variable mode (premium supplied)
+Dual-variable mode (exposure supplied)
 In addition to
 the loss-side ATA, the exposure-driven intensity
 \(g = \Delta loss / premium_{from}\) is computed and stored in
-the intensity column. Premium measure used as denominator for
-loss ratio calculations; for long-term health insurance
+the intensity column. The exposure measure is the denominator
+for loss ratio calculations; for long-term health insurance
 applications, risk premium is commonly used.
 
 
@@ -36,19 +36,19 @@ link-pair rows. Each row corresponds to one development link
 (cohort, ata_from -&amp;gt; ata_to), the long-format intermediate
 underlying both the chain ladder (CL) and exposure-driven (ED)
 workflows.
-Two modes are produced depending on premium:
+Two modes are produced depending on exposure:
 
-Single-variable mode (premium = NULL)
+Single-variable mode (exposure = NULL)
 The age-to-age
 factor is \(ata = value_{to} / value_{from}\), where
 \(value\) is the column named by loss.
 
-Dual-variable mode (premium supplied)
+Dual-variable mode (exposure supplied)
 In addition to
 the loss-side ATA, the exposure-driven intensity
 \(g = \Delta loss / premium_{from}\) is computed and stored in
-the intensity column. Premium measure used as denominator for
-loss ratio calculations; for long-term health insurance
+the intensity column. The exposure measure is the denominator
+for loss ratio calculations; for long-term health insurance
 applications, risk premium is commonly used.
 
 
@@ -79,16 +79,10 @@ applications, risk premium is commonly used.
   <button class="nav-link dropdown-toggle" type="button" id="dropdown--" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">글</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown--"><li><a class="dropdown-item" href="../articles/index.html">전체 글</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/aggregation-frameworks-ko.html">Aggregation frameworks</a></li>
-    <li><a class="dropdown-item" href="../articles/triangle-link-and-maturity-ko.html">Triangle, Link and Maturity</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-ko.html">Regime</a></li>
-    <li><a class="dropdown-item" href="../articles/projection-ko.html">Projection</a></li>
-    <li><a class="dropdown-item" href="../articles/regime-change-filter-ko.html">Regime change filter</a></li>
+    <li><a class="dropdown-item" href="../articles/projection-ko.html">예측 방법론</a></li>
+    <li><a class="dropdown-item" href="../articles/diagnostics-ko.html">진단 (성숙점·수렴점·regime)</a></li>
     <li><a class="dropdown-item" href="../articles/backtest-ko.html">Backtest</a></li>
-    <li><a class="dropdown-item" href="../articles/convergence-ko.html">Convergence</a></li>
     <li><a class="dropdown-item" href="../articles/bootstrap-se-decomposition-ko.html">부트스트랩 표준오차 분해</a></li>
-    <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/chain-ladder-reserving-ko.html">(참고) Chain ladder 를 이용한 준비금 산출</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">참조</a></li>
 <li class="nav-item dropdown">
@@ -122,18 +116,18 @@ link-pair rows. Each row corresponds to one development link
 <code>(cohort, ata_from -&gt; ata_to)</code>, the long-format intermediate
 underlying both the chain ladder (CL) and exposure-driven (ED)
 workflows.</p>
-<p>Two modes are produced depending on <code>premium</code>:</p>
-<dl><dt>Single-variable mode (<code>premium = NULL</code>)</dt>
+<p>Two modes are produced depending on <code>exposure</code>:</p>
+<dl><dt>Single-variable mode (<code>exposure = NULL</code>)</dt>
 <dd><p>The age-to-age
 factor is \(ata = value_{to} / value_{from}\), where
 \(value\) is the column named by <code>loss</code>.</p></dd>
 
-<dt>Dual-variable mode (<code>premium</code> supplied)</dt>
+<dt>Dual-variable mode (<code>exposure</code> supplied)</dt>
 <dd><p>In addition to
 the loss-side ATA, the exposure-driven intensity
 \(g = \Delta loss / premium_{from}\) is computed and stored in
-the <code>intensity</code> column. Premium measure used as denominator for
-loss ratio calculations; for long-term health insurance
+the <code>intensity</code> column. The exposure measure is the denominator
+for loss ratio calculations; for long-term health insurance
 applications, risk premium is commonly used.</p></dd>
 
 
@@ -144,7 +138,7 @@ applications, risk premium is commonly used.</p></dd>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">as_link</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  loss <span class="op">=</span> <span class="st">"loss"</span>,</span>
-<span>  premium <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  exposure <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  weight <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  min_denom <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  drop_invalid <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -166,17 +160,18 @@ numerator. Must be one of <code>"loss"</code>, <code>"premium"</code>, or <code>
 any cumulative metric on the Triangle may be supplied.</p></dd>
 
 
-<dt id="arg-premium">premium<a class="anchor" aria-label="anchor" href="#arg-premium"></a></dt>
+<dt id="arg-exposure">exposure<a class="anchor" aria-label="anchor" href="#arg-exposure"></a></dt>
 <dd><p>Optional second cumulative metric, treated as the
-premium anchor for the ED workflow. Must be one of <code>"loss"</code>,
-<code>"premium"</code>, <code>"ratio"</code>, and must differ from <code>loss</code>. When <code>NULL</code>
-(default), only the single-variable columns are produced.</p></dd>
+exposure base (denominator anchor) for the ED workflow. Must be
+one of <code>"loss"</code>, <code>"premium"</code>, <code>"ratio"</code>, and must differ from
+<code>loss</code>. When <code>NULL</code> (default), only the single-variable columns
+are produced.</p></dd>
 
 
 <dt id="arg-weight">weight<a class="anchor" aria-label="anchor" href="#arg-weight"></a></dt>
 <dd><p>Optional cumulative metric used as WLS weight in
 downstream <code>summary</code> / <code>fit_ata</code> calls. Must differ from
-<code>loss</code>. Cannot be combined with <code>premium</code> (the dual
+<code>loss</code>. Cannot be combined with <code>exposure</code> (the dual
 workflow has its own anchor).</p></dd>
 
 
@@ -198,7 +193,7 @@ diagnostics.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>data.table</code> of class <code>"Link"</code> with columns:</p><ul><li><p>Always: <code>[group]</code>, <code>cohort</code>, <code>ata_from</code>, <code>ata_to</code>, <code>ata_link</code>,
 <code>loss_from</code>, <code>loss_to</code>, <code>loss_delta</code>, <code>ata</code>.</p></li>
-<li><p>If <code>premium</code> is set: also <code>premium_from</code>, <code>premium_to</code>,
+<li><p>If <code>exposure</code> is set: also <code>premium_from</code>, <code>premium_to</code>,
 <code>premium_delta</code>, <code>intensity</code>.</p></li>
 <li><p>If <code>weight</code> is set: also <code>weight</code>.</p></li>
 </ul><p>The returned object carries attributes <code>groups</code>, <code>cohort</code>,
@@ -220,14 +215,14 @@ diagnostics.</p></dd>
 <span class="r-in"><span>  cohort   <span class="op">=</span> <span class="st">"uy_m"</span>,</span></span>
 <span class="r-in"><span>  calendar <span class="op">=</span> <span class="st">"cy_m"</span>,</span></span>
 <span class="r-in"><span>  loss     <span class="op">=</span> <span class="st">"incr_loss"</span>,</span></span>
-<span class="r-in"><span>  premium <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
+<span class="r-in"><span>  premium  <span class="op">=</span> <span class="st">"incr_premium"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Single-variable: cumulative-loss link factors (ATA workflow)</span></span></span>
 <span class="r-in"><span><span class="va">link_loss</span> <span class="op">&lt;-</span> <span class="fu">as_link</span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Dual-variable: ED-ready link table (loss + premium)</span></span></span>
-<span class="r-in"><span><span class="va">link_ed</span> <span class="op">&lt;-</span> <span class="fu">as_link</span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, premium <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">link_ed</span> <span class="op">&lt;-</span> <span class="fu">as_link</span><span class="op">(</span><span class="va">tri</span>, loss <span class="op">=</span> <span class="st">"loss"</span>, exposure <span class="op">=</span> <span class="st">"premium"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">link_ed</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>

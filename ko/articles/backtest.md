@@ -280,7 +280,7 @@ directly.
 
 ## See also
 
-- [`vignette("chain-ladder-reserving")`](https://seokhoonj.github.io/lossratio/ko/articles/chain-ladder-reserving.md)
+- [`vignette("projection")`](https://seokhoonj.github.io/lossratio/ko/articles/projection.md)
   —
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
   reference.

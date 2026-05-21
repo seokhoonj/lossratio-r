@@ -56,7 +56,7 @@ plot_triangle(
 
   :   Cell-status heatmap (used / holdout / unused / future). Accepts
       `recent`, `regime`, `holdout`, `maturity` via `...`. See
-      [`vignette("regime-change-filter")`](https://seokhoonj.github.io/lossratio/ko/articles/regime-change-filter.md)
+      [`vignette("diagnostics")`](https://seokhoonj.github.io/lossratio/ko/articles/diagnostics.md)
       for details.
 
 - metric:
@@ -139,7 +139,7 @@ d <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium = "incr_premium"
+  premium  = "incr_premium"
 )
 
 plot_triangle(d)

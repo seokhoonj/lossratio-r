@@ -73,7 +73,7 @@ cal <- as_calendar(
   groups   = "coverage",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium = "incr_premium"
+  premium  = "incr_premium"
 )
 smr  <- summary(cal)
 head(smr)

@@ -21,7 +21,7 @@ rebuild of the link table when factors are already computed).
 fit_intensity(
   x,
   loss = "loss",
-  premium = "premium",
+  exposure = "premium",
   alpha = 1,
   na_method = c("locf", "zero", "none"),
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
@@ -42,10 +42,10 @@ fit_intensity(
   A single cumulative metric used as the link numerator. Default
   `"loss"`.
 
-- premium:
+- exposure:
 
-  A single cumulative metric used as the premium anchor. Default
-  `"premium"`.
+  A single cumulative metric used as the exposure base (denominator
+  anchor). Default `"premium"`.
 
 - alpha:
 
@@ -165,9 +165,9 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium = "incr_premium"
+  premium  = "incr_premium"
 )
-intensity_fit <- fit_intensity(tri, loss = "loss", premium = "premium")
+intensity_fit <- fit_intensity(tri, loss = "loss", exposure = "premium")
 summary(intensity_fit)
 } # }
 ```
