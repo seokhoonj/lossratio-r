@@ -11,7 +11,7 @@
 
 \item{model}{Either \code{"ata"} (multiplicative chain-ladder factors) or
 \code{"ed"} (additive exposure-driven intensities). When \code{model = "ed"},
-the link table must have been built with \code{premium} set. The
+the link table must have been built with \code{exposure} set. The
 default uses \code{"ed"} if \code{attr(object, "premium")} is non-\code{NULL},
 otherwise \code{"ata"}.}
 

@@ -217,7 +217,7 @@ several adjacent areas:
 
 - **Frequency-severity decomposition** — `fit_ed(loss = "claim_count",
   premium = "insureds")` for frequency,
-  `fit_ed(loss = "loss", premium = "claim_count")` for severity. The
+  `fit_ed(loss = "loss", exposure = "claim_count")` for severity. The
   framework works through slot reinterpretation alone.
 - **Lifetime / cohort analysis** — full life-cycle loss-ratio tracking
   per issue-year cohort. A natural extension of the existing

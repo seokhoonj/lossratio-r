@@ -5,7 +5,7 @@
 #' @description
 #' Internal helper that computes group-wise summary statistics for
 #' incremental loss intensity \eqn{g} from a dual-variable `Link` object
-#' (built with `premium` set). Dispatched via [summary.Link()] when
+#' (built with `exposure` set). Dispatched via [summary.Link()] when
 #' `model = "ed"`.
 #'
 #' Two purposes:
@@ -37,7 +37,7 @@
 #'     are numerically equivalent.}
 #' }
 #'
-#' @param object A `Link` object built with `premium` set,
+#' @param object A `Link` object built with `exposure` set,
 #'   typically produced by [as_link()].
 #' @param alpha Numeric scalar controlling the variance structure in the
 #'   WLS fit. Default is `1`.
@@ -59,7 +59,7 @@
   .assert_class(object, "Link")
 
   if (is.null(attr(object, "premium")))
-    stop("`.summarize_link_ed()` requires a Link built with `premium`.",
+    stop("`.summarize_link_ed()` requires a Link built with `exposure`.",
          call. = FALSE)
 
   grp <- .resolve_groups(object)
@@ -184,7 +184,8 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #' @param x A `"Triangle"` object.
 #' @param loss Cumulative loss variable. Default `"loss"`.
 #'   Forwarded to [as_link()] and to downstream workers.
-#' @param premium Cumulative premium variable. Default `"premium"`.
+#' @param exposure Cumulative exposure-base variable (the loss-ratio
+#'   denominator, typically premium). Default `"premium"`.
 #'   Forwarded to [as_link()] and to downstream workers.
 #' @param method Estimation method. Currently only `"mack"` is supported.
 #' @param alpha Numeric scalar controlling the variance structure. Default
@@ -234,7 +235,7 @@ print.EDSummary <- function(x, digits = attr(x, "digits"), ...) {
 #' @export
 fit_ed <- function(x,
                    loss         = "loss",
-                   premium      = "premium",
+                   exposure     = "premium",
                    method       = c("mack"),
                    alpha        = 1,
                    na_method    = c("locf", "zero", "none"),
@@ -260,7 +261,7 @@ fit_ed <- function(x,
   intensity_fit <- fit_intensity(
     x,
     loss         = loss,
-    premium      = premium,
+    exposure     = exposure,
     alpha        = alpha,
     na_method    = na_method,
     sigma_method = sigma_method,
@@ -313,7 +314,7 @@ fit_ed <- function(x,
   premium_cl <- fit_cl(
     x,
     method       = "mack",
-    loss         = premium,
+    loss         = exposure,
     alpha        = 1,
     sigma_method = sigma_method,
     recent       = recent,
@@ -338,7 +339,7 @@ fit_ed <- function(x,
     ed_fit          = out,
     premium_ata_fit = premium_ata_fit,
     loss            = loss,
-    premium         = premium
+    premium         = exposure
   )
 
   # 4c) join ED factors (g_sel, g_sigma2, g_var)
@@ -672,7 +673,7 @@ print.EDFit <- function(x, ...) {
   .reg_w <- NULL
 
   if (is.null(attr(x, "premium")))
-    stop("`.lm_ed()` requires a Link built with `premium`.",
+    stop("`.lm_ed()` requires a Link built with `exposure`.",
          call. = FALSE)
 
   if (!is.numeric(alpha) || length(alpha) != 1L || is.na(alpha))

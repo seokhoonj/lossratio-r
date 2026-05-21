@@ -227,7 +227,7 @@ fit_premium <- function(x,
 }
 
 
-#' Overlay bootstrap SE / CI onto an PremiumFit `$full`
+#' Overlay bootstrap SE / CI onto a PremiumFit `$full`
 #'
 #' @description
 #' Calls `.resolve_bootstrap()` to optionally build a `BootstrapTriangle`

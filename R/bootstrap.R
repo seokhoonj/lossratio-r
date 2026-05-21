@@ -516,7 +516,7 @@ bootstrap.Triangle <- function(x,
     #    Link (chain ladder anchor).
     if (identical(residual, "cell") &&
         (identical(method, "ed") || identical(method, "sa"))) {
-      link <- as_link(x, loss = target, premium = "premium",
+      link <- as_link(x, loss = target, exposure = "premium",
                       drop_invalid = TRUE)
     } else {
       link <- as_link(x, loss = target, drop_invalid = TRUE)
@@ -608,7 +608,7 @@ bootstrap.Triangle <- function(x,
     #   Pearson residuals (just like cell-mode), since it's the natural
     #   variance scale for ProcessDist.
     if (identical(method, "ed") || identical(method, "sa")) {
-      link <- as_link(x, loss = target, premium = "premium",
+      link <- as_link(x, loss = target, exposure = "premium",
                       drop_invalid = TRUE)
     } else {
       link <- as_link(x, loss = target, drop_invalid = TRUE)
@@ -1371,7 +1371,7 @@ bootstrap.Triangle <- function(x,
 
 # Internal: per-link g_hat anchor (intensity, ED) -------------------------
 #
-# `link` is a dual-variable Link table (built with `as_link(..., premium)`)
+# `link` is a dual-variable Link table (built with `as_link(..., exposure)`)
 # whose `intensity` column already encodes `loss_delta / premium_from`.
 # The volume-weighted per-link intensity is
 #   g_k = sum_i loss_delta_{i, k} / sum_i premium_from_{i, k}

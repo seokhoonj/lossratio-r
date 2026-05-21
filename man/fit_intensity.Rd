@@ -7,7 +7,7 @@
 fit_intensity(
   x,
   loss = "loss",
-  premium = "premium",
+  exposure = "premium",
   alpha = 1,
   na_method = c("locf", "zero", "none"),
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
@@ -22,8 +22,8 @@ fit_intensity(
 \item{loss}{A single cumulative metric used as the link
 numerator. Default \code{"loss"}.}
 
-\item{premium}{A single cumulative metric used as the
-premium anchor. Default \code{"premium"}.}
+\item{exposure}{A single cumulative metric used as the
+exposure base (denominator anchor). Default \code{"premium"}.}
 
 \item{alpha}{WLS weight exponent. Default \code{1}.}
 
@@ -113,9 +113,9 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium = "incr_premium"
+  premium  = "incr_premium"
 )
-intensity_fit <- fit_intensity(tri, loss = "loss", premium = "premium")
+intensity_fit <- fit_intensity(tri, loss = "loss", exposure = "premium")
 summary(intensity_fit)
 }
 

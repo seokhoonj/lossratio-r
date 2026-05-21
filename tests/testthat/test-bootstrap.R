@@ -1229,7 +1229,7 @@ test_that("ED bootstrap point estimate lands in the right order of magnitude", {
                   method = "ed", process = "gamma",
                   B = 200, seed = 1)
   # Analytical ED on the same triangle (intensity-weighted refit).
-  ed_fit <- fit_ed(tri, loss = "loss", premium = "premium")
+  ed_fit <- fit_ed(tri, loss = "loss", exposure = "premium")
   # Compare ultimate per cohort between bootstrap mean and analytical
   # projection.
   ult_dev <- max(bt$summary$dev)

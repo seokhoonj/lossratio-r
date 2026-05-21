@@ -579,7 +579,7 @@ plot.PremiumFit <- function(x, ...) {
 
     # Alias the metric's per-cell SE / CV to fixed names so the label
     # expressions stay role-agnostic (loss_* for CL/SA/BF/CC,
-    # premium_* for an PremiumFit).
+    # premium_* for a PremiumFit).
     dt[, (".se") := .SD[[1L]], .SDcols = paste0(metric, "_total_se")]
     dt[, (".cv") := .SD[[1L]], .SDcols = paste0(metric, "_total_cv")]
 

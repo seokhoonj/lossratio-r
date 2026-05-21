@@ -28,8 +28,8 @@
 #' @param x A `Triangle` object.
 #' @param loss A single cumulative metric used as the link
 #'   numerator. Default `"loss"`.
-#' @param premium A single cumulative metric used as the
-#'   premium anchor. Default `"premium"`.
+#' @param exposure A single cumulative metric used as the
+#'   exposure base (denominator anchor). Default `"premium"`.
 #' @param alpha WLS weight exponent. Default `1`.
 #' @param na_method NA fill method for the selected intensity series
 #'   used downstream by [fit_ed()]. One of `"locf"` (default --
@@ -85,14 +85,14 @@
 #'   loss     = "incr_loss",
 #'   premium  = "incr_premium"
 #' )
-#' intensity_fit <- fit_intensity(tri, loss = "loss", premium = "premium")
+#' intensity_fit <- fit_intensity(tri, loss = "loss", exposure = "premium")
 #' summary(intensity_fit)
 #' }
 #'
 #' @export
 fit_intensity <- function(x,
                           loss         = "loss",
-                          premium      = "premium",
+                          exposure     = "premium",
                           alpha        = 1,
                           na_method    = c("locf", "zero", "none"),
                           sigma_method = c("locf", "min_last2", "loglinear",
@@ -105,7 +105,7 @@ fit_intensity <- function(x,
 
   regime <- .resolve_regime(regime, x)
 
-  link <- as_link(x, loss = loss, premium = premium)
+  link <- as_link(x, loss = loss, exposure = exposure)
 
   na_method    <- match.arg(na_method)
   sigma_method <- match.arg(sigma_method)

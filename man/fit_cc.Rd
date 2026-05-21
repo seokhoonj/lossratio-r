@@ -7,7 +7,7 @@
 fit_cc(
   x,
   loss = "loss",
-  premium = "premium",
+  exposure = "premium",
   bootstrap = NULL,
   B = 999L,
   seed = NULL,
@@ -28,7 +28,7 @@ fit_cc(
 
 \item{loss}{A single cumulative loss variable. Default \code{"loss"}.}
 
-\item{premium}{A single cumulative premium variable. Default
+\item{exposure}{A single cumulative premium variable. Default
 \code{"premium"}.}
 
 \item{bootstrap}{Bootstrap configuration. Same forms as

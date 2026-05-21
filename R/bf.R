@@ -32,7 +32,7 @@
 #' @param x A `Triangle` object.
 #' @param loss A single cumulative loss variable to project. Default
 #'   `"loss"`.
-#' @param premium A single cumulative premium variable used as the
+#' @param exposure A single cumulative premium variable used as the
 #'   denominator of the prior ELR. Default `"premium"`.
 #' @param prior The a priori expected loss ratio. Accepts:
 #'   \describe{
@@ -194,7 +194,7 @@
 #' @export
 fit_bf <- function(x,
                    loss         = "loss",
-                   premium      = "premium",
+                   exposure     = "premium",
                    prior,
                    bootstrap    = NULL,
                    B            = 999L,
@@ -439,7 +439,7 @@ fit_bf <- function(x,
     cohort       = attr(x, "cohort"),
     dev          = attr(x, "dev"),
     loss         = loss,
-    premium      = premium,
+    premium      = exposure,
     full         = full,
     proj         = proj,
     summary      = summ,

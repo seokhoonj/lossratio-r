@@ -64,7 +64,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium = "incr_premium"
+  premium  = "incr_premium"
 )
 }
 }

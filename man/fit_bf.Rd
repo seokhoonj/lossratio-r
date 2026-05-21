@@ -7,7 +7,7 @@
 fit_bf(
   x,
   loss = "loss",
-  premium = "premium",
+  exposure = "premium",
   prior,
   bootstrap = NULL,
   B = 999L,
@@ -31,7 +31,7 @@ fit_bf(
 \item{loss}{A single cumulative loss variable to project. Default
 \code{"loss"}.}
 
-\item{premium}{A single cumulative premium variable used as the
+\item{exposure}{A single cumulative premium variable used as the
 denominator of the prior ELR. Default \code{"premium"}.}
 
 \item{prior}{The a priori expected loss ratio. Accepts:

@@ -7,7 +7,7 @@
 fit_ed(
   x,
   loss = "loss",
-  premium = "premium",
+  exposure = "premium",
   method = c("mack"),
   alpha = 1,
   na_method = c("locf", "zero", "none"),
@@ -27,7 +27,8 @@ fit_ed(
 \item{loss}{Cumulative loss variable. Default \code{"loss"}.
 Forwarded to \code{\link[=as_link]{as_link()}} and to downstream workers.}
 
-\item{premium}{Cumulative premium variable. Default \code{"premium"}.
+\item{exposure}{Cumulative exposure-base variable (the loss-ratio
+denominator, typically premium). Default \code{"premium"}.
 Forwarded to \code{\link[=as_link]{as_link()}} and to downstream workers.}
 
 \item{method}{Estimation method. Currently only \code{"mack"} is supported.}

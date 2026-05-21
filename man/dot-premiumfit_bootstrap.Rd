@@ -2,7 +2,7 @@
 % Please edit documentation in R/premium.R
 \name{.premiumfit_bootstrap}
 \alias{.premiumfit_bootstrap}
-\title{Overlay bootstrap SE / CI onto an PremiumFit \verb{$full}}
+\title{Overlay bootstrap SE / CI onto a PremiumFit \verb{$full}}
 \usage{
 .premiumfit_bootstrap(result, x, groups, bootstrap, B, seed, alpha)
 }

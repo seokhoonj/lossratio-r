@@ -14,16 +14,16 @@
 #' @param x A `"Triangle"` object. The standardized `"loss"` and
 #'   `"premium"` columns are used (`as_triangle()` produces these).
 #' @param loss Cumulative loss column name. Default `"loss"`.
-#' @param premium Cumulative premium column name. Default `"premium"`.
+#' @param exposure Cumulative premium column name. Default `"premium"`.
 #' @param alpha Variance-structure exponent for the loss fit. Default `1`.
-#' @param premium_fit Optional pre-built `PremiumFit` supplying the
+#' @param exposure_fit Optional pre-built `PremiumFit` supplying the
 #'   premium projection. When `NULL`, `fit_sa()` builds the premium
 #'   projection internally -- a worker-layer `fit_cl()` on the
-#'   `premium` column -- using `premium_method`, `premium_alpha`,
+#'   `premium` column -- using `exposure_method`, `exposure_alpha`,
 #'   and the resolved `regime`.
-#' @param premium_method One of `"ed"` (default) or `"cl"`. Used only
-#'   when `premium_fit = NULL`.
-#' @param premium_alpha Variance-structure exponent for the premium fit.
+#' @param exposure_method One of `"ed"` (default) or `"cl"`. Used only
+#'   when `exposure_fit = NULL`.
+#' @param exposure_alpha Variance-structure exponent for the premium fit.
 #'   Default `1`.
 #' @inheritParams fit_ata
 #' @param recent Optional positive integer; calendar-diagonal filter.
@@ -74,24 +74,24 @@
 #'
 #' @export
 fit_sa <- function(x,
-                   loss           = "loss",
-                   premium        = "premium",
-                   alpha          = 1,
-                   premium_fit    = NULL,
-                   premium_method = c("ed", "cl"),
-                   premium_alpha  = 1,
-                   sigma_method   = c("locf", "min_last2", "loglinear",
-                                      "mack", "none"),
-                   recent         = NULL,
-                   regime         = NULL,
-                   maturity       = "auto",
-                   tail           = FALSE,
-                   conf_level     = 0.95,
-                   bootstrap      = NULL,
-                   B              = 999L,
-                   seed           = NULL,
-                   type           = c("parametric", "nonparametric",
-                                      "analytical")) {
+                   loss            = "loss",
+                   exposure        = "premium",
+                   alpha           = 1,
+                   exposure_fit    = NULL,
+                   exposure_method = c("ed", "cl"),
+                   exposure_alpha  = 1,
+                   sigma_method    = c("locf", "min_last2", "loglinear",
+                                       "mack", "none"),
+                   recent          = NULL,
+                   regime          = NULL,
+                   maturity        = "auto",
+                   tail            = FALSE,
+                   conf_level      = 0.95,
+                   bootstrap       = NULL,
+                   B               = 999L,
+                   seed            = NULL,
+                   type            = c("parametric", "nonparametric",
+                                       "analytical")) {
 
   # data.table NSE bindings for R CMD check
   loss_param_se <- loss_proc_se <- loss_total_se <- loss_total_cv <- NULL
@@ -104,20 +104,20 @@ fit_sa <- function(x,
   loss_proc_se2 <- loss_param_se2 <- loss_total_se2 <- is_observed <- NULL
 
   .assert_triangle_input(x, "fit_sa()")
-  sigma_method   <- match.arg(sigma_method)
-  premium_method <- match.arg(premium_method)
+  sigma_method    <- match.arg(sigma_method)
+  exposure_method <- match.arg(exposure_method)
   if (!missing(type)) type <- match.arg(type)
 
-  if (!is.null(premium_fit) && !inherits(premium_fit, "PremiumFit"))
-    stop("`premium_fit` must be an PremiumFit object or NULL.",
+  if (!is.null(exposure_fit) && !inherits(exposure_fit, "PremiumFit"))
+    stop("`exposure_fit` must be a PremiumFit object or NULL.",
          call. = FALSE)
 
   if (!is.numeric(alpha) || length(alpha) != 1L ||
       is.na(alpha) || !is.finite(alpha))
     stop("`alpha` must be a single finite numeric value.", call. = FALSE)
-  if (!is.numeric(premium_alpha) || length(premium_alpha) != 1L ||
-      is.na(premium_alpha) || !is.finite(premium_alpha))
-    stop("`premium_alpha` must be a single finite numeric value.",
+  if (!is.numeric(exposure_alpha) || length(exposure_alpha) != 1L ||
+      is.na(exposure_alpha) || !is.finite(exposure_alpha))
+    stop("`exposure_alpha` must be a single finite numeric value.",
          call. = FALSE)
   if (!is.numeric(conf_level) || length(conf_level) != 1L ||
       is.na(conf_level) || conf_level <= 0 || conf_level >= 1)
@@ -229,33 +229,33 @@ fit_sa <- function(x,
   # avoid the upward worker -> dispatcher dependency. If the caller
   # supplied a pre-built premium_fit (PremiumFit class from a
   # composer-layer caller like fit_ratio), we accept it as-is.
-  if (is.null(premium_fit)) {
-    premium_fit <- fit_cl(
+  if (is.null(exposure_fit)) {
+    exposure_fit <- fit_cl(
       x,
       method       = "mack",
       loss         = "premium",
-      alpha        = premium_alpha,
+      alpha        = exposure_alpha,
       sigma_method = sigma_method,
       regime       = regime_user
     )
-    # Apply premium-side variance overlay when premium_method = "ed"
+    # Apply premium-side variance overlay when exposure_method = "ed"
     # (mirror fit_premium behaviour for variance recursion choice).
-    if (identical(premium_method, "ed")) {
-      premium_fit$full <- .apply_ed_variance(premium_fit$full,
-                                              premium_fit$selected, x)
+    if (identical(exposure_method, "ed")) {
+      exposure_fit$full <- .apply_ed_variance(exposure_fit$full,
+                                              exposure_fit$selected, x)
     }
-    premium_fit$full <- .premium_rename_full(premium_fit$full,
+    exposure_fit$full <- .premium_rename_full(exposure_fit$full,
                                                grp,
                                                conf_level = 0.95)
-    class(premium_fit) <- c("PremiumFit", class(premium_fit))
+    class(exposure_fit) <- c("PremiumFit", class(exposure_fit))
   }
   premium_ata_fit <- structure(
     list(
-      selected     = premium_fit$selected,
-      link         = premium_fit$link,
-      data         = premium_fit$data,
+      selected     = exposure_fit$selected,
+      link         = exposure_fit$link,
+      data         = exposure_fit$data,
       method       = "mack",
-      alpha        = premium_alpha,
+      alpha        = exposure_alpha,
       sigma_method = sigma_method,
       maturity     = NULL
     ),
@@ -281,7 +281,7 @@ fit_sa <- function(x,
   intensity_fit <- fit_intensity(
     x,
     loss         = "loss",
-    premium      = "premium",
+    exposure     = "premium",
     alpha        = alpha,
     sigma_method = sigma_method,
     recent       = recent,
@@ -476,7 +476,7 @@ fit_sa <- function(x,
     maturity        = maturity,
     loss_ata_fit    = loss_ata_fit,
     premium_ata_fit = premium_ata_fit,
-    premium_fit     = premium_fit,
+    premium_fit     = exposure_fit,
     ed              = ed_fit$link,
     factor          = ed_fit$factor,
     selected        = ed_fit$selected,

@@ -155,7 +155,7 @@
   # use weight column if present (added by as_link(weight = ...))
   # otherwise fall back to loss_from (standard volume-weighted chain ladder)
   wt_col    <- if ("weight" %in% names(dt)) "weight" else 1
-  link_factors <- .lm_link(object, weights = wt_col, alpha = alpha, ...)
+  link_factors <- .lm_ata(object, weights = wt_col, alpha = alpha, ...)
 
   # 3) join WLS results onto descriptive statistics ---------------------
   join_cols <- c(grp, "ata_from", "ata_to", "ata_link",

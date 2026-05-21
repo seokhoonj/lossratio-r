@@ -7,11 +7,11 @@
 fit_sa(
   x,
   loss = "loss",
-  premium = "premium",
+  exposure = "premium",
   alpha = 1,
-  premium_fit = NULL,
-  premium_method = c("ed", "cl"),
-  premium_alpha = 1,
+  exposure_fit = NULL,
+  exposure_method = c("ed", "cl"),
+  exposure_alpha = 1,
   sigma_method = c("locf", "min_last2", "loglinear", "mack", "none"),
   recent = NULL,
   regime = NULL,
@@ -30,20 +30,20 @@ fit_sa(
 
 \item{loss}{Cumulative loss column name. Default \code{"loss"}.}
 
-\item{premium}{Cumulative premium column name. Default \code{"premium"}.}
+\item{exposure}{Cumulative premium column name. Default \code{"premium"}.}
 
 \item{alpha}{Variance-structure exponent for the loss fit. Default \code{1}.}
 
-\item{premium_fit}{Optional pre-built \code{PremiumFit} supplying the
+\item{exposure_fit}{Optional pre-built \code{PremiumFit} supplying the
 premium projection. When \code{NULL}, \code{fit_sa()} builds the premium
 projection internally -- a worker-layer \code{fit_cl()} on the
-\code{premium} column -- using \code{premium_method}, \code{premium_alpha},
+\code{premium} column -- using \code{exposure_method}, \code{exposure_alpha},
 and the resolved \code{regime}.}
 
-\item{premium_method}{One of \code{"ed"} (default) or \code{"cl"}. Used only
-when \code{premium_fit = NULL}.}
+\item{exposure_method}{One of \code{"ed"} (default) or \code{"cl"}. Used only
+when \code{exposure_fit = NULL}.}
 
-\item{premium_alpha}{Variance-structure exponent for the premium fit.
+\item{exposure_alpha}{Variance-structure exponent for the premium fit.
 Default \code{1}.}
 
 \item{sigma_method}{Method used to extrapolate \code{sigma} for links where it

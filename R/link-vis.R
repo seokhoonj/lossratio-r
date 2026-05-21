@@ -50,7 +50,7 @@ plot.Link <- function(x, model = NULL, ...) {
   model <- match.arg(model, c("ata", "ed"))
 
   if (identical(model, "ed") && is.null(attr(x, "premium")))
-    stop("`model = 'ed'` requires a Link built with `premium`.",
+    stop("`model = 'ed'` requires a Link built with `exposure`.",
          call. = FALSE)
 
   if (identical(model, "ata")) {
@@ -92,7 +92,7 @@ plot_triangle.Link <- function(x, model = NULL, ...) {
   model <- match.arg(model, c("ata", "ed"))
 
   if (identical(model, "ed") && is.null(attr(x, "premium")))
-    stop("`model = 'ed'` requires a Link built with `premium`.",
+    stop("`model = 'ed'` requires a Link built with `exposure`.",
          call. = FALSE)
 
   if (identical(model, "ata")) {

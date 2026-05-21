@@ -76,7 +76,7 @@ plot_triangle(tri_q)   # cohort × dev heatmap of ratio
 ```
 
 Use `Triangle` as input to:
-- `as_link()` — development factors (ATA / ED via `loss` + optional `premium`)
+- `as_link()` — development factors (ATA / ED via `loss` + optional `exposure`)
 - `fit_cl()`, `fit_ratio()` — projection
 - `detect_regime()` — structural change detection
 

@@ -27,7 +27,7 @@ make_sub_tri <- function(cv = "surgery") {
 make_link_set <- function() {
   tri <- make_tri()
   ata <- as_link(tri, loss = "loss")
-  ed  <- as_link(tri, loss = "loss", premium = "premium")
+  ed  <- as_link(tri, loss = "loss", exposure = "premium")
   list(
     exp     = make_exp(),
     tri     = tri,
@@ -35,7 +35,7 @@ make_link_set <- function() {
     ata_fit = fit_ata(tri, loss = "loss"),
     ata_sm  = summary(ata),
     ed      = ed,
-    ed_fit  = fit_ed(tri, loss = "loss", premium = "premium"),
+    ed_fit  = fit_ed(tri, loss = "loss", exposure = "premium"),
     ed_sm   = summary(ed),
     cl      = fit_cl(tri, loss = "loss", method = "mack"),
     ratio   = fit_ratio(tri, method = "sa", bootstrap = FALSE),

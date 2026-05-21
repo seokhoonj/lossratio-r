@@ -15,17 +15,17 @@
 #' underlying both the chain ladder (CL) and exposure-driven (ED)
 #' workflows.
 #'
-#' Two modes are produced depending on `premium`:
+#' Two modes are produced depending on `exposure`:
 #'
 #' \describe{
-#'   \item{Single-variable mode (`premium = NULL`)}{The age-to-age
+#'   \item{Single-variable mode (`exposure = NULL`)}{The age-to-age
 #'     factor is \eqn{ata = value_{to} / value_{from}}, where
 #'     \eqn{value} is the column named by `loss`.}
-#'   \item{Dual-variable mode (`premium` supplied)}{In addition to
+#'   \item{Dual-variable mode (`exposure` supplied)}{In addition to
 #'     the loss-side ATA, the exposure-driven intensity
 #'     \eqn{g = \Delta loss / premium_{from}} is computed and stored in
-#'     the `intensity` column. Premium measure used as denominator for
-#'     loss ratio calculations; for long-term health insurance
+#'     the `intensity` column. The exposure measure is the denominator
+#'     for loss ratio calculations; for long-term health insurance
 #'     applications, risk premium is commonly used.}
 #' }
 #'
@@ -34,13 +34,14 @@
 #'   numerator. Must be one of `"loss"`, `"premium"`, or `"ratio"`. Default
 #'   `"loss"`. For loss-side ATA this is the cumulative loss column, but
 #'   any cumulative metric on the Triangle may be supplied.
-#' @param premium Optional second cumulative metric, treated as the
-#'   premium anchor for the ED workflow. Must be one of `"loss"`,
-#'   `"premium"`, `"ratio"`, and must differ from `loss`. When `NULL`
-#'   (default), only the single-variable columns are produced.
+#' @param exposure Optional second cumulative metric, treated as the
+#'   exposure base (denominator anchor) for the ED workflow. Must be
+#'   one of `"loss"`, `"premium"`, `"ratio"`, and must differ from
+#'   `loss`. When `NULL` (default), only the single-variable columns
+#'   are produced.
 #' @param weight Optional cumulative metric used as WLS weight in
 #'   downstream `summary` / `fit_ata` calls. Must differ from
-#'   `loss`. Cannot be combined with `premium` (the dual
+#'   `loss`. Cannot be combined with `exposure` (the dual
 #'   workflow has its own anchor).
 #' @param min_denom Minimum denominator required to compute `ata`
 #'   and `intensity`. If `loss_from <= min_denom`, `ata` becomes `NA`;
@@ -55,7 +56,7 @@
 #'
 #'   * Always: `[group]`, `cohort`, `ata_from`, `ata_to`, `ata_link`,
 #'     `loss_from`, `loss_to`, `loss_delta`, `ata`.
-#'   * If `premium` is set: also `premium_from`, `premium_to`,
+#'   * If `exposure` is set: also `premium_from`, `premium_to`,
 #'     `premium_delta`, `intensity`.
 #'   * If `weight` is set: also `weight`.
 #'
@@ -81,14 +82,14 @@
 #' link_loss <- as_link(tri, loss = "loss")
 #'
 #' # Dual-variable: ED-ready link table (loss + premium)
-#' link_ed <- as_link(tri, loss = "loss", premium = "premium")
+#' link_ed <- as_link(tri, loss = "loss", exposure = "premium")
 #' head(link_ed)
 #' }
 #'
 #' @export
 as_link <- function(x,
                        loss         = "loss",
-                       premium      = NULL,
+                       exposure     = NULL,
                        weight       = NULL,
                        min_denom    = 0,
                        drop_invalid = FALSE) {
@@ -124,18 +125,18 @@ as_link <- function(x,
          call. = FALSE)
   loss_col <- loss
 
-  use_premium <- !is.null(premium)
-  use_weight   <- !is.null(weight)
+  use_premium <- !is.null(exposure)
+  use_weight  <- !is.null(weight)
 
   if (use_premium) {
-    if (!is.character(premium) || length(premium) != 1L ||
-        !(premium %in% valid_vars))
-      stop("`premium` must be one of 'loss', 'premium', or 'ratio'.",
+    if (!is.character(exposure) || length(exposure) != 1L ||
+        !(exposure %in% valid_vars))
+      stop("`exposure` must be one of 'loss', 'premium', or 'ratio'.",
            call. = FALSE)
-    exp <- premium
+    exp <- exposure
     if (exp == loss_col)
       warning(
-        "`premium` equals `loss` (\"", loss_col, "\") -- self-anchored ",
+        "`exposure` equals `loss` (\"", loss_col, "\") -- self-anchored ",
         "fit. Mathematically equivalent to chain ladder on the same column ",
         "(f_k = 1 + g_k); use only when intentional.",
         call. = FALSE
@@ -146,7 +147,7 @@ as_link <- function(x,
 
   if (use_weight) {
     if (use_premium)
-      stop("`weight` cannot be combined with `premium`. ",
+      stop("`weight` cannot be combined with `exposure`. ",
            "The dual-variable mode uses `premium_from` as its anchor.",
            call. = FALSE)
     if (!is.character(weight) || length(weight) != 1L ||
@@ -243,7 +244,7 @@ as_link <- function(x,
 #' @param object A `Link` object from [as_link()].
 #' @param model Either `"ata"` (multiplicative chain-ladder factors) or
 #'   `"ed"` (additive exposure-driven intensities). When `model = "ed"`,
-#'   the link table must have been built with `premium` set. The
+#'   the link table must have been built with `exposure` set. The
 #'   default uses `"ed"` if `attr(object, "premium")` is non-`NULL`,
 #'   otherwise `"ata"`.
 #' @param alpha,digits,... Forwarded to the underlying summary helper.
@@ -269,7 +270,7 @@ summary.Link <- function(object,
   model <- match.arg(model, c("ata", "ed"))
 
   if (identical(model, "ed") && is.null(attr(object, "premium")))
-    stop("`model = 'ed'` requires a Link built with `premium`.",
+    stop("`model = 'ed'` requires a Link built with `exposure`.",
          call. = FALSE)
 
   if (identical(model, "ata")) {
@@ -323,11 +324,11 @@ summary.Link <- function(object,
 #'   observation links) or when `f` is zero.
 #'
 #' @keywords internal
-.lm_link <- function(x,
-                     weights = 1,
-                     alpha   = 1,
-                     na_rm   = TRUE,
-                     tol     = 1e-12) {
+.lm_ata <- function(x,
+                    weights = 1,
+                    alpha   = 1,
+                    na_rm   = TRUE,
+                    tol     = 1e-12) {
 
   .assert_class(x, "Link")
 

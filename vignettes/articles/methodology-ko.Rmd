@@ -210,9 +210,9 @@ Sherman 1984 의 *log-linear (exponential form) tail* 은 이미
 *수학적 구조* 는 다음 영역까지 자연 일반화 가능:
 
 -   **frequency-severity 분해** —
-    `fit_ed(loss = "claim_count", premium =   "insureds")` 로
+    `fit_ed(loss = "claim_count", exposure =   "insureds")` 로
     *frequency* 추정,
-    `fit_ed(loss = "loss", premium =   "claim_count")` 로 *severity*
+    `fit_ed(loss = "loss", exposure =   "claim_count")` 로 *severity*
     추정. slot 재해석 만으로 framework 작동.
 -   **lifetime / cohort 분석** — 가입연도별 cohort 의 *전 life cycle*
     손해율 궤적 분석. 현재 framework 의 자연 확장.

@@ -143,7 +143,7 @@ plot(tri)              # cohort trajectories
 plot_triangle(tri)     # cell heatmap
 
 # Exposure-driven fit (additive ED intensity)
-ed <- fit_ed(tri, loss = "loss", premium = "premium")
+ed <- fit_ed(tri, loss = "loss", exposure = "premium")
 
 # Chain ladder fit (multiplicative ATA factors)
 cl <- fit_cl(tri, loss = "loss")

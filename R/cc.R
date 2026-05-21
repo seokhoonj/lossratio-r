@@ -40,7 +40,7 @@
 #'
 #' @param x A `Triangle` object.
 #' @param loss A single cumulative loss variable. Default `"loss"`.
-#' @param premium A single cumulative premium variable. Default
+#' @param exposure A single cumulative premium variable. Default
 #'   `"premium"`.
 #' @param bootstrap Bootstrap configuration. Same forms as
 #'   [fit_bf()]'s `bootstrap` arg -- see there for the full description.
@@ -142,7 +142,7 @@
 #' @export
 fit_cc <- function(x,
                    loss         = "loss",
-                   premium      = "premium",
+                   exposure     = "premium",
                    bootstrap    = NULL,
                    B            = 999L,
                    seed         = NULL,
@@ -448,7 +448,7 @@ fit_cc <- function(x,
     cohort       = attr(x, "cohort"),
     dev          = attr(x, "dev"),
     loss         = loss,
-    premium      = premium,
+    premium      = exposure,
     full         = full,
     proj         = proj,
     summary      = summ,

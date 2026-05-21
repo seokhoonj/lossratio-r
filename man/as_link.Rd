@@ -7,7 +7,7 @@
 as_link(
   x,
   loss = "loss",
-  premium = NULL,
+  exposure = NULL,
   weight = NULL,
   min_denom = 0,
   drop_invalid = FALSE
@@ -21,14 +21,15 @@ numerator. Must be one of \code{"loss"}, \code{"premium"}, or \code{"ratio"}. De
 \code{"loss"}. For loss-side ATA this is the cumulative loss column, but
 any cumulative metric on the Triangle may be supplied.}
 
-\item{premium}{Optional second cumulative metric, treated as the
-premium anchor for the ED workflow. Must be one of \code{"loss"},
-\code{"premium"}, \code{"ratio"}, and must differ from \code{loss}. When \code{NULL}
-(default), only the single-variable columns are produced.}
+\item{exposure}{Optional second cumulative metric, treated as the
+exposure base (denominator anchor) for the ED workflow. Must be
+one of \code{"loss"}, \code{"premium"}, \code{"ratio"}, and must differ from
+\code{loss}. When \code{NULL} (default), only the single-variable columns
+are produced.}
 
 \item{weight}{Optional cumulative metric used as WLS weight in
 downstream \code{summary} / \code{fit_ata} calls. Must differ from
-\code{loss}. Cannot be combined with \code{premium} (the dual
+\code{loss}. Cannot be combined with \code{exposure} (the dual
 workflow has its own anchor).}
 
 \item{min_denom}{Minimum denominator required to compute \code{ata}
@@ -46,7 +47,7 @@ A \code{data.table} of class \code{"Link"} with columns:
 \itemize{
 \item Always: \verb{[group]}, \code{cohort}, \code{ata_from}, \code{ata_to}, \code{ata_link},
 \code{loss_from}, \code{loss_to}, \code{loss_delta}, \code{ata}.
-\item If \code{premium} is set: also \code{premium_from}, \code{premium_to},
+\item If \code{exposure} is set: also \code{premium_from}, \code{premium_to},
 \code{premium_delta}, \code{intensity}.
 \item If \code{weight} is set: also \code{weight}.
 }
@@ -68,17 +69,17 @@ link-pair rows. Each row corresponds to one development link
 underlying both the chain ladder (CL) and exposure-driven (ED)
 workflows.
 
-Two modes are produced depending on \code{premium}:
+Two modes are produced depending on \code{exposure}:
 
 \describe{
-\item{Single-variable mode (\code{premium = NULL})}{The age-to-age
+\item{Single-variable mode (\code{exposure = NULL})}{The age-to-age
 factor is \eqn{ata = value_{to} / value_{from}}, where
 \eqn{value} is the column named by \code{loss}.}
-\item{Dual-variable mode (\code{premium} supplied)}{In addition to
+\item{Dual-variable mode (\code{exposure} supplied)}{In addition to
 the loss-side ATA, the exposure-driven intensity
 \eqn{g = \Delta loss / premium_{from}} is computed and stored in
-the \code{intensity} column. Premium measure used as denominator for
-loss ratio calculations; for long-term health insurance
+the \code{intensity} column. The exposure measure is the denominator
+for loss ratio calculations; for long-term health insurance
 applications, risk premium is commonly used.}
 }
 }
@@ -90,14 +91,14 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium = "incr_premium"
+  premium  = "incr_premium"
 )
 
 # Single-variable: cumulative-loss link factors (ATA workflow)
 link_loss <- as_link(tri, loss = "loss")
 
 # Dual-variable: ED-ready link table (loss + premium)
-link_ed <- as_link(tri, loss = "loss", premium = "premium")
+link_ed <- as_link(tri, loss = "loss", exposure = "premium")
 head(link_ed)
 }
 

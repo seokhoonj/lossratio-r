@@ -2,7 +2,7 @@
 data(experience)
 exp <- experience
 tri <- as_triangle(exp, groups = "coverage", cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
-ed  <- as_link(tri, loss = "loss", premium = "premium")
+ed  <- as_link(tri, loss = "loss", exposure = "premium")
 
 test_that("as_link (ED mode) returns class 'Link' with expected columns", {
   expect_s3_class(ed, "Link")
@@ -36,7 +36,7 @@ test_that("as_link warns (self-anchored) when loss == premium", {
   # Self-anchored ED is mathematically equivalent to chain ladder on
   # the same column (f_k = 1 + g_k). Allowed, but warned.
   expect_warning(
-    as_link(tri, loss = "loss", premium = "loss"),
+    as_link(tri, loss = "loss", exposure = "loss"),
     "self-anchored"
   )
 })
@@ -44,7 +44,7 @@ test_that("as_link warns (self-anchored) when loss == premium", {
 # fit_ed -----------------------------------------------------------------
 
 test_that("fit_ed returns class 'EDFit' with expected components", {
-  ef <- fit_ed(tri, loss = "loss", premium = "premium")
+  ef <- fit_ed(tri, loss = "loss", exposure = "premium")
   expect_s3_class(ef, "EDFit")
   for (nm in c("factor", "selected")) {
     expect_true(nm %in% names(ef), info = paste("missing", nm))
@@ -52,25 +52,25 @@ test_that("fit_ed returns class 'EDFit' with expected components", {
 })
 
 test_that("fit_ed method = 'mack' works", {
-  ef_mack <- fit_ed(tri, loss = "loss", premium = "premium", method = "mack")
+  ef_mack <- fit_ed(tri, loss = "loss", exposure = "premium", method = "mack")
   expect_s3_class(ef_mack, "EDFit")
 })
 
 test_that("fit_ed sigma_method variants run", {
   for (sm in c("min_last2", "locf", "loglinear", "mack", "none")) {
     expect_no_error(suppressWarnings(
-      fit_ed(tri, loss = "loss", premium = "premium", sigma_method = sm)))
+      fit_ed(tri, loss = "loss", exposure = "premium", sigma_method = sm)))
   }
 })
 
 test_that("recent reduces selected rows count", {
-  ef_full   <- fit_ed(tri, loss = "loss", premium = "premium")
-  ef_recent <- fit_ed(tri, loss = "loss", premium = "premium", recent = 6)
+  ef_full   <- fit_ed(tri, loss = "loss", exposure = "premium")
+  ef_recent <- fit_ed(tri, loss = "loss", exposure = "premium", recent = 6)
   expect_true(nrow(ef_recent$selected) <= nrow(ef_full$selected))
 })
 
 test_that("print.EDFit doesn't error", {
-  ef <- fit_ed(tri, loss = "loss", premium = "premium")
+  ef <- fit_ed(tri, loss = "loss", exposure = "premium")
   expect_no_error(capture.output(print(ef)))
 })
 
@@ -91,9 +91,9 @@ test_that("fit_ed with regime drops pre-break cohorts", {
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
-  ed <- as_link(tri, loss = "loss", premium = "premium")
-  fit_full <- fit_ed(tri, loss = "loss", premium = "premium")
-  fit_brk  <- fit_ed(tri, loss = "loss", premium = "premium",
+  ed <- as_link(tri, loss = "loss", exposure = "premium")
+  fit_full <- fit_ed(tri, loss = "loss", exposure = "premium")
+  fit_brk  <- fit_ed(tri, loss = "loss", exposure = "premium",
                      regime = regime_at(change = "2025-07-01"))
   expect_false(identical(fit_full$selected$g_sel,
                          fit_brk$selected$g_sel))
@@ -105,9 +105,9 @@ test_that("fit_ed with NULL regime is unchanged", {
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
-  ed <- as_link(tri, loss = "loss", premium = "premium")
-  fit_default <- fit_ed(tri, loss = "loss", premium = "premium")
-  fit_null    <- fit_ed(tri, loss = "loss", premium = "premium", regime = NULL)
+  ed <- as_link(tri, loss = "loss", exposure = "premium")
+  fit_default <- fit_ed(tri, loss = "loss", exposure = "premium")
+  fit_null    <- fit_ed(tri, loss = "loss", exposure = "premium", regime = NULL)
   expect_identical(fit_default$selected$g_sel,
                    fit_null$selected$g_sel)
 })
@@ -118,8 +118,8 @@ test_that("fit_ed with Regime input preserves the Regime object", {
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
   reg <- detect_regime(tri)
-  ed <- as_link(tri, loss = "loss", premium = "premium")
-  fit_reg <- fit_ed(tri, loss = "loss", premium = "premium", regime = reg)
+  ed <- as_link(tri, loss = "loss", exposure = "premium")
+  fit_reg <- fit_ed(tri, loss = "loss", exposure = "premium", regime = reg)
   expect_s3_class(fit_reg$regime, "Regime")
   expect_identical(fit_reg$regime$changes, reg$changes)
 })
@@ -131,7 +131,7 @@ test_that("fit_ed returns $full with projection columns", {
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
-  ef <- fit_ed(tri, loss = "loss", premium = "premium")
+  ef <- fit_ed(tri, loss = "loss", exposure = "premium")
   expect_true("full" %in% names(ef))
   expect_s3_class(ef$full, "data.table")
   # Worker layer: loss projection + premium projection only.
@@ -151,7 +151,7 @@ test_that("fit_ed loss projection matches fit_ratio method = 'ed'", {
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
-  ef <- fit_ed(tri, loss = "loss", premium = "premium")
+  ef <- fit_ed(tri, loss = "loss", exposure = "premium")
   lr <- fit_ratio(tri, method = "ed", bootstrap = FALSE)
 
   # Worker (fit_ed) produces the loss/premium projection; the ratio

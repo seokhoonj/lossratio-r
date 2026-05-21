@@ -89,7 +89,7 @@ not produce projections (`$full`).
 fit_ata(tri, loss = "loss")
 
 # Exposure-driven intensities — additive, input to ED
-fit_intensity(tri, loss = "loss", premium = "premium")
+fit_intensity(tri, loss = "loss", exposure = "premium")
 ```
 
 `fit_ata()` returns selected ATA factors $f_k$ per development link.
@@ -110,7 +110,7 @@ plot(cl, type = "projection")
 summary(cl)
 
 # Exposure-driven (additive projection)
-ed <- fit_ed(tri, loss = "loss", premium = "premium")
+ed <- fit_ed(tri, loss = "loss", exposure = "premium")
 summary(ed)
 ```
 

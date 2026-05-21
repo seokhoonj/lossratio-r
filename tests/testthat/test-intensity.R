@@ -63,13 +63,13 @@ test_that("print.IntensityFit does not error", {
 })
 
 test_that("Link (ED mode) carries `intensity` column (not `g`)", {
-  link_ed <- as_link(sub, loss = "loss", premium = "premium")
+  link_ed <- as_link(sub, loss = "loss", exposure = "premium")
   expect_true("intensity" %in% names(link_ed))
   expect_false("g" %in% names(link_ed))
 })
 
 test_that("intensity == loss_delta / premium_from when premium_from > 0", {
-  link_ed <- as_link(sub, loss = "loss", premium = "premium")
+  link_ed <- as_link(sub, loss = "loss", exposure = "premium")
   ok <- is.finite(link_ed$intensity) & link_ed$premium_from > 0
   expect_equal(link_ed$intensity[ok],
                link_ed$loss_delta[ok] / link_ed$premium_from[ok],
@@ -94,7 +94,7 @@ test_that("plot_triangle.IntensityFit returns ggplot", {
 
 test_that(".ed_g_var accepts both IntensityFit and EDFit", {
   ifit <- fit_intensity(sub)
-  efit <- fit_ed(sub, loss = "loss", premium = "premium")
+  efit <- fit_ed(sub, loss = "loss", exposure = "premium")
   sel_from_intensity <- lossratio:::.ed_g_var(ifit, alpha = 1)
   sel_from_ed        <- lossratio:::.ed_g_var(efit, alpha = 1)
   expect_true("g_var" %in% names(sel_from_intensity))

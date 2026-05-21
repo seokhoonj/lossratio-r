@@ -55,9 +55,9 @@ used as the \code{premium} measure.
 
 Proportion variables are computed within each \code{calendar} cell:
 \itemize{
-\item \code{incr_loss_share     = incr_loss     / sum(incr_loss)}
+\item \code{incr_loss_share    = incr_loss    / sum(incr_loss)}
 \item \code{incr_premium_share = incr_premium / sum(incr_premium)}
-\item \code{loss_share          = loss          / sum(loss)}
+\item \code{loss_share         = loss         / sum(loss)}
 \item \code{premium_share      = premium      / sum(premium)}
 }
 
@@ -81,7 +81,7 @@ tri <- as_triangle(
   cohort   = "uy_m",
   calendar = "cy_m",
   loss     = "incr_loss",
-  premium = "incr_premium"
+  premium  = "incr_premium"
 )
 
 cal <- as_calendar(tri)
