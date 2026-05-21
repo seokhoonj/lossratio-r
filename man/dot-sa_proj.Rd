@@ -15,15 +15,16 @@
 
 \item{f_sel}{Numeric vector of CL factors.}
 
-\item{maturity_from}{Numeric scalar; switch point. \code{NA} means
-ED-only (no switch).}
+\item{maturity_from}{Numeric scalar; the first CL-phase dev (the
+maturity link's to-index / \code{ata_to}). \code{NA} means ED-only (no switch).}
 }
 \value{
 A numeric vector with projected cumulative loss.
 }
 \description{
 Internal helper that projects cumulative loss with the SA rule:
-ED phase before maturity (\code{k < maturity_from}), CL phase after.
+ED phase for dev before \code{maturity_from}; CL phase from \code{maturity_from}
+onward.
 
 Originally lived in \code{R/loss.R} -- moved to \code{R/sa.R} alongside \code{fit_sa()}
 in Phase 4a.

@@ -338,9 +338,9 @@ fit_sa <- function(x,
   # Maturity join per group --------------------------------------------
   if (!is.null(maturity)) {
     m_join <- .copy_dt(maturity)
-    m_keep <- c(grp, "ata_from")
+    m_keep <- c(grp, "change")
     m_join <- m_join[, .SD, .SDcols = intersect(m_keep, names(m_join))]
-    data.table::setnames(m_join, "ata_from", "maturity_from")
+    data.table::setnames(m_join, "change", "maturity_from")
 
     if (length(grp)) {
       full <- m_join[full, on = grp]
@@ -597,7 +597,8 @@ summary.SAFit <- function(object, ...) {
 #'
 #' @description
 #' Internal helper that projects cumulative loss with the SA rule:
-#' ED phase before maturity (`k < maturity_from`), CL phase after.
+#' ED phase for dev before `maturity_from`; CL phase from `maturity_from`
+#' onward.
 #'
 #' Originally lived in `R/loss.R` -- moved to `R/sa.R` alongside `fit_sa()`
 #' in Phase 4a.
@@ -606,8 +607,8 @@ summary.SAFit <- function(object, ...) {
 #' @param premium_proj Numeric vector of projected cumulative premium.
 #' @param g_sel Numeric vector of ED intensities.
 #' @param f_sel Numeric vector of CL factors.
-#' @param maturity_from Numeric scalar; switch point. `NA` means
-#'   ED-only (no switch).
+#' @param maturity_from Numeric scalar; the first CL-phase dev (the
+#'   maturity link's to-index / `ata_to`). `NA` means ED-only (no switch).
 #'
 #' @return A numeric vector with projected cumulative loss.
 #'
@@ -633,7 +634,7 @@ summary.SAFit <- function(object, ...) {
 
     if (!is.finite(v_prev)) next
 
-    if (k < mat) {
+    if (i < mat) {
       # ED phase: additive
       g_now <- g_sel[k]
       e_now <- premium_proj[k]
@@ -679,7 +680,7 @@ summary.SAFit <- function(object, ...) {
   for (i in seq(last_obs + 1L, n)) {
     k <- i - 1L
 
-    if (k < mat) {
+    if (i < mat) {
       s2  <- g_sigma2[k]
       e_k <- premium_proj[k]
 
@@ -730,7 +731,7 @@ summary.SAFit <- function(object, ...) {
   for (i in seq(last_obs + 1L, n)) {
     k <- i - 1L
 
-    if (k < mat) {
+    if (i < mat) {
       gv  <- g_var[k]
       e_k <- premium_proj[k]
 
