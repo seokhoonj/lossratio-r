@@ -236,7 +236,7 @@ is a console table renderer for data frames and `Triangle` objects.
   : Plot a Cape Cod fit as a triangle table
 
 - [`plot_triangle(`*`<CLFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.CLFit.md)
-  : Plot chain ladder results as a triangle table
+  : Plot a chain ladder fit as a triangle table
 
 - [`plot_triangle(`*`<EDFit>`*`)`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.EDFit.md)
   : Triangle heatmap for an ED fit

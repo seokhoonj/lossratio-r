@@ -61,10 +61,11 @@ fit_sa(
 - exposure_fit:
 
   Optional pre-built `ExposureFit` supplying the exposure projection.
-  When `NULL`, `fit_sa()` calls
-  [`fit_exposure()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_exposure.md)
-  internally using `exposure_method`, `exposure_alpha`, and the resolved
-  `regime`.
+  When `NULL`, `fit_sa()` builds the exposure projection internally – a
+  worker-layer
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
+  on the `exposure` column – using `exposure_method`, `exposure_alpha`,
+  and the resolved `regime`.
 
 - exposure_method:
 

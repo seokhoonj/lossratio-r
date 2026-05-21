@@ -128,9 +128,10 @@ this function; users can also call <code>fit_sa()</code> directly.</p>
 
 <dt id="arg-exposure-fit">exposure_fit<a class="anchor" aria-label="anchor" href="#arg-exposure-fit"></a></dt>
 <dd><p>Optional pre-built <code>ExposureFit</code> supplying the
-exposure projection. When <code>NULL</code>, <code>fit_sa()</code> calls <code><a href="fit_exposure.html">fit_exposure()</a></code>
-internally using <code>exposure_method</code>, <code>exposure_alpha</code>, and the
-resolved <code>regime</code>.</p></dd>
+exposure projection. When <code>NULL</code>, <code>fit_sa()</code> builds the exposure
+projection internally – a worker-layer <code><a href="fit_cl.html">fit_cl()</a></code> on the
+<code>exposure</code> column – using <code>exposure_method</code>, <code>exposure_alpha</code>,
+and the resolved <code>regime</code>.</p></dd>
 
 
 <dt id="arg-exposure-method">exposure_method<a class="anchor" aria-label="anchor" href="#arg-exposure-method"></a></dt>

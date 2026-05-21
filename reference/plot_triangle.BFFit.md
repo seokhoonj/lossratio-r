@@ -1,8 +1,9 @@
 # Plot a Bornhuetter-Ferguson fit as a triangle table
 
-Triangle-style heatmap for a `"BFFit"`. Delegates to the role-agnostic
-implementation shared with
-[`plot_triangle.CLFit()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.CLFit.md).
+Triangle-style heatmap for a `"BFFit"`. Delegates to the shared
+role-agnostic
+[`.plot_triangle_fit()`](https://seokhoonj.github.io/lossratio/reference/dot-plot_triangle_fit.md)
+implementation.
 
 ## Usage
 
