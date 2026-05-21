@@ -293,7 +293,8 @@
     caption = switch(
       type,
       amount = if (nzchar(unit_txt)) paste("Unit:", unit_txt) else NULL,
-      "Unit: %"               # ratio and prop
+      ratio  = "Unit: %",
+      prop   = "Unit: %"
     ),
     hline   = switch(type, ratio = 1, amount = 0, prop = NULL)
   )
