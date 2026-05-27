@@ -1044,7 +1044,10 @@ plot.Total <- function(x,
   # therefore skips the cohort cut and instead shows one hline per
   # change as a visual partition marker.
   is_segment_wise <- inherits(regime, "Regime") &&
-                     identical(regime$treatment, "segment_wise")
+                     isTRUE(regime$treatment %in%
+                            c("segment_wise", "segment_wise_bridged"))
+  is_bridged <- inherits(regime, "Regime") &&
+                identical(regime$treatment, "segment_wise_bridged")
 
   # resolve regime change date -- scalar (single group / scalar input)
   # or a per-group `[join_cols..., change_date]` data.table when a
@@ -1201,8 +1204,12 @@ plot.Total <- function(x,
         dev_vals <- expanded$dev[mask_rows]
         is_obs   <- expanded$is_observed[mask_rows]
         is_held  <- expanded$is_held_out[mask_rows]
-        seg_last <- tapply(coh_rank, seg_id, max)
-        dev_min  <- max_cal - seg_last[as.character(seg_id)] + 1L
+        dev_min  <- .compute_segment_mini_tri_bounds(
+          coh_ranks = coh_rank,
+          seg_ids   = seg_id,
+          max_cal   = max_cal[1L],
+          bridge    = is_bridged
+        )
         expanded[mask_rows,
                  ("is_fit_data") := is_obs & !is_held & (dev_vals >= dev_min)]
       }
@@ -1373,7 +1380,8 @@ plot.Total <- function(x,
   grp_m_k <- attr(usage, "m_k",  exact = TRUE)
 
   is_segment_wise <- inherits(regime, "Regime") &&
-                     identical(regime$treatment, "segment_wise")
+                     isTRUE(regime$treatment %in%
+                            c("segment_wise", "segment_wise_bridged"))
 
   cd <- if (!is.null(regime) && !is_segment_wise) {
     .resolve_regime_change_date(regime, by = grp)

@@ -736,6 +736,97 @@
 }
 
 
+#' Per-cell effective `dev_min` for the segment_wise mini-triangle
+#'
+#' @description
+#' For each cell, returns the minimum dev that keeps it inside its segment's
+#' fit mask. The mask is the union of two regions:
+#'
+#' 1. The segment's natural mini-triangle: `dev >= max_cal - seg_last + 1`.
+#' 2. A *bridge* extension along the calendar diagonal anchored at the
+#'    *next* (newer) segment's first-cohort midpoint dev. The bridge lets
+#'    each older segment connect to its successor, filling the late-dev
+#'    cells of its early cohorts that would otherwise be cut by the
+#'    natural mini-triangle wall and leave projection cells unreachable.
+#'
+#' Bridge construction (segments ordered by `segment_id`, lower id = older
+#' cohorts). For each segment `s` except the newest (no successor), find
+#' segment `s+1`'s
+#'
+#' * `first_rank`  -- cohort rank of `s+1`'s first cohort,
+#' * `seg_dev_min` -- `max_cal - last_rank(s+1) + 1`,
+#' * `first_cohort_dev_max` -- `max_cal - first_rank(s+1) + 1`,
+#' * `mid_dev`     -- `floor((seg_dev_min + first_cohort_dev_max) / 2)`.
+#'
+#' The bridge diagonal for segment `s` is at
+#' `ext_cal_idx(s) = first_rank(s+1) + mid_dev(s+1) - 2` (the cell one
+#' cohort earlier than `s+1`'s first cohort, at the same dev as that first
+#' cohort's mini-triangle midpoint). Each cell in segment `s` then takes
+#'
+#' `effective_dev_min = min(seg_dev_min(s), ext_cal_idx(s) - coh_rank + 1)`
+#'
+#' with `pmin(..., na.rm = TRUE)` so the natural mini-tri wall stays put
+#' when no bridge applies (the last segment, or cells whose bridge ray
+#' lies above the wall).
+#'
+#' Bridges do not cascade: segment `s` is bridged only from segment `s+1`,
+#' not from `s+2`. The bridge only ever *widens* a segment's mini-triangle.
+#'
+#' @param coh_ranks Integer vector. Per-cell cohort rank within the group.
+#' @param seg_ids   Integer vector. Per-cell segment id (1 = oldest).
+#' @param max_cal   Integer scalar. Maximum calendar index in the group.
+#' @param bridge    Logical. When `TRUE`, widen each older segment's
+#'   mini-triangle with the calendar-diagonal bridge anchored at the
+#'   next segment's first-cohort midpoint dev. When `FALSE` (default),
+#'   return the natural mini-triangle wall only -- the pure
+#'   `"segment_wise"` treatment. `TRUE` corresponds to
+#'   `"segment_wise_bridged"`.
+#'
+#' @return Integer vector (same length as `coh_ranks`) of per-cell
+#'   effective `dev_min` for the mini-triangle filter (bridged or pure).
+#'
+#' @keywords internal
+.compute_segment_mini_tri_bounds <- function(coh_ranks, seg_ids, max_cal,
+                                             bridge = FALSE) {
+  if (length(coh_ranks) == 0L) return(integer(0))
+
+  seg_first <- tapply(coh_ranks, seg_ids, min)
+  seg_last  <- tapply(coh_ranks, seg_ids, max)
+
+  seg_dev_min          <- max_cal - seg_last  + 1L
+  first_cohort_dev_max <- max_cal - seg_first + 1L
+  seg_chr <- as.character(seg_ids)
+
+  if (!isTRUE(bridge)) {
+    # Pure `"segment_wise"`: the natural wall, no extension.
+    return(as.integer(unname(seg_dev_min[seg_chr])))
+  }
+
+  # Integer divide via `%/%` keeps `tapply`'s dimnames so the named
+  # lookups below still resolve. `floor()` + `as.integer()` would strip
+  # them and break the `mid_dev[s_next]` lookup.
+  mid_dev <- (seg_dev_min + first_cohort_dev_max) %/% 2L
+
+  seg_int    <- as.integer(names(seg_first))
+  seg_sorted <- seg_int[order(seg_int)]
+
+  ext_cal_idx <- rep(NA_integer_, length(seg_sorted))
+  names(ext_cal_idx) <- as.character(seg_sorted)
+  if (length(seg_sorted) >= 2L) {
+    for (i in seq_len(length(seg_sorted) - 1L)) {
+      s_next <- as.character(seg_sorted[i + 1L])
+      ext_cal_idx[as.character(seg_sorted[i])] <-
+        as.integer(seg_first[s_next] + mid_dev[s_next] - 2L)
+    }
+  }
+
+  out <- pmin(unname(seg_dev_min[seg_chr]),
+              unname(ext_cal_idx[seg_chr]) - coh_ranks + 1L,
+              na.rm = TRUE)
+  as.integer(out)
+}
+
+
 #' Apply regime-change (cohort) filter to a triangle-shaped data.table
 #'
 #' @description
@@ -794,7 +885,8 @@
   # groups not covered by the regime are preserved without a
   # `segment_id` tag either way.
   if (inherits(regime, "Regime") &&
-      identical(regime$treatment, "segment_wise")) {
+      isTRUE(regime$treatment %in%
+             c("segment_wise", "segment_wise_bridged"))) {
     out    <- .copy_dt(dt)
     grp_cols <- if (length(groups)) out[, groups, with = FALSE] else NULL
     # `[[<-` is base-R's assignment form: it invalidates data.table's
@@ -854,8 +946,12 @@
         coh_ranks <- out$.coh_rank_seg[grp_mask]
         max_cal   <- out$.max_cal_seg[grp_mask]
         dev_vals  <- out[grp_mask][[dev]]
-        seg_last  <- tapply(coh_ranks, seg_ids, max)
-        dev_min   <- max_cal - seg_last[as.character(seg_ids)] + 1L
+        dev_min <- .compute_segment_mini_tri_bounds(
+          coh_ranks = coh_ranks,
+          seg_ids   = seg_ids,
+          max_cal   = max_cal[1L],
+          bridge    = identical(regime$treatment, "segment_wise_bridged")
+        )
         keep[grp_mask] <- dev_vals >= dev_min
       }
       out <- out[keep]

@@ -16,7 +16,7 @@ detect_regime(
   n_regimes = NULL,
   sig_level = 0.05,
   min_size = 3L,
-  treatment = c("latest_only", "segment_wise"),
+  treatment = c("latest_only", "segment_wise", "segment_wise_bridged"),
   ...
 )
 
@@ -88,10 +88,20 @@ date and drop all pre-latest-change cohorts. Single pooled factor
 estimate over the surviving (post-latest-change) cohorts.}
 \item{\code{"segment_wise"}}{Preserve all change points. Each segment
 (consecutive cohorts between adjacent changes) gets its own factor
-estimate, and each cohort is projected using its own segment's
-factor. Recommended for multi-regime + long-tail data where opt
-\code{"latest_only"} would lose self-regime responsiveness on older
-cohorts.}
+estimate from cells inside the segment's natural mini-triangle
+(\code{dev >= max_cal - seg_last + 1}), and each cohort is projected
+using its own segment's factor. Cells the mini-triangle wall does
+not reach are left unprojected. Recommended for multi-regime +
+long-tail data where \code{"latest_only"} would lose self-regime
+responsiveness on older cohorts.}
+\item{\code{"segment_wise_bridged"}}{Same as \code{"segment_wise"} but each
+older segment's mini-triangle is widened with a calendar-diagonal
+\emph{bridge} anchored at the next (newer) segment's first-cohort
+mini-triangle midpoint dev. The bridge feeds factor estimation
+at devs that the natural mini-triangle wall would have cut, so
+older segments connect through to their successor. Bridges only
+widen; they never narrow. The newest segment is not bridged
+(no successor) and keeps its natural mini-triangle.}
 }}
 
 \item{...}{Reserved for future use.}

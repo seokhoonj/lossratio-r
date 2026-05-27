@@ -122,11 +122,11 @@ test_that(".apply_regime_filter with multi-group Regime dispatches per group", {
   expect_true(all(out[coverage == "B"]$cohort >= as.Date("2023-08-01")))
 })
 
-test_that(".apply_regime_filter with treatment='segment_wise' applies mini-triangle filter on Triangle", {
+test_that(".apply_regime_filter with treatment='segment_wise' applies pure mini-triangle filter on Triangle", {
   reg <- regime_at(change = c("2023-04-01", "2023-08-01"),
                    treatment = "segment_wise")
 
-  # Square 10x10 *triangular* grid (cohort + dev - 1 <= 10) so each
+  # 10-cohort *triangular* grid (cohort + dev - 1 <= 10) so each
   # segment's mini-triangle is non-trivial. Class `"Triangle"` is
   # required to trigger the mini-triangle filter (Link input keeps
   # the older tag-only behaviour).
@@ -135,7 +135,7 @@ test_that(".apply_regime_filter with treatment='segment_wise' applies mini-trian
   #   seg 1 cohorts 2023-01..2023-03 (ranks 1..3)
   #   seg 2 cohorts 2023-04..2023-07 (ranks 4..7)
   #   seg 3 cohorts 2023-08..2023-10 (ranks 8..10)
-  # dev_min per segment:
+  # Natural mini-triangle dev_min:
   #   seg 1: 10 - 3 + 1 = 8  -> USED at dev 8..10
   #   seg 2: 10 - 7 + 1 = 4  -> USED at dev 4..7
   #   seg 3: 10 - 10 + 1 = 1 -> USED at dev 1..3
@@ -160,6 +160,104 @@ test_that(".apply_regime_filter with treatment='segment_wise' applies mini-trian
   expect_equal(seg1_devs, 8:10)
   expect_equal(seg2_devs, 4:7)
   expect_equal(seg3_devs, 1:3)
+})
+
+test_that(".apply_regime_filter with treatment='segment_wise_bridged' widens older segments via calendar diagonal", {
+  reg <- regime_at(change = c("2023-04-01", "2023-08-01"),
+                   treatment = "segment_wise_bridged")
+
+  # Same 10-cohort triangular grid as the pure segment_wise test.
+  # Bridge anchors (next-segment first-cohort midpoint dev):
+  #   from seg 2: floor((4 +  7) / 2) = 5; ext_cal_idx(seg 1) = 4 + 5 - 2 = 7
+  #   from seg 3: floor((1 +  3) / 2) = 2; ext_cal_idx(seg 2) = 8 + 2 - 2 = 8
+  # Per-cohort effective dev_min after the bridge:
+  #   seg 1 ranks 1/2/3 -> 7/6/5
+  #   seg 2 ranks 4/5/6/7 -> 4/4/3/2
+  #   seg 3 ranks 8/9/10 -> 1/1/1 (newest segment, no bridge)
+  cohorts <- seq.Date(as.Date("2023-01-01"), by = "month", length.out = 10)
+  dt <- do.call(rbind, lapply(seq_along(cohorts), function(i) {
+    data.table::data.table(cohort = cohorts[i], dev = seq_len(11L - i))
+  }))
+  data.table::setattr(dt, "class", c("Triangle", class(dt)))
+
+  out <- lossratio:::.apply_regime_filter(
+    dt, regime = reg,
+    groups = character(0),
+    cohort = "cohort", dev = "dev"
+  )
+
+  expect_true("segment_id" %in% names(out))
+  expect_equal(sort(unique(out$segment_id)), c(1L, 2L, 3L))
+
+  seg1_devs <- sort(unique(out[segment_id == 1L]$dev))
+  seg2_devs <- sort(unique(out[segment_id == 2L]$dev))
+  seg3_devs <- sort(unique(out[segment_id == 3L]$dev))
+  expect_equal(seg1_devs, 5:10)
+  expect_equal(seg2_devs, 2:7)
+  expect_equal(seg3_devs, 1:3)
+
+  # Per-cohort lower bound -- confirms the bridge sweeps segment 1 down
+  # by one dev per cohort step away from the segment's last cohort
+  # until it reaches the natural wall on cohort 1.
+  min_dev_by_coh <- out[, list(min_dev = min(dev)),
+                        by = c("cohort", "segment_id")
+                        ][order(segment_id, cohort)]
+  expect_equal(
+    min_dev_by_coh[segment_id == 1L]$min_dev,
+    c(7L, 6L, 5L)
+  )
+  expect_equal(
+    min_dev_by_coh[segment_id == 2L]$min_dev,
+    c(4L, 4L, 3L, 2L)
+  )
+})
+
+test_that(".compute_segment_mini_tri_bounds returns the natural wall by default", {
+  bounds <- lossratio:::.compute_segment_mini_tri_bounds(
+    coh_ranks = c(1L, 2L, 3L, 4L),
+    seg_ids   = c(1L, 1L, 2L, 2L),
+    max_cal   = 4L
+  )
+  # seg_last(1) = 2 -> dev_min 3; seg_last(2) = 4 -> dev_min 1.
+  expect_equal(bounds, c(3L, 3L, 1L, 1L))
+})
+
+test_that(".compute_segment_mini_tri_bounds(bridge=TRUE) widens older segment only", {
+  # Two segments, oldest = id 1 (cohorts 1..2), newest = id 2 (cohorts 3..4).
+  # max_cal = 4. Natural dev_min:
+  #   seg 1: 4 - 2 + 1 = 3
+  #   seg 2: 4 - 4 + 1 = 1
+  # Bridge anchor in seg 2: first_rank = 3, first_cohort_dev_max = 4 - 3 + 1 = 2,
+  #   mid_dev = floor((1 + 2) / 2) = 1, ext_cal_idx(seg 1) = 3 + 1 - 2 = 2.
+  # Per-cohort effective dev_min:
+  #   seg 1 rank 1: pmin(3, 2 - 1 + 1) = pmin(3, 2) = 2 (bridge widens)
+  #   seg 1 rank 2: pmin(3, 2 - 2 + 1) = pmin(3, 1) = 1 (bridge widens further)
+  #   seg 2 rank 3 / 4: no bridge -> 1
+  bounds <- lossratio:::.compute_segment_mini_tri_bounds(
+    coh_ranks = c(1L, 2L, 3L, 4L),
+    seg_ids   = c(1L, 1L, 2L, 2L),
+    max_cal   = 4L,
+    bridge    = TRUE
+  )
+  expect_equal(bounds, c(2L, 1L, 1L, 1L))
+})
+
+test_that(".compute_segment_mini_tri_bounds gives natural wall when only one segment exists", {
+  # Single segment -> no bridge to apply; effective dev_min == natural.
+  bounds_pure <- lossratio:::.compute_segment_mini_tri_bounds(
+    coh_ranks = c(1L, 2L, 3L),
+    seg_ids   = c(1L, 1L, 1L),
+    max_cal   = 3L
+  )
+  bounds_bridge <- lossratio:::.compute_segment_mini_tri_bounds(
+    coh_ranks = c(1L, 2L, 3L),
+    seg_ids   = c(1L, 1L, 1L),
+    max_cal   = 3L,
+    bridge    = TRUE
+  )
+  # seg_last = 3, max_cal = 3 -> dev_min = 1 for every cohort.
+  expect_equal(bounds_pure, c(1L, 1L, 1L))
+  expect_equal(bounds_bridge, c(1L, 1L, 1L))
 })
 
 test_that(".apply_regime_filter with treatment='segment_wise' tag-only on Link", {

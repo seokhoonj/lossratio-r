@@ -4,7 +4,10 @@
 \alias{regime_at}
 \title{Construct a Regime object from manually specified regime changes}
 \usage{
-regime_at(..., treatment = c("latest_only", "segment_wise"))
+regime_at(
+  ...,
+  treatment = c("latest_only", "segment_wise", "segment_wise_bridged")
+)
 }
 \arguments{
 \item{...}{Named vectors of equal length. Must include \code{change}
