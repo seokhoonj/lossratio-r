@@ -2,6 +2,29 @@
 
 ## lossratio (development version)
 
+- **New `Regime` treatment `"segment_wise_bridged"`** (opt-in,
+  non-breaking). The existing `"segment_wise"` treatment is preserved as
+  the *pure* per-segment mini-triangle (natural wall
+  `dev >= max_cal - seg_last + 1`); the new value adds a
+  calendar-diagonal *bridge* on top of that wall, anchored at the next
+  (newer) segment’s first-cohort mini-triangle midpoint dev, so each
+  older segment can connect through to its successor and feed factor
+  estimation at devs that the natural wall would have cut. Helper
+  [`.compute_segment_mini_tri_bounds()`](https://seokhoonj.github.io/lossratio/reference/dot-compute_segment_mini_tri_bounds.md)
+  (new) computes per-cell effective `dev_min` for both
+  [`.apply_regime_filter()`](https://seokhoonj.github.io/lossratio/reference/dot-apply_regime_filter.md)
+  and
+  [`.compute_triangle_usage()`](https://seokhoonj.github.io/lossratio/reference/dot-compute_triangle_usage.md),
+  so the cell-status heatmap stays aligned with the fit mask. The bridge
+  only ever *widens*; the natural wall is preserved whenever the bridge
+  ray lies above it (e.g. for a segment’s oldest cohort, or the newest
+  segment which has no successor). Bridges do not cascade (segment `s`
+  is bridged only from `s+1`, not from `s+2`). Use via
+  `regime_at(treatment = "segment_wise_bridged")` or
+  `detect_regime(treatment = "segment_wise_bridged")`. The default
+  remains `"latest_only"`; existing `"segment_wise"` callers see no
+  behaviour change.
+
 - **BREAKING: identifier rename `exposure` -\> `premium`.** The
   denominator slot reverts to `premium`, the natural domain word for
   loss-ratio analytics (loss ratio = loss / premium). The earlier
@@ -389,19 +412,20 @@
   `plot_triangle(tri, type = "usage")` -\>
   `plot_triangle(tri, view = "usage")`.
 
-- **Known limitation (future work) — segment_wise mini-triangle
-  gap-fill**. Under `treatment = "segment_wise"`, `fit_*` produces a
-  mini-triangle per regime segment using only that segment’s cohorts;
-  cells that fall outside every mini-triangle (typically old cohorts at
-  late development periods that cannot be reached from any single
-  segment) are currently left unprojected. A follow-up phase should add
-  a fallback (e.g. `latest-segment factor`, `previous-segment factor`,
-  smoothing across segments) controlled by a `Regime$fallback` knob,
-  plus a warning when $`k^*`$ exceeds the *change-to-now* horizon of the
-  latest segment (which would also cause the mini-triangle to be
-  truncated). Today the cells render as `unused` in
-  `plot_triangle(view = "usage")` rather than being filled in by an
-  inferred projection.
+- **Known limitation – segment_wise mini-triangle gap-fill** (partially
+  addressed; see the new `"segment_wise_bridged"` entry at the top of
+  this release). Under the pure `"segment_wise"` treatment, `fit_*`
+  produces a mini-triangle per regime segment using only that segment’s
+  cohorts; cells that fall outside every mini-triangle (typically old
+  cohorts at late development periods that cannot be reached from any
+  single segment) are left unprojected. The new `"segment_wise_bridged"`
+  treatment widens each older segment with a calendar-diagonal bridge
+  into its successor, recovering many of those cells. The newest segment
+  still has no successor to bridge from, so its own late-dev cells –
+  beyond the newest cohort’s last observable dev – remain unreachable; a
+  future phase may add an explicit fallback knob (`Regime$fallback`) and
+  a warning when $`k^*`$ exceeds the *change-to-now* horizon of the
+  newest segment.
 
 - **BREAKING** —
   [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)

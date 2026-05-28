@@ -22,7 +22,10 @@ Argument syntax mirrors
 ## Usage
 
 ``` r
-regime_at(..., treatment = c("latest_only", "segment_wise"))
+regime_at(
+  ...,
+  treatment = c("latest_only", "segment_wise", "segment_wise_bridged")
+)
 ```
 
 ## Arguments
