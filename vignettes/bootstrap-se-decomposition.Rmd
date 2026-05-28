@@ -234,6 +234,12 @@ the data set and left in place.
 
 ## Picking `B` — the Davison & Hinkley convention
 
+The CI bounds use `quantile(..., type = 1)` rather than R's default
+`type = 7`. Type 1 is the *discontinuous* inverse-empirical-CDF
+quantile — it returns an actual sample order statistic with no
+interpolation, whereas the default type 7 interpolates linearly between
+the two neighbouring order statistics.
+
 For an empirical percentile CI to land on an *exact* sample position
 without interpolation, `(B + 1) p` should be an integer for the target
 quantile probability `p`. The packaged defaults reflect this:
