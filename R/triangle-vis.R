@@ -1038,24 +1038,24 @@ plot.Total <- function(x,
     expanded[, (".max_cal_fit") := .max_cal]
   }
 
-  # Detect segment_wise treatment up-front: when set, the regime carries
+  # Detect a segment treatment up-front: when set, the regime carries
   # multiple change points and the *intent* is to keep every cohort
-  # (segments are estimated separately, not filtered). The usage plot
+  # (the bridged band is masked, not cohort-cut). The usage plot
   # therefore skips the cohort cut and instead shows one hline per
-  # change as a visual partition marker.
-  is_segment_wise <- inherits(regime, "Regime") &&
+  # change as a visual partition marker. Both segment treatments mask to
+  # the bridged band, so the bounds helper always runs with bridge = TRUE.
+  is_segment <- inherits(regime, "Regime") &&
                      isTRUE(regime$treatment %in%
-                            c("segment_wise", "segment_wise_bridged"))
-  is_bridged <- inherits(regime, "Regime") &&
-                identical(regime$treatment, "segment_wise_bridged")
+                            c("segment_bridged", "segment_bridged_borrowed"))
+  is_bridged <- is_segment
 
   # resolve regime change date -- scalar (single group / scalar input)
   # or a per-group `[join_cols..., change_date]` data.table when a
   # multi-group `Regime` matches `grp`. Auto-dispatched inside the helper.
-  # Skipped under segment_wise so the cohort filter doesn't kick in
-  # (every observed cell stays "used"; hlines come from the full change
-  # list, drawn by `.plot_triangle_usage`).
-  cd <- if (!is.null(regime) && !is_segment_wise) {
+  # Skipped under a segment treatment so the cohort filter doesn't kick
+  # in (every observed cell stays "used"; hlines come from the full
+  # change list, drawn by `.plot_triangle_usage`).
+  cd <- if (!is.null(regime) && !is_segment) {
     .resolve_regime_change_date(regime, by = grp)
   } else {
     NULL
@@ -1167,7 +1167,7 @@ plot.Total <- function(x,
 
   expanded[, ("is_fit_data") := is_observed & !is_held_out & .pass_filter]
 
-  # segment_wise visualisation: each regime segment shows up as its own
+  # segment-treatment visualisation: each regime segment shows up as its own
   # mini-triangle anchored on the latest cal diagonal. Cells inside an
   # affected group (those listed in `regime$groups` / `regime$changes`)
   # but outside the segment's mini-triangle drop to `unused`. Algorithm
@@ -1182,7 +1182,7 @@ plot.Total <- function(x,
   # CL region (dev >= m_k) is pooled across cohorts and stays `used`
   # regardless of segment. Without `m_k` the cut applies to all dev
   # (pure mini-triangle).
-  if (is_segment_wise) {
+  if (is_segment) {
     bp <- regime$changes
     if (data.table::is.data.table(bp) && nrow(bp) &&
         "change" %in% names(bp)) {
@@ -1283,7 +1283,7 @@ plot.Total <- function(x,
   # 2-pass maturity detection: run when `regime` is set AND the caller
   # actually wants maturity ("auto", a `Maturity` object, or a
   # lazy-detect spec / function). When `maturity` is `NULL` the user
-  # explicitly opted out, so we skip detection and the segment_wise
+  # explicitly opted out, so we skip detection and the segment-treatment
   # mini-triangle stays pure (no CL pooling, no k* vline).
   m_k    <- NULL
   grp_m_k <- NULL
@@ -1379,11 +1379,11 @@ plot.Total <- function(x,
   m_k    <- attr(usage, "m_k",     exact = TRUE)
   grp_m_k <- attr(usage, "m_k",  exact = TRUE)
 
-  is_segment_wise <- inherits(regime, "Regime") &&
+  is_segment <- inherits(regime, "Regime") &&
                      isTRUE(regime$treatment %in%
-                            c("segment_wise", "segment_wise_bridged"))
+                            c("segment_bridged", "segment_bridged_borrowed"))
 
-  cd <- if (!is.null(regime) && !is_segment_wise) {
+  cd <- if (!is.null(regime) && !is_segment) {
     .resolve_regime_change_date(regime, by = grp)
   } else {
     NULL
@@ -1445,12 +1445,12 @@ plot.Total <- function(x,
   # line is drawn just above that row (toward older cohorts).
   #
   # Three dispatch paths:
-  #   - segment_wise: one hline per change in `regime$changes` (so the
+  #   - segment treatment: one hline per change in `regime$changes` (so the
   #     plot shows the full segment partition). Per-group when the
   #     Regime is multi-group and `grp` matches; scalar otherwise.
-  #   - latest_only (default) + per-group `cd`: one hline per group via
+  #   - non-segment + per-group `cd`: one hline per group via
   #     `data = hline_df`, faceted automatically.
-  #   - latest_only + scalar `cd`: one global hline.
+  #   - non-segment + scalar `cd`: one global hline.
   .first_post_idx <- function(cd_scalar) {
     cohorts_sorted <- sort(unique(dt$cohort))
     post_change <- cohorts_sorted[cohorts_sorted >= cd_scalar]
@@ -1464,12 +1464,12 @@ plot.Total <- function(x,
     match(lab, y_levels)
   }
 
-  if (is_segment_wise) {
+  if (is_segment) {
     bp <- regime$changes
     if (data.table::is.data.table(bp) && nrow(bp) &&
         "change" %in% names(bp)) {
 
-      # Per-group segment_wise: route hlines to specific facets whenever
+      # Per-group segment treatment: route hlines to specific facets whenever
       # `regime$changes` carries group columns (`regime$groups`) that
       # match the plot's facet groups (`grp`). We honour this even when
       # `regime$multi_group = FALSE` (e.g. user wrote
@@ -1493,7 +1493,7 @@ plot.Total <- function(x,
           )
         }
       } else {
-        # Scalar segment_wise: one hline per (deduplicated) change. The
+        # Scalar segment treatment: one hline per (deduplicated) change. The
         # change list is shared across every facet (no per-group split).
         for (cd_one in sort(unique(bp[["change"]]))) {
           idx <- .first_post_idx(cd_one)
@@ -1539,7 +1539,7 @@ plot.Total <- function(x,
   # title summarising active filters
   parts <- character(0)
   if (!is.null(recent))       parts <- c(parts, sprintf("recent=%d", as.integer(recent)))
-  if (is_segment_wise) {
+  if (is_segment) {
     bp <- regime$changes
     if (data.table::is.data.table(bp) && nrow(bp) && "change" %in% names(bp)) {
       parts <- c(parts, sprintf("regime=%s",

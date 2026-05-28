@@ -351,6 +351,13 @@ fit_ed <- function(x,
   ed_sel  <- out$selected[, .SD, .SDcols = ed_cols]
   data.table::setnames(ed_sel, "ata_from", "dev")
   data.table::setnames(ed_sel, "sigma2", "g_sigma2")
+  # segment_id present => segment_bridged_borrowed: borrow the late-dev
+  # intensity factors each segment cannot reach from a donor segment.
+  if (has_seg)
+    ed_sel <- .borrow_segment_factors(
+      ed_sel, groups = grp, dev_col = "dev",
+      factor_cols = c("g_sel", "g_sigma2", "g_var")
+    )
   full <- ed_sel[full, on = c(grp, "dev", if (has_seg) "segment_id")]
 
   # 4d) last_obs per cohort

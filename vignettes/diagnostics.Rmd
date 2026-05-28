@@ -590,28 +590,39 @@ The maturity point $k^*$ is a single internal switch produced by
 be none, one, or several. When a `Regime` object carries multiple
 changes, the `treatment` slot decides how downstream fits use them:
 
-- `treatment = "latest_only"` (default): collapse to the most recent
-  change and drop all pre-latest cohorts. A single pooled factor is
-  estimated over the surviving (post-latest) cohorts. Stable when the
-  post-change window has accumulated enough cohorts and earlier
-  regimes are not informative for the current one.
-- `treatment = "segment_wise"`: preserve every change. Each segment
-  (consecutive cohorts between adjacent changes) gets its own factor
-  estimate, and each cohort is projected with its own segment's
-  factor. Use this for multi-regime + long-tail data where the latest
-  regime hasn't yet observed late-dev development.
+Both treatments mask the triangle to a *bridged* development band:
+each segment's natural mini-triangle wall
+(`dev >= max_cal - seg_last + 1`) is widened by a calendar-diagonal
+*bridge* anchored at the next (newer) segment's first-cohort midpoint
+dev. The bridge closes the factor gaps that would otherwise open at the
+segment boundaries, so the band carries a continuous run of age-to-age
+factors and **every cohort projects to the full development length** --
+including the newest cohorts, which the pre-regime cells of older
+cohorts would never reach on their own.
+
+- `treatment = "segment_bridged"` (default): pool the whole bridged
+  band into a single factor estimate. Every cohort at dev `k` uses the
+  same `f_k`, drawn from whichever (most recent) cohorts reach that dev
+  inside the band. The development pattern is treated as shared across
+  regimes; only the band's lower boundary is regime-aware.
+- `treatment = "segment_bridged_borrowed"`: estimate factors *per
+  segment* (early-development factors stay regime-specific), then
+  *borrow* the late-development factors a segment cannot reach from
+  another segment that can. Use this when the early development pattern
+  genuinely differs across regimes but the long-tail development is
+  shared.
 
 Pick the treatment when constructing the `Regime`:
 
 ```{r, eval = FALSE}
-# Latest-only (default — drop pre-latest cohorts)
+# Pooled bridged band (default)
 regime_at(change = c("2022-01-01", "2024-04-01"))
 
-# Segment-wise (each segment gets its own factor)
+# Per-segment factors with late-dev borrowing
 regime_at(change = c("2022-01-01", "2024-04-01"),
-          treatment = "segment_wise")
+          treatment = "segment_bridged_borrowed")
 
-detect_regime(tri_sur, treatment = "segment_wise")
+detect_regime(tri_sur, treatment = "segment_bridged_borrowed")
 ```
 
 ### API

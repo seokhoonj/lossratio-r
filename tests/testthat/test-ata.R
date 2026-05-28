@@ -223,34 +223,25 @@ test_that("fit_ata with Regime input preserves the Regime object", {
   expect_identical(fit_reg$regime$changes, reg$changes)
 })
 
-test_that("fit_ata with treatment='segment_wise' yields per-segment factors", {
+test_that("fit_ata segment treatments: borrowed keeps segment_id, bridged pools", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
                         cohort = "uy_m", calendar = "cy_m",
                         loss = "incr_loss", premium = "incr_premium")
-  reg_seg <- regime_at(change = "2024-04-01", treatment = "segment_wise")
-  reg_lat <- regime_at(change = "2024-04-01", treatment = "latest_only")
+  reg_bor <- regime_at(change = "2024-04-01",
+                       treatment = "segment_bridged_borrowed")
+  reg_brd <- regime_at(change = "2024-04-01",
+                       treatment = "segment_bridged")
 
-  fit_seg <- fit_ata(tri, loss = "loss", regime = reg_seg)
-  fit_lat <- fit_ata(tri, loss = "loss", regime = reg_lat)
+  fit_bor <- fit_ata(tri, loss = "loss", regime = reg_bor)
+  fit_brd <- fit_ata(tri, loss = "loss", regime = reg_brd)
 
-  # segment_id is present in segment_wise, absent in latest_only
-  expect_true("segment_id" %in% names(fit_seg$selected))
-  expect_false("segment_id" %in% names(fit_lat$selected))
+  # segment_bridged_borrowed estimates factors per segment (segment_id
+  # present); segment_bridged pools the band (segment_id absent).
+  expect_true("segment_id" %in% names(fit_bor$selected))
+  expect_false("segment_id" %in% names(fit_brd$selected))
 
-  # Two segments expected
-  expect_equal(sort(unique(fit_seg$selected$segment_id)), c(1L, 2L))
-
-  # Post-change segment factors equal the latest_only factors
-  # (same data subset, same WLS fit)
-  seg2 <- fit_seg$selected[segment_id == 2L,
-                           .(ata_from, ata_to, f_sel)]
-  data.table::setkey(seg2, ata_from, ata_to)
-  lat <- fit_lat$selected[, .(ata_from, ata_to, f_sel)]
-  data.table::setkey(lat, ata_from, ata_to)
-  shared <- lat[seg2, nomatch = NULL,
-                .(ata_from, ata_to, f_lat = f_sel, f_seg = i.f_sel)]
-  expect_true(nrow(shared) > 0L)
-  expect_equal(shared$f_lat, shared$f_seg)
+  # Two segments expected under the per-segment (borrowed) treatment.
+  expect_equal(sort(unique(fit_bor$selected$segment_id)), c(1L, 2L))
 })

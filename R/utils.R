@@ -668,9 +668,9 @@
 #' no changes -- every cohort is in the single (sole) segment.
 #'
 #' Treatment-agnostic: this helper preserves all change points regardless
-#' of `regime$treatment`. Callers decide whether to use the full
-#' partition (`"segment_wise"`) or collapse to the latest change
-#' (`"latest_only"`).
+#' of `regime$treatment`. Callers decide whether to pool the partition
+#' (`"segment_bridged"`) or keep it for per-segment estimation
+#' (`"segment_bridged_borrowed"`).
 #'
 #' @param cohort_vals Date vector of cohort values.
 #' @param regime A `"Regime"` object or `NULL`.
@@ -736,7 +736,7 @@
 }
 
 
-#' Per-cell effective `dev_min` for the segment_wise mini-triangle
+#' Per-cell effective `dev_min` for the segment mini-triangle band
 #'
 #' @description
 #' For each cell, returns the minimum dev that keeps it inside its segment's
@@ -775,12 +775,11 @@
 #' @param coh_ranks Integer vector. Per-cell cohort rank within the group.
 #' @param seg_ids   Integer vector. Per-cell segment id (1 = oldest).
 #' @param max_cal   Integer scalar. Maximum calendar index in the group.
-#' @param bridge    Logical. When `TRUE`, widen each older segment's
-#'   mini-triangle with the calendar-diagonal bridge anchored at the
-#'   next segment's first-cohort midpoint dev. When `FALSE` (default),
-#'   return the natural mini-triangle wall only -- the pure
-#'   `"segment_wise"` treatment. `TRUE` corresponds to
-#'   `"segment_wise_bridged"`.
+#' @param bridge    Logical. When `TRUE` (used by both segment
+#'   treatments), widen each older segment's mini-triangle with the
+#'   calendar-diagonal bridge anchored at the next segment's first-cohort
+#'   midpoint dev. When `FALSE`, return the natural mini-triangle wall
+#'   only (no boundary-gap closure); retained for diagnostics and tests.
 #'
 #' @return Integer vector (same length as `coh_ranks`) of per-cell
 #'   effective `dev_min` for the mini-triangle filter (bridged or pure).
@@ -798,7 +797,7 @@
   seg_chr <- as.character(seg_ids)
 
   if (!isTRUE(bridge)) {
-    # Pure `"segment_wise"`: the natural wall, no extension.
+    # Natural wall, no extension (diagnostics / tests only).
     return(as.integer(unname(seg_dev_min[seg_chr])))
   }
 
@@ -824,6 +823,91 @@
               unname(ext_cal_idx[seg_chr]) - coh_ranks + 1L,
               na.rm = TRUE)
   as.integer(out)
+}
+
+
+#' Borrow missing per-segment factors across segments (segment_bridged_borrowed)
+#'
+#' @description
+#' Augments a per-segment factor table so every segment carries a factor
+#' for the full development range, borrowing the entries a segment cannot
+#' estimate from a donor segment that can. Used only by the
+#' `"segment_bridged_borrowed"` treatment: early-development factors stay
+#' regime-specific (each segment's own estimate), while late-development
+#' factors a segment never reaches are filled from another segment.
+#'
+#' Donor rule (\dQuote{recent}): for each `(group, dev)` the donor is the
+#' segment with the *largest* `segment_id` that has a non-`NA` primary
+#' factor at that dev -- i.e. the most recent regime whose own cohorts
+#' developed that far. The bridged band guarantees a donor exists at every
+#' dev that any segment needs (the boundary factor gaps are closed by the
+#' bridge), so no dev is left unfilled.
+#'
+#' The borrow only *adds* rows for `(segment, dev)` combinations the
+#' segment lacks; rows a segment owns are never overwritten.
+#'
+#' @param sel A `data.table` of per-segment factors with columns
+#'   `groups`, `dev_col`, `segment_id`, and `factor_cols` (plus optional
+#'   `ata_to` / `ata_link` carried along).
+#' @param groups Character vector of group columns (may be empty).
+#' @param dev_col Single column name holding the development index
+#'   (`"dev"` after the projection-time rename).
+#' @param factor_cols Character vector of factor columns to borrow. The
+#'   first element is the *primary* factor (`"f_sel"` / `"g_sel"`) whose
+#'   non-`NA` presence defines whether a segment owns a dev.
+#'
+#' @return `sel` augmented with borrowed rows so every `(group, segment,
+#'   dev)` present in the donor space is covered.
+#'
+#' @keywords internal
+.borrow_segment_factors <- function(sel, groups, dev_col, factor_cols) {
+  if (!"segment_id" %in% names(sel)) return(sel)
+  segs <- sort(unique(sel$segment_id))
+  if (length(segs) < 2L) return(sel)
+
+  primary    <- factor_cols[1L]
+  key_cols   <- c(groups, dev_col)
+  carry_cols <- intersect(c("ata_to", "ata_link", factor_cols), names(sel))
+
+  # Rows a segment genuinely owns (non-NA primary factor).
+  owned <- sel[is.finite(sel[[primary]])]
+  if (!nrow(owned)) return(sel)
+
+  # Full (group, dev) x segment grid over the owned dev space.
+  base <- unique(owned[, key_cols, with = FALSE])
+  grid <- base[rep(seq_len(nrow(base)), each = length(segs))]
+  data.table::set(grid, j = "segment_id",
+                  value = rep(segs, times = nrow(base)))
+
+  # Attach own factors where present.
+  grid <- owned[, c(key_cols, "segment_id", carry_cols), with = FALSE
+                ][grid, on = c(key_cols, "segment_id")]
+
+  # Donor per (group, dev): the row with the largest segment_id that owns
+  # the factor. `.SD[which.max(segment_id)]` selects that row's carry cols.
+  segment_id <- NULL  # data.table NSE binding
+  donor <- owned[, .SD[which.max(segment_id)], by = key_cols,
+                 .SDcols = carry_cols]
+  donor_cols <- paste0(".donor_", carry_cols)
+  data.table::setnames(donor, carry_cols, donor_cols)
+
+  grid <- donor[grid, on = key_cols]
+
+  # Cells a segment does not own (primary NA). Capture the mask ONCE
+  # before filling -- filling the primary column would otherwise flip the
+  # mask for the remaining carry columns.
+  need <- !is.finite(grid[[primary]])
+  for (j in seq_along(carry_cols)) {
+    cc <- carry_cols[j]
+    dc <- donor_cols[j]
+    grid[need, (cc) := grid[[dc]][need]]
+  }
+  grid[, (donor_cols) := NULL]
+
+  # Keep only cells that ended up with a real factor (defensive: with the
+  # bridge every needed dev has a donor, so nothing is dropped in practice).
+  grid <- grid[is.finite(grid[[primary]])]
+  grid[]
 }
 
 
@@ -873,20 +957,27 @@
   if (!data.table::is.data.table(dt))
     stop("`dt` must be a data.table.", call. = FALSE)
 
-  # treatment = "segment_wise": each segment uses its own mini-triangle
-  # anchored at the latest calendar diagonal -- for segment k with cohorts in
-  # [first_k, last_k] (per group), USED cells satisfy
-  # `dev >= dev_min(k) = max_cal_idx - last_cohort_rank_of_seg_k + 1`.
-  # Cells outside any mini-triangle are dropped so downstream factor
-  # estimation never sees them. Mini-triangle filter applies only when
-  # `dt` is a `Triangle` (cohort x dev grid). For `Link` input (fit_ata
-  # standalone path; cohort x ata_from edges, max_cal definition
-  # differs by one), we keep the older tag-only behaviour. Cells in
-  # groups not covered by the regime are preserved without a
-  # `segment_id` tag either way.
-  if (inherits(regime, "Regime") &&
+  # Segment treatments mask the triangle to the *bridged* development
+  # band: each segment's natural mini-triangle wall
+  # `dev >= dev_min(k) = max_cal_idx - last_cohort_rank_of_seg_k + 1`
+  # is widened by a calendar-diagonal bridge to the next segment's
+  # midpoint dev, closing the factor gaps at segment boundaries. Cells
+  # outside the band are dropped so downstream factor estimation never
+  # sees them. The band filter requires the full cohort x dev grid, so it
+  # runs on `Triangle` input only; the worker fits (`fit_ata` / `fit_ed`)
+  # mask the Triangle band *before* building the Link, because the Link
+  # omits dev-1-only cohorts and would corrupt the per-segment cohort
+  # ranks. After masking, `"segment_bridged"` drops the
+  # `segment_id` tag so downstream factor estimation pools the whole band
+  # into one factor set, while `"segment_bridged_borrowed"` keeps the tag
+  # so factors are estimated per segment (then borrowed). This branch is
+  # gated on `is.null(dev_split)` because a non-NULL `dev_split` signals
+  # the SA hybrid cohort-cut path (handled below), which never pools or
+  # borrows.
+  if (is.null(dev_split) &&
+      inherits(regime, "Regime") &&
       isTRUE(regime$treatment %in%
-             c("segment_wise", "segment_wise_bridged"))) {
+             c("segment_bridged", "segment_bridged_borrowed"))) {
     out    <- .copy_dt(dt)
     grp_cols <- if (length(groups)) out[, groups, with = FALSE] else NULL
     # `[[<-` is base-R's assignment form: it invalidates data.table's
@@ -950,13 +1041,20 @@
           coh_ranks = coh_ranks,
           seg_ids   = seg_ids,
           max_cal   = max_cal[1L],
-          bridge    = identical(regime$treatment, "segment_wise_bridged")
+          bridge    = TRUE
         )
         keep[grp_mask] <- dev_vals >= dev_min
       }
       out <- out[keep]
       out[, c(".coh_rank_seg", ".cal_idx_seg", ".max_cal_seg") := NULL]
     }
+
+    # `"segment_bridged"` pools the masked band -- drop the per-segment
+    # tag so downstream factor estimation does not group by `segment_id`.
+    # `"segment_bridged_borrowed"` keeps the tag for per-segment
+    # estimation (the borrow step augments missing late-dev factors).
+    if (identical(regime$treatment, "segment_bridged"))
+      data.table::set(out, j = "segment_id", value = NULL)
 
     return(out[])
   }

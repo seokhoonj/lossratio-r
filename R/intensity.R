@@ -105,22 +105,32 @@ fit_intensity <- function(x,
 
   regime <- .resolve_regime(regime, x)
 
-  link <- as_link(x, loss = loss, exposure = exposure)
+  # 1) regime band mask (BEFORE building the link) ----------------------
+  # Segment treatments mask the Triangle's bridged development band on the
+  # cohort x dev grid (all cohorts present), so the mask runs on the
+  # `Triangle`, not the `Link` (which omits dev-1-only cohorts and would
+  # corrupt each segment's last-cohort rank). For
+  # `"segment_bridged_borrowed"` re-derive `segment_id` on the link.
+  x_band <- if (!is.null(regime)) {
+    .apply_regime_filter(
+      x, regime = regime,
+      groups = .resolve_groups(x),
+      cohort = "cohort", dev = "dev"
+    )
+  } else x
+
+  link <- as_link(x_band, loss = loss, exposure = exposure)
+
+  if (!is.null(regime) && inherits(regime, "Regime") &&
+      identical(regime$treatment, "segment_bridged_borrowed")) {
+    lgrp      <- .resolve_groups(link)
+    lgrp_cols <- if (length(lgrp)) link[, lgrp, with = FALSE] else NULL
+    data.table::set(link, j = "segment_id",
+                    value = .assign_segment(link$cohort, regime, lgrp_cols))
+  }
 
   na_method    <- match.arg(na_method)
   sigma_method <- match.arg(sigma_method)
-
-  # 1) regime-change filter ---------------------------------------------
-  # Multi-group `Regime` triggers per-group dispatch inside
-  # `.apply_regime_filter()`.
-  if (!is.null(regime)) {
-    link <- .apply_regime_filter(
-      link, regime = regime,
-      groups = .resolve_groups(link),
-      cohort = "cohort",
-      dev = "ata_from"
-    )
-  }
 
   # 2) recent-diagonal filter -------------------------------------------
   if (!is.null(recent)) {
@@ -257,7 +267,7 @@ print.IntensityFit <- function(x, ...) {
   z <- .copy_dt(ed_summary)
   z[, ("g_sel") := g]
 
-  # When segment_id is present (segment_wise treatment), LOCF fills must
+  # When segment_id is present (segment_bridged_borrowed), LOCF fills must
   # happen per segment so factors from one regime never leak into another.
   has_seg <- "segment_id" %in% names(z)
   fill_by <- c(groups, if (has_seg) "segment_id")

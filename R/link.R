@@ -375,7 +375,7 @@ summary.Link <- function(object,
   dt[, (".reg_w") := w / loss_from^delta]
   dt[, ("ata_link") := sprintf("%s-%s", ata_from, ata_to)]
 
-  # segment_wise treatment annotates rows with segment_id upstream; when
+  # per-segment treatments annotate rows with segment_id upstream; when
   # present, fit one model per (link, segment) so each regime gets its
   # own factor estimate.
   has_seg <- "segment_id" %in% names(dt)

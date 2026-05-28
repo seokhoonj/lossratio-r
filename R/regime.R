@@ -79,27 +79,27 @@
 #' @param sig_level Significance level for `"e_divisive"`. Default `0.05`.
 #' @param min_size Minimum segment size for `"e_divisive"`. Default `3`.
 #' @param treatment How downstream fits should apply this Regime when
-#'   `$changes` contains multiple change points. One of:
+#'   `$changes` contains multiple change points. Both modes mask the
+#'   triangle to a *bridged* development band: each segment's natural
+#'   mini-triangle wall (`dev >= max_cal - seg_last + 1`) is widened by a
+#'   calendar-diagonal *bridge* anchored at the next (newer) segment's
+#'   first-cohort midpoint dev. The bridge closes the factor gaps that
+#'   would otherwise open at the segment boundaries, so the band carries a
+#'   continuous run of age-to-age factors `f_1, ..., f_(K-1)` and every
+#'   cohort can be projected to the full development length `K`. One of:
 #'   \describe{
-#'     \item{`"latest_only"`}{(default) Collapse to the most recent change
-#'       date and drop all pre-latest-change cohorts. Single pooled factor
-#'       estimate over the surviving (post-latest-change) cohorts.}
-#'     \item{`"segment_wise"`}{Preserve all change points. Each segment
-#'       (consecutive cohorts between adjacent changes) gets its own factor
-#'       estimate from cells inside the segment's natural mini-triangle
-#'       (`dev >= max_cal - seg_last + 1`), and each cohort is projected
-#'       using its own segment's factor. Cells the mini-triangle wall does
-#'       not reach are left unprojected. Recommended for multi-regime +
-#'       long-tail data where `"latest_only"` would lose self-regime
-#'       responsiveness on older cohorts.}
-#'     \item{`"segment_wise_bridged"`}{Same as `"segment_wise"` but each
-#'       older segment's mini-triangle is widened with a calendar-diagonal
-#'       *bridge* anchored at the next (newer) segment's first-cohort
-#'       mini-triangle midpoint dev. The bridge feeds factor estimation
-#'       at devs that the natural mini-triangle wall would have cut, so
-#'       older segments connect through to their successor. Bridges only
-#'       widen; they never narrow. The newest segment is not bridged
-#'       (no successor) and keeps its natural mini-triangle.}
+#'     \item{`"segment_bridged"`}{(default) Pool the whole bridged band
+#'       into a single factor estimate -- every cohort at dev `k` uses the
+#'       same `f_k`, estimated from whichever cohorts reach that dev inside
+#'       the band (the most recent ones, by construction). Not a
+#'       per-segment fit: the development pattern is treated as shared
+#'       across regimes, only the band's lower boundary is regime-aware.}
+#'     \item{`"segment_bridged_borrowed"`}{Estimate factors *per segment*
+#'       (early-dev factors stay regime-specific), then *borrow* the
+#'       late-dev factors a segment cannot estimate from another segment
+#'       that can (the bridge guarantees a donor exists). Each cohort
+#'       projects with its own segment's factors where available and
+#'       borrowed factors beyond its reach.}
 #'   }
 #' @param ... Reserved for future use.
 #'
@@ -138,11 +138,13 @@
 #'       constraint. Vector (single) / named list (multi).}
 #'     \item{`multi_group`}{Logical flag; `TRUE` when detection ran over
 #'       multiple group combos.}
-#'     \item{`treatment`}{Either `"latest_only"` or `"segment_wise"` -- the
-#'       value supplied via the `treatment` argument. Read by downstream
-#'       fits (`fit_ata()`, `fit_intensity()`, `fit_cl()`, `fit_ed()`) to
-#'       decide whether to collapse to the latest change (drop pre-change
-#'       cohorts, single pooled factor) or estimate per-segment factors.}
+#'     \item{`treatment`}{Either `"segment_bridged"` or
+#'       `"segment_bridged_borrowed"` -- the value supplied via the
+#'       `treatment` argument. Read by downstream fits (`fit_ata()`,
+#'       `fit_intensity()`, `fit_cl()`, `fit_ed()`) to decide whether to
+#'       pool the bridged band into a single factor estimate or estimate
+#'       per-segment factors and borrow the late-dev factors a segment
+#'       cannot reach.}
 #'   }
 #'
 #' @seealso [plot.Regime()], [as_triangle()]
@@ -191,8 +193,8 @@ detect_regime <- function(x,
                           n_regimes = NULL,
                           sig_level = 0.05,
                           min_size  = 3L,
-                          treatment = c("latest_only", "segment_wise",
-                                        "segment_wise_bridged"),
+                          treatment = c("segment_bridged",
+                                        "segment_bridged_borrowed"),
                           ...) {
 
   .assert_triangle_input(x, "detect_regime()")
@@ -950,11 +952,12 @@ print.summary.Regime <- function(x, ...) {
 #'   values (e.g. `coverage`, `channel`). With no group columns the
 #'   result is a pooled (single-row) Regime.
 #' @param treatment How downstream fits should apply this Regime when
-#'   `$changes` contains multiple change points. `"latest_only"` (default)
-#'   collapses to the most recent change and drops all pre-latest cohorts
-#'   (single pooled factor). `"segment_wise"` preserves all changes and
-#'   estimates one factor per segment (each cohort projected with its own
-#'   segment's factor). See [detect_regime()] for full semantics.
+#'   `$changes` contains multiple change points. `"segment_bridged"`
+#'   (default) pools the bridged development band into a single factor
+#'   estimate. `"segment_bridged_borrowed"` estimates per-segment factors
+#'   and borrows the late-dev factors a segment cannot reach. Both mask to
+#'   the bridged band so every cohort projects to full development. See
+#'   [detect_regime()] for full semantics.
 #'
 #' @return An object of class `"Regime"` with the minimal schema needed
 #'   by downstream consumers:
@@ -996,8 +999,8 @@ print.summary.Regime <- function(x, ...) {
 #' }
 #'
 #' @export
-regime_at <- function(..., treatment = c("latest_only", "segment_wise",
-                                         "segment_wise_bridged")) {
+regime_at <- function(..., treatment = c("segment_bridged",
+                                         "segment_bridged_borrowed")) {
   treatment <- match.arg(treatment)
   args      <- list(...)
   nms       <- names(args)

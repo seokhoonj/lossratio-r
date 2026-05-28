@@ -212,6 +212,15 @@ fit_cl <- function(x,
                    "f_sel", "sigma2", "f_var")
   sel <- ata_fit$selected[, .SD, .SDcols = factor_cols]
   data.table::setnames(sel, "ata_from", "dev")
+  # segment_id present => segment_bridged_borrowed: borrow the late-dev
+  # factors each segment cannot reach from a donor segment, so every
+  # cohort projects to full development (segment_bridged drops segment_id
+  # upstream and is pooled, so this never fires for it).
+  if (has_seg)
+    sel <- .borrow_segment_factors(
+      sel, groups = grp, dev_col = "dev",
+      factor_cols = c("f_sel", "sigma2", "f_var")
+    )
   full <- sel[full, on = c(grp, "dev", if (has_seg) "segment_id")]
 
   # 8) join RP scale for process variance when weight is used ---------
@@ -497,7 +506,7 @@ print.CLFit <- function(x, ...) {
 
   full[, ("is_observed") := is.finite(loss_obs)]
 
-  # When ata_fit was fitted with segment_wise treatment, attach
+  # When ata_fit was fitted with a per-segment treatment, attach
   # segment_id to each grid row so factor join keys by segment.
   if ("segment_id" %in% names(ata_fit$selected)) {
     grp_cols <- if (length(grp)) full[, grp, with = FALSE] else NULL

@@ -360,24 +360,36 @@ fit_ata <- function(x,
     }
   }
 
-  link <- as_link(x, loss = loss, weight = weight)
+  # 1) regime band mask (BEFORE building the link) -----------------------
+  # Segment treatments mask the Triangle's bridged development band. The
+  # band is defined on the cohort x dev grid where every cohort is
+  # present, so it must be applied to the `Triangle` -- the `Link` omits
+  # dev-1-only cohorts and would shift each segment's last-cohort rank,
+  # corrupting the band bounds. Build the link from the masked Triangle.
+  # `out$data` keeps the *full* Triangle (projection expands the full
+  # cohort x dev grid). For `"segment_bridged"` the mask drops
+  # `segment_id` (pooled fit); for `"segment_bridged_borrowed"` it is
+  # re-derived on the link below so factor estimation groups per segment.
+  x_band <- if (!is.null(regime)) {
+    .apply_regime_filter(
+      x, regime = regime,
+      groups = .resolve_groups(x),
+      cohort = "cohort", dev = "dev"
+    )
+  } else x
+
+  link <- as_link(x_band, loss = loss, weight = weight)
+
+  if (!is.null(regime) && inherits(regime, "Regime") &&
+      identical(regime$treatment, "segment_bridged_borrowed")) {
+    lgrp      <- .resolve_groups(link)
+    lgrp_cols <- if (length(lgrp)) link[, lgrp, with = FALSE] else NULL
+    data.table::set(link, j = "segment_id",
+                    value = .assign_segment(link$cohort, regime, lgrp_cols))
+  }
 
   na_method    <- match.arg(na_method)
   sigma_method <- match.arg(sigma_method)
-
-  # 1) regime-change filter ----------------------------------------------
-  # when `regime` is supplied, drop cohorts strictly before the
-  # change date so estimation uses only the post-change regime. A
-  # multi-group `Regime` triggers per-group dispatch inside
-  # `.apply_regime_filter()`.
-  if (!is.null(regime)) {
-    link <- .apply_regime_filter(
-      link, regime = regime,
-      groups = .resolve_groups(link),
-      cohort = "cohort",
-      dev = "ata_from"
-    )
-  }
 
   # 2) recent-diagonal filter -------------------------------------------
   # when `recent` is supplied, subset to rows within the last `recent`
@@ -569,7 +581,7 @@ print.ATAFit <- function(x, ...) {
   }
 
   # --- LOCF fill --------------------------------------------------------
-  # When segment_id is present (segment_wise treatment), fill per segment
+  # When segment_id is present (segment_bridged_borrowed), fill per segment
   # so factors from one regime never leak into another.
   has_seg <- "segment_id" %in% names(z)
   fill_by <- c(groups, if (has_seg) "segment_id")
@@ -626,7 +638,7 @@ print.ATAFit <- function(x, ...) {
 
   if (length(idx_pred) == 0L) return(z[])
 
-  # When segment_id is present (segment_wise treatment), extrapolate per
+  # When segment_id is present (segment_bridged_borrowed), extrapolate per
   # segment so a sparse segment's sigma is never filled from another
   # regime's pool.
   if ("segment_id" %in% names(z)) {

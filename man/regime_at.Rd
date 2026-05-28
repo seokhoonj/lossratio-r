@@ -4,10 +4,7 @@
 \alias{regime_at}
 \title{Construct a Regime object from manually specified regime changes}
 \usage{
-regime_at(
-  ...,
-  treatment = c("latest_only", "segment_wise", "segment_wise_bridged")
-)
+regime_at(..., treatment = c("segment_bridged", "segment_bridged_borrowed"))
 }
 \arguments{
 \item{...}{Named vectors of equal length. Must include \code{change}
@@ -17,11 +14,12 @@ values (e.g. \code{coverage}, \code{channel}). With no group columns the
 result is a pooled (single-row) Regime.}
 
 \item{treatment}{How downstream fits should apply this Regime when
-\verb{$changes} contains multiple change points. \code{"latest_only"} (default)
-collapses to the most recent change and drops all pre-latest cohorts
-(single pooled factor). \code{"segment_wise"} preserves all changes and
-estimates one factor per segment (each cohort projected with its own
-segment's factor). See \code{\link[=detect_regime]{detect_regime()}} for full semantics.}
+\verb{$changes} contains multiple change points. \code{"segment_bridged"}
+(default) pools the bridged development band into a single factor
+estimate. \code{"segment_bridged_borrowed"} estimates per-segment factors
+and borrows the late-dev factors a segment cannot reach. Both mask to
+the bridged band so every cohort projects to full development. See
+\code{\link[=detect_regime]{detect_regime()}} for full semantics.}
 }
 \value{
 An object of class \code{"Regime"} with the minimal schema needed

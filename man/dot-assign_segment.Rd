@@ -30,8 +30,8 @@ Returns \code{rep(1L, length(cohort_vals))} when \code{regime} is \code{NULL} or
 no changes -- every cohort is in the single (sole) segment.
 
 Treatment-agnostic: this helper preserves all change points regardless
-of \code{regime$treatment}. Callers decide whether to use the full
-partition (\code{"segment_wise"}) or collapse to the latest change
-(\code{"latest_only"}).
+of \code{regime$treatment}. Callers decide whether to pool the partition
+(\code{"segment_bridged"}) or keep it for per-segment estimation
+(\code{"segment_bridged_borrowed"}).
 }
 \keyword{internal}

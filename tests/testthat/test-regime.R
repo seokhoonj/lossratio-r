@@ -17,21 +17,21 @@ test_that("Regime has expected list elements", {
                "trajectory", "pca", "treatment")) {
     expect_true(nm %in% names(r), info = paste("missing", nm))
   }
-  expect_equal(r$treatment, "latest_only")
+  expect_equal(r$treatment, "segment_bridged")
 })
 
-test_that("detect_regime accepts treatment = 'segment_wise'", {
+test_that("detect_regime accepts treatment = 'segment_bridged_borrowed'", {
   r <- detect_regime(sub, window = 12, method = "e_divisive",
-                     treatment = "segment_wise")
-  expect_equal(r$treatment, "segment_wise")
+                     treatment = "segment_bridged_borrowed")
+  expect_equal(r$treatment, "segment_bridged_borrowed")
 })
 
 test_that("regime_at carries treatment slot", {
   r1 <- regime_at(change = "2024-04-01")
-  expect_equal(r1$treatment, "latest_only")
+  expect_equal(r1$treatment, "segment_bridged")
   r2 <- regime_at(change = c("2023-01-01", "2024-04-01"),
-                  treatment = "segment_wise")
-  expect_equal(r2$treatment, "segment_wise")
+                  treatment = "segment_bridged_borrowed")
+  expect_equal(r2$treatment, "segment_bridged_borrowed")
 })
 
 test_that("regime_at rejects unknown treatment", {

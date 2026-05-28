@@ -106,7 +106,7 @@ test_that("fit_ratio with loss_regime + method=sa applies hybrid filter", {
   expect_s3_class(fit_brk$loss_regime, "Regime")
 })
 
-test_that("fit_ratio with loss_regime + method=ed drops pre-break cohorts", {
+test_that("fit_ratio with loss_regime + method=ed masks the bridged band", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
@@ -114,6 +114,8 @@ test_that("fit_ratio with loss_regime + method=ed drops pre-break cohorts", {
   reg <- regime_at(change = "2025-07-01")
   fit_full <- fit_ratio(tri, method = "ed", bootstrap = FALSE)
   fit_brk  <- fit_ratio(tri, method = "ed", loss_regime = reg, bootstrap = FALSE)
+  # The bridged band excludes pre-regime early-dev cells, so the pooled
+  # projection differs from the unfiltered fit.
   expect_false(identical(fit_full$full$ratio_proj, fit_brk$full$ratio_proj))
 })
 
@@ -125,6 +127,40 @@ test_that("fit_ratio with NULL loss_regime is unchanged", {
   a <- fit_ratio(tri, method = "sa", bootstrap = FALSE)
   b <- fit_ratio(tri, method = "sa", loss_regime = NULL, bootstrap = FALSE)
   expect_identical(a$full$ratio_proj, b$full$ratio_proj)
+})
+
+test_that("both segment treatments project every cohort to full development", {
+  data(experience)
+  exp <- experience[coverage == "surgery"]
+  tri <- as_triangle(exp, groups = "coverage",
+                        cohort = "uy_m", calendar = "cy_m", loss = "incr_loss", premium = "incr_premium")
+  max_dev <- max(tri$dev)
+
+  for (trt in c("segment_bridged", "segment_bridged_borrowed")) {
+    reg <- regime_at(change = "2024-07-01", treatment = trt)
+    fit <- fit_loss(tri, method = "cl", regime = reg)
+    full <- fit$full
+    newest <- full[cohort == max(cohort)]
+    # The newest cohort (one observed dev) must project to the full
+    # development length with no gaps -- the bridge closes the segment
+    # boundary factor gaps so the continuous factor run reaches max dev.
+    expect_equal(max(newest$dev), max_dev)
+    expect_equal(sum(is.na(newest$loss_proj)), 0L,
+                 info = paste(trt, "leaves projection gaps"))
+  }
+
+  # bridged pools (segment_id dropped); borrowed keeps per-segment factors.
+  brd <- fit_loss(tri, method = "cl",
+                  regime = regime_at(change = "2024-07-01",
+                                     treatment = "segment_bridged"))
+  bor <- fit_loss(tri, method = "cl",
+                  regime = regime_at(change = "2024-07-01",
+                                     treatment = "segment_bridged_borrowed"))
+  expect_false("segment_id" %in% names(brd$full))
+  expect_true("segment_id" %in% names(bor$full))
+  # The two treatments yield different projections (per-segment early
+  # factors vs pooled).
+  expect_false(isTRUE(all.equal(brd$full$loss_proj, bor$full$loss_proj)))
 })
 
 test_that("fit_ratio with Regime preserves the Regime object", {

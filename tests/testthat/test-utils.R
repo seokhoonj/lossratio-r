@@ -122,23 +122,15 @@ test_that(".apply_regime_filter with multi-group Regime dispatches per group", {
   expect_true(all(out[coverage == "B"]$cohort >= as.Date("2023-08-01")))
 })
 
-test_that(".apply_regime_filter with treatment='segment_wise' applies pure mini-triangle filter on Triangle", {
+test_that(".apply_regime_filter with treatment='segment_bridged' masks the bridged band and drops segment_id (pooled)", {
   reg <- regime_at(change = c("2023-04-01", "2023-08-01"),
-                   treatment = "segment_wise")
+                   treatment = "segment_bridged")
 
-  # 10-cohort *triangular* grid (cohort + dev - 1 <= 10) so each
-  # segment's mini-triangle is non-trivial. Class `"Triangle"` is
-  # required to trigger the mini-triangle filter (Link input keeps
-  # the older tag-only behaviour).
-  # cohorts 2023-01..2023-10 (ranks 1..10), dev 1..(11 - cohort_rank),
-  # max cal_idx = 10. Segments:
-  #   seg 1 cohorts 2023-01..2023-03 (ranks 1..3)
-  #   seg 2 cohorts 2023-04..2023-07 (ranks 4..7)
-  #   seg 3 cohorts 2023-08..2023-10 (ranks 8..10)
-  # Natural mini-triangle dev_min:
-  #   seg 1: 10 - 3 + 1 = 8  -> USED at dev 8..10
-  #   seg 2: 10 - 7 + 1 = 4  -> USED at dev 4..7
-  #   seg 3: 10 - 10 + 1 = 1 -> USED at dev 1..3
+  # 10-cohort *triangular* grid (cohort + dev - 1 <= 10). Class
+  # `"Triangle"` is required to trigger the band filter. The bridged
+  # mask is identical to segment_bridged_borrowed (see the next test);
+  # segment_bridged differs only in that it DROPS `segment_id` so the
+  # downstream fit pools the whole band into one factor set.
   cohorts <- seq.Date(as.Date("2023-01-01"), by = "month", length.out = 10)
   dt <- do.call(rbind, lapply(seq_along(cohorts), function(i) {
     data.table::data.table(cohort = cohorts[i], dev = seq_len(11L - i))
@@ -151,22 +143,24 @@ test_that(".apply_regime_filter with treatment='segment_wise' applies pure mini-
     cohort = "cohort", dev = "dev"
   )
 
-  expect_true("segment_id" %in% names(out))
-  expect_equal(sort(unique(out$segment_id)), c(1L, 2L, 3L))
+  # Pooled: no per-segment tag survives.
+  expect_false("segment_id" %in% names(out))
 
-  seg1_devs <- sort(unique(out[segment_id == 1L]$dev))
-  seg2_devs <- sort(unique(out[segment_id == 2L]$dev))
-  seg3_devs <- sort(unique(out[segment_id == 3L]$dev))
-  expect_equal(seg1_devs, 8:10)
-  expect_equal(seg2_devs, 4:7)
-  expect_equal(seg3_devs, 1:3)
+  # The kept cells are the bridged band -- per-cohort min dev matches the
+  # bridged wall (ranks 1..10 -> 7,6,5,4,4,3,2,1,1,1).
+  min_dev_by_coh <- out[, list(min_dev = min(dev)), by = "cohort"
+                        ][order(cohort)]
+  expect_equal(min_dev_by_coh$min_dev,
+               c(7L, 6L, 5L, 4L, 4L, 3L, 2L, 1L, 1L, 1L))
+  # Bridged band spans dev 1..10 in the union.
+  expect_equal(sort(unique(out$dev)), 1:10)
 })
 
-test_that(".apply_regime_filter with treatment='segment_wise_bridged' widens older segments via calendar diagonal", {
+test_that(".apply_regime_filter with treatment='segment_bridged_borrowed' widens older segments via calendar diagonal and keeps segment_id", {
   reg <- regime_at(change = c("2023-04-01", "2023-08-01"),
-                   treatment = "segment_wise_bridged")
+                   treatment = "segment_bridged_borrowed")
 
-  # Same 10-cohort triangular grid as the pure segment_wise test.
+  # Same 10-cohort triangular grid as the segment_bridged test.
   # Bridge anchors (next-segment first-cohort midpoint dev):
   #   from seg 2: floor((4 +  7) / 2) = 5; ext_cal_idx(seg 1) = 4 + 5 - 2 = 7
   #   from seg 3: floor((1 +  3) / 2) = 2; ext_cal_idx(seg 2) = 8 + 2 - 2 = 8
@@ -260,11 +254,61 @@ test_that(".compute_segment_mini_tri_bounds gives natural wall when only one seg
   expect_equal(bounds_bridge, c(1L, 1L, 1L))
 })
 
-test_that(".apply_regime_filter with treatment='segment_wise' tag-only on Link", {
-  # Link input (no `Triangle` class) keeps the older tag-only
-  # behaviour: every row preserved, just annotated with `segment_id`.
+test_that(".borrow_segment_factors fills each segment's gaps from the recent donor", {
+  # seg 1 owns dev 3,4,5; seg 2 owns dev 1,2,3. Donor per dev = the
+  # largest segment_id that owns that dev:
+  #   dev 1,2 -> only seg 2; dev 3 -> seg 2 (max id, but both own);
+  #   dev 4,5 -> only seg 1.
+  sel <- data.table::data.table(
+    dev        = c(3L, 4L, 5L, 1L, 2L, 3L),
+    segment_id = c(1L, 1L, 1L, 2L, 2L, 2L),
+    f_sel      = c(1.1, 1.2, 1.3, 2.1, 2.2, 2.3),
+    sigma2     = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6)
+  )
+  out <- lossratio:::.borrow_segment_factors(
+    sel, groups = character(0), dev_col = "dev",
+    factor_cols = c("f_sel", "sigma2")
+  )
+
+  # Both segments now cover the full dev range 1..5.
+  expect_equal(sort(unique(out[segment_id == 1L]$dev)), 1:5)
+  expect_equal(sort(unique(out[segment_id == 2L]$dev)), 1:5)
+
+  # seg 1 borrows its missing early devs (1,2) from seg 2; keeps its own
+  # dev 3 (1.1).
+  expect_equal(out[segment_id == 1L & dev == 1L]$f_sel, 2.1)
+  expect_equal(out[segment_id == 1L & dev == 2L]$f_sel, 2.2)
+  expect_equal(out[segment_id == 1L & dev == 3L]$f_sel, 1.1)
+
+  # seg 2 borrows its missing late devs (4,5) from seg 1; keeps its own
+  # dev 3 (2.3).
+  expect_equal(out[segment_id == 2L & dev == 4L]$f_sel, 1.2)
+  expect_equal(out[segment_id == 2L & dev == 5L]$f_sel, 1.3)
+  expect_equal(out[segment_id == 2L & dev == 3L]$f_sel, 2.3)
+
+  # Borrowed companion columns travel with the primary factor.
+  expect_equal(out[segment_id == 1L & dev == 1L]$sigma2, 0.4)
+})
+
+test_that(".borrow_segment_factors is a no-op without segment_id or with one segment", {
+  sel1 <- data.table::data.table(dev = 1:3, f_sel = c(1, 2, 3))
+  expect_identical(
+    lossratio:::.borrow_segment_factors(sel1, character(0), "dev", "f_sel"),
+    sel1
+  )
+  sel2 <- data.table::data.table(dev = 1:3, segment_id = 1L,
+                                 f_sel = c(1, 2, 3))
+  expect_identical(
+    lossratio:::.borrow_segment_factors(sel2, character(0), "dev", "f_sel"),
+    sel2
+  )
+})
+
+test_that(".apply_regime_filter with treatment='segment_bridged_borrowed' tag-only on Link", {
+  # Link input (no `Triangle` class) keeps the tag-only behaviour:
+  # every row preserved, just annotated with `segment_id`.
   reg <- regime_at(change = c("2023-04-01", "2023-08-01"),
-                   treatment = "segment_wise")
+                   treatment = "segment_bridged_borrowed")
   dt <- data.table::data.table(
     cohort = rep(seq.Date(as.Date("2023-01-01"), by = "month",
                           length.out = 10), each = 5),

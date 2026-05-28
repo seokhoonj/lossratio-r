@@ -526,7 +526,7 @@ summary.LossFit <- function(object, ...) {
   full[, ("is_observed") := is.finite(loss_obs)]
 
   # Attach segment_id when either side of the projection was fitted
-  # segment_wise.
+  # per-segment (segment_bridged_borrowed).
   has_seg_ed      <- "segment_id" %in% names(ed_fit$selected)
   has_seg_premium <- "segment_id" %in% names(premium_ata_fit$selected)
   if (has_seg_ed || has_seg_premium) {

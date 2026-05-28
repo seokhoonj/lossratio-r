@@ -86,7 +86,7 @@ test_that("summary.Link (ed mode) returns EDSummary with expected columns", {
 
 # regime -----------------------------------------------------------------
 
-test_that("fit_ed with regime drops pre-break cohorts", {
+test_that("fit_ed with regime masks the bridged band", {
   data(experience)
   exp <- experience[coverage == "surgery"]
   tri <- as_triangle(exp, groups = "coverage",
@@ -95,6 +95,8 @@ test_that("fit_ed with regime drops pre-break cohorts", {
   fit_full <- fit_ed(tri, loss = "loss", exposure = "premium")
   fit_brk  <- fit_ed(tri, loss = "loss", exposure = "premium",
                      regime = regime_at(change = "2025-07-01"))
+  # The bridged band excludes pre-regime early-dev cells, so the pooled
+  # intensity factors differ from the unfiltered fit.
   expect_false(identical(fit_full$selected$g_sel,
                          fit_brk$selected$g_sel))
   expect_s3_class(fit_brk$regime, "Regime")

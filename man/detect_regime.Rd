@@ -16,7 +16,7 @@ detect_regime(
   n_regimes = NULL,
   sig_level = 0.05,
   min_size = 3L,
-  treatment = c("latest_only", "segment_wise", "segment_wise_bridged"),
+  treatment = c("segment_bridged", "segment_bridged_borrowed"),
   ...
 )
 
@@ -81,27 +81,27 @@ requested value) for \code{"hclust"}, where the default is \code{2}.}
 \item{min_size}{Minimum segment size for \code{"e_divisive"}. Default \code{3}.}
 
 \item{treatment}{How downstream fits should apply this Regime when
-\verb{$changes} contains multiple change points. One of:
+\verb{$changes} contains multiple change points. Both modes mask the
+triangle to a \emph{bridged} development band: each segment's natural
+mini-triangle wall (\code{dev >= max_cal - seg_last + 1}) is widened by a
+calendar-diagonal \emph{bridge} anchored at the next (newer) segment's
+first-cohort midpoint dev. The bridge closes the factor gaps that
+would otherwise open at the segment boundaries, so the band carries a
+continuous run of age-to-age factors \verb{f_1, ..., f_(K-1)} and every
+cohort can be projected to the full development length \code{K}. One of:
 \describe{
-\item{\code{"latest_only"}}{(default) Collapse to the most recent change
-date and drop all pre-latest-change cohorts. Single pooled factor
-estimate over the surviving (post-latest-change) cohorts.}
-\item{\code{"segment_wise"}}{Preserve all change points. Each segment
-(consecutive cohorts between adjacent changes) gets its own factor
-estimate from cells inside the segment's natural mini-triangle
-(\code{dev >= max_cal - seg_last + 1}), and each cohort is projected
-using its own segment's factor. Cells the mini-triangle wall does
-not reach are left unprojected. Recommended for multi-regime +
-long-tail data where \code{"latest_only"} would lose self-regime
-responsiveness on older cohorts.}
-\item{\code{"segment_wise_bridged"}}{Same as \code{"segment_wise"} but each
-older segment's mini-triangle is widened with a calendar-diagonal
-\emph{bridge} anchored at the next (newer) segment's first-cohort
-mini-triangle midpoint dev. The bridge feeds factor estimation
-at devs that the natural mini-triangle wall would have cut, so
-older segments connect through to their successor. Bridges only
-widen; they never narrow. The newest segment is not bridged
-(no successor) and keeps its natural mini-triangle.}
+\item{\code{"segment_bridged"}}{(default) Pool the whole bridged band
+into a single factor estimate -- every cohort at dev \code{k} uses the
+same \code{f_k}, estimated from whichever cohorts reach that dev inside
+the band (the most recent ones, by construction). Not a
+per-segment fit: the development pattern is treated as shared
+across regimes, only the band's lower boundary is regime-aware.}
+\item{\code{"segment_bridged_borrowed"}}{Estimate factors \emph{per segment}
+(early-dev factors stay regime-specific), then \emph{borrow} the
+late-dev factors a segment cannot estimate from another segment
+that can (the bridge guarantees a donor exists). Each cohort
+projects with its own segment's factors where available and
+borrowed factors beyond its reach.}
 }}
 
 \item{...}{Reserved for future use.}
@@ -144,11 +144,13 @@ multi-combo.}
 constraint. Vector (single) / named list (multi).}
 \item{\code{multi_group}}{Logical flag; \code{TRUE} when detection ran over
 multiple group combos.}
-\item{\code{treatment}}{Either \code{"latest_only"} or \code{"segment_wise"} -- the
-value supplied via the \code{treatment} argument. Read by downstream
-fits (\code{fit_ata()}, \code{fit_intensity()}, \code{fit_cl()}, \code{fit_ed()}) to
-decide whether to collapse to the latest change (drop pre-change
-cohorts, single pooled factor) or estimate per-segment factors.}
+\item{\code{treatment}}{Either \code{"segment_bridged"} or
+\code{"segment_bridged_borrowed"} -- the value supplied via the
+\code{treatment} argument. Read by downstream fits (\code{fit_ata()},
+\code{fit_intensity()}, \code{fit_cl()}, \code{fit_ed()}) to decide whether to
+pool the bridged band into a single factor estimate or estimate
+per-segment factors and borrow the late-dev factors a segment
+cannot reach.}
 }
 }
 \description{

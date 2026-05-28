@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{.compute_segment_mini_tri_bounds}
 \alias{.compute_segment_mini_tri_bounds}
-\title{Per-cell effective \code{dev_min} for the segment_wise mini-triangle}
+\title{Per-cell effective \code{dev_min} for the segment mini-triangle band}
 \usage{
 .compute_segment_mini_tri_bounds(coh_ranks, seg_ids, max_cal, bridge = FALSE)
 }
@@ -13,12 +13,11 @@
 
 \item{max_cal}{Integer scalar. Maximum calendar index in the group.}
 
-\item{bridge}{Logical. When \code{TRUE}, widen each older segment's
-mini-triangle with the calendar-diagonal bridge anchored at the
-next segment's first-cohort midpoint dev. When \code{FALSE} (default),
-return the natural mini-triangle wall only -- the pure
-\code{"segment_wise"} treatment. \code{TRUE} corresponds to
-\code{"segment_wise_bridged"}.}
+\item{bridge}{Logical. When \code{TRUE} (used by both segment
+treatments), widen each older segment's mini-triangle with the
+calendar-diagonal bridge anchored at the next segment's first-cohort
+midpoint dev. When \code{FALSE}, return the natural mini-triangle wall
+only (no boundary-gap closure); retained for diagnostics and tests.}
 }
 \value{
 Integer vector (same length as \code{coh_ranks}) of per-cell
