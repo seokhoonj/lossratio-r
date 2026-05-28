@@ -541,6 +541,14 @@ summary.LossFit <- function(object, ...) {
   premium_sel <- premium_ata_fit$selected[, .SD, .SDcols = premium_cols]
   data.table::setnames(premium_sel, c("ata_from", "f_sel"),
                        c("dev", "f_premium"))
+  # segment_id present => segment_bridged_borrowed: borrow the late-dev
+  # premium chain ladder factors each segment cannot reach from a donor
+  # (mirrors the g-factor borrow in fit_ed/fit_cl).
+  if (has_seg_premium)
+    premium_sel <- .borrow_segment_factors(
+      premium_sel, groups = grp, dev_col = "dev",
+      factor_cols = "f_premium"
+    )
   full <- premium_sel[full,
                        on = c(grp, "dev", if (has_seg_premium) "segment_id")]
 
