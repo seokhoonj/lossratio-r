@@ -42,7 +42,7 @@ detect_regime(
   n_regimes = NULL,
   sig_level = 0.05,
   min_size = 3L,
-  treatment = c("latest_only", "segment_wise", "segment_wise_bridged"),
+  treatment = c("segment_bridged", "segment_bridged_borrowed"),
   ...
 )
 
@@ -139,35 +139,32 @@ print(x, ...)
 - treatment:
 
   How downstream fits should apply this Regime when `$changes` contains
-  multiple change points. One of:
+  multiple change points. Both modes mask the triangle to a *bridged*
+  development band: each segment's natural mini-triangle wall
+  (`dev >= max_cal - seg_last + 1`) is widened by a calendar-diagonal
+  *bridge* anchored at the next (newer) segment's first-cohort midpoint
+  dev. The bridge closes the factor gaps that would otherwise open at
+  the segment boundaries, so the band carries a continuous run of
+  age-to-age factors `f_1, ..., f_(K-1)` and every cohort can be
+  projected to the full development length `K`. One of:
 
-  `"latest_only"`
+  `"segment_bridged"`
 
-  :   (default) Collapse to the most recent change date and drop all
-      pre-latest-change cohorts. Single pooled factor estimate over the
-      surviving (post-latest-change) cohorts.
+  :   (default) Pool the whole bridged band into a single factor
+      estimate – every cohort at dev `k` uses the same `f_k`, estimated
+      from whichever cohorts reach that dev inside the band (the most
+      recent ones, by construction). Not a per-segment fit: the
+      development pattern is treated as shared across regimes, only the
+      band's lower boundary is regime-aware.
 
-  `"segment_wise"`
+  `"segment_bridged_borrowed"`
 
-  :   Preserve all change points. Each segment (consecutive cohorts
-      between adjacent changes) gets its own factor estimate from cells
-      inside the segment's natural mini-triangle
-      (`dev >= max_cal - seg_last + 1`), and each cohort is projected
-      using its own segment's factor. Cells the mini-triangle wall does
-      not reach are left unprojected. Recommended for multi-regime +
-      long-tail data where `"latest_only"` would lose self-regime
-      responsiveness on older cohorts.
-
-  `"segment_wise_bridged"`
-
-  :   Same as `"segment_wise"` but each older segment's mini-triangle is
-      widened with a calendar-diagonal *bridge* anchored at the next
-      (newer) segment's first-cohort mini-triangle midpoint dev. The
-      bridge feeds factor estimation at devs that the natural
-      mini-triangle wall would have cut, so older segments connect
-      through to their successor. Bridges only widen; they never narrow.
-      The newest segment is not bridged (no successor) and keeps its
-      natural mini-triangle.
+  :   Estimate factors *per segment* (early-dev factors stay
+      regime-specific), then *borrow* the late-dev factors a segment
+      cannot estimate from another segment that can (the bridge
+      guarantees a donor exists). Each cohort projects with its own
+      segment's factors where available and borrowed factors beyond its
+      reach.
 
 - ...:
 
@@ -253,14 +250,15 @@ An object of class `"Regime"`. For single-group input:
 
 - `treatment`:
 
-  Either `"latest_only"` or `"segment_wise"` – the value supplied via
-  the `treatment` argument. Read by downstream fits
+  Either `"segment_bridged"` or `"segment_bridged_borrowed"` – the value
+  supplied via the `treatment` argument. Read by downstream fits
   ([`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md),
   [`fit_intensity()`](https://seokhoonj.github.io/lossratio/reference/fit_intensity.md),
   [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
   [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md))
-  to decide whether to collapse to the latest change (drop pre-change
-  cohorts, single pooled factor) or estimate per-segment factors.
+  to decide whether to pool the bridged band into a single factor
+  estimate or estimate per-segment factors and borrow the late-dev
+  factors a segment cannot reach.
 
 ## See also
 

@@ -197,7 +197,7 @@ strictly chronological.</p></dd>
 <span>  n_regimes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sig_level <span class="op">=</span> <span class="fl">0.05</span>,</span>
 <span>  min_size <span class="op">=</span> <span class="fl">3L</span>,</span>
-<span>  treatment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"latest_only"</span>, <span class="st">"segment_wise"</span>, <span class="st">"segment_wise_bridged"</span><span class="op">)</span>,</span>
+<span>  treatment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"segment_bridged"</span>, <span class="st">"segment_bridged_borrowed"</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -292,30 +292,28 @@ requested value) for <code>"hclust"</code>, where the default is <code>2</code>.
 
 <dt id="arg-treatment">treatment<a class="anchor" aria-label="anchor" href="#arg-treatment"></a></dt>
 <dd><p>How downstream fits should apply this Regime when
-<code>$changes</code> contains multiple change points. One of:</p><dl><dt><code>"latest_only"</code></dt>
-<dd><p>(default) Collapse to the most recent change
-date and drop all pre-latest-change cohorts. Single pooled factor
-estimate over the surviving (post-latest-change) cohorts.</p></dd>
+<code>$changes</code> contains multiple change points. Both modes mask the
+triangle to a <em>bridged</em> development band: each segment's natural
+mini-triangle wall (<code>dev &gt;= max_cal - seg_last + 1</code>) is widened by a
+calendar-diagonal <em>bridge</em> anchored at the next (newer) segment's
+first-cohort midpoint dev. The bridge closes the factor gaps that
+would otherwise open at the segment boundaries, so the band carries a
+continuous run of age-to-age factors <code>f_1, ..., f_(K-1)</code> and every
+cohort can be projected to the full development length <code>K</code>. One of:</p><dl><dt><code>"segment_bridged"</code></dt>
+<dd><p>(default) Pool the whole bridged band
+into a single factor estimate – every cohort at dev <code>k</code> uses the
+same <code>f_k</code>, estimated from whichever cohorts reach that dev inside
+the band (the most recent ones, by construction). Not a
+per-segment fit: the development pattern is treated as shared
+across regimes, only the band's lower boundary is regime-aware.</p></dd>
 
-<dt><code>"segment_wise"</code></dt>
-<dd><p>Preserve all change points. Each segment
-(consecutive cohorts between adjacent changes) gets its own factor
-estimate from cells inside the segment's natural mini-triangle
-(<code>dev &gt;= max_cal - seg_last + 1</code>), and each cohort is projected
-using its own segment's factor. Cells the mini-triangle wall does
-not reach are left unprojected. Recommended for multi-regime +
-long-tail data where <code>"latest_only"</code> would lose self-regime
-responsiveness on older cohorts.</p></dd>
-
-<dt><code>"segment_wise_bridged"</code></dt>
-<dd><p>Same as <code>"segment_wise"</code> but each
-older segment's mini-triangle is widened with a calendar-diagonal
-<em>bridge</em> anchored at the next (newer) segment's first-cohort
-mini-triangle midpoint dev. The bridge feeds factor estimation
-at devs that the natural mini-triangle wall would have cut, so
-older segments connect through to their successor. Bridges only
-widen; they never narrow. The newest segment is not bridged
-(no successor) and keeps its natural mini-triangle.</p></dd>
+<dt><code>"segment_bridged_borrowed"</code></dt>
+<dd><p>Estimate factors <em>per segment</em>
+(early-dev factors stay regime-specific), then <em>borrow</em> the
+late-dev factors a segment cannot estimate from another segment
+that can (the bridge guarantees a donor exists). Each cohort
+projects with its own segment's factors where available and
+borrowed factors beyond its reach.</p></dd>
 
 
 </dl></dd>
@@ -391,11 +389,13 @@ constraint. Vector (single) / named list (multi).</p></dd>
 multiple group combos.</p></dd>
 
 <dt><code>treatment</code></dt>
-<dd><p>Either <code>"latest_only"</code> or <code>"segment_wise"</code> – the
-value supplied via the <code>treatment</code> argument. Read by downstream
-fits (<code><a href="fit_ata.html">fit_ata()</a></code>, <code><a href="fit_intensity.html">fit_intensity()</a></code>, <code><a href="fit_cl.html">fit_cl()</a></code>, <code><a href="fit_ed.html">fit_ed()</a></code>) to
-decide whether to collapse to the latest change (drop pre-change
-cohorts, single pooled factor) or estimate per-segment factors.</p></dd>
+<dd><p>Either <code>"segment_bridged"</code> or
+<code>"segment_bridged_borrowed"</code> – the value supplied via the
+<code>treatment</code> argument. Read by downstream fits (<code><a href="fit_ata.html">fit_ata()</a></code>,
+<code><a href="fit_intensity.html">fit_intensity()</a></code>, <code><a href="fit_cl.html">fit_cl()</a></code>, <code><a href="fit_ed.html">fit_ed()</a></code>) to decide whether to
+pool the bridged band into a single factor estimate or estimate
+per-segment factors and borrow the late-dev factors a segment
+cannot reach.</p></dd>
 
 
 </dl></div>

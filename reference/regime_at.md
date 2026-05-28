@@ -22,10 +22,7 @@ Argument syntax mirrors
 ## Usage
 
 ``` r
-regime_at(
-  ...,
-  treatment = c("latest_only", "segment_wise", "segment_wise_bridged")
-)
+regime_at(..., treatment = c("segment_bridged", "segment_bridged_borrowed"))
 ```
 
 ## Arguments
@@ -41,11 +38,11 @@ regime_at(
 - treatment:
 
   How downstream fits should apply this Regime when `$changes` contains
-  multiple change points. `"latest_only"` (default) collapses to the
-  most recent change and drops all pre-latest cohorts (single pooled
-  factor). `"segment_wise"` preserves all changes and estimates one
-  factor per segment (each cohort projected with its own segment's
-  factor). See
+  multiple change points. `"segment_bridged"` (default) pools the
+  bridged development band into a single factor estimate.
+  `"segment_bridged_borrowed"` estimates per-segment factors and borrows
+  the late-dev factors a segment cannot reach. Both mask to the bridged
+  band so every cohort projects to full development. See
   [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
   for full semantics.
 

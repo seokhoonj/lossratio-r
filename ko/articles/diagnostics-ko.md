@@ -408,7 +408,7 @@ r
 #> <Regime>
 #>   method    : e_divisive
 #>   loss      : ratio
-#>   treatment : latest_only
+#>   treatment : segment_bridged
 #>   window (window) : dev_m 1-4
 #>   cohorts    : 33 analysed (3 dropped)
 #>   regimes    : 2
@@ -430,7 +430,7 @@ summary(r)
 #> Cohort regime detection summary
 #>   method    : e_divisive
 #>   loss      : ratio
-#>   treatment : latest_only
+#>   treatment : segment_bridged
 #>   window    : dev_m 1-4
 #>   cohorts   : 33 analysed (3 dropped)
 #> 
@@ -570,7 +570,7 @@ summary(r2)
 #> Cohort regime detection summary
 #>   method    : e_divisive
 #>   loss      : ratio
-#>   treatment : latest_only
+#>   treatment : segment_bridged
 #>   window    : dev_m 1-4
 #>   cohorts   : 33 analysed (3 dropped)
 #> 
@@ -666,27 +666,37 @@ x 축은 모형 단계의 단일 switch 이며
 회일 수도, 여러 번일 수도 있다. `Regime` 객체가 다중 change 를 담고 있을
 때 처리 방식은 `treatment` slot 으로 결정된다.
 
-- `treatment = "latest_only"` (default): 가장 최신 change 하나만
-  사용하고 그 이전 코호트는 전부 drop. 살아남은 (post-latest) 코호트로
-  단일 factor 를 추정. post-change 윈도우에 충분한 코호트가 쌓였고 옛
-  regime 이 현재 regime 에 정보가 안 될 때 안정적이다.
-- `treatment = "segment_wise"`: 모든 change 를 보존. 각 segment (인접한
-  두 change 사이의 코호트 묶음) 가 자기 factor 를 추정하고, 각 코호트는
-  자기 segment 의 factor 로 예측된다. multi-regime + long-tail 데이터
-  (최신 regime 이 아직 late-dev 까지 가지 못한 경우) 에서 사용한다.
+두 treatment 모두 트라이앵글을 *bridged* 발전 band 로 마스킹한다. 각
+segment 의 자연 mini-triangle 벽 (`dev >= max_cal - seg_last + 1`) 을
+다음 (더 최신) segment 의 first-cohort 중간 dev 에 고정된 대각선
+*bridge* 로 넓힌다. bridge 가 segment 경계의 factor 공백을 메우므로 band
+는 연속된 ATA 인자 열을 갖게 되어 **모든 코호트가 만기 발전 길이까지
+예측된다** – 옛 코호트의 pre-regime 셀만으로는 결코 도달하지 못하는 신생
+코호트까지 포함해서.
+
+- `treatment = "segment_bridged"` (default): bridged band 전체를 하나로
+  풀링해 단일 factor 를 추정. 모든 코호트가 dev `k` 에서 같은 `f_k` 를
+  쓰며, 이는 band 안에서 그 dev 에 도달한 (가장 최신) 코호트들로부터
+  나온다. 발전 패턴은 regime 간 공유로 보고, band 의 하한만 regime 을
+  반영한다.
+- `treatment = "segment_bridged_borrowed"`: segment 별로 factor 를
+  추정하되 (초기 dev 의 factor 는 regime 별로 유지), 자기 segment 가
+  도달하지 못하는 late-dev factor 는 도달한 다른 segment 에서 borrow.
+  초기 발전 패턴이 regime 별로 실제 다르지만 long-tail 발전은 공유될 때
+  사용한다.
 
 `Regime` 만들 때 treatment 를 지정한다.
 
 ``` r
 
-# Latest-only (default — pre-latest 코호트 drop)
+# 풀링된 bridged band (default)
 regime_at(change = c("2022-01-01", "2024-04-01"))
 
-# Segment-wise (각 segment 가 자기 factor)
+# segment 별 factor + late-dev borrow
 regime_at(change = c("2022-01-01", "2024-04-01"),
-          treatment = "segment_wise")
+          treatment = "segment_bridged_borrowed")
 
-detect_regime(tri_sur, treatment = "segment_wise")
+detect_regime(tri_sur, treatment = "segment_bridged_borrowed")
 ```
 
 ### 5.3 API

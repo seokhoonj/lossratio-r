@@ -10,8 +10,9 @@ Returns `rep(1L, length(cohort_vals))` when `regime` is `NULL` or
 carries no changes – every cohort is in the single (sole) segment.
 
 Treatment-agnostic: this helper preserves all change points regardless
-of `regime$treatment`. Callers decide whether to use the full partition
-(`"segment_wise"`) or collapse to the latest change (`"latest_only"`).
+of `regime$treatment`. Callers decide whether to pool the partition
+(`"segment_bridged"`) or keep it for per-segment estimation
+(`"segment_bridged_borrowed"`).
 
 ## Usage
 

@@ -729,7 +729,7 @@ diagonal 만 추가돼도 unconverge 가능하다.</li>
 <span><span class="co">#&gt; &lt;Regime&gt;</span></span>
 <span><span class="co">#&gt;   method    : e_divisive</span></span>
 <span><span class="co">#&gt;   loss      : ratio</span></span>
-<span><span class="co">#&gt;   treatment : latest_only</span></span>
+<span><span class="co">#&gt;   treatment : segment_bridged</span></span>
 <span><span class="co">#&gt;   window (window) : dev_m 1-4</span></span>
 <span><span class="co">#&gt;   cohorts    : 33 analysed (3 dropped)</span></span>
 <span><span class="co">#&gt;   regimes    : 2</span></span>
@@ -749,7 +749,7 @@ diagonal 만 추가돼도 unconverge 가능하다.</li>
 <span><span class="co">#&gt; Cohort regime detection summary</span></span>
 <span><span class="co">#&gt;   method    : e_divisive</span></span>
 <span><span class="co">#&gt;   loss      : ratio</span></span>
-<span><span class="co">#&gt;   treatment : latest_only</span></span>
+<span><span class="co">#&gt;   treatment : segment_bridged</span></span>
 <span><span class="co">#&gt;   window    : dev_m 1-4</span></span>
 <span><span class="co">#&gt;   cohorts   : 33 analysed (3 dropped)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -946,7 +946,7 @@ stationarity 가정 위반에 해당한다. 구조적 메커니즘으로 regime 
 <span><span class="co">#&gt; Cohort regime detection summary</span></span>
 <span><span class="co">#&gt;   method    : e_divisive</span></span>
 <span><span class="co">#&gt;   loss      : ratio</span></span>
-<span><span class="co">#&gt;   treatment : latest_only</span></span>
+<span><span class="co">#&gt;   treatment : segment_bridged</span></span>
 <span><span class="co">#&gt;   window    : dev_m 1-4</span></span>
 <span><span class="co">#&gt;   cohorts   : 33 analysed (3 dropped)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -1055,29 +1055,38 @@ ED 영역이 안정된 곳까지 같이 버린다. 자연스러운 해법은 비
 을 반환한다. y 축은 외생적 사건이라 그룹 안에서 0 회일 수도, 여러 번일
 수도 있다. <code>Regime</code> 객체가 다중 change 를 담고 있을 때 처리
 방식은 <code>treatment</code> slot 으로 결정된다.</p>
+<p>두 treatment 모두 트라이앵글을 <em>bridged</em> 발전 band 로
+마스킹한다. 각 segment 의 자연 mini-triangle 벽
+(<code>dev &gt;= max_cal - seg_last + 1</code>) 을 다음 (더 최신)
+segment 의 first-cohort 중간 dev 에 고정된 대각선 <em>bridge</em> 로
+넓힌다. bridge 가 segment 경계의 factor 공백을 메우므로 band 는 연속된
+ATA 인자 열을 갖게 되어 <strong>모든 코호트가 만기 발전 길이까지
+예측된다</strong> – 옛 코호트의 pre-regime 셀만으로는 결코 도달하지
+못하는 신생 코호트까지 포함해서.</p>
 <ul>
 <li>
-<code>treatment = "latest_only"</code> (default): 가장 최신 change
-하나만 사용하고 그 이전 코호트는 전부 drop. 살아남은 (post-latest)
-코호트로 단일 factor 를 추정. post-change 윈도우에 충분한 코호트가
-쌓였고 옛 regime 이 현재 regime 에 정보가 안 될 때 안정적이다.</li>
+<code>treatment = "segment_bridged"</code> (default): bridged band
+전체를 하나로 풀링해 단일 factor 를 추정. 모든 코호트가 dev
+<code>k</code> 에서 같은 <code>f_k</code> 를 쓰며, 이는 band 안에서 그
+dev 에 도달한 (가장 최신) 코호트들로부터 나온다. 발전 패턴은 regime 간
+공유로 보고, band 의 하한만 regime 을 반영한다.</li>
 <li>
-<code>treatment = "segment_wise"</code>: 모든 change 를 보존. 각
-segment (인접한 두 change 사이의 코호트 묶음) 가 자기 factor 를
-추정하고, 각 코호트는 자기 segment 의 factor 로 예측된다. multi-regime +
-long-tail 데이터 (최신 regime 이 아직 late-dev 까지 가지 못한 경우) 에서
-사용한다.</li>
+<code>treatment = "segment_bridged_borrowed"</code>: segment 별로
+factor 를 추정하되 (초기 dev 의 factor 는 regime 별로 유지), 자기
+segment 가 도달하지 못하는 late-dev factor 는 도달한 다른 segment 에서
+borrow. 초기 발전 패턴이 regime 별로 실제 다르지만 long-tail 발전은
+공유될 때 사용한다.</li>
 </ul>
 <p><code>Regime</code> 만들 때 treatment 를 지정한다.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Latest-only (default — pre-latest 코호트 drop)</span></span>
+<code class="sourceCode R"><span><span class="co"># 풀링된 bridged band (default)</span></span>
 <span><span class="fu"><a href="../reference/regime_at.html">regime_at</a></span><span class="op">(</span>change <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2022-01-01"</span>, <span class="st">"2024-04-01"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Segment-wise (각 segment 가 자기 factor)</span></span>
+<span><span class="co"># segment 별 factor + late-dev borrow</span></span>
 <span><span class="fu"><a href="../reference/regime_at.html">regime_at</a></span><span class="op">(</span>change <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2022-01-01"</span>, <span class="st">"2024-04-01"</span><span class="op">)</span>,</span>
-<span>          treatment <span class="op">=</span> <span class="st">"segment_wise"</span><span class="op">)</span></span>
+<span>          treatment <span class="op">=</span> <span class="st">"segment_bridged_borrowed"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, treatment <span class="op">=</span> <span class="st">"segment_wise"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, treatment <span class="op">=</span> <span class="st">"segment_bridged_borrowed"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="api">5.3 API<a class="anchor" aria-label="anchor" href="#api"></a>

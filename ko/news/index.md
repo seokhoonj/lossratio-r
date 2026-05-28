@@ -2,28 +2,49 @@
 
 ## lossratio (development version)
 
-- **New `Regime` treatment `"segment_wise_bridged"`** (opt-in,
-  non-breaking). The existing `"segment_wise"` treatment is preserved as
-  the *pure* per-segment mini-triangle (natural wall
-  `dev >= max_cal - seg_last + 1`); the new value adds a
-  calendar-diagonal *bridge* on top of that wall, anchored at the next
-  (newer) segment’s first-cohort mini-triangle midpoint dev, so each
-  older segment can connect through to its successor and feed factor
-  estimation at devs that the natural wall would have cut. Helper
+- **BREAKING: `Regime` treatment redesign – two full-development
+  treatments.** The `treatment` enum is now
+  `c("segment_bridged", "segment_bridged_borrowed")` (default
+  `"segment_bridged"`). The previous values `"latest_only"`,
+  `"segment_wise"`, and `"segment_wise_bridged"` are removed: each
+  either failed to project the newest cohorts to full development
+  (`"latest_only"` shortens the horizon to the surviving subset;
+  `"segment_wise"` leaves the newest segment’s late-dev cells
+  unreachable) or was a half-step toward the redesign. Both new
+  treatments mask the triangle to a *bridged* development band – the
+  per-segment mini-triangle wall (`dev >= max_cal - seg_last + 1`)
+  widened by a calendar-diagonal bridge to the next segment’s
+  first-cohort midpoint dev – which closes the factor gaps at the
+  segment boundaries so a continuous run of age-to-age factors covers
+  every development period and **every cohort projects to the full
+  development length**.
+
+  - `"segment_bridged"` (default) pools the whole band into a single
+    factor set (the development pattern is shared across regimes; only
+    the band’s lower boundary is regime-aware). The masked band drops
+    its `segment_id` tag so downstream estimation is pooled.
+  - `"segment_bridged_borrowed"` estimates factors per segment
+    (early-dev factors stay regime-specific) and borrows the late-dev
+    factors a segment cannot reach from a donor segment that can (the
+    most recent segment that developed that far). New helper
+    [`.borrow_segment_factors()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-borrow_segment_factors.md)
+    performs the projection-time augmentation in
+    [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
+    /
+    [`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md).
+
+  The band mask is applied to the `Triangle` (cohort x dev grid)
+  *before* the `Link` is built, because the `Link` omits dev-1-only
+  cohorts and would corrupt each segment’s last-cohort rank. The
+  cohort-cut mechanism that backed `"latest_only"` survives internally
+  for the stage-adaptive
+  ([`fit_sa()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_sa.md))
+  hybrid filter, which is not a user-facing treatment. Helper
   [`.compute_segment_mini_tri_bounds()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-compute_segment_mini_tri_bounds.md)
-  (new) computes per-cell effective `dev_min` for both
+  still computes the per-cell band `dev_min` shared by
   [`.apply_regime_filter()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-apply_regime_filter.md)
   and
-  [`.compute_triangle_usage()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-compute_triangle_usage.md),
-  so the cell-status heatmap stays aligned with the fit mask. The bridge
-  only ever *widens*; the natural wall is preserved whenever the bridge
-  ray lies above it (e.g. for a segment’s oldest cohort, or the newest
-  segment which has no successor). Bridges do not cascade (segment `s`
-  is bridged only from `s+1`, not from `s+2`). Use via
-  `regime_at(treatment = "segment_wise_bridged")` or
-  `detect_regime(treatment = "segment_wise_bridged")`. The default
-  remains `"latest_only"`; existing `"segment_wise"` callers see no
-  behaviour change.
+  [`.compute_triangle_usage()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-compute_triangle_usage.md).
 
 - **BREAKING: identifier rename `exposure` -\> `premium`.** The
   denominator slot reverts to `premium`, the natural domain word for
@@ -411,21 +432,6 @@
   `plot.CLFit(type = "projection"/"reserve")`, etc.). Migration:
   `plot_triangle(tri, type = "usage")` -\>
   `plot_triangle(tri, view = "usage")`.
-
-- **Known limitation – segment_wise mini-triangle gap-fill** (partially
-  addressed; see the new `"segment_wise_bridged"` entry at the top of
-  this release). Under the pure `"segment_wise"` treatment, `fit_*`
-  produces a mini-triangle per regime segment using only that segment’s
-  cohorts; cells that fall outside every mini-triangle (typically old
-  cohorts at late development periods that cannot be reached from any
-  single segment) are left unprojected. The new `"segment_wise_bridged"`
-  treatment widens each older segment with a calendar-diagonal bridge
-  into its successor, recovering many of those cells. The newest segment
-  still has no successor to bridge from, so its own late-dev cells –
-  beyond the newest cohort’s last observable dev – remain unreachable; a
-  future phase may add an explicit fallback knob (`Regime$fallback`) and
-  a warning when $`k^*`$ exceeds the *change-to-now* horizon of the
-  newest segment.
 
 - **BREAKING** —
   [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)

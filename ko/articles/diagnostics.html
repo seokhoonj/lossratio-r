@@ -748,7 +748,7 @@ clustering method to the resulting multivariate sequence.</p>
 <span><span class="co">#&gt; &lt;Regime&gt;</span></span>
 <span><span class="co">#&gt;   method    : e_divisive</span></span>
 <span><span class="co">#&gt;   loss      : ratio</span></span>
-<span><span class="co">#&gt;   treatment : latest_only</span></span>
+<span><span class="co">#&gt;   treatment : segment_bridged</span></span>
 <span><span class="co">#&gt;   window (window) : dev_m 1-4</span></span>
 <span><span class="co">#&gt;   cohorts    : 33 analysed (3 dropped)</span></span>
 <span><span class="co">#&gt;   regimes    : 2</span></span>
@@ -769,7 +769,7 @@ window that retains enough cohorts.</p>
 <span><span class="co">#&gt; Cohort regime detection summary</span></span>
 <span><span class="co">#&gt;   method    : e_divisive</span></span>
 <span><span class="co">#&gt;   loss      : ratio</span></span>
-<span><span class="co">#&gt;   treatment : latest_only</span></span>
+<span><span class="co">#&gt;   treatment : segment_bridged</span></span>
 <span><span class="co">#&gt;   window    : dev_m 1-4</span></span>
 <span><span class="co">#&gt;   cohorts   : 33 analysed (3 dropped)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -970,7 +970,7 @@ regime hypotheses — pass <code>n_regimes</code>:</p>
 <span><span class="co">#&gt; Cohort regime detection summary</span></span>
 <span><span class="co">#&gt;   method    : e_divisive</span></span>
 <span><span class="co">#&gt;   loss      : ratio</span></span>
-<span><span class="co">#&gt;   treatment : latest_only</span></span>
+<span><span class="co">#&gt;   treatment : segment_bridged</span></span>
 <span><span class="co">#&gt;   window    : dev_m 1-4</span></span>
 <span><span class="co">#&gt;   cohorts   : 33 analysed (3 dropped)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -1083,30 +1083,42 @@ is a single internal switch produced by <code><a href="../reference/detect_matur
 Regime changes are exogenous events — there can be none, one, or
 several. When a <code>Regime</code> object carries multiple changes, the
 <code>treatment</code> slot decides how downstream fits use them:</p>
+<p>Both treatments mask the triangle to a <em>bridged</em> development
+band: each segment’s natural mini-triangle wall
+(<code>dev &gt;= max_cal - seg_last + 1</code>) is widened by a
+calendar-diagonal <em>bridge</em> anchored at the next (newer) segment’s
+first-cohort midpoint dev. The bridge closes the factor gaps that would
+otherwise open at the segment boundaries, so the band carries a
+continuous run of age-to-age factors and <strong>every cohort projects
+to the full development length</strong> – including the newest cohorts,
+which the pre-regime cells of older cohorts would never reach on their
+own.</p>
 <ul>
 <li>
-<code>treatment = "latest_only"</code> (default): collapse to the
-most recent change and drop all pre-latest cohorts. A single pooled
-factor is estimated over the surviving (post-latest) cohorts. Stable
-when the post-change window has accumulated enough cohorts and earlier
-regimes are not informative for the current one.</li>
+<code>treatment = "segment_bridged"</code> (default): pool the whole
+bridged band into a single factor estimate. Every cohort at dev
+<code>k</code> uses the same <code>f_k</code>, drawn from whichever
+(most recent) cohorts reach that dev inside the band. The development
+pattern is treated as shared across regimes; only the band’s lower
+boundary is regime-aware.</li>
 <li>
-<code>treatment = "segment_wise"</code>: preserve every change. Each
-segment (consecutive cohorts between adjacent changes) gets its own
-factor estimate, and each cohort is projected with its own segment’s
-factor. Use this for multi-regime + long-tail data where the latest
-regime hasn’t yet observed late-dev development.</li>
+<code>treatment = "segment_bridged_borrowed"</code>: estimate
+factors <em>per segment</em> (early-development factors stay
+regime-specific), then <em>borrow</em> the late-development factors a
+segment cannot reach from another segment that can. Use this when the
+early development pattern genuinely differs across regimes but the
+long-tail development is shared.</li>
 </ul>
 <p>Pick the treatment when constructing the <code>Regime</code>:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Latest-only (default — drop pre-latest cohorts)</span></span>
+<code class="sourceCode R"><span><span class="co"># Pooled bridged band (default)</span></span>
 <span><span class="fu"><a href="../reference/regime_at.html">regime_at</a></span><span class="op">(</span>change <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2022-01-01"</span>, <span class="st">"2024-04-01"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Segment-wise (each segment gets its own factor)</span></span>
+<span><span class="co"># Per-segment factors with late-dev borrowing</span></span>
 <span><span class="fu"><a href="../reference/regime_at.html">regime_at</a></span><span class="op">(</span>change <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2022-01-01"</span>, <span class="st">"2024-04-01"</span><span class="op">)</span>,</span>
-<span>          treatment <span class="op">=</span> <span class="st">"segment_wise"</span><span class="op">)</span></span>
+<span>          treatment <span class="op">=</span> <span class="st">"segment_bridged_borrowed"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, treatment <span class="op">=</span> <span class="st">"segment_wise"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/detect_regime.html">detect_regime</a></span><span class="op">(</span><span class="va">tri_sur</span>, treatment <span class="op">=</span> <span class="st">"segment_bridged_borrowed"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="api">API<a class="anchor" aria-label="anchor" href="#api"></a>

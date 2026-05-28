@@ -1,4 +1,4 @@
-# Per-cell effective `dev_min` for the segment_wise mini-triangle
+# Per-cell effective `dev_min` for the segment mini-triangle band
 
 For each cell, returns the minimum dev that keeps it inside its
 segment's fit mask. The mask is the union of two regions:
@@ -60,11 +60,11 @@ not from `s+2`. The bridge only ever *widens* a segment's mini-triangle.
 
 - bridge:
 
-  Logical. When `TRUE`, widen each older segment's mini-triangle with
-  the calendar-diagonal bridge anchored at the next segment's
-  first-cohort midpoint dev. When `FALSE` (default), return the natural
-  mini-triangle wall only – the pure `"segment_wise"` treatment. `TRUE`
-  corresponds to `"segment_wise_bridged"`.
+  Logical. When `TRUE` (used by both segment treatments), widen each
+  older segment's mini-triangle with the calendar-diagonal bridge
+  anchored at the next segment's first-cohort midpoint dev. When
+  `FALSE`, return the natural mini-triangle wall only (no boundary-gap
+  closure); retained for diagnostics and tests.
 
 ## Value
 

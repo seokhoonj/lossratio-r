@@ -7,9 +7,9 @@ segment K+1.
 Returns rep(1L, length(cohort_vals)) when regime is NULL or carries
 no changes – every cohort is in the single (sole) segment.
 Treatment-agnostic: this helper preserves all change points regardless
-of regime$treatment. Callers decide whether to use the full
-partition ("segment_wise") or collapse to the latest change
-("latest_only").'><meta property="og:description" content='Maps a cohort vector to integer segment ids (1, 2, ..., K+1) given
+of regime$treatment. Callers decide whether to pool the partition
+("segment_bridged") or keep it for per-segment estimation
+("segment_bridged_borrowed").'><meta property="og:description" content='Maps a cohort vector to integer segment ids (1, 2, ..., K+1) given
 a "Regime" object whose $changes carries K change points. A
 cohort earlier than the first change is segment 1; between the k-th
 and (k+1)-th change is segment k+1; on or after the K-th change is
@@ -17,9 +17,9 @@ segment K+1.
 Returns rep(1L, length(cohort_vals)) when regime is NULL or carries
 no changes – every cohort is in the single (sole) segment.
 Treatment-agnostic: this helper preserves all change points regardless
-of regime$treatment. Callers decide whether to use the full
-partition ("segment_wise") or collapse to the latest change
-("latest_only").'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Browser-language redirect: send Korean visitors to /ko/ on the
+of regime$treatment. Callers decide whether to pool the partition
+("segment_bridged") or keep it for per-segment estimation
+("segment_bridged_borrowed").'><meta property="og:image" content="https://seokhoonj.github.io/lossratio/logo.png"><meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs"><!-- Browser-language redirect: send Korean visitors to /ko/ on the
      landing page only. Deep links remain untouched. We use string
      slicing rather than a regex with end-anchor, because pandoc
      treats the dollar sign as a template variable delimiter. --><script>
@@ -127,9 +127,9 @@ segment K+1.</p>
 <p>Returns <code>rep(1L, length(cohort_vals))</code> when <code>regime</code> is <code>NULL</code> or carries
 no changes – every cohort is in the single (sole) segment.</p>
 <p>Treatment-agnostic: this helper preserves all change points regardless
-of <code>regime$treatment</code>. Callers decide whether to use the full
-partition (<code>"segment_wise"</code>) or collapse to the latest change
-(<code>"latest_only"</code>).</p>
+of <code>regime$treatment</code>. Callers decide whether to pool the partition
+(<code>"segment_bridged"</code>) or keep it for per-segment estimation
+(<code>"segment_bridged_borrowed"</code>).</p>
     </div>
 
     <div class="section level2">
