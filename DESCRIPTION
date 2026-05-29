@@ -17,10 +17,10 @@ Description: A loss ratio analytics toolkit for long-term health
     cumulative loss and premium setting with sufficient sample per
     cell.
 License: MPL-2.0
-URL: https://seokhoonj.github.io/lossratio,
-    https://seokhoonj.github.io/lossratio/ko,
-    https://github.com/seokhoonj/lossratio
-BugReports: https://github.com/seokhoonj/lossratio/issues
+URL: https://seokhoonj.github.io/lossratio-r,
+    https://seokhoonj.github.io/lossratio-r/ko,
+    https://github.com/seokhoonj/lossratio-r
+BugReports: https://github.com/seokhoonj/lossratio-r/issues
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 4.1.0)

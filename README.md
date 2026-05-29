@@ -112,10 +112,10 @@ defaults.
 
 ``` r
 # pak (recommended)
-pak::pak("seokhoonj/lossratio")
+pak::pak("seokhoonj/lossratio-r")
 
 # remotes (alternative)
-remotes::install_github("seokhoonj/lossratio")
+remotes::install_github("seokhoonj/lossratio-r")
 ```
 
 ## Quick Start

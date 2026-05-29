@@ -32,10 +32,10 @@
 
 ``` r
 # pak (recommend)
-pak::pak("seokhoonj/lossratio")
+pak::pak("seokhoonj/lossratio-r")
 
 # or
-remotes::install_github("seokhoonj/lossratio")
+remotes::install_github("seokhoonj/lossratio-r")
 ```
 
 ## Quick Start
@@ -186,11 +186,11 @@ vignette("getting-started", package = "lossratio")
 ?detect_regime
 ```
 
-또는 [패키지 사이트](https://seokhoonj.github.io/lossratio/ko/).
+또는 [패키지 사이트](https://seokhoonj.github.io/lossratio-r/ko/).
 
 ## Python sibling
 
-Python 구현: [`lossratio-py`](https://github.com/seokhoonj/lossratio-py) — sklearn-style estimator (`lr.Ratio().fit(tri)`), polars 기반.
+Python 구현: [`lossratio`](https://github.com/seokhoonj/lossratio) — sklearn-style estimator (`lr.Ratio().fit(tri)`), polars 기반.
 
 ## 라이선스 / 저자
 
