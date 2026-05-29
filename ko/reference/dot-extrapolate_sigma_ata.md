@@ -19,7 +19,7 @@ filtered ata factor table. Five methods are supported: `"locf"`,
 
   A `data.table` with `ata_from` and `sigma` columns, typically the
   output of
-  [`.filter_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-filter_ata.md).
+  [`.filter_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-filter_ata.md).
 
 - method:
 

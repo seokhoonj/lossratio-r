@@ -2,7 +2,7 @@
 
 Triangle-style heatmap for an `"PremiumFit"`. Delegates to the shared
 role-agnostic
-[`.plot_triangle_fit()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-plot_triangle_fit.md)
+[`.plot_triangle_fit()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-plot_triangle_fit.md)
 implementation; the cell metric is the premium projection.
 
 ## Usage
@@ -21,7 +21,7 @@ plot_triangle(x, ...)
 - ...:
 
   Forwarded to the shared implementation – see
-  [`plot_triangle.SAFit()`](https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.SAFit.md).
+  [`plot_triangle.SAFit()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot_triangle.SAFit.md).
 
 ## Value
 

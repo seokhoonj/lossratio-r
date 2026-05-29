@@ -1,7 +1,7 @@
 # Safely format a period vector for plot axis labels
 
 Internal helper that formats a period vector using
-[`.format_period()`](https://seokhoonj.github.io/lossratio/reference/dot-format_period.md)
+[`.format_period()`](https://seokhoonj.github.io/lossratio-r/reference/dot-format_period.md)
 when the variable name is a recognised period variable, or falls back to
 [`base::as.character()`](https://rdrr.io/r/base/character.html)
 otherwise.
@@ -31,7 +31,7 @@ period.
 
   Optional grain code (`"M"`/`"Q"`/`"H"`/`"Y"`). Used when `var` is not
   a package-standard period name (see
-  [`.get_period_type()`](https://seokhoonj.github.io/lossratio/reference/dot-get_period_type.md)).
+  [`.get_period_type()`](https://seokhoonj.github.io/lossratio-r/reference/dot-get_period_type.md)).
 
 ## Value
 

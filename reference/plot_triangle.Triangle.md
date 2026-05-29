@@ -56,7 +56,7 @@ plot_triangle(
 
   :   Cell-status heatmap (used / holdout / unused / future). Accepts
       `recent`, `regime`, `holdout`, `maturity` via `...`. See
-      [`vignette("diagnostics")`](https://seokhoonj.github.io/lossratio/articles/diagnostics.md)
+      [`vignette("diagnostics")`](https://seokhoonj.github.io/lossratio-r/articles/diagnostics.md)
       for details.
 
 - metric:
@@ -104,13 +104,13 @@ plot_triangle(
 - theme:
 
   A string passed to
-  [`.switch_theme()`](https://seokhoonj.github.io/lossratio/reference/dot-switch_theme.md)
+  [`.switch_theme()`](https://seokhoonj.github.io/lossratio-r/reference/dot-switch_theme.md)
   (`"view"`, `"save"`, `"shiny"`).
 
 - ...:
 
   Additional arguments passed to
-  [`.switch_theme()`](https://seokhoonj.github.io/lossratio/reference/dot-switch_theme.md).
+  [`.switch_theme()`](https://seokhoonj.github.io/lossratio-r/reference/dot-switch_theme.md).
 
 ## Value
 
@@ -122,7 +122,7 @@ The x-axis uses the development variable stored in `attr(x, "dev")`, and
 the y-axis uses the period variable stored in `attr(x, "cohort")`. If
 either axis variable is a period-like variable such as `uy_m`, `cy_m`,
 `uy_q`, `cy_q`, `uy_h`, `cy_h`, `uy`, or `cy`, it is formatted using
-[`.format_period()`](https://seokhoonj.github.io/lossratio/reference/dot-format_period.md).
+[`.format_period()`](https://seokhoonj.github.io/lossratio-r/reference/dot-format_period.md).
 
 Facets are created from `attr(x, "groups")`.
 

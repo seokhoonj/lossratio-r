@@ -2,14 +2,14 @@
 
 Validate raw experience data, aggregate it onto a `(group, cohort, dev)`
 grid, and assign the `Triangle` S3 class so the downstream methods
-([`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md),
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
-[`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md),
+([`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ratio.md),
+[`fit_loss()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_loss.md),
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md),
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html),
-[`plot_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.md),
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md),
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md),
-[`detect_convergence()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_convergence.md),
+[`plot_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot_triangle.md),
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md),
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_regime.md),
+[`detect_convergence()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_convergence.md),
 ...) can dispatch on the result.
 
 Three steps happen inside this single call:
@@ -153,7 +153,7 @@ as_triangle(
   Logical; if `TRUE`, zero-fill missing `(groups, cohort, dev)` cells so
   that every cohort has a consecutive `dev` sequence. Default `FALSE`,
   which raises an error when gaps are detected. Use
-  [`validate_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/validate_triangle.md)
+  [`validate_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/validate_triangle.md)
   to inspect gaps before deciding.
 
 ## Value

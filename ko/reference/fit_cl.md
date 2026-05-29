@@ -4,9 +4,9 @@ Fit a Mack (1993) chain ladder projection from an object of class
 `"Triangle"`. The function works on long-form cumulative data and does
 not require a complete triangle. Age-to-age factors are estimated
 through
-[`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md)
+[`as_link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_link.md)
 and
-[`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
+[`fit_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ata.md),
 then applied recursively. The point forecast follows the standard
 recursion, and prediction uncertainty is decomposed into process
 variance and parameter variance.
@@ -54,14 +54,14 @@ fit_cl(
 - weight:
 
   An optional column name passed to
-  [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md)
+  [`as_link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_link.md)
   as the WLS weight variable. Typically `"premium"` when
   `loss = "ratio"`. Default is `NULL`.
 
 - alpha:
 
   Numeric scalar controlling the variance structure in
-  [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md).
+  [`fit_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ata.md).
   Default is `1`.
 
 - sigma_method:
@@ -73,7 +73,7 @@ fit_cl(
   for any earlier ones with a warning. `"none"` performs no
   extrapolation; `sigma` stays `NA` and downstream variance terms drop
   those links via finite-value guards. Passed to
-  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-extrapolate_sigma_ata.md).
+  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-extrapolate_sigma_ata.md).
 
 - recent:
 
@@ -85,9 +85,9 @@ fit_cl(
 
   Optional regime specification for cohort cutoff. Accepts: `NULL`
   (default – no filter), a `Regime` object (from
-  [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
+  [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_regime.md)
   or
-  [`regime_at()`](https://seokhoonj.github.io/lossratio/ko/reference/regime_at.md)),
+  [`regime_at()`](https://seokhoonj.github.io/lossratio-r/ko/reference/regime_at.md)),
   the string `"auto"` (internal `detect_regime(tri, loss = "ratio")`
   call), or a function `function(tri) -> Regime` for deferred
   custom-config detection. When supplied, cohorts strictly before the
@@ -96,7 +96,7 @@ fit_cl(
 - maturity:
 
   Maturity input forwarded to
-  [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md).
+  [`fit_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ata.md).
   Accepts four forms:
 
   `NULL` (default)
@@ -106,23 +106,23 @@ fit_cl(
   `Maturity` object
 
   :   Pre-built (e.g. from
-      [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
+      [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md)
       or
-      [`maturity_at()`](https://seokhoonj.github.io/lossratio/ko/reference/maturity_at.md))
+      [`maturity_at()`](https://seokhoonj.github.io/lossratio-r/ko/reference/maturity_at.md))
       – used as-is.
 
   `"auto"`
 
   :   Internal
-      [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
+      [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md)
       call with defaults (loss inferred from `loss`).
 
   function `function(tri) -> Maturity`
 
   :   Lazy spec, typically built with
-      [`maturity_spec()`](https://seokhoonj.github.io/lossratio/ko/reference/maturity_spec.md),
+      [`maturity_spec()`](https://seokhoonj.github.io/lossratio-r/ko/reference/maturity_spec.md),
       invoked on the triangle at fit time (leakage-safe for
-      [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)).
+      [`backtest()`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md)).
 
 - tail:
 
@@ -134,7 +134,7 @@ fit_cl(
 
   Optional bootstrap specification. Accepts `NULL` (default, analytical
   Mack SE only), a `BootstrapTriangle` object produced by
-  [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
+  [`bootstrap()`](https://seokhoonj.github.io/lossratio-r/ko/reference/bootstrap.md)
   (replayed for SE / CI), or the string `"auto"` to run an internal
   nonparametric bootstrap at fit time.
 
@@ -197,7 +197,7 @@ An object of class `"CLFit"` containing:
 - `link`:
 
   The `"Link"` object produced by
-  [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md).
+  [`as_link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_link.md).
 
 - `summary`:
 
@@ -211,12 +211,12 @@ An object of class `"CLFit"` containing:
 - `factor`:
 
   `data.table` of fitted factors from
-  [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md).
+  [`fit_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ata.md).
 
 - `maturity`:
 
   Maturity diagnostics from
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md),
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md),
   or `NULL` when maturity filtering was not applied.
 
 - `alpha`:
@@ -253,8 +253,8 @@ An object of class `"CLFit"` containing:
 
 ## See also
 
-[`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
+[`fit_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ata.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ratio.md)
 
 ## Examples
 

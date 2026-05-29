@@ -64,12 +64,12 @@ plot(
 - theme:
 
   Theme string passed to
-  [`.switch_theme()`](https://seokhoonj.github.io/lossratio/reference/dot-switch_theme.md).
+  [`.switch_theme()`](https://seokhoonj.github.io/lossratio-r/reference/dot-switch_theme.md).
 
 - ...:
 
   Additional arguments passed to
-  [`.switch_theme()`](https://seokhoonj.github.io/lossratio/reference/dot-switch_theme.md).
+  [`.switch_theme()`](https://seokhoonj.github.io/lossratio-r/reference/dot-switch_theme.md).
 
 ## Value
 
@@ -78,4 +78,4 @@ A `ggplot` object (single-group), or a named list of `ggplot` objects
 
 ## See also
 
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)

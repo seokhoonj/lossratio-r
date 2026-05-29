@@ -67,7 +67,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/seokhoonj/lossratio/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/seokhoonj/lossratio-r/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -83,7 +83,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>부트스트랩 표준오차 분해 — 모수 불확실성과 프로세스 불확실성</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/seokhoonj/lossratio/blob/main/vignettes/articles/bootstrap-se-decomposition-ko.Rmd" class="external-link"><code>vignettes/articles/bootstrap-se-decomposition-ko.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/seokhoonj/lossratio-r/blob/main/vignettes/articles/bootstrap-se-decomposition-ko.Rmd" class="external-link"><code>vignettes/articles/bootstrap-se-decomposition-ko.Rmd</code></a></small>
       <div class="d-none name"><code>bootstrap-se-decomposition-ko.Rmd</code></div>
     </div>
 
@@ -199,7 +199,7 @@ replicate 마다:</p>
 </ol>
 <p>두 값 모두 cell × replicate 단위로 반환된다.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio" class="external-link">lossratio</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio-r" class="external-link">lossratio</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span></span>
 <span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_triangle.html">as_triangle</a></span><span class="op">(</span></span>
@@ -404,6 +404,11 @@ normal) 에도 <em>closed-form 분산 유도 없이</em> 작동한다.</li>
 <div class="section level2">
 <h2 id="b-결정-davison-hinkley-컨벤션">7. <code>B</code> 결정 — Davison &amp; Hinkley 컨벤션<a class="anchor" aria-label="anchor" href="#b-%EA%B2%B0%EC%A0%95-davison-hinkley-%EC%BB%A8%EB%B2%A4%EC%85%98"></a>
 </h2>
+<p>CI 경계는 R 기본값 <code>type = 7</code> 이 아니라
+<code>quantile(..., type = 1)</code> 로 읽는다. type 1 은 <em>보간하지
+않는</em> 분위수(경험적 CDF 의 역함수)로, 두 이웃 순서통계량 사이를 선형
+보간하는 기본 type 7 과 달리 분위수가 항상 실제 순서통계량 위에
+떨어진다.</p>
 <p>경험적 percentile CI 가 <em>정확한 sample 위치</em> 에 떨어지려면 (즉
 보간 없이) <code>(B + 1) p</code> 가 정수여야 한다. 패키지 default 가
 이를 반영한다.</p>

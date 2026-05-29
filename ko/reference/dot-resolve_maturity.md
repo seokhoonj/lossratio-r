@@ -1,10 +1,10 @@
 # Resolve a maturity input to a Maturity object (or NULL)
 
 Internal 4-type dispatcher used by
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md),
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ratio.md),
+[`fit_loss()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_loss.md),
 and
-[`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md)
 to normalize the `maturity` input into a single representation: either
 `NULL` (no maturity override) or a `"Maturity"` object.
 
@@ -21,12 +21,12 @@ The four accepted input types are:
 - `"auto"`:
 
   Runs
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md)
   on `masked_tri` if supplied, otherwise on `tri`. The `masked_tri`
   fallback is the leakage-safe path used by
-  [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+  [`backtest()`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md)
   – fit functions pass only `tri`, while
-  [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+  [`backtest()`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md)
   passes both so detection sees only the masked (training) data.
 
 - `function(tri) -> Maturity`:

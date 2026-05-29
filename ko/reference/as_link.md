@@ -2,18 +2,18 @@
 
 Derive the development-link table from a `Triangle` and assign the
 `Link` S3 class so the associated
-[`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md),
-[`plot.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/plot.Link.md),
-[`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
-[`fit_intensity()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_intensity.md),
+[`summary.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/summary.Link.md),
+[`plot.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot.Link.md),
+[`fit_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ata.md),
+[`fit_intensity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_intensity.md),
 etc. methods dispatch on the result.
 
 Unlike
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md)
 /
-[`as_calendar()`](https://seokhoonj.github.io/lossratio/ko/reference/as_calendar.md)
+[`as_calendar()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_calendar.md)
 /
-[`as_total()`](https://seokhoonj.github.io/lossratio/ko/reference/as_total.md)
+[`as_total()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_total.md)
 (which take raw experience data and validate/aggregate it), `as_link()`
 operates *on a Triangle* (already validated upstream) and reshapes it
 into link-pair rows. Each row corresponds to one development link
@@ -103,11 +103,11 @@ The returned object carries attributes `groups`, `cohort`, `dev`,
 
 ## See also
 
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md),
-[`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md),
-[`plot.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/plot.Link.md),
-[`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
-[`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md),
+[`summary.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/summary.Link.md),
+[`plot.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot.Link.md),
+[`fit_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ata.md),
+[`fit_ed()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ed.md)
 
 ## Examples
 

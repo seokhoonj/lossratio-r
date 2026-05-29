@@ -44,11 +44,11 @@ projection is identical under `premium_method = "ed"` or `"cl"` (they
 differ only in the variance recursion).
 
 This function is the *composition* layer over
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
+[`fit_loss()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_loss.md)
 and
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md):
+[`fit_premium()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_premium.md):
 it delegates loss projection to
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
+[`fit_loss()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_loss.md),
 retrieves the embedded `PremiumFit`, and composes the loss-ratio point +
 variance via the delta method (`se_method = "fixed"` or `"delta"`). See
 `ARCHITECTURE.md` for the layered design.
@@ -84,14 +84,14 @@ fit_ratio(
 
   An object of class `"Triangle"`. The standardized `"loss"` and
   `"premium"` columns are used
-  ([`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
+  ([`as_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md)
   produces these).
 
 - method:
 
   One of `"ed"` (default), `"cl"`, `"sa"`, `"bf"`, or `"cc"` – the
   loss-side projection method, forwarded to
-  [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md).
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_loss.md).
   `"bf"` and `"cc"` require their prior arguments (`prior`, etc.)
   supplied through `...`.
 
@@ -112,9 +112,9 @@ fit_ratio(
   `Regime` object
 
   :   Use as-is. Typically built via
-      [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
+      [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_regime.md)
       or
-      [`regime_at()`](https://seokhoonj.github.io/lossratio/ko/reference/regime_at.md).
+      [`regime_at()`](https://seokhoonj.github.io/lossratio-r/ko/reference/regime_at.md).
 
   `"auto"`
 
@@ -144,7 +144,7 @@ fit_ratio(
 - premium_method:
 
   One of `"ed"` (default) or `"cl"`. Forwarded to
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_premium.md)
   when constructing the premium projection.
 
 - premium_alpha:
@@ -168,7 +168,7 @@ fit_ratio(
   for any earlier ones with a warning. `"none"` performs no
   extrapolation; `sigma` stays `NA` and downstream variance terms drop
   those links via finite-value guards. Passed to
-  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-extrapolate_sigma_ata.md).
+  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-extrapolate_sigma_ata.md).
 
 - recent:
 
@@ -185,9 +185,9 @@ fit_ratio(
   `Maturity` object
 
   :   Use as-is. Typically built via
-      [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
+      [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md)
       or
-      [`maturity_at()`](https://seokhoonj.github.io/lossratio/ko/reference/maturity_at.md).
+      [`maturity_at()`](https://seokhoonj.github.io/lossratio-r/ko/reference/maturity_at.md).
 
   `"auto"` (default)
 
@@ -198,7 +198,7 @@ fit_ratio(
 
   :   A user-supplied function taking the triangle and returning a
       `Maturity` object (e.g. from
-      [`maturity_spec()`](https://seokhoonj.github.io/lossratio/ko/reference/maturity_spec.md))
+      [`maturity_spec()`](https://seokhoonj.github.io/lossratio-r/ko/reference/maturity_spec.md))
       for deferred custom-config detection.
 
   When `method = "sa"`, this also determines the switch point between ED
@@ -207,7 +207,7 @@ fit_ratio(
 - tail:
 
   Tail factor for the loss-side projection, forwarded to
-  [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md).
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_loss.md).
   `FALSE` (default) applies none; `TRUE` estimates a log-linear tail
   factor; a numeric value is used directly.
 
@@ -260,28 +260,28 @@ fit_ratio(
   `"auto"`
 
   :   Internal
-      [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
+      [`bootstrap()`](https://seokhoonj.github.io/lossratio-r/ko/reference/bootstrap.md)
       call on the loss triangle with defaults
       `(type = "analytical", process = "normal", target = "loss")`.
 
   `BootstrapTriangle`
 
   :   Pre-built object from
-      [`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md).
+      [`bootstrap()`](https://seokhoonj.github.io/lossratio-r/ko/reference/bootstrap.md).
       Must have `meta$target == "loss"`.
 
   Function `function(tri) -> BootstrapTriangle`
 
   :   Lazy spec invoked on the input Triangle (leakage-safe for
-      [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)).
+      [`backtest()`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md)).
 
   Premium is held at observed values during the bootstrap (loss-only
   convention). `ratio_se` is recomputed from the bootstrap-derived
   `loss_total_se` via
-  [`.compute_ratio_se()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-compute_ratio_se.md),
+  [`.compute_ratio_se()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-compute_ratio_se.md),
   combined with the premium-side SE per `se_method` (`"fixed"` ignores
   premium SE; `"delta"` uses `premium_total_se` from the inner
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_premium.md)
   plus `rho` correlation).
 
 - B:
@@ -296,7 +296,7 @@ fit_ratio(
 - ...:
 
   Additional arguments forwarded to
-  [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_loss.md)
   and its worker – notably `prior` (and related arguments) when
   `method = "bf"` or `"cc"`.
 
@@ -306,13 +306,13 @@ An object of class `"RatioFit"`.
 
 ## See also
 
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md),
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md),
-[`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md),
-[`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
-[`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md),
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
+[`fit_loss()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_loss.md),
+[`fit_premium()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_premium.md),
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md),
+[`as_link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_link.md),
+[`fit_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ata.md),
+[`fit_ed()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ed.md),
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md)
 
 ## Examples
 

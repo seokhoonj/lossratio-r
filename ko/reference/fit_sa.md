@@ -4,12 +4,12 @@ Project cumulative loss across the cohort x development grid using the
 *stage-adaptive* (SA) method: ED before the maturity point, CL after. SA
 composes both projection paradigms anchored on a per-group maturity
 switch – a 2-pass fit (maturity detection via
-[`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md),
+[`fit_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ata.md),
 then the SA projection itself).
 
 SA is a worker – standalone, no internal method dispatch. The
 role-specific entry point
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
+[`fit_loss()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_loss.md)
 dispatches `method = "sa"` to this function; users can also call
 `fit_sa()` directly.
 
@@ -43,7 +43,7 @@ fit_sa(
 
   A `"Triangle"` object. The standardized `"loss"` and `"premium"`
   columns are used
-  ([`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
+  ([`as_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md)
   produces these).
 
 - loss:
@@ -63,7 +63,7 @@ fit_sa(
   Optional pre-built `PremiumFit` supplying the premium projection. When
   `NULL`, `fit_sa()` builds the premium projection internally – a
   worker-layer
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_cl.md)
   on the `premium` column – using `exposure_method`, `exposure_alpha`,
   and the resolved `regime`.
 
@@ -85,7 +85,7 @@ fit_sa(
   for any earlier ones with a warning. `"none"` performs no
   extrapolation; `sigma` stays `NA` and downstream variance terms drop
   those links via finite-value guards. Passed to
-  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-extrapolate_sigma_ata.md).
+  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-extrapolate_sigma_ata.md).
 
 - recent:
 
@@ -144,10 +144,10 @@ An object of class `"SAFit"`. List with components mirroring `LossFit`:
 
 ## See also
 
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md),
-[`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md),
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md).
+[`fit_loss()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_loss.md),
+[`fit_cl()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_cl.md),
+[`fit_ed()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ed.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ratio.md).
 
 ## Examples
 

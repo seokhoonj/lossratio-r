@@ -7,14 +7,14 @@ Internal helper computing:
 where \\W_k = \sum_i w\_{i,k} \cdot C\_{i,k}^\alpha\\. This is
 consistent with the WLS weight \\w\_{i,k} / C\_{i,k}^{2-\alpha}\\ used
 in
-[`.lm_ata()`](https://seokhoonj.github.io/lossratio/reference/dot-lm_ata.md)
+[`.lm_ata()`](https://seokhoonj.github.io/lossratio-r/reference/dot-lm_ata.md)
 and follows Mack (1993)'s distribution-free standard-error derivation
 for the chain ladder reserve estimator.
 
 Paradigm pairing: the package keeps two natural analytical variance
 helpers, one per paradigm-target pair: `.mack_f_var()` (CL / Mack 1993
 applied to f-factor) and
-[`.ed_g_var()`](https://seokhoonj.github.io/lossratio/reference/dot-ed_g_var.md)
+[`.ed_g_var()`](https://seokhoonj.github.io/lossratio-r/reference/dot-ed_g_var.md)
 (ED / Buehlmann-Straub 1970 applied to g-intensity). They share the
 underlying volume-weighted variance idea (\\\sigma^2_g = \sigma^2_f\\
 via \\g_k = f_k - 1\\), but operate on different `Link` columns (f reads
@@ -23,7 +23,7 @@ differently-named output columns (`f_var` / `g_var`), so are kept as
 separate helpers.
 
 Also used by
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
 for the CL component.
 
 ## Usage

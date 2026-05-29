@@ -12,7 +12,7 @@ The `$full` projection table holds cumulative loss / premium projections
 and their standard errors, computed directly from the Mack-style ED
 recursion (see `.ed_proj`, `.ed_proc_var`, `.ed_param_var`). To validate
 an ED projection via
-[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md),
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md),
 call `backtest(tri, target = "ratio", loss_method = "ed")`.
 
 ## Usage
@@ -45,14 +45,14 @@ fit_ed(
 - loss:
 
   Cumulative loss variable. Default `"loss"`. Forwarded to
-  [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md)
+  [`as_link()`](https://seokhoonj.github.io/lossratio-r/reference/as_link.md)
   and to downstream workers.
 
 - exposure:
 
   Cumulative exposure-base variable (the loss-ratio denominator,
   typically premium). Default `"premium"`. Forwarded to
-  [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md)
+  [`as_link()`](https://seokhoonj.github.io/lossratio-r/reference/as_link.md)
   and to downstream workers.
 
 - method:
@@ -77,7 +77,7 @@ fit_ed(
   for any earlier ones with a warning. `"none"` performs no
   extrapolation; `sigma` stays `NA` and downstream variance terms drop
   those links via finite-value guards. Passed to
-  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio/reference/dot-extrapolate_sigma_ata.md).
+  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio-r/reference/dot-extrapolate_sigma_ata.md).
 
 - recent:
 
@@ -88,11 +88,11 @@ fit_ed(
 
   Optional regime specification for cohort cutoff. Accepts: `NULL`
   (default – no filter), a `"Regime"` object (from
-  [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)),
+  [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)),
   the string `"auto"` (internal `detect_regime(tri, loss = "ratio")`
   call), or a function `function(tri) -> Regime`. Resolved internally
   via
-  [`.resolve_regime()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_regime.md).
+  [`.resolve_regime()`](https://seokhoonj.github.io/lossratio-r/reference/dot-resolve_regime.md).
   When supplied, cohorts with `cohort < change_date` are excluded from
   estimation. Default is `NULL`.
 
@@ -100,7 +100,7 @@ fit_ed(
 
   Optional bootstrap specification. Accepts `NULL` (default, analytical
   Mack SE only), a `BootstrapTriangle` object produced by
-  [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
+  [`bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/bootstrap.md)
   (replayed for SE / CI), or the string `"auto"` to run an internal
   nonparametric bootstrap at fit time.
 
@@ -122,7 +122,7 @@ fit_ed(
 - ...:
 
   Additional arguments passed to
-  [`summary.Link()`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md).
+  [`summary.Link()`](https://seokhoonj.github.io/lossratio-r/reference/summary.Link.md).
 
 ## Value
 
@@ -151,7 +151,7 @@ An object of class `"EDFit"` (a named list) with components:
 
 ## See also
 
-[`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md),
-[`summary.Link()`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md),
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md),
-[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+[`as_link()`](https://seokhoonj.github.io/lossratio-r/reference/as_link.md),
+[`summary.Link()`](https://seokhoonj.github.io/lossratio-r/reference/summary.Link.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md),
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)

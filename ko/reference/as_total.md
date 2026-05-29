@@ -3,13 +3,13 @@
 Validate raw experience data, aggregate it to a single scalar row per
 group (collapsing both the cohort and development axes), and assign the
 `Total` S3 class so the associated
-[`plot.Total()`](https://seokhoonj.github.io/lossratio/ko/reference/plot.Total.md)
+[`plot.Total()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot.Total.md)
 bar chart and other Total methods dispatch on the result.
 
 Compared with
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md)
 (two-dimensional `cohort x dev`) and
-[`as_calendar()`](https://seokhoonj.github.io/lossratio/ko/reference/as_calendar.md)
+[`as_calendar()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_calendar.md)
 (one-dimensional time series), `as_total()` is *zero-dimensional* per
 group – one row of portfolio aggregates. The typical use is high-level
 portfolio comparison across products, coverages, or channels.
@@ -41,7 +41,7 @@ as_total(x)
 - x:
 
   A `Triangle` object (typically from
-  [`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)).
+  [`as_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md)).
 
 ## Value
 

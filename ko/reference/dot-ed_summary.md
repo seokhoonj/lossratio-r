@@ -3,14 +3,14 @@
 Internal helper that derives the per-cohort `latest` / `loss_ult` /
 `reserve` / process / parameter / total SE table from `x$full` and
 stores it on `x$summary`. Mirrors
-[`.cl_summary()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-cl_summary.md)
+[`.cl_summary()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-cl_summary.md)
 for cross-paradigm slot symmetry: both `CLFit$summary` and
 `EDFit$summary` carry the same columns, so downstream consumers
-([`summary.CLFit()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.CLFit.md),
+([`summary.CLFit()`](https://seokhoonj.github.io/lossratio-r/ko/reference/summary.CLFit.md),
 future
-[`summary.EDFit()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.EDFit.md)
+[`summary.EDFit()`](https://seokhoonj.github.io/lossratio-r/ko/reference/summary.EDFit.md)
 reserve view,
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ratio.md)
 composition, etc.) read from a uniform layout.
 
 ## Usage

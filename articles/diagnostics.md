@@ -8,9 +8,9 @@ three diagnostics, each on its own axis:
 
 | Tool | Question | Result | Axis |
 |----|----|----|----|
-| [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md) ($`k^*`$) | When are link factors reproducible? | a dev value | development period |
-| [`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md) ($`k^{**}`$) | When does the LR estimate stop revising? | a dev value | development period |
-| [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md) | Are underwriting cohorts homogeneous? | cohort groups | underwriting period |
+| [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md) ($`k^*`$) | When are link factors reproducible? | a dev value | development period |
+| [`detect_convergence()`](https://seokhoonj.github.io/lossratio-r/reference/detect_convergence.md) ($`k^{**}`$) | When does the LR estimate stop revising? | a dev value | development period |
+| [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md) | Are underwriting cohorts homogeneous? | cohort groups | underwriting period |
 
 In P&C run-off these three properties tend to coincide; in long-duration
 health insurance they must be verified independently. This vignette
@@ -43,7 +43,7 @@ factors are stable enough to trust for chain-ladder projection. It is
 used internally by `fit_ratio(method = "sa")` to switch from the
 exposure-driven (ED) region to the chain-ladder (CL) region.
 
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
 takes a `Triangle` directly — the underlying single-variable `Link` and
 its WLS summary are built internally:
 
@@ -107,25 +107,25 @@ plot(as_link(tri_sur, loss = "loss"), type = "cv")
 
 ### Use in fitting
 
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
 is also called internally by
-[`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md),
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
+[`fit_ata()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ata.md),
+[`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md),
 and `fit_ratio(method = "sa")` via the `maturity` argument. It accepts
 four forms:
 
 - `NULL` — no detection (worker default for standalone calls).
 - a pre-built `Maturity` object — from
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md),
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md),
   or from
-  [`maturity_at()`](https://seokhoonj.github.io/lossratio/reference/maturity_at.md)
+  [`maturity_at()`](https://seokhoonj.github.io/lossratio-r/reference/maturity_at.md)
   for a manual override.
 - `"auto"` — internal
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
   with defaults (the default for `fit_ratio(method = "sa")` and
-  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)).
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md)).
 - a function of one triangle returning a `Maturity` — typically
-  [`maturity_spec()`](https://seokhoonj.github.io/lossratio/reference/maturity_spec.md),
+  [`maturity_spec()`](https://seokhoonj.github.io/lossratio-r/reference/maturity_spec.md),
   which forwards custom detection thresholds.
 
 ``` r
@@ -153,14 +153,14 @@ actually settled. A criterion built on those quantities passes
 automatically with $`k`$, not because of true convergence (the *inertia*
 failure mode).
 
-[`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md)
+[`detect_convergence()`](https://seokhoonj.github.io/lossratio-r/reference/detect_convergence.md)
 detects the **convergence point** $`k^{**}`$ — the first dev
 $`k \ge k^*`$ at which the projected portfolio loss ratio is *observed*
 to be stable, in a sense the user picks via `method =`. It is the
 natural counterpart to $`k^*`$:
 
 - $`k^*`$
-  ([`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md))
+  ([`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md))
   marks where link factors $`f_k`$ become reproducible.
 - $`k^{**}`$ marks where the projection itself stops moving with new
   data.
@@ -173,7 +173,7 @@ from $`k^{**}`$.
 Convergence cannot be measured asymptotically from finite data, only
 *observed up to* the maximum available dev `dev_max` ($`K_{\max}`$). The
 detector runs a rolling
-[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
 over a sequence of candidate dev points `dev_cand`
 $`\in [k^*, K_{\max}-2]`$, builds the projected ultimate LR path `ratio`
 at each one, then evaluates four stability metrics on that path. The
@@ -209,9 +209,9 @@ SE-normalisation with a data-size-independent threshold.
 
 Standard chain-ladder convention: $`i`$ indexes cohort (origin period),
 $`k`$ indexes development period.
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
 returns $`k^*`$,
-[`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md)
+[`detect_convergence()`](https://seokhoonj.github.io/lossratio-r/reference/detect_convergence.md)
 returns $`k^{**}`$ — both live on the same $`k`$ axis.
 
 | Code | Math | Meaning |
@@ -333,7 +333,7 @@ sapply(
 `max_dispersion` below $`\approx 0.05`$ is difficult to attain in real
 portfolios because of single-period claim noise; values above $`0.20`$
 usually indicate genuine cohort heterogeneity that warrants
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)
 before further modelling.
 
 ### Reserving caveat
@@ -354,26 +354,26 @@ For reserving applications:
   the same data might unconverge with one more diagonal.
 - Read the projected ultimate LR and its standard error from
   `fit_ratio()$summary` directly.
-  [`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md)
+  [`detect_convergence()`](https://seokhoonj.github.io/lossratio-r/reference/detect_convergence.md)
   is a diagnostic, not an estimator; the reserve point estimate and
   uncertainty come from the fit object.
 
 ### Limitations
 
-[`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md)
+[`detect_convergence()`](https://seokhoonj.github.io/lossratio-r/reference/detect_convergence.md)
 is a thin layer over repeated
-[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
 calls and inherits their constraints:
 
 - **Identifiability**: `conv_k` can be declared only when
   `dev_max - mat_k >= window` (or 2 for tail / slope). Short observation
   windows return `NA` for every method.
 - **Model conditioning**: the projected LR is computed by
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md),
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md),
   which internally composes
-  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md)
   (default `method = "ed"`) and
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md).
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md).
   Choices made inside that composition (loss method, regime filter,
   maturity argument) feed through to `conv_k`; pass `loss_method =`,
   `loss_regime =`, etc. through `...` to override.
@@ -414,7 +414,7 @@ have lower early loss ratios than older ones, but eye-balling a bundle
 of trajectories is an unreliable way to locate a structural shift —
 especially when observation windows differ across cohorts.
 
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)
 answers both questions in one call — grouping underwriting cohorts into
 **regimes** (groups of cohorts that share similar loss dynamics) and
 reporting the break dates between groups. It treats each underwriting
@@ -645,20 +645,20 @@ value. The `r_all$multi_group` flag distinguishes the layout from the
 single-group scalar form. If a group has too few cohorts for the chosen
 `window`, that group is skipped with a warning (others continue). If
 *all* groups fail,
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)
 errors out. `plot(r_all)` returns a named list of per-group `ggplot`
 panels.
 
 ## Regime filtering of fits
 
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)
 is a *preprocessing diagnostic*, not a modification of the
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
 framework. Its output is used in two ways:
 
 1.  **Stratified fitting**: if two clearly distinct regimes are
     detected, fitting
-    [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+    [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
     separately on each regime subset often yields sharper
     convergence-region LR estimates than a pooled fit.
 2.  **In-fit filtering**: a `Regime` can be passed straight into the
@@ -670,7 +670,7 @@ framework. Its output is used in two ways:
 When chain ladder is fitted on the full triangle after a regime change,
 old-cohort link factors leak into the new-cohort projections, which
 shows up as a monotone drift across `diag_summary` in
-[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md).
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md).
 The `recent = N` argument suppresses some of this drift, but a
 calendar-diagonal cut is symmetric across both axes — it discards older
 cohorts’ young-dev cells too, where the ED region was already stable.
@@ -692,7 +692,7 @@ that split.
 | y (regime change)       | zero or many per group | `detect_regime$changes` |
 
 The maturity point $`k^*`$ is a single internal switch produced by
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md).
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md).
 Regime changes are exogenous events — there can be none, one, or
 several. When a `Regime` object carries multiple changes, the
 `treatment` slot decides how downstream fits use them:
@@ -734,15 +734,15 @@ detect_regime(tri_sur, treatment = "segment_bridged_borrowed")
 
 ### API
 
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
 takes two role-specific regime arguments — `loss_regime` (loss-side
 filter) and `premium_regime` (premium-side filter; defaults to
 `loss_regime`).
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+[`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md)
 /
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+[`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md)
 take a single `regime` argument.
-[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
 mirrors `fit_ratio` with `loss_regime` / `premium_regime`. The workers
 (`fit_ata`, `fit_ed`, `fit_cl`, `fit_intensity`) expose the same single
 `regime` argument. All accept the same four input types:
@@ -750,12 +750,12 @@ mirrors `fit_ratio` with `loss_regime` / `premium_regime`. The workers
 | Input | Behaviour |
 |----|----|
 | `NULL` (default) | no filtering — backwards compatible |
-| `Regime` object | output of [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md) or [`regime_at()`](https://seokhoonj.github.io/lossratio/reference/regime_at.md) |
-| `"auto"` sentinel | calls [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md) internally on the triangle |
+| `Regime` object | output of [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md) or [`regime_at()`](https://seokhoonj.github.io/lossratio-r/reference/regime_at.md) |
+| `"auto"` sentinel | calls [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md) internally on the triangle |
 | `function(tri) -> Regime` | closure that returns a `Regime` from a triangle |
 
 Raw `Date` / character / vector input is no longer accepted — wrap it in
-[`regime_at()`](https://seokhoonj.github.io/lossratio/reference/regime_at.md)
+[`regime_at()`](https://seokhoonj.github.io/lossratio-r/reference/regime_at.md)
 first to make the change explicit:
 
 ``` r
@@ -849,7 +849,7 @@ filter; the overall mean returns to ~0.
 
 ### Multi-group handling
 
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)
 assumes a single-group triangle for in-fit filtering. For a portfolio
 with multiple `coverage` groups, call it per group:
 
@@ -893,30 +893,30 @@ P&C run-off but must be verified independently in long-duration health
 insurance:
 
 1.  Run
-    [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md).
+    [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md).
     If multiple regimes exist, fit each group separately, or pass
     `loss_regime =` / `regime =` into the fit / backtest call.
 2.  For each homogeneous group, compute $`k^*`$ via
-    [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md).
+    [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md).
 3.  Run
-    [`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md)
+    [`detect_convergence()`](https://seokhoonj.github.io/lossratio-r/reference/detect_convergence.md)
     to obtain $`k^{**} \ge k^*`$. Read the projected ultimate loss ratio
     from `fit_ratio()$summary` and apply the reserving caveat.
 
 ## See also
 
-- [`?detect_maturity`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md),
-  [`?detect_convergence`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md),
-  [`?detect_regime`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md),
-  [`?regime_at`](https://seokhoonj.github.io/lossratio/reference/regime_at.md),
-  [`?maturity_spec`](https://seokhoonj.github.io/lossratio/reference/maturity_spec.md),
-  [`?fit_ratio`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md),
-  [`?backtest`](https://seokhoonj.github.io/lossratio/reference/backtest.md).
-- [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/articles/backtest.md)
+- [`?detect_maturity`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md),
+  [`?detect_convergence`](https://seokhoonj.github.io/lossratio-r/reference/detect_convergence.md),
+  [`?detect_regime`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md),
+  [`?regime_at`](https://seokhoonj.github.io/lossratio-r/reference/regime_at.md),
+  [`?maturity_spec`](https://seokhoonj.github.io/lossratio-r/reference/maturity_spec.md),
+  [`?fit_ratio`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md),
+  [`?backtest`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md).
+- [`vignette("backtest")`](https://seokhoonj.github.io/lossratio-r/articles/backtest.md)
   — the rolling holdout machinery that
-  [`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md)
+  [`detect_convergence()`](https://seokhoonj.github.io/lossratio-r/reference/detect_convergence.md)
   and the regime filter case study are built on.
-- [`vignette("projection")`](https://seokhoonj.github.io/lossratio/articles/projection.md)
+- [`vignette("projection")`](https://seokhoonj.github.io/lossratio-r/articles/projection.md)
   —
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
   and the `"sa"`, `"ed"`, `"cl"` methods.

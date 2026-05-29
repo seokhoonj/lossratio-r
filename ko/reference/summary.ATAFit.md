@@ -3,7 +3,7 @@
 Returns the link-level `ATASummary` carried by the fit, i.e. one row per
 age-to-age link with the WLS-estimated factor `f`, standard error,
 sigma, and diagnostic statistics. Mirrors
-[`summary.EDFit()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.EDFit.md).
+[`summary.EDFit()`](https://seokhoonj.github.io/lossratio-r/ko/reference/summary.EDFit.md).
 
 ## Usage
 

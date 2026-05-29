@@ -2,14 +2,14 @@
 
 User-facing helper for hand-specifying a maturity point (or a set of
 per-group maturity points) without running
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md).
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md).
 The returned `"Maturity"` object plugs into any function that consumes a
 Maturity result –
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md),
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
-[`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ratio.md),
+[`fit_loss()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_loss.md),
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md),
 and the maturity input dispatcher – by carrying the same row schema as
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md)
 output (group columns plus `ata_from`, `change`, `ata_link`).
 
 Use this when company-standard or domain-knowledge maturity points are
@@ -42,7 +42,7 @@ maturity_at(...)
 ## Value
 
 A `data.table` with class `"Maturity"` carrying the same columns as
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md)
 output: group columns (if any), `ata_from = change - 1L`, `change`,
 `ata_link = "<from>-<to>"`, and the diagnostic stat columns (`mean`,
 `median`, `wt`, `cv`, `f`, `f_se`, `rse`, `sigma`, `n_cohorts`,
@@ -52,8 +52,8 @@ output: group columns (if any), `ata_from = change - 1L`, `change`,
 
 ## See also
 
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md),
-[`regime_at()`](https://seokhoonj.github.io/lossratio/ko/reference/regime_at.md)
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md),
+[`regime_at()`](https://seokhoonj.github.io/lossratio-r/ko/reference/regime_at.md)
 
 ## Examples
 

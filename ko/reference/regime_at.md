@@ -2,16 +2,16 @@
 
 User-facing helper for hand-specifying a regime change (or a set of
 per-group changes) without running
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md).
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_regime.md).
 The returned `"Regime"` object plugs into any function that consumes a
 Regime –
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md),
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md),
-[`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ratio.md),
+[`fit_loss()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_loss.md),
+[`fit_premium()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_premium.md),
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md),
 and the regime-change resolver – by carrying the same `$changes` schema
 as
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_regime.md)
 output.
 
 Argument syntax mirrors
@@ -43,7 +43,7 @@ regime_at(..., treatment = c("segment_bridged", "segment_bridged_borrowed"))
   `"segment_bridged_borrowed"` estimates per-segment factors and borrows
   the late-dev factors a segment cannot reach. Both mask to the bridged
   band so every cohort projects to full development. See
-  [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
+  [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_regime.md)
   for full semantics.
 
 ## Value
@@ -82,7 +82,7 @@ distinguishable from a detected Regime.
 
 ## See also
 
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_regime.md)
 
 ## Examples
 

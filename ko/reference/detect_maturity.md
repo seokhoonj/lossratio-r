@@ -3,7 +3,7 @@
 Identify the first mature age-to-age (ata) link from a `Triangle`.
 Internally builds a single-variable `Link` table, computes the per-link
 diagnostic via
-[`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md)
+[`summary.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/summary.Link.md)
 with `model = "ata"`, and then locates the first link whose statistics
 satisfy all maturity criteria.
 
@@ -60,7 +60,7 @@ detect_maturity(
 
   Cumulative metric for the link factor. Default `"loss"` (chain-ladder
   convention; see Description). Forwarded to
-  [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md).
+  [`as_link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_link.md).
 
 - groups:
 
@@ -80,13 +80,13 @@ detect_maturity(
 - weight:
 
   Optional WLS weight variable. Forwarded to
-  [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md).
+  [`as_link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_link.md).
 
 - alpha:
 
   Numeric scalar controlling the variance structure in the underlying
   WLS fit. Default `1`. Forwarded to
-  [`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md).
+  [`summary.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/summary.Link.md).
 
 - max_cv:
 

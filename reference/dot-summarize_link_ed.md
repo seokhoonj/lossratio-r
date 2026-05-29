@@ -3,7 +3,7 @@
 Internal helper that computes group-wise summary statistics for
 incremental loss intensity \\g\\ from a dual-variable `Link` object
 (built with `exposure` set). Dispatched via
-[`summary.Link()`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md)
+[`summary.Link()`](https://seokhoonj.github.io/lossratio-r/reference/summary.Link.md)
 when `model = "ed"`.
 
 Two purposes:
@@ -16,7 +16,7 @@ Two purposes:
     development link to produce the WLS-estimated intensity (`g`), its
     standard error (`g_se`), relative standard error (`rse`), and
     residual sigma (`sigma`). These are used downstream by
-    [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md).
+    [`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md).
 
 ## Usage
 
@@ -29,7 +29,7 @@ Two purposes:
 - object:
 
   A `Link` object built with `exposure` set, typically produced by
-  [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md).
+  [`as_link()`](https://seokhoonj.github.io/lossratio-r/reference/as_link.md).
 
 - alpha:
 
@@ -69,6 +69,6 @@ they differ in how weights are assigned:
 
 ## See also
 
-[`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md),
-[`summary.Link()`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md),
-[`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md)
+[`as_link()`](https://seokhoonj.github.io/lossratio-r/reference/as_link.md),
+[`summary.Link()`](https://seokhoonj.github.io/lossratio-r/reference/summary.Link.md),
+[`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md)

@@ -3,7 +3,7 @@
 Visualise gap positions on a `cohort x dev` grid: for every cohort with
 gaps, expanded dev cells are coloured by status (`observed` /
 `missing`). Complements
-[`plot.TriangleValidation()`](https://seokhoonj.github.io/lossratio/ko/reference/plot.TriangleValidation.md)
+[`plot.TriangleValidation()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot.TriangleValidation.md)
 (which shows observed-vs-expected counts as bars) – this heatmap shows
 *where* the gaps are.
 
@@ -34,7 +34,7 @@ plot_triangle(
   Axis layout. One of `"calendar"` (cohort x calendar grid, default) or
   `"dev"` (cohort x dev grid). `"calendar"` requires the calendar column
   to have been supplied to
-  [`validate_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/validate_triangle.md);
+  [`validate_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/validate_triangle.md);
   `"dev"` works when either calendar or dev was supplied.
 
 - show_label:
@@ -45,12 +45,12 @@ plot_triangle(
 - theme:
 
   String passed to
-  [`.switch_theme()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-switch_theme.md).
+  [`.switch_theme()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-switch_theme.md).
 
 - ...:
 
   Extra arguments passed to
-  [`.switch_theme()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-switch_theme.md).
+  [`.switch_theme()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-switch_theme.md).
 
 ## Value
 

@@ -21,13 +21,13 @@ where `premium` represents risk premium, not written premium.
 
 Useful links:
 
-- <https://seokhoonj.github.io/lossratio>
+- <https://seokhoonj.github.io/lossratio-r>
 
-- <https://seokhoonj.github.io/lossratio/ko>
+- <https://seokhoonj.github.io/lossratio-r/ko>
 
-- <https://github.com/seokhoonj/lossratio>
+- <https://github.com/seokhoonj/lossratio-r>
 
-- Report bugs at <https://github.com/seokhoonj/lossratio/issues>
+- Report bugs at <https://github.com/seokhoonj/lossratio-r/issues>
 
 ## Author
 

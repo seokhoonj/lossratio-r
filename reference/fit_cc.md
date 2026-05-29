@@ -30,13 +30,13 @@ computed *within group* (not pooled across groups) so each group retains
 its own portfolio-level ELR estimate.
 
 This is a peer worker alongside
-[`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md)
+[`fit_bf()`](https://seokhoonj.github.io/lossratio-r/reference/fit_bf.md)
 /
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+[`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
 /
-[`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md).
+[`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md).
 Standalone for the Cape Cod recipe – composition with
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
 is not part of this worker. Point projection is always computed;
 bootstrap SE / CI is opt-in via `bootstrap = TRUE` (Phase 3b). The
 bootstrap path also produces per-replicate pooled ELR draws
@@ -83,7 +83,7 @@ fit_cc(
 - bootstrap:
 
   Bootstrap configuration. Same forms as
-  [`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md)'s
+  [`fit_bf()`](https://seokhoonj.github.io/lossratio-r/reference/fit_bf.md)'s
   `bootstrap` arg – see there for the full description.
 
 - B:
@@ -116,17 +116,17 @@ fit_cc(
 - alpha:
 
   Numeric scalar passed through to the inner
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
   /
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md)
   calls. Default `1`.
 
 - sigma_method:
 
   Sigma extrapolation method forwarded to
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
   /
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md).
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md).
   Default `"locf"`.
 
 - recent:
@@ -138,7 +138,7 @@ fit_cc(
 
   Optional regime specification forwarded to the inner loss and premium
   fits. See
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
   for the four-type dispatch.
 
 - credibility:
@@ -149,7 +149,7 @@ fit_cc(
   credibility blend `ult = Z * CL + (1 - Z) * prior` with the pooled ELR
   as the prior; `Z = K / (K + s^2)` shrinks a green / rare-event cohort
   toward the pooled ELR. See
-  [`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md)
+  [`fit_bf()`](https://seokhoonj.github.io/lossratio-r/reference/fit_bf.md)
   for the full description. A credibility blend uses the analytical SE
   path.
 
@@ -225,9 +225,9 @@ An object of class `"CCFit"` containing:
 - `alpha`, `sigma_method`, `recent`, `regime`:
 
   Inputs forwarded to the inner
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
   /
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md)
   calls.
 
 ## References
@@ -241,10 +241,10 @@ Bornhuetter, R. L. and Ferguson, R. E. (1972). The actuary and IBNR.
 
 ## See also
 
-[`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md)
+[`fit_bf()`](https://seokhoonj.github.io/lossratio-r/reference/fit_bf.md)
 (Bornhuetter-Ferguson with user-supplied prior),
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+[`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md),
+[`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md)
 
 ## Examples
 

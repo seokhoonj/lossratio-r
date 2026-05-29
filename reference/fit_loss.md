@@ -6,29 +6,29 @@ forwards to a worker selected by `method`:
 
 - `"ed"` (default):
 
-  [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md)
+  [`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md)
   – pure exposure-driven (additive). Unconditional safe baseline; no
   maturity dependency.
 
 - `"cl"`:
 
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
   – pure Mack chain ladder (multiplicative). Classical reference.
 
 - `"sa"`:
 
-  [`fit_sa()`](https://seokhoonj.github.io/lossratio/reference/fit_sa.md)
+  [`fit_sa()`](https://seokhoonj.github.io/lossratio-r/reference/fit_sa.md)
   – stage-adaptive composition: ED before the maturity point, CL after.
 
 - `"bf"`:
 
-  [`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md)
+  [`fit_bf()`](https://seokhoonj.github.io/lossratio-r/reference/fit_bf.md)
   – Bornhuetter-Ferguson; requires a `prior` ELR (scalar or per-cohort
   table) passed via `...`.
 
 - `"cc"`:
 
-  [`fit_cc()`](https://seokhoonj.github.io/lossratio/reference/fit_cc.md)
+  [`fit_cc()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cc.md)
   – Cape Cod (BF with a pooled ELR derived from the data).
 
 The dispatcher returns a `LossFit` object whose `$full` schema is
@@ -37,7 +37,7 @@ uniform across methods (`loss_obs`, `loss_proj`, `loss_total_se`,
 `incr_premium_proj`, plus method-specific extras). Missing slots on
 worker outputs (e.g. `loss_ata_fit` for ED, `ed`/`selected` for
 CL/BF/CC) are synthesized as `NULL` so downstream code such as
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
 can guard uniformly.
 
 ## Usage
@@ -70,7 +70,7 @@ fit_loss(
 
   A `"Triangle"` object. The standardized `"loss"` and `"premium"`
   columns are used
-  ([`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
+  ([`as_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/as_triangle.md)
   produces these).
 
 - method:
@@ -89,14 +89,14 @@ fit_loss(
   simple cohort cut. The same resolved regime is applied to the internal
   premium fit – callers needing an asymmetric loss/premium split should
   use
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md).
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md).
 
 - premium_fit:
 
   Optional pre-built `PremiumFit` supplying the premium projection. Only
   used by `"ed"` (via `fit_ed`'s internal premium handling) and `"sa"`.
   When `NULL`, the worker calls
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md)
   internally.
 
 - premium_method:
@@ -117,7 +117,7 @@ fit_loss(
   for any earlier ones with a warning. `"none"` performs no
   extrapolation; `sigma` stays `NA` and downstream variance terms drop
   those links via finite-value guards. Passed to
-  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio/reference/dot-extrapolate_sigma_ata.md).
+  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio-r/reference/dot-extrapolate_sigma_ata.md).
 
 - recent:
 
@@ -142,11 +142,11 @@ fit_loss(
 - bootstrap:
 
   Bootstrap configuration. Five forms accepted (see
-  [`fit_sa()`](https://seokhoonj.github.io/lossratio/reference/fit_sa.md)
+  [`fit_sa()`](https://seokhoonj.github.io/lossratio-r/reference/fit_sa.md)
   /
-  [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md)
+  [`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md)
   /
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
   for method-specific defaults).
 
 - B:
@@ -175,13 +175,13 @@ An object of class `"LossFit"`. List with components: `full`, `proj`,
 
 ## See also
 
-[`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md),
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
-[`fit_sa()`](https://seokhoonj.github.io/lossratio/reference/fit_sa.md),
-[`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md),
-[`fit_cc()`](https://seokhoonj.github.io/lossratio/reference/fit_cc.md),
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md),
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md).
+[`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md),
+[`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md),
+[`fit_sa()`](https://seokhoonj.github.io/lossratio-r/reference/fit_sa.md),
+[`fit_bf()`](https://seokhoonj.github.io/lossratio-r/reference/fit_bf.md),
+[`fit_cc()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cc.md),
+[`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md).
 
 ## Examples
 

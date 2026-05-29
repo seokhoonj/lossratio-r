@@ -4,7 +4,7 @@ Drops the most recent `holdout` calendar diagonals (per group) from a
 `Triangle`, returning a new `Triangle` of the same class with all
 attributes preserved. Useful for simulating a historical analyst's view
 – the same masking
-[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
 and `detect_regime(holdout=)` apply internally.
 
 The calendar diagonal index is built as `rank(cohort) + dev - 1`, with

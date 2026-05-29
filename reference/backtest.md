@@ -8,13 +8,13 @@ values that were withheld.
 The target is selected with `target`:
 
 - `target = "ratio"` – score the loss-ratio projection from
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md).
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md).
 
 - `target = "loss"` – score the loss projection from
-  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md).
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md).
 
 - `target = "premium"` – score the premium projection from
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md).
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md).
 
 The A/E Error (`ae_err`) follows the standard actuarial A/E convention
 and is computed cell-wise as \$\$ae\\err =
@@ -81,9 +81,9 @@ print(x, ...)
 - loss_method:
 
   Method for the loss-side projection. Passed to
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
   /
-  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md)
   as their `method` argument. One of `"ed"` (default), `"cl"`, `"sa"`,
   `"bf"`, or `"cc"`. `"bf"` / `"cc"` need their prior arguments supplied
   through `...`. Unused for `target = "premium"`.
@@ -91,11 +91,11 @@ print(x, ...)
 - premium_method:
 
   Method for the premium-side projection. Passed to
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
   /
-  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md)
   /
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md).
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md).
   One of `"ed"` (default) or `"cl"`.
 
 - loss_alpha, premium_alpha:
@@ -111,7 +111,7 @@ print(x, ...)
   for any earlier ones with a warning. `"none"` performs no
   extrapolation; `sigma` stays `NA` and downstream variance terms drop
   those links via finite-value guards. Passed to
-  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio/reference/dot-extrapolate_sigma_ata.md).
+  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio-r/reference/dot-extrapolate_sigma_ata.md).
 
 - recent:
 
@@ -121,16 +121,16 @@ print(x, ...)
 
   Regime spec for the loss / premium side. Each accepts one of four
   input types, dispatched by
-  [`.resolve_regime()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_regime.md):
+  [`.resolve_regime()`](https://seokhoonj.github.io/lossratio-r/reference/dot-resolve_regime.md):
 
   - `NULL` (default) – no regime filter.
 
   - A `Regime` object (e.g. from
-    [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md))
+    [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md))
     – used as-is.
 
   - The string `"auto"` – runs
-    [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+    [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)
     on the **masked** triangle (leakage-safe; uses only data available
     at the simulated backtest cutoff).
 
@@ -143,54 +143,54 @@ print(x, ...)
 
   Maturity input. Used only for `target = "ratio"` and `target = "loss"`
   (stage-adaptive). Accepts one of four input types, dispatched by
-  [`.resolve_maturity()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_maturity.md):
+  [`.resolve_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/dot-resolve_maturity.md):
 
   - `NULL` – skip maturity filtering.
 
   - A `Maturity` object (e.g. from
-    [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+    [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
     or
-    [`maturity_at()`](https://seokhoonj.github.io/lossratio/reference/maturity_at.md))
+    [`maturity_at()`](https://seokhoonj.github.io/lossratio-r/reference/maturity_at.md))
     – used as-is. Caller takes responsibility for any leakage in their
     pre-computation.
 
   - The string `"auto"` (default) – runs
-    [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+    [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
     on the **masked** triangle (last `holdout` calendar diagonals
     removed), avoiding look-ahead leakage.
 
   - A function `function(tri) -> Maturity` (e.g. from
-    [`maturity_spec()`](https://seokhoonj.github.io/lossratio/reference/maturity_spec.md))
+    [`maturity_spec()`](https://seokhoonj.github.io/lossratio-r/reference/maturity_spec.md))
     – called on the masked triangle for the same leakage-safe reason.
 
 - se_method:
 
   Standard-error composition for
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md).
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md).
   Unused for `target = "loss"` / `target = "premium"`.
 
 - rho:
 
   Loss-premium correlation used by
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
   delta method. Unused for `target = "loss"` / `target = "premium"`.
 
 - conf_level:
 
   Confidence level for
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
   /
-  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md)
   intervals. Unused for `target = "premium"`.
 
 - bootstrap, B, seed:
 
   Bootstrap controls forwarded to the target-specific fitter
-  ([`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+  ([`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
   /
-  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md)
   /
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)).
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md)).
   `bootstrap = NULL` (default) defers to the fitter's method-dependent
   resolution: bootstrap for SA/ED methods, analytical for pure CL. The
   fitter accepts the full 4-type dispatch (`NULL` / logical / `"auto"` /
@@ -258,10 +258,10 @@ An object of class `"Backtest"` with components:
 
 ## See also
 
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md),
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md),
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md),
-[`plot.Backtest()`](https://seokhoonj.github.io/lossratio/reference/plot.Backtest.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md),
+[`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md),
+[`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md),
+[`plot.Backtest()`](https://seokhoonj.github.io/lossratio-r/reference/plot.Backtest.md)
 
 ## Examples
 

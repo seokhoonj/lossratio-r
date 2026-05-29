@@ -1,7 +1,7 @@
 # Multi-group plot helper for `Regime`
 
 Builds one PCA panel per group via
-[`.regime_pca_plot()`](https://seokhoonj.github.io/lossratio/reference/dot-regime_pca_plot.md)
+[`.regime_pca_plot()`](https://seokhoonj.github.io/lossratio-r/reference/dot-regime_pca_plot.md)
 and returns a named list of `ggplot` objects keyed by group value.
 
 ## Usage

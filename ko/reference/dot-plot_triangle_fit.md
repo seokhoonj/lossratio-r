@@ -104,7 +104,7 @@ The `label_style` argument controls cell labels:
 - theme:
 
   A string passed to
-  [`.switch_theme()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-switch_theme.md).
+  [`.switch_theme()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-switch_theme.md).
 
 - nrow, ncol:
 
@@ -114,7 +114,7 @@ The `label_style` argument controls cell labels:
 - ...:
 
   Additional arguments passed to
-  [`.switch_theme()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-switch_theme.md).
+  [`.switch_theme()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-switch_theme.md).
 
 ## Value
 

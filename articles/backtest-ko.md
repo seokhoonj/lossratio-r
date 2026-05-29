@@ -1,14 +1,14 @@
 # Backtest: hold-out 대각선을 이용한 추정 검증
 
 > 영어 원본 보기: [Backtesting projections against held-out
-> diagonals](https://seokhoonj.github.io/lossratio/backtest.md)
+> diagonals](https://seokhoonj.github.io/lossratio-r/backtest.md)
 
 ## 1. 동기
 
 준비금 산출과 추정(projection) 방법은 관측된 자료에 적합되지만, 실무적
 가치는 과거 valuation 시점(평가 시점)에서 그 방법이 어떻게 작동했을지에
 달려 있다.
-[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
 는 triangle 에서 `holdout` 으로 지정한 만큼의 최근 대각선 (calendar
 diagonal)을 마스킹한 뒤, 이전 부분에 모형을 재적합하고, 그 추정값을
 마스킹된 셀의 실제값과 비교함으로써 이 질문에 답한다. 이는 경과 기간
@@ -206,9 +206,9 @@ plot_triangle(bt)         # hold-out 영역에 대한 발산형 팔레트 히트
 `type = "col"` 은 경과 기간별 체계적 편향을 살피기에 적합하다.
 `type = "diag"` 는 대각선 효과(calendar-year drift) 를 드러낸다.
 `type = "cell"` 은 어느 코호트가 편향에 기여하는지를 노출한다.
-[`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
+[`plot_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/plot_triangle.md)
 은 셀 단위 A/E Error 값을 기저 적합의
-[`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
+[`plot_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/plot_triangle.md)
 과 동일한 삼각 배치 위에 올려놓으며, 빨간색이 과소 추정 (actual \> pred)
 을 표시하는 빨강/파랑 발산형 팔레트를 사용한다.
 
@@ -234,16 +234,16 @@ plot_triangle(bt)         # hold-out 영역에 대한 발산형 팔레트 히트
 
 > **`target` 에 대한 참고.** `target` 은 **스코어 컬럼(score column)**
 > 으로, 셀 단위로 실제값과 추정값을 비교하는 대상 컬럼을 가리킨다.
-> [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+> [`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
 > 는 `target` 값에 따라 내부적으로 적절한 역할별 적합 함수 를 호출하고,
 > 해당 적합 객체의 `$full` 에서 대응되는 추정 컬럼을 비교 대상으로
 > 사용한다.
 
 | `target` | 내부 적합 함수 | method 인자 | 비교 컬럼 |
 |----|----|----|----|
-| `"ratio"` | [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md) | `loss_method` | `ratio_proj` |
-| `"loss"` | [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md) | `loss_method` | `loss_proj` |
-| `"premium"` | [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md) | `premium_method` | `premium_proj` |
+| `"ratio"` | [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md) | `loss_method` | `ratio_proj` |
+| `"loss"` | [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md) | `loss_method` | `loss_proj` |
+| `"premium"` | [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md) | `premium_method` | `premium_proj` |
 
 ``` r
 
@@ -271,14 +271,14 @@ print(bt_ed_ratio)
 
 ## 8. 함께 보기
 
-- [`vignette("projection")`](https://seokhoonj.github.io/lossratio/articles/projection.md)
+- [`vignette("projection")`](https://seokhoonj.github.io/lossratio-r/articles/projection.md)
   —
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
   참고.
-- [`vignette("projection")`](https://seokhoonj.github.io/lossratio/articles/projection.md)
+- [`vignette("projection")`](https://seokhoonj.github.io/lossratio-r/articles/projection.md)
   —
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
   및 `"sa"`, `"ed"`, `"cl"` 방법.
-- [`?backtest`](https://seokhoonj.github.io/lossratio/reference/backtest.md),
-  [`?plot.Backtest`](https://seokhoonj.github.io/lossratio/reference/plot.Backtest.md),
-  [`?plot_triangle.Backtest`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.Backtest.md).
+- [`?backtest`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md),
+  [`?plot.Backtest`](https://seokhoonj.github.io/lossratio-r/reference/plot.Backtest.md),
+  [`?plot_triangle.Backtest`](https://seokhoonj.github.io/lossratio-r/reference/plot_triangle.Backtest.md).

@@ -1,7 +1,7 @@
 # Resolve a regime specifier to a single Date
 
 Internal helper used by
-[`.apply_regime_filter()`](https://seokhoonj.github.io/lossratio/reference/dot-apply_regime_filter.md)
+[`.apply_regime_filter()`](https://seokhoonj.github.io/lossratio-r/reference/dot-apply_regime_filter.md)
 to coerce a heterogeneous `regime` argument (NULL, Date scalar/vector,
 character coercible to Date, or a `Regime` object) into either a single
 Date scalar or a per-group `data.table` keyed by the caller-supplied
@@ -18,7 +18,7 @@ Date scalar or a per-group `data.table` keyed by the caller-supplied
 - regime:
 
   See
-  [`.apply_regime_filter()`](https://seokhoonj.github.io/lossratio/reference/dot-apply_regime_filter.md).
+  [`.apply_regime_filter()`](https://seokhoonj.github.io/lossratio-r/reference/dot-apply_regime_filter.md).
 
 - by:
 

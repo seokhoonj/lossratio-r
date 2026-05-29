@@ -32,7 +32,7 @@ regardless of shape.
 - prior:
 
   The user-supplied prior. See
-  [`fit_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.md).
+  [`fit_bf()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_bf.md).
 
 - dt:
 

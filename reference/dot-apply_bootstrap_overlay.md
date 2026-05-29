@@ -1,14 +1,14 @@
 # Overlay bootstrap summary statistics onto a fit's `$full` grid
 
 The shared core of every bootstrap-CI path
-([`.lossfit_bootstrap()`](https://seokhoonj.github.io/lossratio/reference/dot-lossfit_bootstrap.md),
-[`.premiumfit_bootstrap()`](https://seokhoonj.github.io/lossratio/reference/dot-premiumfit_bootstrap.md),
+([`.lossfit_bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/dot-lossfit_bootstrap.md),
+[`.premiumfit_bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/dot-premiumfit_bootstrap.md),
 and the in-worker
-[`fit_sa()`](https://seokhoonj.github.io/lossratio/reference/fit_sa.md)
+[`fit_sa()`](https://seokhoonj.github.io/lossratio-r/reference/fit_sa.md)
 /
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
 blocks). Given an already-resolved bootstrap result, it renames the
-[`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
+[`bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/bootstrap.md)
 summary columns to the caller's `<role>_*` schema, joins them onto
 `full` by `(groups, cohort, dev)`, and – on projected cells only –
 overlays the bootstrap SE / CV (and quantile CI when present) over the

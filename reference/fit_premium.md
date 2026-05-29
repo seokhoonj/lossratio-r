@@ -53,7 +53,7 @@ fit_premium(
 - alpha:
 
   Numeric scalar controlling the variance structure passed through to
-  [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md).
+  [`fit_ata()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ata.md).
   Default `1`.
 
 - regime:
@@ -68,9 +68,9 @@ fit_premium(
   `Regime` object
 
   :   Use as-is. Typically built via
-      [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+      [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)
       or
-      [`regime_at()`](https://seokhoonj.github.io/lossratio/reference/regime_at.md).
+      [`regime_at()`](https://seokhoonj.github.io/lossratio-r/reference/regime_at.md).
 
   `"auto"`
 
@@ -94,7 +94,7 @@ fit_premium(
   for any earlier ones with a warning. `"none"` performs no
   extrapolation; `sigma` stays `NA` and downstream variance terms drop
   those links via finite-value guards. Passed to
-  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio/reference/dot-extrapolate_sigma_ata.md).
+  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio-r/reference/dot-extrapolate_sigma_ata.md).
 
 - recent:
 
@@ -127,20 +127,20 @@ fit_premium(
   `"auto"`
 
   :   Internal
-      [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
+      [`bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/bootstrap.md)
       call on the premium triangle with defaults
       `(type = "analytical", process = "normal", target = "premium")`.
 
   `BootstrapTriangle`
 
   :   Pre-built object from
-      [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md).
+      [`bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/bootstrap.md).
       Must have `meta$target == "premium"`.
 
   Function `function(tri) -> BootstrapTriangle`
 
   :   Lazy spec invoked on the input Triangle (leakage-safe for
-      [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)).
+      [`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)).
 
   Regardless of `method`, the bootstrap path uses CL recursion –
   premium's self-anchor makes ED and CL algebraically equivalent
@@ -170,10 +170,10 @@ proc/param decomposition is retained as diagnostic.
 
 ## See also
 
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
-[`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md),
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md),
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md).
+[`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md),
+[`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md),
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/as_triangle.md).
 
 ## Examples
 

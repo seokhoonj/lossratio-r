@@ -3,7 +3,7 @@
 Applies (1) the ED-variance overlay when `method = "ed"`, (2) the
 `loss_*` -\> `premium_*` column rename, and (3) the analytical CI
 bounds. Mirrors the
-[`.lossfit_augment()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-lossfit_augment.md)
+[`.lossfit_augment()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-lossfit_augment.md)
 helper in `R/loss.R`.
 
 ## Usage

@@ -9,7 +9,7 @@ their own slot layouts. This helper adds missing slots (`loss_ata_fit`,
 `loss_total_cv`), and assigns class `"LossFit"`.
 
 For `"cl"`, this synthesizes the premium columns by running an
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
+[`fit_premium()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_premium.md)
 internally when none are present.
 
 ## Usage

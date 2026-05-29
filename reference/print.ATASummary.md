@@ -3,7 +3,7 @@
 Numeric columns are stored at full double precision; rounding is applied
 only for display. The default `digits` is taken from the `digits`
 attribute set by
-[`summary.Link()`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md)
+[`summary.Link()`](https://seokhoonj.github.io/lossratio-r/reference/summary.Link.md)
 (3 unless overridden).
 
 ## Usage

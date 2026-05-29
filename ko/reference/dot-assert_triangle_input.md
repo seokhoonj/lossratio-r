@@ -1,7 +1,7 @@
 # Assert that the input is a `Triangle`, with a helpful error for `Link`
 
 Internal helper used by `fit_*()` entry points. Wraps
-[`.assert_class()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-assert_class.md)
+[`.assert_class()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-assert_class.md)
 but intercepts `Link` inputs first to print a message that explains why
 a `Link` is not a valid input (as_link is called internally) and how to
 pass the data correctly.

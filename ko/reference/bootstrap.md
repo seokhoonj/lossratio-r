@@ -120,7 +120,7 @@ bootstrap(
   across all dev), `"sa"` (stage-adaptive – ED before maturity, CL
   after; currently routes through the CL kernel pending Phase 4 SA
   bootstrap). Mirrors the `method` argument of
-  [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md);
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_loss.md);
   the resulting `BootstrapTriangle` is consumed by the corresponding
   `fit_*(..., bootstrap = bt)` branch. `"ed"` requires
   `residual = "cell"`; ED + `residual = "link"` is not implemented.
@@ -199,11 +199,11 @@ bootstrap(
   quantile work). On a typical 4-group monthly triangle at `B = 999` the
   reshape costs ~250-300 ms and ~200 MB on top of `$summary`; users who
   only consume `$summary` (the common case) should leave this `FALSE`.
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ratio.md)
   /
-  [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_loss.md)
   /
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_premium.md)
   always pass `FALSE` internally because they only read `$summary`. Set
   `TRUE` explicitly if you want to inspect `$pseudo_triangles` directly.
 

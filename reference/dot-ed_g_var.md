@@ -7,7 +7,7 @@ intensity \\g_k = \sum_i \Delta L\_{i,k} / \sum_i P\_{i,k-1}\\.
 
 Paradigm pairing: the package keeps two natural analytical variance
 helpers, one per paradigm-target pair:
-[`.mack_f_var()`](https://seokhoonj.github.io/lossratio/reference/dot-mack_f_var.md)
+[`.mack_f_var()`](https://seokhoonj.github.io/lossratio-r/reference/dot-mack_f_var.md)
 (CL / Mack 1993 applied to f-factor) and `.ed_g_var()` (ED /
 Buehlmann-Straub 1970 applied to g-intensity). The cross-paradigm pairs
 (`.mack_g_var`, `.bs_f_var`) are algebraically derivable via \\g_k =
@@ -24,9 +24,9 @@ conceptually clean entry point for factor-level callers; `"EDFit"` is
 accepted for projection-level callers that already hold the fit object.
 
 Used by
-[`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md)
+[`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md)
 when `method = "mack"` and by
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
 for the ED component.
 
 ## Usage

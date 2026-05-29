@@ -1,9 +1,9 @@
 # Resolve a bootstrap argument to a BootstrapTriangle (4-type dispatch)
 
 Mirrors
-[`.resolve_maturity()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_maturity.md)
+[`.resolve_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/dot-resolve_maturity.md)
 /
-[`.resolve_regime()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_regime.md)
+[`.resolve_regime()`](https://seokhoonj.github.io/lossratio-r/reference/dot-resolve_regime.md)
 pattern. Accepts:
 
 ## Usage
@@ -45,7 +45,7 @@ pattern. Accepts:
   min_pool, maturity, target, alpha:
 
   Defaults forwarded to
-  [`bootstrap.Triangle()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
+  [`bootstrap.Triangle()`](https://seokhoonj.github.io/lossratio-r/reference/bootstrap.md)
   when `arg` resolves to `"auto"` or `TRUE`.
 
 ## Value

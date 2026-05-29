@@ -88,7 +88,7 @@ cumulative values are constructed inside the package.
 
 ## Building a Triangle – `as_triangle()`
 
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/as_triangle.md)
 turns raw experience into a standard **Triangle** object. It performs
 validation, coordinate standardisation, and aggregation in one call.
 
@@ -135,7 +135,7 @@ prefix – `loss`/`incr_loss`, `premium`/`incr_premium`,
 
 If you already hold a cumulative triangle, pass
 `cell_type = "cumulative"`.
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/as_triangle.md)
 then differences within each cohort to recover the increments
 automatically.
 
@@ -197,7 +197,7 @@ observed level well.
 
 ## `fit_cl()` – chain ladder
 
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+[`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
 performs a Mack (1993) chain ladder fit on the cumulative `loss`.
 
 ``` r
@@ -321,7 +321,7 @@ plot(cl)
 
 ## `fit_ed()` – exposure-driven
 
-[`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md)
+[`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md)
 fits the same triangle with the additive exposure-driven model.
 
 ``` r
@@ -419,7 +419,7 @@ periods.
 
 ## `fit_sa()` – stage-adaptive
 
-[`fit_sa()`](https://seokhoonj.github.io/lossratio/reference/fit_sa.md)
+[`fit_sa()`](https://seokhoonj.github.io/lossratio-r/reference/fit_sa.md)
 blends the two views in a stage-adaptive (SA) way: the development
 periods before the maturity point are fit with the exposure-driven
 model, and the periods after it with chain ladder.
@@ -487,7 +487,7 @@ plot(sa)
 
 ## `fit_bf()` – Bornhuetter-Ferguson
 
-[`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md)
+[`fit_bf()`](https://seokhoonj.github.io/lossratio-r/reference/fit_bf.md)
 brings in an **external prior loss ratio**. The portion of loss that has
 not yet emerged is filled not by the data but by the prior.
 
@@ -593,7 +593,7 @@ reason to use Bornhuetter-Ferguson.
 
 ## `fit_cc()` – Cape Cod
 
-[`fit_cc()`](https://seokhoonj.github.io/lossratio/reference/fit_cc.md)
+[`fit_cc()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cc.md)
 has the same structure as Bornhuetter-Ferguson, except the prior loss
 ratio is not supplied externally – it is **estimated by pooling the
 data**.
@@ -736,7 +736,7 @@ external basis for a prior and you let the portfolio speak its own ELR.
 ## `fit_loss()` / `fit_premium()` – the unified dispatchers
 
 Rather than calling a different function for each method,
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+[`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md)
 lets you switch the method with a single `method` argument.
 
 ``` r
@@ -749,7 +749,7 @@ class(fl)
 `method` is one of `"ed"` (default), `"cl"`, `"sa"`, `"bf"`, `"cc"`. For
 `"bf"` / `"cc"` extra arguments such as `prior` are forwarded through
 `...`.
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+[`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md)
 is the companion function that fits the premium side separately.
 
 ``` r
@@ -800,7 +800,7 @@ summary(fe)
 
 ## `fit_ratio()` – composing the loss ratio
 
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
 is the composition layer: it fits the loss side and the premium side
 separately, then combines them to produce the **loss ratio**.
 
@@ -964,11 +964,11 @@ plot(lr)
 
 The same long-format experience can be aggregated three ways depending
 on the question.
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/as_triangle.md)
 keeps both axes (cohort x dev) for projection; two siblings collapse one
 or both axes.
 
-[`as_calendar()`](https://seokhoonj.github.io/lossratio/reference/as_calendar.md)
+[`as_calendar()`](https://seokhoonj.github.io/lossratio-r/reference/as_calendar.md)
 collapses cohorts onto the diagonal, giving one row per calendar period
 – the diagonal sum of the triangle. Use it for calendar-time trend and
 diagonal-effect analysis.
@@ -1001,7 +1001,7 @@ plot(cal)              # x axis: calendar (Date)
 The `t` column is a sequential index within group (1, 2, 3, …), a
 time-series convention. It is *not* a development period.
 
-[`as_total()`](https://seokhoonj.github.io/lossratio/reference/as_total.md)
+[`as_total()`](https://seokhoonj.github.io/lossratio-r/reference/as_total.md)
 collapses both axes to one value per group, useful for portfolio-level
 comparison. The `period_from` / `period_to` arguments bound a fixed
 window so groups stay comparable.
@@ -1034,7 +1034,7 @@ head(tot)
 
 Between a Triangle and a fit sits the **Link** object, the per-link
 factor table built by
-[`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md).
+[`as_link()`](https://seokhoonj.github.io/lossratio-r/reference/as_link.md).
 It is the intermediate object that feeds both chain ladder and the
 exposure-driven model.
 
@@ -1214,9 +1214,9 @@ intensity `intensity = loss_delta / premium_from`. The
 per-link statistics – mean / median / weighted factor, coefficient of
 variation, WLS standard error – that drive maturity detection. The
 factor-level helpers
-[`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)
+[`fit_ata()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ata.md)
 and
-[`fit_intensity()`](https://seokhoonj.github.io/lossratio/reference/fit_intensity.md)
+[`fit_intensity()`](https://seokhoonj.github.io/lossratio-r/reference/fit_intensity.md)
 wrap this same machinery and return per-link estimates only (no `$full`
 projection).
 
@@ -1282,7 +1282,7 @@ planted during 2024, so the result above picks up that change point.
 
 ## `backtest()` – validation
 
-[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
 hides the latest few calendar diagonals, refits the model, and compares
 the withheld actuals against the projection to measure the model’s
 accuracy.
@@ -1452,18 +1452,18 @@ plot_triangle(sa, label_style = "cv")
 ![](getting-started_files/figure-html/plot-examples-1.png)
 
 The `label_style` argument of
-[`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
+[`plot_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/plot_triangle.md)
 switches the cell labels between value (`"value"`), coefficient of
 variation (`"cv"`), standard error (`"se"`), and confidence interval
 (`"ci"`). For the detailed arguments of
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) – `type`,
 `region`, and so on – see each class’s help page
-([`?plot.CLFit`](https://seokhoonj.github.io/lossratio/reference/plot.CLFit.md)
+([`?plot.CLFit`](https://seokhoonj.github.io/lossratio-r/reference/plot.CLFit.md)
 and friends).
 
 The CL / ED / SA / BF / CC / premium fit results all support
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) and
-[`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
+[`plot_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/plot_triangle.md)
 the same way, so the visualisation interface is identical regardless of
 method.
 
@@ -1472,16 +1472,16 @@ method.
 This tutorial follows the core workflow in one pass. For the
 methodological background and detailed options of each topic, see:
 
-- [`?as_triangle`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md),
-  [`?fit_cl`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
-  [`?fit_sa`](https://seokhoonj.github.io/lossratio/reference/fit_sa.md),
-  [`?fit_ratio`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+- [`?as_triangle`](https://seokhoonj.github.io/lossratio-r/reference/as_triangle.md),
+  [`?fit_cl`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md),
+  [`?fit_sa`](https://seokhoonj.github.io/lossratio-r/reference/fit_sa.md),
+  [`?fit_ratio`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
   and other per-function help pages.
-- [`vignette("projection")`](https://seokhoonj.github.io/lossratio/articles/projection.md)
+- [`vignette("projection")`](https://seokhoonj.github.io/lossratio-r/articles/projection.md)
   – projection methods in depth.
-- [`vignette("diagnostics")`](https://seokhoonj.github.io/lossratio/articles/diagnostics.md)
+- [`vignette("diagnostics")`](https://seokhoonj.github.io/lossratio-r/articles/diagnostics.md)
   – maturity, convergence, and regime detection.
-- [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/articles/backtest.md)
+- [`vignette("backtest")`](https://seokhoonj.github.io/lossratio-r/articles/backtest.md)
   – the validation procedure.
-- [`vignette("bootstrap-se-decomposition")`](https://seokhoonj.github.io/lossratio/articles/bootstrap-se-decomposition.md)
+- [`vignette("bootstrap-se-decomposition")`](https://seokhoonj.github.io/lossratio-r/articles/bootstrap-se-decomposition.md)
   – bootstrap standard errors and variance decomposition.

@@ -11,7 +11,7 @@ dip followed by roughly constant incremental loss per dev, so the
 cumulative LR rises monotonically toward the target. The surgery
 coverage carries a synthetic 2024-07 cohort regime change (target LR
 scaled by 0.6) so the
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)
 example has a clear shift to find.
 
 ## Usage

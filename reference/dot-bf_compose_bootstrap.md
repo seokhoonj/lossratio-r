@@ -46,12 +46,12 @@ replicates.
 - boots:
 
   A named list `list(loss = BT, premium = BT)` from
-  [`.resolve_bootstrap_bf()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_bootstrap_bf.md).
+  [`.resolve_bootstrap_bf()`](https://seokhoonj.github.io/lossratio-r/reference/dot-resolve_bootstrap_bf.md).
 
 - priors:
 
   Per-cohort ELR table (see
-  [`.resolve_bf_prior()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_bf_prior.md)).
+  [`.resolve_bf_prior()`](https://seokhoonj.github.io/lossratio-r/reference/dot-resolve_bf_prior.md)).
   Pass `NULL` for the Cape Cod composition (ELR is data-pooled per
   replicate).
 

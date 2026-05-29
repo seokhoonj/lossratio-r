@@ -2,7 +2,7 @@
 
 Triangle-style heatmap for a `"SAFit"`. Delegates to the shared
 role-agnostic
-[`.plot_triangle_fit()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-plot_triangle_fit.md)
+[`.plot_triangle_fit()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-plot_triangle_fit.md)
 implementation.
 
 ## Usage

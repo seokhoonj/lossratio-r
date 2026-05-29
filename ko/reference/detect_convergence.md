@@ -92,7 +92,7 @@ detect_convergence(
 - triangle:
 
   A `Triangle` object (typically from
-  [`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)).
+  [`as_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md)).
 
 - method:
 
@@ -122,14 +122,14 @@ detect_convergence(
   valuations used by the `"window"` method to compute `drift_window`.
   Default `5L`. Note: other functions in the package also expose a
   `window` argument (e.g.
-  [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
+  [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_regime.md)
   for e-divisive segment width); here it controls *only* the drift
   metric, not the e-divisive algorithm.
 
 - mat_k:
 
   Pre-computed maturity point. When `NULL`, computed via
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md)
   applied to a ratio-based ATA.
 
 - holdout_max:
@@ -145,9 +145,9 @@ detect_convergence(
 - ...:
 
   Additional arguments forwarded to
-  [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+  [`backtest()`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md)
   (and thence to
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)),
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ratio.md)),
   e.g. `loss_method`, `recent`, `loss_regime`.
 
 ## Value
@@ -161,6 +161,6 @@ per-method pass vectors (`pass_window`, `pass_tail`, `pass_slope`,
 
 ## See also
 
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md),
-[`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md),
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md),
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ratio.md)

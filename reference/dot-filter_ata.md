@@ -25,13 +25,13 @@ Internal helper that produces a `f_sel` column by applying two steps:
 - ata_summary:
 
   A `data.table` of class `"ATASummary"` from
-  [`summary.Link()`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md)
+  [`summary.Link()`](https://seokhoonj.github.io/lossratio-r/reference/summary.Link.md)
   with `model = "ata"`.
 
 - maturity:
 
   A `data.table` from
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md),
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md),
   or `NULL` when `use_maturity = FALSE`.
 
 - use_maturity:

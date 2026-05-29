@@ -18,7 +18,7 @@ Ratio-specific internal helper. Two variants:
   negative).
 
 Not exported; called only by
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md).
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ratio.md).
 The `"fixed"` branch encodes the actuarial assumption that earned
 premium is known (not estimated), so this helper is *not* a generic
 ratio-SE utility.

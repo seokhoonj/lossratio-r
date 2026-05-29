@@ -54,7 +54,7 @@ drawn whenever the `<role>_total_se` column is present and finite.
 - theme:
 
   A string passed to
-  [`.switch_theme()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-switch_theme.md).
+  [`.switch_theme()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-switch_theme.md).
 
 - nrow, ncol:
 
@@ -64,7 +64,7 @@ drawn whenever the `<role>_total_se` column is present and finite.
 - ...:
 
   Additional arguments passed to
-  [`.switch_theme()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-switch_theme.md).
+  [`.switch_theme()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-switch_theme.md).
 
 ## Value
 

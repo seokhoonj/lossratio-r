@@ -84,7 +84,7 @@ head(experience)
 
 ## 3. Triangle 만들기 – `as_triangle()`
 
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md)
 는 raw experience 를 표준 **Triangle** 객체로 바꾼다. 검증 + 좌표
 표준화 + 집계를 한 번에 수행한다.
 
@@ -122,7 +122,7 @@ tri
 #>                    incr_profit <fct>, loss_share <dbl>, incr_loss_share <dbl>
 ```
 
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md)
 의 동작을 풀어 보면 다음과 같다.
 
 - 필수 컬럼의 존재를 확인하고 expected type 으로 코어션한다,
@@ -137,7 +137,7 @@ tri
 
 이미 누적 삼각형을 갖고 있다면 `cell_type = "cumulative"` 를 주면 된다.
 그러면
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md)
 가 코호트별로 차분해 증분을 자동 산출한다.
 
 ``` r
@@ -182,9 +182,9 @@ plot_triangle(tri1, metric = "ratio")
 
 | 빌더 | 출력 객체 | 차원 | 사용 시점 |
 |----|----|----|----|
-| [`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md) | `Triangle` | 코호트 x dev (2D) | SA, ED, CL 예측 |
-| [`as_calendar()`](https://seokhoonj.github.io/lossratio/ko/reference/as_calendar.md) | `Calendar` | 달력 기간 (1D) | 달력 추세, 대각선 효과 |
-| [`as_total()`](https://seokhoonj.github.io/lossratio/ko/reference/as_total.md) | `Total` | 포트폴리오 합계 (그룹별) | 상위 수준 손해율 비교 |
+| [`as_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md) | `Triangle` | 코호트 x dev (2D) | SA, ED, CL 예측 |
+| [`as_calendar()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_calendar.md) | `Calendar` | 달력 기간 (1D) | 달력 추세, 대각선 효과 |
+| [`as_total()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_total.md) | `Total` | 포트폴리오 합계 (그룹별) | 상위 수준 손해율 비교 |
 
 **Calendar** 는 코호트를 대각선 위로 합산한다 – 각 행이 모든 인수
 코호트에 걸친 하나의 달력 기간이며, 수학적으로 Triangle 의 대각선 합과
@@ -256,7 +256,7 @@ head(tot)
 
 Triangle 에서 연속한 두 경과기간을 잇는 **Link** 객체를 만들면, 위 두
 인자를 적합 전에 직접 점검할 수 있다.
-[`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md)
+[`as_link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_link.md)
 에 `loss` 만 주면 관측된 ATA 인자를, `exposure` 까지 주면 ED 강도 `g_k`
 를 담는다 – 워커 레이어에서 보험료 컬럼은 `exposure` 인자로 받는다.
 
@@ -287,12 +287,12 @@ head(summary(ata, model = "ata"))
 `summary(link, model = "ata"|"ed")` 는 링크별 mean / median / cv /
 `f`(또는 `g`) 등 인자 통계를 산출한다. 이 통계가 뒤에서 성숙점 검출을
 구동한다. 더 깊은 진단은
-[`vignette("getting-started")`](https://seokhoonj.github.io/lossratio/ko/articles/getting-started.md)
+[`vignette("getting-started")`](https://seokhoonj.github.io/lossratio-r/ko/articles/getting-started.md)
 를 참고한다.
 
 ## 6. `fit_cl()` – chain ladder
 
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
+[`fit_cl()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_cl.md)
 은 누적 `loss` 위에서 Mack(1993) 방식의 chain ladder 적합을 수행한다.
 
 ``` r
@@ -413,7 +413,7 @@ plot(cl)
 
 ## 7. `fit_ed()` – 노출 기반
 
-[`fit_ed()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ed.md)
+[`fit_ed()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ed.md)
 는 같은 삼각형을 가법형 ED 모형으로 적합한다.
 
 ``` r
@@ -508,7 +508,7 @@ summary(ed_fit)
 
 ## 8. `fit_sa()` – 단계 적응형
 
-[`fit_sa()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_sa.md)
+[`fit_sa()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_sa.md)
 는 두 관점을 **단계 적응형(stage-adaptive, SA)** 으로 합성한다.
 **성숙점(maturity point)** 이전 경과기간은 ED 로, 이후는 CL 로 적합한다.
 
@@ -573,7 +573,7 @@ plot(sa)
 
 ## 9. `fit_bf()` – Bornhuetter-Ferguson
 
-[`fit_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.md)
+[`fit_bf()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_bf.md)
 는 **외부 사전(prior) 손해율** 을 끌어들인다. 아직 발현되지 않은 미래
 부분은 데이터가 아니라 prior 가 채운다.
 
@@ -677,7 +677,7 @@ prior 를 코호트마다 다르게 주거나(데이터프레임), 분포 prior(
 
 ## 10. `fit_cc()` – Cape Cod
 
-[`fit_cc()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cc.md)
+[`fit_cc()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_cc.md)
 는 BF 와 같은 구조이되, 사전 손해율을 외부에서 받지 않고 **데이터를
 풀링해 추정** 한다.
 
@@ -819,7 +819,7 @@ summary(cc)
 ## 11. `fit_loss()` / `fit_premium()` – 통합 디스패처
 
 방법을 매번 다른 함수로 부르는 대신,
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md)
+[`fit_loss()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_loss.md)
 하나로 `method` 인자만 바꿔 호출할 수 있다.
 
 ``` r
@@ -831,7 +831,7 @@ class(fl)
 
 `method` 는 `"ed"`(기본), `"cl"`, `"sa"`, `"bf"`, `"cc"` 중 하나다.
 `"bf"`/`"cc"` 는 prior 등 추가 인자를 `...` 로 넘긴다.
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md)
+[`fit_premium()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_premium.md)
 는 보험료 측을 따로 적합하는 짝 함수다.
 
 ``` r
@@ -882,7 +882,7 @@ summary(fe)
 
 ## 12. `fit_ratio()` – 손해율 합성
 
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ratio.md)
 는 손해 측과 보험료 측을 각각 적합한 뒤 둘을 결합해 **손해율** 을
 산출하는 합성(composition) 레이어다.
 
@@ -1099,7 +1099,7 @@ reg$changes
 
 ## 14. `backtest()` – 검증
 
-[`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md)
 는 최근 달력 대각선 몇 개를 가린 뒤 다시 적합하고, 가려진 실제값과
 예측값을 비교해 모형의 정확도를 측정한다.
 
@@ -1265,17 +1265,17 @@ plot_triangle(sa, label_style = "cv")
 
 ![](getting-started-ko_files/figure-html/plot-examples-1.png)
 
-[`plot_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.md)
+[`plot_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot_triangle.md)
 의 `label_style` 은 셀 라벨을 값(`"value"`)·변동계수
 (`"cv"`)·표준오차(`"se"`)·신뢰구간(`"ci"`)으로 바꾼다.
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) 의
 `type`·`region` 등 세부 인자는 각 클래스의
-도움말([`?plot.CLFit`](https://seokhoonj.github.io/lossratio/ko/reference/plot.CLFit.md)
+도움말([`?plot.CLFit`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot.CLFit.md)
 등)을 참고한다.
 
 CL / ED / SA / BF / CC / Premium 적합 결과 모두 같은 방식으로
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) 과
-[`plot_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.md)
+[`plot_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot_triangle.md)
 을 지원하므로, 어떤 방법을 쓰든 시각화 인터페이스는 동일하다.
 
 ## 16. 함께 보기
@@ -1283,16 +1283,16 @@ CL / ED / SA / BF / CC / Premium 적합 결과 모두 같은 방식으로
 이 문서는 핵심 작업 흐름을 한 번에 따라가는 것이 목적이다. 각 주제의
 방법론적 배경과 세부 옵션은 다음을 참고한다.
 
-- [`?as_triangle`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md),
-  [`?fit_cl`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md),
-  [`?fit_sa`](https://seokhoonj.github.io/lossratio/ko/reference/fit_sa.md),
-  [`?fit_ratio`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
+- [`?as_triangle`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md),
+  [`?fit_cl`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_cl.md),
+  [`?fit_sa`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_sa.md),
+  [`?fit_ratio`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ratio.md)
   등 함수별 도움말.
-- [`vignette("projection")`](https://seokhoonj.github.io/lossratio/ko/articles/projection.md)
+- [`vignette("projection")`](https://seokhoonj.github.io/lossratio-r/ko/articles/projection.md)
   – 예측 방법 선택과 방법론 상세.
-- [`vignette("diagnostics")`](https://seokhoonj.github.io/lossratio/ko/articles/diagnostics.md)
+- [`vignette("diagnostics")`](https://seokhoonj.github.io/lossratio-r/ko/articles/diagnostics.md)
   – 성숙점·수렴점·regime 진단 심화.
-- [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/ko/articles/backtest.md)
+- [`vignette("backtest")`](https://seokhoonj.github.io/lossratio-r/ko/articles/backtest.md)
   – 검증 절차.
-- [`vignette("bootstrap-se-decomposition")`](https://seokhoonj.github.io/lossratio/ko/articles/bootstrap-se-decomposition.md)
+- [`vignette("bootstrap-se-decomposition")`](https://seokhoonj.github.io/lossratio-r/ko/articles/bootstrap-se-decomposition.md)
   – 부트스트랩 표준오차 분해.

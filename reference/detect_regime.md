@@ -95,7 +95,7 @@ print(x, ...)
 
   Derived metrics drop the first dev row per cohort (no predecessor),
   then re-index `dev` so detection sees a contiguous sequence. See the
-  [`vignette("diagnostics")`](https://seokhoonj.github.io/lossratio/articles/diagnostics.md)
+  [`vignette("diagnostics")`](https://seokhoonj.github.io/lossratio-r/articles/diagnostics.md)
   "Choice of loss" section for guidance on which loss metric matches
   which suspected event.
 
@@ -113,7 +113,7 @@ print(x, ...)
 
   Trajectory window. Integer (e.g., `12L`) for a fixed window, or the
   string `"auto"` (default) – resolves to each group's maturity via
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md),
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md),
   falling back to `6L` when maturity is unavailable (NA, pooled mode, or
   `by` mismatching the Triangle's `attr("groups")`). Cohorts with fewer
   than the resolved `window` observed periods are dropped.
@@ -200,7 +200,7 @@ An object of class `"Regime"`. For single-group input:
 - `window_mode`:
 
   Either `"auto"` (resolved per group via
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md))
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md))
   or `"manual"` (user-supplied integer).
 
 - `cohort`:
@@ -252,18 +252,18 @@ An object of class `"Regime"`. For single-group input:
 
   Either `"segment_bridged"` or `"segment_bridged_borrowed"` – the value
   supplied via the `treatment` argument. Read by downstream fits
-  ([`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md),
-  [`fit_intensity()`](https://seokhoonj.github.io/lossratio/reference/fit_intensity.md),
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
-  [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md))
+  ([`fit_ata()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ata.md),
+  [`fit_intensity()`](https://seokhoonj.github.io/lossratio-r/reference/fit_intensity.md),
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md),
+  [`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md))
   to decide whether to pool the bridged band into a single factor
   estimate or estimate per-segment factors and borrow the late-dev
   factors a segment cannot reach.
 
 ## See also
 
-[`plot.Regime()`](https://seokhoonj.github.io/lossratio/reference/plot.Regime.md),
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
+[`plot.Regime()`](https://seokhoonj.github.io/lossratio-r/reference/plot.Regime.md),
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/as_triangle.md)
 
 ## Examples
 

@@ -2,7 +2,7 @@
 
 Compute group-wise summary statistics for age-to-age factors from an
 object of class `"Link"`. This helper backs the
-[`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md)
+[`summary.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/summary.Link.md)
 dispatcher when `model = "ata"`. It serves two purposes:
 
 1.  **Diagnostics**: provides descriptive statistics (`mean`, `median`,
@@ -13,9 +13,9 @@ dispatcher when `model = "ata"`. It serves two purposes:
     ata link to produce the WLS-estimated factor (`f`), its standard
     error (`f_se`), relative standard error (`rse`), and Mack sigma
     (`sigma`). These are used downstream by
-    [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
+    [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md)
     and
-    [`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md).
+    [`fit_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ata.md).
 
 ## Usage
 
@@ -28,7 +28,7 @@ dispatcher when `model = "ata"`. It serves two purposes:
 - object:
 
   An object of class `"Link"`, typically produced by
-  [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md).
+  [`as_link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_link.md).
 
 - alpha:
 
@@ -70,7 +70,7 @@ link:
 
   Coefficient of variation of observed ata factors (\\SD / mean\\). Used
   by
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md)
   to assess stability.
 
 - `f`:
@@ -145,7 +145,7 @@ Therefore `wt` and `f` can differ for two reasons:
 ## Weights
 
 When the input `"Link"` object contains a `weight` column (added by
-[`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md)
+[`as_link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_link.md)
 when `weight` is supplied), that column is automatically used as the WLS
 weight in place of `loss_from`. This is useful when `loss = "ratio"`,
 where `loss_from` carries no premium information and an external premium
@@ -158,7 +158,7 @@ The coefficient of variation is defined as: \$\$cv =
 ata values for link \\k\\ and \\\bar{f}\_k\\ is their arithmetic mean.
 The `cv` reflects the relative spread of observed factors across
 cohorts, regardless of the premium scale. It is used by
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md)
 as one of the criteria for determining the maturity point.
 
 ## Relative standard error (`rse`)
@@ -174,7 +174,7 @@ consistent across cohorts.
 
 ## See also
 
-[`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md),
-[`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md),
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md),
-[`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md)
+[`as_link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_link.md),
+[`summary.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/summary.Link.md),
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md),
+[`fit_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ata.md)

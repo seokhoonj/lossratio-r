@@ -1,11 +1,11 @@
 # Plot an Intensity fit
 
 Visualise an object of class `"IntensityFit"` by delegating to
-[`plot.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/plot.Link.md)
+[`plot.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot.Link.md)
 on the underlying `Link` data stored in `x$link` with `model = "ed"`.
 `IntensityFit` is the factor-level diagnostic for the exposure-driven
 (ED) workflow and mirrors how
-[`plot.ATAFit()`](https://seokhoonj.github.io/lossratio/ko/reference/plot.ATAFit.md)
+[`plot.ATAFit()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot.ATAFit.md)
 delegates for the multiplicative (CL) side.
 
 ## Usage
@@ -24,7 +24,7 @@ plot(x, ...)
 - ...:
 
   Arguments passed to
-  [`plot.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/plot.Link.md).
+  [`plot.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot.Link.md).
 
 ## Value
 
@@ -32,6 +32,6 @@ A `ggplot` object.
 
 ## See also
 
-[`plot.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/plot.Link.md),
-[`fit_intensity()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_intensity.md),
-[`plot.ATAFit()`](https://seokhoonj.github.io/lossratio/ko/reference/plot.ATAFit.md)
+[`plot.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot.Link.md),
+[`fit_intensity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_intensity.md),
+[`plot.ATAFit()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot.ATAFit.md)

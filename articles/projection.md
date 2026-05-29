@@ -1,7 +1,7 @@
 # Projection methods
 
 > Korean version: [예측
-> 방법론](https://seokhoonj.github.io/lossratio/articles/articles/projection-ko.md)
+> 방법론](https://seokhoonj.github.io/lossratio-r/articles/articles/projection-ko.md)
 
 This is a deep-dive into the five projection methods in `lossratio` —
 exposure-driven (ED), chain ladder (CL), stage-adaptive (SA),
@@ -308,7 +308,7 @@ trade-off is the mirror image of ED’s: CL is volatile when early $`f_k`$
 are noisy, because small denominators amplify link errors.
 
 Within
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md),
 the CL method projects loss *and* premium forward — each via chain
 ladder on its own column — and computes the loss-ratio uncertainty via
 the delta method. The loss lane alone is equivalent to `fit_cl(tri)`.
@@ -613,11 +613,11 @@ use case.
 
 ## Chain ladder as a reserving worker
 
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+[`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
 is the dedicated chain ladder fit for a single value column. Unlike
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
 — which projects loss and premium jointly to get loss ratio —
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+[`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
 projects one cumulative metric forward and computes Mack-style standard
 errors per cohort. This is the classical P&C *reserving* use case:
 projecting ultimate paid / incurred loss for an open accident year.
@@ -642,7 +642,7 @@ print(cl)
 #> periods     : 36
 ```
 
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+[`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
 summarises adjacent development links by age-to-age factors
 $`f_k = C^L_{k+1} / C^L_k`$, selected per link and then chained to
 project each cohort forward to ultimate. On top of the point projection,
@@ -753,7 +753,7 @@ plot(cl, type = "reserve", conf_level = 0.95)
 
 ![](projection_files/figure-html/unnamed-chunk-9-2.png)
 
-[`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
+[`plot_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/plot_triangle.md)
 displays the cohort x dev cells as a heatmap, distinguishing observed
 cells from projected, with `label_style` showing per-cell CV / SE / CI:
 
@@ -843,7 +843,7 @@ fit_cl(tri, sigma_method = "loglinear")
 
 ## Variance and confidence intervals
 
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
 reports analytical standard errors for `L/P`. Two variants control how
 premium uncertainty enters:
 
@@ -862,9 +862,9 @@ premium uncertainty enters:
 There are two complementary paths to SE estimation:
 
 - **Analytical** —
-  [`.mack_f_var()`](https://seokhoonj.github.io/lossratio/reference/dot-mack_f_var.md)
+  [`.mack_f_var()`](https://seokhoonj.github.io/lossratio-r/reference/dot-mack_f_var.md)
   (Mack 1993) and
-  [`.ed_g_var()`](https://seokhoonj.github.io/lossratio/reference/dot-ed_g_var.md)
+  [`.ed_g_var()`](https://seokhoonj.github.io/lossratio-r/reference/dot-ed_g_var.md)
   (B-S 1970) provide closed-form per-link variance, distribution-free.
 - **Bootstrap** — a residual paradigm (`cell` / `link` / `parametric`)
   drives forward simulation, capturing distributional shape. Residual
@@ -1005,29 +1005,29 @@ summary(ratio_boot)
 
 For `method = "sa"` the maturity point $`k^*`$ determines where the
 projection switches from ED to CL. By default
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
 /
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+[`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md)
 use `maturity = "auto"`, which calls
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
 internally with default thresholds. Other forms:
 
 - `maturity = NULL` — disable detection (only meaningful for non-SA
   methods or for
-  [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)
+  [`fit_ata()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ata.md)
   standalone).
 - `maturity = maturity_spec(max_cv = 0.05, min_run = 2L)` — a lazy spec
   forwarding custom thresholds to
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
   at fit time (leakage-safe for
-  [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)).
+  [`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)).
 - `maturity = detect_maturity(tri, ...)` — a pre-built `Maturity`
   object, fixed across refits.
 - `maturity = maturity_at(coverage = "surgery", change = 4)` — a manual
   per-group override (e.g. a company-standard $`k^*`$).
 
 The same lazy-spec / pre-built / manual pattern applies to
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
+[`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md),
 where maturity filtering restricts the projection to the mature region
 when the selected ATA factors are volatile.
 
@@ -1061,15 +1061,15 @@ immature for any data-only method to be trustworthy.
 
 ## See also
 
-- [`vignette("getting-started")`](https://seokhoonj.github.io/lossratio/articles/getting-started.md)
+- [`vignette("getting-started")`](https://seokhoonj.github.io/lossratio-r/articles/getting-started.md)
   — package quick-start guide.
-- [`vignette("diagnostics")`](https://seokhoonj.github.io/lossratio/articles/diagnostics.md)
+- [`vignette("diagnostics")`](https://seokhoonj.github.io/lossratio-r/articles/diagnostics.md)
   — regime detection and filtering.
-- [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/articles/backtest.md)
+- [`vignette("backtest")`](https://seokhoonj.github.io/lossratio-r/articles/backtest.md)
   — calendar-diagonal hold-out validation.
-- [`vignette("diagnostics")`](https://seokhoonj.github.io/lossratio/articles/diagnostics.md)
+- [`vignette("diagnostics")`](https://seokhoonj.github.io/lossratio-r/articles/diagnostics.md)
   — projected loss-ratio convergence diagnostic.
-- [`vignette("getting-started")`](https://seokhoonj.github.io/lossratio/articles/getting-started.md)
+- [`vignette("getting-started")`](https://seokhoonj.github.io/lossratio-r/articles/getting-started.md)
   — Triangle / Link / Maturity data flow.
 
 ## References

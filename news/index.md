@@ -27,24 +27,24 @@
     (early-dev factors stay regime-specific) and borrows the late-dev
     factors a segment cannot reach from a donor segment that can (the
     most recent segment that developed that far). New helper
-    [`.borrow_segment_factors()`](https://seokhoonj.github.io/lossratio/reference/dot-borrow_segment_factors.md)
+    [`.borrow_segment_factors()`](https://seokhoonj.github.io/lossratio-r/reference/dot-borrow_segment_factors.md)
     performs the projection-time augmentation in
-    [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+    [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
     /
-    [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md).
+    [`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md).
 
   The band mask is applied to the `Triangle` (cohort x dev grid)
   *before* the `Link` is built, because the `Link` omits dev-1-only
   cohorts and would corrupt each segment’s last-cohort rank. The
   cohort-cut mechanism that backed `"latest_only"` survives internally
   for the stage-adaptive
-  ([`fit_sa()`](https://seokhoonj.github.io/lossratio/reference/fit_sa.md))
+  ([`fit_sa()`](https://seokhoonj.github.io/lossratio-r/reference/fit_sa.md))
   hybrid filter, which is not a user-facing treatment. Helper
-  [`.compute_segment_mini_tri_bounds()`](https://seokhoonj.github.io/lossratio/reference/dot-compute_segment_mini_tri_bounds.md)
+  [`.compute_segment_mini_tri_bounds()`](https://seokhoonj.github.io/lossratio-r/reference/dot-compute_segment_mini_tri_bounds.md)
   still computes the per-cell band `dev_min` shared by
-  [`.apply_regime_filter()`](https://seokhoonj.github.io/lossratio/reference/dot-apply_regime_filter.md)
+  [`.apply_regime_filter()`](https://seokhoonj.github.io/lossratio-r/reference/dot-apply_regime_filter.md)
   and
-  [`.compute_triangle_usage()`](https://seokhoonj.github.io/lossratio/reference/dot-compute_triangle_usage.md).
+  [`.compute_triangle_usage()`](https://seokhoonj.github.io/lossratio-r/reference/dot-compute_triangle_usage.md).
 
 - **BREAKING: identifier rename `exposure` -\> `premium`.** The
   denominator slot reverts to `premium`, the natural domain word for
@@ -77,9 +77,9 @@
   - `LossFit$exposure_fit` -\> `$premium_fit`
   - S3 class `"ExposureFit"` -\> `"PremiumFit"`
     (incl. `print.ExposureFit()` / `summary.ExposureFit()` -\>
-    [`print.PremiumFit()`](https://seokhoonj.github.io/lossratio/reference/print.PremiumFit.md)
+    [`print.PremiumFit()`](https://seokhoonj.github.io/lossratio-r/reference/print.PremiumFit.md)
     /
-    [`summary.PremiumFit()`](https://seokhoonj.github.io/lossratio/reference/summary.PremiumFit.md))
+    [`summary.PremiumFit()`](https://seokhoonj.github.io/lossratio-r/reference/summary.PremiumFit.md))
   - `attr(ExposureFit_obj, "exposure_method")` -\>
     `attr(PremiumFit_obj, "premium_method")`
   - Triangle / Calendar / Total columns: `exposure`, `incr_exposure`,
@@ -105,41 +105,41 @@
   same concept behaves the same way regardless of entry point:
 
   - `premium_method` now defaults to `"ed"` (was `"cl"`) in
-    [`fit_sa()`](https://seokhoonj.github.io/lossratio/reference/fit_sa.md)
+    [`fit_sa()`](https://seokhoonj.github.io/lossratio-r/reference/fit_sa.md)
     /
-    [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+    [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md)
     /
-    [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+    [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
     /
-    [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md),
+    [`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md),
     matching
-    [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md).
+    [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md).
     This changes the default premium-side variance recursion; point
     projections are unaffected. Pass `premium_method = "cl"` to keep the
     old behaviour.
-  - [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)’s
+  - [`bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/bootstrap.md)’s
     `type` now defaults to `"parametric"` (was `"analytical"`), matching
     the
-    [`fit_sa()`](https://seokhoonj.github.io/lossratio/reference/fit_sa.md)
+    [`fit_sa()`](https://seokhoonj.github.io/lossratio-r/reference/fit_sa.md)
     /
-    [`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md)
+    [`fit_bf()`](https://seokhoonj.github.io/lossratio-r/reference/fit_bf.md)
     /
-    [`fit_cc()`](https://seokhoonj.github.io/lossratio/reference/fit_cc.md)
+    [`fit_cc()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cc.md)
     workers. Pass `type = "analytical"` for the closed-form path.
-  - [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+  - [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
     and
-    [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+    [`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
     accept `"bf"` and `"cc"` as loss-side methods (forwarded to
-    [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md));
+    [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md));
     supply the prior arguments through `...`.
-  - [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+  - [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
     gained a `tail` argument, forwarded to
-    [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md).
+    [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md).
 
 - **Buehlmann-Straub credibility blend for
-  [`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md)
+  [`fit_bf()`](https://seokhoonj.github.io/lossratio-r/reference/fit_bf.md)
   /
-  [`fit_cc()`](https://seokhoonj.github.io/lossratio/reference/fit_cc.md).**
+  [`fit_cc()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cc.md).**
   A new `credibility` argument switches the BF / CC blend weight from
   the emergence fraction `q` to a Buehlmann-Straub credibility factor
   `Z = K / (K + s^2)`, where `s^2` is the variance of the cohort’s own
@@ -153,23 +153,23 @@
   `K`.
 
 - **Analytical prediction error for
-  [`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md)
+  [`fit_bf()`](https://seokhoonj.github.io/lossratio-r/reference/fit_bf.md)
   /
-  [`fit_cc()`](https://seokhoonj.github.io/lossratio/reference/fit_cc.md).**
+  [`fit_cc()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cc.md).**
   `type = "analytical"` is now implemented (previously a stub error). It
   computes the closed-form mean squared error of prediction via the
   Mack (2008) Bornhuetter-Ferguson MSEP decomposition – process error
   plus development-pattern and prior estimation error – without
   simulation. `$summary` carries `loss_total_se` / `loss_total_cv` /
   `loss_ci_lo` / `loss_ci_hi`;
-  [`fit_cc()`](https://seokhoonj.github.io/lossratio/reference/fit_cc.md)
+  [`fit_cc()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cc.md)
   additionally reports `elr_cc_se` / `elr_cc_cv` / `elr_cc_ci_lo` /
   `elr_cc_ci_hi` for the data-estimated pooled ELR. The analytical path
   is also used whenever no bootstrap is requested, so every fit now
   reports an SE.
 
 - **Distribution prior for
-  [`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md).**
+  [`fit_bf()`](https://seokhoonj.github.io/lossratio-r/reference/fit_bf.md).**
   A `data.frame` prior may carry an optional `elr_se` column – the
   standard error of the a priori ELR. The bootstrap path then draws a
   per-replicate ELR from `Normal(elr, elr_se)`, and the analytical path
@@ -177,31 +177,31 @@
   is unchanged.
 
 - **Per-group prior for
-  [`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md).**
+  [`fit_bf()`](https://seokhoonj.github.io/lossratio-r/reference/fit_bf.md).**
   A prior `data.frame` may carry the grouping columns plus `elr` without
   a `cohort` column; the group’s ELR is then broadcast to every cohort
   in that group.
 
 - **Worker layer fix + bootstrap arg on `fit_cl` / `fit_ed`.**
-  [`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md)
+  [`fit_bf()`](https://seokhoonj.github.io/lossratio-r/reference/fit_bf.md)
   /
-  [`fit_cc()`](https://seokhoonj.github.io/lossratio/reference/fit_cc.md)
+  [`fit_cc()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cc.md)
   /
-  [`fit_sa()`](https://seokhoonj.github.io/lossratio/reference/fit_sa.md)
+  [`fit_sa()`](https://seokhoonj.github.io/lossratio-r/reference/fit_sa.md)
   now build their internal premium fit by calling
   `fit_cl(loss = "premium", ...)` directly instead of routing through
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md)
   — downward-only Tier 3 -\> Tier 4 dependency.
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
   and
-  [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md)
+  [`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md)
   both gain `bootstrap`, `B`, `seed`, `conf_level` arguments for
   symmetry with the SA / BF / CC workers; `bootstrap = NULL` (default)
   preserves analytical Mack SE. All fit-result classes standardised to
   `c("XFit", "list")` (or prepended forms for the dispatchers).
 
-- **[`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md) +
-  [`fit_cc()`](https://seokhoonj.github.io/lossratio/reference/fit_cc.md)
+- **[`fit_bf()`](https://seokhoonj.github.io/lossratio-r/reference/fit_bf.md) +
+  [`fit_cc()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cc.md)
   promoted to peer workers** with bootstrap composition. `fit_bf` takes
   an external prior ELR (Bornhuetter-Ferguson 1972); `fit_cc` derives
   ELR from data via payout weighting (Stanard 1985, Cape Cod). Both
@@ -212,15 +212,15 @@
 - **`fit_sa` worker + `fit_loss` true dispatcher.** Phase 4 split the
   stage-adaptive composition (`R/sa.R`, class `"SAFit"`) out of
   `R/loss.R`, and
-  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md)
   now thin-dispatches by `method` to the worker functions (`fit_ed` /
   `fit_cl` / `fit_sa` / `fit_bf` / `fit_cc`) and augments their output
   to the LossFit-uniform `$full` schema via
-  [`.lossfit_augment()`](https://seokhoonj.github.io/lossratio/reference/dot-lossfit_augment.md).
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+  [`.lossfit_augment()`](https://seokhoonj.github.io/lossratio-r/reference/dot-lossfit_augment.md).
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md)
   follows the same pattern with
-  [`.premiumfit_augment()`](https://seokhoonj.github.io/lossratio/reference/dot-premiumfit_augment.md) +
-  [`.premiumfit_bootstrap()`](https://seokhoonj.github.io/lossratio/reference/dot-premiumfit_bootstrap.md)
+  [`.premiumfit_augment()`](https://seokhoonj.github.io/lossratio-r/reference/dot-premiumfit_augment.md) +
+  [`.premiumfit_bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/dot-premiumfit_bootstrap.md)
   (Phase 4c).
 
 - **BREAKING: bootstrap `type = "parametric"` -\> `"analytical"`
@@ -228,7 +228,7 @@
   `"parametric"`. The textbook-parametric kernels (cell-distribution
   sampling + refit, England-Verrall 1999) now use `type = "parametric"`,
   and the analytical Mack closed-form lives at `type = "analytical"`.
-  [`bootstrap.Triangle()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
+  [`bootstrap.Triangle()`](https://seokhoonj.github.io/lossratio-r/reference/bootstrap.md)
   default is `"analytical"`; worker-side `fit_sa` / `fit_bf` / `fit_cc`
   `type =` defaults to `"parametric"` (cell-distribution simulation).
 
@@ -240,7 +240,7 @@
   refit and CL-stage cells using multiplicative `f_k` refit.
 
 - **ED bootstrap (Phase 1, fixed premium).**
-  [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
+  [`bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/bootstrap.md)
   now supports `method = "ed"` for `residual = "cell"`: per-replicate
   `g*_k` refit and additive forward projection
   (`Delta loss = g_k * P_{from} + noise`) instead of the multiplicative
@@ -252,20 +252,20 @@
   loss + premium bootstrap) deferred. `method = "ed"` requires
   `residual = "cell"`; ED + link residuals is not implemented.
 
-- **[`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
+- **[`bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/bootstrap.md)
   method-enum reorder — `c("sa", "cl", "ed")` -\>
   `c("ed", "cl", "sa")`.** Matches the
-  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md)
   /
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
   default flip. Default is now `"ed"`. Users relying on `"sa"` as the
   bootstrap method must pass it explicitly.
 
 - **BREAKING: method default flip — `"sa"` -\> `"ed"`.**
-  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md),
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md),
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md),
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md),
   and
-  [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+  [`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
   (via `loss_method`) now default to `method = "ed"` (exposure-driven)
   instead of `"sa"` (stage-adaptive). Method-enum order is
   `c("ed", "cl", "sa")` — *simple -\> classical -\> composition*.
@@ -285,11 +285,11 @@
   is reserved for the CL/Mack 1993 paradigm (f-factor variance); ED
   intensity variance follows the Buehlmann-Straub 1970 lineage and now
   lives at
-  [`.ed_g_var()`](https://seokhoonj.github.io/lossratio/reference/dot-ed_g_var.md).
+  [`.ed_g_var()`](https://seokhoonj.github.io/lossratio-r/reference/dot-ed_g_var.md).
   The two natural analytical variance helpers in the package are now:
-  [`.mack_f_var()`](https://seokhoonj.github.io/lossratio/reference/dot-mack_f_var.md)
+  [`.mack_f_var()`](https://seokhoonj.github.io/lossratio-r/reference/dot-mack_f_var.md)
   (CL paradigm, f) and
-  [`.ed_g_var()`](https://seokhoonj.github.io/lossratio/reference/dot-ed_g_var.md)
+  [`.ed_g_var()`](https://seokhoonj.github.io/lossratio-r/reference/dot-ed_g_var.md)
   (ED paradigm, g). Cross-paradigm pairs are not provided as separate
   functions — they are algebraically derivable via `g_k = f_k - 1`. Both
   helpers now carry [@references](https://github.com/references) blocks
@@ -298,7 +298,7 @@
 - **BREAKING: worker-arg rename `target` -\> `loss`.** Worker-layer
   functions (`fit_cl`, `fit_ed`, `fit_ata`, `fit_intensity`,
   `detect_maturity`, `detect_regime`) and
-  [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md)
+  [`as_link()`](https://seokhoonj.github.io/lossratio-r/reference/as_link.md)
   now take a `loss` argument in place of `target`. Worker-output columns
   rename accordingly (`target_obs` -\> `loss_obs`, `target_proj` -\>
   `loss_proj`, `target_*_se` -\> `loss_*_se`, `target_from` /
@@ -306,7 +306,7 @@
   `loss_delta`). Fit-object attribute key `attr(., "target")` becomes
   `attr(., "loss")` on Link, ATAFit, EDFit, CLFit, IntensityFit,
   Maturity, Regime, and Convergence objects. The `target` arg on
-  [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+  [`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
   (a dispatcher enum selecting `"ratio"` / `"loss"` / `"premium"`) is
   **unchanged** — that is a different semantic (which metric to
   backtest) and stays as-is. Bootstrap’s `target = c("loss", "premium")`
@@ -391,7 +391,7 @@
   insurance reserving on developing exposure (risk premium) triangles.
 
 - **Default flip** —
-  [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)’s
+  [`bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/bootstrap.md)’s
   `keep_pseudo` default changes from `TRUE` to `FALSE`. The long-format
   `$pseudo_triangles` long-format data.table is no longer built on every
   call; the precomputed `$summary` (Pythagorean SE decomposition +
@@ -406,13 +406,13 @@
   Python sibling’s `lr.Triangle(df)` mental model:
 
   - `build_triangle()` -\>
-    [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
+    [`as_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/as_triangle.md)
   - `build_calendar()` -\>
-    [`as_calendar()`](https://seokhoonj.github.io/lossratio/reference/as_calendar.md)
+    [`as_calendar()`](https://seokhoonj.github.io/lossratio-r/reference/as_calendar.md)
   - `build_total()` -\>
-    [`as_total()`](https://seokhoonj.github.io/lossratio/reference/as_total.md)
+    [`as_total()`](https://seokhoonj.github.io/lossratio-r/reference/as_total.md)
   - `build_link()` -\>
-    [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md)
+    [`as_link()`](https://seokhoonj.github.io/lossratio-r/reference/as_link.md)
     No signature change, only the verb. Migration is a global
     find-and-replace. The functions still validate, coerce, and
     aggregate substantively – the `as_*` name reflects that the returned
@@ -421,11 +421,11 @@
     (`Triangle`, `Calendar`, `Total`, `Link`) remain unchanged.
 
 - **BREAKING** —
-  [`plot_triangle.Triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.Triangle.md)
+  [`plot_triangle.Triangle()`](https://seokhoonj.github.io/lossratio-r/reference/plot_triangle.Triangle.md)
   argument `type` renamed to `view` for parity with
-  [`plot_triangle.CLFit()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.CLFit.md),
+  [`plot_triangle.CLFit()`](https://seokhoonj.github.io/lossratio-r/reference/plot_triangle.CLFit.md),
   `plot_triangle.LRFit()`, and
-  [`plot_triangle.Backtest()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.Backtest.md),
+  [`plot_triangle.Backtest()`](https://seokhoonj.github.io/lossratio-r/reference/plot_triangle.Backtest.md),
   which already used `view = c("value", "usage")`. The `type =` slot is
   left free for plot-method-specific semantics
   (`plot.Backtest(type = "col"/"diag"/"cell")`,
@@ -434,7 +434,7 @@
   `plot_triangle(tri, view = "usage")`.
 
 - **BREAKING** —
-  [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+  [`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
   cell-level columns renamed from `target_actual` / `target_proj` (and
   `_incr` siblings) to `actual` / `expected` (and `actual_incr` /
   `expected_incr`). The new names match the actuarial A/E convention
@@ -445,7 +445,7 @@
   `bt$ae_err$target_actual` with `bt$ae_err$actual`,
   `bt$ae_err$target_proj` with `bt$ae_err$expected`.
 
-- [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+- [`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
   result slot `fit_fn_name` renamed to `dispatcher` for clarity (the
   value is still the dispatcher name — `fit_ratio` / `fit_loss` /
   `fit_premium` — selected by `target=`).
@@ -453,11 +453,11 @@
   [`summary()`](https://rdrr.io/r/base/summary.html) labels updated
   accordingly.
 
-- [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md),
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md),
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md),
+- [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md),
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md),
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md),
   and
-  [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+  [`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
   now attach a `$usage` `data.table` to the result: one row per
   `(group, cohort, dev)` cell of the *pre-filter* triangle with a
   `status` factor (`used` / `unused` / `holdout` / `future`).
@@ -465,12 +465,12 @@
   re-deriving the filter logic at plot time, so the heatmap always
   matches the cells the fit actually saw. New internal helper
   `.build_usage()` packages the 2-pass maturity detection plus
-  [`.compute_triangle_usage()`](https://seokhoonj.github.io/lossratio/reference/dot-compute_triangle_usage.md)
+  [`.compute_triangle_usage()`](https://seokhoonj.github.io/lossratio-r/reference/dot-compute_triangle_usage.md)
   and attaches filter metadata (`regime` / `recent` / `holdout` / `m_k`
   / `m_k_dt`) as `data.table` attributes for the renderer.
 
 - **BREAKING** — `build_triangle()`, `build_total()`, and
-  [`validate_triangle()`](https://seokhoonj.github.io/lossratio/reference/validate_triangle.md)
+  [`validate_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/validate_triangle.md)
   rename their `dev =` argument to `development =`. The new name is more
   explicit about the development-period axis (matching the
   `coh <- cohort` symmetry inside the function bodies). Migration:
@@ -478,7 +478,7 @@
   `build_triangle(..., development = "dev_m")`.
 
 - **BREAKING** —
-  [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+  [`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
   result columns renamed from `value_proj` / `value_actual` (and `_incr`
   variants) to `target_proj` / `target_actual` (and `_incr` variants),
   matching the worker-layer `target_*` generic convention.
@@ -494,7 +494,7 @@
   - `detect_regime_optimal_window()` diagnostics column:
     `mean_magnitude` -\> `magnitude_mean`.
 
-- [`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
+- [`plot_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/plot_triangle.md)
   now derives the axis grain via `attr(tri, "grain")` when the raw
   column name (`uy_m`, `cy_q`, …) is not one of the package-standard
   forms, so user-supplied names like `uym` or `elap_m` still render tick
@@ -522,10 +522,10 @@
   `build_triangle(df, ...)`. Matches Python sibling 0.0.1.dev7.
 
 - New
-  [`fit_intensity()`](https://seokhoonj.github.io/lossratio/reference/fit_intensity.md) +
+  [`fit_intensity()`](https://seokhoonj.github.io/lossratio-r/reference/fit_intensity.md) +
   `IntensityFit` S3 class (R/intensity.R) — factor-level ED diagnostic,
   parallel to
-  [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)
+  [`fit_ata()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ata.md)
   for the multiplicative side. Returns per-link WLS-estimated
   intensities `g_k` with standard errors and diagnostic stats; no
   projection. ED has no maturity concept, so `fit_intensity`
@@ -537,7 +537,7 @@
   parallelism with ATA summary’s `f`, `f_se`. Layered naming: cell layer
   uses concept (`intensity`), summary layer uses symbol (`g`).
 
-- [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md):
+- [`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md):
   cell-level metric and aggregation columns renamed from `aeg` to
   `ae_err` (column `ae_err`, aggregations `ae_err_mean` / `ae_err_med` /
   `ae_err_wt`). Print and plot labels updated to “A/E Error”. Formula
@@ -556,28 +556,28 @@
   `summary.Link(model = "ata"|"ed")` dispatches to the matching
   diagnostic.
 - Estimation:
-  [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)
+  [`fit_ata()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ata.md)
   (per-link factors only);
-  [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md),
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
+  [`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md),
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md),
   and `fit_lr()` (factors + projection). `fit_lr` supports three methods
   — `"sa"` (default), `"ed"`, `"cl"`.
 - Cell-selection diagnostics:
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
   (dev axis — link beyond which ATA factors are stable),
-  [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+  [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)
   (cohort axis — structural breaks across underwriting cohorts).
 - Projection diagnostic:
-  [`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md)
+  [`detect_convergence()`](https://seokhoonj.github.io/lossratio-r/reference/detect_convergence.md)
   (operates on a fitted `LRFit`; valuation depth at which projected
   ultimate loss ratio stops revising).
 - Backtest:
-  [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+  [`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
   (calendar-diagonal hold-out, supports `fit_cl`, `fit_ed`, and
   `fit_lr`).
 - Visualisation: S3
   [`plot()`](https://rdrr.io/r/graphics/plot.default.html) and
-  [`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
+  [`plot_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/plot_triangle.md)
   methods on every fit class.
 
 ### Dataset

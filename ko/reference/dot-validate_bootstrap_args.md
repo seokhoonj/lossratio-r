@@ -1,7 +1,7 @@
 # Validate the bootstrap argument combination
 
 Internal helper called by
-[`bootstrap.Triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
+[`bootstrap.Triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/bootstrap.md)
 after [`match.arg()`](https://rdrr.io/r/base/match.arg.html). Enforces
 the type/residual/process/method/pooling/tail combination matrix and
 warns when an argument is silently ignored.

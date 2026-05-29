@@ -2,7 +2,7 @@
 
 Projection plot for a `"BFFit"` – observed and projected cumulative loss
 by cohort, delegated to
-[`.plot_projection_fit()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-plot_projection_fit.md).
+[`.plot_projection_fit()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-plot_projection_fit.md).
 
 ## Usage
 
@@ -20,9 +20,9 @@ plot(x, ...)
 - ...:
 
   Forwarded to
-  [`.plot_projection_fit()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-plot_projection_fit.md)
+  [`.plot_projection_fit()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-plot_projection_fit.md)
   – see
-  [`plot.SAFit()`](https://seokhoonj.github.io/lossratio/ko/reference/plot.SAFit.md).
+  [`plot.SAFit()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot.SAFit.md).
 
 ## Value
 

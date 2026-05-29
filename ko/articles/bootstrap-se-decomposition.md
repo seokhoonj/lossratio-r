@@ -87,7 +87,7 @@ deviations:
 
 ## How `bootstrap()` produces both pieces
 
-[`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
+[`bootstrap()`](https://seokhoonj.github.io/lossratio-r/ko/reference/bootstrap.md)
 simulates `B` pseudo triangles. Each replicate `b` does two things:
 
 1.  **Stage 1 — parameter perturbation.** Residuals are resampled (or
@@ -145,17 +145,17 @@ process-noise draw.
 
 ## The `type` argument — three SE paradigms
 
-[`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
+[`bootstrap()`](https://seokhoonj.github.io/lossratio-r/ko/reference/bootstrap.md)
 and the worker fits
-([`fit_sa()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_sa.md),
-[`fit_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.md),
-[`fit_cc()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cc.md))
+([`fit_sa()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_sa.md),
+[`fit_bf()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_bf.md),
+[`fit_cc()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_cc.md))
 take a `type` argument that selects how parameter uncertainty is
 generated:
 
 | `type` | Stage-1 perturbation | When to use |
 |----|----|----|
-| `"analytical"` | None — closed-form Mack (1993) MSEP, no simulation | Fast, distribution-free SE; default for [`bootstrap.Triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md) |
+| `"analytical"` | None — closed-form Mack (1993) MSEP, no simulation | Fast, distribution-free SE; default for [`bootstrap.Triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/bootstrap.md) |
 | `"nonparametric"` | Residuals are resampled from the observed development pattern | No distributional assumption; the classic resampling bootstrap |
 | `"parametric"` | Cells are redrawn from a fitted distribution, then factors are refit (England-Verrall 1999) | Captures distributional shape; default for the `fit_sa/bf/cc` workers |
 
@@ -169,7 +169,7 @@ the same `$summary` decomposition columns.
 
 ## The `$summary` slot
 
-[`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
+[`bootstrap()`](https://seokhoonj.github.io/lossratio-r/ko/reference/bootstrap.md)
 computes the cohort × dev decomposition once and exposes it as a
 precomputed summary, so downstream fit functions can wrap-only the
 columns without re-running the per-replicate sample-variance loops:
@@ -244,6 +244,12 @@ and left in place.
 
 ## Picking `B` — the Davison & Hinkley convention
 
+The CI bounds use `quantile(..., type = 1)` rather than R’s default
+`type = 7`. Type 1 is the *discontinuous* inverse-empirical-CDF quantile
+— it returns an actual sample order statistic with no interpolation,
+whereas the default type 7 interpolates linearly between the two
+neighbouring order statistics.
+
 For an empirical percentile CI to land on an *exact* sample position
 without interpolation, `(B + 1) p` should be an integer for the target
 quantile probability `p`. The packaged defaults reflect this:
@@ -263,9 +269,9 @@ percentile reports.
 
 ## See also
 
-[`vignette("backtest")`](https://seokhoonj.github.io/lossratio/ko/articles/backtest.md)
+[`vignette("backtest")`](https://seokhoonj.github.io/lossratio-r/ko/articles/backtest.md)
 for hold-out-based bootstrap validation,
-[`vignette("projection")`](https://seokhoonj.github.io/lossratio/ko/articles/projection.md)
+[`vignette("projection")`](https://seokhoonj.github.io/lossratio-r/ko/articles/projection.md)
 for the underlying CL machinery, and
-[`?bootstrap`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
+[`?bootstrap`](https://seokhoonj.github.io/lossratio-r/ko/reference/bootstrap.md)
 for the full argument reference.

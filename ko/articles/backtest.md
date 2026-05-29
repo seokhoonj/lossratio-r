@@ -5,7 +5,7 @@
 Reserving and projection methods are fitted on observed data, but their
 practical value lies in how they would have performed at past valuation
 dates.
-[`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md)
 answers that question by hiding the latest `holdout` calendar diagonals
 from a triangle, refitting the model on the earlier portion, and
 comparing its projection to the actuals that were withheld. This is
@@ -205,9 +205,9 @@ plot_triangle(bt)         # diverging-color heatmap on the held-out wedge
 `type = "col"` is the right place to look for systematic dev-period
 bias; `type = "diag"` reveals calendar-year drift; `type = "cell"`
 exposes which cohorts contribute the bias;
-[`plot_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.md)
+[`plot_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot_triangle.md)
 puts the cell-level A/E Error values on the same triangular layout as
-[`plot_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.md)
+[`plot_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot_triangle.md)
 for the underlying fit, with a red/blue diverging palette where red
 marks under-projection (actual \> pred) and blue marks over-projection
 (actual \< pred).
@@ -236,15 +236,15 @@ across the triangle.
 > **A note on `target`.** `target` is the **score column** — the column
 > on which actual vs. predicted are compared cell-by-cell. It selects
 > which role-specific fitter
-> [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+> [`backtest()`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md)
 > runs internally and which projection column on the fit’s `$full` table
 > is compared against the held-out actuals:
 
 | `target` | Internal fitter | Method arg | Compared column |
 |----|----|----|----|
-| `"ratio"` | [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md) | `loss_method` | `ratio_proj` |
-| `"loss"` | [`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md) | `loss_method` | `loss_proj` |
-| `"premium"` | [`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md) | `premium_method` | `premium_proj` |
+| `"ratio"` | [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ratio.md) | `loss_method` | `ratio_proj` |
+| `"loss"` | [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_loss.md) | `loss_method` | `loss_proj` |
+| `"premium"` | [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_premium.md) | `premium_method` | `premium_proj` |
 
 The `loss_method` argument selects the underlying loss / loss-ratio
 projection strategy: `"ed"` (exposure-driven, the default) is the
@@ -280,14 +280,14 @@ directly.
 
 ## See also
 
-- [`vignette("projection")`](https://seokhoonj.github.io/lossratio/ko/articles/projection.md)
+- [`vignette("projection")`](https://seokhoonj.github.io/lossratio-r/ko/articles/projection.md)
   —
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_cl.md)
   reference.
-- [`vignette("projection")`](https://seokhoonj.github.io/lossratio/ko/articles/projection.md)
+- [`vignette("projection")`](https://seokhoonj.github.io/lossratio-r/ko/articles/projection.md)
   —
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ratio.md)
   and the `"sa"`, `"ed"`, `"cl"` methods.
-- [`?backtest`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md),
-  [`?plot.Backtest`](https://seokhoonj.github.io/lossratio/ko/reference/plot.Backtest.md),
-  [`?plot_triangle.Backtest`](https://seokhoonj.github.io/lossratio/ko/reference/plot_triangle.Backtest.md).
+- [`?backtest`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md),
+  [`?plot.Backtest`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot.Backtest.md),
+  [`?plot_triangle.Backtest`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot_triangle.Backtest.md).

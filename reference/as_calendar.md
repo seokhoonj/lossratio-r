@@ -3,13 +3,13 @@
 Validate raw experience data, aggregate it along a single
 calendar-period axis, and assign the `Calendar` S3 class so the
 associated
-[`plot.Calendar()`](https://seokhoonj.github.io/lossratio/reference/plot.Calendar.md)
+[`plot.Calendar()`](https://seokhoonj.github.io/lossratio-r/reference/plot.Calendar.md)
 /
-[`summary.Calendar()`](https://seokhoonj.github.io/lossratio/reference/summary.Calendar.md)
+[`summary.Calendar()`](https://seokhoonj.github.io/lossratio-r/reference/summary.Calendar.md)
 / longer-form methods dispatch on the result.
 
 Compared with
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md),
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/as_triangle.md),
 which builds a *two-dimensional* `cohort x dev` structure,
 `as_calendar()` is *one-dimensional*: a single calendar-period time
 series (per group) showing how the portfolio evolves through time,
@@ -57,7 +57,7 @@ as_calendar(x)
 - x:
 
   A `Triangle` object (typically from
-  [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)).
+  [`as_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/as_triangle.md)).
 
 ## Value
 

@@ -4,14 +4,14 @@ Estimate age-to-age (ata) development factors from an object of class
 `"Link"` and return a unified `"ATAFit"` object that bundles:
 
 - Summary statistics and WLS estimates (`summary`) from
-  [`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md)
+  [`summary.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/summary.Link.md)
   with `model = "ata"`.
 
 - Selected factors (`selected`) ready for chain ladder projection, after
   optional maturity filtering and LOCF fill.
 
 - Maturity diagnostics (`maturity`) from
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md).
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md).
 
 ## Usage
 
@@ -35,17 +35,17 @@ fit_ata(
 - x:
 
   An object of class `"Link"`, typically produced by
-  [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md).
+  [`as_link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_link.md).
 
 - loss:
 
   Cumulative metric for the link factor. Default `"loss"`. Forwarded to
-  [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md).
+  [`as_link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_link.md).
 
 - weight:
 
   Optional WLS weight variable. Forwarded to
-  [`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md).
+  [`as_link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_link.md).
 
 - alpha:
 
@@ -55,7 +55,7 @@ fit_ata(
 
   Method used to fill `NA` values in `f_sel`. One of `"locf"` (default)
   or `"none"`. Passed to
-  [`.filter_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-filter_ata.md).
+  [`.filter_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-filter_ata.md).
 
 - sigma_method:
 
@@ -66,7 +66,7 @@ fit_ata(
   for any earlier ones with a warning. `"none"` performs no
   extrapolation; `sigma` stays `NA` and downstream variance terms drop
   those links via finite-value guards. Passed to
-  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-extrapolate_sigma_ata.md).
+  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-extrapolate_sigma_ata.md).
 
 - recent:
 
@@ -79,9 +79,9 @@ fit_ata(
 
   Optional regime specification for cohort cutoff. Accepts: `NULL`
   (default – no filter), a `Regime` object (from
-  [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
+  [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_regime.md)
   or
-  [`regime_at()`](https://seokhoonj.github.io/lossratio/ko/reference/regime_at.md)),
+  [`regime_at()`](https://seokhoonj.github.io/lossratio-r/ko/reference/regime_at.md)),
   the string `"auto"` (internal `detect_regime(tri, loss = "ratio")`
   call), or a function `function(tri) -> Regime` for deferred
   custom-config detection. When supplied, cohorts strictly before the
@@ -99,9 +99,9 @@ fit_ata(
   `Maturity` object
 
   :   Use as-is. Typically built via
-      [`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md)
+      [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md)
       or
-      [`maturity_at()`](https://seokhoonj.github.io/lossratio/ko/reference/maturity_at.md).
+      [`maturity_at()`](https://seokhoonj.github.io/lossratio-r/ko/reference/maturity_at.md).
 
   `"auto"`
 
@@ -112,7 +112,7 @@ fit_ata(
 
   :   A user-supplied function taking the triangle and returning a
       `Maturity` object (e.g. from
-      [`maturity_spec()`](https://seokhoonj.github.io/lossratio/ko/reference/maturity_spec.md))
+      [`maturity_spec()`](https://seokhoonj.github.io/lossratio-r/ko/reference/maturity_spec.md))
       for deferred custom-config detection.
 
   When the supplied `Maturity` carries `attr(., "groups")` that differs
@@ -122,7 +122,7 @@ fit_ata(
 - ...:
 
   Additional arguments passed to
-  [`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md).
+  [`summary.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/summary.Link.md).
 
 ## Value
 
@@ -139,7 +139,7 @@ An object of class `"ATAFit"` (a named list) containing:
 - `summary`:
 
   `"ATASummary"` object from
-  [`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md).
+  [`summary.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/summary.Link.md).
 
 - `selected`:
 
@@ -177,7 +177,7 @@ An object of class `"ATAFit"` (a named list) containing:
 
 ## See also
 
-[`as_link()`](https://seokhoonj.github.io/lossratio/ko/reference/as_link.md),
-[`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md),
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_maturity.md),
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cl.md)
+[`as_link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_link.md),
+[`summary.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/summary.Link.md),
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_maturity.md),
+[`fit_cl()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_cl.md)

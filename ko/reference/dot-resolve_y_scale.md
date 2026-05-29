@@ -4,7 +4,7 @@ Internal helper that resolves the appropriate
 [`ggplot2::scale_y_continuous()`](https://ggplot2.tidyverse.org/reference/scale_continuous.html)
 layer from the variable type and scaling divisor. Given the metadata
 produced by
-[`.get_plot_meta()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-get_plot_meta.md),
+[`.get_plot_meta()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-get_plot_meta.md),
 it determines how y-axis labels should be formatted:
 
 - Ratio and proportion variables are displayed as percentages.
@@ -23,7 +23,7 @@ it determines how y-axis labels should be formatted:
 - meta:
 
   A named list produced by
-  [`.get_plot_meta()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-get_plot_meta.md),
+  [`.get_plot_meta()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-get_plot_meta.md),
   containing at least a `type` element.
 
 - amount_divisor:

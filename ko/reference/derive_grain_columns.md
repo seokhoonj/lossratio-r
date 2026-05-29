@@ -6,9 +6,9 @@ optionally `dev_m`), derive the coarser-grain siblings (`uy_q` / `uy_h`
 frame can be aggregated at any of the four grains.
 
 This is an *optional* utility –
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md)
 and
-[`as_calendar()`](https://seokhoonj.github.io/lossratio/ko/reference/as_calendar.md)
+[`as_calendar()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_calendar.md)
 already derive the single grain they need internally. Use this when you
 want a single enriched frame that can be re-aggregated at multiple
 grains, or for exploratory plots.

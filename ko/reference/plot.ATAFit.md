@@ -1,7 +1,7 @@
 # Plot an ata fit
 
 Visualise an object of class `"ATAFit"` by delegating to
-[`plot.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/plot.Link.md)
+[`plot.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot.Link.md)
 on the underlying `Link` data stored in `x$link` with `model = "ata"`.
 
 ## Usage
@@ -20,7 +20,7 @@ plot(x, ...)
 - ...:
 
   Arguments passed to
-  [`plot.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/plot.Link.md).
+  [`plot.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot.Link.md).
 
 ## Value
 
@@ -28,5 +28,5 @@ A `ggplot` object.
 
 ## See also
 
-[`plot.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/plot.Link.md),
-[`fit_ata()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ata.md)
+[`plot.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/plot.Link.md),
+[`fit_ata()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ata.md)

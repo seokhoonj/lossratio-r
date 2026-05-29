@@ -15,7 +15,7 @@ premium\_{ult,i}\\.
 - bt:
 
   A `Backtest` object (result of
-  [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)).
+  [`backtest()`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md)).
 
 ## Value
 

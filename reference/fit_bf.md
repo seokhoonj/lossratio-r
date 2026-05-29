@@ -25,13 +25,13 @@ where
   ladder on the `premium` column.
 
 This is a peer worker alongside
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+[`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
 /
-[`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md)
+[`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md)
 /
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md).
+[`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md).
 Standalone for the BF recipe – composition with
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
 is not part of this worker. Point projection is always computed;
 bootstrap SE / CI is opt-in via `bootstrap = TRUE` (Phase 3b).
 Closed-form Mack (2008) MSEP is not yet implemented.
@@ -112,14 +112,14 @@ fit_bf(
   `TRUE` / `"auto"`
 
   :   Internal
-      [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md)
+      [`bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/bootstrap.md)
       calls (one for loss, one for premium) sharing `seed` so replicate
       indices align across the two simulations.
 
   Named list `list(loss = BootstrapTriangle, premium = BootstrapTriangle)`
 
   :   Pre-built objects from
-      [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md).
+      [`bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/bootstrap.md).
       Must have matching `meta$B` / `meta$seed` so per-replicate
       composition is well-defined; `meta$target` must be `"loss"` and
       `"premium"` respectively.
@@ -127,7 +127,7 @@ fit_bf(
   Function `function(tri) -> list(loss = ..., premium = ...)`
 
   :   Lazy spec invoked on the input Triangle (leakage-safe for
-      [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)).
+      [`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)).
 
   Latest observed cumulative loss is *not* perturbed in the BF recipe –
   it is treated as the cohort anchor, mirroring the point-estimate
@@ -155,27 +155,27 @@ fit_bf(
 
   Residual scope for `type = "nonparametric"`. One of `"cell"` (default)
   or `"link"`. See
-  [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md).
+  [`bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/bootstrap.md).
 
 - process:
 
   One of `"gamma"` (default), `"od_pois"`, or `"normal"`. See
-  [`bootstrap()`](https://seokhoonj.github.io/lossratio/reference/bootstrap.md).
+  [`bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/bootstrap.md).
 
 - alpha:
 
   Numeric scalar passed through to the inner
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
   and
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md)
   calls. Default `1`.
 
 - sigma_method:
 
   Sigma extrapolation method forwarded to
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
   /
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md).
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md).
   Default `"locf"`.
 
 - recent:
@@ -187,13 +187,13 @@ fit_bf(
 
   Optional regime specification forwarded to the inner loss and premium
   fits. See
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
   for the four-type dispatch.
 
 - maturity:
 
   Optional maturity specification forwarded to the inner loss fit. See
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
   for the four-type dispatch.
 
 - credibility:
@@ -310,9 +310,9 @@ An object of class `"BFFit"` containing:
 - `alpha`, `sigma_method`, `recent`, `regime`, `maturity`:
 
   Inputs forwarded to the inner
-  [`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md)
+  [`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md)
   /
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md)
   calls.
 
 ## References
@@ -325,10 +325,10 @@ Bulletin*, 38(1), 87-103. (MSEP – not yet implemented.)
 
 ## See also
 
-[`fit_cc()`](https://seokhoonj.github.io/lossratio/reference/fit_cc.md)
+[`fit_cc()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cc.md)
 (pooled ELR variant),
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+[`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md),
+[`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md)
 
 ## Examples
 

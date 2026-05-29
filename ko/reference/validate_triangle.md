@@ -4,15 +4,15 @@ Check that each `(groups, cohort)` cohort has a consecutive `dev`
 sequence within its observed range. Non-consecutive cohorts produce
 non-consecutive age-to-age links downstream (e.g., `14 -> 17` instead of
 `14 -> 15`), which breaks
-[`summary.Link()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Link.md)
+[`summary.Link()`](https://seokhoonj.github.io/lossratio-r/ko/reference/summary.Link.md)
 key uniqueness and causes cartesian joins in
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md).
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ratio.md).
 
 This function inspects the raw data without modifying it. Use it before
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md)
 to decide whether to fix the data source, drop offending cohorts, or
 pass `fill_gaps = TRUE` to
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md).
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md).
 
 Two checks are performed:
 
@@ -62,7 +62,7 @@ validate_triangle(
   A single development-period variable (raw column name). Optional when
   `calendar` is supplied – `dev` is then derived from
   `(cohort, calendar)` at the resolved `grain` (same dispatch as
-  [`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)).
+  [`as_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md)).
 
 - grain:
 
@@ -101,4 +101,4 @@ displays both sections.
 
 ## See also
 
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/as_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/as_triangle.md)

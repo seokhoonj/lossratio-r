@@ -4,7 +4,7 @@ Internal helper that projects cumulative loss with the SA rule: ED phase
 for dev before `maturity_from`; CL phase from `maturity_from` onward.
 
 Originally lived in `R/loss.R` – moved to `R/sa.R` alongside
-[`fit_sa()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_sa.md)
+[`fit_sa()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_sa.md)
 in Phase 4a.
 
 ## Usage

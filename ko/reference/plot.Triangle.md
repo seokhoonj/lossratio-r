@@ -18,7 +18,7 @@ The function supports two display modes:
   - Weighted mean
 
 Summary statistics are computed from
-[`summary.Triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.Triangle.md).
+[`summary.Triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/summary.Triangle.md).
 
 ## Usage
 
@@ -79,13 +79,13 @@ plot(
 - theme:
 
   A string passed to
-  [`.switch_theme()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-switch_theme.md)
+  [`.switch_theme()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-switch_theme.md)
   (`"view"`, `"save"`, `"shiny"`).
 
 - ...:
 
   Additional arguments passed to
-  [`.switch_theme()`](https://seokhoonj.github.io/lossratio/ko/reference/dot-switch_theme.md).
+  [`.switch_theme()`](https://seokhoonj.github.io/lossratio-r/ko/reference/dot-switch_theme.md).
 
 ## Value
 

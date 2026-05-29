@@ -100,7 +100,7 @@ plot_triangle(
 - ...:
 
   Additional arguments passed to
-  [`.switch_theme()`](https://seokhoonj.github.io/lossratio/reference/dot-switch_theme.md).
+  [`.switch_theme()`](https://seokhoonj.github.io/lossratio-r/reference/dot-switch_theme.md).
 
 ## Value
 

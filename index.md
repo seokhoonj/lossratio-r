@@ -59,10 +59,10 @@ It provides:
 
 A long-format `data.frame` / `data.table`. Column names are configurable
 – pass them via
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/as_triangle.md)
 arguments and the function standardises internally.
 
-| [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md) argument | Meaning | Example |
+| [`as_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/as_triangle.md) argument | Meaning | Example |
 |----|----|----|
 | `cohort` | Cohort period (typically UY for long-term health) (Date) | `"uy_m"`, `"uy"` |
 | `calendar` *or* `dev` | Calendar period (Date) *or* `dev` period (integer) | `"cy_m"` / `"dev_m"` |
@@ -76,13 +76,13 @@ Two more arguments govern interpretation:
 - **`cell_type`** – `"incremental"` (default) or `"cumulative"`. Raw
   experience is typically incremental; if your data is pre-summed
   cumulative, pass `cell_type = "cumulative"` and
-  [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
+  [`as_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/as_triangle.md)
   derives the incremental form via per-cohort diff.
 - **`grain`** – `"auto"` (default, inferred from `cohort` dates) or
   `"M"` / `"Q"` / `"H"` / `"Y"`. Aggregates to monthly / quarterly /
   half-yearly / yearly granularity.
 
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/as_triangle.md)
 validates the schema, coerces date columns, derives the missing axis
 when one of `calendar` / `dev` is supplied, bins to `grain`, and emits
 cumulative + incremental cell values plus the derived `ratio`, `margin`,
@@ -102,7 +102,7 @@ per-period values carry an `incr_` (incremental) prefix:
 | Profit  | `profit`             | `incr_profit`        |
 
 Raw `experience` input is per-period only (`incr_loss`, `incr_premium`);
-[`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md)
+[`as_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/as_triangle.md)
 produces both forms in the output. Worker fit functions (`fit_cl`,
 `fit_ed`, `fit_ata`, `fit_intensity`) take `loss` / `premium` / `weight`
 arguments; dispatcher functions (`fit_loss`, `fit_premium`) and the
@@ -115,10 +115,10 @@ defaults.
 ``` r
 
 # pak (recommended)
-pak::pak("seokhoonj/lossratio")
+pak::pak("seokhoonj/lossratio-r")
 
 # remotes (alternative)
-remotes::install_github("seokhoonj/lossratio")
+remotes::install_github("seokhoonj/lossratio-r")
 ```
 
 ## Quick Start
@@ -173,9 +173,9 @@ The same long-format experience data can be viewed three ways:
 
 | Builder | Output object | Dimension | Use case |
 |----|----|----|----|
-| [`as_triangle()`](https://seokhoonj.github.io/lossratio/reference/as_triangle.md) | `Triangle` | cohort × dev (2D) | Chain ladder, ED, SA projection |
-| [`as_calendar()`](https://seokhoonj.github.io/lossratio/reference/as_calendar.md) | `Calendar` | calendar period (1D) | Calendar-year trend / diagonal effect |
-| [`as_total()`](https://seokhoonj.github.io/lossratio/reference/as_total.md) | `Total` | portfolio total (0D, per group) | High-level comparison across groups |
+| [`as_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/as_triangle.md) | `Triangle` | cohort × dev (2D) | Chain ladder, ED, SA projection |
+| [`as_calendar()`](https://seokhoonj.github.io/lossratio-r/reference/as_calendar.md) | `Calendar` | calendar period (1D) | Calendar-year trend / diagonal effect |
+| [`as_total()`](https://seokhoonj.github.io/lossratio-r/reference/as_total.md) | `Total` | portfolio total (0D, per group) | High-level comparison across groups |
 
 After `as_triangle`, downstream columns are standardized to `cohort` and
 `dev` regardless of input granularity (`uy_m` / `uy_q` / `uy`, etc.).
@@ -187,7 +187,7 @@ Original column names are preserved as attributes (`cohort`, `calendar`,
 ### Exposure-Driven (default)
 
 `fit_ratio(method = "ed")` (default) or
-[`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md).
+[`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md).
 All loss increments use premium (risk premium) as the denominator:
 $`\Delta C^L = g_k \cdot C^P_k`$. Unconditional safe baseline – no
 maturity dependency, robust under early-dev age-to-age volatility.
@@ -201,7 +201,7 @@ post-change cohorts. See the `regime` argument for explicit filtering.
 ### Chain Ladder
 
 `fit_ratio(method = "cl")` or
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md).
+[`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md).
 Classical Mack (1993) chain ladder $`C^L_{k+1} = f_k \cdot C^L_k`$ with
 analytic standard errors. The cohort’s own cum_loss acts as the anchor,
 so cohort-level drift propagates naturally without explicit regime
@@ -224,9 +224,9 @@ dev (CL phase).
 ### Prior-Anchored (BF / CC)
 
 `fit_loss(method = "bf")` /
-[`fit_bf()`](https://seokhoonj.github.io/lossratio/reference/fit_bf.md)
+[`fit_bf()`](https://seokhoonj.github.io/lossratio-r/reference/fit_bf.md)
 and `fit_loss(method = "cc")` /
-[`fit_cc()`](https://seokhoonj.github.io/lossratio/reference/fit_cc.md).
+[`fit_cc()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cc.md).
 Both blend an expected loss ratio (ELR) with the observed loss:
 $`\text{Ult} = L_{\text{latest}} + (1 - q) \cdot \text{ELR} \cdot E_{\text{ult}}`$.
 Bornhuetter-Ferguson (1972) takes the ELR from an external prior; Cape
@@ -248,7 +248,7 @@ plot_triangle(x)     # lossratio generic — cell heatmap layout
 ```
 
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) and
-[`plot_triangle()`](https://seokhoonj.github.io/lossratio/reference/plot_triangle.md)
+[`plot_triangle()`](https://seokhoonj.github.io/lossratio-r/reference/plot_triangle.md)
 work uniformly across `Triangle`, `Calendar`, `Link`, `ATAFit`, `EDFit`,
 `CLFit`, `RatioFit`, `Maturity`, `Convergence`, and `Regime` objects.
 
@@ -265,7 +265,7 @@ vignette("diagnostics", package = "lossratio")
 ## License
 
 MPL-2.0. See
-[LICENSE.md](https://seokhoonj.github.io/lossratio/LICENSE.md).
+[LICENSE.md](https://seokhoonj.github.io/lossratio-r/LICENSE.md).
 
 ## Author
 

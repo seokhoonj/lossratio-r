@@ -2,7 +2,7 @@
 
 Initialises `g_sel` from the WLS-fitted `g` and optionally fills `NA`
 runs via `data.table::nafill(type = "locf")`. Mirrors the fill phase of
-[`.filter_ata()`](https://seokhoonj.github.io/lossratio/reference/dot-filter_ata.md)
+[`.filter_ata()`](https://seokhoonj.github.io/lossratio-r/reference/dot-filter_ata.md)
 without the maturity gate (ED has no maturity concept).
 
 ## Usage

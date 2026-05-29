@@ -1,11 +1,11 @@
 # Overlay bootstrap SE / CI onto a PremiumFit `$full`
 
 Calls
-[`.resolve_bootstrap()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_bootstrap.md)
+[`.resolve_bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/dot-resolve_bootstrap.md)
 to optionally build a `BootstrapTriangle` on the premium target, then
 maps its summary columns onto the projected cells of `result$full`. Sets
 `result$ci_type` and a thin `result$bootstrap` metadata list. Mirrors
-[`.lossfit_bootstrap()`](https://seokhoonj.github.io/lossratio/reference/dot-lossfit_bootstrap.md)
+[`.lossfit_bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/dot-lossfit_bootstrap.md)
 in `R/loss.R`.
 
 ## Usage
@@ -19,7 +19,7 @@ in `R/loss.R`.
 - result:
 
   An augmented premium fit (post
-  [`.premiumfit_augment()`](https://seokhoonj.github.io/lossratio/reference/dot-premiumfit_augment.md)).
+  [`.premiumfit_augment()`](https://seokhoonj.github.io/lossratio-r/reference/dot-premiumfit_augment.md)).
 
 - x:
 
@@ -32,7 +32,7 @@ in `R/loss.R`.
 - bootstrap, B, seed, alpha:
 
   Forwarded to
-  [`.resolve_bootstrap()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_bootstrap.md).
+  [`.resolve_bootstrap()`](https://seokhoonj.github.io/lossratio-r/reference/dot-resolve_bootstrap.md).
 
 ## Value
 

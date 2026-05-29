@@ -8,9 +8,9 @@
 
 | 도구 | 질문 | 결과 | 축 |
 |----|----|----|----|
-| [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md) ($`k^*`$) | link factor 가 재현 가능해지는 시점? | dev 값 | 경과 기간 |
-| [`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md) ($`k^{**}`$) | LR 추정이 갱신을 멈추는 시점? | dev 값 | 경과 기간 |
-| [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md) | 인수 코호트들이 동질적인가? | 코호트 그룹 | 인수 시기 |
+| [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md) ($`k^*`$) | link factor 가 재현 가능해지는 시점? | dev 값 | 경과 기간 |
+| [`detect_convergence()`](https://seokhoonj.github.io/lossratio-r/reference/detect_convergence.md) ($`k^{**}`$) | LR 추정이 갱신을 멈추는 시점? | dev 값 | 경과 기간 |
+| [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md) | 인수 코호트들이 동질적인가? | 코호트 그룹 | 인수 시기 |
 
 P&C run-off 에서는 이 세 속성이 한 점에 모이는 경향이 있지만, 장기
 건강보험에서는 각각 독립적으로 검증해야 한다. 이 문서는 의존 순서대로 —
@@ -42,7 +42,7 @@ ladder 추정에 신뢰할 만큼 안정화되는 경과 기간 링크이다.
 `fit_ratio(method = "sa")` 가 노출 기반(exposure-driven, ED) 영역에서
 chain ladder(CL) 영역으로 전환할 때 내부적으로 사용한다.
 
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
 는 `Triangle` 을 직접 입력으로 받는다 — 내부에서 단일 변수 `Link` 와 그
 WLS 요약을 자동으로 빌드한다.
 
@@ -104,24 +104,24 @@ plot(as_link(tri_sur, loss = "loss"), type = "cv")
 
 ### 2.2 적합 함수에서의 사용
 
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
 는
-[`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md),
-[`fit_cl()`](https://seokhoonj.github.io/lossratio/reference/fit_cl.md),
+[`fit_ata()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ata.md),
+[`fit_cl()`](https://seokhoonj.github.io/lossratio-r/reference/fit_cl.md),
 `fit_ratio(method = "sa")` 내부에서도 `maturity` 인자를 통해 호출된다.
 `maturity` 인자는 네 가지 형태를 받는다.
 
 - `NULL` — 탐지 안 함 (워커 단독 호출의 default).
 - 이미 산출된 `Maturity` 객체 —
-  [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+  [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
   결과, 또는 수동 override 용
-  [`maturity_at()`](https://seokhoonj.github.io/lossratio/reference/maturity_at.md).
+  [`maturity_at()`](https://seokhoonj.github.io/lossratio-r/reference/maturity_at.md).
 - `"auto"` — default 임계값으로 내부 탐지 (`fit_ratio(method = "sa")` 와
-  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md)
   의 default).
 - triangle 한 개를 인자로 받아 `Maturity` 를 반환하는 함수 — 보통 사용자
   임계값을 넘기는
-  [`maturity_spec()`](https://seokhoonj.github.io/lossratio/reference/maturity_spec.md).
+  [`maturity_spec()`](https://seokhoonj.github.io/lossratio-r/reference/maturity_spec.md).
 
 ``` r
 
@@ -145,14 +145,14 @@ fit_ratio(tri_sur, method = "sa",
 신호가 아니다. 그 위에 세운 단일 기준은 $`k`$ 가 커지기만 하면 자동으로
 통과한다.
 
-[`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md)
+[`detect_convergence()`](https://seokhoonj.github.io/lossratio-r/reference/detect_convergence.md)
 는 수렴점(convergence point) $`k^{**}`$ — 예측 포트폴리오 손해율이
 안정하다고 *관찰되는* 첫 dev $`k \ge k^*`$ 를 검출한다. 어떤 의미의
 “안정” 인지는 사용자가 `method =` 인자로 고른다. $`k^*`$ 와 자연스러운
 짝이다.
 
 - $`k^*`$
-  ([`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+  ([`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
   산출): link factor $`f_k`$ 가 코호트 간에 재현 가능해지는 시점.
 - $`k^{**}`$: 모형 출력 (예측 손해율) 이 새 데이터에도 거의 움직이지
   않는 시점.
@@ -166,7 +166,7 @@ fit_ratio(tri_sur, method = "sa",
 최대 dev `dev_max` ($`K_{\max}`$) 까지에 한해 *관찰* 만 가능하다.
 검출기는 후보 시점 시퀀스 `dev_cand` $`\in [k^*, K_{\max}-2]`$ 위에서
 rolling
-[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
 를 돌려 각 시점의 예측 손해율 경로 `ratio` 을 만들고, 그 경로 위에서 네
 가지 안정성 지표를 평가한다. `method =` 가 어떤 지표가 `conv_k` 를
 결정할지 선택한다. 네 지표 모두 항상 결과 객체에 반환되므로 사용자는
@@ -199,9 +199,9 @@ $`v`$ 표기, 같은 축). 대규모 portfolio 에서 이 형태는 구조적으
 
 표준 chain ladder 컨벤션: $`i`$ = 코호트 (origin period), $`k`$ = 경과
 기간.
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
 가 $`k^*`$,
-[`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md)
+[`detect_convergence()`](https://seokhoonj.github.io/lossratio-r/reference/detect_convergence.md)
 가 $`k^{**}`$ 를 반환한다 — 둘 다 같은 $`k`$ 축 위에 있다.
 
 | Code | Math | 의미 |
@@ -264,7 +264,7 @@ head(summary(res), 6)
 ### 3.4 작동 메커니즘: 다중 holdout refit
 
 `dev_cand[i]` 마다 `holdout = dev_max - dev_cand[i]` 로
-[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
 를 돌려 portfolio LR 을 추출한다. 같은 holdout 깊이는 캐싱되므로 인접
 후보 간 재계산이 없다.
 
@@ -319,7 +319,7 @@ sapply(
 `max_dispersion` 이 $`\approx 0.05`$ 이하로 떨어지는 경우는 단일 기간
 claim 노이즈 때문에 실 portfolio 에서 보기 어렵고, $`0.20`$ 이상이면
 코호트 간 진성 이질성을 의심해야 한다 — 이 경우 모형 적합 전에
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)
 으로 그룹을 분리하는 것이 권장된다.
 
 ### 3.7 Reserving 주의사항
@@ -339,28 +339,28 @@ Reserving 응용 시:
   약한 증거이며, 한 diagonal 만 추가돼도 unconverge 가능하다.
 - 예측 손해율의 점추정과 표준오차는 `fit_ratio()$summary` 에서 직접
   읽는다.
-  [`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md)
+  [`detect_convergence()`](https://seokhoonj.github.io/lossratio-r/reference/detect_convergence.md)
   는 진단 도구이지 추정기 자체가 아니다. reserve 의 점추정과 불확실성은
   fit 객체에서 나온다.
 
 ### 3.8 한계
 
-[`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md)
+[`detect_convergence()`](https://seokhoonj.github.io/lossratio-r/reference/detect_convergence.md)
 는 반복적인
-[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
 호출 위의 얇은 layer 이며 그 제약을 그대로 상속한다.
 
 - **식별 가능성**: `conv_k` 는 `dev_max - mat_k >= window` (또는 tail /
   slope 의 경우 2) 일 때만 선언 가능하다. 관측 기간이 짧으면 모든 method
   가 `NA` 를 반환한다.
 - **모형 조건부**: 예측 LR 은
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
   로 산출된다.
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
   이 내부적으로
-  [`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+  [`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md)
   (default `method = "ed"`) 와
-  [`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+  [`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md)
   을 합성하므로, 그 안의 선택 (loss method, regime 필터, maturity 인자)
   이 `conv_k` 로 흘러간다. `...` 으로 `loss_method =`, `loss_regime =`
   등 override 가능.
@@ -394,7 +394,7 @@ Reserving 응용 시:
 궤적 다발을 눈대중으로 살피는 것은 구조적 변화의 위치를 짚어내는 신뢰할
 만한 방법이 못 된다.
 
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)
 은 이 두 질문에 한 번의 호출로 답한다 — 인수 코호트를 **regime** (유사한
 손해 추이를 공유하는 인수 코호트들의 묶음) 으로 그룹화하고, 그룹 사이의
 변화 시점을 함께 보고한다. 각 인수 코호트를 특징 벡터 (경과 기간
@@ -589,7 +589,7 @@ summary(r2)
 ### 4.6 다중 그룹 탐지
 
 여러 그룹으로 구축한 `Triangle` 은 그대로
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)
 에 전달할 수 있다. 그룹별로 독립적으로 탐지가 수행되며 결과는 하나의
 `Regime` 객체에 모인다.
 
@@ -616,21 +616,21 @@ r_all$changes
 `r_all$multi_group` 플래그가 단일 그룹 스칼라 형식과 구분해 준다. 특정
 그룹의 코호트 수가 `window` 보다 적으면 그 그룹은 경고와 함께 skip 되고
 나머지 그룹은 정상 진행된다. *모든* 그룹이 실패하면
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)
 은 오류를 발생시킨다. `plot(r_all)` 은 그룹별 패널 ggplot 객체의 named
 list 를 반환한다.
 
 ## 5. regime 필터링
 
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)
 은
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
 프레임워크의 수정이 아니라 전처리 진단이다. 그 출력은 두 가지로
 활용된다.
 
 1.  **층화 적합**: 명확히 구분되는 두 regime 이 탐지된 경우, 각 regime
     부분집합에 대해
-    [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+    [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
     을 따로 적합하면 풀링 적합보다 더 또렷한 수렴 영역의 손해율 추정값을
     얻는 경우가 많다.
 2.  **적합 내 필터링**: `Regime` 을 `fit_*` 계열에 그대로 데이터 필터로
@@ -661,7 +661,7 @@ regime change 이후 chain ladder 가 전체 triangle 에 적합되면 오래된
 | y (regime change)       | 그룹당 0~여러 번  | `detect_regime$changes` |
 
 x 축은 모형 단계의 단일 switch 이며
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
 가 한 점 ($`k^*`$) 을 반환한다. y 축은 외생적 사건이라 그룹 안에서 0
 회일 수도, 여러 번일 수도 있다. `Regime` 객체가 다중 change 를 담고 있을
 때 처리 방식은 `treatment` slot 으로 결정된다.
@@ -701,14 +701,14 @@ detect_regime(tri_sur, treatment = "segment_bridged_borrowed")
 
 ### 5.3 API
 
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
 은 role 별 두 인자 — `loss_regime` (loss-side 필터) 와 `premium_regime`
 (premium-side 필터; default 는 `loss_regime` 와 동일) 을 받는다.
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/reference/fit_loss.md)
+[`fit_loss()`](https://seokhoonj.github.io/lossratio-r/reference/fit_loss.md)
 /
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/reference/fit_premium.md)
+[`fit_premium()`](https://seokhoonj.github.io/lossratio-r/reference/fit_premium.md)
 은 단일 `regime` 인자.
-[`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
 는 `fit_ratio` 와 동일하게 `loss_regime` / `premium_regime` 를 받는다.
 워커 (`fit_ata`, `fit_ed`, `fit_cl`, `fit_intensity`) 도 동일한 단일
 `regime` 인자를 노출한다. 모두 다음 네 입력 타입을 공유한다.
@@ -716,12 +716,12 @@ detect_regime(tri_sur, treatment = "segment_bridged_borrowed")
 | 입력 | 동작 |
 |----|----|
 | `NULL` (default) | 필터링 없음 — 기존 동작과 동일 |
-| `Regime` 객체 | [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md) 또는 [`regime_at()`](https://seokhoonj.github.io/lossratio/reference/regime_at.md) 의 결과 |
-| `"auto"` sentinel | 내부적으로 [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md) 자동 호출 |
+| `Regime` 객체 | [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md) 또는 [`regime_at()`](https://seokhoonj.github.io/lossratio-r/reference/regime_at.md) 의 결과 |
+| `"auto"` sentinel | 내부적으로 [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md) 자동 호출 |
 | `function(tri) -> Regime` | Triangle 을 받아 Regime 을 반환하는 closure |
 
 raw `Date` / 문자열 / 벡터 입력은 더 이상 받지 않는다 —
-[`regime_at()`](https://seokhoonj.github.io/lossratio/reference/regime_at.md)
+[`regime_at()`](https://seokhoonj.github.io/lossratio-r/reference/regime_at.md)
 로 명시적으로 감싸 change 날짜를 드러내야 한다.
 
 ``` r
@@ -758,7 +758,7 @@ fit_ratio(tri_sur, method = "sa", recent = 18L,
 검출** 로 추정한다.
 
 1.  1차 pass: 필터링 없는 raw triangle 으로
-    [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+    [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
     호출 -\> $`k^*`$ 추정. change 이전·이후 코호트 모두 ATA 패턴에
     기여하므로 $`k^*`$ 는 안정적이다.
 2.  2차 pass: 1차에서 얻은 $`k^*`$ 를 고정한 채 hybrid 필터를 적용해 본
@@ -822,7 +822,7 @@ axis 컷을 $`k^*`$ 에서 이어붙여 적용한다.
 
 ### 5.6 다중 그룹 처리
 
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)
 은 적합 내 필터링에서 단일 그룹 triangle 을 전제한다. 여러 `coverage`
 그룹이 있는 portfolio 에서는 그룹별로 별도 호출한다.
 
@@ -868,31 +868,31 @@ change 이전 코호트의 ultimate 추정도 post-change 데이터로 전이되
 분리한다 — P&C run-off 에서는 한 점에 모이지만 장기 건강보험에서는 각각
 독립적으로 검증해야 한다.
 
-1.  [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+1.  [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)
     실행. 다중 regime 이 존재하면 그룹별로 분리해서 적합하거나, fit /
     backtest 호출에 `loss_regime =` / `regime =` 를 전달한다.
 2.  각 동질 그룹에서
-    [`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+    [`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
     로 $`k^*`$ 산출.
-3.  [`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md)
+3.  [`detect_convergence()`](https://seokhoonj.github.io/lossratio-r/reference/detect_convergence.md)
     로 $`k^{**} \ge k^*`$ 검출. 예측 손해율은 `fit_ratio()$summary` 에서
     읽고 위의 reserving 주의사항을 적용한다.
 
 ## 7. 함께 보기
 
-- [`?detect_maturity`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md),
-  [`?detect_convergence`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md),
-  [`?detect_regime`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md),
-  [`?regime_at`](https://seokhoonj.github.io/lossratio/reference/regime_at.md),
-  [`?maturity_spec`](https://seokhoonj.github.io/lossratio/reference/maturity_spec.md),
-  [`?fit_ratio`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md),
-  [`?backtest`](https://seokhoonj.github.io/lossratio/reference/backtest.md).
-- [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/articles/backtest.md)
+- [`?detect_maturity`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md),
+  [`?detect_convergence`](https://seokhoonj.github.io/lossratio-r/reference/detect_convergence.md),
+  [`?detect_regime`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md),
+  [`?regime_at`](https://seokhoonj.github.io/lossratio-r/reference/regime_at.md),
+  [`?maturity_spec`](https://seokhoonj.github.io/lossratio-r/reference/maturity_spec.md),
+  [`?fit_ratio`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md),
+  [`?backtest`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md).
+- [`vignette("backtest")`](https://seokhoonj.github.io/lossratio-r/articles/backtest.md)
   —
-  [`detect_convergence()`](https://seokhoonj.github.io/lossratio/reference/detect_convergence.md)
+  [`detect_convergence()`](https://seokhoonj.github.io/lossratio-r/reference/detect_convergence.md)
   와 regime 필터 케이스 스터디가 그 위에 구축된 rolling holdout
   메커니즘.
-- [`vignette("projection")`](https://seokhoonj.github.io/lossratio/articles/projection.md)
+- [`vignette("projection")`](https://seokhoonj.github.io/lossratio-r/articles/projection.md)
   —
-  [`fit_ratio()`](https://seokhoonj.github.io/lossratio/reference/fit_ratio.md)
+  [`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ratio.md)
   과 `"sa"`, `"ed"`, `"cl"` 방법.

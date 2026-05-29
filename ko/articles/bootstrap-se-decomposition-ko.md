@@ -78,7 +78,7 @@ closed-form 분산 식이 필요하지 않고, 단계 적응형(stage-adaptive, 
 
 ## 3. `bootstrap()` 이 두 값을 모두 만들어내는 방식
 
-[`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
+[`bootstrap()`](https://seokhoonj.github.io/lossratio-r/ko/reference/bootstrap.md)
 은 `B` 개의 대안(alternative) 삼각형을 시뮬레이션한다. 각 replicate `b`
 는 두 단계를 수행한다.
 
@@ -137,16 +137,16 @@ long-format `pseudo_triangles` 테이블에는 *두 값 컬럼* 이 있다.
 
 ### `type` 인자 — 세 가지 SE 패러다임
 
-[`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
+[`bootstrap()`](https://seokhoonj.github.io/lossratio-r/ko/reference/bootstrap.md)
 과 worker 적합
-함수([`fit_sa()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_sa.md),
-[`fit_bf()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_bf.md),
-[`fit_cc()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_cc.md))
+함수([`fit_sa()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_sa.md),
+[`fit_bf()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_bf.md),
+[`fit_cc()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_cc.md))
 는 모수 불확실성을 어떻게 생성할지 고르는 `type` 인자를 받는다.
 
 | `type` | Stage-1 perturbation | 용도 |
 |----|----|----|
-| `"analytical"` | 없음 — Mack(1993) MSEP closed-form, 시뮬레이션 없음 | 빠르고 분포 가정 없는 SE; [`bootstrap.Triangle()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md) 의 default |
+| `"analytical"` | 없음 — Mack(1993) MSEP closed-form, 시뮬레이션 없음 | 빠르고 분포 가정 없는 SE; [`bootstrap.Triangle()`](https://seokhoonj.github.io/lossratio-r/ko/reference/bootstrap.md) 의 default |
 | `"nonparametric"` | 관측된 발전 패턴에서 잔차를 재추출 | 분포 가정 없는 고전적 재추출 부트스트랩 |
 | `"parametric"` | 적합된 분포에서 셀을 재추출 후 인자 재적합(England-Verrall 1999) | 분포 형태까지 반영; `fit_sa/bf/cc` worker 의 default |
 
@@ -160,7 +160,7 @@ Stage-2 process-noise 단계를 거쳐 동일한 `$summary` 분해 컬럼을
 
 ## 4. `$summary` 슬롯
 
-[`bootstrap()`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
+[`bootstrap()`](https://seokhoonj.github.io/lossratio-r/ko/reference/bootstrap.md)
 은 cohort × dev 별 분해를 *한 번에* 계산하여 미리 저장된 summary 로
 노출한다. 하위 fit 함수가 *per-replicate 표본 분산 루프* 를 다시 돌릴
 필요 없이 컬럼만 매핑하면 된다.
@@ -232,6 +232,11 @@ cell-residual 모드는 각 그룹의 잔차 풀의 평균을 0 으로 보정한
 
 ## 7. `B` 결정 — Davison & Hinkley 컨벤션
 
+CI 경계는 R 기본값 `type = 7` 이 아니라 `quantile(..., type = 1)` 로
+읽는다. type 1 은 *보간하지 않는* 분위수(경험적 CDF 의 역함수)로, 두
+이웃 순서통계량 사이를 선형 보간하는 기본 type 7 과 달리 분위수가 항상
+실제 순서통계량 위에 떨어진다.
+
 경험적 percentile CI 가 *정확한 sample 위치* 에 떨어지려면 (즉 보간
 없이) `(B + 1) p` 가 정수여야 한다. 패키지 default 가 이를 반영한다.
 
@@ -249,9 +254,9 @@ percentile (75%, 95%, 99%) 이 모두 *정수 순위 index* 에 떨어지므로,
 
 ## 8. 함께 보기
 
-- [`vignette("backtest")`](https://seokhoonj.github.io/lossratio/ko/articles/backtest.md)
+- [`vignette("backtest")`](https://seokhoonj.github.io/lossratio-r/ko/articles/backtest.md)
   — hold-out 기반 부트스트랩 검증
-- [`vignette("projection")`](https://seokhoonj.github.io/lossratio/ko/articles/projection.md)
+- [`vignette("projection")`](https://seokhoonj.github.io/lossratio-r/ko/articles/projection.md)
   — 기초 체인 래더
-- [`?bootstrap`](https://seokhoonj.github.io/lossratio/ko/reference/bootstrap.md)
+- [`?bootstrap`](https://seokhoonj.github.io/lossratio-r/ko/reference/bootstrap.md)
   — 전체 인자 reference

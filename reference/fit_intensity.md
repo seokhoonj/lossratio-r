@@ -7,11 +7,11 @@ intensities along with their standard errors and diagnostic statistics.
 
 This is the factor-level diagnostic for the exposure-driven (ED)
 workflow, parallel to
-[`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md)
+[`fit_ata()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ata.md)
 for the multiplicative (chain ladder) side. Both operate at the *factor
 level* without producing a full projection. For full ED projection
 (cumulative loss / premium / ratio), use
-[`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md)
+[`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md)
 which accepts either a `Triangle` or an `IntensityFit` (skipping a
 rebuild of the link table when factors are already computed).
 
@@ -54,7 +54,7 @@ fit_intensity(
 - na_method:
 
   NA fill method for the selected intensity series used downstream by
-  [`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md).
+  [`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md).
   One of `"locf"` (default – carries the last observed intensity
   forward, appropriate for long-term health where ageing keeps \\g_k\\
   elevated rather than decaying to 0), `"zero"` (sets late-dev NAs to 0;
@@ -69,31 +69,31 @@ fit_intensity(
   for any earlier ones with a warning. `"none"` performs no
   extrapolation; `sigma` stays `NA` and downstream variance terms drop
   those links via finite-value guards. Passed to
-  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio/reference/dot-extrapolate_sigma_ata.md).
+  [`.extrapolate_sigma_ata()`](https://seokhoonj.github.io/lossratio-r/reference/dot-extrapolate_sigma_ata.md).
 
 - recent:
 
   Optional positive integer. When supplied, restricts estimation to rows
   within the last `recent` calendar diagonals (calendar-diagonal wedge
   filter; see
-  [`.apply_recent_filter()`](https://seokhoonj.github.io/lossratio/reference/dot-apply_recent_filter.md)).
+  [`.apply_recent_filter()`](https://seokhoonj.github.io/lossratio-r/reference/dot-apply_recent_filter.md)).
 
 - regime:
 
   Optional regime specification for cohort cutoff. Accepts: `NULL`
   (default – no filter), a `"Regime"` object (from
-  [`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)),
+  [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)),
   the string `"auto"` (internal `detect_regime(tri, loss = "ratio")`
   call), or a function `function(tri) -> Regime`. Resolved internally
   via
-  [`.resolve_regime()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_regime.md).
+  [`.resolve_regime()`](https://seokhoonj.github.io/lossratio-r/reference/dot-resolve_regime.md).
   When supplied, cohorts strictly before the change are dropped before
   estimation.
 
 - ...:
 
   Passed to
-  [`summary.Link()`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md)
+  [`summary.Link()`](https://seokhoonj.github.io/lossratio-r/reference/summary.Link.md)
   (e.g. `digits`).
 
 ## Value
@@ -115,12 +115,12 @@ A list of class `"IntensityFit"` with components:
 - `link`:
 
   Alias of `data` for parallelism with
-  [`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md).
+  [`fit_ata()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ata.md).
 
 - `factor`:
 
   The `EDSummary` returned by
-  [`summary.Link()`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md)
+  [`summary.Link()`](https://seokhoonj.github.io/lossratio-r/reference/summary.Link.md)
   – one row per link with WLS-estimated `g`, `g_se`, `rse`, `sigma`,
   plus descriptive statistics.
 
@@ -135,25 +135,25 @@ A list of class `"IntensityFit"` with components:
 
   Call metadata. `regime` is the resolved `"Regime"` object (or `NULL`)
   returned by
-  [`.resolve_regime()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_regime.md).
+  [`.resolve_regime()`](https://seokhoonj.github.io/lossratio-r/reference/dot-resolve_regime.md).
 
 ## ED has no maturity concept
 
 Unlike ATA factors, where CV / RSE drive a
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
 threshold, ED intensities behave differently – as \\g_k \to 0\\ in late
 development the CV / RSE blow up by construction, not by instability.
 `fit_intensity()` therefore deliberately omits a `maturity` parameter,
 and
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)
 rejects `IntensityFit` input with an informative error.
 
 ## See also
 
-[`fit_ata()`](https://seokhoonj.github.io/lossratio/reference/fit_ata.md),
-[`fit_ed()`](https://seokhoonj.github.io/lossratio/reference/fit_ed.md),
-[`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md),
-[`summary.Link()`](https://seokhoonj.github.io/lossratio/reference/summary.Link.md)
+[`fit_ata()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ata.md),
+[`fit_ed()`](https://seokhoonj.github.io/lossratio-r/reference/fit_ed.md),
+[`as_link()`](https://seokhoonj.github.io/lossratio-r/reference/as_link.md),
+[`summary.Link()`](https://seokhoonj.github.io/lossratio-r/reference/summary.Link.md)
 
 ## Examples
 

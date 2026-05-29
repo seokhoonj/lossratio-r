@@ -2,9 +2,9 @@
 
 Projection plot for an `"PremiumFit"` – observed and projected
 cumulative premium by cohort, delegated to
-[`.plot_projection_fit()`](https://seokhoonj.github.io/lossratio/reference/dot-plot_projection_fit.md).
+[`.plot_projection_fit()`](https://seokhoonj.github.io/lossratio-r/reference/dot-plot_projection_fit.md).
 Defined so an `PremiumFit` does not fall through to
-[`plot.CLFit()`](https://seokhoonj.github.io/lossratio/reference/plot.CLFit.md),
+[`plot.CLFit()`](https://seokhoonj.github.io/lossratio-r/reference/plot.CLFit.md),
 whose `$full` schema is loss-side.
 
 ## Usage
@@ -23,9 +23,9 @@ plot(x, ...)
 - ...:
 
   Forwarded to
-  [`.plot_projection_fit()`](https://seokhoonj.github.io/lossratio/reference/dot-plot_projection_fit.md)
+  [`.plot_projection_fit()`](https://seokhoonj.github.io/lossratio-r/reference/dot-plot_projection_fit.md)
   – see
-  [`plot.SAFit()`](https://seokhoonj.github.io/lossratio/reference/plot.SAFit.md).
+  [`plot.SAFit()`](https://seokhoonj.github.io/lossratio-r/reference/plot.SAFit.md).
 
 ## Value
 

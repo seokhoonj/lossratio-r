@@ -14,7 +14,7 @@ summary(object, model = NULL, alpha = 1, digits = NULL, ...)
 - object:
 
   A `Link` object from
-  [`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md).
+  [`as_link()`](https://seokhoonj.github.io/lossratio-r/reference/as_link.md).
 
 - model:
 
@@ -34,5 +34,5 @@ Either an `ATASummary` (model = `"ata"`) or `EDSummary` (model = `"ed"`)
 
 ## See also
 
-[`as_link()`](https://seokhoonj.github.io/lossratio/reference/as_link.md),
-[`detect_maturity()`](https://seokhoonj.github.io/lossratio/reference/detect_maturity.md)
+[`as_link()`](https://seokhoonj.github.io/lossratio-r/reference/as_link.md),
+[`detect_maturity()`](https://seokhoonj.github.io/lossratio-r/reference/detect_maturity.md)

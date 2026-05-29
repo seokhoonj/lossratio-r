@@ -19,7 +19,7 @@
 <script src="extra.js"></script><meta property="og:title" content="lossratio">
 <meta name="description" content="경험 데이터 기반 손해율 분석 및 추정 도구.">
 <meta property="og:description" content="경험 데이터 기반 손해율 분석 및 추정 도구.">
-<meta property="og:image" content="https://seokhoonj.github.io/lossratio/ko/logo.png">
+<meta property="og:image" content="https://seokhoonj.github.io/lossratio-r/ko/logo.png">
 <meta name="google-site-verification" content="9-dA4_Uuy20hNJ7t5reHrOAEZSy0K_JKK62xO7K3Qxs">
 <!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPEDFJ0V37"></script><script>
   window.dataLayer = window.dataLayer || [];
@@ -70,7 +70,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/seokhoonj/lossratio/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/seokhoonj/lossratio-r/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -142,16 +142,16 @@
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># pak (recommend)</span></span>
-<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"seokhoonj/lossratio"</span><span class="op">)</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"seokhoonj/lossratio-r"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># or</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"seokhoonj/lossratio"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"seokhoonj/lossratio-r"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio" class="external-link">lossratio</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://seokhoonj.github.io/lossratio-r" class="external-link">lossratio</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">experience</span><span class="op">)</span>           <span class="co"># 번들 합성 데이터 (4 coverages)</span></span>
 <span></span>
 <span><span class="co"># 1) Triangle 구축 — long-format 데이터 → 코호트 × dev 구조</span></span>
@@ -375,12 +375,12 @@
 <span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"getting-started"</span>, package <span class="op">=</span> <span class="st">"lossratio"</span><span class="op">)</span></span>
 <span><span class="op">?</span><span class="va">fit_ratio</span></span>
 <span><span class="op">?</span><span class="va">detect_regime</span></span></code></pre></div>
-<p>또는 <a href="https://seokhoonj.github.io/lossratio/ko/">패키지 사이트</a>.</p>
+<p>또는 <a href="https://seokhoonj.github.io/lossratio-r/ko/">패키지 사이트</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="python-sibling">Python sibling<a class="anchor" aria-label="anchor" href="#python-sibling"></a>
 </h2>
-<p>Python 구현: <a href="https://github.com/seokhoonj/lossratio-py" class="external-link"><code>lossratio-py</code></a> — sklearn-style estimator (<code>lr.Ratio().fit(tri)</code>), polars 기반.</p>
+<p>Python 구현: <a href="https://github.com/seokhoonj/lossratio" class="external-link"><code>lossratio</code></a> — sklearn-style estimator (<code>lr.Ratio().fit(tri)</code>), polars 기반.</p>
 </div>
 <div class="section level2">
 <h2 id="라이선스--저자">라이선스 / 저자<a class="anchor" aria-label="anchor" href="#%EB%9D%BC%EC%9D%B4%EC%84%A0%EC%8A%A4--%EC%A0%80%EC%9E%90"></a>
@@ -391,8 +391,8 @@
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/seokhoonj/lossratio/" class="external-link">Browse source code</a></li>
-<li><a href="https://github.com/seokhoonj/lossratio/issues" class="external-link">Report a bug</a></li>
+<li><a href="https://github.com/seokhoonj/lossratio-r/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/seokhoonj/lossratio-r/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
 

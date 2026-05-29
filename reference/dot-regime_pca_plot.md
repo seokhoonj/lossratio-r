@@ -1,7 +1,7 @@
 # Draw a PCA scatter of cohort development trajectories
 
 A lean PCA biplot specialised for
-[`detect_regime()`](https://seokhoonj.github.io/lossratio/reference/detect_regime.md)
+[`detect_regime()`](https://seokhoonj.github.io/lossratio-r/reference/detect_regime.md)
 output: every numeric column of `data` is treated as a trajectory
 feature, the `regime` column colours the score cloud, and loading arrows
 show how each development period contributes to the first two principal
@@ -71,12 +71,12 @@ inside the score range.
 - theme:
 
   Theme key forwarded to
-  [`.switch_theme()`](https://seokhoonj.github.io/lossratio/reference/dot-switch_theme.md).
+  [`.switch_theme()`](https://seokhoonj.github.io/lossratio-r/reference/dot-switch_theme.md).
 
 - ...:
 
   Forwarded to
-  [`.switch_theme()`](https://seokhoonj.github.io/lossratio/reference/dot-switch_theme.md).
+  [`.switch_theme()`](https://seokhoonj.github.io/lossratio-r/reference/dot-switch_theme.md).
 
 ## Value
 

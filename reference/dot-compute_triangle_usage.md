@@ -32,7 +32,7 @@ Mask precedence: `holdout` \> `used` \> `unused` \> `future`.
 - regime:
 
   Optional cohort cutoff. Accepts the same input forms handled by
-  [`.resolve_regime_change_date()`](https://seokhoonj.github.io/lossratio/reference/dot-resolve_regime_change_date.md)
+  [`.resolve_regime_change_date()`](https://seokhoonj.github.io/lossratio-r/reference/dot-resolve_regime_change_date.md)
   (`NULL`, `Date`, character, vector, or `Regime`).
 
 - holdout:
@@ -41,7 +41,7 @@ Mask precedence: `holdout` \> `used` \> `unused` \> `future`.
   diagonals are flagged `"holdout"`. The `recent` filter is then
   evaluated against the post-holdout boundary so the recent wedge sits
   *before* the holdout wedge (no overlap), matching
-  [`backtest()`](https://seokhoonj.github.io/lossratio/reference/backtest.md)
+  [`backtest()`](https://seokhoonj.github.io/lossratio-r/reference/backtest.md)
   semantics – the internal fitter operates on the masked triangle whose
   own max_cal is `original - holdout`.
 

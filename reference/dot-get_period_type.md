@@ -2,7 +2,7 @@
 
 Internal helper that maps a period variable name (e.g. `"uy_m"`,
 `"cy_q"`) to the corresponding type string accepted by
-[`.format_period()`](https://seokhoonj.github.io/lossratio/reference/dot-format_period.md).
+[`.format_period()`](https://seokhoonj.github.io/lossratio-r/reference/dot-format_period.md).
 
 Falls back to a `grain` hint (M/Q/H/Y) when the variable name is not one
 of the package-standard forms. This keeps plot formatting robust to

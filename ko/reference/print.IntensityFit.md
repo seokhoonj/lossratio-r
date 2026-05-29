@@ -1,9 +1,9 @@
 # Print method for `IntensityFit`
 
 Mirrors
-[`print.ATAFit()`](https://seokhoonj.github.io/lossratio/ko/reference/print.ATAFit.md)
+[`print.ATAFit()`](https://seokhoonj.github.io/lossratio-r/ko/reference/print.ATAFit.md)
 – prints call metadata only. Use
-[`summary.IntensityFit()`](https://seokhoonj.github.io/lossratio/ko/reference/summary.IntensityFit.md)
+[`summary.IntensityFit()`](https://seokhoonj.github.io/lossratio-r/ko/reference/summary.IntensityFit.md)
 (or `x$factor`) to inspect the per-link summary table.
 
 ## Usage

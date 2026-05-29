@@ -1,5 +1,5 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://seokhoonj.github.io/lossratio/sitemap.xml
-Sitemap: https://seokhoonj.github.io/lossratio/ko/sitemap.xml
+Sitemap: https://seokhoonj.github.io/lossratio-r/sitemap.xml
+Sitemap: https://seokhoonj.github.io/lossratio-r/ko/sitemap.xml

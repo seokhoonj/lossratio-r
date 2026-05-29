@@ -1,11 +1,11 @@
 # Resolve a regime input to a Regime object (or NULL)
 
 Internal 4-type dispatcher used by
-[`fit_ratio()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_ratio.md),
-[`fit_loss()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_loss.md),
-[`fit_premium()`](https://seokhoonj.github.io/lossratio/ko/reference/fit_premium.md),
+[`fit_ratio()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_ratio.md),
+[`fit_loss()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_loss.md),
+[`fit_premium()`](https://seokhoonj.github.io/lossratio-r/ko/reference/fit_premium.md),
 and
-[`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+[`backtest()`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md)
 to normalize the `regime` input (or split-axis variants such as
 `loss_regime`) into a single representation: either `NULL` (no filter)
 or a `"Regime"` object.
@@ -23,13 +23,13 @@ The four accepted input types are:
 - `"auto"`:
 
   Runs
-  [`detect_regime()`](https://seokhoonj.github.io/lossratio/ko/reference/detect_regime.md)
+  [`detect_regime()`](https://seokhoonj.github.io/lossratio-r/ko/reference/detect_regime.md)
   on `masked_tri` if supplied, otherwise on `tri`, with
   `loss = "ratio"`. The `masked_tri` fallback is the leakage-safe path
   used by
-  [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+  [`backtest()`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md)
   – fit functions pass only `tri`, while
-  [`backtest()`](https://seokhoonj.github.io/lossratio/ko/reference/backtest.md)
+  [`backtest()`](https://seokhoonj.github.io/lossratio-r/ko/reference/backtest.md)
   passes both so detection sees only the masked (training) data.
 
 - `function(tri) -> Regime`:
